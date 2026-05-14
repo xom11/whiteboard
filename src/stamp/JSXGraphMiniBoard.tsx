@@ -1,5 +1,6 @@
 'use client';
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { deserializeIntoBoard, type SerializedBoard, type SerializedElement } from './serializeBoard';
 
 // Tool keys — match GeoGebra-style toolset
@@ -120,21 +121,21 @@ const Icon = {
 const TOOLS: ToolDef[] = [
   { key: 'move', label: 'Di chuyển', hint: 'Kéo điểm hoặc xoay nền', icon: Icon.cursor, group: 'move', needs: 0 },
   { key: 'point', label: 'Điểm mới', hint: 'Click để thêm điểm', icon: Icon.point, group: 'point', needs: 1 },
-  { key: 'midpoint', label: 'Trung điểm', hint: 'Click 2 điểm', icon: Icon.midpoint, group: 'point', needs: 2, accepts: ['point', 'point'] },
+  { key: 'midpoint', label: 'Trung điểm', hint: 'Click 2 điểm có sẵn', icon: Icon.midpoint, group: 'point', needs: 2, accepts: ['point', 'point'] },
   { key: 'segment', label: 'Đoạn thẳng', hint: 'Click 2 điểm', icon: Icon.segment, group: 'line', needs: 2 },
   { key: 'line', label: 'Đường thẳng qua 2 điểm', hint: 'Click 2 điểm', icon: Icon.line, group: 'line', needs: 2 },
   { key: 'ray', label: 'Tia qua 2 điểm', hint: 'Click 2 điểm', icon: Icon.ray, group: 'line', needs: 2 },
   { key: 'vector', label: 'Vector', hint: 'Click 2 điểm', icon: Icon.vector, group: 'line', needs: 2 },
-  { key: 'perpendicular', label: 'Đường vuông góc', hint: 'Click 1 điểm + 1 đường', icon: Icon.perpendicular, group: 'construct', needs: 2, accepts: ['point', 'line'] },
-  { key: 'parallel', label: 'Đường song song', hint: 'Click 1 điểm + 1 đường', icon: Icon.parallel, group: 'construct', needs: 2, accepts: ['point', 'line'] },
-  { key: 'perpBisector', label: 'Đường trung trực', hint: 'Click 2 điểm', icon: Icon.perpBisector, group: 'construct', needs: 2, accepts: ['point', 'point'] },
-  { key: 'angleBisector', label: 'Đường phân giác', hint: 'Click 3 điểm', icon: Icon.bisector, group: 'construct', needs: 3, accepts: ['point', 'point', 'point'] },
+  { key: 'perpendicular', label: 'Đường vuông góc', hint: 'Click 1 điểm + 1 đường có sẵn', icon: Icon.perpendicular, group: 'construct', needs: 2, accepts: ['point', 'line'] },
+  { key: 'parallel', label: 'Đường song song', hint: 'Click 1 điểm + 1 đường có sẵn', icon: Icon.parallel, group: 'construct', needs: 2, accepts: ['point', 'line'] },
+  { key: 'perpBisector', label: 'Đường trung trực', hint: 'Click 2 điểm có sẵn', icon: Icon.perpBisector, group: 'construct', needs: 2, accepts: ['point', 'point'] },
+  { key: 'angleBisector', label: 'Đường phân giác', hint: 'Click 3 điểm có sẵn (đỉnh ở giữa)', icon: Icon.bisector, group: 'construct', needs: 3, accepts: ['point', 'point', 'point'] },
   { key: 'polygon', label: 'Đa giác', hint: 'Click các điểm, click lại điểm đầu để đóng', icon: Icon.polygon, group: 'polygon', needs: -1 },
   { key: 'circleCenter', label: 'Đường tròn (tâm + điểm)', hint: 'Click tâm rồi 1 điểm trên đường tròn', icon: Icon.circleCenter, group: 'circle', needs: 2 },
   { key: 'circle3', label: 'Đường tròn qua 3 điểm', hint: 'Click 3 điểm', icon: Icon.circle3, group: 'circle', needs: 3 },
-  { key: 'tangent', label: 'Tiếp tuyến', hint: 'Click 1 điểm + 1 đường tròn', icon: Icon.tangent, group: 'circle', needs: 2, accepts: ['point', 'circle'] },
-  { key: 'angle', label: 'Góc', hint: 'Click 3 điểm (đỉnh ở giữa)', icon: Icon.angle, group: 'measure', needs: 3, accepts: ['point', 'point', 'point'] },
-  { key: 'distance', label: 'Khoảng cách', hint: 'Click 2 điểm', icon: Icon.distance, group: 'measure', needs: 2, accepts: ['point', 'point'] },
+  { key: 'tangent', label: 'Tiếp tuyến', hint: 'Click 1 điểm + 1 đường tròn có sẵn', icon: Icon.tangent, group: 'circle', needs: 2, accepts: ['point', 'circle'] },
+  { key: 'angle', label: 'Góc', hint: 'Click 3 điểm có sẵn (đỉnh ở giữa)', icon: Icon.angle, group: 'measure', needs: 3, accepts: ['point', 'point', 'point'] },
+  { key: 'distance', label: 'Khoảng cách', hint: 'Click 2 điểm có sẵn', icon: Icon.distance, group: 'measure', needs: 2, accepts: ['point', 'point'] },
   { key: 'area', label: 'Diện tích', hint: 'Click các đỉnh, click lại điểm đầu để đóng', icon: Icon.area, group: 'measure', needs: -1 },
   { key: 'toggleLabel', label: 'Hiện/ẩn tên', hint: 'Click vào đối tượng', icon: Icon.toggleLabel, group: 'edit', needs: 1, accepts: ['any'] },
   { key: 'toggleVisible', label: 'Hiện/ẩn đối tượng', hint: 'Click vào đối tượng', icon: Icon.toggleVisible, group: 'edit', needs: 1, accepts: ['any'] },
@@ -198,6 +199,24 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
   const pendingRef = useRef<JxgObj[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
 
+  // Live preview segments while building a polygon/area: drawn between
+  // consecutive pending points so the user sees the shape forming.
+  const previewSegRef = useRef<JxgObj[]>([]);
+  // Tick state forces re-render so the undo button enable state stays in sync
+  // with creationLogRef (which is mutated outside React).
+  const [historyTick, setHistoryTick] = useState(0);
+  // Transient warning shown when a strict construction tool gets a click that
+  // didn't land on the required existing object (so the user knows why nothing
+  // happened). Auto-clears.
+  const [warn, setWarn] = useState<string | null>(null);
+  const warnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const flashWarn = useCallback((msg: string) => {
+    if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
+    setWarn(msg);
+    warnTimerRef.current = setTimeout(() => setWarn(null), 1800);
+  }, []);
+  useEffect(() => () => { if (warnTimerRef.current) clearTimeout(warnTimerRef.current); }, []);
+
   const labelIdxRef = useRef(0);
   const nextLabel = useCallback(() => {
     const idx = labelIdxRef.current;
@@ -224,6 +243,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     (id: string, type: string, args: unknown[], attrs: Record<string, unknown>, obj: JxgObj) => {
       creationLogRef.current.push({ id, type, args, attrs });
       objMapRef.current.set(id, obj);
+      setHistoryTick((t) => t + 1);
     },
     [],
   );
@@ -248,10 +268,20 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     return null;
   }, []);
 
+  const clearPreviewSegs = useCallback(() => {
+    const b = boardRef.current;
+    if (!b) return;
+    for (const s of previewSegRef.current) {
+      try { b.removeObject(s); } catch { /* ignore */ }
+    }
+    previewSegRef.current = [];
+  }, []);
+
   const clearPending = useCallback(() => {
+    clearPreviewSegs();
     pendingRef.current = [];
     setPendingCount(0);
-  }, []);
+  }, [clearPreviewSegs]);
 
   // Apply tool action with a sequence of picked refs
   const finalize = useCallback((toolDef: ToolDef, picks: JxgObj[]) => {
@@ -292,9 +322,19 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         create('parallel', [l, p], stroke);
         break;
       }
-      case 'perpBisector':
-        create('perpendicularbisector', labels, stroke);
+      case 'perpBisector': {
+        // JSXGraph 1.12.x doesn't register a `perpendicularbisector` element
+        // (only `perpendicular`, `perpendicularpoint`, `perpendicularsegment`).
+        // Build it from primitives: midpoint M of P1P2, then a perpendicular
+        // line to the segment P1P2 through M. Helpers are invisible but logged
+        // so deserialize-on-reload reconstructs the dependency chain.
+        const mid = create('midpoint', labels, { visible: false, withLabel: false, name: '' });
+        const seg = create('segment', labels, { visible: false, withLabel: false });
+        const midId = localIdOf(mid);
+        const segId = localIdOf(seg);
+        if (midId && segId) create('perpendicular', [segId, midId], stroke);
         break;
+      }
       case 'angleBisector':
         create('bisector', labels, stroke);
         break;
@@ -305,11 +345,15 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         create('circumcircle', labels, strokeOnly);
         break;
       case 'tangent': {
-        const [, c] = picks[0] && objKind(picks[0]) === 'point' ? [labels[0], labels[1]] : [labels[1], labels[0]];
-        // JSXGraph tangent: needs a glider on the circle. Create glider then tangent.
-        const px = picks[0]?.X ? picks[0].X() : 0;
-        const py = picks[0]?.Y ? picks[0].Y() : 0;
-        const glider = create('glider', [px, py, c], { name: '', size: 2, strokeColor: '#666', visible: false });
+        // Need to find the actual point pick (not just by slot index) since
+        // the user can click circle-then-point OR point-then-circle.
+        const firstIsPoint = picks[0] && objKind(picks[0]) === 'point';
+        const pointPick = firstIsPoint ? picks[0] : picks[1];
+        const circleLabel = firstIsPoint ? labels[1] : labels[0];
+        if (!pointPick || !circleLabel) break;
+        const px = typeof pointPick.X === 'function' ? pointPick.X() : 0;
+        const py = typeof pointPick.Y === 'function' ? pointPick.Y() : 0;
+        const glider = create('glider', [px, py, circleLabel], { name: '', size: 2, strokeColor: '#666', visible: false });
         const gid = localIdOf(glider);
         if (gid) create('tangent', [gid], stroke);
         break;
@@ -323,6 +367,10 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         const midX = (pA.X() + pB.X()) / 2;
         const midY = (pA.Y() + pB.Y()) / 2;
         create('text', [midX, midY, `d = ${dist.toFixed(2)}`], { fontSize: 14, color: '#dc2626' });
+        break;
+      }
+      case 'polygon': {
+        create('polygon', labels, { fillColor: '#1e3a8a', fillOpacity: 0.10, borders: { strokeColor: '#0f172a', strokeWidth: 2 } });
         break;
       }
       case 'area': {
@@ -362,6 +410,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
           if (id) {
             creationLogRef.current = creationLogRef.current.filter(e => e.id !== id);
             objMapRef.current.delete(id);
+            setHistoryTick((t) => t + 1);
           }
         } catch { /* ignore */ }
         break;
@@ -369,27 +418,116 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     }
   }, [create, localIdOf, nextLabel]);
 
-  // Find which JSXGraph object (if any) is at a given mouse event.
-  // We use board.getAllObjectsUnderMouse from JSXGraph if available; otherwise iterate.
+  // Undo: remove the most recently logged creation. Also clears any in-progress
+  // polygon construction (pending picks + preview segments) so state is sane.
+  const undoLast = useCallback(() => {
+    const b = boardRef.current;
+    if (!b) return;
+    while (creationLogRef.current.length > 0) {
+      const last = creationLogRef.current.pop();
+      if (!last) break;
+      const obj = objMapRef.current.get(last.id);
+      objMapRef.current.delete(last.id);
+      if (obj) {
+        try { b.removeObject(obj); } catch { /* ignore */ }
+        clearPending();
+        setHistoryTick((t) => t + 1);
+        try { b.update(); } catch { /* ignore */ }
+        return;
+      }
+      // Skip stale log entry (object already gone) and continue popping
+    }
+    setHistoryTick((t) => t + 1);
+  }, [clearPending]);
+
+  // Global Ctrl/Cmd+Z while the panel is mounted. Skipped when focus is in a
+  // text input so we don't hijack other undo flows. Capture phase + stop
+  // propagation so Excalidraw's underlying undo doesn't also fire when the
+  // panel is open on top of the whiteboard.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && !e.shiftKey)) return;
+      const ae = document.activeElement as HTMLElement | null;
+      if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      undoLast();
+    };
+    window.addEventListener('keydown', onKey, { capture: true });
+    return () => window.removeEventListener('keydown', onKey, { capture: true });
+  }, [undoLast]);
+
+  // Translate a pointer event into JSXGraph SVG-pixel coords (the coord system
+  // `hasPoint` uses). Falls back to manual rect math if `getMousePosition` is
+  // unavailable (e.g. in tests with a mocked board).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const screenCoordsOf = useCallback((evt: any): [number, number] | null => {
+    const b = boardRef.current;
+    if (!b) return null;
+    try {
+      const mp = b.getMousePosition ? b.getMousePosition(evt) : null;
+      if (mp && mp.length >= 2) return [mp[0], mp[1]];
+    } catch { /* fall through */ }
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const cx = evt.clientX ?? evt.touches?.[0]?.clientX ?? 0;
+      const cy = evt.clientY ?? evt.touches?.[0]?.clientY ?? 0;
+      return [cx - rect.left, cy - rect.top];
+    }
+    return null;
+  }, []);
+
+  // Find which JSXGraph object (if any) is at a given pointer event.
+  // JSXGraph's `hasPoint` expects coords in the board's SVG pixel space, not
+  // viewport-relative clientX/Y. Without this, hits are offset by the
+  // container's page position and existing points never snap.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const objectsAt = useCallback((evt: any): JxgObj[] => {
     const b = boardRef.current;
     if (!b) return [];
+    const sc = screenCoordsOf(evt);
+    if (!sc) return [];
+    const [sx, sy] = sc;
+    const list: JxgObj[] = [];
     try {
-      const list: JxgObj[] = [];
       const objs = b.objectsList || [];
       for (const o of objs) {
         try {
-          if (o.hasPoint && o.hasPoint(evt.clientX ? evt.clientX : (evt.touches ? evt.touches[0].clientX : 0), evt.clientY ? evt.clientY : (evt.touches ? evt.touches[0].clientY : 0))) {
-            list.push(o);
-          }
+          if (o.hasPoint && o.hasPoint(sx, sy)) list.push(o);
         } catch { /* ignore */ }
       }
-      return list;
-    } catch {
-      return [];
-    }
-  }, []);
+    } catch { /* ignore */ }
+    return list;
+  }, [screenCoordsOf]);
+
+  // Generous point-snap: JSXGraph's `hasPoint` for a point uses the visual
+  // radius (~3px) which is too strict for click targeting. When a tool needs
+  // a point pick, fall back to "nearest point within tolPx pixels".
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const findNearestPoint = useCallback((evt: any, tolPx: number = 12): JxgObj | null => {
+    const b = boardRef.current;
+    if (!b) return null;
+    const sc = screenCoordsOf(evt);
+    if (!sc) return null;
+    const [sx, sy] = sc;
+    const tol2 = tolPx * tolPx;
+    let best: { obj: JxgObj; d2: number } | null = null;
+    try {
+      const objs = b.objectsList || [];
+      for (const o of objs) {
+        try {
+          if (objKind(o) !== 'point') continue;
+          const pc = o.coords?.scrCoords;
+          if (!pc) continue;
+          const dx = pc[1] - sx;
+          const dy = pc[2] - sy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 <= tol2 && (!best || d2 < best.d2)) best = { obj: o, d2 };
+        } catch { /* ignore */ }
+      }
+    } catch { /* ignore */ }
+    return best ? best.obj : null;
+  }, [screenCoordsOf]);
 
   // Initialize board
   useEffect(() => {
@@ -405,9 +543,16 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         grid: false,
         showCopyright: false,
         showNavigation: true,
-        keepAspectRatio: false,
+        // Keep 1:1 user→pixel ratio so circles stay circular regardless of the
+        // container aspect ratio (Excalidraw panel is taller than wide and
+        // without this circles became ellipses after reload).
+        keepAspectRatio: true,
         pan: { enabled: true, needShift: false },
         zoom: { wheel: true },
+        // Looser hit-test radius so clicking on a thin segment/line/circle
+        // actually registers without pixel-perfect aim. `precision` is a real
+        // JSXGraph option (Options.precision) but isn't in the d.ts file.
+        ...({ precision: { hasPoint: 8, mouse: 4, touch: 16 } } as Record<string, unknown>),
       });
       boardRef.current = board;
 
@@ -454,6 +599,12 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         const hits = objectsAt(e).filter(o => o !== axisObjsRef.current.x && o !== axisObjsRef.current.y);
         // Prefer points over other elements when present
         const bestHit: JxgObj | null = hits.find(o => objKind(o) === 'point') ?? hits[0] ?? null;
+        // Generous fallback used when a slot expects a point: JSXGraph's `hasPoint`
+        // for a small point is ~3px which is too tight for clicking, so we look up
+        // the nearest existing point within 12px. Only applied where the active
+        // tool slot needs a point — otherwise we'd shadow valid line/circle hits.
+        const snapPointForPointSlot = (): JxgObj | null =>
+          bestHit && objKind(bestHit) === 'point' ? bestHit : findNearestPoint(e, 12);
 
         // Tool: point — always create a new free point at click
         if (t === 'point') {
@@ -464,52 +615,100 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
 
         // Edit / single-target tools (toggleLabel, toggleVisible, delete)
         if (toolDef.needs === 1 && toolDef.accepts) {
-          if (bestHit) finalize(toolDef, [bestHit]);
+          // Fall back to generous point snap if hasPoint missed a small point.
+          const hit = bestHit ?? findNearestPoint(e, 12);
+          if (hit) finalize(toolDef, [hit]);
+          else flashWarn('Click vào một đối tượng để áp dụng');
           return;
         }
 
         // Polygon / area: variable-length, close on click near starting point
         if (toolDef.needs === -1) {
-          // First click: ensure starting point picked or create
-          const pick: JxgObj = bestHit && objKind(bestHit) === 'point' ? bestHit : (() => {
-            const name = nextLabel();
-            return create('point', [x, y], { name, color: '#0f172a', size: 3 });
-          })();
-          // Check close ring: if click hits first picked point, close polygon
-          if (pendingRef.current.length >= 3 && bestHit && bestHit === pendingRef.current[0]) {
+          const snappedPoint = snapPointForPointSlot();
+          // Close ring first: if user clicks back on the first pending point
+          // (with at least 3 points already), finalize. Done before push so the
+          // first point isn't duplicated into pending.
+          if (pendingRef.current.length >= 3 && snappedPoint && snappedPoint === pendingRef.current[0]) {
+            clearPreviewSegs();
             finalize(toolDef, pendingRef.current);
             clearPending();
             return;
+          }
+          // Otherwise pick (snap-to-existing or create) a new vertex
+          const pick: JxgObj = snappedPoint ?? (() => {
+            const name = nextLabel();
+            return create('point', [x, y], { name, color: '#0f172a', size: 3 });
+          })();
+          // Live preview: draw an edge from the previous pending vertex to
+          // this new one so the user sees the polygon being built.
+          if (pendingRef.current.length > 0 && boardRef.current) {
+            const prev = pendingRef.current[pendingRef.current.length - 1];
+            try {
+              const seg = boardRef.current.create('segment', [prev, pick], {
+                strokeColor: '#3b82f6',
+                strokeWidth: 1.5,
+                strokeOpacity: 0.75,
+                fixed: true,
+                highlight: false,
+                withLabel: false,
+              });
+              previewSegRef.current.push(seg);
+            } catch { /* ignore */ }
           }
           pendingRef.current.push(pick);
           setPendingCount(pendingRef.current.length);
           return;
         }
 
-        // Multi-click fixed tools (segment, line, midpoint, circle, etc.)
-        const slot = pendingRef.current.length;
-        const kindRequired = toolDef.accepts ? toolDef.accepts[slot] : 'point';
+        // Multi-click branch. Two sub-modes:
+        //   A) Strict + order-flexible: tool declared `accepts`. We bind each
+        //      click to whatever required kind is still unfilled, regardless
+        //      of click order. E.g. perpendicular accepts ['point', 'line']
+        //      and the user can click line-then-point or point-then-line.
+        //   B) Lenient + order-fixed: tool has no `accepts` (segment, line,
+        //      ray, vector, circle*, ...). All slots want points; missing
+        //      snaps create a fresh point.
         let pick: JxgObj | null = null;
 
-        if (kindRequired === 'point') {
-          if (bestHit && objKind(bestHit) === 'point') {
-            pick = bestHit;
-          } else {
-            const name = nextLabel();
-            pick = create('point', [x, y], { name, color: '#0f172a', size: 3, fillColor: '#0f172a', strokeColor: '#0f172a' });
+        if (toolDef.accepts) {
+          // --- Mode A: strict, order-flexible ---
+          const usedKinds = pendingRef.current.map((p) => objKind(p));
+          const remaining: Array<'point' | 'line' | 'circle' | 'any'> = [...toolDef.accepts];
+          for (const u of usedKinds) {
+            if (u === 'other') continue;
+            const i = remaining.indexOf(u);
+            if (i >= 0) remaining.splice(i, 1);
           }
-        } else if (kindRequired === 'line') {
-          if (bestHit && objKind(bestHit) === 'line') pick = bestHit;
-          else return; // must click an existing line
-        } else if (kindRequired === 'circle') {
-          if (bestHit && objKind(bestHit) === 'circle') pick = bestHit;
-          else return;
-        } else if (kindRequired === 'any' || !kindRequired) {
-          // Default: create new point
-          if (bestHit && objKind(bestHit) === 'point') pick = bestHit;
+          const strictPoint = hits.find((o) => objKind(o) === 'point') ?? null;
+          const lineHit = hits.find((o) => objKind(o) === 'line') ?? null;
+          const circleHit = hits.find((o) => objKind(o) === 'circle') ?? null;
+          // Priority: an exact point hit binds to 'point' first (so a click
+          // landing right on a vertex isn't stolen by a line/circle passing
+          // through it). Otherwise bind by what's clicked.
+          if (remaining.includes('point') && strictPoint) pick = strictPoint;
+          else if (remaining.includes('line') && lineHit) pick = lineHit;
+          else if (remaining.includes('circle') && circleHit) pick = circleHit;
+          else if (remaining.includes('point')) {
+            // generous snap fallback for small points
+            const near = findNearestPoint(e, 12);
+            if (near) pick = near;
+          } else if (remaining.includes('any')) {
+            pick = strictPoint ?? lineHit ?? circleHit ?? null;
+          }
+          if (!pick) {
+            const needs = remaining.map((k) =>
+              k === 'point' ? 'một điểm' : k === 'line' ? 'một đường/đoạn' : k === 'circle' ? 'một đường tròn' : 'một đối tượng',
+            );
+            flashWarn(`Còn cần click vào ${needs.join(' + ')} có sẵn`);
+            return;
+          }
+        } else {
+          // --- Mode B: lenient, all slots want a point ---
+          const snapped = snapPointForPointSlot();
+          if (snapped) pick = snapped;
           else {
             const name = nextLabel();
-            pick = create('point', [x, y], { name, color: '#0f172a', size: 3 });
+            pick = create('point', [x, y], { name, color: '#0f172a', size: 3, fillColor: '#0f172a', strokeColor: '#0f172a' });
           }
         }
 
@@ -596,37 +795,57 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     return acc;
   }, {});
 
-  return (
-    <div className="flex h-full flex-col bg-slate-50">
-      {/* Toolbar */}
-      <div className="border-b bg-white">
-        <div className="flex flex-wrap items-center gap-2 px-2 py-1.5">
-          {(Object.keys(grouped) as Array<ToolDef['group']>).map((group) => (
-            <div key={group} className="flex items-center gap-0.5 rounded-md border border-slate-200 bg-slate-50/60 p-0.5">
-              <span className="px-1.5 text-[10px] font-medium uppercase tracking-wide text-slate-500">{GROUP_LABELS[group]}</span>
-              {grouped[group].map((t) => (
-                <button
-                  key={t.key}
-                  type="button"
-                  title={t.label + (t.hint ? ' — ' + t.hint : '')}
-                  aria-label={t.label}
-                  aria-pressed={tool === t.key}
-                  data-tool={t.key}
-                  onClick={() => handleToolChange(t.key)}
-                  className={`flex h-7 w-7 items-center justify-center rounded transition ${
-                    tool === t.key
-                      ? 'bg-emerald-600 text-white shadow-sm'
-                      : 'text-slate-700 hover:bg-white hover:text-slate-900'
-                  }`}
-                >
-                  {t.icon}
-                </button>
-              ))}
-            </div>
-          ))}
+  const groupKeys = Object.keys(grouped) as Array<ToolDef['group']>;
 
-          <div className="ml-auto flex items-center gap-2 pl-2">
-            <label className="flex items-center gap-1 text-xs text-slate-600 select-none">
+  // Shared tooltip rendered via portal so it escapes Excalidraw's overflow
+  // clipping + transformed ancestors and stays on top regardless of stacking.
+  const [hover, setHover] = useState<{ label: string; hint?: string; x: number; y: number } | null>(null);
+  const [portalReady, setPortalReady] = useState(false);
+  useEffect(() => { setPortalReady(true); }, []);
+  const showHover = useCallback((el: HTMLElement, t: ToolDef) => {
+    const r = el.getBoundingClientRect();
+    setHover({ label: t.label, hint: t.hint, x: r.left, y: r.top + r.height / 2 });
+  }, []);
+  const hideHover = useCallback(() => setHover(null), []);
+
+  return (
+    <div className="flex h-full min-h-0 bg-slate-50">
+      {/* Left: slim hint/options bar + canvas */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex items-center gap-2 border-b border-slate-200 bg-white px-3 py-1.5 text-xs">
+          <button
+            type="button"
+            onClick={undoLast}
+            disabled={creationLogRef.current.length === 0}
+            aria-label="Hoàn tác"
+            title="Hoàn tác (Ctrl/Cmd+Z)"
+            data-testid="undo-btn"
+            data-history-tick={historyTick}
+            className="flex shrink-0 items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 7 3 13 9 13" />
+              <path d="M3.51 13a9 9 0 1 0 2.13-9.36L3 7" />
+            </svg>
+          </button>
+          <span className="min-w-0 flex-1 truncate text-slate-600">
+            {warn ? (
+              <span className="rounded bg-rose-50 px-2 py-0.5 font-medium text-rose-700" role="status">{warn}</span>
+            ) : (
+              <>
+                <span className="font-medium text-slate-800">{currentToolDef?.label}</span>
+                {currentToolDef?.hint && <span className="ml-2 text-slate-500">— {currentToolDef.hint}</span>}
+              </>
+            )}
+          </span>
+          {pendingCount > 0 && (
+            <span className="flex shrink-0 items-center gap-1.5">
+              <span className="rounded bg-amber-100 px-2 py-0.5 text-amber-800">Đã chọn {pendingCount}</span>
+              <button onClick={handleClearPending} className="text-slate-500 underline-offset-2 hover:text-slate-900 hover:underline">huỷ</button>
+            </span>
+          )}
+          <div className="flex shrink-0 items-center gap-2 border-l border-slate-200 pl-2 text-slate-600">
+            <label className="flex items-center gap-1 select-none">
               <input
                 type="checkbox"
                 checked={showAxis}
@@ -635,7 +854,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
               />
               Trục
             </label>
-            <label className="flex items-center gap-1 text-xs text-slate-600 select-none">
+            <label className="flex items-center gap-1 select-none">
               <input
                 type="checkbox"
                 checked={showGrid}
@@ -647,28 +866,73 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
           </div>
         </div>
 
-        {/* Hint bar */}
-        <div className="flex items-center justify-between gap-2 border-t bg-slate-50 px-3 py-1 text-xs text-slate-600">
-          <span>
-            <span className="font-medium text-slate-800">{currentToolDef?.label}</span>
-            {currentToolDef?.hint && <span className="ml-2 text-slate-500">— {currentToolDef.hint}</span>}
-          </span>
-          {pendingCount > 0 && (
-            <span className="flex items-center gap-2">
-              <span className="rounded bg-amber-100 px-2 py-0.5 text-amber-800">Đã chọn {pendingCount}</span>
-              <button onClick={handleClearPending} className="text-slate-500 hover:text-slate-900 underline-offset-2 hover:underline">huỷ</button>
-            </span>
-          )}
-        </div>
+        <div
+          ref={containerRef}
+          id={containerId}
+          data-testid="jxgmini-container"
+          className="min-h-0 flex-1 bg-white"
+          style={{ touchAction: 'none' }}
+        />
       </div>
 
+      {/* Right: vertical tool rail — icon-only, tooltip rendered via portal */}
       <div
-        ref={containerRef}
-        id={containerId}
-        data-testid="jxgmini-container"
-        className="flex-1 bg-white"
-        style={{ touchAction: 'none' }}
-      />
+        role="toolbar"
+        aria-label="Công cụ dựng hình"
+        className="flex w-[60px] shrink-0 flex-col items-stretch gap-1 border-l border-slate-200 bg-white py-2"
+        style={{ overflow: 'visible' }}
+      >
+        {groupKeys.map((group, idx) => (
+          <React.Fragment key={group}>
+            {idx > 0 && <div className="mx-2 my-0.5 h-px bg-slate-200" aria-hidden="true" />}
+            <div className="grid grid-cols-2 gap-1 px-1.5" aria-label={GROUP_LABELS[group]}>
+              {grouped[group].map((t) => {
+                const active = tool === t.key;
+                return (
+                  <button
+                    key={t.key}
+                    type="button"
+                    aria-label={t.label}
+                    aria-pressed={active}
+                    data-tool={t.key}
+                    onClick={() => handleToolChange(t.key)}
+                    onMouseEnter={(e) => showHover(e.currentTarget, t)}
+                    onMouseLeave={hideHover}
+                    onFocus={(e) => showHover(e.currentTarget, t)}
+                    onBlur={hideHover}
+                    className={`flex h-8 w-8 items-center justify-center rounded-md transition ${
+                      active
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                    }`}
+                  >
+                    {t.icon}
+                  </button>
+                );
+              })}
+            </div>
+          </React.Fragment>
+        ))}
+      </div>
+
+      {portalReady && hover && typeof document !== 'undefined'
+        ? createPortal(
+            <div
+              role="tooltip"
+              className="pointer-events-none fixed w-max max-w-[220px] rounded-md bg-slate-900 px-2 py-1 text-left text-[11px] leading-tight text-white shadow-lg"
+              style={{
+                left: hover.x - 8,
+                top: hover.y,
+                transform: 'translate(-100%, -50%)',
+                zIndex: 2147483600,
+              }}
+            >
+              <span className="block font-medium">{hover.label}</span>
+              {hover.hint && <span className="mt-0.5 block text-slate-300">{hover.hint}</span>}
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 };
