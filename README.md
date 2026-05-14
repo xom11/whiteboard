@@ -1,11 +1,17 @@
-# @hoctotbachkhoa/whiteboard
+# @xom11/whiteboard
 
 Excalidraw-based whiteboard component dùng cho HocTotBachKhoa classroom: bút/shape/text/import ảnh + hai stamp tools (hình học JSXGraph, công thức LaTeX KaTeX).
 
 ## Install
 
+Cài qua git URL (repo public, không cần npm publish):
+
 ```bash
-npm install @hoctotbachkhoa/whiteboard
+# pin tag (recommended)
+npm install github:xom11/whiteboard#v0.2.0
+
+# hoặc trong package.json
+"@xom11/whiteboard": "github:xom11/whiteboard#v0.2.0"
 ```
 
 Peer deps: `react >=18`, `react-dom >=18`, `next >=14`.
@@ -13,7 +19,7 @@ Peer deps: `react >=18`, `react-dom >=18`, `next >=14`.
 ## Usage
 
 ```tsx
-import { ExcalidrawWhiteboardView, type ExcalidrawSceneSnapshot } from '@hoctotbachkhoa/whiteboard';
+import { ExcalidrawWhiteboardView, type ExcalidrawSceneSnapshot } from '@xom11/whiteboard';
 
 export function ClassroomBoard() {
   return (
@@ -38,29 +44,19 @@ npm run build      # tsup → dist/{index.js, index.mjs, index.d.ts}
 npm run dev        # tsup watch mode
 ```
 
-## Local linking (yalc)
+## Workflow phát hành phiên bản mới
 
-Trong khi iterate cùng với app consumer (vd. `hoctotbachkhoa/hoctotbachkhoa`):
+`npm ci --ignore-scripts` ở consumer skip prepare hook → phải commit `dist/`:
 
 ```bash
-# trong whiteboard repo
 npm run build
-yalc publish
-
-# trong consumer repo
-yalc add @hoctotbachkhoa/whiteboard
-npm install
-```
-
-Khi sửa whiteboard, `yalc publish --push` sẽ auto-update consumer.
-
-Để chốt version chính thức (sau khi PR vào main):
-
-```bash
-npm version patch        # bump version
+git add dist/
+git commit -am "release vX.Y.Z"
+npm version patch        # bump package.json + tạo tag
 git push --follow-tags
-# consumer pin version mới trong package.json
 ```
+
+Consumer pin tag mới trong `package.json` rồi `npm install`.
 
 ## Architecture
 
@@ -72,4 +68,4 @@ git push --follow-tags
 
 ## Extracted from
 
-`Hoctotbachkhoa/hoctotbachkhoa` (apps/web/components/classroom/excalidrawBoard/) — git history preserved via `git filter-repo`.
+`Hoctotbachkhoa/hoctotbachkhoa` (apps/web/components/classroom/excalidrawBoard/) — git history preserved via `git filter-repo`. Repo sau đó transfer từ `Hoctotbachkhoa/whiteboard` sang `xom11/whiteboard` (v0.2.0 trở đi).

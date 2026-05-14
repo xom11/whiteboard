@@ -4,7 +4,7 @@ Project context cho Claude Code. Đọc file này trước khi làm việc với
 
 ## Tổng quan
 
-**`@hoctotbachkhoa/whiteboard`** — Excalidraw-based whiteboard component cho HocTotBachKhoa classroom. Tách từ monorepo classroom thành package độc lập để cô lập bug + iterate nhanh.
+**`@xom11/whiteboard`** — Excalidraw-based whiteboard component cho HocTotBachKhoa classroom. Tách từ monorepo classroom thành package độc lập để cô lập bug + iterate nhanh.
 
 - Bút/shape/text/import ảnh — qua Excalidraw 0.18
 - Stamp **hình học** (📐) — JSXGraph editor + serialize JSON state để re-edit
@@ -55,7 +55,7 @@ import {
   type SyncableAppState,
   type BinaryFiles,
   type ExcalidrawElement,
-} from '@hoctotbachkhoa/whiteboard';
+} from '@xom11/whiteboard';
 ```
 
 Consumer cần wrap trong Client Component (`"use client"`). Package tự thêm `"use client"` vào dist/* nên import từ Server Component cũng OK (Next.js sẽ treat là client).
@@ -70,17 +70,20 @@ npm run build       # tsup → dist/ + inject-use-client.mjs
 npm run dev         # tsup --watch (auto rebuild + inject)
 ```
 
-## Dev workflow với consumer (yalc)
+## Dev workflow phát hành phiên bản mới
 
 ```bash
-# Local: link với hoctotbachkhoa/hoctotbachkhoa
+# 1. Build + commit dist/ (consumer dùng `npm ci --ignore-scripts` nên không build được)
 npm run build
-yalc publish --push   # auto-update mọi consumer đã `yalc add`
+git add dist/
+git commit -am "release vX.Y.Z"
 
-# Pin version chính thức
-npm version patch
+# 2. Bump version + tag + push
+npm version patch        # 0.2.0 → 0.2.1 — tự commit + tag
 git push --follow-tags
-# Consumer đổi package.json: "@hoctotbachkhoa/whiteboard": "git+ssh://git@github.com:Hoctotbachkhoa/whiteboard.git#v0.1.1"
+
+# 3. Consumer pin tag mới trong package.json
+"@xom11/whiteboard": "github:xom11/whiteboard#vX.Y.Z"
 ```
 
 ## Conventions
@@ -109,7 +112,7 @@ git push --follow-tags
 - **Excalidraw double-click image → crop mode**: `appState.croppingElementId` được set. Math-stamp intercept → reopen editor thay vì crop. Sau khi insert lại, dùng `skipCropForIdRef` để tránh loop.
 - **JSXGraph point labels**: mặc định render bằng HTML `<div>` overlay → clone-SVG export missing labels. Fix: set `JXG.Options.text.display = 'internal'` (cả ở MiniBoard và offscreen restore).
 - **CSS-in-JS từ Excalidraw**: `import '@excalidraw/excalidraw/index.css'` trong `ExcalidrawWhiteboardView.tsx`. Consumer Next.js handle CSS imports từ JS thông qua webpack/turbopack loader.
-- **Tailwind v4 không scan node_modules**: consumer phải thêm `@source "../../../node_modules/@hoctotbachkhoa/whiteboard/dist/**/*.{js,mjs}";` vào globals.css.
+- **Tailwind v4 không scan node_modules**: consumer phải thêm `@source "../../../node_modules/@xom11/whiteboard/dist/**/*.{js,mjs}";` vào globals.css.
 
 ## Extracted from
 
