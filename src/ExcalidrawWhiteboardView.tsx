@@ -16,12 +16,16 @@ import {
   useStampShortcuts,
   isMathStamp,
   svgToImageElement,
+  restoreMissingMathStampFiles,
   type SerializedBoard,
 } from './excalidrawBoard/stamp';
 import '@excalidraw/excalidraw/index.css';
 
+// Excalidraw + custom MainMenu/Footer/WelcomeScreen are bundled into a single
+// client-only module so we can use static imports (and thus `MainMenu.DefaultItems`)
+// without SSR ever evaluating @excalidraw/excalidraw.
 const Excalidraw = dynamic(
-  async () => (await import('@excalidraw/excalidraw')).Excalidraw,
+  async () => (await import('./excalidrawBoard/ExcalidrawWithMenus')).ExcalidrawWithMenus,
   { ssr: false, loading: () => <div className="flex h-full items-center justify-center text-sm text-gray-500">Đang tải bảng…</div> },
 );
 
@@ -127,6 +131,28 @@ export function ExcalidrawWhiteboardView({
       })),
     );
   }, [isTeacher, api, remoteFiles]);
+
+  // ---- Restore math-stamp binary files after page reload / remote sync ----
+  // Walk current scene elements; for each math-stamp image with missing file,
+  // regenerate the SVG from customData and add to Excalidraw's file store.
+  useEffect(() => {
+    if (!api) return;
+    let cancelled = false;
+    const run = async () => {
+      try {
+        const elements = api.getSceneElements();
+        if (!elements || elements.length === 0) return;
+        if (cancelled) return;
+        await restoreMissingMathStampFiles(api, elements);
+      } catch (err) {
+        console.warn('Math stamp restore pass failed:', err);
+      }
+    };
+    // Initial restore + retry after a tick to catch scenes that arrive shortly after.
+    run();
+    const t = setTimeout(run, 400);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [api, initialScene, remoteScene]);
 
   useEffect(() => () => {
     if (throttleTimerRef.current) clearTimeout(throttleTimerRef.current);

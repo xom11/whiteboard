@@ -11,6 +11,8 @@ export interface SerializedElement {
 export interface SerializedBoard {
   bbox: [number, number, number, number];
   elements: SerializedElement[];
+  showAxis?: boolean;
+  showGrid?: boolean;
 }
 
 interface BoardLike {
@@ -18,15 +20,29 @@ interface BoardLike {
   create(type: string, args: unknown[], attrs: Record<string, unknown>): unknown;
 }
 
-export function serializeBoard(board: BoardLike, log: SerializedElement[]): SerializedBoard {
+export function serializeBoard(
+  board: BoardLike,
+  log: SerializedElement[],
+  options: { showAxis?: boolean; showGrid?: boolean } = {},
+): SerializedBoard {
   return {
     bbox: board.getBoundingBox(),
     elements: log.map(e => ({ type: e.type, args: e.args, attrs: e.attrs, id: e.id })),
+    showAxis: !!options.showAxis,
+    showGrid: !!options.showGrid,
   };
 }
 
 export function deserializeIntoBoard(board: BoardLike, serialized: SerializedBoard): void {
+  // Replay: args may contain references to earlier elements by our serialized id ("j0", "j1"…).
+  // We resolve those to actual JSXGraph objects via a local id→object map.
+  const idMap = new Map<string, unknown>();
   for (const el of serialized.elements) {
-    board.create(el.type, el.args, { ...el.attrs });
+    const resolvedArgs = el.args.map((a) => {
+      if (typeof a === 'string' && idMap.has(a)) return idMap.get(a);
+      return a;
+    });
+    const created = board.create(el.type, resolvedArgs, { ...el.attrs });
+    idMap.set(el.id, created);
   }
 }

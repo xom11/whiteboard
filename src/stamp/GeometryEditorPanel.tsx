@@ -27,9 +27,12 @@ export const GeometryEditorPanel: React.FC<Props> = ({ initialState, onInsert, o
       const svgString = renderGeometryToSvg(container);
       const log = handleRef.current.getCreationLog();
       const bbox = handleRef.current.getBbox();
+      const showAxis = handleRef.current.getShowAxis();
+      const showGrid = handleRef.current.getShowGrid();
       const serialized = serializeBoard(
         { getBoundingBox: () => bbox, create: () => undefined },
         log,
+        { showAxis, showGrid },
       );
       onInsert(JSON.stringify(serialized), svgString);
     } catch (err) {
@@ -41,24 +44,39 @@ export const GeometryEditorPanel: React.FC<Props> = ({ initialState, onInsert, o
     <aside
       role="dialog"
       aria-label="Dựng hình học"
-      className="absolute top-0 right-0 h-full w-2/5 min-w-[320px] max-w-[600px] bg-white border-l shadow-xl z-40 flex flex-col"
+      data-testid="geometry-editor-panel"
+      className="absolute top-0 right-0 z-40 flex h-full w-[480px] min-w-[400px] max-w-[640px] flex-col border-l border-slate-200 bg-white shadow-2xl"
     >
-      <header className="flex items-center justify-between p-2 bg-gray-100 border-b">
-        <h3 className="text-sm font-semibold">📐 Dựng hình học</h3>
-        <button onClick={onClose} aria-label="Đóng" className="text-gray-500 hover:text-gray-900">✕</button>
+      <header className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2 text-white">
+        <h3 className="flex items-center gap-2 text-sm font-semibold">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="3,18 12,3 21,18"/>
+            <circle cx="12" cy="3" r="1.5" fill="currentColor"/>
+            <circle cx="3" cy="18" r="1.5" fill="currentColor"/>
+            <circle cx="21" cy="18" r="1.5" fill="currentColor"/>
+          </svg>
+          Dựng hình học
+        </h3>
+        <button onClick={onClose} aria-label="Đóng" className="rounded p-1 hover:bg-white/15 transition">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+        </button>
       </header>
-      <div className="flex-1 min-h-0">
+      <div className="min-h-0 flex-1">
         <JSXGraphMiniBoard onReady={handleReady} initialState={initialState} />
       </div>
-      <footer className="flex justify-end gap-2 p-2 border-t bg-gray-50">
-        <button onClick={onClose} className="px-3 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded">Huỷ</button>
-        <button
-          onClick={handleInsert}
-          disabled={!ready}
-          className="px-3 py-1 text-xs bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50 rounded"
-        >
-          Chèn
-        </button>
+      <footer className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2">
+        <span className="text-xs text-slate-500">Mẹo: chọn công cụ, click trên bảng để dựng hình.</span>
+        <div className="flex gap-2">
+          <button onClick={onClose} className="rounded border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100">Huỷ</button>
+          <button
+            onClick={handleInsert}
+            disabled={!ready}
+            data-testid="geometry-insert-btn"
+            className="rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+          >
+            Chèn vào bảng
+          </button>
+        </div>
       </footer>
     </aside>
   );
