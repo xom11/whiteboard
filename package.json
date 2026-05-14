@@ -21,8 +21,8 @@
     "*.css"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsup && node scripts/inject-use-client.mjs",
+    "dev": "tsup --watch --onSuccess \"node scripts/inject-use-client.mjs\"",
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist .yalc yalc.lock"

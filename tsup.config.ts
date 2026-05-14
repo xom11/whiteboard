@@ -8,8 +8,6 @@ export default defineConfig({
   clean: true,
   external: ['react', 'react-dom', 'next', 'next/dynamic'],
   treeshake: true,
-  // Banner để giữ "use client" cho component RSC consumer (Next.js App Router)
-  banner: {
-    js: '"use client";',
-  },
+  // "use client" được prepend qua scripts/inject-use-client.mjs (banner config bị
+  // bundler strip — Next.js App Router yêu cầu directive ở dòng đầu của file output).
 });
