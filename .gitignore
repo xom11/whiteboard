@@ -8,3 +8,5 @@ yalc.lock
 coverage/
 .tsbuildinfo
 .next/
+.playwright-mcp/
+dark-mode-*.png

@@ -26,6 +26,7 @@ import {
 } from './stamp';
 import type { GeomTool } from './stamp/JSXGraphMiniBoard';
 import '@excalidraw/excalidraw/index.css';
+import './stamp/stamp.css';
 
 const Excalidraw = dynamic(
   async () => (await import('./ExcalidrawWithMenus')).ExcalidrawWithMenus,
@@ -71,6 +72,7 @@ export function ExcalidrawWhiteboardView({
   onFilesChange,
 }: ExcalidrawWhiteboardViewProps) {
   const [api, setApi] = useState<ExApi | null>(null);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
   const knownFileIdsRef = useRef<Set<string>>(new Set());
   const lastElementsHashRef = useRef<string>('');
   const throttleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -108,11 +110,6 @@ export function ExcalidrawWhiteboardView({
 
   // Mỗi lần intercept crop xong, lưu id để skip không lặp lại
   const handledCropIdRef = useRef<string | null>(null);
-
-  // Sau khi insert/update stamp, Excalidraw auto-select element mới + auto-bật crop
-  // mode. Đánh dấu id của stamp vừa insert để intercept handler bỏ qua lần đầu
-  // (không reopen editor) thay vào đó chỉ clear crop state.
-  const skipCropForIdRef = useRef<string | null>(null);
 
   // Lưu lại tool Excalidraw đang active TRƯỚC khi mở G/L để restore sau khi đóng.
   const prevExcalidrawToolRef = useRef<string>('selection');
@@ -153,27 +150,22 @@ export function ExcalidrawWhiteboardView({
   const handleChange = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (elements: readonly ExcalidrawElement[], appState: any, files: BinaryFiles) => {
+      // Sync theme từ Excalidraw appState → React state (cho cả teacher/student).
+      const nextDark = appState?.theme === 'dark';
+      setIsDarkTheme((prev) => (prev === nextDark ? prev : nextDark));
+
       if (!isTeacher) return;
 
       // Intercept Excalidraw crop-image flow cho math stamps: khi user double-click
-      // 1 stamp, Excalidraw set appState.croppingElementId. Ta detect và mở editor
-      // của chính ta thay vì để Excalidraw vào crop mode.
+      // 1 stamp, Excalidraw set appState.croppingElementId. Ta dismiss crop mode +
+      // mở editor của chính ta. handlePointerDown cũng phát hiện double-click sớm
+      // hơn — đây là fallback (đặc biệt khi click rơi vào selection handle khiến
+      // pointerDownState.hit.element = null).
       const cropId = appState?.croppingElementId as string | null | undefined;
-      // Stamp vừa được insert programmatically → Excalidraw auto-bật crop cho nó.
-      // Bỏ qua lần đầu, chỉ dismiss crop.
-      if (cropId && cropId === skipCropForIdRef.current && api) {
-        skipCropForIdRef.current = null;
-        handledCropIdRef.current = cropId;
-        api.updateScene({
-          appState: { ...appState, croppingElementId: null, selectedElementIds: {} },
-        });
-        return;
-      }
       if (cropId && cropId !== handledCropIdRef.current && api) {
         const el = elements.find((e: ExcalidrawElement) => e.id === cropId);
         if (el && isMathStamp(el)) {
           handledCropIdRef.current = cropId;
-          // Thoát crop mode + clear selection
           api.updateScene({
             appState: { ...appState, croppingElementId: null, selectedElementIds: {} },
           });
@@ -353,14 +345,12 @@ export function ExcalidrawWhiteboardView({
         const elements = api.getSceneElements();
         const editingId = geometryEditing.editingElementId;
         if (editingId) {
-          skipCropForIdRef.current = editingId;
           const updated = elements.map((e: ExcalidrawElement) =>
             e.id === editingId ? { ...e, fileId, customData, width, height } : e,
           );
           api.updateScene({ elements: updated, appState: clearAppStateAfterInsert() });
         } else {
           const newElement = buildStampImageElement(fileId, width, height, customData);
-          skipCropForIdRef.current = newElement.id;
           api.updateScene({
             elements: [...elements, newElement],
             appState: clearAppStateAfterInsert(),
@@ -391,7 +381,6 @@ export function ExcalidrawWhiteboardView({
         const elements = api.getSceneElements();
         const editingId = latexEditing.editingElementId;
         if (editingId) {
-          skipCropForIdRef.current = editingId;
           const updated = elements.map((e: ExcalidrawElement) =>
             e.id === editingId ? { ...e, fileId, customData, width, height } : e,
           );
@@ -405,7 +394,6 @@ export function ExcalidrawWhiteboardView({
             latexEditing.x || undefined,
             latexEditing.y || undefined,
           );
-          skipCropForIdRef.current = newElement.id;
           api.updateScene({
             elements: [...elements, newElement],
             appState: clearAppStateAfterInsert(),
@@ -576,7 +564,7 @@ export function ExcalidrawWhiteboardView({
   }, [activeStamp, closeStamp]);
 
   return (
-    <div className="relative h-full w-full">
+    <div className={`relative h-full w-full${isDarkTheme ? ' theme--dark' : ''}`}>
       <Excalidraw
         excalidrawAPI={(a: ExApi) => setApi(a)}
         viewModeEnabled={!isTeacher}

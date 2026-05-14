@@ -1,0 +1,84 @@
+/* Dark-mode overrides cho math-stamp panels.
+ * Active khi outer wrapper có class `theme--dark` (mirrored từ Excalidraw appState).
+ * Selector `[data-stamp-area="true"]` đã có sẵn trên mọi panel để dùng cho click-outside detection. */
+
+.theme--dark [data-stamp-area="true"] {
+  color: rgb(226 232 240);
+}
+
+/* ---- Backgrounds ---- */
+.theme--dark [data-stamp-area="true"].bg-white,
+.theme--dark [data-stamp-area="true"] .bg-white {
+  background-color: rgb(30 41 59);
+}
+.theme--dark [data-stamp-area="true"] .bg-slate-50 {
+  background-color: rgb(15 23 42);
+}
+.theme--dark [data-stamp-area="true"] .bg-emerald-50 {
+  background-color: rgb(6 78 59);
+}
+.theme--dark [data-stamp-area="true"] .bg-rose-50 {
+  background-color: rgb(127 29 29);
+}
+.theme--dark [data-stamp-area="true"] .hover\:bg-slate-100:hover {
+  background-color: rgb(51 65 85);
+}
+.theme--dark [data-stamp-area="true"] .hover\:bg-slate-50:hover {
+  background-color: rgb(15 23 42);
+}
+.theme--dark [data-stamp-area="true"] .hover\:bg-emerald-50:hover {
+  background-color: rgb(6 78 59);
+}
+
+/* Left-panel header có gradient sáng — đổi sang slate */
+.theme--dark [data-testid="stamp-left-panel"] > header.bg-gradient-to-r {
+  background-image: linear-gradient(to right, rgb(15 23 42), rgb(30 41 59));
+}
+
+/* ---- Borders ---- */
+.theme--dark [data-stamp-area="true"] .border-slate-200,
+.theme--dark [data-stamp-area="true"] .border-slate-300 {
+  border-color: rgb(51 65 85);
+}
+
+/* ---- Text ---- */
+.theme--dark [data-stamp-area="true"] .text-slate-400 {
+  color: rgb(100 116 139);
+}
+.theme--dark [data-stamp-area="true"] .text-slate-500 {
+  color: rgb(148 163 184);
+}
+.theme--dark [data-stamp-area="true"] .text-slate-600,
+.theme--dark [data-stamp-area="true"] .text-slate-700,
+.theme--dark [data-stamp-area="true"] .text-slate-800,
+.theme--dark [data-stamp-area="true"] .text-slate-900 {
+  color: rgb(226 232 240);
+}
+.theme--dark [data-stamp-area="true"] .hover\:text-slate-800:hover,
+.theme--dark [data-stamp-area="true"] .hover\:text-slate-900:hover {
+  color: rgb(241 245 249);
+}
+.theme--dark [data-stamp-area="true"] .text-emerald-700 {
+  color: rgb(110 231 183);
+}
+.theme--dark [data-stamp-area="true"] .text-rose-700 {
+  color: rgb(253 164 175);
+}
+
+/* ---- Inputs ---- */
+.theme--dark [data-stamp-area="true"] input[type="text"],
+.theme--dark [data-stamp-area="true"] textarea {
+  background-color: rgb(15 23 42);
+  color: rgb(241 245 249);
+}
+.theme--dark [data-stamp-area="true"] input::placeholder,
+.theme--dark [data-stamp-area="true"] textarea::placeholder {
+  color: rgb(100 116 139);
+}
+
+/* ---- Kbd badge ---- */
+.theme--dark [data-stamp-area="true"] kbd {
+  background-color: rgb(15 23 42);
+  border-color: rgb(71 85 105);
+  color: rgb(226 232 240);
+}
