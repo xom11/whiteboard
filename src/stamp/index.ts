@@ -1,6 +1,12 @@
 export { StampToolButtons } from './StampToolButtons';
-export { LatexEditorPopover } from './LatexEditorPopover';
-export { GeometryEditorPanel } from './GeometryEditorPanel';
+export { ToolbarStampInjector } from './ToolbarStampInjector';
+export { GeometryLeftPanel, LatexLeftPanel } from './StampLeftPanel';
+export { LatexEditorPopover, type LatexEditorHandle } from './LatexEditorPopover';
+export {
+  GeometryEditorPanel,
+  type GeometryEditorPanelHandle,
+  type GeomBoardState,
+} from './GeometryEditorPanel';
 export { useStampShortcuts } from './useStampShortcuts';
 export { isMathStamp, type MathStampCustomData } from './types';
 export { svgToImageElement } from './svgToImageElement';

@@ -33,14 +33,28 @@ export interface MiniBoardHandle {
   getBbox: () => [number, number, number, number];
   getShowAxis: () => boolean;
   getShowGrid: () => boolean;
+  /** Đổi tool active từ bên ngoài (panel trái). */
+  setTool: (t: GeomTool) => void;
+  getTool: () => GeomTool;
+  /** Toggle layout từ bên ngoài. */
+  setShowAxis: (b: boolean) => void;
+  setShowGrid: (b: boolean) => void;
+  /** Undo bước cuối. */
+  undo: () => void;
+  /** Có gì để undo? */
+  canUndo: () => boolean;
+  /** Subscribe khi state thay đổi (tool / showAxis / showGrid / undo). */
+  subscribe: (cb: () => void) => () => void;
 }
 
 interface Props {
   onReady: (handle: MiniBoardHandle) => void;
   initialState: SerializedBoard | null;
+  /** Khi true, ẩn cột tool bên phải + top bar — UI tools nằm ở panel ngoài (StampLeftPanel). */
+  hideInternalToolbar?: boolean;
 }
 
-interface ToolDef {
+export interface ToolDef {
   key: GeomTool;
   label: string;
   hint: string;
@@ -118,7 +132,7 @@ const Icon = {
   ),
 };
 
-const TOOLS: ToolDef[] = [
+export const TOOLS: ToolDef[] = [
   { key: 'move', label: 'Di chuyển', hint: 'Kéo điểm hoặc xoay nền', icon: Icon.cursor, group: 'move', needs: 0 },
   { key: 'point', label: 'Điểm mới', hint: 'Click để thêm điểm', icon: Icon.point, group: 'point', needs: 1 },
   { key: 'midpoint', label: 'Trung điểm', hint: 'Click 2 điểm có sẵn', icon: Icon.midpoint, group: 'point', needs: 2, accepts: ['point', 'point'] },
@@ -142,7 +156,7 @@ const TOOLS: ToolDef[] = [
   { key: 'delete', label: 'Xoá', hint: 'Click vào đối tượng', icon: Icon.trash, group: 'edit', needs: 1, accepts: ['any'] },
 ];
 
-const GROUP_LABELS: Record<ToolDef['group'], string> = {
+export const GROUP_LABELS: Record<ToolDef['group'], string> = {
   move: 'Cơ bản',
   point: 'Điểm',
   line: 'Đường',
@@ -174,7 +188,7 @@ function acceptMatches(tool: ToolDef, slot: number, kind: 'point' | 'line' | 'ci
   return a === kind;
 }
 
-export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) => {
+export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, hideInternalToolbar }) => {
   const containerId = useId().replace(/:/g, '_') + '_jxgmini';
   const containerRef = useRef<HTMLDivElement>(null);
   const boardRef = useRef<JxgObj>(null);
@@ -537,6 +551,22 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
       const JXG = (await import('jsxgraph')).default;
       if (cancelled || !containerRef.current) return;
       jxgRef.current = JXG;
+      // Render text/labels as SVG <text> (default 'html' uses absolute-positioned
+      // <div> overlays, which are NOT captured when we clone the SVG to export
+      // the stamp → labels disappear in inserted image).
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const opts = (JXG as any).Options;
+        if (opts) {
+          opts.text = opts.text || {};
+          opts.text.display = 'internal';
+          opts.text.useASCIIMathML = false;
+          opts.text.useMathJax = false;
+          opts.text.useKatex = false;
+          opts.label = opts.label || {};
+          opts.label.display = 'internal';
+        }
+      } catch { /* ignore */ }
       const board = JXG.JSXGraph.initBoard(containerId, {
         boundingbox: initialState?.bbox ?? [-10, 10, 10, -10],
         axis: false, // We manage axis manually via toggle for clean default
@@ -728,6 +758,16 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         getBbox: () => boardRef.current ? boardRef.current.getBoundingBox() : [-10, 10, 10, -10],
         getShowAxis: () => showAxisRef.current,
         getShowGrid: () => showGridRef.current,
+        setTool: (t: GeomTool) => handleToolChangeRef.current(t),
+        getTool: () => toolRef.current,
+        setShowAxis: (b: boolean) => setShowAxisRef.current(b),
+        setShowGrid: (b: boolean) => setShowGridRef.current(b),
+        undo: () => undoLastRef.current(),
+        canUndo: () => creationLogRef.current.length > 0,
+        subscribe: (cb: () => void) => {
+          subscribersRef.current.add(cb);
+          return () => { subscribersRef.current.delete(cb); };
+        },
       });
     })();
     return () => {
@@ -783,6 +823,28 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     setTool(t);
   }, [clearPending]);
 
+  // Stable ref so onReady closure (captured at mount) can call latest handler.
+  const handleToolChangeRef = useRef(handleToolChange);
+  handleToolChangeRef.current = handleToolChange;
+
+  // Subscribers thông báo bên ngoài khi state thay đổi (tool / axis / grid / undo)
+  const subscribersRef = useRef<Set<() => void>>(new Set());
+  const notifySubscribers = useCallback(() => {
+    subscribersRef.current.forEach((cb) => {
+      try { cb(); } catch { /* ignore */ }
+    });
+  }, []);
+
+  // Phát tín hiệu khi state thay đổi
+  useEffect(() => { notifySubscribers(); }, [tool, showAxis, showGrid, historyTick, notifySubscribers]);
+
+  const undoLastRef = useRef(undoLast);
+  undoLastRef.current = undoLast;
+  const setShowAxisRef = useRef(setShowAxis);
+  setShowAxisRef.current = setShowAxis;
+  const setShowGridRef = useRef(setShowGrid);
+  setShowGridRef.current = setShowGrid;
+
   const handleClearPending = useCallback(() => {
     clearPending();
   }, [clearPending]);
@@ -812,6 +874,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     <div className="flex h-full min-h-0 bg-slate-50">
       {/* Left: slim hint/options bar + canvas */}
       <div className="flex min-w-0 flex-1 flex-col">
+        {!hideInternalToolbar && (
         <div className="flex items-center gap-2 border-b border-slate-200 bg-white px-3 py-1.5 text-xs">
           <button
             type="button"
@@ -865,6 +928,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
             </label>
           </div>
         </div>
+        )}
 
         <div
           ref={containerRef}
@@ -876,6 +940,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
       </div>
 
       {/* Right: vertical tool rail — icon-only, tooltip rendered via portal */}
+      {!hideInternalToolbar && (
       <div
         role="toolbar"
         aria-label="Công cụ dựng hình"
@@ -914,6 +979,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
           </React.Fragment>
         ))}
       </div>
+      )}
 
       {portalReady && hover && typeof document !== 'undefined'
         ? createPortal(

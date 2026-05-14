@@ -20,10 +20,17 @@ export function useStampShortcuts({ onGeometry, onLatex, enabled }: Options): vo
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (isEditableTarget(e.target)) return;
       const key = e.key.toLowerCase();
-      if (key === 'g') { e.preventDefault(); onGeometry(); }
-      else if (key === 'l') { e.preventDefault(); onLatex(); }
+      if (key !== 'g' && key !== 'l') return;
+      // Capture phase + stopPropagation: Excalidraw's L shortcut (Line tool) và
+      // các phím tắt khác đăng ký ở bubble phase. Phải chặn trước khi event tới
+      // được handler của Excalidraw, không thì user bấm L lại bị Excalidraw chuyển
+      // sang Line tool thay vì toggle LaTeX panel.
+      e.preventDefault();
+      e.stopPropagation();
+      if (key === 'g') onGeometry();
+      else onLatex();
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    window.addEventListener('keydown', handler, { capture: true });
+    return () => window.removeEventListener('keydown', handler, { capture: true });
   }, [enabled, onGeometry, onLatex]);
 }

@@ -4,6 +4,8 @@ import { GeometryEditorPanel } from '../GeometryEditorPanel';
 
 jest.mock('../JSXGraphMiniBoard', () => ({
   __esModule: true,
+  TOOLS: [],
+  GROUP_LABELS: {},
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   JSXGraphMiniBoard: ({ onReady }: { onReady: (h: any) => void }) => {
     React.useEffect(() => {
@@ -15,6 +17,15 @@ jest.mock('../JSXGraphMiniBoard', () => ({
         },
         getCreationLog: () => [{ type: 'point', args: [1, 2], attrs: { name: 'A' }, id: 'j0' }],
         getBbox: () => [-10, 10, 10, -10],
+        getShowAxis: () => false,
+        getShowGrid: () => false,
+        getTool: () => 'move',
+        setTool: () => {},
+        setShowAxis: () => {},
+        setShowGrid: () => {},
+        undo: () => {},
+        canUndo: () => true,
+        subscribe: () => () => {},
       }), 0);
     }, []);
     return <div data-testid="mock-jxg" />;

@@ -3,14 +3,26 @@ import { render } from '@testing-library/react';
 import { ExcalidrawWhiteboardView } from '../ExcalidrawWhiteboardView';
 
 // Mock Excalidraw — quá heavy cho jsdom (esm.sh fonts, canvas).
-// Mock relays `renderTopRightUI` prop để stamp UI test pass.
+// Render DOM `.excalidraw > .App-toolbar > .Shape` để ToolbarStampInjector
+// (portal-based) tìm được mount point.
 jest.mock('@excalidraw/excalidraw', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require('react');
+  const NoopChildren = ({ children }: { children?: React.ReactNode }) =>
+    React.createElement(React.Fragment, null, children);
+  const DefaultItem = () => null;
+  const MainMenu = Object.assign(NoopChildren, {
+    DefaultItems: {
+      LoadScene: DefaultItem,
+      SaveAsImage: DefaultItem,
+      ClearCanvas: DefaultItem,
+      ToggleTheme: DefaultItem,
+    },
+  });
   return {
     Excalidraw: (props: {
       excalidrawAPI?: (api: unknown) => void;
-      renderTopRightUI?: (isMobile: boolean, appState: unknown) => React.ReactNode;
+      children?: React.ReactNode;
     }) => {
       React.useEffect(() => {
         props.excalidrawAPI?.({
@@ -23,10 +35,18 @@ jest.mock('@excalidraw/excalidraw', () => {
       }, []);
       return React.createElement(
         'div',
-        { 'data-testid': 'excalidraw-mock' },
-        typeof props.renderTopRightUI === 'function' ? props.renderTopRightUI(false, {}) : null,
+        { 'data-testid': 'excalidraw-mock', className: 'excalidraw' },
+        React.createElement(
+          'div',
+          { className: 'App-toolbar' },
+          React.createElement('div', { className: 'Stack Stack_horizontal' }),
+        ),
+        props.children,
       );
     },
+    MainMenu,
+    Footer: NoopChildren,
+    WelcomeScreen: NoopChildren,
     hashElementsVersion: () => 'hash',
   };
 });
@@ -76,7 +96,7 @@ describe('ExcalidrawWhiteboardView', () => {
 });
 
 describe('ExcalidrawWhiteboardView stamp UI', () => {
-  test('teacher: renders stamp buttons via renderTopRightUI slot', async () => {
+  test('teacher: G/L buttons portal-injected vào Excalidraw toolbar', async () => {
     const { findByLabelText } = render(
       React.createElement(ExcalidrawWhiteboardView, {
         role: 'teacher',
@@ -91,8 +111,8 @@ describe('ExcalidrawWhiteboardView stamp UI', () => {
     expect(await findByLabelText(/chèn công thức/i)).toBeInTheDocument();
   });
 
-  test('student: stamp buttons disabled', async () => {
-    const { findByLabelText } = render(
+  test('student: G/L buttons không được render', async () => {
+    const { findByTestId, queryByLabelText } = render(
       React.createElement(ExcalidrawWhiteboardView, {
         role: 'student',
         roomId: 't1',
@@ -102,7 +122,8 @@ describe('ExcalidrawWhiteboardView stamp UI', () => {
         onFilesChange: () => {},
       }),
     );
-    const geoBtn = await findByLabelText(/chèn hình học/i);
-    expect(geoBtn).toBeDisabled();
+    await findByTestId('excalidraw-mock');
+    expect(queryByLabelText(/chèn hình học/i)).toBeNull();
+    expect(queryByLabelText(/chèn công thức/i)).toBeNull();
   });
 });

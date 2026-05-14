@@ -39,6 +39,21 @@ function svgToDataURL(svg: string): string {
 async function renderGeometrySvgFromState(jsonState: string): Promise<string> {
   const parsed = JSON.parse(jsonState) as SerializedBoard;
   const JXG = (await import('jsxgraph')).default;
+  // Labels render as SVG <text> để được capture trong clone SVG (xem note ở
+  // JSXGraphMiniBoard cho lý do)
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const opts = (JXG as any).Options;
+    if (opts) {
+      opts.text = opts.text || {};
+      opts.text.display = 'internal';
+      opts.text.useASCIIMathML = false;
+      opts.text.useMathJax = false;
+      opts.text.useKatex = false;
+      opts.label = opts.label || {};
+      opts.label.display = 'internal';
+    }
+  } catch { /* ignore */ }
   const container = document.createElement('div');
   const containerId = 'jxg_offscreen_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
   container.id = containerId;
