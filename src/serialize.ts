@@ -1,4 +1,3 @@
-// apps/web/components/classroom/excalidrawBoard/serialize.ts
 import type { AppState } from '@excalidraw/excalidraw/types';
 import type { SyncableAppState } from './types';
 

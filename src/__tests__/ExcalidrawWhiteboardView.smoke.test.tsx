@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { ExcalidrawWhiteboardView } from '../../ExcalidrawWhiteboardView';
+import { ExcalidrawWhiteboardView } from '../ExcalidrawWhiteboardView';
 
 // Mock Excalidraw — quá heavy cho jsdom (esm.sh fonts, canvas).
 // Mock relays `renderTopRightUI` prop để stamp UI test pass.
@@ -32,7 +32,7 @@ jest.mock('@excalidraw/excalidraw', () => {
 });
 
 // Mock stamp/renderLatexToSvg to avoid katex ESM import in jsdom.
-jest.mock('../../excalidrawBoard/stamp/renderLatexToSvg', () => ({
+jest.mock('../stamp/renderLatexToSvg', () => ({
   renderLatexToSvg: jest.fn(async () => '<svg>mock</svg>'),
 }));
 

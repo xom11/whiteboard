@@ -7,8 +7,8 @@ import type {
   BinaryFiles,
   ExcalidrawSceneSnapshot,
   SyncableAppState,
-} from './excalidrawBoard/types';
-import { pickSyncableAppState } from './excalidrawBoard/serialize';
+} from './types';
+import { pickSyncableAppState } from './serialize';
 import {
   StampToolButtons,
   LatexEditorPopover,
@@ -18,14 +18,14 @@ import {
   svgToImageElement,
   restoreMissingMathStampFiles,
   type SerializedBoard,
-} from './excalidrawBoard/stamp';
+} from './stamp';
 import '@excalidraw/excalidraw/index.css';
 
 // Excalidraw + custom MainMenu/Footer/WelcomeScreen are bundled into a single
 // client-only module so we can use static imports (and thus `MainMenu.DefaultItems`)
 // without SSR ever evaluating @excalidraw/excalidraw.
 const Excalidraw = dynamic(
-  async () => (await import('./excalidrawBoard/ExcalidrawWithMenus')).ExcalidrawWithMenus,
+  async () => (await import('./ExcalidrawWithMenus')).ExcalidrawWithMenus,
   { ssr: false, loading: () => <div className="flex h-full items-center justify-center text-sm text-gray-500">Đang tải bảng…</div> },
 );
 

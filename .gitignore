@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.yalc/
+yalc.lock
+*.log
+.DS_Store
+coverage/
+.tsbuildinfo
+.next/

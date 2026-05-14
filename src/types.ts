@@ -1,4 +1,3 @@
-// apps/web/components/classroom/excalidrawBoard/types.ts
 import type {
   ExcalidrawElement,
   NonDeletedExcalidrawElement,
