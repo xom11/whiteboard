@@ -48,23 +48,32 @@ describe('handlers — primitives', () => {
     expect(log[0].parents).toEqual([1, 2, 3]);
   });
 
-  it('segment tool: 2 click → 2 points + 1 bounded line3d', () => {
+  it('segment tool: 2 click → 2 points + 1 bounded line3d (visible)', () => {
     // JSXGraph 1.12 has no `segment3d` — segment renders as bounded `line3d`
-    // (straightFirst:false + straightLast:false in attributes).
+    // (straightFirst:false + straightLast:false). Bug #9: explicit stroke attrs
+    // required for visibility in view3d projection.
     const { ctx, log } = buildCtx();
     handleToolStep(ctx, 'segment', hit(0, 0, 0));
     handleToolStep(ctx, 'segment', hit(1, 0, 0));
     const types = log.map((e) => e.type);
     expect(types).toEqual(['point3d', 'point3d', 'line3d']);
-    expect(log[2].attributes).toMatchObject({ straightFirst: false, straightLast: false });
+    expect(log[2].attributes).toMatchObject({
+      straightFirst: false,
+      straightLast: false,
+      strokeWidth: 2,
+      visible: true,
+    });
+    expect(typeof log[2].attributes.strokeColor).toBe('string');
   });
 
-  it('line tool: 2 click → 2 points + 1 line3d', () => {
+  it('line tool: 2 click → 2 points + 1 line3d with stroke attrs', () => {
     const { ctx, log } = buildCtx();
     handleToolStep(ctx, 'line', hit(0, 0, 0));
     handleToolStep(ctx, 'line', hit(1, 0, 0));
     const types = log.map((e) => e.type);
     expect(types).toEqual(['point3d', 'point3d', 'line3d']);
+    expect(log[2].attributes).toMatchObject({ strokeWidth: 2, visible: true });
+    expect(log[2].attributes.straightFirst).toBeUndefined();
   });
 
   it('plane tool: 3 click → 3 points + 1 plane3d', () => {
@@ -115,7 +124,10 @@ describe('handlers — primitives', () => {
 });
 
 describe('handlers — solids', () => {
-  it('tetrahedron: 4 click → 4 points + polyhedron3d', () => {
+  // Bug #7: polyhedron3d() with face-of-refs format crashes in JSXGraph 1.12.
+  // Implementation now emits N polygon3d entries (1 per face) instead.
+
+  it('tetrahedron: 4 click → 4 points + 4 polygon3d faces', () => {
     const { ctx, log } = buildCtx();
     handleToolStep(ctx, 'tetrahedron', hit(0, 0, 0));
     handleToolStep(ctx, 'tetrahedron', hit(2, 0, 0));
@@ -123,10 +135,10 @@ describe('handlers — solids', () => {
     handleToolStep(ctx, 'tetrahedron', hit(1, 1, 2));
     const types = log.map((e) => e.type);
     expect(types.filter((t) => t === 'point3d').length).toBe(4);
-    expect(types[types.length - 1]).toBe('polyhedron3d');
+    expect(types.filter((t) => t === 'polygon3d').length).toBe(4);
   });
 
-  it('parallelepiped: 1 origin click + 3 vector prompts → 8 points + polyhedron3d', () => {
+  it('parallelepiped: 1 origin click + 3 vector prompts → 8 points + 6 polygon3d faces', () => {
     const promptCoords = jest.fn()
       .mockReturnValueOnce({ x: 2, y: 0, z: 0 })
       .mockReturnValueOnce({ x: 0, y: 2, z: 0 })
@@ -135,12 +147,11 @@ describe('handlers — solids', () => {
     handleToolStep(ctx, 'parallelepiped', hit(0, 0, 0));
     expect(promptCoords).toHaveBeenCalledTimes(3);
     const pointCount = log.filter((e) => e.type === 'point3d').length;
-    // 1 origin (created by resolvePoint) + 7 derived = 8
     expect(pointCount).toBe(8);
-    expect(log[log.length - 1].type).toBe('polyhedron3d');
+    expect(log.filter((e) => e.type === 'polygon3d').length).toBe(6);
   });
 
-  it('prism: polygon base + close + height → prism', () => {
+  it('prism: polygon base + close + height → 5 polygon3d faces (2 caps + 3 sides)', () => {
     const promptNumber = jest.fn(() => 3);
     const { ctx, log } = buildCtx({ promptNumber });
     handleToolStep(ctx, 'prism', hit(0, 0, 0));
@@ -149,10 +160,10 @@ describe('handlers — solids', () => {
     handleToolStep(ctx, 'prism', hit(1, 2, 0));
     handleToolStep(ctx, 'prism', { x3: 0, y3: 0, z3: 0, existingPointId: firstId });
     expect(promptNumber).toHaveBeenCalled();
-    expect(log[log.length - 1].type).toBe('polyhedron3d');
+    expect(log.filter((e) => e.type === 'polygon3d').length).toBe(5);
   });
 
-  it('pyramid: polygon base + close + apex → pyramid', () => {
+  it('pyramid: polygon base + close + apex → 4 polygon3d faces (1 base + 3 sides)', () => {
     const { ctx, log } = buildCtx();
     handleToolStep(ctx, 'pyramid', hit(0, 0, 0));
     const firstId = log[0].id;
@@ -160,7 +171,7 @@ describe('handlers — solids', () => {
     handleToolStep(ctx, 'pyramid', hit(1, 2, 0));
     handleToolStep(ctx, 'pyramid', { x3: 0, y3: 0, z3: 0, existingPointId: firstId });
     handleToolStep(ctx, 'pyramid', hit(1, 1, 2)); // apex
-    expect(log[log.length - 1].type).toBe('polyhedron3d');
+    expect(log.filter((e) => e.type === 'polygon3d').length).toBe(4);
   });
 });
 
@@ -180,29 +191,22 @@ describe('handlers — curved', () => {
     expect(log.filter((e) => e.type === 'sphere3d').length).toBe(0);
   });
 
-  it('cone: tâm + radius + apex → polyhedron3d xấp xỉ', () => {
+  it('cone: tâm + radius + apex → polygon3d faces xấp xỉ', () => {
     const promptNumber = jest.fn(() => 1.5);
     const { ctx, log } = buildCtx({ promptNumber });
     handleToolStep(ctx, 'cone', hit(0, 0, 0));
     handleToolStep(ctx, 'cone', hit(0, 0, 3));
-    expect(log[log.length - 1].type).toBe('polyhedron3d');
+    // 1 base + 16 side triangles = 17 polygon3d faces
+    expect(log.filter((e) => e.type === 'polygon3d').length).toBe(17);
     expect(log.filter((e) => e.type === 'point3d').length).toBeGreaterThanOrEqual(16);
   });
 
-  it('cylinder: tâm + radius + height → polyhedron3d xấp xỉ', () => {
+  it('cylinder: tâm + radius + height → polygon3d faces xấp xỉ', () => {
     const promptNumber = jest.fn().mockReturnValueOnce(1).mockReturnValueOnce(3);
     const { ctx, log } = buildCtx({ promptNumber });
     handleToolStep(ctx, 'cylinder', hit(0, 0, 0));
-    expect(log[log.length - 1].type).toBe('polyhedron3d');
+    // 2 caps + 16 side quads = 18 polygon3d faces
+    expect(log.filter((e) => e.type === 'polygon3d').length).toBe(18);
     expect(log.filter((e) => e.type === 'point3d').length).toBeGreaterThanOrEqual(32);
-  });
-
-  it('solidofrevolution: prompt curve + axis → solidofrevolution3d', () => {
-    const promptText = jest.fn()
-      .mockReturnValueOnce('Math.sin(z) + 2')
-      .mockReturnValueOnce('z');
-    const { ctx, log } = buildCtx({ promptText });
-    handleToolStep(ctx, 'solidofrevolution', hit(0, 0, 0));
-    expect(log[log.length - 1].type).toBe('solidofrevolution3d');
   });
 });

@@ -3391,6 +3391,386 @@ var VIEW3D_ATTRS = (isDark) => {
     zAxis: { strokeColor: p.axisZ, lastArrow: { type: 2 } }
   };
 };
+
+// src/stamps/geometry-3d/editor/handlers.ts
+function createHandlerContext(deps) {
+  return { ...deps, pendingPoints: [], pendingFlags: {} };
+}
+function refByPlaceholder(id) {
+  return `@id:${id}`;
+}
+function createPoint3D(ctx, x, y, z, label) {
+  const id = ctx.nextId();
+  const attrs = { id, size: 3 };
+  const ref = ctx.view.create("point3d", [x, y, z], attrs);
+  ctx.objMap.set(id, ref);
+  ctx.pushLog({
+    type: "point3d",
+    parents: [x, y, z],
+    attributes: attrs,
+    id,
+    label
+  });
+  return { id, ref, coords: [x, y, z] };
+}
+function resolvePoint(ctx, hit) {
+  if (hit.existingPointId && ctx.objMap.has(hit.existingPointId)) {
+    return {
+      id: hit.existingPointId,
+      ref: ctx.objMap.get(hit.existingPointId),
+      coords: [hit.x3, hit.y3, hit.z3]
+    };
+  }
+  return createPoint3D(ctx, hit.x3, hit.y3, hit.z3);
+}
+function finishPolygon(ctx, points, extraAttrs = {}) {
+  const id = ctx.nextId();
+  const refs = points.map((p) => p.ref);
+  const attrs = { id, ...extraAttrs };
+  const ref = ctx.view.create("polygon3d", [refs], attrs);
+  ctx.objMap.set(id, ref);
+  ctx.pushLog({
+    type: "polygon3d",
+    parents: [points.map((p) => refByPlaceholder(p.id))],
+    attributes: attrs,
+    id
+  });
+}
+function finishLineLike(ctx, elType, points, extraAttrs = {}) {
+  const id = ctx.nextId();
+  const refs = points.map((p) => p.ref);
+  const attrs = { id, ...extraAttrs };
+  const ref = ctx.view.create(elType, refs, attrs);
+  ctx.objMap.set(id, ref);
+  ctx.pushLog({
+    type: elType,
+    parents: points.map((p) => refByPlaceholder(p.id)),
+    attributes: attrs,
+    id
+  });
+}
+function handleToolStep(ctx, tool, hit) {
+  switch (tool) {
+    case "move":
+      return;
+    case "point": {
+      const coords = ctx.promptCoords("To\u1EA1 \u0111\u1ED9 \u0111i\u1EC3m (x, y, z)");
+      if (!coords) return;
+      createPoint3D(ctx, coords.x, coords.y, coords.z);
+      ctx.notify();
+      return;
+    }
+    case "segment":
+    case "line": {
+      const p = resolvePoint(ctx, hit);
+      ctx.pendingPoints.push(p);
+      if (ctx.pendingPoints.length === 2) {
+        const lineColor = ctx.isDark ? "#9ecbff" : "#0066cc";
+        const baseAttrs = {
+          strokeColor: lineColor,
+          strokeWidth: 2,
+          visible: true,
+          fixed: true
+        };
+        if (tool === "segment") {
+          baseAttrs.straightFirst = false;
+          baseAttrs.straightLast = false;
+        }
+        finishLineLike(ctx, "line3d", ctx.pendingPoints, baseAttrs);
+        ctx.pendingPoints = [];
+      }
+      ctx.notify();
+      return;
+    }
+    case "plane": {
+      const p = resolvePoint(ctx, hit);
+      ctx.pendingPoints.push(p);
+      if (ctx.pendingPoints.length === 3) {
+        finishLineLike(ctx, "plane3d", ctx.pendingPoints);
+        ctx.pendingPoints = [];
+      }
+      ctx.notify();
+      return;
+    }
+    case "triangle": {
+      const p = resolvePoint(ctx, hit);
+      ctx.pendingPoints.push(p);
+      if (ctx.pendingPoints.length === 3) {
+        finishPolygon(ctx, ctx.pendingPoints);
+        ctx.pendingPoints = [];
+      }
+      ctx.notify();
+      return;
+    }
+    case "polygon": {
+      if (ctx.pendingPoints.length >= 3 && hit.existingPointId === ctx.pendingPoints[0].id) {
+        finishPolygon(ctx, ctx.pendingPoints);
+        ctx.pendingPoints = [];
+        ctx.notify();
+        return;
+      }
+      const p = resolvePoint(ctx, hit);
+      ctx.pendingPoints.push(p);
+      ctx.notify();
+      return;
+    }
+    case "label": {
+      if (!hit.existingPointId) return;
+      const text = ctx.promptText("N\u1ED9i dung nh\xE3n");
+      if (!text) return;
+      const id = ctx.nextId();
+      const pointRef = ctx.objMap.get(hit.existingPointId);
+      const ref = ctx.view.create("text3d", [pointRef, text], { id });
+      ctx.objMap.set(id, ref);
+      ctx.pushLog({
+        type: "text3d",
+        parents: [refByPlaceholder(hit.existingPointId), text],
+        attributes: { id },
+        id,
+        label: text
+      });
+      ctx.notify();
+      return;
+    }
+    // Solids + curved handled in B8, B9
+    default:
+      handleSolidStep(ctx, tool, hit);
+      return;
+  }
+}
+function handleSolidStep(ctx, tool, hit) {
+  switch (tool) {
+    case "tetrahedron": {
+      const p = resolvePoint(ctx, hit);
+      ctx.pendingPoints.push(p);
+      if (ctx.pendingPoints.length === 4) {
+        const [a, b, c, d] = ctx.pendingPoints;
+        finishPolyhedron(ctx, [
+          [a, b, c],
+          [a, b, d],
+          [a, c, d],
+          [b, c, d]
+        ]);
+        ctx.pendingPoints = [];
+      }
+      ctx.notify();
+      return;
+    }
+    case "parallelepiped": {
+      const origin = resolvePoint(ctx, hit);
+      const v1 = ctx.promptCoords("Vector c\u1EA1nh 1 (dx, dy, dz)");
+      const v2 = ctx.promptCoords("Vector c\u1EA1nh 2 (dx, dy, dz)");
+      const v3 = ctx.promptCoords("Vector c\u1EA1nh 3 (dx, dy, dz)");
+      if (!v1 || !v2 || !v3) return;
+      const [ox, oy, oz] = origin.coords;
+      const c1 = createPoint3D(ctx, ox + v1.x, oy + v1.y, oz + v1.z);
+      const c2 = createPoint3D(ctx, ox + v2.x, oy + v2.y, oz + v2.z);
+      const c3 = createPoint3D(ctx, ox + v3.x, oy + v3.y, oz + v3.z);
+      const c12 = createPoint3D(
+        ctx,
+        ox + v1.x + v2.x,
+        oy + v1.y + v2.y,
+        oz + v1.z + v2.z
+      );
+      const c13 = createPoint3D(
+        ctx,
+        ox + v1.x + v3.x,
+        oy + v1.y + v3.y,
+        oz + v1.z + v3.z
+      );
+      const c23 = createPoint3D(
+        ctx,
+        ox + v2.x + v3.x,
+        oy + v2.y + v3.y,
+        oz + v2.z + v3.z
+      );
+      const c123 = createPoint3D(
+        ctx,
+        ox + v1.x + v2.x + v3.x,
+        oy + v1.y + v2.y + v3.y,
+        oz + v1.z + v2.z + v3.z
+      );
+      finishPolyhedron(ctx, [
+        [origin, c1, c12, c2],
+        [origin, c1, c13, c3],
+        [origin, c2, c23, c3],
+        [c123, c12, c1, c13],
+        [c123, c12, c2, c23],
+        [c123, c13, c3, c23]
+      ]);
+      ctx.pendingPoints = [];
+      ctx.notify();
+      return;
+    }
+    case "prism": {
+      if (ctx.pendingPoints.length >= 3 && hit.existingPointId === ctx.pendingPoints[0].id) {
+        const base = ctx.pendingPoints;
+        const height = ctx.promptNumber("Chi\u1EC1u cao (theo tr\u1EE5c z)");
+        if (!height) return;
+        const top = base.map(
+          (bp) => createPoint3D(ctx, bp.coords[0], bp.coords[1], bp.coords[2] + height)
+        );
+        const faces = [base, top];
+        for (let i = 0; i < base.length; i++) {
+          const next = (i + 1) % base.length;
+          faces.push([base[i], base[next], top[next], top[i]]);
+        }
+        finishPolyhedron(ctx, faces);
+        ctx.pendingPoints = [];
+        ctx.notify();
+        return;
+      }
+      const p = resolvePoint(ctx, hit);
+      ctx.pendingPoints.push(p);
+      ctx.notify();
+      return;
+    }
+    case "pyramid": {
+      const baseDone = ctx.pendingFlags.pyramidBaseDone === true;
+      if (!baseDone && ctx.pendingPoints.length >= 3 && hit.existingPointId === ctx.pendingPoints[0].id) {
+        ctx.pendingFlags.pyramidBaseDone = true;
+        ctx.notify();
+        return;
+      }
+      if (baseDone) {
+        const base = ctx.pendingPoints;
+        const apex = createPoint3D(ctx, hit.x3, hit.y3, hit.z3);
+        const faces = [base];
+        for (let i = 0; i < base.length; i++) {
+          const next = (i + 1) % base.length;
+          faces.push([base[i], base[next], apex]);
+        }
+        finishPolyhedron(ctx, faces);
+        ctx.pendingPoints = [];
+        ctx.pendingFlags.pyramidBaseDone = false;
+        ctx.notify();
+        return;
+      }
+      const p = resolvePoint(ctx, hit);
+      ctx.pendingPoints.push(p);
+      ctx.notify();
+      return;
+    }
+    // Curved → B9
+    default:
+      handleCurvedStep(ctx, tool, hit);
+      return;
+  }
+}
+function finishPolyhedron(ctx, faces) {
+  const faceColor = ctx.isDark ? "rgba(150, 180, 220, 0.35)" : "rgba(60, 120, 200, 0.25)";
+  const edgeColor = ctx.isDark ? "#9ecbff" : "#0066cc";
+  for (const face of faces) {
+    finishPolygon(ctx, face, {
+      fillColor: faceColor,
+      fillOpacity: 1,
+      strokeColor: edgeColor,
+      strokeWidth: 1.5,
+      visible: true
+    });
+  }
+}
+var CURVED_SEGMENTS = 16;
+function handleCurvedStep(ctx, tool, hit) {
+  switch (tool) {
+    case "sphere": {
+      const radius = ctx.promptNumber("B\xE1n k\xEDnh m\u1EB7t c\u1EA7u");
+      if (radius == null) return;
+      const center = resolvePoint(ctx, hit);
+      const id = ctx.nextId();
+      const ref = ctx.view.create("sphere3d", [center.ref, radius], { id });
+      ctx.objMap.set(id, ref);
+      ctx.pushLog({
+        type: "sphere3d",
+        parents: [refByPlaceholder(center.id), radius],
+        attributes: { id },
+        id
+      });
+      ctx.notify();
+      return;
+    }
+    case "cone": {
+      const baseDone = ctx.pendingFlags.coneBaseDone === true;
+      if (!baseDone) {
+        const radius2 = ctx.promptNumber("B\xE1n k\xEDnh \u0111\xE1y");
+        if (radius2 == null) return;
+        const center2 = resolvePoint(ctx, hit);
+        ctx.pendingFlags.coneCenter = center2;
+        ctx.pendingFlags.coneRadius = radius2;
+        ctx.pendingFlags.coneBaseDone = true;
+        ctx.notify();
+        return;
+      }
+      const center = ctx.pendingFlags.coneCenter;
+      const radius = ctx.pendingFlags.coneRadius;
+      const apex = createPoint3D(ctx, hit.x3, hit.y3, hit.z3);
+      const [cx, cy, cz] = center.coords;
+      const basePoints = [];
+      for (let i = 0; i < CURVED_SEGMENTS; i++) {
+        const theta = i / CURVED_SEGMENTS * Math.PI * 2;
+        basePoints.push(
+          createPoint3D(
+            ctx,
+            cx + radius * Math.cos(theta),
+            cy + radius * Math.sin(theta),
+            cz
+          )
+        );
+      }
+      const faces = [basePoints];
+      for (let i = 0; i < CURVED_SEGMENTS; i++) {
+        faces.push([basePoints[i], basePoints[(i + 1) % CURVED_SEGMENTS], apex]);
+      }
+      finishPolyhedron(ctx, faces);
+      ctx.pendingFlags.coneBaseDone = false;
+      ctx.pendingFlags.coneCenter = void 0;
+      ctx.pendingFlags.coneRadius = void 0;
+      ctx.notify();
+      return;
+    }
+    case "cylinder": {
+      const radius = ctx.promptNumber("B\xE1n k\xEDnh \u0111\xE1y");
+      if (radius == null) return;
+      const height = ctx.promptNumber("Chi\u1EC1u cao (theo tr\u1EE5c z)");
+      if (height == null) return;
+      const center = resolvePoint(ctx, hit);
+      const [cx, cy, cz] = center.coords;
+      const basePoints = [];
+      const topPoints = [];
+      for (let i = 0; i < CURVED_SEGMENTS; i++) {
+        const theta = i / CURVED_SEGMENTS * Math.PI * 2;
+        basePoints.push(
+          createPoint3D(
+            ctx,
+            cx + radius * Math.cos(theta),
+            cy + radius * Math.sin(theta),
+            cz
+          )
+        );
+        topPoints.push(
+          createPoint3D(
+            ctx,
+            cx + radius * Math.cos(theta),
+            cy + radius * Math.sin(theta),
+            cz + height
+          )
+        );
+      }
+      const faces = [basePoints, topPoints];
+      for (let i = 0; i < CURVED_SEGMENTS; i++) {
+        const next = (i + 1) % CURVED_SEGMENTS;
+        faces.push([basePoints[i], basePoints[next], topPoints[next], topPoints[i]]);
+      }
+      finishPolyhedron(ctx, faces);
+      ctx.notify();
+      return;
+    }
+    // 'solidofrevolution' removed in 0.6.1 — `solidofrevolution3d` is not a valid
+    // JSXGraph 1.12.2 element. See Bug #8.
+    default:
+      return;
+  }
+}
 var MiniBoard3D = forwardRef(function MiniBoard3D2({ isDark, initialState }, ref) {
   const reactId = useId();
   const containerId = `geom3d_${reactId.replace(/[^a-zA-Z0-9_]/g, "_")}`;
@@ -3404,6 +3784,8 @@ var MiniBoard3D = forwardRef(function MiniBoard3D2({ isDark, initialState }, ref
   const initialBbox3D = useRef(
     initialState?.view.bbox3D ?? DEFAULT_VIEW3D.bbox3D
   );
+  const ctxRef = useRef(null);
+  const pointerHandlerRef = useRef(null);
   const [showAxes, setShowAxes] = useState(initialState?.showAxes ?? true);
   const [showMesh, setShowMesh] = useState(initialState?.showMesh ?? false);
   const notify = useCallback(() => {
@@ -3441,6 +3823,81 @@ var MiniBoard3D = forwardRef(function MiniBoard3D2({ isDark, initialState }, ref
       }
     );
     viewRef.current = view;
+    let idCounter = 1;
+    const ctx = createHandlerContext({
+      view,
+      pushLog: (e) => {
+        logRef.current.push(e);
+        notify();
+      },
+      objMap: objMapRef.current,
+      nextId: () => `obj_${Date.now().toString(36)}_${(idCounter++).toString(36)}`,
+      isDark,
+      promptCoords: (label) => {
+        const raw = window.prompt(`${label}
+(\u0111\u1ECBnh d\u1EA1ng "x,y,z")`, "0,0,0");
+        if (!raw) return null;
+        const parts = raw.split(",").map((s) => Number(s.trim()));
+        if (parts.length !== 3 || parts.some((n) => !isFinite(n))) return null;
+        return { x: parts[0], y: parts[1], z: parts[2] };
+      },
+      promptNumber: (label) => {
+        const raw = window.prompt(label, "1");
+        if (raw == null) return null;
+        const n = Number(raw);
+        return isFinite(n) ? n : null;
+      },
+      promptText: (label) => {
+        const raw = window.prompt(label, "");
+        return raw == null ? null : raw;
+      },
+      notify
+    });
+    ctxRef.current = ctx;
+    function findExistingPointAt(clientX, clientY) {
+      const containerRect = div.getBoundingClientRect();
+      const localX = clientX - containerRect.left;
+      const localY = clientY - containerRect.top;
+      const PICK = 18;
+      const svg = div.querySelector("svg");
+      if (!svg) return void 0;
+      for (const [id, obj] of objMapRef.current) {
+        const entry = obj;
+        if (entry?.elType !== "point3d") continue;
+        const sc = entry.coords?.scrCoords;
+        if (!sc || sc.length < 3) continue;
+        const dx = sc[1] - localX;
+        const dy = sc[2] - localY;
+        if (dx * dx + dy * dy <= PICK * PICK) return id;
+      }
+      return void 0;
+    }
+    const handlePointerDown = (e) => {
+      const tool = toolRef.current;
+      if (tool === "move") return;
+      const existingPointId = findExistingPointAt(e.clientX, e.clientY);
+      let x3 = 0;
+      let y3 = 0;
+      const z3 = 0;
+      try {
+        const board2d = boardRef.current;
+        if (board2d?.getUsrCoordsOfMouse) {
+          const uc = board2d.getUsrCoordsOfMouse(e);
+          if (Array.isArray(uc) && uc.length >= 2) {
+            x3 = uc[0];
+            y3 = uc[1];
+          }
+        }
+      } catch {
+      }
+      const hit = { x3, y3, z3, existingPointId };
+      handleToolStep(ctx, tool, hit);
+    };
+    const svgEl = div.querySelector("svg");
+    const targetEl = svgEl ?? div;
+    const handlePointerDownEv = (e) => handlePointerDown(e);
+    targetEl.addEventListener("pointerdown", handlePointerDownEv);
+    pointerHandlerRef.current = { el: targetEl, fn: handlePointerDownEv };
     if (initialState?.elements?.length) {
       const map = objMapRef.current;
       for (const el of initialState.elements) {
@@ -3457,12 +3914,20 @@ var MiniBoard3D = forwardRef(function MiniBoard3D2({ isDark, initialState }, ref
       }
     }
     return () => {
+      if (pointerHandlerRef.current) {
+        pointerHandlerRef.current.el.removeEventListener(
+          "pointerdown",
+          pointerHandlerRef.current.fn
+        );
+        pointerHandlerRef.current = null;
+      }
       try {
         JXG.JSXGraph.freeBoard(board);
       } catch {
       }
       boardRef.current = null;
       viewRef.current = null;
+      ctxRef.current = null;
       objMapRef.current.clear();
     };
   }, []);
@@ -3541,7 +4006,11 @@ var MiniBoard3D = forwardRef(function MiniBoard3D2({ isDark, initialState }, ref
         width: "100%",
         height: "100%",
         background: p.view3dBg,
-        position: "relative"
+        position: "relative",
+        // Clip JSXGraph mesh3d/bounding-box paths that project outside the
+        // board container (Bug #4) — without this they overlap LeftPanel and
+        // block pointer events.
+        overflow: "hidden"
       }
     }
   );
@@ -3606,13 +4075,6 @@ var TOOLS_3D = [
     stepsRequired: 1,
     hint: "T\xE2m \u0111\xE1y + b\xE1n k\xEDnh + chi\u1EC1u cao"
   },
-  {
-    key: "solidofrevolution",
-    label: "Kh\u1ED1i tr\xF2n xoay",
-    group: "curved",
-    stepsRequired: 1,
-    hint: "\u0110\u01B0\u1EDDng cong + tr\u1EE5c"
-  },
   { key: "label", label: "Nh\xE3n", group: "meta", stepsRequired: 1, hint: "G\u1EAFn v\xE0o \u0111i\u1EC3m" }
 ];
 function ToolButton({ toolKey, label, hint, active, onClick, icon }) {
@@ -3671,7 +4133,6 @@ var ICONS_3D = {
     /* @__PURE__ */ jsx("line", { x1: "6", y1: "5", x2: "6", y2: "19" }),
     /* @__PURE__ */ jsx("line", { x1: "18", y1: "5", x2: "18", y2: "19" })
   ] }),
-  solidofrevolution: /* @__PURE__ */ jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsx("path", { d: "M12 3 C 8 8 8 16 12 21 M12 3 C 16 8 16 16 12 21 M12 3 L12 21" }) }),
   label: /* @__PURE__ */ jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsx("path", { d: "M4 4 H 16 L 20 8 L 16 12 H 4 Z" }) })
 };
 var TOOLTIP_DELAY_MS2 = 400;
@@ -3865,7 +4326,11 @@ function LeftPanel3({ handle, onResetView, onClose, isDark }) {
 }
 var EditorPanel = forwardRef(function EditorPanel2({ isDark, initial, onInsert, onClose }, ref) {
   const boardRef = useRef(null);
-  const [, setBoardKey] = useState(0);
+  const [boardHandle, setBoardHandle] = useState(null);
+  const setBoard = useCallback((h) => {
+    boardRef.current = h;
+    setBoardHandle((prev) => prev === h ? prev : h);
+  }, []);
   useImperativeHandle(
     ref,
     () => ({
@@ -3891,17 +4356,14 @@ var EditorPanel = forwardRef(function EditorPanel2({ isDark, initial, onInsert, 
     }),
     [onInsert]
   );
-  const handleBoardReady = (h) => {
-    boardRef.current = h;
-    setBoardKey((k) => k + 1);
-  };
-  const handleResetView = () => {
+  const handleResetView = useCallback(() => {
     boardRef.current?.resetView();
-  };
+  }, []);
   return /* @__PURE__ */ jsxs(
     "div",
     {
       "data-testid": "geom3d-editor-panel",
+      "data-stamp-area": "true",
       style: {
         position: "absolute",
         left: "50%",
@@ -3938,37 +4400,31 @@ var EditorPanel = forwardRef(function EditorPanel2({ isDark, initial, onInsert, 
           /* @__PURE__ */ jsx(
             LeftPanel3,
             {
-              handle: boardRef.current,
+              handle: boardHandle,
               onResetView: handleResetView,
               onClose,
               isDark
             }
           ),
-          /* @__PURE__ */ jsx("div", { style: { position: "absolute", left: 120, top: 0, right: 0, bottom: 0 }, children: /* @__PURE__ */ jsx(BoardMount, { onMount: handleBoardReady, isDark, initialState: initial }) })
+          /* @__PURE__ */ jsx(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                left: 120,
+                top: 0,
+                right: 0,
+                bottom: 0,
+                overflow: "hidden"
+              },
+              children: /* @__PURE__ */ jsx(MiniBoard3D, { ref: setBoard, isDark, initialState: initial })
+            }
+          )
         ] })
       ]
     }
   );
 });
-function BoardMount({ onMount, isDark, initialState }) {
-  const mountedRef = useRef(false);
-  return /* @__PURE__ */ jsx(
-    MiniBoard3D,
-    {
-      ref: (h) => {
-        if (h && !mountedRef.current) {
-          mountedRef.current = true;
-          onMount(h);
-        } else if (!h && mountedRef.current) {
-          mountedRef.current = false;
-          onMount(null);
-        }
-      },
-      isDark,
-      initialState
-    }
-  );
-}
 
 // src/stamps/geometry-3d/serialize.ts
 function isGeometry3DCustomData(data) {

@@ -119,11 +119,6 @@ export const ICONS_3D: Record<GeomTool3D, ReactNode> = {
       <line x1="18" y1="5" x2="18" y2="19" />
     </svg>
   ),
-  solidofrevolution: (
-    <svg width="20" height="20" viewBox="0 0 24 24" {...stroke}>
-      <path d="M12 3 C 8 8 8 16 12 21 M12 3 C 16 8 16 16 12 21 M12 3 L12 21" />
-    </svg>
-  ),
   label: (
     <svg width="20" height="20" viewBox="0 0 24 24" {...stroke}>
       <path d="M4 4 H 16 L 20 8 L 16 12 H 4 Z" />

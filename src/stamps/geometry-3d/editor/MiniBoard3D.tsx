@@ -154,7 +154,10 @@ export const MiniBoard3D = forwardRef<MiniBoard3DHandle, Props>(function MiniBoa
       const containerRect = (div as HTMLDivElement).getBoundingClientRect();
       const localX = clientX - containerRect.left;
       const localY = clientY - containerRect.top;
-      const PICK = 12;
+      // Picking radius widened from 12px (Bug #10) — synthetic clicks in E2E
+      // tests + screen↔world projection rounding both made 12px too tight for
+      // polygon-close detection.
+      const PICK = 18;
       const svg = (div as HTMLDivElement).querySelector('svg');
       if (!svg) return undefined;
       // Find SVG elements rendered by point3d objects. JSXGraph 3D points render
@@ -319,6 +322,10 @@ export const MiniBoard3D = forwardRef<MiniBoard3DHandle, Props>(function MiniBoa
         height: '100%',
         background: p.view3dBg,
         position: 'relative',
+        // Clip JSXGraph mesh3d/bounding-box paths that project outside the
+        // board container (Bug #4) — without this they overlap LeftPanel and
+        // block pointer events.
+        overflow: 'hidden',
       }}
     />
   );

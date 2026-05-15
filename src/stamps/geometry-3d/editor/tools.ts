@@ -13,7 +13,6 @@ export type GeomTool3D =
   | 'sphere'
   | 'cone'
   | 'cylinder'
-  | 'solidofrevolution'
   | 'label';
 
 export type ToolGroup3D = 'view' | 'primitive' | 'solid' | 'curved' | 'meta';
@@ -84,13 +83,6 @@ export const TOOLS_3D: ReadonlyArray<ToolDef3D> = [
     group: 'curved',
     stepsRequired: 1,
     hint: 'Tâm đáy + bán kính + chiều cao',
-  },
-  {
-    key: 'solidofrevolution',
-    label: 'Khối tròn xoay',
-    group: 'curved',
-    stepsRequired: 1,
-    hint: 'Đường cong + trục',
   },
   { key: 'label', label: 'Nhãn', group: 'meta', stepsRequired: 1, hint: 'Gắn vào điểm' },
 ];

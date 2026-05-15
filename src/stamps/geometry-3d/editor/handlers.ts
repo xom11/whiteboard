@@ -77,15 +77,20 @@ function resolvePoint(ctx: HandlerContext, hit: ClickHit): PendingPoint {
   return createPoint3D(ctx, hit.x3, hit.y3, hit.z3);
 }
 
-function finishPolygon(ctx: HandlerContext, points: PendingPoint[]): void {
+function finishPolygon(
+  ctx: HandlerContext,
+  points: PendingPoint[],
+  extraAttrs: Record<string, unknown> = {},
+): void {
   const id = ctx.nextId();
   const refs = points.map((p) => p.ref);
-  const ref = ctx.view.create('polygon3d', [refs], { id });
+  const attrs = { id, ...extraAttrs };
+  const ref = ctx.view.create('polygon3d', [refs], attrs);
   ctx.objMap.set(id, ref);
   ctx.pushLog({
     type: 'polygon3d',
     parents: [points.map((p) => refByPlaceholder(p.id))],
-    attributes: { id },
+    attributes: attrs,
     id,
   });
 }
@@ -132,9 +137,20 @@ export function handleToolStep(
       ctx.pendingPoints.push(p);
       if (ctx.pendingPoints.length === 2) {
         // JSXGraph 3D has no `segment3d`; bound a `line3d` with straight* off for segment.
-        const extra =
-          tool === 'segment' ? { straightFirst: false, straightLast: false } : {};
-        finishLineLike(ctx, 'line3d', ctx.pendingPoints, extra);
+        // Explicit stroke + fixed to force visible render (default render is invisible
+        // in view3d unless attrs are set — see Bug #9).
+        const lineColor = ctx.isDark ? '#9ecbff' : '#0066cc';
+        const baseAttrs: Record<string, unknown> = {
+          strokeColor: lineColor,
+          strokeWidth: 2,
+          visible: true,
+          fixed: true,
+        };
+        if (tool === 'segment') {
+          baseAttrs.straightFirst = false;
+          baseAttrs.straightLast = false;
+        }
+        finishLineLike(ctx, 'line3d', ctx.pendingPoints, baseAttrs);
         ctx.pendingPoints = [];
       }
       ctx.notify();
@@ -344,16 +360,22 @@ export function handleSolidStep(
 }
 
 function finishPolyhedron(ctx: HandlerContext, faces: PendingPoint[][]): void {
-  const id = ctx.nextId();
-  const facesRef = faces.map((f) => f.map((p) => p.ref));
-  const ref = ctx.view.create('polyhedron3d', [facesRef], { id });
-  ctx.objMap.set(id, ref);
-  ctx.pushLog({
-    type: 'polyhedron3d',
-    parents: [faces.map((f) => f.map((p) => refByPlaceholder(p.id)))],
-    attributes: { id },
-    id,
-  });
+  // JSXGraph 1.12 `polyhedron3d` API requires `[vertices[], faceIndices[]]` (coords
+  // + index arrays) — the previous `[facesAsPointRefs]` form throws `Cannot read
+  // 'length' of undefined` at runtime. Emit one `polygon3d` per face instead;
+  // polygon3d is proven to render (triangle test) and round-trips cleanly through
+  // the existing render.ts path. See Bug #7.
+  const faceColor = ctx.isDark ? 'rgba(150, 180, 220, 0.35)' : 'rgba(60, 120, 200, 0.25)';
+  const edgeColor = ctx.isDark ? '#9ecbff' : '#0066cc';
+  for (const face of faces) {
+    finishPolygon(ctx, face, {
+      fillColor: faceColor,
+      fillOpacity: 1,
+      strokeColor: edgeColor,
+      strokeWidth: 1.5,
+      visible: true,
+    });
+  }
 }
 
 const CURVED_SEGMENTS = 16;
@@ -460,25 +482,8 @@ export function handleCurvedStep(
       return;
     }
 
-    case 'solidofrevolution': {
-      const fnText = ctx.promptText('Hàm bán kính theo trục, vd "Math.sin(z) + 2"');
-      if (!fnText) return;
-      const axisText = ctx.promptText('Trục xoay (x | y | z), mặc định z');
-      const lowered = (axisText || 'z').toLowerCase();
-      const axis = lowered === 'x' ? 'x' : lowered === 'y' ? 'y' : 'z';
-      const id = ctx.nextId();
-      const ref = ctx.view.create('solidofrevolution3d', [fnText, axis], { id });
-      ctx.objMap.set(id, ref);
-      ctx.pushLog({
-        type: 'solidofrevolution3d',
-        parents: [fnText, axis],
-        attributes: { id },
-        id,
-      });
-      ctx.notify();
-      return;
-    }
-
+    // 'solidofrevolution' removed in 0.6.1 — `solidofrevolution3d` is not a valid
+    // JSXGraph 1.12.2 element. See Bug #8.
     default:
       return;
   }

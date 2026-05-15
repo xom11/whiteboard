@@ -51,13 +51,17 @@ describe('Geometry3D tools registry', () => {
         'sphere',
         'cone',
         'cylinder',
-        'solidofrevolution',
       ]),
     );
     expect(keys).toEqual(expect.arrayContaining(['label']));
   });
 
-  it('có 16 tools', () => {
-    expect(TOOLS_3D.length).toBe(16);
+  it('không expose solidofrevolution (removed Bug #8)', () => {
+    const keys: string[] = TOOLS_3D.map((t) => t.key);
+    expect(keys).not.toContain('solidofrevolution');
+  });
+
+  it('có 15 tools (sau khi remove solidofrevolution)', () => {
+    expect(TOOLS_3D.length).toBe(15);
   });
 });

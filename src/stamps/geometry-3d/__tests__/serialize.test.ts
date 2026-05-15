@@ -55,9 +55,9 @@ describe('SerializedBoard3D round-trip', () => {
         label: 'A',
       },
       {
-        type: 'segment3d',
+        type: 'line3d',
         parents: ['@id:p1', '@id:p2'],
-        attributes: { strokeColor: '#000' },
+        attributes: { strokeColor: '#000', straightFirst: false, straightLast: false },
         id: 's1',
       },
     ],

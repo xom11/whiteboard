@@ -19,9 +19,7 @@ export type Element3DType =
   | 'line3d'
   | 'plane3d'
   | 'polygon3d'
-  | 'polyhedron3d'
   | 'sphere3d'
-  | 'solidofrevolution3d'
   | 'text3d';
 
 export interface SerializedElement3D {
