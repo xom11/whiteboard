@@ -32,21 +32,3 @@ export {
 } from './stamps';
 export { restoreMissingStampFiles } from './stamps';
 
-// ===========================================================================
-// Aliases @deprecated — sẽ xoá ở 0.6.0
-// ===========================================================================
-
-import {
-  isStampElement,
-  restoreMissingStampFiles as _restoreMissingStampFiles,
-  type StampCustomData,
-} from './stamps';
-
-/** @deprecated Dùng `isStampElement` thay vì `isMathStamp`. Sẽ xoá ở 0.6.0. */
-export const isMathStamp = isStampElement;
-
-/** @deprecated Dùng `StampCustomData` thay vì `MathStampCustomData`. Sẽ xoá ở 0.6.0. */
-export type MathStampCustomData = StampCustomData;
-
-/** @deprecated Dùng `restoreMissingStampFiles` thay vì `restoreMissingMathStampFiles`. Sẽ xoá ở 0.6.0. */
-export const restoreMissingMathStampFiles = _restoreMissingStampFiles;

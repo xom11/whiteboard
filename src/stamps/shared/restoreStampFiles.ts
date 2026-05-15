@@ -115,6 +115,3 @@ export async function restoreMissingStampFiles(
     try { api.addFiles(filesToAdd); } catch (err) { console.warn('addFiles failed:', err); }
   }
 }
-
-/** @deprecated Dùng `restoreMissingStampFiles` thay vì `restoreMissingMathStampFiles`. Sẽ xoá ở 0.6.0. */
-export const restoreMissingMathStampFiles = restoreMissingStampFiles;
