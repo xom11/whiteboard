@@ -357,12 +357,23 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     const o: any = obj;
     if (patch.remove) {
       try { boardRef.current.removeObject(o); } catch { /* ignore */ }
-      const id = localIdOf(o);
-      if (id) {
-        creationLogRef.current = creationLogRef.current.filter((e) => e.id !== id);
-        objMapRef.current.delete(id);
-        setHistoryTick((t) => t + 1);
+      // Cascade: walk log and drop entries whose JSXGraph object was also removed
+      const board = boardRef.current;
+      const aliveIds = new Set<string>();
+      for (const [id, obj] of objMapRef.current.entries()) {
+        // JSXGraph keeps objects in board.objects keyed by JSXGraph internal id
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const jxgId = (obj as any)?.id;
+        if (jxgId && board && board.objects && board.objects[jxgId]) {
+          aliveIds.add(id);
+        }
       }
+      // Drop dead entries from log + map
+      creationLogRef.current = creationLogRef.current.filter((e) => aliveIds.has(e.id));
+      for (const id of Array.from(objMapRef.current.keys())) {
+        if (!aliveIds.has(id)) objMapRef.current.delete(id);
+      }
+      setHistoryTick((t) => t + 1);
       return;
     }
     if (patch.attrs) {
@@ -632,14 +643,23 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     if (!def) { flashWarn('Không thể biến đổi đối tượng này'); return; }
 
     // 1. Create + log transform entry
-    const transformLogArgs: unknown[] = spec.params.map((p) => {
-      if (typeof p === 'function') return p;
+    const transformLogArgs: unknown[] = [];
+    for (const p of spec.params) {
+      if (typeof p === 'function') {
+        flashWarn('Tham số transform không serialize được — bỏ qua');
+        return;
+      }
       if (p && typeof p === 'object') {
         const id = localIdOf(p);
-        return id ?? p;
+        if (!id) {
+          flashWarn('Đối tượng tham chiếu không nằm trong board — không thể biến đổi');
+          return;
+        }
+        transformLogArgs.push(id);
+      } else {
+        transformLogArgs.push(p);
       }
-      return p;
-    });
+    }
     const tId = nextLocalId();
     const transformObj = boardRef.current.create('transform', spec.params, spec.attrs);
     creationLogRef.current.push({ id: tId, type: 'transform', args: transformLogArgs, attrs: spec.attrs as Record<string, unknown> });
