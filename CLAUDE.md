@@ -17,30 +17,48 @@ Project context cho Claude Code. Đọc file này trước khi làm việc với
 ```
 whiteboard/
 ├── src/
-│   ├── index.ts                 ← public API: ExcalidrawWhiteboardView + types
-│   ├── ExcalidrawWhiteboardView.tsx  ← main wrapper, sync teacher ↔ student, stamp lifecycle
-│   ├── ExcalidrawWithMenus.tsx  ← Excalidraw + custom MainMenu/Footer/WelcomeScreen
-│   ├── serialize.ts             ← pickSyncableAppState (subset cho real-time sync)
-│   ├── types.ts                 ← re-export Excalidraw types + SyncableAppState/SceneSnapshot
-│   └── stamp/
-│       ├── ToolbarStampInjector.tsx   ← portal G/L buttons vào Excalidraw toolbar
-│       ├── StampLeftPanel.tsx         ← Geometry + Latex left panels (tools, snippets)
-│       ├── GeometryEditorPanel.tsx    ← floating center editor (forwardRef + handle)
-│       ├── LatexEditorPopover.tsx     ← floating center editor cho LaTeX
-│       ├── JSXGraphMiniBoard.tsx      ← JSXGraph board wrapper + tool state
-│       ├── StampToolButtons.tsx       ← legacy buttons (sẽ cleanup)
-│       ├── useStampShortcuts.ts       ← G/L global shortcuts (capture phase)
-│       ├── renderLatexToSvg.ts        ← KaTeX → SVG string
-│       ├── renderGeometryToSvg.ts     ← JSXGraph container → SVG string
-│       ├── serializeBoard.ts          ← JSXGraph creation log → JSON
-│       ├── restoreMathStampFiles.ts   ← regenerate SVG files sau reload
-│       ├── svgToImageElement.ts       ← SVG → Excalidraw image element
-│       ├── types.ts                   ← MathStampCustomData (latex | geometry)
-│       └── index.ts                   ← stamp barrel
-├── dist/                        ← tsup output (gitignored)
-├── scripts/inject-use-client.mjs ← postbuild: prepend "use client" vào dist/*
-├── tsup.config.ts
-├── jest.config.js + jest.setup.ts
+│   ├── index.ts                       ← public API (new names + @deprecated aliases)
+│   ├── Whiteboard.tsx                 ← main component
+│   ├── ExcalidrawWithMenus.tsx
+│   ├── serialize.ts                   ← pickSyncableAppState
+│   ├── types.ts                       ← Excalidraw types re-exports
+│   ├── stamps/                        ← registry-driven plugin layout
+│   │   ├── index.ts                   ← barrel
+│   │   ├── shared/
+│   │   │   ├── registry.ts            ← DEFAULT_STAMPS, findStampForCustomData
+│   │   │   ├── types.ts               ← StampType, RestoredStampFile
+│   │   │   ├── insertImage.ts
+│   │   │   ├── svgToImage.ts
+│   │   │   ├── excalidrawPalette.ts
+│   │   │   ├── stamp.css
+│   │   │   ├── ToolbarInjector.tsx    ← (cũ: ToolbarStampInjector)
+│   │   │   ├── useShortcuts.ts        ← (cũ: useStampShortcuts)
+│   │   │   └── restoreStampFiles.ts   ← (cũ: restoreMathStampFiles)
+│   │   ├── geometry-2d/
+│   │   │   ├── index.tsx              ← StampType + Host
+│   │   │   ├── serialize.ts
+│   │   │   ├── render.ts
+│   │   │   ├── renderInline.ts
+│   │   │   └── editor/
+│   │   │       ├── EditorPanel.tsx
+│   │   │       ├── MiniBoard.tsx
+│   │   │       ├── tools.tsx
+│   │   │       ├── handlers.ts
+│   │   │       ├── theme.ts
+│   │   │       ├── transforms.ts
+│   │   │       ├── LeftPanel.tsx
+│   │   │       ├── PropertiesPopover.tsx
+│   │   │       └── TransformParamPopover.tsx
+│   │   └── latex/
+│   │       ├── index.tsx
+│   │       ├── render.ts
+│   │       └── editor/
+│   │           ├── EditorPopover.tsx
+│   │           └── LeftPanel.tsx
+│   └── core/
+│       └── persistence/
+├── dist/
+├── scripts/
 └── package.json
 ```
 
@@ -48,14 +66,23 @@ whiteboard/
 
 ```ts
 import {
-  ExcalidrawWhiteboardView,
+  Whiteboard,
   pickSyncableAppState,
-  type ExcalidrawWhiteboardViewProps,
+  isStampElement,
+  restoreMissingStampFiles,
+  type WhiteboardProps,
+  type StampCustomData,
   type ExcalidrawSceneSnapshot,
   type SyncableAppState,
   type BinaryFiles,
   type ExcalidrawElement,
 } from '@xom11/whiteboard';
+
+// @deprecated aliases (xoá ở 0.6.0):
+// ExcalidrawWhiteboardView → Whiteboard
+// isMathStamp → isStampElement
+// MathStampCustomData → StampCustomData
+// restoreMissingMathStampFiles → restoreMissingStampFiles
 ```
 
 Consumer cần wrap trong Client Component (`"use client"`). Package tự thêm `"use client"` vào dist/* nên import từ Server Component cũng OK (Next.js sẽ treat là client).
