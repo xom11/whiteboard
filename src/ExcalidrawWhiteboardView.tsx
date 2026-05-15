@@ -54,6 +54,8 @@ export interface ExcalidrawWhiteboardViewProps {
   remoteFiles?: BinaryFiles | null;
   onSceneChange: (snapshot: ExcalidrawSceneSnapshot) => void;
   onFilesChange: (files: BinaryFiles, newFileIds: string[]) => void;
+  /** Excalidraw UI language. Defaults to 'vi-VN'. See @excalidraw/excalidraw locales. */
+  langCode?: string;
 }
 
 const INITIAL_GEOM_STATE: GeomBoardState = {
@@ -70,6 +72,7 @@ export function ExcalidrawWhiteboardView({
   remoteFiles,
   onSceneChange,
   onFilesChange,
+  langCode = 'vi-VN',
 }: ExcalidrawWhiteboardViewProps) {
   const [api, setApi] = useState<ExApi | null>(null);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
@@ -567,6 +570,7 @@ export function ExcalidrawWhiteboardView({
     <div className={`relative h-full w-full${isDarkTheme ? ' theme--dark' : ''}`}>
       <Excalidraw
         excalidrawAPI={(a: ExApi) => setApi(a)}
+        langCode={langCode}
         viewModeEnabled={!isTeacher}
         initialData={
           initialScene
