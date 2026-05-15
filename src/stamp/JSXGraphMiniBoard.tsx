@@ -1,6 +1,7 @@
 'use client';
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { deserializeIntoBoard, type SerializedBoard, type SerializedElement } from './serializeBoard';
+import { getDefiningPoints, buildTransformSpec } from './transforms';
 
 // Tool keys — match GeoGebra-style toolset
 export type GeomTool =
@@ -24,7 +25,12 @@ export type GeomTool =
   | 'area'
   | 'toggleLabel'
   | 'toggleVisible'
-  | 'delete';
+  | 'delete'
+  | 'translate'
+  | 'rotate'
+  | 'reflectLine'
+  | 'reflectPoint'
+  | 'dilate';
 
 export interface MiniBoardHandle {
   getContainer: () => HTMLDivElement | null;
@@ -50,6 +56,9 @@ export interface MiniBoardHandle {
   mutateObject: (obj: unknown, patch: { attrs?: Record<string, unknown>; remove?: boolean }) => void;
   /** Subscribe selection-from-move-tool. Trả về unsubscribe. */
   onSelect: (cb: (snap: ObjectSnapshot) => void) => () => void;
+  onTransformParam: (cb: (info: { tool: 'rotate' | 'dilate'; anchor: { x: number; y: number } } | null) => void) => () => void;
+  confirmTransformParam: (value: number) => void;
+  cancelTransformParam: () => void;
 }
 
 export interface ObjectSnapshot {
@@ -74,7 +83,7 @@ export interface ToolDef {
   label: string;
   hint: string;
   icon: React.ReactNode;
-  group: 'move' | 'point' | 'line' | 'construct' | 'polygon' | 'circle' | 'measure' | 'edit';
+  group: 'move' | 'point' | 'line' | 'construct' | 'polygon' | 'circle' | 'measure' | 'edit' | 'transform';
   needs: number; // number of clicks / points required before action fires
   // accepts: 'any' (point or non-point), 'point', 'line', 'circle'
   accepts?: Array<'point' | 'line' | 'circle' | 'any'>;
@@ -145,6 +154,21 @@ const Icon = {
   trash: (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6 l-1 14 a 2 2 0 0 1 -2 2 H 8 a 2 2 0 0 1 -2 -2 l-1 -14"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
   ),
+  translate: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4 L20 20"/><polygon points="14,4 20,4 20,10" fill="currentColor"/><circle cx="5" cy="5" r="1.5" fill="currentColor"/></svg>
+  ),
+  rotate: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12 A8 8 0 1 1 12 20"/><polyline points="4,9 4,13 8,13"/></svg>
+  ),
+  reflectLine: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="2" x2="12" y2="22" strokeDasharray="3 2"/><polygon points="4,6 9,12 4,18" fill="currentColor"/><polygon points="20,6 15,12 20,18" fill="currentColor"/></svg>
+  ),
+  reflectPoint: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="5" cy="5" r="1.6" fill="currentColor"/><circle cx="19" cy="19" r="1.6" fill="currentColor"/><line x1="5" y1="5" x2="19" y2="19" strokeDasharray="2 2"/></svg>
+  ),
+  dilate: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1.5" fill="currentColor"/><polygon points="6,18 18,18 12,6" fillOpacity="0.1" fill="currentColor"/><polygon points="9,15 15,15 12,11" fill="currentColor"/></svg>
+  ),
 };
 
 export const TOOLS: ToolDef[] = [
@@ -169,6 +193,11 @@ export const TOOLS: ToolDef[] = [
   { key: 'toggleLabel', label: 'Hiện/ẩn tên', hint: 'Click vào đối tượng', icon: Icon.toggleLabel, group: 'edit', needs: 1, accepts: ['any'] },
   { key: 'toggleVisible', label: 'Hiện/ẩn đối tượng', hint: 'Click vào đối tượng', icon: Icon.toggleVisible, group: 'edit', needs: 1, accepts: ['any'] },
   { key: 'delete', label: 'Xoá', hint: 'Click vào đối tượng', icon: Icon.trash, group: 'edit', needs: 1, accepts: ['any'] },
+  { key: 'translate', label: 'Phép tịnh tiến', hint: 'Click object → 2 điểm tạo vector', icon: Icon.translate, group: 'transform', needs: 3, accepts: ['any', 'point', 'point'] },
+  { key: 'rotate', label: 'Quay đối tượng', hint: 'Click object → tâm quay → nhập góc', icon: Icon.rotate, group: 'transform', needs: 2, accepts: ['any', 'point'] },
+  { key: 'reflectLine', label: 'Đối xứng qua đường thẳng', hint: 'Click object → đường thẳng', icon: Icon.reflectLine, group: 'transform', needs: 2, accepts: ['any', 'line'] },
+  { key: 'reflectPoint', label: 'Đối xứng qua điểm', hint: 'Click object → tâm đối xứng', icon: Icon.reflectPoint, group: 'transform', needs: 2, accepts: ['any', 'point'] },
+  { key: 'dilate', label: 'Phép vị tự', hint: 'Click object → tâm → nhập tỷ số k', icon: Icon.dilate, group: 'transform', needs: 2, accepts: ['any', 'point'] },
 ];
 
 export const GROUP_LABELS: Record<ToolDef['group'], string> = {
@@ -180,6 +209,7 @@ export const GROUP_LABELS: Record<ToolDef['group'], string> = {
   circle: 'Đường tròn',
   measure: 'Đo lường',
   edit: 'Chỉnh sửa',
+  transform: 'Phép biến hình',
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -592,6 +622,59 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     }
   }, [create, localIdOf, nextLabel]);
 
+  const finalizeTransformCreate = useCallback((
+    spec: { params: unknown[]; attrs: { type: 'translate' | 'rotate' | 'reflect' | 'scale' } },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    source: any,
+  ) => {
+    if (!boardRef.current) return;
+    const def = getDefiningPoints(source);
+    if (!def) { flashWarn('Không thể biến đổi đối tượng này'); return; }
+
+    // 1. Create + log transform entry
+    const transformLogArgs: unknown[] = spec.params.map((p) => {
+      if (typeof p === 'function') return p;
+      if (p && typeof p === 'object') {
+        const id = localIdOf(p);
+        return id ?? p;
+      }
+      return p;
+    });
+    const tId = nextLocalId();
+    const transformObj = boardRef.current.create('transform', spec.params, spec.attrs);
+    creationLogRef.current.push({ id: tId, type: 'transform', args: transformLogArgs, attrs: spec.attrs as Record<string, unknown> });
+    objMapRef.current.set(tId, transformObj);
+
+    // 2. Transform each defining point — log each
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const transformedPoints: any[] = def.points.map((src) => {
+      const srcId = localIdOf(src);
+      const id = nextLocalId();
+      const srcName = typeof src.name === 'string' ? src.name : '';
+      const newName = srcName ? `${srcName}'` : nextLabel();
+      const attrs = { name: newName, size: 3, color: '#0ea5e9', strokeColor: '#0ea5e9', fillColor: '#0ea5e9' };
+      const obj = boardRef.current!.create('point', [transformObj, src], attrs);
+      creationLogRef.current.push({ id, type: 'point', args: [tId, srcId ?? src], attrs });
+      objMapRef.current.set(id, obj);
+      return obj;
+    });
+
+    // 3. Recreate same-kind object from transformed points
+    const baseStyle = { ...def.attrs, strokeColor: '#0ea5e9' };
+    const strokeOnly = { ...baseStyle, fillColor: 'none', fillOpacity: 0 };
+    const ids = transformedPoints.map((p) => localIdOf(p)).filter((s): s is string => !!s);
+    switch (def.kind) {
+      case 'point': /* nothing — already created */ break;
+      case 'segment': create('segment', ids, baseStyle); break;
+      case 'line': create('line', ids, baseStyle); break;
+      case 'ray': create('line', ids, { ...baseStyle, straightFirst: false, straightLast: true }); break;
+      case 'arrow': create('arrow', ids, baseStyle); break;
+      case 'circleCenter': create('circle', ids, strokeOnly); break;
+      case 'circle3': create('circumcircle', ids, strokeOnly); break;
+    }
+    setHistoryTick((t) => t + 1);
+  }, [create, flashWarn, localIdOf, nextLabel, nextLocalId]);
+
   // Undo: remove the most recently logged creation. Also clears any in-progress
   // polygon construction (pending picks + preview segments) so state is sane.
   const undoLast = useCallback(() => {
@@ -712,6 +795,22 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     } catch { /* ignore */ }
     return best ? best.obj : null;
   }, [screenCoordsOf]);
+
+  // Pending transform state for rotate/dilate (needs param popover)
+  interface PendingTransform {
+    tool: 'rotate' | 'dilate';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    source: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    center: any;
+    anchorScreen: { x: number; y: number };
+  }
+  const pendingTransformRef = useRef<PendingTransform | null>(null);
+  type TransformPopoverInfo = { tool: 'rotate' | 'dilate'; anchor: { x: number; y: number } } | null;
+  const transformSubsRef = useRef<Set<(info: TransformPopoverInfo) => void>>(new Set());
+  const emitTransform = useCallback((info: TransformPopoverInfo) => {
+    transformSubsRef.current.forEach((cb) => { try { cb(info); } catch { /* ignore */ } });
+  }, []);
 
   // Initialize board
   useEffect(() => {
@@ -923,6 +1022,38 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         setPendingCount(pendingRef.current.length);
 
         if (pendingRef.current.length >= toolDef.needs) {
+          const tk = toolDef.key;
+          if (tk === 'rotate' || tk === 'dilate') {
+            const source = pendingRef.current[0];
+            const center = pendingRef.current[1];
+            const cx = ((e.clientX ?? 0) as number) + 8;
+            const cy = ((e.clientY ?? 0) as number) + 8;
+            pendingTransformRef.current = { tool: tk, source, center, anchorScreen: { x: cx, y: cy } };
+            emitTransform({ tool: tk, anchor: { x: cx, y: cy } });
+            // Don't clearPending here — wait for confirm/cancel
+            return;
+          }
+          if (tk === 'translate') {
+            const source = pendingRef.current[0];
+            const spec = buildTransformSpec({ kind: 'translate', vectorPoints: [pendingRef.current[1], pendingRef.current[2]] });
+            finalizeTransformCreate(spec, source);
+            clearPending();
+            return;
+          }
+          if (tk === 'reflectLine') {
+            const source = pendingRef.current[0];
+            const spec = buildTransformSpec({ kind: 'reflectLine', line: pendingRef.current[1] });
+            finalizeTransformCreate(spec, source);
+            clearPending();
+            return;
+          }
+          if (tk === 'reflectPoint') {
+            const source = pendingRef.current[0];
+            const spec = buildTransformSpec({ kind: 'reflectPoint', center: pendingRef.current[1] });
+            finalizeTransformCreate(spec, source);
+            clearPending();
+            return;
+          }
           finalize(toolDef, pendingRef.current);
           clearPending();
         } else {
@@ -994,6 +1125,26 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         onSelect: (cb: (snap: ObjectSnapshot) => void) => {
           selectSubsRef.current.add(cb);
           return () => { selectSubsRef.current.delete(cb); };
+        },
+        onTransformParam: (cb: (info: { tool: 'rotate' | 'dilate'; anchor: { x: number; y: number } } | null) => void) => {
+          transformSubsRef.current.add(cb);
+          return () => { transformSubsRef.current.delete(cb); };
+        },
+        confirmTransformParam: (value: number) => {
+          const p = pendingTransformRef.current;
+          if (!p) return;
+          const spec = p.tool === 'rotate'
+            ? buildTransformSpec({ kind: 'rotate', center: p.center, angleDeg: value })
+            : buildTransformSpec({ kind: 'dilate', center: p.center, k: value });
+          finalizeTransformCreateRef.current(spec, p.source);
+          pendingTransformRef.current = null;
+          emitTransformRef.current(null);
+          clearPendingRef.current();
+        },
+        cancelTransformParam: () => {
+          pendingTransformRef.current = null;
+          emitTransformRef.current(null);
+          clearPendingRef.current();
         },
       });
     })();
@@ -1082,6 +1233,10 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
   undoLastRef.current = undoLast;
   const clearPendingRef = useRef(clearPending);
   clearPendingRef.current = clearPending;
+  const finalizeTransformCreateRef = useRef(finalizeTransformCreate);
+  finalizeTransformCreateRef.current = finalizeTransformCreate;
+  const emitTransformRef = useRef(emitTransform);
+  emitTransformRef.current = emitTransform;
   const setShowAxisRef = useRef(setShowAxis);
   setShowAxisRef.current = setShowAxis;
   const setShowGridRef = useRef(setShowGrid);
