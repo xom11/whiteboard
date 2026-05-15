@@ -96,6 +96,11 @@ export function Whiteboard({
   const sceneThrottleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileThrottleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pruneThrottleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestSceneRef = useRef<{
+    elements: readonly ExcalidrawElement[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    appState: any;
+  } | null>(null);
   const pendingFilesRef = useRef<BinaryFiles>({});
   const persistEnabled = typeof storageKey === 'string' && storageKey.length > 0;
   const persistKeyRef = useRef(storageKey);
@@ -168,6 +173,7 @@ export function Whiteboard({
       setIsDarkTheme((prev) => (prev === nextDark ? prev : nextDark));
 
       if (readOnly) return;
+      latestSceneRef.current = { elements, appState };
 
       // Intercept Excalidraw crop-image flow cho math stamps: khi user double-click
       // 1 stamp, Excalidraw set appState.croppingElementId. Ta dismiss crop mode +
@@ -206,8 +212,9 @@ export function Whiteboard({
         sceneThrottleRef.current = setTimeout(async () => {
           sceneThrottleRef.current = null;
           const mod = await import('@excalidraw/excalidraw');
-          const liveElements = elements.filter((e) => !e.isDeleted) as readonly ExcalidrawElement[];
-          const liveAppState = pickSyncableAppState(appState);
+          const latestScene = latestSceneRef.current ?? { elements, appState };
+          const liveElements = latestScene.elements.filter((e) => !e.isDeleted) as readonly ExcalidrawElement[];
+          const liveAppState = pickSyncableAppState(latestScene.appState);
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const elementHash = (mod as any).hashElementsVersion(liveElements);
           const sceneHash = `${elementHash}:${JSON.stringify(liveAppState)}`;

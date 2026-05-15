@@ -245,6 +245,35 @@ describe('Whiteboard', () => {
     });
   });
 
+  test('scene throttle persists the latest change in the throttle window', async () => {
+    jest.useFakeTimers();
+    const { findByTestId } = render(React.createElement(Whiteboard, {}));
+    await findByTestId('excalidraw-mock');
+
+    act(() => {
+      getExcProps()?.onChange?.(
+        [{ id: 'early', type: 'rectangle', isDeleted: false }],
+        { theme: 'light', viewBackgroundColor: '#fff', scrollX: 0, scrollY: 0 },
+        {},
+      );
+      getExcProps()?.onChange?.(
+        [{ id: 'latest', type: 'rectangle', isDeleted: false }],
+        { theme: 'dark', viewBackgroundColor: '#fff', scrollX: 10, scrollY: 20 },
+        {},
+      );
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(250);
+      await Promise.resolve();
+    });
+
+    const raw = window.localStorage.getItem('whiteboard:scene:default');
+    expect(JSON.parse(raw ?? '{}')).toMatchObject({
+      elements: [{ id: 'latest', type: 'rectangle', isDeleted: false }],
+      appState: { theme: 'dark', scrollX: 10, scrollY: 20 },
+    });
+  });
+
   test('new raster file is written to fileStore after throttle', async () => {
     jest.useFakeTimers();
     const imageElement = { id: 'img1', type: 'image', fileId: 'file1', isDeleted: false };

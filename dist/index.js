@@ -3689,6 +3689,7 @@ function Whiteboard({
   const sceneThrottleRef = react.useRef(null);
   const fileThrottleRef = react.useRef(null);
   const pruneThrottleRef = react.useRef(null);
+  const latestSceneRef = react.useRef(null);
   const pendingFilesRef = react.useRef({});
   const persistEnabled = typeof storageKey === "string" && storageKey.length > 0;
   const persistKeyRef = react.useRef(storageKey);
@@ -3745,6 +3746,7 @@ function Whiteboard({
       const nextDark = appState?.theme === "dark";
       setIsDarkTheme((prev) => prev === nextDark ? prev : nextDark);
       if (readOnly) return;
+      latestSceneRef.current = { elements, appState };
       const cropId = appState?.croppingElementId;
       if (cropId && cropId !== handledCropIdRef.current && api) {
         const el = elements.find((e) => e.id === cropId);
@@ -3776,8 +3778,9 @@ function Whiteboard({
         sceneThrottleRef.current = setTimeout(async () => {
           sceneThrottleRef.current = null;
           const mod = await import('@excalidraw/excalidraw');
-          const liveElements = elements.filter((e) => !e.isDeleted);
-          const liveAppState = pickSyncableAppState(appState);
+          const latestScene = latestSceneRef.current ?? { elements, appState };
+          const liveElements = latestScene.elements.filter((e) => !e.isDeleted);
+          const liveAppState = pickSyncableAppState(latestScene.appState);
           const elementHash = mod.hashElementsVersion(liveElements);
           const sceneHash = `${elementHash}:${JSON.stringify(liveAppState)}`;
           if (sceneHash === lastSceneHashRef.current) return;
