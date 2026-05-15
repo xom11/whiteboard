@@ -579,7 +579,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
   }, [create, localIdOf, nextLabel]);
 
   const finalizeTransformCreate = useCallback((
-    spec: { params: unknown[]; attrs: { type: 'translate' | 'rotate' | 'reflect' | 'scale' } },
+    spec: { params: unknown[]; attrs: { type: 'translate' | 'rotate' | 'reflect' | 'scale' }; chain?: Array<{ params: unknown[]; attrs: { type: 'translate' | 'rotate' | 'reflect' | 'scale' } }> },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     source: any,
   ) => {
@@ -587,30 +587,45 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     const def = getDefiningPoints(source);
     if (!def) { flashWarn('Không thể biến đổi đối tượng này'); return; }
 
-    // 1. Create + log transform entry
-    const transformLogArgs: unknown[] = [];
-    for (const p of spec.params) {
-      if (typeof p === 'function') {
-        flashWarn('Tham số transform không serialize được — bỏ qua');
-        return;
-      }
-      if (p && typeof p === 'object') {
-        const id = localIdOf(p);
-        if (!id) {
-          flashWarn('Đối tượng tham chiếu không nằm trong board — không thể biến đổi');
+    // 1. Create + log transform entry/entries. Chain mode (dilate): create N
+    // transforms in order, log each, and apply them as an array.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const transformObjs: any[] = [];
+    const transformIds: string[] = [];
+    const steps = spec.chain ?? [{ params: spec.params, attrs: spec.attrs }];
+    for (const step of steps) {
+      const stepLogArgs: unknown[] = [];
+      for (const p of step.params) {
+        if (typeof p === 'function') {
+          flashWarn('Tham số transform không serialize được — bỏ qua');
           return;
         }
-        transformLogArgs.push(id);
-      } else {
-        transformLogArgs.push(p);
+        if (p && typeof p === 'object') {
+          const id = localIdOf(p);
+          if (!id) {
+            flashWarn('Đối tượng tham chiếu không nằm trong board — không thể biến đổi');
+            return;
+          }
+          stepLogArgs.push(id);
+        } else {
+          stepLogArgs.push(p);
+        }
       }
+      const stepId = nextLocalId();
+      const stepObj = boardRef.current.create('transform', step.params, step.attrs);
+      creationLogRef.current.push({ id: stepId, type: 'transform', args: stepLogArgs, attrs: step.attrs as Record<string, unknown> });
+      objMapRef.current.set(stepId, stepObj);
+      transformObjs.push(stepObj);
+      transformIds.push(stepId);
     }
-    const tId = nextLocalId();
-    const transformObj = boardRef.current.create('transform', spec.params, spec.attrs);
-    creationLogRef.current.push({ id: tId, type: 'transform', args: transformLogArgs, attrs: spec.attrs as Record<string, unknown> });
-    objMapRef.current.set(tId, transformObj);
+    const transformParent = transformObjs.length === 1 ? transformObjs[0] : transformObjs;
+    const transformLogRef = transformObjs.length === 1 ? transformIds[0] : transformIds;
 
-    // 2. Transform each defining point — log each
+    // 2. Transform each defining point — log each.
+    // JSXGraph signature: create('point', [parentElement, transformation|transformationArray])
+    // — SOURCE element first, transformation second. Reversing the order made
+    // JSXGraph reject the call ("Can't create point with parent types 'object'
+    // and 'object'"), crashing the rotate tool prior to this fix.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transformedPoints: any[] = def.points.map((src) => {
       const srcId = localIdOf(src);
@@ -618,8 +633,8 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
       const srcName = typeof src.name === 'string' ? src.name : '';
       const newName = srcName ? `${srcName}'` : nextLabel();
       const attrs = { name: newName, size: 3, color: '#0ea5e9', strokeColor: '#0ea5e9', fillColor: '#0ea5e9' };
-      const obj = boardRef.current!.create('point', [transformObj, src], attrs);
-      creationLogRef.current.push({ id, type: 'point', args: [tId, srcId ?? src], attrs });
+      const obj = boardRef.current!.create('point', [src, transformParent], attrs);
+      creationLogRef.current.push({ id, type: 'point', args: [srcId ?? src, transformLogRef], attrs });
       objMapRef.current.set(id, obj);
       return obj;
     });
@@ -1031,16 +1046,22 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
           const circleHit = hits.find((o) => objKind(o) === 'circle') ?? null;
           // Priority: an exact point hit binds to 'point' first (so a click
           // landing right on a vertex isn't stolen by a line/circle passing
-          // through it). Otherwise bind by what's clicked.
+          // through it). Typed line/circle bind next. 'any' slot accepts any
+          // remaining hit (point/line/circle). Generous point-snap is the
+          // last resort when only a 'point' slot is open.
+          //
+          // Previously 'any' was checked AFTER the snap fallback for point,
+          // which meant tools like dilate (accepts ['any', 'point']) couldn't
+          // pick a segment for the 'any' slot — the snap branch absorbed the
+          // click and 'any' was never evaluated.
           if (remaining.includes('point') && strictPoint) pick = strictPoint;
           else if (remaining.includes('line') && lineHit) pick = lineHit;
           else if (remaining.includes('circle') && circleHit) pick = circleHit;
-          else if (remaining.includes('point')) {
-            // generous snap fallback for small points
+          else if (remaining.includes('any') && (strictPoint || lineHit || circleHit)) {
+            pick = strictPoint ?? lineHit ?? circleHit;
+          } else if (remaining.includes('point')) {
             const near = findNearestPoint(e, 12);
             if (near) pick = near;
-          } else if (remaining.includes('any')) {
-            pick = strictPoint ?? lineHit ?? circleHit ?? null;
           }
           if (!pick) {
             const needs = remaining.map((k) =>

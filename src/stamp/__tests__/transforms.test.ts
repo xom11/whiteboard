@@ -84,10 +84,15 @@ describe('buildTransformSpec', () => {
     expect(spec.params[1]).toBe(c);
   });
 
-  it('dilate: [k, k, center]', () => {
-    const c = { X: () => 0 };
+  it('dilate: trả về chain 3 transforms (T(-c) → S(k,k) → T(+c)) vì JSXGraph scale không nhận center', () => {
+    const c = { X: () => 3, Y: () => 4 };
     const spec = buildTransformSpec({ kind: 'dilate', center: c, k: 2 });
     expect(spec.attrs).toEqual({ type: 'scale' });
-    expect(spec.params).toEqual([2, 2, c]);
+    expect(spec.params).toEqual([]);
+    expect(spec.chain).toBeDefined();
+    expect(spec.chain).toHaveLength(3);
+    expect(spec.chain![0]).toEqual({ params: [-3, -4], attrs: { type: 'translate' } });
+    expect(spec.chain![1]).toEqual({ params: [2, 2], attrs: { type: 'scale' } });
+    expect(spec.chain![2]).toEqual({ params: [3, 4], attrs: { type: 'translate' } });
   });
 });

@@ -72,13 +72,18 @@ function createValueLabel(board: any, target: any): unknown {
 
 export function deserializeIntoBoard(board: BoardLike, serialized: SerializedBoard): void {
   // Replay: args may contain references to earlier elements by our serialized id ("j0", "j1"…).
-  // We resolve those to actual JSXGraph objects via a local id→object map.
+  // We resolve those to actual JSXGraph objects via a local id→object map. Nested
+  // arrays are also resolved recursively — needed for dilate, which logs the
+  // transform parent of a transformed point as ["j2","j3","j4"] (a chain of 3
+  // transforms passed to `board.create('point', [src, [t1,t2,t3]])`).
   const idMap = new Map<string, unknown>();
+  const resolve = (a: unknown): unknown => {
+    if (typeof a === 'string' && idMap.has(a)) return idMap.get(a);
+    if (Array.isArray(a)) return a.map(resolve);
+    return a;
+  };
   for (const el of serialized.elements) {
-    const resolvedArgs = el.args.map((a) => {
-      if (typeof a === 'string' && idMap.has(a)) return idMap.get(a);
-      return a;
-    });
+    const resolvedArgs = el.args.map(resolve);
     if (el.type === 'valueLabel') {
       const target = resolvedArgs[0];
       const txt = createValueLabel(board, target);

@@ -63,6 +63,12 @@ export type TransformInput =
 export interface TransformSpec {
   params: unknown[];
   attrs: { type: 'translate' | 'rotate' | 'reflect' | 'scale' };
+  /**
+   * Khi `chain` được set, finalizeTransformCreate dựng từng transform trong chain
+   * (theo thứ tự) rồi pass mảng vào `board.create('point', [src, [t1, t2, t3]])`.
+   * Dùng cho `dilate` (scale-quanh-điểm) vì JSXGraph 'scale' không nhận center.
+   */
+  chain?: Array<{ params: unknown[]; attrs: { type: 'translate' | 'rotate' | 'reflect' | 'scale' } }>;
 }
 
 export function buildTransformSpec(input: TransformInput): TransformSpec {
@@ -88,6 +94,18 @@ export function buildTransformSpec(input: TransformInput): TransformSpec {
       // quanh điểm đó. Dùng 'rotate' (params [angle, center]) để chuẩn.
       return { params: [Math.PI, input.center], attrs: { type: 'rotate' } };
     case 'dilate':
-      return { params: [input.k, input.k, input.center], attrs: { type: 'scale' } };
+      // JSXGraph 'scale' chỉ nhận đúng 2 tham số (sx, sy) và scale quanh gốc toạ độ —
+      // tham số center thứ 3 làm constructor throw. Dilate quanh điểm c bằng tỷ số k
+      // = compose 3 phép: T(-c) → S(k,k) → T(+c). Sinh ra chain (mảng spec) thay vì
+      // 1 spec đơn; consumer (finalizeTransformCreate) tự nhận biết.
+      return {
+        params: [],
+        attrs: { type: 'scale' },
+        chain: [
+          { params: [-input.center.X(), -input.center.Y()], attrs: { type: 'translate' as const } },
+          { params: [input.k, input.k], attrs: { type: 'scale' as const } },
+          { params: [input.center.X(), input.center.Y()], attrs: { type: 'translate' as const } },
+        ],
+      };
   }
 }
