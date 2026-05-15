@@ -19,7 +19,7 @@ interface ExcalidrawSceneSnapshot {
 }
 
 /**
- * Props mà mỗi StampHost nhận từ ExcalidrawWhiteboardView. Host component tự
+ * Props mà mỗi StampHost nhận từ Whiteboard. Host component tự
  * quản lý state nội bộ (panel ref, undo stack, displayMode...) — main view
  * chỉ điều phối show/hide.
  */
@@ -83,43 +83,38 @@ interface StampType {
     renderSvgFromCustomData(data: unknown): Promise<string>;
     /**
      * Host component bọc toàn bộ UI editing (panel + left panel + insert
-     * handler). ExcalidrawWhiteboardView mount Host khi activeStamp khớp kind.
+     * handler). Whiteboard mount Host khi activeStamp khớp kind.
      */
     Host: StampHostComponent;
 }
 
-interface ExcalidrawWhiteboardViewProps {
-    role: 'teacher' | 'student';
-    roomId: string;
-    initialScene: ExcalidrawSceneSnapshot | null;
-    remoteScene: ExcalidrawSceneSnapshot | null;
-    remoteFiles?: BinaryFiles | null;
-    onSceneChange: (snapshot: ExcalidrawSceneSnapshot) => void;
-    onFilesChange: (files: BinaryFiles, newFileIds: string[]) => void;
+interface WhiteboardProps {
+    /**
+     * Storage key cho persist client-side.
+     * - Scene -> localStorage['whiteboard:scene:'+storageKey]
+     * - Files raster -> IndexedDB 'whiteboard-files' index theo storageKey
+     * - Default: 'default'
+     * - Truyen `null` de tat persist (consumer drive state qua onApi).
+     */
+    storageKey?: string | null;
+    /** View-only (Excalidraw viewModeEnabled). Default false. */
+    readOnly?: boolean;
+    /** Local edits -> consumer broadcast. Optional. */
+    onSceneChange?: (snapshot: ExcalidrawSceneSnapshot) => void;
+    onFilesChange?: (files: BinaryFiles, newFileIds: string[]) => void;
+    /** Excalidraw imperative API. Consumer dung inject remote scene khi can. */
+    onApi?: (api: any) => void;
     /** Excalidraw UI language. Defaults to 'vi-VN'. See @excalidraw/excalidraw locales. */
     langCode?: string;
-    /**
-     * Khi set, component tự lưu scene + files vào `sessionStorage[persistKey]` mỗi
-     * lần thay đổi (teacher) và khôi phục khi mount. Math stamps tự regenerate SVG
-     * qua `restoreMissingMathStampFiles`, nên storage chỉ cần chứa elements + appState
-     * + raster files.
-     */
-    persistKey?: string;
     /**
      * Danh sách stamp đăng ký. Mỗi stamp khai báo phím tắt + toolbar button +
      * Host component (UI editing). Mặc định DEFAULT_STAMPS (geometry + latex).
      * Truyền `[...DEFAULT_STAMPS, customStamp]` để thêm stamp mới.
      */
     stamps?: ReadonlyArray<StampType>;
-    /**
-     * Callback nhận Excalidraw imperative API khi nó mount xong. Dùng cho test
-     * (Playwright) hoặc consumer cần điều khiển scene ngoài luồng remote-sync.
-     * Tránh expose API nếu không cần — phần lớn consumer chỉ cần onSceneChange.
-     */
-    onApi?: (api: any) => void;
 }
-declare function ExcalidrawWhiteboardView({ role, initialScene, remoteScene, remoteFiles, onSceneChange, onFilesChange, langCode, persistKey, stamps, onApi, }: ExcalidrawWhiteboardViewProps): react_jsx_runtime.JSX.Element;
+declare function Whiteboard({ storageKey, readOnly, onSceneChange, onFilesChange, onApi, langCode, stamps, }: WhiteboardProps): react_jsx_runtime.JSX.Element;
 
 declare function pickSyncableAppState(s: AppState): SyncableAppState;
 
-export { type ExcalidrawSceneSnapshot, ExcalidrawWhiteboardView, type ExcalidrawWhiteboardViewProps, type SyncableAppState, pickSyncableAppState };
+export { type ExcalidrawSceneSnapshot, type SyncableAppState, Whiteboard, type WhiteboardProps, pickSyncableAppState };

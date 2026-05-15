@@ -18,5 +18,5 @@ function ExcalidrawWithMenus(props) {
 }
 
 export { ExcalidrawWithMenus };
-//# sourceMappingURL=ExcalidrawWithMenus-YGFFNZYY.mjs.map
-//# sourceMappingURL=ExcalidrawWithMenus-YGFFNZYY.mjs.map
+//# sourceMappingURL=ExcalidrawWithMenus-KBLDWPM2.mjs.map
+//# sourceMappingURL=ExcalidrawWithMenus-KBLDWPM2.mjs.map

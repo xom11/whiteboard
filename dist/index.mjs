@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { jsxs, jsx, Fragment } from 'react/jsx-runtime';
 import '@excalidraw/excalidraw/index.css';
 
-// src/ExcalidrawWhiteboardView.tsx
+// src/Whiteboard.tsx
 
 // src/serialize.ts
 function pickSyncableAppState(s) {
@@ -3409,59 +3409,223 @@ async function restoreMissingMathStampFiles(api, elements, stamps = DEFAULT_STAM
     }
   }
 }
-function readPersisted(key) {
-  if (!key || typeof window === "undefined") return null;
+
+// src/core/persistence/sceneStore.ts
+var PREFIX = "whiteboard:scene:";
+var SCHEMA_VERSION = 1;
+function fullKey(key) {
+  return PREFIX + key;
+}
+function readScene(key) {
+  if (typeof window === "undefined") return null;
+  const raw = window.localStorage.getItem(fullKey(key));
+  if (!raw) return null;
   try {
-    const raw = window.sessionStorage.getItem(key);
-    if (!raw) return null;
     const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return null;
+    if (parsed.version !== SCHEMA_VERSION) {
+      console.warn(
+        `[whiteboard] scene version ${parsed.version} kh\xF4ng kh\u1EDBp ${SCHEMA_VERSION}, b\u1ECF qua.`
+      );
+      return null;
+    }
     if (!Array.isArray(parsed.elements)) return null;
     return {
+      version: SCHEMA_VERSION,
       elements: parsed.elements,
       appState: parsed.appState ?? {},
-      files: parsed.files
+      savedAt: typeof parsed.savedAt === "number" ? parsed.savedAt : Date.now()
     };
-  } catch {
+  } catch (err) {
+    console.warn("[whiteboard] scene parse error, clear:", err);
+    try {
+      window.localStorage.removeItem(fullKey(key));
+    } catch {
+    }
     return null;
   }
 }
-function writePersisted(key, snap) {
+function writeScene(key, payload) {
   if (typeof window === "undefined") return;
+  const record = {
+    version: SCHEMA_VERSION,
+    elements: payload.elements,
+    appState: payload.appState,
+    savedAt: Date.now()
+  };
   try {
-    window.sessionStorage.setItem(key, JSON.stringify(snap));
-  } catch {
+    window.localStorage.setItem(fullKey(key), JSON.stringify(record));
+  } catch (err) {
+    console.warn("[whiteboard] scene write failed:", err);
   }
 }
-function usePersist(key, api, markFileKnown) {
-  const persistedInitial = useMemo(() => readPersisted(key), [key]);
-  const markFileKnownRef = useRef(markFileKnown);
-  markFileKnownRef.current = markFileKnown;
-  useEffect(() => {
-    if (!api) return;
-    if (!persistedInitial?.files) return;
-    const entries = Object.entries(persistedInitial.files);
-    if (entries.length === 0) return;
-    try {
-      api.addFiles(
-        entries.map(([id, f]) => ({
-          id,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          dataURL: f.dataURL,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          mimeType: f.mimeType,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          created: f.created ?? Date.now()
-        }))
-      );
-      entries.forEach(([id]) => markFileKnownRef.current(id));
-    } catch (err) {
-      console.warn("Restore persisted files failed:", err);
+
+// src/core/persistence/fileStore.ts
+var DB_NAME = "whiteboard-files";
+var DB_VERSION = 1;
+var STORE = "files";
+var dbPromise = null;
+var idbDisabled = false;
+function openDb() {
+  if (idbDisabled) return Promise.reject(new Error("IndexedDB disabled"));
+  if (dbPromise) return dbPromise;
+  dbPromise = new Promise((resolve, reject) => {
+    if (typeof indexedDB === "undefined") {
+      idbDisabled = true;
+      reject(new Error("indexedDB undefined"));
+      return;
     }
-  }, [api, persistedInitial]);
-  return { persistedInitial };
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(STORE)) {
+        const store = db.createObjectStore(STORE, { keyPath: "id" });
+        store.createIndex("storageKey", "storageKey", { unique: false });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => {
+      idbDisabled = true;
+      reject(req.error ?? new Error("IDB open failed"));
+    };
+  });
+  return dbPromise;
+}
+async function withStore(mode, fn, fallback) {
+  let db;
+  try {
+    db = await openDb();
+  } catch {
+    return fallback;
+  }
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, mode);
+    const store = tx.objectStore(STORE);
+    let result = fallback;
+    try {
+      fn(
+        store,
+        (value) => {
+          result = value;
+        },
+        reject
+      );
+    } catch (err) {
+      reject(err);
+      return;
+    }
+    tx.oncomplete = () => resolve(result);
+    tx.onerror = () => {
+      console.warn("[whiteboard] IDB tx error:", tx.error);
+      reject(tx.error ?? new Error("IDB tx error"));
+    };
+    tx.onabort = () => reject(tx.error ?? new Error("IDB tx aborted"));
+  });
+}
+async function readFiles(storageKey) {
+  try {
+    return await withStore(
+      "readonly",
+      (store, setResult, fail) => {
+        const out = {};
+        const req = store.index("storageKey").openCursor(IDBKeyRange.only(storageKey));
+        req.onsuccess = () => {
+          const cursor = req.result;
+          if (!cursor) {
+            setResult(out);
+            return;
+          }
+          const record = cursor.value;
+          out[record.id] = {
+            dataURL: record.dataURL,
+            mimeType: record.mimeType,
+            created: record.created
+          };
+          cursor.continue();
+        };
+        req.onerror = () => fail(req.error);
+      },
+      {}
+    );
+  } catch (err) {
+    console.warn("[whiteboard] readFiles failed:", err);
+    return {};
+  }
+}
+async function writeFiles(storageKey, files) {
+  const entries = Object.entries(files);
+  if (entries.length === 0) return;
+  try {
+    await withStore(
+      "readwrite",
+      (store, setResult, fail) => {
+        let pending = entries.length;
+        const finishOne = () => {
+          pending -= 1;
+          if (pending === 0) setResult(void 0);
+        };
+        const now = Date.now();
+        for (const [id, f] of entries) {
+          const ff = f;
+          const getReq = store.get(id);
+          getReq.onsuccess = () => {
+            if (getReq.result) {
+              finishOne();
+              return;
+            }
+            const rec = {
+              id,
+              storageKey,
+              dataURL: ff.dataURL,
+              mimeType: ff.mimeType,
+              created: ff.created ?? now,
+              savedAt: now
+            };
+            const putReq = store.put(rec);
+            putReq.onsuccess = finishOne;
+            putReq.onerror = () => fail(putReq.error);
+          };
+          getReq.onerror = () => fail(getReq.error);
+        }
+        ;
+      },
+      void 0
+    );
+  } catch (err) {
+    console.warn("[whiteboard] writeFiles failed:", err);
+  }
+}
+async function pruneFiles(storageKey, keepIds) {
+  try {
+    await withStore(
+      "readwrite",
+      (store, setResult, fail) => {
+        const req = store.index("storageKey").openCursor(IDBKeyRange.only(storageKey));
+        req.onsuccess = () => {
+          const cursor = req.result;
+          if (!cursor) {
+            setResult(void 0);
+            return;
+          }
+          const record = cursor.value;
+          if (keepIds.has(record.id)) {
+            cursor.continue();
+            return;
+          }
+          const deleteReq = cursor.delete();
+          deleteReq.onsuccess = () => cursor.continue();
+          deleteReq.onerror = () => fail(deleteReq.error);
+        };
+        req.onerror = () => fail(req.error);
+      },
+      void 0
+    );
+  } catch (err) {
+    console.warn("[whiteboard] pruneFiles failed:", err);
+  }
 }
 var Excalidraw = dynamic(
-  async () => (await import('./ExcalidrawWithMenus-YGFFNZYY.mjs')).ExcalidrawWithMenus,
+  async () => (await import('./ExcalidrawWithMenus-KBLDWPM2.mjs')).ExcalidrawWithMenus,
   {
     ssr: false,
     loading: () => /* @__PURE__ */ jsx("div", { className: "flex h-full items-center justify-center text-sm text-gray-500", children: "\u0110ang t\u1EA3i b\u1EA3ng\u2026" })
@@ -3469,29 +3633,34 @@ var Excalidraw = dynamic(
 );
 var SYNC_THROTTLE_MS = 200;
 var DOUBLE_CLICK_MS = 400;
-function ExcalidrawWhiteboardView({
-  role,
-  initialScene,
-  remoteScene,
-  remoteFiles,
+function Whiteboard({
+  storageKey = "default",
+  readOnly = false,
   onSceneChange,
   onFilesChange,
+  onApi,
   langCode = "vi-VN",
-  persistKey,
-  stamps = DEFAULT_STAMPS,
-  onApi
+  stamps = DEFAULT_STAMPS
 }) {
   const [api, setApi] = useState(null);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const knownFileIdsRef = useRef(/* @__PURE__ */ new Set());
   const lastElementsHashRef = useRef("");
-  const throttleTimerRef = useRef(null);
-  const { persistedInitial } = usePersist(
-    persistKey,
-    api,
-    (id) => knownFileIdsRef.current.add(id)
+  const sceneThrottleRef = useRef(null);
+  const fileThrottleRef = useRef(null);
+  const pruneThrottleRef = useRef(null);
+  const pendingFilesRef = useRef({});
+  const persistEnabled = typeof storageKey === "string" && storageKey.length > 0;
+  const persistKeyRef = useRef(storageKey);
+  persistKeyRef.current = storageKey;
+  const persistedInitial = useMemo(
+    () => persistEnabled ? readScene(storageKey) : null,
+    [persistEnabled, storageKey]
   );
-  const effectiveInitialScene = persistedInitial ? { elements: persistedInitial.elements, appState: persistedInitial.appState } : initialScene;
+  const effectiveInitialScene = persistedInitial ? {
+    elements: persistedInitial.elements,
+    appState: persistedInitial.appState
+  } : null;
   const [activeStamp, setActiveStamp] = useState(null);
   const activeStampRef = useRef(activeStamp);
   activeStampRef.current = activeStamp;
@@ -3503,7 +3672,6 @@ function ExcalidrawWhiteboardView({
   });
   const handledCropIdRef = useRef(null);
   const prevExcalidrawToolRef = useRef("selection");
-  const isTeacher = role === "teacher";
   const stampByKind = useMemo(() => {
     const m = /* @__PURE__ */ new Map();
     for (const s of stamps) m.set(s.kind, s);
@@ -3513,12 +3681,12 @@ function ExcalidrawWhiteboardView({
   const HostComponent = activeStampDef?.Host ?? null;
   const openStamp = useCallback(
     (kind, element = null) => {
-      if (!isTeacher) return;
+      if (readOnly) return;
       if (!stampByKind.has(kind)) return;
       setEditingElement(element);
       setActiveStamp(kind);
     },
-    [isTeacher, stampByKind]
+    [readOnly, stampByKind]
   );
   const closeStamp = useCallback(() => {
     setActiveStamp(null);
@@ -3536,7 +3704,7 @@ function ExcalidrawWhiteboardView({
     (elements, appState, files) => {
       const nextDark = appState?.theme === "dark";
       setIsDarkTheme((prev) => prev === nextDark ? prev : nextDark);
-      if (!isTeacher) return;
+      if (readOnly) return;
       const cropId = appState?.croppingElementId;
       if (cropId && cropId !== handledCropIdRef.current && api) {
         const el = elements.find((e) => e.id === cropId);
@@ -3562,61 +3730,94 @@ function ExcalidrawWhiteboardView({
       const newIds = fileIds.filter((id) => !knownFileIdsRef.current.has(id));
       if (newIds.length > 0) {
         newIds.forEach((id) => knownFileIdsRef.current.add(id));
-        onFilesChange(files, newIds);
+        onFilesChange?.(files, newIds);
       }
-      if (throttleTimerRef.current) return;
-      throttleTimerRef.current = setTimeout(async () => {
-        throttleTimerRef.current = null;
-        const mod = await import('@excalidraw/excalidraw');
-        const hash = mod.hashElementsVersion(elements);
-        if (hash === lastElementsHashRef.current) return;
-        lastElementsHashRef.current = hash;
-        const liveElements = elements.filter((e) => !e.isDeleted);
-        const liveAppState = pickSyncableAppState(appState);
-        onSceneChange({ elements: liveElements, appState: liveAppState });
-        if (persistKey) {
-          const stampFileIds = /* @__PURE__ */ new Set();
-          for (const el of liveElements) {
-            const fid = el.fileId;
-            if (fid && isMathStamp(el)) stampFileIds.add(fid);
+      if (!sceneThrottleRef.current) {
+        sceneThrottleRef.current = setTimeout(async () => {
+          sceneThrottleRef.current = null;
+          const mod = await import('@excalidraw/excalidraw');
+          const hash = mod.hashElementsVersion(elements);
+          if (hash === lastElementsHashRef.current) return;
+          lastElementsHashRef.current = hash;
+          const liveElements = elements.filter((e) => !e.isDeleted);
+          const liveAppState = pickSyncableAppState(appState);
+          onSceneChange?.({ elements: liveElements, appState: liveAppState });
+          if (persistEnabled) {
+            writeScene(storageKey, {
+              elements: liveElements,
+              appState: liveAppState
+            });
           }
-          const rasterFiles = {};
-          for (const [fid, f] of Object.entries(files)) {
-            if (!stampFileIds.has(fid)) rasterFiles[fid] = f;
-          }
-          writePersisted(persistKey, {
-            elements: liveElements,
-            appState: liveAppState,
-            files: rasterFiles
-          });
+        }, SYNC_THROTTLE_MS);
+      }
+      if (persistEnabled && newIds.length > 0) {
+        for (const id of newIds) {
+          if (files[id]) pendingFilesRef.current[id] = files[id];
         }
-      }, SYNC_THROTTLE_MS);
+        if (!fileThrottleRef.current) {
+          fileThrottleRef.current = setTimeout(() => {
+            fileThrottleRef.current = null;
+            const pending = pendingFilesRef.current;
+            pendingFilesRef.current = {};
+            const currentElements = api?.getSceneElements?.() ?? elements;
+            const stampIds = /* @__PURE__ */ new Set();
+            for (const el of currentElements) {
+              const fid = el.fileId;
+              if (fid && isMathStamp(el)) stampIds.add(fid);
+            }
+            const raster = {};
+            for (const [id, f] of Object.entries(pending)) {
+              if (!stampIds.has(id)) raster[id] = f;
+            }
+            if (Object.keys(raster).length > 0) {
+              void writeFiles(persistKeyRef.current, raster);
+            }
+          }, 1e3);
+        }
+      }
+      if (persistEnabled && !pruneThrottleRef.current) {
+        pruneThrottleRef.current = setTimeout(() => {
+          pruneThrottleRef.current = null;
+          const currentElements = api?.getSceneElements?.() ?? elements;
+          const keep = /* @__PURE__ */ new Set();
+          for (const el of currentElements) {
+            const fid = el.fileId;
+            if (fid && !isMathStamp(el)) keep.add(fid);
+          }
+          void pruneFiles(persistKeyRef.current, keep);
+        }, 2e3);
+      }
     },
-    [isTeacher, api, onSceneChange, onFilesChange, persistKey, stamps, openStamp]
+    [readOnly, api, onSceneChange, onFilesChange, persistEnabled, storageKey, stamps, openStamp]
   );
   useEffect(() => {
-    if (isTeacher || !api || !remoteScene) return;
-    api.updateScene({
-      elements: remoteScene.elements,
-      appState: remoteScene.appState
+    if (!api || !persistEnabled) return;
+    let cancelled = false;
+    void readFiles(storageKey).then((files) => {
+      if (cancelled) return;
+      const entries = Object.entries(files);
+      if (entries.length === 0) return;
+      try {
+        api.addFiles(
+          entries.map(([id, f]) => ({
+            id,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            dataURL: f.dataURL,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            mimeType: f.mimeType,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            created: f.created ?? Date.now()
+          }))
+        );
+        entries.forEach(([id]) => knownFileIdsRef.current.add(id));
+      } catch (err) {
+        console.warn("[whiteboard] addFiles t\u1EEB IDB th\u1EA5t b\u1EA1i:", err);
+      }
     });
-  }, [isTeacher, api, remoteScene]);
-  useEffect(() => {
-    if (isTeacher || !api || !remoteFiles) return;
-    const entries = Object.entries(remoteFiles);
-    if (entries.length === 0) return;
-    api.addFiles(
-      entries.map(([id, f]) => ({
-        id,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        dataURL: f.dataURL,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        mimeType: f.mimeType,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        created: f.created ?? Date.now()
-      }))
-    );
-  }, [isTeacher, api, remoteFiles]);
+    return () => {
+      cancelled = true;
+    };
+  }, [api, persistEnabled, storageKey]);
   useEffect(() => {
     if (!api) return;
     let cancelled = false;
@@ -3636,17 +3837,19 @@ function ExcalidrawWhiteboardView({
       cancelled = true;
       clearTimeout(t);
     };
-  }, [api, initialScene, remoteScene, stamps]);
+  }, [api, persistedInitial, stamps]);
   useEffect(
     () => () => {
-      if (throttleTimerRef.current) clearTimeout(throttleTimerRef.current);
+      if (sceneThrottleRef.current) clearTimeout(sceneThrottleRef.current);
+      if (fileThrottleRef.current) clearTimeout(fileThrottleRef.current);
+      if (pruneThrottleRef.current) clearTimeout(pruneThrottleRef.current);
     },
     []
   );
   const handlePointerDown = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (_activeTool, pointerDownState) => {
-      if (!isTeacher) return;
+      if (readOnly) return;
       const hitElement = pointerDownState?.hit?.element;
       if (!hitElement || hitElement.type !== "image") return;
       const stamp = findStampForCustomData(hitElement.customData, stamps);
@@ -3660,10 +3863,10 @@ function ExcalidrawWhiteboardView({
         customData: hitElement.customData
       });
     },
-    [isTeacher, stamps, openStamp]
+    [readOnly, stamps, openStamp]
   );
   useStampShortcuts({
-    enabled: isTeacher,
+    enabled: !readOnly,
     onToggle: toggleStampByKind,
     stamps
   });
@@ -3767,7 +3970,7 @@ function ExcalidrawWhiteboardView({
           onApi?.(a);
         },
         langCode,
-        viewModeEnabled: !isTeacher,
+        viewModeEnabled: readOnly,
         initialData: effectiveInitialScene ? {
           elements: effectiveInitialScene.elements,
           appState: {
@@ -3782,7 +3985,7 @@ function ExcalidrawWhiteboardView({
     /* @__PURE__ */ jsx(
       ToolbarStampInjector,
       {
-        enabled: isTeacher,
+        enabled: !readOnly,
         activeStampKind: activeStamp,
         onToggle: toggleStampByKind,
         stamps
@@ -3801,6 +4004,6 @@ function ExcalidrawWhiteboardView({
   ] });
 }
 
-export { ExcalidrawWhiteboardView, pickSyncableAppState };
+export { Whiteboard, pickSyncableAppState };
 //# sourceMappingURL=index.mjs.map
 //# sourceMappingURL=index.mjs.map
