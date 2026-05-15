@@ -244,7 +244,9 @@ export function Whiteboard({
             for (const [id, f] of Object.entries(pending)) {
               if (!stampIds.has(id)) raster[id] = f;
             }
-            void writeFiles(persistKeyRef.current as string, raster);
+            if (Object.keys(raster).length > 0) {
+              void writeFiles(persistKeyRef.current as string, raster);
+            }
           }, 1000);
         }
       }
