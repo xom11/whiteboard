@@ -94,15 +94,17 @@ function finishLineLike(
   ctx: HandlerContext,
   elType: Element3DType,
   points: PendingPoint[],
+  extraAttrs: Record<string, unknown> = {},
 ): void {
   const id = ctx.nextId();
   const refs = points.map((p) => p.ref);
-  const ref = ctx.view.create(elType, refs, { id });
+  const attrs = { id, ...extraAttrs };
+  const ref = ctx.view.create(elType, refs, attrs);
   ctx.objMap.set(id, ref);
   ctx.pushLog({
     type: elType,
     parents: points.map((p) => refByPlaceholder(p.id)),
-    attributes: { id },
+    attributes: attrs,
     id,
   });
 }
@@ -129,7 +131,10 @@ export function handleToolStep(
       const p = resolvePoint(ctx, hit);
       ctx.pendingPoints.push(p);
       if (ctx.pendingPoints.length === 2) {
-        finishLineLike(ctx, tool === 'segment' ? 'segment3d' : 'line3d', ctx.pendingPoints);
+        // JSXGraph 3D has no `segment3d`; bound a `line3d` with straight* off for segment.
+        const extra =
+          tool === 'segment' ? { straightFirst: false, straightLast: false } : {};
+        finishLineLike(ctx, 'line3d', ctx.pendingPoints, extra);
         ctx.pendingPoints = [];
       }
       ctx.notify();
@@ -140,6 +145,8 @@ export function handleToolStep(
       const p = resolvePoint(ctx, hit);
       ctx.pendingPoints.push(p);
       if (ctx.pendingPoints.length === 3) {
+        // plane3d in JSXGraph expects [point, direction1, direction2] but accepts
+        // 3-point form for "plane through A, B, C".
         finishLineLike(ctx, 'plane3d', ctx.pendingPoints);
         ctx.pendingPoints = [];
       }

@@ -13,6 +13,12 @@ import JXG from 'jsxgraph';
 import { DEFAULT_VIEW3D, VIEW3D_ATTRS, paletteFor } from './theme';
 import type { GeomTool3D } from './tools';
 import type { SerializedBoard3D, SerializedElement3D } from '../serialize';
+import {
+  createHandlerContext,
+  handleToolStep,
+  type ClickHit,
+  type HandlerContext,
+} from './handlers';
 
 export interface MiniBoard3DHandle {
   getContainer: () => HTMLDivElement | null;
@@ -66,6 +72,8 @@ export const MiniBoard3D = forwardRef<MiniBoard3DHandle, Props>(function MiniBoa
   const initialBbox3D = useRef<[number, number, number, number, number, number]>(
     initialState?.view.bbox3D ?? DEFAULT_VIEW3D.bbox3D,
   );
+  const ctxRef = useRef<HandlerContext | null>(null);
+  const pointerHandlerRef = useRef<{ el: HTMLElement | SVGElement; fn: EventListener } | null>(null);
   const [showAxes, setShowAxes] = useState(initialState?.showAxes ?? true);
   const [showMesh, setShowMesh] = useState(initialState?.showMesh ?? false);
 
@@ -108,6 +116,94 @@ export const MiniBoard3D = forwardRef<MiniBoard3DHandle, Props>(function MiniBoa
     );
     viewRef.current = view;
 
+    // Wire pointer events to handlers
+    let idCounter = 1;
+    const ctx: HandlerContext = createHandlerContext({
+      view,
+      pushLog: (e) => {
+        logRef.current.push(e);
+        notify();
+      },
+      objMap: objMapRef.current,
+      nextId: () => `obj_${Date.now().toString(36)}_${(idCounter++).toString(36)}`,
+      isDark,
+      promptCoords: (label) => {
+        const raw = window.prompt(`${label}\n(định dạng "x,y,z")`, '0,0,0');
+        if (!raw) return null;
+        const parts = raw.split(',').map((s) => Number(s.trim()));
+        if (parts.length !== 3 || parts.some((n) => !isFinite(n))) return null;
+        return { x: parts[0], y: parts[1], z: parts[2] };
+      },
+      promptNumber: (label) => {
+        const raw = window.prompt(label, '1');
+        if (raw == null) return null;
+        const n = Number(raw);
+        return isFinite(n) ? n : null;
+      },
+      promptText: (label) => {
+        const raw = window.prompt(label, '');
+        return raw == null ? null : raw;
+      },
+      notify,
+    });
+    ctxRef.current = ctx;
+
+    // Helper: find existing point3d under pointer (returns its id) so polygon
+    // close + segment chaining work.
+    function findExistingPointAt(clientX: number, clientY: number): string | undefined {
+      const containerRect = (div as HTMLDivElement).getBoundingClientRect();
+      const localX = clientX - containerRect.left;
+      const localY = clientY - containerRect.top;
+      const PICK = 12;
+      const svg = (div as HTMLDivElement).querySelector('svg');
+      if (!svg) return undefined;
+      // Find SVG elements rendered by point3d objects. JSXGraph 3D points render
+      // as <ellipse>/<circle> in the SVG. Match by id attribute.
+      for (const [id, obj] of objMapRef.current) {
+        const entry = obj as { elType?: string; coords?: { scrCoords?: number[] } };
+        if (entry?.elType !== 'point3d') continue;
+        const sc = entry.coords?.scrCoords;
+        if (!sc || sc.length < 3) continue;
+        const dx = sc[1] - localX;
+        const dy = sc[2] - localY;
+        if (dx * dx + dy * dy <= PICK * PICK) return id;
+      }
+      return undefined;
+    }
+
+    const handlePointerDown = (e: PointerEvent) => {
+      const tool = toolRef.current;
+      if (tool === 'move') return;
+      // Suppress default JSXGraph drag/select for tool clicks
+      const existingPointId = findExistingPointAt(e.clientX, e.clientY);
+      let x3 = 0;
+      let y3 = 0;
+      const z3 = 0;
+      try {
+        // 2D world coords from screen, project onto z=0 plane.
+        const board2d = boardRef.current as
+          | { getCoordsTopLeftCorner?: unknown; getUsrCoordsOfMouse?: (ev: Event) => [number, number] }
+          | null;
+        if (board2d?.getUsrCoordsOfMouse) {
+          const uc = board2d.getUsrCoordsOfMouse(e);
+          if (Array.isArray(uc) && uc.length >= 2) {
+            x3 = uc[0];
+            y3 = uc[1];
+          }
+        }
+      } catch {
+        /* fall back to 0,0,0 */
+      }
+      const hit: ClickHit = { x3, y3, z3, existingPointId };
+      handleToolStep(ctx, tool, hit);
+    };
+
+    const svgEl = (div as HTMLDivElement).querySelector('svg');
+    const targetEl = (svgEl ?? (div as HTMLDivElement)) as HTMLElement | SVGElement;
+    const handlePointerDownEv: EventListener = (e) => handlePointerDown(e as PointerEvent);
+    targetEl.addEventListener('pointerdown', handlePointerDownEv);
+    pointerHandlerRef.current = { el: targetEl, fn: handlePointerDownEv };
+
     if (initialState?.elements?.length) {
       const map = objMapRef.current;
       for (const el of initialState.elements) {
@@ -125,6 +221,13 @@ export const MiniBoard3D = forwardRef<MiniBoard3DHandle, Props>(function MiniBoa
     }
 
     return () => {
+      if (pointerHandlerRef.current) {
+        pointerHandlerRef.current.el.removeEventListener(
+          'pointerdown',
+          pointerHandlerRef.current.fn,
+        );
+        pointerHandlerRef.current = null;
+      }
       try {
         JXG.JSXGraph.freeBoard(board);
       } catch {
@@ -132,6 +235,7 @@ export const MiniBoard3D = forwardRef<MiniBoard3DHandle, Props>(function MiniBoa
       }
       boardRef.current = null;
       viewRef.current = null;
+      ctxRef.current = null;
       objMapRef.current.clear();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

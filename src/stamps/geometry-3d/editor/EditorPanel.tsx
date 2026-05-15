@@ -1,5 +1,5 @@
 'use client';
-import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
 import { MiniBoard3D, type MiniBoard3DHandle } from './MiniBoard3D';
 import { LeftPanel } from './LeftPanel';
 import type { SerializedBoard3D } from '../serialize';
@@ -20,8 +20,18 @@ export const EditorPanel = forwardRef<EditorPanelHandle, Props>(function EditorP
   { isDark, initial, onInsert, onClose },
   ref,
 ) {
+  // Stable ref to the latest mounted handle so callbacks (tryInsert) read fresh state
+  // without triggering re-renders when the handle updates internally.
   const boardRef = useRef<MiniBoard3DHandle | null>(null);
-  const [, setBoardKey] = useState(0);
+  // Re-render trigger for LeftPanel ONLY when the handle identity changes
+  // (mount → handle, unmount → null). Functional-equality guard breaks the
+  // ref-callback re-render loop seen with React 19 strict mode.
+  const [boardHandle, setBoardHandle] = useState<MiniBoard3DHandle | null>(null);
+
+  const setBoard = useCallback((h: MiniBoard3DHandle | null) => {
+    boardRef.current = h;
+    setBoardHandle((prev) => (prev === h ? prev : h));
+  }, []);
 
   useImperativeHandle(
     ref,
@@ -49,18 +59,14 @@ export const EditorPanel = forwardRef<EditorPanelHandle, Props>(function EditorP
     [onInsert],
   );
 
-  const handleBoardReady = (h: MiniBoard3DHandle | null) => {
-    boardRef.current = h;
-    setBoardKey((k) => k + 1);
-  };
-
-  const handleResetView = () => {
+  const handleResetView = useCallback(() => {
     boardRef.current?.resetView();
-  };
+  }, []);
 
   return (
     <div
       data-testid="geom3d-editor-panel"
+      data-stamp-area="true"
       style={{
         position: 'absolute',
         left: '50%',
@@ -93,41 +99,24 @@ export const EditorPanel = forwardRef<EditorPanelHandle, Props>(function EditorP
       </div>
       <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
         <LeftPanel
-          handle={boardRef.current}
+          handle={boardHandle}
           onResetView={handleResetView}
           onClose={onClose}
           isDark={isDark}
         />
-        <div style={{ position: 'absolute', left: 120, top: 0, right: 0, bottom: 0 }}>
-          <BoardMount onMount={handleBoardReady} isDark={isDark} initialState={initial} />
+        <div
+          style={{
+            position: 'absolute',
+            left: 120,
+            top: 0,
+            right: 0,
+            bottom: 0,
+            overflow: 'hidden',
+          }}
+        >
+          <MiniBoard3D ref={setBoard} isDark={isDark} initialState={initial} />
         </div>
       </div>
     </div>
   );
 });
-
-interface BoardMountProps {
-  onMount: (h: MiniBoard3DHandle | null) => void;
-  isDark: boolean;
-  initialState: SerializedBoard3D | null;
-}
-
-function BoardMount({ onMount, isDark, initialState }: BoardMountProps) {
-  const mountedRef = useRef(false);
-
-  return (
-    <MiniBoard3D
-      ref={(h: MiniBoard3DHandle | null) => {
-        if (h && !mountedRef.current) {
-          mountedRef.current = true;
-          onMount(h);
-        } else if (!h && mountedRef.current) {
-          mountedRef.current = false;
-          onMount(null);
-        }
-      }}
-      isDark={isDark}
-      initialState={initialState}
-    />
-  );
-}

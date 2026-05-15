@@ -17,17 +17,10 @@ export function isGeometry3DCustomData(data: unknown): data is Geometry3DCustomD
 export type Element3DType =
   | 'point3d'
   | 'line3d'
-  | 'segment3d'
   | 'plane3d'
   | 'polygon3d'
   | 'polyhedron3d'
   | 'sphere3d'
-  | 'tetrahedron3d'
-  | 'parallelepiped3d'
-  | 'prism3d'
-  | 'pyramid3d'
-  | 'cone3d'
-  | 'cylinder3d'
   | 'solidofrevolution3d'
   | 'text3d';
 
