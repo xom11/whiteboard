@@ -47,6 +47,10 @@ jest.mock('../renderGeometryToSvg', () => ({
   renderGeometryToSvg: jest.fn(() => '<svg>fake</svg>'),
 }));
 
+jest.mock('../renderGeometryFromState', () => ({
+  renderGeometrySvgFromState: jest.fn(async () => '<svg>fake</svg>'),
+}));
+
 describe('GeometryEditorPanel', () => {
   test('renders panel header + Insert/Cancel buttons', () => {
     render(<GeometryEditorPanel initialState={null} onInsert={() => {}} onClose={() => {}} />);
@@ -60,6 +64,8 @@ describe('GeometryEditorPanel', () => {
     render(<GeometryEditorPanel initialState={null} onInsert={onInsert} onClose={() => {}} />);
     await act(async () => { await new Promise(r => setTimeout(r, 20)); });
     fireEvent.click(screen.getByRole('button', { name: 'Chèn' }));
+    // performInsert tạo SVG async (qua renderGeometrySvgFromState).
+    await act(async () => { await new Promise(r => setTimeout(r, 20)); });
     expect(onInsert).toHaveBeenCalledWith(
       expect.stringContaining('"bbox"'),
       '<svg>fake</svg>',

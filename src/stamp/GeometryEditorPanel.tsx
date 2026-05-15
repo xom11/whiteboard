@@ -2,7 +2,7 @@
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { JSXGraphMiniBoard, type MiniBoardHandle, type GeomTool, type ObjectSnapshot } from './JSXGraphMiniBoard';
 import { serializeBoard, type SerializedBoard } from './serializeBoard';
-import { renderGeometryToSvg } from './renderGeometryToSvg';
+import { renderGeometrySvgFromState } from './renderGeometryFromState';
 import { PropertiesPopover } from './PropertiesPopover';
 import { TransformParamPopover } from './TransformParamPopover';
 
@@ -66,28 +66,31 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
       h.onTransformParam((info) => setTransformPopover(info));
     }, [emitState]);
 
+    // Build serialized state (sentinels intact) — async vì SVG render offscreen
+    // với light palette để Excalidraw filter tự đảo khi dark mode.
     const performInsert = useCallback((): boolean => {
       if (!handleRef.current) return false;
-      const container = handleRef.current.getContainer();
-      if (!container) return false;
       const log = handleRef.current.getCreationLog();
       if (log.length === 0) return false;
-      try {
-        const svgString = renderGeometryToSvg(container);
-        const bbox = handleRef.current.getBbox();
-        const showAxis = handleRef.current.getShowAxis();
-        const showGrid = handleRef.current.getShowGrid();
-        const serialized = serializeBoard(
-          { getBoundingBox: () => bbox, create: () => undefined },
-          log,
-          { showAxis, showGrid },
-        );
-        onInsert(JSON.stringify(serialized), svgString);
-        return true;
-      } catch (err) {
-        console.error('Geometry insert failed:', err);
-        return false;
-      }
+      const bbox = handleRef.current.getBbox();
+      const showAxis = handleRef.current.getShowAxis();
+      const showGrid = handleRef.current.getShowGrid();
+      const serialized = serializeBoard(
+        { getBoundingBox: () => bbox, create: () => undefined },
+        log,
+        { showAxis, showGrid },
+      );
+      const jsonState = JSON.stringify(serialized);
+      // Fire-and-forget. Caller (`tryInsert`) chỉ cần biết có nội dung không.
+      void (async () => {
+        try {
+          const svgString = await renderGeometrySvgFromState(jsonState);
+          onInsert(jsonState, svgString);
+        } catch (err) {
+          console.error('Geometry insert failed:', err);
+        }
+      })();
+      return true;
     }, [onInsert]);
 
     const handleInsert = useCallback(() => {

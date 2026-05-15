@@ -50,13 +50,6 @@ interface StampHostHandle {
 }
 type StampHostComponent = ForwardRefExoticComponent<StampHostProps & RefAttributes<StampHostHandle>>;
 /**
- * Render context truyền vào `renderSvgFromCustomData`. Cho phép stamp render
- * theo theme hiện tại của canvas (regenerate khi user switch dark/light).
- */
-interface StampRenderCtx {
-    isDark: boolean;
-}
-/**
  * Định nghĩa 1 loại stamp. Mỗi stamp khai báo:
  *   - kind: unique string (khớp với customData.kind)
  *   - phím tắt + UI toolbar
@@ -84,10 +77,10 @@ interface StampType {
     /**
      * Re-render SVG từ customData. Dùng khi restore math-stamp file sau reload
      * page (Excalidraw không persist binary file payload, chỉ giữ fileId trong
-     * element), và khi user switch dark/light theme (stamps tự đổi màu).
-     * `ctx.isDark` đại diện theme hiện tại của canvas Excalidraw.
+     * element). SVG render với light palette (nét đậm) — Excalidraw tự đảo
+     * màu trong dark mode qua CSS filter.
      */
-    renderSvgFromCustomData(data: unknown, ctx?: StampRenderCtx): Promise<string>;
+    renderSvgFromCustomData(data: unknown): Promise<string>;
     /**
      * Host component bọc toàn bộ UI editing (panel + left panel + insert
      * handler). ExcalidrawWhiteboardView mount Host khi activeStamp khớp kind.

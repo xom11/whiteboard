@@ -2108,6 +2108,57 @@ function renderGeometryToSvg(boardContainer) {
   return new XMLSerializer().serializeToString(clone);
 }
 
+// src/stamp/renderGeometryFromState.ts
+async function renderGeometrySvgFromState(jsonState) {
+  const parsed = JSON.parse(jsonState);
+  const palette = paletteFor(false);
+  const JXG = (await import('jsxgraph')).default;
+  try {
+    const opts = JXG.Options;
+    if (opts) {
+      opts.text = opts.text || {};
+      opts.text.display = "internal";
+      opts.text.useASCIIMathML = false;
+      opts.text.useMathJax = false;
+      opts.text.useKatex = false;
+      opts.text.strokeColor = palette.label;
+      opts.label = opts.label || {};
+      opts.label.display = "internal";
+      opts.label.strokeColor = palette.label;
+      opts.axis = opts.axis || {};
+      opts.axis.strokeColor = palette.axis;
+      opts.grid = opts.grid || {};
+      opts.grid.strokeColor = palette.grid;
+    }
+  } catch {
+  }
+  const container = document.createElement("div");
+  const containerId = "jxg_offscreen_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+  container.id = containerId;
+  container.style.cssText = "position:absolute;top:-99999px;left:-99999px;width:400px;height:300px;visibility:hidden;pointer-events:none;";
+  document.body.appendChild(container);
+  let board = null;
+  try {
+    board = JXG.JSXGraph.initBoard(containerId, {
+      boundingbox: parsed.bbox,
+      axis: !!parsed.showAxis,
+      grid: !!parsed.showGrid,
+      showCopyright: false,
+      showNavigation: false,
+      keepAspectRatio: false
+    });
+    deserializeIntoBoard(board, parsed, { palette });
+    board.update();
+    return renderGeometryToSvg(container);
+  } finally {
+    try {
+      if (board) JXG.JSXGraph.freeBoard(board);
+    } catch {
+    }
+    if (container.parentNode) container.parentNode.removeChild(container);
+  }
+}
+
 // src/stamp/excalidrawPalette.ts
 var STROKE_PALETTE = [
   "#1e1e1e",
@@ -2485,26 +2536,26 @@ var GeometryEditorPanel = react.forwardRef(
     }, [emitState]);
     const performInsert = react.useCallback(() => {
       if (!handleRef.current) return false;
-      const container = handleRef.current.getContainer();
-      if (!container) return false;
       const log = handleRef.current.getCreationLog();
       if (log.length === 0) return false;
-      try {
-        const svgString = renderGeometryToSvg(container);
-        const bbox = handleRef.current.getBbox();
-        const showAxis = handleRef.current.getShowAxis();
-        const showGrid = handleRef.current.getShowGrid();
-        const serialized = serializeBoard(
-          { getBoundingBox: () => bbox, create: () => void 0 },
-          log,
-          { showAxis, showGrid }
-        );
-        onInsert(JSON.stringify(serialized), svgString);
-        return true;
-      } catch (err) {
-        console.error("Geometry insert failed:", err);
-        return false;
-      }
+      const bbox = handleRef.current.getBbox();
+      const showAxis = handleRef.current.getShowAxis();
+      const showGrid = handleRef.current.getShowGrid();
+      const serialized = serializeBoard(
+        { getBoundingBox: () => bbox, create: () => void 0 },
+        log,
+        { showAxis, showGrid }
+      );
+      const jsonState = JSON.stringify(serialized);
+      void (async () => {
+        try {
+          const svgString = await renderGeometrySvgFromState(jsonState);
+          onInsert(jsonState, svgString);
+        } catch (err) {
+          console.error("Geometry insert failed:", err);
+        }
+      })();
+      return true;
     }, [onInsert]);
     const handleInsert = react.useCallback(() => {
       performInsert();
@@ -2757,57 +2808,6 @@ async function insertStampImage(api, opts) {
   });
   return { fileId, width, height, elementId: newElement.id };
 }
-
-// src/stamp/renderGeometryFromState.ts
-async function renderGeometrySvgFromState(jsonState, isDark = false) {
-  const parsed = JSON.parse(jsonState);
-  const palette = paletteFor(isDark);
-  const JXG = (await import('jsxgraph')).default;
-  try {
-    const opts = JXG.Options;
-    if (opts) {
-      opts.text = opts.text || {};
-      opts.text.display = "internal";
-      opts.text.useASCIIMathML = false;
-      opts.text.useMathJax = false;
-      opts.text.useKatex = false;
-      opts.text.strokeColor = palette.label;
-      opts.label = opts.label || {};
-      opts.label.display = "internal";
-      opts.label.strokeColor = palette.label;
-      opts.axis = opts.axis || {};
-      opts.axis.strokeColor = palette.axis;
-      opts.grid = opts.grid || {};
-      opts.grid.strokeColor = palette.grid;
-    }
-  } catch {
-  }
-  const container = document.createElement("div");
-  const containerId = "jxg_offscreen_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
-  container.id = containerId;
-  container.style.cssText = "position:absolute;top:-99999px;left:-99999px;width:400px;height:300px;visibility:hidden;pointer-events:none;";
-  document.body.appendChild(container);
-  let board = null;
-  try {
-    board = JXG.JSXGraph.initBoard(containerId, {
-      boundingbox: parsed.bbox,
-      axis: !!parsed.showAxis,
-      grid: !!parsed.showGrid,
-      showCopyright: false,
-      showNavigation: false,
-      keepAspectRatio: false
-    });
-    deserializeIntoBoard(board, parsed, { palette });
-    board.update();
-    return renderGeometryToSvg(container);
-  } finally {
-    try {
-      if (board) JXG.JSXGraph.freeBoard(board);
-    } catch {
-    }
-    if (container.parentNode) container.parentNode.removeChild(container);
-  }
-}
 function isGeometryCustomData(data) {
   if (!data || typeof data !== "object") return false;
   const d = data;
@@ -2908,11 +2908,11 @@ var geometryStamp = {
   toolbarIcon: GeometryIcon,
   toolbarTestId: "stamp-toolbar-geometry",
   matchesCustomData: isGeometryCustomData,
-  async renderSvgFromCustomData(data, ctx) {
+  async renderSvgFromCustomData(data) {
     if (!isGeometryCustomData(data)) {
       throw new Error("geometryStamp.renderSvgFromCustomData: customData kh\xF4ng ph\u1EA3i geometry");
     }
-    return renderGeometrySvgFromState(data.jsonState, !!ctx?.isDark);
+    return renderGeometrySvgFromState(data.jsonState);
   },
   Host: GeometryStampHost
 };
@@ -2943,7 +2943,7 @@ async function loadKatexCss() {
   cachedCss = "";
   return "";
 }
-async function renderLatexToSvg(src, displayMode, isDark = false) {
+async function renderLatexToSvg(src, displayMode) {
   const katex = await import('katex');
   const html = katex.default.renderToString(src, { displayMode, throwOnError: true, output: "html" });
   const measureDiv = document.createElement("div");
@@ -2955,8 +2955,7 @@ async function renderLatexToSvg(src, displayMode, isDark = false) {
   const height = Math.ceil(rect.height) || 20;
   document.body.removeChild(measureDiv);
   const cssText = await loadKatexCss();
-  const textColor = isDark ? "#e2e8f0" : "#000000";
-  return '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + " " + height + '"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="font-size:16px;line-height:1.2;color:' + textColor + ';"><style>' + cssText + "</style>" + html + "</div></foreignObject></svg>";
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + " " + height + '"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="font-size:16px;line-height:1.2;"><style>' + cssText + "</style>" + html + "</div></foreignObject></svg>";
 }
 var DEBOUNCE_MS = 100;
 var LatexEditorPopover = react.forwardRef(function LatexEditorPopover2({
@@ -3213,11 +3212,11 @@ var latexStamp = {
   toolbarIcon: LatexIcon,
   toolbarTestId: "stamp-toolbar-latex",
   matchesCustomData: isLatexCustomData,
-  async renderSvgFromCustomData(data, ctx) {
+  async renderSvgFromCustomData(data) {
     if (!isLatexCustomData(data)) {
       throw new Error("latexStamp.renderSvgFromCustomData: customData kh\xF4ng ph\u1EA3i latex");
     }
-    return renderLatexToSvg(data.src, data.displayMode, !!ctx?.isDark);
+    return renderLatexToSvg(data.src, data.displayMode);
   },
   Host: LatexStampHost
 };
@@ -3415,52 +3414,24 @@ function svgToDataURL(svg) {
   const utf8 = unescape(encodeURIComponent(svg));
   return "data:image/svg+xml;base64," + btoa(utf8);
 }
-async function buildFileForStamp(fileId, customData, stamp, ctx) {
+async function buildFileForStamp(fileId, customData, stamp) {
   try {
-    const svg = await stamp.renderSvgFromCustomData(customData, ctx);
+    const svg = await stamp.renderSvgFromCustomData(customData);
     return { id: fileId, dataURL: svgToDataURL(svg), mimeType: "image/svg+xml", created: Date.now() };
   } catch (err) {
     console.warn("Stamp restore failed for", fileId, "(" + stamp.kind + ")", err);
     return null;
   }
 }
-function stableShortHash(input) {
-  let h1 = 2166136261;
-  let h2 = 3421674724;
-  for (let i = 0; i < input.length; i++) {
-    const c = input.charCodeAt(i);
-    h1 ^= c;
-    h1 = Math.imul(h1, 16777619);
-    h2 ^= c + i;
-    h2 = Math.imul(h2, 1099511628211 & 4294967295);
-  }
-  return (h1 >>> 0).toString(16).padStart(8, "0") + (h2 >>> 0).toString(16).padStart(8, "0");
-}
-function themedFileId(stampKind, customData, ctx) {
-  const key = stampKind + "|" + (ctx.isDark ? "d" : "l") + "|" + JSON.stringify(customData);
-  return stampKind + "-" + (ctx.isDark ? "d" : "l") + "-" + stableShortHash(key);
-}
-async function rebuildStampFileWithNewId(customData, stamp, ctx) {
-  try {
-    const svg = await stamp.renderSvgFromCustomData(customData, ctx);
-    const { dataURL } = await svgToImageElement(svg);
-    const fileId = themedFileId(stamp.kind, customData, ctx);
-    return { fileId, dataURL };
-  } catch (err) {
-    console.warn("Stamp rebuild (force) failed for stamp.kind=" + stamp.kind, err);
-    return null;
-  }
-}
-async function restoreMissingMathStampFiles(api, elements, stamps = DEFAULT_STAMPS, options = {}) {
+async function restoreMissingMathStampFiles(api, elements, stamps = DEFAULT_STAMPS) {
   if (!api) return;
-  const { forceRegenerate = false, ctx = { isDark: false } } = options;
   const existing = typeof api.getFiles === "function" ? api.getFiles() : {};
   const targets = [];
   const seen = /* @__PURE__ */ new Set();
   for (const el of elements) {
     if (el.type !== "image") continue;
     if (!el.fileId) continue;
-    if (!forceRegenerate && existing && existing[el.fileId]) continue;
+    if (existing && existing[el.fileId]) continue;
     if (seen.has(el.fileId)) continue;
     const stamp = findStampForCustomData(el.customData, stamps);
     if (!stamp) continue;
@@ -3468,42 +3439,7 @@ async function restoreMissingMathStampFiles(api, elements, stamps = DEFAULT_STAM
     targets.push({ fileId: el.fileId, customData: el.customData, stamp });
   }
   if (targets.length === 0) return;
-  if (forceRegenerate) {
-    const oldToNew = {};
-    const newFiles = [];
-    for (const t of targets) {
-      const built2 = await rebuildStampFileWithNewId(t.customData, t.stamp, ctx);
-      if (!built2) continue;
-      oldToNew[t.fileId] = built2.fileId;
-      newFiles.push({ id: built2.fileId, dataURL: built2.dataURL, mimeType: "image/svg+xml", created: Date.now() });
-    }
-    if (newFiles.length === 0) return;
-    try {
-      api.addFiles(newFiles);
-    } catch (err) {
-      console.warn("addFiles failed:", err);
-    }
-    try {
-      const current = typeof api.getSceneElements === "function" ? api.getSceneElements() : elements;
-      const updated = current.map((el) => {
-        if (el.type === "image" && el.fileId && oldToNew[el.fileId]) {
-          return {
-            ...el,
-            fileId: oldToNew[el.fileId],
-            version: (el.version ?? 1) + 1,
-            versionNonce: Math.floor(Math.random() * 1e9),
-            updated: Date.now()
-          };
-        }
-        return el;
-      });
-      api.updateScene({ elements: updated });
-    } catch (err) {
-      console.warn("updateScene after force regenerate failed:", err);
-    }
-    return;
-  }
-  const built = await Promise.all(targets.map((t) => buildFileForStamp(t.fileId, t.customData, t.stamp, ctx)));
+  const built = await Promise.all(targets.map((t) => buildFileForStamp(t.fileId, t.customData, t.stamp)));
   const files = built.filter((f) => !!f);
   if (files.length > 0) {
     try {
@@ -3729,9 +3665,7 @@ function ExcalidrawWhiteboardView({
         const elements = api.getSceneElements();
         if (!elements || elements.length === 0) return;
         if (cancelled) return;
-        await restoreMissingMathStampFiles(api, elements, stamps, {
-          ctx: { isDark: isDarkTheme }
-        });
+        await restoreMissingMathStampFiles(api, elements, stamps);
       } catch (err) {
         console.warn("Math stamp restore pass failed:", err);
       }
@@ -3742,33 +3676,7 @@ function ExcalidrawWhiteboardView({
       cancelled = true;
       clearTimeout(t);
     };
-  }, [api, initialScene, remoteScene, stamps, isDarkTheme]);
-  const lastRegenThemeRef = react.useRef(null);
-  react.useEffect(() => {
-    if (!api) return;
-    if (lastRegenThemeRef.current === null) {
-      lastRegenThemeRef.current = isDarkTheme;
-      return;
-    }
-    if (lastRegenThemeRef.current === isDarkTheme) return;
-    lastRegenThemeRef.current = isDarkTheme;
-    let cancelled = false;
-    (async () => {
-      try {
-        const elements = api.getSceneElements();
-        if (!elements || elements.length === 0 || cancelled) return;
-        await restoreMissingMathStampFiles(api, elements, stamps, {
-          forceRegenerate: true,
-          ctx: { isDark: isDarkTheme }
-        });
-      } catch (err) {
-        console.warn("Math stamp theme regenerate failed:", err);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [api, isDarkTheme, stamps]);
+  }, [api, initialScene, remoteScene, stamps]);
   react.useEffect(
     () => () => {
       if (throttleTimerRef.current) clearTimeout(throttleTimerRef.current);

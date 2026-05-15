@@ -266,9 +266,7 @@ export function ExcalidrawWhiteboardView({
         const elements = api.getSceneElements();
         if (!elements || elements.length === 0) return;
         if (cancelled) return;
-        await restoreMissingMathStampFiles(api, elements, stamps, {
-          ctx: { isDark: isDarkTheme },
-        });
+        await restoreMissingMathStampFiles(api, elements, stamps);
       } catch (err) {
         console.warn('Math stamp restore pass failed:', err);
       }
@@ -279,35 +277,7 @@ export function ExcalidrawWhiteboardView({
       cancelled = true;
       clearTimeout(t);
     };
-  }, [api, initialScene, remoteScene, stamps, isDarkTheme]);
-
-  // Khi user switch dark/light theme, force regenerate mọi math-stamp file để
-  // màu khớp canvas (giống cách Excalidraw tự đảo màu nét vẽ native).
-  // Ref guard tránh chạy ở lần mount đầu — restore pass ở trên đã handle.
-  const lastRegenThemeRef = useRef<boolean | null>(null);
-  useEffect(() => {
-    if (!api) return;
-    if (lastRegenThemeRef.current === null) {
-      lastRegenThemeRef.current = isDarkTheme;
-      return;
-    }
-    if (lastRegenThemeRef.current === isDarkTheme) return;
-    lastRegenThemeRef.current = isDarkTheme;
-    let cancelled = false;
-    (async () => {
-      try {
-        const elements = api.getSceneElements();
-        if (!elements || elements.length === 0 || cancelled) return;
-        await restoreMissingMathStampFiles(api, elements, stamps, {
-          forceRegenerate: true,
-          ctx: { isDark: isDarkTheme },
-        });
-      } catch (err) {
-        console.warn('Math stamp theme regenerate failed:', err);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [api, isDarkTheme, stamps]);
+  }, [api, initialScene, remoteScene, stamps]);
 
   useEffect(
     () => () => {

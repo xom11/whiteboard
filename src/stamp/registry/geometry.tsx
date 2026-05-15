@@ -146,11 +146,11 @@ export const geometryStamp: StampType = {
   toolbarIcon: GeometryIcon,
   toolbarTestId: 'stamp-toolbar-geometry',
   matchesCustomData: isGeometryCustomData,
-  async renderSvgFromCustomData(data, ctx) {
+  async renderSvgFromCustomData(data) {
     if (!isGeometryCustomData(data)) {
       throw new Error('geometryStamp.renderSvgFromCustomData: customData không phải geometry');
     }
-    return renderGeometrySvgFromState(data.jsonState, !!ctx?.isDark);
+    return renderGeometrySvgFromState(data.jsonState);
   },
   Host: GeometryStampHost,
 };
