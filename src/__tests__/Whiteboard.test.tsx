@@ -207,6 +207,44 @@ describe('Whiteboard', () => {
     });
   });
 
+  test('appState-only changes are persisted even when elements are unchanged', async () => {
+    jest.useFakeTimers();
+    const element = { id: 'el1', type: 'rectangle', isDeleted: false };
+    const { findByTestId } = render(React.createElement(Whiteboard, {}));
+    await findByTestId('excalidraw-mock');
+
+    act(() => {
+      getExcProps()?.onChange?.(
+        [element],
+        { theme: 'light', viewBackgroundColor: '#fff', zoom: { value: 1 }, scrollX: 0, scrollY: 0 },
+        {},
+      );
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(250);
+      await Promise.resolve();
+    });
+
+    act(() => {
+      getExcProps()?.onChange?.(
+        [element],
+        { theme: 'dark', viewBackgroundColor: '#fff', zoom: { value: 1 }, scrollX: 80, scrollY: 90 },
+        {},
+      );
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(250);
+      await Promise.resolve();
+    });
+
+    const raw = window.localStorage.getItem('whiteboard:scene:default');
+    expect(JSON.parse(raw ?? '{}').appState).toMatchObject({
+      theme: 'dark',
+      scrollX: 80,
+      scrollY: 90,
+    });
+  });
+
   test('new raster file is written to fileStore after throttle', async () => {
     jest.useFakeTimers();
     const imageElement = { id: 'img1', type: 'image', fileId: 'file1', isDeleted: false };

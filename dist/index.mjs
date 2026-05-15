@@ -3645,7 +3645,7 @@ function Whiteboard({
   const [api, setApi] = useState(null);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const knownFileIdsRef = useRef(/* @__PURE__ */ new Set());
-  const lastElementsHashRef = useRef("");
+  const lastSceneHashRef = useRef("");
   const sceneThrottleRef = useRef(null);
   const fileThrottleRef = useRef(null);
   const pruneThrottleRef = useRef(null);
@@ -3736,11 +3736,12 @@ function Whiteboard({
         sceneThrottleRef.current = setTimeout(async () => {
           sceneThrottleRef.current = null;
           const mod = await import('@excalidraw/excalidraw');
-          const hash = mod.hashElementsVersion(elements);
-          if (hash === lastElementsHashRef.current) return;
-          lastElementsHashRef.current = hash;
           const liveElements = elements.filter((e) => !e.isDeleted);
           const liveAppState = pickSyncableAppState(appState);
+          const elementHash = mod.hashElementsVersion(liveElements);
+          const sceneHash = `${elementHash}:${JSON.stringify(liveAppState)}`;
+          if (sceneHash === lastSceneHashRef.current) return;
+          lastSceneHashRef.current = sceneHash;
           onSceneChange?.({ elements: liveElements, appState: liveAppState });
           if (persistEnabled) {
             writeScene(storageKey, {

@@ -92,7 +92,7 @@ export function Whiteboard({
   const [api, setApi] = useState<ExApi | null>(null);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const knownFileIdsRef = useRef<Set<string>>(new Set());
-  const lastElementsHashRef = useRef<string>('');
+  const lastSceneHashRef = useRef<string>('');
   const sceneThrottleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileThrottleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pruneThrottleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -206,12 +206,13 @@ export function Whiteboard({
         sceneThrottleRef.current = setTimeout(async () => {
           sceneThrottleRef.current = null;
           const mod = await import('@excalidraw/excalidraw');
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const hash = (mod as any).hashElementsVersion(elements);
-          if (hash === lastElementsHashRef.current) return;
-          lastElementsHashRef.current = hash;
           const liveElements = elements.filter((e) => !e.isDeleted) as readonly ExcalidrawElement[];
           const liveAppState = pickSyncableAppState(appState);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const elementHash = (mod as any).hashElementsVersion(liveElements);
+          const sceneHash = `${elementHash}:${JSON.stringify(liveAppState)}`;
+          if (sceneHash === lastSceneHashRef.current) return;
+          lastSceneHashRef.current = sceneHash;
           onSceneChange?.({ elements: liveElements, appState: liveAppState });
 
           if (persistEnabled) {
