@@ -10,19 +10,19 @@ import type {
 } from './types';
 import { pickSyncableAppState } from './serialize';
 import {
-  ToolbarStampInjector,
-  useStampShortcuts,
-  isMathStamp,
-  restoreMissingMathStampFiles,
+  isStampElement,
   DEFAULT_STAMPS,
   findStampForCustomData,
   type StampType,
-} from './stamp';
-import type { StampHostHandle } from './stamp/registry/types';
+} from './stamps/shared/registry';
+import { ToolbarInjector } from './stamps/shared/ToolbarInjector';
+import { useShortcuts } from './stamps/shared/useShortcuts';
+import { restoreMissingStampFiles } from './stamps/shared/restoreStampFiles';
+import type { StampHostHandle } from './stamps/shared/types';
 import { readScene, writeScene } from './core/persistence/sceneStore';
 import { readFiles, writeFiles, pruneFiles } from './core/persistence/fileStore';
 import '@excalidraw/excalidraw/index.css';
-import './stamp/stamp.css';
+import './stamps/shared/stamp.css';
 
 const Excalidraw = dynamic(
   async () => (await import('./ExcalidrawWithMenus')).ExcalidrawWithMenus,
@@ -246,7 +246,7 @@ export function Whiteboard({
             for (const el of currentElements) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const fid = (el as any).fileId as string | undefined;
-              if (fid && isMathStamp(el)) stampIds.add(fid);
+              if (fid && isStampElement(el)) stampIds.add(fid);
             }
             const raster: BinaryFiles = {};
             for (const [id, f] of Object.entries(pending)) {
@@ -268,7 +268,7 @@ export function Whiteboard({
           for (const el of currentElements) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const fid = (el as any).fileId as string | undefined;
-            if (fid && !isMathStamp(el)) keep.add(fid);
+            if (fid && !isStampElement(el)) keep.add(fid);
           }
           void pruneFiles(persistKeyRef.current as string, keep);
         }, 2000);
@@ -315,7 +315,7 @@ export function Whiteboard({
         const elements = api.getSceneElements();
         if (!elements || elements.length === 0) return;
         if (cancelled) return;
-        await restoreMissingMathStampFiles(api, elements, stamps);
+        await restoreMissingStampFiles(api, elements, stamps);
       } catch (err) {
         console.warn('Math stamp restore pass failed:', err);
       }
@@ -361,7 +361,7 @@ export function Whiteboard({
   );
 
   // ---- Keyboard shortcuts: đọc registry, mỗi stamp tự khai báo phím tắt ----
-  useStampShortcuts({
+  useShortcuts({
     enabled: !readOnly,
     onToggle: toggleStampByKind,
     stamps,
@@ -483,7 +483,7 @@ export function Whiteboard({
         onPointerDown={handlePointerDown}
       />
 
-      <ToolbarStampInjector
+      <ToolbarInjector
         enabled={!readOnly}
         activeStampKind={activeStamp}
         onToggle={toggleStampByKind}

@@ -59,7 +59,7 @@ function pickSyncableAppState(s) {
   };
 }
 
-// src/stamp/transforms.ts
+// src/stamps/geometry-2d/editor/transforms.ts
 var LINE_LIKE = /* @__PURE__ */ new Set(["line", "segment", "arrow"]);
 function copyVisAttrs(obj) {
   const v = obj?.visProp ?? {};
@@ -300,7 +300,7 @@ function objKind(obj) {
   return "other";
 }
 
-// src/stamp/geometryTheme.ts
+// src/stamps/geometry-2d/editor/theme.ts
 var themeStroke = (dark) => dark ? "#e2e8f0" : "#0f172a";
 var themeAxis = (dark) => dark ? "#cbd5e1" : "#94a3b8";
 var themeGrid = (dark) => dark ? "#475569" : "#e2e8f0";
@@ -335,6 +335,354 @@ function resolveAttrColors(attrs, palette) {
     return out;
   }
   return attrs;
+}
+
+// src/stamps/geometry-2d/editor/handlers.ts
+function handleDown(ctx, e) {
+  if (!ctx.boardRef.current) return;
+  const t = ctx.toolRef.current;
+  if (t === "move") {
+    const sc = ctx.screenCoordsOf(e);
+    if (!sc) return;
+    const [sx, sy] = sc;
+    ctx.moveDownRef.current = { sx, sy };
+    return;
+  }
+  if (t === "select") {
+    const sc = ctx.screenCoordsOf(e);
+    if (!sc) return;
+    const [sx, sy] = sc;
+    const hits2 = ctx.objectsAt(e).map(ctx.promoteLabel).filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y);
+    const obj = hits2.find((o) => objKind(o) === "point") ?? hits2[0] ?? ctx.findNearestPoint(e, 12);
+    if (obj) {
+      const shift = !!(e.shiftKey || e.altKey);
+      ctx.toggleSelect(obj, shift);
+      ctx.moveDownRef.current = { sx, sy };
+      ctx.marqueeRef.current = null;
+      return;
+    }
+    ctx.marqueeRef.current = { startSx: sx, startSy: sy };
+    if (!(e.shiftKey || e.altKey)) ctx.clearSelection();
+    return;
+  }
+  const toolDef = TOOLS.find((td) => td.key === t);
+  if (!toolDef) return;
+  const coords = ctx.boardRef.current.getUsrCoordsOfMouse(e);
+  const x = coords[0], y = coords[1];
+  const hits = ctx.objectsAt(e).map(ctx.promoteLabel).filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y);
+  const bestHit = hits.find((o) => objKind(o) === "point") ?? hits[0] ?? null;
+  const snapPointForPointSlot = () => bestHit && objKind(bestHit) === "point" ? bestHit : ctx.findNearestPoint(e, 12);
+  if (t === "point") {
+    const curves = hits.filter((o) => objKind(o) === "line" || objKind(o) === "circle");
+    if (curves.length >= 2) {
+      const a = curves[0];
+      const b = curves[1];
+      const aId = ctx.localIdOf(a);
+      const bId = ctx.localIdOf(b);
+      if (aId && bId) {
+        const name2 = ctx.nextLabel();
+        const attrs = { name: name2, color: "@stroke", size: 3, fillColor: "@stroke", strokeColor: "@stroke" };
+        try {
+          const isLineLine = objKind(a) === "line" && objKind(b) === "line";
+          if (isLineLine) {
+            ctx.create("intersection", [aId, bId, 0], attrs);
+          } else {
+            const tmp0 = ctx.boardRef.current.create("intersection", [a, b, 0], { visible: false, withLabel: false });
+            const tmp1 = ctx.boardRef.current.create("intersection", [a, b, 1], { visible: false, withLabel: false });
+            const d0 = Math.hypot((tmp0.X?.() ?? 0) - x, (tmp0.Y?.() ?? 0) - y);
+            const d1 = Math.hypot((tmp1.X?.() ?? 0) - x, (tmp1.Y?.() ?? 0) - y);
+            try {
+              ctx.boardRef.current.removeObject(tmp0);
+            } catch {
+            }
+            try {
+              ctx.boardRef.current.removeObject(tmp1);
+            } catch {
+            }
+            const idx = d0 <= d1 ? 0 : 1;
+            ctx.create("intersection", [aId, bId, idx], attrs);
+          }
+          return;
+        } catch {
+        }
+      }
+    }
+    const name = ctx.nextLabel();
+    ctx.create("point", [x, y], { name, color: "@stroke", size: 3, fillColor: "@stroke", strokeColor: "@stroke" });
+    return;
+  }
+  if (toolDef.needs === 1 && toolDef.accepts) {
+    const hit = bestHit ?? ctx.findNearestPoint(e, 12);
+    if (hit) ctx.finalize(toolDef, [hit]);
+    else ctx.flashWarn("Click v\xE0o m\u1ED9t \u0111\u1ED1i t\u01B0\u1EE3ng \u0111\u1EC3 \xE1p d\u1EE5ng");
+    return;
+  }
+  if (toolDef.needs === -1) {
+    const snappedPoint = snapPointForPointSlot();
+    if (ctx.pendingRef.current.length >= 3 && snappedPoint && snappedPoint === ctx.pendingRef.current[0]) {
+      ctx.clearPreviewSegs();
+      ctx.finalize(toolDef, ctx.pendingRef.current);
+      ctx.clearPending();
+      return;
+    }
+    if (snappedPoint && ctx.pendingRef.current.includes(snappedPoint)) {
+      ctx.flashWarn("\u0110\u1EC9nh n\xE0y \u0111\xE3 c\xF3 \u2014 click \u0111i\u1EC3m kh\xE1c ho\u1EB7c click l\u1EA1i \u0111i\u1EC3m \u0111\u1EA7u \u0111\u1EC3 \u0111\xF3ng");
+      return;
+    }
+    const pick2 = snappedPoint ?? (() => {
+      const name = ctx.nextLabel();
+      return ctx.create("point", [x, y], { name, color: "@stroke", size: 3 });
+    })();
+    if (ctx.pendingRef.current.length > 0 && ctx.boardRef.current) {
+      const prev = ctx.pendingRef.current[ctx.pendingRef.current.length - 1];
+      try {
+        const seg = ctx.boardRef.current.create("segment", [prev, pick2], {
+          strokeColor: "#3b82f6",
+          strokeWidth: 1.5,
+          strokeOpacity: 0.75,
+          fixed: true,
+          highlight: false,
+          withLabel: false
+        });
+        ctx.previewSegRef.current.push(seg);
+      } catch {
+      }
+    }
+    ctx.pendingRef.current.push(pick2);
+    ctx.setPendingCount(ctx.pendingRef.current.length);
+    return;
+  }
+  let pick = null;
+  if (toolDef.accepts) {
+    const usedKinds = ctx.pendingRef.current.map((p) => objKind(p));
+    const remaining = [...toolDef.accepts];
+    for (const u of usedKinds) {
+      if (u === "other") continue;
+      const i = remaining.indexOf(u);
+      if (i >= 0) remaining.splice(i, 1);
+    }
+    const strictPoint = hits.find((o) => objKind(o) === "point") ?? null;
+    const lineHit = hits.find((o) => objKind(o) === "line") ?? null;
+    const circleHit = hits.find((o) => objKind(o) === "circle") ?? null;
+    if (remaining.includes("point") && strictPoint) pick = strictPoint;
+    else if (remaining.includes("line") && lineHit) pick = lineHit;
+    else if (remaining.includes("circle") && circleHit) pick = circleHit;
+    else if (remaining.includes("any") && (strictPoint || lineHit || circleHit)) {
+      pick = strictPoint ?? lineHit ?? circleHit;
+    } else if (remaining.includes("point")) {
+      const near = ctx.findNearestPoint(e, 12);
+      if (near) pick = near;
+    }
+    if (!pick) {
+      const needs = remaining.map(
+        (k) => k === "point" ? "m\u1ED9t \u0111i\u1EC3m" : k === "line" ? "m\u1ED9t \u0111\u01B0\u1EDDng/\u0111o\u1EA1n" : k === "circle" ? "m\u1ED9t \u0111\u01B0\u1EDDng tr\xF2n" : "m\u1ED9t \u0111\u1ED1i t\u01B0\u1EE3ng"
+      );
+      ctx.flashWarn(`C\xF2n c\u1EA7n click v\xE0o ${needs.join(" + ")} c\xF3 s\u1EB5n`);
+      return;
+    }
+    if (ctx.pendingRef.current.includes(pick)) {
+      ctx.flashWarn("\u0110\xE3 ch\u1ECDn \u0111\u1ED1i t\u01B0\u1EE3ng n\xE0y \u2014 ch\u1ECDn \u0111\u1ED1i t\u01B0\u1EE3ng kh\xE1c");
+      return;
+    }
+  } else {
+    const snapped = snapPointForPointSlot();
+    if (snapped && ctx.pendingRef.current.includes(snapped)) {
+      ctx.flashWarn("\u0110\xE3 ch\u1ECDn \u0111i\u1EC3m n\xE0y \u2014 ch\u1ECDn \u0111i\u1EC3m kh\xE1c ho\u1EB7c click ch\u1ED7 tr\u1ED1ng");
+      return;
+    }
+    if (snapped) pick = snapped;
+    else {
+      const name = ctx.nextLabel();
+      pick = ctx.create("point", [x, y], { name, color: "@stroke", size: 3, fillColor: "@stroke", strokeColor: "@stroke" });
+    }
+  }
+  if (!pick) return;
+  ctx.pendingRef.current.push(pick);
+  ctx.setPendingCount(ctx.pendingRef.current.length);
+  if (ctx.pendingRef.current.length >= toolDef.needs) {
+    const tk = toolDef.key;
+    if (tk === "rotate" || tk === "dilate") {
+      const source = ctx.pendingRef.current[0];
+      const center = ctx.pendingRef.current[1];
+      const cx = (e.clientX ?? 0) + 8;
+      const cy = (e.clientY ?? 0) + 8;
+      ctx.pendingTransformRef.current = { tool: tk, source, center, anchorScreen: { x: cx, y: cy } };
+      ctx.emitTransform({ tool: tk, anchor: { x: cx, y: cy } });
+      return;
+    }
+    if (tk === "regularPolygon") {
+      const p1 = ctx.pendingRef.current[0];
+      const p2 = ctx.pendingRef.current[1];
+      const cx = (e.clientX ?? 0) + 8;
+      const cy = (e.clientY ?? 0) + 8;
+      ctx.pendingTransformRef.current = { tool: tk, source: p1, center: p2, anchorScreen: { x: cx, y: cy } };
+      ctx.emitTransform({ tool: tk, anchor: { x: cx, y: cy } });
+      return;
+    }
+    if (tk === "translate") {
+      const source = ctx.pendingRef.current[0];
+      const spec = buildTransformSpec({ kind: "translate", vectorPoints: [ctx.pendingRef.current[1], ctx.pendingRef.current[2]] });
+      ctx.finalizeTransformCreate(spec, source);
+      ctx.clearPending();
+      return;
+    }
+    if (tk === "reflectLine") {
+      const source = ctx.pendingRef.current[0];
+      const spec = buildTransformSpec({ kind: "reflectLine", line: ctx.pendingRef.current[1] });
+      ctx.finalizeTransformCreate(spec, source);
+      ctx.clearPending();
+      return;
+    }
+    if (tk === "reflectPoint") {
+      const source = ctx.pendingRef.current[0];
+      const spec = buildTransformSpec({ kind: "reflectPoint", center: ctx.pendingRef.current[1] });
+      ctx.finalizeTransformCreate(spec, source);
+      ctx.clearPending();
+      return;
+    }
+    ctx.finalize(toolDef, ctx.pendingRef.current);
+    ctx.clearPending();
+  } else {
+    ctx.refreshPreview();
+  }
+}
+function handleUp(ctx, e) {
+  const t = ctx.toolRef.current;
+  if (t === "select") {
+    const mq = ctx.marqueeRef.current;
+    ctx.marqueeRef.current = null;
+    ctx.moveDownRef.current = null;
+    if (!mq) return;
+    const sc2 = ctx.screenCoordsOf(e);
+    if (!sc2) return;
+    const [ex, ey] = sc2;
+    if (mq.rect) {
+      try {
+        ctx.boardRef.current?.removeObject(mq.rect);
+      } catch {
+      }
+    }
+    if (Math.hypot(ex - mq.startSx, ey - mq.startSy) < 4) return;
+    const x1 = Math.min(mq.startSx, ex), x2 = Math.max(mq.startSx, ex);
+    const y1 = Math.min(mq.startSy, ey), y2 = Math.max(mq.startSy, ey);
+    const board = ctx.boardRef.current;
+    if (!board) return;
+    const list = board.objectsList || [];
+    for (const o of list) {
+      if (o === ctx.axisObjsRef.current.x || o === ctx.axisObjsRef.current.y) continue;
+      const kind = objKind(o);
+      if (kind === "point") {
+        const pc = o.coords?.scrCoords;
+        if (!pc) continue;
+        if (pc[1] >= x1 && pc[1] <= x2 && pc[2] >= y1 && pc[2] <= y2) {
+          if (!ctx.selectedSetRef.current.has(o)) {
+            ctx.selectedSetRef.current.add(o);
+            ctx.applySelectionStyle(o);
+          }
+        }
+      } else if (kind === "line" || kind === "circle") {
+        const defs = [o.point1, o.point2, o.center, o.midpoint, o.point3].filter(Boolean);
+        const anyInside = defs.some((p) => {
+          const pc = p?.coords?.scrCoords;
+          return pc && pc[1] >= x1 && pc[1] <= x2 && pc[2] >= y1 && pc[2] <= y2;
+        });
+        if (anyInside && !ctx.selectedSetRef.current.has(o)) {
+          ctx.selectedSetRef.current.add(o);
+          ctx.applySelectionStyle(o);
+        }
+      }
+    }
+    ctx.setSelectionTick((tt) => tt + 1);
+    try {
+      board.update();
+    } catch {
+    }
+    return;
+  }
+  if (t !== "move") return;
+  const start = ctx.moveDownRef.current;
+  ctx.moveDownRef.current = null;
+  if (!start) return;
+  const sc = ctx.screenCoordsOf(e);
+  if (!sc) return;
+  const [sx, sy] = sc;
+  const moved = Math.hypot(sx - start.sx, sy - start.sy);
+  if (moved > 4) return;
+  const hits = ctx.objectsAt(e).map(ctx.promoteLabel).filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y);
+  const best = hits.find((o) => objKind(o) === "point") ?? hits[0] ?? ctx.findNearestPoint(e, 12);
+  if (!best) {
+    ctx.lastMoveClickRef.current = { obj: null, time: 0 };
+    return;
+  }
+  const now = Date.now();
+  const isDouble = ctx.lastMoveClickRef.current.obj === best && now - ctx.lastMoveClickRef.current.time < 400;
+  ctx.lastMoveClickRef.current = { obj: best, time: now };
+  if (!isDouble) return;
+  const cx = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+  const cy = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
+  const snap = ctx.snapshotObject(best, { x: cx + 8, y: cy + 8 });
+  if (snap) ctx.emitSelect(snap);
+}
+function handleMove(ctx, e) {
+  if (ctx.toolRef.current === "select" && ctx.marqueeRef.current) {
+    const sc = ctx.screenCoordsOf(e);
+    if (sc && ctx.boardRef.current) {
+      const [sx, sy] = sc;
+      const { startSx, startSy } = ctx.marqueeRef.current;
+      const b = ctx.boardRef.current;
+      const ux1 = b.screenCoords2userCoords?.([Math.min(startSx, sx), Math.min(startSy, sy)]) ?? null;
+      const ux2 = b.screenCoords2userCoords?.([Math.max(startSx, sx), Math.max(startSy, sy)]) ?? null;
+      const toUsr = (px, py) => {
+        const ox = b.origin?.scrCoords?.[1] ?? 0;
+        const oy = b.origin?.scrCoords?.[2] ?? 0;
+        const ux = (px - ox) / b.unitX;
+        const uy = (oy - py) / b.unitY;
+        return [ux, uy];
+      };
+      const [x1u, y1u] = ux1 && ux1.length >= 2 ? [ux1[0], ux1[1]] : toUsr(Math.min(startSx, sx), Math.min(startSy, sy));
+      const [x2u, y2u] = ux2 && ux2.length >= 2 ? [ux2[0], ux2[1]] : toUsr(Math.max(startSx, sx), Math.max(startSy, sy));
+      const rect = ctx.marqueeRef.current.rect;
+      if (rect) {
+        try {
+          ctx.boardRef.current.removeObject(rect);
+        } catch {
+        }
+      }
+      try {
+        ctx.marqueeRef.current.rect = ctx.boardRef.current.create("polygon", [
+          [x1u, y1u],
+          [x2u, y1u],
+          [x2u, y2u],
+          [x1u, y2u]
+        ], {
+          fillColor: "#06b6d4",
+          fillOpacity: 0.08,
+          borders: { strokeColor: "#06b6d4", strokeWidth: 1, dash: 2 },
+          vertices: { visible: false },
+          fixed: true,
+          highlight: false,
+          withLabel: false
+        });
+      } catch {
+      }
+    }
+    return;
+  }
+  const ph = ctx.phantomRef.current;
+  if (!ph || !ctx.boardRef.current) return;
+  if (ctx.previewRafRef.current != null) return;
+  ctx.previewRafRef.current = requestAnimationFrame(() => {
+    ctx.previewRafRef.current = null;
+    if (!ctx.boardRef.current || !ctx.phantomRef.current) return;
+    try {
+      const coords = ctx.boardRef.current.getUsrCoordsOfMouse(e);
+      const JXG = ctx.jxgRef.current;
+      if (!JXG) return;
+      ctx.phantomRef.current.setPositionDirectly(JXG.COORDS_BY_USER, [coords[0], coords[1]]);
+      ctx.boardRef.current.update();
+    } catch {
+    }
+  });
 }
 var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
   const isDarkRef = react.useRef(!!isDark);
@@ -1122,6 +1470,17 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
       }
     });
   }, []);
+  const selectSubsRef = react.useRef(/* @__PURE__ */ new Set());
+  const emitSelect = react.useCallback((snap) => {
+    selectSubsRef.current.forEach((cb) => {
+      try {
+        cb(snap);
+      } catch {
+      }
+    });
+  }, []);
+  const moveDownRef = react.useRef(null);
+  const lastMoveClickRef = react.useRef({ obj: null, time: 0 });
   react.useEffect(() => {
     if (typeof window === "undefined" || !containerRef.current) return;
     let cancelled = false;
@@ -1203,350 +1562,124 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
         }
       }
       board.on("down", (e) => {
-        if (!boardRef.current) return;
-        const t = toolRef.current;
-        if (t === "move") {
-          const sc = screenCoordsOf(e);
-          if (!sc) return;
-          const [sx, sy] = sc;
-          moveDownRef.current = { sx, sy };
-          return;
-        }
-        if (t === "select") {
-          const sc = screenCoordsOf(e);
-          if (!sc) return;
-          const [sx, sy] = sc;
-          const hits2 = objectsAt(e).map(promoteLabel).filter((o) => o !== axisObjsRef.current.x && o !== axisObjsRef.current.y);
-          const obj = hits2.find((o) => objKind(o) === "point") ?? hits2[0] ?? findNearestPoint(e, 12);
-          if (obj) {
-            const shift = !!(e.shiftKey || e.altKey);
-            toggleSelect(obj, shift);
-            moveDownRef.current = { sx, sy };
-            marqueeRef.current = null;
-            return;
-          }
-          marqueeRef.current = { startSx: sx, startSy: sy };
-          if (!(e.shiftKey || e.altKey)) clearSelection();
-          return;
-        }
-        const toolDef = TOOLS.find((td) => td.key === t);
-        if (!toolDef) return;
-        const coords = boardRef.current.getUsrCoordsOfMouse(e);
-        const x = coords[0], y = coords[1];
-        const hits = objectsAt(e).map(promoteLabel).filter((o) => o !== axisObjsRef.current.x && o !== axisObjsRef.current.y);
-        const bestHit = hits.find((o) => objKind(o) === "point") ?? hits[0] ?? null;
-        const snapPointForPointSlot = () => bestHit && objKind(bestHit) === "point" ? bestHit : findNearestPoint(e, 12);
-        if (t === "point") {
-          const curves = hits.filter((o) => objKind(o) === "line" || objKind(o) === "circle");
-          if (curves.length >= 2) {
-            const a = curves[0];
-            const b = curves[1];
-            const aId = localIdOf(a);
-            const bId = localIdOf(b);
-            if (aId && bId) {
-              const name2 = nextLabel();
-              const attrs = { name: name2, color: "@stroke", size: 3, fillColor: "@stroke", strokeColor: "@stroke" };
-              try {
-                const isLineLine = objKind(a) === "line" && objKind(b) === "line";
-                if (isLineLine) {
-                  create("intersection", [aId, bId, 0], attrs);
-                } else {
-                  const tmp0 = boardRef.current.create("intersection", [a, b, 0], { visible: false, withLabel: false });
-                  const tmp1 = boardRef.current.create("intersection", [a, b, 1], { visible: false, withLabel: false });
-                  const d0 = Math.hypot((tmp0.X?.() ?? 0) - x, (tmp0.Y?.() ?? 0) - y);
-                  const d1 = Math.hypot((tmp1.X?.() ?? 0) - x, (tmp1.Y?.() ?? 0) - y);
-                  try {
-                    boardRef.current.removeObject(tmp0);
-                  } catch {
-                  }
-                  try {
-                    boardRef.current.removeObject(tmp1);
-                  } catch {
-                  }
-                  const idx = d0 <= d1 ? 0 : 1;
-                  create("intersection", [aId, bId, idx], attrs);
-                }
-                return;
-              } catch {
-              }
-            }
-          }
-          const name = nextLabel();
-          create("point", [x, y], { name, color: "@stroke", size: 3, fillColor: "@stroke", strokeColor: "@stroke" });
-          return;
-        }
-        if (toolDef.needs === 1 && toolDef.accepts) {
-          const hit = bestHit ?? findNearestPoint(e, 12);
-          if (hit) finalize(toolDef, [hit]);
-          else flashWarn("Click v\xE0o m\u1ED9t \u0111\u1ED1i t\u01B0\u1EE3ng \u0111\u1EC3 \xE1p d\u1EE5ng");
-          return;
-        }
-        if (toolDef.needs === -1) {
-          const snappedPoint = snapPointForPointSlot();
-          if (pendingRef.current.length >= 3 && snappedPoint && snappedPoint === pendingRef.current[0]) {
-            clearPreviewSegs();
-            finalize(toolDef, pendingRef.current);
-            clearPending();
-            return;
-          }
-          if (snappedPoint && pendingRef.current.includes(snappedPoint)) {
-            flashWarn("\u0110\u1EC9nh n\xE0y \u0111\xE3 c\xF3 \u2014 click \u0111i\u1EC3m kh\xE1c ho\u1EB7c click l\u1EA1i \u0111i\u1EC3m \u0111\u1EA7u \u0111\u1EC3 \u0111\xF3ng");
-            return;
-          }
-          const pick2 = snappedPoint ?? (() => {
-            const name = nextLabel();
-            return create("point", [x, y], { name, color: "@stroke", size: 3 });
-          })();
-          if (pendingRef.current.length > 0 && boardRef.current) {
-            const prev = pendingRef.current[pendingRef.current.length - 1];
-            try {
-              const seg = boardRef.current.create("segment", [prev, pick2], {
-                strokeColor: "#3b82f6",
-                strokeWidth: 1.5,
-                strokeOpacity: 0.75,
-                fixed: true,
-                highlight: false,
-                withLabel: false
-              });
-              previewSegRef.current.push(seg);
-            } catch {
-            }
-          }
-          pendingRef.current.push(pick2);
-          setPendingCount(pendingRef.current.length);
-          return;
-        }
-        let pick = null;
-        if (toolDef.accepts) {
-          const usedKinds = pendingRef.current.map((p) => objKind(p));
-          const remaining = [...toolDef.accepts];
-          for (const u of usedKinds) {
-            if (u === "other") continue;
-            const i = remaining.indexOf(u);
-            if (i >= 0) remaining.splice(i, 1);
-          }
-          const strictPoint = hits.find((o) => objKind(o) === "point") ?? null;
-          const lineHit = hits.find((o) => objKind(o) === "line") ?? null;
-          const circleHit = hits.find((o) => objKind(o) === "circle") ?? null;
-          if (remaining.includes("point") && strictPoint) pick = strictPoint;
-          else if (remaining.includes("line") && lineHit) pick = lineHit;
-          else if (remaining.includes("circle") && circleHit) pick = circleHit;
-          else if (remaining.includes("any") && (strictPoint || lineHit || circleHit)) {
-            pick = strictPoint ?? lineHit ?? circleHit;
-          } else if (remaining.includes("point")) {
-            const near = findNearestPoint(e, 12);
-            if (near) pick = near;
-          }
-          if (!pick) {
-            const needs = remaining.map(
-              (k) => k === "point" ? "m\u1ED9t \u0111i\u1EC3m" : k === "line" ? "m\u1ED9t \u0111\u01B0\u1EDDng/\u0111o\u1EA1n" : k === "circle" ? "m\u1ED9t \u0111\u01B0\u1EDDng tr\xF2n" : "m\u1ED9t \u0111\u1ED1i t\u01B0\u1EE3ng"
-            );
-            flashWarn(`C\xF2n c\u1EA7n click v\xE0o ${needs.join(" + ")} c\xF3 s\u1EB5n`);
-            return;
-          }
-          if (pendingRef.current.includes(pick)) {
-            flashWarn("\u0110\xE3 ch\u1ECDn \u0111\u1ED1i t\u01B0\u1EE3ng n\xE0y \u2014 ch\u1ECDn \u0111\u1ED1i t\u01B0\u1EE3ng kh\xE1c");
-            return;
-          }
-        } else {
-          const snapped = snapPointForPointSlot();
-          if (snapped && pendingRef.current.includes(snapped)) {
-            flashWarn("\u0110\xE3 ch\u1ECDn \u0111i\u1EC3m n\xE0y \u2014 ch\u1ECDn \u0111i\u1EC3m kh\xE1c ho\u1EB7c click ch\u1ED7 tr\u1ED1ng");
-            return;
-          }
-          if (snapped) pick = snapped;
-          else {
-            const name = nextLabel();
-            pick = create("point", [x, y], { name, color: "@stroke", size: 3, fillColor: "@stroke", strokeColor: "@stroke" });
-          }
-        }
-        if (!pick) return;
-        pendingRef.current.push(pick);
-        setPendingCount(pendingRef.current.length);
-        if (pendingRef.current.length >= toolDef.needs) {
-          const tk = toolDef.key;
-          if (tk === "rotate" || tk === "dilate") {
-            const source = pendingRef.current[0];
-            const center = pendingRef.current[1];
-            const cx = (e.clientX ?? 0) + 8;
-            const cy = (e.clientY ?? 0) + 8;
-            pendingTransformRef.current = { tool: tk, source, center, anchorScreen: { x: cx, y: cy } };
-            emitTransform({ tool: tk, anchor: { x: cx, y: cy } });
-            return;
-          }
-          if (tk === "regularPolygon") {
-            const p1 = pendingRef.current[0];
-            const p2 = pendingRef.current[1];
-            const cx = (e.clientX ?? 0) + 8;
-            const cy = (e.clientY ?? 0) + 8;
-            pendingTransformRef.current = { tool: tk, source: p1, center: p2, anchorScreen: { x: cx, y: cy } };
-            emitTransform({ tool: tk, anchor: { x: cx, y: cy } });
-            return;
-          }
-          if (tk === "translate") {
-            const source = pendingRef.current[0];
-            const spec = buildTransformSpec({ kind: "translate", vectorPoints: [pendingRef.current[1], pendingRef.current[2]] });
-            finalizeTransformCreate(spec, source);
-            clearPending();
-            return;
-          }
-          if (tk === "reflectLine") {
-            const source = pendingRef.current[0];
-            const spec = buildTransformSpec({ kind: "reflectLine", line: pendingRef.current[1] });
-            finalizeTransformCreate(spec, source);
-            clearPending();
-            return;
-          }
-          if (tk === "reflectPoint") {
-            const source = pendingRef.current[0];
-            const spec = buildTransformSpec({ kind: "reflectPoint", center: pendingRef.current[1] });
-            finalizeTransformCreate(spec, source);
-            clearPending();
-            return;
-          }
-          finalize(toolDef, pendingRef.current);
-          clearPending();
-        } else {
-          refreshPreview();
-        }
+        const ctx = {
+          boardRef,
+          toolRef,
+          pendingRef,
+          previewSegRef,
+          axisObjsRef,
+          selectedSetRef,
+          marqueeRef,
+          moveDownRef,
+          lastMoveClickRef,
+          pendingTransformRef,
+          phantomRef,
+          previewShapeRef,
+          previewRafRef,
+          jxgRef,
+          screenCoordsOf,
+          objectsAt,
+          promoteLabel,
+          findNearestPoint,
+          toggleSelect,
+          clearSelection,
+          applySelectionStyle,
+          localIdOf,
+          nextLabel,
+          create,
+          finalize,
+          finalizeTransformCreate,
+          clearPending,
+          clearPreviewSegs,
+          refreshPreview,
+          flashWarn,
+          emitTransform,
+          snapshotObject,
+          emitSelect,
+          setPendingCount,
+          setSelectionTick
+        };
+        handleDown(ctx, e);
       });
       board.on("up", (e) => {
-        const t = toolRef.current;
-        if (t === "select") {
-          const mq = marqueeRef.current;
-          marqueeRef.current = null;
-          moveDownRef.current = null;
-          if (!mq) return;
-          const sc2 = screenCoordsOf(e);
-          if (!sc2) return;
-          const [ex, ey] = sc2;
-          if (mq.rect) {
-            try {
-              boardRef.current?.removeObject(mq.rect);
-            } catch {
-            }
-          }
-          if (Math.hypot(ex - mq.startSx, ey - mq.startSy) < 4) return;
-          const x1 = Math.min(mq.startSx, ex), x2 = Math.max(mq.startSx, ex);
-          const y1 = Math.min(mq.startSy, ey), y2 = Math.max(mq.startSy, ey);
-          const board2 = boardRef.current;
-          if (!board2) return;
-          const list = board2.objectsList || [];
-          for (const o of list) {
-            if (o === axisObjsRef.current.x || o === axisObjsRef.current.y) continue;
-            const kind = objKind(o);
-            if (kind === "point") {
-              const pc = o.coords?.scrCoords;
-              if (!pc) continue;
-              if (pc[1] >= x1 && pc[1] <= x2 && pc[2] >= y1 && pc[2] <= y2) {
-                if (!selectedSetRef.current.has(o)) {
-                  selectedSetRef.current.add(o);
-                  applySelectionStyle(o);
-                }
-              }
-            } else if (kind === "line" || kind === "circle") {
-              const defs = [o.point1, o.point2, o.center, o.midpoint, o.point3].filter(Boolean);
-              const anyInside = defs.some((p) => {
-                const pc = p?.coords?.scrCoords;
-                return pc && pc[1] >= x1 && pc[1] <= x2 && pc[2] >= y1 && pc[2] <= y2;
-              });
-              if (anyInside && !selectedSetRef.current.has(o)) {
-                selectedSetRef.current.add(o);
-                applySelectionStyle(o);
-              }
-            }
-          }
-          setSelectionTick((tt) => tt + 1);
-          try {
-            board2.update();
-          } catch {
-          }
-          return;
-        }
-        if (t !== "move") return;
-        const start = moveDownRef.current;
-        moveDownRef.current = null;
-        if (!start) return;
-        const sc = screenCoordsOf(e);
-        if (!sc) return;
-        const [sx, sy] = sc;
-        const moved = Math.hypot(sx - start.sx, sy - start.sy);
-        if (moved > 4) return;
-        const hits = objectsAt(e).map(promoteLabel).filter((o) => o !== axisObjsRef.current.x && o !== axisObjsRef.current.y);
-        const best = hits.find((o) => objKind(o) === "point") ?? hits[0] ?? findNearestPoint(e, 12);
-        if (!best) {
-          lastMoveClickRef.current = { obj: null, time: 0 };
-          return;
-        }
-        const now = Date.now();
-        const isDouble = lastMoveClickRef.current.obj === best && now - lastMoveClickRef.current.time < 400;
-        lastMoveClickRef.current = { obj: best, time: now };
-        if (!isDouble) return;
-        const cx = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
-        const cy = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
-        const snap = snapshotObject(best, { x: cx + 8, y: cy + 8 });
-        if (snap) emitSelect(snap);
+        const ctx = {
+          boardRef,
+          toolRef,
+          pendingRef,
+          previewSegRef,
+          axisObjsRef,
+          selectedSetRef,
+          marqueeRef,
+          moveDownRef,
+          lastMoveClickRef,
+          pendingTransformRef,
+          phantomRef,
+          previewShapeRef,
+          previewRafRef,
+          jxgRef,
+          screenCoordsOf,
+          objectsAt,
+          promoteLabel,
+          findNearestPoint,
+          toggleSelect,
+          clearSelection,
+          applySelectionStyle,
+          localIdOf,
+          nextLabel,
+          create,
+          finalize,
+          finalizeTransformCreate,
+          clearPending,
+          clearPreviewSegs,
+          refreshPreview,
+          flashWarn,
+          emitTransform,
+          snapshotObject,
+          emitSelect,
+          setPendingCount,
+          setSelectionTick
+        };
+        handleUp(ctx, e);
       });
       board.on("move", (e) => {
-        if (toolRef.current === "select" && marqueeRef.current) {
-          const sc = screenCoordsOf(e);
-          if (sc && boardRef.current) {
-            const [sx, sy] = sc;
-            const { startSx, startSy } = marqueeRef.current;
-            const b = boardRef.current;
-            const ux1 = b.screenCoords2userCoords?.([Math.min(startSx, sx), Math.min(startSy, sy)]) ?? null;
-            const ux2 = b.screenCoords2userCoords?.([Math.max(startSx, sx), Math.max(startSy, sy)]) ?? null;
-            const toUsr = (px, py) => {
-              const ox = b.origin?.scrCoords?.[1] ?? 0;
-              const oy = b.origin?.scrCoords?.[2] ?? 0;
-              const ux = (px - ox) / b.unitX;
-              const uy = (oy - py) / b.unitY;
-              return [ux, uy];
-            };
-            const [x1u, y1u] = ux1 && ux1.length >= 2 ? [ux1[0], ux1[1]] : toUsr(Math.min(startSx, sx), Math.min(startSy, sy));
-            const [x2u, y2u] = ux2 && ux2.length >= 2 ? [ux2[0], ux2[1]] : toUsr(Math.max(startSx, sx), Math.max(startSy, sy));
-            const rect = marqueeRef.current.rect;
-            if (rect) {
-              try {
-                boardRef.current.removeObject(rect);
-              } catch {
-              }
-            }
-            try {
-              marqueeRef.current.rect = boardRef.current.create("polygon", [
-                [x1u, y1u],
-                [x2u, y1u],
-                [x2u, y2u],
-                [x1u, y2u]
-              ], {
-                fillColor: "#06b6d4",
-                fillOpacity: 0.08,
-                borders: { strokeColor: "#06b6d4", strokeWidth: 1, dash: 2 },
-                vertices: { visible: false },
-                fixed: true,
-                highlight: false,
-                withLabel: false
-              });
-            } catch {
-            }
-          }
-          return;
-        }
-        const ph = phantomRef.current;
-        if (!ph || !boardRef.current) return;
-        if (previewRafRef.current != null) return;
-        previewRafRef.current = requestAnimationFrame(() => {
-          previewRafRef.current = null;
-          if (!boardRef.current || !phantomRef.current) return;
-          try {
-            const coords = boardRef.current.getUsrCoordsOfMouse(e);
-            const JXG2 = jxgRef.current;
-            if (!JXG2) return;
-            phantomRef.current.setPositionDirectly(JXG2.COORDS_BY_USER, [coords[0], coords[1]]);
-            boardRef.current.update();
-          } catch {
-          }
-        });
+        const ctx = {
+          boardRef,
+          toolRef,
+          pendingRef,
+          previewSegRef,
+          axisObjsRef,
+          selectedSetRef,
+          marqueeRef,
+          moveDownRef,
+          lastMoveClickRef,
+          pendingTransformRef,
+          phantomRef,
+          previewShapeRef,
+          previewRafRef,
+          jxgRef,
+          screenCoordsOf,
+          objectsAt,
+          promoteLabel,
+          findNearestPoint,
+          toggleSelect,
+          clearSelection,
+          applySelectionStyle,
+          localIdOf,
+          nextLabel,
+          create,
+          finalize,
+          finalizeTransformCreate,
+          clearPending,
+          clearPreviewSegs,
+          refreshPreview,
+          flashWarn,
+          emitTransform,
+          snapshotObject,
+          emitSelect,
+          setPendingCount,
+          setSelectionTick
+        };
+        handleMove(ctx, e);
       });
       onReady({
         getContainer: () => containerRef.current,
@@ -1718,17 +1851,6 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
       }
     });
   }, []);
-  const selectSubsRef = react.useRef(/* @__PURE__ */ new Set());
-  const emitSelect = react.useCallback((snap) => {
-    selectSubsRef.current.forEach((cb) => {
-      try {
-        cb(snap);
-      } catch {
-      }
-    });
-  }, []);
-  const moveDownRef = react.useRef(null);
-  const lastMoveClickRef = react.useRef({ obj: null, time: 0 });
   react.useEffect(() => {
     notifySubscribers();
   }, [tool, showAxis, showGrid, historyTick, notifySubscribers]);
@@ -1805,7 +1927,7 @@ var GeometryIconHeader = /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "14", h
   /* @__PURE__ */ jsxRuntime.jsx("circle", { cx: "20", cy: "20", r: "1.5", fill: "currentColor", stroke: "none" }),
   /* @__PURE__ */ jsxRuntime.jsx("circle", { cx: "12", cy: "5", r: "1.5", fill: "currentColor", stroke: "none" })
 ] });
-function GeometryLeftPanel({
+function LeftPanel({
   activeTool,
   onToolChange,
   showAxis,
@@ -1935,107 +2057,8 @@ function GeometryLeftPanel({
     ) : null
   ] });
 }
-var SNIPPETS = [
-  {
-    group: "Ph\xE2n s\u1ED1 & lu\u1EF9 th\u1EEBa",
-    items: [
-      { label: "Ph\xE2n s\u1ED1", preview: "a\u2044b", snippet: "\\frac{a}{b}" },
-      { label: "Lu\u1EF9 th\u1EEBa", preview: "x\xB2", snippet: "^{2}" },
-      { label: "Ch\u1EC9 s\u1ED1", preview: "x\u2081", snippet: "_{1}" },
-      { label: "C\u0103n", preview: "\u221Ax", snippet: "\\sqrt{x}" },
-      { label: "C\u0103n n", preview: "\u207F\u221Ax", snippet: "\\sqrt[n]{x}" }
-    ]
-  },
-  {
-    group: "T\u1ED5ng & t\xEDch ph\xE2n",
-    items: [
-      { label: "T\u1ED5ng", preview: "\u03A3", snippet: "\\sum_{i=1}^{n}" },
-      { label: "T\xEDch", preview: "\u03A0", snippet: "\\prod_{i=1}^{n}" },
-      { label: "T\xEDch ph\xE2n", preview: "\u222B", snippet: "\\int_{a}^{b}" },
-      { label: "Gi\u1EDBi h\u1EA1n", preview: "lim", snippet: "\\lim_{x \\to 0}" }
-    ]
-  },
-  {
-    group: "K\xFD hi\u1EC7u",
-    items: [
-      { label: "\u03B1", preview: "\u03B1", snippet: "\\alpha" },
-      { label: "\u03B2", preview: "\u03B2", snippet: "\\beta" },
-      { label: "\u03C0", preview: "\u03C0", snippet: "\\pi" },
-      { label: "\u03B8", preview: "\u03B8", snippet: "\\theta" },
-      { label: "\u2260", preview: "\u2260", snippet: "\\neq" },
-      { label: "\u2264", preview: "\u2264", snippet: "\\leq" },
-      { label: "\u2265", preview: "\u2265", snippet: "\\geq" },
-      { label: "\u221E", preview: "\u221E", snippet: "\\infty" },
-      { label: "\u2192", preview: "\u2192", snippet: "\\to" }
-    ]
-  }
-];
-function LatexLeftPanel({
-  displayMode,
-  onDisplayModeChange,
-  onInsertSnippet,
-  onClose
-}) {
-  return /* @__PURE__ */ jsxRuntime.jsxs(Shell, { title: "C\xF4ng th\u1EE9c LaTeX", icon: "\u2211", onClose, children: [
-    /* @__PURE__ */ jsxRuntime.jsx(Section, { label: "Ch\u1EBF \u0111\u1ED9 hi\u1EC3n th\u1ECB", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "grid grid-cols-2 gap-1.5", children: [
-      /* @__PURE__ */ jsxRuntime.jsxs(
-        "button",
-        {
-          type: "button",
-          onClick: () => onDisplayModeChange(false),
-          "aria-pressed": !displayMode,
-          className: [
-            "rounded-md border px-2 py-1.5 text-xs transition",
-            !displayMode ? "border-emerald-500 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-300" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
-          ].join(" "),
-          children: [
-            /* @__PURE__ */ jsxRuntime.jsx("span", { className: "block font-medium", children: "Inline" }),
-            /* @__PURE__ */ jsxRuntime.jsx("span", { className: "block text-[10px] text-slate-500", children: "$ ... $" })
-          ]
-        }
-      ),
-      /* @__PURE__ */ jsxRuntime.jsxs(
-        "button",
-        {
-          type: "button",
-          onClick: () => onDisplayModeChange(true),
-          "aria-pressed": displayMode,
-          className: [
-            "rounded-md border px-2 py-1.5 text-xs transition",
-            displayMode ? "border-emerald-500 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-300" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
-          ].join(" "),
-          children: [
-            /* @__PURE__ */ jsxRuntime.jsx("span", { className: "block font-medium", children: "Block" }),
-            /* @__PURE__ */ jsxRuntime.jsx("span", { className: "block text-[10px] text-slate-500", children: "$$ ... $$" })
-          ]
-        }
-      )
-    ] }) }),
-    SNIPPETS.map((group) => /* @__PURE__ */ jsxRuntime.jsx(Section, { label: group.group, children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex flex-wrap gap-1", children: group.items.map((s) => /* @__PURE__ */ jsxRuntime.jsx(
-      "button",
-      {
-        type: "button",
-        onClick: () => onInsertSnippet(s.snippet),
-        title: s.snippet,
-        className: "rounded border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700",
-        children: s.preview
-      },
-      s.snippet
-    )) }) }, group.group)),
-    /* @__PURE__ */ jsxRuntime.jsx(Section, { label: "Ph\xEDm t\u1EAFt", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex flex-wrap gap-2 text-[11px] text-slate-600", children: [
-      /* @__PURE__ */ jsxRuntime.jsxs("span", { className: "inline-flex items-center gap-1", children: [
-        /* @__PURE__ */ jsxRuntime.jsx("kbd", { className: "rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono", children: "Enter" }),
-        "ch\xE8n"
-      ] }),
-      /* @__PURE__ */ jsxRuntime.jsxs("span", { className: "inline-flex items-center gap-1", children: [
-        /* @__PURE__ */ jsxRuntime.jsx("kbd", { className: "rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono", children: "Esc" }),
-        "\u0111\xF3ng"
-      ] })
-    ] }) })
-  ] });
-}
 
-// src/stamp/serializeBoard.ts
+// src/stamps/geometry-2d/serialize.ts
 function serializeBoard(board, log, options = {}) {
   return {
     bbox: board.getBoundingBox(),
@@ -2097,7 +2120,7 @@ function deserializeIntoBoard(board, serialized, options = {}) {
   }
 }
 
-// src/stamp/renderGeometryToSvg.ts
+// src/stamps/geometry-2d/renderInline.ts
 function renderGeometryToSvg(boardContainer) {
   const svgEl = boardContainer.querySelector("svg");
   if (!svgEl) throw new Error("renderGeometryToSvg: no SVG found in board container");
@@ -2108,7 +2131,7 @@ function renderGeometryToSvg(boardContainer) {
   return new XMLSerializer().serializeToString(clone);
 }
 
-// src/stamp/renderGeometryFromState.ts
+// src/stamps/geometry-2d/render.ts
 async function renderGeometrySvgFromState(jsonState) {
   const parsed = JSON.parse(jsonState);
   const palette = paletteFor(false);
@@ -2159,7 +2182,7 @@ async function renderGeometrySvgFromState(jsonState) {
   }
 }
 
-// src/stamp/excalidrawPalette.ts
+// src/stamps/shared/excalidrawPalette.ts
 var STROKE_PALETTE = [
   "#1e1e1e",
   // black
@@ -2702,7 +2725,7 @@ var GeometryEditorPanel = react.forwardRef(
   }
 );
 
-// src/stamp/svgToImageElement.ts
+// src/stamps/shared/svgToImage.ts
 async function hashString(input) {
   if (typeof crypto !== "undefined" && crypto.subtle) {
     const buf = new TextEncoder().encode(input);
@@ -2740,7 +2763,7 @@ async function svgToImageElement(svg) {
   return { dataURL, fileId, width, height, mimeType: "image/svg+xml" };
 }
 
-// src/core/insertStampImage.ts
+// src/stamps/shared/insertImage.ts
 var clearAppStateAfterInsert = () => ({
   selectedElementIds: {},
   croppingElementId: null
@@ -2865,7 +2888,7 @@ var GeometryStampHost = react.forwardRef(
     );
     return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
       /* @__PURE__ */ jsxRuntime.jsx(
-        GeometryLeftPanel,
+        LeftPanel,
         {
           activeTool: geomState.tool,
           onToolChange: (t) => panelRef.current?.setTool(t),
@@ -2914,10 +2937,158 @@ var geometryStamp = {
     }
     return renderGeometrySvgFromState(data.jsonState);
   },
+  async restoreFileFromCustomData(element) {
+    const data = element.customData;
+    const fileId = element.fileId;
+    if (!data || !fileId) return null;
+    if (!isGeometryCustomData(data)) return null;
+    const svgString = await renderGeometrySvgFromState(data.jsonState);
+    const utf8 = unescape(encodeURIComponent(svgString));
+    const dataURL = "data:image/svg+xml;base64," + (typeof btoa !== "undefined" ? btoa(utf8) : Buffer.from(utf8).toString("base64"));
+    return { fileId, dataURL, mimeType: "image/svg+xml" };
+  },
   Host: GeometryStampHost
 };
+function Shell2({ title, icon, onClose, children }) {
+  return /* @__PURE__ */ jsxRuntime.jsxs(
+    "aside",
+    {
+      role: "complementary",
+      "aria-label": title,
+      "data-testid": "stamp-left-panel",
+      "data-stamp-area": "true",
+      className: "absolute left-0 top-0 z-30 flex h-full w-60 flex-col border-r border-slate-200 bg-white shadow-md animate-in slide-in-from-left duration-200",
+      children: [
+        /* @__PURE__ */ jsxRuntime.jsxs("header", { className: "flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-3 py-2", children: [
+          /* @__PURE__ */ jsxRuntime.jsxs("h3", { className: "flex items-center gap-2 text-sm font-semibold text-slate-800", children: [
+            /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-base leading-none", children: icon }),
+            title
+          ] }),
+          /* @__PURE__ */ jsxRuntime.jsx(
+            "button",
+            {
+              onClick: onClose,
+              "aria-label": "\u0110\xF3ng",
+              className: "rounded p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800",
+              children: /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+                /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
+                /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
+              ] })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxRuntime.jsx("div", { className: "min-h-0 flex-1 overflow-y-auto p-3 space-y-4", children })
+      ]
+    }
+  );
+}
+function Section2({ label, children }) {
+  return /* @__PURE__ */ jsxRuntime.jsxs("section", { children: [
+    /* @__PURE__ */ jsxRuntime.jsx("h4", { className: "mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500", children: label }),
+    children
+  ] });
+}
+var SNIPPETS = [
+  {
+    group: "Ph\xE2n s\u1ED1 & lu\u1EF9 th\u1EEBa",
+    items: [
+      { label: "Ph\xE2n s\u1ED1", preview: "a\u2044b", snippet: "\\frac{a}{b}" },
+      { label: "Lu\u1EF9 th\u1EEBa", preview: "x\xB2", snippet: "^{2}" },
+      { label: "Ch\u1EC9 s\u1ED1", preview: "x\u2081", snippet: "_{1}" },
+      { label: "C\u0103n", preview: "\u221Ax", snippet: "\\sqrt{x}" },
+      { label: "C\u0103n n", preview: "\u207F\u221Ax", snippet: "\\sqrt[n]{x}" }
+    ]
+  },
+  {
+    group: "T\u1ED5ng & t\xEDch ph\xE2n",
+    items: [
+      { label: "T\u1ED5ng", preview: "\u03A3", snippet: "\\sum_{i=1}^{n}" },
+      { label: "T\xEDch", preview: "\u03A0", snippet: "\\prod_{i=1}^{n}" },
+      { label: "T\xEDch ph\xE2n", preview: "\u222B", snippet: "\\int_{a}^{b}" },
+      { label: "Gi\u1EDBi h\u1EA1n", preview: "lim", snippet: "\\lim_{x \\to 0}" }
+    ]
+  },
+  {
+    group: "K\xFD hi\u1EC7u",
+    items: [
+      { label: "\u03B1", preview: "\u03B1", snippet: "\\alpha" },
+      { label: "\u03B2", preview: "\u03B2", snippet: "\\beta" },
+      { label: "\u03C0", preview: "\u03C0", snippet: "\\pi" },
+      { label: "\u03B8", preview: "\u03B8", snippet: "\\theta" },
+      { label: "\u2260", preview: "\u2260", snippet: "\\neq" },
+      { label: "\u2264", preview: "\u2264", snippet: "\\leq" },
+      { label: "\u2265", preview: "\u2265", snippet: "\\geq" },
+      { label: "\u221E", preview: "\u221E", snippet: "\\infty" },
+      { label: "\u2192", preview: "\u2192", snippet: "\\to" }
+    ]
+  }
+];
+function LeftPanel2({
+  displayMode,
+  onDisplayModeChange,
+  onInsertSnippet,
+  onClose
+}) {
+  return /* @__PURE__ */ jsxRuntime.jsxs(Shell2, { title: "C\xF4ng th\u1EE9c LaTeX", icon: "\u2211", onClose, children: [
+    /* @__PURE__ */ jsxRuntime.jsx(Section2, { label: "Ch\u1EBF \u0111\u1ED9 hi\u1EC3n th\u1ECB", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "grid grid-cols-2 gap-1.5", children: [
+      /* @__PURE__ */ jsxRuntime.jsxs(
+        "button",
+        {
+          type: "button",
+          onClick: () => onDisplayModeChange(false),
+          "aria-pressed": !displayMode,
+          className: [
+            "rounded-md border px-2 py-1.5 text-xs transition",
+            !displayMode ? "border-emerald-500 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-300" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+          ].join(" "),
+          children: [
+            /* @__PURE__ */ jsxRuntime.jsx("span", { className: "block font-medium", children: "Inline" }),
+            /* @__PURE__ */ jsxRuntime.jsx("span", { className: "block text-[10px] text-slate-500", children: "$ ... $" })
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsxRuntime.jsxs(
+        "button",
+        {
+          type: "button",
+          onClick: () => onDisplayModeChange(true),
+          "aria-pressed": displayMode,
+          className: [
+            "rounded-md border px-2 py-1.5 text-xs transition",
+            displayMode ? "border-emerald-500 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-300" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+          ].join(" "),
+          children: [
+            /* @__PURE__ */ jsxRuntime.jsx("span", { className: "block font-medium", children: "Block" }),
+            /* @__PURE__ */ jsxRuntime.jsx("span", { className: "block text-[10px] text-slate-500", children: "$$ ... $$" })
+          ]
+        }
+      )
+    ] }) }),
+    SNIPPETS.map((group) => /* @__PURE__ */ jsxRuntime.jsx(Section2, { label: group.group, children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex flex-wrap gap-1", children: group.items.map((s) => /* @__PURE__ */ jsxRuntime.jsx(
+      "button",
+      {
+        type: "button",
+        onClick: () => onInsertSnippet(s.snippet),
+        title: s.snippet,
+        className: "rounded border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700",
+        children: s.preview
+      },
+      s.snippet
+    )) }) }, group.group)),
+    /* @__PURE__ */ jsxRuntime.jsx(Section2, { label: "Ph\xEDm t\u1EAFt", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex flex-wrap gap-2 text-[11px] text-slate-600", children: [
+      /* @__PURE__ */ jsxRuntime.jsxs("span", { className: "inline-flex items-center gap-1", children: [
+        /* @__PURE__ */ jsxRuntime.jsx("kbd", { className: "rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono", children: "Enter" }),
+        "ch\xE8n"
+      ] }),
+      /* @__PURE__ */ jsxRuntime.jsxs("span", { className: "inline-flex items-center gap-1", children: [
+        /* @__PURE__ */ jsxRuntime.jsx("kbd", { className: "rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono", children: "Esc" }),
+        "\u0111\xF3ng"
+      ] })
+    ] }) })
+  ] });
+}
 
-// src/stamp/renderLatexToSvg.ts
+// src/stamps/latex/render.ts
 var cachedCss = null;
 function absoluteOrigin() {
   if (typeof window !== "undefined" && window.location) return window.location.origin;
@@ -2958,7 +3129,7 @@ async function renderLatexToSvg(src, displayMode) {
   return '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + " " + height + '"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="font-size:16px;line-height:1.2;"><style>' + cssText + "</style>" + html + "</div></foreignObject></svg>";
 }
 var DEBOUNCE_MS = 100;
-var LatexEditorPopover = react.forwardRef(function LatexEditorPopover2({
+var EditorPopover = react.forwardRef(function EditorPopover2({
   x,
   y,
   initialValue,
@@ -3178,7 +3349,7 @@ var LatexStampHost = react.forwardRef(
     );
     return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
       /* @__PURE__ */ jsxRuntime.jsx(
-        LatexLeftPanel,
+        LeftPanel2,
         {
           displayMode,
           onDisplayModeChange: setDisplayMode,
@@ -3187,7 +3358,7 @@ var LatexStampHost = react.forwardRef(
         }
       ),
       /* @__PURE__ */ jsxRuntime.jsx(
-        LatexEditorPopover,
+        EditorPopover,
         {
           ref: editorRef,
           x: 0,
@@ -3218,10 +3389,20 @@ var latexStamp = {
     }
     return renderLatexToSvg(data.src, data.displayMode);
   },
+  async restoreFileFromCustomData(element) {
+    const data = element.customData;
+    const fileId = element.fileId;
+    if (!data || !fileId) return null;
+    if (!isLatexCustomData(data)) return null;
+    const svgString = await renderLatexToSvg(data.src, data.displayMode);
+    const utf8 = unescape(encodeURIComponent(svgString));
+    const dataURL = "data:image/svg+xml;base64," + (typeof btoa !== "undefined" ? btoa(utf8) : Buffer.from(utf8).toString("base64"));
+    return { fileId, dataURL, mimeType: "image/svg+xml" };
+  },
   Host: LatexStampHost
 };
 
-// src/stamp/registry/index.ts
+// src/stamps/shared/registry.ts
 var DEFAULT_STAMPS = Object.freeze([geometryStamp, latexStamp]);
 function findStampForCustomData(data, stamps = DEFAULT_STAMPS) {
   for (const s of stamps) {
@@ -3229,8 +3410,11 @@ function findStampForCustomData(data, stamps = DEFAULT_STAMPS) {
   }
   return null;
 }
+function isStampElement(element, stamps = DEFAULT_STAMPS) {
+  return findStampForCustomData(element.customData, stamps) !== null;
+}
 var WRAPPER_ID = "stamp-toolbar-portal-wrapper";
-function ToolbarStampInjector({
+function ToolbarInjector({
   enabled,
   activeStampKind,
   onToggle,
@@ -3380,7 +3564,7 @@ function isEditableTarget(t) {
   const tag = t.tagName;
   return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
 }
-function useStampShortcuts({
+function useShortcuts({
   enabled,
   onToggle,
   stamps = DEFAULT_STAMPS
@@ -3404,12 +3588,7 @@ function useStampShortcuts({
   }, [enabled, onToggle, stamps]);
 }
 
-// src/stamp/types.ts
-function isMathStamp(element) {
-  return isGeometryCustomData(element.customData) || isLatexCustomData(element.customData);
-}
-
-// src/stamp/restoreMathStampFiles.ts
+// src/stamps/shared/restoreStampFiles.ts
 function svgToDataURL(svg) {
   const utf8 = unescape(encodeURIComponent(svg));
   return "data:image/svg+xml;base64," + btoa(utf8);
@@ -3423,12 +3602,27 @@ async function buildFileForStamp(fileId, customData, stamp) {
     return null;
   }
 }
-async function restoreMissingMathStampFiles(api, elements, stamps = DEFAULT_STAMPS) {
+async function restoreMissingStampFiles(api, elements, stamps = DEFAULT_STAMPS) {
   if (!api) return;
+  const filesToAdd = [];
+  const newPathHandled = /* @__PURE__ */ new Set();
+  for (const el of elements) {
+    const stamp = findStampForCustomData(el.customData, stamps);
+    if (!stamp?.restoreFileFromCustomData) continue;
+    const restored = await stamp.restoreFileFromCustomData(el);
+    if (!restored) continue;
+    newPathHandled.add(el.id);
+    filesToAdd.push({
+      id: restored.fileId,
+      dataURL: restored.dataURL,
+      mimeType: restored.mimeType,
+      created: Date.now()
+    });
+  }
   const existing = typeof api.getFiles === "function" ? api.getFiles() : {};
-  const targets = [];
   const seen = /* @__PURE__ */ new Set();
   for (const el of elements) {
+    if (newPathHandled.has(el.id)) continue;
     if (el.type !== "image") continue;
     if (!el.fileId) continue;
     if (existing && existing[el.fileId]) continue;
@@ -3436,14 +3630,12 @@ async function restoreMissingMathStampFiles(api, elements, stamps = DEFAULT_STAM
     const stamp = findStampForCustomData(el.customData, stamps);
     if (!stamp) continue;
     seen.add(el.fileId);
-    targets.push({ fileId: el.fileId, customData: el.customData, stamp });
+    const built = await buildFileForStamp(el.fileId, el.customData, stamp);
+    if (built) filesToAdd.push(built);
   }
-  if (targets.length === 0) return;
-  const built = await Promise.all(targets.map((t) => buildFileForStamp(t.fileId, t.customData, t.stamp)));
-  const files = built.filter((f) => !!f);
-  if (files.length > 0) {
+  if (filesToAdd.length > 0) {
     try {
-      api.addFiles(files);
+      api.addFiles(filesToAdd);
     } catch (err) {
       console.warn("addFiles failed:", err);
     }
@@ -3807,7 +3999,7 @@ function Whiteboard({
             const stampIds = /* @__PURE__ */ new Set();
             for (const el of currentElements) {
               const fid = el.fileId;
-              if (fid && isMathStamp(el)) stampIds.add(fid);
+              if (fid && isStampElement(el)) stampIds.add(fid);
             }
             const raster = {};
             for (const [id, f] of Object.entries(pending)) {
@@ -3826,7 +4018,7 @@ function Whiteboard({
           const keep = /* @__PURE__ */ new Set();
           for (const el of currentElements) {
             const fid = el.fileId;
-            if (fid && !isMathStamp(el)) keep.add(fid);
+            if (fid && !isStampElement(el)) keep.add(fid);
           }
           void pruneFiles(persistKeyRef.current, keep);
         }, 2e3);
@@ -3870,7 +4062,7 @@ function Whiteboard({
         const elements = api.getSceneElements();
         if (!elements || elements.length === 0) return;
         if (cancelled) return;
-        await restoreMissingMathStampFiles(api, elements, stamps);
+        await restoreMissingStampFiles(api, elements, stamps);
       } catch (err) {
         console.warn("Math stamp restore pass failed:", err);
       }
@@ -3909,7 +4101,7 @@ function Whiteboard({
     },
     [readOnly, stamps, openStamp]
   );
-  useStampShortcuts({
+  useShortcuts({
     enabled: !readOnly,
     onToggle: toggleStampByKind,
     stamps
@@ -4027,7 +4219,7 @@ function Whiteboard({
       }
     ),
     /* @__PURE__ */ jsxRuntime.jsx(
-      ToolbarStampInjector,
+      ToolbarInjector,
       {
         enabled: !readOnly,
         activeStampKind: activeStamp,
@@ -4048,7 +4240,21 @@ function Whiteboard({
   ] });
 }
 
+// src/index.ts
+var isMathStamp = isStampElement;
+var restoreMissingMathStampFiles = restoreMissingStampFiles;
+
+exports.DEFAULT_STAMPS = DEFAULT_STAMPS;
 exports.Whiteboard = Whiteboard;
+exports.findStampForCustomData = findStampForCustomData;
+exports.geometryStamp = geometryStamp;
+exports.isGeometryCustomData = isGeometryCustomData;
+exports.isLatexCustomData = isLatexCustomData;
+exports.isMathStamp = isMathStamp;
+exports.isStampElement = isStampElement;
+exports.latexStamp = latexStamp;
 exports.pickSyncableAppState = pickSyncableAppState;
+exports.restoreMissingMathStampFiles = restoreMissingMathStampFiles;
+exports.restoreMissingStampFiles = restoreMissingStampFiles;
 //# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map

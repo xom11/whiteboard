@@ -1,5 +1,5 @@
 import * as react_jsx_runtime from 'react/jsx-runtime';
-import { NonDeletedExcalidrawElement } from '@excalidraw/excalidraw/element/types';
+import { NonDeletedExcalidrawElement, ExcalidrawElement } from '@excalidraw/excalidraw/element/types';
 export { ExcalidrawElement, NonDeletedExcalidrawElement } from '@excalidraw/excalidraw/element/types';
 import { AppState, BinaryFiles } from '@excalidraw/excalidraw/types';
 export { AppState, BinaryFiles } from '@excalidraw/excalidraw/types';
@@ -18,6 +18,23 @@ interface ExcalidrawSceneSnapshot {
     appState: SyncableAppState;
 }
 
+/**
+ * Kết quả trả về từ `restoreFileFromCustomData`. Chứa đủ thông tin để
+ * consumer gọi `api.addFiles(...)`.
+ */
+interface RestoredStampFile {
+    fileId: string;
+    dataURL: string;
+    mimeType: 'image/svg+xml' | 'image/png';
+}
+/**
+ * Tối thiểu mọi custom data của stamp cần có. Các stamp cụ thể (geometry,
+ * latex, ...) extend interface này với fields riêng.
+ */
+interface BaseStampCustomData {
+    kind: string;
+    version: number;
+}
 /**
  * Props mà mỗi StampHost nhận từ Whiteboard. Host component tự
  * quản lý state nội bộ (panel ref, undo stack, displayMode...) — main view
@@ -82,11 +99,57 @@ interface StampType {
      */
     renderSvgFromCustomData(data: unknown): Promise<string>;
     /**
+     * Regenerate file SVG/PNG cho element thuộc stamp này khi reload từ persisted
+     * snapshot. Trả về `RestoredStampFile` để consumer gọi `api.addFiles`, hoặc
+     * `null` nếu element không cần file (vd stamp chỉ là text overlay).
+     *
+     * Khi method này có mặt, `restoreMissingStampFiles` sẽ ưu tiên gọi method
+     * này thay vì dùng `renderSvgFromCustomData`. Stamp tự chịu trách nhiệm lấy
+     * `fileId` từ element và render file.
+     */
+    restoreFileFromCustomData?: (element: ExcalidrawElement) => Promise<RestoredStampFile | null>;
+    /**
      * Host component bọc toàn bộ UI editing (panel + left panel + insert
      * handler). Whiteboard mount Host khi activeStamp khớp kind.
      */
     Host: StampHostComponent;
 }
+
+interface GeometryCustomData extends BaseStampCustomData {
+    kind: 'geometry';
+    version: 1;
+    jsonState: string;
+    svgWidth: number;
+    svgHeight: number;
+}
+declare function isGeometryCustomData(data: unknown): data is GeometryCustomData;
+declare const geometryStamp: StampType;
+
+interface LatexCustomData extends BaseStampCustomData {
+    kind: 'latex';
+    version: 1;
+    src: string;
+    displayMode: boolean;
+}
+declare function isLatexCustomData(data: unknown): data is LatexCustomData;
+declare const latexStamp: StampType;
+
+/**
+ * Set stamp mặc định dùng trong Whiteboard. Consumer có thể
+ * truyền custom array để bật/tắt từng stamp hoặc đăng ký stamp mới.
+ *
+ * Để thêm 1 stamp mới (vd chart):
+ *   1. Tạo `src/stamp/registry/chart.tsx` với StampType object.
+ *   2. Add vào DEFAULT_STAMPS ở dưới, HOẶC consumer truyền
+ *      `<Whiteboard stamps={[...DEFAULT_STAMPS, chartStamp]} />`.
+ */
+declare const DEFAULT_STAMPS: ReadonlyArray<StampType>;
+/** Tìm stamp tương ứng với customData của element. null nếu không match. */
+declare function findStampForCustomData(data: unknown, stamps?: ReadonlyArray<StampType>): StampType | null;
+/** isMathStamp version dựa trên registry — replace logic hardcode trong types.ts. */
+declare function isStampElement<T extends {
+    customData?: unknown;
+}>(element: T, stamps?: ReadonlyArray<StampType>): boolean;
 
 interface WhiteboardProps {
     /**
@@ -117,4 +180,35 @@ declare function Whiteboard({ storageKey, readOnly, onSceneChange, onFilesChange
 
 declare function pickSyncableAppState(s: AppState): SyncableAppState;
 
-export { type ExcalidrawSceneSnapshot, type SyncableAppState, Whiteboard, type WhiteboardProps, pickSyncableAppState };
+interface ElementLike {
+    id: string;
+    type?: string;
+    fileId?: string | null;
+    customData?: unknown;
+}
+/**
+ * Find stamp elements whose binary file is missing from Excalidraw, then
+ * regenerate via registry dispatch. Idempotent: safe to call on every scene
+ * update.
+ *
+ * Stamps that implement `restoreFileFromCustomData` are handled via the new
+ * registry-driven path (stamp receives the full element and returns the file
+ * record). Stamps that only implement `renderSvgFromCustomData` use the legacy
+ * path (filter type=image + fileId, skip already-present files).
+ *
+ * @param api Excalidraw imperative API.
+ * @param elements Tất cả elements trong scene.
+ * @param stamps Registry. Default = DEFAULT_STAMPS.
+ */
+declare function restoreMissingStampFiles(api: any, elements: readonly ElementLike[], stamps?: ReadonlyArray<StampType>): Promise<void>;
+
+type StampCustomData = GeometryCustomData | LatexCustomData;
+
+/** @deprecated Dùng `isStampElement` thay vì `isMathStamp`. Sẽ xoá ở 0.6.0. */
+declare const isMathStamp: typeof isStampElement;
+/** @deprecated Dùng `StampCustomData` thay vì `MathStampCustomData`. Sẽ xoá ở 0.6.0. */
+type MathStampCustomData = StampCustomData;
+/** @deprecated Dùng `restoreMissingStampFiles` thay vì `restoreMissingMathStampFiles`. Sẽ xoá ở 0.6.0. */
+declare const restoreMissingMathStampFiles: typeof restoreMissingStampFiles;
+
+export { type BaseStampCustomData, DEFAULT_STAMPS, type ExcalidrawSceneSnapshot, type GeometryCustomData, type LatexCustomData, type MathStampCustomData, type StampCustomData, type StampType, type SyncableAppState, Whiteboard, type WhiteboardProps, findStampForCustomData, geometryStamp, isGeometryCustomData, isLatexCustomData, isMathStamp, isStampElement, latexStamp, pickSyncableAppState, restoreMissingMathStampFiles, restoreMissingStampFiles };
