@@ -44,6 +44,24 @@ export interface MiniBoardHandle {
   canUndo: () => boolean;
   /** Subscribe khi state thay đổi (tool / showAxis / showGrid / undo). */
   subscribe: (cb: () => void) => () => void;
+  /** Đọc snapshot thuộc tính object (cho popover). */
+  snapshotObject: (obj: unknown, anchorScreen: { x: number; y: number }) => ObjectSnapshot | null;
+  /** Mutate thuộc tính + sync log. */
+  mutateObject: (obj: unknown, patch: { attrs?: Record<string, unknown>; remove?: boolean }) => void;
+  /** Subscribe selection-from-move-tool. Trả về unsubscribe. */
+  onSelect: (cb: (snap: ObjectSnapshot) => void) => () => void;
+}
+
+export interface ObjectSnapshot {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  obj: any;
+  kind: 'point' | 'line' | 'circle';
+  name: string;
+  color: string;
+  dash: number;
+  width: number;
+  face: 'o' | 'circle' | 'cross' | 'plus';
+  screenCoords: { x: number; y: number };
 }
 
 interface Props {
@@ -278,6 +296,50 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     }
     return null;
   }, []);
+
+  const snapshotObject = useCallback((obj: unknown, anchorScreen: { x: number; y: number }): ObjectSnapshot | null => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const o: any = obj;
+    const k = objKind(o);
+    if (k !== 'point' && k !== 'line' && k !== 'circle') return null;
+    const v = o.visProp ?? {};
+    return {
+      obj: o,
+      kind: k,
+      name: typeof o.name === 'string' ? o.name : '',
+      color: (v.strokecolor as string) ?? '#1e1e1e',
+      dash: typeof v.dash === 'number' ? v.dash : 0,
+      width: typeof v.strokewidth === 'number' ? v.strokewidth : 2,
+      face: (v.face as ObjectSnapshot['face']) ?? 'o',
+      screenCoords: anchorScreen,
+    };
+  }, []);
+
+  const mutateObject = useCallback((obj: unknown, patch: { attrs?: Record<string, unknown>; remove?: boolean }) => {
+    if (!boardRef.current) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const o: any = obj;
+    if (patch.remove) {
+      try { boardRef.current.removeObject(o); } catch { /* ignore */ }
+      const id = localIdOf(o);
+      if (id) {
+        creationLogRef.current = creationLogRef.current.filter((e) => e.id !== id);
+        objMapRef.current.delete(id);
+        setHistoryTick((t) => t + 1);
+      }
+      return;
+    }
+    if (patch.attrs) {
+      try { o.setAttribute(patch.attrs); } catch { /* ignore */ }
+      const id = localIdOf(o);
+      if (id) {
+        const entry = creationLogRef.current.find((e) => e.id === id);
+        if (entry) entry.attrs = { ...entry.attrs, ...patch.attrs };
+        setHistoryTick((t) => t + 1);
+      }
+    }
+    try { boardRef.current.update(); } catch { /* ignore */ }
+  }, [localIdOf]);
 
   const clearPreviewSegs = useCallback(() => {
     const b = boardRef.current;
@@ -615,7 +677,13 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
       board.on('down', (e: any) => {
         if (!boardRef.current) return;
         const t = toolRef.current;
-        if (t === 'move') return;
+        if (t === 'move') {
+          const sc = screenCoordsOf(e);
+          if (!sc) return;
+          const [sx, sy] = sc;
+          moveDownRef.current = { sx, sy };
+          return;
+        }
         const toolDef = TOOLS.find(td => td.key === t);
         if (!toolDef) return;
 
@@ -749,6 +817,29 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         }
       });
 
+      // Pointer up: single-click on Move tool emits selection
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      board.on('up', (e: any) => {
+        const t = toolRef.current;
+        if (t !== 'move') return;
+        const start = moveDownRef.current;
+        moveDownRef.current = null;
+        if (!start) return;
+        const sc = screenCoordsOf(e);
+        if (!sc) return;
+        const [sx, sy] = sc;
+        const moved = Math.hypot(sx - start.sx, sy - start.sy);
+        if (moved > 4) return;  // drag, không phải click
+        const hits = objectsAt(e).filter((o) => o !== axisObjsRef.current.x && o !== axisObjsRef.current.y);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const best: any = hits.find((o) => objKind(o) === 'point') ?? hits[0] ?? findNearestPoint(e, 12);
+        if (!best) return;
+        const cx = (e.clientX ?? e.touches?.[0]?.clientX ?? 0) as number;
+        const cy = (e.clientY ?? e.touches?.[0]?.clientY ?? 0) as number;
+        const snap = snapshotObject(best, { x: cx + 8, y: cy + 8 });
+        if (snap) emitSelect(snap);
+      });
+
       onReady({
         getContainer: () => containerRef.current,
         getCreationLog: () => [...creationLogRef.current],
@@ -764,6 +855,12 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         subscribe: (cb: () => void) => {
           subscribersRef.current.add(cb);
           return () => { subscribersRef.current.delete(cb); };
+        },
+        snapshotObject,
+        mutateObject,
+        onSelect: (cb: (snap: ObjectSnapshot) => void) => {
+          selectSubsRef.current.add(cb);
+          return () => { selectSubsRef.current.delete(cb); };
         },
       });
     })();
@@ -831,6 +928,15 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
       try { cb(); } catch { /* ignore */ }
     });
   }, []);
+
+  // Selection subscribers — emitted when Move tool single-clicks an object
+  const selectSubsRef = useRef<Set<(snap: ObjectSnapshot) => void>>(new Set());
+  const emitSelect = useCallback((snap: ObjectSnapshot) => {
+    selectSubsRef.current.forEach((cb) => { try { cb(snap); } catch { /* ignore */ } });
+  }, []);
+
+  // Track pointer-down position for click vs drag detection in Move tool
+  const moveDownRef = useRef<{ sx: number; sy: number } | null>(null);
 
   // Phát tín hiệu khi state thay đổi
   useEffect(() => { notifySubscribers(); }, [tool, showAxis, showGrid, historyTick, notifySubscribers]);
