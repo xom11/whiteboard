@@ -1,0 +1,54 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type JxgObj = any;
+
+export type DefKind = 'point' | 'segment' | 'line' | 'ray' | 'arrow' | 'circleCenter' | 'circle3';
+
+export interface DefiningPointsResult {
+  kind: DefKind;
+  points: JxgObj[];
+  attrs: Record<string, unknown>;
+}
+
+const LINE_LIKE = new Set(['line', 'segment', 'arrow']);
+
+function copyVisAttrs(obj: JxgObj): Record<string, unknown> {
+  const v = obj?.visProp ?? {};
+  const pick = (k: string) => v?.[k];
+  const out: Record<string, unknown> = {};
+  const mapping: Array<[string, string]> = [
+    ['strokecolor', 'strokeColor'],
+    ['strokewidth', 'strokeWidth'],
+    ['strokeopacity', 'strokeOpacity'],
+    ['dash', 'dash'],
+    ['fillcolor', 'fillColor'],
+    ['fillopacity', 'fillOpacity'],
+  ];
+  for (const [from, to] of mapping) {
+    const val = pick(from);
+    if (val !== undefined) out[to] = val;
+  }
+  return out;
+}
+
+export function getDefiningPoints(obj: JxgObj): DefiningPointsResult | null {
+  if (!obj) return null;
+  const e = (obj.elType ?? obj.type ?? '').toString().toLowerCase();
+  if (e === 'point' || e === 'glider' || e === 'midpoint') {
+    return { kind: 'point', points: [obj], attrs: copyVisAttrs(obj) };
+  }
+  if (LINE_LIKE.has(e) && obj.point1 && obj.point2) {
+    const kind: DefKind = e === 'segment' ? 'segment' : e === 'arrow' ? 'arrow' : 'line';
+    return { kind, points: [obj.point1, obj.point2], attrs: copyVisAttrs(obj) };
+  }
+  if (e === 'circle' && obj.center && obj.point2) {
+    return { kind: 'circleCenter', points: [obj.center, obj.point2], attrs: copyVisAttrs(obj) };
+  }
+  if (e === 'circumcircle' && obj.point1 && obj.point2 && obj.point3) {
+    return {
+      kind: 'circle3',
+      points: [obj.point1, obj.point2, obj.point3],
+      attrs: copyVisAttrs(obj),
+    };
+  }
+  return null;
+}
