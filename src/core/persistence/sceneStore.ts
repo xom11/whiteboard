@@ -1,10 +1,10 @@
 import type { ExcalidrawElement, SyncableAppState } from '../../types';
 
 const PREFIX = 'whiteboard:scene:';
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 1 as const;
 
 export interface StoredScene {
-  version: number;
+  version: typeof SCHEMA_VERSION;
   elements: readonly ExcalidrawElement[];
   appState: Partial<SyncableAppState>;
   savedAt: number;
@@ -22,6 +22,8 @@ export function readScene(key: string): StoredScene | null {
     const parsed = JSON.parse(raw) as Partial<StoredScene>;
     if (!parsed || typeof parsed !== 'object') return null;
     if (parsed.version !== SCHEMA_VERSION) {
+      // Cố ý KHÔNG xoá entry — version mismatch có thể là dữ liệu của client
+      // mới hơn (user vừa downgrade). Giữ lại để client tương ứng đọc được sau.
       console.warn(
         `[whiteboard] scene version ${parsed.version} không khớp ${SCHEMA_VERSION}, bỏ qua.`,
       );
