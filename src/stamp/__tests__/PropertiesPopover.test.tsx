@@ -73,10 +73,38 @@ describe('PropertiesPopover', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
-  it('line: pill không có nút Tên, mở section style hiện dash', () => {
-    render(<PropertiesPopover {...baseProps} kind="line" currentColor="#1e1e1e" currentDash={0} currentWidth={2} />);
-    expect(screen.queryByRole('button', { name: /^T[eê]n$/i })).toBeNull();
+  it('line: có nút Tên, mở section style hiện dash', () => {
+    render(<PropertiesPopover {...baseProps} kind="line" currentName="" currentColor="#1e1e1e" currentDash={0} currentWidth={2} />);
+    expect(screen.getByRole('button', { name: /^T[eê]n$/i })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /^Ki[eể]u$/i }));
     expect(screen.getByRole('button', { name: /Ki[eể]u n[eé]t đứt/i })).toBeInTheDocument();
+  });
+
+  it('line: đặt tên qua input + onMutate name', () => {
+    const onMutate = jest.fn();
+    render(<PropertiesPopover {...baseProps} kind="line" currentName="" currentColor="#1e1e1e" currentDash={0} currentWidth={2} onMutate={onMutate} />);
+    fireEvent.click(screen.getByRole('button', { name: /^T[eê]n$/i }));
+    const input = screen.getByRole('textbox');
+    fireEvent.change(input, { target: { value: 'f' } });
+    fireEvent.blur(input);
+    expect(onMutate).toHaveBeenCalledWith({ attrs: { name: 'f' } });
+  });
+
+  it('line: toggle "Hiển thị giá trị" gọi onMutate({ valueLabel: true })', () => {
+    const onMutate = jest.fn();
+    render(<PropertiesPopover {...baseProps} kind="line" currentName="f" currentColor="#1e1e1e" currentDash={0} currentWidth={2} currentShowValue={false} onMutate={onMutate} />);
+    fireEvent.click(screen.getByRole('button', { name: /^T[eê]n$/i }));
+    const cb = screen.getByRole('checkbox', { name: /Hi[eể]n th[ịi] gi[aá] tr[ịi]/i });
+    fireEvent.click(cb);
+    expect(onMutate).toHaveBeenCalledWith({ valueLabel: true });
+  });
+
+  it('line: toggle "Hiển thị tên" gọi onMutate({ attrs: { withLabel: false } })', () => {
+    const onMutate = jest.fn();
+    render(<PropertiesPopover {...baseProps} kind="line" currentName="f" currentColor="#1e1e1e" currentDash={0} currentWidth={2} currentShowLabel={true} onMutate={onMutate} />);
+    fireEvent.click(screen.getByRole('button', { name: /^T[eê]n$/i }));
+    const cb = screen.getByRole('checkbox', { name: /Hi[eể]n th[ịi] t[eê]n/i });
+    fireEvent.click(cb);
+    expect(onMutate).toHaveBeenCalledWith({ attrs: { withLabel: false } });
   });
 });

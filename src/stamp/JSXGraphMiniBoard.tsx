@@ -73,6 +73,10 @@ export interface ObjectSnapshot {
   dash: number;
   width: number;
   face: 'o' | 'circle' | 'cross' | 'plus';
+  /** Đang hiển thị tên (label) hay không. */
+  showLabel: boolean;
+  /** Đang có value-label (text gắn động) hay không. */
+  showValue: boolean;
   screenCoords: { x: number; y: number };
 }
 
@@ -261,6 +265,11 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
   // We also track the LAST object created (for non-point types like segment) so accept-matching works.
   const objMapRef = useRef<Map<string, JxgObj>>(new Map());
 
+  // Map target line/circle → dynamic value-label text element (hiển thị độ dài
+  // / bán kính). Khi user toggle "Show Value", ta tạo/xoá text này. Serialize:
+  // entry type='valueLabel' trong creationLog với args=[targetLocalId].
+  const valueLabelsRef = useRef<Map<JxgObj, JxgObj>>(new Map());
+
   // Pending picks for multi-click tools: array of JSXGraph object refs
   const pendingRef = useRef<JxgObj[]>([]);
   const [, setPendingCount] = useState(0);
@@ -346,6 +355,8 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     const k = objKind(o);
     if (k !== 'point' && k !== 'line' && k !== 'circle') return null;
     const v = o.visProp ?? {};
+    const showLabel = v.withlabel !== false;
+    const showValue = valueLabelsRef.current.has(o);
     return {
       obj: o,
       kind: k,
@@ -354,15 +365,66 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
       dash: typeof v.dash === 'number' ? v.dash : 0,
       width: typeof v.strokewidth === 'number' ? v.strokewidth : 2,
       face: (v.face as ObjectSnapshot['face']) ?? 'o',
+      showLabel,
+      showValue,
       screenCoords: anchorScreen,
     };
   }, []);
 
-  const mutateObject = useCallback((obj: unknown, patch: { attrs?: Record<string, unknown>; remove?: boolean }) => {
+  // Tạo text element động hiển thị giá trị (độ dài segment / bán kính circle).
+  // Trả về JSXGraph text obj (chưa log). Cần obj có cùng "kind" được hỗ trợ.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const createValueLabelFor = useCallback((target: any): any => {
+    const b = boardRef.current;
+    if (!b || !target) return null;
+    const k = objKind(target);
+    if (k === 'line') {
+      // segment / line / arrow đều dùng point1 + point2
+      const p1 = target.point1;
+      const p2 = target.point2;
+      if (!p1 || !p2) return null;
+      const txt = b.create('text', [
+        () => (p1.X() + p2.X()) / 2 + 0.15,
+        () => (p1.Y() + p2.Y()) / 2 + 0.25,
+        () => {
+          const dx = p2.X() - p1.X();
+          const dy = p2.Y() - p1.Y();
+          const len = Math.hypot(dx, dy);
+          const name = typeof target.name === 'string' && target.name ? target.name : 'd';
+          return `${name} = ${len.toFixed(2)}`;
+        },
+      ], { fontSize: 12, color: '#dc2626', fixed: true, highlight: false });
+      return txt;
+    }
+    if (k === 'circle') {
+      const center = target.center ?? target.midpoint;
+      if (!center) return null;
+      const txt = b.create('text', [
+        () => center.X() + 0.3,
+        () => center.Y() + 0.3,
+        () => {
+          const r = typeof target.Radius === 'function' ? target.Radius() : 0;
+          const name = typeof target.name === 'string' && target.name ? target.name : 'r';
+          return `${name} = ${r.toFixed(2)}`;
+        },
+      ], { fontSize: 12, color: '#dc2626', fixed: true, highlight: false });
+      return txt;
+    }
+    return null;
+  }, []);
+
+  const mutateObject = useCallback((obj: unknown, patch: { attrs?: Record<string, unknown>; remove?: boolean; valueLabel?: boolean }) => {
     if (!boardRef.current) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const o: any = obj;
     if (patch.remove) {
+      // Nếu obj có value-label đính kèm → xoá luôn text đó để cascade không
+      // bỏ sót.
+      const vl = valueLabelsRef.current.get(o);
+      if (vl) {
+        try { boardRef.current.removeObject(vl); } catch { /* ignore */ }
+        valueLabelsRef.current.delete(o);
+      }
       try { boardRef.current.removeObject(o); } catch { /* ignore */ }
       // Cascade: walk log and drop entries whose JSXGraph object was also removed
       const board = boardRef.current;
@@ -383,6 +445,36 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
       setHistoryTick((t) => t + 1);
       return;
     }
+    if (typeof patch.valueLabel === 'boolean') {
+      const has = valueLabelsRef.current.has(o);
+      if (patch.valueLabel && !has) {
+        const txt = createValueLabelFor(o);
+        if (txt) {
+          valueLabelsRef.current.set(o, txt);
+          // Log entry tổng hợp để reload regenerate được. args=[targetLocalId].
+          const targetId = localIdOf(o);
+          if (targetId) {
+            const id = nextLocalId();
+            creationLogRef.current.push({ id, type: 'valueLabel', args: [targetId], attrs: {} });
+            objMapRef.current.set(id, txt);
+            setHistoryTick((t) => t + 1);
+          }
+        }
+      } else if (!patch.valueLabel && has) {
+        const txt = valueLabelsRef.current.get(o);
+        valueLabelsRef.current.delete(o);
+        if (txt) {
+          try { boardRef.current.removeObject(txt); } catch { /* ignore */ }
+          // Xoá log entry value-label tương ứng
+          const txtId = localIdOf(txt);
+          if (txtId) {
+            creationLogRef.current = creationLogRef.current.filter((e) => e.id !== txtId);
+            objMapRef.current.delete(txtId);
+            setHistoryTick((t) => t + 1);
+          }
+        }
+      }
+    }
     if (patch.attrs) {
       try { o.setAttribute(patch.attrs); } catch { /* ignore */ }
       const id = localIdOf(o);
@@ -393,7 +485,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
       }
     }
     try { boardRef.current.update(); } catch { /* ignore */ }
-  }, [localIdOf]);
+  }, [createValueLabelFor, localIdOf, nextLocalId]);
 
   const clearPreviewSegs = useCallback(() => {
     const b = boardRef.current;
@@ -908,6 +1000,18 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         for (const el of initialState.elements) {
           const resolved = el.args.map(a => (typeof a === 'string' && idMap.has(a)) ? idMap.get(a) : a);
           try {
+            if (el.type === 'valueLabel') {
+              // Synthetic: regenerate dynamic text gắn với target.
+              const target = resolved[0];
+              if (target) {
+                const txt = createValueLabelFor(target);
+                if (txt) {
+                  idMap.set(el.id, txt);
+                  valueLabelsRef.current.set(target, txt);
+                }
+              }
+              continue;
+            }
             const obj = board.create(el.type, resolved, { ...el.attrs });
             idMap.set(el.id, obj);
           } catch (err) {

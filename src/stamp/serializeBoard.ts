@@ -37,6 +37,39 @@ export function serializeBoard(
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function createValueLabel(board: any, target: any): unknown {
+  if (!board || !target) return null;
+  const e = (target.elType ?? target.type ?? '').toString().toLowerCase();
+  if (e === 'segment' || e === 'line' || e === 'arrow') {
+    const p1 = target.point1, p2 = target.point2;
+    if (!p1 || !p2) return null;
+    return board.create('text', [
+      () => (p1.X() + p2.X()) / 2 + 0.15,
+      () => (p1.Y() + p2.Y()) / 2 + 0.25,
+      () => {
+        const len = Math.hypot(p2.X() - p1.X(), p2.Y() - p1.Y());
+        const name = typeof target.name === 'string' && target.name ? target.name : 'd';
+        return `${name} = ${len.toFixed(2)}`;
+      },
+    ], { fontSize: 12, color: '#dc2626', fixed: true, highlight: false });
+  }
+  if (e === 'circle' || e === 'circumcircle') {
+    const center = target.center ?? target.midpoint ?? target.point1;
+    if (!center) return null;
+    return board.create('text', [
+      () => center.X() + 0.3,
+      () => center.Y() + 0.3,
+      () => {
+        const r = typeof target.Radius === 'function' ? target.Radius() : 0;
+        const name = typeof target.name === 'string' && target.name ? target.name : 'r';
+        return `${name} = ${r.toFixed(2)}`;
+      },
+    ], { fontSize: 12, color: '#dc2626', fixed: true, highlight: false });
+  }
+  return null;
+}
+
 export function deserializeIntoBoard(board: BoardLike, serialized: SerializedBoard): void {
   // Replay: args may contain references to earlier elements by our serialized id ("j0", "j1"…).
   // We resolve those to actual JSXGraph objects via a local id→object map.
@@ -46,6 +79,12 @@ export function deserializeIntoBoard(board: BoardLike, serialized: SerializedBoa
       if (typeof a === 'string' && idMap.has(a)) return idMap.get(a);
       return a;
     });
+    if (el.type === 'valueLabel') {
+      const target = resolvedArgs[0];
+      const txt = createValueLabel(board, target);
+      if (txt) idMap.set(el.id, txt);
+      continue;
+    }
     const created = board.create(el.type, resolvedArgs, { ...el.attrs });
     idMap.set(el.id, created);
   }

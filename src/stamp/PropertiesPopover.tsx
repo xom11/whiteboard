@@ -9,6 +9,8 @@ export type PointFace = 'o' | 'circle' | 'cross' | 'plus';
 export interface PropertyPatch {
   attrs?: Record<string, unknown>;
   remove?: boolean;
+  /** Bật/tắt value-label động (độ dài segment / bán kính circle). */
+  valueLabel?: boolean;
 }
 
 interface CommonProps {
@@ -27,13 +29,20 @@ interface PointProps extends CommonProps {
   currentDash: number;
   currentWidth: number;
   currentFace: PointFace;
+  /** Có đang hiện label tên không. */
+  currentShowLabel?: boolean;
 }
 
 interface LineOrCircleProps extends CommonProps {
   kind: 'line' | 'circle';
+  currentName: string;
   currentColor: string;
   currentDash: number;
   currentWidth: number;
+  /** Có đang hiện label tên không. */
+  currentShowLabel?: boolean;
+  /** Có đang hiện value-label động không. */
+  currentShowValue?: boolean;
 }
 
 type Props = PointProps | LineOrCircleProps;
@@ -110,12 +119,14 @@ export const PropertiesPopover: React.FC<Props> = (props) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const [section, setSection] = useState<Section>(null);
 
-  const [name, setName] = useState<string>(props.kind === 'point' ? props.currentName : '');
+  const initialName =
+    props.kind === 'point' ? props.currentName : (props.kind === 'line' || props.kind === 'circle') ? props.currentName : '';
+  const [name, setName] = useState<string>(initialName);
   // Khi popover mở lại trên đối tượng khác, đồng bộ name input.
   useEffect(() => {
-    if (props.kind === 'point') setName(props.currentName);
+    setName(initialName);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.kind === 'point' ? props.currentName : '']);
+  }, [initialName]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -139,15 +150,22 @@ export const PropertiesPopover: React.FC<Props> = (props) => {
   const pickWidth = (w: number) => onMutate({ attrs: { strokeWidth: w } });
   const pickFace = (f: PointFace) => onMutate({ attrs: { face: f } });
 
+  const currentName = (props.kind === 'point' || props.kind === 'line' || props.kind === 'circle') ? props.currentName : '';
   const commitName = () => {
-    if (props.kind !== 'point') return;
     const trimmed = name.trim();
-    if (!trimmed || trimmed === props.currentName) return;
-    const others = new Set((getAllNames?.() ?? []).filter((n) => n !== props.currentName));
-    const final = disambiguateName(trimmed, others);
+    if (trimmed === currentName) return;
+    // Cho phép xoá tên (empty); chỉ disambiguate khi user nhập 1 cái gì đó.
+    let final = trimmed;
+    if (trimmed) {
+      const others = new Set((getAllNames?.() ?? []).filter((n) => n !== currentName));
+      final = disambiguateName(trimmed, others);
+    }
     if (final !== name) setName(final);
     onMutate({ attrs: { name: final } });
   };
+
+  const toggleShowLabel = (next: boolean) => onMutate({ attrs: { withLabel: next } });
+  const toggleShowValue = (next: boolean) => onMutate({ valueLabel: next });
 
   const doDelete = () => { onMutate({ remove: true }); onClose(); };
 
@@ -202,9 +220,7 @@ export const PropertiesPopover: React.FC<Props> = (props) => {
         <PillBtn id="color" label="Màu" icon={Icons.color} active={section === 'color'} onClick={() => toggleSection('color')} indicatorColor={colorIndicatorTint} />
         <PillBtn id="style" label="Kiểu" icon={Icons.style} active={section === 'style'} onClick={() => toggleSection('style')} />
         <PillBtn id="size" label="Độ dày" icon={Icons.size} active={section === 'size'} onClick={() => toggleSection('size')} />
-        {props.kind === 'point' && (
-          <PillBtn id="name" label="Tên" icon={Icons.name} active={section === 'name'} onClick={() => toggleSection('name')} />
-        )}
+        <PillBtn id="name" label="Tên" icon={Icons.name} active={section === 'name'} onClick={() => toggleSection('name')} />
         <span aria-hidden className="mx-0.5 h-5 w-px bg-slate-200" />
         <PillBtn id="delete" label="Xoá" icon={Icons.trash} onClick={doDelete} />
       </div>
@@ -280,18 +296,43 @@ export const PropertiesPopover: React.FC<Props> = (props) => {
             </div>
           )}
 
-          {section === 'name' && props.kind === 'point' && (
-            <div className="flex flex-col gap-1">
-              <span className="text-[11px] font-medium text-slate-500">Tên</span>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                onBlur={commitName}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitName(); } }}
-                autoFocus
-                className="rounded border border-slate-300 bg-white px-2 py-1 text-sm text-slate-800"
-              />
-              <span className="text-[10px] text-slate-400">Trùng tên sẽ tự thêm chỉ số (B → B₂)</span>
+          {section === 'name' && (
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1">
+                <span className="text-[11px] font-medium text-slate-500">Tên</span>
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onBlur={commitName}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitName(); } }}
+                  autoFocus
+                  placeholder={props.kind === 'point' ? 'A, B, …' : props.kind === 'line' ? 'a, b, f, …' : 'O, c, …'}
+                  className="rounded border border-slate-300 bg-white px-2 py-1 text-sm text-slate-800"
+                />
+                <span className="text-[10px] text-slate-400">Trùng tên sẽ tự thêm chỉ số (B → B₂)</span>
+              </div>
+
+              <label className="flex items-center justify-between gap-2 text-[12px] text-slate-700">
+                <span>Hiển thị tên</span>
+                <input
+                  type="checkbox"
+                  checked={props.currentShowLabel !== false}
+                  onChange={(e) => toggleShowLabel(e.target.checked)}
+                  aria-label="Hiển thị tên"
+                />
+              </label>
+
+              {(props.kind === 'line' || props.kind === 'circle') && (
+                <label className="flex items-center justify-between gap-2 text-[12px] text-slate-700">
+                  <span>Hiển thị giá trị</span>
+                  <input
+                    type="checkbox"
+                    checked={!!(props as LineOrCircleProps).currentShowValue}
+                    onChange={(e) => toggleShowValue(e.target.checked)}
+                    aria-label="Hiển thị giá trị"
+                  />
+                </label>
+              )}
             </div>
           )}
         </div>

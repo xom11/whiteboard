@@ -154,11 +154,16 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
               currentDash={propsPopover.dash}
               currentWidth={propsPopover.width}
               currentFace={propsPopover.face}
+              currentShowLabel={propsPopover.showLabel}
               getAllNames={() => handleRef.current?.getAllPointNames() ?? []}
               onClose={() => setPropsPopover(null)}
               onMutate={(patch) => {
                 handleRef.current?.mutateObject(propsPopover.obj, patch);
                 if (patch.remove) setPropsPopover(null);
+                // Refresh snapshot để UI checkbox phản ánh state mới
+                if (typeof patch.valueLabel === 'boolean' || patch.attrs) {
+                  setPropsPopover((cur) => cur ? { ...cur, showValue: patch.valueLabel ?? cur.showValue } : cur);
+                }
               }}
             />
           ) : (
@@ -166,13 +171,23 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
               kind={propsPopover.kind}
               anchor={propsPopover.screenCoords}
               isDark={isDark}
+              currentName={propsPopover.name}
               currentColor={propsPopover.color}
               currentDash={propsPopover.dash}
               currentWidth={propsPopover.width}
+              currentShowLabel={propsPopover.showLabel}
+              currentShowValue={propsPopover.showValue}
+              getAllNames={() => handleRef.current?.getAllPointNames() ?? []}
               onClose={() => setPropsPopover(null)}
               onMutate={(patch) => {
                 handleRef.current?.mutateObject(propsPopover.obj, patch);
                 if (patch.remove) setPropsPopover(null);
+                if (typeof patch.valueLabel === 'boolean') {
+                  setPropsPopover((cur) => cur ? { ...cur, showValue: patch.valueLabel ?? cur.showValue } : cur);
+                }
+                if (patch.attrs && 'withLabel' in patch.attrs) {
+                  setPropsPopover((cur) => cur ? { ...cur, showLabel: !!patch.attrs?.withLabel } : cur);
+                }
               }}
             />
           )
