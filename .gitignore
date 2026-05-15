@@ -13,3 +13,6 @@ dark-mode-*.png
 after-segment.png
 playground-initial.png
 examples/playground/dist/
+
+# Playwright screenshots — never commit
+*.png
