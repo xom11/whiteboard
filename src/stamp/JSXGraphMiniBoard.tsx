@@ -10,6 +10,7 @@ import {
   type GeomTool,
   type ToolDef,
 } from './jsxgraph/tools';
+import { paletteFor, resolveAttrColors, themeAxis, themeGrid, themeLabel } from './geometryTheme';
 
 // Re-export để backward-compat với consumer cũ.
 export { TOOLS, GROUP_LABELS };
@@ -71,12 +72,16 @@ export interface ObjectSnapshot {
 interface Props {
   onReady: (handle: MiniBoardHandle) => void;
   initialState: SerializedBoard | null;
+  /** Khi true → board nền tối, điểm/đường/label dùng tone sáng để contrast. */
+  isDark?: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type JxgObj = any;
 
-export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) => {
+export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDark }) => {
+  const isDarkRef = useRef(!!isDark);
+  isDarkRef.current = !!isDark;
   const containerId = useId().replace(/:/g, '_') + '_jxgmini';
   const containerRef = useRef<HTMLDivElement>(null);
   const boardRef = useRef<JxgObj>(null);
@@ -175,7 +180,10 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
       if (!boardRef.current) return null;
       const id = nextLocalId();
       const resolved = resolveArgs(args);
-      const obj = boardRef.current.create(type, resolved, { ...attrs });
+      // attrs có thể chứa sentinel `@stroke/@axis/@grid/@label` — log lưu nguyên
+      // bản (theme-neutral), JSXGraph nhận màu thực resolve theo theme hiện tại.
+      const resolvedAttrs = resolveAttrColors(attrs, paletteFor(isDarkRef.current));
+      const obj = boardRef.current.create(type, resolved, resolvedAttrs);
       pushLog(id, type, args, attrs, obj);
       return obj;
     },
@@ -531,12 +539,12 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     // For open shapes (segment, line, ray, vector). `color` shorthand also fills
     // closed shapes, so we use explicit strokeColor + transparent fillOpacity for
     // anything closed (circle, polygon, angle).
-    const stroke = { strokeColor: '#0f172a', strokeWidth: 2 };
+    const stroke = { strokeColor: '@stroke', strokeWidth: 2 };
     const strokeOnly = { ...stroke, fillColor: 'none', fillOpacity: 0 };
     const lblName = nextLabel();
     switch (toolDef.key) {
       case 'midpoint':
-        create('midpoint', labels, { name: lblName, color: '#000', size: 3 });
+        create('midpoint', labels, { name: lblName, color: '@stroke', size: 3 });
         break;
       case 'segment':
         create('segment', labels, stroke);
@@ -631,7 +639,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         break;
       }
       case 'polygon': {
-        create('polygon', labels, { fillColor: '#1e3a8a', fillOpacity: 0.10, borders: { strokeColor: '#0f172a', strokeWidth: 2 } });
+        create('polygon', labels, { fillColor: '#1e3a8a', fillOpacity: 0.10, borders: { strokeColor: '@stroke', strokeWidth: 2 } });
         break;
       }
       case 'area': {
@@ -959,6 +967,9 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
           opts.text.useKatex = false;
           opts.label = opts.label || {};
           opts.label.display = 'internal';
+          // Label tone theo theme — JSXGraph mặc định stroke black cho text label.
+          opts.label.strokeColor = themeLabel(isDarkRef.current);
+          opts.text.strokeColor = themeLabel(isDarkRef.current);
         }
       } catch { /* ignore */ }
       const board = JXG.JSXGraph.initBoard(containerId, {
@@ -998,7 +1009,8 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
               }
               continue;
             }
-            const obj = board.create(el.type, resolved, { ...el.attrs });
+            const themedAttrs = resolveAttrColors({ ...el.attrs }, paletteFor(isDarkRef.current));
+            const obj = board.create(el.type, resolved, themedAttrs);
             idMap.set(el.id, obj);
           } catch (err) {
             console.warn('Replay failed for', el.type, err);
@@ -1011,12 +1023,12 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
       // Initial axis/grid
       if (showAxisRef.current) {
         try {
-          axisObjsRef.current.x = board.create('axis', [[0, 0], [1, 0]], { strokeColor: '#94a3b8', name: '', withLabel: false });
-          axisObjsRef.current.y = board.create('axis', [[0, 0], [0, 1]], { strokeColor: '#94a3b8', name: '', withLabel: false });
+          axisObjsRef.current.x = board.create('axis', [[0, 0], [1, 0]], { strokeColor: themeAxis(isDarkRef.current), name: '', withLabel: false });
+          axisObjsRef.current.y = board.create('axis', [[0, 0], [0, 1]], { strokeColor: themeAxis(isDarkRef.current), name: '', withLabel: false });
         } catch { /* ignore */ }
       }
       if (showGridRef.current) {
-        try { board.create('grid', [], { strokeColor: '#e2e8f0', strokeOpacity: 1 }); } catch { /* ignore */ }
+        try { board.create('grid', [], { strokeColor: themeGrid(isDarkRef.current), strokeOpacity: 1 }); } catch { /* ignore */ }
       }
 
       // Pointer down: handle click-driven tool actions
@@ -1089,7 +1101,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
             const bId = localIdOf(b);
             if (aId && bId) {
               const name = nextLabel();
-              const attrs = { name, color: '#0f172a', size: 3, fillColor: '#0f172a', strokeColor: '#0f172a' };
+              const attrs = { name, color: '@stroke', size: 3, fillColor: '@stroke', strokeColor: '@stroke' };
               try {
                 // intersection trả về element [obj1, obj2] với giao gần (x, y).
                 // JSXGraph cần index i (0 hoặc 1) cho trường hợp 2 giao (line-circle, circle-circle).
@@ -1115,7 +1127,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
             }
           }
           const name = nextLabel();
-          create('point', [x, y], { name, color: '#0f172a', size: 3, fillColor: '#0f172a', strokeColor: '#0f172a' });
+          create('point', [x, y], { name, color: '@stroke', size: 3, fillColor: '@stroke', strokeColor: '@stroke' });
           return;
         }
 
@@ -1148,7 +1160,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
           // Otherwise pick (snap-to-existing or create) a new vertex
           const pick: JxgObj = snappedPoint ?? (() => {
             const name = nextLabel();
-            return create('point', [x, y], { name, color: '#0f172a', size: 3 });
+            return create('point', [x, y], { name, color: '@stroke', size: 3 });
           })();
           // Live preview: draw an edge from the previous pending vertex to
           // this new one so the user sees the polygon being built.
@@ -1236,7 +1248,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
           if (snapped) pick = snapped;
           else {
             const name = nextLabel();
-            pick = create('point', [x, y], { name, color: '#0f172a', size: 3, fillColor: '#0f172a', strokeColor: '#0f172a' });
+            pick = create('point', [x, y], { name, color: '@stroke', size: 3, fillColor: '@stroke', strokeColor: '@stroke' });
           }
         }
 
@@ -1490,7 +1502,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
                 create('regularpolygon', [p1Id, p2Id, n], {
                   fillColor: '#1e3a8a',
                   fillOpacity: 0.10,
-                  borders: { strokeColor: '#0f172a', strokeWidth: 2 },
+                  borders: { strokeColor: '@stroke', strokeWidth: 2 },
                 });
               } catch (err) {
                 console.warn('regularpolygon failed', err);
@@ -1542,8 +1554,8 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
       if (axisObjsRef.current.x) { try { b.removeObject(axisObjsRef.current.x); } catch { /* ignore */ } axisObjsRef.current.x = undefined; }
       if (axisObjsRef.current.y) { try { b.removeObject(axisObjsRef.current.y); } catch { /* ignore */ } axisObjsRef.current.y = undefined; }
       if (showAxis) {
-        axisObjsRef.current.x = b.create('axis', [[0, 0], [1, 0]], { strokeColor: '#94a3b8', name: '', withLabel: false });
-        axisObjsRef.current.y = b.create('axis', [[0, 0], [0, 1]], { strokeColor: '#94a3b8', name: '', withLabel: false });
+        axisObjsRef.current.x = b.create('axis', [[0, 0], [1, 0]], { strokeColor: themeAxis(isDarkRef.current), name: '', withLabel: false });
+        axisObjsRef.current.y = b.create('axis', [[0, 0], [0, 1]], { strokeColor: themeAxis(isDarkRef.current), name: '', withLabel: false });
       }
       b.update();
     } catch { /* ignore */ }
@@ -1561,7 +1573,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         }
       }
       if (showGrid) {
-        b.create('grid', [], { strokeColor: '#e2e8f0', strokeOpacity: 1 });
+        b.create('grid', [], { strokeColor: themeGrid(isDarkRef.current), strokeOpacity: 1 });
       }
       b.update();
     } catch { /* ignore */ }

@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Whiteboard Playground</title>
     <style>
+      /* Mini Tailwind shim — ExcalidrawWhiteboardView dùng .relative .h-full .w-full */
+      .relative { position: relative; }
+      .h-full { height: 100%; }
+      .w-full { width: 100%; }
       html, body, #root { margin: 0; padding: 0; height: 100%; font-family: system-ui, sans-serif; }
       body { background: #f8fafc; color: #0f172a; }
       .toolbar { padding: 6px 10px; background: #fff; border-bottom: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }

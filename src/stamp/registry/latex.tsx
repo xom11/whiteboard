@@ -123,11 +123,11 @@ export const latexStamp: StampType = {
   toolbarIcon: LatexIcon,
   toolbarTestId: 'stamp-toolbar-latex',
   matchesCustomData: isLatexCustomData,
-  async renderSvgFromCustomData(data) {
+  async renderSvgFromCustomData(data, ctx) {
     if (!isLatexCustomData(data)) {
       throw new Error('latexStamp.renderSvgFromCustomData: customData không phải latex');
     }
-    return renderLatexToSvg(data.src, data.displayMode);
+    return renderLatexToSvg(data.src, data.displayMode, !!ctx?.isDark);
   },
   Host: LatexStampHost,
 };

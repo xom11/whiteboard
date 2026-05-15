@@ -70,6 +70,13 @@ export interface ExcalidrawWhiteboardViewProps {
    * Truyền `[...DEFAULT_STAMPS, customStamp]` để thêm stamp mới.
    */
   stamps?: ReadonlyArray<StampType>;
+  /**
+   * Callback nhận Excalidraw imperative API khi nó mount xong. Dùng cho test
+   * (Playwright) hoặc consumer cần điều khiển scene ngoài luồng remote-sync.
+   * Tránh expose API nếu không cần — phần lớn consumer chỉ cần onSceneChange.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onApi?: (api: any) => void;
 }
 
 export function ExcalidrawWhiteboardView({
@@ -82,6 +89,7 @@ export function ExcalidrawWhiteboardView({
   langCode = 'vi-VN',
   persistKey,
   stamps = DEFAULT_STAMPS,
+  onApi,
 }: ExcalidrawWhiteboardViewProps) {
   const [api, setApi] = useState<ExApi | null>(null);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
@@ -258,7 +266,9 @@ export function ExcalidrawWhiteboardView({
         const elements = api.getSceneElements();
         if (!elements || elements.length === 0) return;
         if (cancelled) return;
-        await restoreMissingMathStampFiles(api, elements, stamps);
+        await restoreMissingMathStampFiles(api, elements, stamps, {
+          ctx: { isDark: isDarkTheme },
+        });
       } catch (err) {
         console.warn('Math stamp restore pass failed:', err);
       }
@@ -269,7 +279,35 @@ export function ExcalidrawWhiteboardView({
       cancelled = true;
       clearTimeout(t);
     };
-  }, [api, initialScene, remoteScene, stamps]);
+  }, [api, initialScene, remoteScene, stamps, isDarkTheme]);
+
+  // Khi user switch dark/light theme, force regenerate mọi math-stamp file để
+  // màu khớp canvas (giống cách Excalidraw tự đảo màu nét vẽ native).
+  // Ref guard tránh chạy ở lần mount đầu — restore pass ở trên đã handle.
+  const lastRegenThemeRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    if (!api) return;
+    if (lastRegenThemeRef.current === null) {
+      lastRegenThemeRef.current = isDarkTheme;
+      return;
+    }
+    if (lastRegenThemeRef.current === isDarkTheme) return;
+    lastRegenThemeRef.current = isDarkTheme;
+    let cancelled = false;
+    (async () => {
+      try {
+        const elements = api.getSceneElements();
+        if (!elements || elements.length === 0 || cancelled) return;
+        await restoreMissingMathStampFiles(api, elements, stamps, {
+          forceRegenerate: true,
+          ctx: { isDark: isDarkTheme },
+        });
+      } catch (err) {
+        console.warn('Math stamp theme regenerate failed:', err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [api, isDarkTheme, stamps]);
 
   useEffect(
     () => () => {
@@ -406,7 +444,7 @@ export function ExcalidrawWhiteboardView({
   return (
     <div className={`relative h-full w-full${isDarkTheme ? ' theme--dark' : ''}`}>
       <Excalidraw
-        excalidrawAPI={(a: ExApi) => setApi(a)}
+        excalidrawAPI={(a: ExApi) => { setApi(a); onApi?.(a); }}
         langCode={langCode}
         viewModeEnabled={!isTeacher}
         initialData={

@@ -33,7 +33,11 @@ async function loadKatexCss(): Promise<string> {
   return '';
 }
 
-export async function renderLatexToSvg(src: string, displayMode: boolean): Promise<string> {
+export async function renderLatexToSvg(
+  src: string,
+  displayMode: boolean,
+  isDark: boolean = false,
+): Promise<string> {
   const katex = await import('katex');
   const html = katex.default.renderToString(src, { displayMode, throwOnError: true, output: 'html' });
 
@@ -47,10 +51,11 @@ export async function renderLatexToSvg(src: string, displayMode: boolean): Promi
   document.body.removeChild(measureDiv);
 
   const cssText = await loadKatexCss();
+  const textColor = isDark ? '#e2e8f0' : '#000000';
 
   return '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '">' +
     '<foreignObject width="100%" height="100%">' +
-    '<div xmlns="http://www.w3.org/1999/xhtml" style="font-size:16px;line-height:1.2;">' +
+    '<div xmlns="http://www.w3.org/1999/xhtml" style="font-size:16px;line-height:1.2;color:' + textColor + ';">' +
     '<style>' + cssText + '</style>' +
     html +
     '</div>' +

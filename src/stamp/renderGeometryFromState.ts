@@ -1,10 +1,12 @@
 import { renderGeometryToSvg } from './renderGeometryToSvg';
 import { deserializeIntoBoard, type SerializedBoard } from './serializeBoard';
+import { paletteFor } from './geometryTheme';
 
 /**
  * Re-render geometry SVG từ jsonState đã serialize. Dùng cho 2 mục đích:
  *   1. Restore math-stamp file sau khi reload page (Excalidraw mất binary files).
- *   2. Có thể tái dùng trong tương lai khi cần export hoặc preview.
+ *   2. Re-render khi user switch dark/light theme — stamps đổi màu theo canvas
+ *      giống các nét vẽ native của Excalidraw.
  *
  * Implementation: tạo 1 div ẩn (off-screen, real dimensions để JSXGraph render
  * chuẩn), initBoard, replay creation log từ jsonState, dump SVG, dọn dẹp.
@@ -12,8 +14,12 @@ import { deserializeIntoBoard, type SerializedBoard } from './serializeBoard';
  * Lý do JXG.Options.text.display = 'internal': JSXGraph mặc định render
  * label bằng HTML <div> overlay → clone SVG export sẽ thiếu label.
  */
-export async function renderGeometrySvgFromState(jsonState: string): Promise<string> {
+export async function renderGeometrySvgFromState(
+  jsonState: string,
+  isDark: boolean = false,
+): Promise<string> {
   const parsed = JSON.parse(jsonState) as SerializedBoard;
+  const palette = paletteFor(isDark);
   const JXG = (await import('jsxgraph')).default;
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,8 +30,16 @@ export async function renderGeometrySvgFromState(jsonState: string): Promise<str
       opts.text.useASCIIMathML = false;
       opts.text.useMathJax = false;
       opts.text.useKatex = false;
+      opts.text.strokeColor = palette.label;
       opts.label = opts.label || {};
       opts.label.display = 'internal';
+      opts.label.strokeColor = palette.label;
+      // Axis/grid tự sinh bởi initBoard (axis:true/grid:true) — set default
+      // strokeColor theo theme để khớp.
+      opts.axis = opts.axis || {};
+      opts.axis.strokeColor = palette.axis;
+      opts.grid = opts.grid || {};
+      opts.grid.strokeColor = palette.grid;
     }
   } catch { /* ignore */ }
   const container = document.createElement('div');
@@ -45,7 +59,7 @@ export async function renderGeometrySvgFromState(jsonState: string): Promise<str
       keepAspectRatio: false,
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    deserializeIntoBoard(board as any, parsed);
+    deserializeIntoBoard(board as any, parsed, { palette });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (board as any).update();
     return renderGeometryToSvg(container);

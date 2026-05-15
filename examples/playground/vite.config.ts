@@ -11,6 +11,8 @@ export default defineConfig({
       '@tools': path.resolve(__dirname, '../../src/stamp/jsxgraph/tools.tsx'),
       '@transforms': path.resolve(__dirname, '../../src/stamp/transforms.ts'),
       '@serialize-board': path.resolve(__dirname, '../../src/stamp/serializeBoard.ts'),
+      // Shim next/dynamic để ExcalidrawWhiteboardView chạy ngoài Next.js.
+      'next/dynamic': path.resolve(__dirname, 'src/next-dynamic-shim.ts'),
     },
   },
   server: {

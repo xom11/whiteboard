@@ -141,6 +141,7 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
           <JSXGraphMiniBoard
             onReady={handleReady}
             initialState={initialState}
+            isDark={isDark}
           />
         </div>
         {propsPopover && (

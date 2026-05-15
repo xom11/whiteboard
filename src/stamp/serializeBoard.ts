@@ -4,6 +4,12 @@
 // type === 'transform': args là [refs đến điểm/đường/scalar], attrs là { type: 'translate'|'rotate'|'reflect'|'scale', ... }.
 // Object trả về (kết quả board.create('transform', ...)) được đăng ký vào idMap như mọi element khác
 // để point/line phụ thuộc reference được bằng id ('j5' → JSXGraph transform object).
+//
+// Log lưu màu dưới dạng sentinel ('@stroke', '@axis', '@grid', '@label') để
+// theme-neutral. Khi replay, palette resolve thành màu thực theo `isDark` hiện
+// tại (truyền qua options.palette).
+
+import { paletteFor, resolveAttrColors, type GeomPalette } from './geometryTheme';
 
 export interface SerializedElement {
   type: string;
@@ -70,12 +76,22 @@ function createValueLabel(board: any, target: any): unknown {
   return null;
 }
 
-export function deserializeIntoBoard(board: BoardLike, serialized: SerializedBoard): void {
+export interface DeserializeOptions {
+  /** Theme-aware palette để resolve sentinel attrs. Mặc định = light. */
+  palette?: GeomPalette;
+}
+
+export function deserializeIntoBoard(
+  board: BoardLike,
+  serialized: SerializedBoard,
+  options: DeserializeOptions = {},
+): void {
   // Replay: args may contain references to earlier elements by our serialized id ("j0", "j1"…).
   // We resolve those to actual JSXGraph objects via a local id→object map. Nested
   // arrays are also resolved recursively — needed for dilate, which logs the
   // transform parent of a transformed point as ["j2","j3","j4"] (a chain of 3
   // transforms passed to `board.create('point', [src, [t1,t2,t3]])`).
+  const palette = options.palette ?? paletteFor(false);
   const idMap = new Map<string, unknown>();
   const resolve = (a: unknown): unknown => {
     if (typeof a === 'string' && idMap.has(a)) return idMap.get(a);
@@ -90,7 +106,8 @@ export function deserializeIntoBoard(board: BoardLike, serialized: SerializedBoa
       if (txt) idMap.set(el.id, txt);
       continue;
     }
-    const created = board.create(el.type, resolvedArgs, { ...el.attrs });
+    const themedAttrs = resolveAttrColors({ ...el.attrs }, palette);
+    const created = board.create(el.type, resolvedArgs, themedAttrs);
     idMap.set(el.id, created);
   }
 }
