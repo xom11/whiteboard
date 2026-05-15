@@ -96,9 +96,9 @@ git push --follow-tags
 - Capture phase + `stopPropagation` để win Excalidraw's bubble handlers (G/L shortcuts xung đột L=Line)
 
 ### Git
-- Branch từ `main`: `feature/`, `bugfix/`, `hotfix/`, `refactor/`, `chore/`
+- Solo project — push thẳng vào `main` OK (chưa public version npm; bump + publish khi xong các round bugfix).
+- Branch phụ chỉ khi cần cô lập thử nghiệm: `feature/`, `bugfix/`, `hotfix/`, `refactor/`, `chore/`.
 - Commit message + PR description viết tiếng Việt (prefix giữ tiếng Anh: `feat`, `fix`, `chore`, `refactor`)
-- Không push thẳng vào `main`
 - **KHÔNG** thêm `Co-Authored-By` lines (per user preference)
 
 ### Test
