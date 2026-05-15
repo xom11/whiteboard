@@ -20,5 +20,7 @@ describe('public API back-compat aliases (sẽ xoá ở 0.6.0)', () => {
     expect(pkg.findStampForCustomData).toBeDefined();
     expect(pkg.isGeometryCustomData).toBeDefined();
     expect(pkg.isLatexCustomData).toBeDefined();
+    expect(pkg.geometry3dStamp).toBeDefined();
+    expect(pkg.isGeometry3DCustomData).toBeDefined();
   });
 });

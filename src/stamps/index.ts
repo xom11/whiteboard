@@ -7,12 +7,15 @@ export {
   isStampElement,
   geometryStamp,
   latexStamp,
+  geometry3dStamp,
   type StampType,
   type BaseStampCustomData,
   type GeometryCustomData,
   type LatexCustomData,
+  type Geometry3DCustomData,
   isGeometryCustomData,
   isLatexCustomData,
+  isGeometry3DCustomData,
 } from './shared/registry';
 
 export type {
@@ -28,6 +31,6 @@ export { restoreMissingStampFiles } from './shared/restoreStampFiles';
 export { ToolbarInjector } from './shared/ToolbarInjector';
 export { useShortcuts } from './shared/useShortcuts';
 
-// Union helper for consumers — extended in Phase B with Geometry3DCustomData
-import type { GeometryCustomData, LatexCustomData } from './shared/registry';
-export type StampCustomData = GeometryCustomData | LatexCustomData;
+// Union helper for consumers
+import type { GeometryCustomData, LatexCustomData, Geometry3DCustomData } from './shared/registry';
+export type StampCustomData = GeometryCustomData | LatexCustomData | Geometry3DCustomData;

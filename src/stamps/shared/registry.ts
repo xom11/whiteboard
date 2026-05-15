@@ -1,9 +1,15 @@
 import { geometryStamp } from '../geometry-2d';
 import { latexStamp } from '../latex';
+import { geometry3dStamp } from '../geometry-3d';
 import type { StampType } from './types';
 
 export { geometryStamp, type GeometryCustomData, isGeometryCustomData } from '../geometry-2d';
 export { latexStamp, type LatexCustomData, isLatexCustomData } from '../latex';
+export {
+  geometry3dStamp,
+  type Geometry3DCustomData,
+  isGeometry3DCustomData,
+} from '../geometry-3d';
 export type { StampType, BaseStampCustomData } from './types';
 
 /**
@@ -15,7 +21,11 @@ export type { StampType, BaseStampCustomData } from './types';
  *   2. Add vào DEFAULT_STAMPS ở dưới, HOẶC consumer truyền
  *      `<Whiteboard stamps={[...DEFAULT_STAMPS, chartStamp]} />`.
  */
-export const DEFAULT_STAMPS: ReadonlyArray<StampType> = Object.freeze([geometryStamp, latexStamp]);
+export const DEFAULT_STAMPS: ReadonlyArray<StampType> = Object.freeze([
+  geometryStamp,
+  latexStamp,
+  geometry3dStamp,
+]);
 
 /** Tìm stamp tương ứng với customData của element. null nếu không match. */
 export function findStampForCustomData(

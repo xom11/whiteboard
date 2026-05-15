@@ -19,12 +19,15 @@ export {
   isStampElement,
   geometryStamp,
   latexStamp,
+  geometry3dStamp,
   isGeometryCustomData,
   isLatexCustomData,
+  isGeometry3DCustomData,
   type StampType,
   type BaseStampCustomData,
   type GeometryCustomData,
   type LatexCustomData,
+  type Geometry3DCustomData,
   type StampCustomData,
 } from './stamps';
 export { restoreMissingStampFiles } from './stamps';
