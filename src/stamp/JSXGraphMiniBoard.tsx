@@ -565,13 +565,25 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         const obj = picks[0];
         try {
           boardRef.current.removeObject(obj);
-          // Also remove from log (best effort)
-          const id = localIdOf(obj);
-          if (id) {
-            creationLogRef.current = creationLogRef.current.filter(e => e.id !== id);
-            objMapRef.current.delete(id);
-            setHistoryTick((t) => t + 1);
+          // JSXGraph cascade-removes dependents (e.g. xoá point → segment dùng
+          // point đó cũng biến mất). Đồng bộ log: walk objMap, giữ lại id nào
+          // vẫn còn trong board.objects; còn lại drop khỏi log + map. Trước
+          // patch, chỉ entry chính bị xoá → log dangling reference, replay sẽ
+          // throw vì id phụ thuộc không resolve được.
+          const board = boardRef.current;
+          const aliveIds = new Set<string>();
+          for (const [id, o] of objMapRef.current.entries()) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const jxgId = (o as any)?.id;
+            if (jxgId && board && board.objects && board.objects[jxgId]) {
+              aliveIds.add(id);
+            }
           }
+          creationLogRef.current = creationLogRef.current.filter((e) => aliveIds.has(e.id));
+          for (const id of Array.from(objMapRef.current.keys())) {
+            if (!aliveIds.has(id)) objMapRef.current.delete(id);
+          }
+          setHistoryTick((t) => t + 1);
         } catch { /* ignore */ }
         break;
       }
