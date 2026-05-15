@@ -145,20 +145,23 @@ Vị trí: anchor ở screen coords, prefer phía dưới-phải; nếu tràn vi
 
 ### 4.3 Color palette
 
-Cố định 8 màu:
+Dùng đúng palette stroke chuẩn của Excalidraw (`DEFAULT_ELEMENT_STROKE_COLOR_PALETTE` / common stroke colors) để khi user copy/paste hoặc kết hợp với element vẽ bằng bút Excalidraw, màu nhất quán:
 
 ```ts
+// 8 màu chính từ Excalidraw — top row của element stroke picker
 const PALETTE = [
-  '#0f172a', // đen
-  '#dc2626', // đỏ
-  '#2563eb', // xanh dương
-  '#059669', // xanh lá
-  '#ea580c', // cam
-  '#7c3aed', // tím
-  '#64748b', // xám
-  '#92400e', // nâu
+  '#1e1e1e', // black
+  '#e03131', // red
+  '#e8590c', // orange
+  '#f08c00', // yellow
+  '#2f9e44', // green
+  '#1971c2', // blue
+  '#9c36b5', // grape
+  '#868e96', // gray
 ];
 ```
+
+Nếu Excalidraw có export const trực tiếp (`COLOR_PALETTE.elementStroke` hoặc `DEFAULT_ELEMENT_STROKE_COLORS`), import và lấy 8 màu đầu thay vì hard-code. Nếu không truy cập được (Excalidraw không export public), giữ hard-code với comment chỉ rõ nguồn để cập nhật khi Excalidraw đổi palette.
 
 Đổi màu = patch `{ strokeColor, fillColor: kind === 'circle' ? 'none' : color, color }`.
 
