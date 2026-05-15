@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Whiteboard Demo — E2E test harness</title>
+    <style>
+      html,
+      body,
+      #root {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        width: 100vw;
+        overflow: hidden;
+        font-family: system-ui, sans-serif;
+      }
+      /* Minimal Tailwind utility shims used by Whiteboard.tsx so the demo
+         doesn't need a full Tailwind build. */
+      .h-full { height: 100%; }
+      .w-full { width: 100%; }
+      .relative { position: relative; }
+      .absolute { position: absolute; }
+      .flex { display: flex; }
+      .items-center { align-items: center; }
+      .justify-center { justify-content: center; }
+      .text-sm { font-size: 0.875rem; }
+      .text-gray-500 { color: rgb(107 114 128); }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>
