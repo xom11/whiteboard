@@ -10,3 +10,6 @@ coverage/
 .playwright-mcp/
 dark-mode-*.png
 .worktrees/
+after-segment.png
+playground-initial.png
+examples/playground/dist/

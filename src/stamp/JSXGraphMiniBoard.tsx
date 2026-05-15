@@ -761,6 +761,26 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     return best ? best.obj : null;
   }, [screenCoordsOf]);
 
+  // Label-aware snap: if the click landed on a JSXGraph text label (drawn near
+  // each named element with `display:'internal'`), follow it back to the owning
+  // element. Without this, clicking the "A" label of a point with the segment
+  // tool falls through to `findNearestPoint` and — when the label center is
+  // beyond the 12 px tolerance — creates a duplicate point right next to A.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const promoteLabel = useCallback((o: JxgObj): JxgObj => {
+    if (!o) return o;
+    const t = (o.elType || o.type || '').toString().toLowerCase();
+    if (t !== 'text') return o;
+    const b = boardRef.current;
+    if (!b) return o;
+    try {
+      for (const c of (b.objectsList || [])) {
+        if (c.label === o) return c;
+      }
+    } catch { /* ignore */ }
+    return o;
+  }, []);
+
   // Pending transform state for rotate/dilate/regularPolygon (needs param popover)
   interface PendingTransform {
     tool: 'rotate' | 'dilate' | 'regularPolygon';
@@ -877,8 +897,12 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         const coords = boardRef.current.getUsrCoordsOfMouse(e);
         const x = coords[0], y = coords[1];
 
-        // Detect if click hits any existing object (snap target)
-        const hits = objectsAt(e).filter(o => o !== axisObjsRef.current.x && o !== axisObjsRef.current.y);
+        // Detect if click hits any existing object (snap target). Text labels
+        // are promoted to their owning element so a click on the "A" label
+        // counts as a click on the point A.
+        const hits = objectsAt(e)
+          .map(promoteLabel)
+          .filter(o => o !== axisObjsRef.current.x && o !== axisObjsRef.current.y);
         // Prefer points over other elements when present
         const bestHit: JxgObj | null = hits.find(o => objKind(o) === 'point') ?? hits[0] ?? null;
         // Generous fallback used when a slot expects a point: JSXGraph's `hasPoint`
@@ -952,6 +976,11 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
             clearPending();
             return;
           }
+          // Reject re-picking an interior pending vertex (would create a degenerate edge).
+          if (snappedPoint && pendingRef.current.includes(snappedPoint)) {
+            flashWarn('Đỉnh này đã có — click điểm khác hoặc click lại điểm đầu để đóng');
+            return;
+          }
           // Otherwise pick (snap-to-existing or create) a new vertex
           const pick: JxgObj = snappedPoint ?? (() => {
             const name = nextLabel();
@@ -1020,9 +1049,20 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
             flashWarn(`Còn cần click vào ${needs.join(' + ')} có sẵn`);
             return;
           }
+          // Reject duplicate picks (e.g. click the same point twice for midpoint
+          // would produce a degenerate object pointing at itself).
+          if (pendingRef.current.includes(pick)) {
+            flashWarn('Đã chọn đối tượng này — chọn đối tượng khác');
+            return;
+          }
         } else {
           // --- Mode B: lenient, all slots want a point ---
           const snapped = snapPointForPointSlot();
+          if (snapped && pendingRef.current.includes(snapped)) {
+            // Same point clicked twice → would produce a zero-length segment / etc.
+            flashWarn('Đã chọn điểm này — chọn điểm khác hoặc click chỗ trống');
+            return;
+          }
           if (snapped) pick = snapped;
           else {
             const name = nextLabel();
@@ -1098,7 +1138,9 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         const [sx, sy] = sc;
         const moved = Math.hypot(sx - start.sx, sy - start.sy);
         if (moved > 4) return;  // drag, không phải click
-        const hits = objectsAt(e).filter((o) => o !== axisObjsRef.current.x && o !== axisObjsRef.current.y);
+        const hits = objectsAt(e)
+          .map(promoteLabel)
+          .filter((o) => o !== axisObjsRef.current.x && o !== axisObjsRef.current.y);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const best: any = hits.find((o) => objKind(o) === 'point') ?? hits[0] ?? findNearestPoint(e, 12);
         if (!best) {

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Whiteboard Playground</title>
+    <style>
+      html, body, #root { margin: 0; padding: 0; height: 100%; font-family: system-ui, sans-serif; }
+      body { background: #f8fafc; color: #0f172a; }
+      .toolbar { padding: 6px 10px; background: #fff; border-bottom: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+      .toolbar button { font-size: 12px; padding: 4px 8px; border: 1px solid #cbd5e1; background: #fff; border-radius: 4px; cursor: pointer; }
+      .toolbar button.active { background: #0f172a; color: #fff; }
+      .toolbar .group { font-size: 11px; color: #64748b; padding: 0 4px; }
+      .board-wrap { padding: 12px; height: calc(100vh - 50px); display: flex; gap: 12px; }
+      .board-host { flex: 1; min-width: 0; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; overflow: hidden; }
+      .board-host > div { width: 100% !important; height: 100% !important; }
+      .info { width: 340px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; font-size: 12px; overflow: auto; }
+      .info pre { background: #f1f5f9; padding: 8px; border-radius: 4px; white-space: pre-wrap; word-break: break-all; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
