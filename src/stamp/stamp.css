@@ -82,3 +82,31 @@
   border-color: rgb(71 85 105);
   color: rgb(226 232 240);
 }
+
+/* --- Popover & swatch active states (Task 13) --- */
+.theme--dark [data-stamp-area="true"] .bg-emerald-100 {
+  background-color: rgb(6 78 59);
+}
+.theme--dark [data-stamp-area="true"] .border-emerald-500 {
+  border-color: rgb(52 211 153);
+}
+.theme--dark [data-stamp-area="true"] .ring-emerald-300 {
+  --tw-ring-color: rgb(110 231 183);
+}
+.theme--dark [data-stamp-area="true"] .border-rose-300 {
+  border-color: rgb(190 18 60);
+}
+.theme--dark [data-stamp-area="true"] .hover\:bg-rose-100:hover {
+  background-color: rgb(127 29 29);
+}
+
+/* --- Geometry header dimmer trong dark --- */
+.theme--dark [data-stamp-area="true"] .bg-gradient-to-r.from-emerald-600 {
+  background-image: linear-gradient(to right, rgb(6 95 70), rgb(15 76 76));
+}
+.theme--dark [data-stamp-area="true"] .bg-emerald-600 {
+  background-color: rgb(6 95 70);
+}
+.theme--dark [data-stamp-area="true"] .hover\:bg-emerald-700:hover {
+  background-color: rgb(4 120 87);
+}

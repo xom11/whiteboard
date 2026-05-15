@@ -14,16 +14,17 @@ interface ShellProps {
   icon: React.ReactNode;
   onClose: () => void;
   children: React.ReactNode;
+  isDark?: boolean;
 }
 
-function Shell({ title, icon, onClose, children }: ShellProps) {
+function Shell({ title, icon, onClose, children, isDark }: ShellProps) {
   return (
     <aside
       role="complementary"
       aria-label={title}
       data-testid="stamp-left-panel"
       data-stamp-area="true"
-      className="absolute left-0 top-0 z-30 flex h-full w-60 flex-col border-r border-slate-200 bg-white shadow-md animate-in slide-in-from-left duration-200"
+      className={`${isDark ? 'theme--dark ' : ''}absolute left-0 top-0 z-30 flex h-full w-60 flex-col border-r border-slate-200 bg-white shadow-md animate-in slide-in-from-left duration-200`}
     >
       <header className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-3 py-2">
         <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-800">
@@ -69,6 +70,7 @@ interface GeometryLeftPanelProps {
   onUndo: () => void;
   canUndo: boolean;
   onClose: () => void;
+  isDark?: boolean;
 }
 
 const GeometryIconHeader = (
@@ -90,6 +92,7 @@ export function GeometryLeftPanel({
   onUndo,
   canUndo,
   onClose,
+  isDark,
 }: GeometryLeftPanelProps) {
   // Group TOOLS by category
   const grouped = TOOLS.reduce<Record<string, ToolDef[]>>((acc, t) => {
@@ -127,7 +130,7 @@ export function GeometryLeftPanel({
 
   return (
     <>
-    <Shell title="Hình học" icon={GeometryIconHeader} onClose={onClose}>
+    <Shell title="Hình học" icon={GeometryIconHeader} onClose={onClose} isDark={isDark}>
       <Section label="Bố cục">
         <div className="flex items-center gap-3 text-[11px] text-slate-700">
           <label className="inline-flex select-none items-center gap-1.5">

@@ -1,6 +1,7 @@
 'use client';
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { deserializeIntoBoard, type SerializedBoard, type SerializedElement } from './serializeBoard';
+import { getDefiningPoints, buildTransformSpec } from './transforms';
 
 // Tool keys — match GeoGebra-style toolset
 export type GeomTool =
@@ -24,7 +25,12 @@ export type GeomTool =
   | 'area'
   | 'toggleLabel'
   | 'toggleVisible'
-  | 'delete';
+  | 'delete'
+  | 'translate'
+  | 'rotate'
+  | 'reflectLine'
+  | 'reflectPoint'
+  | 'dilate';
 
 export interface MiniBoardHandle {
   getContainer: () => HTMLDivElement | null;
@@ -44,6 +50,27 @@ export interface MiniBoardHandle {
   canUndo: () => boolean;
   /** Subscribe khi state thay đổi (tool / showAxis / showGrid / undo). */
   subscribe: (cb: () => void) => () => void;
+  /** Đọc snapshot thuộc tính object (cho popover). */
+  snapshotObject: (obj: unknown, anchorScreen: { x: number; y: number }) => ObjectSnapshot | null;
+  /** Mutate thuộc tính + sync log. */
+  mutateObject: (obj: unknown, patch: { attrs?: Record<string, unknown>; remove?: boolean }) => void;
+  /** Subscribe selection-from-move-tool. Trả về unsubscribe. */
+  onSelect: (cb: (snap: ObjectSnapshot) => void) => () => void;
+  onTransformParam: (cb: (info: { tool: 'rotate' | 'dilate'; anchor: { x: number; y: number } } | null) => void) => () => void;
+  confirmTransformParam: (value: number) => void;
+  cancelTransformParam: () => void;
+}
+
+export interface ObjectSnapshot {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  obj: any;
+  kind: 'point' | 'line' | 'circle';
+  name: string;
+  color: string;
+  dash: number;
+  width: number;
+  face: 'o' | 'circle' | 'cross' | 'plus';
+  screenCoords: { x: number; y: number };
 }
 
 interface Props {
@@ -56,7 +83,7 @@ export interface ToolDef {
   label: string;
   hint: string;
   icon: React.ReactNode;
-  group: 'move' | 'point' | 'line' | 'construct' | 'polygon' | 'circle' | 'measure' | 'edit';
+  group: 'move' | 'point' | 'line' | 'construct' | 'polygon' | 'circle' | 'measure' | 'edit' | 'transform';
   needs: number; // number of clicks / points required before action fires
   // accepts: 'any' (point or non-point), 'point', 'line', 'circle'
   accepts?: Array<'point' | 'line' | 'circle' | 'any'>;
@@ -127,6 +154,21 @@ const Icon = {
   trash: (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6 l-1 14 a 2 2 0 0 1 -2 2 H 8 a 2 2 0 0 1 -2 -2 l-1 -14"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
   ),
+  translate: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4 L20 20"/><polygon points="14,4 20,4 20,10" fill="currentColor"/><circle cx="5" cy="5" r="1.5" fill="currentColor"/></svg>
+  ),
+  rotate: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12 A8 8 0 1 1 12 20"/><polyline points="4,9 4,13 8,13"/></svg>
+  ),
+  reflectLine: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="2" x2="12" y2="22" strokeDasharray="3 2"/><polygon points="4,6 9,12 4,18" fill="currentColor"/><polygon points="20,6 15,12 20,18" fill="currentColor"/></svg>
+  ),
+  reflectPoint: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="5" cy="5" r="1.6" fill="currentColor"/><circle cx="19" cy="19" r="1.6" fill="currentColor"/><line x1="5" y1="5" x2="19" y2="19" strokeDasharray="2 2"/></svg>
+  ),
+  dilate: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1.5" fill="currentColor"/><polygon points="6,18 18,18 12,6" fillOpacity="0.1" fill="currentColor"/><polygon points="9,15 15,15 12,11" fill="currentColor"/></svg>
+  ),
 };
 
 export const TOOLS: ToolDef[] = [
@@ -151,6 +193,11 @@ export const TOOLS: ToolDef[] = [
   { key: 'toggleLabel', label: 'Hiện/ẩn tên', hint: 'Click vào đối tượng', icon: Icon.toggleLabel, group: 'edit', needs: 1, accepts: ['any'] },
   { key: 'toggleVisible', label: 'Hiện/ẩn đối tượng', hint: 'Click vào đối tượng', icon: Icon.toggleVisible, group: 'edit', needs: 1, accepts: ['any'] },
   { key: 'delete', label: 'Xoá', hint: 'Click vào đối tượng', icon: Icon.trash, group: 'edit', needs: 1, accepts: ['any'] },
+  { key: 'translate', label: 'Phép tịnh tiến', hint: 'Click object → 2 điểm tạo vector', icon: Icon.translate, group: 'transform', needs: 3, accepts: ['any', 'point', 'point'] },
+  { key: 'rotate', label: 'Quay đối tượng', hint: 'Click object → tâm quay → nhập góc', icon: Icon.rotate, group: 'transform', needs: 2, accepts: ['any', 'point'] },
+  { key: 'reflectLine', label: 'Đối xứng qua đường thẳng', hint: 'Click object → đường thẳng', icon: Icon.reflectLine, group: 'transform', needs: 2, accepts: ['any', 'line'] },
+  { key: 'reflectPoint', label: 'Đối xứng qua điểm', hint: 'Click object → tâm đối xứng', icon: Icon.reflectPoint, group: 'transform', needs: 2, accepts: ['any', 'point'] },
+  { key: 'dilate', label: 'Phép vị tự', hint: 'Click object → tâm → nhập tỷ số k', icon: Icon.dilate, group: 'transform', needs: 2, accepts: ['any', 'point'] },
 ];
 
 export const GROUP_LABELS: Record<ToolDef['group'], string> = {
@@ -162,6 +209,7 @@ export const GROUP_LABELS: Record<ToolDef['group'], string> = {
   circle: 'Đường tròn',
   measure: 'Đo lường',
   edit: 'Chỉnh sửa',
+  transform: 'Phép biến hình',
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -213,6 +261,12 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
   // Live preview segments while building a polygon/area: drawn between
   // consecutive pending points so the user sees the shape forming.
   const previewSegRef = useRef<JxgObj[]>([]);
+  // Phantom point that tracks mouse position for 2-3 click tool live preview.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const phantomRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const previewShapeRef = useRef<any>(null);
+  const previewRafRef = useRef<number | null>(null);
   // Tick state forces re-render so the undo button enable state stays in sync
   // with creationLogRef (which is mutated outside React).
   const [historyTick, setHistoryTick] = useState(0);
@@ -279,6 +333,61 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     return null;
   }, []);
 
+  const snapshotObject = useCallback((obj: unknown, anchorScreen: { x: number; y: number }): ObjectSnapshot | null => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const o: any = obj;
+    const k = objKind(o);
+    if (k !== 'point' && k !== 'line' && k !== 'circle') return null;
+    const v = o.visProp ?? {};
+    return {
+      obj: o,
+      kind: k,
+      name: typeof o.name === 'string' ? o.name : '',
+      color: (v.strokecolor as string) ?? '#1e1e1e',
+      dash: typeof v.dash === 'number' ? v.dash : 0,
+      width: typeof v.strokewidth === 'number' ? v.strokewidth : 2,
+      face: (v.face as ObjectSnapshot['face']) ?? 'o',
+      screenCoords: anchorScreen,
+    };
+  }, []);
+
+  const mutateObject = useCallback((obj: unknown, patch: { attrs?: Record<string, unknown>; remove?: boolean }) => {
+    if (!boardRef.current) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const o: any = obj;
+    if (patch.remove) {
+      try { boardRef.current.removeObject(o); } catch { /* ignore */ }
+      // Cascade: walk log and drop entries whose JSXGraph object was also removed
+      const board = boardRef.current;
+      const aliveIds = new Set<string>();
+      for (const [id, obj] of objMapRef.current.entries()) {
+        // JSXGraph keeps objects in board.objects keyed by JSXGraph internal id
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const jxgId = (obj as any)?.id;
+        if (jxgId && board && board.objects && board.objects[jxgId]) {
+          aliveIds.add(id);
+        }
+      }
+      // Drop dead entries from log + map
+      creationLogRef.current = creationLogRef.current.filter((e) => aliveIds.has(e.id));
+      for (const id of Array.from(objMapRef.current.keys())) {
+        if (!aliveIds.has(id)) objMapRef.current.delete(id);
+      }
+      setHistoryTick((t) => t + 1);
+      return;
+    }
+    if (patch.attrs) {
+      try { o.setAttribute(patch.attrs); } catch { /* ignore */ }
+      const id = localIdOf(o);
+      if (id) {
+        const entry = creationLogRef.current.find((e) => e.id === id);
+        if (entry) entry.attrs = { ...entry.attrs, ...patch.attrs };
+        setHistoryTick((t) => t + 1);
+      }
+    }
+    try { boardRef.current.update(); } catch { /* ignore */ }
+  }, [localIdOf]);
+
   const clearPreviewSegs = useCallback(() => {
     const b = boardRef.current;
     if (!b) return;
@@ -288,11 +397,106 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     previewSegRef.current = [];
   }, []);
 
+  const removePhantom = useCallback(() => {
+    const b = boardRef.current;
+    if (!b) return;
+    if (previewShapeRef.current) {
+      try { b.removeObject(previewShapeRef.current); } catch { /* ignore */ }
+      previewShapeRef.current = null;
+    }
+    if (phantomRef.current) {
+      try { b.removeObject(phantomRef.current); } catch { /* ignore */ }
+      phantomRef.current = null;
+    }
+  }, []);
+
   const clearPending = useCallback(() => {
+    removePhantom();
     clearPreviewSegs();
     pendingRef.current = [];
     setPendingCount(0);
-  }, [clearPreviewSegs]);
+  }, [clearPreviewSegs, removePhantom]);
+
+  // Build a transient preview shape (not logged) from pending picks + phantom point.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const buildPreview = useCallback((toolDef: ToolDef, picks: any[], phantom: any) => {
+    const b = boardRef.current;
+    if (!b) return null;
+    const style = { strokeColor: '#3b82f6', strokeWidth: 1.5, strokeOpacity: 0.65, dash: 2, fixed: true, highlight: false, withLabel: false } as Record<string, unknown>;
+    const circStyle = { ...style, fillColor: 'none', fillOpacity: 0 };
+    try {
+      switch (toolDef.key) {
+        case 'segment':
+        case 'midpoint':
+        case 'distance':
+          return b.create('segment', [picks[0], phantom], style);
+        case 'line':
+          return b.create('line', [picks[0], phantom], style);
+        case 'ray':
+          return b.create('line', [picks[0], phantom], { ...style, straightFirst: false, straightLast: true });
+        case 'vector':
+          return b.create('arrow', [picks[0], phantom], style);
+        case 'circleCenter':
+          return b.create('circle', [picks[0], phantom], circStyle);
+        case 'circle3':
+          if (picks.length === 1) return b.create('circle', [picks[0], phantom], circStyle);
+          if (picks.length === 2) return b.create('circumcircle', [picks[0], picks[1], phantom], circStyle);
+          return null;
+        case 'angle':
+          if (picks.length === 1) return b.create('segment', [picks[0], phantom], style);
+          if (picks.length === 2) return b.create('angle', [picks[0], picks[1], phantom], { ...style, radius: 1, fillColor: '#22c55e', fillOpacity: 0.15 });
+          return null;
+        case 'perpBisector':
+          return b.create('segment', [picks[0], phantom], style);
+        case 'angleBisector':
+          if (picks.length === 1) return b.create('segment', [picks[0], phantom], style);
+          if (picks.length === 2) return b.create('bisector', [picks[0], picks[1], phantom], style);
+          return null;
+        case 'perpendicular':
+        case 'parallel':
+        case 'tangent':
+          if (picks.length === 1) {
+            const k = objKind(picks[0]);
+            if (k === 'line' && toolDef.key !== 'tangent') {
+              return b.create(toolDef.key, [picks[0], phantom], style);
+            }
+            if (k === 'circle' && toolDef.key === 'tangent') {
+              const glider = b.create('glider', [phantom.X(), phantom.Y(), picks[0]], { visible: false, withLabel: false });
+              return b.create('tangent', [glider], style);
+            }
+          }
+          return null;
+        default:
+          return null;
+      }
+    } catch {
+      return null;
+    }
+  }, []);
+
+  // Tear down old preview shape and build a new one from current picks + phantom.
+  const refreshPreview = useCallback(() => {
+    const b = boardRef.current;
+    if (!b) return;
+    // Tear down current preview shape (not the phantom)
+    if (previewShapeRef.current) {
+      try { b.removeObject(previewShapeRef.current); } catch { /* ignore */ }
+      previewShapeRef.current = null;
+    }
+    const t = toolRef.current;
+    const toolDef = TOOLS.find((td) => td.key === t);
+    if (!toolDef) return;
+    const picks = pendingRef.current;
+    if (picks.length === 0 || toolDef.needs <= 0) return;
+    if (picks.length >= toolDef.needs) return;
+    // Create phantom if missing
+    if (!phantomRef.current) {
+      try {
+        phantomRef.current = b.create('point', [0, 0], { visible: false, fixed: true, withLabel: false, name: '' });
+      } catch { return; }
+    }
+    previewShapeRef.current = buildPreview(toolDef, picks, phantomRef.current);
+  }, [buildPreview]);
 
   // Apply tool action with a sequence of picked refs
   const finalize = useCallback((toolDef: ToolDef, picks: JxgObj[]) => {
@@ -429,6 +633,68 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     }
   }, [create, localIdOf, nextLabel]);
 
+  const finalizeTransformCreate = useCallback((
+    spec: { params: unknown[]; attrs: { type: 'translate' | 'rotate' | 'reflect' | 'scale' } },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    source: any,
+  ) => {
+    if (!boardRef.current) return;
+    const def = getDefiningPoints(source);
+    if (!def) { flashWarn('Không thể biến đổi đối tượng này'); return; }
+
+    // 1. Create + log transform entry
+    const transformLogArgs: unknown[] = [];
+    for (const p of spec.params) {
+      if (typeof p === 'function') {
+        flashWarn('Tham số transform không serialize được — bỏ qua');
+        return;
+      }
+      if (p && typeof p === 'object') {
+        const id = localIdOf(p);
+        if (!id) {
+          flashWarn('Đối tượng tham chiếu không nằm trong board — không thể biến đổi');
+          return;
+        }
+        transformLogArgs.push(id);
+      } else {
+        transformLogArgs.push(p);
+      }
+    }
+    const tId = nextLocalId();
+    const transformObj = boardRef.current.create('transform', spec.params, spec.attrs);
+    creationLogRef.current.push({ id: tId, type: 'transform', args: transformLogArgs, attrs: spec.attrs as Record<string, unknown> });
+    objMapRef.current.set(tId, transformObj);
+
+    // 2. Transform each defining point — log each
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const transformedPoints: any[] = def.points.map((src) => {
+      const srcId = localIdOf(src);
+      const id = nextLocalId();
+      const srcName = typeof src.name === 'string' ? src.name : '';
+      const newName = srcName ? `${srcName}'` : nextLabel();
+      const attrs = { name: newName, size: 3, color: '#0ea5e9', strokeColor: '#0ea5e9', fillColor: '#0ea5e9' };
+      const obj = boardRef.current!.create('point', [transformObj, src], attrs);
+      creationLogRef.current.push({ id, type: 'point', args: [tId, srcId ?? src], attrs });
+      objMapRef.current.set(id, obj);
+      return obj;
+    });
+
+    // 3. Recreate same-kind object from transformed points
+    const baseStyle = { ...def.attrs, strokeColor: '#0ea5e9' };
+    const strokeOnly = { ...baseStyle, fillColor: 'none', fillOpacity: 0 };
+    const ids = transformedPoints.map((p) => localIdOf(p)).filter((s): s is string => !!s);
+    switch (def.kind) {
+      case 'point': /* nothing — already created */ break;
+      case 'segment': create('segment', ids, baseStyle); break;
+      case 'line': create('line', ids, baseStyle); break;
+      case 'ray': create('line', ids, { ...baseStyle, straightFirst: false, straightLast: true }); break;
+      case 'arrow': create('arrow', ids, baseStyle); break;
+      case 'circleCenter': create('circle', ids, strokeOnly); break;
+      case 'circle3': create('circumcircle', ids, strokeOnly); break;
+    }
+    setHistoryTick((t) => t + 1);
+  }, [create, flashWarn, localIdOf, nextLabel, nextLocalId]);
+
   // Undo: remove the most recently logged creation. Also clears any in-progress
   // polygon construction (pending picks + preview segments) so state is sane.
   const undoLast = useCallback(() => {
@@ -451,22 +717,32 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     setHistoryTick((t) => t + 1);
   }, [clearPending]);
 
-  // Global Ctrl/Cmd+Z while the panel is mounted. Skipped when focus is in a
-  // text input so we don't hijack other undo flows. Capture phase + stop
+  // Global Ctrl/Cmd+Z + Esc while the panel is mounted. Skipped when focus is
+  // in a text input so we don't hijack other undo flows. Capture phase + stop
   // propagation so Excalidraw's underlying undo doesn't also fire when the
-  // panel is open on top of the whiteboard.
+  // panel is open on top of the whiteboard. Esc cancels in-progress picks.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && !e.shiftKey)) return;
       const ae = document.activeElement as HTMLElement | null;
-      if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable)) return;
-      e.preventDefault();
-      e.stopPropagation();
-      undoLast();
+      const inField = !!(ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable));
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+        if (inField) return;
+        e.preventDefault();
+        e.stopPropagation();
+        undoLastRef.current();
+        return;
+      }
+      if (e.key === 'Escape' && !inField) {
+        if (pendingRef.current.length > 0) {
+          e.preventDefault();
+          e.stopPropagation();
+          clearPendingRef.current();
+        }
+      }
     };
     window.addEventListener('keydown', onKey, { capture: true });
     return () => window.removeEventListener('keydown', onKey, { capture: true });
-  }, [undoLast]);
+  }, []);
 
   // Translate a pointer event into JSXGraph SVG-pixel coords (the coord system
   // `hasPoint` uses). Falls back to manual rect math if `getMousePosition` is
@@ -539,6 +815,22 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     } catch { /* ignore */ }
     return best ? best.obj : null;
   }, [screenCoordsOf]);
+
+  // Pending transform state for rotate/dilate (needs param popover)
+  interface PendingTransform {
+    tool: 'rotate' | 'dilate';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    source: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    center: any;
+    anchorScreen: { x: number; y: number };
+  }
+  const pendingTransformRef = useRef<PendingTransform | null>(null);
+  type TransformPopoverInfo = { tool: 'rotate' | 'dilate'; anchor: { x: number; y: number } } | null;
+  const transformSubsRef = useRef<Set<(info: TransformPopoverInfo) => void>>(new Set());
+  const emitTransform = useCallback((info: TransformPopoverInfo) => {
+    transformSubsRef.current.forEach((cb) => { try { cb(info); } catch { /* ignore */ } });
+  }, []);
 
   // Initialize board
   useEffect(() => {
@@ -615,7 +907,13 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
       board.on('down', (e: any) => {
         if (!boardRef.current) return;
         const t = toolRef.current;
-        if (t === 'move') return;
+        if (t === 'move') {
+          const sc = screenCoordsOf(e);
+          if (!sc) return;
+          const [sx, sy] = sc;
+          moveDownRef.current = { sx, sy };
+          return;
+        }
         const toolDef = TOOLS.find(td => td.key === t);
         if (!toolDef) return;
 
@@ -744,9 +1042,86 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         setPendingCount(pendingRef.current.length);
 
         if (pendingRef.current.length >= toolDef.needs) {
+          const tk = toolDef.key;
+          if (tk === 'rotate' || tk === 'dilate') {
+            const source = pendingRef.current[0];
+            const center = pendingRef.current[1];
+            const cx = ((e.clientX ?? 0) as number) + 8;
+            const cy = ((e.clientY ?? 0) as number) + 8;
+            pendingTransformRef.current = { tool: tk, source, center, anchorScreen: { x: cx, y: cy } };
+            emitTransform({ tool: tk, anchor: { x: cx, y: cy } });
+            // Don't clearPending here — wait for confirm/cancel
+            return;
+          }
+          if (tk === 'translate') {
+            const source = pendingRef.current[0];
+            const spec = buildTransformSpec({ kind: 'translate', vectorPoints: [pendingRef.current[1], pendingRef.current[2]] });
+            finalizeTransformCreate(spec, source);
+            clearPending();
+            return;
+          }
+          if (tk === 'reflectLine') {
+            const source = pendingRef.current[0];
+            const spec = buildTransformSpec({ kind: 'reflectLine', line: pendingRef.current[1] });
+            finalizeTransformCreate(spec, source);
+            clearPending();
+            return;
+          }
+          if (tk === 'reflectPoint') {
+            const source = pendingRef.current[0];
+            const spec = buildTransformSpec({ kind: 'reflectPoint', center: pendingRef.current[1] });
+            finalizeTransformCreate(spec, source);
+            clearPending();
+            return;
+          }
           finalize(toolDef, pendingRef.current);
           clearPending();
+        } else {
+          refreshPreview();
         }
+      });
+
+      // Pointer up: single-click on Move tool emits selection
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      board.on('up', (e: any) => {
+        const t = toolRef.current;
+        if (t !== 'move') return;
+        const start = moveDownRef.current;
+        moveDownRef.current = null;
+        if (!start) return;
+        const sc = screenCoordsOf(e);
+        if (!sc) return;
+        const [sx, sy] = sc;
+        const moved = Math.hypot(sx - start.sx, sy - start.sy);
+        if (moved > 4) return;  // drag, không phải click
+        const hits = objectsAt(e).filter((o) => o !== axisObjsRef.current.x && o !== axisObjsRef.current.y);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const best: any = hits.find((o) => objKind(o) === 'point') ?? hits[0] ?? findNearestPoint(e, 12);
+        if (!best) return;
+        const cx = (e.clientX ?? e.touches?.[0]?.clientX ?? 0) as number;
+        const cy = (e.clientY ?? e.touches?.[0]?.clientY ?? 0) as number;
+        const snap = snapshotObject(best, { x: cx + 8, y: cy + 8 });
+        if (snap) emitSelect(snap);
+      });
+
+      // Mouse move: update phantom position so preview shape tracks cursor.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      board.on('move', (e: any) => {
+        const ph = phantomRef.current;
+        if (!ph || !boardRef.current) return;
+        if (previewRafRef.current != null) return;
+        previewRafRef.current = requestAnimationFrame(() => {
+          previewRafRef.current = null;
+          if (!boardRef.current || !phantomRef.current) return;
+          try {
+            const coords = boardRef.current.getUsrCoordsOfMouse(e);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const JXG: any = jxgRef.current;
+            if (!JXG) return;
+            phantomRef.current.setPositionDirectly(JXG.COORDS_BY_USER, [coords[0], coords[1]]);
+            boardRef.current.update();
+          } catch { /* ignore */ }
+        });
       });
 
       onReady({
@@ -765,10 +1140,40 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
           subscribersRef.current.add(cb);
           return () => { subscribersRef.current.delete(cb); };
         },
+        snapshotObject,
+        mutateObject,
+        onSelect: (cb: (snap: ObjectSnapshot) => void) => {
+          selectSubsRef.current.add(cb);
+          return () => { selectSubsRef.current.delete(cb); };
+        },
+        onTransformParam: (cb: (info: { tool: 'rotate' | 'dilate'; anchor: { x: number; y: number } } | null) => void) => {
+          transformSubsRef.current.add(cb);
+          return () => { transformSubsRef.current.delete(cb); };
+        },
+        confirmTransformParam: (value: number) => {
+          const p = pendingTransformRef.current;
+          if (!p) return;
+          const spec = p.tool === 'rotate'
+            ? buildTransformSpec({ kind: 'rotate', center: p.center, angleDeg: value })
+            : buildTransformSpec({ kind: 'dilate', center: p.center, k: value });
+          finalizeTransformCreateRef.current(spec, p.source);
+          pendingTransformRef.current = null;
+          emitTransformRef.current(null);
+          clearPendingRef.current();
+        },
+        cancelTransformParam: () => {
+          pendingTransformRef.current = null;
+          emitTransformRef.current(null);
+          clearPendingRef.current();
+        },
       });
     })();
     return () => {
       cancelled = true;
+      if (previewRafRef.current != null) {
+        cancelAnimationFrame(previewRafRef.current);
+        previewRafRef.current = null;
+      }
       if (boardRef.current && jxgRef.current) {
         try { jxgRef.current.JSXGraph.freeBoard(boardRef.current); } catch { /* ignore */ }
         boardRef.current = null;
@@ -832,11 +1237,26 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     });
   }, []);
 
+  // Selection subscribers — emitted when Move tool single-clicks an object
+  const selectSubsRef = useRef<Set<(snap: ObjectSnapshot) => void>>(new Set());
+  const emitSelect = useCallback((snap: ObjectSnapshot) => {
+    selectSubsRef.current.forEach((cb) => { try { cb(snap); } catch { /* ignore */ } });
+  }, []);
+
+  // Track pointer-down position for click vs drag detection in Move tool
+  const moveDownRef = useRef<{ sx: number; sy: number } | null>(null);
+
   // Phát tín hiệu khi state thay đổi
   useEffect(() => { notifySubscribers(); }, [tool, showAxis, showGrid, historyTick, notifySubscribers]);
 
   const undoLastRef = useRef(undoLast);
   undoLastRef.current = undoLast;
+  const clearPendingRef = useRef(clearPending);
+  clearPendingRef.current = clearPending;
+  const finalizeTransformCreateRef = useRef(finalizeTransformCreate);
+  finalizeTransformCreateRef.current = finalizeTransformCreate;
+  const emitTransformRef = useRef(emitTransform);
+  emitTransformRef.current = emitTransform;
   const setShowAxisRef = useRef(setShowAxis);
   setShowAxisRef.current = setShowAxis;
   const setShowGridRef = useRef(setShowGrid);

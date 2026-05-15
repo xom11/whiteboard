@@ -1,8 +1,10 @@
 'use client';
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { JSXGraphMiniBoard, type MiniBoardHandle, type GeomTool } from './JSXGraphMiniBoard';
+import { JSXGraphMiniBoard, type MiniBoardHandle, type GeomTool, type ObjectSnapshot } from './JSXGraphMiniBoard';
 import { serializeBoard, type SerializedBoard } from './serializeBoard';
 import { renderGeometryToSvg } from './renderGeometryToSvg';
+import { PropertiesPopover } from './PropertiesPopover';
+import { TransformParamPopover } from './TransformParamPopover';
 
 interface Props {
   initialState: SerializedBoard | null;
@@ -12,6 +14,7 @@ interface Props {
   withLeftPanel?: boolean;
   /** Callback khi handle/state thay đổi — parent sync LeftPanel state. */
   onStateChange?: (state: GeomBoardState) => void;
+  isDark?: boolean;
 }
 
 export interface GeomBoardState {
@@ -33,9 +36,11 @@ export interface GeometryEditorPanelHandle {
 }
 
 export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
-  function GeometryEditorPanel({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange }, ref) {
+  function GeometryEditorPanel({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark }, ref) {
     const handleRef = useRef<MiniBoardHandle | null>(null);
     const [ready, setReady] = useState(false);
+    const [propsPopover, setPropsPopover] = useState<ObjectSnapshot | null>(null);
+    const [transformPopover, setTransformPopover] = useState<{ tool: 'rotate' | 'dilate'; anchor: { x: number; y: number } } | null>(null);
     const onStateChangeRef = useRef(onStateChange);
     useEffect(() => { onStateChangeRef.current = onStateChange; }, [onStateChange]);
 
@@ -57,6 +62,8 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
       emitState();
       // Subscribe để parent biết khi nào tool/axis/grid/undo thay đổi
       h.subscribe(emitState);
+      h.onSelect((snap: ObjectSnapshot) => setPropsPopover(snap));
+      h.onTransformParam((info) => setTransformPopover(info));
     }, [emitState]);
 
     const performInsert = useCallback((): boolean => {
@@ -111,7 +118,7 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
         data-testid="geometry-editor-panel"
         data-stamp-area="true"
         style={wrapperStyle}
-        className="flex h-[540px] max-h-[85vh] w-[640px] max-w-[calc(100vw-280px)] flex-col overflow-hidden rounded-lg border border-slate-300 bg-white shadow-2xl ring-1 ring-black/5"
+        className={`${isDark ? 'theme--dark ' : ''}flex h-[540px] max-h-[85vh] w-[640px] max-w-[calc(100vw-280px)] flex-col overflow-hidden rounded-lg border border-slate-300 bg-white shadow-2xl ring-1 ring-black/5`}
       >
         <header className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2 text-white">
           <h3 className="flex items-center gap-2 text-sm font-semibold">
@@ -136,6 +143,51 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
             initialState={initialState}
           />
         </div>
+        {propsPopover && (
+          propsPopover.kind === 'point' ? (
+            <PropertiesPopover
+              kind="point"
+              anchor={propsPopover.screenCoords}
+              isDark={isDark}
+              currentName={propsPopover.name}
+              currentColor={propsPopover.color}
+              currentDash={propsPopover.dash}
+              currentWidth={propsPopover.width}
+              currentFace={propsPopover.face}
+              onClose={() => setPropsPopover(null)}
+              onMutate={(patch) => {
+                handleRef.current?.mutateObject(propsPopover.obj, patch);
+                if (patch.remove) setPropsPopover(null);
+              }}
+            />
+          ) : (
+            <PropertiesPopover
+              kind={propsPopover.kind}
+              anchor={propsPopover.screenCoords}
+              isDark={isDark}
+              currentColor={propsPopover.color}
+              currentDash={propsPopover.dash}
+              currentWidth={propsPopover.width}
+              onClose={() => setPropsPopover(null)}
+              onMutate={(patch) => {
+                handleRef.current?.mutateObject(propsPopover.obj, patch);
+                if (patch.remove) setPropsPopover(null);
+              }}
+            />
+          )
+        )}
+
+        {transformPopover && (
+          <TransformParamPopover
+            kind={transformPopover.tool}
+            anchor={transformPopover.anchor}
+            defaultValue={transformPopover.tool === 'rotate' ? 90 : 2}
+            isDark={isDark}
+            onConfirm={(v) => { handleRef.current?.confirmTransformParam(v); setTransformPopover(null); }}
+            onCancel={() => { handleRef.current?.cancelTransformParam(); setTransformPopover(null); }}
+          />
+        )}
+
         <footer className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2">
           <span className="text-xs text-slate-500">Chọn công cụ bên trái, click trên bảng để dựng hình.</span>
           <div className="flex gap-2">

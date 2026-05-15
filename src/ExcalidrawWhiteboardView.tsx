@@ -606,6 +606,7 @@ export function ExcalidrawWhiteboardView({
             onUndo={() => geomPanelRef.current?.undo()}
             canUndo={geomState.canUndo}
             onClose={closeStamp}
+            isDark={isDarkTheme}
           />
           <GeometryEditorPanel
             ref={geomPanelRef}
@@ -614,6 +615,7 @@ export function ExcalidrawWhiteboardView({
             onClose={closeStamp}
             onStateChange={setGeomState}
             withLeftPanel
+            isDark={isDarkTheme}
           />
         </>
       )}

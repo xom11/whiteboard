@@ -1,5 +1,9 @@
 // JSXGraph không có built-in getJSON. Component giữ MỘT LOG riêng của các create() call
 // do user trigger, pass log đó vào serializeBoard. Replay = gọi board.create() theo thứ tự log.
+//
+// type === 'transform': args là [refs đến điểm/đường/scalar], attrs là { type: 'translate'|'rotate'|'reflect'|'scale', ... }.
+// Object trả về (kết quả board.create('transform', ...)) được đăng ký vào idMap như mọi element khác
+// để point/line phụ thuộc reference được bằng id ('j5' → JSXGraph transform object).
 
 export interface SerializedElement {
   type: string;
