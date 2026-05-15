@@ -20,6 +20,7 @@ import { renderGeometrySvgFromState } from './render';
 import type { SerializedBoard } from './serialize';
 import type {
   BaseStampCustomData,
+  RestoredStampFile,
   StampHostProps,
   StampHostHandle,
   StampType,
@@ -151,6 +152,18 @@ export const geometryStamp: StampType = {
       throw new Error('geometryStamp.renderSvgFromCustomData: customData không phải geometry');
     }
     return renderGeometrySvgFromState(data.jsonState);
+  },
+  async restoreFileFromCustomData(element): Promise<RestoredStampFile | null> {
+    const data = element.customData as GeometryCustomData | undefined;
+    const fileId = (element as { fileId?: string | null }).fileId;
+    if (!data || !fileId) return null;
+    if (!isGeometryCustomData(data)) return null;
+    const svgString = await renderGeometrySvgFromState(data.jsonState);
+    const utf8 = unescape(encodeURIComponent(svgString));
+    const dataURL = 'data:image/svg+xml;base64,' + (
+      typeof btoa !== 'undefined' ? btoa(utf8) : Buffer.from(utf8).toString('base64')
+    );
+    return { fileId, dataURL, mimeType: 'image/svg+xml' };
   },
   Host: GeometryStampHost,
 };

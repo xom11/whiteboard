@@ -14,6 +14,7 @@ import { insertStampImage } from '../shared/insertImage';
 import { renderLatexToSvg } from './render';
 import type {
   BaseStampCustomData,
+  RestoredStampFile,
   StampHostProps,
   StampHostHandle,
   StampType,
@@ -128,6 +129,18 @@ export const latexStamp: StampType = {
       throw new Error('latexStamp.renderSvgFromCustomData: customData không phải latex');
     }
     return renderLatexToSvg(data.src, data.displayMode);
+  },
+  async restoreFileFromCustomData(element): Promise<RestoredStampFile | null> {
+    const data = element.customData as LatexCustomData | undefined;
+    const fileId = (element as { fileId?: string | null }).fileId;
+    if (!data || !fileId) return null;
+    if (!isLatexCustomData(data)) return null;
+    const svgString = await renderLatexToSvg(data.src, data.displayMode);
+    const utf8 = unescape(encodeURIComponent(svgString));
+    const dataURL = 'data:image/svg+xml;base64,' + (
+      typeof btoa !== 'undefined' ? btoa(utf8) : Buffer.from(utf8).toString('base64')
+    );
+    return { fileId, dataURL, mimeType: 'image/svg+xml' };
   },
   Host: LatexStampHost,
 };

@@ -1,4 +1,15 @@
 import type { ForwardRefExoticComponent, ReactNode, RefAttributes } from 'react';
+import type { ExcalidrawElement } from '../../types';
+
+/**
+ * Kết quả trả về từ `restoreFileFromCustomData`. Chứa đủ thông tin để
+ * consumer gọi `api.addFiles(...)`.
+ */
+export interface RestoredStampFile {
+  fileId: string;
+  dataURL: string;
+  mimeType: 'image/svg+xml' | 'image/png';
+}
 
 /**
  * Tối thiểu mọi custom data của stamp cần có. Các stamp cụ thể (geometry,
@@ -77,6 +88,17 @@ export interface StampType {
    * màu trong dark mode qua CSS filter.
    */
   renderSvgFromCustomData(data: unknown): Promise<string>;
+
+  /**
+   * Regenerate file SVG/PNG cho element thuộc stamp này khi reload từ persisted
+   * snapshot. Trả về `RestoredStampFile` để consumer gọi `api.addFiles`, hoặc
+   * `null` nếu element không cần file (vd stamp chỉ là text overlay).
+   *
+   * Khi method này có mặt, `restoreMissingStampFiles` sẽ ưu tiên gọi method
+   * này thay vì dùng `renderSvgFromCustomData`. Stamp tự chịu trách nhiệm lấy
+   * `fileId` từ element và render file.
+   */
+  restoreFileFromCustomData?: (element: ExcalidrawElement) => Promise<RestoredStampFile | null>;
 
   /**
    * Host component bọc toàn bộ UI editing (panel + left panel + insert
