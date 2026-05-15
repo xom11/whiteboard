@@ -1,6 +1,5 @@
 'use client';
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { deserializeIntoBoard, type SerializedBoard, type SerializedElement } from './serializeBoard';
 
 // Tool keys — match GeoGebra-style toolset
@@ -50,8 +49,6 @@ export interface MiniBoardHandle {
 interface Props {
   onReady: (handle: MiniBoardHandle) => void;
   initialState: SerializedBoard | null;
-  /** Khi true, ẩn cột tool bên phải + top bar — UI tools nằm ở panel ngoài (StampLeftPanel). */
-  hideInternalToolbar?: boolean;
 }
 
 export interface ToolDef {
@@ -188,7 +185,7 @@ function acceptMatches(tool: ToolDef, slot: number, kind: 'point' | 'line' | 'ci
   return a === kind;
 }
 
-export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, hideInternalToolbar }) => {
+export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) => {
   const containerId = useId().replace(/:/g, '_') + '_jxgmini';
   const containerRef = useRef<HTMLDivElement>(null);
   const boardRef = useRef<JxgObj>(null);
@@ -211,7 +208,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, hide
 
   // Pending picks for multi-click tools: array of JSXGraph object refs
   const pendingRef = useRef<JxgObj[]>([]);
-  const [pendingCount, setPendingCount] = useState(0);
+  const [, setPendingCount] = useState(0);
 
   // Live preview segments while building a polygon/area: drawn between
   // consecutive pending points so the user sees the shape forming.
@@ -222,7 +219,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, hide
   // Transient warning shown when a strict construction tool gets a click that
   // didn't land on the required existing object (so the user knows why nothing
   // happened). Auto-clears.
-  const [warn, setWarn] = useState<string | null>(null);
+  const [, setWarn] = useState<string | null>(null);
   const warnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const flashWarn = useCallback((msg: string) => {
     if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
@@ -845,160 +842,13 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, hide
   const setShowGridRef = useRef(setShowGrid);
   setShowGridRef.current = setShowGrid;
 
-  const handleClearPending = useCallback(() => {
-    clearPending();
-  }, [clearPending]);
-
-  const currentToolDef = TOOLS.find(t => t.key === tool);
-
-  // Group tools by category for UI display
-  const grouped = TOOLS.reduce<Record<string, ToolDef[]>>((acc, t) => {
-    (acc[t.group] ??= []).push(t);
-    return acc;
-  }, {});
-
-  const groupKeys = Object.keys(grouped) as Array<ToolDef['group']>;
-
-  // Shared tooltip rendered via portal so it escapes Excalidraw's overflow
-  // clipping + transformed ancestors and stays on top regardless of stacking.
-  const [hover, setHover] = useState<{ label: string; hint?: string; x: number; y: number } | null>(null);
-  const [portalReady, setPortalReady] = useState(false);
-  useEffect(() => { setPortalReady(true); }, []);
-  const showHover = useCallback((el: HTMLElement, t: ToolDef) => {
-    const r = el.getBoundingClientRect();
-    setHover({ label: t.label, hint: t.hint, x: r.left, y: r.top + r.height / 2 });
-  }, []);
-  const hideHover = useCallback(() => setHover(null), []);
-
   return (
-    <div className="flex h-full min-h-0 bg-slate-50">
-      {/* Left: slim hint/options bar + canvas */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        {!hideInternalToolbar && (
-        <div className="flex items-center gap-2 border-b border-slate-200 bg-white px-3 py-1.5 text-xs">
-          <button
-            type="button"
-            onClick={undoLast}
-            disabled={creationLogRef.current.length === 0}
-            aria-label="Hoàn tác"
-            title="Hoàn tác (Ctrl/Cmd+Z)"
-            data-testid="undo-btn"
-            data-history-tick={historyTick}
-            className="flex shrink-0 items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="3 7 3 13 9 13" />
-              <path d="M3.51 13a9 9 0 1 0 2.13-9.36L3 7" />
-            </svg>
-          </button>
-          <span className="min-w-0 flex-1 truncate text-slate-600">
-            {warn ? (
-              <span className="rounded bg-rose-50 px-2 py-0.5 font-medium text-rose-700" role="status">{warn}</span>
-            ) : (
-              <>
-                <span className="font-medium text-slate-800">{currentToolDef?.label}</span>
-                {currentToolDef?.hint && <span className="ml-2 text-slate-500">— {currentToolDef.hint}</span>}
-              </>
-            )}
-          </span>
-          {pendingCount > 0 && (
-            <span className="flex shrink-0 items-center gap-1.5">
-              <span className="rounded bg-amber-100 px-2 py-0.5 text-amber-800">Đã chọn {pendingCount}</span>
-              <button onClick={handleClearPending} className="text-slate-500 underline-offset-2 hover:text-slate-900 hover:underline">huỷ</button>
-            </span>
-          )}
-          <div className="flex shrink-0 items-center gap-2 border-l border-slate-200 pl-2 text-slate-600">
-            <label className="flex items-center gap-1 select-none">
-              <input
-                type="checkbox"
-                checked={showAxis}
-                onChange={(e) => setShowAxis(e.target.checked)}
-                data-testid="toggle-axis"
-              />
-              Trục
-            </label>
-            <label className="flex items-center gap-1 select-none">
-              <input
-                type="checkbox"
-                checked={showGrid}
-                onChange={(e) => setShowGrid(e.target.checked)}
-                data-testid="toggle-grid"
-              />
-              Lưới
-            </label>
-          </div>
-        </div>
-        )}
-
-        <div
-          ref={containerRef}
-          id={containerId}
-          data-testid="jxgmini-container"
-          className="min-h-0 flex-1 bg-white"
-          style={{ touchAction: 'none' }}
-        />
-      </div>
-
-      {/* Right: vertical tool rail — icon-only, tooltip rendered via portal */}
-      {!hideInternalToolbar && (
-      <div
-        role="toolbar"
-        aria-label="Công cụ dựng hình"
-        className="flex w-[60px] shrink-0 flex-col items-stretch gap-1 border-l border-slate-200 bg-white py-2"
-        style={{ overflow: 'visible' }}
-      >
-        {groupKeys.map((group, idx) => (
-          <React.Fragment key={group}>
-            {idx > 0 && <div className="mx-2 my-0.5 h-px bg-slate-200" aria-hidden="true" />}
-            <div className="grid grid-cols-2 gap-1 px-1.5" aria-label={GROUP_LABELS[group]}>
-              {grouped[group].map((t) => {
-                const active = tool === t.key;
-                return (
-                  <button
-                    key={t.key}
-                    type="button"
-                    aria-label={t.label}
-                    aria-pressed={active}
-                    data-tool={t.key}
-                    onClick={() => handleToolChange(t.key)}
-                    onMouseEnter={(e) => showHover(e.currentTarget, t)}
-                    onMouseLeave={hideHover}
-                    onFocus={(e) => showHover(e.currentTarget, t)}
-                    onBlur={hideHover}
-                    className={`flex h-8 w-8 items-center justify-center rounded-md transition ${
-                      active
-                        ? 'bg-emerald-600 text-white shadow-sm'
-                        : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
-                    }`}
-                  >
-                    {t.icon}
-                  </button>
-                );
-              })}
-            </div>
-          </React.Fragment>
-        ))}
-      </div>
-      )}
-
-      {portalReady && hover && typeof document !== 'undefined'
-        ? createPortal(
-            <div
-              role="tooltip"
-              className="pointer-events-none fixed w-max max-w-[220px] rounded-md bg-slate-900 px-2 py-1 text-left text-[11px] leading-tight text-white shadow-lg"
-              style={{
-                left: hover.x - 8,
-                top: hover.y,
-                transform: 'translate(-100%, -50%)',
-                zIndex: 2147483600,
-              }}
-            >
-              <span className="block font-medium">{hover.label}</span>
-              {hover.hint && <span className="mt-0.5 block text-slate-300">{hover.hint}</span>}
-            </div>,
-            document.body,
-          )
-        : null}
-    </div>
+    <div
+      ref={containerRef}
+      id={containerId}
+      data-testid="jxgmini-container"
+      className="h-full min-h-0 bg-white"
+      style={{ touchAction: 'none' }}
+    />
   );
 };

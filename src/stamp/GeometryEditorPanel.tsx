@@ -134,7 +134,6 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
           <JSXGraphMiniBoard
             onReady={handleReady}
             initialState={initialState}
-            hideInternalToolbar
           />
         </div>
         <footer className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2">

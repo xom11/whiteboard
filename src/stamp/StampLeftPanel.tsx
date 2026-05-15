@@ -1,7 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { TOOLS, GROUP_LABELS, type GeomTool, type ToolDef } from './JSXGraphMiniBoard';
+
+const TOOLTIP_DELAY_MS = 400;
+type HoverState = { label: string; hint?: string; x: number; y: number } | null;
 
 // ---------- Shared shell ----------
 
@@ -94,7 +98,35 @@ export function GeometryLeftPanel({
   }, {});
   const groupKeys = Object.keys(grouped) as Array<ToolDef['group']>;
 
+  const [hover, setHover] = useState<HoverState>(null);
+  const [portalReady, setPortalReady] = useState(false);
+  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setPortalReady(true);
+    return () => {
+      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    };
+  }, []);
+
+  const showHover = useCallback((el: HTMLElement, t: ToolDef) => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    hoverTimerRef.current = setTimeout(() => {
+      const r = el.getBoundingClientRect();
+      setHover({ label: t.label, hint: t.hint, x: r.right, y: r.top + r.height / 2 });
+    }, TOOLTIP_DELAY_MS);
+  }, []);
+
+  const hideHover = useCallback(() => {
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+    setHover(null);
+  }, []);
+
   return (
+    <>
     <Shell title="Hình học" icon={GeometryIconHeader} onClose={onClose}>
       <Section label="Bố cục">
         <div className="flex items-center gap-3 text-[11px] text-slate-700">
@@ -143,9 +175,12 @@ export function GeometryLeftPanel({
                   type="button"
                   aria-label={t.label}
                   aria-pressed={active}
-                  title={t.label + (t.hint ? ' — ' + t.hint : '')}
                   data-tool={t.key}
                   onClick={() => onToolChange(t.key)}
+                  onMouseEnter={(e) => showHover(e.currentTarget, t)}
+                  onMouseLeave={hideHover}
+                  onFocus={(e) => showHover(e.currentTarget, t)}
+                  onBlur={hideHover}
                   className={[
                     'flex h-8 items-center justify-center rounded-md transition',
                     active
@@ -161,6 +196,25 @@ export function GeometryLeftPanel({
         </Section>
       ))}
     </Shell>
+    {portalReady && hover && typeof document !== 'undefined'
+      ? createPortal(
+          <div
+            role="tooltip"
+            className="pointer-events-none fixed w-max max-w-[220px] rounded-md bg-slate-900 px-2 py-1 text-left text-[11px] leading-tight text-white shadow-lg"
+            style={{
+              left: hover.x + 8,
+              top: hover.y,
+              transform: 'translate(0, -50%)',
+              zIndex: 2147483600,
+            }}
+          >
+            <span className="block font-medium">{hover.label}</span>
+            {hover.hint && <span className="mt-0.5 block text-slate-300">{hover.hint}</span>}
+          </div>,
+          document.body,
+        )
+      : null}
+    </>
   );
 }
 
