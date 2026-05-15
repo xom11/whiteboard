@@ -26,6 +26,12 @@ jest.mock('../JSXGraphMiniBoard', () => ({
         undo: () => {},
         canUndo: () => true,
         subscribe: () => () => {},
+        onSelect: () => () => {},
+        onTransformParam: () => () => {},
+        confirmTransformParam: () => {},
+        cancelTransformParam: () => {},
+        mutateObject: () => {},
+        snapshotObject: () => null,
       }), 0);
     }, []);
     return <div data-testid="mock-jxg" />;
