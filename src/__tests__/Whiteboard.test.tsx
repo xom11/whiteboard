@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, render } from '@testing-library/react';
+import { act, render, screen, fireEvent } from '@testing-library/react';
 import { Whiteboard } from '../Whiteboard';
 import { readFiles, writeFiles, pruneFiles } from '../core/persistence/fileStore';
 
@@ -73,6 +73,13 @@ jest.mock('@excalidraw/excalidraw', () => {
 
 jest.mock('../stamps/latex/render', () => ({
   renderLatexToSvg: jest.fn(async () => '<svg>mock</svg>'),
+}));
+
+// MiniBoard3D imports JXG and calls initBoard in useEffect. Mock it so
+// EditorPanel can mount without the infinite setBoardKey loop caused by
+// the real component calling the ref callback.
+jest.mock('../stamps/geometry-3d/editor/MiniBoard3D', () => ({
+  MiniBoard3D: jest.fn(() => null),
 }));
 
 jest.mock('next/dynamic', () => {
@@ -325,5 +332,29 @@ describe('Whiteboard', () => {
     });
 
     expect(writeFiles).not.toHaveBeenCalled();
+  });
+});
+
+describe('Whiteboard — geometry3d stamp', () => {
+  it('bấm D mở Geometry3D editor', async () => {
+    const { findByTestId } = render(React.createElement(Whiteboard, {}));
+    await findByTestId('excalidraw-mock');
+    await act(async () => {
+      fireEvent.keyDown(window, { key: 'd' });
+    });
+    expect(screen.queryByText(/Hình học không gian/)).toBeTruthy();
+  });
+
+  it('click Đóng → 3D editor unmount', async () => {
+    const { findByTestId } = render(React.createElement(Whiteboard, {}));
+    await findByTestId('excalidraw-mock');
+    await act(async () => {
+      fireEvent.keyDown(window, { key: 'd' });
+    });
+    const closeBtn = screen.getByText('Đóng');
+    await act(async () => {
+      fireEvent.click(closeBtn);
+    });
+    expect(screen.queryByText(/Hình học không gian/)).toBeFalsy();
   });
 });
