@@ -10,3 +10,4 @@ coverage/
 .next/
 .playwright-mcp/
 dark-mode-*.png
+.worktrees/
