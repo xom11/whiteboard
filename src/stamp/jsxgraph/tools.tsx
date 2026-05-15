@@ -11,6 +11,7 @@ import React from 'react';
 // Tool keys — match GeoGebra-style toolset
 export type GeomTool =
   | 'move'
+  | 'select'
   | 'point'
   | 'midpoint'
   | 'segment'
@@ -63,6 +64,9 @@ export interface ToolDef {
 const Icon = {
   cursor: (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4 L20 12 L13 13 L11 20 Z"/></svg>
+  ),
+  select: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4 L20 12 L13 13 L11 20 Z" fill="none"/><rect x="2.5" y="2.5" width="19" height="19" strokeDasharray="3 2" fill="none"/></svg>
   ),
   point: (
     <svg width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>
@@ -147,6 +151,7 @@ const Icon = {
 // ============== Tool catalog ==============
 export const TOOLS: ToolDef[] = [
   { key: 'move', label: 'Di chuyển', hint: 'Kéo điểm hoặc xoay nền', icon: Icon.cursor, group: 'move', needs: 0 },
+  { key: 'select', label: 'Chọn', hint: 'Click để chọn 1 / Shift+click để bỏ thêm / Kéo nền để khoanh vùng / DEL để xoá', icon: Icon.select, group: 'move', needs: 0 },
   { key: 'point', label: 'Điểm mới', hint: 'Click để thêm điểm', icon: Icon.point, group: 'point', needs: 1 },
   { key: 'midpoint', label: 'Trung điểm', hint: 'Click 2 điểm có sẵn', icon: Icon.midpoint, group: 'point', needs: 2, accepts: ['point', 'point'] },
   { key: 'segment', label: 'Đoạn thẳng', hint: 'Click 2 điểm', icon: Icon.segment, group: 'line', needs: 2 },

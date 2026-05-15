@@ -44,6 +44,12 @@ export interface MiniBoardHandle {
   onTransformParam: (cb: (info: { tool: 'rotate' | 'dilate' | 'regularPolygon'; anchor: { x: number; y: number } } | null) => void) => () => void;
   confirmTransformParam: (value: number) => void;
   cancelTransformParam: () => void;
+  /** Số đối tượng đang chọn (qua tool 'select'). */
+  getSelectionSize: () => number;
+  /** Bỏ chọn tất cả. */
+  clearSelection: () => void;
+  /** Xoá tất cả đối tượng đang chọn (cascade-aware). */
+  deleteSelection: () => void;
 }
 
 export interface ObjectSnapshot {
@@ -99,6 +105,15 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
   // Pending picks for multi-click tools: array of JSXGraph object refs
   const pendingRef = useRef<JxgObj[]>([]);
   const [, setPendingCount] = useState(0);
+
+  // Selection state — tool 'select' adds clicked objects here. Selected objects
+  // get a cyan highlight stroke (original style preserved in selOriginalRef so
+  // we can restore on deselect).
+  const selectedSetRef = useRef<Set<JxgObj>>(new Set());
+  const selOriginalRef = useRef<Map<JxgObj, { strokeColor?: unknown; strokeWidth?: unknown }>>(new Map());
+  const [, setSelectionTick] = useState(0);
+  // Marquee state during select-tool drag.
+  const marqueeRef = useRef<{ startSx: number; startSy: number; rect?: JxgObj } | null>(null);
 
   // Live preview segments while building a polygon/area: drawn between
   // consecutive pending points so the user sees the shape forming.
@@ -341,6 +356,92 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     pendingRef.current = [];
     setPendingCount(0);
   }, [clearPreviewSegs, removePhantom]);
+
+  // === Selection helpers (used by the `select` tool) ===
+  const applySelectionStyle = useCallback((obj: JxgObj) => {
+    if (!obj || selOriginalRef.current.has(obj)) return;
+    try {
+      const visProp = obj.visProp ?? {};
+      selOriginalRef.current.set(obj, {
+        strokeColor: visProp.strokecolor,
+        strokeWidth: visProp.strokewidth,
+      });
+      const kind = objKind(obj);
+      if (kind === 'point') {
+        obj.setAttribute({ strokeColor: '#06b6d4', strokeWidth: 3 });
+      } else {
+        obj.setAttribute({ strokeColor: '#06b6d4', strokeWidth: 3 });
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  const restoreSelectionStyle = useCallback((obj: JxgObj) => {
+    const orig = selOriginalRef.current.get(obj);
+    if (!orig) return;
+    try {
+      const attrs: Record<string, unknown> = {};
+      if (orig.strokeColor !== undefined) attrs.strokeColor = orig.strokeColor;
+      if (orig.strokeWidth !== undefined) attrs.strokeWidth = orig.strokeWidth;
+      obj.setAttribute(attrs);
+    } catch { /* ignore */ }
+    selOriginalRef.current.delete(obj);
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    for (const o of selectedSetRef.current) {
+      restoreSelectionStyle(o);
+    }
+    selectedSetRef.current.clear();
+    setSelectionTick((t) => t + 1);
+    try { boardRef.current?.update(); } catch { /* ignore */ }
+  }, [restoreSelectionStyle]);
+
+  const toggleSelect = useCallback((obj: JxgObj, additive: boolean) => {
+    if (!obj) return;
+    if (!additive) {
+      // Single-click replace: clear others first.
+      for (const o of selectedSetRef.current) {
+        if (o !== obj) restoreSelectionStyle(o);
+      }
+      selectedSetRef.current = new Set([obj]);
+      applySelectionStyle(obj);
+    } else {
+      if (selectedSetRef.current.has(obj)) {
+        restoreSelectionStyle(obj);
+        selectedSetRef.current.delete(obj);
+      } else {
+        selectedSetRef.current.add(obj);
+        applySelectionStyle(obj);
+      }
+    }
+    setSelectionTick((t) => t + 1);
+    try { boardRef.current?.update(); } catch { /* ignore */ }
+  }, [applySelectionStyle, restoreSelectionStyle]);
+
+  const deleteSelected = useCallback(() => {
+    const board = boardRef.current;
+    if (!board) return;
+    if (selectedSetRef.current.size === 0) return;
+    // Drop highlight first so removal doesn't try to setAttribute on dead obj.
+    for (const o of selectedSetRef.current) selOriginalRef.current.delete(o);
+    for (const o of selectedSetRef.current) {
+      try { board.removeObject(o); } catch { /* ignore */ }
+    }
+    selectedSetRef.current.clear();
+    // Cascade-prune log (same approach as delete tool)
+    const aliveIds = new Set<string>();
+    for (const [id, o] of objMapRef.current.entries()) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const jxgId = (o as any)?.id;
+      if (jxgId && board.objects && board.objects[jxgId]) aliveIds.add(id);
+    }
+    creationLogRef.current = creationLogRef.current.filter((e) => aliveIds.has(e.id));
+    for (const id of Array.from(objMapRef.current.keys())) {
+      if (!aliveIds.has(id)) objMapRef.current.delete(id);
+    }
+    setSelectionTick((t) => t + 1);
+    setHistoryTick((t) => t + 1);
+  }, []);
 
   // Build a transient preview shape (not logged) from pending picks + phantom point.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -710,6 +811,18 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
           e.stopPropagation();
           clearPendingRef.current();
         }
+        if (selectedSetRef.current.size > 0) {
+          e.preventDefault();
+          e.stopPropagation();
+          clearSelectionRef.current();
+        }
+      }
+      if ((e.key === 'Delete' || e.key === 'Backspace') && !inField) {
+        if (selectedSetRef.current.size > 0) {
+          e.preventDefault();
+          e.stopPropagation();
+          deleteSelectedRef.current();
+        }
       }
     };
     window.addEventListener('keydown', onKey, { capture: true });
@@ -916,6 +1029,30 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
           if (!sc) return;
           const [sx, sy] = sc;
           moveDownRef.current = { sx, sy };
+          return;
+        }
+        if (t === 'select') {
+          const sc = screenCoordsOf(e);
+          if (!sc) return;
+          const [sx, sy] = sc;
+          const hits = objectsAt(e)
+            .map(promoteLabel)
+            .filter((o) => o !== axisObjsRef.current.x && o !== axisObjsRef.current.y);
+          const obj = hits.find((o) => objKind(o) === 'point') ?? hits[0] ?? findNearestPoint(e, 12);
+          if (obj) {
+            const shift = !!(e.shiftKey || e.altKey);
+            toggleSelect(obj, shift);
+            // Stash so 'up' handler doesn't treat this as a marquee end.
+            moveDownRef.current = { sx, sy };
+            marqueeRef.current = null;
+            return;
+          }
+          // Empty space: start marquee. We disable board pan while marqueeing
+          // by not setting moveDownRef (board's internal pan listener relies on
+          // it being null elsewhere; here we record marquee start separately).
+          marqueeRef.current = { startSx: sx, startSy: sy };
+          // Clear current selection unless shift is held (additive marquee).
+          if (!(e.shiftKey || e.altKey)) clearSelection();
           return;
         }
         const toolDef = TOOLS.find(td => td.key === t);
@@ -1162,6 +1299,58 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       board.on('up', (e: any) => {
         const t = toolRef.current;
+        if (t === 'select') {
+          // Finalize marquee: any object hit-tested inside the rectangle gets
+          // added to the selection. Single click on object was already handled
+          // in `down`; here we only care about drag end.
+          const mq = marqueeRef.current;
+          marqueeRef.current = null;
+          moveDownRef.current = null;
+          if (!mq) return;
+          const sc = screenCoordsOf(e);
+          if (!sc) return;
+          const [ex, ey] = sc;
+          if (mq.rect) { try { boardRef.current?.removeObject(mq.rect); } catch { /* ignore */ } }
+          if (Math.hypot(ex - mq.startSx, ey - mq.startSy) < 4) return;  // not a real drag
+          const x1 = Math.min(mq.startSx, ex), x2 = Math.max(mq.startSx, ex);
+          const y1 = Math.min(mq.startSy, ey), y2 = Math.max(mq.startSy, ey);
+          const board = boardRef.current;
+          if (!board) return;
+          const list = (board.objectsList || []) as JxgObj[];
+          for (const o of list) {
+            if (o === axisObjsRef.current.x || o === axisObjsRef.current.y) continue;
+            // Points: include if their screen coord falls inside the rect.
+            const kind = objKind(o);
+            if (kind === 'point') {
+              const pc = o.coords?.scrCoords;
+              if (!pc) continue;
+              if (pc[1] >= x1 && pc[1] <= x2 && pc[2] >= y1 && pc[2] <= y2) {
+                if (!selectedSetRef.current.has(o)) {
+                  selectedSetRef.current.add(o);
+                  applySelectionStyle(o);
+                }
+              }
+            }
+            // Lines/segments/circles: simple test — include if either defining
+            // point falls inside (good enough for marquee UX without doing
+            // expensive line-rectangle intersections).
+            else if (kind === 'line' || kind === 'circle') {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const defs: any[] = [o.point1, o.point2, o.center, o.midpoint, o.point3].filter(Boolean);
+              const anyInside = defs.some((p) => {
+                const pc = p?.coords?.scrCoords;
+                return pc && pc[1] >= x1 && pc[1] <= x2 && pc[2] >= y1 && pc[2] <= y2;
+              });
+              if (anyInside && !selectedSetRef.current.has(o)) {
+                selectedSetRef.current.add(o);
+                applySelectionStyle(o);
+              }
+            }
+          }
+          setSelectionTick((tt) => tt + 1);
+          try { board.update(); } catch { /* ignore */ }
+          return;
+        }
         if (t !== 'move') return;
         const start = moveDownRef.current;
         moveDownRef.current = null;
@@ -1193,6 +1382,45 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
       // Mouse move: update phantom position so preview shape tracks cursor.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       board.on('move', (e: any) => {
+        // Marquee rectangle redraw while user drags with the select tool on empty space.
+        if (toolRef.current === 'select' && marqueeRef.current) {
+          const sc = screenCoordsOf(e);
+          if (sc && boardRef.current) {
+            const [sx, sy] = sc;
+            const { startSx, startSy } = marqueeRef.current;
+            // Convert screen px to user coords for JSXGraph polygon overlay.
+            const b = boardRef.current;
+            const ux1 = b.screenCoords2userCoords?.([Math.min(startSx, sx), Math.min(startSy, sy)]) ?? null;
+            const ux2 = b.screenCoords2userCoords?.([Math.max(startSx, sx), Math.max(startSy, sy)]) ?? null;
+            // JSXGraph internal: getUsrCoordsByScreenCoords may not exist; fall
+            // back to using a known board API.
+            const toUsr = (px: number, py: number): [number, number] => {
+              // Coords.getMouseCoordinates equivalent — use board.origin + unitX/Y.
+              const ox = b.origin?.scrCoords?.[1] ?? 0;
+              const oy = b.origin?.scrCoords?.[2] ?? 0;
+              const ux = (px - ox) / b.unitX;
+              const uy = (oy - py) / b.unitY;
+              return [ux, uy];
+            };
+            const [x1u, y1u] = ux1 && ux1.length >= 2 ? [ux1[0], ux1[1]] : toUsr(Math.min(startSx, sx), Math.min(startSy, sy));
+            const [x2u, y2u] = ux2 && ux2.length >= 2 ? [ux2[0], ux2[1]] : toUsr(Math.max(startSx, sx), Math.max(startSy, sy));
+            const rect = marqueeRef.current.rect;
+            if (rect) {
+              try { boardRef.current.removeObject(rect); } catch { /* ignore */ }
+            }
+            try {
+              marqueeRef.current.rect = boardRef.current.create('polygon', [
+                [x1u, y1u], [x2u, y1u], [x2u, y2u], [x1u, y2u],
+              ], {
+                fillColor: '#06b6d4', fillOpacity: 0.08,
+                borders: { strokeColor: '#06b6d4', strokeWidth: 1, dash: 2 },
+                vertices: { visible: false },
+                fixed: true, highlight: false, withLabel: false,
+              });
+            } catch { /* ignore */ }
+          }
+          return;
+        }
         const ph = phantomRef.current;
         if (!ph || !boardRef.current) return;
         if (previewRafRef.current != null) return;
@@ -1286,6 +1514,9 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
           emitTransformRef.current(null);
           clearPendingRef.current();
         },
+        getSelectionSize: () => selectedSetRef.current.size,
+        clearSelection: () => clearSelectionRef.current(),
+        deleteSelection: () => deleteSelectedRef.current(),
       });
     })();
     return () => {
@@ -1343,6 +1574,15 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     // without waiting for React's commit phase.
     toolRef.current = t;
     setTool(t);
+    // Disable JSXGraph pan while the user is in the select tool so that
+    // drag-empty starts a marquee selection instead of panning the board.
+    // Re-enable for every other tool (board pan is the default).
+    const b = boardRef.current;
+    if (b) {
+      try {
+        if (b.attr?.pan) b.attr.pan.enabled = (t !== 'select');
+      } catch { /* ignore */ }
+    }
   }, [clearPending]);
 
   // Stable ref so onReady closure (captured at mount) can call latest handler.
@@ -1379,6 +1619,10 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
   clearPendingRef.current = clearPending;
   const finalizeTransformCreateRef = useRef(finalizeTransformCreate);
   finalizeTransformCreateRef.current = finalizeTransformCreate;
+  const clearSelectionRef = useRef(clearSelection);
+  clearSelectionRef.current = clearSelection;
+  const deleteSelectedRef = useRef(deleteSelected);
+  deleteSelectedRef.current = deleteSelected;
   const emitTransformRef = useRef(emitTransform);
   emitTransformRef.current = emitTransform;
   const setShowAxisRef = useRef(setShowAxis);
