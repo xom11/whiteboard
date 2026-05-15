@@ -21,6 +21,7 @@ import {
   type Geometry3DCustomData,
   type SerializedBoard3D,
 } from './serialize';
+import { renderGeometry3DSvgFromState } from './render';
 
 export { isGeometry3DCustomData };
 export type { Geometry3DCustomData };
@@ -110,21 +111,29 @@ export const geometry3dStamp: StampType = {
   toolbarIcon: Geometry3DIcon,
   toolbarTestId: 'stamp-toolbar-geometry3d',
   matchesCustomData: isGeometry3DCustomData,
-  // B14 will swap this stub for the real renderGeometry3DSvgFromState call.
   async renderSvgFromCustomData(data: unknown): Promise<string> {
     if (!isGeometry3DCustomData(data)) {
       throw new Error('geometry3dStamp.renderSvgFromCustomData: customData không phải geometry3d');
     }
-    // Stub: B14 will replace this with offscreen render.
-    return '';
+    const { svgString } = await renderGeometry3DSvgFromState(data.jsonState);
+    return svgString;
   },
   restoreFileFromCustomData: async (element): Promise<RestoredStampFile | null> => {
     const data = element.customData as Geometry3DCustomData | undefined;
     const fileId = (element as { fileId?: string | null }).fileId;
     if (!data || !fileId) return null;
     if (!isGeometry3DCustomData(data)) return null;
-    // Stub: B14 will replace this with offscreen render.
-    return null;
+    try {
+      const { svgString } = await renderGeometry3DSvgFromState(data.jsonState);
+      const dataURL = `data:image/svg+xml;base64,${
+        typeof btoa !== 'undefined'
+          ? btoa(unescape(encodeURIComponent(svgString)))
+          : Buffer.from(svgString).toString('base64')
+      }`;
+      return { fileId, dataURL, mimeType: 'image/svg+xml' };
+    } catch {
+      return null;
+    }
   },
   Host: Geometry3DStampHost,
 };
