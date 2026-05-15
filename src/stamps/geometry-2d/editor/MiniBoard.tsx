@@ -9,7 +9,7 @@ import {
   objKind,
   type GeomTool,
   type ToolDef,
-} from './toolButtons';
+} from './tools';
 import { paletteFor, resolveAttrColors, themeAxis, themeGrid, themeLabel } from './theme';
 
 // Re-export để backward-compat với consumer cũ.
