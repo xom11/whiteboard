@@ -1,5 +1,5 @@
-export { ExcalidrawWhiteboardView } from './ExcalidrawWhiteboardView';
-export type { ExcalidrawWhiteboardViewProps } from './ExcalidrawWhiteboardView';
+export { Whiteboard } from './Whiteboard';
+export type { WhiteboardProps } from './Whiteboard';
 export { pickSyncableAppState } from './serialize';
 export type {
   ExcalidrawElement,
