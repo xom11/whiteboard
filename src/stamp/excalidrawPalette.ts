@@ -1,5 +1,3 @@
-'use client';
-
 // 8 màu chính lấy từ Excalidraw DEFAULT_ELEMENT_STROKE_COLOR_PALETTE.
 // Nguồn: @excalidraw/excalidraw — packages/excalidraw/colors.ts (top row chuẩn).
 // Cần đồng bộ tay nếu Excalidraw đổi palette ở major bump.
