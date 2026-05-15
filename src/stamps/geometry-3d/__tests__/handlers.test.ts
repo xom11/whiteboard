@@ -48,12 +48,15 @@ describe('handlers — primitives', () => {
     expect(log[0].parents).toEqual([1, 2, 3]);
   });
 
-  it('segment tool: 2 click → 2 points + 1 segment3d', () => {
+  it('segment tool: 2 click → 2 points + 1 bounded line3d', () => {
+    // JSXGraph 1.12 has no `segment3d` — segment renders as bounded `line3d`
+    // (straightFirst:false + straightLast:false in attributes).
     const { ctx, log } = buildCtx();
     handleToolStep(ctx, 'segment', hit(0, 0, 0));
     handleToolStep(ctx, 'segment', hit(1, 0, 0));
     const types = log.map((e) => e.type);
-    expect(types).toEqual(['point3d', 'point3d', 'segment3d']);
+    expect(types).toEqual(['point3d', 'point3d', 'line3d']);
+    expect(log[2].attributes).toMatchObject({ straightFirst: false, straightLast: false });
   });
 
   it('line tool: 2 click → 2 points + 1 line3d', () => {
