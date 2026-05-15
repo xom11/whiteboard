@@ -7,13 +7,13 @@ export { latexStamp, type LatexCustomData, isLatexCustomData } from './latex';
 export type { StampType, BaseStampCustomData } from './types';
 
 /**
- * Set stamp mặc định dùng trong ExcalidrawWhiteboardView. Consumer có thể
+ * Set stamp mặc định dùng trong Whiteboard. Consumer có thể
  * truyền custom array để bật/tắt từng stamp hoặc đăng ký stamp mới.
  *
  * Để thêm 1 stamp mới (vd chart):
  *   1. Tạo `src/stamp/registry/chart.tsx` với StampType object.
  *   2. Add vào DEFAULT_STAMPS ở dưới, HOẶC consumer truyền
- *      `<ExcalidrawWhiteboardView stamps={[...DEFAULT_STAMPS, chartStamp]} />`.
+ *      `<Whiteboard stamps={[...DEFAULT_STAMPS, chartStamp]} />`.
  */
 export const DEFAULT_STAMPS: ReadonlyArray<StampType> = Object.freeze([geometryStamp, latexStamp]);
 

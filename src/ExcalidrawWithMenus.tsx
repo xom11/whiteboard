@@ -1,7 +1,7 @@
 'use client';
 
 // Client-only wrapper around Excalidraw that lets us reach for static helpers
-// like `MainMenu.DefaultItems.*`. ExcalidrawWhiteboardView dynamic-imports this
+// like `MainMenu.DefaultItems.*`. Whiteboard dynamic-imports this
 // file so SSR never evaluates @excalidraw/excalidraw, while inside this file we
 // can use plain static imports (the entire module loads on the client).
 

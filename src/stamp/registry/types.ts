@@ -10,7 +10,7 @@ export interface BaseStampCustomData {
 }
 
 /**
- * Props mà mỗi StampHost nhận từ ExcalidrawWhiteboardView. Host component tự
+ * Props mà mỗi StampHost nhận từ Whiteboard. Host component tự
  * quản lý state nội bộ (panel ref, undo stack, displayMode...) — main view
  * chỉ điều phối show/hide.
  */
@@ -80,7 +80,7 @@ export interface StampType {
 
   /**
    * Host component bọc toàn bộ UI editing (panel + left panel + insert
-   * handler). ExcalidrawWhiteboardView mount Host khi activeStamp khớp kind.
+   * handler). Whiteboard mount Host khi activeStamp khớp kind.
    */
   Host: StampHostComponent;
 }
