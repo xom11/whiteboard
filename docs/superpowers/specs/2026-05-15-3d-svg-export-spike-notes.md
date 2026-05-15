@@ -26,3 +26,9 @@ Mở file `scripts/spike-jsxgraph-3d.html` trong Chrome / Firefox / Safari (file
 ## Action items
 
 (điền sau khi chạy)
+
+---
+
+## Resolution (2026-05-15)
+
+User confirmed via browser spike: **SVG export hoạt động đúng** cho polygon3d, sphere3d, polyhedron3d, và text3d labels. → **Option A**: tiếp tục pipeline SVG như spec §5.6. Không cần fallback PNG.
