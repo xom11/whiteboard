@@ -231,6 +231,12 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
   // Live preview segments while building a polygon/area: drawn between
   // consecutive pending points so the user sees the shape forming.
   const previewSegRef = useRef<JxgObj[]>([]);
+  // Phantom point that tracks mouse position for 2-3 click tool live preview.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const phantomRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const previewShapeRef = useRef<any>(null);
+  const previewRafRef = useRef<number | null>(null);
   // Tick state forces re-render so the undo button enable state stays in sync
   // with creationLogRef (which is mutated outside React).
   const [historyTick, setHistoryTick] = useState(0);
@@ -350,11 +356,106 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     previewSegRef.current = [];
   }, []);
 
+  const removePhantom = useCallback(() => {
+    const b = boardRef.current;
+    if (!b) return;
+    if (previewShapeRef.current) {
+      try { b.removeObject(previewShapeRef.current); } catch { /* ignore */ }
+      previewShapeRef.current = null;
+    }
+    if (phantomRef.current) {
+      try { b.removeObject(phantomRef.current); } catch { /* ignore */ }
+      phantomRef.current = null;
+    }
+  }, []);
+
   const clearPending = useCallback(() => {
+    removePhantom();
     clearPreviewSegs();
     pendingRef.current = [];
     setPendingCount(0);
-  }, [clearPreviewSegs]);
+  }, [clearPreviewSegs, removePhantom]);
+
+  // Build a transient preview shape (not logged) from pending picks + phantom point.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const buildPreview = useCallback((toolDef: ToolDef, picks: any[], phantom: any) => {
+    const b = boardRef.current;
+    if (!b) return null;
+    const style = { strokeColor: '#3b82f6', strokeWidth: 1.5, strokeOpacity: 0.65, dash: 2, fixed: true, highlight: false, withLabel: false } as Record<string, unknown>;
+    const circStyle = { ...style, fillColor: 'none', fillOpacity: 0 };
+    try {
+      switch (toolDef.key) {
+        case 'segment':
+        case 'midpoint':
+        case 'distance':
+          return b.create('segment', [picks[0], phantom], style);
+        case 'line':
+          return b.create('line', [picks[0], phantom], style);
+        case 'ray':
+          return b.create('line', [picks[0], phantom], { ...style, straightFirst: false, straightLast: true });
+        case 'vector':
+          return b.create('arrow', [picks[0], phantom], style);
+        case 'circleCenter':
+          return b.create('circle', [picks[0], phantom], circStyle);
+        case 'circle3':
+          if (picks.length === 1) return b.create('circle', [picks[0], phantom], circStyle);
+          if (picks.length === 2) return b.create('circumcircle', [picks[0], picks[1], phantom], circStyle);
+          return null;
+        case 'angle':
+          if (picks.length === 1) return b.create('segment', [picks[0], phantom], style);
+          if (picks.length === 2) return b.create('angle', [picks[0], picks[1], phantom], { ...style, radius: 1, fillColor: '#22c55e', fillOpacity: 0.15 });
+          return null;
+        case 'perpBisector':
+          return b.create('segment', [picks[0], phantom], style);
+        case 'angleBisector':
+          if (picks.length === 1) return b.create('segment', [picks[0], phantom], style);
+          if (picks.length === 2) return b.create('bisector', [picks[0], picks[1], phantom], style);
+          return null;
+        case 'perpendicular':
+        case 'parallel':
+        case 'tangent':
+          if (picks.length === 1) {
+            const k = objKind(picks[0]);
+            if (k === 'line' && toolDef.key !== 'tangent') {
+              return b.create(toolDef.key, [picks[0], phantom], style);
+            }
+            if (k === 'circle' && toolDef.key === 'tangent') {
+              const glider = b.create('glider', [phantom.X(), phantom.Y(), picks[0]], { visible: false, withLabel: false });
+              return b.create('tangent', [glider], style);
+            }
+          }
+          return null;
+        default:
+          return null;
+      }
+    } catch {
+      return null;
+    }
+  }, []);
+
+  // Tear down old preview shape and build a new one from current picks + phantom.
+  const refreshPreview = useCallback(() => {
+    const b = boardRef.current;
+    if (!b) return;
+    // Tear down current preview shape (not the phantom)
+    if (previewShapeRef.current) {
+      try { b.removeObject(previewShapeRef.current); } catch { /* ignore */ }
+      previewShapeRef.current = null;
+    }
+    const t = toolRef.current;
+    const toolDef = TOOLS.find((td) => td.key === t);
+    if (!toolDef) return;
+    const picks = pendingRef.current;
+    if (picks.length === 0 || toolDef.needs <= 0) return;
+    if (picks.length >= toolDef.needs) return;
+    // Create phantom if missing
+    if (!phantomRef.current) {
+      try {
+        phantomRef.current = b.create('point', [0, 0], { visible: false, fixed: true, withLabel: false, name: '' });
+      } catch { return; }
+    }
+    previewShapeRef.current = buildPreview(toolDef, picks, phantomRef.current);
+  }, [buildPreview]);
 
   // Apply tool action with a sequence of picked refs
   const finalize = useCallback((toolDef: ToolDef, picks: JxgObj[]) => {
@@ -513,22 +614,32 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     setHistoryTick((t) => t + 1);
   }, [clearPending]);
 
-  // Global Ctrl/Cmd+Z while the panel is mounted. Skipped when focus is in a
-  // text input so we don't hijack other undo flows. Capture phase + stop
+  // Global Ctrl/Cmd+Z + Esc while the panel is mounted. Skipped when focus is
+  // in a text input so we don't hijack other undo flows. Capture phase + stop
   // propagation so Excalidraw's underlying undo doesn't also fire when the
-  // panel is open on top of the whiteboard.
+  // panel is open on top of the whiteboard. Esc cancels in-progress picks.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && !e.shiftKey)) return;
       const ae = document.activeElement as HTMLElement | null;
-      if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable)) return;
-      e.preventDefault();
-      e.stopPropagation();
-      undoLast();
+      const inField = !!(ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable));
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+        if (inField) return;
+        e.preventDefault();
+        e.stopPropagation();
+        undoLastRef.current();
+        return;
+      }
+      if (e.key === 'Escape' && !inField) {
+        if (pendingRef.current.length > 0) {
+          e.preventDefault();
+          e.stopPropagation();
+          clearPendingRef.current();
+        }
+      }
     };
     window.addEventListener('keydown', onKey, { capture: true });
     return () => window.removeEventListener('keydown', onKey, { capture: true });
-  }, [undoLast]);
+  }, []);
 
   // Translate a pointer event into JSXGraph SVG-pixel coords (the coord system
   // `hasPoint` uses). Falls back to manual rect math if `getMousePosition` is
@@ -814,6 +925,8 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         if (pendingRef.current.length >= toolDef.needs) {
           finalize(toolDef, pendingRef.current);
           clearPending();
+        } else {
+          refreshPreview();
         }
       });
 
@@ -838,6 +951,26 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         const cy = (e.clientY ?? e.touches?.[0]?.clientY ?? 0) as number;
         const snap = snapshotObject(best, { x: cx + 8, y: cy + 8 });
         if (snap) emitSelect(snap);
+      });
+
+      // Mouse move: update phantom position so preview shape tracks cursor.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      board.on('move', (e: any) => {
+        const ph = phantomRef.current;
+        if (!ph || !boardRef.current) return;
+        if (previewRafRef.current != null) return;
+        previewRafRef.current = requestAnimationFrame(() => {
+          previewRafRef.current = null;
+          if (!boardRef.current || !phantomRef.current) return;
+          try {
+            const coords = boardRef.current.getUsrCoordsOfMouse(e);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const JXG: any = jxgRef.current;
+            if (!JXG) return;
+            phantomRef.current.setPositionDirectly(JXG.COORDS_BY_USER, [coords[0], coords[1]]);
+            boardRef.current.update();
+          } catch { /* ignore */ }
+        });
       });
 
       onReady({
@@ -866,6 +999,10 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     })();
     return () => {
       cancelled = true;
+      if (previewRafRef.current != null) {
+        cancelAnimationFrame(previewRafRef.current);
+        previewRafRef.current = null;
+      }
       if (boardRef.current && jxgRef.current) {
         try { jxgRef.current.JSXGraph.freeBoard(boardRef.current); } catch { /* ignore */ }
         boardRef.current = null;
@@ -943,6 +1080,8 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
 
   const undoLastRef = useRef(undoLast);
   undoLastRef.current = undoLast;
+  const clearPendingRef = useRef(clearPending);
+  clearPendingRef.current = clearPending;
   const setShowAxisRef = useRef(setShowAxis);
   setShowAxisRef.current = setShowAxis;
   const setShowGridRef = useRef(setShowGrid);
