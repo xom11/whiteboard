@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   ExcalidrawElement,
   BinaryFiles,
@@ -11,20 +11,14 @@ import type {
 import { pickSyncableAppState } from './serialize';
 import {
   ToolbarStampInjector,
-  GeometryLeftPanel,
-  LatexLeftPanel,
-  LatexEditorPopover,
-  GeometryEditorPanel,
   useStampShortcuts,
   isMathStamp,
   restoreMissingMathStampFiles,
-  type SerializedBoard,
-  type LatexEditorHandle,
-  type GeometryEditorPanelHandle,
-  type GeomBoardState,
+  DEFAULT_STAMPS,
+  findStampForCustomData,
+  type StampType,
 } from './stamp';
-import type { GeomTool } from './stamp/JSXGraphMiniBoard';
-import { insertStampImage } from './core/insertStampImage';
+import type { StampHostHandle } from './stamp/registry/types';
 import { usePersist, writePersisted } from './core/usePersist';
 import '@excalidraw/excalidraw/index.css';
 import './stamp/stamp.css';
@@ -47,6 +41,12 @@ type ExApi = any;
 const SYNC_THROTTLE_MS = 200;
 const DOUBLE_CLICK_MS = 400;
 
+/** Element đang re-edit (double-click) — đủ tối thiểu để Host parse customData. */
+interface EditingElement {
+  id: string;
+  customData: unknown;
+}
+
 export interface ExcalidrawWhiteboardViewProps {
   role: 'teacher' | 'student';
   roomId: string;
@@ -61,18 +61,16 @@ export interface ExcalidrawWhiteboardViewProps {
    * Khi set, component tự lưu scene + files vào `sessionStorage[persistKey]` mỗi
    * lần thay đổi (teacher) và khôi phục khi mount. Math stamps tự regenerate SVG
    * qua `restoreMissingMathStampFiles`, nên storage chỉ cần chứa elements + appState
-   * + raster files. Khi prop này có giá trị, dữ liệu khôi phục từ storage được
-   * ưu tiên hơn `initialScene` (đảm bảo reload trang giữ lại bảng vẽ).
+   * + raster files.
    */
   persistKey?: string;
+  /**
+   * Danh sách stamp đăng ký. Mỗi stamp khai báo phím tắt + toolbar button +
+   * Host component (UI editing). Mặc định DEFAULT_STAMPS (geometry + latex).
+   * Truyền `[...DEFAULT_STAMPS, customStamp]` để thêm stamp mới.
+   */
+  stamps?: ReadonlyArray<StampType>;
 }
-
-const INITIAL_GEOM_STATE: GeomBoardState = {
-  tool: 'move',
-  showAxis: false,
-  showGrid: false,
-  canUndo: false,
-};
 
 export function ExcalidrawWhiteboardView({
   role,
@@ -83,6 +81,7 @@ export function ExcalidrawWhiteboardView({
   onFilesChange,
   langCode = 'vi-VN',
   persistKey,
+  stamps = DEFAULT_STAMPS,
 }: ExcalidrawWhiteboardViewProps) {
   const [api, setApi] = useState<ExApi | null>(null);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
@@ -98,74 +97,53 @@ export function ExcalidrawWhiteboardView({
       ? { elements: persistedInitial.elements, appState: persistedInitial.appState as SyncableAppState }
       : initialScene;
 
-  const [activeStamp, setActiveStamp] = useState<'geometry' | 'latex' | null>(null);
+  // ---- Stamp state (registry-driven) ----
+  const [activeStamp, setActiveStamp] = useState<string | null>(null);
   const activeStampRef = useRef(activeStamp);
   activeStampRef.current = activeStamp;
-
-  // Geometry-specific state
-  const [geometryEditing, setGeometryEditing] = useState<{
-    editingElementId: string | null;
-    initialState: SerializedBoard | null;
-  }>({ editingElementId: null, initialState: null });
-  const [geomState, setGeomState] = useState<GeomBoardState>(INITIAL_GEOM_STATE);
-  const geomPanelRef = useRef<GeometryEditorPanelHandle | null>(null);
-
-  // LaTeX-specific state
-  const [latexEditing, setLatexEditing] = useState<{
-    editingElementId: string | null;
-    initialValue: string;
-    x: number;
-    y: number;
-  }>({ editingElementId: null, initialValue: '', x: 0, y: 0 });
-  const [latexDisplayMode, setLatexDisplayMode] = useState(false);
-  const latexEditorRef = useRef<LatexEditorHandle | null>(null);
-  const latexInsertableRef = useRef<{ insert: () => boolean; hasContent: () => boolean }>({
-    insert: () => false,
-    hasContent: () => false,
-  });
+  const [editingElement, setEditingElement] = useState<EditingElement | null>(null);
+  const hostRef = useRef<StampHostHandle | null>(null);
 
   const lastClickRef = useRef<{ time: number; elementId: string | null }>({
     time: 0,
     elementId: null,
   });
-
-  // Mỗi lần intercept crop xong, lưu id để skip không lặp lại
   const handledCropIdRef = useRef<string | null>(null);
-
-  // Lưu lại tool Excalidraw đang active TRƯỚC khi mở G/L để restore sau khi đóng.
   const prevExcalidrawToolRef = useRef<string>('selection');
-
   const isTeacher = role === 'teacher';
 
-  // ---- Open / close helpers ----
-  const openGeometry = useCallback(() => {
-    if (!isTeacher) return;
-    setGeometryEditing({ editingElementId: null, initialState: null });
-    setGeomState(INITIAL_GEOM_STATE);
-    setActiveStamp('geometry');
-  }, [isTeacher]);
+  const stampByKind = useMemo(() => {
+    const m = new Map<string, StampType>();
+    for (const s of stamps) m.set(s.kind, s);
+    return m;
+  }, [stamps]);
 
-  const openLatex = useCallback(() => {
-    if (!isTeacher) return;
-    setLatexEditing({ editingElementId: null, initialValue: '', x: 0, y: 0 });
-    setActiveStamp('latex');
-  }, [isTeacher]);
+  const activeStampDef = activeStamp ? stampByKind.get(activeStamp) ?? null : null;
+  const HostComponent = activeStampDef?.Host ?? null;
+
+  // ---- Open / close helpers ----
+  const openStamp = useCallback(
+    (kind: string, element: EditingElement | null = null) => {
+      if (!isTeacher) return;
+      if (!stampByKind.has(kind)) return;
+      setEditingElement(element);
+      setActiveStamp(kind);
+    },
+    [isTeacher, stampByKind],
+  );
 
   const closeStamp = useCallback(() => {
     setActiveStamp(null);
-    setGeometryEditing({ editingElementId: null, initialState: null });
-    setLatexEditing({ editingElementId: null, initialValue: '', x: 0, y: 0 });
+    setEditingElement(null);
   }, []);
 
-  const toggleGeometry = useCallback(() => {
-    if (activeStamp === 'geometry') closeStamp();
-    else openGeometry();
-  }, [activeStamp, closeStamp, openGeometry]);
-
-  const toggleLatex = useCallback(() => {
-    if (activeStamp === 'latex') closeStamp();
-    else openLatex();
-  }, [activeStamp, closeStamp, openLatex]);
+  const toggleStampByKind = useCallback(
+    (kind: string) => {
+      if (activeStamp === kind) closeStamp();
+      else openStamp(kind);
+    },
+    [activeStamp, openStamp, closeStamp],
+  );
 
   // ---- Teacher path: capture local changes ----
   const handleChange = useCallback(
@@ -179,38 +157,24 @@ export function ExcalidrawWhiteboardView({
 
       // Intercept Excalidraw crop-image flow cho math stamps: khi user double-click
       // 1 stamp, Excalidraw set appState.croppingElementId. Ta dismiss crop mode +
-      // mở editor của chính ta. handlePointerDown cũng phát hiện double-click sớm
-      // hơn — đây là fallback (đặc biệt khi click rơi vào selection handle khiến
-      // pointerDownState.hit.element = null).
+      // mở Host editor tương ứng. handlePointerDown phát hiện double-click sớm
+      // hơn — đây là fallback (đặc biệt khi click rơi vào selection handle).
       const cropId = appState?.croppingElementId as string | null | undefined;
       if (cropId && cropId !== handledCropIdRef.current && api) {
         const el = elements.find((e: ExcalidrawElement) => e.id === cropId);
-        if (el && isMathStamp(el)) {
-          handledCropIdRef.current = cropId;
-          api.updateScene({
-            appState: { ...appState, croppingElementId: null, selectedElementIds: {} },
-          });
-          if (el.customData.kind === 'geometry') {
-            try {
-              const parsed = JSON.parse(el.customData.jsonState) as SerializedBoard;
-              setGeometryEditing({ editingElementId: el.id, initialState: parsed });
-              setActiveStamp('geometry');
-            } catch {
-              console.warn('customData jsonState corrupted; skipping reopen');
-            }
-          } else {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const elAny = el as any;
-            setLatexEditing({
-              editingElementId: el.id,
-              initialValue: el.customData.src,
-              x: elAny.x ?? 0,
-              y: elAny.y ?? 0,
+        if (el) {
+          const stamp = findStampForCustomData((el as { customData?: unknown }).customData, stamps);
+          if (stamp) {
+            handledCropIdRef.current = cropId;
+            api.updateScene({
+              appState: { ...appState, croppingElementId: null, selectedElementIds: {} },
             });
-            setLatexDisplayMode(!!el.customData.displayMode);
-            setActiveStamp('latex');
+            openStamp(stamp.kind, {
+              id: el.id,
+              customData: (el as { customData?: unknown }).customData,
+            });
+            return;
           }
-          return;
         }
       }
       if (!cropId) {
@@ -257,7 +221,7 @@ export function ExcalidrawWhiteboardView({
         }
       }, SYNC_THROTTLE_MS);
     },
-    [isTeacher, api, onSceneChange, onFilesChange, persistKey],
+    [isTeacher, api, onSceneChange, onFilesChange, persistKey, stamps, openStamp],
   );
 
   // ---- Student path: apply remote scene ----
@@ -294,7 +258,7 @@ export function ExcalidrawWhiteboardView({
         const elements = api.getSceneElements();
         if (!elements || elements.length === 0) return;
         if (cancelled) return;
-        await restoreMissingMathStampFiles(api, elements);
+        await restoreMissingMathStampFiles(api, elements, stamps);
       } catch (err) {
         console.warn('Math stamp restore pass failed:', err);
       }
@@ -305,60 +269,13 @@ export function ExcalidrawWhiteboardView({
       cancelled = true;
       clearTimeout(t);
     };
-  }, [api, initialScene, remoteScene]);
+  }, [api, initialScene, remoteScene, stamps]);
 
   useEffect(
     () => () => {
       if (throttleTimerRef.current) clearTimeout(throttleTimerRef.current);
     },
     [],
-  );
-
-  // ---- Stamp insert handlers ----
-  const handleGeometryInsert = useCallback(
-    async (jsonState: string, svgString: string) => {
-      if (!api) return;
-      try {
-        await insertStampImage(api, {
-          svgString,
-          makeCustomData: (width, height) => ({
-            kind: 'geometry' as const,
-            version: 1 as const,
-            jsonState,
-            svgWidth: width,
-            svgHeight: height,
-          }),
-          editingElementId: geometryEditing.editingElementId,
-        });
-      } catch (err) {
-        console.error('Geometry stamp insert failed:', err);
-      }
-      closeStamp();
-    },
-    [api, geometryEditing.editingElementId, closeStamp],
-  );
-
-  const handleLatexInsert = useCallback(
-    async (svgString: string, src: string, displayMode: boolean) => {
-      if (!api) return;
-      try {
-        await insertStampImage(api, {
-          svgString,
-          makeCustomData: () => ({
-            kind: 'latex' as const,
-            version: 1 as const,
-            src,
-            displayMode,
-          }),
-          editingElementId: latexEditing.editingElementId,
-          position: { x: latexEditing.x || undefined, y: latexEditing.y || undefined },
-        });
-      } catch (err) {
-        console.error('LaTeX stamp insert failed:', err);
-      }
-      closeStamp();
-    },
-    [api, latexEditing.editingElementId, latexEditing.x, latexEditing.y, closeStamp],
   );
 
   // ---- Double-click detection for re-edit ----
@@ -368,45 +285,30 @@ export function ExcalidrawWhiteboardView({
       if (!isTeacher) return;
       const hitElement = pointerDownState?.hit?.element;
       if (!hitElement || hitElement.type !== 'image') return;
-      if (!isMathStamp(hitElement)) return;
+      const stamp = findStampForCustomData(hitElement.customData, stamps);
+      if (!stamp) return;
       const now = Date.now();
       const isDouble =
         lastClickRef.current.elementId === hitElement.id &&
         now - lastClickRef.current.time < DOUBLE_CLICK_MS;
       lastClickRef.current = { time: now, elementId: hitElement.id };
       if (!isDouble) return;
-      if (hitElement.customData.kind === 'geometry') {
-        try {
-          const parsed = JSON.parse(hitElement.customData.jsonState) as SerializedBoard;
-          setGeometryEditing({ editingElementId: hitElement.id, initialState: parsed });
-          setActiveStamp('geometry');
-        } catch {
-          console.warn('customData jsonState corrupted; skipping reopen');
-        }
-      } else {
-        setLatexEditing({
-          editingElementId: hitElement.id,
-          initialValue: hitElement.customData.src,
-          x: hitElement.x ?? 0,
-          y: hitElement.y ?? 0,
-        });
-        setLatexDisplayMode(!!hitElement.customData.displayMode);
-        setActiveStamp('latex');
-      }
+      openStamp(stamp.kind, {
+        id: hitElement.id,
+        customData: hitElement.customData,
+      });
     },
-    [isTeacher],
+    [isTeacher, stamps, openStamp],
   );
 
-  // ---- Keyboard shortcuts: G / L để toggle ----
+  // ---- Keyboard shortcuts: đọc registry, mỗi stamp tự khai báo phím tắt ----
   useStampShortcuts({
     enabled: isTeacher,
-    onGeometry: toggleGeometry,
-    onLatex: toggleLatex,
+    onToggle: toggleStampByKind,
+    stamps,
   });
 
   // ---- Sync Excalidraw activeTool với activeStamp ----
-  // Khi G/L mở, deselect tool Excalidraw (1-9) bằng cách set sang 'hand' (không
-  // vẽ). Khi đóng, restore tool trước đó để user không bị mất context.
   useEffect(() => {
     if (!api) return;
     if (activeStamp) {
@@ -423,10 +325,15 @@ export function ExcalidrawWhiteboardView({
     }
   }, [activeStamp, api]);
 
-  // ---- Block tất cả Excalidraw shortcuts khi G/L active ----
-  // Capture-phase keydown: chặn mọi phím (trừ trong editable input) để các
-  // shortcut 1-9, V, R, D, O, A, L, P, T, E, H... của Excalidraw không trigger
-  // tool change đằng sau editor.
+  // ---- Block Excalidraw shortcuts khi stamp panel đang mở ----
+  // Capture-phase keydown: chặn mọi phím (trừ editable input + modifier + Esc +
+  // phím tắt của stamp đã đăng ký) để các shortcut 1-9, V, R, D... của
+  // Excalidraw không trigger tool change sau editor.
+  const stampShortcutKeys = useMemo(
+    () => new Set(stamps.map((s) => s.shortcutKey.toLowerCase())),
+    [stamps],
+  );
+
   useEffect(() => {
     if (!activeStamp) return;
     const ALLOWED_KEYS = new Set([
@@ -444,21 +351,16 @@ export function ExcalidrawWhiteboardView({
 
     const blocker = (e: KeyboardEvent) => {
       if (isEditable(e.target)) return;
-      // Cho phép Ctrl/Cmd + chữ cái (undo, copy/paste...)
       if (e.ctrlKey || e.metaKey) return;
       if (ALLOWED_KEYS.has(e.key)) return;
-      // Esc xử lý ở handler riêng — không block để handler bên dưới chạy
       if (e.key === 'Escape') return;
-      // G / L: useStampShortcuts đã có handler riêng để toggle — vẫn cho qua
-      // (useStampShortcuts đăng ký ở capture phase qua window listener)
-      const k = e.key.toLowerCase();
-      if (k === 'g' || k === 'l') return;
+      if (stampShortcutKeys.has(e.key.toLowerCase())) return;
       e.preventDefault();
       e.stopPropagation();
     };
     window.addEventListener('keydown', blocker, { capture: true });
     return () => window.removeEventListener('keydown', blocker, { capture: true });
-  }, [activeStamp]);
+  }, [activeStamp, stampShortcutKeys]);
 
   // ---- Esc đóng panel (capture phase để chạy TRƯỚC Excalidraw) ----
   useEffect(() => {
@@ -466,15 +368,9 @@ export function ExcalidrawWhiteboardView({
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
       const ae = document.activeElement as HTMLElement | null;
-      // Trong input → để input handle Esc nhưng vẫn close stamp
-      // (Excalidraw có Esc handler riêng có thể swallow → bắt ở capture)
-      if (
-        ae &&
-        (ae.tagName === 'TEXTAREA' || ae.isContentEditable)
-      ) {
+      if (ae && (ae.tagName === 'TEXTAREA' || ae.isContentEditable)) {
         return;
       }
-      // INPUT trong LaTeX editor: vẫn cho phép close
       e.preventDefault();
       e.stopPropagation();
       closeStamp();
@@ -483,10 +379,7 @@ export function ExcalidrawWhiteboardView({
     return () => window.removeEventListener('keydown', onKey, { capture: true });
   }, [activeStamp, closeStamp]);
 
-  // ---- Click ra ngoài (auto-insert hoặc đóng) ----
-  // Khi user click ngoài editor / panel trái / nút G-L trên toolbar:
-  //   - Geometry: nếu có ít nhất 1 phép dựng → tự chèn; không có → chỉ đóng.
-  //   - LaTeX: nếu input không rỗng và preview hợp lệ → tự chèn; không có → chỉ đóng.
+  // ---- Click ra ngoài → auto-insert (nếu có nội dung) rồi đóng ----
   useEffect(() => {
     if (!activeStamp) return;
     let lastFireTime = 0;
@@ -494,21 +387,14 @@ export function ExcalidrawWhiteboardView({
       const target = e.target as HTMLElement | null;
       if (!target) return;
       if (target.closest('[data-stamp-area="true"]')) return;
-      // Dedup: pointerdown + mousedown bắn cùng 1 lúc → chỉ xử lý lần đầu.
       const now = Date.now();
       if (now - lastFireTime < 50) return;
       lastFireTime = now;
-      const stampType = activeStampRef.current;
-      if (stampType === 'geometry') {
-        geomPanelRef.current?.insert();
-      } else if (stampType === 'latex') {
-        latexInsertableRef.current.insert();
-      }
+      // Trigger insert qua Host imperative API. Host quyết định có chèn được
+      // không (geometry: log.length > 0; latex: input không rỗng + preview ok).
+      hostRef.current?.tryInsert();
       closeStamp();
     };
-    // Listen ở window capture phase — sớm hơn cả document, đảm bảo chạy trước
-    // Excalidraw's internal handlers. Cũng listen pointerdown thay vì mousedown
-    // vì Excalidraw có thể call stopPropagation trên mousedown trên canvas.
     window.addEventListener('pointerdown', handler, { capture: true });
     window.addEventListener('mousedown', handler, { capture: true });
     return () => {
@@ -540,66 +426,19 @@ export function ExcalidrawWhiteboardView({
 
       <ToolbarStampInjector
         enabled={isTeacher}
-        activeStamp={activeStamp}
-        onToggleGeometry={toggleGeometry}
-        onToggleLatex={toggleLatex}
+        activeStampKind={activeStamp}
+        onToggle={toggleStampByKind}
+        stamps={stamps}
       />
 
-      {activeStamp === 'geometry' && (
-        <>
-          <GeometryLeftPanel
-            activeTool={geomState.tool}
-            onToolChange={(t: GeomTool) => geomPanelRef.current?.setTool(t)}
-            showAxis={geomState.showAxis}
-            showGrid={geomState.showGrid}
-            onShowAxisChange={(b) => geomPanelRef.current?.setShowAxis(b)}
-            onShowGridChange={(b) => geomPanelRef.current?.setShowGrid(b)}
-            onUndo={() => geomPanelRef.current?.undo()}
-            canUndo={geomState.canUndo}
-            onClose={closeStamp}
-            isDark={isDarkTheme}
-          />
-          <GeometryEditorPanel
-            ref={geomPanelRef}
-            initialState={geometryEditing.initialState}
-            onInsert={handleGeometryInsert}
-            onClose={closeStamp}
-            onStateChange={setGeomState}
-            withLeftPanel
-            isDark={isDarkTheme}
-          />
-        </>
-      )}
-
-      {activeStamp === 'latex' && (
-        <>
-          <LatexLeftPanel
-            displayMode={latexDisplayMode}
-            onDisplayModeChange={setLatexDisplayMode}
-            onInsertSnippet={(s) => latexEditorRef.current?.insertAtCursor(s)}
-            onClose={closeStamp}
-          />
-          <LatexEditorPopover
-            ref={(node) => {
-              latexEditorRef.current = node;
-              // Cập nhật insertable interface để click-outside có thể trigger insert
-              if (node) {
-                latexInsertableRef.current = {
-                  insert: () => node.tryInsert(),
-                  hasContent: () => node.hasContent(),
-                };
-              }
-            }}
-            x={0}
-            y={0}
-            initialValue={latexEditing.initialValue}
-            displayMode={latexDisplayMode}
-            onDisplayModeChange={setLatexDisplayMode}
-            onInsert={handleLatexInsert}
-            onClose={closeStamp}
-            withLeftPanel
-          />
-        </>
+      {HostComponent && (
+        <HostComponent
+          ref={hostRef}
+          api={api}
+          editingElement={editingElement}
+          onClose={closeStamp}
+          isDark={isDarkTheme}
+        />
       )}
     </div>
   );

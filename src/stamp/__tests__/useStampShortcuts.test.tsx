@@ -1,51 +1,86 @@
 import { render, fireEvent } from '@testing-library/react';
 import { useStampShortcuts } from '../useStampShortcuts';
 
-function Harness({ onGeo, onLatex, enabled = true }: { onGeo: () => void; onLatex: () => void; enabled?: boolean }) {
-  useStampShortcuts({ onGeometry: onGeo, onLatex, enabled });
+function Harness({
+  onToggle,
+  enabled = true,
+}: {
+  onToggle: (kind: string) => void;
+  enabled?: boolean;
+}) {
+  useStampShortcuts({ onToggle, enabled });
   return <div data-testid="harness" />;
 }
 
-describe('useStampShortcuts', () => {
-  test('pressing G calls onGeometry', () => {
-    const onGeo = jest.fn();
-    render(<Harness onGeo={onGeo} onLatex={() => {}} />);
+describe('useStampShortcuts (registry-driven)', () => {
+  test('pressing G dispatches kind="geometry"', () => {
+    const onToggle = jest.fn();
+    render(<Harness onToggle={onToggle} />);
     fireEvent.keyDown(window, { key: 'g' });
-    expect(onGeo).toHaveBeenCalled();
+    expect(onToggle).toHaveBeenCalledWith('geometry');
   });
 
-  test('pressing L calls onLatex', () => {
-    const onLatex = jest.fn();
-    render(<Harness onGeo={() => {}} onLatex={onLatex} />);
+  test('pressing L dispatches kind="latex"', () => {
+    const onToggle = jest.fn();
+    render(<Harness onToggle={onToggle} />);
     fireEvent.keyDown(window, { key: 'l' });
-    expect(onLatex).toHaveBeenCalled();
+    expect(onToggle).toHaveBeenCalledWith('latex');
   });
 
-  test('does not fire when focus is in input element', () => {
-    const onGeo = jest.fn();
+  test('không fire khi target là input', () => {
+    const onToggle = jest.fn();
     const { container } = render(
       <>
-        <Harness onGeo={onGeo} onLatex={() => {}} />
+        <Harness onToggle={onToggle} />
         <input data-testid="input" />
-      </>
+      </>,
     );
     const input = container.querySelector('[data-testid="input"]') as HTMLInputElement;
     input.focus();
     fireEvent.keyDown(input, { key: 'g', bubbles: true });
-    expect(onGeo).not.toHaveBeenCalled();
+    expect(onToggle).not.toHaveBeenCalled();
   });
 
-  test('enabled=false disables shortcuts', () => {
-    const onGeo = jest.fn();
-    render(<Harness onGeo={onGeo} onLatex={() => {}} enabled={false} />);
+  test('enabled=false vô hiệu hoá shortcut', () => {
+    const onToggle = jest.fn();
+    render(<Harness onToggle={onToggle} enabled={false} />);
     fireEvent.keyDown(window, { key: 'g' });
-    expect(onGeo).not.toHaveBeenCalled();
+    expect(onToggle).not.toHaveBeenCalled();
   });
 
-  test('ignores G with modifier (Cmd+G)', () => {
-    const onGeo = jest.fn();
-    render(<Harness onGeo={onGeo} onLatex={() => {}} />);
+  test('bỏ qua khi có modifier (Cmd+G)', () => {
+    const onToggle = jest.fn();
+    render(<Harness onToggle={onToggle} />);
     fireEvent.keyDown(window, { key: 'g', metaKey: true });
-    expect(onGeo).not.toHaveBeenCalled();
+    expect(onToggle).not.toHaveBeenCalled();
+  });
+
+  test('bỏ qua phím không có trong registry', () => {
+    const onToggle = jest.fn();
+    render(<Harness onToggle={onToggle} />);
+    fireEvent.keyDown(window, { key: 'x' });
+    expect(onToggle).not.toHaveBeenCalled();
+  });
+
+  test('registry custom: nhận key chưa có trong default', () => {
+    const onToggle = jest.fn();
+    const customStamps = [
+      {
+        kind: 'chart',
+        shortcutKey: 'c',
+        toolbarLabel: 'C',
+        toolbarTitle: 'Chart',
+        toolbarIcon: null,
+        matchesCustomData: () => false,
+        renderSvgFromCustomData: async () => '',
+      },
+    ];
+    function CustomHarness() {
+      useStampShortcuts({ enabled: true, onToggle, stamps: customStamps });
+      return null;
+    }
+    render(<CustomHarness />);
+    fireEvent.keyDown(window, { key: 'c' });
+    expect(onToggle).toHaveBeenCalledWith('chart');
   });
 });

@@ -2,32 +2,36 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { DEFAULT_STAMPS } from './registry';
+import type { StampType } from './registry/types';
 
 interface Props {
   /** Bật/tắt theo role. Khi disabled → không mount portal. */
   enabled: boolean;
-  /** Stamp đang active: 'geometry' | 'latex' | null */
-  activeStamp: 'geometry' | 'latex' | null;
-  onToggleGeometry: () => void;
-  onToggleLatex: () => void;
+  /** Kind stamp đang active, hoặc null nếu không có stamp nào mở. */
+  activeStampKind: string | null;
+  /** Toggle stamp theo kind. */
+  onToggle: (kind: string) => void;
+  /** Danh sách stamp đăng ký. Mặc định DEFAULT_STAMPS. */
+  stamps?: ReadonlyArray<StampType>;
 }
 
 const WRAPPER_ID = 'stamp-toolbar-portal-wrapper';
 
 /**
- * Inject 2 nút G / L vào thanh tool chính của Excalidraw (`.App-toolbar .Shape`)
- * sao cho chúng xuất hiện ngay sau nút eraser (tool 9) và kế thừa CSS native
- * của Excalidraw (cùng kích thước, hover, selected state, keybinding label).
+ * Inject N nút stamp vào thanh tool chính của Excalidraw
+ * (`.App-toolbar .Stack_horizontal`) — số nút = registry.length. Mỗi nút kế
+ * thừa CSS native (cùng kích thước, hover, selected state, keybinding label).
  *
- * Pattern: ReactDOM portal vào 1 DOM node được append vào `.Shape`. Dùng
+ * Pattern: ReactDOM portal vào 1 DOM node được append vào toolbar. Dùng
  * `MutationObserver` để re-mount nếu Excalidraw xoá wrapper hoặc re-render
  * toolbar (đổi orientation, mobile/desktop switch...).
  */
 export function ToolbarStampInjector({
   enabled,
-  activeStamp,
-  onToggleGeometry,
-  onToggleLatex,
+  activeStampKind,
+  onToggle,
+  stamps = DEFAULT_STAMPS,
 }: Props) {
   const [mountNode, setMountNode] = useState<HTMLElement | null>(null);
 
@@ -84,7 +88,6 @@ export function ToolbarStampInjector({
 
     tryMount();
 
-    // Observe toolbar parent: nếu Excalidraw re-render và xoá wrapper, ta re-mount.
     const root = document.querySelector('.excalidraw') ?? document.body;
     observer = new MutationObserver(() => {
       if (cancelled) return;
@@ -100,7 +103,6 @@ export function ToolbarStampInjector({
       cancelled = true;
       if (timer) clearTimeout(timer);
       observer?.disconnect();
-      // Cleanup wrapper khi component unmount (để tránh leak nếu Excalidraw vẫn render)
       document.getElementById(WRAPPER_ID)?.remove();
     };
   }, [enabled]);
@@ -109,42 +111,21 @@ export function ToolbarStampInjector({
 
   return createPortal(
     <>
-      <StampToolButton
-        icon={GeometryIcon}
-        keybind="G"
-        label="Chèn hình học (G)"
-        active={activeStamp === 'geometry'}
-        onClick={onToggleGeometry}
-        dataTestId="stamp-toolbar-geometry"
-      />
-      <StampToolButton
-        icon={LatexIcon}
-        keybind="L"
-        label="Chèn công thức LaTeX (L)"
-        active={activeStamp === 'latex'}
-        onClick={onToggleLatex}
-        dataTestId="stamp-toolbar-latex"
-      />
+      {stamps.map((stamp) => (
+        <StampToolButton
+          key={stamp.kind}
+          icon={stamp.toolbarIcon}
+          keybind={stamp.toolbarLabel}
+          label={stamp.toolbarTitle}
+          active={activeStampKind === stamp.kind}
+          onClick={() => onToggle(stamp.kind)}
+          dataTestId={stamp.toolbarTestId}
+        />
+      ))}
     </>,
     mountNode,
   );
 }
-
-// Inline SVG icons để khớp template tool 1-9 của Excalidraw (line/stroke style).
-const GeometryIcon = (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <polygon points="4,20 20,20 12,5" />
-    <circle cx="4" cy="20" r="1.4" fill="currentColor" stroke="none" />
-    <circle cx="20" cy="20" r="1.4" fill="currentColor" stroke="none" />
-    <circle cx="12" cy="5" r="1.4" fill="currentColor" stroke="none" />
-  </svg>
-);
-
-const LatexIcon = (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M17 5 H7 L13 12 L7 19 H17" />
-  </svg>
-);
 
 interface StampToolButtonProps {
   icon: React.ReactNode;

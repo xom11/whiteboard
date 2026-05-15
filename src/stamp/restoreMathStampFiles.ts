@@ -1,21 +1,18 @@
-// Regenerate Excalidraw BinaryFiles for math-stamp elements after page reload.
+// Regenerate Excalidraw BinaryFiles for stamp elements after page reload.
 //
 // Why this exists: VideoRoom only persists the Excalidraw scene (elements +
-// appState) to sessionStorage; binary files (the SVG dataURLs for our LaTeX /
-// geometry stamps) are NOT persisted. After reload, elements still reference a
-// fileId via customData, but the file payload is missing — Excalidraw renders
-// the image area as an empty placeholder.
+// appState) to sessionStorage; binary files (the SVG dataURLs for stamp
+// images) are NOT persisted. After reload, elements still reference a fileId
+// via customData, but the file payload is missing — Excalidraw renders the
+// image area as an empty placeholder.
 //
-// We deterministically reproduce each stamp's SVG from its customData
-// (LaTeX source / geometry creation log), then call api.addFiles using the
-// element's existing fileId. The dataURL contents may differ slightly from
-// the original (e.g. element ordering), but that's fine — Excalidraw keys on
-// the fileId we provide, not on dataURL hash.
+// Strategy: tra registry để tìm StampType khớp customData.kind → gọi
+// `renderSvgFromCustomData(customData)` → dataURL + addFiles dưới fileId cũ.
+// Excalidraw key trên fileId chứ không phải hash dataURL nên nếu kết quả
+// render có sai khác nhỏ (vd thứ tự element) cũng không ảnh hưởng.
 
-import { renderLatexToSvg } from './renderLatexToSvg';
-import { renderGeometryToSvg } from './renderGeometryToSvg';
-import { deserializeIntoBoard, type SerializedBoard } from './serializeBoard';
-import { isMathStamp, type MathStampCustomData } from './types';
+import { DEFAULT_STAMPS, findStampForCustomData } from './registry';
+import type { StampType } from './registry/types';
 
 interface ElementLike {
   id: string;
@@ -36,100 +33,51 @@ function svgToDataURL(svg: string): string {
   return 'data:image/svg+xml;base64,' + btoa(utf8);
 }
 
-async function renderGeometrySvgFromState(jsonState: string): Promise<string> {
-  const parsed = JSON.parse(jsonState) as SerializedBoard;
-  const JXG = (await import('jsxgraph')).default;
-  // Labels render as SVG <text> để được capture trong clone SVG (xem note ở
-  // JSXGraphMiniBoard cho lý do)
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const opts = (JXG as any).Options;
-    if (opts) {
-      opts.text = opts.text || {};
-      opts.text.display = 'internal';
-      opts.text.useASCIIMathML = false;
-      opts.text.useMathJax = false;
-      opts.text.useKatex = false;
-      opts.label = opts.label || {};
-      opts.label.display = 'internal';
-    }
-  } catch { /* ignore */ }
-  const container = document.createElement('div');
-  const containerId = 'jxg_offscreen_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-  container.id = containerId;
-  // Place off-screen but with real dimensions so JSXGraph renders correctly.
-  container.style.cssText = 'position:absolute;top:-99999px;left:-99999px;width:400px;height:300px;visibility:hidden;pointer-events:none;';
-  document.body.appendChild(container);
-  let board: unknown = null;
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    board = (JXG as any).JSXGraph.initBoard(containerId, {
-      boundingbox: parsed.bbox,
-      axis: !!parsed.showAxis,
-      grid: !!parsed.showGrid,
-      showCopyright: false,
-      showNavigation: false,
-      keepAspectRatio: false,
-    });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    deserializeIntoBoard(board as any, parsed);
-    // Allow render flush
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (board as any).update();
-    return renderGeometryToSvg(container);
-  } finally {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (board) (JXG as any).JSXGraph.freeBoard(board);
-    } catch { /* ignore */ }
-    if (container.parentNode) container.parentNode.removeChild(container);
-  }
-}
-
 async function buildFileForStamp(
   fileId: string,
-  customData: MathStampCustomData,
+  customData: unknown,
+  stamp: StampType,
 ): Promise<AddFileRecord | null> {
   try {
-    let svg: string;
-    if (customData.kind === 'latex') {
-      svg = await renderLatexToSvg(customData.src, customData.displayMode);
-    } else if (customData.kind === 'geometry') {
-      svg = await renderGeometrySvgFromState(customData.jsonState);
-    } else {
-      return null;
-    }
+    const svg = await stamp.renderSvgFromCustomData(customData);
     return { id: fileId, dataURL: svgToDataURL(svg), mimeType: 'image/svg+xml', created: Date.now() };
   } catch (err) {
-    console.warn('Math-stamp restore failed for', fileId, err);
+    console.warn('Stamp restore failed for', fileId, '(' + stamp.kind + ')', err);
     return null;
   }
 }
 
 /**
- * Find math-stamp elements whose binary file is missing from Excalidraw, then
- * regenerate and add it. Idempotent: safe to call on every scene update.
+ * Find stamp elements whose binary file is missing from Excalidraw, then
+ * regenerate via registry dispatch. Idempotent: safe to call on every scene
+ * update.
+ *
+ * @param api Excalidraw imperative API.
+ * @param elements Tất cả elements (sẽ filter type=image + có fileId + match registry).
+ * @param stamps Registry. Default = DEFAULT_STAMPS.
  */
 export async function restoreMissingMathStampFiles(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   api: any,
   elements: readonly ElementLike[],
+  stamps: ReadonlyArray<StampType> = DEFAULT_STAMPS,
 ): Promise<void> {
   if (!api) return;
   const existing = (typeof api.getFiles === 'function') ? api.getFiles() : {};
-  const targets: Array<{ fileId: string; customData: MathStampCustomData }> = [];
+  const targets: Array<{ fileId: string; customData: unknown; stamp: StampType }> = [];
   const seen = new Set<string>();
   for (const el of elements) {
     if (el.type !== 'image') continue;
     if (!el.fileId) continue;
     if (existing && existing[el.fileId]) continue;
     if (seen.has(el.fileId)) continue;
-    if (!isMathStamp(el as { customData?: unknown })) continue;
+    const stamp = findStampForCustomData(el.customData, stamps);
+    if (!stamp) continue;
     seen.add(el.fileId);
-    targets.push({ fileId: el.fileId, customData: (el as { customData: MathStampCustomData }).customData });
+    targets.push({ fileId: el.fileId, customData: el.customData, stamp });
   }
   if (targets.length === 0) return;
-  const built = await Promise.all(targets.map(t => buildFileForStamp(t.fileId, t.customData)));
+  const built = await Promise.all(targets.map(t => buildFileForStamp(t.fileId, t.customData, t.stamp)));
   const files = built.filter((f): f is AddFileRecord => !!f);
   if (files.length > 0) {
     try { api.addFiles(files); } catch (err) { console.warn('addFiles failed:', err); }

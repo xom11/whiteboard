@@ -1,9 +1,13 @@
 import { useEffect } from 'react';
+import { DEFAULT_STAMPS } from './registry';
+import type { StampType } from './registry/types';
 
 interface Options {
-  onGeometry: () => void;
-  onLatex: () => void;
   enabled: boolean;
+  /** Toggle stamp theo kind khi user bấm shortcut tương ứng. */
+  onToggle: (kind: string) => void;
+  /** Registry. Mặc định DEFAULT_STAMPS. */
+  stamps?: ReadonlyArray<StampType>;
 }
 
 function isEditableTarget(t: EventTarget | null): boolean {
@@ -13,24 +17,33 @@ function isEditableTarget(t: EventTarget | null): boolean {
   return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
 }
 
-export function useStampShortcuts({ onGeometry, onLatex, enabled }: Options): void {
+/**
+ * Bind keyboard shortcut cho mỗi stamp trong registry. Capture phase +
+ * stopPropagation để chặn trước Excalidraw's bubble-phase handlers (Excalidraw
+ * dùng `L` cho Line tool, nếu không chặn → bấm L lại chuyển tool thay vì
+ * toggle LaTeX panel).
+ */
+export function useStampShortcuts({
+  enabled,
+  onToggle,
+  stamps = DEFAULT_STAMPS,
+}: Options): void {
   useEffect(() => {
     if (!enabled) return;
+    const keyToKind = new Map<string, string>();
+    for (const s of stamps) keyToKind.set(s.shortcutKey, s.kind);
+
     const handler = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (isEditableTarget(e.target)) return;
       const key = e.key.toLowerCase();
-      if (key !== 'g' && key !== 'l') return;
-      // Capture phase + stopPropagation: Excalidraw's L shortcut (Line tool) và
-      // các phím tắt khác đăng ký ở bubble phase. Phải chặn trước khi event tới
-      // được handler của Excalidraw, không thì user bấm L lại bị Excalidraw chuyển
-      // sang Line tool thay vì toggle LaTeX panel.
+      const kind = keyToKind.get(key);
+      if (!kind) return;
       e.preventDefault();
       e.stopPropagation();
-      if (key === 'g') onGeometry();
-      else onLatex();
+      onToggle(kind);
     };
     window.addEventListener('keydown', handler, { capture: true });
     return () => window.removeEventListener('keydown', handler, { capture: true });
-  }, [enabled, onGeometry, onLatex]);
+  }, [enabled, onToggle, stamps]);
 }
