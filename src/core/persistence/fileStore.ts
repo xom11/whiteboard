@@ -44,23 +44,35 @@ function openDb(): Promise<IDBDatabase> {
 
 async function withStore<T>(
   mode: IDBTransactionMode,
-  fn: (store: IDBObjectStore) => Promise<T> | T,
+  fn: (
+    store: IDBObjectStore,
+    setResult: (value: T) => void,
+    fail: (error: unknown) => void,
+  ) => void,
+  fallback: T,
 ): Promise<T> {
   let db: IDBDatabase;
   try {
     db = await openDb();
   } catch {
-    return undefined as unknown as T;
+    return fallback;
   }
   return new Promise<T>((resolve, reject) => {
     const tx = db.transaction(STORE, mode);
     const store = tx.objectStore(STORE);
-    let result: T;
-    Promise.resolve(fn(store))
-      .then((r) => {
-        result = r;
-      })
-      .catch(reject);
+    let result = fallback;
+    try {
+      fn(
+        store,
+        (value) => {
+          result = value;
+        },
+        reject,
+      );
+    } catch (err) {
+      reject(err);
+      return;
+    }
     tx.oncomplete = () => resolve(result);
     tx.onerror = () => {
       console.warn('[whiteboard] IDB tx error:', tx.error);
@@ -70,43 +82,32 @@ async function withStore<T>(
   });
 }
 
-function cursorAllByIndex(
-  store: IDBObjectStore,
-  indexName: string,
-  key: IDBValidKey,
-): Promise<FileRecord[]> {
-  return new Promise((resolve, reject) => {
-    const out: FileRecord[] = [];
-    const req = store.index(indexName).openCursor(IDBKeyRange.only(key));
-    req.onsuccess = () => {
-      const cursor = req.result;
-      if (cursor) {
-        out.push(cursor.value as FileRecord);
-        cursor.continue();
-      } else {
-        resolve(out);
-      }
-    };
-    req.onerror = () => reject(req.error);
-  });
-}
-
 export async function readFiles(storageKey: string): Promise<BinaryFiles> {
   try {
-    const records = await withStore('readonly', (store) =>
-      cursorAllByIndex(store, 'storageKey', storageKey),
+    return await withStore(
+      'readonly',
+      (store, setResult, fail) => {
+        const out: BinaryFiles = {};
+        const req = store.index('storageKey').openCursor(IDBKeyRange.only(storageKey));
+        req.onsuccess = () => {
+          const cursor = req.result;
+          if (!cursor) {
+            setResult(out);
+            return;
+          }
+          const record = cursor.value as FileRecord;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (out as any)[record.id] = {
+            dataURL: record.dataURL,
+            mimeType: record.mimeType,
+            created: record.created,
+          };
+          cursor.continue();
+        };
+        req.onerror = () => fail(req.error);
+      },
+      {},
     );
-    if (!records) return {};
-    const out: BinaryFiles = {};
-    for (const r of records) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (out as any)[r.id] = {
-        dataURL: r.dataURL,
-        mimeType: r.mimeType,
-        created: r.created,
-      };
-    }
-    return out;
   } catch (err) {
     console.warn('[whiteboard] readFiles failed:', err);
     return {};
@@ -117,28 +118,42 @@ export async function writeFiles(storageKey: string, files: BinaryFiles): Promis
   const entries = Object.entries(files);
   if (entries.length === 0) return;
   try {
-    await withStore('readwrite', async (store) => {
-      const existing = await new Promise<Set<string>>((resolve, reject) => {
-        const req = store.index('storageKey').getAllKeys(IDBKeyRange.only(storageKey));
-        req.onsuccess = () => resolve(new Set(req.result as string[]));
-        req.onerror = () => reject(req.error);
-      });
-      const now = Date.now();
-      for (const [id, f] of entries) {
-        if (existing.has(id)) continue;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const ff = f as any;
-        const rec: FileRecord = {
-          id,
-          storageKey,
-          dataURL: ff.dataURL,
-          mimeType: ff.mimeType,
-          created: ff.created ?? now,
-          savedAt: now,
+    await withStore<void>(
+      'readwrite',
+      (store, setResult, fail) => {
+        let pending = entries.length;
+        const finishOne = () => {
+          pending -= 1;
+          if (pending === 0) setResult(undefined);
         };
-        store.put(rec);
-      }
-    });
+
+        const now = Date.now();
+        for (const [id, f] of entries) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const ff = f as any;
+          const getReq = store.get(id);
+          getReq.onsuccess = () => {
+            if (getReq.result) {
+              finishOne();
+              return;
+            }
+            const rec: FileRecord = {
+              id,
+              storageKey,
+              dataURL: ff.dataURL,
+              mimeType: ff.mimeType,
+              created: ff.created ?? now,
+              savedAt: now,
+            };
+            const putReq = store.put(rec);
+            putReq.onsuccess = finishOne;
+            putReq.onerror = () => fail(putReq.error);
+          };
+          getReq.onerror = () => fail(getReq.error);
+        };
+      },
+      undefined,
+    );
   } catch (err) {
     console.warn('[whiteboard] writeFiles failed:', err);
   }
@@ -149,16 +164,29 @@ export async function pruneFiles(
   keepIds: ReadonlySet<string>,
 ): Promise<void> {
   try {
-    await withStore('readwrite', async (store) => {
-      const keys = await new Promise<string[]>((resolve, reject) => {
-        const req = store.index('storageKey').getAllKeys(IDBKeyRange.only(storageKey));
-        req.onsuccess = () => resolve(req.result as string[]);
-        req.onerror = () => reject(req.error);
-      });
-      for (const id of keys) {
-        if (!keepIds.has(id)) store.delete(id);
-      }
-    });
+    await withStore<void>(
+      'readwrite',
+      (store, setResult, fail) => {
+        const req = store.index('storageKey').openCursor(IDBKeyRange.only(storageKey));
+        req.onsuccess = () => {
+          const cursor = req.result;
+          if (!cursor) {
+            setResult(undefined);
+            return;
+          }
+          const record = cursor.value as FileRecord;
+          if (keepIds.has(record.id)) {
+            cursor.continue();
+            return;
+          }
+          const deleteReq = cursor.delete();
+          deleteReq.onsuccess = () => cursor.continue();
+          deleteReq.onerror = () => fail(deleteReq.error);
+        };
+        req.onerror = () => fail(req.error);
+      },
+      undefined,
+    );
   } catch (err) {
     console.warn('[whiteboard] pruneFiles failed:', err);
   }
@@ -166,14 +194,24 @@ export async function pruneFiles(
 
 export async function clearAll(storageKey: string): Promise<void> {
   try {
-    await withStore('readwrite', async (store) => {
-      const keys = await new Promise<string[]>((resolve, reject) => {
-        const req = store.index('storageKey').getAllKeys(IDBKeyRange.only(storageKey));
-        req.onsuccess = () => resolve(req.result as string[]);
-        req.onerror = () => reject(req.error);
-      });
-      for (const id of keys) store.delete(id);
-    });
+    await withStore<void>(
+      'readwrite',
+      (store, setResult, fail) => {
+        const req = store.index('storageKey').openCursor(IDBKeyRange.only(storageKey));
+        req.onsuccess = () => {
+          const cursor = req.result;
+          if (!cursor) {
+            setResult(undefined);
+            return;
+          }
+          const deleteReq = cursor.delete();
+          deleteReq.onsuccess = () => cursor.continue();
+          deleteReq.onerror = () => fail(deleteReq.error);
+        };
+        req.onerror = () => fail(req.error);
+      },
+      undefined,
+    );
   } catch (err) {
     console.warn('[whiteboard] clearAll failed:', err);
   }
