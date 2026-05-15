@@ -110,3 +110,53 @@ describe('handlers — primitives', () => {
     expect(log.length).toBe(0);
   });
 });
+
+describe('handlers — solids', () => {
+  it('tetrahedron: 4 click → 4 points + polyhedron3d', () => {
+    const { ctx, log } = buildCtx();
+    handleToolStep(ctx, 'tetrahedron', hit(0, 0, 0));
+    handleToolStep(ctx, 'tetrahedron', hit(2, 0, 0));
+    handleToolStep(ctx, 'tetrahedron', hit(1, 2, 0));
+    handleToolStep(ctx, 'tetrahedron', hit(1, 1, 2));
+    const types = log.map((e) => e.type);
+    expect(types.filter((t) => t === 'point3d').length).toBe(4);
+    expect(types[types.length - 1]).toBe('polyhedron3d');
+  });
+
+  it('parallelepiped: 1 origin click + 3 vector prompts → 8 points + polyhedron3d', () => {
+    const promptCoords = jest.fn()
+      .mockReturnValueOnce({ x: 2, y: 0, z: 0 })
+      .mockReturnValueOnce({ x: 0, y: 2, z: 0 })
+      .mockReturnValueOnce({ x: 0, y: 0, z: 2 });
+    const { ctx, log } = buildCtx({ promptCoords });
+    handleToolStep(ctx, 'parallelepiped', hit(0, 0, 0));
+    expect(promptCoords).toHaveBeenCalledTimes(3);
+    const pointCount = log.filter((e) => e.type === 'point3d').length;
+    // 1 origin (created by resolvePoint) + 7 derived = 8
+    expect(pointCount).toBe(8);
+    expect(log[log.length - 1].type).toBe('polyhedron3d');
+  });
+
+  it('prism: polygon base + close + height → prism', () => {
+    const promptNumber = jest.fn(() => 3);
+    const { ctx, log } = buildCtx({ promptNumber });
+    handleToolStep(ctx, 'prism', hit(0, 0, 0));
+    const firstId = log[0].id;
+    handleToolStep(ctx, 'prism', hit(2, 0, 0));
+    handleToolStep(ctx, 'prism', hit(1, 2, 0));
+    handleToolStep(ctx, 'prism', { x3: 0, y3: 0, z3: 0, existingPointId: firstId });
+    expect(promptNumber).toHaveBeenCalled();
+    expect(log[log.length - 1].type).toBe('polyhedron3d');
+  });
+
+  it('pyramid: polygon base + close + apex → pyramid', () => {
+    const { ctx, log } = buildCtx();
+    handleToolStep(ctx, 'pyramid', hit(0, 0, 0));
+    const firstId = log[0].id;
+    handleToolStep(ctx, 'pyramid', hit(2, 0, 0));
+    handleToolStep(ctx, 'pyramid', hit(1, 2, 0));
+    handleToolStep(ctx, 'pyramid', { x3: 0, y3: 0, z3: 0, existingPointId: firstId });
+    handleToolStep(ctx, 'pyramid', hit(1, 1, 2)); // apex
+    expect(log[log.length - 1].type).toBe('polyhedron3d');
+  });
+});

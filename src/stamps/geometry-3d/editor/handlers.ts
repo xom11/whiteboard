@@ -200,13 +200,162 @@ export function handleToolStep(
   }
 }
 
-// Stub — implemented in B8
 export function handleSolidStep(
+  ctx: HandlerContext,
+  tool: GeomTool3D,
+  hit: ClickHit,
+): void {
+  switch (tool) {
+    case 'tetrahedron': {
+      const p = resolvePoint(ctx, hit);
+      ctx.pendingPoints.push(p);
+      if (ctx.pendingPoints.length === 4) {
+        const [a, b, c, d] = ctx.pendingPoints;
+        finishPolyhedron(ctx, [
+          [a, b, c],
+          [a, b, d],
+          [a, c, d],
+          [b, c, d],
+        ]);
+        ctx.pendingPoints = [];
+      }
+      ctx.notify();
+      return;
+    }
+
+    case 'parallelepiped': {
+      const origin = resolvePoint(ctx, hit);
+      const v1 = ctx.promptCoords('Vector cạnh 1 (dx, dy, dz)');
+      const v2 = ctx.promptCoords('Vector cạnh 2 (dx, dy, dz)');
+      const v3 = ctx.promptCoords('Vector cạnh 3 (dx, dy, dz)');
+      if (!v1 || !v2 || !v3) return;
+      const [ox, oy, oz] = origin.coords;
+      // 7 derived points (origin is reused as corner 0)
+      const c1 = createPoint3D(ctx, ox + v1.x, oy + v1.y, oz + v1.z);
+      const c2 = createPoint3D(ctx, ox + v2.x, oy + v2.y, oz + v2.z);
+      const c3 = createPoint3D(ctx, ox + v3.x, oy + v3.y, oz + v3.z);
+      const c12 = createPoint3D(
+        ctx,
+        ox + v1.x + v2.x,
+        oy + v1.y + v2.y,
+        oz + v1.z + v2.z,
+      );
+      const c13 = createPoint3D(
+        ctx,
+        ox + v1.x + v3.x,
+        oy + v1.y + v3.y,
+        oz + v1.z + v3.z,
+      );
+      const c23 = createPoint3D(
+        ctx,
+        ox + v2.x + v3.x,
+        oy + v2.y + v3.y,
+        oz + v2.z + v3.z,
+      );
+      const c123 = createPoint3D(
+        ctx,
+        ox + v1.x + v2.x + v3.x,
+        oy + v1.y + v2.y + v3.y,
+        oz + v1.z + v2.z + v3.z,
+      );
+      finishPolyhedron(ctx, [
+        [origin, c1, c12, c2],
+        [origin, c1, c13, c3],
+        [origin, c2, c23, c3],
+        [c123, c12, c1, c13],
+        [c123, c12, c2, c23],
+        [c123, c13, c3, c23],
+      ]);
+      ctx.pendingPoints = [];
+      ctx.notify();
+      return;
+    }
+
+    case 'prism': {
+      if (
+        ctx.pendingPoints.length >= 3 &&
+        hit.existingPointId === ctx.pendingPoints[0].id
+      ) {
+        const base = ctx.pendingPoints;
+        const height = ctx.promptNumber('Chiều cao (theo trục z)');
+        if (!height) return;
+        const top = base.map((bp) =>
+          createPoint3D(ctx, bp.coords[0], bp.coords[1], bp.coords[2] + height),
+        );
+        const faces: PendingPoint[][] = [base, top];
+        for (let i = 0; i < base.length; i++) {
+          const next = (i + 1) % base.length;
+          faces.push([base[i], base[next], top[next], top[i]]);
+        }
+        finishPolyhedron(ctx, faces);
+        ctx.pendingPoints = [];
+        ctx.notify();
+        return;
+      }
+      const p = resolvePoint(ctx, hit);
+      ctx.pendingPoints.push(p);
+      ctx.notify();
+      return;
+    }
+
+    case 'pyramid': {
+      const baseDone = ctx.pendingFlags.pyramidBaseDone === true;
+      if (
+        !baseDone &&
+        ctx.pendingPoints.length >= 3 &&
+        hit.existingPointId === ctx.pendingPoints[0].id
+      ) {
+        ctx.pendingFlags.pyramidBaseDone = true;
+        ctx.notify();
+        return;
+      }
+      if (baseDone) {
+        const base = ctx.pendingPoints;
+        const apex = createPoint3D(ctx, hit.x3, hit.y3, hit.z3);
+        const faces: PendingPoint[][] = [base];
+        for (let i = 0; i < base.length; i++) {
+          const next = (i + 1) % base.length;
+          faces.push([base[i], base[next], apex]);
+        }
+        finishPolyhedron(ctx, faces);
+        ctx.pendingPoints = [];
+        ctx.pendingFlags.pyramidBaseDone = false;
+        ctx.notify();
+        return;
+      }
+      const p = resolvePoint(ctx, hit);
+      ctx.pendingPoints.push(p);
+      ctx.notify();
+      return;
+    }
+
+    // Curved → B9
+    default:
+      handleCurvedStep(ctx, tool, hit);
+      return;
+  }
+}
+
+function finishPolyhedron(ctx: HandlerContext, faces: PendingPoint[][]): void {
+  const id = ctx.nextId();
+  const facesRef = faces.map((f) => f.map((p) => p.ref));
+  const ref = ctx.view.create('polyhedron3d', [facesRef], { id });
+  ctx.objMap.set(id, ref);
+  ctx.pushLog({
+    type: 'polyhedron3d',
+    parents: [faces.map((f) => f.map((p) => refByPlaceholder(p.id)))],
+    attributes: { id },
+    id,
+  });
+}
+
+// Stub — implemented in B9
+export function handleCurvedStep(
   _ctx: HandlerContext,
   _tool: GeomTool3D,
   _hit: ClickHit,
 ): void {
-  // no-op stub
+  /* no-op stub */
 }
 
 // Helpers exported for B8/B9 to reuse
