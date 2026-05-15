@@ -150,22 +150,29 @@ export const MiniBoard3D = forwardRef<MiniBoard3DHandle, Props>(function MiniBoa
 
     // Helper: find existing point3d under pointer (returns its id) so polygon
     // close + segment chaining work.
+    //
+    // Bug #10 root cause: JSXGraph 3D `point3d` objects don't expose `coords`
+    // directly — the rendered position lives on the auto-generated 2D shadow
+    // `element2D.coords.scrCoords`. The earlier code read `obj.coords` which
+    // was always undefined, so every iteration `continue`'d and the hit-test
+    // never matched. View3d's screen↔world projection isn't lossless, so the
+    // user's click position can differ from the rendered point by 100+ px;
+    // using the shadow's actual screen coords fixes both that drift and the
+    // synthetic-test miss.
     function findExistingPointAt(clientX: number, clientY: number): string | undefined {
       const containerRect = (div as HTMLDivElement).getBoundingClientRect();
       const localX = clientX - containerRect.left;
       const localY = clientY - containerRect.top;
-      // Picking radius widened from 12px (Bug #10) — synthetic clicks in E2E
-      // tests + screen↔world projection rounding both made 12px too tight for
-      // polygon-close detection.
       const PICK = 18;
       const svg = (div as HTMLDivElement).querySelector('svg');
       if (!svg) return undefined;
-      // Find SVG elements rendered by point3d objects. JSXGraph 3D points render
-      // as <ellipse>/<circle> in the SVG. Match by id attribute.
       for (const [id, obj] of objMapRef.current) {
-        const entry = obj as { elType?: string; coords?: { scrCoords?: number[] } };
+        const entry = obj as {
+          elType?: string;
+          element2D?: { coords?: { scrCoords?: number[] } };
+        };
         if (entry?.elType !== 'point3d') continue;
-        const sc = entry.coords?.scrCoords;
+        const sc = entry.element2D?.coords?.scrCoords;
         if (!sc || sc.length < 3) continue;
         const dx = sc[1] - localX;
         const dy = sc[2] - localY;

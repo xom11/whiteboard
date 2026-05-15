@@ -105,15 +105,19 @@ describe('handlers — primitives', () => {
     expect(log[log.length - 1].type).toBe('polygon3d');
   });
 
-  it('label tool yêu cầu existingPointId', () => {
+  it('label tool yêu cầu existingPointId + emits text3d với [x,y,z,text] parents', () => {
     const promptText = jest.fn(() => 'Apex');
-    const { ctx, log } = buildCtx({ promptText });
+    const promptCoords = jest.fn(() => ({ x: 1, y: 2, z: 3 }));
+    const { ctx, log } = buildCtx({ promptText, promptCoords });
     // First create a point manually
     handleToolStep(ctx, 'point', hit());
     const ptId = log[0].id;
     handleToolStep(ctx, 'label', { x3: 0, y3: 0, z3: 0, existingPointId: ptId });
-    expect(log[log.length - 1].type).toBe('text3d');
-    expect(log[log.length - 1].label).toBe('Apex');
+    const last = log[log.length - 1];
+    expect(last.type).toBe('text3d');
+    expect(last.label).toBe('Apex');
+    // text3d parents must be [x, y, z, text] form per JSXGraph 1.12 API.
+    expect(last.parents).toEqual([1, 2, 3, 'Apex']);
   });
 
   it('label tool: không có existingPointId → no-op', () => {

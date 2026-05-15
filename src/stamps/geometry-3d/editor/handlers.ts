@@ -26,6 +26,8 @@ export interface HandlerContext extends HandlerContextDeps {
   pendingPoints: PendingPoint[];
   /** Internal state flag for multi-stage tools (pyramid base done, etc.) */
   pendingFlags: Record<string, unknown>;
+  /** World coords keyed by point id — used by label tool to anchor text3d. */
+  pushedPointCoords: Map<string, [number, number, number]>;
 }
 
 export interface ClickHit {
@@ -37,7 +39,12 @@ export interface ClickHit {
 }
 
 export function createHandlerContext(deps: HandlerContextDeps): HandlerContext {
-  return { ...deps, pendingPoints: [], pendingFlags: {} };
+  return {
+    ...deps,
+    pendingPoints: [],
+    pendingFlags: {},
+    pushedPointCoords: new Map(),
+  };
 }
 
 function refByPlaceholder(id: string): string {
@@ -56,6 +63,7 @@ function createPoint3D(
   if (label) attrs.name = label;
   const ref = ctx.view.create('point3d', [x, y, z], attrs);
   ctx.objMap.set(id, ref);
+  ctx.pushedPointCoords.set(id, [x, y, z]);
   ctx.pushLog({
     type: 'point3d',
     parents: [x, y, z],
@@ -68,10 +76,13 @@ function createPoint3D(
 
 function resolvePoint(ctx: HandlerContext, hit: ClickHit): PendingPoint {
   if (hit.existingPointId && ctx.objMap.has(hit.existingPointId)) {
+    // Prefer the stored world coords (the click hit is screen-projected and
+    // may differ); fall back to hit coords if the point predates this session.
+    const stored = ctx.pushedPointCoords.get(hit.existingPointId);
     return {
       id: hit.existingPointId,
       ref: ctx.objMap.get(hit.existingPointId),
-      coords: [hit.x3, hit.y3, hit.z3],
+      coords: stored ?? [hit.x3, hit.y3, hit.z3],
     };
   }
   return createPoint3D(ctx, hit.x3, hit.y3, hit.z3);
@@ -202,13 +213,25 @@ export function handleToolStep(
       const text = ctx.promptText('Nội dung nhãn');
       if (!text) return;
       const id = ctx.nextId();
-      const pointRef = ctx.objMap.get(hit.existingPointId);
-      const ref = ctx.view.create('text3d', [pointRef, text], { id });
+      // JSXGraph 1.12 `text3d` requires `[[x,y,z], text]` or `[x,y,z,text]`; the
+      // `[pointRef, text]` form silently renders empty. Anchor coords come from
+      // the host point (we already have its world coords from createPoint3D log).
+      // Points are immutable in this editor (no drag-edit) so static coords are
+      // safe.
+      const pointLog = ctx.pushedPointCoords.get(hit.existingPointId);
+      if (!pointLog) return;
+      const [x, y, z] = pointLog;
+      const attrs: Record<string, unknown> = {
+        id,
+        fontSize: 14,
+        strokeColor: ctx.isDark ? '#f5f5f5' : '#111111',
+      };
+      const ref = ctx.view.create('text3d', [x, y, z, text], attrs);
       ctx.objMap.set(id, ref);
       ctx.pushLog({
         type: 'text3d',
-        parents: [refByPlaceholder(hit.existingPointId), text],
-        attributes: { id },
+        parents: [x, y, z, text],
+        attributes: attrs,
         id,
         label: text,
       });

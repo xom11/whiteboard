@@ -3394,7 +3394,12 @@ var VIEW3D_ATTRS = (isDark) => {
 
 // src/stamps/geometry-3d/editor/handlers.ts
 function createHandlerContext(deps) {
-  return { ...deps, pendingPoints: [], pendingFlags: {} };
+  return {
+    ...deps,
+    pendingPoints: [],
+    pendingFlags: {},
+    pushedPointCoords: /* @__PURE__ */ new Map()
+  };
 }
 function refByPlaceholder(id) {
   return `@id:${id}`;
@@ -3404,6 +3409,7 @@ function createPoint3D(ctx, x, y, z, label) {
   const attrs = { id, size: 3 };
   const ref = ctx.view.create("point3d", [x, y, z], attrs);
   ctx.objMap.set(id, ref);
+  ctx.pushedPointCoords.set(id, [x, y, z]);
   ctx.pushLog({
     type: "point3d",
     parents: [x, y, z],
@@ -3415,10 +3421,11 @@ function createPoint3D(ctx, x, y, z, label) {
 }
 function resolvePoint(ctx, hit) {
   if (hit.existingPointId && ctx.objMap.has(hit.existingPointId)) {
+    const stored = ctx.pushedPointCoords.get(hit.existingPointId);
     return {
       id: hit.existingPointId,
       ref: ctx.objMap.get(hit.existingPointId),
-      coords: [hit.x3, hit.y3, hit.z3]
+      coords: stored ?? [hit.x3, hit.y3, hit.z3]
     };
   }
   return createPoint3D(ctx, hit.x3, hit.y3, hit.z3);
@@ -3519,13 +3526,20 @@ function handleToolStep(ctx, tool, hit) {
       const text = ctx.promptText("N\u1ED9i dung nh\xE3n");
       if (!text) return;
       const id = ctx.nextId();
-      const pointRef = ctx.objMap.get(hit.existingPointId);
-      const ref = ctx.view.create("text3d", [pointRef, text], { id });
+      const pointLog = ctx.pushedPointCoords.get(hit.existingPointId);
+      if (!pointLog) return;
+      const [x, y, z] = pointLog;
+      const attrs = {
+        id,
+        fontSize: 14,
+        strokeColor: ctx.isDark ? "#f5f5f5" : "#111111"
+      };
+      const ref = ctx.view.create("text3d", [x, y, z, text], attrs);
       ctx.objMap.set(id, ref);
       ctx.pushLog({
         type: "text3d",
-        parents: [refByPlaceholder(hit.existingPointId), text],
-        attributes: { id },
+        parents: [x, y, z, text],
+        attributes: attrs,
         id,
         label: text
       });
@@ -3864,7 +3878,7 @@ var MiniBoard3D = forwardRef(function MiniBoard3D2({ isDark, initialState }, ref
       for (const [id, obj] of objMapRef.current) {
         const entry = obj;
         if (entry?.elType !== "point3d") continue;
-        const sc = entry.coords?.scrCoords;
+        const sc = entry.element2D?.coords?.scrCoords;
         if (!sc || sc.length < 3) continue;
         const dx = sc[1] - localX;
         const dy = sc[2] - localY;
