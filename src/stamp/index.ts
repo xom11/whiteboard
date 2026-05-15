@@ -1,7 +1,7 @@
 export { StampToolButtons } from './StampToolButtons';
 export { ToolbarInjector as ToolbarStampInjector } from '../stamps/shared/ToolbarInjector';
 export { GeometryLeftPanel, LatexLeftPanel } from './StampLeftPanel';
-export { LatexEditorPopover, type LatexEditorHandle } from './LatexEditorPopover';
+export { LatexEditorPopover, type LatexEditorHandle } from '../stamps/latex/editor/EditorPopover';
 export {
   GeometryEditorPanel,
   type GeometryEditorPanelHandle,

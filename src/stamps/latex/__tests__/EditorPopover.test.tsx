@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { LatexEditorPopover } from '../LatexEditorPopover';
+import { LatexEditorPopover } from '../editor/EditorPopover';
 
-jest.mock('../renderLatexToSvg', () => ({
+jest.mock('../render', () => ({
   renderLatexToSvg: jest.fn(async (src) => {
     if (src.includes('\\invalid')) throw new Error('parse error');
     return '<svg>' + src + '</svg>';

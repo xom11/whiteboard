@@ -71,7 +71,7 @@ jest.mock('@excalidraw/excalidraw', () => {
   };
 });
 
-jest.mock('../stamp/renderLatexToSvg', () => ({
+jest.mock('../stamps/latex/render', () => ({
   renderLatexToSvg: jest.fn(async () => '<svg>mock</svg>'),
 }));
 

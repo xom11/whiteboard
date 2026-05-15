@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { renderLatexToSvg } from './renderLatexToSvg';
+import { renderLatexToSvg } from '../render';
 
 interface Props {
   /**
@@ -27,7 +27,7 @@ interface Props {
   withLeftPanel?: boolean;
 }
 
-export interface LatexEditorHandle {
+export interface EditorPopoverHandle {
   /** Chèn snippet vào vị trí con trỏ trong textbox. */
   insertAtCursor: (snippet: string) => void;
   /** Có content hợp lệ để chèn không (input không rỗng + preview ok). */
@@ -38,7 +38,7 @@ export interface LatexEditorHandle {
 
 const DEBOUNCE_MS = 100;
 
-export const LatexEditorPopover = forwardRef<LatexEditorHandle, Props>(function LatexEditorPopover(
+export const EditorPopover = forwardRef<EditorPopoverHandle, Props>(function EditorPopover(
   {
     x,
     y,
@@ -215,3 +215,7 @@ export const LatexEditorPopover = forwardRef<LatexEditorHandle, Props>(function 
     </div>
   );
 });
+
+// Back-compat aliases
+export { EditorPopover as LatexEditorPopover };
+export type { EditorPopoverHandle as LatexEditorHandle };

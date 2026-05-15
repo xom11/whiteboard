@@ -8,16 +8,16 @@ import {
   useRef,
   useState,
 } from 'react';
-import { LatexLeftPanel } from '../StampLeftPanel';
-import { LatexEditorPopover, type LatexEditorHandle } from '../LatexEditorPopover';
-import { insertStampImage } from '../../stamps/shared/insertImage';
-import { renderLatexToSvg } from '../renderLatexToSvg';
+import { LeftPanel as LatexLeftPanel } from './editor/LeftPanel';
+import { EditorPopover as LatexEditorPopover, type EditorPopoverHandle as LatexEditorHandle } from './editor/EditorPopover';
+import { insertStampImage } from '../shared/insertImage';
+import { renderLatexToSvg } from './render';
 import type {
   BaseStampCustomData,
   StampHostProps,
   StampHostHandle,
   StampType,
-} from '../../stamps/shared/types';
+} from '../shared/types';
 
 // ============== Custom data type + guard ==============
 

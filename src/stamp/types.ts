@@ -15,7 +15,7 @@ import {
 import {
   isLatexCustomData,
   type LatexCustomData,
-} from './registry/latex';
+} from '../stamps/latex';
 
 export type MathStampCustomData = GeometryCustomData | LatexCustomData;
 

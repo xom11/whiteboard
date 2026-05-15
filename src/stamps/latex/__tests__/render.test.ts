@@ -1,4 +1,4 @@
-import { renderLatexToSvg } from '../renderLatexToSvg';
+import { renderLatexToSvg } from '../render';
 
 jest.mock('katex', () => ({
   __esModule: true,
