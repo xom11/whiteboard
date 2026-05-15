@@ -9,7 +9,7 @@
 // theme-neutral. Khi replay, palette resolve thành màu thực theo `isDark` hiện
 // tại (truyền qua options.palette).
 
-import { paletteFor, resolveAttrColors, type GeomPalette } from './geometryTheme';
+import { paletteFor, resolveAttrColors, type GeomPalette } from './editor/theme';
 
 export interface SerializedElement {
   type: string;

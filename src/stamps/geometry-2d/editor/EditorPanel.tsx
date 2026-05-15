@@ -1,8 +1,8 @@
 'use client';
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { JSXGraphMiniBoard, type MiniBoardHandle, type GeomTool, type ObjectSnapshot } from './JSXGraphMiniBoard';
-import { serializeBoard, type SerializedBoard } from './serializeBoard';
-import { renderGeometrySvgFromState } from './renderGeometryFromState';
+import { JSXGraphMiniBoard, type MiniBoardHandle, type GeomTool, type ObjectSnapshot } from './MiniBoard';
+import { serializeBoard, type SerializedBoard } from '../serialize';
+import { renderGeometrySvgFromState } from '../render';
 import { PropertiesPopover } from './PropertiesPopover';
 import { TransformParamPopover } from './TransformParamPopover';
 

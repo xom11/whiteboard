@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { PropertiesPopover } from '../PropertiesPopover';
+import { PropertiesPopover } from '../editor/PropertiesPopover';
 
 describe('PropertiesPopover', () => {
   const baseProps = { anchor: { x: 50, y: 50 }, onClose: jest.fn(), onMutate: jest.fn(), isDark: false };

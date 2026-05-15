@@ -11,7 +11,7 @@
 import {
   isGeometryCustomData,
   type GeometryCustomData,
-} from './registry/geometry';
+} from '../stamps/geometry-2d';
 import {
   isLatexCustomData,
   type LatexCustomData,

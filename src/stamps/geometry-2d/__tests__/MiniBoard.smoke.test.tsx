@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react';
-import { JSXGraphMiniBoard } from '../JSXGraphMiniBoard';
+import { JSXGraphMiniBoard } from '../editor/MiniBoard';
 
 jest.mock('jsxgraph', () => ({
   __esModule: true,

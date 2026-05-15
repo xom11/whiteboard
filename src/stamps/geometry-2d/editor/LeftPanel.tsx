@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { TOOLS, GROUP_LABELS, type GeomTool, type ToolDef } from './JSXGraphMiniBoard';
+import { TOOLS, GROUP_LABELS, type GeomTool, type ToolDef } from './MiniBoard';
 
 const TOOLTIP_DELAY_MS = 400;
 type HoverState = { label: string; hint?: string; x: number; y: number } | null;
@@ -82,7 +82,7 @@ const GeometryIconHeader = (
   </svg>
 );
 
-export function GeometryLeftPanel({
+export function LeftPanel({
   activeTool,
   onToolChange,
   showAxis,
@@ -221,5 +221,5 @@ export function GeometryLeftPanel({
   );
 }
 
-// ---------- LaTeX left panel — extracted to src/stamps/latex/editor/LeftPanel.tsx ----------
-export { LatexLeftPanel } from '../stamps/latex/editor/LeftPanel';
+// Alias for back-compat
+export { LeftPanel as GeometryLeftPanel };

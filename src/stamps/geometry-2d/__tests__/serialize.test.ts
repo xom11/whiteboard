@@ -1,4 +1,4 @@
-import { serializeBoard, deserializeIntoBoard, type SerializedElement, type SerializedBoard } from '../serializeBoard';
+import { serializeBoard, deserializeIntoBoard, type SerializedElement, type SerializedBoard } from '../serialize';
 
 function makeMockBoard() {
   const objectsList: unknown[] = [];

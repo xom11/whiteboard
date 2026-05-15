@@ -1,6 +1,6 @@
 'use client';
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { deserializeIntoBoard, type SerializedBoard, type SerializedElement } from './serializeBoard';
+import { deserializeIntoBoard, type SerializedBoard, type SerializedElement } from '../serialize';
 import { getDefiningPoints, buildTransformSpec } from './transforms';
 import {
   TOOLS,
@@ -9,8 +9,8 @@ import {
   objKind,
   type GeomTool,
   type ToolDef,
-} from './jsxgraph/tools';
-import { paletteFor, resolveAttrColors, themeAxis, themeGrid, themeLabel } from './geometryTheme';
+} from './toolButtons';
+import { paletteFor, resolveAttrColors, themeAxis, themeGrid, themeLabel } from './theme';
 
 // Re-export để backward-compat với consumer cũ.
 export { TOOLS, GROUP_LABELS };

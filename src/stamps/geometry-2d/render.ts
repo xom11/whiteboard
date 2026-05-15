@@ -1,6 +1,6 @@
-import { renderGeometryToSvg } from './renderGeometryToSvg';
-import { deserializeIntoBoard, type SerializedBoard } from './serializeBoard';
-import { paletteFor } from './geometryTheme';
+import { renderGeometryToSvg } from './renderInline';
+import { deserializeIntoBoard, type SerializedBoard } from './serialize';
+import { paletteFor } from './editor/theme';
 
 /**
  * Re-render geometry SVG từ jsonState đã serialize. Dùng cho:

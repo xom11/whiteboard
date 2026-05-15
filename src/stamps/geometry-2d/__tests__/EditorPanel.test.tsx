@@ -1,8 +1,8 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import React from 'react';
-import { GeometryEditorPanel } from '../GeometryEditorPanel';
+import { GeometryEditorPanel } from '../editor/EditorPanel';
 
-jest.mock('../JSXGraphMiniBoard', () => ({
+jest.mock('../editor/MiniBoard', () => ({
   __esModule: true,
   TOOLS: [],
   GROUP_LABELS: {},
@@ -38,16 +38,16 @@ jest.mock('../JSXGraphMiniBoard', () => ({
   },
 }));
 
-jest.mock('../serializeBoard', () => ({
+jest.mock('../serialize', () => ({
   serializeBoard: jest.fn((_b, log) => ({ bbox: [-10, 10, 10, -10], elements: log })),
   deserializeIntoBoard: jest.fn(),
 }));
 
-jest.mock('../renderGeometryToSvg', () => ({
+jest.mock('../renderInline', () => ({
   renderGeometryToSvg: jest.fn(() => '<svg>fake</svg>'),
 }));
 
-jest.mock('../renderGeometryFromState', () => ({
+jest.mock('../render', () => ({
   renderGeometrySvgFromState: jest.fn(async () => '<svg>fake</svg>'),
 }));
 

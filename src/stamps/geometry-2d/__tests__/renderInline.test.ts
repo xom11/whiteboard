@@ -1,4 +1,4 @@
-import { renderGeometryToSvg } from '../renderGeometryToSvg';
+import { renderGeometryToSvg } from '../renderInline';
 
 describe('renderGeometryToSvg', () => {
   test('returns standalone SVG string with xmlns', () => {

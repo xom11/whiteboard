@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { TransformParamPopover } from '../TransformParamPopover';
+import { TransformParamPopover } from '../editor/TransformParamPopover';
 
 describe('TransformParamPopover', () => {
   const baseProps = { anchor: { x: 100, y: 100 }, onConfirm: jest.fn(), onCancel: jest.fn(), isDark: false };

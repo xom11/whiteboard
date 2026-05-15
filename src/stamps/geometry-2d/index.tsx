@@ -8,22 +8,22 @@ import {
   useRef,
   useState,
 } from 'react';
-import { GeometryLeftPanel } from '../StampLeftPanel';
+import { GeometryLeftPanel } from './editor/LeftPanel';
 import {
   GeometryEditorPanel,
   type GeometryEditorPanelHandle,
   type GeomBoardState,
-} from '../GeometryEditorPanel';
-import type { GeomTool } from '../JSXGraphMiniBoard';
-import { insertStampImage } from '../../stamps/shared/insertImage';
-import { renderGeometrySvgFromState } from '../renderGeometryFromState';
-import type { SerializedBoard } from '../serializeBoard';
+} from './editor/EditorPanel';
+import type { GeomTool } from './editor/MiniBoard';
+import { insertStampImage } from '../shared/insertImage';
+import { renderGeometrySvgFromState } from './render';
+import type { SerializedBoard } from './serialize';
 import type {
   BaseStampCustomData,
   StampHostProps,
   StampHostHandle,
   StampType,
-} from '../../stamps/shared/types';
+} from '../shared/types';
 
 // ============== Custom data type + guard ==============
 

@@ -1,4 +1,4 @@
-import { getDefiningPoints, buildTransformSpec } from '../transforms';
+import { getDefiningPoints, buildTransformSpec } from '../editor/transforms';
 
 const mkPoint = () => ({ elType: 'point' });
 

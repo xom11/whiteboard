@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { STROKE_PALETTE } from '../stamps/shared/excalidrawPalette';
+import { STROKE_PALETTE } from '../../shared/excalidrawPalette';
 
 export type ObjKind = 'point' | 'line' | 'circle';
 export type PointFace = 'o' | 'circle' | 'cross' | 'plus';

@@ -1,8 +1,8 @@
-import { geometryStamp } from '../../stamp/registry/geometry';
+import { geometryStamp } from '../geometry-2d';
 import { latexStamp } from '../latex';
 import type { StampType } from './types';
 
-export { geometryStamp, type GeometryCustomData, isGeometryCustomData } from '../../stamp/registry/geometry';
+export { geometryStamp, type GeometryCustomData, isGeometryCustomData } from '../geometry-2d';
 export { latexStamp, type LatexCustomData, isLatexCustomData } from '../latex';
 export type { StampType, BaseStampCustomData } from './types';
 
