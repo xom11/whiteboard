@@ -1,4 +1,4 @@
-import { getDefiningPoints } from '../transforms';
+import { getDefiningPoints, buildTransformSpec } from '../transforms';
 
 const mkPoint = () => ({ elType: 'point' });
 
@@ -49,5 +49,44 @@ describe('getDefiningPoints', () => {
 
   it('null cho object không biết', () => {
     expect(getDefiningPoints({ elType: 'angle' })).toBeNull();
+  });
+});
+
+describe('buildTransformSpec', () => {
+  it('translate: dx/dy literal từ 2 điểm (serialize-friendly)', () => {
+    const a = { X: () => 0, Y: () => 0 };
+    const b = { X: () => 3, Y: () => 4 };
+    const spec = buildTransformSpec({ kind: 'translate', vectorPoints: [a, b] });
+    expect(spec.attrs).toEqual({ type: 'translate' });
+    expect(spec.params).toEqual([3, 4]);
+  });
+
+  it('rotate: chuyển độ → rad, attach center', () => {
+    const c = { X: () => 0 };
+    const spec = buildTransformSpec({ kind: 'rotate', center: c, angleDeg: 90 });
+    expect(spec.attrs).toEqual({ type: 'rotate' });
+    expect(spec.params[0]).toBeCloseTo(Math.PI / 2, 6);
+    expect(spec.params[1]).toBe(c);
+  });
+
+  it('reflectLine: 1 param là line', () => {
+    const l = { elType: 'line' };
+    expect(buildTransformSpec({ kind: 'reflectLine', line: l })).toEqual({
+      params: [l], attrs: { type: 'reflect' },
+    });
+  });
+
+  it('reflectPoint: scale(-1,-1) quanh center', () => {
+    const c = { X: () => 0 };
+    const spec = buildTransformSpec({ kind: 'reflectPoint', center: c });
+    expect(spec.attrs).toEqual({ type: 'scale' });
+    expect(spec.params).toEqual([-1, -1, c]);
+  });
+
+  it('dilate: [k, k, center]', () => {
+    const c = { X: () => 0 };
+    const spec = buildTransformSpec({ kind: 'dilate', center: c, k: 2 });
+    expect(spec.attrs).toEqual({ type: 'scale' });
+    expect(spec.params).toEqual([2, 2, c]);
   });
 });

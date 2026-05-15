@@ -52,3 +52,40 @@ export function getDefiningPoints(obj: JxgObj): DefiningPointsResult | null {
   }
   return null;
 }
+
+export type TransformInput =
+  | { kind: 'translate'; vectorPoints: [JxgObj, JxgObj] }
+  | { kind: 'rotate'; center: JxgObj; angleDeg: number }
+  | { kind: 'reflectLine'; line: JxgObj }
+  | { kind: 'reflectPoint'; center: JxgObj }
+  | { kind: 'dilate'; center: JxgObj; k: number };
+
+export interface TransformSpec {
+  params: unknown[];
+  attrs: { type: 'translate' | 'rotate' | 'reflect' | 'scale' };
+}
+
+export function buildTransformSpec(input: TransformInput): TransformSpec {
+  switch (input.kind) {
+    case 'translate': {
+      // Literal dx/dy (không phải callback) để serialize qua JSON.stringify được.
+      // Trade-off: transformed object không cập nhật khi user kéo điểm vector — chấp nhận.
+      const [a, b] = input.vectorPoints;
+      const dx = b.X() - a.X();
+      const dy = b.Y() - a.Y();
+      return { params: [dx, dy], attrs: { type: 'translate' } };
+    }
+    case 'rotate':
+      return {
+        params: [(input.angleDeg * Math.PI) / 180, input.center],
+        attrs: { type: 'rotate' },
+      };
+    case 'reflectLine':
+      return { params: [input.line], attrs: { type: 'reflect' } };
+    case 'reflectPoint':
+      // JSXGraph không có 'pointMirror' built-in; equivalent với scale(-1, -1) quanh center.
+      return { params: [-1, -1, input.center], attrs: { type: 'scale' } };
+    case 'dilate':
+      return { params: [input.k, input.k, input.center], attrs: { type: 'scale' } };
+  }
+}
