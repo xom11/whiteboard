@@ -1,4 +1,4 @@
-import { svgToImageElement } from '../../stamps/shared/svgToImage';
+import { svgToImageElement } from '../svgToImage';
 
 describe('svgToImageElement', () => {
   test('returns SVG dataURL + dimensions parsed from svg attributes', async () => {

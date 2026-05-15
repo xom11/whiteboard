@@ -10,11 +10,11 @@ import type {
 } from './types';
 import { pickSyncableAppState } from './serialize';
 import {
-  isMathStamp,
+  isStampElement,
   DEFAULT_STAMPS,
   findStampForCustomData,
   type StampType,
-} from './stamp';
+} from './stamps/shared/registry';
 import { ToolbarInjector } from './stamps/shared/ToolbarInjector';
 import { useShortcuts } from './stamps/shared/useShortcuts';
 import { restoreMissingStampFiles } from './stamps/shared/restoreStampFiles';
@@ -246,7 +246,7 @@ export function Whiteboard({
             for (const el of currentElements) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const fid = (el as any).fileId as string | undefined;
-              if (fid && isMathStamp(el)) stampIds.add(fid);
+              if (fid && isStampElement(el)) stampIds.add(fid);
             }
             const raster: BinaryFiles = {};
             for (const [id, f] of Object.entries(pending)) {
@@ -268,7 +268,7 @@ export function Whiteboard({
           for (const el of currentElements) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const fid = (el as any).fileId as string | undefined;
-            if (fid && !isMathStamp(el)) keep.add(fid);
+            if (fid && !isStampElement(el)) keep.add(fid);
           }
           void pruneFiles(persistKeyRef.current as string, keep);
         }, 2000);
