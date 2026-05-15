@@ -1,6 +1,5 @@
 node_modules/
-# dist/ KHÔNG ignore — consumer cài qua git URL (`npm install git+https://...#vX.Y.Z`)
-# cần file built sẵn vì `npm ci --ignore-scripts` (Dockerfile) sẽ skip prepare hook
+dist/
 .yalc/
 yalc.lock
 *.log
