@@ -349,13 +349,132 @@ function finishPolyhedron(ctx: HandlerContext, faces: PendingPoint[][]): void {
   });
 }
 
-// Stub — implemented in B9
+const CURVED_SEGMENTS = 16;
+
 export function handleCurvedStep(
-  _ctx: HandlerContext,
-  _tool: GeomTool3D,
-  _hit: ClickHit,
+  ctx: HandlerContext,
+  tool: GeomTool3D,
+  hit: ClickHit,
 ): void {
-  /* no-op stub */
+  switch (tool) {
+    case 'sphere': {
+      const radius = ctx.promptNumber('Bán kính mặt cầu');
+      if (radius == null) return;
+      const center = resolvePoint(ctx, hit);
+      const id = ctx.nextId();
+      const ref = ctx.view.create('sphere3d', [center.ref, radius], { id });
+      ctx.objMap.set(id, ref);
+      ctx.pushLog({
+        type: 'sphere3d',
+        parents: [refByPlaceholder(center.id), radius],
+        attributes: { id },
+        id,
+      });
+      ctx.notify();
+      return;
+    }
+
+    case 'cone': {
+      const baseDone = ctx.pendingFlags.coneBaseDone === true;
+      if (!baseDone) {
+        const radius = ctx.promptNumber('Bán kính đáy');
+        if (radius == null) return;
+        const center = resolvePoint(ctx, hit);
+        ctx.pendingFlags.coneCenter = center;
+        ctx.pendingFlags.coneRadius = radius;
+        ctx.pendingFlags.coneBaseDone = true;
+        ctx.notify();
+        return;
+      }
+      // Second click = apex
+      const center = ctx.pendingFlags.coneCenter as PendingPoint;
+      const radius = ctx.pendingFlags.coneRadius as number;
+      const apex = createPoint3D(ctx, hit.x3, hit.y3, hit.z3);
+      const [cx, cy, cz] = center.coords;
+      const basePoints: PendingPoint[] = [];
+      for (let i = 0; i < CURVED_SEGMENTS; i++) {
+        const theta = (i / CURVED_SEGMENTS) * Math.PI * 2;
+        basePoints.push(
+          createPoint3D(
+            ctx,
+            cx + radius * Math.cos(theta),
+            cy + radius * Math.sin(theta),
+            cz,
+          ),
+        );
+      }
+      const faces: PendingPoint[][] = [basePoints];
+      for (let i = 0; i < CURVED_SEGMENTS; i++) {
+        faces.push([basePoints[i], basePoints[(i + 1) % CURVED_SEGMENTS], apex]);
+      }
+      finishPolyhedron(ctx, faces);
+      ctx.pendingFlags.coneBaseDone = false;
+      ctx.pendingFlags.coneCenter = undefined;
+      ctx.pendingFlags.coneRadius = undefined;
+      ctx.notify();
+      return;
+    }
+
+    case 'cylinder': {
+      const radius = ctx.promptNumber('Bán kính đáy');
+      if (radius == null) return;
+      const height = ctx.promptNumber('Chiều cao (theo trục z)');
+      if (height == null) return;
+      const center = resolvePoint(ctx, hit);
+      const [cx, cy, cz] = center.coords;
+      const basePoints: PendingPoint[] = [];
+      const topPoints: PendingPoint[] = [];
+      for (let i = 0; i < CURVED_SEGMENTS; i++) {
+        const theta = (i / CURVED_SEGMENTS) * Math.PI * 2;
+        basePoints.push(
+          createPoint3D(
+            ctx,
+            cx + radius * Math.cos(theta),
+            cy + radius * Math.sin(theta),
+            cz,
+          ),
+        );
+        topPoints.push(
+          createPoint3D(
+            ctx,
+            cx + radius * Math.cos(theta),
+            cy + radius * Math.sin(theta),
+            cz + height,
+          ),
+        );
+      }
+      const faces: PendingPoint[][] = [basePoints, topPoints];
+      for (let i = 0; i < CURVED_SEGMENTS; i++) {
+        const next = (i + 1) % CURVED_SEGMENTS;
+        faces.push([basePoints[i], basePoints[next], topPoints[next], topPoints[i]]);
+      }
+      finishPolyhedron(ctx, faces);
+      ctx.notify();
+      return;
+    }
+
+    case 'solidofrevolution': {
+      const fnText = ctx.promptText('Hàm bán kính theo trục, vd "Math.sin(z) + 2"');
+      if (!fnText) return;
+      const axisText = ctx.promptText('Trục xoay (x | y | z), mặc định z');
+      const lowered = (axisText || 'z').toLowerCase();
+      const axis = lowered === 'x' ? 'x' : lowered === 'y' ? 'y' : 'z';
+      const id = ctx.nextId();
+      const ref = ctx.view.create('solidofrevolution3d', [fnText, axis], { id });
+      ctx.objMap.set(id, ref);
+      ctx.pushLog({
+        type: 'solidofrevolution3d',
+        parents: [fnText, axis],
+        attributes: { id },
+        id,
+      });
+      ctx.notify();
+      return;
+    }
+
+    default:
+      return;
+  }
 }
 
 // Helpers exported for B8/B9 to reuse

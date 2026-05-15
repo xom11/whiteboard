@@ -160,3 +160,46 @@ describe('handlers — solids', () => {
     expect(log[log.length - 1].type).toBe('polyhedron3d');
   });
 });
+
+describe('handlers — curved', () => {
+  it('sphere: tâm click + bán kính prompt → sphere3d', () => {
+    const promptNumber = jest.fn(() => 2);
+    const { ctx, log } = buildCtx({ promptNumber });
+    handleToolStep(ctx, 'sphere', hit(0, 0, 0));
+    expect(promptNumber).toHaveBeenCalled();
+    expect(log[log.length - 1].type).toBe('sphere3d');
+  });
+
+  it('sphere: bỏ qua nếu không nhập bán kính', () => {
+    const promptNumber = jest.fn(() => null);
+    const { ctx, log } = buildCtx({ promptNumber });
+    handleToolStep(ctx, 'sphere', hit(0, 0, 0));
+    expect(log.filter((e) => e.type === 'sphere3d').length).toBe(0);
+  });
+
+  it('cone: tâm + radius + apex → polyhedron3d xấp xỉ', () => {
+    const promptNumber = jest.fn(() => 1.5);
+    const { ctx, log } = buildCtx({ promptNumber });
+    handleToolStep(ctx, 'cone', hit(0, 0, 0));
+    handleToolStep(ctx, 'cone', hit(0, 0, 3));
+    expect(log[log.length - 1].type).toBe('polyhedron3d');
+    expect(log.filter((e) => e.type === 'point3d').length).toBeGreaterThanOrEqual(16);
+  });
+
+  it('cylinder: tâm + radius + height → polyhedron3d xấp xỉ', () => {
+    const promptNumber = jest.fn().mockReturnValueOnce(1).mockReturnValueOnce(3);
+    const { ctx, log } = buildCtx({ promptNumber });
+    handleToolStep(ctx, 'cylinder', hit(0, 0, 0));
+    expect(log[log.length - 1].type).toBe('polyhedron3d');
+    expect(log.filter((e) => e.type === 'point3d').length).toBeGreaterThanOrEqual(32);
+  });
+
+  it('solidofrevolution: prompt curve + axis → solidofrevolution3d', () => {
+    const promptText = jest.fn()
+      .mockReturnValueOnce('Math.sin(z) + 2')
+      .mockReturnValueOnce('z');
+    const { ctx, log } = buildCtx({ promptText });
+    handleToolStep(ctx, 'solidofrevolution', hit(0, 0, 0));
+    expect(log[log.length - 1].type).toBe('solidofrevolution3d');
+  });
+});
