@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { DEFAULT_STAMPS } from './registry';
-import type { StampType } from './registry/types';
+import { DEFAULT_STAMPS } from '../stamps/shared/registry';
+import type { StampType } from '../stamps/shared/types';
 
 interface Props {
   /** Bật/tắt theo role. Khi disabled → không mount portal. */

@@ -6,7 +6,7 @@ import {
   latexStamp,
   isGeometryCustomData,
   isLatexCustomData,
-} from '../index';
+} from '../registry';
 
 describe('DEFAULT_STAMPS', () => {
   it('chứa đúng geometry + latex (theo thứ tự)', () => {

@@ -10,14 +10,14 @@ import {
 } from 'react';
 import { LatexLeftPanel } from '../StampLeftPanel';
 import { LatexEditorPopover, type LatexEditorHandle } from '../LatexEditorPopover';
-import { insertStampImage } from '../../core/insertStampImage';
+import { insertStampImage } from '../../stamps/shared/insertImage';
 import { renderLatexToSvg } from '../renderLatexToSvg';
 import type {
   BaseStampCustomData,
   StampHostProps,
   StampHostHandle,
   StampType,
-} from './types';
+} from '../../stamps/shared/types';
 
 // ============== Custom data type + guard ==============
 

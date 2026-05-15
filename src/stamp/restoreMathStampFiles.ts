@@ -15,8 +15,8 @@
 // `filter: invert(...)` lên canvas trong dark mode → nét tự đảo sáng. KHÔNG
 // cần force regenerate khi user toggle theme.
 
-import { DEFAULT_STAMPS, findStampForCustomData } from './registry';
-import type { StampType } from './registry/types';
+import { DEFAULT_STAMPS, findStampForCustomData } from '../stamps/shared/registry';
+import type { StampType } from '../stamps/shared/types';
 
 interface ElementLike {
   id: string;

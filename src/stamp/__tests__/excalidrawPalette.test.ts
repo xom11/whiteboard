@@ -1,4 +1,4 @@
-import { STROKE_PALETTE } from '../excalidrawPalette';
+import { STROKE_PALETTE } from '../../stamps/shared/excalidrawPalette';
 
 describe('STROKE_PALETTE', () => {
   it('có đúng 8 màu hex hợp lệ', () => {

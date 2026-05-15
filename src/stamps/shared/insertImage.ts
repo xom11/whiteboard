@@ -1,5 +1,5 @@
-import { svgToImageElement } from '../stamp/svgToImageElement';
-import type { ExcalidrawElement } from '../types';
+import { svgToImageElement } from './svgToImage';
+import type { ExcalidrawElement } from '../../types';
 
 // Excalidraw imperative API — không có public type chính xác. Giữ untyped ở
 // boundary và yêu cầu caller pass đúng instance.

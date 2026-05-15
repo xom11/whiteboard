@@ -15,7 +15,7 @@ import {
   type GeomBoardState,
 } from '../GeometryEditorPanel';
 import type { GeomTool } from '../JSXGraphMiniBoard';
-import { insertStampImage } from '../../core/insertStampImage';
+import { insertStampImage } from '../../stamps/shared/insertImage';
 import { renderGeometrySvgFromState } from '../renderGeometryFromState';
 import type { SerializedBoard } from '../serializeBoard';
 import type {
@@ -23,7 +23,7 @@ import type {
   StampHostProps,
   StampHostHandle,
   StampType,
-} from './types';
+} from '../../stamps/shared/types';
 
 // ============== Custom data type + guard ==============
 

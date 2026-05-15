@@ -18,11 +18,11 @@ import {
   findStampForCustomData,
   type StampType,
 } from './stamp';
-import type { StampHostHandle } from './stamp/registry/types';
+import type { StampHostHandle } from './stamps/shared/types';
 import { readScene, writeScene } from './core/persistence/sceneStore';
 import { readFiles, writeFiles, pruneFiles } from './core/persistence/fileStore';
 import '@excalidraw/excalidraw/index.css';
-import './stamp/stamp.css';
+import './stamps/shared/stamp.css';
 
 const Excalidraw = dynamic(
   async () => (await import('./ExcalidrawWithMenus')).ExcalidrawWithMenus,

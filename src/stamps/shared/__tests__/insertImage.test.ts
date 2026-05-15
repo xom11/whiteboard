@@ -1,7 +1,7 @@
-import { insertStampImage } from '../insertStampImage';
+import { insertStampImage } from '../insertImage';
 
 // Mock svgToImageElement để test không phụ thuộc crypto.subtle / btoa
-jest.mock('../../stamp/svgToImageElement', () => ({
+jest.mock('../svgToImage', () => ({
   svgToImageElement: jest.fn(async (svg: string) => ({
     dataURL: 'data:image/svg+xml;base64,FAKE',
     fileId: 'file_' + svg.length,

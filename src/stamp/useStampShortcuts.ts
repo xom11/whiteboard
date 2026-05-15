@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { DEFAULT_STAMPS } from './registry';
-import type { StampType } from './registry/types';
+import { DEFAULT_STAMPS } from '../stamps/shared/registry';
+import type { StampType } from '../stamps/shared/types';
 
 interface Options {
   enabled: boolean;

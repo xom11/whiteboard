@@ -9,7 +9,7 @@ export {
 } from './GeometryEditorPanel';
 export { useStampShortcuts } from './useStampShortcuts';
 export { isMathStamp, type MathStampCustomData } from './types';
-export { svgToImageElement } from './svgToImageElement';
+export { svgToImageElement } from '../stamps/shared/svgToImage';
 export { restoreMissingMathStampFiles } from './restoreMathStampFiles';
 export type { SerializedBoard } from './serializeBoard';
 
@@ -26,4 +26,4 @@ export {
   type LatexCustomData,
   isGeometryCustomData,
   isLatexCustomData,
-} from './registry';
+} from '../stamps/shared/registry';
