@@ -83,8 +83,10 @@ export function buildTransformSpec(input: TransformInput): TransformSpec {
     case 'reflectLine':
       return { params: [input.line], attrs: { type: 'reflect' } };
     case 'reflectPoint':
-      // JSXGraph không có 'pointMirror' built-in; equivalent với scale(-1, -1) quanh center.
-      return { params: [-1, -1, input.center], attrs: { type: 'scale' } };
+      // JSXGraph 'scale' chỉ nhận 2 tham số (sx, sy) và scale quanh gốc toạ độ —
+      // tham số center thứ 3 bị lờ → trước đây sai. Đối xứng qua điểm = quay 180°
+      // quanh điểm đó. Dùng 'rotate' (params [angle, center]) để chuẩn.
+      return { params: [Math.PI, input.center], attrs: { type: 'rotate' } };
     case 'dilate':
       return { params: [input.k, input.k, input.center], attrs: { type: 'scale' } };
   }

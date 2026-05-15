@@ -40,7 +40,7 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
     const handleRef = useRef<MiniBoardHandle | null>(null);
     const [ready, setReady] = useState(false);
     const [propsPopover, setPropsPopover] = useState<ObjectSnapshot | null>(null);
-    const [transformPopover, setTransformPopover] = useState<{ tool: 'rotate' | 'dilate'; anchor: { x: number; y: number } } | null>(null);
+    const [transformPopover, setTransformPopover] = useState<{ tool: 'rotate' | 'dilate' | 'regularPolygon'; anchor: { x: number; y: number } } | null>(null);
     const onStateChangeRef = useRef(onStateChange);
     useEffect(() => { onStateChangeRef.current = onStateChange; }, [onStateChange]);
 
@@ -154,6 +154,7 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
               currentDash={propsPopover.dash}
               currentWidth={propsPopover.width}
               currentFace={propsPopover.face}
+              getAllNames={() => handleRef.current?.getAllPointNames() ?? []}
               onClose={() => setPropsPopover(null)}
               onMutate={(patch) => {
                 handleRef.current?.mutateObject(propsPopover.obj, patch);
@@ -181,7 +182,11 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
           <TransformParamPopover
             kind={transformPopover.tool}
             anchor={transformPopover.anchor}
-            defaultValue={transformPopover.tool === 'rotate' ? 90 : 2}
+            defaultValue={
+              transformPopover.tool === 'rotate' ? 90
+                : transformPopover.tool === 'dilate' ? 2
+                : 6
+            }
             isDark={isDark}
             onConfirm={(v) => { handleRef.current?.confirmTransformParam(v); setTransformPopover(null); }}
             onCancel={() => { handleRef.current?.cancelTransformParam(); setTransformPopover(null); }}

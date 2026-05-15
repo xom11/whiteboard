@@ -76,11 +76,12 @@ describe('buildTransformSpec', () => {
     });
   });
 
-  it('reflectPoint: scale(-1,-1) quanh center', () => {
+  it('reflectPoint: rotate(π) quanh center (JSXGraph scale không nhận center → dùng rotate 180°)', () => {
     const c = { X: () => 0 };
     const spec = buildTransformSpec({ kind: 'reflectPoint', center: c });
-    expect(spec.attrs).toEqual({ type: 'scale' });
-    expect(spec.params).toEqual([-1, -1, c]);
+    expect(spec.attrs).toEqual({ type: 'rotate' });
+    expect(spec.params[0]).toBeCloseTo(Math.PI, 6);
+    expect(spec.params[1]).toBe(c);
   });
 
   it('dilate: [k, k, center]', () => {

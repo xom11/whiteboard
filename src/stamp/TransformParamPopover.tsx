@@ -1,8 +1,11 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+
+export type ParamKind = 'rotate' | 'dilate' | 'regularPolygon';
 
 interface Props {
-  kind: 'rotate' | 'dilate';
+  kind: ParamKind;
   anchor: { x: number; y: number };
   defaultValue: number;
   onConfirm: (value: number) => void;
@@ -10,30 +13,44 @@ interface Props {
   isDark?: boolean;
 }
 
+const LABELS: Record<ParamKind, { aria: string; label: string; step: number; min?: number }> = {
+  rotate: { aria: 'Góc quay', label: 'Góc (°)', step: 15 },
+  dilate: { aria: 'Tỷ số k', label: 'Tỷ số k', step: 0.5 },
+  regularPolygon: { aria: 'Số cạnh đa giác đều', label: 'Số cạnh (n ≥ 3)', step: 1, min: 3 },
+};
+
 export const TransformParamPopover: React.FC<Props> = ({ kind, anchor, defaultValue, onConfirm, onCancel, isDark }) => {
   const [value, setValue] = useState<number>(defaultValue);
   const inputRef = useRef<HTMLInputElement>(null);
+  const meta = LABELS[kind];
 
   useEffect(() => { inputRef.current?.focus(); inputRef.current?.select(); }, []);
 
-  const submit = () => onConfirm(Number.isFinite(value) ? value : defaultValue);
+  const submit = () => {
+    let v = Number.isFinite(value) ? value : defaultValue;
+    if (kind === 'regularPolygon') {
+      v = Math.max(3, Math.round(v));
+    }
+    onConfirm(v);
+  };
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  const node = (
     <div
       data-stamp-area="true"
-      className={`${isDark ? 'theme--dark ' : ''}fixed z-[60] flex flex-col gap-2 rounded-lg border border-slate-300 bg-white p-3 shadow-2xl ring-1 ring-black/5`}
+      className={`${isDark ? 'theme--dark ' : ''}fixed z-[2147483600] flex flex-col gap-2 rounded-lg border border-slate-300 bg-white p-3 shadow-2xl ring-1 ring-black/5`}
       style={{ left: anchor.x, top: anchor.y, minWidth: 180 }}
       role="dialog"
-      aria-label={kind === 'rotate' ? 'Góc quay' : 'Tỷ số k'}
+      aria-label={meta.aria}
     >
-      <label className="text-xs font-medium text-slate-700">
-        {kind === 'rotate' ? 'Góc (°)' : 'Tỷ số k'}
-      </label>
+      <label className="text-xs font-medium text-slate-700">{meta.label}</label>
       <input
         ref={inputRef}
         type="number"
         value={value}
-        step={kind === 'rotate' ? 15 : 0.5}
+        step={meta.step}
+        min={meta.min}
         onChange={(e) => setValue(parseFloat(e.target.value))}
         onKeyDown={(e) => {
           if (e.key === 'Enter') { e.preventDefault(); submit(); }
@@ -57,4 +74,6 @@ export const TransformParamPopover: React.FC<Props> = ({ kind, anchor, defaultVa
       </div>
     </div>
   );
+
+  return createPortal(node, document.body);
 };

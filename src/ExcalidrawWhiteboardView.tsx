@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   ExcalidrawElement,
   BinaryFiles,
@@ -56,6 +56,46 @@ export interface ExcalidrawWhiteboardViewProps {
   onFilesChange: (files: BinaryFiles, newFileIds: string[]) => void;
   /** Excalidraw UI language. Defaults to 'vi-VN'. See @excalidraw/excalidraw locales. */
   langCode?: string;
+  /**
+   * Khi set, component tự lưu scene + files vào `sessionStorage[persistKey]` mỗi
+   * lần thay đổi (teacher) và khôi phục khi mount. Math stamps tự regenerate SVG
+   * qua `restoreMissingMathStampFiles`, nên storage chỉ cần chứa elements + appState
+   * + raster files. Khi prop này có giá trị, dữ liệu khôi phục từ storage được
+   * ưu tiên hơn `initialScene` (đảm bảo reload trang giữ lại bảng vẽ).
+   */
+  persistKey?: string;
+}
+
+interface PersistedSnapshot {
+  elements: readonly ExcalidrawElement[];
+  appState: Partial<SyncableAppState>;
+  files?: BinaryFiles;
+}
+
+function readPersisted(key: string | undefined): PersistedSnapshot | null {
+  if (!key || typeof window === 'undefined') return null;
+  try {
+    const raw = window.sessionStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<PersistedSnapshot>;
+    if (!Array.isArray(parsed.elements)) return null;
+    return {
+      elements: parsed.elements,
+      appState: (parsed.appState ?? {}) as Partial<SyncableAppState>,
+      files: parsed.files,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writePersisted(key: string, snap: PersistedSnapshot): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.setItem(key, JSON.stringify(snap));
+  } catch {
+    /* quota or serialize error — ignore */
+  }
 }
 
 const INITIAL_GEOM_STATE: GeomBoardState = {
@@ -73,7 +113,17 @@ export function ExcalidrawWhiteboardView({
   onSceneChange,
   onFilesChange,
   langCode = 'vi-VN',
+  persistKey,
 }: ExcalidrawWhiteboardViewProps) {
+  // Đọc 1 lần duy nhất ở render đầu (lazy memo) — Excalidraw's `initialData` chỉ
+  // được tiêu thụ ở mount đầu tiên, đọc trong useEffect sẽ trễ hơn 1 frame và
+  // không có hiệu lực. persistKey đổi giữa runtime sẽ KHÔNG re-mount Excalidraw
+  // (chấp nhận trade-off; consumer không nên đổi key động).
+  const persistedInitial = useMemo(() => readPersisted(persistKey), [persistKey]);
+  const effectiveInitialScene: ExcalidrawSceneSnapshot | null =
+    persistedInitial
+      ? { elements: persistedInitial.elements, appState: persistedInitial.appState as SyncableAppState }
+      : initialScene;
   const [api, setApi] = useState<ExApi | null>(null);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const knownFileIdsRef = useRef<Set<string>>(new Set());
@@ -214,13 +264,32 @@ export function ExcalidrawWhiteboardView({
         const hash = (mod as any).hashElementsVersion(elements);
         if (hash === lastElementsHashRef.current) return;
         lastElementsHashRef.current = hash;
-        onSceneChange({
-          elements: elements.filter((e) => !e.isDeleted) as readonly ExcalidrawElement[],
-          appState: pickSyncableAppState(appState),
-        });
+        const liveElements = elements.filter((e) => !e.isDeleted) as readonly ExcalidrawElement[];
+        const liveAppState = pickSyncableAppState(appState);
+        onSceneChange({ elements: liveElements, appState: liveAppState });
+
+        if (persistKey) {
+          // Bỏ qua file của math-stamp (sẽ regenerate). Giữ lại file raster
+          // (user-paste image) để reload không mất ảnh.
+          const stampFileIds = new Set<string>();
+          for (const el of liveElements) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const fid = (el as any).fileId as string | undefined;
+            if (fid && isMathStamp(el)) stampFileIds.add(fid);
+          }
+          const rasterFiles: BinaryFiles = {};
+          for (const [fid, f] of Object.entries(files)) {
+            if (!stampFileIds.has(fid)) rasterFiles[fid] = f;
+          }
+          writePersisted(persistKey, {
+            elements: liveElements,
+            appState: liveAppState,
+            files: rasterFiles,
+          });
+        }
       }, SYNC_THROTTLE_MS);
     },
-    [isTeacher, api, onSceneChange, onFilesChange],
+    [isTeacher, api, onSceneChange, onFilesChange, persistKey],
   );
 
   // ---- Student path: apply remote scene ----
@@ -248,6 +317,32 @@ export function ExcalidrawWhiteboardView({
       })),
     );
   }, [isTeacher, api, remoteFiles]);
+
+  // Restore raster files (paste-image) đã lưu trong sessionStorage. Math-stamp
+  // files được regenerate từ customData ở effect bên dưới — đoạn này chỉ phục
+  // vụ user-pasted raster.
+  useEffect(() => {
+    if (!api) return;
+    if (!persistedInitial?.files) return;
+    const entries = Object.entries(persistedInitial.files);
+    if (entries.length === 0) return;
+    try {
+      api.addFiles(
+        entries.map(([id, f]) => ({
+          id,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          dataURL: (f as any).dataURL,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          mimeType: (f as any).mimeType,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          created: (f as any).created ?? Date.now(),
+        })),
+      );
+      entries.forEach(([id]) => knownFileIdsRef.current.add(id));
+    } catch (err) {
+      console.warn('Restore persisted files failed:', err);
+    }
+  }, [api, persistedInitial]);
 
   useEffect(() => {
     if (!api) return;
@@ -573,12 +668,12 @@ export function ExcalidrawWhiteboardView({
         langCode={langCode}
         viewModeEnabled={!isTeacher}
         initialData={
-          initialScene
+          effectiveInitialScene
             ? {
-                elements: initialScene.elements,
+                elements: effectiveInitialScene.elements,
                 appState: {
-                  ...initialScene.appState,
-                  gridSize: initialScene.appState.gridSize ?? undefined,
+                  ...effectiveInitialScene.appState,
+                  gridSize: effectiveInitialScene.appState.gridSize ?? undefined,
                 },
               }
             : { appState: { viewBackgroundColor: '#ffffff' } }

@@ -17,6 +17,7 @@ export type GeomTool =
   | 'perpBisector'
   | 'angleBisector'
   | 'polygon'
+  | 'regularPolygon'
   | 'circleCenter'
   | 'circle3'
   | 'tangent'
@@ -54,9 +55,11 @@ export interface MiniBoardHandle {
   snapshotObject: (obj: unknown, anchorScreen: { x: number; y: number }) => ObjectSnapshot | null;
   /** Mutate thuộc tính + sync log. */
   mutateObject: (obj: unknown, patch: { attrs?: Record<string, unknown>; remove?: boolean }) => void;
+  /** Liệt kê tên của tất cả point hiện tại (để popover disambiguate khi rename). */
+  getAllPointNames: () => string[];
   /** Subscribe selection-from-move-tool. Trả về unsubscribe. */
   onSelect: (cb: (snap: ObjectSnapshot) => void) => () => void;
-  onTransformParam: (cb: (info: { tool: 'rotate' | 'dilate'; anchor: { x: number; y: number } } | null) => void) => () => void;
+  onTransformParam: (cb: (info: { tool: 'rotate' | 'dilate' | 'regularPolygon'; anchor: { x: number; y: number } } | null) => void) => () => void;
   confirmTransformParam: (value: number) => void;
   cancelTransformParam: () => void;
 }
@@ -127,6 +130,9 @@ const Icon = {
   polygon: (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><polygon points="6,6 18,6 22,14 12,22 4,14"/></svg>
   ),
+  regularPolygon: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><polygon points="12,3 20,8 20,17 12,22 4,17 4,8"/></svg>
+  ),
   circleCenter: (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/></svg>
   ),
@@ -184,6 +190,7 @@ export const TOOLS: ToolDef[] = [
   { key: 'perpBisector', label: 'Đường trung trực', hint: 'Click 2 điểm có sẵn', icon: Icon.perpBisector, group: 'construct', needs: 2, accepts: ['point', 'point'] },
   { key: 'angleBisector', label: 'Đường phân giác', hint: 'Click 3 điểm có sẵn (đỉnh ở giữa)', icon: Icon.bisector, group: 'construct', needs: 3, accepts: ['point', 'point', 'point'] },
   { key: 'polygon', label: 'Đa giác', hint: 'Click các điểm, click lại điểm đầu để đóng', icon: Icon.polygon, group: 'polygon', needs: -1 },
+  { key: 'regularPolygon', label: 'Đa giác đều', hint: 'Click 2 điểm rồi nhập số cạnh', icon: Icon.regularPolygon, group: 'polygon', needs: 2, accepts: ['point', 'point'] },
   { key: 'circleCenter', label: 'Đường tròn (tâm + điểm)', hint: 'Click tâm rồi 1 điểm trên đường tròn', icon: Icon.circleCenter, group: 'circle', needs: 2 },
   { key: 'circle3', label: 'Đường tròn qua 3 điểm', hint: 'Click 3 điểm', icon: Icon.circle3, group: 'circle', needs: 3 },
   { key: 'tangent', label: 'Tiếp tuyến', hint: 'Click 1 điểm + 1 đường tròn có sẵn', icon: Icon.tangent, group: 'circle', needs: 2, accepts: ['point', 'circle'] },
@@ -573,9 +580,29 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         if (gid) create('tangent', [gid], stroke);
         break;
       }
-      case 'angle':
-        create('angle', labels, { radius: 1, fillColor: '#22c55e', fillOpacity: 0.25, strokeColor: '#16a34a', strokeWidth: 1.5, name: lblName });
+      case 'angle': {
+        // JSXGraph vẽ cung từ BA → BC theo chiều dương (ngược chiều kim đồng hồ).
+        // Nếu cross(BA, BC) < 0 thì cung CCW từ BA → BC > 180° → đổi vai trò A,C
+        // để luôn hiển thị góc nhọn/tù thay vì góc phản (reflex).
+        const [pa, pb, pc] = picks;
+        let order: string[] = labels;
+        try {
+          const ax = pa.X() - pb.X(), ay = pa.Y() - pb.Y();
+          const cx = pc.X() - pb.X(), cy = pc.Y() - pb.Y();
+          const cross = ax * cy - ay * cx;
+          if (cross < 0) order = [labels[2], labels[1], labels[0]];
+        } catch { /* fallback giữ thứ tự */ }
+        create('angle', order, {
+          radius: 1,
+          fillColor: '#22c55e',
+          fillOpacity: 0.25,
+          strokeColor: '#16a34a',
+          strokeWidth: 1.5,
+          name: '',
+          withLabel: false,
+        });
         break;
+      }
       case 'distance': {
         const pA = picks[0], pB = picks[1];
         const dist = Math.hypot((pA.X() - pB.X()), (pA.Y() - pB.Y()));
@@ -816,9 +843,9 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     return best ? best.obj : null;
   }, [screenCoordsOf]);
 
-  // Pending transform state for rotate/dilate (needs param popover)
+  // Pending transform state for rotate/dilate/regularPolygon (needs param popover)
   interface PendingTransform {
-    tool: 'rotate' | 'dilate';
+    tool: 'rotate' | 'dilate' | 'regularPolygon';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     source: any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -826,7 +853,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
     anchorScreen: { x: number; y: number };
   }
   const pendingTransformRef = useRef<PendingTransform | null>(null);
-  type TransformPopoverInfo = { tool: 'rotate' | 'dilate'; anchor: { x: number; y: number } } | null;
+  type TransformPopoverInfo = { tool: 'rotate' | 'dilate' | 'regularPolygon'; anchor: { x: number; y: number } } | null;
   const transformSubsRef = useRef<Set<(info: TransformPopoverInfo) => void>>(new Set());
   const emitTransform = useCallback((info: TransformPopoverInfo) => {
     transformSubsRef.current.forEach((cb) => { try { cb(info); } catch { /* ignore */ } });
@@ -931,8 +958,44 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         const snapPointForPointSlot = (): JxgObj | null =>
           bestHit && objKind(bestHit) === 'point' ? bestHit : findNearestPoint(e, 12);
 
-        // Tool: point — always create a new free point at click
+        // Tool: point — nếu click trúng ≥2 đường/đường tròn → tạo giao điểm
+        // ràng buộc (khi kéo các đường, điểm này luôn là giao). Trường hợp 1
+        // đường + click thường vẫn tạo điểm tự do (không glide để tránh ràng
+        // buộc ngoài ý muốn).
         if (t === 'point') {
+          const curves = hits.filter((o) => objKind(o) === 'line' || objKind(o) === 'circle');
+          if (curves.length >= 2) {
+            const a = curves[0];
+            const b = curves[1];
+            const aId = localIdOf(a);
+            const bId = localIdOf(b);
+            if (aId && bId) {
+              const name = nextLabel();
+              const attrs = { name, color: '#0f172a', size: 3, fillColor: '#0f172a', strokeColor: '#0f172a' };
+              try {
+                // intersection trả về element [obj1, obj2] với giao gần (x, y).
+                // JSXGraph cần index i (0 hoặc 1) cho trường hợp 2 giao (line-circle, circle-circle).
+                // Chọn index dựa vào điểm gần click hơn.
+                const isLineLine = objKind(a) === 'line' && objKind(b) === 'line';
+                if (isLineLine) {
+                  create('intersection', [aId, bId, 0], attrs);
+                } else {
+                  // Thử cả 2 index, chọn cái gần click hơn
+                  const tmp0 = boardRef.current.create('intersection', [a, b, 0], { visible: false, withLabel: false });
+                  const tmp1 = boardRef.current.create('intersection', [a, b, 1], { visible: false, withLabel: false });
+                  const d0 = Math.hypot((tmp0.X?.() ?? 0) - x, (tmp0.Y?.() ?? 0) - y);
+                  const d1 = Math.hypot((tmp1.X?.() ?? 0) - x, (tmp1.Y?.() ?? 0) - y);
+                  try { boardRef.current.removeObject(tmp0); } catch { /* ignore */ }
+                  try { boardRef.current.removeObject(tmp1); } catch { /* ignore */ }
+                  const idx = d0 <= d1 ? 0 : 1;
+                  create('intersection', [aId, bId, idx], attrs);
+                }
+                return;
+              } catch {
+                // fallback: tạo điểm tự do
+              }
+            }
+          }
           const name = nextLabel();
           create('point', [x, y], { name, color: '#0f172a', size: 3, fillColor: '#0f172a', strokeColor: '#0f172a' });
           return;
@@ -1053,6 +1116,15 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
             // Don't clearPending here — wait for confirm/cancel
             return;
           }
+          if (tk === 'regularPolygon') {
+            const p1 = pendingRef.current[0];
+            const p2 = pendingRef.current[1];
+            const cx = ((e.clientX ?? 0) as number) + 8;
+            const cy = ((e.clientY ?? 0) as number) + 8;
+            pendingTransformRef.current = { tool: tk, source: p1, center: p2, anchorScreen: { x: cx, y: cy } };
+            emitTransform({ tool: tk, anchor: { x: cx, y: cy } });
+            return;
+          }
           if (tk === 'translate') {
             const source = pendingRef.current[0];
             const spec = buildTransformSpec({ kind: 'translate', vectorPoints: [pendingRef.current[1], pendingRef.current[2]] });
@@ -1081,7 +1153,9 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         }
       });
 
-      // Pointer up: single-click on Move tool emits selection
+      // Pointer up: DOUBLE-click on Move tool emits selection (single-click chỉ
+      // dùng để drag đối tượng). Theo dõi click trước đó: nếu click thứ 2 trong
+      // 400ms vào CÙNG đối tượng → mở popover.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       board.on('up', (e: any) => {
         const t = toolRef.current;
@@ -1097,7 +1171,14 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         const hits = objectsAt(e).filter((o) => o !== axisObjsRef.current.x && o !== axisObjsRef.current.y);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const best: any = hits.find((o) => objKind(o) === 'point') ?? hits[0] ?? findNearestPoint(e, 12);
-        if (!best) return;
+        if (!best) {
+          lastMoveClickRef.current = { obj: null, time: 0 };
+          return;
+        }
+        const now = Date.now();
+        const isDouble = lastMoveClickRef.current.obj === best && (now - lastMoveClickRef.current.time) < 400;
+        lastMoveClickRef.current = { obj: best, time: now };
+        if (!isDouble) return;
         const cx = (e.clientX ?? e.touches?.[0]?.clientX ?? 0) as number;
         const cy = (e.clientY ?? e.touches?.[0]?.clientY ?? 0) as number;
         const snap = snapshotObject(best, { x: cx + 8, y: cy + 8 });
@@ -1142,17 +1223,51 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
         },
         snapshotObject,
         mutateObject,
+        getAllPointNames: () => {
+          const b = boardRef.current;
+          if (!b) return [];
+          const out: string[] = [];
+          try {
+            const objs = b.objectsList || [];
+            for (const o of objs) {
+              if (objKind(o) === 'point' && typeof o.name === 'string' && o.name) {
+                out.push(o.name);
+              }
+            }
+          } catch { /* ignore */ }
+          return out;
+        },
         onSelect: (cb: (snap: ObjectSnapshot) => void) => {
           selectSubsRef.current.add(cb);
           return () => { selectSubsRef.current.delete(cb); };
         },
-        onTransformParam: (cb: (info: { tool: 'rotate' | 'dilate'; anchor: { x: number; y: number } } | null) => void) => {
+        onTransformParam: (cb: (info: TransformPopoverInfo) => void) => {
           transformSubsRef.current.add(cb);
           return () => { transformSubsRef.current.delete(cb); };
         },
         confirmTransformParam: (value: number) => {
           const p = pendingTransformRef.current;
           if (!p) return;
+          if (p.tool === 'regularPolygon') {
+            const n = Math.max(3, Math.round(value));
+            const p1Id = localIdOf(p.source);
+            const p2Id = localIdOf(p.center);
+            if (p1Id && p2Id && boardRef.current) {
+              try {
+                create('regularpolygon', [p1Id, p2Id, n], {
+                  fillColor: '#1e3a8a',
+                  fillOpacity: 0.10,
+                  borders: { strokeColor: '#0f172a', strokeWidth: 2 },
+                });
+              } catch (err) {
+                console.warn('regularpolygon failed', err);
+              }
+            }
+            pendingTransformRef.current = null;
+            emitTransformRef.current(null);
+            clearPendingRef.current();
+            return;
+          }
           const spec = p.tool === 'rotate'
             ? buildTransformSpec({ kind: 'rotate', center: p.center, angleDeg: value })
             : buildTransformSpec({ kind: 'dilate', center: p.center, k: value });
@@ -1245,6 +1360,10 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState }) =>
 
   // Track pointer-down position for click vs drag detection in Move tool
   const moveDownRef = useRef<{ sx: number; sy: number } | null>(null);
+  // Track previous Move-tool click for double-click detection (open popover only
+  // on 2nd click within 400ms on the same object).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const lastMoveClickRef = useRef<{ obj: any | null; time: number }>({ obj: null, time: 0 });
 
   // Phát tín hiệu khi state thay đổi
   useEffect(() => { notifySubscribers(); }, [tool, showAxis, showGrid, historyTick, notifySubscribers]);

@@ -34,7 +34,8 @@ describe('TransformParamPopover', () => {
   });
 
   it('isDark thêm class theme--dark', () => {
-    const { container } = render(<TransformParamPopover {...baseProps} kind="rotate" defaultValue={90} isDark />);
-    expect(container.querySelector('.theme--dark')).not.toBeNull();
+    // Popover render qua portal vào document.body, không nằm trong container.
+    render(<TransformParamPopover {...baseProps} kind="rotate" defaultValue={90} isDark />);
+    expect(document.body.querySelector('.theme--dark')).not.toBeNull();
   });
 });
