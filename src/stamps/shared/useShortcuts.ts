@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { DEFAULT_STAMPS } from '../stamps/shared/registry';
-import type { StampType } from '../stamps/shared/types';
+import { DEFAULT_STAMPS } from './registry';
+import type { StampType } from './types';
 
 interface Options {
   enabled: boolean;
@@ -23,7 +23,7 @@ function isEditableTarget(t: EventTarget | null): boolean {
  * dùng `L` cho Line tool, nếu không chặn → bấm L lại chuyển tool thay vì
  * toggle LaTeX panel).
  */
-export function useStampShortcuts({
+export function useShortcuts({
   enabled,
   onToggle,
   stamps = DEFAULT_STAMPS,

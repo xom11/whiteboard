@@ -1,5 +1,5 @@
 export { StampToolButtons } from './StampToolButtons';
-export { ToolbarStampInjector } from './ToolbarStampInjector';
+export { ToolbarInjector as ToolbarStampInjector } from '../stamps/shared/ToolbarInjector';
 export { GeometryLeftPanel, LatexLeftPanel } from './StampLeftPanel';
 export { LatexEditorPopover, type LatexEditorHandle } from './LatexEditorPopover';
 export {
@@ -7,10 +7,10 @@ export {
   type GeometryEditorPanelHandle,
   type GeomBoardState,
 } from './GeometryEditorPanel';
-export { useStampShortcuts } from './useStampShortcuts';
+export { useShortcuts as useStampShortcuts } from '../stamps/shared/useShortcuts';
 export { isMathStamp, type MathStampCustomData } from './types';
 export { svgToImageElement } from '../stamps/shared/svgToImage';
-export { restoreMissingMathStampFiles } from './restoreMathStampFiles';
+export { restoreMissingStampFiles as restoreMissingMathStampFiles } from '../stamps/shared/restoreStampFiles';
 export type { SerializedBoard } from './serializeBoard';
 
 // Registry — Phase 2 stamp extensibility

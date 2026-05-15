@@ -1,5 +1,5 @@
 import { render, fireEvent } from '@testing-library/react';
-import { useStampShortcuts } from '../useStampShortcuts';
+import { useShortcuts } from '../useShortcuts';
 
 function Harness({
   onToggle,
@@ -8,11 +8,11 @@ function Harness({
   onToggle: (kind: string) => void;
   enabled?: boolean;
 }) {
-  useStampShortcuts({ onToggle, enabled });
+  useShortcuts({ onToggle, enabled });
   return <div data-testid="harness" />;
 }
 
-describe('useStampShortcuts (registry-driven)', () => {
+describe('useShortcuts (registry-driven)', () => {
   test('pressing G dispatches kind="geometry"', () => {
     const onToggle = jest.fn();
     render(<Harness onToggle={onToggle} />);
@@ -76,7 +76,7 @@ describe('useStampShortcuts (registry-driven)', () => {
       },
     ];
     function CustomHarness() {
-      useStampShortcuts({ enabled: true, onToggle, stamps: customStamps });
+      useShortcuts({ enabled: true, onToggle, stamps: customStamps });
       return null;
     }
     render(<CustomHarness />);

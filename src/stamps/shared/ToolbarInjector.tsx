@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { DEFAULT_STAMPS } from '../stamps/shared/registry';
-import type { StampType } from '../stamps/shared/types';
+import { DEFAULT_STAMPS } from './registry';
+import type { StampType } from './types';
 
 interface Props {
   /** Bật/tắt theo role. Khi disabled → không mount portal. */
@@ -27,7 +27,7 @@ const WRAPPER_ID = 'stamp-toolbar-portal-wrapper';
  * `MutationObserver` để re-mount nếu Excalidraw xoá wrapper hoặc re-render
  * toolbar (đổi orientation, mobile/desktop switch...).
  */
-export function ToolbarStampInjector({
+export function ToolbarInjector({
   enabled,
   activeStampKind,
   onToggle,

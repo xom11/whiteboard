@@ -1,5 +1,5 @@
-import { restoreMissingMathStampFiles } from '../restoreMathStampFiles';
-import type { StampType } from '../../stamps/shared/types';
+import { restoreMissingStampFiles as restoreMissingMathStampFiles } from '../restoreStampFiles';
+import type { StampType } from '../types';
 
 function makeMockStamp(): {
   stamp: StampType;

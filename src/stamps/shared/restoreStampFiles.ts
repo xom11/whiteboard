@@ -15,8 +15,8 @@
 // `filter: invert(...)` lên canvas trong dark mode → nét tự đảo sáng. KHÔNG
 // cần force regenerate khi user toggle theme.
 
-import { DEFAULT_STAMPS, findStampForCustomData } from '../stamps/shared/registry';
-import type { StampType } from '../stamps/shared/types';
+import { DEFAULT_STAMPS, findStampForCustomData } from './registry';
+import type { StampType } from './types';
 
 interface ElementLike {
   id: string;
@@ -60,7 +60,7 @@ async function buildFileForStamp(
  * @param elements Tất cả elements (sẽ filter type=image + có fileId + match registry).
  * @param stamps Registry. Default = DEFAULT_STAMPS.
  */
-export async function restoreMissingMathStampFiles(
+export async function restoreMissingStampFiles(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   api: any,
   elements: readonly ElementLike[],
@@ -87,3 +87,6 @@ export async function restoreMissingMathStampFiles(
     try { api.addFiles(files); } catch (err) { console.warn('addFiles failed:', err); }
   }
 }
+
+/** @deprecated Dùng `restoreMissingStampFiles` thay vì `restoreMissingMathStampFiles`. Sẽ xoá ở 0.6.0. */
+export const restoreMissingMathStampFiles = restoreMissingStampFiles;

@@ -10,14 +10,14 @@ import type {
 } from './types';
 import { pickSyncableAppState } from './serialize';
 import {
-  ToolbarStampInjector,
-  useStampShortcuts,
   isMathStamp,
-  restoreMissingMathStampFiles,
   DEFAULT_STAMPS,
   findStampForCustomData,
   type StampType,
 } from './stamp';
+import { ToolbarInjector } from './stamps/shared/ToolbarInjector';
+import { useShortcuts } from './stamps/shared/useShortcuts';
+import { restoreMissingStampFiles } from './stamps/shared/restoreStampFiles';
 import type { StampHostHandle } from './stamps/shared/types';
 import { readScene, writeScene } from './core/persistence/sceneStore';
 import { readFiles, writeFiles, pruneFiles } from './core/persistence/fileStore';
@@ -315,7 +315,7 @@ export function Whiteboard({
         const elements = api.getSceneElements();
         if (!elements || elements.length === 0) return;
         if (cancelled) return;
-        await restoreMissingMathStampFiles(api, elements, stamps);
+        await restoreMissingStampFiles(api, elements, stamps);
       } catch (err) {
         console.warn('Math stamp restore pass failed:', err);
       }
@@ -361,7 +361,7 @@ export function Whiteboard({
   );
 
   // ---- Keyboard shortcuts: đọc registry, mỗi stamp tự khai báo phím tắt ----
-  useStampShortcuts({
+  useShortcuts({
     enabled: !readOnly,
     onToggle: toggleStampByKind,
     stamps,
@@ -483,7 +483,7 @@ export function Whiteboard({
         onPointerDown={handlePointerDown}
       />
 
-      <ToolbarStampInjector
+      <ToolbarInjector
         enabled={!readOnly}
         activeStampKind={activeStamp}
         onToggle={toggleStampByKind}
