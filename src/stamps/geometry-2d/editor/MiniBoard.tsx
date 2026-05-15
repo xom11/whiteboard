@@ -11,6 +11,7 @@ import {
   type ToolDef,
 } from './tools';
 import { paletteFor, resolveAttrColors, themeAxis, themeGrid, themeLabel } from './theme';
+import { handleDown, handleUp, handleMove, type HandlerCtx } from './handlers';
 
 // Re-export để backward-compat với consumer cũ.
 export { TOOLS, GROUP_LABELS };
@@ -945,6 +946,19 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     transformSubsRef.current.forEach((cb) => { try { cb(info); } catch { /* ignore */ } });
   }, []);
 
+  // Selection subscribers — emitted when Move tool single-clicks an object
+  const selectSubsRef = useRef<Set<(snap: ObjectSnapshot) => void>>(new Set());
+  const emitSelect = useCallback((snap: ObjectSnapshot) => {
+    selectSubsRef.current.forEach((cb) => { try { cb(snap); } catch { /* ignore */ } });
+  }, []);
+
+  // Track pointer-down position for click vs drag detection in Move tool
+  const moveDownRef = useRef<{ sx: number; sy: number } | null>(null);
+  // Track previous Move-tool click for double-click detection (open popover only
+  // on 2nd click within 400ms on the same object).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const lastMoveClickRef = useRef<{ obj: any | null; time: number }>({ obj: null, time: 0 });
+
   // Initialize board
   useEffect(() => {
     if (typeof window === 'undefined' || !containerRef.current) return;
@@ -1031,423 +1045,57 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
         try { board.create('grid', [], { strokeColor: themeGrid(isDarkRef.current), strokeOpacity: 1 }); } catch { /* ignore */ }
       }
 
-      // Pointer down: handle click-driven tool actions
+      // Pointer down: handle click-driven tool actions.
+      // Full dispatch logic lives in handlers.ts (handleDown). A stable ctx
+      // object is built here so the closure captured at mount stays thin.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       board.on('down', (e: any) => {
-        if (!boardRef.current) return;
-        const t = toolRef.current;
-        if (t === 'move') {
-          const sc = screenCoordsOf(e);
-          if (!sc) return;
-          const [sx, sy] = sc;
-          moveDownRef.current = { sx, sy };
-          return;
-        }
-        if (t === 'select') {
-          const sc = screenCoordsOf(e);
-          if (!sc) return;
-          const [sx, sy] = sc;
-          const hits = objectsAt(e)
-            .map(promoteLabel)
-            .filter((o) => o !== axisObjsRef.current.x && o !== axisObjsRef.current.y);
-          const obj = hits.find((o) => objKind(o) === 'point') ?? hits[0] ?? findNearestPoint(e, 12);
-          if (obj) {
-            const shift = !!(e.shiftKey || e.altKey);
-            toggleSelect(obj, shift);
-            // Stash so 'up' handler doesn't treat this as a marquee end.
-            moveDownRef.current = { sx, sy };
-            marqueeRef.current = null;
-            return;
-          }
-          // Empty space: start marquee. We disable board pan while marqueeing
-          // by not setting moveDownRef (board's internal pan listener relies on
-          // it being null elsewhere; here we record marquee start separately).
-          marqueeRef.current = { startSx: sx, startSy: sy };
-          // Clear current selection unless shift is held (additive marquee).
-          if (!(e.shiftKey || e.altKey)) clearSelection();
-          return;
-        }
-        const toolDef = TOOLS.find(td => td.key === t);
-        if (!toolDef) return;
-
-        const coords = boardRef.current.getUsrCoordsOfMouse(e);
-        const x = coords[0], y = coords[1];
-
-        // Detect if click hits any existing object (snap target). Text labels
-        // are promoted to their owning element so a click on the "A" label
-        // counts as a click on the point A.
-        const hits = objectsAt(e)
-          .map(promoteLabel)
-          .filter(o => o !== axisObjsRef.current.x && o !== axisObjsRef.current.y);
-        // Prefer points over other elements when present
-        const bestHit: JxgObj | null = hits.find(o => objKind(o) === 'point') ?? hits[0] ?? null;
-        // Generous fallback used when a slot expects a point: JSXGraph's `hasPoint`
-        // for a small point is ~3px which is too tight for clicking, so we look up
-        // the nearest existing point within 12px. Only applied where the active
-        // tool slot needs a point — otherwise we'd shadow valid line/circle hits.
-        const snapPointForPointSlot = (): JxgObj | null =>
-          bestHit && objKind(bestHit) === 'point' ? bestHit : findNearestPoint(e, 12);
-
-        // Tool: point — nếu click trúng ≥2 đường/đường tròn → tạo giao điểm
-        // ràng buộc (khi kéo các đường, điểm này luôn là giao). Trường hợp 1
-        // đường + click thường vẫn tạo điểm tự do (không glide để tránh ràng
-        // buộc ngoài ý muốn).
-        if (t === 'point') {
-          const curves = hits.filter((o) => objKind(o) === 'line' || objKind(o) === 'circle');
-          if (curves.length >= 2) {
-            const a = curves[0];
-            const b = curves[1];
-            const aId = localIdOf(a);
-            const bId = localIdOf(b);
-            if (aId && bId) {
-              const name = nextLabel();
-              const attrs = { name, color: '@stroke', size: 3, fillColor: '@stroke', strokeColor: '@stroke' };
-              try {
-                // intersection trả về element [obj1, obj2] với giao gần (x, y).
-                // JSXGraph cần index i (0 hoặc 1) cho trường hợp 2 giao (line-circle, circle-circle).
-                // Chọn index dựa vào điểm gần click hơn.
-                const isLineLine = objKind(a) === 'line' && objKind(b) === 'line';
-                if (isLineLine) {
-                  create('intersection', [aId, bId, 0], attrs);
-                } else {
-                  // Thử cả 2 index, chọn cái gần click hơn
-                  const tmp0 = boardRef.current.create('intersection', [a, b, 0], { visible: false, withLabel: false });
-                  const tmp1 = boardRef.current.create('intersection', [a, b, 1], { visible: false, withLabel: false });
-                  const d0 = Math.hypot((tmp0.X?.() ?? 0) - x, (tmp0.Y?.() ?? 0) - y);
-                  const d1 = Math.hypot((tmp1.X?.() ?? 0) - x, (tmp1.Y?.() ?? 0) - y);
-                  try { boardRef.current.removeObject(tmp0); } catch { /* ignore */ }
-                  try { boardRef.current.removeObject(tmp1); } catch { /* ignore */ }
-                  const idx = d0 <= d1 ? 0 : 1;
-                  create('intersection', [aId, bId, idx], attrs);
-                }
-                return;
-              } catch {
-                // fallback: tạo điểm tự do
-              }
-            }
-          }
-          const name = nextLabel();
-          create('point', [x, y], { name, color: '@stroke', size: 3, fillColor: '@stroke', strokeColor: '@stroke' });
-          return;
-        }
-
-        // Edit / single-target tools (toggleLabel, toggleVisible, delete)
-        if (toolDef.needs === 1 && toolDef.accepts) {
-          // Fall back to generous point snap if hasPoint missed a small point.
-          const hit = bestHit ?? findNearestPoint(e, 12);
-          if (hit) finalize(toolDef, [hit]);
-          else flashWarn('Click vào một đối tượng để áp dụng');
-          return;
-        }
-
-        // Polygon / area: variable-length, close on click near starting point
-        if (toolDef.needs === -1) {
-          const snappedPoint = snapPointForPointSlot();
-          // Close ring first: if user clicks back on the first pending point
-          // (with at least 3 points already), finalize. Done before push so the
-          // first point isn't duplicated into pending.
-          if (pendingRef.current.length >= 3 && snappedPoint && snappedPoint === pendingRef.current[0]) {
-            clearPreviewSegs();
-            finalize(toolDef, pendingRef.current);
-            clearPending();
-            return;
-          }
-          // Reject re-picking an interior pending vertex (would create a degenerate edge).
-          if (snappedPoint && pendingRef.current.includes(snappedPoint)) {
-            flashWarn('Đỉnh này đã có — click điểm khác hoặc click lại điểm đầu để đóng');
-            return;
-          }
-          // Otherwise pick (snap-to-existing or create) a new vertex
-          const pick: JxgObj = snappedPoint ?? (() => {
-            const name = nextLabel();
-            return create('point', [x, y], { name, color: '@stroke', size: 3 });
-          })();
-          // Live preview: draw an edge from the previous pending vertex to
-          // this new one so the user sees the polygon being built.
-          if (pendingRef.current.length > 0 && boardRef.current) {
-            const prev = pendingRef.current[pendingRef.current.length - 1];
-            try {
-              const seg = boardRef.current.create('segment', [prev, pick], {
-                strokeColor: '#3b82f6',
-                strokeWidth: 1.5,
-                strokeOpacity: 0.75,
-                fixed: true,
-                highlight: false,
-                withLabel: false,
-              });
-              previewSegRef.current.push(seg);
-            } catch { /* ignore */ }
-          }
-          pendingRef.current.push(pick);
-          setPendingCount(pendingRef.current.length);
-          return;
-        }
-
-        // Multi-click branch. Two sub-modes:
-        //   A) Strict + order-flexible: tool declared `accepts`. We bind each
-        //      click to whatever required kind is still unfilled, regardless
-        //      of click order. E.g. perpendicular accepts ['point', 'line']
-        //      and the user can click line-then-point or point-then-line.
-        //   B) Lenient + order-fixed: tool has no `accepts` (segment, line,
-        //      ray, vector, circle*, ...). All slots want points; missing
-        //      snaps create a fresh point.
-        let pick: JxgObj | null = null;
-
-        if (toolDef.accepts) {
-          // --- Mode A: strict, order-flexible ---
-          const usedKinds = pendingRef.current.map((p) => objKind(p));
-          const remaining: Array<'point' | 'line' | 'circle' | 'any'> = [...toolDef.accepts];
-          for (const u of usedKinds) {
-            if (u === 'other') continue;
-            const i = remaining.indexOf(u);
-            if (i >= 0) remaining.splice(i, 1);
-          }
-          const strictPoint = hits.find((o) => objKind(o) === 'point') ?? null;
-          const lineHit = hits.find((o) => objKind(o) === 'line') ?? null;
-          const circleHit = hits.find((o) => objKind(o) === 'circle') ?? null;
-          // Priority: an exact point hit binds to 'point' first (so a click
-          // landing right on a vertex isn't stolen by a line/circle passing
-          // through it). Typed line/circle bind next. 'any' slot accepts any
-          // remaining hit (point/line/circle). Generous point-snap is the
-          // last resort when only a 'point' slot is open.
-          //
-          // Previously 'any' was checked AFTER the snap fallback for point,
-          // which meant tools like dilate (accepts ['any', 'point']) couldn't
-          // pick a segment for the 'any' slot — the snap branch absorbed the
-          // click and 'any' was never evaluated.
-          if (remaining.includes('point') && strictPoint) pick = strictPoint;
-          else if (remaining.includes('line') && lineHit) pick = lineHit;
-          else if (remaining.includes('circle') && circleHit) pick = circleHit;
-          else if (remaining.includes('any') && (strictPoint || lineHit || circleHit)) {
-            pick = strictPoint ?? lineHit ?? circleHit;
-          } else if (remaining.includes('point')) {
-            const near = findNearestPoint(e, 12);
-            if (near) pick = near;
-          }
-          if (!pick) {
-            const needs = remaining.map((k) =>
-              k === 'point' ? 'một điểm' : k === 'line' ? 'một đường/đoạn' : k === 'circle' ? 'một đường tròn' : 'một đối tượng',
-            );
-            flashWarn(`Còn cần click vào ${needs.join(' + ')} có sẵn`);
-            return;
-          }
-          // Reject duplicate picks (e.g. click the same point twice for midpoint
-          // would produce a degenerate object pointing at itself).
-          if (pendingRef.current.includes(pick)) {
-            flashWarn('Đã chọn đối tượng này — chọn đối tượng khác');
-            return;
-          }
-        } else {
-          // --- Mode B: lenient, all slots want a point ---
-          const snapped = snapPointForPointSlot();
-          if (snapped && pendingRef.current.includes(snapped)) {
-            // Same point clicked twice → would produce a zero-length segment / etc.
-            flashWarn('Đã chọn điểm này — chọn điểm khác hoặc click chỗ trống');
-            return;
-          }
-          if (snapped) pick = snapped;
-          else {
-            const name = nextLabel();
-            pick = create('point', [x, y], { name, color: '@stroke', size: 3, fillColor: '@stroke', strokeColor: '@stroke' });
-          }
-        }
-
-        if (!pick) return;
-        pendingRef.current.push(pick);
-        setPendingCount(pendingRef.current.length);
-
-        if (pendingRef.current.length >= toolDef.needs) {
-          const tk = toolDef.key;
-          if (tk === 'rotate' || tk === 'dilate') {
-            const source = pendingRef.current[0];
-            const center = pendingRef.current[1];
-            const cx = ((e.clientX ?? 0) as number) + 8;
-            const cy = ((e.clientY ?? 0) as number) + 8;
-            pendingTransformRef.current = { tool: tk, source, center, anchorScreen: { x: cx, y: cy } };
-            emitTransform({ tool: tk, anchor: { x: cx, y: cy } });
-            // Don't clearPending here — wait for confirm/cancel
-            return;
-          }
-          if (tk === 'regularPolygon') {
-            const p1 = pendingRef.current[0];
-            const p2 = pendingRef.current[1];
-            const cx = ((e.clientX ?? 0) as number) + 8;
-            const cy = ((e.clientY ?? 0) as number) + 8;
-            pendingTransformRef.current = { tool: tk, source: p1, center: p2, anchorScreen: { x: cx, y: cy } };
-            emitTransform({ tool: tk, anchor: { x: cx, y: cy } });
-            return;
-          }
-          if (tk === 'translate') {
-            const source = pendingRef.current[0];
-            const spec = buildTransformSpec({ kind: 'translate', vectorPoints: [pendingRef.current[1], pendingRef.current[2]] });
-            finalizeTransformCreate(spec, source);
-            clearPending();
-            return;
-          }
-          if (tk === 'reflectLine') {
-            const source = pendingRef.current[0];
-            const spec = buildTransformSpec({ kind: 'reflectLine', line: pendingRef.current[1] });
-            finalizeTransformCreate(spec, source);
-            clearPending();
-            return;
-          }
-          if (tk === 'reflectPoint') {
-            const source = pendingRef.current[0];
-            const spec = buildTransformSpec({ kind: 'reflectPoint', center: pendingRef.current[1] });
-            finalizeTransformCreate(spec, source);
-            clearPending();
-            return;
-          }
-          finalize(toolDef, pendingRef.current);
-          clearPending();
-        } else {
-          refreshPreview();
-        }
+        const ctx: HandlerCtx = {
+          boardRef, toolRef, pendingRef, previewSegRef, axisObjsRef, selectedSetRef,
+          marqueeRef, moveDownRef, lastMoveClickRef, pendingTransformRef,
+          phantomRef, previewShapeRef, previewRafRef, jxgRef,
+          screenCoordsOf, objectsAt, promoteLabel, findNearestPoint,
+          toggleSelect, clearSelection, applySelectionStyle,
+          localIdOf, nextLabel, create, finalize, finalizeTransformCreate,
+          clearPending, clearPreviewSegs, refreshPreview, flashWarn,
+          emitTransform, snapshotObject, emitSelect,
+          setPendingCount, setSelectionTick,
+        };
+        handleDown(ctx, e);
       });
 
-      // Pointer up: DOUBLE-click on Move tool emits selection (single-click chỉ
-      // dùng để drag đối tượng). Theo dõi click trước đó: nếu click thứ 2 trong
-      // 400ms vào CÙNG đối tượng → mở popover.
+      // Pointer up: DOUBLE-click on Move tool emits selection. Full logic in handlers.ts.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       board.on('up', (e: any) => {
-        const t = toolRef.current;
-        if (t === 'select') {
-          // Finalize marquee: any object hit-tested inside the rectangle gets
-          // added to the selection. Single click on object was already handled
-          // in `down`; here we only care about drag end.
-          const mq = marqueeRef.current;
-          marqueeRef.current = null;
-          moveDownRef.current = null;
-          if (!mq) return;
-          const sc = screenCoordsOf(e);
-          if (!sc) return;
-          const [ex, ey] = sc;
-          if (mq.rect) { try { boardRef.current?.removeObject(mq.rect); } catch { /* ignore */ } }
-          if (Math.hypot(ex - mq.startSx, ey - mq.startSy) < 4) return;  // not a real drag
-          const x1 = Math.min(mq.startSx, ex), x2 = Math.max(mq.startSx, ex);
-          const y1 = Math.min(mq.startSy, ey), y2 = Math.max(mq.startSy, ey);
-          const board = boardRef.current;
-          if (!board) return;
-          const list = (board.objectsList || []) as JxgObj[];
-          for (const o of list) {
-            if (o === axisObjsRef.current.x || o === axisObjsRef.current.y) continue;
-            // Points: include if their screen coord falls inside the rect.
-            const kind = objKind(o);
-            if (kind === 'point') {
-              const pc = o.coords?.scrCoords;
-              if (!pc) continue;
-              if (pc[1] >= x1 && pc[1] <= x2 && pc[2] >= y1 && pc[2] <= y2) {
-                if (!selectedSetRef.current.has(o)) {
-                  selectedSetRef.current.add(o);
-                  applySelectionStyle(o);
-                }
-              }
-            }
-            // Lines/segments/circles: simple test — include if either defining
-            // point falls inside (good enough for marquee UX without doing
-            // expensive line-rectangle intersections).
-            else if (kind === 'line' || kind === 'circle') {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const defs: any[] = [o.point1, o.point2, o.center, o.midpoint, o.point3].filter(Boolean);
-              const anyInside = defs.some((p) => {
-                const pc = p?.coords?.scrCoords;
-                return pc && pc[1] >= x1 && pc[1] <= x2 && pc[2] >= y1 && pc[2] <= y2;
-              });
-              if (anyInside && !selectedSetRef.current.has(o)) {
-                selectedSetRef.current.add(o);
-                applySelectionStyle(o);
-              }
-            }
-          }
-          setSelectionTick((tt) => tt + 1);
-          try { board.update(); } catch { /* ignore */ }
-          return;
-        }
-        if (t !== 'move') return;
-        const start = moveDownRef.current;
-        moveDownRef.current = null;
-        if (!start) return;
-        const sc = screenCoordsOf(e);
-        if (!sc) return;
-        const [sx, sy] = sc;
-        const moved = Math.hypot(sx - start.sx, sy - start.sy);
-        if (moved > 4) return;  // drag, không phải click
-        const hits = objectsAt(e)
-          .map(promoteLabel)
-          .filter((o) => o !== axisObjsRef.current.x && o !== axisObjsRef.current.y);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const best: any = hits.find((o) => objKind(o) === 'point') ?? hits[0] ?? findNearestPoint(e, 12);
-        if (!best) {
-          lastMoveClickRef.current = { obj: null, time: 0 };
-          return;
-        }
-        const now = Date.now();
-        const isDouble = lastMoveClickRef.current.obj === best && (now - lastMoveClickRef.current.time) < 400;
-        lastMoveClickRef.current = { obj: best, time: now };
-        if (!isDouble) return;
-        const cx = (e.clientX ?? e.touches?.[0]?.clientX ?? 0) as number;
-        const cy = (e.clientY ?? e.touches?.[0]?.clientY ?? 0) as number;
-        const snap = snapshotObject(best, { x: cx + 8, y: cy + 8 });
-        if (snap) emitSelect(snap);
+        const ctx: HandlerCtx = {
+          boardRef, toolRef, pendingRef, previewSegRef, axisObjsRef, selectedSetRef,
+          marqueeRef, moveDownRef, lastMoveClickRef, pendingTransformRef,
+          phantomRef, previewShapeRef, previewRafRef, jxgRef,
+          screenCoordsOf, objectsAt, promoteLabel, findNearestPoint,
+          toggleSelect, clearSelection, applySelectionStyle,
+          localIdOf, nextLabel, create, finalize, finalizeTransformCreate,
+          clearPending, clearPreviewSegs, refreshPreview, flashWarn,
+          emitTransform, snapshotObject, emitSelect,
+          setPendingCount, setSelectionTick,
+        };
+        handleUp(ctx, e);
       });
 
-      // Mouse move: update phantom position so preview shape tracks cursor.
+      // Mouse move: update phantom + marquee. Full logic in handlers.ts.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       board.on('move', (e: any) => {
-        // Marquee rectangle redraw while user drags with the select tool on empty space.
-        if (toolRef.current === 'select' && marqueeRef.current) {
-          const sc = screenCoordsOf(e);
-          if (sc && boardRef.current) {
-            const [sx, sy] = sc;
-            const { startSx, startSy } = marqueeRef.current;
-            // Convert screen px to user coords for JSXGraph polygon overlay.
-            const b = boardRef.current;
-            const ux1 = b.screenCoords2userCoords?.([Math.min(startSx, sx), Math.min(startSy, sy)]) ?? null;
-            const ux2 = b.screenCoords2userCoords?.([Math.max(startSx, sx), Math.max(startSy, sy)]) ?? null;
-            // JSXGraph internal: getUsrCoordsByScreenCoords may not exist; fall
-            // back to using a known board API.
-            const toUsr = (px: number, py: number): [number, number] => {
-              // Coords.getMouseCoordinates equivalent — use board.origin + unitX/Y.
-              const ox = b.origin?.scrCoords?.[1] ?? 0;
-              const oy = b.origin?.scrCoords?.[2] ?? 0;
-              const ux = (px - ox) / b.unitX;
-              const uy = (oy - py) / b.unitY;
-              return [ux, uy];
-            };
-            const [x1u, y1u] = ux1 && ux1.length >= 2 ? [ux1[0], ux1[1]] : toUsr(Math.min(startSx, sx), Math.min(startSy, sy));
-            const [x2u, y2u] = ux2 && ux2.length >= 2 ? [ux2[0], ux2[1]] : toUsr(Math.max(startSx, sx), Math.max(startSy, sy));
-            const rect = marqueeRef.current.rect;
-            if (rect) {
-              try { boardRef.current.removeObject(rect); } catch { /* ignore */ }
-            }
-            try {
-              marqueeRef.current.rect = boardRef.current.create('polygon', [
-                [x1u, y1u], [x2u, y1u], [x2u, y2u], [x1u, y2u],
-              ], {
-                fillColor: '#06b6d4', fillOpacity: 0.08,
-                borders: { strokeColor: '#06b6d4', strokeWidth: 1, dash: 2 },
-                vertices: { visible: false },
-                fixed: true, highlight: false, withLabel: false,
-              });
-            } catch { /* ignore */ }
-          }
-          return;
-        }
-        const ph = phantomRef.current;
-        if (!ph || !boardRef.current) return;
-        if (previewRafRef.current != null) return;
-        previewRafRef.current = requestAnimationFrame(() => {
-          previewRafRef.current = null;
-          if (!boardRef.current || !phantomRef.current) return;
-          try {
-            const coords = boardRef.current.getUsrCoordsOfMouse(e);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const JXG: any = jxgRef.current;
-            if (!JXG) return;
-            phantomRef.current.setPositionDirectly(JXG.COORDS_BY_USER, [coords[0], coords[1]]);
-            boardRef.current.update();
-          } catch { /* ignore */ }
-        });
+        const ctx: HandlerCtx = {
+          boardRef, toolRef, pendingRef, previewSegRef, axisObjsRef, selectedSetRef,
+          marqueeRef, moveDownRef, lastMoveClickRef, pendingTransformRef,
+          phantomRef, previewShapeRef, previewRafRef, jxgRef,
+          screenCoordsOf, objectsAt, promoteLabel, findNearestPoint,
+          toggleSelect, clearSelection, applySelectionStyle,
+          localIdOf, nextLabel, create, finalize, finalizeTransformCreate,
+          clearPending, clearPreviewSegs, refreshPreview, flashWarn,
+          emitTransform, snapshotObject, emitSelect,
+          setPendingCount, setSelectionTick,
+        };
+        handleMove(ctx, e);
       });
 
       onReady({
@@ -1608,19 +1256,6 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
       try { cb(); } catch { /* ignore */ }
     });
   }, []);
-
-  // Selection subscribers — emitted when Move tool single-clicks an object
-  const selectSubsRef = useRef<Set<(snap: ObjectSnapshot) => void>>(new Set());
-  const emitSelect = useCallback((snap: ObjectSnapshot) => {
-    selectSubsRef.current.forEach((cb) => { try { cb(snap); } catch { /* ignore */ } });
-  }, []);
-
-  // Track pointer-down position for click vs drag detection in Move tool
-  const moveDownRef = useRef<{ sx: number; sy: number } | null>(null);
-  // Track previous Move-tool click for double-click detection (open popover only
-  // on 2nd click within 400ms on the same object).
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const lastMoveClickRef = useRef<{ obj: any | null; time: number }>({ obj: null, time: 0 });
 
   // Phát tín hiệu khi state thay đổi
   useEffect(() => { notifySubscribers(); }, [tool, showAxis, showGrid, historyTick, notifySubscribers]);
