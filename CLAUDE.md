@@ -8,6 +8,7 @@ Project context cho Claude Code. Đọc file này trước khi làm việc với
 
 - Bút/shape/text/import ảnh — qua Excalidraw 0.18
 - Stamp **hình học** (📐) — JSXGraph editor + serialize JSON state để re-edit
+- Stamp **hình học không gian 3D** (📐 3D) — JSXGraph 3D primitives + serialize JSON state để re-edit
 - Stamp **LaTeX** (∑) — KaTeX render → SVG
 - Roundtrip edit: double-click stamp → reopen editor với state cũ
 - Persist qua sessionStorage (consumer handle); SVG files regenerate khi reload
@@ -17,7 +18,7 @@ Project context cho Claude Code. Đọc file này trước khi làm việc với
 ```
 whiteboard/
 ├── src/
-│   ├── index.ts                       ← public API (new names + @deprecated aliases)
+│   ├── index.ts                       ← public API
 │   ├── Whiteboard.tsx                 ← main component
 │   ├── ExcalidrawWithMenus.tsx
 │   ├── serialize.ts                   ← pickSyncableAppState
@@ -49,11 +50,23 @@ whiteboard/
 │   │   │       ├── LeftPanel.tsx
 │   │   │       ├── PropertiesPopover.tsx
 │   │   │       └── TransformParamPopover.tsx
-│   │   └── latex/
-│   │       ├── index.tsx
+│   │   ├── latex/
+│   │   │   ├── index.tsx
+│   │   │   ├── render.ts
+│   │   │   └── editor/
+│   │   │       ├── EditorPopover.tsx
+│   │   │       └── LeftPanel.tsx
+│   │   └── geometry-3d/
+│   │       ├── index.tsx              ← StampType + Host
+│   │       ├── serialize.ts
 │   │       ├── render.ts
 │   │       └── editor/
-│   │           ├── EditorPopover.tsx
+│   │           ├── EditorPanel.tsx
+│   │           ├── MiniBoard3D.tsx
+│   │           ├── tools.ts
+│   │           ├── toolButtons.tsx
+│   │           ├── handlers.ts
+│   │           ├── theme.ts
 │   │           └── LeftPanel.tsx
 │   └── core/
 │       └── persistence/
@@ -77,12 +90,6 @@ import {
   type BinaryFiles,
   type ExcalidrawElement,
 } from '@xom11/whiteboard';
-
-// @deprecated aliases (xoá ở 0.6.0):
-// ExcalidrawWhiteboardView → Whiteboard
-// isMathStamp → isStampElement
-// MathStampCustomData → StampCustomData
-// restoreMissingMathStampFiles → restoreMissingStampFiles
 ```
 
 Consumer cần wrap trong Client Component (`"use client"`). Package tự thêm `"use client"` vào dist/* nên import từ Server Component cũng OK (Next.js sẽ treat là client).

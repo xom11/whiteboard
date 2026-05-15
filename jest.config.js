@@ -9,6 +9,7 @@ module.exports = {
   },
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': '<rootDir>/__mocks__/styleMock.js',
+    '^jsxgraph$': '<rootDir>/__mocks__/jsxgraphMock.js',
   },
   transformIgnorePatterns: ['/node_modules/(?!(katex|@excalidraw)/)'],
 };

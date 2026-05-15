@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic';
 import { forwardRef, useRef, useState, useEffect, useCallback, useImperativeHandle, useMemo, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { jsxs, jsx, Fragment } from 'react/jsx-runtime';
+import JXG from 'jsxgraph';
 import '@excalidraw/excalidraw/index.css';
 
 // src/Whiteboard.tsx
@@ -636,9 +637,9 @@ function handleMove(ctx, e) {
     if (!ctx.boardRef.current || !ctx.phantomRef.current) return;
     try {
       const coords = ctx.boardRef.current.getUsrCoordsOfMouse(e);
-      const JXG = ctx.jxgRef.current;
-      if (!JXG) return;
-      ctx.phantomRef.current.setPositionDirectly(JXG.COORDS_BY_USER, [coords[0], coords[1]]);
+      const JXG3 = ctx.jxgRef.current;
+      if (!JXG3) return;
+      ctx.phantomRef.current.setPositionDirectly(JXG3.COORDS_BY_USER, [coords[0], coords[1]]);
       ctx.boardRef.current.update();
     } catch {
     }
@@ -1068,34 +1069,34 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
   const finalize = useCallback((toolDef, picks) => {
     if (!boardRef.current) return;
     const labels = picks.map(localIdOf).filter(Boolean);
-    const stroke = { strokeColor: "@stroke", strokeWidth: 2 };
-    const strokeOnly = { ...stroke, fillColor: "none", fillOpacity: 0 };
+    const stroke2 = { strokeColor: "@stroke", strokeWidth: 2 };
+    const strokeOnly = { ...stroke2, fillColor: "none", fillOpacity: 0 };
     const lblName = nextLabel();
     switch (toolDef.key) {
       case "midpoint":
         create("midpoint", labels, { name: lblName, color: "@stroke", size: 3 });
         break;
       case "segment":
-        create("segment", labels, stroke);
+        create("segment", labels, stroke2);
         break;
       case "line":
-        create("line", labels, stroke);
+        create("line", labels, stroke2);
         break;
       case "ray": {
-        create("line", labels, { ...stroke, straightFirst: false, straightLast: true });
+        create("line", labels, { ...stroke2, straightFirst: false, straightLast: true });
         break;
       }
       case "vector":
-        create("arrow", labels, stroke);
+        create("arrow", labels, stroke2);
         break;
       case "perpendicular": {
         const [p, l] = picks[0] && objKind(picks[0]) === "point" ? [labels[0], labels[1]] : [labels[1], labels[0]];
-        create("perpendicular", [l, p], stroke);
+        create("perpendicular", [l, p], stroke2);
         break;
       }
       case "parallel": {
         const [p, l] = picks[0] && objKind(picks[0]) === "point" ? [labels[0], labels[1]] : [labels[1], labels[0]];
-        create("parallel", [l, p], stroke);
+        create("parallel", [l, p], stroke2);
         break;
       }
       case "perpBisector": {
@@ -1103,11 +1104,11 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
         const seg = create("segment", labels, { visible: false, withLabel: false });
         const midId = localIdOf(mid);
         const segId = localIdOf(seg);
-        if (midId && segId) create("perpendicular", [segId, midId], stroke);
+        if (midId && segId) create("perpendicular", [segId, midId], stroke2);
         break;
       }
       case "angleBisector":
-        create("bisector", labels, stroke);
+        create("bisector", labels, stroke2);
         break;
       case "circleCenter":
         create("circle", labels, strokeOnly);
@@ -1124,7 +1125,7 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
         const py = typeof pointPick.Y === "function" ? pointPick.Y() : 0;
         const glider = create("glider", [px, py, circleLabel], { name: "", size: 2, strokeColor: "#666", visible: false });
         const gid = localIdOf(glider);
-        if (gid) create("tangent", [gid], stroke);
+        if (gid) create("tangent", [gid], stroke2);
         break;
       }
       case "angle": {
@@ -1445,11 +1446,11 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
     if (typeof window === "undefined" || !containerRef.current) return;
     let cancelled = false;
     (async () => {
-      const JXG = (await import('jsxgraph')).default;
+      const JXG3 = (await import('jsxgraph')).default;
       if (cancelled || !containerRef.current) return;
-      jxgRef.current = JXG;
+      jxgRef.current = JXG3;
       try {
-        const opts = JXG.Options;
+        const opts = JXG3.Options;
         if (opts) {
           opts.text = opts.text || {};
           opts.text.display = "internal";
@@ -1463,7 +1464,7 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
         }
       } catch {
       }
-      const board = JXG.JSXGraph.initBoard(containerId, {
+      const board = JXG3.JSXGraph.initBoard(containerId, {
         boundingbox: initialState?.bbox ?? [-10, 10, 10, -10],
         axis: false,
         // We manage axis manually via toggle for clean default
@@ -2095,9 +2096,9 @@ function renderGeometryToSvg(boardContainer) {
 async function renderGeometrySvgFromState(jsonState) {
   const parsed = JSON.parse(jsonState);
   const palette = paletteFor(false);
-  const JXG = (await import('jsxgraph')).default;
+  const JXG3 = (await import('jsxgraph')).default;
   try {
-    const opts = JXG.Options;
+    const opts = JXG3.Options;
     if (opts) {
       opts.text = opts.text || {};
       opts.text.display = "internal";
@@ -2122,7 +2123,7 @@ async function renderGeometrySvgFromState(jsonState) {
   document.body.appendChild(container);
   let board = null;
   try {
-    board = JXG.JSXGraph.initBoard(containerId, {
+    board = JXG3.JSXGraph.initBoard(containerId, {
       boundingbox: parsed.bbox,
       axis: !!parsed.showAxis,
       grid: !!parsed.showGrid,
@@ -2135,7 +2136,7 @@ async function renderGeometrySvgFromState(jsonState) {
     return renderGeometryToSvg(container);
   } finally {
     try {
-      if (board) JXG.JSXGraph.freeBoard(board);
+      if (board) JXG3.JSXGraph.freeBoard(board);
     } catch {
     }
     if (container.parentNode) container.parentNode.removeChild(container);
@@ -3362,8 +3363,807 @@ var latexStamp = {
   Host: LatexStampHost
 };
 
+// src/stamps/geometry-3d/editor/theme.ts
+function paletteFor2(isDark) {
+  const base = paletteFor(isDark);
+  return {
+    ...base,
+    view3dBg: isDark ? "#1a1a1a" : "#ffffff",
+    axisX: "#d63b3b",
+    axisY: "#2d8a2d",
+    axisZ: "#2d6dd6"
+  };
+}
+var DEFAULT_VIEW3D = {
+  azimuth: 0.7,
+  elevation: 0.4,
+  bbox3D: [-3, -3, -3, 3, 3, 3]
+};
+var VIEW3D_ATTRS = (isDark) => {
+  const p = paletteFor2(isDark);
+  return {
+    az: { slider: { visible: false }, point2: { visible: false } },
+    el: { slider: { visible: false } },
+    projection: "central",
+    axesPosition: "border",
+    xAxis: { strokeColor: p.axisX, lastArrow: { type: 2 } },
+    yAxis: { strokeColor: p.axisY, lastArrow: { type: 2 } },
+    zAxis: { strokeColor: p.axisZ, lastArrow: { type: 2 } }
+  };
+};
+var MiniBoard3D = forwardRef(function MiniBoard3D2({ isDark, initialState }, ref) {
+  const reactId = useId();
+  const containerId = `geom3d_${reactId.replace(/[^a-zA-Z0-9_]/g, "_")}`;
+  const containerRef = useRef(null);
+  const boardRef = useRef(null);
+  const viewRef = useRef(null);
+  const toolRef = useRef("move");
+  const logRef = useRef([]);
+  const objMapRef = useRef(/* @__PURE__ */ new Map());
+  const subsRef = useRef(/* @__PURE__ */ new Set());
+  const initialBbox3D = useRef(
+    initialState?.view.bbox3D ?? DEFAULT_VIEW3D.bbox3D
+  );
+  const [showAxes, setShowAxes] = useState(initialState?.showAxes ?? true);
+  const [showMesh, setShowMesh] = useState(initialState?.showMesh ?? false);
+  const notify = useCallback(() => {
+    for (const cb of subsRef.current) cb();
+  }, []);
+  useEffect(() => {
+    const div = containerRef.current;
+    if (!div) return;
+    JXG.Options.text.display = "internal";
+    const board = JXG.JSXGraph.initBoard(div, {
+      boundingbox: [-6, 6, 6, -6],
+      axis: false,
+      showCopyright: false,
+      showNavigation: false,
+      renderer: "svg"
+    });
+    boardRef.current = board;
+    const initView = initialState?.view ?? DEFAULT_VIEW3D;
+    const baseAttrs = VIEW3D_ATTRS(isDark);
+    const view = board.create(
+      "view3d",
+      [
+        [-5, -5],
+        [10, 10],
+        [
+          [initView.bbox3D[0], initView.bbox3D[3]],
+          [initView.bbox3D[1], initView.bbox3D[4]],
+          [initView.bbox3D[2], initView.bbox3D[5]]
+        ]
+      ],
+      {
+        ...baseAttrs,
+        az: { ...baseAttrs.az, value: initView.azimuth },
+        el: { ...baseAttrs.el, value: initView.elevation }
+      }
+    );
+    viewRef.current = view;
+    if (initialState?.elements?.length) {
+      const map = objMapRef.current;
+      for (const el of initialState.elements) {
+        const parents = el.parents.map(
+          (p2) => typeof p2 === "string" && p2.startsWith("@id:") ? map.get(p2.slice(4)) : p2
+        );
+        const obj = view.create(el.type, parents, {
+          ...el.attributes,
+          id: el.id,
+          name: el.label
+        });
+        map.set(el.id, obj);
+        logRef.current.push(el);
+      }
+    }
+    return () => {
+      try {
+        JXG.JSXGraph.freeBoard(board);
+      } catch {
+      }
+      boardRef.current = null;
+      viewRef.current = null;
+      objMapRef.current.clear();
+    };
+  }, []);
+  const handleRef = useRef(null);
+  handleRef.current = {
+    getContainer: () => containerRef.current,
+    getTool: () => toolRef.current,
+    setTool: (t) => {
+      toolRef.current = t;
+      notify();
+    },
+    getCreationLog: () => [...logRef.current],
+    pushLog: (e) => {
+      logRef.current.push(e);
+      notify();
+    },
+    getViewState: () => {
+      const v = viewRef.current;
+      return {
+        azimuth: v?.az?.Value?.() ?? DEFAULT_VIEW3D.azimuth,
+        elevation: v?.el?.Value?.() ?? DEFAULT_VIEW3D.elevation,
+        bbox3D: initialBbox3D.current
+      };
+    },
+    getBbox: () => [-6, 6, 6, -6],
+    getShowAxes: () => showAxes,
+    getShowMesh: () => showMesh,
+    setShowAxes: (b) => {
+      setShowAxes(b);
+      notify();
+    },
+    setShowMesh: (b) => {
+      setShowMesh(b);
+      notify();
+    },
+    resetView: () => {
+      notify();
+    },
+    undo: () => {
+      logRef.current.pop();
+      notify();
+    },
+    canUndo: () => logRef.current.length > 0,
+    snapshotSVG: () => {
+      const div = containerRef.current;
+      if (!div) return { svgString: "", width: 0, height: 0 };
+      const svg = div.querySelector("svg");
+      if (!svg) return { svgString: "", width: 0, height: 0 };
+      const clone = svg.cloneNode(true);
+      const rect = svg.getBoundingClientRect();
+      const width = rect.width || 600;
+      const height = rect.height || 600;
+      clone.setAttribute("width", String(width));
+      clone.setAttribute("height", String(height));
+      return {
+        svgString: new XMLSerializer().serializeToString(clone),
+        width,
+        height
+      };
+    },
+    subscribe: (cb) => {
+      subsRef.current.add(cb);
+      return () => {
+        subsRef.current.delete(cb);
+      };
+    }
+  };
+  useImperativeHandle(ref, () => handleRef.current, []);
+  const p = paletteFor2(isDark);
+  return /* @__PURE__ */ jsx(
+    "div",
+    {
+      ref: containerRef,
+      id: containerId,
+      style: {
+        width: "100%",
+        height: "100%",
+        background: p.view3dBg,
+        position: "relative"
+      }
+    }
+  );
+});
+
+// src/stamps/geometry-3d/editor/tools.ts
+var GROUP_LABELS_3D = {
+  view: "Xem",
+  primitive: "C\u01A1 b\u1EA3n",
+  solid: "Kh\u1ED1i \u0111a di\u1EC7n",
+  curved: "Kh\u1ED1i cong",
+  meta: "Kh\xE1c"
+};
+var TOOLS_3D = [
+  { key: "move", label: "Di chuy\u1EC3n", group: "view", stepsRequired: 0 },
+  { key: "point", label: "\u0110i\u1EC3m", group: "primitive", stepsRequired: 1, hint: "Nh\u1EADp (x, y, z)" },
+  { key: "segment", label: "\u0110o\u1EA1n th\u1EB3ng", group: "primitive", stepsRequired: 2 },
+  { key: "line", label: "\u0110\u01B0\u1EDDng th\u1EB3ng", group: "primitive", stepsRequired: 2 },
+  { key: "plane", label: "M\u1EB7t ph\u1EB3ng", group: "primitive", stepsRequired: 3 },
+  { key: "triangle", label: "Tam gi\xE1c", group: "primitive", stepsRequired: 3 },
+  {
+    key: "polygon",
+    label: "\u0110a gi\xE1c",
+    group: "primitive",
+    stepsRequired: 3,
+    hint: "Click tr\u1EDF l\u1EA1i \u0111i\u1EC3m \u0111\u1EA7u \u0111\u1EC3 \u0111\xF3ng"
+  },
+  { key: "tetrahedron", label: "T\u1EE9 di\u1EC7n", group: "solid", stepsRequired: 4 },
+  {
+    key: "parallelepiped",
+    label: "H\xECnh h\u1ED9p",
+    group: "solid",
+    stepsRequired: 1,
+    hint: "1 \u0111\u1EC9nh + 3 vector"
+  },
+  {
+    key: "prism",
+    label: "L\u0103ng tr\u1EE5",
+    group: "solid",
+    stepsRequired: 3,
+    hint: "\u0110a gi\xE1c \u0111\xE1y + chi\u1EC1u cao"
+  },
+  {
+    key: "pyramid",
+    label: "Ch\xF3p",
+    group: "solid",
+    stepsRequired: 4,
+    hint: "\u0110a gi\xE1c \u0111\xE1y + \u0111\u1EC9nh"
+  },
+  { key: "sphere", label: "M\u1EB7t c\u1EA7u", group: "curved", stepsRequired: 1, hint: "T\xE2m + b\xE1n k\xEDnh" },
+  {
+    key: "cone",
+    label: "H\xECnh n\xF3n",
+    group: "curved",
+    stepsRequired: 2,
+    hint: "T\xE2m \u0111\xE1y + b\xE1n k\xEDnh + \u0111\u1EC9nh"
+  },
+  {
+    key: "cylinder",
+    label: "H\xECnh tr\u1EE5",
+    group: "curved",
+    stepsRequired: 1,
+    hint: "T\xE2m \u0111\xE1y + b\xE1n k\xEDnh + chi\u1EC1u cao"
+  },
+  {
+    key: "solidofrevolution",
+    label: "Kh\u1ED1i tr\xF2n xoay",
+    group: "curved",
+    stepsRequired: 1,
+    hint: "\u0110\u01B0\u1EDDng cong + tr\u1EE5c"
+  },
+  { key: "label", label: "Nh\xE3n", group: "meta", stepsRequired: 1, hint: "G\u1EAFn v\xE0o \u0111i\u1EC3m" }
+];
+function ToolButton({ toolKey, label, hint, active, onClick, icon }) {
+  return /* @__PURE__ */ jsx(
+    "button",
+    {
+      type: "button",
+      title: hint ? `${label} \u2014 ${hint}` : label,
+      "aria-label": label,
+      "aria-pressed": active,
+      onClick,
+      "data-active": active || void 0,
+      "data-tool": toolKey,
+      className: [
+        "flex h-8 items-center justify-center rounded-md transition",
+        active ? "bg-blue-600 text-white shadow-sm" : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+      ].join(" "),
+      children: icon
+    }
+  );
+}
+var stroke = {
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.5,
+  strokeLinecap: "round",
+  strokeLinejoin: "round"
+};
+var ICONS_3D = {
+  move: /* @__PURE__ */ jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsx("path", { d: "M5 9l-3 3 3 3M19 9l3 3-3 3M9 5l3-3 3 3M9 19l3 3 3-3" }) }),
+  point: /* @__PURE__ */ jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx("circle", { cx: "12", cy: "12", r: "3", fill: "currentColor" }) }),
+  segment: /* @__PURE__ */ jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: [
+    /* @__PURE__ */ jsx("line", { x1: "4", y1: "20", x2: "20", y2: "4" }),
+    /* @__PURE__ */ jsx("circle", { cx: "4", cy: "20", r: "1.5", fill: "currentColor", stroke: "none" }),
+    /* @__PURE__ */ jsx("circle", { cx: "20", cy: "4", r: "1.5", fill: "currentColor", stroke: "none" })
+  ] }),
+  line: /* @__PURE__ */ jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsx("line", { x1: "2", y1: "22", x2: "22", y2: "2" }) }),
+  plane: /* @__PURE__ */ jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsx("path", { d: "M3 18 L8 8 L21 6 L16 18 Z" }) }),
+  triangle: /* @__PURE__ */ jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsx("path", { d: "M12 4 L21 20 L3 20 Z" }) }),
+  polygon: /* @__PURE__ */ jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsx("path", { d: "M12 3 L20 9 L17 19 L7 19 L4 9 Z" }) }),
+  tetrahedron: /* @__PURE__ */ jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsx("path", { d: "M12 3 L20 20 L4 20 Z M12 3 L12 20" }) }),
+  parallelepiped: /* @__PURE__ */ jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsx("path", { d: "M4 7 L14 4 L20 7 L14 10 Z M4 7 L4 17 L14 20 L14 10 M14 20 L20 17 L20 7" }) }),
+  prism: /* @__PURE__ */ jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsx("path", { d: "M12 4 L18 8 L18 20 L12 16 Z M12 4 L6 8 L6 20 L12 16 M6 8 L12 12 L18 8 M6 20 L18 20" }) }),
+  pyramid: /* @__PURE__ */ jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsx("path", { d: "M12 3 L4 20 L20 20 Z M12 3 L12 20" }) }),
+  sphere: /* @__PURE__ */ jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: [
+    /* @__PURE__ */ jsx("circle", { cx: "12", cy: "12", r: "8" }),
+    /* @__PURE__ */ jsx("ellipse", { cx: "12", cy: "12", rx: "8", ry: "3" })
+  ] }),
+  cone: /* @__PURE__ */ jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: [
+    /* @__PURE__ */ jsx("path", { d: "M12 3 L4 20 L20 20 Z" }),
+    /* @__PURE__ */ jsx("ellipse", { cx: "12", cy: "20", rx: "8", ry: "2" })
+  ] }),
+  cylinder: /* @__PURE__ */ jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: [
+    /* @__PURE__ */ jsx("ellipse", { cx: "12", cy: "5", rx: "6", ry: "2" }),
+    /* @__PURE__ */ jsx("ellipse", { cx: "12", cy: "19", rx: "6", ry: "2" }),
+    /* @__PURE__ */ jsx("line", { x1: "6", y1: "5", x2: "6", y2: "19" }),
+    /* @__PURE__ */ jsx("line", { x1: "18", y1: "5", x2: "18", y2: "19" })
+  ] }),
+  solidofrevolution: /* @__PURE__ */ jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsx("path", { d: "M12 3 C 8 8 8 16 12 21 M12 3 C 16 8 16 16 12 21 M12 3 L12 21" }) }),
+  label: /* @__PURE__ */ jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsx("path", { d: "M4 4 H 16 L 20 8 L 16 12 H 4 Z" }) })
+};
+var TOOLTIP_DELAY_MS2 = 400;
+function Shell3({ title, icon, onClose, children, isDark }) {
+  return /* @__PURE__ */ jsxs(
+    "aside",
+    {
+      role: "complementary",
+      "aria-label": title,
+      "data-testid": "geom3d-left-panel",
+      "data-stamp-area": "true",
+      className: `${isDark ? "theme--dark " : ""}absolute left-0 top-0 z-30 flex h-full w-60 flex-col border-r border-slate-200 bg-white shadow-md animate-in slide-in-from-left duration-200`,
+      children: [
+        /* @__PURE__ */ jsxs("header", { className: "flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-3 py-2", children: [
+          /* @__PURE__ */ jsxs("h3", { className: "flex items-center gap-2 text-sm font-semibold text-slate-800", children: [
+            /* @__PURE__ */ jsx("span", { className: "text-base leading-none", children: icon }),
+            title
+          ] }),
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              onClick: onClose,
+              "aria-label": "\u0110\xF3ng",
+              className: "rounded p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800",
+              children: /* @__PURE__ */ jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+                /* @__PURE__ */ jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
+                /* @__PURE__ */ jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
+              ] })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "min-h-0 flex-1 overflow-y-auto p-3 space-y-4", children })
+      ]
+    }
+  );
+}
+function Section3({ label, children }) {
+  return /* @__PURE__ */ jsxs("section", { children: [
+    /* @__PURE__ */ jsx("h4", { className: "mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500", children: label }),
+    children
+  ] });
+}
+var Geom3DIconHeader = /* @__PURE__ */ jsx("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round", children: /* @__PURE__ */ jsx("path", { d: "M4 7 L14 4 L20 7 L14 10 Z M4 7 L4 17 L14 20 L14 10 M14 20 L20 17 L20 7" }) });
+function LeftPanel3({ handle, onResetView, onClose, isDark }) {
+  const [tool, setTool] = useState("move");
+  const [showAxes, setShowAxes] = useState(true);
+  const [showMesh, setShowMesh] = useState(false);
+  const [canUndo, setCanUndo] = useState(false);
+  const [hover, setHover] = useState(null);
+  const [portalReady, setPortalReady] = useState(false);
+  const hoverTimerRef = useRef(null);
+  useEffect(() => {
+    setPortalReady(true);
+    return () => {
+      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    };
+  }, []);
+  useEffect(() => {
+    if (!handle) return;
+    const sync = () => {
+      setTool(handle.getTool());
+      setShowAxes(handle.getShowAxes());
+      setShowMesh(handle.getShowMesh());
+      setCanUndo(handle.canUndo());
+    };
+    sync();
+    return handle.subscribe(sync);
+  }, [handle]);
+  const showHover = useCallback((el, t) => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    hoverTimerRef.current = setTimeout(() => {
+      const r = el.getBoundingClientRect();
+      setHover({ label: t.label, hint: t.hint, x: r.right, y: r.top + r.height / 2 });
+    }, TOOLTIP_DELAY_MS2);
+  }, []);
+  const hideHover = useCallback(() => {
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+    setHover(null);
+  }, []);
+  const grouped = TOOLS_3D.reduce(
+    (acc, t) => {
+      var _a;
+      (acc[_a = t.group] ?? (acc[_a] = [])).push(t);
+      return acc;
+    },
+    {}
+  );
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsxs(Shell3, { title: "H\xECnh h\u1ECDc 3D", icon: Geom3DIconHeader, onClose, isDark, children: [
+      /* @__PURE__ */ jsx(Section3, { label: "B\u1ED1 c\u1EE5c", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 flex-wrap text-[11px] text-slate-700", children: [
+        /* @__PURE__ */ jsxs("label", { className: "inline-flex select-none items-center gap-1.5", children: [
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              type: "checkbox",
+              checked: showAxes,
+              onChange: (e) => handle?.setShowAxes(e.target.checked),
+              "data-testid": "toggle-axes"
+            }
+          ),
+          "Tr\u1EE5c"
+        ] }),
+        /* @__PURE__ */ jsxs("label", { className: "inline-flex select-none items-center gap-1.5", children: [
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              type: "checkbox",
+              checked: showMesh,
+              onChange: (e) => handle?.setShowMesh(e.target.checked),
+              "data-testid": "toggle-mesh"
+            }
+          ),
+          "L\u01B0\u1EDBi"
+        ] }),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            onClick: onResetView,
+            title: "Reset g\xF3c nh\xECn",
+            "aria-label": "Reset view",
+            className: "ml-auto inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900",
+            children: /* @__PURE__ */ jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+              /* @__PURE__ */ jsx("path", { d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" }),
+              /* @__PURE__ */ jsx("path", { d: "M3 3v5h5" })
+            ] })
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            onClick: () => handle?.undo(),
+            disabled: !canUndo,
+            title: "Ho\xE0n t\xE1c (Ctrl/Cmd+Z)",
+            "aria-label": "Ho\xE0n t\xE1c",
+            className: "inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
+            children: /* @__PURE__ */ jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+              /* @__PURE__ */ jsx("polyline", { points: "3 7 3 13 9 13" }),
+              /* @__PURE__ */ jsx("path", { d: "M3.51 13a9 9 0 1 0 2.13-9.36L3 7" })
+            ] })
+          }
+        )
+      ] }) }),
+      Object.entries(grouped).map(([group, tools]) => /* @__PURE__ */ jsx(Section3, { label: GROUP_LABELS_3D[group], children: /* @__PURE__ */ jsx("div", { className: "grid grid-cols-4 gap-1", children: tools.map((t) => /* @__PURE__ */ jsx(
+        ToolButton,
+        {
+          toolKey: t.key,
+          label: t.label,
+          hint: t.hint,
+          active: tool === t.key,
+          onClick: () => handle?.setTool(t.key),
+          icon: /* @__PURE__ */ jsx(
+            "span",
+            {
+              onMouseEnter: (e) => showHover(e.currentTarget.closest("button"), t),
+              onMouseLeave: hideHover,
+              onFocus: (e) => showHover(e.currentTarget.closest("button"), t),
+              onBlur: hideHover,
+              children: ICONS_3D[t.key]
+            }
+          )
+        },
+        t.key
+      )) }) }, group))
+    ] }),
+    portalReady && hover && typeof document !== "undefined" ? createPortal(
+      /* @__PURE__ */ jsxs(
+        "div",
+        {
+          role: "tooltip",
+          className: "pointer-events-none fixed w-max max-w-[220px] rounded-md bg-slate-900 px-2 py-1 text-left text-[11px] leading-tight text-white shadow-lg",
+          style: {
+            left: hover.x + 8,
+            top: hover.y,
+            transform: "translate(0, -50%)",
+            zIndex: 2147483600
+          },
+          children: [
+            /* @__PURE__ */ jsx("span", { className: "block font-medium", children: hover.label }),
+            hover.hint && /* @__PURE__ */ jsx("span", { className: "mt-0.5 block text-slate-300", children: hover.hint })
+          ]
+        }
+      ),
+      document.body
+    ) : null
+  ] });
+}
+var EditorPanel = forwardRef(function EditorPanel2({ isDark, initial, onInsert, onClose }, ref) {
+  const boardRef = useRef(null);
+  const [, setBoardKey] = useState(0);
+  useImperativeHandle(
+    ref,
+    () => ({
+      tryInsert: () => {
+        const board = boardRef.current;
+        if (!board) return false;
+        const log = board.getCreationLog();
+        if (log.length === 0) return false;
+        const view = board.getViewState();
+        const state = {
+          version: 1,
+          bbox: board.getBbox(),
+          view,
+          showAxes: board.getShowAxes(),
+          showMesh: board.getShowMesh(),
+          elements: log
+        };
+        const snap = board.snapshotSVG();
+        onInsert(JSON.stringify(state), snap.svgString, snap.width, snap.height);
+        return true;
+      },
+      hasContent: () => (boardRef.current?.getCreationLog().length ?? 0) > 0
+    }),
+    [onInsert]
+  );
+  const handleBoardReady = (h) => {
+    boardRef.current = h;
+    setBoardKey((k) => k + 1);
+  };
+  const handleResetView = () => {
+    boardRef.current?.resetView();
+  };
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      "data-testid": "geom3d-editor-panel",
+      style: {
+        position: "absolute",
+        left: "50%",
+        top: "50%",
+        transform: "translate(-50%, -50%)",
+        width: 900,
+        height: 700,
+        background: "#fff",
+        boxShadow: "0 6px 32px rgba(0,0,0,0.2)",
+        borderRadius: 8,
+        zIndex: 10,
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden"
+      },
+      children: [
+        /* @__PURE__ */ jsxs(
+          "div",
+          {
+            style: {
+              display: "flex",
+              padding: "8px 12px",
+              borderBottom: "1px solid #eee",
+              alignItems: "center"
+            },
+            children: [
+              /* @__PURE__ */ jsx("span", { style: { fontWeight: 600 }, children: "H\xECnh h\u1ECDc kh\xF4ng gian (3D)" }),
+              /* @__PURE__ */ jsx("span", { style: { flex: 1 } }),
+              /* @__PURE__ */ jsx("button", { type: "button", onClick: onClose, children: "\u0110\xF3ng" })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxs("div", { style: { position: "relative", flex: 1, minHeight: 0 }, children: [
+          /* @__PURE__ */ jsx(
+            LeftPanel3,
+            {
+              handle: boardRef.current,
+              onResetView: handleResetView,
+              onClose,
+              isDark
+            }
+          ),
+          /* @__PURE__ */ jsx("div", { style: { position: "absolute", left: 120, top: 0, right: 0, bottom: 0 }, children: /* @__PURE__ */ jsx(BoardMount, { onMount: handleBoardReady, isDark, initialState: initial }) })
+        ] })
+      ]
+    }
+  );
+});
+function BoardMount({ onMount, isDark, initialState }) {
+  const mountedRef = useRef(false);
+  return /* @__PURE__ */ jsx(
+    MiniBoard3D,
+    {
+      ref: (h) => {
+        if (h && !mountedRef.current) {
+          mountedRef.current = true;
+          onMount(h);
+        } else if (!h && mountedRef.current) {
+          mountedRef.current = false;
+          onMount(null);
+        }
+      },
+      isDark,
+      initialState
+    }
+  );
+}
+
+// src/stamps/geometry-3d/serialize.ts
+function isGeometry3DCustomData(data) {
+  if (!data || typeof data !== "object") return false;
+  const d = data;
+  return d.kind === "geometry3d" && d.version === 1 && typeof d.jsonState === "string";
+}
+function parseSerializedBoard3D(json) {
+  const parsed = JSON.parse(json);
+  if (!parsed || typeof parsed !== "object") {
+    throw new Error("parseSerializedBoard3D: not an object");
+  }
+  const p = parsed;
+  if (p.version !== 1) {
+    throw new Error(`parseSerializedBoard3D: unsupported version ${String(p.version)}`);
+  }
+  if (!Array.isArray(p.elements)) {
+    throw new Error("parseSerializedBoard3D: elements missing");
+  }
+  return parsed;
+}
+var OUTPUT_WIDTH = 1024;
+var OUTPUT_HEIGHT = 768;
+async function renderGeometry3DSvgFromState(jsonState) {
+  const state = parseSerializedBoard3D(jsonState);
+  const div = document.createElement("div");
+  div.style.cssText = `position:absolute;left:-9999px;top:-9999px;width:${OUTPUT_WIDTH}px;height:${OUTPUT_HEIGHT}px;`;
+  document.body.appendChild(div);
+  try {
+    JXG.Options.text.display = "internal";
+    const board = JXG.JSXGraph.initBoard(div, {
+      boundingbox: state.bbox,
+      axis: false,
+      showCopyright: false,
+      showNavigation: false,
+      renderer: "svg"
+    });
+    const view = board.create(
+      "view3d",
+      [
+        [-5, -5],
+        [10, 10],
+        [
+          [state.view.bbox3D[0], state.view.bbox3D[3]],
+          [state.view.bbox3D[1], state.view.bbox3D[4]],
+          [state.view.bbox3D[2], state.view.bbox3D[5]]
+        ]
+      ],
+      {
+        az: { slider: { visible: false }, value: state.view.azimuth },
+        el: { slider: { visible: false }, value: state.view.elevation },
+        projection: "central"
+      }
+    );
+    if (!state.showAxes) {
+      view.defaultAxes = [];
+    }
+    const idMap = /* @__PURE__ */ new Map();
+    for (const el of state.elements) {
+      const parents = el.parents.map(
+        (p) => typeof p === "string" && p.startsWith("@id:") ? idMap.get(p.slice(4)) : p
+      );
+      const obj = view.create(el.type, parents, {
+        ...el.attributes,
+        id: el.id,
+        name: el.label
+      });
+      idMap.set(el.id, obj);
+    }
+    const svg = div.querySelector("svg");
+    if (!svg) {
+      throw new Error("renderGeometry3DSvgFromState: SVG not produced");
+    }
+    const clone = svg.cloneNode(true);
+    clone.setAttribute("width", String(OUTPUT_WIDTH));
+    clone.setAttribute("height", String(OUTPUT_HEIGHT));
+    const svgString = new XMLSerializer().serializeToString(clone);
+    try {
+      JXG.JSXGraph.freeBoard(board);
+    } catch {
+    }
+    return { svgString, width: OUTPUT_WIDTH, height: OUTPUT_HEIGHT };
+  } finally {
+    document.body.removeChild(div);
+  }
+}
+function parseInitial(editingElement) {
+  if (!editingElement) return null;
+  if (!isGeometry3DCustomData(editingElement.customData)) return null;
+  try {
+    return parseSerializedBoard3D(editingElement.customData.jsonState);
+  } catch {
+    return null;
+  }
+}
+var Geometry3DStampHost = forwardRef(
+  function Geometry3DStampHost2({ api, editingElement, onClose, isDark }, ref) {
+    const editorRef = useRef(null);
+    const initial = useMemo(
+      () => parseInitial(editingElement),
+      [editingElement]
+    );
+    const handleInsert = useCallback(
+      async (jsonState, svgString, width, height) => {
+        if (!api) return;
+        await insertStampImage(api, {
+          svgString,
+          makeCustomData: () => ({
+            kind: "geometry3d",
+            version: 1,
+            jsonState,
+            svgWidth: width,
+            svgHeight: height
+          }),
+          editingElementId: editingElement?.id ?? null
+        });
+        onClose();
+      },
+      [api, editingElement, onClose]
+    );
+    useImperativeHandle(
+      ref,
+      () => ({
+        tryInsert: () => editorRef.current?.tryInsert() ?? false,
+        hasContent: () => editorRef.current?.hasContent() ?? false
+      }),
+      []
+    );
+    return /* @__PURE__ */ jsx(
+      EditorPanel,
+      {
+        ref: editorRef,
+        isDark,
+        initial,
+        onInsert: handleInsert,
+        onClose
+      }
+    );
+  }
+);
+var Geometry3DIcon = /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    width: "20",
+    height: "20",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "1.6",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    "aria-hidden": "true",
+    children: [
+      /* @__PURE__ */ jsx("path", { d: "M12 3 L20 8 L20 16 L12 21 L4 16 L4 8 Z" }),
+      /* @__PURE__ */ jsx("path", { d: "M12 3 L12 21 M4 8 L12 12 L20 8 M4 16 L12 12 L20 16" })
+    ]
+  }
+);
+var geometry3dStamp = {
+  kind: "geometry3d",
+  shortcutKey: "d",
+  toolbarLabel: "D",
+  toolbarTitle: "H\xECnh 3D (D)",
+  toolbarIcon: Geometry3DIcon,
+  toolbarTestId: "stamp-toolbar-geometry3d",
+  matchesCustomData: isGeometry3DCustomData,
+  async renderSvgFromCustomData(data) {
+    if (!isGeometry3DCustomData(data)) {
+      throw new Error("geometry3dStamp.renderSvgFromCustomData: customData kh\xF4ng ph\u1EA3i geometry3d");
+    }
+    const { svgString } = await renderGeometry3DSvgFromState(data.jsonState);
+    return svgString;
+  },
+  restoreFileFromCustomData: async (element) => {
+    const data = element.customData;
+    const fileId = element.fileId;
+    if (!data || !fileId) return null;
+    if (!isGeometry3DCustomData(data)) return null;
+    try {
+      const { svgString } = await renderGeometry3DSvgFromState(data.jsonState);
+      const dataURL = `data:image/svg+xml;base64,${typeof btoa !== "undefined" ? btoa(unescape(encodeURIComponent(svgString))) : Buffer.from(svgString).toString("base64")}`;
+      return { fileId, dataURL, mimeType: "image/svg+xml" };
+    } catch {
+      return null;
+    }
+  },
+  Host: Geometry3DStampHost
+};
+
 // src/stamps/shared/registry.ts
-var DEFAULT_STAMPS = Object.freeze([geometryStamp, latexStamp]);
+var DEFAULT_STAMPS = Object.freeze([
+  geometryStamp,
+  latexStamp,
+  geometry3dStamp
+]);
 function findStampForCustomData(data, stamps = DEFAULT_STAMPS) {
   for (const s of stamps) {
     if (s.matchesCustomData(data)) return s;
@@ -4200,10 +5000,6 @@ function Whiteboard({
   ] });
 }
 
-// src/index.ts
-var isMathStamp = isStampElement;
-var restoreMissingMathStampFiles = restoreMissingStampFiles;
-
-export { DEFAULT_STAMPS, Whiteboard, findStampForCustomData, geometryStamp, isGeometryCustomData, isLatexCustomData, isMathStamp, isStampElement, latexStamp, pickSyncableAppState, restoreMissingMathStampFiles, restoreMissingStampFiles };
+export { DEFAULT_STAMPS, Whiteboard, findStampForCustomData, geometry3dStamp, geometryStamp, isGeometry3DCustomData, isGeometryCustomData, isLatexCustomData, isStampElement, latexStamp, pickSyncableAppState, restoreMissingStampFiles };
 //# sourceMappingURL=index.mjs.map
 //# sourceMappingURL=index.mjs.map

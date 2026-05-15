@@ -134,6 +134,17 @@ interface LatexCustomData extends BaseStampCustomData {
 declare function isLatexCustomData(data: unknown): data is LatexCustomData;
 declare const latexStamp: StampType;
 
+interface Geometry3DCustomData extends BaseStampCustomData {
+    kind: 'geometry3d';
+    version: 1;
+    jsonState: string;
+    svgWidth: number;
+    svgHeight: number;
+}
+declare function isGeometry3DCustomData(data: unknown): data is Geometry3DCustomData;
+
+declare const geometry3dStamp: StampType;
+
 /**
  * Set stamp mặc định dùng trong Whiteboard. Consumer có thể
  * truyền custom array để bật/tắt từng stamp hoặc đăng ký stamp mới.
@@ -202,13 +213,6 @@ interface ElementLike {
  */
 declare function restoreMissingStampFiles(api: any, elements: readonly ElementLike[], stamps?: ReadonlyArray<StampType>): Promise<void>;
 
-type StampCustomData = GeometryCustomData | LatexCustomData;
+type StampCustomData = GeometryCustomData | LatexCustomData | Geometry3DCustomData;
 
-/** @deprecated Dùng `isStampElement` thay vì `isMathStamp`. Sẽ xoá ở 0.6.0. */
-declare const isMathStamp: typeof isStampElement;
-/** @deprecated Dùng `StampCustomData` thay vì `MathStampCustomData`. Sẽ xoá ở 0.6.0. */
-type MathStampCustomData = StampCustomData;
-/** @deprecated Dùng `restoreMissingStampFiles` thay vì `restoreMissingMathStampFiles`. Sẽ xoá ở 0.6.0. */
-declare const restoreMissingMathStampFiles: typeof restoreMissingStampFiles;
-
-export { type BaseStampCustomData, DEFAULT_STAMPS, type ExcalidrawSceneSnapshot, type GeometryCustomData, type LatexCustomData, type MathStampCustomData, type StampCustomData, type StampType, type SyncableAppState, Whiteboard, type WhiteboardProps, findStampForCustomData, geometryStamp, isGeometryCustomData, isLatexCustomData, isMathStamp, isStampElement, latexStamp, pickSyncableAppState, restoreMissingMathStampFiles, restoreMissingStampFiles };
+export { type BaseStampCustomData, DEFAULT_STAMPS, type ExcalidrawSceneSnapshot, type Geometry3DCustomData, type GeometryCustomData, type LatexCustomData, type StampCustomData, type StampType, type SyncableAppState, Whiteboard, type WhiteboardProps, findStampForCustomData, geometry3dStamp, geometryStamp, isGeometry3DCustomData, isGeometryCustomData, isLatexCustomData, isStampElement, latexStamp, pickSyncableAppState, restoreMissingStampFiles };
