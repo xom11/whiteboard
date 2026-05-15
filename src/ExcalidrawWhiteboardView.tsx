@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type {
   ExcalidrawElement,
   BinaryFiles,
@@ -17,7 +17,6 @@ import {
   GeometryEditorPanel,
   useStampShortcuts,
   isMathStamp,
-  svgToImageElement,
   restoreMissingMathStampFiles,
   type SerializedBoard,
   type LatexEditorHandle,
@@ -25,6 +24,8 @@ import {
   type GeomBoardState,
 } from './stamp';
 import type { GeomTool } from './stamp/JSXGraphMiniBoard';
+import { insertStampImage } from './core/insertStampImage';
+import { usePersist, writePersisted } from './core/usePersist';
 import '@excalidraw/excalidraw/index.css';
 import './stamp/stamp.css';
 
@@ -66,38 +67,6 @@ export interface ExcalidrawWhiteboardViewProps {
   persistKey?: string;
 }
 
-interface PersistedSnapshot {
-  elements: readonly ExcalidrawElement[];
-  appState: Partial<SyncableAppState>;
-  files?: BinaryFiles;
-}
-
-function readPersisted(key: string | undefined): PersistedSnapshot | null {
-  if (!key || typeof window === 'undefined') return null;
-  try {
-    const raw = window.sessionStorage.getItem(key);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<PersistedSnapshot>;
-    if (!Array.isArray(parsed.elements)) return null;
-    return {
-      elements: parsed.elements,
-      appState: (parsed.appState ?? {}) as Partial<SyncableAppState>,
-      files: parsed.files,
-    };
-  } catch {
-    return null;
-  }
-}
-
-function writePersisted(key: string, snap: PersistedSnapshot): void {
-  if (typeof window === 'undefined') return;
-  try {
-    window.sessionStorage.setItem(key, JSON.stringify(snap));
-  } catch {
-    /* quota or serialize error — ignore */
-  }
-}
-
 const INITIAL_GEOM_STATE: GeomBoardState = {
   tool: 'move',
   showAxis: false,
@@ -115,20 +84,19 @@ export function ExcalidrawWhiteboardView({
   langCode = 'vi-VN',
   persistKey,
 }: ExcalidrawWhiteboardViewProps) {
-  // Đọc 1 lần duy nhất ở render đầu (lazy memo) — Excalidraw's `initialData` chỉ
-  // được tiêu thụ ở mount đầu tiên, đọc trong useEffect sẽ trễ hơn 1 frame và
-  // không có hiệu lực. persistKey đổi giữa runtime sẽ KHÔNG re-mount Excalidraw
-  // (chấp nhận trade-off; consumer không nên đổi key động).
-  const persistedInitial = useMemo(() => readPersisted(persistKey), [persistKey]);
-  const effectiveInitialScene: ExcalidrawSceneSnapshot | null =
-    persistedInitial
-      ? { elements: persistedInitial.elements, appState: persistedInitial.appState as SyncableAppState }
-      : initialScene;
   const [api, setApi] = useState<ExApi | null>(null);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const knownFileIdsRef = useRef<Set<string>>(new Set());
   const lastElementsHashRef = useRef<string>('');
   const throttleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const { persistedInitial } = usePersist(persistKey, api, (id) =>
+    knownFileIdsRef.current.add(id),
+  );
+  const effectiveInitialScene: ExcalidrawSceneSnapshot | null =
+    persistedInitial
+      ? { elements: persistedInitial.elements, appState: persistedInitial.appState as SyncableAppState }
+      : initialScene;
 
   const [activeStamp, setActiveStamp] = useState<'geometry' | 'latex' | null>(null);
   const activeStampRef = useRef(activeStamp);
@@ -318,32 +286,6 @@ export function ExcalidrawWhiteboardView({
     );
   }, [isTeacher, api, remoteFiles]);
 
-  // Restore raster files (paste-image) đã lưu trong sessionStorage. Math-stamp
-  // files được regenerate từ customData ở effect bên dưới — đoạn này chỉ phục
-  // vụ user-pasted raster.
-  useEffect(() => {
-    if (!api) return;
-    if (!persistedInitial?.files) return;
-    const entries = Object.entries(persistedInitial.files);
-    if (entries.length === 0) return;
-    try {
-      api.addFiles(
-        entries.map(([id, f]) => ({
-          id,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          dataURL: (f as any).dataURL,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          mimeType: (f as any).mimeType,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          created: (f as any).created ?? Date.now(),
-        })),
-      );
-      entries.forEach(([id]) => knownFileIdsRef.current.add(id));
-    } catch (err) {
-      console.warn('Restore persisted files failed:', err);
-    }
-  }, [api, persistedInitial]);
-
   useEffect(() => {
     if (!api) return;
     let cancelled = false;
@@ -372,137 +314,51 @@ export function ExcalidrawWhiteboardView({
     [],
   );
 
-  // ---- Helpers ----
-  const buildStampImageElement = useCallback(
-    (fileId: string, width: number, height: number, customData: unknown, x?: number, y?: number) => {
-      const appState =
-        api?.getAppState() ?? { scrollX: 0, scrollY: 0, width: 800, height: 600, zoom: { value: 1 } };
-      const cx =
-        x ?? appState.scrollX + (appState.width ?? 800) / 2 / (appState.zoom?.value ?? 1) - width / 2;
-      const cy =
-        y ?? appState.scrollY + (appState.height ?? 600) / 2 / (appState.zoom?.value ?? 1) - height / 2;
-      return {
-        type: 'image' as const,
-        id: 'stamp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
-        x: cx,
-        y: cy,
-        width,
-        height,
-        fileId,
-        customData,
-        angle: 0,
-        strokeColor: 'transparent',
-        backgroundColor: 'transparent',
-        fillStyle: 'solid',
-        strokeWidth: 1,
-        strokeStyle: 'solid',
-        roughness: 0,
-        opacity: 100,
-        groupIds: [],
-        roundness: null,
-        seed: Math.floor(Math.random() * 1e9),
-        versionNonce: 0,
-        version: 1,
-        isDeleted: false,
-        boundElements: null,
-        updated: Date.now(),
-        link: null,
-        locked: false,
-        status: 'saved',
-        scale: [1, 1],
-      };
-    },
-    [api],
-  );
-
-  // Bỏ qua appState (selectedElementIds + croppingElementId) sau khi insert để
-  // Excalidraw không tự động bật crop mode cho element vừa thêm → tránh trigger
-  // crop intercept handler vô tận.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const clearAppStateAfterInsert = (): any => ({
-    selectedElementIds: {},
-    croppingElementId: null,
-  });
-
   // ---- Stamp insert handlers ----
   const handleGeometryInsert = useCallback(
     async (jsonState: string, svgString: string) => {
       if (!api) return;
       try {
-        const { dataURL, fileId, width, height, mimeType } = await svgToImageElement(svgString);
-        api.addFiles([{ id: fileId, dataURL, mimeType, created: Date.now() }]);
-
-        const customData = {
-          kind: 'geometry' as const,
-          version: 1 as const,
-          jsonState,
-          svgWidth: width,
-          svgHeight: height,
-        };
-
-        const elements = api.getSceneElements();
-        const editingId = geometryEditing.editingElementId;
-        if (editingId) {
-          const updated = elements.map((e: ExcalidrawElement) =>
-            e.id === editingId ? { ...e, fileId, customData, width, height } : e,
-          );
-          api.updateScene({ elements: updated, appState: clearAppStateAfterInsert() });
-        } else {
-          const newElement = buildStampImageElement(fileId, width, height, customData);
-          api.updateScene({
-            elements: [...elements, newElement],
-            appState: clearAppStateAfterInsert(),
-          });
-        }
+        await insertStampImage(api, {
+          svgString,
+          makeCustomData: (width, height) => ({
+            kind: 'geometry' as const,
+            version: 1 as const,
+            jsonState,
+            svgWidth: width,
+            svgHeight: height,
+          }),
+          editingElementId: geometryEditing.editingElementId,
+        });
       } catch (err) {
         console.error('Geometry stamp insert failed:', err);
       }
       closeStamp();
     },
-    [api, geometryEditing.editingElementId, buildStampImageElement, closeStamp],
+    [api, geometryEditing.editingElementId, closeStamp],
   );
 
   const handleLatexInsert = useCallback(
     async (svgString: string, src: string, displayMode: boolean) => {
       if (!api) return;
       try {
-        const { dataURL, fileId, width, height, mimeType } = await svgToImageElement(svgString);
-        api.addFiles([{ id: fileId, dataURL, mimeType, created: Date.now() }]);
-
-        const customData = {
-          kind: 'latex' as const,
-          version: 1 as const,
-          src,
-          displayMode,
-        };
-
-        const elements = api.getSceneElements();
-        const editingId = latexEditing.editingElementId;
-        if (editingId) {
-          const updated = elements.map((e: ExcalidrawElement) =>
-            e.id === editingId ? { ...e, fileId, customData, width, height } : e,
-          );
-          api.updateScene({ elements: updated, appState: clearAppStateAfterInsert() });
-        } else {
-          const newElement = buildStampImageElement(
-            fileId,
-            width,
-            height,
-            customData,
-            latexEditing.x || undefined,
-            latexEditing.y || undefined,
-          );
-          api.updateScene({
-            elements: [...elements, newElement],
-            appState: clearAppStateAfterInsert(),
-          });
-        }
+        await insertStampImage(api, {
+          svgString,
+          makeCustomData: () => ({
+            kind: 'latex' as const,
+            version: 1 as const,
+            src,
+            displayMode,
+          }),
+          editingElementId: latexEditing.editingElementId,
+          position: { x: latexEditing.x || undefined, y: latexEditing.y || undefined },
+        });
       } catch (err) {
         console.error('LaTeX stamp insert failed:', err);
       }
       closeStamp();
     },
-    [api, latexEditing.editingElementId, latexEditing.x, latexEditing.y, buildStampImageElement, closeStamp],
+    [api, latexEditing.editingElementId, latexEditing.x, latexEditing.y, closeStamp],
   );
 
   // ---- Double-click detection for re-edit ----
