@@ -1100,7 +1100,26 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
 
       onReady({
         getContainer: () => containerRef.current,
-        getCreationLog: () => [...creationLogRef.current],
+        // Sync toạ độ live của free point về log trước khi trả ra. JSXGraph
+        // cho phép drag free point (args=[x,y] không có ref), việc drag chỉ
+        // cập nhật obj.X()/Y() trên board chứ không đụng log → re-edit + Chèn
+        // sẽ serialize toạ độ cũ → SVG không đổi → fileId trùng → user thấy
+        // "k thay đổi". Line/segment/circle/polygon tham chiếu point qua id
+        // nên auto-update theo.
+        getCreationLog: () => creationLogRef.current.map((e) => {
+          if (e.type !== 'point') return { ...e };
+          const args = e.args;
+          if (!Array.isArray(args) || args.length !== 2) return { ...e };
+          if (typeof args[0] !== 'number' || typeof args[1] !== 'number') return { ...e };
+          const obj = objMapRef.current.get(e.id) as
+            | { X?: () => number; Y?: () => number }
+            | undefined;
+          if (!obj || typeof obj.X !== 'function' || typeof obj.Y !== 'function') return { ...e };
+          const x = obj.X();
+          const y = obj.Y();
+          if (!Number.isFinite(x) || !Number.isFinite(y)) return { ...e };
+          return { ...e, args: [x, y] };
+        }),
         getBbox: () => boardRef.current ? boardRef.current.getBoundingBox() : [-10, 10, 10, -10],
         getShowAxis: () => showAxisRef.current,
         getShowGrid: () => showGridRef.current,
