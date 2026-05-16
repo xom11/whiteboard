@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { DEFAULT_STAMPS } from './registry';
 import type { StampType } from './types';
@@ -16,16 +16,20 @@ interface Props {
   stamps?: ReadonlyArray<StampType>;
 }
 
-const WRAPPER_ID = 'stamp-toolbar-portal-wrapper';
+const TOOLBAR_WRAPPER_ID = 'stamp-toolbar-portal-wrapper';
+const MENU_WRAPPER_ID = 'stamp-menu-portal-wrapper';
 
 /**
- * Inject N nút stamp vào thanh tool chính của Excalidraw
- * (`.App-toolbar .Stack_horizontal`) — số nút = registry.length. Mỗi nút kế
- * thừa CSS native (cùng kích thước, hover, selected state, keybinding label).
+ * Inject stamp buttons vào Excalidraw.
  *
- * Pattern: ReactDOM portal vào 1 DOM node được append vào toolbar. Dùng
- * `MutationObserver` để re-mount nếu Excalidraw xoá wrapper hoặc re-render
- * toolbar (đổi orientation, mobile/desktop switch...).
+ * - **Desktop** (`.excalidraw` không có class `--mobile`): chèn nút vào thanh
+ *   tool chính (`.App-toolbar .Stack_horizontal`), trước nút "More tools".
+ * - **Mobile** (`.excalidraw.excalidraw--mobile`): main toolbar chật, không
+ *   cuộn được → bỏ inject vào toolbar. Thay vào đó, khi user mở popover "More
+ *   tools", chèn các stamp dưới dạng `.dropdown-menu-item` ở đầu menu.
+ *
+ * Phát hiện mobile bằng `MutationObserver` theo class của `.excalidraw` root —
+ * Excalidraw tự switch class khi đổi orientation hoặc resize.
  */
 export function ToolbarInjector({
   enabled,
@@ -33,11 +37,69 @@ export function ToolbarInjector({
   onToggle,
   stamps = DEFAULT_STAMPS,
 }: Props) {
-  const [mountNode, setMountNode] = useState<HTMLElement | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [toolbarMount, setToolbarMount] = useState<HTMLElement | null>(null);
+  const [menuMount, setMenuMount] = useState<HTMLElement | null>(null);
 
+  // Refs giữ giá trị mới nhất → so sánh trong observer để bail-out no-op
+  // setState. Tránh trigger setState liên tục trong khi Excalidraw đang commit
+  // (React 19 sẽ warn "scheduled from inside an update function").
+  const isMobileRef = useRef(false);
+  const toolbarMountRef = useRef<HTMLElement | null>(null);
+  const menuMountRef = useRef<HTMLElement | null>(null);
+
+  // --- Detect mobile via .excalidraw--mobile class on root ---
   useEffect(() => {
     if (!enabled) {
-      setMountNode(null);
+      if (isMobileRef.current !== false) {
+        isMobileRef.current = false;
+        setIsMobile(false);
+      }
+      return;
+    }
+    let cancelled = false;
+    let observer: MutationObserver | null = null;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let attempts = 0;
+
+    const apply = (next: boolean) => {
+      if (cancelled || isMobileRef.current === next) return;
+      isMobileRef.current = next;
+      queueMicrotask(() => {
+        if (!cancelled) setIsMobile(next);
+      });
+    };
+
+    const attach = () => {
+      if (cancelled) return;
+      const root = document.querySelector<HTMLElement>('.excalidraw');
+      if (!root) {
+        if (attempts++ < 20) timer = setTimeout(attach, 100);
+        return;
+      }
+      apply(root.classList.contains('excalidraw--mobile'));
+      observer = new MutationObserver(() => {
+        apply(root.classList.contains('excalidraw--mobile'));
+      });
+      observer.observe(root, { attributes: true, attributeFilter: ['class'] });
+    };
+    attach();
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+      observer?.disconnect();
+    };
+  }, [enabled]);
+
+  // --- Desktop: inject into main toolbar (.App-toolbar .Stack_horizontal) ---
+  useEffect(() => {
+    if (!enabled || isMobile) {
+      if (toolbarMountRef.current !== null) {
+        toolbarMountRef.current = null;
+        setToolbarMount(null);
+      }
+      document.getElementById(TOOLBAR_WRAPPER_ID)?.remove();
       return;
     }
 
@@ -46,25 +108,27 @@ export function ToolbarInjector({
     let observer: MutationObserver | null = null;
     let timer: ReturnType<typeof setTimeout> | null = null;
 
+    const apply = (next: HTMLElement | null) => {
+      if (cancelled || toolbarMountRef.current === next) return;
+      toolbarMountRef.current = next;
+      queueMicrotask(() => {
+        if (!cancelled) setToolbarMount(next);
+      });
+    };
+
     const tryMount = () => {
       if (cancelled) return;
-      // Container thật chứa tất cả tool icons trong Excalidraw 0.18+ là
-      // `.App-toolbar .Stack.Stack_horizontal`. Class `.Shape` là class trên
-      // <label> của mỗi tool radio, không phải parent.
       const container =
         document.querySelector('.excalidraw .App-toolbar .Stack_horizontal') ??
         document.querySelector('.App-toolbar .Stack_horizontal');
       if (!container) {
-        if (attempts++ < 20) {
-          timer = setTimeout(tryMount, 100);
-        }
+        if (attempts++ < 20) timer = setTimeout(tryMount, 100);
         return;
       }
-      // Nếu wrapper cũ tồn tại (HMR / re-mount) thì tái sử dụng
-      let wrapper = container.querySelector<HTMLDivElement>('#' + WRAPPER_ID);
+      let wrapper = container.querySelector<HTMLDivElement>('#' + TOOLBAR_WRAPPER_ID);
       if (!wrapper) {
         wrapper = document.createElement('div');
-        wrapper.id = WRAPPER_ID;
+        wrapper.id = TOOLBAR_WRAPPER_ID;
         wrapper.className = 'Stamp-toolbar-injector';
         wrapper.setAttribute('data-stamp-area', 'true');
         wrapper.style.display = 'inline-flex';
@@ -72,18 +136,18 @@ export function ToolbarInjector({
         wrapper.style.gap = '4px';
         wrapper.style.marginInlineStart = '6px';
         wrapper.style.paddingInlineStart = '6px';
-        wrapper.style.borderInlineStart = '1px solid var(--default-border-color, rgba(0,0,0,0.1))';
-        // Insert before the "More tools" dropdown button (last child) nếu có,
-        // còn không thì append cuối.
-        const moreTools = container.querySelector('.App-toolbar__extra-tools-dropdown')
-          ?? container.querySelector('button[aria-label*="More tools" i]');
+        wrapper.style.borderInlineStart =
+          '1px solid var(--default-border-color, rgba(0,0,0,0.1))';
+        const moreTools =
+          container.querySelector('.App-toolbar__extra-tools-dropdown') ??
+          container.querySelector('button[aria-label*="More tools" i]');
         if (moreTools && moreTools.parentElement === container) {
           container.insertBefore(wrapper, moreTools);
         } else {
           container.appendChild(wrapper);
         }
       }
-      setMountNode(wrapper);
+      apply(wrapper);
     };
 
     tryMount();
@@ -91,7 +155,7 @@ export function ToolbarInjector({
     const root = document.querySelector('.excalidraw') ?? document.body;
     observer = new MutationObserver(() => {
       if (cancelled) return;
-      const stillThere = document.getElementById(WRAPPER_ID);
+      const stillThere = document.getElementById(TOOLBAR_WRAPPER_ID);
       if (!stillThere) {
         attempts = 0;
         tryMount();
@@ -103,27 +167,139 @@ export function ToolbarInjector({
       cancelled = true;
       if (timer) clearTimeout(timer);
       observer?.disconnect();
-      document.getElementById(WRAPPER_ID)?.remove();
+      document.getElementById(TOOLBAR_WRAPPER_ID)?.remove();
     };
-  }, [enabled]);
+  }, [enabled, isMobile]);
 
-  if (!enabled || !mountNode) return null;
+  // --- Mobile: inject into dropdown-menu when popover opens ---
+  useEffect(() => {
+    if (!enabled || !isMobile) {
+      if (menuMountRef.current !== null) {
+        menuMountRef.current = null;
+        setMenuMount(null);
+      }
+      document.getElementById(MENU_WRAPPER_ID)?.remove();
+      return;
+    }
 
-  return createPortal(
+    let cancelled = false;
+    let observer: MutationObserver | null = null;
+    let rafId: number | null = null;
+
+    const apply = (next: HTMLElement | null) => {
+      if (cancelled || menuMountRef.current === next) return;
+      menuMountRef.current = next;
+      queueMicrotask(() => {
+        if (!cancelled) setMenuMount(next);
+      });
+    };
+
+    const findMenu = () => {
+      if (cancelled) return;
+      const container = document.querySelector<HTMLElement>(
+        '.dropdown-menu--mobile .dropdown-menu-container',
+      );
+      if (!container) {
+        apply(null);
+        return;
+      }
+      let wrapper = container.querySelector<HTMLDivElement>('#' + MENU_WRAPPER_ID);
+      if (!wrapper) {
+        wrapper = document.createElement('div');
+        wrapper.id = MENU_WRAPPER_ID;
+        wrapper.setAttribute('data-stamp-menu', 'true');
+        wrapper.style.display = 'contents';
+        container.insertBefore(wrapper, container.firstChild);
+      }
+      apply(wrapper);
+    };
+
+    // Coalesce burst of DOM mutations into one rAF pass
+    const schedule = () => {
+      if (rafId != null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        findMenu();
+      });
+    };
+
+    findMenu();
+
+    const root = document.querySelector('.excalidraw') ?? document.body;
+    observer = new MutationObserver(schedule);
+    observer.observe(root, { childList: true, subtree: true });
+
+    return () => {
+      cancelled = true;
+      if (rafId != null) cancelAnimationFrame(rafId);
+      observer?.disconnect();
+      document.getElementById(MENU_WRAPPER_ID)?.remove();
+    };
+  }, [enabled, isMobile]);
+
+  if (!enabled) return null;
+
+  const closeMobileMenu = () => {
+    // Click the trigger to collapse the popover
+    const trigger = document.querySelector<HTMLButtonElement>(
+      '.App-toolbar__extra-tools-trigger',
+    );
+    trigger?.click();
+  };
+
+  const desktopButtons = !isMobile && toolbarMount
+    ? createPortal(
+        <>
+          {stamps.map((stamp) => (
+            <StampToolButton
+              key={stamp.kind}
+              icon={stamp.toolbarIcon}
+              keybind={stamp.toolbarLabel}
+              label={stamp.toolbarTitle}
+              active={activeStampKind === stamp.kind}
+              onClick={() => onToggle(stamp.kind)}
+              dataTestId={stamp.toolbarTestId}
+            />
+          ))}
+        </>,
+        toolbarMount,
+      )
+    : null;
+
+  const mobileMenuItems = isMobile && menuMount
+    ? createPortal(
+        <>
+          {stamps.map((stamp) => (
+            <StampMenuItem
+              key={stamp.kind}
+              icon={stamp.toolbarIcon}
+              label={stamp.toolbarTitle}
+              active={activeStampKind === stamp.kind}
+              onClick={() => {
+                onToggle(stamp.kind);
+                closeMobileMenu();
+              }}
+              dataTestId={stamp.toolbarTestId}
+            />
+          ))}
+          <div
+            aria-hidden="true"
+            style={{
+              height: 1,
+              background: 'var(--default-border-color, rgba(0,0,0,0.08))',
+              margin: '6px 4px',
+            }}
+          />
+        </>,
+        menuMount,
+      )
+    : null;
+
+  return (
     <>
-      {stamps.map((stamp) => (
-        <StampToolButton
-          key={stamp.kind}
-          icon={stamp.toolbarIcon}
-          keybind={stamp.toolbarLabel}
-          label={stamp.toolbarTitle}
-          active={activeStampKind === stamp.kind}
-          onClick={() => onToggle(stamp.kind)}
-          dataTestId={stamp.toolbarTestId}
-        />
-      ))}
-    </>,
-    mountNode,
+      {desktopButtons}
+      {mobileMenuItems}
+    </>
   );
 }
 
@@ -197,6 +373,66 @@ function StampToolButton({ icon, keybind, label, active, onClick, dataTestId }: 
       >
         {keybind}
       </span>
+    </button>
+  );
+}
+
+interface StampMenuItemProps {
+  icon: React.ReactNode;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  dataTestId?: string;
+}
+
+/**
+ * Render menu item kế thừa style native `.dropdown-menu-item` của Excalidraw
+ * mobile popover: flex row, icon trái + label phải, height 2.25rem, hover bg.
+ * Active state dùng class `.dropdown-menu-item--selected`.
+ */
+function StampMenuItem({ icon, label, active, onClick, dataTestId }: StampMenuItemProps) {
+  const className = [
+    'dropdown-menu-item',
+    'dropdown-menu-item-base',
+    active ? 'dropdown-menu-item--selected' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      aria-pressed={active}
+      data-testid={dataTestId}
+      className={className}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        columnGap: '0.625rem',
+        width: '100%',
+        boxSizing: 'border-box',
+        background: 'transparent',
+        border: '1px solid transparent',
+        cursor: 'pointer',
+        fontFamily: 'inherit',
+        fontSize: '0.875rem',
+        color: 'var(--color-on-surface)',
+      }}
+    >
+      <span
+        aria-hidden="true"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '1rem',
+          height: '1rem',
+        }}
+      >
+        {icon}
+      </span>
+      <span>{label}</span>
     </button>
   );
 }
