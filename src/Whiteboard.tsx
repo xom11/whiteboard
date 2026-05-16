@@ -90,7 +90,9 @@ export function Whiteboard({
   stamps = DEFAULT_STAMPS,
 }: WhiteboardProps) {
   const [api, setApi] = useState<ExApi | null>(null);
+  const apiRef = useRef<ExApi | null>(null);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const isDarkThemeRef = useRef(false);
   const knownFileIdsRef = useRef<Set<string>>(new Set());
   const lastSceneHashRef = useRef<string>('');
   const sceneThrottleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -169,8 +171,15 @@ export function Whiteboard({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (elements: readonly ExcalidrawElement[], appState: any, files: BinaryFiles) => {
       // Sync theme từ Excalidraw appState -> React state.
+      // Excalidraw 0.18 gọi onChange đồng bộ trong state-updater của họ
+      // (React 19 / Next.js 16 sẽ warn: "scheduled from inside an update
+      // function"). Bail-out qua ref + defer setState bằng queueMicrotask để
+      // setState chạy SAU commit của Excalidraw, không nằm trong updater.
       const nextDark = appState?.theme === 'dark';
-      setIsDarkTheme((prev) => (prev === nextDark ? prev : nextDark));
+      if (isDarkThemeRef.current !== nextDark) {
+        isDarkThemeRef.current = nextDark;
+        queueMicrotask(() => setIsDarkTheme(nextDark));
+      }
 
       if (readOnly) return;
       latestSceneRef.current = { elements, appState };
@@ -186,12 +195,20 @@ export function Whiteboard({
           const stamp = findStampForCustomData((el as { customData?: unknown }).customData, stamps);
           if (stamp) {
             handledCropIdRef.current = cropId;
-            api.updateScene({
-              appState: { ...appState, croppingElementId: null, selectedElementIds: {} },
-            });
-            openStamp(stamp.kind, {
-              id: el.id,
-              customData: (el as { customData?: unknown }).customData,
+            // Defer cả updateScene + openStamp ra khỏi commit-phase của
+            // Excalidraw — nếu chạy đồng bộ, React 19 warn "update scheduled
+            // from inside an update function" (handleChange chạy trong updater
+            // của Excalidraw).
+            const elId = el.id;
+            const elCustom = (el as { customData?: unknown }).customData;
+            const stampKind = stamp.kind;
+            queueMicrotask(() => {
+              try {
+                api.updateScene({
+                  appState: { croppingElementId: null, selectedElementIds: {} },
+                });
+              } catch { /* ignore */ }
+              openStamp(stampKind, { id: elId, customData: elCustom });
             });
             return;
           }
@@ -465,7 +482,17 @@ export function Whiteboard({
   return (
     <div className={`relative h-full w-full${isDarkTheme ? ' theme--dark' : ''}`}>
       <Excalidraw
-        excalidrawAPI={(a: ExApi) => { setApi(a); onApi?.(a); }}
+        excalidrawAPI={(a: ExApi) => {
+          // Excalidraw có thể gọi callback này đồng bộ trong commit-phase của
+          // họ. Bail-out qua ref + defer setApi để tránh "update scheduled
+          // from inside an update function" trên React 19 / Next.js 16.
+          if (apiRef.current === a) return;
+          apiRef.current = a;
+          queueMicrotask(() => {
+            setApi(a);
+            onApi?.(a);
+          });
+        }}
         langCode={langCode}
         viewModeEnabled={readOnly}
         initialData={
