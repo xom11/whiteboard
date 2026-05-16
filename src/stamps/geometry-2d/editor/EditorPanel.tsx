@@ -15,6 +15,10 @@ interface Props {
   /** Callback khi handle/state thay đổi — parent sync LeftPanel state. */
   onStateChange?: (state: GeomBoardState) => void;
   isDark?: boolean;
+  /** Mobile mode: full-screen + hamburger header. */
+  isMobile?: boolean;
+  /** Click hamburger trên mobile để mở LeftPanel drawer. */
+  onOpenDrawer?: () => void;
 }
 
 export interface GeomBoardState {
@@ -36,7 +40,7 @@ export interface GeometryEditorPanelHandle {
 }
 
 export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
-  function GeometryEditorPanel({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark }, ref) {
+  function GeometryEditorPanel({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer }, ref) {
     const handleRef = useRef<MiniBoardHandle | null>(null);
     const [ready, setReady] = useState(false);
     const [propsPopover, setPropsPopover] = useState<ObjectSnapshot | null>(null);
@@ -106,13 +110,15 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
       hasContent: () => (handleRef.current?.getCreationLog().length ?? 0) > 0,
     }), [performInsert]);
 
-    const wrapperStyle: React.CSSProperties = {
-      position: 'absolute',
-      top: '50%',
-      left: withLeftPanel ? 'calc(50% + 120px)' : '50%',
-      transform: 'translate(-50%, -50%)',
-      zIndex: 40,
-    };
+    const wrapperStyle: React.CSSProperties = isMobile
+      ? { position: 'fixed', inset: 0, zIndex: 40 }
+      : {
+          position: 'absolute',
+          top: '50%',
+          left: withLeftPanel ? 'calc(50% + 120px)' : '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 40,
+        };
 
     return (
       <div
@@ -120,11 +126,32 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
         aria-label="Dựng hình học"
         data-testid="geometry-editor-panel"
         data-stamp-area="true"
+        data-mobile-editor={isMobile ? 'true' : undefined}
         style={wrapperStyle}
-        className={`${isDark ? 'theme--dark ' : ''}flex h-[540px] max-h-[85vh] w-[640px] max-w-[calc(100vw-280px)] flex-col overflow-hidden rounded-lg border border-slate-300 bg-white shadow-2xl ring-1 ring-black/5`}
+        className={[
+          isDark ? 'theme--dark ' : '',
+          'flex flex-col overflow-hidden bg-white',
+          isMobile
+            ? 'h-full w-full'
+            : 'h-[540px] max-h-[85vh] w-[640px] max-w-[calc(100vw-280px)] rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5',
+        ].join(' ')}
       >
-        <header className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2 text-white">
-          <h3 className="flex items-center gap-2 text-sm font-semibold">
+        <header className="flex items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2 text-white">
+          {isMobile && (
+            <button
+              type="button"
+              onClick={onOpenDrawer}
+              aria-label="Mở ngăn công cụ"
+              className="-ml-1 inline-flex h-10 w-10 items-center justify-center rounded transition hover:bg-white/15"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="4" y1="6" x2="20" y2="6" />
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <line x1="4" y1="18" x2="20" y2="18" />
+              </svg>
+            </button>
+          )}
+          <h3 className="flex flex-1 items-center gap-2 text-sm font-semibold">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polygon points="3,18 12,3 21,18" />
               <circle cx="12" cy="3" r="1.5" fill="currentColor" />
@@ -133,14 +160,25 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
             </svg>
             Dựng hình học
           </h3>
-          <button onClick={onClose} aria-label="Đóng" className="rounded p-1 transition hover:bg-white/15">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          {isMobile && (
+            <button
+              type="button"
+              onClick={handleInsert}
+              disabled={!ready}
+              data-testid="geometry-insert-btn-mobile"
+              className="rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50"
+            >
+              Chèn
+            </button>
+          )}
+          <button onClick={onClose} aria-label="Đóng" className="inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="6" y1="6" x2="18" y2="18" />
               <line x1="18" y1="6" x2="6" y2="18" />
             </svg>
           </button>
         </header>
-        <div className="min-h-0 flex-1" style={{ height: '420px' }}>
+        <div className="min-h-0 flex-1" style={isMobile ? undefined : { height: '420px' }}>
           <JSXGraphMiniBoard
             onReady={handleReady}
             initialState={initialState}
@@ -212,25 +250,27 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
           />
         )}
 
-        <footer className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2">
-          <span className="text-xs text-slate-500">Chọn công cụ bên trái, click trên bảng để dựng hình.</span>
-          <div className="flex gap-2">
-            <button
-              onClick={onClose}
-              className="rounded border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
-            >
-              Huỷ
-            </button>
-            <button
-              onClick={handleInsert}
-              disabled={!ready}
-              data-testid="geometry-insert-btn"
-              className="rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50"
-            >
-              Chèn
-            </button>
-          </div>
-        </footer>
+        {!isMobile && (
+          <footer className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2">
+            <span className="text-xs text-slate-500">Chọn công cụ bên trái, click trên bảng để dựng hình.</span>
+            <div className="flex gap-2">
+              <button
+                onClick={onClose}
+                className="rounded border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+              >
+                Huỷ
+              </button>
+              <button
+                onClick={handleInsert}
+                disabled={!ready}
+                data-testid="geometry-insert-btn"
+                className="rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50"
+              >
+                Chèn
+              </button>
+            </div>
+          </footer>
+        )}
       </div>
     );
   },

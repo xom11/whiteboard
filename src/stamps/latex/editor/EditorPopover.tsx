@@ -25,6 +25,10 @@ interface Props {
   onDisplayModeChange?: (b: boolean) => void;
   /** Khi true, position center offset cho panel trái. */
   withLeftPanel?: boolean;
+  /** Mobile mode: full-screen + hamburger header. */
+  isMobile?: boolean;
+  /** Trigger mở snippet drawer trên mobile. */
+  onOpenDrawer?: () => void;
 }
 
 export interface EditorPopoverHandle {
@@ -48,6 +52,8 @@ export const EditorPopover = forwardRef<EditorPopoverHandle, Props>(function Edi
     displayMode: controlledDisplayMode,
     onDisplayModeChange,
     withLeftPanel = false,
+    isMobile = false,
+    onOpenDrawer,
   },
   ref,
 ) {
@@ -131,41 +137,73 @@ export const EditorPopover = forwardRef<EditorPopoverHandle, Props>(function Edi
 
   // Position: nếu x/y > 0 → dùng legacy absolute (cho tests cũ). Còn không thì center floating.
   const isLegacyPosition = x > 0 || y > 0;
-  const wrapperStyle: React.CSSProperties = isLegacyPosition
-    ? { position: 'absolute', top: y, left: x, zIndex: 50 }
-    : {
-        position: 'absolute',
-        top: '50%',
-        left: withLeftPanel ? 'calc(50% + 120px)' : '50%',
-        transform: 'translate(-50%, -50%)',
-        zIndex: 50,
-      };
+  const wrapperStyle: React.CSSProperties = isMobile
+    ? { position: 'fixed', inset: 0, zIndex: 50 }
+    : isLegacyPosition
+      ? { position: 'absolute', top: y, left: x, zIndex: 50 }
+      : {
+          position: 'absolute',
+          top: '50%',
+          left: withLeftPanel ? 'calc(50% + 120px)' : '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 50,
+        };
 
   return (
     <div
       style={wrapperStyle}
       data-stamp-area="true"
-      className="w-[420px] max-w-[calc(100vw-280px)] rounded-lg border border-slate-300 bg-white shadow-2xl ring-1 ring-black/5"
+      data-mobile-editor={isMobile ? 'true' : undefined}
+      className={
+        isMobile
+          ? 'flex h-full w-full flex-col bg-white'
+          : 'w-[420px] max-w-[calc(100vw-280px)] rounded-lg border border-slate-300 bg-white shadow-2xl ring-1 ring-black/5'
+      }
       role="dialog"
       aria-label="Nhập công thức LaTeX"
     >
-      <header className="flex items-center justify-between rounded-t-lg border-b border-slate-200 bg-gradient-to-r from-indigo-600 to-purple-600 px-3 py-2 text-white">
-        <h3 className="flex items-center gap-2 text-sm font-semibold">
+      <header className={`flex items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-indigo-600 to-purple-600 px-3 py-2 text-white${isMobile ? '' : ' rounded-t-lg'}`}>
+        {isMobile && (
+          <button
+            type="button"
+            onClick={onOpenDrawer}
+            aria-label="Mở ngăn snippet"
+            className="-ml-1 inline-flex h-10 w-10 items-center justify-center rounded transition hover:bg-white/15"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="4" y1="6" x2="20" y2="6" />
+              <line x1="4" y1="12" x2="20" y2="12" />
+              <line x1="4" y1="18" x2="20" y2="18" />
+            </svg>
+          </button>
+        )}
+        <h3 className="flex flex-1 items-center gap-2 text-sm font-semibold">
           <span className="text-base leading-none">∑</span>
           Công thức LaTeX
         </h3>
+        {isMobile && (
+          <button
+            type="button"
+            onClick={handleInsert}
+            disabled={!previewSvg || !!error}
+            data-testid="latex-insert-btn-mobile"
+            className="rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50"
+          >
+            Chèn
+          </button>
+        )}
         <button
           onClick={onClose}
           aria-label="Đóng"
-          className="rounded p-1 transition hover:bg-white/15"
+          className="inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="6" y1="6" x2="18" y2="18" />
             <line x1="18" y1="6" x2="6" y2="18" />
           </svg>
         </button>
       </header>
-      <div className="space-y-2 p-3">
+      <div className={`space-y-2 p-3${isMobile ? ' flex min-h-0 flex-1 flex-col' : ''}`}>
         <input
           ref={inputRef}
           type="text"
@@ -174,12 +212,15 @@ export const EditorPopover = forwardRef<EditorPopoverHandle, Props>(function Edi
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Vd: \frac{a^2+b^2}{c}"
-          className="w-full rounded border border-slate-300 px-2 py-1.5 font-mono text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200"
+          className={`w-full rounded border border-slate-300 px-2 py-1.5 font-mono outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200${
+            isMobile ? ' min-h-[44px] text-base' : ' text-sm'
+          }`}
           autoFocus
         />
         <div
           className={[
-            'flex min-h-[64px] items-center justify-center rounded border p-3 text-center',
+            'flex items-center justify-center rounded border p-3 text-center',
+            isMobile ? 'min-h-0 flex-1 overflow-auto' : 'min-h-[64px]',
             error ? 'border-rose-300 bg-rose-50 text-rose-700' : 'border-slate-200 bg-slate-50',
           ].join(' ')}
         >
@@ -191,26 +232,33 @@ export const EditorPopover = forwardRef<EditorPopoverHandle, Props>(function Edi
             <span className="text-xs text-slate-400">(xem trước)</span>
           )}
         </div>
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] text-slate-500">
-            {displayMode ? 'Block' : 'Inline'} · Enter để chèn
-          </span>
-          <div className="flex gap-2">
-            <button
-              onClick={onClose}
-              className="rounded border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
-            >
-              Huỷ
-            </button>
-            <button
-              onClick={handleInsert}
-              disabled={!previewSvg || !!error}
-              className="rounded bg-indigo-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-indigo-700 disabled:opacity-50"
-            >
-              Chèn
-            </button>
+        {!isMobile && (
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] text-slate-500">
+              {displayMode ? 'Block' : 'Inline'} · Enter để chèn
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={onClose}
+                className="rounded border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+              >
+                Huỷ
+              </button>
+              <button
+                onClick={handleInsert}
+                disabled={!previewSvg || !!error}
+                className="rounded bg-indigo-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-indigo-700 disabled:opacity-50"
+              >
+                Chèn
+              </button>
+            </div>
           </div>
-        </div>
+        )}
+        {isMobile && (
+          <div className="text-center text-[11px] text-slate-500">
+            {displayMode ? 'Block' : 'Inline'} · Bấm Chèn ở thanh trên
+          </div>
+        )}
       </div>
     </div>
   );

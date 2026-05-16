@@ -12,6 +12,7 @@ import { LeftPanel as LatexLeftPanel } from './editor/LeftPanel';
 import { EditorPopover as LatexEditorPopover, type EditorPopoverHandle as LatexEditorHandle } from './editor/EditorPopover';
 import { insertStampImage } from '../shared/insertImage';
 import { renderLatexToSvg } from './render';
+import { useIsMobile } from '../shared/useIsMobile';
 import type {
   BaseStampCustomData,
   RestoredStampFile,
@@ -40,6 +41,8 @@ export function isLatexCustomData(data: unknown): data is LatexCustomData {
 const LatexStampHost = forwardRef<StampHostHandle, StampHostProps>(
   function LatexStampHost({ api, editingElement, onClose }, ref) {
     const editorRef = useRef<LatexEditorHandle | null>(null);
+    const { isMobile } = useIsMobile();
+    const [drawerOpen, setDrawerOpen] = useState(false);
 
     const initial = useMemo(() => {
       if (editingElement && isLatexCustomData(editingElement.customData)) {
@@ -91,6 +94,9 @@ const LatexStampHost = forwardRef<StampHostHandle, StampHostProps>(
           onDisplayModeChange={setDisplayMode}
           onInsertSnippet={(s) => editorRef.current?.insertAtCursor(s)}
           onClose={onClose}
+          isMobile={isMobile}
+          drawerOpen={drawerOpen}
+          onDrawerClose={() => setDrawerOpen(false)}
         />
         <LatexEditorPopover
           ref={editorRef}
@@ -101,7 +107,9 @@ const LatexStampHost = forwardRef<StampHostHandle, StampHostProps>(
           onDisplayModeChange={setDisplayMode}
           onInsert={handleInsert}
           onClose={onClose}
-          withLeftPanel
+          withLeftPanel={!isMobile}
+          isMobile={isMobile}
+          onOpenDrawer={() => setDrawerOpen(true)}
         />
       </>
     );

@@ -17,35 +17,64 @@ interface ShellProps {
   onClose: () => void;
   children: React.ReactNode;
   isDark?: boolean;
+  isMobile?: boolean;
+  drawerOpen?: boolean;
+  onDrawerClose?: () => void;
 }
 
-function Shell({ title, icon, onClose, children, isDark }: ShellProps) {
+function Shell({ title, icon, onClose, children, isDark, isMobile, drawerOpen, onDrawerClose }: ShellProps) {
+  const mobileAttrs = isMobile
+    ? {
+        'data-mobile-drawer': 'true',
+        'data-drawer-state': drawerOpen ? 'open' : 'closed',
+      }
+    : {};
+  const handleHeaderClose = () => {
+    if (isMobile) onDrawerClose?.();
+    else onClose();
+  };
   return (
-    <aside
-      role="complementary"
-      aria-label={title}
-      data-testid="geom3d-left-panel"
-      data-stamp-area="true"
-      className={`${isDark ? 'theme--dark ' : ''}absolute left-0 top-0 z-30 flex h-full w-60 flex-col border-r border-slate-200 bg-white shadow-md animate-in slide-in-from-left duration-200`}
-    >
-      <header className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-3 py-2">
-        <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-          <span className="text-base leading-none">{icon}</span>
-          {title}
-        </h3>
-        <button
-          onClick={onClose}
-          aria-label="Đóng"
-          className="rounded p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="6" y1="6" x2="18" y2="18" />
-            <line x1="18" y1="6" x2="6" y2="18" />
-          </svg>
-        </button>
-      </header>
-      <div className="min-h-0 flex-1 overflow-y-auto p-3 space-y-4">{children}</div>
-    </aside>
+    <>
+      {isMobile && drawerOpen && (
+        <div
+          className="stamp-drawer-backdrop"
+          onPointerDown={onDrawerClose}
+          aria-hidden="true"
+        />
+      )}
+      <aside
+        role="complementary"
+        aria-label={title}
+        aria-hidden={isMobile && !drawerOpen ? 'true' : undefined}
+        data-testid="geom3d-left-panel"
+        data-stamp-area="true"
+        {...mobileAttrs}
+        className={[
+          isDark ? 'theme--dark ' : '',
+          isMobile
+            ? 'stamp-drawer-mobile flex flex-col border-r border-slate-200 bg-white shadow-md'
+            : 'absolute left-0 top-0 z-30 flex h-full w-60 flex-col border-r border-slate-200 bg-white shadow-md animate-in slide-in-from-left duration-200',
+        ].join('')}
+      >
+        <header className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-3 py-2">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+            <span className="text-base leading-none">{icon}</span>
+            {title}
+          </h3>
+          <button
+            onClick={handleHeaderClose}
+            aria-label={isMobile ? 'Đóng ngăn công cụ' : 'Đóng'}
+            className="rounded p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="6" y1="6" x2="18" y2="18" />
+              <line x1="18" y1="6" x2="6" y2="18" />
+            </svg>
+          </button>
+        </header>
+        <div className="min-h-0 flex-1 overflow-y-auto p-3 space-y-4">{children}</div>
+      </aside>
+    </>
   );
 }
 
@@ -75,9 +104,12 @@ interface Props {
   onResetView: () => void;
   onClose: () => void;
   isDark?: boolean;
+  isMobile?: boolean;
+  drawerOpen?: boolean;
+  onDrawerClose?: () => void;
 }
 
-export function LeftPanel({ handle, onResetView, onClose, isDark }: Props) {
+export function LeftPanel({ handle, onResetView, onClose, isDark, isMobile, drawerOpen, onDrawerClose }: Props) {
   const [tool, setTool] = useState<GeomTool3D>('move');
   const [showAxes, setShowAxes] = useState(true);
   const [showMesh, setShowMesh] = useState(false);
@@ -131,7 +163,15 @@ export function LeftPanel({ handle, onResetView, onClose, isDark }: Props) {
 
   return (
     <>
-      <Shell title="Hình học 3D" icon={Geom3DIconHeader} onClose={onClose} isDark={isDark}>
+      <Shell
+        title="Hình học 3D"
+        icon={Geom3DIconHeader}
+        onClose={onClose}
+        isDark={isDark}
+        isMobile={isMobile}
+        drawerOpen={drawerOpen}
+        onDrawerClose={onDrawerClose}
+      >
         <Section label="Bố cục">
           <div className="flex items-center gap-2 flex-wrap text-[11px] text-slate-700">
             <label className="inline-flex select-none items-center gap-1.5">
@@ -190,7 +230,10 @@ export function LeftPanel({ handle, onResetView, onClose, isDark }: Props) {
                   label={t.label}
                   hint={t.hint}
                   active={tool === t.key}
-                  onClick={() => handle?.setTool(t.key)}
+                  onClick={() => {
+                    handle?.setTool(t.key);
+                    if (isMobile) onDrawerClose?.();
+                  }}
                   icon={
                     <span
                       onMouseEnter={(e) => showHover(e.currentTarget.closest('button') as HTMLElement, t)}

@@ -1,7 +1,8 @@
 'use client';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { STROKE_PALETTE } from '../../shared/excalidrawPalette';
+import { useIsMobile } from '../../shared/useIsMobile';
 
 export type ObjKind = 'point' | 'line' | 'circle';
 export type PointFace = 'o' | 'circle' | 'cross' | 'plus';
@@ -118,6 +119,30 @@ export const PropertiesPopover: React.FC<Props> = (props) => {
   const { anchor, onClose, onMutate, isDark, getAllNames } = props;
   const rootRef = useRef<HTMLDivElement>(null);
   const [section, setSection] = useState<Section>(null);
+  const { isMobile } = useIsMobile();
+  // Clamp anchor vào viewport sau khi render (measure actual rect).
+  // Trên mobile, force bottom-center thay vì follow anchor (anchor có thể nằm
+  // sát mép màn hình hoặc dưới ngón tay user → khó tap).
+  const [clamped, setClamped] = useState<{ left: number; top: number } | null>(null);
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined') return;
+    const margin = 8;
+    if (isMobile) {
+      // Bottom-center, 12px above bottom safe area.
+      const rect = rootRef.current?.getBoundingClientRect();
+      const w = rect?.width ?? 280;
+      const left = Math.max(margin, (window.innerWidth - w) / 2);
+      const top = window.innerHeight - (rect?.height ?? 80) - margin - 12;
+      setClamped({ left, top: Math.max(margin, top) });
+      return;
+    }
+    const rect = rootRef.current?.getBoundingClientRect();
+    const w = rect?.width ?? 280;
+    const h = rect?.height ?? 80;
+    const left = Math.max(margin, Math.min(anchor.x, window.innerWidth - w - margin));
+    const top = Math.max(margin, Math.min(anchor.y, window.innerHeight - h - margin));
+    setClamped({ left, top });
+  }, [anchor.x, anchor.y, isMobile, section]);
 
   const initialName =
     props.kind === 'point' ? props.currentName : (props.kind === 'line' || props.kind === 'circle') ? props.currentName : '';
@@ -132,14 +157,16 @@ export const PropertiesPopover: React.FC<Props> = (props) => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') { e.preventDefault(); onClose(); }
     };
-    const onMouseDown = (e: MouseEvent) => {
+    // PointerDown covers mouse + touch + pen — replaces legacy mousedown listener
+    // which excluded touch/pen and broke click-outside trên mobile.
+    const onPointerDown = (e: PointerEvent) => {
       if (!rootRef.current?.contains(e.target as Node)) onClose();
     };
     document.addEventListener('keydown', onKey);
-    document.addEventListener('mousedown', onMouseDown, { capture: true });
+    document.addEventListener('pointerdown', onPointerDown, { capture: true });
     return () => {
       document.removeEventListener('keydown', onKey);
-      document.removeEventListener('mousedown', onMouseDown, { capture: true } as EventListenerOptions);
+      document.removeEventListener('pointerdown', onPointerDown, { capture: true } as EventListenerOptions);
     };
   }, [onClose]);
 
@@ -186,6 +213,7 @@ export const PropertiesPopover: React.FC<Props> = (props) => {
     <button
       type="button"
       data-section={id}
+      data-pill-btn={id}
       aria-label={label}
       aria-pressed={!!active}
       onClick={onClick}
@@ -206,12 +234,13 @@ export const PropertiesPopover: React.FC<Props> = (props) => {
 
   const colorIndicatorTint = useMemo(() => currentColor, [currentColor]);
 
+  const pos = clamped ?? { left: anchor.x, top: anchor.y };
   const node = (
     <div
       ref={rootRef}
       data-stamp-area="true"
       className={`${isDark ? 'theme--dark ' : ''}fixed z-[2147483600] flex flex-col gap-1.5`}
-      style={{ left: anchor.x, top: anchor.y }}
+      style={{ left: pos.left, top: pos.top }}
       role="dialog"
       aria-label="Thuộc tính đối tượng"
     >

@@ -22,6 +22,7 @@ import {
   type SerializedBoard3D,
 } from './serialize';
 import { renderGeometry3DSvgFromState } from './render';
+import { useIsMobile } from '../shared/useIsMobile';
 
 export { isGeometry3DCustomData };
 export type { Geometry3DCustomData };
@@ -41,6 +42,7 @@ function parseInitial(
 export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
   function Geometry3DStampHost({ api, editingElement, onClose, isDark }, ref) {
     const editorRef = useRef<EditorPanelHandle | null>(null);
+    const { isMobile } = useIsMobile();
     const initial = useMemo(
       () => parseInitial(editingElement),
       [editingElement],
@@ -81,6 +83,7 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
         initial={initial}
         onInsert={handleInsert}
         onClose={onClose}
+        isMobile={isMobile}
       />
     );
   },

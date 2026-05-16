@@ -25,6 +25,7 @@ import type {
   StampHostHandle,
   StampType,
 } from '../shared/types';
+import { useIsMobile } from '../shared/useIsMobile';
 
 // ============== Custom data type + guard ==============
 
@@ -55,6 +56,8 @@ const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
   function GeometryStampHost({ api, editingElement, onClose, isDark }, ref) {
     const panelRef = useRef<GeometryEditorPanelHandle | null>(null);
     const [geomState, setGeomState] = useState<GeomBoardState>(INITIAL_GEOM_STATE);
+    const { isMobile } = useIsMobile();
+    const [drawerOpen, setDrawerOpen] = useState(false);
 
     // Initial state cho editor: parse từ customData nếu đang re-edit, null nếu tạo mới.
     const initialState = useMemo<SerializedBoard | null>(() => {
@@ -113,6 +116,9 @@ const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
           canUndo={geomState.canUndo}
           onClose={onClose}
           isDark={isDark}
+          isMobile={isMobile}
+          drawerOpen={drawerOpen}
+          onDrawerClose={() => setDrawerOpen(false)}
         />
         <GeometryEditorPanel
           ref={panelRef}
@@ -120,8 +126,10 @@ const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
           onInsert={handleInsert}
           onClose={onClose}
           onStateChange={setGeomState}
-          withLeftPanel
+          withLeftPanel={!isMobile}
           isDark={isDark}
+          isMobile={isMobile}
+          onOpenDrawer={() => setDrawerOpen(true)}
         />
       </>
     );

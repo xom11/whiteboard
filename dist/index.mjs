@@ -1,7 +1,7 @@
 "use client";
 import './index.css';
 import dynamic from 'next/dynamic';
-import { forwardRef, useRef, useState, useEffect, useCallback, useImperativeHandle, useMemo, useId } from 'react';
+import { forwardRef, useRef, useState, useEffect, useCallback, useImperativeHandle, useMemo, useId, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { jsxs, jsx, Fragment } from 'react/jsx-runtime';
 import '@excalidraw/excalidraw/index.css';
@@ -1843,38 +1843,61 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
   );
 };
 var TOOLTIP_DELAY_MS = 400;
-function Shell({ title, icon, onClose, children, isDark }) {
-  return /* @__PURE__ */ jsxs(
-    "aside",
-    {
-      role: "complementary",
-      "aria-label": title,
-      "data-testid": "stamp-left-panel",
-      "data-stamp-area": "true",
-      className: `${isDark ? "theme--dark " : ""}absolute left-0 top-0 z-30 flex h-full w-60 flex-col border-r border-slate-200 bg-white shadow-md animate-in slide-in-from-left duration-200`,
-      children: [
-        /* @__PURE__ */ jsxs("header", { className: "flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-3 py-2", children: [
-          /* @__PURE__ */ jsxs("h3", { className: "flex items-center gap-2 text-sm font-semibold text-slate-800", children: [
-            /* @__PURE__ */ jsx("span", { className: "text-base leading-none", children: icon }),
-            title
+function Shell({ title, icon, onClose, children, isDark, isMobile, drawerOpen, onDrawerClose, closeLabel = "\u0110\xF3ng" }) {
+  const mobileAttrs = isMobile ? {
+    "data-mobile-drawer": "true",
+    "data-drawer-state": drawerOpen ? "open" : "closed"
+  } : {};
+  const handleHeaderClose = () => {
+    if (isMobile) onDrawerClose?.();
+    else onClose();
+  };
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    isMobile && drawerOpen && /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "stamp-drawer-backdrop",
+        onPointerDown: onDrawerClose,
+        "aria-hidden": "true"
+      }
+    ),
+    /* @__PURE__ */ jsxs(
+      "aside",
+      {
+        role: "complementary",
+        "aria-label": title,
+        "aria-hidden": isMobile && !drawerOpen ? "true" : void 0,
+        "data-testid": "stamp-left-panel",
+        "data-stamp-area": "true",
+        ...mobileAttrs,
+        className: [
+          isDark ? "theme--dark " : "",
+          isMobile ? "stamp-drawer-mobile flex flex-col border-r border-slate-200 bg-white shadow-md" : "absolute left-0 top-0 z-30 flex h-full w-60 flex-col border-r border-slate-200 bg-white shadow-md animate-in slide-in-from-left duration-200"
+        ].join(""),
+        children: [
+          /* @__PURE__ */ jsxs("header", { className: "flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-3 py-2", children: [
+            /* @__PURE__ */ jsxs("h3", { className: "flex items-center gap-2 text-sm font-semibold text-slate-800", children: [
+              /* @__PURE__ */ jsx("span", { className: "text-base leading-none", children: icon }),
+              title
+            ] }),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: handleHeaderClose,
+                "aria-label": isMobile ? "\u0110\xF3ng ng\u0103n c\xF4ng c\u1EE5" : closeLabel,
+                className: "rounded p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800",
+                children: /* @__PURE__ */ jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+                  /* @__PURE__ */ jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
+                  /* @__PURE__ */ jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
+                ] })
+              }
+            )
           ] }),
-          /* @__PURE__ */ jsx(
-            "button",
-            {
-              onClick: onClose,
-              "aria-label": "\u0110\xF3ng",
-              className: "rounded p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800",
-              children: /* @__PURE__ */ jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
-                /* @__PURE__ */ jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
-                /* @__PURE__ */ jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
-              ] })
-            }
-          )
-        ] }),
-        /* @__PURE__ */ jsx("div", { className: "min-h-0 flex-1 overflow-y-auto p-3 space-y-4", children })
-      ]
-    }
-  );
+          /* @__PURE__ */ jsx("div", { className: "min-h-0 flex-1 overflow-y-auto p-3 space-y-4", children })
+        ]
+      }
+    )
+  ] });
 }
 function Section({ label, children }) {
   return /* @__PURE__ */ jsxs("section", { children: [
@@ -1898,7 +1921,10 @@ function LeftPanel({
   onUndo,
   canUndo,
   onClose,
-  isDark
+  isDark,
+  isMobile,
+  drawerOpen,
+  onDrawerClose
 }) {
   const grouped = TOOLS.reduce((acc, t) => {
     var _a;
@@ -1930,72 +1956,87 @@ function LeftPanel({
     setHover(null);
   }, []);
   return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsxs(Shell, { title: "H\xECnh h\u1ECDc", icon: GeometryIconHeader, onClose, isDark, children: [
-      /* @__PURE__ */ jsx(Section, { label: "B\u1ED1 c\u1EE5c", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3 text-[11px] text-slate-700", children: [
-        /* @__PURE__ */ jsxs("label", { className: "inline-flex select-none items-center gap-1.5", children: [
-          /* @__PURE__ */ jsx(
-            "input",
-            {
-              type: "checkbox",
-              checked: showAxis,
-              onChange: (e) => onShowAxisChange(e.target.checked),
-              "data-testid": "toggle-axis"
-            }
-          ),
-          "Tr\u1EE5c to\u1EA1 \u0111\u1ED9"
-        ] }),
-        /* @__PURE__ */ jsxs("label", { className: "inline-flex select-none items-center gap-1.5", children: [
-          /* @__PURE__ */ jsx(
-            "input",
-            {
-              type: "checkbox",
-              checked: showGrid,
-              onChange: (e) => onShowGridChange(e.target.checked),
-              "data-testid": "toggle-grid"
-            }
-          ),
-          "L\u01B0\u1EDBi"
-        ] }),
-        /* @__PURE__ */ jsx(
-          "button",
-          {
-            type: "button",
-            onClick: onUndo,
-            disabled: !canUndo,
-            title: "Ho\xE0n t\xE1c (Ctrl/Cmd+Z)",
-            "aria-label": "Ho\xE0n t\xE1c",
-            className: "ml-auto inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
-            children: /* @__PURE__ */ jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
-              /* @__PURE__ */ jsx("polyline", { points: "3 7 3 13 9 13" }),
-              /* @__PURE__ */ jsx("path", { d: "M3.51 13a9 9 0 1 0 2.13-9.36L3 7" })
-            ] })
-          }
-        )
-      ] }) }),
-      groupKeys.map((group) => /* @__PURE__ */ jsx(Section, { label: GROUP_LABELS[group], children: /* @__PURE__ */ jsx("div", { className: "grid grid-cols-4 gap-1", children: grouped[group].map((t) => {
-        const active = activeTool === t.key;
-        return /* @__PURE__ */ jsx(
-          "button",
-          {
-            type: "button",
-            "aria-label": t.label,
-            "aria-pressed": active,
-            "data-tool": t.key,
-            onClick: () => onToolChange(t.key),
-            onMouseEnter: (e) => showHover(e.currentTarget, t),
-            onMouseLeave: hideHover,
-            onFocus: (e) => showHover(e.currentTarget, t),
-            onBlur: hideHover,
-            className: [
-              "flex h-8 items-center justify-center rounded-md transition",
-              active ? "bg-emerald-600 text-white shadow-sm" : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
-            ].join(" "),
-            children: t.icon
-          },
-          t.key
-        );
-      }) }) }, group))
-    ] }),
+    /* @__PURE__ */ jsxs(
+      Shell,
+      {
+        title: "H\xECnh h\u1ECDc",
+        icon: GeometryIconHeader,
+        onClose,
+        isDark,
+        isMobile,
+        drawerOpen,
+        onDrawerClose,
+        children: [
+          /* @__PURE__ */ jsx(Section, { label: "B\u1ED1 c\u1EE5c", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3 text-[11px] text-slate-700", children: [
+            /* @__PURE__ */ jsxs("label", { className: "inline-flex select-none items-center gap-1.5", children: [
+              /* @__PURE__ */ jsx(
+                "input",
+                {
+                  type: "checkbox",
+                  checked: showAxis,
+                  onChange: (e) => onShowAxisChange(e.target.checked),
+                  "data-testid": "toggle-axis"
+                }
+              ),
+              "Tr\u1EE5c to\u1EA1 \u0111\u1ED9"
+            ] }),
+            /* @__PURE__ */ jsxs("label", { className: "inline-flex select-none items-center gap-1.5", children: [
+              /* @__PURE__ */ jsx(
+                "input",
+                {
+                  type: "checkbox",
+                  checked: showGrid,
+                  onChange: (e) => onShowGridChange(e.target.checked),
+                  "data-testid": "toggle-grid"
+                }
+              ),
+              "L\u01B0\u1EDBi"
+            ] }),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                type: "button",
+                onClick: onUndo,
+                disabled: !canUndo,
+                title: "Ho\xE0n t\xE1c (Ctrl/Cmd+Z)",
+                "aria-label": "Ho\xE0n t\xE1c",
+                className: "ml-auto inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
+                children: /* @__PURE__ */ jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+                  /* @__PURE__ */ jsx("polyline", { points: "3 7 3 13 9 13" }),
+                  /* @__PURE__ */ jsx("path", { d: "M3.51 13a9 9 0 1 0 2.13-9.36L3 7" })
+                ] })
+              }
+            )
+          ] }) }),
+          groupKeys.map((group) => /* @__PURE__ */ jsx(Section, { label: GROUP_LABELS[group], children: /* @__PURE__ */ jsx("div", { className: "grid grid-cols-4 gap-1", children: grouped[group].map((t) => {
+            const active = activeTool === t.key;
+            return /* @__PURE__ */ jsx(
+              "button",
+              {
+                type: "button",
+                "aria-label": t.label,
+                "aria-pressed": active,
+                "data-tool": t.key,
+                onClick: () => {
+                  onToolChange(t.key);
+                  if (isMobile) onDrawerClose?.();
+                },
+                onMouseEnter: (e) => showHover(e.currentTarget, t),
+                onMouseLeave: hideHover,
+                onFocus: (e) => showHover(e.currentTarget, t),
+                onBlur: hideHover,
+                className: [
+                  "flex h-8 items-center justify-center rounded-md transition",
+                  active ? "bg-emerald-600 text-white shadow-sm" : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                ].join(" "),
+                children: t.icon
+              },
+              t.key
+            );
+          }) }) }, group))
+        ]
+      }
+    ),
     portalReady && hover && typeof document !== "undefined" ? createPortal(
       /* @__PURE__ */ jsxs(
         "div",
@@ -2162,6 +2203,38 @@ var STROKE_PALETTE = [
   "#868e96"
   // gray
 ];
+var MOBILE_QUERY = "(max-width: 768px)";
+var NO_HOVER_QUERY = "(hover: none)";
+function readMatch(query) {
+  if (typeof window === "undefined" || !window.matchMedia) return false;
+  try {
+    return window.matchMedia(query).matches;
+  } catch {
+    return false;
+  }
+}
+function useIsMobile() {
+  const [state, setState] = useState(() => ({
+    isMobile: readMatch(MOBILE_QUERY),
+    isTouchOnly: readMatch(NO_HOVER_QUERY)
+  }));
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mql = window.matchMedia(MOBILE_QUERY);
+    const tql = window.matchMedia(NO_HOVER_QUERY);
+    const update = () => {
+      setState({ isMobile: mql.matches, isTouchOnly: tql.matches });
+    };
+    update();
+    mql.addEventListener("change", update);
+    tql.addEventListener("change", update);
+    return () => {
+      mql.removeEventListener("change", update);
+      tql.removeEventListener("change", update);
+    };
+  }, []);
+  return state;
+}
 var DASH_OPTIONS = [
   { value: 0, label: "N\xE9t li\u1EC1n" },
   { value: 2, label: "N\xE9t \u0111\u1EE9t" },
@@ -2220,6 +2293,26 @@ var PropertiesPopover = (props) => {
   const { anchor, onClose, onMutate, isDark, getAllNames } = props;
   const rootRef = useRef(null);
   const [section, setSection] = useState(null);
+  const { isMobile } = useIsMobile();
+  const [clamped, setClamped] = useState(null);
+  useLayoutEffect(() => {
+    if (typeof window === "undefined") return;
+    const margin = 8;
+    if (isMobile) {
+      const rect2 = rootRef.current?.getBoundingClientRect();
+      const w2 = rect2?.width ?? 280;
+      const left2 = Math.max(margin, (window.innerWidth - w2) / 2);
+      const top2 = window.innerHeight - (rect2?.height ?? 80) - margin - 12;
+      setClamped({ left: left2, top: Math.max(margin, top2) });
+      return;
+    }
+    const rect = rootRef.current?.getBoundingClientRect();
+    const w = rect?.width ?? 280;
+    const h = rect?.height ?? 80;
+    const left = Math.max(margin, Math.min(anchor.x, window.innerWidth - w - margin));
+    const top = Math.max(margin, Math.min(anchor.y, window.innerHeight - h - margin));
+    setClamped({ left, top });
+  }, [anchor.x, anchor.y, isMobile, section]);
   const initialName = props.kind === "point" ? props.currentName : props.kind === "line" || props.kind === "circle" ? props.currentName : "";
   const [name, setName] = useState(initialName);
   useEffect(() => {
@@ -2232,14 +2325,14 @@ var PropertiesPopover = (props) => {
         onClose();
       }
     };
-    const onMouseDown = (e) => {
+    const onPointerDown = (e) => {
       if (!rootRef.current?.contains(e.target)) onClose();
     };
     document.addEventListener("keydown", onKey);
-    document.addEventListener("mousedown", onMouseDown, { capture: true });
+    document.addEventListener("pointerdown", onPointerDown, { capture: true });
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.removeEventListener("mousedown", onMouseDown, { capture: true });
+      document.removeEventListener("pointerdown", onPointerDown, { capture: true });
     };
   }, [onClose]);
   const pickColor = (c) => {
@@ -2276,6 +2369,7 @@ var PropertiesPopover = (props) => {
     {
       type: "button",
       "data-section": id,
+      "data-pill-btn": id,
       "aria-label": label,
       "aria-pressed": !!active,
       onClick,
@@ -2294,13 +2388,14 @@ var PropertiesPopover = (props) => {
     }
   );
   const colorIndicatorTint = useMemo(() => currentColor, [currentColor]);
+  const pos = clamped ?? { left: anchor.x, top: anchor.y };
   const node = /* @__PURE__ */ jsxs(
     "div",
     {
       ref: rootRef,
       "data-stamp-area": "true",
       className: `${isDark ? "theme--dark " : ""}fixed z-[2147483600] flex flex-col gap-1.5`,
-      style: { left: anchor.x, top: anchor.y },
+      style: { left: pos.left, top: pos.top },
       role: "dialog",
       "aria-label": "Thu\u1ED9c t\xEDnh \u0111\u1ED1i t\u01B0\u1EE3ng",
       children: [
@@ -2490,7 +2585,7 @@ var TransformParamPopover = ({ kind, anchor, defaultValue, onConfirm, onCancel, 
   return createPortal(node, document.body);
 };
 var GeometryEditorPanel = forwardRef(
-  function GeometryEditorPanel2({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark }, ref) {
+  function GeometryEditorPanel2({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer }, ref) {
     const handleRef = useRef(null);
     const [ready, setReady] = useState(false);
     const [propsPopover, setPropsPopover] = useState(null);
@@ -2552,7 +2647,7 @@ var GeometryEditorPanel = forwardRef(
       insert: performInsert,
       hasContent: () => (handleRef.current?.getCreationLog().length ?? 0) > 0
     }), [performInsert]);
-    const wrapperStyle = {
+    const wrapperStyle = isMobile ? { position: "fixed", inset: 0, zIndex: 40 } : {
       position: "absolute",
       top: "50%",
       left: withLeftPanel ? "calc(50% + 120px)" : "50%",
@@ -2566,11 +2661,30 @@ var GeometryEditorPanel = forwardRef(
         "aria-label": "D\u1EF1ng h\xECnh h\u1ECDc",
         "data-testid": "geometry-editor-panel",
         "data-stamp-area": "true",
+        "data-mobile-editor": isMobile ? "true" : void 0,
         style: wrapperStyle,
-        className: `${isDark ? "theme--dark " : ""}flex h-[540px] max-h-[85vh] w-[640px] max-w-[calc(100vw-280px)] flex-col overflow-hidden rounded-lg border border-slate-300 bg-white shadow-2xl ring-1 ring-black/5`,
+        className: [
+          isDark ? "theme--dark " : "",
+          "flex flex-col overflow-hidden bg-white",
+          isMobile ? "h-full w-full" : "h-[540px] max-h-[85vh] w-[640px] max-w-[calc(100vw-280px)] rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5"
+        ].join(" "),
         children: [
-          /* @__PURE__ */ jsxs("header", { className: "flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2 text-white", children: [
-            /* @__PURE__ */ jsxs("h3", { className: "flex items-center gap-2 text-sm font-semibold", children: [
+          /* @__PURE__ */ jsxs("header", { className: "flex items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2 text-white", children: [
+            isMobile && /* @__PURE__ */ jsx(
+              "button",
+              {
+                type: "button",
+                onClick: onOpenDrawer,
+                "aria-label": "M\u1EDF ng\u0103n c\xF4ng c\u1EE5",
+                className: "-ml-1 inline-flex h-10 w-10 items-center justify-center rounded transition hover:bg-white/15",
+                children: /* @__PURE__ */ jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+                  /* @__PURE__ */ jsx("line", { x1: "4", y1: "6", x2: "20", y2: "6" }),
+                  /* @__PURE__ */ jsx("line", { x1: "4", y1: "12", x2: "20", y2: "12" }),
+                  /* @__PURE__ */ jsx("line", { x1: "4", y1: "18", x2: "20", y2: "18" })
+                ] })
+              }
+            ),
+            /* @__PURE__ */ jsxs("h3", { className: "flex flex-1 items-center gap-2 text-sm font-semibold", children: [
               /* @__PURE__ */ jsxs("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
                 /* @__PURE__ */ jsx("polygon", { points: "3,18 12,3 21,18" }),
                 /* @__PURE__ */ jsx("circle", { cx: "12", cy: "3", r: "1.5", fill: "currentColor" }),
@@ -2579,12 +2693,23 @@ var GeometryEditorPanel = forwardRef(
               ] }),
               "D\u1EF1ng h\xECnh h\u1ECDc"
             ] }),
-            /* @__PURE__ */ jsx("button", { onClick: onClose, "aria-label": "\u0110\xF3ng", className: "rounded p-1 transition hover:bg-white/15", children: /* @__PURE__ */ jsxs("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+            isMobile && /* @__PURE__ */ jsx(
+              "button",
+              {
+                type: "button",
+                onClick: handleInsert,
+                disabled: !ready,
+                "data-testid": "geometry-insert-btn-mobile",
+                className: "rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50",
+                children: "Ch\xE8n"
+              }
+            ),
+            /* @__PURE__ */ jsx("button", { onClick: onClose, "aria-label": "\u0110\xF3ng", className: "inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15", children: /* @__PURE__ */ jsxs("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
               /* @__PURE__ */ jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
               /* @__PURE__ */ jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
             ] }) })
           ] }),
-          /* @__PURE__ */ jsx("div", { className: "min-h-0 flex-1", style: { height: "420px" }, children: /* @__PURE__ */ jsx(
+          /* @__PURE__ */ jsx("div", { className: "min-h-0 flex-1", style: isMobile ? void 0 : { height: "420px" }, children: /* @__PURE__ */ jsx(
             JSXGraphMiniBoard,
             {
               onReady: handleReady,
@@ -2657,7 +2782,7 @@ var GeometryEditorPanel = forwardRef(
               }
             }
           ),
-          /* @__PURE__ */ jsxs("footer", { className: "flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2", children: [
+          !isMobile && /* @__PURE__ */ jsxs("footer", { className: "flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2", children: [
             /* @__PURE__ */ jsx("span", { className: "text-xs text-slate-500", children: "Ch\u1ECDn c\xF4ng c\u1EE5 b\xEAn tr\xE1i, click tr\xEAn b\u1EA3ng \u0111\u1EC3 d\u1EF1ng h\xECnh." }),
             /* @__PURE__ */ jsxs("div", { className: "flex gap-2", children: [
               /* @__PURE__ */ jsx(
@@ -2807,6 +2932,8 @@ var GeometryStampHost = forwardRef(
   function GeometryStampHost2({ api, editingElement, onClose, isDark }, ref) {
     const panelRef = useRef(null);
     const [geomState, setGeomState] = useState(INITIAL_GEOM_STATE);
+    const { isMobile } = useIsMobile();
+    const [drawerOpen, setDrawerOpen] = useState(false);
     const initialState = useMemo(() => {
       if (!editingElement) return null;
       if (!isGeometryCustomData(editingElement.customData)) return null;
@@ -2860,7 +2987,10 @@ var GeometryStampHost = forwardRef(
           onUndo: () => panelRef.current?.undo(),
           canUndo: geomState.canUndo,
           onClose,
-          isDark
+          isDark,
+          isMobile,
+          drawerOpen,
+          onDrawerClose: () => setDrawerOpen(false)
         }
       ),
       /* @__PURE__ */ jsx(
@@ -2871,8 +3001,10 @@ var GeometryStampHost = forwardRef(
           onInsert: handleInsert,
           onClose,
           onStateChange: setGeomState,
-          withLeftPanel: true,
-          isDark
+          withLeftPanel: !isMobile,
+          isDark,
+          isMobile,
+          onOpenDrawer: () => setDrawerOpen(true)
         }
       )
     ] });
@@ -2910,38 +3042,58 @@ var geometryStamp = {
   },
   Host: GeometryStampHost
 };
-function Shell2({ title, icon, onClose, children }) {
-  return /* @__PURE__ */ jsxs(
-    "aside",
-    {
-      role: "complementary",
-      "aria-label": title,
-      "data-testid": "stamp-left-panel",
-      "data-stamp-area": "true",
-      className: "absolute left-0 top-0 z-30 flex h-full w-60 flex-col border-r border-slate-200 bg-white shadow-md animate-in slide-in-from-left duration-200",
-      children: [
-        /* @__PURE__ */ jsxs("header", { className: "flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-3 py-2", children: [
-          /* @__PURE__ */ jsxs("h3", { className: "flex items-center gap-2 text-sm font-semibold text-slate-800", children: [
-            /* @__PURE__ */ jsx("span", { className: "text-base leading-none", children: icon }),
-            title
+function Shell2({ title, icon, onClose, children, isMobile, drawerOpen, onDrawerClose }) {
+  const mobileAttrs = isMobile ? {
+    "data-mobile-drawer": "true",
+    "data-drawer-state": drawerOpen ? "open" : "closed"
+  } : {};
+  const handleHeaderClose = () => {
+    if (isMobile) onDrawerClose?.();
+    else onClose();
+  };
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    isMobile && drawerOpen && /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "stamp-drawer-backdrop",
+        onPointerDown: onDrawerClose,
+        "aria-hidden": "true"
+      }
+    ),
+    /* @__PURE__ */ jsxs(
+      "aside",
+      {
+        role: "complementary",
+        "aria-label": title,
+        "aria-hidden": isMobile && !drawerOpen ? "true" : void 0,
+        "data-testid": "stamp-left-panel",
+        "data-stamp-area": "true",
+        ...mobileAttrs,
+        className: isMobile ? "stamp-drawer-mobile flex flex-col border-r border-slate-200 bg-white shadow-md" : "absolute left-0 top-0 z-30 flex h-full w-60 flex-col border-r border-slate-200 bg-white shadow-md animate-in slide-in-from-left duration-200",
+        children: [
+          /* @__PURE__ */ jsxs("header", { className: "flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-3 py-2", children: [
+            /* @__PURE__ */ jsxs("h3", { className: "flex items-center gap-2 text-sm font-semibold text-slate-800", children: [
+              /* @__PURE__ */ jsx("span", { className: "text-base leading-none", children: icon }),
+              title
+            ] }),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: handleHeaderClose,
+                "aria-label": isMobile ? "\u0110\xF3ng ng\u0103n c\xF4ng c\u1EE5" : "\u0110\xF3ng",
+                className: "rounded p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800",
+                children: /* @__PURE__ */ jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+                  /* @__PURE__ */ jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
+                  /* @__PURE__ */ jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
+                ] })
+              }
+            )
           ] }),
-          /* @__PURE__ */ jsx(
-            "button",
-            {
-              onClick: onClose,
-              "aria-label": "\u0110\xF3ng",
-              className: "rounded p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800",
-              children: /* @__PURE__ */ jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
-                /* @__PURE__ */ jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
-                /* @__PURE__ */ jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
-              ] })
-            }
-          )
-        ] }),
-        /* @__PURE__ */ jsx("div", { className: "min-h-0 flex-1 overflow-y-auto p-3 space-y-4", children })
-      ]
-    }
-  );
+          /* @__PURE__ */ jsx("div", { className: "min-h-0 flex-1 overflow-y-auto p-3 space-y-4", children })
+        ]
+      }
+    )
+  ] });
 }
 function Section2({ label, children }) {
   return /* @__PURE__ */ jsxs("section", { children: [
@@ -2988,65 +3140,80 @@ function LeftPanel2({
   displayMode,
   onDisplayModeChange,
   onInsertSnippet,
-  onClose
+  onClose,
+  isMobile,
+  drawerOpen,
+  onDrawerClose
 }) {
-  return /* @__PURE__ */ jsxs(Shell2, { title: "C\xF4ng th\u1EE9c LaTeX", icon: "\u2211", onClose, children: [
-    /* @__PURE__ */ jsx(Section2, { label: "Ch\u1EBF \u0111\u1ED9 hi\u1EC3n th\u1ECB", children: /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-1.5", children: [
-      /* @__PURE__ */ jsxs(
-        "button",
-        {
-          type: "button",
-          onClick: () => onDisplayModeChange(false),
-          "aria-pressed": !displayMode,
-          className: [
-            "rounded-md border px-2 py-1.5 text-xs transition",
-            !displayMode ? "border-emerald-500 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-300" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
-          ].join(" "),
-          children: [
-            /* @__PURE__ */ jsx("span", { className: "block font-medium", children: "Inline" }),
-            /* @__PURE__ */ jsx("span", { className: "block text-[10px] text-slate-500", children: "$ ... $" })
-          ]
-        }
-      ),
-      /* @__PURE__ */ jsxs(
-        "button",
-        {
-          type: "button",
-          onClick: () => onDisplayModeChange(true),
-          "aria-pressed": displayMode,
-          className: [
-            "rounded-md border px-2 py-1.5 text-xs transition",
-            displayMode ? "border-emerald-500 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-300" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
-          ].join(" "),
-          children: [
-            /* @__PURE__ */ jsx("span", { className: "block font-medium", children: "Block" }),
-            /* @__PURE__ */ jsx("span", { className: "block text-[10px] text-slate-500", children: "$$ ... $$" })
-          ]
-        }
-      )
-    ] }) }),
-    SNIPPETS.map((group) => /* @__PURE__ */ jsx(Section2, { label: group.group, children: /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-1", children: group.items.map((s) => /* @__PURE__ */ jsx(
-      "button",
-      {
-        type: "button",
-        onClick: () => onInsertSnippet(s.snippet),
-        title: s.snippet,
-        className: "rounded border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700",
-        children: s.preview
-      },
-      s.snippet
-    )) }) }, group.group)),
-    /* @__PURE__ */ jsx(Section2, { label: "Ph\xEDm t\u1EAFt", children: /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap gap-2 text-[11px] text-slate-600", children: [
-      /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1", children: [
-        /* @__PURE__ */ jsx("kbd", { className: "rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono", children: "Enter" }),
-        "ch\xE8n"
-      ] }),
-      /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1", children: [
-        /* @__PURE__ */ jsx("kbd", { className: "rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono", children: "Esc" }),
-        "\u0111\xF3ng"
-      ] })
-    ] }) })
-  ] });
+  return /* @__PURE__ */ jsxs(
+    Shell2,
+    {
+      title: "C\xF4ng th\u1EE9c LaTeX",
+      icon: "\u2211",
+      onClose,
+      isMobile,
+      drawerOpen,
+      onDrawerClose,
+      children: [
+        /* @__PURE__ */ jsx(Section2, { label: "Ch\u1EBF \u0111\u1ED9 hi\u1EC3n th\u1ECB", children: /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-1.5", children: [
+          /* @__PURE__ */ jsxs(
+            "button",
+            {
+              type: "button",
+              onClick: () => onDisplayModeChange(false),
+              "aria-pressed": !displayMode,
+              className: [
+                "rounded-md border px-2 py-1.5 text-xs transition",
+                !displayMode ? "border-emerald-500 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-300" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+              ].join(" "),
+              children: [
+                /* @__PURE__ */ jsx("span", { className: "block font-medium", children: "Inline" }),
+                /* @__PURE__ */ jsx("span", { className: "block text-[10px] text-slate-500", children: "$ ... $" })
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxs(
+            "button",
+            {
+              type: "button",
+              onClick: () => onDisplayModeChange(true),
+              "aria-pressed": displayMode,
+              className: [
+                "rounded-md border px-2 py-1.5 text-xs transition",
+                displayMode ? "border-emerald-500 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-300" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+              ].join(" "),
+              children: [
+                /* @__PURE__ */ jsx("span", { className: "block font-medium", children: "Block" }),
+                /* @__PURE__ */ jsx("span", { className: "block text-[10px] text-slate-500", children: "$$ ... $$" })
+              ]
+            }
+          )
+        ] }) }),
+        SNIPPETS.map((group) => /* @__PURE__ */ jsx(Section2, { label: group.group, children: /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-1", children: group.items.map((s) => /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            "data-snippet": s.snippet,
+            onClick: () => onInsertSnippet(s.snippet),
+            title: s.snippet,
+            className: "rounded border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700",
+            children: s.preview
+          },
+          s.snippet
+        )) }) }, group.group)),
+        /* @__PURE__ */ jsx(Section2, { label: "Ph\xEDm t\u1EAFt", children: /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap gap-2 text-[11px] text-slate-600", children: [
+          /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1", children: [
+            /* @__PURE__ */ jsx("kbd", { className: "rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono", children: "Enter" }),
+            "ch\xE8n"
+          ] }),
+          /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1", children: [
+            /* @__PURE__ */ jsx("kbd", { className: "rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono", children: "Esc" }),
+            "\u0111\xF3ng"
+          ] })
+        ] }) })
+      ]
+    }
+  );
 }
 
 // src/stamps/latex/render.ts
@@ -3098,7 +3265,9 @@ var EditorPopover = forwardRef(function EditorPopover2({
   onClose,
   displayMode: controlledDisplayMode,
   onDisplayModeChange,
-  withLeftPanel = false
+  withLeftPanel = false,
+  isMobile = false,
+  onOpenDrawer
 }, ref) {
   const [value, setValue] = useState(initialValue);
   const [internalDisplayMode] = useState(false);
@@ -3169,7 +3338,7 @@ var EditorPopover = forwardRef(function EditorPopover2({
     [value, previewSvg, error, displayMode, onInsert]
   );
   const isLegacyPosition = x > 0 || y > 0;
-  const wrapperStyle = isLegacyPosition ? { position: "absolute", top: y, left: x, zIndex: 50 } : {
+  const wrapperStyle = isMobile ? { position: "fixed", inset: 0, zIndex: 50 } : isLegacyPosition ? { position: "absolute", top: y, left: x, zIndex: 50 } : {
     position: "absolute",
     top: "50%",
     left: withLeftPanel ? "calc(50% + 120px)" : "50%",
@@ -3181,29 +3350,55 @@ var EditorPopover = forwardRef(function EditorPopover2({
     {
       style: wrapperStyle,
       "data-stamp-area": "true",
-      className: "w-[420px] max-w-[calc(100vw-280px)] rounded-lg border border-slate-300 bg-white shadow-2xl ring-1 ring-black/5",
+      "data-mobile-editor": isMobile ? "true" : void 0,
+      className: isMobile ? "flex h-full w-full flex-col bg-white" : "w-[420px] max-w-[calc(100vw-280px)] rounded-lg border border-slate-300 bg-white shadow-2xl ring-1 ring-black/5",
       role: "dialog",
       "aria-label": "Nh\u1EADp c\xF4ng th\u1EE9c LaTeX",
       children: [
-        /* @__PURE__ */ jsxs("header", { className: "flex items-center justify-between rounded-t-lg border-b border-slate-200 bg-gradient-to-r from-indigo-600 to-purple-600 px-3 py-2 text-white", children: [
-          /* @__PURE__ */ jsxs("h3", { className: "flex items-center gap-2 text-sm font-semibold", children: [
+        /* @__PURE__ */ jsxs("header", { className: `flex items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-indigo-600 to-purple-600 px-3 py-2 text-white${isMobile ? "" : " rounded-t-lg"}`, children: [
+          isMobile && /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              onClick: onOpenDrawer,
+              "aria-label": "M\u1EDF ng\u0103n snippet",
+              className: "-ml-1 inline-flex h-10 w-10 items-center justify-center rounded transition hover:bg-white/15",
+              children: /* @__PURE__ */ jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+                /* @__PURE__ */ jsx("line", { x1: "4", y1: "6", x2: "20", y2: "6" }),
+                /* @__PURE__ */ jsx("line", { x1: "4", y1: "12", x2: "20", y2: "12" }),
+                /* @__PURE__ */ jsx("line", { x1: "4", y1: "18", x2: "20", y2: "18" })
+              ] })
+            }
+          ),
+          /* @__PURE__ */ jsxs("h3", { className: "flex flex-1 items-center gap-2 text-sm font-semibold", children: [
             /* @__PURE__ */ jsx("span", { className: "text-base leading-none", children: "\u2211" }),
             "C\xF4ng th\u1EE9c LaTeX"
           ] }),
+          isMobile && /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              onClick: handleInsert,
+              disabled: !previewSvg || !!error,
+              "data-testid": "latex-insert-btn-mobile",
+              className: "rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50",
+              children: "Ch\xE8n"
+            }
+          ),
           /* @__PURE__ */ jsx(
             "button",
             {
               onClick: onClose,
               "aria-label": "\u0110\xF3ng",
-              className: "rounded p-1 transition hover:bg-white/15",
-              children: /* @__PURE__ */ jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+              className: "inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15",
+              children: /* @__PURE__ */ jsxs("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
                 /* @__PURE__ */ jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
                 /* @__PURE__ */ jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
               ] })
             }
           )
         ] }),
-        /* @__PURE__ */ jsxs("div", { className: "space-y-2 p-3", children: [
+        /* @__PURE__ */ jsxs("div", { className: `space-y-2 p-3${isMobile ? " flex min-h-0 flex-1 flex-col" : ""}`, children: [
           /* @__PURE__ */ jsx(
             "input",
             {
@@ -3214,7 +3409,7 @@ var EditorPopover = forwardRef(function EditorPopover2({
               onChange: (e) => setValue(e.target.value),
               onKeyDown: handleKeyDown,
               placeholder: "Vd: \\frac{a^2+b^2}{c}",
-              className: "w-full rounded border border-slate-300 px-2 py-1.5 font-mono text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200",
+              className: `w-full rounded border border-slate-300 px-2 py-1.5 font-mono outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200${isMobile ? " min-h-[44px] text-base" : " text-sm"}`,
               autoFocus: true
             }
           ),
@@ -3222,7 +3417,8 @@ var EditorPopover = forwardRef(function EditorPopover2({
             "div",
             {
               className: [
-                "flex min-h-[64px] items-center justify-center rounded border p-3 text-center",
+                "flex items-center justify-center rounded border p-3 text-center",
+                isMobile ? "min-h-0 flex-1 overflow-auto" : "min-h-[64px]",
                 error ? "border-rose-300 bg-rose-50 text-rose-700" : "border-slate-200 bg-slate-50"
               ].join(" "),
               children: error ? /* @__PURE__ */ jsxs("span", { className: "text-xs", children: [
@@ -3231,7 +3427,7 @@ var EditorPopover = forwardRef(function EditorPopover2({
               ] }) : previewSvg ? /* @__PURE__ */ jsx("span", { dangerouslySetInnerHTML: { __html: previewSvg } }) : /* @__PURE__ */ jsx("span", { className: "text-xs text-slate-400", children: "(xem tr\u01B0\u1EDBc)" })
             }
           ),
-          /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between", children: [
+          !isMobile && /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between", children: [
             /* @__PURE__ */ jsxs("span", { className: "text-[11px] text-slate-500", children: [
               displayMode ? "Block" : "Inline",
               " \xB7 Enter \u0111\u1EC3 ch\xE8n"
@@ -3255,6 +3451,10 @@ var EditorPopover = forwardRef(function EditorPopover2({
                 }
               )
             ] })
+          ] }),
+          isMobile && /* @__PURE__ */ jsxs("div", { className: "text-center text-[11px] text-slate-500", children: [
+            displayMode ? "Block" : "Inline",
+            " \xB7 B\u1EA5m Ch\xE8n \u1EDF thanh tr\xEAn"
           ] })
         ] })
       ]
@@ -3269,6 +3469,8 @@ function isLatexCustomData(data) {
 var LatexStampHost = forwardRef(
   function LatexStampHost2({ api, editingElement, onClose }, ref) {
     const editorRef = useRef(null);
+    const { isMobile } = useIsMobile();
+    const [drawerOpen, setDrawerOpen] = useState(false);
     const initial = useMemo(() => {
       if (editingElement && isLatexCustomData(editingElement.customData)) {
         return {
@@ -3315,7 +3517,10 @@ var LatexStampHost = forwardRef(
           displayMode,
           onDisplayModeChange: setDisplayMode,
           onInsertSnippet: (s) => editorRef.current?.insertAtCursor(s),
-          onClose
+          onClose,
+          isMobile,
+          drawerOpen,
+          onDrawerClose: () => setDrawerOpen(false)
         }
       ),
       /* @__PURE__ */ jsx(
@@ -3329,7 +3534,9 @@ var LatexStampHost = forwardRef(
           onDisplayModeChange: setDisplayMode,
           onInsert: handleInsert,
           onClose,
-          withLeftPanel: true
+          withLeftPanel: !isMobile,
+          isMobile,
+          onOpenDrawer: () => setDrawerOpen(true)
         }
       )
     ] });
@@ -4158,38 +4365,61 @@ var ICONS_3D = {
   label: /* @__PURE__ */ jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsx("path", { d: "M4 4 H 16 L 20 8 L 16 12 H 4 Z" }) })
 };
 var TOOLTIP_DELAY_MS2 = 400;
-function Shell3({ title, icon, onClose, children, isDark }) {
-  return /* @__PURE__ */ jsxs(
-    "aside",
-    {
-      role: "complementary",
-      "aria-label": title,
-      "data-testid": "geom3d-left-panel",
-      "data-stamp-area": "true",
-      className: `${isDark ? "theme--dark " : ""}absolute left-0 top-0 z-30 flex h-full w-60 flex-col border-r border-slate-200 bg-white shadow-md animate-in slide-in-from-left duration-200`,
-      children: [
-        /* @__PURE__ */ jsxs("header", { className: "flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-3 py-2", children: [
-          /* @__PURE__ */ jsxs("h3", { className: "flex items-center gap-2 text-sm font-semibold text-slate-800", children: [
-            /* @__PURE__ */ jsx("span", { className: "text-base leading-none", children: icon }),
-            title
+function Shell3({ title, icon, onClose, children, isDark, isMobile, drawerOpen, onDrawerClose }) {
+  const mobileAttrs = isMobile ? {
+    "data-mobile-drawer": "true",
+    "data-drawer-state": drawerOpen ? "open" : "closed"
+  } : {};
+  const handleHeaderClose = () => {
+    if (isMobile) onDrawerClose?.();
+    else onClose();
+  };
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    isMobile && drawerOpen && /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "stamp-drawer-backdrop",
+        onPointerDown: onDrawerClose,
+        "aria-hidden": "true"
+      }
+    ),
+    /* @__PURE__ */ jsxs(
+      "aside",
+      {
+        role: "complementary",
+        "aria-label": title,
+        "aria-hidden": isMobile && !drawerOpen ? "true" : void 0,
+        "data-testid": "geom3d-left-panel",
+        "data-stamp-area": "true",
+        ...mobileAttrs,
+        className: [
+          isDark ? "theme--dark " : "",
+          isMobile ? "stamp-drawer-mobile flex flex-col border-r border-slate-200 bg-white shadow-md" : "absolute left-0 top-0 z-30 flex h-full w-60 flex-col border-r border-slate-200 bg-white shadow-md animate-in slide-in-from-left duration-200"
+        ].join(""),
+        children: [
+          /* @__PURE__ */ jsxs("header", { className: "flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-3 py-2", children: [
+            /* @__PURE__ */ jsxs("h3", { className: "flex items-center gap-2 text-sm font-semibold text-slate-800", children: [
+              /* @__PURE__ */ jsx("span", { className: "text-base leading-none", children: icon }),
+              title
+            ] }),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: handleHeaderClose,
+                "aria-label": isMobile ? "\u0110\xF3ng ng\u0103n c\xF4ng c\u1EE5" : "\u0110\xF3ng",
+                className: "rounded p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800",
+                children: /* @__PURE__ */ jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+                  /* @__PURE__ */ jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
+                  /* @__PURE__ */ jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
+                ] })
+              }
+            )
           ] }),
-          /* @__PURE__ */ jsx(
-            "button",
-            {
-              onClick: onClose,
-              "aria-label": "\u0110\xF3ng",
-              className: "rounded p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800",
-              children: /* @__PURE__ */ jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
-                /* @__PURE__ */ jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
-                /* @__PURE__ */ jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
-              ] })
-            }
-          )
-        ] }),
-        /* @__PURE__ */ jsx("div", { className: "min-h-0 flex-1 overflow-y-auto p-3 space-y-4", children })
-      ]
-    }
-  );
+          /* @__PURE__ */ jsx("div", { className: "min-h-0 flex-1 overflow-y-auto p-3 space-y-4", children })
+        ]
+      }
+    )
+  ] });
 }
 function Section3({ label, children }) {
   return /* @__PURE__ */ jsxs("section", { children: [
@@ -4198,7 +4428,7 @@ function Section3({ label, children }) {
   ] });
 }
 var Geom3DIconHeader = /* @__PURE__ */ jsx("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round", children: /* @__PURE__ */ jsx("path", { d: "M4 7 L14 4 L20 7 L14 10 Z M4 7 L4 17 L14 20 L14 10 M14 20 L20 17 L20 7" }) });
-function LeftPanel3({ handle, onResetView, onClose, isDark }) {
+function LeftPanel3({ handle, onResetView, onClose, isDark, isMobile, drawerOpen, onDrawerClose }) {
   const [tool, setTool] = useState("move");
   const [showAxes, setShowAxes] = useState(true);
   const [showMesh, setShowMesh] = useState(false);
@@ -4246,84 +4476,99 @@ function LeftPanel3({ handle, onResetView, onClose, isDark }) {
     {}
   );
   return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsxs(Shell3, { title: "H\xECnh h\u1ECDc 3D", icon: Geom3DIconHeader, onClose, isDark, children: [
-      /* @__PURE__ */ jsx(Section3, { label: "B\u1ED1 c\u1EE5c", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 flex-wrap text-[11px] text-slate-700", children: [
-        /* @__PURE__ */ jsxs("label", { className: "inline-flex select-none items-center gap-1.5", children: [
-          /* @__PURE__ */ jsx(
-            "input",
+    /* @__PURE__ */ jsxs(
+      Shell3,
+      {
+        title: "H\xECnh h\u1ECDc 3D",
+        icon: Geom3DIconHeader,
+        onClose,
+        isDark,
+        isMobile,
+        drawerOpen,
+        onDrawerClose,
+        children: [
+          /* @__PURE__ */ jsx(Section3, { label: "B\u1ED1 c\u1EE5c", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 flex-wrap text-[11px] text-slate-700", children: [
+            /* @__PURE__ */ jsxs("label", { className: "inline-flex select-none items-center gap-1.5", children: [
+              /* @__PURE__ */ jsx(
+                "input",
+                {
+                  type: "checkbox",
+                  checked: showAxes,
+                  onChange: (e) => handle?.setShowAxes(e.target.checked),
+                  "data-testid": "toggle-axes"
+                }
+              ),
+              "Tr\u1EE5c"
+            ] }),
+            /* @__PURE__ */ jsxs("label", { className: "inline-flex select-none items-center gap-1.5", children: [
+              /* @__PURE__ */ jsx(
+                "input",
+                {
+                  type: "checkbox",
+                  checked: showMesh,
+                  onChange: (e) => handle?.setShowMesh(e.target.checked),
+                  "data-testid": "toggle-mesh"
+                }
+              ),
+              "L\u01B0\u1EDBi"
+            ] }),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                type: "button",
+                onClick: onResetView,
+                title: "Reset g\xF3c nh\xECn",
+                "aria-label": "Reset view",
+                className: "ml-auto inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900",
+                children: /* @__PURE__ */ jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+                  /* @__PURE__ */ jsx("path", { d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" }),
+                  /* @__PURE__ */ jsx("path", { d: "M3 3v5h5" })
+                ] })
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                type: "button",
+                onClick: () => handle?.undo(),
+                disabled: !canUndo,
+                title: "Ho\xE0n t\xE1c (Ctrl/Cmd+Z)",
+                "aria-label": "Ho\xE0n t\xE1c",
+                className: "inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
+                children: /* @__PURE__ */ jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+                  /* @__PURE__ */ jsx("polyline", { points: "3 7 3 13 9 13" }),
+                  /* @__PURE__ */ jsx("path", { d: "M3.51 13a9 9 0 1 0 2.13-9.36L3 7" })
+                ] })
+              }
+            )
+          ] }) }),
+          Object.entries(grouped).map(([group, tools]) => /* @__PURE__ */ jsx(Section3, { label: GROUP_LABELS_3D[group], children: /* @__PURE__ */ jsx("div", { className: "grid grid-cols-4 gap-1", children: tools.map((t) => /* @__PURE__ */ jsx(
+            ToolButton,
             {
-              type: "checkbox",
-              checked: showAxes,
-              onChange: (e) => handle?.setShowAxes(e.target.checked),
-              "data-testid": "toggle-axes"
-            }
-          ),
-          "Tr\u1EE5c"
-        ] }),
-        /* @__PURE__ */ jsxs("label", { className: "inline-flex select-none items-center gap-1.5", children: [
-          /* @__PURE__ */ jsx(
-            "input",
-            {
-              type: "checkbox",
-              checked: showMesh,
-              onChange: (e) => handle?.setShowMesh(e.target.checked),
-              "data-testid": "toggle-mesh"
-            }
-          ),
-          "L\u01B0\u1EDBi"
-        ] }),
-        /* @__PURE__ */ jsx(
-          "button",
-          {
-            type: "button",
-            onClick: onResetView,
-            title: "Reset g\xF3c nh\xECn",
-            "aria-label": "Reset view",
-            className: "ml-auto inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900",
-            children: /* @__PURE__ */ jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
-              /* @__PURE__ */ jsx("path", { d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" }),
-              /* @__PURE__ */ jsx("path", { d: "M3 3v5h5" })
-            ] })
-          }
-        ),
-        /* @__PURE__ */ jsx(
-          "button",
-          {
-            type: "button",
-            onClick: () => handle?.undo(),
-            disabled: !canUndo,
-            title: "Ho\xE0n t\xE1c (Ctrl/Cmd+Z)",
-            "aria-label": "Ho\xE0n t\xE1c",
-            className: "inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
-            children: /* @__PURE__ */ jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
-              /* @__PURE__ */ jsx("polyline", { points: "3 7 3 13 9 13" }),
-              /* @__PURE__ */ jsx("path", { d: "M3.51 13a9 9 0 1 0 2.13-9.36L3 7" })
-            ] })
-          }
-        )
-      ] }) }),
-      Object.entries(grouped).map(([group, tools]) => /* @__PURE__ */ jsx(Section3, { label: GROUP_LABELS_3D[group], children: /* @__PURE__ */ jsx("div", { className: "grid grid-cols-4 gap-1", children: tools.map((t) => /* @__PURE__ */ jsx(
-        ToolButton,
-        {
-          toolKey: t.key,
-          label: t.label,
-          hint: t.hint,
-          active: tool === t.key,
-          onClick: () => handle?.setTool(t.key),
-          icon: /* @__PURE__ */ jsx(
-            "span",
-            {
-              onMouseEnter: (e) => showHover(e.currentTarget.closest("button"), t),
-              onMouseLeave: hideHover,
-              onFocus: (e) => showHover(e.currentTarget.closest("button"), t),
-              onBlur: hideHover,
-              children: ICONS_3D[t.key]
-            }
-          )
-        },
-        t.key
-      )) }) }, group))
-    ] }),
+              toolKey: t.key,
+              label: t.label,
+              hint: t.hint,
+              active: tool === t.key,
+              onClick: () => {
+                handle?.setTool(t.key);
+                if (isMobile) onDrawerClose?.();
+              },
+              icon: /* @__PURE__ */ jsx(
+                "span",
+                {
+                  onMouseEnter: (e) => showHover(e.currentTarget.closest("button"), t),
+                  onMouseLeave: hideHover,
+                  onFocus: (e) => showHover(e.currentTarget.closest("button"), t),
+                  onBlur: hideHover,
+                  children: ICONS_3D[t.key]
+                }
+              )
+            },
+            t.key
+          )) }) }, group))
+        ]
+      }
+    ),
     portalReady && hover && typeof document !== "undefined" ? createPortal(
       /* @__PURE__ */ jsxs(
         "div",
@@ -4346,7 +4591,8 @@ function LeftPanel3({ handle, onResetView, onClose, isDark }) {
     ) : null
   ] });
 }
-var EditorPanel = forwardRef(function EditorPanel2({ isDark, initial, onInsert, onClose }, ref) {
+var EditorPanel = forwardRef(function EditorPanel2({ isDark, initial, onInsert, onClose, isMobile = false }, ref) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const boardRef = useRef(null);
   const [boardHandle, setBoardHandle] = useState(null);
   const setBoard = useCallback((h) => {
@@ -4381,40 +4627,128 @@ var EditorPanel = forwardRef(function EditorPanel2({ isDark, initial, onInsert, 
   const handleResetView = useCallback(() => {
     boardRef.current?.resetView();
   }, []);
+  const handleInsert = useCallback(() => {
+    const board = boardRef.current;
+    if (!board) return;
+    const log = board.getCreationLog();
+    if (log.length === 0) return;
+    const view = board.getViewState();
+    const state = {
+      version: 1,
+      bbox: board.getBbox(),
+      view,
+      showAxes: board.getShowAxes(),
+      showMesh: board.getShowMesh(),
+      elements: log
+    };
+    const snap = board.snapshotSVG();
+    onInsert(JSON.stringify(state), snap.svgString, snap.width, snap.height);
+  }, [onInsert]);
+  const wrapperStyle = isMobile ? {
+    position: "fixed",
+    inset: 0,
+    background: "#fff",
+    zIndex: 10,
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden"
+  } : {
+    position: "absolute",
+    left: "50%",
+    top: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 900,
+    height: 700,
+    background: "#fff",
+    boxShadow: "0 6px 32px rgba(0,0,0,0.2)",
+    borderRadius: 8,
+    zIndex: 10,
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden"
+  };
   return /* @__PURE__ */ jsxs(
     "div",
     {
       "data-testid": "geom3d-editor-panel",
       "data-stamp-area": "true",
-      style: {
-        position: "absolute",
-        left: "50%",
-        top: "50%",
-        transform: "translate(-50%, -50%)",
-        width: 900,
-        height: 700,
-        background: "#fff",
-        boxShadow: "0 6px 32px rgba(0,0,0,0.2)",
-        borderRadius: 8,
-        zIndex: 10,
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden"
-      },
+      "data-mobile-editor": isMobile ? "true" : void 0,
+      style: wrapperStyle,
+      className: isDark ? "theme--dark" : void 0,
       children: [
         /* @__PURE__ */ jsxs(
           "div",
           {
             style: {
               display: "flex",
+              gap: 8,
               padding: "8px 12px",
               borderBottom: "1px solid #eee",
               alignItems: "center"
             },
             children: [
-              /* @__PURE__ */ jsx("span", { style: { fontWeight: 600 }, children: "H\xECnh h\u1ECDc kh\xF4ng gian (3D)" }),
-              /* @__PURE__ */ jsx("span", { style: { flex: 1 } }),
-              /* @__PURE__ */ jsx("button", { type: "button", onClick: onClose, children: "\u0110\xF3ng" })
+              isMobile && /* @__PURE__ */ jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => setDrawerOpen(true),
+                  "aria-label": "M\u1EDF ng\u0103n c\xF4ng c\u1EE5",
+                  style: {
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: 40,
+                    width: 40,
+                    border: 0,
+                    background: "transparent",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    color: "inherit"
+                  },
+                  children: /* @__PURE__ */ jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+                    /* @__PURE__ */ jsx("line", { x1: "4", y1: "6", x2: "20", y2: "6" }),
+                    /* @__PURE__ */ jsx("line", { x1: "4", y1: "12", x2: "20", y2: "12" }),
+                    /* @__PURE__ */ jsx("line", { x1: "4", y1: "18", x2: "20", y2: "18" })
+                  ] })
+                }
+              ),
+              /* @__PURE__ */ jsx("span", { style: { fontWeight: 600, flex: 1 }, children: "H\xECnh h\u1ECDc kh\xF4ng gian (3D)" }),
+              isMobile && /* @__PURE__ */ jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: handleInsert,
+                  "data-testid": "geom3d-insert-btn-mobile",
+                  style: {
+                    background: "#2563eb",
+                    color: "#fff",
+                    border: 0,
+                    padding: "6px 14px",
+                    borderRadius: 6,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: "pointer"
+                  },
+                  children: "Ch\xE8n"
+                }
+              ),
+              /* @__PURE__ */ jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: onClose,
+                  "aria-label": "\u0110\xF3ng",
+                  style: {
+                    border: "1px solid #cbd5e1",
+                    background: "#fff",
+                    padding: isMobile ? "6px 10px" : "4px 10px",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    fontSize: 13
+                  },
+                  children: "\u0110\xF3ng"
+                }
+              )
             ]
           }
         ),
@@ -4425,7 +4759,10 @@ var EditorPanel = forwardRef(function EditorPanel2({ isDark, initial, onInsert, 
               handle: boardHandle,
               onResetView: handleResetView,
               onClose,
-              isDark
+              isDark,
+              isMobile,
+              drawerOpen,
+              onDrawerClose: () => setDrawerOpen(false)
             }
           ),
           /* @__PURE__ */ jsx(
@@ -4433,7 +4770,7 @@ var EditorPanel = forwardRef(function EditorPanel2({ isDark, initial, onInsert, 
             {
               style: {
                 position: "absolute",
-                left: 120,
+                left: isMobile ? 0 : 120,
                 top: 0,
                 right: 0,
                 bottom: 0,
@@ -4548,6 +4885,7 @@ function parseInitial(editingElement) {
 var Geometry3DStampHost = forwardRef(
   function Geometry3DStampHost2({ api, editingElement, onClose, isDark }, ref) {
     const editorRef = useRef(null);
+    const { isMobile } = useIsMobile();
     const initial = useMemo(
       () => parseInitial(editingElement),
       [editingElement]
@@ -4585,7 +4923,8 @@ var Geometry3DStampHost = forwardRef(
         isDark,
         initial,
         onInsert: handleInsert,
-        onClose
+        onClose,
+        isMobile
       }
     );
   }
