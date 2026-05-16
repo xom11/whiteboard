@@ -1,6 +1,5 @@
 "use client";
 
-import JXG from 'jsxgraph';
 import { parseSerializedBoard3D } from './serialize';
 
 export interface RenderResult {
@@ -19,6 +18,7 @@ export async function renderGeometry3DSvgFromState(
   jsonState: string,
 ): Promise<RenderResult> {
   const state = parseSerializedBoard3D(jsonState);
+  const JXG = (await import('jsxgraph')).default;
 
   const div = document.createElement('div');
   div.style.cssText = `position:absolute;left:-9999px;top:-9999px;width:${OUTPUT_WIDTH}px;height:${OUTPUT_HEIGHT}px;`;

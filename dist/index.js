@@ -1,4 +1,5 @@
 "use client";
+require('./index.css');
 'use strict';
 
 var excalidraw = require('@excalidraw/excalidraw');
@@ -6,13 +7,11 @@ var jsxRuntime = require('react/jsx-runtime');
 var dynamic = require('next/dynamic');
 var react = require('react');
 var reactDom = require('react-dom');
-var JXG = require('jsxgraph');
 require('@excalidraw/excalidraw/index.css');
 
 function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
 
 var dynamic__default = /*#__PURE__*/_interopDefault(dynamic);
-var JXG__default = /*#__PURE__*/_interopDefault(JXG);
 
 var __defProp = Object.defineProperty;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -678,9 +677,9 @@ function handleMove(ctx, e) {
     if (!ctx.boardRef.current || !ctx.phantomRef.current) return;
     try {
       const coords = ctx.boardRef.current.getUsrCoordsOfMouse(e);
-      const JXG3 = ctx.jxgRef.current;
-      if (!JXG3) return;
-      ctx.phantomRef.current.setPositionDirectly(JXG3.COORDS_BY_USER, [coords[0], coords[1]]);
+      const JXG = ctx.jxgRef.current;
+      if (!JXG) return;
+      ctx.phantomRef.current.setPositionDirectly(JXG.COORDS_BY_USER, [coords[0], coords[1]]);
       ctx.boardRef.current.update();
     } catch {
     }
@@ -1487,11 +1486,11 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
     if (typeof window === "undefined" || !containerRef.current) return;
     let cancelled = false;
     (async () => {
-      const JXG3 = (await import('jsxgraph')).default;
+      const JXG = (await import('jsxgraph')).default;
       if (cancelled || !containerRef.current) return;
-      jxgRef.current = JXG3;
+      jxgRef.current = JXG;
       try {
-        const opts = JXG3.Options;
+        const opts = JXG.Options;
         if (opts) {
           opts.text = opts.text || {};
           opts.text.display = "internal";
@@ -1505,7 +1504,7 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
         }
       } catch {
       }
-      const board = JXG3.JSXGraph.initBoard(containerId, {
+      const board = JXG.JSXGraph.initBoard(containerId, {
         boundingbox: initialState?.bbox ?? [-10, 10, 10, -10],
         axis: false,
         // We manage axis manually via toggle for clean default
@@ -2137,9 +2136,9 @@ function renderGeometryToSvg(boardContainer) {
 async function renderGeometrySvgFromState(jsonState) {
   const parsed = JSON.parse(jsonState);
   const palette = paletteFor(false);
-  const JXG3 = (await import('jsxgraph')).default;
+  const JXG = (await import('jsxgraph')).default;
   try {
-    const opts = JXG3.Options;
+    const opts = JXG.Options;
     if (opts) {
       opts.text = opts.text || {};
       opts.text.display = "internal";
@@ -2164,7 +2163,7 @@ async function renderGeometrySvgFromState(jsonState) {
   document.body.appendChild(container);
   let board = null;
   try {
-    board = JXG3.JSXGraph.initBoard(containerId, {
+    board = JXG.JSXGraph.initBoard(containerId, {
       boundingbox: parsed.bbox,
       axis: !!parsed.showAxis,
       grid: !!parsed.showGrid,
@@ -2177,7 +2176,7 @@ async function renderGeometrySvgFromState(jsonState) {
     return renderGeometryToSvg(container);
   } finally {
     try {
-      if (board) JXG3.JSXGraph.freeBoard(board);
+      if (board) JXG.JSXGraph.freeBoard(board);
     } catch {
     }
     if (container.parentNode) container.parentNode.removeChild(container);
@@ -3849,126 +3848,134 @@ var MiniBoard3D = react.forwardRef(function MiniBoard3D2({ isDark, initialState 
   react.useEffect(() => {
     const div = containerRef.current;
     if (!div) return;
-    JXG__default.default.Options.text.display = "internal";
-    const board = JXG__default.default.JSXGraph.initBoard(div, {
-      boundingbox: [-6, 6, 6, -6],
-      axis: false,
-      showCopyright: false,
-      showNavigation: false,
-      renderer: "svg"
-    });
-    boardRef.current = board;
-    const initView = initialState?.view ?? DEFAULT_VIEW3D;
-    const baseAttrs = VIEW3D_ATTRS(isDark);
-    const view = board.create(
-      "view3d",
-      [
-        [-5, -5],
-        [10, 10],
+    let cancelled = false;
+    let JXG = null;
+    let board = null;
+    void (async () => {
+      JXG = (await import('jsxgraph')).default;
+      if (cancelled || !containerRef.current) return;
+      JXG.Options.text.display = "internal";
+      board = JXG.JSXGraph.initBoard(div, {
+        boundingbox: [-6, 6, 6, -6],
+        axis: false,
+        showCopyright: false,
+        showNavigation: false,
+        renderer: "svg"
+      });
+      boardRef.current = board;
+      const initView = initialState?.view ?? DEFAULT_VIEW3D;
+      const baseAttrs = VIEW3D_ATTRS(isDark);
+      const view = board.create(
+        "view3d",
         [
-          [initView.bbox3D[0], initView.bbox3D[3]],
-          [initView.bbox3D[1], initView.bbox3D[4]],
-          [initView.bbox3D[2], initView.bbox3D[5]]
-        ]
-      ],
-      {
-        ...baseAttrs,
-        az: { ...baseAttrs.az, value: initView.azimuth },
-        el: { ...baseAttrs.el, value: initView.elevation }
-      }
-    );
-    viewRef.current = view;
-    let idCounter = 1;
-    const ctx = createHandlerContext({
-      view,
-      pushLog: (e) => {
-        logRef.current.push(e);
-        notify();
-      },
-      objMap: objMapRef.current,
-      nextId: () => `obj_${Date.now().toString(36)}_${(idCounter++).toString(36)}`,
-      isDark,
-      promptCoords: (label) => {
-        const raw = window.prompt(`${label}
-(\u0111\u1ECBnh d\u1EA1ng "x,y,z")`, "0,0,0");
-        if (!raw) return null;
-        const parts = raw.split(",").map((s) => Number(s.trim()));
-        if (parts.length !== 3 || parts.some((n) => !isFinite(n))) return null;
-        return { x: parts[0], y: parts[1], z: parts[2] };
-      },
-      promptNumber: (label) => {
-        const raw = window.prompt(label, "1");
-        if (raw == null) return null;
-        const n = Number(raw);
-        return isFinite(n) ? n : null;
-      },
-      promptText: (label) => {
-        const raw = window.prompt(label, "");
-        return raw == null ? null : raw;
-      },
-      notify
-    });
-    ctxRef.current = ctx;
-    function findExistingPointAt(clientX, clientY) {
-      const containerRect = div.getBoundingClientRect();
-      const localX = clientX - containerRect.left;
-      const localY = clientY - containerRect.top;
-      const PICK = 18;
-      const svg = div.querySelector("svg");
-      if (!svg) return void 0;
-      for (const [id, obj] of objMapRef.current) {
-        const entry = obj;
-        if (entry?.elType !== "point3d") continue;
-        const sc = entry.element2D?.coords?.scrCoords;
-        if (!sc || sc.length < 3) continue;
-        const dx = sc[1] - localX;
-        const dy = sc[2] - localY;
-        if (dx * dx + dy * dy <= PICK * PICK) return id;
-      }
-      return void 0;
-    }
-    const handlePointerDown = (e) => {
-      const tool = toolRef.current;
-      if (tool === "move") return;
-      const existingPointId = findExistingPointAt(e.clientX, e.clientY);
-      let x3 = 0;
-      let y3 = 0;
-      const z3 = 0;
-      try {
-        const board2d = boardRef.current;
-        if (board2d?.getUsrCoordsOfMouse) {
-          const uc = board2d.getUsrCoordsOfMouse(e);
-          if (Array.isArray(uc) && uc.length >= 2) {
-            x3 = uc[0];
-            y3 = uc[1];
-          }
+          [-5, -5],
+          [10, 10],
+          [
+            [initView.bbox3D[0], initView.bbox3D[3]],
+            [initView.bbox3D[1], initView.bbox3D[4]],
+            [initView.bbox3D[2], initView.bbox3D[5]]
+          ]
+        ],
+        {
+          ...baseAttrs,
+          az: { ...baseAttrs.az, value: initView.azimuth },
+          el: { ...baseAttrs.el, value: initView.elevation }
         }
-      } catch {
+      );
+      viewRef.current = view;
+      let idCounter = 1;
+      const ctx = createHandlerContext({
+        view,
+        pushLog: (e) => {
+          logRef.current.push(e);
+          notify();
+        },
+        objMap: objMapRef.current,
+        nextId: () => `obj_${Date.now().toString(36)}_${(idCounter++).toString(36)}`,
+        isDark,
+        promptCoords: (label) => {
+          const raw = window.prompt(`${label}
+(\u0111\u1ECBnh d\u1EA1ng "x,y,z")`, "0,0,0");
+          if (!raw) return null;
+          const parts = raw.split(",").map((s) => Number(s.trim()));
+          if (parts.length !== 3 || parts.some((n) => !isFinite(n))) return null;
+          return { x: parts[0], y: parts[1], z: parts[2] };
+        },
+        promptNumber: (label) => {
+          const raw = window.prompt(label, "1");
+          if (raw == null) return null;
+          const n = Number(raw);
+          return isFinite(n) ? n : null;
+        },
+        promptText: (label) => {
+          const raw = window.prompt(label, "");
+          return raw == null ? null : raw;
+        },
+        notify
+      });
+      ctxRef.current = ctx;
+      function findExistingPointAt(clientX, clientY) {
+        const containerRect = div.getBoundingClientRect();
+        const localX = clientX - containerRect.left;
+        const localY = clientY - containerRect.top;
+        const PICK = 18;
+        const svg = div.querySelector("svg");
+        if (!svg) return void 0;
+        for (const [id, obj] of objMapRef.current) {
+          const entry = obj;
+          if (entry?.elType !== "point3d") continue;
+          const sc = entry.element2D?.coords?.scrCoords;
+          if (!sc || sc.length < 3) continue;
+          const dx = sc[1] - localX;
+          const dy = sc[2] - localY;
+          if (dx * dx + dy * dy <= PICK * PICK) return id;
+        }
+        return void 0;
       }
-      const hit = { x3, y3, z3, existingPointId };
-      handleToolStep(ctx, tool, hit);
-    };
-    const svgEl = div.querySelector("svg");
-    const targetEl = svgEl ?? div;
-    const handlePointerDownEv = (e) => handlePointerDown(e);
-    targetEl.addEventListener("pointerdown", handlePointerDownEv);
-    pointerHandlerRef.current = { el: targetEl, fn: handlePointerDownEv };
-    if (initialState?.elements?.length) {
-      const map = objMapRef.current;
-      for (const el of initialState.elements) {
-        const parents = el.parents.map(
-          (p2) => typeof p2 === "string" && p2.startsWith("@id:") ? map.get(p2.slice(4)) : p2
-        );
-        const obj = view.create(el.type, parents, {
-          ...el.attributes,
-          id: el.id,
-          name: el.label
-        });
-        map.set(el.id, obj);
-        logRef.current.push(el);
+      const handlePointerDown = (e) => {
+        const tool = toolRef.current;
+        if (tool === "move") return;
+        const existingPointId = findExistingPointAt(e.clientX, e.clientY);
+        let x3 = 0;
+        let y3 = 0;
+        const z3 = 0;
+        try {
+          const board2d = boardRef.current;
+          if (board2d?.getUsrCoordsOfMouse) {
+            const uc = board2d.getUsrCoordsOfMouse(e);
+            if (Array.isArray(uc) && uc.length >= 2) {
+              x3 = uc[0];
+              y3 = uc[1];
+            }
+          }
+        } catch {
+        }
+        const hit = { x3, y3, z3, existingPointId };
+        handleToolStep(ctx, tool, hit);
+      };
+      const svgEl = div.querySelector("svg");
+      const targetEl = svgEl ?? div;
+      const handlePointerDownEv = (e) => handlePointerDown(e);
+      targetEl.addEventListener("pointerdown", handlePointerDownEv);
+      pointerHandlerRef.current = { el: targetEl, fn: handlePointerDownEv };
+      if (initialState?.elements?.length) {
+        const map = objMapRef.current;
+        for (const el of initialState.elements) {
+          const parents = el.parents.map(
+            (p2) => typeof p2 === "string" && p2.startsWith("@id:") ? map.get(p2.slice(4)) : p2
+          );
+          const obj = view.create(el.type, parents, {
+            ...el.attributes,
+            id: el.id,
+            name: el.label
+          });
+          map.set(el.id, obj);
+          logRef.current.push(el);
+        }
       }
-    }
+    })();
     return () => {
+      cancelled = true;
       if (pointerHandlerRef.current) {
         pointerHandlerRef.current.el.removeEventListener(
           "pointerdown",
@@ -3977,7 +3984,7 @@ var MiniBoard3D = react.forwardRef(function MiniBoard3D2({ isDark, initialState 
         pointerHandlerRef.current = null;
       }
       try {
-        JXG__default.default.JSXGraph.freeBoard(board);
+        if (board && JXG) JXG.JSXGraph.freeBoard(board);
       } catch {
       }
       boardRef.current = null;
@@ -4501,16 +4508,19 @@ function parseSerializedBoard3D(json) {
   }
   return parsed;
 }
+
+// src/stamps/geometry-3d/render.ts
 var OUTPUT_WIDTH = 1024;
 var OUTPUT_HEIGHT = 768;
 async function renderGeometry3DSvgFromState(jsonState) {
   const state = parseSerializedBoard3D(jsonState);
+  const JXG = (await import('jsxgraph')).default;
   const div = document.createElement("div");
   div.style.cssText = `position:absolute;left:-9999px;top:-9999px;width:${OUTPUT_WIDTH}px;height:${OUTPUT_HEIGHT}px;`;
   document.body.appendChild(div);
   try {
-    JXG__default.default.Options.text.display = "internal";
-    const board = JXG__default.default.JSXGraph.initBoard(div, {
+    JXG.Options.text.display = "internal";
+    const board = JXG.JSXGraph.initBoard(div, {
       boundingbox: state.bbox,
       axis: false,
       showCopyright: false,
@@ -4558,7 +4568,7 @@ async function renderGeometry3DSvgFromState(jsonState) {
     clone.setAttribute("height", String(OUTPUT_HEIGHT));
     const svgString = new XMLSerializer().serializeToString(clone);
     try {
-      JXG__default.default.JSXGraph.freeBoard(board);
+      JXG.JSXGraph.freeBoard(board);
     } catch {
     }
     return { svgString, width: OUTPUT_WIDTH, height: OUTPUT_HEIGHT };

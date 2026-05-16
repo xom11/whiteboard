@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.2 — 2026-05-16
+
+### Fixed (consumer integration hotfixes)
+- **CSS dark-mode không reachable** — `dist/index.css` (101 dòng dark-mode override cho stamps) chưa có path nào load được từ consumer. Fix:
+  - Postbuild auto-prepend `import './index.css'` vào `dist/index.{mjs,js}` → CSS tự load qua side-effect, consumer không cần làm gì.
+  - Đồng thời expose `"./styles.css": "./dist/index.css"` trong `package.json#exports` cho ai muốn import thủ công (`import '@xom11/whiteboard/styles.css'`).
+- **SSR-unsafe `import JXG`** — `geometry-3d` còn `import JXG from 'jsxgraph'` ở module top → JSXGraph touches `document` khi evaluate → Next.js Server Component throw, consumer buộc phải `next/dynamic({ ssr: false })`. Fix: chuyển sang dynamic import (`(await import('jsxgraph')).default`) trong `render.ts` + `MiniBoard3D.tsx`, đồng nhất với pattern `geometry-2d` đã làm. Consumer giờ có thể SSR-safe import (vẫn nên `ssr:false` cho perf, nhưng không còn bắt buộc).
+
 ## 0.6.1 — 2026-05-15
 
 ### Fixed (geometry-3d E2E hotfixes)

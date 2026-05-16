@@ -9,7 +9,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import JXG from 'jsxgraph';
 import { DEFAULT_VIEW3D, VIEW3D_ATTRS, paletteFor } from './theme';
 import type { GeomTool3D } from './tools';
 import type { SerializedBoard3D, SerializedElement3D } from '../serialize';
@@ -84,9 +83,17 @@ export const MiniBoard3D = forwardRef<MiniBoard3DHandle, Props>(function MiniBoa
   useEffect(() => {
     const div = containerRef.current;
     if (!div) return;
-    JXG.Options.text.display = 'internal';
+    let cancelled = false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let JXG: any = null;
+    let board: JxgBoard | null = null;
 
-    const board: JxgBoard = JXG.JSXGraph.initBoard(div, {
+    void (async () => {
+      JXG = (await import('jsxgraph')).default;
+      if (cancelled || !containerRef.current) return;
+      JXG.Options.text.display = 'internal';
+
+      board = JXG.JSXGraph.initBoard(div, {
       boundingbox: [-6, 6, 6, -6],
       axis: false,
       showCopyright: false,
@@ -229,8 +236,10 @@ export const MiniBoard3D = forwardRef<MiniBoard3DHandle, Props>(function MiniBoa
         logRef.current.push(el);
       }
     }
+    })();
 
     return () => {
+      cancelled = true;
       if (pointerHandlerRef.current) {
         pointerHandlerRef.current.el.removeEventListener(
           'pointerdown',
@@ -239,7 +248,7 @@ export const MiniBoard3D = forwardRef<MiniBoard3DHandle, Props>(function MiniBoa
         pointerHandlerRef.current = null;
       }
       try {
-        JXG.JSXGraph.freeBoard(board);
+        if (board && JXG) JXG.JSXGraph.freeBoard(board);
       } catch {
         /* ignore teardown errors in tests */
       }
