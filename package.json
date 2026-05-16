@@ -3,7 +3,7 @@
   "version": "0.6.1",
   "private": false,
   "description": "Excalidraw + JSXGraph + KaTeX whiteboard component (drawing, geometry stamps, LaTeX stamps).",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -15,7 +15,9 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "README.md"
   ],
   "sideEffects": [
     "*.css"
