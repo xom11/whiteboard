@@ -2,14 +2,14 @@
 
 import { useCallback, useState } from 'react';
 import {
-  ExcalidrawWhiteboardView,
+  Whiteboard,
   type ExcalidrawSceneSnapshot,
   type BinaryFiles,
 } from '../../src';
 
 export default function PlaygroundPage() {
   const [, setScene] = useState<ExcalidrawSceneSnapshot | null>(null);
-  const [files, setFiles] = useState<BinaryFiles>({});
+  const [, setFiles] = useState<BinaryFiles>({});
 
   const handleSceneChange = useCallback((snapshot: ExcalidrawSceneSnapshot) => {
     setScene(snapshot);
@@ -21,12 +21,8 @@ export default function PlaygroundPage() {
 
   return (
     <div className="h-screen w-screen">
-      <ExcalidrawWhiteboardView
-        role="teacher"
-        roomId="playground"
-        initialScene={null}
-        remoteScene={null}
-        remoteFiles={files}
+      <Whiteboard
+        storageKey="playground"
         onSceneChange={handleSceneChange}
         onFilesChange={handleFilesChange}
       />
