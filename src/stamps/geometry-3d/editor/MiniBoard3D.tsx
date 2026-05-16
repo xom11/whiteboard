@@ -268,7 +268,36 @@ export const MiniBoard3D = forwardRef<MiniBoard3DHandle, Props>(function MiniBoa
       toolRef.current = t;
       notify();
     },
-    getCreationLog: () => [...logRef.current],
+    // Sync toạ độ live của free point3d về log trước khi trả ra. JSXGraph
+    // cho phép drag point3d (parents=[x,y,z] không có ref), việc drag chỉ
+    // cập nhật obj.X()/Y()/Z() chứ không đụng log → re-edit + Chèn sẽ
+    // serialize toạ độ cũ → SVG không đổi → fileId trùng → user thấy
+    // "k thay đổi". Line/plane/polygon/sphere tham chiếu point qua @id nên
+    // auto-update theo.
+    getCreationLog: () => logRef.current.map((e) => {
+      if (e.type !== 'point3d') return { ...e };
+      const parents = e.parents;
+      if (!Array.isArray(parents) || parents.length !== 3) return { ...e };
+      if (
+        typeof parents[0] !== 'number' ||
+        typeof parents[1] !== 'number' ||
+        typeof parents[2] !== 'number'
+      ) return { ...e };
+      const obj = objMapRef.current.get(e.id) as
+        | { X?: () => number; Y?: () => number; Z?: () => number }
+        | undefined;
+      if (
+        !obj ||
+        typeof obj.X !== 'function' ||
+        typeof obj.Y !== 'function' ||
+        typeof obj.Z !== 'function'
+      ) return { ...e };
+      const x = obj.X();
+      const y = obj.Y();
+      const z = obj.Z();
+      if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) return { ...e };
+      return { ...e, parents: [x, y, z] };
+    }),
     pushLog: (e) => {
       logRef.current.push(e);
       notify();
