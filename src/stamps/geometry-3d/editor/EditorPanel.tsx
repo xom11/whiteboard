@@ -147,6 +147,7 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
 
         // Branch 3 — point tool but non-placeable hit (no state change, no snapshot).
         if (tool === 'point') {
+          dragSnapshotRef.current = null;
           draggedPointRef.current = null;
           dragStartRef.current = null;
           return true;
