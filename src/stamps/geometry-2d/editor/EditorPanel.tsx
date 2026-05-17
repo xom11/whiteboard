@@ -5,6 +5,7 @@ import { serializeBoard, type SerializedBoard } from '../serialize';
 import { renderGeometrySvgFromState } from '../render';
 import { PropertiesPopover } from './PropertiesPopover';
 import { TransformParamPopover } from './TransformParamPopover';
+import { UndoIcon, RedoIcon } from './LeftPanel';
 
 interface Props {
   initialState: SerializedBoard | null;
@@ -19,6 +20,11 @@ interface Props {
   isMobile?: boolean;
   /** Click hamburger trên mobile để mở LeftPanel drawer. */
   onOpenDrawer?: () => void;
+  /** Mobile header: undo/redo. Bypass LeftPanel để user truy cập nhanh. */
+  onUndo?: () => void;
+  onRedo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
 }
 
 export interface GeomBoardState {
@@ -42,7 +48,7 @@ export interface GeometryEditorPanelHandle {
 }
 
 export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
-  function GeometryEditorPanel({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer }, ref) {
+  function GeometryEditorPanel({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer, onUndo, onRedo, canUndo, canRedo }, ref) {
     const handleRef = useRef<MiniBoardHandle | null>(null);
     const [ready, setReady] = useState(false);
     const [propsPopover, setPropsPopover] = useState<ObjectSnapshot | null>(null);
@@ -165,15 +171,39 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
             Dựng hình học
           </h3>
           {isMobile && (
-            <button
-              type="button"
-              onClick={handleInsert}
-              disabled={!ready}
-              data-testid="geometry-insert-btn-mobile"
-              className="rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50"
-            >
-              Chèn
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={onUndo}
+                disabled={!canUndo}
+                aria-label="Hoàn tác"
+                title="Hoàn tác (Ctrl/Cmd+Z)"
+                data-testid="undo-btn-mobile"
+                className="inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15 disabled:opacity-40"
+              >
+                <UndoIcon />
+              </button>
+              <button
+                type="button"
+                onClick={onRedo}
+                disabled={!canRedo}
+                aria-label="Làm lại"
+                title="Làm lại (Ctrl/Cmd+Shift+Z)"
+                data-testid="redo-btn-mobile"
+                className="inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15 disabled:opacity-40"
+              >
+                <RedoIcon />
+              </button>
+              <button
+                type="button"
+                onClick={handleInsert}
+                disabled={!ready}
+                data-testid="geometry-insert-btn-mobile"
+                className="rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50"
+              >
+                Chèn
+              </button>
+            </>
           )}
           <button onClick={onClose} aria-label="Đóng" className="inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
