@@ -1,4 +1,4 @@
-import { validate } from '../parser';
+import { validate, rewriteToJs } from '../parser';
 
 describe('parser.validate', () => {
   it('chấp nhận biểu thức cơ bản', () => {
@@ -46,5 +46,42 @@ describe('parser.validate', () => {
     expect(validate('x +').ok).toBe(false);
     expect(validate('(x').ok).toBe(false);
     expect(validate(')').ok).toBe(false);
+  });
+});
+
+describe('parser.rewriteToJs', () => {
+  it('chuyển ^ thành **', () => {
+    expect(rewriteToJs('x^2', {})).toBe('x**2');
+  });
+
+  it('thay thế hằng pi và e', () => {
+    expect(rewriteToJs('pi * x', {})).toBe('Math.PI * x');
+    expect(rewriteToJs('e^x', {})).toBe('Math.E**x');
+  });
+
+  it('thay thế hàm whitelist với Math.<fn>', () => {
+    expect(rewriteToJs('sin(x)', {})).toBe('Math.sin(x)');
+    expect(rewriteToJs('cos(x)', {})).toBe('Math.cos(x)');
+    expect(rewriteToJs('sqrt(x)', {})).toBe('Math.sqrt(x)');
+  });
+
+  it('không nhầm asin thành sin (longest first)', () => {
+    expect(rewriteToJs('asin(x)', {})).toBe('Math.asin(x)');
+    expect(rewriteToJs('acos(x)', {})).toBe('Math.acos(x)');
+    expect(rewriteToJs('atan(x)', {})).toBe('Math.atan(x)');
+  });
+
+  it('log map sang Math.log10, ln map sang Math.log', () => {
+    expect(rewriteToJs('log(x)', {})).toBe('Math.log10(x)');
+    expect(rewriteToJs('ln(x)', {})).toBe('Math.log(x)');
+  });
+
+  it('thay thế tham số đơn ký tự', () => {
+    expect(rewriteToJs('a*x + b', { a: 2, b: 3 })).toBe('(2)*x + (3)');
+    expect(rewriteToJs('m * sin(x)', { m: 1.5 })).toBe('(1.5) * Math.sin(x)');
+  });
+
+  it('không thay thế tham số tên dài (chỉ 1 ký tự)', () => {
+    expect(rewriteToJs('x', { foo: 99 })).toBe('x');
   });
 });
