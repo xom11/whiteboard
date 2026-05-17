@@ -19,6 +19,7 @@ import { ToolbarInjector } from './stamps/shared/ToolbarInjector';
 import { useShortcuts } from './stamps/shared/useShortcuts';
 import { useStampDoubleClick } from './stamps/shared/useStampDoubleClick';
 import { useStampShortcutBlocker } from './stamps/shared/useStampShortcutBlocker';
+import { useStampClickOutside } from './stamps/shared/useStampClickOutside';
 import { restoreMissingStampFiles } from './stamps/shared/restoreStampFiles';
 import type { StampHostHandle } from './stamps/shared/types';
 import { readScene, writeScene } from './core/persistence/sceneStore';
@@ -402,29 +403,7 @@ export function Whiteboard({
     return () => window.removeEventListener('keydown', onKey, { capture: true });
   }, [activeStamp, closeStamp]);
 
-  // ---- Click ra ngoài → auto-insert (nếu có nội dung) rồi đóng ----
-  useEffect(() => {
-    if (!activeStamp) return;
-    let lastFireTime = 0;
-    const handler = (e: MouseEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
-      if (target.closest('[data-stamp-area="true"]')) return;
-      const now = Date.now();
-      if (now - lastFireTime < 50) return;
-      lastFireTime = now;
-      // Trigger insert qua Host imperative API. Host quyết định có chèn được
-      // không (geometry: log.length > 0; latex: input không rỗng + preview ok).
-      hostRef.current?.tryInsert();
-      closeStamp();
-    };
-    window.addEventListener('pointerdown', handler, { capture: true });
-    window.addEventListener('mousedown', handler, { capture: true });
-    return () => {
-      window.removeEventListener('pointerdown', handler, { capture: true });
-      window.removeEventListener('mousedown', handler, { capture: true });
-    };
-  }, [activeStamp, closeStamp]);
+  useStampClickOutside({ activeStamp, hostRef, onClose: closeStamp });
 
   return (
     <div className={`relative h-full w-full${isDarkTheme ? ' theme--dark' : ''}`}>
