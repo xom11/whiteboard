@@ -35,6 +35,19 @@ export function ClassroomBoard() {
 }
 ```
 
+## Migration to v0.8.0 (geometry-3d redesign)
+
+`geometry3dStamp` được viết lại theo UX của GeoGebra 3D Calculator:
+
+- Click trên mặt nền / trục / mặt phẳng / mặt cầu để **đặt điểm constraint** (không còn prompt nhập toạ độ).
+- **Drag điểm** trên Move tool — điểm trượt theo surface (z-axis chỉ thay đổi z, mặt nền giữ z=0).
+- **Algebra panel** mới (tab bên trái) hiển thị mỗi object: label, biểu thức symbolic, giá trị numeric, menu ⋮ (đổi tên / màu / ẩn / xoá).
+- 16 tool: Move, Point, Point-on-Object, Segment, Line, Ray, Vector, Polygon, Plane (3 điểm), Pyramid, Prism, Tetrahedron, Cube, Sphere, Cylinder, Cone.
+
+**Backward compat**: Stamps lưu từ v0.7.0 load OK (legacy points → constraint free). API consumer giữ nguyên.
+
+**Tạm thời bỏ**: Chord-shortcut 2 phím (`G S` cho segment, v.v.) — sẽ trở lại với letter-mapping mới.
+
 ## Migration to v0.7.0 (BREAKING)
 
 `DEFAULT_STAMPS` v0.7.0 chỉ gồm 2 stamps stable: `geometry` + `latex`. 3D + graph2d chuyển sang opt-IN (experimental).

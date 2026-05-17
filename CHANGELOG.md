@@ -1,5 +1,51 @@
 # Changelog
 
+## v0.8.0 (unreleased)
+
+### Major redesign — Geometry 3D stamp (GeoGebra-style UX)
+
+Tham khảo GeoGebra 3D Calculator (https://www.geogebra.org/3d) — toàn bộ UX layer của `geometryStamp3D` được viết lại.
+
+### Breaking changes
+- Tool registry đổi từ `GeomTool3D` (15 key) sang `ToolKey` (16 key, thêm `pointOnObject`, bỏ `label` — label trở thành menu action trên hàng algebra).
+- Editor API: `EditorPanelHandle` mới (`hasContent()` + `serialize()`); host wrapper được điều chỉnh tương ứng.
+- Schema bump `version: 1 → 2` (cả `Geometry3DCustomData` lẫn `SerializedBoard3D`). Stamps v0.7.0 (`version: 1`) **vẫn load được** — mọi `point3d` legacy được map về `Constraint = { kind: 'free' }` tự động.
+- Chord-shortcut nhập 2 phím tạm thời bị xoá (deferred — sẽ trở lại khi có letter-mapping mới cho 16 tool).
+
+### Added
+- **Algebra panel** — tab thứ 2 bên cạnh Tools, hiển thị mỗi object 1 row: chip màu • label • symbolic expression (vd `Point(zAxis)`, `Segment(A, B)`, `Sphere(O, P)`) • numeric value `(x, y, z)` • menu ⋮ (đổi tên / đổi màu / ẩn / xoá).
+- **Point-on-surface constraint** — click trên mặt nền / trục / mặt phẳng / mặt cầu / đa giác tạo điểm gắn vào surface đó. Drag điểm sẽ trượt theo surface (chỉ thay đổi tham số `(u, v)`, `t`, `theta/phi`).
+- **StatusHint bar** dưới canvas hiển thị hint của tool đang dùng + nhãn object đang hover (giống GeoGebra).
+- **Scene3D model** (`editor/scene/Scene3D.ts`) — pure-TS source of truth tách rời JSXGraph: `addPoint(constraint)`, `addObject(kind, spec)`, event emitter (`add`/`change`/`delete`/`reset`), cascade delete.
+- **Constraint types** đầy đủ: `free`, `onGround`, `onAxis`, `onPlane`, `onLine`, `onPolygon`, `onSphere`.
+- **constraintMath** (`editor/scene/constraintMath.ts`) — `constraintToWorld` + `worldToConstraint` round-trip cho mọi kind.
+- **hitTest** layer (`editor/hitTest/`) — ray-cast screen → world, intersect ray với plane/sphere/segment, snap về existing point trong bán kính 8px.
+- **JxgRenderer** (`editor/renderer/JxgRenderer.ts`) — subscribe Scene3D events → tạo/update `point3d/line3d/plane3d/polygon3d/sphere3d`. Drag hook: JSXGraph `on('drag')` → `worldToConstraint` → `scene.emitChange`.
+- **Declarative ToolSpec** (`editor/tools/spec.ts`) — 16 tool khai báo `steps: ToolStep[]` (point / closingPoint / number / object) + `build(args, scene)`. ToolController FSM consume hit events, advance step, finalize.
+- 16 tool handlers: `move`, `point`, `pointOnObject`, `segment`, `line`, `ray`, `vector`, `polygon`, `plane`, `pyramid`, `prism`, `tetrahedron` (đều), `cube`, `sphere`, `cylinder`, `cone`.
+
+### Changed
+- File layout: `src/stamps/geometry-3d/editor/` reorganize thành `scene/`, `hitTest/`, `renderer/`, `tools/handlers/`, `toolPanel/`, `algebraPanel/`. Mỗi layer độc lập + có test riêng.
+- LeftPanel rewrite: tabbed UI (Tools | Algebra) thay cho danh sách phẳng tool buttons.
+- MiniBoard3D simplify: chỉ mount JSXGraph + expose view3d ref + emit pointer events. Toolflow + handlers chuyển sang ToolController.
+
+### Removed
+- Legacy files: `editor/handlers.ts`, `editor/tools.ts`, `editor/toolButtons.tsx` (~1100 LOC).
+- Tests legacy: `handlers.test.ts`, `tools.test.ts`, `Host.chord.test.tsx`.
+- Tool `label` (gắn nhãn cho điểm) — chức năng đổi tên đã được tích hợp vào RowMenu của Algebra panel.
+
+### Migration notes
+- Stamps lưu từ v0.7.0 load OK (legacy points → `constraint: 'free'`). Khi save lại lần đầu, stamp được upgrade lên `version: 2` tự động.
+- Consumer KHÔNG cần đổi import — `Whiteboard` + `geometry3dStamp` API giữ nguyên.
+
+### Test coverage
+- 330 test pass (geometry-3d: 142, scene: 23, hitTest: 13, renderer: 13, tools: 27, algebraPanel: 6, UI: 8...).
+- Typecheck strict mode clean.
+
+### Internal architecture refs
+- Spec: `docs/superpowers/specs/2026-05-17-3d-geogebra-redesign-design.md` (417 dòng, 17 section).
+- Plan: `docs/superpowers/plans/2026-05-17-3d-geogebra-redesign.md` (8 phase, ~40 task).
+
 ## v0.7.0 (2026-05-17)
 
 ### Breaking changes
