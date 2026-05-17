@@ -15,11 +15,13 @@ export class JxgRenderer {
   private unsubAdd: () => void;
   private unsubChange: () => void;
   private unsubDelete: () => void;
+  private unsubReset: () => void;
 
   constructor(private scene: Scene3D, private view: View3DLike) {
     this.unsubAdd = scene.on('add', (o) => this.handleAdd(o));
     this.unsubChange = scene.on('change', (o) => this.handleChange(o));
     this.unsubDelete = scene.on('delete', (id) => this.handleDelete(id));
+    this.unsubReset = scene.on('reset', () => this.handleReset());
     for (const obj of scene.list()) this.handleAdd(obj);
   }
 
@@ -27,6 +29,7 @@ export class JxgRenderer {
     this.unsubAdd();
     this.unsubChange();
     this.unsubDelete();
+    this.unsubReset();
     for (const [id, j] of this.map) {
       try { j.remove?.(); } catch { /* swallow */ }
       this.map.delete(id);
@@ -224,5 +227,12 @@ export class JxgRenderer {
     if (!j) return;
     try { j.remove?.(); } catch { /* swallow */ }
     this.map.delete(id);
+  }
+
+  private handleReset(): void {
+    for (const [, j] of this.map) {
+      try { j.remove?.(); } catch { /* swallow */ }
+    }
+    this.map.clear();
   }
 }
