@@ -1,5 +1,5 @@
 "use client";
-import { isGeometry3DCustomData, parseSerializedBoard3D } from './chunk-DJTBZEAR.mjs';
+import { isGeometry3DCustomData, parseSerializedBoard3D } from './chunk-BFUP5QTF.mjs';
 import { lazy } from 'react';
 import { jsxs, jsx } from 'react/jsx-runtime';
 
@@ -71,7 +71,7 @@ async function renderGeometry3DSvgFromState(jsonState) {
   }
 }
 var Geometry3DStampHost = lazy(
-  () => import('./host-XUFON6CQ.mjs').then((m) => ({ default: m.Geometry3DStampHost }))
+  () => import('./host-IR36GT5N.mjs').then((m) => ({ default: m.Geometry3DStampHost }))
 );
 var Geometry3DIcon = /* @__PURE__ */ jsxs(
   "svg",
@@ -125,5 +125,5 @@ var geometry3dStamp = {
 };
 
 export { geometry3dStamp };
-//# sourceMappingURL=chunk-HYXFHEDJ.mjs.map
-//# sourceMappingURL=chunk-HYXFHEDJ.mjs.map
+//# sourceMappingURL=chunk-4DNQWZFX.mjs.map
+//# sourceMappingURL=chunk-4DNQWZFX.mjs.map

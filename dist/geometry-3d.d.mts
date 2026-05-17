@@ -4,7 +4,7 @@ import '@excalidraw/excalidraw/element/types';
 
 interface Geometry3DCustomData extends BaseStampCustomData {
     kind: 'geometry3d';
-    version: 1;
+    version: 1 | 2;
     jsonState: string;
     svgWidth: number;
     svgHeight: number;

@@ -3,10 +3,30 @@ require('./index.css');
 'use strict';
 
 var jsxRuntime = require('react/jsx-runtime');
-var react = require('react');
+var React11 = require('react');
 var reactDom = require('react-dom');
 var excalidraw = require('@excalidraw/excalidraw');
 require('@excalidraw/excalidraw/index.css');
+
+function _interopNamespace(e) {
+  if (e && e.__esModule) return e;
+  var n = Object.create(null);
+  if (e) {
+    Object.keys(e).forEach(function (k) {
+      if (k !== 'default') {
+        var d = Object.getOwnPropertyDescriptor(e, k);
+        Object.defineProperty(n, k, d.get ? d : {
+          enumerable: true,
+          get: function () { return e[k]; }
+        });
+      }
+    });
+  }
+  n.default = e;
+  return Object.freeze(n);
+}
+
+var React11__namespace = /*#__PURE__*/_interopNamespace(React11);
 
 var __defProp = Object.defineProperty;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -846,56 +866,56 @@ var init_MiniBoard = __esm({
     init_theme();
     init_handlers();
     JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
-      const isDarkRef = react.useRef(!!isDark);
+      const isDarkRef = React11.useRef(!!isDark);
       isDarkRef.current = !!isDark;
-      const containerId = react.useId().replace(/:/g, "_") + "_jxgmini";
-      const containerRef = react.useRef(null);
-      const boardRef = react.useRef(null);
-      const jxgRef = react.useRef(null);
-      const axisObjsRef = react.useRef({});
-      const creationLogRef = react.useRef([]);
-      const [tool, setTool] = react.useState("move");
-      const toolRef = react.useRef("move");
+      const containerId = React11.useId().replace(/:/g, "_") + "_jxgmini";
+      const containerRef = React11.useRef(null);
+      const boardRef = React11.useRef(null);
+      const jxgRef = React11.useRef(null);
+      const axisObjsRef = React11.useRef({});
+      const creationLogRef = React11.useRef([]);
+      const [tool, setTool] = React11.useState("move");
+      const toolRef = React11.useRef("move");
       toolRef.current = tool;
-      const [showAxis, setShowAxis] = react.useState(initialState?.showAxis ?? false);
-      const [showGrid, setShowGrid] = react.useState(initialState?.showGrid ?? false);
-      const showAxisRef = react.useRef(showAxis);
+      const [showAxis, setShowAxis] = React11.useState(initialState?.showAxis ?? false);
+      const [showGrid, setShowGrid] = React11.useState(initialState?.showGrid ?? false);
+      const showAxisRef = React11.useRef(showAxis);
       showAxisRef.current = showAxis;
-      const showGridRef = react.useRef(showGrid);
+      const showGridRef = React11.useRef(showGrid);
       showGridRef.current = showGrid;
-      const objMapRef = react.useRef(/* @__PURE__ */ new Map());
-      const valueLabelsRef = react.useRef(/* @__PURE__ */ new Map());
-      const pendingRef = react.useRef([]);
-      const [, setPendingCount] = react.useState(0);
-      const selectedSetRef = react.useRef(/* @__PURE__ */ new Set());
-      const selOriginalRef = react.useRef(/* @__PURE__ */ new Map());
-      const [, setSelectionTick] = react.useState(0);
-      const marqueeRef = react.useRef(null);
-      const previewSegRef = react.useRef([]);
-      const phantomRef = react.useRef(null);
-      const previewShapeRef = react.useRef(null);
-      const previewRafRef = react.useRef(null);
-      const [historyTick, setHistoryTick] = react.useState(0);
-      const [, setWarn] = react.useState(null);
-      const warnTimerRef = react.useRef(null);
-      const flashWarn = react.useCallback((msg) => {
+      const objMapRef = React11.useRef(/* @__PURE__ */ new Map());
+      const valueLabelsRef = React11.useRef(/* @__PURE__ */ new Map());
+      const pendingRef = React11.useRef([]);
+      const [, setPendingCount] = React11.useState(0);
+      const selectedSetRef = React11.useRef(/* @__PURE__ */ new Set());
+      const selOriginalRef = React11.useRef(/* @__PURE__ */ new Map());
+      const [, setSelectionTick] = React11.useState(0);
+      const marqueeRef = React11.useRef(null);
+      const previewSegRef = React11.useRef([]);
+      const phantomRef = React11.useRef(null);
+      const previewShapeRef = React11.useRef(null);
+      const previewRafRef = React11.useRef(null);
+      const [historyTick, setHistoryTick] = React11.useState(0);
+      const [, setWarn] = React11.useState(null);
+      const warnTimerRef = React11.useRef(null);
+      const flashWarn = React11.useCallback((msg) => {
         if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
         setWarn(msg);
         warnTimerRef.current = setTimeout(() => setWarn(null), 1800);
       }, []);
-      react.useEffect(() => () => {
+      React11.useEffect(() => () => {
         if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
       }, []);
-      const labelIdxRef = react.useRef(0);
-      const nextLabel = react.useCallback(() => {
+      const labelIdxRef = React11.useRef(0);
+      const nextLabel = React11.useCallback(() => {
         const idx = labelIdxRef.current;
         const suffix = idx >= 26 ? String(Math.floor(idx / 26)) : "";
         const code = "A".charCodeAt(0) + idx % 26;
         labelIdxRef.current = idx + 1;
         return String.fromCharCode(code) + suffix;
       }, []);
-      const nextLocalId = react.useCallback(() => "j" + creationLogRef.current.length, []);
-      const resolveArgs = react.useCallback((args) => {
+      const nextLocalId = React11.useCallback(() => "j" + creationLogRef.current.length, []);
+      const resolveArgs = React11.useCallback((args) => {
         return args.map((a) => {
           if (typeof a === "string" && objMapRef.current.has(a)) {
             return objMapRef.current.get(a);
@@ -903,7 +923,7 @@ var init_MiniBoard = __esm({
           return a;
         });
       }, []);
-      const pushLog = react.useCallback(
+      const pushLog = React11.useCallback(
         (id, type, args, attrs, obj) => {
           creationLogRef.current.push({ id, type, args, attrs });
           objMapRef.current.set(id, obj);
@@ -911,7 +931,7 @@ var init_MiniBoard = __esm({
         },
         []
       );
-      const create = react.useCallback(
+      const create = React11.useCallback(
         (type, args, attrs = {}) => {
           if (!boardRef.current) return null;
           const id = nextLocalId();
@@ -923,13 +943,13 @@ var init_MiniBoard = __esm({
         },
         [nextLocalId, resolveArgs, pushLog]
       );
-      const localIdOf = react.useCallback((obj) => {
+      const localIdOf = React11.useCallback((obj) => {
         for (const [id, o] of objMapRef.current.entries()) {
           if (o === obj) return id;
         }
         return null;
       }, []);
-      const snapshotObject = react.useCallback((obj, anchorScreen) => {
+      const snapshotObject = React11.useCallback((obj, anchorScreen) => {
         const o = obj;
         const k = objKind(o);
         if (k !== "point" && k !== "line" && k !== "circle") return null;
@@ -949,7 +969,7 @@ var init_MiniBoard = __esm({
           screenCoords: anchorScreen
         };
       }, []);
-      const createValueLabelFor = react.useCallback((target) => {
+      const createValueLabelFor = React11.useCallback((target) => {
         const b = boardRef.current;
         if (!b || !target) return null;
         const k = objKind(target);
@@ -986,7 +1006,7 @@ var init_MiniBoard = __esm({
         }
         return null;
       }, []);
-      const mutateObject = react.useCallback((obj, patch) => {
+      const mutateObject = React11.useCallback((obj, patch) => {
         if (!boardRef.current) return;
         const o = obj;
         if (patch.remove) {
@@ -1065,7 +1085,7 @@ var init_MiniBoard = __esm({
         } catch {
         }
       }, [createValueLabelFor, localIdOf, nextLocalId]);
-      const clearPreviewSegs = react.useCallback(() => {
+      const clearPreviewSegs = React11.useCallback(() => {
         const b = boardRef.current;
         if (!b) return;
         for (const s of previewSegRef.current) {
@@ -1076,7 +1096,7 @@ var init_MiniBoard = __esm({
         }
         previewSegRef.current = [];
       }, []);
-      const removePhantom = react.useCallback(() => {
+      const removePhantom = React11.useCallback(() => {
         const b = boardRef.current;
         if (!b) return;
         if (previewShapeRef.current) {
@@ -1094,13 +1114,13 @@ var init_MiniBoard = __esm({
           phantomRef.current = null;
         }
       }, []);
-      const clearPending = react.useCallback(() => {
+      const clearPending = React11.useCallback(() => {
         removePhantom();
         clearPreviewSegs();
         pendingRef.current = [];
         setPendingCount(0);
       }, [clearPreviewSegs, removePhantom]);
-      const applySelectionStyle = react.useCallback((obj) => {
+      const applySelectionStyle = React11.useCallback((obj) => {
         if (!obj || selOriginalRef.current.has(obj)) return;
         try {
           const visProp = obj.visProp ?? {};
@@ -1117,7 +1137,7 @@ var init_MiniBoard = __esm({
         } catch {
         }
       }, []);
-      const restoreSelectionStyle = react.useCallback((obj) => {
+      const restoreSelectionStyle = React11.useCallback((obj) => {
         const orig = selOriginalRef.current.get(obj);
         if (!orig) return;
         try {
@@ -1129,7 +1149,7 @@ var init_MiniBoard = __esm({
         }
         selOriginalRef.current.delete(obj);
       }, []);
-      const clearSelection = react.useCallback(() => {
+      const clearSelection = React11.useCallback(() => {
         for (const o of selectedSetRef.current) {
           restoreSelectionStyle(o);
         }
@@ -1140,7 +1160,7 @@ var init_MiniBoard = __esm({
         } catch {
         }
       }, [restoreSelectionStyle]);
-      const toggleSelect = react.useCallback((obj, additive) => {
+      const toggleSelect = React11.useCallback((obj, additive) => {
         if (!obj) return;
         if (!additive) {
           for (const o of selectedSetRef.current) {
@@ -1163,7 +1183,7 @@ var init_MiniBoard = __esm({
         } catch {
         }
       }, [applySelectionStyle, restoreSelectionStyle]);
-      const deleteSelected = react.useCallback(() => {
+      const deleteSelected = React11.useCallback(() => {
         const board = boardRef.current;
         if (!board) return;
         if (selectedSetRef.current.size === 0) return;
@@ -1187,7 +1207,7 @@ var init_MiniBoard = __esm({
         setSelectionTick((t) => t + 1);
         setHistoryTick((t) => t + 1);
       }, []);
-      const buildPreview = react.useCallback((toolDef, picks, phantom) => {
+      const buildPreview = React11.useCallback((toolDef, picks, phantom) => {
         const b = boardRef.current;
         if (!b) return null;
         const style = { strokeColor: "#3b82f6", strokeWidth: 1.5, strokeOpacity: 0.65, dash: 2, fixed: true, highlight: false, withLabel: false };
@@ -1241,7 +1261,7 @@ var init_MiniBoard = __esm({
           return null;
         }
       }, []);
-      const refreshPreview = react.useCallback(() => {
+      const refreshPreview = React11.useCallback(() => {
         const b = boardRef.current;
         if (!b) return;
         if (previewShapeRef.current) {
@@ -1266,37 +1286,37 @@ var init_MiniBoard = __esm({
         }
         previewShapeRef.current = buildPreview(toolDef, picks, phantomRef.current);
       }, [buildPreview]);
-      const finalize = react.useCallback((toolDef, picks) => {
+      const finalize = React11.useCallback((toolDef, picks) => {
         if (!boardRef.current) return;
         const labels = picks.map(localIdOf).filter(Boolean);
-        const stroke2 = { strokeColor: "@stroke", strokeWidth: 2 };
-        const strokeOnly = { ...stroke2, fillColor: "none", fillOpacity: 0 };
+        const stroke = { strokeColor: "@stroke", strokeWidth: 2 };
+        const strokeOnly = { ...stroke, fillColor: "none", fillOpacity: 0 };
         const lblName = nextLabel();
         switch (toolDef.key) {
           case "midpoint":
             create("midpoint", labels, { name: lblName, color: "@stroke", size: 3 });
             break;
           case "segment":
-            create("segment", labels, stroke2);
+            create("segment", labels, stroke);
             break;
           case "line":
-            create("line", labels, stroke2);
+            create("line", labels, stroke);
             break;
           case "ray": {
-            create("line", labels, { ...stroke2, straightFirst: false, straightLast: true });
+            create("line", labels, { ...stroke, straightFirst: false, straightLast: true });
             break;
           }
           case "vector":
-            create("arrow", labels, stroke2);
+            create("arrow", labels, stroke);
             break;
           case "perpendicular": {
             const [p, l] = picks[0] && objKind(picks[0]) === "point" ? [labels[0], labels[1]] : [labels[1], labels[0]];
-            create("perpendicular", [l, p], stroke2);
+            create("perpendicular", [l, p], stroke);
             break;
           }
           case "parallel": {
             const [p, l] = picks[0] && objKind(picks[0]) === "point" ? [labels[0], labels[1]] : [labels[1], labels[0]];
-            create("parallel", [l, p], stroke2);
+            create("parallel", [l, p], stroke);
             break;
           }
           case "perpBisector": {
@@ -1304,11 +1324,11 @@ var init_MiniBoard = __esm({
             const seg = create("segment", labels, { visible: false, withLabel: false });
             const midId = localIdOf(mid);
             const segId = localIdOf(seg);
-            if (midId && segId) create("perpendicular", [segId, midId], stroke2);
+            if (midId && segId) create("perpendicular", [segId, midId], stroke);
             break;
           }
           case "angleBisector":
-            create("bisector", labels, stroke2);
+            create("bisector", labels, stroke);
             break;
           case "circleCenter":
             create("circle", labels, strokeOnly);
@@ -1325,7 +1345,7 @@ var init_MiniBoard = __esm({
             const py = typeof pointPick.Y === "function" ? pointPick.Y() : 0;
             const glider = create("glider", [px, py, circleLabel], { name: "", size: 2, strokeColor: "#666", visible: false });
             const gid = localIdOf(glider);
-            if (gid) create("tangent", [gid], stroke2);
+            if (gid) create("tangent", [gid], stroke);
             break;
           }
           case "angle": {
@@ -1334,8 +1354,8 @@ var init_MiniBoard = __esm({
             try {
               const ax = pa.X() - pb.X(), ay = pa.Y() - pb.Y();
               const cx = pc.X() - pb.X(), cy = pc.Y() - pb.Y();
-              const cross = ax * cy - ay * cx;
-              if (cross < 0) order = [labels[2], labels[1], labels[0]];
+              const cross2 = ax * cy - ay * cx;
+              if (cross2 < 0) order = [labels[2], labels[1], labels[0]];
             } catch {
             }
             create("angle", order, {
@@ -1413,7 +1433,7 @@ var init_MiniBoard = __esm({
           }
         }
       }, [create, localIdOf, nextLabel]);
-      const finalizeTransformCreate = react.useCallback((spec, source) => {
+      const finalizeTransformCreate = React11.useCallback((spec, source) => {
         if (!boardRef.current) return;
         const def = getDefiningPoints(source);
         if (!def) {
@@ -1488,7 +1508,7 @@ var init_MiniBoard = __esm({
         }
         setHistoryTick((t) => t + 1);
       }, [create, flashWarn, localIdOf, nextLabel, nextLocalId]);
-      const undoLast = react.useCallback(() => {
+      const undoLast = React11.useCallback(() => {
         const b = boardRef.current;
         if (!b) return;
         while (creationLogRef.current.length > 0) {
@@ -1512,7 +1532,7 @@ var init_MiniBoard = __esm({
         }
         setHistoryTick((t) => t + 1);
       }, [clearPending]);
-      react.useEffect(() => {
+      React11.useEffect(() => {
         const onKey = (e) => {
           const ae = document.activeElement;
           const inField = !!(ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable));
@@ -1546,7 +1566,7 @@ var init_MiniBoard = __esm({
         window.addEventListener("keydown", onKey, { capture: true });
         return () => window.removeEventListener("keydown", onKey, { capture: true });
       }, []);
-      const screenCoordsOf = react.useCallback((evt) => {
+      const screenCoordsOf = React11.useCallback((evt) => {
         const b = boardRef.current;
         if (!b) return null;
         try {
@@ -1562,7 +1582,7 @@ var init_MiniBoard = __esm({
         }
         return null;
       }, []);
-      const objectsAt = react.useCallback((evt) => {
+      const objectsAt = React11.useCallback((evt) => {
         const b = boardRef.current;
         if (!b) return [];
         const sc = screenCoordsOf(evt);
@@ -1581,7 +1601,7 @@ var init_MiniBoard = __esm({
         }
         return list;
       }, [screenCoordsOf]);
-      const findNearestPoint = react.useCallback((evt, tolPx = 12) => {
+      const findNearestPoint = React11.useCallback((evt, tolPx = 12) => {
         const b = boardRef.current;
         if (!b) return null;
         const sc = screenCoordsOf(evt);
@@ -1607,7 +1627,7 @@ var init_MiniBoard = __esm({
         }
         return best ? best.obj : null;
       }, [screenCoordsOf]);
-      const promoteLabel = react.useCallback((o) => {
+      const promoteLabel = React11.useCallback((o) => {
         if (!o) return o;
         const t = (o.elType || o.type || "").toString().toLowerCase();
         if (t !== "text") return o;
@@ -1621,9 +1641,9 @@ var init_MiniBoard = __esm({
         }
         return o;
       }, []);
-      const pendingTransformRef = react.useRef(null);
-      const transformSubsRef = react.useRef(/* @__PURE__ */ new Set());
-      const emitTransform = react.useCallback((info) => {
+      const pendingTransformRef = React11.useRef(null);
+      const transformSubsRef = React11.useRef(/* @__PURE__ */ new Set());
+      const emitTransform = React11.useCallback((info) => {
         transformSubsRef.current.forEach((cb) => {
           try {
             cb(info);
@@ -1631,8 +1651,8 @@ var init_MiniBoard = __esm({
           }
         });
       }, []);
-      const selectSubsRef = react.useRef(/* @__PURE__ */ new Set());
-      const emitSelect = react.useCallback((snap) => {
+      const selectSubsRef = React11.useRef(/* @__PURE__ */ new Set());
+      const emitSelect = React11.useCallback((snap) => {
         selectSubsRef.current.forEach((cb) => {
           try {
             cb(snap);
@@ -1640,9 +1660,9 @@ var init_MiniBoard = __esm({
           }
         });
       }, []);
-      const moveDownRef = react.useRef(null);
-      const lastMoveClickRef = react.useRef({ obj: null, time: 0 });
-      react.useEffect(() => {
+      const moveDownRef = React11.useRef(null);
+      const lastMoveClickRef = React11.useRef({ obj: null, time: 0 });
+      React11.useEffect(() => {
         if (typeof window === "undefined" || !containerRef.current) return;
         let cancelled = false;
         (async () => {
@@ -1960,7 +1980,7 @@ var init_MiniBoard = __esm({
           }
         };
       }, [containerId]);
-      react.useEffect(() => {
+      React11.useEffect(() => {
         const b = boardRef.current;
         if (!b) return;
         try {
@@ -1986,7 +2006,7 @@ var init_MiniBoard = __esm({
         } catch {
         }
       }, [showAxis]);
-      react.useEffect(() => {
+      React11.useEffect(() => {
         const b = boardRef.current;
         if (!b) return;
         try {
@@ -2006,7 +2026,7 @@ var init_MiniBoard = __esm({
         } catch {
         }
       }, [showGrid]);
-      const handleToolChange = react.useCallback((t) => {
+      const handleToolChange = React11.useCallback((t) => {
         clearPending();
         toolRef.current = t;
         setTool(t);
@@ -2018,10 +2038,10 @@ var init_MiniBoard = __esm({
           }
         }
       }, [clearPending]);
-      const handleToolChangeRef = react.useRef(handleToolChange);
+      const handleToolChangeRef = React11.useRef(handleToolChange);
       handleToolChangeRef.current = handleToolChange;
-      const subscribersRef = react.useRef(/* @__PURE__ */ new Set());
-      const notifySubscribers = react.useCallback(() => {
+      const subscribersRef = React11.useRef(/* @__PURE__ */ new Set());
+      const notifySubscribers = React11.useCallback(() => {
         subscribersRef.current.forEach((cb) => {
           try {
             cb();
@@ -2029,24 +2049,24 @@ var init_MiniBoard = __esm({
           }
         });
       }, []);
-      react.useEffect(() => {
+      React11.useEffect(() => {
         notifySubscribers();
       }, [tool, showAxis, showGrid, historyTick, notifySubscribers]);
-      const undoLastRef = react.useRef(undoLast);
+      const undoLastRef = React11.useRef(undoLast);
       undoLastRef.current = undoLast;
-      const clearPendingRef = react.useRef(clearPending);
+      const clearPendingRef = React11.useRef(clearPending);
       clearPendingRef.current = clearPending;
-      const finalizeTransformCreateRef = react.useRef(finalizeTransformCreate);
+      const finalizeTransformCreateRef = React11.useRef(finalizeTransformCreate);
       finalizeTransformCreateRef.current = finalizeTransformCreate;
-      const clearSelectionRef = react.useRef(clearSelection);
+      const clearSelectionRef = React11.useRef(clearSelection);
       clearSelectionRef.current = clearSelection;
-      const deleteSelectedRef = react.useRef(deleteSelected);
+      const deleteSelectedRef = React11.useRef(deleteSelected);
       deleteSelectedRef.current = deleteSelected;
-      const emitTransformRef = react.useRef(emitTransform);
+      const emitTransformRef = React11.useRef(emitTransform);
       emitTransformRef.current = emitTransform;
-      const setShowAxisRef = react.useRef(setShowAxis);
+      const setShowAxisRef = React11.useRef(setShowAxis);
       setShowAxisRef.current = setShowAxis;
-      const setShowGridRef = react.useRef(setShowGrid);
+      const setShowGridRef = React11.useRef(setShowGrid);
       setShowGridRef.current = setShowGrid;
       return /* @__PURE__ */ jsxRuntime.jsx(
         "div",
@@ -2267,23 +2287,23 @@ function GridIcon() {
   ] });
 }
 function useToolHoverTooltip() {
-  const [hover, setHover] = react.useState(null);
-  const [portalReady, setPortalReady] = react.useState(false);
-  const hoverTimerRef = react.useRef(null);
-  react.useEffect(() => {
+  const [hover, setHover] = React11.useState(null);
+  const [portalReady, setPortalReady] = React11.useState(false);
+  const hoverTimerRef = React11.useRef(null);
+  React11.useEffect(() => {
     setPortalReady(true);
     return () => {
       if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     };
   }, []);
-  const showHover = react.useCallback((el, t) => {
+  const showHover = React11.useCallback((el, t) => {
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     hoverTimerRef.current = setTimeout(() => {
       const r = el.getBoundingClientRect();
       setHover({ label: t.label, hint: t.hint, x: r.right, y: r.top + r.height / 2 });
     }, TOOLTIP_DELAY_MS);
   }, []);
-  const hideHover = react.useCallback(() => {
+  const hideHover = React11.useCallback(() => {
     if (hoverTimerRef.current) {
       clearTimeout(hoverTimerRef.current);
       hoverTimerRef.current = null;
@@ -2294,14 +2314,14 @@ function useToolHoverTooltip() {
 }
 function DesktopGeometryPanel(props) {
   const { activeTool, onToolChange, showAxis, showGrid, onShowAxisChange, onShowGridChange, onUndo, canUndo, onClose, isDark, chordGroup } = props;
-  const grouped = react.useMemo(() => {
+  const grouped = React11.useMemo(() => {
     return TOOLS.reduce((acc, t) => {
       var _a;
       (acc[_a = t.group] ?? (acc[_a] = [])).push(t);
       return acc;
     }, {});
   }, []);
-  const groupKeys = react.useMemo(
+  const groupKeys = React11.useMemo(
     () => GROUP_ORDER.filter((g) => grouped[g]),
     [grouped]
   );
@@ -2469,7 +2489,7 @@ function MobileGeometryPanel(props) {
     drawerOpen,
     onDrawerClose
   } = props;
-  const groups = react.useMemo(() => {
+  const groups = React11.useMemo(() => {
     const acc = /* @__PURE__ */ new Map();
     for (const t of TOOLS) {
       if (!acc.has(t.group)) acc.set(t.group, []);
@@ -2577,11 +2597,11 @@ function readMatch(query) {
   }
 }
 function useIsMobile() {
-  const [state, setState] = react.useState(() => ({
+  const [state, setState] = React11.useState(() => ({
     isMobile: readMatch(MOBILE_QUERY),
     isTouchOnly: readMatch(NO_HOVER_QUERY)
   }));
-  react.useEffect(() => {
+  React11.useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return;
     const mql = window.matchMedia(MOBILE_QUERY);
     const tql = window.matchMedia(NO_HOVER_QUERY);
@@ -2668,11 +2688,11 @@ var init_PropertiesPopover = __esm({
     };
     PropertiesPopover = (props) => {
       const { anchor, onClose, onMutate, isDark, getAllNames } = props;
-      const rootRef = react.useRef(null);
-      const [section, setSection] = react.useState(null);
+      const rootRef = React11.useRef(null);
+      const [section, setSection] = React11.useState(null);
       const { isMobile } = useIsMobile();
-      const [clamped, setClamped] = react.useState(null);
-      react.useLayoutEffect(() => {
+      const [clamped, setClamped] = React11.useState(null);
+      React11.useLayoutEffect(() => {
         if (typeof window === "undefined") return;
         const margin = 8;
         if (isMobile) {
@@ -2691,11 +2711,11 @@ var init_PropertiesPopover = __esm({
         setClamped({ left, top });
       }, [anchor.x, anchor.y, isMobile, section]);
       const initialName = props.kind === "point" ? props.currentName : props.kind === "line" || props.kind === "circle" ? props.currentName : "";
-      const [name, setName] = react.useState(initialName);
-      react.useEffect(() => {
+      const [name, setName] = React11.useState(initialName);
+      React11.useEffect(() => {
         setName(initialName);
       }, [initialName]);
-      react.useEffect(() => {
+      React11.useEffect(() => {
         const onKey = (e) => {
           if (e.key === "Escape") {
             e.preventDefault();
@@ -2764,7 +2784,7 @@ var init_PropertiesPopover = __esm({
           ]
         }
       );
-      const colorIndicatorTint = react.useMemo(() => currentColor, [currentColor]);
+      const colorIndicatorTint = React11.useMemo(() => currentColor, [currentColor]);
       const pos = clamped ?? { left: anchor.x, top: anchor.y };
       const node = /* @__PURE__ */ jsxRuntime.jsxs(
         "div",
@@ -2898,10 +2918,10 @@ var init_TransformParamPopover = __esm({
       regularPolygon: { aria: "S\u1ED1 c\u1EA1nh \u0111a gi\xE1c \u0111\u1EC1u", label: "S\u1ED1 c\u1EA1nh (n \u2265 3)", step: 1, min: 3 }
     };
     TransformParamPopover = ({ kind, anchor, defaultValue, onConfirm, onCancel, isDark }) => {
-      const [value, setValue] = react.useState(defaultValue);
-      const inputRef = react.useRef(null);
+      const [value, setValue] = React11.useState(defaultValue);
+      const inputRef = React11.useRef(null);
       const meta = LABELS[kind];
-      react.useEffect(() => {
+      React11.useEffect(() => {
         inputRef.current?.focus();
         inputRef.current?.select();
       }, []);
@@ -2978,17 +2998,17 @@ var init_EditorPanel = __esm({
     init_render();
     init_PropertiesPopover();
     init_TransformParamPopover();
-    GeometryEditorPanel = react.forwardRef(
+    GeometryEditorPanel = React11.forwardRef(
       function GeometryEditorPanel2({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer }, ref) {
-        const handleRef = react.useRef(null);
-        const [ready, setReady] = react.useState(false);
-        const [propsPopover, setPropsPopover] = react.useState(null);
-        const [transformPopover, setTransformPopover] = react.useState(null);
-        const onStateChangeRef = react.useRef(onStateChange);
-        react.useEffect(() => {
+        const handleRef = React11.useRef(null);
+        const [ready, setReady] = React11.useState(false);
+        const [propsPopover, setPropsPopover] = React11.useState(null);
+        const [transformPopover, setTransformPopover] = React11.useState(null);
+        const onStateChangeRef = React11.useRef(onStateChange);
+        React11.useEffect(() => {
           onStateChangeRef.current = onStateChange;
         }, [onStateChange]);
-        const emitState = react.useCallback(() => {
+        const emitState = React11.useCallback(() => {
           const h = handleRef.current;
           const cb = onStateChangeRef.current;
           if (!h || !cb) return;
@@ -2999,7 +3019,7 @@ var init_EditorPanel = __esm({
             canUndo: h.canUndo()
           });
         }, []);
-        const handleReady = react.useCallback((h) => {
+        const handleReady = React11.useCallback((h) => {
           handleRef.current = h;
           setReady(true);
           emitState();
@@ -3007,7 +3027,7 @@ var init_EditorPanel = __esm({
           h.onSelect((snap) => setPropsPopover(snap));
           h.onTransformParam((info) => setTransformPopover(info));
         }, [emitState]);
-        const performInsert = react.useCallback(() => {
+        const performInsert = React11.useCallback(() => {
           if (!handleRef.current) return false;
           const log = handleRef.current.getCreationLog();
           if (log.length === 0) return false;
@@ -3030,10 +3050,10 @@ var init_EditorPanel = __esm({
           })();
           return true;
         }, [onInsert]);
-        const handleInsert = react.useCallback(() => {
+        const handleInsert = React11.useCallback(() => {
           performInsert();
         }, [performInsert]);
-        react.useImperativeHandle(ref, () => ({
+        React11.useImperativeHandle(ref, () => ({
           setTool: (t) => handleRef.current?.setTool(t),
           setShowAxis: (b) => handleRef.current?.setShowAxis(b),
           setShowGrid: (b) => handleRef.current?.setShowGrid(b),
@@ -3212,19 +3232,19 @@ function isFieldFocused() {
 }
 function useChordShortcut(args) {
   const { groupOrder, tools, onSelect, enabled } = args;
-  const [chordGroup, setChordGroup] = react.useState(null);
-  const groupOrderRef = react.useRef(groupOrder);
-  const toolsRef = react.useRef(tools);
-  const onSelectRef = react.useRef(onSelect);
-  const chordGroupRef = react.useRef(null);
+  const [chordGroup, setChordGroup] = React11.useState(null);
+  const groupOrderRef = React11.useRef(groupOrder);
+  const toolsRef = React11.useRef(tools);
+  const onSelectRef = React11.useRef(onSelect);
+  const chordGroupRef = React11.useRef(null);
   groupOrderRef.current = groupOrder;
   toolsRef.current = tools;
   onSelectRef.current = onSelect;
-  const cancel = react.useCallback(() => {
+  const cancel = React11.useCallback(() => {
     chordGroupRef.current = null;
     setChordGroup(null);
   }, []);
-  react.useEffect(() => {
+  React11.useEffect(() => {
     if (!enabled) return;
     const setChord = (next) => {
       chordGroupRef.current = next;
@@ -3421,19 +3441,19 @@ var init_host = __esm({
       showGrid: false,
       canUndo: false
     };
-    GeometryStampHost = react.forwardRef(
+    GeometryStampHost = React11.forwardRef(
       function GeometryStampHost2({ api, editingElement, onClose, isDark }, ref) {
-        const panelRef = react.useRef(null);
-        const [geomState, setGeomState] = react.useState(INITIAL_GEOM_STATE);
+        const panelRef = React11.useRef(null);
+        const [geomState, setGeomState] = React11.useState(INITIAL_GEOM_STATE);
         const { isMobile } = useIsMobile();
-        const [drawerOpen, setDrawerOpen] = react.useState(false);
+        const [drawerOpen, setDrawerOpen] = React11.useState(false);
         const { chordGroup } = useChordShortcut({
           groupOrder: GROUP_ORDER,
           tools: TOOLS,
           onSelect: (key) => panelRef.current?.setTool(key),
           enabled: !isMobile
         });
-        const initialState = react.useMemo(() => {
+        const initialState = React11.useMemo(() => {
           if (!editingElement) return null;
           if (!isGeometryCustomData(editingElement.customData)) return null;
           try {
@@ -3443,7 +3463,7 @@ var init_host = __esm({
             return null;
           }
         }, [editingElement]);
-        const handleInsert = react.useCallback(
+        const handleInsert = React11.useCallback(
           async (jsonState, svgString) => {
             if (!api) return;
             try {
@@ -3465,7 +3485,7 @@ var init_host = __esm({
           },
           [api, editingElement?.id, onClose]
         );
-        react.useImperativeHandle(
+        React11.useImperativeHandle(
           ref,
           () => ({
             tryInsert: () => panelRef.current?.insert() ?? false,
@@ -3754,7 +3774,7 @@ var init_EditorPopover = __esm({
     "use client";
     init_render2();
     DEBOUNCE_MS = 100;
-    EditorPopover = react.forwardRef(function EditorPopover2({
+    EditorPopover = React11.forwardRef(function EditorPopover2({
       x,
       y,
       initialValue,
@@ -3766,14 +3786,14 @@ var init_EditorPopover = __esm({
       isMobile = false,
       onOpenDrawer
     }, ref) {
-      const [value, setValue] = react.useState(initialValue);
-      const [internalDisplayMode] = react.useState(false);
+      const [value, setValue] = React11.useState(initialValue);
+      const [internalDisplayMode] = React11.useState(false);
       const displayMode = controlledDisplayMode ?? internalDisplayMode;
-      const [previewSvg, setPreviewSvg] = react.useState(null);
-      const [error, setError] = react.useState(null);
-      const debounceRef = react.useRef(null);
-      const inputRef = react.useRef(null);
-      react.useEffect(() => {
+      const [previewSvg, setPreviewSvg] = React11.useState(null);
+      const [error, setError] = React11.useState(null);
+      const debounceRef = React11.useRef(null);
+      const inputRef = React11.useRef(null);
+      React11.useEffect(() => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(async () => {
           try {
@@ -3789,11 +3809,11 @@ var init_EditorPopover = __esm({
           if (debounceRef.current) clearTimeout(debounceRef.current);
         };
       }, [value, displayMode]);
-      const handleInsert = react.useCallback(() => {
+      const handleInsert = React11.useCallback(() => {
         if (!previewSvg) return;
         onInsert(previewSvg, value, displayMode);
       }, [previewSvg, value, displayMode, onInsert]);
-      const handleKeyDown = react.useCallback(
+      const handleKeyDown = React11.useCallback(
         (e) => {
           if (e.key === "Escape") onClose();
           if (e.key === "Enter" && !e.shiftKey) {
@@ -3803,7 +3823,7 @@ var init_EditorPopover = __esm({
         },
         [onClose, handleInsert]
       );
-      react.useImperativeHandle(
+      React11.useImperativeHandle(
         ref,
         () => ({
           insertAtCursor: (snippet) => {
@@ -3975,12 +3995,12 @@ var init_host2 = __esm({
     init_insertImage();
     init_useIsMobile();
     init_types2();
-    LatexStampHost = react.forwardRef(
+    LatexStampHost = React11.forwardRef(
       function LatexStampHost2({ api, editingElement, onClose }, ref) {
-        const editorRef = react.useRef(null);
+        const editorRef = React11.useRef(null);
         const { isMobile } = useIsMobile();
-        const [drawerOpen, setDrawerOpen] = react.useState(false);
-        const initial = react.useMemo(() => {
+        const [drawerOpen, setDrawerOpen] = React11.useState(false);
+        const initial = React11.useMemo(() => {
           if (editingElement && isLatexCustomData(editingElement.customData)) {
             return {
               initialValue: editingElement.customData.src,
@@ -3989,8 +4009,8 @@ var init_host2 = __esm({
           }
           return { initialValue: "", displayMode: false };
         }, [editingElement]);
-        const [displayMode, setDisplayMode] = react.useState(initial.displayMode);
-        const handleInsert = react.useCallback(
+        const [displayMode, setDisplayMode] = React11.useState(initial.displayMode);
+        const handleInsert = React11.useCallback(
           async (svgString, src, dm) => {
             if (!api) return;
             try {
@@ -4011,7 +4031,7 @@ var init_host2 = __esm({
           },
           [api, editingElement?.id, onClose]
         );
-        react.useImperativeHandle(
+        React11.useImperativeHandle(
           ref,
           () => ({
             tryInsert: () => editorRef.current?.tryInsert() ?? false,
@@ -4058,7 +4078,10 @@ var init_host2 = __esm({
 function isGeometry3DCustomData(data) {
   if (!data || typeof data !== "object") return false;
   const d = data;
-  return d.kind === "geometry3d" && d.version === 1 && typeof d.jsonState === "string";
+  return d.kind === "geometry3d" && (d.version === 1 || d.version === 2) && typeof d.jsonState === "string";
+}
+function serializeBoard3D(state) {
+  return JSON.stringify(state);
 }
 function parseSerializedBoard3D(json) {
   const parsed = JSON.parse(json);
@@ -4066,7 +4089,7 @@ function parseSerializedBoard3D(json) {
     throw new Error("parseSerializedBoard3D: not an object");
   }
   const p = parsed;
-  if (p.version !== 1) {
+  if (p.version !== 1 && p.version !== 2) {
     throw new Error(`parseSerializedBoard3D: unsupported version ${String(p.version)}`);
   }
   if (!Array.isArray(p.elements)) {
@@ -4076,6 +4099,1861 @@ function parseSerializedBoard3D(json) {
 }
 var init_serialize2 = __esm({
   "src/stamps/geometry-3d/serialize.ts"() {
+  }
+});
+
+// src/stamps/geometry-3d/editor/scene/labels.ts
+function nextPointLabel(existing) {
+  const used = new Set(existing);
+  for (let suffix = 0; suffix < 1e3; suffix++) {
+    for (let i = 0; i < 26; i++) {
+      const letter = String.fromCharCode(A + i);
+      const candidate = suffix === 0 ? letter : `${letter}_${suffix}`;
+      if (!used.has(candidate)) return candidate;
+    }
+  }
+  return `P_${used.size}`;
+}
+function nextDerivedLabel(kind, existing) {
+  const used = new Set(existing);
+  if (LOWERCASE_KINDS.includes(kind)) {
+    for (let i = 0; i < 26; i++) {
+      const c = String.fromCharCode("a".charCodeAt(0) + i);
+      if (!used.has(c)) return c;
+    }
+    for (let n = 1; n < 1e3; n++) {
+      const c = `a_${n}`;
+      if (!used.has(c)) return c;
+    }
+  }
+  const prefix = PREFIX[kind] ?? kind[0];
+  for (let n = 1; n < 1e3; n++) {
+    const candidate = `${prefix}_${n}`;
+    if (!used.has(candidate)) return candidate;
+  }
+  return `${prefix}_x`;
+}
+var A, LOWERCASE_KINDS, PREFIX;
+var init_labels = __esm({
+  "src/stamps/geometry-3d/editor/scene/labels.ts"() {
+    A = "A".charCodeAt(0);
+    LOWERCASE_KINDS = ["segment", "line", "ray", "vector"];
+    PREFIX = {
+      sphere: "s",
+      polyhedron: "h",
+      cylinder: "c",
+      cone: "k",
+      polygon: "g",
+      plane: "\u03C0"
+    };
+  }
+});
+
+// src/stamps/geometry-3d/editor/scene/Scene3D.ts
+var Scene3D;
+var init_Scene3D = __esm({
+  "src/stamps/geometry-3d/editor/scene/Scene3D.ts"() {
+    init_labels();
+    Scene3D = class {
+      constructor() {
+        this.objects = /* @__PURE__ */ new Map();
+        this.order = [];
+        this.counter = 0;
+        this.listeners = {
+          add: /* @__PURE__ */ new Set(),
+          change: /* @__PURE__ */ new Set(),
+          delete: /* @__PURE__ */ new Set(),
+          reset: /* @__PURE__ */ new Set()
+        };
+      }
+      on(event, cb) {
+        const set = this.listeners[event];
+        set.add(cb);
+        return () => {
+          set.delete(cb);
+        };
+      }
+      nextId(prefix) {
+        this.counter += 1;
+        return `${prefix}${this.counter}`;
+      }
+      addPoint(constraint, label, color) {
+        const id = this.nextId("p");
+        const existingLabels = this.list().filter((o) => o.kind === "point").map((o) => o.label);
+        const autoLabel = label ?? nextPointLabel(existingLabels);
+        const obj = {
+          kind: "point",
+          id,
+          label: autoLabel,
+          visible: true,
+          color,
+          constraint
+        };
+        this.objects.set(id, obj);
+        this.order.push(id);
+        this.listeners.add.forEach((cb) => cb(obj));
+        return id;
+      }
+      addObject(kind, spec, label) {
+        const id = this.nextId(kind[0]);
+        const existingLabels = this.list().filter((o) => o.kind === kind).map((o) => o.label);
+        const autoLabel = label ?? nextDerivedLabel(kind, existingLabels);
+        const obj = { id, label: autoLabel, visible: true, kind, ...spec };
+        this.objects.set(id, obj);
+        this.order.push(id);
+        this.listeners.add.forEach((cb) => cb(obj));
+        return id;
+      }
+      insert(obj) {
+        if (this.objects.has(obj.id)) {
+          throw new Error(`Scene3D.insert: id ${obj.id} already exists`);
+        }
+        this.objects.set(obj.id, obj);
+        this.order.push(obj.id);
+        this.listeners.add.forEach((cb) => cb(obj));
+      }
+      get(id) {
+        return this.objects.get(id);
+      }
+      list() {
+        return this.order.map((id) => this.objects.get(id)).filter((obj) => obj !== void 0);
+      }
+      referencedIds(obj) {
+        switch (obj.kind) {
+          case "point": {
+            const c = obj.constraint;
+            if (c.kind === "onPlane") return [c.planeId];
+            if (c.kind === "onLine") return [c.lineId];
+            if (c.kind === "onPolygon") return [c.polygonId];
+            if (c.kind === "onSphere") return [c.sphereId];
+            return [];
+          }
+          case "segment":
+          case "line":
+            return [obj.p1, obj.p2];
+          case "ray":
+            return [obj.origin, obj.through];
+          case "vector":
+            return [obj.from, obj.to];
+          case "polygon":
+            return obj.vertices;
+          case "plane":
+            return [obj.p1, obj.p2, obj.p3];
+          case "sphere":
+            return [obj.center, obj.surfacePoint];
+          case "polyhedron":
+            return obj.vertices;
+          case "cylinder":
+            return [obj.baseCenter, obj.topCenter];
+          case "cone":
+            return [obj.baseCenter, obj.apex];
+        }
+      }
+      collectDependents(targetId) {
+        const dependents = /* @__PURE__ */ new Set([targetId]);
+        let grew = true;
+        while (grew) {
+          grew = false;
+          for (const obj of this.objects.values()) {
+            if (dependents.has(obj.id)) continue;
+            const refs = this.referencedIds(obj);
+            if (refs.some((r) => dependents.has(r))) {
+              dependents.add(obj.id);
+              grew = true;
+            }
+          }
+        }
+        return dependents;
+      }
+      delete(id) {
+        if (!this.objects.has(id)) return;
+        const toDelete = this.collectDependents(id);
+        for (const dependentId of toDelete) {
+          this.objects.delete(dependentId);
+          this.order = this.order.filter((x) => x !== dependentId);
+          this.listeners.delete.forEach((cb) => cb(dependentId));
+        }
+      }
+      reset() {
+        this.objects.clear();
+        this.order = [];
+        this.counter = 0;
+        this.listeners.reset.forEach((cb) => cb());
+      }
+      reserveId(prefix) {
+        return this.nextId(prefix);
+      }
+      emitChange(id) {
+        const obj = this.objects.get(id);
+        if (!obj) return;
+        this.listeners.change.forEach((cb) => cb(obj));
+      }
+    };
+  }
+});
+
+// src/stamps/geometry-3d/editor/tools/handlers/_ensurePoint.ts
+function hitToConstraint(hit) {
+  switch (hit.kind) {
+    case "onGround":
+      return { kind: "onGround", x: hit.world[0], y: hit.world[1] };
+    case "onAxis":
+      return { kind: "onAxis", axis: hit.axis, t: hit.t };
+    case "onPlane":
+      return { kind: "onPlane", planeId: hit.planeId, u: hit.u, v: hit.v };
+    case "onLine":
+      return { kind: "onLine", lineId: hit.lineId, t: hit.t };
+    case "onPolygon":
+      return { kind: "onPolygon", polygonId: hit.polygonId, u: hit.u, v: hit.v };
+    case "onSphere":
+      return { kind: "onSphere", sphereId: hit.sphereId, theta: hit.theta, phi: hit.phi };
+    default:
+      return null;
+  }
+}
+function ensurePoint(hit, scene) {
+  if (hit.kind === "existingPoint") return hit.pointId;
+  const c = hitToConstraint(hit);
+  if (!c) return null;
+  return scene.addPoint(c);
+}
+var init_ensurePoint = __esm({
+  "src/stamps/geometry-3d/editor/tools/handlers/_ensurePoint.ts"() {
+  }
+});
+
+// src/stamps/geometry-3d/editor/tools/handlers/point.ts
+function buildPoint(args, scene) {
+  const hit = args[0]?.hit;
+  if (!hit) return null;
+  if (hit.kind === "existingPoint") return hit.pointId;
+  const c = hitToConstraint(hit);
+  if (!c) return null;
+  return scene.addPoint(c);
+}
+var buildPointOnObject;
+var init_point = __esm({
+  "src/stamps/geometry-3d/editor/tools/handlers/point.ts"() {
+    init_ensurePoint();
+    buildPointOnObject = buildPoint;
+  }
+});
+
+// src/stamps/geometry-3d/editor/tools/handlers/segment.ts
+function buildSegment(args, scene) {
+  if (args.length < 2 || !args[0].hit || !args[1].hit) return null;
+  const p1 = ensurePoint(args[0].hit, scene);
+  const p2 = ensurePoint(args[1].hit, scene);
+  if (!p1 || !p2 || p1 === p2) return null;
+  return scene.addObject("segment", { p1, p2 });
+}
+function buildLine(args, scene) {
+  if (args.length < 2 || !args[0].hit || !args[1].hit) return null;
+  const p1 = ensurePoint(args[0].hit, scene);
+  const p2 = ensurePoint(args[1].hit, scene);
+  if (!p1 || !p2 || p1 === p2) return null;
+  return scene.addObject("line", { p1, p2 });
+}
+function buildRay(args, scene) {
+  if (args.length < 2 || !args[0].hit || !args[1].hit) return null;
+  const origin = ensurePoint(args[0].hit, scene);
+  const through = ensurePoint(args[1].hit, scene);
+  if (!origin || !through || origin === through) return null;
+  return scene.addObject("ray", { origin, through });
+}
+function buildVector(args, scene) {
+  if (args.length < 2 || !args[0].hit || !args[1].hit) return null;
+  const from = ensurePoint(args[0].hit, scene);
+  const to = ensurePoint(args[1].hit, scene);
+  if (!from || !to || from === to) return null;
+  return scene.addObject("vector", { from, to });
+}
+var init_segment = __esm({
+  "src/stamps/geometry-3d/editor/tools/handlers/segment.ts"() {
+    init_ensurePoint();
+  }
+});
+
+// src/stamps/geometry-3d/editor/tools/handlers/polygon.ts
+function buildPolygon(args, scene) {
+  const vertexArgs = args.filter((a) => a.step.type === "point");
+  const vertexIds = vertexArgs.map((a) => a.hit ? ensurePoint(a.hit, scene) : null).filter((x) => !!x);
+  if (vertexIds.length < 3) return null;
+  return scene.addObject("polygon", { vertices: vertexIds });
+}
+var init_polygon = __esm({
+  "src/stamps/geometry-3d/editor/tools/handlers/polygon.ts"() {
+    init_ensurePoint();
+  }
+});
+
+// src/stamps/geometry-3d/editor/scene/constraintMath.ts
+function sub(a, b) {
+  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+}
+function add(a, b) {
+  return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+}
+function scale(a, k) {
+  return [a[0] * k, a[1] * k, a[2] * k];
+}
+function dot(a, b) {
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+function cross(a, b) {
+  return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+}
+function norm(a) {
+  return Math.sqrt(dot(a, a));
+}
+function normalize(a) {
+  const n = norm(a);
+  return n === 0 ? a : scale(a, 1 / n);
+}
+function getPointWorld(id, scene) {
+  const obj = scene.get(id);
+  if (!obj || obj.kind !== "point") {
+    throw new Error(`constraintMath: point ${id} not found`);
+  }
+  return constraintToWorld(obj.constraint, scene);
+}
+function getPlaneBasis(planeObj, scene) {
+  const p1 = getPointWorld(planeObj.p1, scene);
+  const p2 = getPointWorld(planeObj.p2, scene);
+  const p3 = getPointWorld(planeObj.p3, scene);
+  const basis1 = sub(p2, p1);
+  const tmp = sub(p3, p1);
+  const normal = normalize(cross(basis1, tmp));
+  const basis2 = cross(normal, basis1);
+  return { origin: p1, basis1, basis2, normal };
+}
+function constraintToWorld(c, scene) {
+  switch (c.kind) {
+    case "free":
+      return [c.x, c.y, c.z];
+    case "onGround":
+      return [c.x, c.y, 0];
+    case "onAxis": {
+      if (c.axis === "x") return [c.t, 0, 0];
+      if (c.axis === "y") return [0, c.t, 0];
+      return [0, 0, c.t];
+    }
+    case "onPlane": {
+      const plane = scene.get(c.planeId);
+      if (!plane || plane.kind !== "plane") throw new Error("onPlane: plane missing");
+      const { origin, basis1, basis2 } = getPlaneBasis(plane, scene);
+      return add(add(origin, scale(basis1, c.u)), scale(basis2, c.v));
+    }
+    case "onLine": {
+      const line = scene.get(c.lineId);
+      if (!line || line.kind !== "line" && line.kind !== "segment" && line.kind !== "ray") {
+        throw new Error("onLine: parent missing");
+      }
+      const p1Id = line.kind === "ray" ? line.origin : line.p1;
+      const p2Id = line.kind === "ray" ? line.through : line.p2;
+      const p1 = getPointWorld(p1Id, scene);
+      const p2 = getPointWorld(p2Id, scene);
+      const dir = sub(p2, p1);
+      return add(p1, scale(dir, c.t));
+    }
+    case "onPolygon": {
+      const pg = scene.get(c.polygonId);
+      if (!pg || pg.kind !== "polygon") throw new Error("onPolygon: parent missing");
+      const v = pg.vertices;
+      if (v.length < 3) throw new Error("onPolygon: < 3 vertices");
+      const p1 = getPointWorld(v[0], scene);
+      const p2 = getPointWorld(v[1], scene);
+      const p3 = getPointWorld(v[2], scene);
+      const basis1 = sub(p2, p1);
+      const tmp = sub(p3, p1);
+      const normal = normalize(cross(basis1, tmp));
+      const basis2 = cross(normal, basis1);
+      return add(add(p1, scale(basis1, c.u)), scale(basis2, c.v));
+    }
+    case "onSphere": {
+      const sph = scene.get(c.sphereId);
+      if (!sph || sph.kind !== "sphere") throw new Error("onSphere: parent missing");
+      const center = getPointWorld(sph.center, scene);
+      const surface = getPointWorld(sph.surfacePoint, scene);
+      const radius = norm(sub(surface, center));
+      const x = center[0] + radius * Math.sin(c.phi) * Math.cos(c.theta);
+      const y = center[1] + radius * Math.sin(c.phi) * Math.sin(c.theta);
+      const z = center[2] + radius * Math.cos(c.phi);
+      return [x, y, z];
+    }
+  }
+}
+function worldToConstraint(current, world, scene) {
+  switch (current.kind) {
+    case "free":
+      return { kind: "free", x: world[0], y: world[1], z: world[2] };
+    case "onGround":
+      return { kind: "onGround", x: world[0], y: world[1] };
+    case "onAxis": {
+      const t = current.axis === "x" ? world[0] : current.axis === "y" ? world[1] : world[2];
+      return { kind: "onAxis", axis: current.axis, t };
+    }
+    case "onPlane": {
+      const plane = scene.get(current.planeId);
+      if (!plane || plane.kind !== "plane") return current;
+      const { origin, basis1, basis2 } = getPlaneBasis(plane, scene);
+      const rel = sub(world, origin);
+      const b1n = dot(basis1, basis1);
+      const b2n = dot(basis2, basis2);
+      const u = b1n === 0 ? 0 : dot(rel, basis1) / b1n;
+      const v = b2n === 0 ? 0 : dot(rel, basis2) / b2n;
+      return { kind: "onPlane", planeId: current.planeId, u, v };
+    }
+    case "onLine": {
+      const line = scene.get(current.lineId);
+      if (!line) return current;
+      const p1Id = line.kind === "ray" ? line.origin : line.p1;
+      const p2Id = line.kind === "ray" ? line.through : line.p2;
+      const p1 = getPointWorld(p1Id, scene);
+      const p2 = getPointWorld(p2Id, scene);
+      const dir = sub(p2, p1);
+      const len2 = dot(dir, dir);
+      const t = len2 === 0 ? 0 : dot(sub(world, p1), dir) / len2;
+      return { kind: "onLine", lineId: current.lineId, t };
+    }
+    case "onPolygon": {
+      const pg = scene.get(current.polygonId);
+      if (!pg || pg.kind !== "polygon" || pg.vertices.length < 3) return current;
+      const p1 = getPointWorld(pg.vertices[0], scene);
+      const p2 = getPointWorld(pg.vertices[1], scene);
+      const p3 = getPointWorld(pg.vertices[2], scene);
+      const basis1 = sub(p2, p1);
+      const tmp = sub(p3, p1);
+      const normal = normalize(cross(basis1, tmp));
+      const basis2 = cross(normal, basis1);
+      const rel = sub(world, p1);
+      const b1n = dot(basis1, basis1);
+      const b2n = dot(basis2, basis2);
+      const u = b1n === 0 ? 0 : dot(rel, basis1) / b1n;
+      const v = b2n === 0 ? 0 : dot(rel, basis2) / b2n;
+      return { kind: "onPolygon", polygonId: current.polygonId, u, v };
+    }
+    case "onSphere": {
+      const sph = scene.get(current.sphereId);
+      if (!sph || sph.kind !== "sphere") return current;
+      const center = getPointWorld(sph.center, scene);
+      const rel = sub(world, center);
+      const r = norm(rel);
+      if (r === 0) return current;
+      const phi = Math.acos(rel[2] / r);
+      const theta = Math.atan2(rel[1], rel[0]);
+      return { kind: "onSphere", sphereId: current.sphereId, theta, phi };
+    }
+  }
+}
+var init_constraintMath = __esm({
+  "src/stamps/geometry-3d/editor/scene/constraintMath.ts"() {
+  }
+});
+
+// src/stamps/geometry-3d/editor/scene/geometryChecks.ts
+function getWorld(id, scene) {
+  const obj = scene.get(id);
+  if (!obj || obj.kind !== "point") return null;
+  return constraintToWorld(obj.constraint, scene);
+}
+function areCollinear3(p1Id, p2Id, p3Id, scene) {
+  const p1 = getWorld(p1Id, scene);
+  const p2 = getWorld(p2Id, scene);
+  const p3 = getWorld(p3Id, scene);
+  if (!p1 || !p2 || !p3) return true;
+  const a = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+  const b = [p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]];
+  const c = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  return Math.hypot(c[0], c[1], c[2]) < EPS;
+}
+function apexCoplanarWithBase(baseIds, apexId, scene) {
+  if (baseIds.length < 3) return false;
+  const p1 = getWorld(baseIds[0], scene);
+  const p2 = getWorld(baseIds[1], scene);
+  const p3 = getWorld(baseIds[2], scene);
+  const apex = getWorld(apexId, scene);
+  if (!p1 || !p2 || !p3 || !apex) return false;
+  const a = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+  const b = [p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]];
+  const n = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  const d = [apex[0] - p1[0], apex[1] - p1[1], apex[2] - p1[2]];
+  const dotND = n[0] * d[0] + n[1] * d[1] + n[2] * d[2];
+  return Math.abs(dotND) < EPS;
+}
+var EPS;
+var init_geometryChecks = __esm({
+  "src/stamps/geometry-3d/editor/scene/geometryChecks.ts"() {
+    init_constraintMath();
+    EPS = 1e-6;
+  }
+});
+
+// src/stamps/geometry-3d/editor/tools/handlers/plane.ts
+function buildPlane(args, scene) {
+  if (args.length < 3 || !args[0].hit || !args[1].hit || !args[2].hit) return null;
+  const p1 = ensurePoint(args[0].hit, scene);
+  const p2 = ensurePoint(args[1].hit, scene);
+  const p3 = ensurePoint(args[2].hit, scene);
+  if (!p1 || !p2 || !p3) return null;
+  if (p1 === p2 || p2 === p3 || p1 === p3) return null;
+  if (areCollinear3(p1, p2, p3, scene)) return null;
+  return scene.addObject("plane", { p1, p2, p3 });
+}
+var init_plane = __esm({
+  "src/stamps/geometry-3d/editor/tools/handlers/plane.ts"() {
+    init_ensurePoint();
+    init_geometryChecks();
+  }
+});
+
+// src/stamps/geometry-3d/editor/tools/handlers/pyramid.ts
+function buildPyramid(args, scene) {
+  const pointArgs = args.filter((a) => a.step.type === "point");
+  const baseArgs = pointArgs.slice(0, -1);
+  const apexArg = pointArgs.slice(-1)[0];
+  if (baseArgs.length < 3 || !apexArg?.hit) return null;
+  const baseIds = baseArgs.map((a) => a.hit ? ensurePoint(a.hit, scene) : null).filter((x) => !!x);
+  const apexId = ensurePoint(apexArg.hit, scene);
+  if (!apexId || baseIds.length < 3) return null;
+  if (apexCoplanarWithBase(baseIds, apexId, scene)) return null;
+  const vertices = [...baseIds, apexId];
+  const apexIdx = vertices.length - 1;
+  const faces = [baseIds.map((_, i) => i)];
+  for (let i = 0; i < baseIds.length; i++) {
+    faces.push([i, (i + 1) % baseIds.length, apexIdx]);
+  }
+  return scene.addObject("polyhedron", { flavor: "pyramid", vertices, faces });
+}
+var init_pyramid = __esm({
+  "src/stamps/geometry-3d/editor/tools/handlers/pyramid.ts"() {
+    init_ensurePoint();
+    init_geometryChecks();
+  }
+});
+
+// src/stamps/geometry-3d/editor/tools/handlers/prism.ts
+function buildPrism(args, scene) {
+  const baseArgs = args.filter((a) => a.step.type === "point");
+  const numberArg = args.find((a) => a.step.type === "number");
+  if (baseArgs.length < 3 || !numberArg || typeof numberArg.value !== "number") return null;
+  const height = numberArg.value;
+  if (height <= 0) return null;
+  const baseIds = baseArgs.map((a) => a.hit ? ensurePoint(a.hit, scene) : null).filter((x) => !!x);
+  if (baseIds.length < 3) return null;
+  const topIds = [];
+  for (const id of baseIds) {
+    const p = scene.get(id);
+    if (!p || p.kind !== "point") return null;
+    const w = constraintToWorld(p.constraint, scene);
+    topIds.push(scene.addPoint({ kind: "free", x: w[0], y: w[1], z: w[2] + height }));
+  }
+  const n = baseIds.length;
+  const vertices = [...baseIds, ...topIds];
+  const faces = [
+    baseIds.map((_, i) => i),
+    topIds.map((_, i) => n + i)
+  ];
+  for (let i = 0; i < n; i++) {
+    faces.push([i, (i + 1) % n, n + (i + 1) % n, n + i]);
+  }
+  return scene.addObject("polyhedron", { flavor: "prism", vertices, faces });
+}
+var init_prism = __esm({
+  "src/stamps/geometry-3d/editor/tools/handlers/prism.ts"() {
+    init_ensurePoint();
+    init_constraintMath();
+  }
+});
+
+// src/stamps/geometry-3d/editor/tools/handlers/tetrahedron.ts
+function buildTetrahedron(args, scene) {
+  if (args.length < 2 || !args[0].hit || !args[1].hit) return null;
+  const p1Id = ensurePoint(args[0].hit, scene);
+  const p2Id = ensurePoint(args[1].hit, scene);
+  if (!p1Id || !p2Id || p1Id === p2Id) return null;
+  const p1Obj = scene.get(p1Id);
+  const p2Obj = scene.get(p2Id);
+  if (!p1Obj || p1Obj.kind !== "point" || !p2Obj || p2Obj.kind !== "point") return null;
+  const p1 = constraintToWorld(p1Obj.constraint, scene);
+  const p2 = constraintToWorld(p2Obj.constraint, scene);
+  const z0 = Math.min(p1[2], p2[2]);
+  const baseA = [p1[0], p1[1], z0];
+  const baseB = [p2[0], p2[1], z0];
+  const dx = baseB[0] - baseA[0];
+  const dy = baseB[1] - baseA[1];
+  const edge = Math.hypot(dx, dy);
+  if (edge < 1e-9) return null;
+  const mid = [(baseA[0] + baseB[0]) / 2, (baseA[1] + baseB[1]) / 2, z0];
+  const perpX = -dy;
+  const perpY = dx;
+  const perpLen = Math.hypot(perpX, perpY);
+  const height = edge * Math.sqrt(3) / 2;
+  const baseC = [mid[0] + perpX / perpLen * height, mid[1] + perpY / perpLen * height, z0];
+  const centroid = [
+    (baseA[0] + baseB[0] + baseC[0]) / 3,
+    (baseA[1] + baseB[1] + baseC[1]) / 3,
+    z0
+  ];
+  const apexHeight = edge * Math.sqrt(2 / 3);
+  const apex = [centroid[0], centroid[1], z0 + apexHeight];
+  const cId = scene.addPoint({ kind: "free", x: baseC[0], y: baseC[1], z: baseC[2] });
+  const apexId = scene.addPoint({ kind: "free", x: apex[0], y: apex[1], z: apex[2] });
+  const vertices = [p1Id, p2Id, cId, apexId];
+  const faces = [
+    [0, 1, 2],
+    // base
+    [0, 1, 3],
+    // face p1-p2-apex
+    [1, 2, 3],
+    // face p2-c-apex
+    [2, 0, 3]
+    // face c-p1-apex
+  ];
+  return scene.addObject("polyhedron", { flavor: "tetrahedron", vertices, faces });
+}
+var init_tetrahedron = __esm({
+  "src/stamps/geometry-3d/editor/tools/handlers/tetrahedron.ts"() {
+    init_ensurePoint();
+    init_constraintMath();
+  }
+});
+
+// src/stamps/geometry-3d/editor/tools/handlers/cube.ts
+function buildCube(args, scene) {
+  if (args.length < 2 || !args[0].hit || !args[1].hit) return null;
+  const p1Id = ensurePoint(args[0].hit, scene);
+  const p2Id = ensurePoint(args[1].hit, scene);
+  if (!p1Id || !p2Id || p1Id === p2Id) return null;
+  const p1Obj = scene.get(p1Id);
+  const p2Obj = scene.get(p2Id);
+  if (!p1Obj || p1Obj.kind !== "point" || !p2Obj || p2Obj.kind !== "point") return null;
+  const p1 = constraintToWorld(p1Obj.constraint, scene);
+  const p2 = constraintToWorld(p2Obj.constraint, scene);
+  if (Math.abs(p1[2]) > 1e-6 || Math.abs(p2[2]) > 1e-6) return null;
+  const dx = p2[0] - p1[0];
+  const dy = p2[1] - p1[1];
+  const edge = Math.hypot(dx, dy);
+  if (edge < 1e-9) return null;
+  const perpX = -dy;
+  const perpY = dx;
+  const p3 = [p2[0] + perpX, p2[1] + perpY, 0];
+  const p4 = [p1[0] + perpX, p1[1] + perpY, 0];
+  const t1 = [p1[0], p1[1], edge];
+  const t2 = [p2[0], p2[1], edge];
+  const t3 = [p3[0], p3[1], edge];
+  const t4 = [p4[0], p4[1], edge];
+  const p3Id = scene.addPoint({ kind: "onGround", x: p3[0], y: p3[1] });
+  const p4Id = scene.addPoint({ kind: "onGround", x: p4[0], y: p4[1] });
+  const t1Id = scene.addPoint({ kind: "free", x: t1[0], y: t1[1], z: t1[2] });
+  const t2Id = scene.addPoint({ kind: "free", x: t2[0], y: t2[1], z: t2[2] });
+  const t3Id = scene.addPoint({ kind: "free", x: t3[0], y: t3[1], z: t3[2] });
+  const t4Id = scene.addPoint({ kind: "free", x: t4[0], y: t4[1], z: t4[2] });
+  const vertices = [p1Id, p2Id, p3Id, p4Id, t1Id, t2Id, t3Id, t4Id];
+  const faces = [
+    [0, 1, 2, 3],
+    // bottom
+    [4, 5, 6, 7],
+    // top
+    [0, 1, 5, 4],
+    // front
+    [1, 2, 6, 5],
+    // right
+    [2, 3, 7, 6],
+    // back
+    [3, 0, 4, 7]
+    // left
+  ];
+  return scene.addObject("polyhedron", { flavor: "cube", vertices, faces });
+}
+var init_cube = __esm({
+  "src/stamps/geometry-3d/editor/tools/handlers/cube.ts"() {
+    init_ensurePoint();
+    init_constraintMath();
+  }
+});
+
+// src/stamps/geometry-3d/editor/tools/handlers/sphere.ts
+function buildSphere(args, scene) {
+  if (args.length < 2 || !args[0].hit || !args[1].hit) return null;
+  const center = ensurePoint(args[0].hit, scene);
+  const surface = ensurePoint(args[1].hit, scene);
+  if (!center || !surface || center === surface) return null;
+  return scene.addObject("sphere", { center, surfacePoint: surface });
+}
+var init_sphere = __esm({
+  "src/stamps/geometry-3d/editor/tools/handlers/sphere.ts"() {
+    init_ensurePoint();
+  }
+});
+
+// src/stamps/geometry-3d/editor/tools/handlers/cylinder.ts
+function buildCylinder(args, scene) {
+  const points = args.filter((a) => a.step.type === "point");
+  const numberArg = args.find((a) => a.step.type === "number");
+  if (points.length < 2 || !points[0].hit || !points[1].hit || !numberArg || typeof numberArg.value !== "number") return null;
+  const radius = numberArg.value;
+  if (radius <= 0) return null;
+  const baseCenter = ensurePoint(points[0].hit, scene);
+  const topCenter = ensurePoint(points[1].hit, scene);
+  if (!baseCenter || !topCenter || baseCenter === topCenter) return null;
+  return scene.addObject("cylinder", { baseCenter, topCenter, radius });
+}
+var init_cylinder = __esm({
+  "src/stamps/geometry-3d/editor/tools/handlers/cylinder.ts"() {
+    init_ensurePoint();
+  }
+});
+
+// src/stamps/geometry-3d/editor/tools/handlers/cone.ts
+function buildCone(args, scene) {
+  const points = args.filter((a) => a.step.type === "point");
+  const numberArg = args.find((a) => a.step.type === "number");
+  if (points.length < 2 || !points[0].hit || !points[1].hit || !numberArg || typeof numberArg.value !== "number") return null;
+  const radius = numberArg.value;
+  if (radius <= 0) return null;
+  const baseCenter = ensurePoint(points[0].hit, scene);
+  const apex = ensurePoint(points[1].hit, scene);
+  if (!baseCenter || !apex || baseCenter === apex) return null;
+  return scene.addObject("cone", { baseCenter, apex, radius });
+}
+var init_cone = __esm({
+  "src/stamps/geometry-3d/editor/tools/handlers/cone.ts"() {
+    init_ensurePoint();
+  }
+});
+
+// src/stamps/geometry-3d/editor/tools/spec.ts
+var stubBuild, ALL_SURFACES, OBJECT_ONLY, NO_SURFACE, TOOLS2, TOOL_GROUPS;
+var init_spec = __esm({
+  "src/stamps/geometry-3d/editor/tools/spec.ts"() {
+    init_point();
+    init_segment();
+    init_polygon();
+    init_plane();
+    init_pyramid();
+    init_prism();
+    init_tetrahedron();
+    init_cube();
+    init_sphere();
+    init_cylinder();
+    init_cone();
+    stubBuild = () => null;
+    ALL_SURFACES = ["ground", "axis", "plane", "line", "polygon", "sphere"];
+    OBJECT_ONLY = ["plane", "line", "polygon", "sphere"];
+    NO_SURFACE = ["ground", "axis", "plane"];
+    TOOLS2 = [
+      {
+        key: "move",
+        label: "Di chuy\u1EC3n",
+        hintIdle: "K\xE9o \u0111i\u1EC3m ho\u1EB7c xoay khung",
+        steps: [],
+        build: stubBuild
+      },
+      {
+        key: "point",
+        label: "\u0110i\u1EC3m",
+        hintIdle: "Ch\u1ECDn m\u1EB7t ph\u1EB3ng / \u0111\u01B0\u1EDDng / m\u1EB7t c\u1EA7u \u0111\u1EC3 \u0111\u1EB7t \u0111i\u1EC3m",
+        steps: [{ type: "point", allowExisting: false, allowNewOn: ALL_SURFACES, hint: "Ch\u1ECDn v\u1ECB tr\xED \u0111\u1EC3 \u0111\u1EB7t \u0111i\u1EC3m" }],
+        build: buildPoint
+      },
+      {
+        key: "pointOnObject",
+        label: "\u0110i\u1EC3m tr\xEAn \u0111\u1ED1i t\u01B0\u1EE3ng",
+        hintIdle: "Ch\u1ECDn m\u1ED9t \u0111\u1ED1i t\u01B0\u1EE3ng \u0111\u1EC3 \u0111\u1EB7t \u0111i\u1EC3m",
+        steps: [{ type: "point", allowExisting: false, allowNewOn: OBJECT_ONLY, hint: "Click l\xEAn m\u1EB7t / \u0111\u01B0\u1EDDng \u0111\u1EC3 \u0111\u1EB7t \u0111i\u1EC3m" }],
+        build: buildPointOnObject
+      },
+      {
+        key: "segment",
+        label: "\u0110o\u1EA1n th\u1EB3ng",
+        hintIdle: "Ch\u1ECDn 2 \u0111i\u1EC3m \u0111\u1EC3 v\u1EBD \u0111o\u1EA1n th\u1EB3ng",
+        steps: [
+          { type: "point", allowExisting: true, allowNewOn: ALL_SURFACES, hint: "Ch\u1ECDn \u0111i\u1EC3m th\u1EE9 nh\u1EA5t" },
+          { type: "point", allowExisting: true, allowNewOn: ALL_SURFACES, hint: "Ch\u1ECDn \u0111i\u1EC3m th\u1EE9 hai" }
+        ],
+        build: buildSegment
+      },
+      {
+        key: "line",
+        label: "\u0110\u01B0\u1EDDng th\u1EB3ng",
+        hintIdle: "Ch\u1ECDn 2 \u0111i\u1EC3m \u0111\u1EC3 v\u1EBD \u0111\u01B0\u1EDDng th\u1EB3ng",
+        steps: [
+          { type: "point", allowExisting: true, allowNewOn: ALL_SURFACES, hint: "Ch\u1ECDn \u0111i\u1EC3m th\u1EE9 nh\u1EA5t" },
+          { type: "point", allowExisting: true, allowNewOn: ALL_SURFACES, hint: "Ch\u1ECDn \u0111i\u1EC3m th\u1EE9 hai" }
+        ],
+        build: buildLine
+      },
+      {
+        key: "ray",
+        label: "Tia",
+        hintIdle: "Ch\u1ECDn \u0111i\u1EC3m g\u1ED1c r\u1ED3i \u0111i\u1EC3m tr\xEAn tia",
+        steps: [
+          { type: "point", allowExisting: true, allowNewOn: ALL_SURFACES, hint: "Ch\u1ECDn \u0111i\u1EC3m g\u1ED1c" },
+          { type: "point", allowExisting: true, allowNewOn: ALL_SURFACES, hint: "Ch\u1ECDn \u0111i\u1EC3m tr\xEAn tia" }
+        ],
+        build: buildRay
+      },
+      {
+        key: "vector",
+        label: "Vector",
+        hintIdle: "Ch\u1ECDn 2 \u0111i\u1EC3m \u0111\u1EC3 v\u1EBD vector",
+        steps: [
+          { type: "point", allowExisting: true, allowNewOn: ALL_SURFACES, hint: "Ch\u1ECDn \u0111i\u1EC3m \u0111\u1EA7u" },
+          { type: "point", allowExisting: true, allowNewOn: ALL_SURFACES, hint: "Ch\u1ECDn \u0111i\u1EC3m cu\u1ED1i" }
+        ],
+        build: buildVector
+      },
+      {
+        key: "polygon",
+        label: "\u0110a gi\xE1c",
+        hintIdle: "Ch\u1ECDn c\xE1c \u0111\u1EC9nh; click \u0111i\u1EC3m \u0111\u1EA7u \u0111\u1EC3 \u0111\xF3ng",
+        steps: [
+          { type: "point", allowExisting: true, allowNewOn: ALL_SURFACES, hint: "Ch\u1ECDn \u0111\u1EC9nh th\u1EE9 1" },
+          { type: "point", allowExisting: true, allowNewOn: ALL_SURFACES, hint: "Ch\u1ECDn \u0111\u1EC9nh th\u1EE9 2" },
+          { type: "point", allowExisting: true, allowNewOn: ALL_SURFACES, hint: "Ch\u1ECDn \u0111\u1EC9nh th\u1EE9 3" },
+          { type: "closingPoint", hint: "Click \u0111i\u1EC3m \u0111\u1EA7u \u0111\u1EC3 \u0111\xF3ng (ho\u1EB7c ch\u1ECDn th\xEAm \u0111\u1EC9nh)" }
+        ],
+        build: buildPolygon
+      },
+      {
+        key: "plane",
+        label: "M\u1EB7t ph\u1EB3ng (3 \u0111i\u1EC3m)",
+        hintIdle: "Ch\u1ECDn 3 \u0111i\u1EC3m \u0111\u1EC3 x\xE1c \u0111\u1ECBnh m\u1EB7t ph\u1EB3ng",
+        steps: [
+          { type: "point", allowExisting: true, allowNewOn: ALL_SURFACES, hint: "Ch\u1ECDn \u0111i\u1EC3m th\u1EE9 1 c\u1EE7a m\u1EB7t ph\u1EB3ng" },
+          { type: "point", allowExisting: true, allowNewOn: ALL_SURFACES, hint: "Ch\u1ECDn \u0111i\u1EC3m th\u1EE9 2" },
+          { type: "point", allowExisting: true, allowNewOn: ALL_SURFACES, hint: "Ch\u1ECDn \u0111i\u1EC3m th\u1EE9 3" }
+        ],
+        build: buildPlane
+      },
+      {
+        key: "pyramid",
+        label: "H\xECnh ch\xF3p",
+        hintIdle: "Ch\u1ECDn \u0111\xE1y \u0111a gi\xE1c r\u1ED3i ch\u1ECDn \u0111\u1EC9nh ch\xF3p",
+        steps: [
+          { type: "point", allowExisting: true, allowNewOn: NO_SURFACE, hint: "Ch\u1ECDn \u0111\u1EC9nh \u0111\xE1y 1" },
+          { type: "point", allowExisting: true, allowNewOn: NO_SURFACE, hint: "Ch\u1ECDn \u0111\u1EC9nh \u0111\xE1y 2" },
+          { type: "point", allowExisting: true, allowNewOn: NO_SURFACE, hint: "Ch\u1ECDn \u0111\u1EC9nh \u0111\xE1y 3" },
+          { type: "closingPoint", hint: "Click \u0111\u1EC9nh \u0111\xE1y \u0111\u1EA7u ti\xEAn \u0111\u1EC3 \u0111\xF3ng (ho\u1EB7c ch\u1ECDn th\xEAm \u0111\u1EC9nh)" },
+          { type: "point", allowExisting: true, allowNewOn: ALL_SURFACES, hint: "Ch\u1ECDn \u0111\u1EC9nh ch\xF3p" }
+        ],
+        build: buildPyramid
+      },
+      {
+        key: "prism",
+        label: "L\u0103ng tr\u1EE5",
+        hintIdle: "Ch\u1ECDn \u0111\xE1y \u0111a gi\xE1c r\u1ED3i nh\u1EADp chi\u1EC1u cao",
+        steps: [
+          { type: "point", allowExisting: true, allowNewOn: NO_SURFACE, hint: "Ch\u1ECDn \u0111\u1EC9nh \u0111\xE1y 1" },
+          { type: "point", allowExisting: true, allowNewOn: NO_SURFACE, hint: "Ch\u1ECDn \u0111\u1EC9nh \u0111\xE1y 2" },
+          { type: "point", allowExisting: true, allowNewOn: NO_SURFACE, hint: "Ch\u1ECDn \u0111\u1EC9nh \u0111\xE1y 3" },
+          { type: "closingPoint", hint: "Click \u0111\u1EC9nh \u0111\u1EA7u \u0111\u1EC3 \u0111\xF3ng \u0111\xE1y" },
+          { type: "number", prompt: "Chi\u1EC1u cao (theo tr\u1EE5c z)", min: 1e-4 }
+        ],
+        build: buildPrism
+      },
+      {
+        key: "tetrahedron",
+        label: "T\u1EE9 di\u1EC7n \u0111\u1EC1u",
+        hintIdle: "Ch\u1ECDn 2 \u0111i\u1EC3m x\xE1c \u0111\u1ECBnh c\u1EA1nh c\u1EE7a t\u1EE9 di\u1EC7n",
+        steps: [
+          { type: "point", allowExisting: true, allowNewOn: NO_SURFACE, hint: "Ch\u1ECDn \u0111i\u1EC3m 1" },
+          { type: "point", allowExisting: true, allowNewOn: NO_SURFACE, hint: "Ch\u1ECDn \u0111i\u1EC3m 2" }
+        ],
+        build: buildTetrahedron
+      },
+      {
+        key: "cube",
+        label: "L\u1EADp ph\u01B0\u01A1ng",
+        hintIdle: "Ch\u1ECDn 2 \u0111i\u1EC3m tr\xEAn n\u1EC1n x\xE1c \u0111\u1ECBnh c\u1EA1nh",
+        steps: [
+          { type: "point", allowExisting: true, allowNewOn: ["ground"], hint: "Ch\u1ECDn \u0111i\u1EC3m 1 (tr\xEAn n\u1EC1n)" },
+          { type: "point", allowExisting: true, allowNewOn: ["ground"], hint: "Ch\u1ECDn \u0111i\u1EC3m 2 (tr\xEAn n\u1EC1n)" }
+        ],
+        build: buildCube
+      },
+      {
+        key: "sphere",
+        label: "M\u1EB7t c\u1EA7u",
+        hintIdle: "Ch\u1ECDn t\xE2m r\u1ED3i \u0111i\u1EC3m tr\xEAn m\u1EB7t c\u1EA7u",
+        steps: [
+          { type: "point", allowExisting: true, allowNewOn: NO_SURFACE, hint: "Ch\u1ECDn t\xE2m m\u1EB7t c\u1EA7u" },
+          { type: "point", allowExisting: true, allowNewOn: ALL_SURFACES, hint: "Ch\u1ECDn \u0111i\u1EC3m tr\xEAn m\u1EB7t c\u1EA7u" }
+        ],
+        build: buildSphere
+      },
+      {
+        key: "cylinder",
+        label: "H\xECnh tr\u1EE5",
+        hintIdle: "Ch\u1ECDn t\xE2m \u0111\xE1y, t\xE2m tr\xEAn, r\u1ED3i nh\u1EADp b\xE1n k\xEDnh",
+        steps: [
+          { type: "point", allowExisting: true, allowNewOn: NO_SURFACE, hint: "Ch\u1ECDn t\xE2m \u0111\xE1y" },
+          { type: "point", allowExisting: true, allowNewOn: NO_SURFACE, hint: "Ch\u1ECDn t\xE2m tr\xEAn" },
+          { type: "number", prompt: "B\xE1n k\xEDnh", min: 1e-4 }
+        ],
+        build: buildCylinder
+      },
+      {
+        key: "cone",
+        label: "H\xECnh n\xF3n",
+        hintIdle: "Ch\u1ECDn t\xE2m \u0111\xE1y, \u0111\u1EC9nh, r\u1ED3i nh\u1EADp b\xE1n k\xEDnh",
+        steps: [
+          { type: "point", allowExisting: true, allowNewOn: NO_SURFACE, hint: "Ch\u1ECDn t\xE2m \u0111\xE1y" },
+          { type: "point", allowExisting: true, allowNewOn: NO_SURFACE, hint: "Ch\u1ECDn \u0111\u1EC9nh" },
+          { type: "number", prompt: "B\xE1n k\xEDnh", min: 1e-4 }
+        ],
+        build: buildCone
+      }
+    ];
+    TOOL_GROUPS = {
+      "C\u01A1 b\u1EA3n": ["move", "point", "segment", "line", "plane"],
+      "\u0110i\u1EC3m": ["point", "pointOnObject"],
+      "\u0110\u01B0\u1EDDng th\u1EB3ng": ["segment", "line", "ray", "vector", "polygon"],
+      "M\u1EB7t ph\u1EB3ng": ["plane"],
+      "Kh\u1ED1i \u0111a di\u1EC7n": ["pyramid", "prism", "tetrahedron", "cube"],
+      "Kh\u1ED1i cong": ["sphere", "cylinder", "cone"]
+    };
+  }
+});
+
+// src/stamps/geometry-3d/editor/tools/controller.ts
+function stepHint(step) {
+  return step.type === "number" ? step.prompt : step.hint;
+}
+var ToolController;
+var init_controller = __esm({
+  "src/stamps/geometry-3d/editor/tools/controller.ts"() {
+    init_spec();
+    ToolController = class {
+      constructor(scene) {
+        this.scene = scene;
+        this.state = { tool: null, stepIndex: 0, collected: [], hint: "" };
+        this.listeners = /* @__PURE__ */ new Set();
+        this.selectTool("move");
+      }
+      getState() {
+        return this.state;
+      }
+      on(cb) {
+        this.listeners.add(cb);
+        return () => {
+          this.listeners.delete(cb);
+        };
+      }
+      selectTool(key) {
+        const tool = TOOLS2.find((t) => t.key === key) ?? TOOLS2.find((t) => t.key === "move");
+        const firstStep = tool.steps[0];
+        this.state = {
+          tool,
+          stepIndex: 0,
+          collected: [],
+          hint: firstStep ? stepHint(firstStep) : tool.hintIdle
+        };
+        this.notify();
+      }
+      cancel() {
+        this.selectTool("move");
+      }
+      consumeHit(hit) {
+        const tool = this.state.tool;
+        if (!tool) return false;
+        const step = tool.steps[this.state.stepIndex];
+        if (!step) return false;
+        if (step.type === "closingPoint") {
+          if (hit.kind === "empty") return false;
+          if (hit.kind === "existingPoint") {
+            this.state.collected.push({ step, hit });
+            this.state.stepIndex++;
+            this.advance();
+            return true;
+          }
+          const prevStep = tool.steps[this.state.stepIndex - 1];
+          if (!prevStep || prevStep.type !== "point") return false;
+          if (!this.hitMatchesStep(hit, prevStep)) return false;
+          this.state.collected.push({ step: prevStep, hit });
+          this.notify();
+          return true;
+        }
+        if (!this.hitMatchesStep(hit, step)) return false;
+        this.state.collected.push({ step, hit });
+        this.state.stepIndex++;
+        this.advance();
+        return true;
+      }
+      consumeNumber(value) {
+        const tool = this.state.tool;
+        if (!tool) return false;
+        const step = tool.steps[this.state.stepIndex];
+        if (!step || step.type !== "number") return false;
+        if (step.min != null && value < step.min) return false;
+        if (step.max != null && value > step.max) return false;
+        this.state.collected.push({ step, value });
+        this.state.stepIndex++;
+        this.advance();
+        return true;
+      }
+      hitMatchesStep(hit, step) {
+        if (step.type !== "point" && step.type !== "closingPoint") return false;
+        if (hit.kind === "empty") return false;
+        if (step.type === "closingPoint") return hit.kind === "existingPoint";
+        if (hit.kind === "existingPoint") return step.allowExisting;
+        const surfaceMap = {
+          onGround: "ground",
+          onAxis: "axis",
+          onPlane: "plane",
+          onLine: "line",
+          onPolygon: "polygon",
+          onSphere: "sphere"
+        };
+        const k = surfaceMap[hit.kind];
+        return k != null && step.type === "point" && step.allowNewOn.includes(k);
+      }
+      advance() {
+        const tool = this.state.tool;
+        if (this.state.stepIndex >= tool.steps.length) {
+          tool.build(this.state.collected, this.scene);
+          this.selectTool("move");
+          return;
+        }
+        this.state.hint = stepHint(tool.steps[this.state.stepIndex]);
+        this.notify();
+      }
+      notify() {
+        for (const cb of this.listeners) cb(this.state);
+      }
+    };
+  }
+});
+
+// src/stamps/geometry-3d/editor/renderer/faceted.ts
+function cylinderFaces(center, top, radius) {
+  const baseRing = [];
+  const topRing = [];
+  for (let i = 0; i < CURVED_SEGMENTS; i++) {
+    const theta = i / CURVED_SEGMENTS * Math.PI * 2;
+    const dx = radius * Math.cos(theta);
+    const dy = radius * Math.sin(theta);
+    baseRing.push([center[0] + dx, center[1] + dy, center[2]]);
+    topRing.push([top[0] + dx, top[1] + dy, top[2]]);
+  }
+  const vertices = [...baseRing, ...topRing];
+  const faces = [];
+  faces.push(baseRing.map((_, i) => i));
+  faces.push(topRing.map((_, i) => CURVED_SEGMENTS + i));
+  for (let i = 0; i < CURVED_SEGMENTS; i++) {
+    const next = (i + 1) % CURVED_SEGMENTS;
+    faces.push([i, next, CURVED_SEGMENTS + next, CURVED_SEGMENTS + i]);
+  }
+  return { vertices, faces };
+}
+function coneFaces(baseCenter, apex, radius) {
+  const baseRing = [];
+  for (let i = 0; i < CURVED_SEGMENTS; i++) {
+    const theta = i / CURVED_SEGMENTS * Math.PI * 2;
+    baseRing.push([
+      baseCenter[0] + radius * Math.cos(theta),
+      baseCenter[1] + radius * Math.sin(theta),
+      baseCenter[2]
+    ]);
+  }
+  const apexIdx = baseRing.length;
+  const vertices = [...baseRing, apex];
+  const faces = [baseRing.map((_, i) => i)];
+  for (let i = 0; i < CURVED_SEGMENTS; i++) {
+    faces.push([i, (i + 1) % CURVED_SEGMENTS, apexIdx]);
+  }
+  return { vertices, faces };
+}
+var CURVED_SEGMENTS;
+var init_faceted = __esm({
+  "src/stamps/geometry-3d/editor/renderer/faceted.ts"() {
+    CURVED_SEGMENTS = 16;
+  }
+});
+
+// src/stamps/geometry-3d/editor/renderer/JxgRenderer.ts
+var JxgRenderer;
+var init_JxgRenderer = __esm({
+  "src/stamps/geometry-3d/editor/renderer/JxgRenderer.ts"() {
+    init_constraintMath();
+    init_faceted();
+    JxgRenderer = class {
+      constructor(scene, view) {
+        this.scene = scene;
+        this.view = view;
+        this.map = /* @__PURE__ */ new Map();
+        this.unsubAdd = scene.on("add", (o) => this.handleAdd(o));
+        this.unsubChange = scene.on("change", (o) => this.handleChange(o));
+        this.unsubDelete = scene.on("delete", (id) => this.handleDelete(id));
+        for (const obj of scene.list()) this.handleAdd(obj);
+      }
+      dispose() {
+        this.unsubAdd();
+        this.unsubChange();
+        this.unsubDelete();
+        for (const [id, j] of this.map) {
+          try {
+            j.remove?.();
+          } catch {
+          }
+          this.map.delete(id);
+        }
+      }
+      handleAdd(obj) {
+        if (this.map.has(obj.id)) return;
+        if (obj.kind === "point") {
+          const world = constraintToWorld(obj.constraint, this.scene);
+          const attrs = { id: obj.id, name: obj.label, size: 4, visible: obj.visible };
+          const jxg = this.view.create("point3d", world, attrs);
+          this.map.set(obj.id, jxg);
+          this.attachDragHook(obj.id, jxg);
+          return;
+        }
+        if (obj.kind === "segment") {
+          const a = this.map.get(obj.p1);
+          const b = this.map.get(obj.p2);
+          const attrs = {
+            id: obj.id,
+            straightFirst: false,
+            straightLast: false,
+            visible: obj.visible,
+            strokeColor: obj.color ?? "#0066cc",
+            strokeWidth: 2
+          };
+          this.map.set(obj.id, this.view.create("line3d", [a, b], attrs));
+          return;
+        }
+        if (obj.kind === "line") {
+          const attrs = {
+            id: obj.id,
+            visible: obj.visible,
+            strokeColor: obj.color ?? "#0066cc",
+            strokeWidth: 2
+          };
+          this.map.set(
+            obj.id,
+            this.view.create("line3d", [this.map.get(obj.p1), this.map.get(obj.p2)], attrs)
+          );
+          return;
+        }
+        if (obj.kind === "ray") {
+          const attrs = { id: obj.id, straightFirst: false, visible: obj.visible };
+          this.map.set(
+            obj.id,
+            this.view.create("line3d", [this.map.get(obj.origin), this.map.get(obj.through)], attrs)
+          );
+          return;
+        }
+        if (obj.kind === "vector") {
+          const attrs = {
+            id: obj.id,
+            lastArrow: true,
+            straightFirst: false,
+            straightLast: false,
+            visible: obj.visible
+          };
+          this.map.set(
+            obj.id,
+            this.view.create("line3d", [this.map.get(obj.from), this.map.get(obj.to)], attrs)
+          );
+          return;
+        }
+        if (obj.kind === "plane") {
+          const attrs = { id: obj.id, fillOpacity: 0.2, visible: obj.visible };
+          this.map.set(
+            obj.id,
+            this.view.create(
+              "plane3d",
+              [this.map.get(obj.p1), this.map.get(obj.p2), this.map.get(obj.p3)],
+              attrs
+            )
+          );
+          return;
+        }
+        if (obj.kind === "polygon") {
+          const refs = obj.vertices.map((v) => this.map.get(v));
+          const attrs = { id: obj.id, fillOpacity: 0.3, visible: obj.visible };
+          this.map.set(obj.id, this.view.create("polygon3d", [refs], attrs));
+          return;
+        }
+        if (obj.kind === "sphere") {
+          const attrs = { id: obj.id, fillOpacity: 0.25, visible: obj.visible };
+          this.map.set(
+            obj.id,
+            this.view.create("sphere3d", [this.map.get(obj.center), this.map.get(obj.surfacePoint)], attrs)
+          );
+          return;
+        }
+        if (obj.kind === "polyhedron") {
+          const verts = obj.vertices.map((id) => this.map.get(id));
+          const faceJxgs = obj.faces.map(
+            (face) => this.view.create("polygon3d", [face.map((idx) => verts[idx])], {
+              id: `${obj.id}.face${face.join("-")}`,
+              fillOpacity: 0.25,
+              strokeColor: "#0066cc",
+              strokeWidth: 1.5,
+              visible: obj.visible
+            })
+          );
+          this.map.set(obj.id, {
+            _faces: faceJxgs,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            remove: () => faceJxgs.forEach((f) => f.remove?.())
+          });
+          return;
+        }
+        if (obj.kind === "cylinder" || obj.kind === "cone") {
+          const baseCenterPt = this.scene.get(obj.baseCenter);
+          if (!baseCenterPt || baseCenterPt.kind !== "point") return;
+          const base = constraintToWorld(baseCenterPt.constraint, this.scene);
+          let secondPt;
+          if (obj.kind === "cylinder") {
+            const topCenterPt = this.scene.get(obj.topCenter);
+            if (!topCenterPt || topCenterPt.kind !== "point") return;
+            secondPt = constraintToWorld(topCenterPt.constraint, this.scene);
+          } else {
+            const apexPt = this.scene.get(obj.apex);
+            if (!apexPt || apexPt.kind !== "point") return;
+            secondPt = constraintToWorld(apexPt.constraint, this.scene);
+          }
+          const geom = obj.kind === "cylinder" ? cylinderFaces(base, secondPt, obj.radius) : coneFaces(base, secondPt, obj.radius);
+          const vertJxgs = geom.vertices.map(
+            (v, i) => this.view.create("point3d", v, {
+              id: `${obj.id}.v${i}`,
+              visible: false,
+              fixed: true,
+              withLabel: false
+            })
+          );
+          const faceJxgs = geom.faces.map(
+            (face) => this.view.create("polygon3d", [face.map((idx) => vertJxgs[idx])], {
+              id: `${obj.id}.face${face.join("-")}`,
+              fillOpacity: 0.25,
+              strokeColor: "#0066cc",
+              strokeWidth: 1.5,
+              visible: obj.visible
+            })
+          );
+          this.map.set(obj.id, {
+            _verts: vertJxgs,
+            _faces: faceJxgs,
+            remove: () => {
+              faceJxgs.forEach((f) => f.remove?.());
+              vertJxgs.forEach((v) => v.remove?.());
+            }
+          });
+          return;
+        }
+      }
+      attachDragHook(id, jxg) {
+        if (typeof jxg.on !== "function") return;
+        jxg.on("drag", () => {
+          const obj = this.scene.get(id);
+          if (!obj || obj.kind !== "point") return;
+          const world = [jxg.X(), jxg.Y(), jxg.Z()];
+          const updated = worldToConstraint(obj.constraint, world, this.scene);
+          obj.constraint = updated;
+          this.scene.emitChange(id);
+        });
+      }
+      handleChange(obj) {
+        const j = this.map.get(obj.id);
+        if (!j) return;
+        if (obj.kind === "point" && typeof j.moveTo === "function") {
+          const w = constraintToWorld(obj.constraint, this.scene);
+          j.moveTo([w[0], w[1], w[2]]);
+        }
+      }
+      handleDelete(id) {
+        const j = this.map.get(id);
+        if (!j) return;
+        try {
+          j.remove?.();
+        } catch {
+        }
+        this.map.delete(id);
+      }
+    };
+  }
+});
+
+// src/stamps/geometry-3d/editor/hitTest/rayCast.ts
+function screenToRay(screen, view) {
+  const near = unproject(screen, view, 20);
+  const far = unproject(screen, view, -20);
+  const dir = [far[0] - near[0], far[1] - near[1], far[2] - near[2]];
+  const n = Math.sqrt(dir[0] ** 2 + dir[1] ** 2 + dir[2] ** 2);
+  const norm3 = n === 0 ? [0, 0, -1] : [dir[0] / n, dir[1] / n, dir[2] / n];
+  return { origin: near, dir: norm3 };
+}
+function unproject(screen, view, depth) {
+  if (typeof view.unprojectScreen === "function") {
+    const v = view.unprojectScreen(screen.x, screen.y, depth);
+    return [v[0], v[1], v[2]];
+  }
+  if (typeof view.project3DTo2D === "function") {
+    const p0 = view.project3DTo2D(0, 0, 0);
+    const px = view.project3DTo2D(1, 0, 0);
+    const py = view.project3DTo2D(0, 1, 0);
+    const pz = view.project3DTo2D(0, 0, 1);
+    const ox = p0[1], oy = p0[2];
+    const a = px[1] - ox, b = py[1] - ox, c = pz[1] - ox;
+    const d = px[2] - oy, e = py[2] - oy, f = pz[2] - oy;
+    const rhsX = screen.x - ox - c * depth;
+    const rhsY = screen.y - oy - f * depth;
+    const det = a * e - b * d;
+    if (Math.abs(det) < 1e-9) return [0, 0, depth];
+    const x = (e * rhsX - b * rhsY) / det;
+    const y = (-d * rhsX + a * rhsY) / det;
+    return [x, y, depth];
+  }
+  throw new Error("rayCast: view has neither unprojectScreen nor project3DTo2D");
+}
+var init_rayCast = __esm({
+  "src/stamps/geometry-3d/editor/hitTest/rayCast.ts"() {
+  }
+});
+
+// src/stamps/geometry-3d/editor/hitTest/intersect.ts
+function dot2(a, b) {
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+function sub2(a, b) {
+  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+}
+function add2(a, b) {
+  return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+}
+function scale2(a, k) {
+  return [a[0] * k, a[1] * k, a[2] * k];
+}
+function norm2(a) {
+  return dot2(a, a);
+}
+function rayPlane(ray, plane) {
+  const denom = dot2(ray.dir, plane.normal);
+  if (Math.abs(denom) < EPS2) return null;
+  const t = dot2(sub2(plane.point, ray.origin), plane.normal) / denom;
+  if (t < 0) return null;
+  return { point: add2(ray.origin, scale2(ray.dir, t)), t };
+}
+function rayGround(ray) {
+  return rayPlane(ray, { point: [0, 0, 0], normal: [0, 0, 1] });
+}
+function raySphere(ray, sphere) {
+  const oc = sub2(ray.origin, sphere.center);
+  const b = dot2(oc, ray.dir);
+  const c = dot2(oc, oc) - sphere.radius * sphere.radius;
+  const disc = b * b - c;
+  if (disc < 0) return null;
+  const sqrtD = Math.sqrt(disc);
+  const t1 = -b - sqrtD;
+  const t2 = -b + sqrtD;
+  const t = t1 >= 0 ? t1 : t2;
+  if (t < 0) return null;
+  return { point: add2(ray.origin, scale2(ray.dir, t)), t };
+}
+function rayLineSegment(ray, seg, maxDistance) {
+  const u = ray.dir;
+  const v = sub2(seg.b, seg.a);
+  const w0 = sub2(ray.origin, seg.a);
+  const a = dot2(u, u);
+  const bb = dot2(u, v);
+  const cc = dot2(v, v);
+  const d = dot2(u, w0);
+  const e = dot2(v, w0);
+  const denom = a * cc - bb * bb;
+  if (Math.abs(denom) < EPS2) return null;
+  const sc = (bb * e - cc * d) / denom;
+  const tc = (a * e - bb * d) / denom;
+  if (sc < 0 || tc < 0 || tc > 1) return null;
+  const pRay = add2(ray.origin, scale2(u, sc));
+  const pSeg = add2(seg.a, scale2(v, tc));
+  const dist2 = norm2(sub2(pRay, pSeg));
+  if (dist2 > maxDistance * maxDistance) return null;
+  return { point: pSeg, t: sc, tOnSegment: tc };
+}
+var EPS2;
+var init_intersect = __esm({
+  "src/stamps/geometry-3d/editor/hitTest/intersect.ts"() {
+    EPS2 = 1e-9;
+  }
+});
+
+// src/stamps/geometry-3d/editor/hitTest/snapping.ts
+function findSnapPoint(screen, view, scene, pixelRadius = 8) {
+  let best = null;
+  const r2 = pixelRadius * pixelRadius;
+  for (const obj of scene.list()) {
+    if (obj.kind !== "point") continue;
+    if (!obj.visible) continue;
+    const world = constraintToWorld(obj.constraint, scene);
+    const proj = view.project3DTo2D?.(world[0], world[1], world[2]);
+    if (!proj) continue;
+    const dx = proj[1] - screen.x;
+    const dy = proj[2] - screen.y;
+    const d2 = dx * dx + dy * dy;
+    if (d2 <= r2 && (best === null || d2 < best.d2)) {
+      best = { id: obj.id, d2 };
+    }
+  }
+  return best?.id ?? null;
+}
+var init_snapping = __esm({
+  "src/stamps/geometry-3d/editor/hitTest/snapping.ts"() {
+    init_constraintMath();
+  }
+});
+
+// src/stamps/geometry-3d/editor/hitTest/hitTest.ts
+function hitTest(screen, view, scene) {
+  const snap = findSnapPoint(screen, view, scene);
+  if (snap) return { kind: "existingPoint", pointId: snap };
+  const ray = screenToRay(screen, view);
+  let bestSphere = null;
+  for (const obj of scene.list()) {
+    if (obj.kind !== "sphere" || !obj.visible) continue;
+    const centerPoint = scene.get(obj.center);
+    const surfacePoint = scene.get(obj.surfacePoint);
+    if (!centerPoint || centerPoint.kind !== "point") continue;
+    if (!surfacePoint || surfacePoint.kind !== "point") continue;
+    const center = constraintToWorld(centerPoint.constraint, scene);
+    const surface = constraintToWorld(surfacePoint.constraint, scene);
+    const radius = Math.hypot(
+      surface[0] - center[0],
+      surface[1] - center[1],
+      surface[2] - center[2]
+    );
+    const sh = raySphere(ray, { center, radius });
+    if (sh && (bestSphere === null || sh.t < bestSphere.t)) {
+      bestSphere = { id: obj.id, t: sh.t, world: sh.point };
+    }
+  }
+  if (view.project3DTo2D) {
+    const axes = [
+      { axis: "x", a: [-10, 0, 0], b: [10, 0, 0] },
+      { axis: "y", a: [0, -10, 0], b: [0, 10, 0] },
+      { axis: "z", a: [0, 0, -10], b: [0, 0, 10] }
+    ];
+    for (const ax of axes) {
+      const pa = view.project3DTo2D(ax.a[0], ax.a[1], ax.a[2]);
+      const pb = view.project3DTo2D(ax.b[0], ax.b[1], ax.b[2]);
+      const d = distScreenPointToSegment(screen, [pa[1], pa[2]], [pb[1], pb[2]]);
+      if (d <= AXIS_PIXEL_THRESHOLD) {
+        const hit = rayLineSegment(ray, { a: ax.a, b: ax.b }, 1e3);
+        if (hit) {
+          const t = ax.axis === "x" ? hit.point[0] : ax.axis === "y" ? hit.point[1] : hit.point[2];
+          return { kind: "onAxis", axis: ax.axis, t, world: hit.point };
+        }
+      }
+    }
+  }
+  let bestPlane = null;
+  for (const obj of scene.list()) {
+    if (obj.kind !== "plane" || !obj.visible) continue;
+    const basis = planeBasis(obj, scene);
+    if (!basis) continue;
+    const ph = rayPlane(ray, { point: basis.origin, normal: basis.normal });
+    if (ph && (bestPlane === null || ph.t < bestPlane.t)) {
+      bestPlane = { id: obj.id, t: ph.t, world: ph.point, basis };
+    }
+  }
+  if (bestPlane && (!bestSphere || bestPlane.t < bestSphere.t)) {
+    const rel = [
+      bestPlane.world[0] - bestPlane.basis.origin[0],
+      bestPlane.world[1] - bestPlane.basis.origin[1],
+      bestPlane.world[2] - bestPlane.basis.origin[2]
+    ];
+    const b1n = dot3(bestPlane.basis.basis1, bestPlane.basis.basis1);
+    const b2n = dot3(bestPlane.basis.basis2, bestPlane.basis.basis2);
+    const u = b1n === 0 ? 0 : dot3(rel, bestPlane.basis.basis1) / b1n;
+    const v = b2n === 0 ? 0 : dot3(rel, bestPlane.basis.basis2) / b2n;
+    return { kind: "onPlane", planeId: bestPlane.id, u, v, world: bestPlane.world };
+  }
+  if (bestSphere) {
+    const sph = scene.get(bestSphere.id);
+    if (sph && sph.kind === "sphere") {
+      const centerPt = scene.get(sph.center);
+      if (centerPt && centerPt.kind === "point") {
+        const center = constraintToWorld(centerPt.constraint, scene);
+        const relX = bestSphere.world[0] - center[0];
+        const relY = bestSphere.world[1] - center[1];
+        const relZ = bestSphere.world[2] - center[2];
+        const r = Math.hypot(relX, relY, relZ);
+        const phi = r === 0 ? 0 : Math.acos(relZ / r);
+        const theta = Math.atan2(relY, relX);
+        return { kind: "onSphere", sphereId: bestSphere.id, theta, phi, world: bestSphere.world };
+      }
+    }
+  }
+  const g = rayGround(ray);
+  if (g) return { kind: "onGround", world: g.point };
+  return { kind: "empty" };
+}
+function distScreenPointToSegment(p, a, b) {
+  const vx = b[0] - a[0];
+  const vy = b[1] - a[1];
+  const wx = p.x - a[0];
+  const wy = p.y - a[1];
+  const c1 = vx * wx + vy * wy;
+  if (c1 <= 0) return Math.hypot(wx, wy);
+  const c2 = vx * vx + vy * vy;
+  if (c2 <= c1) return Math.hypot(p.x - b[0], p.y - b[1]);
+  const t = c1 / c2;
+  const px = a[0] + t * vx;
+  const py = a[1] + t * vy;
+  return Math.hypot(p.x - px, p.y - py);
+}
+function planeBasis(planeObj, scene) {
+  const p1Obj = scene.get(planeObj.p1);
+  const p2Obj = scene.get(planeObj.p2);
+  const p3Obj = scene.get(planeObj.p3);
+  if (!p1Obj || p1Obj.kind !== "point") return null;
+  if (!p2Obj || p2Obj.kind !== "point") return null;
+  if (!p3Obj || p3Obj.kind !== "point") return null;
+  const p1 = constraintToWorld(p1Obj.constraint, scene);
+  const p2 = constraintToWorld(p2Obj.constraint, scene);
+  const p3 = constraintToWorld(p3Obj.constraint, scene);
+  const basis1 = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+  const tmp = [p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]];
+  const cx = basis1[1] * tmp[2] - basis1[2] * tmp[1];
+  const cy = basis1[2] * tmp[0] - basis1[0] * tmp[2];
+  const cz = basis1[0] * tmp[1] - basis1[1] * tmp[0];
+  const cLen = Math.hypot(cx, cy, cz);
+  if (cLen === 0) return null;
+  const normal = [cx / cLen, cy / cLen, cz / cLen];
+  const basis2 = [
+    normal[1] * basis1[2] - normal[2] * basis1[1],
+    normal[2] * basis1[0] - normal[0] * basis1[2],
+    normal[0] * basis1[1] - normal[1] * basis1[0]
+  ];
+  return { origin: p1, basis1, basis2, normal };
+}
+function dot3(a, b) {
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+var AXIS_PIXEL_THRESHOLD;
+var init_hitTest = __esm({
+  "src/stamps/geometry-3d/editor/hitTest/hitTest.ts"() {
+    init_rayCast();
+    init_intersect();
+    init_snapping();
+    init_constraintMath();
+    AXIS_PIXEL_THRESHOLD = 12;
+  }
+});
+function ToolButton(props) {
+  const { toolKey, label, selected, onClick, icon } = props;
+  return /* @__PURE__ */ jsxRuntime.jsxs(
+    "button",
+    {
+      type: "button",
+      "data-tool-key": toolKey,
+      "aria-pressed": selected,
+      onClick: () => onClick(toolKey),
+      className: "flex flex-col items-center justify-center gap-1 rounded-md border p-2 text-xs " + (selected ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-200" : "border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"),
+      style: { width: 80, height: 72 },
+      children: [
+        /* @__PURE__ */ jsxRuntime.jsx("span", { "aria-hidden": true, className: "text-lg", children: icon ?? "\u2B1B" }),
+        /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-center leading-tight", children: label })
+      ]
+    }
+  );
+}
+var init_ToolButton = __esm({
+  "src/stamps/geometry-3d/editor/toolPanel/ToolButton.tsx"() {
+    "use client";
+  }
+});
+function ToolPalette(props) {
+  const { selected, onSelect } = props;
+  return /* @__PURE__ */ jsxRuntime.jsx("div", { "data-testid": "tool-palette", className: "flex flex-col gap-4 p-3", children: Object.entries(TOOL_GROUPS).map(([groupLabel, keys]) => /* @__PURE__ */ jsxRuntime.jsxs("div", { children: [
+    /* @__PURE__ */ jsxRuntime.jsx("h4", { className: "mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-400", children: groupLabel }),
+    /* @__PURE__ */ jsxRuntime.jsx("div", { className: "grid grid-cols-3 gap-1.5", children: keys.map((k) => {
+      const tool = TOOLS2.find((t) => t.key === k);
+      return /* @__PURE__ */ jsxRuntime.jsx(
+        ToolButton,
+        {
+          toolKey: k,
+          label: tool.label,
+          selected: selected === k,
+          onClick: onSelect,
+          icon: ICONS[k]
+        },
+        k
+      );
+    }) })
+  ] }, groupLabel)) });
+}
+var ICONS;
+var init_ToolPalette = __esm({
+  "src/stamps/geometry-3d/editor/toolPanel/ToolPalette.tsx"() {
+    "use client";
+    init_ToolButton();
+    init_spec();
+    ICONS = {
+      move: "\u2196",
+      point: "\xB7",
+      pointOnObject: "\u2299",
+      segment: "\u2014",
+      line: "\u27F7",
+      ray: "\u2192",
+      vector: "\u2197",
+      polygon: "\u2B20",
+      plane: "\u2B1C",
+      pyramid: "\u25B3",
+      prism: "\u25A6",
+      tetrahedron: "\u25EC",
+      cube: "\u2B1B",
+      sphere: "\u25CF",
+      cylinder: "\u232D",
+      cone: "\u23F6"
+    };
+  }
+});
+
+// src/stamps/geometry-3d/editor/algebraPanel/symbolic.ts
+function symbolicFor(obj, scene) {
+  const n = (id) => scene.get(id)?.label ?? id;
+  switch (obj.kind) {
+    case "point": {
+      const c = obj.constraint;
+      switch (c.kind) {
+        case "free":
+          return "Point";
+        case "onGround":
+          return "Point(xyPlane)";
+        case "onAxis":
+          return `Point(${c.axis}Axis)`;
+        case "onPlane":
+          return `Point(${n(c.planeId)})`;
+        case "onLine":
+          return `Point(${n(c.lineId)})`;
+        case "onPolygon":
+          return `Point(${n(c.polygonId)})`;
+        case "onSphere":
+          return `Point(${n(c.sphereId)})`;
+      }
+      return "Point";
+    }
+    case "segment":
+      return `Segment(${n(obj.p1)}, ${n(obj.p2)})`;
+    case "line":
+      return `Line(${n(obj.p1)}, ${n(obj.p2)})`;
+    case "ray":
+      return `Ray(${n(obj.origin)}, ${n(obj.through)})`;
+    case "vector":
+      return `Vector(${n(obj.from)}, ${n(obj.to)})`;
+    case "polygon":
+      return `Polygon(${obj.vertices.map(n).join(", ")})`;
+    case "plane":
+      return `Plane(${n(obj.p1)}, ${n(obj.p2)}, ${n(obj.p3)})`;
+    case "sphere":
+      return `Sphere(${n(obj.center)}, ${n(obj.surfacePoint)})`;
+    case "polyhedron": {
+      const flavorVn = {
+        pyramid: "Ch\xF3p",
+        prism: "L\u0103ng tr\u1EE5",
+        tetrahedron: "T\u1EE9 di\u1EC7n",
+        cube: "L\u1EADp ph\u01B0\u01A1ng"
+      };
+      return `${flavorVn[obj.flavor]}(${obj.vertices.length} \u0111\u1EC9nh)`;
+    }
+    case "cylinder":
+      return `Cylinder(${n(obj.baseCenter)}, ${n(obj.topCenter)}, r=${obj.radius})`;
+    case "cone":
+      return `Cone(${n(obj.baseCenter)}, ${n(obj.apex)}, r=${obj.radius})`;
+  }
+}
+function numericFor(obj, scene) {
+  if (obj.kind === "point") {
+    const w = constraintToWorld(obj.constraint, scene);
+    return `(${round(w[0])}, ${round(w[1])}, ${round(w[2])})`;
+  }
+  return "";
+}
+function round(x) {
+  return Math.abs(x) < 1e-9 ? "0" : (Math.round(x * 100) / 100).toString();
+}
+var init_symbolic = __esm({
+  "src/stamps/geometry-3d/editor/algebraPanel/symbolic.ts"() {
+    init_constraintMath();
+  }
+});
+function RowMenu(props) {
+  const [open, setOpen] = React11__namespace.useState(false);
+  return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "relative inline-block", children: [
+    /* @__PURE__ */ jsxRuntime.jsx(
+      "button",
+      {
+        type: "button",
+        "aria-label": "Row menu",
+        onClick: () => setOpen((v) => !v),
+        className: "rounded px-1.5 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+        children: "\u22EE"
+      }
+    ),
+    open ? /* @__PURE__ */ jsxRuntime.jsxs(
+      "div",
+      {
+        role: "menu",
+        className: "absolute right-0 z-10 mt-1 w-40 rounded-md border border-zinc-200 bg-white py-1 text-xs shadow-lg dark:border-zinc-700 dark:bg-zinc-900",
+        children: [
+          /* @__PURE__ */ jsxRuntime.jsx(MenuItem, { onClick: () => {
+            setOpen(false);
+            props.onRename();
+          }, children: "\u0110\u1ED5i t\xEAn" }),
+          /* @__PURE__ */ jsxRuntime.jsx(MenuItem, { onClick: () => {
+            setOpen(false);
+            props.onChangeColor();
+          }, children: "\u0110\u1ED5i m\xE0u" }),
+          /* @__PURE__ */ jsxRuntime.jsx(MenuItem, { onClick: () => {
+            setOpen(false);
+            props.onToggleVisibility();
+          }, children: props.visible ? "\u1EA8n" : "Hi\u1EC7n" }),
+          /* @__PURE__ */ jsxRuntime.jsx(MenuItem, { onClick: () => {
+            setOpen(false);
+            props.onDelete();
+          }, className: "text-red-600", children: "Xo\xE1" })
+        ]
+      }
+    ) : null
+  ] });
+}
+function MenuItem({ children, onClick, className }) {
+  return /* @__PURE__ */ jsxRuntime.jsx(
+    "button",
+    {
+      type: "button",
+      role: "menuitem",
+      onClick,
+      className: `block w-full px-3 py-1 text-left hover:bg-zinc-100 dark:hover:bg-zinc-800 ${className ?? ""}`,
+      children
+    }
+  );
+}
+var init_RowMenu = __esm({
+  "src/stamps/geometry-3d/editor/algebraPanel/RowMenu.tsx"() {
+    "use client";
+  }
+});
+function AlgebraRow(props) {
+  const { obj, scene, onDelete } = props;
+  const symbolic = symbolicFor(obj, scene);
+  const numeric = numericFor(obj, scene);
+  return /* @__PURE__ */ jsxRuntime.jsxs(
+    "li",
+    {
+      "data-testid": `algebra-row-${obj.id}`,
+      className: "flex items-center gap-2 border-b border-zinc-100 px-3 py-1.5 text-xs dark:border-zinc-800",
+      children: [
+        /* @__PURE__ */ jsxRuntime.jsx(
+          "span",
+          {
+            "aria-hidden": true,
+            className: "inline-block size-3 rounded-full border",
+            style: { backgroundColor: obj.color ?? "#0066cc" }
+          }
+        ),
+        /* @__PURE__ */ jsxRuntime.jsx("span", { className: "min-w-[3ch] font-semibold", children: obj.label }),
+        /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-zinc-500", children: "=" }),
+        /* @__PURE__ */ jsxRuntime.jsx("span", { className: "flex-1 truncate font-mono", children: symbolic }),
+        numeric ? /* @__PURE__ */ jsxRuntime.jsx("span", { className: "truncate text-zinc-500", children: numeric }) : null,
+        /* @__PURE__ */ jsxRuntime.jsx(
+          RowMenu,
+          {
+            visible: obj.visible,
+            onRename: () => {
+            },
+            onChangeColor: () => {
+            },
+            onToggleVisibility: () => {
+            },
+            onDelete: () => onDelete(obj.id)
+          }
+        )
+      ]
+    }
+  );
+}
+var init_AlgebraRow = __esm({
+  "src/stamps/geometry-3d/editor/algebraPanel/AlgebraRow.tsx"() {
+    "use client";
+    init_symbolic();
+    init_RowMenu();
+  }
+});
+function AlgebraList(props) {
+  const { scene } = props;
+  const [, forceUpdate] = React11__namespace.useReducer((x) => x + 1, 0);
+  React11__namespace.useEffect(() => {
+    const unsubAdd = scene.on("add", () => forceUpdate());
+    const unsubChange = scene.on("change", () => forceUpdate());
+    const unsubDelete = scene.on("delete", () => forceUpdate());
+    const unsubReset = scene.on("reset", () => forceUpdate());
+    return () => {
+      unsubAdd();
+      unsubChange();
+      unsubDelete();
+      unsubReset();
+    };
+  }, [scene]);
+  const objects = scene.list();
+  return /* @__PURE__ */ jsxRuntime.jsx(
+    "ul",
+    {
+      "data-testid": "algebra-list",
+      className: "flex max-h-[calc(100vh-200px)] flex-col overflow-y-auto",
+      children: objects.length === 0 ? /* @__PURE__ */ jsxRuntime.jsx("li", { className: "px-3 py-4 text-center text-xs text-zinc-500", children: "Ch\u01B0a c\xF3 \u0111\u1ED1i t\u01B0\u1EE3ng n\xE0o" }) : objects.map((o) => /* @__PURE__ */ jsxRuntime.jsx(AlgebraRow, { obj: o, scene, onDelete: (id) => scene.delete(id) }, o.id))
+    }
+  );
+}
+var init_AlgebraList = __esm({
+  "src/stamps/geometry-3d/editor/algebraPanel/AlgebraList.tsx"() {
+    "use client";
+    init_AlgebraRow();
+  }
+});
+function LeftPanel3(props) {
+  const { scene, selectedTool, onSelectTool } = props;
+  const [tab, setTab] = React11__namespace.useState("tools");
+  return /* @__PURE__ */ jsxRuntime.jsxs(
+    "div",
+    {
+      "data-testid": "left-panel",
+      className: "flex h-full w-[280px] flex-col border-r border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900",
+      children: [
+        /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex border-b border-zinc-200 dark:border-zinc-700", children: [
+          /* @__PURE__ */ jsxRuntime.jsx(TabButton, { active: tab === "tools", onClick: () => setTab("tools"), children: "\u{1F9F0} Tools" }),
+          /* @__PURE__ */ jsxRuntime.jsx(TabButton, { active: tab === "algebra", onClick: () => setTab("algebra"), children: "\u{1F4D0} Algebra" })
+        ] }),
+        /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex-1 overflow-y-auto", children: tab === "tools" ? /* @__PURE__ */ jsxRuntime.jsx(ToolPalette, { selected: selectedTool, onSelect: onSelectTool }) : /* @__PURE__ */ jsxRuntime.jsx(AlgebraList, { scene }) })
+      ]
+    }
+  );
+}
+function TabButton({
+  active,
+  onClick,
+  children
+}) {
+  return /* @__PURE__ */ jsxRuntime.jsx(
+    "button",
+    {
+      type: "button",
+      onClick,
+      "aria-pressed": active,
+      className: "flex-1 px-3 py-2 text-sm font-medium " + (active ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"),
+      children
+    }
+  );
+}
+var init_LeftPanel3 = __esm({
+  "src/stamps/geometry-3d/editor/LeftPanel.tsx"() {
+    "use client";
+    init_ToolPalette();
+    init_AlgebraList();
   }
 });
 
@@ -4113,1335 +5991,452 @@ var init_theme2 = __esm({
     };
   }
 });
-
-// src/stamps/geometry-3d/editor/handlers.ts
-function createHandlerContext(deps) {
-  return {
-    ...deps,
-    pendingPoints: [],
-    pendingFlags: {},
-    pushedPointCoords: /* @__PURE__ */ new Map()
-  };
-}
-function refByPlaceholder(id) {
-  return `@id:${id}`;
-}
-function createPoint3D(ctx, x, y, z, label) {
-  const id = ctx.nextId();
-  const attrs = { id, size: 3 };
-  const ref = ctx.view.create("point3d", [x, y, z], attrs);
-  ctx.objMap.set(id, ref);
-  ctx.pushedPointCoords.set(id, [x, y, z]);
-  ctx.pushLog({
-    type: "point3d",
-    parents: [x, y, z],
-    attributes: attrs,
-    id,
-    label
-  });
-  return { id, ref, coords: [x, y, z] };
-}
-function resolvePoint(ctx, hit) {
-  if (hit.existingPointId && ctx.objMap.has(hit.existingPointId)) {
-    const stored = ctx.pushedPointCoords.get(hit.existingPointId);
-    return {
-      id: hit.existingPointId,
-      ref: ctx.objMap.get(hit.existingPointId),
-      coords: stored ?? [hit.x3, hit.y3, hit.z3]
-    };
-  }
-  return createPoint3D(ctx, hit.x3, hit.y3, hit.z3);
-}
-function finishPolygon(ctx, points, extraAttrs = {}) {
-  const id = ctx.nextId();
-  const refs = points.map((p) => p.ref);
-  const attrs = { id, ...extraAttrs };
-  const ref = ctx.view.create("polygon3d", [refs], attrs);
-  ctx.objMap.set(id, ref);
-  ctx.pushLog({
-    type: "polygon3d",
-    parents: [points.map((p) => refByPlaceholder(p.id))],
-    attributes: attrs,
-    id
-  });
-}
-function finishLineLike(ctx, elType, points, extraAttrs = {}) {
-  const id = ctx.nextId();
-  const refs = points.map((p) => p.ref);
-  const attrs = { id, ...extraAttrs };
-  const ref = ctx.view.create(elType, refs, attrs);
-  ctx.objMap.set(id, ref);
-  ctx.pushLog({
-    type: elType,
-    parents: points.map((p) => refByPlaceholder(p.id)),
-    attributes: attrs,
-    id
-  });
-}
-function handleToolStep(ctx, tool, hit) {
-  switch (tool) {
-    case "move":
-      return;
-    case "point": {
-      const coords = ctx.promptCoords("To\u1EA1 \u0111\u1ED9 \u0111i\u1EC3m (x, y, z)");
-      if (!coords) return;
-      createPoint3D(ctx, coords.x, coords.y, coords.z);
-      ctx.notify();
-      return;
-    }
-    case "segment":
-    case "line": {
-      const p = resolvePoint(ctx, hit);
-      ctx.pendingPoints.push(p);
-      if (ctx.pendingPoints.length === 2) {
-        const lineColor = ctx.isDark ? "#9ecbff" : "#0066cc";
-        const baseAttrs = {
-          strokeColor: lineColor,
-          strokeWidth: 2,
-          visible: true,
-          fixed: true
-        };
-        if (tool === "segment") {
-          baseAttrs.straightFirst = false;
-          baseAttrs.straightLast = false;
-        }
-        finishLineLike(ctx, "line3d", ctx.pendingPoints, baseAttrs);
-        ctx.pendingPoints = [];
-      }
-      ctx.notify();
-      return;
-    }
-    case "plane": {
-      const p = resolvePoint(ctx, hit);
-      ctx.pendingPoints.push(p);
-      if (ctx.pendingPoints.length === 3) {
-        finishLineLike(ctx, "plane3d", ctx.pendingPoints);
-        ctx.pendingPoints = [];
-      }
-      ctx.notify();
-      return;
-    }
-    case "triangle": {
-      const p = resolvePoint(ctx, hit);
-      ctx.pendingPoints.push(p);
-      if (ctx.pendingPoints.length === 3) {
-        finishPolygon(ctx, ctx.pendingPoints);
-        ctx.pendingPoints = [];
-      }
-      ctx.notify();
-      return;
-    }
-    case "polygon": {
-      if (ctx.pendingPoints.length >= 3 && hit.existingPointId === ctx.pendingPoints[0].id) {
-        finishPolygon(ctx, ctx.pendingPoints);
-        ctx.pendingPoints = [];
-        ctx.notify();
-        return;
-      }
-      const p = resolvePoint(ctx, hit);
-      ctx.pendingPoints.push(p);
-      ctx.notify();
-      return;
-    }
-    case "label": {
-      if (!hit.existingPointId) return;
-      const text = ctx.promptText("N\u1ED9i dung nh\xE3n");
-      if (!text) return;
-      const id = ctx.nextId();
-      const pointLog = ctx.pushedPointCoords.get(hit.existingPointId);
-      if (!pointLog) return;
-      const [x, y, z] = pointLog;
-      const attrs = {
-        id,
-        fontSize: 14,
-        strokeColor: ctx.isDark ? "#f5f5f5" : "#111111"
-      };
-      const ref = ctx.view.create("text3d", [x, y, z, text], attrs);
-      ctx.objMap.set(id, ref);
-      ctx.pushLog({
-        type: "text3d",
-        parents: [x, y, z, text],
-        attributes: attrs,
-        id,
-        label: text
-      });
-      ctx.notify();
-      return;
-    }
-    // Solids + curved handled in B8, B9
-    default:
-      handleSolidStep(ctx, tool, hit);
-      return;
-  }
-}
-function handleSolidStep(ctx, tool, hit) {
-  switch (tool) {
-    case "tetrahedron": {
-      const p = resolvePoint(ctx, hit);
-      ctx.pendingPoints.push(p);
-      if (ctx.pendingPoints.length === 4) {
-        const [a, b, c, d] = ctx.pendingPoints;
-        finishPolyhedron(ctx, [
-          [a, b, c],
-          [a, b, d],
-          [a, c, d],
-          [b, c, d]
-        ]);
-        ctx.pendingPoints = [];
-      }
-      ctx.notify();
-      return;
-    }
-    case "parallelepiped": {
-      const origin = resolvePoint(ctx, hit);
-      const v1 = ctx.promptCoords("Vector c\u1EA1nh 1 (dx, dy, dz)");
-      const v2 = ctx.promptCoords("Vector c\u1EA1nh 2 (dx, dy, dz)");
-      const v3 = ctx.promptCoords("Vector c\u1EA1nh 3 (dx, dy, dz)");
-      if (!v1 || !v2 || !v3) return;
-      const [ox, oy, oz] = origin.coords;
-      const c1 = createPoint3D(ctx, ox + v1.x, oy + v1.y, oz + v1.z);
-      const c2 = createPoint3D(ctx, ox + v2.x, oy + v2.y, oz + v2.z);
-      const c3 = createPoint3D(ctx, ox + v3.x, oy + v3.y, oz + v3.z);
-      const c12 = createPoint3D(
-        ctx,
-        ox + v1.x + v2.x,
-        oy + v1.y + v2.y,
-        oz + v1.z + v2.z
-      );
-      const c13 = createPoint3D(
-        ctx,
-        ox + v1.x + v3.x,
-        oy + v1.y + v3.y,
-        oz + v1.z + v3.z
-      );
-      const c23 = createPoint3D(
-        ctx,
-        ox + v2.x + v3.x,
-        oy + v2.y + v3.y,
-        oz + v2.z + v3.z
-      );
-      const c123 = createPoint3D(
-        ctx,
-        ox + v1.x + v2.x + v3.x,
-        oy + v1.y + v2.y + v3.y,
-        oz + v1.z + v2.z + v3.z
-      );
-      finishPolyhedron(ctx, [
-        [origin, c1, c12, c2],
-        [origin, c1, c13, c3],
-        [origin, c2, c23, c3],
-        [c123, c12, c1, c13],
-        [c123, c12, c2, c23],
-        [c123, c13, c3, c23]
-      ]);
-      ctx.pendingPoints = [];
-      ctx.notify();
-      return;
-    }
-    case "prism": {
-      if (ctx.pendingPoints.length >= 3 && hit.existingPointId === ctx.pendingPoints[0].id) {
-        const base = ctx.pendingPoints;
-        const height = ctx.promptNumber("Chi\u1EC1u cao (theo tr\u1EE5c z)");
-        if (!height) return;
-        const top = base.map(
-          (bp) => createPoint3D(ctx, bp.coords[0], bp.coords[1], bp.coords[2] + height)
-        );
-        const faces = [base, top];
-        for (let i = 0; i < base.length; i++) {
-          const next = (i + 1) % base.length;
-          faces.push([base[i], base[next], top[next], top[i]]);
-        }
-        finishPolyhedron(ctx, faces);
-        ctx.pendingPoints = [];
-        ctx.notify();
-        return;
-      }
-      const p = resolvePoint(ctx, hit);
-      ctx.pendingPoints.push(p);
-      ctx.notify();
-      return;
-    }
-    case "pyramid": {
-      const baseDone = ctx.pendingFlags.pyramidBaseDone === true;
-      if (!baseDone && ctx.pendingPoints.length >= 3 && hit.existingPointId === ctx.pendingPoints[0].id) {
-        ctx.pendingFlags.pyramidBaseDone = true;
-        ctx.notify();
-        return;
-      }
-      if (baseDone) {
-        const base = ctx.pendingPoints;
-        const apex = createPoint3D(ctx, hit.x3, hit.y3, hit.z3);
-        const faces = [base];
-        for (let i = 0; i < base.length; i++) {
-          const next = (i + 1) % base.length;
-          faces.push([base[i], base[next], apex]);
-        }
-        finishPolyhedron(ctx, faces);
-        ctx.pendingPoints = [];
-        ctx.pendingFlags.pyramidBaseDone = false;
-        ctx.notify();
-        return;
-      }
-      const p = resolvePoint(ctx, hit);
-      ctx.pendingPoints.push(p);
-      ctx.notify();
-      return;
-    }
-    // Curved → B9
-    default:
-      handleCurvedStep(ctx, tool, hit);
-      return;
-  }
-}
-function finishPolyhedron(ctx, faces) {
-  const faceColor = ctx.isDark ? "rgba(150, 180, 220, 0.35)" : "rgba(60, 120, 200, 0.25)";
-  const edgeColor = ctx.isDark ? "#9ecbff" : "#0066cc";
-  for (const face of faces) {
-    finishPolygon(ctx, face, {
-      fillColor: faceColor,
-      fillOpacity: 1,
-      strokeColor: edgeColor,
-      strokeWidth: 1.5,
-      visible: true
-    });
-  }
-}
-function handleCurvedStep(ctx, tool, hit) {
-  switch (tool) {
-    case "sphere": {
-      const radius = ctx.promptNumber("B\xE1n k\xEDnh m\u1EB7t c\u1EA7u");
-      if (radius == null) return;
-      const center = resolvePoint(ctx, hit);
-      const id = ctx.nextId();
-      const ref = ctx.view.create("sphere3d", [center.ref, radius], { id });
-      ctx.objMap.set(id, ref);
-      ctx.pushLog({
-        type: "sphere3d",
-        parents: [refByPlaceholder(center.id), radius],
-        attributes: { id },
-        id
-      });
-      ctx.notify();
-      return;
-    }
-    case "cone": {
-      const baseDone = ctx.pendingFlags.coneBaseDone === true;
-      if (!baseDone) {
-        const radius2 = ctx.promptNumber("B\xE1n k\xEDnh \u0111\xE1y");
-        if (radius2 == null) return;
-        const center2 = resolvePoint(ctx, hit);
-        ctx.pendingFlags.coneCenter = center2;
-        ctx.pendingFlags.coneRadius = radius2;
-        ctx.pendingFlags.coneBaseDone = true;
-        ctx.notify();
-        return;
-      }
-      const center = ctx.pendingFlags.coneCenter;
-      const radius = ctx.pendingFlags.coneRadius;
-      const apex = createPoint3D(ctx, hit.x3, hit.y3, hit.z3);
-      const [cx, cy, cz] = center.coords;
-      const basePoints = [];
-      for (let i = 0; i < CURVED_SEGMENTS; i++) {
-        const theta = i / CURVED_SEGMENTS * Math.PI * 2;
-        basePoints.push(
-          createPoint3D(
-            ctx,
-            cx + radius * Math.cos(theta),
-            cy + radius * Math.sin(theta),
-            cz
-          )
-        );
-      }
-      const faces = [basePoints];
-      for (let i = 0; i < CURVED_SEGMENTS; i++) {
-        faces.push([basePoints[i], basePoints[(i + 1) % CURVED_SEGMENTS], apex]);
-      }
-      finishPolyhedron(ctx, faces);
-      ctx.pendingFlags.coneBaseDone = false;
-      ctx.pendingFlags.coneCenter = void 0;
-      ctx.pendingFlags.coneRadius = void 0;
-      ctx.notify();
-      return;
-    }
-    case "cylinder": {
-      const radius = ctx.promptNumber("B\xE1n k\xEDnh \u0111\xE1y");
-      if (radius == null) return;
-      const height = ctx.promptNumber("Chi\u1EC1u cao (theo tr\u1EE5c z)");
-      if (height == null) return;
-      const center = resolvePoint(ctx, hit);
-      const [cx, cy, cz] = center.coords;
-      const basePoints = [];
-      const topPoints = [];
-      for (let i = 0; i < CURVED_SEGMENTS; i++) {
-        const theta = i / CURVED_SEGMENTS * Math.PI * 2;
-        basePoints.push(
-          createPoint3D(
-            ctx,
-            cx + radius * Math.cos(theta),
-            cy + radius * Math.sin(theta),
-            cz
-          )
-        );
-        topPoints.push(
-          createPoint3D(
-            ctx,
-            cx + radius * Math.cos(theta),
-            cy + radius * Math.sin(theta),
-            cz + height
-          )
-        );
-      }
-      const faces = [basePoints, topPoints];
-      for (let i = 0; i < CURVED_SEGMENTS; i++) {
-        const next = (i + 1) % CURVED_SEGMENTS;
-        faces.push([basePoints[i], basePoints[next], topPoints[next], topPoints[i]]);
-      }
-      finishPolyhedron(ctx, faces);
-      ctx.notify();
-      return;
-    }
-    // 'solidofrevolution' removed in 0.6.1 — `solidofrevolution3d` is not a valid
-    // JSXGraph 1.12.2 element. See Bug #8.
-    default:
-      return;
-  }
-}
-var CURVED_SEGMENTS;
-var init_handlers2 = __esm({
-  "src/stamps/geometry-3d/editor/handlers.ts"() {
-    CURVED_SEGMENTS = 16;
-  }
-});
 var MiniBoard3D;
 var init_MiniBoard3D = __esm({
   "src/stamps/geometry-3d/editor/MiniBoard3D.tsx"() {
     "use client";
     init_theme2();
-    init_handlers2();
-    MiniBoard3D = react.forwardRef(function MiniBoard3D2({ isDark, initialState }, ref) {
-      const reactId = react.useId();
-      const containerId = `geom3d_${reactId.replace(/[^a-zA-Z0-9_]/g, "_")}`;
-      const containerRef = react.useRef(null);
-      const boardRef = react.useRef(null);
-      const viewRef = react.useRef(null);
-      const toolRef = react.useRef("move");
-      const logRef = react.useRef([]);
-      const objMapRef = react.useRef(/* @__PURE__ */ new Map());
-      const subsRef = react.useRef(/* @__PURE__ */ new Set());
-      const initialBbox3D = react.useRef(
-        initialState?.view.bbox3D ?? DEFAULT_VIEW3D.bbox3D
-      );
-      const ctxRef = react.useRef(null);
-      const pointerHandlerRef = react.useRef(null);
-      const [showAxes, setShowAxes] = react.useState(initialState?.showAxes ?? true);
-      const [showMesh, setShowMesh] = react.useState(initialState?.showMesh ?? false);
-      const notify = react.useCallback(() => {
-        for (const cb of subsRef.current) cb();
-      }, []);
-      react.useEffect(() => {
-        const div = containerRef.current;
-        if (!div) return;
-        let cancelled = false;
-        let JXG = null;
-        let board = null;
-        void (async () => {
-          JXG = (await import('jsxgraph')).default;
-          if (cancelled || !containerRef.current) return;
-          JXG.Options.text.display = "internal";
-          board = JXG.JSXGraph.initBoard(div, {
-            boundingbox: [-6, 6, 6, -6],
-            axis: false,
-            showCopyright: false,
-            showNavigation: false,
-            renderer: "svg"
-          });
-          boardRef.current = board;
-          const initView = initialState?.view ?? DEFAULT_VIEW3D;
-          const baseAttrs = VIEW3D_ATTRS(isDark);
-          const view = board.create(
-            "view3d",
-            [
-              [-5, -5],
-              [10, 10],
-              [
-                [initView.bbox3D[0], initView.bbox3D[3]],
-                [initView.bbox3D[1], initView.bbox3D[4]],
-                [initView.bbox3D[2], initView.bbox3D[5]]
-              ]
-            ],
-            {
-              ...baseAttrs,
-              az: { ...baseAttrs.az, value: initView.azimuth },
-              el: { ...baseAttrs.el, value: initView.elevation }
-            }
-          );
-          viewRef.current = view;
-          let idCounter = 1;
-          const ctx = createHandlerContext({
-            view,
-            pushLog: (e) => {
-              logRef.current.push(e);
-              notify();
-            },
-            objMap: objMapRef.current,
-            nextId: () => `obj_${Date.now().toString(36)}_${(idCounter++).toString(36)}`,
-            isDark,
-            promptCoords: (label) => {
-              const raw = window.prompt(`${label}
-(\u0111\u1ECBnh d\u1EA1ng "x,y,z")`, "0,0,0");
-              if (!raw) return null;
-              const parts = raw.split(",").map((s) => Number(s.trim()));
-              if (parts.length !== 3 || parts.some((n) => !isFinite(n))) return null;
-              return { x: parts[0], y: parts[1], z: parts[2] };
-            },
-            promptNumber: (label) => {
-              const raw = window.prompt(label, "1");
-              if (raw == null) return null;
-              const n = Number(raw);
-              return isFinite(n) ? n : null;
-            },
-            promptText: (label) => {
-              const raw = window.prompt(label, "");
-              return raw == null ? null : raw;
-            },
-            notify
-          });
-          ctxRef.current = ctx;
-          function findExistingPointAt(clientX, clientY) {
-            const containerRect = div.getBoundingClientRect();
-            const localX = clientX - containerRect.left;
-            const localY = clientY - containerRect.top;
-            const PICK = 18;
-            const svg = div.querySelector("svg");
-            if (!svg) return void 0;
-            for (const [id, obj] of objMapRef.current) {
-              const entry = obj;
-              if (entry?.elType !== "point3d") continue;
-              const sc = entry.element2D?.coords?.scrCoords;
-              if (!sc || sc.length < 3) continue;
-              const dx = sc[1] - localX;
-              const dy = sc[2] - localY;
-              if (dx * dx + dy * dy <= PICK * PICK) return id;
-            }
-            return void 0;
-          }
-          const handlePointerDown = (e) => {
-            const tool = toolRef.current;
-            if (tool === "move") return;
-            const existingPointId = findExistingPointAt(e.clientX, e.clientY);
-            let x3 = 0;
-            let y3 = 0;
-            const z3 = 0;
+    MiniBoard3D = React11__namespace.forwardRef(
+      function MiniBoard3D2(props, ref) {
+        const containerRef = React11__namespace.useRef(null);
+        const boardRef = React11__namespace.useRef(null);
+        const viewRef = React11__namespace.useRef(null);
+        const { isDark, onView3DReady, onPointerClick, onPointerMove, onPointerLeave } = props;
+        const onView3DReadyRef = React11__namespace.useRef(onView3DReady);
+        const onPointerClickRef = React11__namespace.useRef(onPointerClick);
+        const onPointerMoveRef = React11__namespace.useRef(onPointerMove);
+        const onPointerLeaveRef = React11__namespace.useRef(onPointerLeave);
+        onView3DReadyRef.current = onView3DReady;
+        onPointerClickRef.current = onPointerClick;
+        onPointerMoveRef.current = onPointerMove;
+        onPointerLeaveRef.current = onPointerLeave;
+        React11__namespace.useImperativeHandle(
+          ref,
+          () => ({
+            getBoard: () => boardRef.current,
+            getView3D: () => viewRef.current,
+            getSvgElement: () => containerRef.current?.querySelector("svg") ?? null
+          }),
+          []
+        );
+        React11__namespace.useEffect(() => {
+          const div = containerRef.current;
+          if (!div) return;
+          let cancelled = false;
+          let JXG = null;
+          let board = null;
+          let svgEl = null;
+          let handlePointerDown = null;
+          let handlePointerMove = null;
+          let handlePointerLeave = null;
+          void (async () => {
             try {
-              const board2d = boardRef.current;
-              if (board2d?.getUsrCoordsOfMouse) {
-                const uc = board2d.getUsrCoordsOfMouse(e);
-                if (Array.isArray(uc) && uc.length >= 2) {
-                  x3 = uc[0];
-                  y3 = uc[1];
-                }
-              }
+              JXG = (await import('jsxgraph')).default;
+            } catch {
+              return;
+            }
+            if (cancelled || !containerRef.current) return;
+            try {
+              JXG.Options.text.display = "internal";
             } catch {
             }
-            const hit = { x3, y3, z3, existingPointId };
-            handleToolStep(ctx, tool, hit);
-          };
-          const svgEl = div.querySelector("svg");
-          const targetEl = svgEl ?? div;
-          const handlePointerDownEv = (e) => handlePointerDown(e);
-          targetEl.addEventListener("pointerdown", handlePointerDownEv);
-          pointerHandlerRef.current = { el: targetEl, fn: handlePointerDownEv };
-          if (initialState?.elements?.length) {
-            const map = objMapRef.current;
-            for (const el of initialState.elements) {
-              const parents = el.parents.map(
-                (p2) => typeof p2 === "string" && p2.startsWith("@id:") ? map.get(p2.slice(4)) : p2
-              );
-              const obj = view.create(el.type, parents, {
-                ...el.attributes,
-                id: el.id,
-                name: el.label
+            try {
+              board = JXG.JSXGraph.initBoard(div, {
+                boundingbox: [-6, 6, 6, -6],
+                keepaspectratio: true,
+                axis: false,
+                showCopyright: false,
+                showNavigation: false,
+                renderer: "svg"
               });
-              map.set(el.id, obj);
-              logRef.current.push(el);
+            } catch {
+              return;
+            }
+            if (cancelled || !board) return;
+            boardRef.current = board;
+            let view = null;
+            try {
+              const baseAttrs = VIEW3D_ATTRS(isDark);
+              view = board.create(
+                "view3d",
+                [
+                  [-5, -5],
+                  [10, 10],
+                  [
+                    [DEFAULT_VIEW3D.bbox3D[0], DEFAULT_VIEW3D.bbox3D[3]],
+                    [DEFAULT_VIEW3D.bbox3D[1], DEFAULT_VIEW3D.bbox3D[4]],
+                    [DEFAULT_VIEW3D.bbox3D[2], DEFAULT_VIEW3D.bbox3D[5]]
+                  ]
+                ],
+                {
+                  ...baseAttrs,
+                  az: { ...baseAttrs.az, value: DEFAULT_VIEW3D.azimuth },
+                  el: { ...baseAttrs.el, value: DEFAULT_VIEW3D.elevation }
+                }
+              );
+            } catch {
+            }
+            viewRef.current = view;
+            if (view) onView3DReadyRef.current?.(view, board);
+            svgEl = containerRef.current?.querySelector("svg") ?? null;
+            if (svgEl) {
+              const p2 = paletteFor2(isDark);
+              svgEl.style.background = p2.view3dBg;
+              const pixelToUser = (e) => {
+                const rect = svgEl.getBoundingClientRect();
+                const px = e.clientX - rect.left;
+                const py = e.clientY - rect.top;
+                const b = board;
+                if (!b || !b.origin || !b.origin.scrCoords) {
+                  return { x: px, y: py };
+                }
+                const ox = b.origin.scrCoords[1];
+                const oy = b.origin.scrCoords[2];
+                const ux = b.unitX || 1;
+                const uy = b.unitY || 1;
+                return { x: (px - ox) / ux, y: (oy - py) / uy };
+              };
+              handlePointerDown = (e) => {
+                if (!svgEl) return;
+                onPointerClickRef.current?.(pixelToUser(e));
+              };
+              handlePointerMove = (e) => {
+                if (!svgEl) return;
+                onPointerMoveRef.current?.(pixelToUser(e));
+              };
+              handlePointerLeave = () => onPointerLeaveRef.current?.();
+              svgEl.addEventListener("pointerdown", handlePointerDown);
+              svgEl.addEventListener("pointermove", handlePointerMove);
+              svgEl.addEventListener("pointerleave", handlePointerLeave);
+            }
+          })();
+          return () => {
+            cancelled = true;
+            if (svgEl) {
+              if (handlePointerDown) svgEl.removeEventListener("pointerdown", handlePointerDown);
+              if (handlePointerMove) svgEl.removeEventListener("pointermove", handlePointerMove);
+              if (handlePointerLeave) svgEl.removeEventListener("pointerleave", handlePointerLeave);
+            }
+            try {
+              if (board && JXG) JXG.JSXGraph.freeBoard(board);
+            } catch {
+            }
+            boardRef.current = null;
+            viewRef.current = null;
+          };
+        }, [isDark]);
+        const p = paletteFor2(isDark);
+        return /* @__PURE__ */ jsxRuntime.jsx(
+          "div",
+          {
+            "data-testid": "mini-board-3d",
+            ref: containerRef,
+            style: {
+              width: "100%",
+              height: "100%",
+              minHeight: 400,
+              background: p.view3dBg,
+              position: "relative",
+              // Clip JSXGraph mesh3d paths projecting outside the container.
+              overflow: "hidden"
             }
           }
-        })();
-        return () => {
-          cancelled = true;
-          if (pointerHandlerRef.current) {
-            pointerHandlerRef.current.el.removeEventListener(
-              "pointerdown",
-              pointerHandlerRef.current.fn
-            );
-            pointerHandlerRef.current = null;
-          }
-          try {
-            if (board && JXG) JXG.JSXGraph.freeBoard(board);
-          } catch {
-          }
-          boardRef.current = null;
-          viewRef.current = null;
-          ctxRef.current = null;
-          objMapRef.current.clear();
-        };
-      }, []);
-      const handleRef = react.useRef(null);
-      handleRef.current = {
-        getContainer: () => containerRef.current,
-        getTool: () => toolRef.current,
-        setTool: (t) => {
-          toolRef.current = t;
-          notify();
-        },
-        // Sync toạ độ live của free point3d về log trước khi trả ra. JSXGraph
-        // cho phép drag point3d (parents=[x,y,z] không có ref), việc drag chỉ
-        // cập nhật obj.X()/Y()/Z() chứ không đụng log → re-edit + Chèn sẽ
-        // serialize toạ độ cũ → SVG không đổi → fileId trùng → user thấy
-        // "k thay đổi". Line/plane/polygon/sphere tham chiếu point qua @id nên
-        // auto-update theo.
-        getCreationLog: () => logRef.current.map((e) => {
-          if (e.type !== "point3d") return { ...e };
-          const parents = e.parents;
-          if (!Array.isArray(parents) || parents.length !== 3) return { ...e };
-          if (typeof parents[0] !== "number" || typeof parents[1] !== "number" || typeof parents[2] !== "number") return { ...e };
-          const obj = objMapRef.current.get(e.id);
-          if (!obj || typeof obj.X !== "function" || typeof obj.Y !== "function" || typeof obj.Z !== "function") return { ...e };
-          const x = obj.X();
-          const y = obj.Y();
-          const z = obj.Z();
-          if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) return { ...e };
-          return { ...e, parents: [x, y, z] };
-        }),
-        pushLog: (e) => {
-          logRef.current.push(e);
-          notify();
-        },
-        getViewState: () => {
-          const v = viewRef.current;
-          return {
-            azimuth: v?.az?.Value?.() ?? DEFAULT_VIEW3D.azimuth,
-            elevation: v?.el?.Value?.() ?? DEFAULT_VIEW3D.elevation,
-            bbox3D: initialBbox3D.current
-          };
-        },
-        getBbox: () => [-6, 6, 6, -6],
-        getShowAxes: () => showAxes,
-        getShowMesh: () => showMesh,
-        setShowAxes: (b) => {
-          setShowAxes(b);
-          notify();
-        },
-        setShowMesh: (b) => {
-          setShowMesh(b);
-          notify();
-        },
-        resetView: () => {
-          notify();
-        },
-        undo: () => {
-          logRef.current.pop();
-          notify();
-        },
-        canUndo: () => logRef.current.length > 0,
-        snapshotSVG: () => {
-          const div = containerRef.current;
-          if (!div) return { svgString: "", width: 0, height: 0 };
-          const svg = div.querySelector("svg");
-          if (!svg) return { svgString: "", width: 0, height: 0 };
-          const clone = svg.cloneNode(true);
-          const rect = svg.getBoundingClientRect();
-          const width = rect.width || 600;
-          const height = rect.height || 600;
-          clone.setAttribute("width", String(width));
-          clone.setAttribute("height", String(height));
-          return {
-            svgString: new XMLSerializer().serializeToString(clone),
-            width,
-            height
-          };
-        },
-        subscribe: (cb) => {
-          subsRef.current.add(cb);
-          return () => {
-            subsRef.current.delete(cb);
-          };
-        }
+        );
+      }
+    );
+  }
+});
+function StatusHint(props) {
+  const { hint, hoverLabel } = props;
+  return /* @__PURE__ */ jsxRuntime.jsxs(
+    "div",
+    {
+      "data-testid": "status-hint",
+      className: "border-t border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300",
+      children: [
+        /* @__PURE__ */ jsxRuntime.jsxs("span", { children: [
+          "\u{1F4D0} ",
+          hint || "Ch\u1ECDn c\xF4ng c\u1EE5 trong b\u1EA3ng b\xEAn tr\xE1i"
+        ] }),
+        hoverLabel ? /* @__PURE__ */ jsxRuntime.jsxs("span", { className: "ml-3 text-zinc-500", children: [
+          "\u2014 \u0111ang tr\xEAn: ",
+          hoverLabel
+        ] }) : null
+      ]
+    }
+  );
+}
+var init_StatusHint = __esm({
+  "src/stamps/geometry-3d/editor/StatusHint.tsx"() {
+    "use client";
+  }
+});
+
+// src/stamps/geometry-3d/editor/scene/persistence.ts
+function sceneToBoard(scene, view, bbox) {
+  const elements = [];
+  for (const obj of scene.list()) {
+    const els = sceneObjectToElements(obj, scene);
+    elements.push(...els);
+  }
+  return { version: 2, bbox, view, showAxes: true, showMesh: true, elements };
+}
+function sceneObjectToElements(obj, scene) {
+  const baseAttrs = { label: obj.label, visible: obj.visible, color: obj.color };
+  switch (obj.kind) {
+    case "point": {
+      let w;
+      try {
+        w = constraintToWorld(obj.constraint, scene);
+      } catch {
+        w = [0, 0, 0];
+      }
+      return [{
+        type: "point3d",
+        parents: [w[0], w[1], w[2]],
+        attributes: { id: obj.id, ...baseAttrs },
+        id: obj.id,
+        label: obj.label,
+        constraint: obj.constraint
+      }];
+    }
+    case "segment":
+    case "line":
+    case "ray":
+    case "vector":
+    case "plane":
+    case "sphere":
+    case "polygon":
+    case "polyhedron":
+    case "cylinder":
+    case "cone": {
+      return [{
+        type: pickJxgType(obj.kind),
+        parents: [],
+        attributes: { id: obj.id, ...baseAttrs, sceneKind: obj.kind, sceneSpec: encodeSpec(obj) },
+        id: obj.id,
+        label: obj.label
+      }];
+    }
+  }
+}
+function pickJxgType(kind) {
+  switch (kind) {
+    case "point":
+      return "point3d";
+    case "segment":
+    case "line":
+    case "ray":
+    case "vector":
+      return "line3d";
+    case "plane":
+      return "plane3d";
+    case "sphere":
+      return "sphere3d";
+    case "polygon":
+    case "polyhedron":
+    case "cylinder":
+    case "cone":
+      return "polygon3d";
+  }
+}
+function encodeSpec(obj) {
+  const rest = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (k === "id" || k === "label" || k === "visible" || k === "color" || k === "kind") continue;
+    rest[k] = v;
+  }
+  return rest;
+}
+function boardToScene(board) {
+  const scene = new Scene3D();
+  for (const el of board.elements) {
+    if (el.type === "point3d") {
+      const constraint = el.constraint ?? {
+        kind: "free",
+        x: Number(el.parents[0] ?? 0),
+        y: Number(el.parents[1] ?? 0),
+        z: Number(el.parents[2] ?? 0)
       };
-      react.useImperativeHandle(ref, () => handleRef.current, []);
-      const p = paletteFor2(isDark);
-      return /* @__PURE__ */ jsxRuntime.jsx(
-        "div",
-        {
-          ref: containerRef,
-          id: containerId,
-          style: {
-            width: "100%",
-            height: "100%",
-            background: p.view3dBg,
-            position: "relative",
-            // Clip JSXGraph mesh3d/bounding-box paths that project outside the
-            // board container (Bug #4) — without this they overlap LeftPanel and
-            // block pointer events.
-            overflow: "hidden"
-          }
-        }
-      );
-    });
+      const color2 = el.attributes["color"];
+      const visible2 = el.attributes["visible"] !== false;
+      try {
+        scene.insert({
+          kind: "point",
+          id: el.id,
+          label: el.label ?? el.id,
+          visible: visible2,
+          color: color2,
+          constraint
+        });
+      } catch {
+      }
+      continue;
+    }
+    const sceneKind = el.attributes["sceneKind"];
+    const sceneSpec = el.attributes["sceneSpec"];
+    if (!sceneKind || !sceneSpec) continue;
+    const color = el.attributes["color"];
+    const visible = el.attributes["visible"] !== false;
+    const obj = {
+      id: el.id,
+      label: el.label ?? el.id,
+      visible,
+      color,
+      kind: sceneKind,
+      ...sceneSpec
+    };
+    try {
+      scene.insert(obj);
+    } catch {
+    }
+  }
+  return scene;
+}
+var init_persistence = __esm({
+  "src/stamps/geometry-3d/editor/scene/persistence.ts"() {
+    init_Scene3D();
+    init_constraintMath();
   }
 });
 var EditorPanel;
 var init_EditorPanel2 = __esm({
   "src/stamps/geometry-3d/editor/EditorPanel.tsx"() {
     "use client";
+    init_Scene3D();
+    init_controller();
+    init_JxgRenderer();
+    init_hitTest();
+    init_LeftPanel3();
     init_MiniBoard3D();
-    EditorPanel = react.forwardRef(function EditorPanel2({ isDark, initial, onInsert, onClose, isMobile = false, withLeftPanel = false, onBoardReady, onOpenDrawer }, ref) {
-      const boardRef = react.useRef(null);
-      const [ready, setReady] = react.useState(false);
-      const onBoardReadyRef = react.useRef(onBoardReady);
-      onBoardReadyRef.current = onBoardReady;
-      const setBoard = react.useCallback((h) => {
-        boardRef.current = h;
-        setReady(!!h);
-        onBoardReadyRef.current?.(h);
-      }, []);
-      const performInsert = react.useCallback(() => {
-        const board = boardRef.current;
-        if (!board) return false;
-        const log = board.getCreationLog();
-        if (log.length === 0) return false;
-        const view = board.getViewState();
-        const state = {
-          version: 1,
-          bbox: board.getBbox(),
-          view,
-          showAxes: board.getShowAxes(),
-          showMesh: board.getShowMesh(),
-          elements: log
-        };
-        const snap = board.snapshotSVG();
-        onInsert(JSON.stringify(state), snap.svgString, snap.width, snap.height);
-        return true;
-      }, [onInsert]);
-      react.useImperativeHandle(
-        ref,
-        () => ({
-          tryInsert: performInsert,
-          hasContent: () => (boardRef.current?.getCreationLog().length ?? 0) > 0
-        }),
-        [performInsert]
-      );
-      const handleInsert = react.useCallback(() => {
-        performInsert();
-      }, [performInsert]);
-      const wrapperStyle = isMobile ? { position: "fixed", inset: 0, zIndex: 40 } : {
-        position: "absolute",
-        top: "50%",
-        left: withLeftPanel ? "calc(50% + 120px)" : "50%",
-        transform: "translate(-50%, -50%)",
-        zIndex: 40
-      };
-      return /* @__PURE__ */ jsxRuntime.jsxs(
-        "div",
-        {
-          role: "dialog",
-          "aria-label": "D\u1EF1ng h\xECnh h\u1ECDc 3D",
-          "data-testid": "geom3d-editor-panel",
-          "data-stamp-area": "true",
-          "data-mobile-editor": isMobile ? "true" : void 0,
-          style: wrapperStyle,
-          className: [
-            isDark ? "theme--dark " : "",
-            "flex flex-col overflow-hidden bg-white",
-            isMobile ? "h-full w-full" : "h-[600px] max-h-[85vh] w-[760px] max-w-[calc(100vw-280px)] rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5"
-          ].join(" "),
-          children: [
-            /* @__PURE__ */ jsxRuntime.jsxs("header", { className: "flex items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-cyan-600 px-3 py-2 text-white", children: [
-              isMobile && /* @__PURE__ */ jsxRuntime.jsx(
-                "button",
-                {
-                  type: "button",
-                  onClick: onOpenDrawer,
-                  "aria-label": "M\u1EDF ng\u0103n c\xF4ng c\u1EE5",
-                  className: "-ml-1 inline-flex h-10 w-10 items-center justify-center rounded transition hover:bg-white/15",
-                  children: /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
-                    /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "4", y1: "6", x2: "20", y2: "6" }),
-                    /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "4", y1: "12", x2: "20", y2: "12" }),
-                    /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "4", y1: "18", x2: "20", y2: "18" })
-                  ] })
-                }
-              ),
-              /* @__PURE__ */ jsxRuntime.jsxs("h3", { className: "flex flex-1 items-center gap-2 text-sm font-semibold", children: [
-                /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 7 L14 4 L20 7 L14 10 Z M4 7 L4 17 L14 20 L14 10 M14 20 L20 17 L20 7" }) }),
-                "H\xECnh h\u1ECDc kh\xF4ng gian (3D)"
-              ] }),
-              isMobile && /* @__PURE__ */ jsxRuntime.jsx(
-                "button",
-                {
-                  type: "button",
-                  onClick: handleInsert,
-                  disabled: !ready,
-                  "data-testid": "geom3d-insert-btn-mobile",
-                  className: "rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50",
-                  children: "Ch\xE8n"
-                }
-              ),
-              /* @__PURE__ */ jsxRuntime.jsx(
-                "button",
-                {
-                  onClick: onClose,
-                  "aria-label": "\u0110\xF3ng",
-                  className: "inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15",
-                  children: /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
-                    /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
-                    /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
-                  ] })
-                }
-              )
-            ] }),
-            /* @__PURE__ */ jsxRuntime.jsx("div", { className: "min-h-0 flex-1", children: /* @__PURE__ */ jsxRuntime.jsx(MiniBoard3D, { ref: setBoard, isDark, initialState: initial }) }),
-            !isMobile && /* @__PURE__ */ jsxRuntime.jsxs("footer", { className: "flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2", children: [
-              /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-xs text-slate-500", children: "Ch\u1ECDn c\xF4ng c\u1EE5 b\xEAn tr\xE1i, click tr\xEAn b\u1EA3ng \u0111\u1EC3 d\u1EF1ng h\xECnh." }),
-              /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex gap-2", children: [
-                /* @__PURE__ */ jsxRuntime.jsx(
-                  "button",
-                  {
-                    onClick: onClose,
-                    className: "rounded border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100",
-                    children: "Hu\u1EF7"
-                  }
-                ),
-                /* @__PURE__ */ jsxRuntime.jsx(
-                  "button",
-                  {
-                    onClick: handleInsert,
-                    disabled: !ready,
-                    "data-testid": "geom3d-insert-btn",
-                    className: "rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-blue-700 disabled:opacity-50",
-                    children: "Ch\xE8n"
-                  }
-                )
-              ] })
-            ] })
-          ]
-        }
-      );
-    });
-  }
-});
-
-// src/stamps/geometry-3d/editor/tools.ts
-function letterForGroup3D(g) {
-  const idx = GROUP_ORDER_3D.indexOf(g);
-  return idx >= 0 ? String.fromCharCode(A_CODE_3D + idx) : "";
-}
-var GROUP_LABELS_3D, GROUP_ORDER_3D, A_CODE_3D, TOOLS_3D;
-var init_tools2 = __esm({
-  "src/stamps/geometry-3d/editor/tools.ts"() {
-    GROUP_LABELS_3D = {
-      view: "Xem",
-      primitive: "C\u01A1 b\u1EA3n",
-      solid: "Kh\u1ED1i \u0111a di\u1EC7n",
-      curved: "Kh\u1ED1i cong",
-      meta: "Kh\xE1c"
-    };
-    GROUP_ORDER_3D = [
-      "view",
-      "primitive",
-      "solid",
-      "curved",
-      "meta"
-    ];
-    A_CODE_3D = "A".charCodeAt(0);
-    TOOLS_3D = [
-      { key: "move", label: "Di chuy\u1EC3n", group: "view", stepsRequired: 0 },
-      { key: "point", label: "\u0110i\u1EC3m", group: "primitive", stepsRequired: 1, hint: "Nh\u1EADp (x, y, z)" },
-      { key: "segment", label: "\u0110o\u1EA1n th\u1EB3ng", group: "primitive", stepsRequired: 2 },
-      { key: "line", label: "\u0110\u01B0\u1EDDng th\u1EB3ng", group: "primitive", stepsRequired: 2 },
-      { key: "plane", label: "M\u1EB7t ph\u1EB3ng", group: "primitive", stepsRequired: 3 },
-      { key: "triangle", label: "Tam gi\xE1c", group: "primitive", stepsRequired: 3 },
-      {
-        key: "polygon",
-        label: "\u0110a gi\xE1c",
-        group: "primitive",
-        stepsRequired: 3,
-        hint: "Click tr\u1EDF l\u1EA1i \u0111i\u1EC3m \u0111\u1EA7u \u0111\u1EC3 \u0111\xF3ng"
-      },
-      { key: "tetrahedron", label: "T\u1EE9 di\u1EC7n", group: "solid", stepsRequired: 4 },
-      {
-        key: "parallelepiped",
-        label: "H\xECnh h\u1ED9p",
-        group: "solid",
-        stepsRequired: 1,
-        hint: "1 \u0111\u1EC9nh + 3 vector"
-      },
-      {
-        key: "prism",
-        label: "L\u0103ng tr\u1EE5",
-        group: "solid",
-        stepsRequired: 3,
-        hint: "\u0110a gi\xE1c \u0111\xE1y + chi\u1EC1u cao"
-      },
-      {
-        key: "pyramid",
-        label: "Ch\xF3p",
-        group: "solid",
-        stepsRequired: 4,
-        hint: "\u0110a gi\xE1c \u0111\xE1y + \u0111\u1EC9nh"
-      },
-      { key: "sphere", label: "M\u1EB7t c\u1EA7u", group: "curved", stepsRequired: 1, hint: "T\xE2m + b\xE1n k\xEDnh" },
-      {
-        key: "cone",
-        label: "H\xECnh n\xF3n",
-        group: "curved",
-        stepsRequired: 2,
-        hint: "T\xE2m \u0111\xE1y + b\xE1n k\xEDnh + \u0111\u1EC9nh"
-      },
-      {
-        key: "cylinder",
-        label: "H\xECnh tr\u1EE5",
-        group: "curved",
-        stepsRequired: 1,
-        hint: "T\xE2m \u0111\xE1y + b\xE1n k\xEDnh + chi\u1EC1u cao"
-      },
-      { key: "label", label: "Nh\xE3n", group: "meta", stepsRequired: 1, hint: "G\u1EAFn v\xE0o \u0111i\u1EC3m" }
-    ];
-  }
-});
-function ToolButton({ toolKey, label, hint, active, onClick, icon, badge }) {
-  return /* @__PURE__ */ jsxRuntime.jsxs(
-    "button",
-    {
-      type: "button",
-      title: hint ? `${label} \u2014 ${hint}` : label,
-      "aria-label": label,
-      "aria-pressed": active,
-      onClick,
-      "data-active": active || void 0,
-      "data-tool": toolKey,
-      className: [
-        "relative flex h-8 items-center justify-center rounded-md transition",
-        active ? "bg-blue-600 text-white shadow-sm" : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
-      ].join(" "),
-      children: [
-        icon,
-        badge
-      ]
-    }
-  );
-}
-var stroke, ICONS_3D;
-var init_toolButtons = __esm({
-  "src/stamps/geometry-3d/editor/toolButtons.tsx"() {
-    "use client";
-    stroke = {
-      fill: "none",
-      stroke: "currentColor",
-      strokeWidth: 1.5,
-      strokeLinecap: "round",
-      strokeLinejoin: "round"
-    };
-    ICONS_3D = {
-      move: /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M5 9l-3 3 3 3M19 9l3 3-3 3M9 5l3-3 3 3M9 19l3 3 3-3" }) }),
-      point: /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsxRuntime.jsx("circle", { cx: "12", cy: "12", r: "3", fill: "currentColor" }) }),
-      segment: /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: [
-        /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "4", y1: "20", x2: "20", y2: "4" }),
-        /* @__PURE__ */ jsxRuntime.jsx("circle", { cx: "4", cy: "20", r: "1.5", fill: "currentColor", stroke: "none" }),
-        /* @__PURE__ */ jsxRuntime.jsx("circle", { cx: "20", cy: "4", r: "1.5", fill: "currentColor", stroke: "none" })
-      ] }),
-      line: /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "2", y1: "22", x2: "22", y2: "2" }) }),
-      plane: /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M3 18 L8 8 L21 6 L16 18 Z" }) }),
-      triangle: /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M12 4 L21 20 L3 20 Z" }) }),
-      polygon: /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M12 3 L20 9 L17 19 L7 19 L4 9 Z" }) }),
-      tetrahedron: /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M12 3 L20 20 L4 20 Z M12 3 L12 20" }) }),
-      parallelepiped: /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 7 L14 4 L20 7 L14 10 Z M4 7 L4 17 L14 20 L14 10 M14 20 L20 17 L20 7" }) }),
-      prism: /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M12 4 L18 8 L18 20 L12 16 Z M12 4 L6 8 L6 20 L12 16 M6 8 L12 12 L18 8 M6 20 L18 20" }) }),
-      pyramid: /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M12 3 L4 20 L20 20 Z M12 3 L12 20" }) }),
-      sphere: /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: [
-        /* @__PURE__ */ jsxRuntime.jsx("circle", { cx: "12", cy: "12", r: "8" }),
-        /* @__PURE__ */ jsxRuntime.jsx("ellipse", { cx: "12", cy: "12", rx: "8", ry: "3" })
-      ] }),
-      cone: /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: [
-        /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M12 3 L4 20 L20 20 Z" }),
-        /* @__PURE__ */ jsxRuntime.jsx("ellipse", { cx: "12", cy: "20", rx: "8", ry: "2" })
-      ] }),
-      cylinder: /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: [
-        /* @__PURE__ */ jsxRuntime.jsx("ellipse", { cx: "12", cy: "5", rx: "6", ry: "2" }),
-        /* @__PURE__ */ jsxRuntime.jsx("ellipse", { cx: "12", cy: "19", rx: "6", ry: "2" }),
-        /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "6", y1: "5", x2: "6", y2: "19" }),
-        /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "18", y1: "5", x2: "18", y2: "19" })
-      ] }),
-      label: /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", ...stroke, children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 4 H 16 L 20 8 L 16 12 H 4 Z" }) })
-    };
-  }
-});
-function Shell3({ title, icon, onClose, children, isDark }) {
-  return /* @__PURE__ */ jsxRuntime.jsxs(
-    "aside",
-    {
-      role: "complementary",
-      "aria-label": title,
-      "data-testid": "geom3d-left-panel",
-      "data-stamp-area": "true",
-      className: [
-        isDark ? "theme--dark " : "",
-        "absolute left-0 top-0 z-30 flex h-full w-60 flex-col border-r border-slate-200 bg-white shadow-md animate-in slide-in-from-left duration-200"
-      ].join(""),
-      children: [
-        /* @__PURE__ */ jsxRuntime.jsxs("header", { className: "flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-3 py-2", children: [
-          /* @__PURE__ */ jsxRuntime.jsxs("h3", { className: "flex items-center gap-2 text-sm font-semibold text-slate-800", children: [
-            /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-base leading-none", children: icon }),
-            title
-          ] }),
-          /* @__PURE__ */ jsxRuntime.jsx(
-            "button",
-            {
-              onClick: onClose,
-              "aria-label": "\u0110\xF3ng",
-              className: "rounded p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800",
-              children: /* @__PURE__ */ jsxRuntime.jsx(CloseIcon2, {})
+    init_StatusHint();
+    init_persistence();
+    EditorPanel = React11__namespace.forwardRef(
+      function EditorPanel2(props, ref) {
+        const isDark = props.isDark ?? false;
+        const sceneRef = React11__namespace.useRef(null);
+        if (!sceneRef.current) sceneRef.current = new Scene3D();
+        const controllerRef = React11__namespace.useRef(null);
+        if (!controllerRef.current) controllerRef.current = new ToolController(sceneRef.current);
+        const [selectedTool, setSelectedTool] = React11__namespace.useState("move");
+        const [hint, setHint] = React11__namespace.useState("Ch\u1ECDn c\xF4ng c\u1EE5 trong b\u1EA3ng b\xEAn tr\xE1i");
+        const [hoverLabel, setHoverLabel] = React11__namespace.useState(null);
+        const boardRef = React11__namespace.useRef(null);
+        const rendererRef = React11__namespace.useRef(null);
+        React11__namespace.useEffect(() => {
+          if (props.initialState && sceneRef.current) {
+            const loaded = boardToScene(props.initialState);
+            sceneRef.current.reset();
+            for (const obj of loaded.list()) {
+              sceneRef.current.insert(obj);
             }
-          )
-        ] }),
-        /* @__PURE__ */ jsxRuntime.jsx("div", { className: "min-h-0 flex-1 overflow-y-auto p-3 space-y-4", children })
-      ]
-    }
-  );
-}
-function Section3({ label, children }) {
-  return /* @__PURE__ */ jsxRuntime.jsxs("section", { children: [
-    /* @__PURE__ */ jsxRuntime.jsx("h4", { className: "mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500", children: label }),
-    children
-  ] });
-}
-function CloseIcon2() {
-  return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
-    /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
-    /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
-  ] });
-}
-function UndoIcon2() {
-  return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
-    /* @__PURE__ */ jsxRuntime.jsx("polyline", { points: "3 7 3 13 9 13" }),
-    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M3.51 13a9 9 0 1 0 2.13-9.36L3 7" })
-  ] });
-}
-function ResetViewIcon() {
-  return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
-    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" }),
-    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M3 3v5h5" })
-  ] });
-}
-function AxisIcon3D() {
-  return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round", children: [
-    /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "12", y1: "20", x2: "12", y2: "4" }),
-    /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "12", y1: "12", x2: "22", y2: "6" }),
-    /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "12", y1: "12", x2: "2", y2: "18" })
-  ] });
-}
-function MeshIcon() {
-  return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", strokeLinejoin: "round", children: [
-    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 8 L12 4 L20 8 L12 12 Z" }),
-    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 8 L4 16 L12 20 L12 12" }),
-    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M12 20 L20 16 L20 8" })
-  ] });
-}
-function useToolHoverTooltip2() {
-  const [hover, setHover] = react.useState(null);
-  const [portalReady, setPortalReady] = react.useState(false);
-  const hoverTimerRef = react.useRef(null);
-  react.useEffect(() => {
-    setPortalReady(true);
-    return () => {
-      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
-    };
-  }, []);
-  const showHover = react.useCallback((el, t) => {
-    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
-    hoverTimerRef.current = setTimeout(() => {
-      const r = el.getBoundingClientRect();
-      setHover({ label: t.label, hint: t.hint, x: r.right, y: r.top + r.height / 2 });
-    }, TOOLTIP_DELAY_MS2);
-  }, []);
-  const hideHover = react.useCallback(() => {
-    if (hoverTimerRef.current) {
-      clearTimeout(hoverTimerRef.current);
-      hoverTimerRef.current = null;
-    }
-    setHover(null);
-  }, []);
-  return { hover, portalReady, showHover, hideHover };
-}
-function useHandleState(handle) {
-  const [tool, setTool] = react.useState("move");
-  const [showAxes, setShowAxes] = react.useState(true);
-  const [showMesh, setShowMesh] = react.useState(false);
-  const [canUndo, setCanUndo] = react.useState(false);
-  react.useEffect(() => {
-    if (!handle) return;
-    const sync = () => {
-      setTool(handle.getTool());
-      setShowAxes(handle.getShowAxes());
-      setShowMesh(handle.getShowMesh());
-      setCanUndo(handle.canUndo());
-    };
-    sync();
-    return handle.subscribe(sync);
-  }, [handle]);
-  return { tool, showAxes, showMesh, canUndo };
-}
-function DesktopPanel(props) {
-  const { handle, onResetView, onClose, isDark, chordGroup } = props;
-  const { tool, showAxes, showMesh, canUndo } = useHandleState(handle);
-  const { hover, portalReady, showHover, hideHover } = useToolHoverTooltip2();
-  const grouped = react.useMemo(() => {
-    return TOOLS_3D.reduce(
-      (acc, t) => {
-        var _a;
-        (acc[_a = t.group] ?? (acc[_a] = [])).push(t);
-        return acc;
-      },
-      {}
-    );
-  }, []);
-  const orderedGroups = react.useMemo(
-    () => GROUP_ORDER_3D.filter((g) => grouped[g]),
-    [grouped]
-  );
-  const activeGroupTools = chordGroup ? grouped[chordGroup] ?? null : null;
-  return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-    /* @__PURE__ */ jsxRuntime.jsxs(Shell3, { title: "H\xECnh h\u1ECDc 3D", icon: Geom3DIconHeader, onClose, isDark, children: [
-      /* @__PURE__ */ jsxRuntime.jsx(Section3, { label: "B\u1ED1 c\u1EE5c", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-2 flex-wrap text-[11px] text-slate-700", children: [
-        /* @__PURE__ */ jsxRuntime.jsxs("label", { className: "inline-flex select-none items-center gap-1.5", children: [
-          /* @__PURE__ */ jsxRuntime.jsx(
-            "input",
-            {
-              type: "checkbox",
-              checked: showAxes,
-              onChange: (e) => handle?.setShowAxes(e.target.checked),
-              "data-testid": "toggle-axes"
-            }
-          ),
-          "Tr\u1EE5c"
-        ] }),
-        /* @__PURE__ */ jsxRuntime.jsxs("label", { className: "inline-flex select-none items-center gap-1.5", children: [
-          /* @__PURE__ */ jsxRuntime.jsx(
-            "input",
-            {
-              type: "checkbox",
-              checked: showMesh,
-              onChange: (e) => handle?.setShowMesh(e.target.checked),
-              "data-testid": "toggle-mesh"
-            }
-          ),
-          "L\u01B0\u1EDBi"
-        ] }),
-        /* @__PURE__ */ jsxRuntime.jsx(
-          "button",
-          {
-            type: "button",
-            onClick: onResetView,
-            title: "Reset g\xF3c nh\xECn",
-            "aria-label": "Reset view",
-            className: "ml-auto inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900",
-            children: /* @__PURE__ */ jsxRuntime.jsx(ResetViewIcon, {})
           }
-        ),
-        /* @__PURE__ */ jsxRuntime.jsx(
-          "button",
-          {
-            type: "button",
-            onClick: () => handle?.undo(),
-            disabled: !canUndo,
-            title: "Ho\xE0n t\xE1c (Ctrl/Cmd+Z)",
-            "aria-label": "Ho\xE0n t\xE1c",
-            className: "inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
-            children: /* @__PURE__ */ jsxRuntime.jsx(UndoIcon2, {})
+        }, []);
+        React11__namespace.useEffect(() => {
+          const ctrl = controllerRef.current;
+          const unsub = ctrl.on((state) => {
+            setHint(state.hint);
+            setSelectedTool(state.tool?.key ?? "move");
+          });
+          return unsub;
+        }, []);
+        React11__namespace.useEffect(() => {
+          return () => {
+            rendererRef.current?.dispose();
+            rendererRef.current = null;
+          };
+        }, []);
+        const handleView3DReady = React11__namespace.useCallback((view) => {
+          if (!sceneRef.current) return;
+          rendererRef.current = new JxgRenderer(sceneRef.current, view);
+        }, []);
+        const handleClick = React11__namespace.useCallback((screen) => {
+          const board = boardRef.current;
+          if (!board) return;
+          const view = board.getView3D();
+          if (!view) return;
+          try {
+            const hit = hitTest(screen, view, sceneRef.current);
+            controllerRef.current.consumeHit(hit);
+          } catch {
           }
-        )
-      ] }) }),
-      orderedGroups.map((group) => {
-        const tools = grouped[group];
-        const isChordActive = chordGroup === group;
-        const dimmed = chordGroup !== null && !isChordActive;
-        return /* @__PURE__ */ jsxRuntime.jsxs(
-          "section",
-          {
-            "data-chord-group": group,
-            "data-chord-active": isChordActive ? "true" : "false",
-            className: [
-              "rounded-md transition",
-              isChordActive ? "bg-blue-50 ring-1 ring-blue-400 p-1" : "p-0",
-              dimmed ? "opacity-55" : "opacity-100"
-            ].join(" "),
-            children: [
-              /* @__PURE__ */ jsxRuntime.jsxs("h4", { className: "mb-1.5 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-slate-500", children: [
-                /* @__PURE__ */ jsxRuntime.jsx("span", { children: GROUP_LABELS_3D[group] }),
-                /* @__PURE__ */ jsxRuntime.jsx(
-                  "span",
-                  {
-                    "data-testid": `chord-letter-${group}`,
-                    className: [
-                      "font-mono text-[10px] leading-none transition",
-                      isChordActive ? "text-blue-700 font-bold" : "text-slate-400"
-                    ].join(" "),
-                    children: letterForGroup3D(group)
-                  }
-                )
-              ] }),
-              /* @__PURE__ */ jsxRuntime.jsx("div", { className: "grid grid-cols-4 gap-1", children: tools.map((t, i) => {
-                const isActive = tool === t.key;
-                return /* @__PURE__ */ jsxRuntime.jsx(
-                  ToolButton,
-                  {
-                    toolKey: t.key,
-                    label: t.label,
-                    hint: t.hint,
-                    active: isActive,
-                    onClick: () => handle?.setTool(t.key),
-                    icon: /* @__PURE__ */ jsxRuntime.jsx(
-                      "span",
-                      {
-                        onMouseEnter: (e) => showHover(e.currentTarget.closest("button"), t),
-                        onMouseLeave: hideHover,
-                        onFocus: (e) => showHover(e.currentTarget.closest("button"), t),
-                        onBlur: hideHover,
-                        children: ICONS_3D[t.key]
-                      }
-                    ),
-                    badge: /* @__PURE__ */ jsxRuntime.jsx(
-                      "span",
-                      {
-                        "data-testid": `chord-num-${t.key}`,
-                        className: [
-                          "pointer-events-none absolute bottom-0 right-0.5 font-mono text-[9px] leading-none transition",
-                          isActive ? "text-white/70" : isChordActive ? "text-blue-700 font-bold" : "text-slate-400"
-                        ].join(" "),
-                        children: i + 1
-                      }
-                    )
-                  },
-                  t.key
-                );
-              }) })
-            ]
-          },
-          group
+        }, []);
+        const handleMove2 = React11__namespace.useCallback((screen) => {
+          const board = boardRef.current;
+          if (!board) return;
+          const view = board.getView3D();
+          if (!view) return;
+          let hit;
+          try {
+            hit = hitTest(screen, view, sceneRef.current);
+          } catch {
+            setHoverLabel(null);
+            return;
+          }
+          if (hit.kind === "empty") setHoverLabel(null);
+          else if (hit.kind === "existingPoint") {
+            const obj = sceneRef.current.get(hit.pointId);
+            setHoverLabel(obj?.label ?? null);
+          } else if (hit.kind === "onGround") setHoverLabel("m\u1EB7t n\u1EC1n");
+          else if (hit.kind === "onAxis") setHoverLabel(`tr\u1EE5c ${hit.axis.toUpperCase()}`);
+          else if (hit.kind === "onPlane") setHoverLabel(`m\u1EB7t ph\u1EB3ng ${hit.planeId}`);
+          else if (hit.kind === "onSphere") setHoverLabel(`m\u1EB7t c\u1EA7u ${hit.sphereId}`);
+          else setHoverLabel(null);
+        }, []);
+        React11__namespace.useImperativeHandle(
+          ref,
+          () => ({
+            hasContent: () => (sceneRef.current?.list().length ?? 0) > 0,
+            serialize: () => {
+              const view = boardRef.current?.getView3D();
+              const v = view;
+              const azimuth = typeof v?.az?.Value === "function" ? v.az.Value() : 0;
+              const elevation = typeof v?.el?.Value === "function" ? v.el.Value() : 0;
+              return sceneToBoard(
+                sceneRef.current,
+                { azimuth, elevation, bbox3D: [-5, -5, -5, 5, 5, 5] },
+                [-6, -6, 6, 6]
+              );
+            }
+          }),
+          []
         );
-      }),
-      chordGroup && activeGroupTools && /* @__PURE__ */ jsxRuntime.jsxs(
-        "div",
-        {
-          "data-testid": "chord-hint",
-          className: "mt-1 rounded border border-blue-200 bg-blue-50/60 px-2 py-1 text-[11px] leading-snug text-slate-600",
-          children: [
-            /* @__PURE__ */ jsxRuntime.jsx("span", { className: "font-mono font-semibold text-blue-700", children: letterForGroup3D(chordGroup) }),
-            /* @__PURE__ */ jsxRuntime.jsx("span", { className: "mx-1 text-slate-400", children: "\u2192" }),
-            activeGroupTools.map((t, i) => /* @__PURE__ */ jsxRuntime.jsxs("span", { className: "mr-2 inline-block", children: [
-              /* @__PURE__ */ jsxRuntime.jsx("span", { className: "font-mono font-semibold text-blue-700", children: i + 1 }),
-              /* @__PURE__ */ jsxRuntime.jsx("span", { className: "ml-1", children: t.label })
-            ] }, t.key)),
-            /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-slate-400", children: "Esc hu\u1EF7" })
-          ]
-        }
-      )
-    ] }),
-    portalReady && hover && typeof document !== "undefined" ? reactDom.createPortal(
-      /* @__PURE__ */ jsxRuntime.jsxs(
-        "div",
-        {
-          role: "tooltip",
-          className: "pointer-events-none fixed w-max max-w-[220px] rounded-md bg-slate-900 px-2 py-1 text-left text-[11px] leading-tight text-white shadow-lg",
-          style: {
-            left: hover.x + 8,
-            top: hover.y,
-            transform: "translate(0, -50%)",
-            zIndex: 2147483600
-          },
-          children: [
-            /* @__PURE__ */ jsxRuntime.jsx("span", { className: "block font-medium", children: hover.label }),
-            hover.hint && /* @__PURE__ */ jsxRuntime.jsx("span", { className: "mt-0.5 block text-slate-300", children: hover.hint })
-          ]
-        }
-      ),
-      document.body
-    ) : null
-  ] });
-}
-function MobilePanel(props) {
-  const { handle, onResetView, isDark, drawerOpen, onDrawerClose } = props;
-  const { tool, showAxes, showMesh, canUndo } = useHandleState(handle);
-  const groups = react.useMemo(() => {
-    const acc = /* @__PURE__ */ new Map();
-    for (const t of TOOLS_3D) {
-      if (!acc.has(t.group)) acc.set(t.group, []);
-      acc.get(t.group).push(t);
-    }
-    return Array.from(acc.entries()).map(([group, tools]) => ({
-      group,
-      groupLabel: GROUP_LABELS_3D[group],
-      tools: tools.map((t) => ({ key: t.key, label: t.label, icon: ICONS_3D[t.key] }))
-    }));
-  }, []);
-  return /* @__PURE__ */ jsxRuntime.jsx(
-    MobileToolDrawer,
-    {
-      title: "H\xECnh h\u1ECDc 3D",
-      headerIcon: Geom3DIconHeader,
-      testId: "geom3d-left-panel",
-      isDark,
-      drawerOpen: !!drawerOpen,
-      onDrawerClose: () => onDrawerClose?.(),
-      chips: [
-        {
-          label: "Tr\u1EE5c",
-          icon: /* @__PURE__ */ jsxRuntime.jsx(AxisIcon3D, {}),
-          pressed: showAxes,
-          onToggle: (b) => handle?.setShowAxes(b),
-          testId: "toggle-axes"
-        },
-        {
-          label: "L\u01B0\u1EDBi",
-          icon: /* @__PURE__ */ jsxRuntime.jsx(MeshIcon, {}),
-          pressed: showMesh,
-          onToggle: (b) => handle?.setShowMesh(b),
-          testId: "toggle-mesh"
-        }
-      ],
-      actions: [
-        {
-          label: "Reset view",
-          title: "Reset g\xF3c nh\xECn",
-          icon: /* @__PURE__ */ jsxRuntime.jsx(ResetViewIcon, {}),
-          onClick: onResetView
-        },
-        {
-          label: "Ho\xE0n t\xE1c",
-          title: "Ho\xE0n t\xE1c (Ctrl/Cmd+Z)",
-          icon: /* @__PURE__ */ jsxRuntime.jsx(UndoIcon2, {}),
-          onClick: () => handle?.undo(),
-          disabled: !canUndo
-        }
-      ],
-      groups,
-      activeTool: tool,
-      onToolSelect: (k) => handle?.setTool(k)
-    }
-  );
-}
-function LeftPanel3(props) {
-  if (props.isMobile) return /* @__PURE__ */ jsxRuntime.jsx(MobilePanel, { ...props });
-  return /* @__PURE__ */ jsxRuntime.jsx(DesktopPanel, { ...props });
-}
-var TOOLTIP_DELAY_MS2, Geom3DIconHeader;
-var init_LeftPanel3 = __esm({
-  "src/stamps/geometry-3d/editor/LeftPanel.tsx"() {
-    "use client";
-    init_tools2();
-    init_toolButtons();
-    init_MobileToolDrawer();
-    TOOLTIP_DELAY_MS2 = 400;
-    Geom3DIconHeader = /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round", children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 7 L14 4 L20 7 L14 10 Z M4 7 L4 17 L14 20 L14 10 M14 20 L20 17 L20 7" }) });
+        return /* @__PURE__ */ jsxRuntime.jsxs(
+          "div",
+          {
+            "data-testid": "editor-panel-3d",
+            className: [
+              isDark ? "theme--dark " : "",
+              "flex h-full w-full overflow-hidden bg-white dark:bg-zinc-950"
+            ].join(""),
+            children: [
+              /* @__PURE__ */ jsxRuntime.jsx(
+                LeftPanel3,
+                {
+                  scene: sceneRef.current,
+                  selectedTool,
+                  onSelectTool: (k) => controllerRef.current.selectTool(k)
+                }
+              ),
+              /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex min-w-0 flex-1 flex-col", children: [
+                /* @__PURE__ */ jsxRuntime.jsx("div", { className: "min-h-0 flex-1", children: /* @__PURE__ */ jsxRuntime.jsx(
+                  MiniBoard3D,
+                  {
+                    ref: boardRef,
+                    isDark,
+                    onView3DReady: handleView3DReady,
+                    onPointerClick: handleClick,
+                    onPointerMove: handleMove2,
+                    onPointerLeave: () => setHoverLabel(null)
+                  }
+                ) }),
+                /* @__PURE__ */ jsxRuntime.jsx(StatusHint, { hint, hoverLabel })
+              ] })
+            ]
+          }
+        );
+      }
+    );
   }
 });
 
@@ -5464,37 +6459,21 @@ var init_host3 = __esm({
   "src/stamps/geometry-3d/host.tsx"() {
     "use client";
     init_EditorPanel2();
-    init_LeftPanel3();
-    init_tools2();
-    init_useChordShortcut();
     init_insertImage();
     init_useIsMobile();
     init_serialize2();
-    Geometry3DStampHost = react.forwardRef(
+    Geometry3DStampHost = React11.forwardRef(
       function Geometry3DStampHost2({ api, editingElement, onClose, isDark }, ref) {
-        const editorRef = react.useRef(null);
+        const editorRef = React11.useRef(null);
         const { isMobile } = useIsMobile();
-        const [drawerOpen, setDrawerOpen] = react.useState(false);
-        const [boardHandle, setBoardHandle] = react.useState(null);
-        const initial = react.useMemo(
+        const initial = React11.useMemo(
           () => parseInitial(editingElement),
           [editingElement]
         );
-        const handleBoardReady = react.useCallback((h) => {
-          setBoardHandle((prev) => prev === h ? prev : h);
-        }, []);
-        const { chordGroup } = useChordShortcut({
-          groupOrder: GROUP_ORDER_3D,
-          tools: TOOLS_3D,
-          onSelect: (key) => boardHandle?.setTool(key),
-          enabled: !isMobile
-        });
-        const handleResetView = react.useCallback(() => {
-          boardHandle?.resetView();
-        }, [boardHandle]);
-        const handleInsert = react.useCallback(
-          async (jsonState, svgString, width, height) => {
+        const performInsert = React11.useCallback(
+          async (board, width, height, svgString) => {
             if (!api) return;
+            const jsonState = serializeBoard3D(board);
             await insertStampImage(api, {
               svgString,
               makeCustomData: () => ({
@@ -5510,43 +6489,90 @@ var init_host3 = __esm({
           },
           [api, editingElement, onClose]
         );
-        react.useImperativeHandle(
+        const tryInsert = React11.useCallback(() => {
+          if (!editorRef.current) return false;
+          if (!editorRef.current.hasContent()) return false;
+          const board = editorRef.current.serialize();
+          if (board.elements.length === 0) return false;
+          void performInsert(board, 0, 0, "");
+          return true;
+        }, [performInsert]);
+        React11.useImperativeHandle(
           ref,
           () => ({
-            tryInsert: () => editorRef.current?.tryInsert() ?? false,
+            tryInsert,
             hasContent: () => editorRef.current?.hasContent() ?? false
           }),
-          []
+          [tryInsert]
         );
-        return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-          /* @__PURE__ */ jsxRuntime.jsx(
-            LeftPanel3,
-            {
-              handle: boardHandle,
-              onResetView: handleResetView,
-              onClose,
-              isDark,
-              isMobile,
-              drawerOpen,
-              onDrawerClose: () => setDrawerOpen(false),
-              chordGroup
-            }
-          ),
-          /* @__PURE__ */ jsxRuntime.jsx(
-            EditorPanel,
-            {
-              ref: editorRef,
-              isDark,
-              initial,
-              onInsert: handleInsert,
-              onClose,
-              isMobile,
-              withLeftPanel: !isMobile,
-              onBoardReady: handleBoardReady,
-              onOpenDrawer: () => setDrawerOpen(true)
-            }
-          )
-        ] });
+        const handleEditorInsert = React11.useCallback(
+          (board, width, height, svgString) => {
+            void performInsert(board, width, height, svgString);
+          },
+          [performInsert]
+        );
+        const wrapperStyle = isMobile ? { position: "fixed", inset: 0, zIndex: 40 } : {
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          zIndex: 40
+        };
+        return /* @__PURE__ */ jsxRuntime.jsxs(
+          "div",
+          {
+            role: "dialog",
+            "aria-label": "D\u1EF1ng h\xECnh h\u1ECDc 3D",
+            "data-testid": "geom3d-host",
+            "data-stamp-area": "true",
+            style: wrapperStyle,
+            className: [
+              isDark ? "theme--dark " : "",
+              "flex flex-col overflow-hidden bg-white",
+              isMobile ? "h-full w-full" : "h-[600px] max-h-[85vh] w-[1040px] max-w-[calc(100vw-80px)] rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5"
+            ].join(" "),
+            children: [
+              /* @__PURE__ */ jsxRuntime.jsxs("header", { className: "flex items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-cyan-600 px-3 py-2 text-white", children: [
+                /* @__PURE__ */ jsxRuntime.jsxs("h3", { className: "flex flex-1 items-center gap-2 text-sm font-semibold", children: [
+                  /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 7 L14 4 L20 7 L14 10 Z M4 7 L4 17 L14 20 L14 10 M14 20 L20 17 L20 7" }) }),
+                  "H\xECnh h\u1ECDc kh\xF4ng gian (3D)"
+                ] }),
+                /* @__PURE__ */ jsxRuntime.jsx(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: tryInsert,
+                    "data-testid": "geom3d-insert-btn",
+                    className: "rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25",
+                    children: "Ch\xE8n"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntime.jsx(
+                  "button",
+                  {
+                    onClick: onClose,
+                    "aria-label": "\u0110\xF3ng",
+                    className: "inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15",
+                    children: /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+                      /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
+                      /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
+                    ] })
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsxRuntime.jsx("div", { className: "min-h-0 flex-1", children: /* @__PURE__ */ jsxRuntime.jsx(
+                EditorPanel,
+                {
+                  ref: editorRef,
+                  isDark,
+                  initialState: initial,
+                  onInsert: handleEditorInsert,
+                  onClose
+                }
+              ) })
+            ]
+          }
+        );
       }
     );
   }
@@ -5730,7 +6756,7 @@ function numericalDerivative(expression, paramValues, x, h = 1e-4) {
   const y2 = fn(x + h);
   return (y2 - y1) / (2 * h);
 }
-var init_handlers3 = __esm({
+var init_handlers2 = __esm({
   "src/stamps/graph-2d/editor/handlers.ts"() {
     init_parser();
   }
@@ -5846,7 +6872,7 @@ function scanRoots(fn, xMin, xMax, samples = 200) {
 var init_renderObjects = __esm({
   "src/stamps/graph-2d/renderObjects.ts"() {
     init_parser();
-    init_handlers3();
+    init_handlers2();
   }
 });
 
@@ -5912,7 +6938,7 @@ var init_types3 = __esm({
 
 // src/stamps/graph-2d/editor/tools.ts
 var GRAPH_TOOLS;
-var init_tools3 = __esm({
+var init_tools2 = __esm({
   "src/stamps/graph-2d/editor/tools.ts"() {
     GRAPH_TOOLS = [
       { id: "move", label: "Di chuy\u1EC3n", title: "Di chuy\u1EC3n / ch\u1ECDn" },
@@ -5924,8 +6950,8 @@ var init_tools3 = __esm({
 });
 function FunctionRow(props) {
   const { id, name, expression, color, visible, error } = props;
-  const [draft, setDraft] = react.useState(expression);
-  react.useEffect(() => {
+  const [draft, setDraft] = React11.useState(expression);
+  React11.useEffect(() => {
     setDraft(expression);
   }, [expression]);
   const commit = () => {
@@ -6138,19 +7164,19 @@ var init_AlgebraView = __esm({
     init_colors();
   }
 });
-function CloseIcon3() {
+function CloseIcon2() {
   return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
     /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
     /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
   ] });
 }
-function UndoIcon3() {
+function UndoIcon2() {
   return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
     /* @__PURE__ */ jsxRuntime.jsx("polyline", { points: "3 7 3 13 9 13" }),
     /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M3.51 13a9 9 0 1 0 2.13-9.36L3 7" })
   ] });
 }
-function ResetViewIcon2() {
+function ResetViewIcon() {
   return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
     /* @__PURE__ */ jsxRuntime.jsx("circle", { cx: "12", cy: "12", r: "9" }),
     /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "12", y1: "3", x2: "12", y2: "21" }),
@@ -6180,7 +7206,7 @@ function TangentIcon() {
     /* @__PURE__ */ jsxRuntime.jsx("circle", { cx: "12", cy: "10", r: "1.8", fill: "currentColor", stroke: "none" })
   ] });
 }
-function Section4({ label, children }) {
+function Section3({ label, children }) {
   return /* @__PURE__ */ jsxRuntime.jsxs("section", { children: [
     /* @__PURE__ */ jsxRuntime.jsx("h4", { className: "mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500", children: label }),
     children
@@ -6188,7 +7214,7 @@ function Section4({ label, children }) {
 }
 function PanelBody(props) {
   return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-    /* @__PURE__ */ jsxRuntime.jsx(Section4, { label: "B\u1ED1 c\u1EE5c", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-2 flex-wrap text-[11px] text-slate-700", children: [
+    /* @__PURE__ */ jsxRuntime.jsx(Section3, { label: "B\u1ED1 c\u1EE5c", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-2 flex-wrap text-[11px] text-slate-700", children: [
       /* @__PURE__ */ jsxRuntime.jsxs("label", { className: "inline-flex select-none items-center gap-1.5", children: [
         /* @__PURE__ */ jsxRuntime.jsx(
           "input",
@@ -6221,7 +7247,7 @@ function PanelBody(props) {
           title: "\u0110\u1EB7t l\u1EA1i t\u1EA7m nh\xECn",
           "aria-label": "\u0110\u1EB7t l\u1EA1i t\u1EA7m nh\xECn",
           className: "ml-auto inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900",
-          children: /* @__PURE__ */ jsxRuntime.jsx(ResetViewIcon2, {})
+          children: /* @__PURE__ */ jsxRuntime.jsx(ResetViewIcon, {})
         }
       ),
       /* @__PURE__ */ jsxRuntime.jsx(
@@ -6233,11 +7259,11 @@ function PanelBody(props) {
           title: "Ho\xE0n t\xE1c (Ctrl/Cmd+Z)",
           "aria-label": "Ho\xE0n t\xE1c",
           className: "inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
-          children: /* @__PURE__ */ jsxRuntime.jsx(UndoIcon3, {})
+          children: /* @__PURE__ */ jsxRuntime.jsx(UndoIcon2, {})
         }
       )
     ] }) }),
-    /* @__PURE__ */ jsxRuntime.jsx(Section4, { label: "C\xF4ng c\u1EE5", children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "grid grid-cols-4 gap-1", children: GRAPH_TOOLS.map((t) => {
+    /* @__PURE__ */ jsxRuntime.jsx(Section3, { label: "C\xF4ng c\u1EE5", children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "grid grid-cols-4 gap-1", children: GRAPH_TOOLS.map((t) => {
       const isActive = props.activeTool === t.id;
       return /* @__PURE__ */ jsxRuntime.jsx(
         "button",
@@ -6257,7 +7283,7 @@ function PanelBody(props) {
         t.id
       );
     }) }) }),
-    /* @__PURE__ */ jsxRuntime.jsx(Section4, { label: "H\xE0m s\u1ED1", children: /* @__PURE__ */ jsxRuntime.jsx(
+    /* @__PURE__ */ jsxRuntime.jsx(Section3, { label: "H\xE0m s\u1ED1", children: /* @__PURE__ */ jsxRuntime.jsx(
       AlgebraView,
       {
         graph: props.graph,
@@ -6300,7 +7326,7 @@ function GraphLeftPanel(props) {
               onClick: handleClose,
               "aria-label": "\u0110\xF3ng",
               className: "rounded p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800",
-              children: /* @__PURE__ */ jsxRuntime.jsx(CloseIcon3, {})
+              children: /* @__PURE__ */ jsxRuntime.jsx(CloseIcon2, {})
             }
           )
         ] }),
@@ -6313,7 +7339,7 @@ var GraphIconHeader, TOOL_ICONS;
 var init_LeftPanel4 = __esm({
   "src/stamps/graph-2d/editor/LeftPanel.tsx"() {
     "use client";
-    init_tools3();
+    init_tools2();
     init_AlgebraView();
     GraphIconHeader = /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round", children: [
       /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M3 21 V3" }),
@@ -6333,10 +7359,10 @@ var init_theme3 = __esm({
   }
 });
 function MiniBoard({ graph, activeTool, isDark, onBoardEvent }) {
-  const containerRef = react.useRef(null);
-  const boardRef = react.useRef(null);
-  const curvesRef = react.useRef(/* @__PURE__ */ new Map());
-  react.useEffect(() => {
+  const containerRef = React11.useRef(null);
+  const boardRef = React11.useRef(null);
+  const curvesRef = React11.useRef(/* @__PURE__ */ new Map());
+  React11.useEffect(() => {
     let cancelled = false;
     let createdBoard = null;
     const containerEl = containerRef.current;
@@ -6406,11 +7432,11 @@ function MiniBoard({ graph, activeTool, isDark, onBoardEvent }) {
       curvesRef.current.clear();
     };
   }, []);
-  react.useEffect(() => {
+  React11.useEffect(() => {
     if (!boardRef.current) return;
     syncObjects(boardRef.current, graph, curvesRef.current);
   }, [graph]);
-  react.useEffect(() => {
+  React11.useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
     el.style.cursor = activeTool === "move" ? "" : "crosshair";
@@ -6570,7 +7596,7 @@ var init_MiniBoard2 = __esm({
     "use client";
     init_parser();
     init_theme3();
-    init_handlers3();
+    init_handlers2();
   }
 });
 var GraphEditorPanel;
@@ -6582,26 +7608,26 @@ var init_EditorPanel3 = __esm({
     init_parser();
     init_render3();
     init_colors();
-    init_handlers3();
-    GraphEditorPanel = react.forwardRef(function GraphEditorPanel2(props, ref) {
+    init_handlers2();
+    GraphEditorPanel = React11.forwardRef(function GraphEditorPanel2(props, ref) {
       const initialGraph = props.initialState ?? EMPTY_GRAPH;
-      const graphRef = react.useRef(initialGraph);
-      const [, forceUpdate] = react.useState(0);
-      const [errors, setErrors] = react.useState({});
-      const [tool, setToolState] = react.useState("move");
-      const undoStackRef = react.useRef([]);
-      const idCounterRef = react.useRef(1);
-      const toolRef = react.useRef(tool);
+      const graphRef = React11.useRef(initialGraph);
+      const [, forceUpdate] = React11.useState(0);
+      const [errors, setErrors] = React11.useState({});
+      const [tool, setToolState] = React11.useState("move");
+      const undoStackRef = React11.useRef([]);
+      const idCounterRef = React11.useRef(1);
+      const toolRef = React11.useRef(tool);
       toolRef.current = tool;
-      const intersectFirstRef = react.useRef(null);
-      const propsRef = react.useRef(props);
+      const intersectFirstRef = React11.useRef(null);
+      const propsRef = React11.useRef(props);
       propsRef.current = props;
-      const initialGraphNotifiedRef = react.useRef(false);
-      const pushUndo = react.useCallback((g) => {
+      const initialGraphNotifiedRef = React11.useRef(false);
+      const pushUndo = React11.useCallback((g) => {
         undoStackRef.current.push(g);
         if (undoStackRef.current.length > 30) undoStackRef.current.shift();
       }, []);
-      const setErrorsWithNotify = react.useCallback(
+      const setErrorsWithNotify = React11.useCallback(
         (updater) => {
           setErrors((prev) => {
             const next = updater(prev);
@@ -6611,7 +7637,7 @@ var init_EditorPanel3 = __esm({
         },
         []
       );
-      const notifyStateChange = react.useCallback((g, t) => {
+      const notifyStateChange = React11.useCallback((g, t) => {
         propsRef.current.onStateChange({
           tool: t,
           showAxis: g.view.showAxis,
@@ -6619,7 +7645,7 @@ var init_EditorPanel3 = __esm({
           canUndo: undoStackRef.current.length > 0
         });
       }, []);
-      const updateGraph = react.useCallback(
+      const updateGraph = React11.useCallback(
         (mutator) => {
           const prev = graphRef.current;
           pushUndo(prev);
@@ -6631,7 +7657,7 @@ var init_EditorPanel3 = __esm({
         },
         [pushUndo, notifyStateChange]
       );
-      const onBoardEvent = react.useCallback((ev) => {
+      const onBoardEvent = React11.useCallback((ev) => {
         const currentTool = toolRef.current;
         if (currentTool === "point-on-curve" && ev.type === "click-curve" && ev.functionId && ev.x !== void 0) {
           updateGraph(
@@ -6665,7 +7691,7 @@ var init_EditorPanel3 = __esm({
           setToolState("move");
         }
       }, [updateGraph]);
-      react.useImperativeHandle(
+      React11.useImperativeHandle(
         ref,
         () => ({
           insert: () => {
@@ -6799,7 +7825,7 @@ var init_EditorPanel3 = __esm({
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [updateGraph, errors, setErrorsWithNotify]
       );
-      react.useEffect(() => {
+      React11.useEffect(() => {
         if (!initialGraphNotifiedRef.current) {
           initialGraphNotifiedRef.current = true;
           propsRef.current.onGraphChange?.(graphRef.current);
@@ -6944,22 +7970,22 @@ var init_host4 = __esm({
       showGrid: true,
       canUndo: false
     };
-    Graph2DStampHost = react.forwardRef(
+    Graph2DStampHost = React11.forwardRef(
       function Graph2DStampHost2({ api, editingElement, onClose, isDark }, ref) {
-        const panelRef = react.useRef(null);
-        const [graphUIState, setGraphUIState] = react.useState(INITIAL_GRAPH_STATE);
+        const panelRef = React11.useRef(null);
+        const [graphUIState, setGraphUIState] = React11.useState(INITIAL_GRAPH_STATE);
         const { isMobile } = useIsMobile();
-        const [drawerOpen, setDrawerOpen] = react.useState(false);
-        const initialState = react.useMemo(() => {
+        const [drawerOpen, setDrawerOpen] = React11.useState(false);
+        const initialState = React11.useMemo(() => {
           if (!editingElement) return null;
           if (!isGraph2DCustomData(editingElement.customData)) return null;
           return parseSerializedGraph(editingElement.customData.jsonState);
         }, [editingElement]);
-        const [graphSnapshot, setGraphSnapshot] = react.useState(
+        const [graphSnapshot, setGraphSnapshot] = React11.useState(
           initialState ?? EMPTY_GRAPH
         );
-        const [errorsSnapshot, setErrorsSnapshot] = react.useState({});
-        const handleInsert = react.useCallback(
+        const [errorsSnapshot, setErrorsSnapshot] = React11.useState({});
+        const handleInsert = React11.useCallback(
           async (jsonState, svgString) => {
             if (!api) return;
             try {
@@ -6981,7 +8007,7 @@ var init_host4 = __esm({
           },
           [api, editingElement?.id, onClose]
         );
-        react.useImperativeHandle(
+        React11.useImperativeHandle(
           ref,
           () => ({
             tryInsert: () => panelRef.current?.insert() ?? false,
@@ -7083,7 +8109,7 @@ function pickSyncableAppState(s) {
 // src/stamps/geometry-2d/index.tsx
 init_render();
 init_types();
-var GeometryStampHost3 = react.lazy(
+var GeometryStampHost3 = React11.lazy(
   () => Promise.resolve().then(() => (init_host(), host_exports)).then((m) => ({ default: m.GeometryStampHost }))
 );
 var GeometryIcon = /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: [
@@ -7122,7 +8148,7 @@ var geometryStamp = {
 // src/stamps/latex/index.tsx
 init_render2();
 init_types2();
-var LatexStampHost3 = react.lazy(
+var LatexStampHost3 = React11.lazy(
   () => Promise.resolve().then(() => (init_host2(), host_exports2)).then((m) => ({ default: m.LatexStampHost }))
 );
 var LatexIcon = /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M17 5 H7 L13 12 L7 19 H17" }) });
@@ -7224,7 +8250,7 @@ async function renderGeometry3DSvgFromState(jsonState) {
     document.body.removeChild(div);
   }
 }
-var Geometry3DStampHost3 = react.lazy(
+var Geometry3DStampHost3 = React11.lazy(
   () => Promise.resolve().then(() => (init_host3(), host_exports3)).then((m) => ({ default: m.Geometry3DStampHost }))
 );
 var Geometry3DIcon = /* @__PURE__ */ jsxRuntime.jsxs(
@@ -7281,7 +8307,7 @@ var geometry3dStamp = {
 // src/stamps/graph-2d/index.tsx
 init_render3();
 init_types3();
-var Graph2DStampHost3 = react.lazy(
+var Graph2DStampHost3 = React11.lazy(
   () => Promise.resolve().then(() => (init_host4(), host_exports4)).then((m) => ({ default: m.Graph2DStampHost }))
 );
 var Graph2DIcon = /* @__PURE__ */ jsxRuntime.jsxs(
@@ -7362,9 +8388,9 @@ function ToolbarInjector({
   onToggle,
   stamps = DEFAULT_STAMPS
 }) {
-  const [menuMount, setMenuMount] = react.useState(null);
-  const menuMountRef = react.useRef(null);
-  react.useEffect(() => {
+  const [menuMount, setMenuMount] = React11.useState(null);
+  const menuMountRef = React11.useRef(null);
+  React11.useEffect(() => {
     if (!enabled) {
       if (menuMountRef.current !== null) {
         menuMountRef.current = null;
@@ -7516,7 +8542,7 @@ function useShortcuts({
   onToggle,
   stamps = DEFAULT_STAMPS
 }) {
-  react.useEffect(() => {
+  React11.useEffect(() => {
     if (!enabled) return;
     const keyToKind = /* @__PURE__ */ new Map();
     for (const s of stamps) keyToKind.set(s.shortcutKey, s.kind);
@@ -7536,11 +8562,11 @@ function useShortcuts({
 }
 var DOUBLE_CLICK_MS = 400;
 function useStampDoubleClick({ enabled, stamps, onOpen }) {
-  const lastClickRef = react.useRef({
+  const lastClickRef = React11.useRef({
     time: 0,
     elementId: null
   });
-  return react.useCallback(
+  return React11.useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (_activeTool, pointerDownState) => {
       if (!enabled) return;
@@ -7583,11 +8609,11 @@ function isEditable(el) {
   return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
 }
 function useStampShortcutBlocker({ activeStamp, stamps }) {
-  const shortcutKeys = react.useMemo(
+  const shortcutKeys = React11.useMemo(
     () => new Set(stamps.map((s) => s.shortcutKey.toLowerCase())),
     [stamps]
   );
-  react.useEffect(() => {
+  React11.useEffect(() => {
     if (!activeStamp) return;
     const blocker = (e) => {
       if (isEditable(e.target)) return;
@@ -7603,7 +8629,7 @@ function useStampShortcutBlocker({ activeStamp, stamps }) {
   }, [activeStamp, shortcutKeys]);
 }
 function useStampClickOutside({ activeStamp, hostRef, onClose }) {
-  react.useEffect(() => {
+  React11.useEffect(() => {
     if (!activeStamp) return;
     let lastFire = 0;
     const handler = (e) => {
@@ -7680,10 +8706,10 @@ async function restoreMissingStampFiles(api, elements, stamps = DEFAULT_STAMPS) 
 }
 
 // src/core/persistence/sceneStore.ts
-var PREFIX = "whiteboard:scene:";
+var PREFIX2 = "whiteboard:scene:";
 var SCHEMA_VERSION = 1;
 function fullKey(key) {
-  return PREFIX + key;
+  return PREFIX2 + key;
 }
 function readScene(key) {
   if (typeof window === "undefined") return null;
@@ -7893,7 +8919,7 @@ async function pruneFiles(storageKey, keepIds) {
     console.warn("[whiteboard] pruneFiles failed:", err);
   }
 }
-var Excalidraw2 = react.lazy(
+var Excalidraw2 = React11.lazy(
   () => Promise.resolve().then(() => (init_ExcalidrawWithMenus(), ExcalidrawWithMenus_exports)).then((m) => ({ default: m.ExcalidrawWithMenus }))
 );
 var ExcalidrawLoadingFallback = () => /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex h-full items-center justify-center text-sm text-gray-500", children: "\u0110ang t\u1EA3i b\u1EA3ng\u2026" });
@@ -7907,21 +8933,21 @@ function Whiteboard({
   langCode = "vi-VN",
   stamps = DEFAULT_STAMPS
 }) {
-  const [api, setApi] = react.useState(null);
-  const apiRef = react.useRef(null);
-  const [isDarkTheme, setIsDarkTheme] = react.useState(false);
-  const isDarkThemeRef = react.useRef(false);
-  const knownFileIdsRef = react.useRef(/* @__PURE__ */ new Set());
-  const lastSceneHashRef = react.useRef("");
-  const sceneThrottleRef = react.useRef(null);
-  const fileThrottleRef = react.useRef(null);
-  const pruneThrottleRef = react.useRef(null);
-  const latestSceneRef = react.useRef(null);
-  const pendingFilesRef = react.useRef({});
+  const [api, setApi] = React11.useState(null);
+  const apiRef = React11.useRef(null);
+  const [isDarkTheme, setIsDarkTheme] = React11.useState(false);
+  const isDarkThemeRef = React11.useRef(false);
+  const knownFileIdsRef = React11.useRef(/* @__PURE__ */ new Set());
+  const lastSceneHashRef = React11.useRef("");
+  const sceneThrottleRef = React11.useRef(null);
+  const fileThrottleRef = React11.useRef(null);
+  const pruneThrottleRef = React11.useRef(null);
+  const latestSceneRef = React11.useRef(null);
+  const pendingFilesRef = React11.useRef({});
   const persistEnabled = typeof storageKey === "string" && storageKey.length > 0;
-  const persistKeyRef = react.useRef(storageKey);
+  const persistKeyRef = React11.useRef(storageKey);
   persistKeyRef.current = storageKey;
-  const persistedInitial = react.useMemo(
+  const persistedInitial = React11.useMemo(
     () => persistEnabled ? readScene(storageKey) : null,
     [persistEnabled, storageKey]
   );
@@ -7929,21 +8955,21 @@ function Whiteboard({
     elements: persistedInitial.elements,
     appState: persistedInitial.appState
   } : null;
-  const [activeStamp, setActiveStamp] = react.useState(null);
-  const activeStampRef = react.useRef(activeStamp);
+  const [activeStamp, setActiveStamp] = React11.useState(null);
+  const activeStampRef = React11.useRef(activeStamp);
   activeStampRef.current = activeStamp;
-  const [editingElement, setEditingElement] = react.useState(null);
-  const hostRef = react.useRef(null);
-  const handledCropIdRef = react.useRef(null);
-  const prevExcalidrawToolRef = react.useRef("selection");
-  const stampByKind = react.useMemo(() => {
+  const [editingElement, setEditingElement] = React11.useState(null);
+  const hostRef = React11.useRef(null);
+  const handledCropIdRef = React11.useRef(null);
+  const prevExcalidrawToolRef = React11.useRef("selection");
+  const stampByKind = React11.useMemo(() => {
     const m = /* @__PURE__ */ new Map();
     for (const s of stamps) m.set(s.kind, s);
     return m;
   }, [stamps]);
   const activeStampDef = activeStamp ? stampByKind.get(activeStamp) ?? null : null;
   const HostComponent = activeStampDef?.Host ?? null;
-  const openStamp = react.useCallback(
+  const openStamp = React11.useCallback(
     (kind, element = null) => {
       if (readOnly) return;
       if (!stampByKind.has(kind)) return;
@@ -7952,18 +8978,18 @@ function Whiteboard({
     },
     [readOnly, stampByKind]
   );
-  const closeStamp = react.useCallback(() => {
+  const closeStamp = React11.useCallback(() => {
     setActiveStamp(null);
     setEditingElement(null);
   }, []);
-  const toggleStampByKind = react.useCallback(
+  const toggleStampByKind = React11.useCallback(
     (kind) => {
       if (activeStamp === kind) closeStamp();
       else openStamp(kind);
     },
     [activeStamp, openStamp, closeStamp]
   );
-  const handleChange = react.useCallback(
+  const handleChange = React11.useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (elements, appState, files) => {
       const nextDark = appState?.theme === "dark";
@@ -8065,7 +9091,7 @@ function Whiteboard({
     },
     [readOnly, api, onSceneChange, onFilesChange, persistEnabled, storageKey, stamps, openStamp]
   );
-  react.useEffect(() => {
+  React11.useEffect(() => {
     if (!api || !persistEnabled) return;
     let cancelled = false;
     void readFiles(storageKey).then((files) => {
@@ -8093,7 +9119,7 @@ function Whiteboard({
       cancelled = true;
     };
   }, [api, persistEnabled, storageKey]);
-  react.useEffect(() => {
+  React11.useEffect(() => {
     if (!api) return;
     let cancelled = false;
     const run = async () => {
@@ -8113,7 +9139,7 @@ function Whiteboard({
       clearTimeout(t);
     };
   }, [api, persistedInitial, stamps]);
-  react.useEffect(
+  React11.useEffect(
     () => () => {
       if (sceneThrottleRef.current) clearTimeout(sceneThrottleRef.current);
       if (fileThrottleRef.current) clearTimeout(fileThrottleRef.current);
@@ -8131,7 +9157,7 @@ function Whiteboard({
     onToggle: toggleStampByKind,
     stamps
   });
-  react.useEffect(() => {
+  React11.useEffect(() => {
     if (!api) return;
     if (activeStamp) {
       try {
@@ -8148,7 +9174,7 @@ function Whiteboard({
     }
   }, [activeStamp, api]);
   useStampShortcutBlocker({ activeStamp, stamps });
-  react.useEffect(() => {
+  React11.useEffect(() => {
     if (!activeStamp) return;
     const onKey = (e) => {
       if (e.key !== "Escape") return;
@@ -8165,7 +9191,7 @@ function Whiteboard({
   }, [activeStamp, closeStamp]);
   useStampClickOutside({ activeStamp, hostRef, onClose: closeStamp });
   return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: `relative h-full w-full${isDarkTheme ? " theme--dark" : ""}`, children: [
-    /* @__PURE__ */ jsxRuntime.jsx(react.Suspense, { fallback: /* @__PURE__ */ jsxRuntime.jsx(ExcalidrawLoadingFallback, {}), children: /* @__PURE__ */ jsxRuntime.jsx(
+    /* @__PURE__ */ jsxRuntime.jsx(React11.Suspense, { fallback: /* @__PURE__ */ jsxRuntime.jsx(ExcalidrawLoadingFallback, {}), children: /* @__PURE__ */ jsxRuntime.jsx(
       Excalidraw2,
       {
         excalidrawAPI: (a) => {

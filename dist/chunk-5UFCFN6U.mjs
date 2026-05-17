@@ -4,7 +4,7 @@ import { lazy } from 'react';
 import { jsxs, jsx } from 'react/jsx-runtime';
 
 var GeometryStampHost = lazy(
-  () => import('./host-T2W6R6SO.mjs').then((m) => ({ default: m.GeometryStampHost }))
+  () => import('./host-QGLCPFJP.mjs').then((m) => ({ default: m.GeometryStampHost }))
 );
 var GeometryIcon = /* @__PURE__ */ jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: [
   /* @__PURE__ */ jsx("polygon", { points: "4,20 20,20 12,5" }),
@@ -40,5 +40,5 @@ var geometryStamp = {
 };
 
 export { geometryStamp };
-//# sourceMappingURL=chunk-SHFOGORM.mjs.map
-//# sourceMappingURL=chunk-SHFOGORM.mjs.map
+//# sourceMappingURL=chunk-5UFCFN6U.mjs.map
+//# sourceMappingURL=chunk-5UFCFN6U.mjs.map
