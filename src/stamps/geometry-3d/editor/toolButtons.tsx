@@ -9,9 +9,10 @@ interface ToolButtonProps {
   active: boolean;
   onClick: () => void;
   icon: ReactNode;
+  badge?: ReactNode;
 }
 
-export function ToolButton({ toolKey, label, hint, active, onClick, icon }: ToolButtonProps) {
+export function ToolButton({ toolKey, label, hint, active, onClick, icon, badge }: ToolButtonProps) {
   return (
     <button
       type="button"
@@ -22,13 +23,14 @@ export function ToolButton({ toolKey, label, hint, active, onClick, icon }: Tool
       data-active={active || undefined}
       data-tool={toolKey}
       className={[
-        'flex h-8 items-center justify-center rounded-md transition',
+        'relative flex h-8 items-center justify-center rounded-md transition',
         active
           ? 'bg-blue-600 text-white shadow-sm'
           : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900',
       ].join(' ')}
     >
       {icon}
+      {badge}
     </button>
   );
 }

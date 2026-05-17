@@ -33,6 +33,30 @@ export const GROUP_LABELS_3D: Record<ToolGroup3D, string> = {
   meta: 'Khác',
 };
 
+// Positional A..E — letter shortcut cho chord 2-phím.
+export const GROUP_ORDER_3D: ToolGroup3D[] = [
+  'view',
+  'primitive',
+  'solid',
+  'curved',
+  'meta',
+];
+
+const A_CODE_3D = 'A'.charCodeAt(0);
+
+export function letterForGroup3D(g: ToolGroup3D): string {
+  const idx = GROUP_ORDER_3D.indexOf(g);
+  return idx >= 0 ? String.fromCharCode(A_CODE_3D + idx) : '';
+}
+
+export function groupForLetter3D(ch: string): ToolGroup3D | null {
+  if (ch.length !== 1) return null;
+  const upper = ch.toUpperCase();
+  const idx = upper.charCodeAt(0) - A_CODE_3D;
+  if (idx < 0 || idx >= GROUP_ORDER_3D.length) return null;
+  return GROUP_ORDER_3D[idx];
+}
+
 export const TOOLS_3D: ReadonlyArray<ToolDef3D> = [
   { key: 'move', label: 'Di chuyển', group: 'view', stepsRequired: 0 },
   { key: 'point', label: 'Điểm', group: 'primitive', stepsRequired: 1, hint: 'Nhập (x, y, z)' },
