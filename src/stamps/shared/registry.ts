@@ -36,6 +36,12 @@ export const ALL_STAMPS: ReadonlyArray<StampType> = Object.freeze([
  * Set stamp mặc định cho Whiteboard. v0.7.0 trở đi = STABLE_STAMPS.
  * Consumer muốn experimental: `<Whiteboard stamps={ALL_STAMPS} />` hoặc
  * `[...DEFAULT_STAMPS, geometry3dStamp]`.
+ *
+ * Để thêm 1 stamp mới (vd chart):
+ *   1. Tạo `src/stamps/chart/index.tsx` export `chartStamp: StampType`.
+ *   2. Import + add vào STABLE_STAMPS (production-ready) hoặc
+ *      EXPERIMENTAL_STAMPS (chưa ổn định) ở file này.
+ *   3. Re-export `chartStamp` từ `src/stamps/index.ts` + `src/index.ts`.
  */
 export const DEFAULT_STAMPS: ReadonlyArray<StampType> = STABLE_STAMPS;
 
