@@ -3,6 +3,7 @@
 import {
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useRef,
   useState,
@@ -61,6 +62,9 @@ export interface GraphEditorPanelProps {
   isDark: boolean;
   isMobile: boolean;
   onOpenDrawer: () => void;
+  // Lift state up so Host can render AlgebraView with current graph + errors
+  onGraphChange?: (g: SerializedGraph) => void;
+  onErrorsChange?: (errors: Record<string, string | null>) => void;
 }
 
 export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
@@ -86,10 +90,24 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
   const propsRef = useRef(props);
   propsRef.current = props;
 
+  // Notify initial graph state to Host on mount
+  const initialGraphNotifiedRef = useRef(false);
+
   const pushUndo = useCallback((g: SerializedGraph) => {
     undoStackRef.current.push(g);
     if (undoStackRef.current.length > 30) undoStackRef.current.shift();
   }, []);
+
+  const setErrorsWithNotify = useCallback(
+    (updater: (prev: Record<string, string | null>) => Record<string, string | null>) => {
+      setErrors((prev) => {
+        const next = updater(prev);
+        propsRef.current.onErrorsChange?.(next);
+        return next;
+      });
+    },
+    [],
+  );
 
   const notifyStateChange = useCallback((g: SerializedGraph, t: GraphTool) => {
     propsRef.current.onStateChange({
@@ -108,6 +126,7 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
       graphRef.current = next;
       notifyStateChange(next, toolRef.current);
       forceUpdate((n) => n + 1);
+      propsRef.current.onGraphChange?.(next);
     },
     [pushUndo, notifyStateChange],
   );
@@ -196,6 +215,7 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
           showGrid: prev.view.showGrid,
           canUndo: undoStackRef.current.length > 0,
         });
+        propsRef.current.onGraphChange?.(prev);
       },
 
       addFunction: (expr: string) => {
@@ -230,7 +250,7 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
           functions: [...prev.functions, newFn],
           parameters: [...prev.parameters, ...newParams],
         }));
-        setErrors((e) => ({ ...e, [id]: null }));
+        setErrorsWithNotify((e) => ({ ...e, [id]: null }));
         return { ok: true as const, id };
       },
 
@@ -238,7 +258,7 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
         const g = graphRef.current;
         const v = validate(expr);
         if (!v.ok) {
-          setErrors((e) => ({ ...e, [id]: v.error ?? 'Invalid' }));
+          setErrorsWithNotify((e) => ({ ...e, [id]: v.error ?? 'Invalid' }));
           return;
         }
         const usedParamNames = new Set(g.parameters.map((p) => p.name));
@@ -255,7 +275,7 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
           ),
           parameters: [...prev.parameters, ...newParams],
         }));
-        setErrors((e) => ({ ...e, [id]: null }));
+        setErrorsWithNotify((e) => ({ ...e, [id]: null }));
       },
 
       toggleFunctionVisible: (id: string) =>
@@ -274,13 +294,15 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
 
       // setParameter does NOT push undo — would flood the stack (slider drag)
       setParameter: (name: string, value: number) => {
-        graphRef.current = {
+        const next = {
           ...graphRef.current,
           parameters: graphRef.current.parameters.map((p) =>
             p.name === name ? { ...p, value } : p,
           ),
         };
+        graphRef.current = next;
         forceUpdate((n) => n + 1);
+        propsRef.current.onGraphChange?.(next);
       },
 
       setParameterRange: (name: string, min: number, max: number, step: number) =>
@@ -302,10 +324,19 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
       getGraph: () => graphRef.current,
       getErrors: () => errors,
     }),
-    // deps: updateGraph stable; errors changes when function errors change
+    // deps: updateGraph stable; errors changes when function errors change; setErrorsWithNotify stable
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [updateGraph, errors],
+    [updateGraph, errors, setErrorsWithNotify],
   );
+
+  // Notify Host of initial graph on mount (so AlgebraView renders correctly for re-edit)
+  useEffect(() => {
+    if (!initialGraphNotifiedRef.current) {
+      initialGraphNotifiedRef.current = true;
+      propsRef.current.onGraphChange?.(graphRef.current);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const graph = graphRef.current;
 
