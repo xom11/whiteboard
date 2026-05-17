@@ -14,6 +14,7 @@ export interface MiniBoard3DProps {
   onPointerClick?: (screen: { x: number; y: number }) => void;
   onPointerMove?: (screen: { x: number; y: number }) => void;
   onPointerLeave?: () => void;
+  onPointerDragEnd?: () => void;
 }
 
 export interface MiniBoard3DHandle {
@@ -28,7 +29,7 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
     const containerRef = React.useRef<HTMLDivElement | null>(null);
     const boardRef = React.useRef<JxgBoard | null>(null);
     const viewRef = React.useRef<JxgView3D | null>(null);
-    const { isDark, onView3DReady, onPointerClick, onPointerMove, onPointerLeave } = props;
+    const { isDark, onView3DReady, onPointerClick, onPointerMove, onPointerLeave, onPointerDragEnd } = props;
 
     // Keep latest callback refs stable across re-renders so the init effect
     // doesn't have to re-run when handlers change.
@@ -36,10 +37,12 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
     const onPointerClickRef = React.useRef(onPointerClick);
     const onPointerMoveRef = React.useRef(onPointerMove);
     const onPointerLeaveRef = React.useRef(onPointerLeave);
+    const onPointerDragEndRef = React.useRef(onPointerDragEnd);
     onView3DReadyRef.current = onView3DReady;
     onPointerClickRef.current = onPointerClick;
     onPointerMoveRef.current = onPointerMove;
     onPointerLeaveRef.current = onPointerLeave;
+    onPointerDragEndRef.current = onPointerDragEnd;
 
     React.useImperativeHandle(
       ref,
@@ -62,6 +65,7 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
       let handlePointerDown: ((e: PointerEvent) => void) | null = null;
       let handlePointerMove: ((e: PointerEvent) => void) | null = null;
       let handlePointerLeave: (() => void) | null = null;
+      let handlePointerUp: (() => void) | null = null;
 
       void (async () => {
         try {
@@ -149,9 +153,11 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
             onPointerMoveRef.current?.(pixelToUser(e));
           };
           handlePointerLeave = () => onPointerLeaveRef.current?.();
+          handlePointerUp = () => onPointerDragEndRef.current?.();
           svgEl.addEventListener('pointerdown', handlePointerDown);
           svgEl.addEventListener('pointermove', handlePointerMove);
           svgEl.addEventListener('pointerleave', handlePointerLeave);
+          svgEl.addEventListener('pointerup', handlePointerUp);
         }
       })();
 
@@ -161,6 +167,7 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
           if (handlePointerDown) svgEl.removeEventListener('pointerdown', handlePointerDown);
           if (handlePointerMove) svgEl.removeEventListener('pointermove', handlePointerMove);
           if (handlePointerLeave) svgEl.removeEventListener('pointerleave', handlePointerLeave);
+          if (handlePointerUp) svgEl.removeEventListener('pointerup', handlePointerUp);
         }
         try {
           if (board && JXG) JXG.JSXGraph.freeBoard(board);
