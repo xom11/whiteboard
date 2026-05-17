@@ -89,6 +89,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
   const jxgRef = useRef<JxgObj>(null);
   const axisObjsRef = useRef<{ x?: JxgObj; y?: JxgObj }>({});
   const creationLogRef = useRef<SerializedElement[]>([]);
+  const redoStackRef = useRef<SerializedElement[]>([]);
 
   const [tool, setTool] = useState<GeomTool>('move');
   const toolRef = useRef<GeomTool>('move');
@@ -167,13 +168,19 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     });
   }, []);
 
+  // Push entry mới vào creationLog + clear redoStack (chuẩn UX undo/redo).
+  const pushCreationLog = useCallback((entry: SerializedElement) => {
+    creationLogRef.current.push(entry);
+    redoStackRef.current = [];
+  }, []);
+
   const pushLog = useCallback(
     (id: string, type: string, args: unknown[], attrs: Record<string, unknown>, obj: JxgObj) => {
-      creationLogRef.current.push({ id, type, args, attrs });
+      pushCreationLog({ id, type, args, attrs });
       objMapRef.current.set(id, obj);
       setHistoryTick((t) => t + 1);
     },
-    [],
+    [pushCreationLog],
   );
 
   const create = useCallback(
@@ -305,7 +312,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
           const targetId = localIdOf(o);
           if (targetId) {
             const id = nextLocalId();
-            creationLogRef.current.push({ id, type: 'valueLabel', args: [targetId], attrs: {} });
+            pushCreationLog({ id, type: 'valueLabel', args: [targetId], attrs: {} });
             objMapRef.current.set(id, txt);
             setHistoryTick((t) => t + 1);
           }
@@ -735,7 +742,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
       }
       const stepId = nextLocalId();
       const stepObj = boardRef.current.create('transform', step.params, step.attrs);
-      creationLogRef.current.push({ id: stepId, type: 'transform', args: stepLogArgs, attrs: step.attrs as Record<string, unknown> });
+      pushCreationLog({ id: stepId, type: 'transform', args: stepLogArgs, attrs: step.attrs as Record<string, unknown> });
       objMapRef.current.set(stepId, stepObj);
       transformObjs.push(stepObj);
       transformIds.push(stepId);
@@ -756,7 +763,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
       const newName = srcName ? `${srcName}'` : nextLabel();
       const attrs = { name: newName, size: 3, color: '#0ea5e9', strokeColor: '#0ea5e9', fillColor: '#0ea5e9' };
       const obj = boardRef.current!.create('point', [src, transformParent], attrs);
-      creationLogRef.current.push({ id, type: 'point', args: [srcId ?? src, transformLogRef], attrs });
+      pushCreationLog({ id, type: 'point', args: [srcId ?? src, transformLogRef], attrs });
       objMapRef.current.set(id, obj);
       return obj;
     });
@@ -817,14 +824,33 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
       if (obj) {
         try { b.removeObject(obj); } catch { /* ignore */ }
         clearPending();
+        // Push entry này vào redoStack (chỉ entry có object thật).
+        redoStackRef.current.push(last);
         setHistoryTick((t) => t + 1);
         try { b.update(); } catch { /* ignore */ }
         return;
       }
-      // Skip stale log entry (object already gone) and continue popping
+      // Skip stale log entry (object đã biến mất từ trước) — không push vào redoStack
     }
     setHistoryTick((t) => t + 1);
   }, [clearPending]);
+
+  // Redo: pop entry cuối khỏi redoStack và tái tạo object.
+  const redoNext = useCallback(() => {
+    const b = boardRef.current;
+    if (!b) return;
+    const entry = redoStackRef.current.pop();
+    if (!entry) {
+      setHistoryTick((t) => t + 1);
+      return;
+    }
+    const ok = recreateFromLogEntry(entry);
+    if (ok) {
+      creationLogRef.current.push(entry);
+    }
+    setHistoryTick((t) => t + 1);
+    try { b.update(); } catch { /* ignore */ }
+  }, [recreateFromLogEntry]);
 
   // Global Ctrl/Cmd+Z + Esc while the panel is mounted. Skipped when focus is
   // in a text input so we don't hijack other undo flows. Capture phase + stop
