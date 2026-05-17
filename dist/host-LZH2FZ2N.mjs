@@ -1,5 +1,5 @@
 "use client";
-import { EMPTY_GRAPH, addPointOnCurve, addIntersection, validate, stringifySerializedGraph, renderGraph2dSvgFromState, isGraph2DCustomData, parseSerializedGraph, compile, numericalDerivative } from './chunk-HM7RIXJE.mjs';
+import { EMPTY_GRAPH, addPointOnCurve, addIntersection, validate, stringifySerializedGraph, renderGraph2dSvgFromState, isGraph2DCustomData, parseSerializedGraph, compile, numericalDerivative } from './chunk-74VEEZBV.mjs';
 import { useIsMobile } from './chunk-P2AOIF7S.mjs';
 import { insertStampImage } from './chunk-C6SCVOMC.mjs';
 import { __require } from './chunk-BJTO5JO5.mjs';
@@ -1062,5 +1062,5 @@ var Graph2DStampHost = forwardRef(
 );
 
 export { Graph2DStampHost };
-//# sourceMappingURL=host-2QGKMGCT.mjs.map
-//# sourceMappingURL=host-2QGKMGCT.mjs.map
+//# sourceMappingURL=host-LZH2FZ2N.mjs.map
+//# sourceMappingURL=host-LZH2FZ2N.mjs.map

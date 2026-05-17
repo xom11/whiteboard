@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.9.0 (unreleased)
+
+Tổng quát: kết quả của 1 đợt audit (security + bugs + bundle contract + repo hygiene). 5 issue đóng: #3, #4, #5, #6, #7.
+
+### Breaking changes
+- **Peer dependencies**: `@excalidraw/excalidraw`, `jsxgraph`, `katex` chuyển từ `dependencies` → `peerDependencies`. Consumer cần tự cài 3 package này. Mục đích chính: đúng contract peer-dep, tránh consumer + whiteboard cùng cài 2 phiên bản khác nhau (trước đây dist bundle vốn không inline 3 deps này vì code đã dùng dynamic import — nên kích thước dist không đổi). Xem README mục _Peer dependencies_. (closes #4)
+- **storageKey validation**: prop `storageKey` của `Whiteboard` giờ phải match `/^[a-zA-Z0-9_-]{1,128}$/`. Giá trị invalid → throw `Error` tại entry point persistence (sceneStore/fileStore). (kèm closes #6)
+
+### Security
+- **graph-2d parser**: thay `new Function('x', 'return ...')` bằng AST-based math evaluator (`src/stamps/graph-2d/evaluator.ts`). Loại bỏ vector code-injection từ formula người dùng. Whitelist hàm `sin/cos/tan/asin/acos/atan/log/ln/exp/sqrt/abs/floor/ceil/round`; hằng `pi/e`. (closes #3)
+- **Persistence schema**: `JSON.parse` với reviver chặn `__proto__`/`constructor`/`prototype` (ngừa prototype pollution); depth check max 64 level (ngừa DoS deeply-nested JSON); whitelist top-level keys khi đọc scene. (closes #6)
+
+### Fixed
+- **Whiteboard.tsx — throttle flush on unmount**: scene/file/prune write pending trong throttle window (200ms / 1s / 2s) giờ được flush đồng bộ trước cleanup → không mất write cuối khi component unmount.
+- **Whiteboard.tsx — IDB cancelled-guard**: `readFiles` useEffect check `cancelled` ở mỗi async boundary → không gọi `setState`/`api.addFiles` sau unmount.
+- **Whiteboard.tsx — stale closure stamps**: `restoreMissingStampFiles` đọc `stamps` qua `stampsRef.current` → luôn dùng prop mới nhất. (closes #5)
+
+### Chores
+- Move 35 PNG screenshot ở root vào `docs/screenshots/`; `.gitignore` pattern `/*.png` chặn PNG mới ở root. (closes #7)
+- Rebuild `dist/` với toolchain + source mới.
+
+---
+
 ## v0.8.0 (unreleased)
 
 ### Major redesign — Geometry 3D stamp (GeoGebra-style UX)

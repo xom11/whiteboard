@@ -59,6 +59,335 @@ var init_serialize = __esm({
   }
 });
 
+// src/stamps/graph-2d/evaluator.ts
+function tokenize(src) {
+  const tokens = [];
+  let i = 0;
+  while (i < src.length) {
+    const ch = src[i];
+    if (ch === " " || ch === "	" || ch === "\n" || ch === "\r") {
+      i++;
+      continue;
+    }
+    if (ch >= "0" && ch <= "9" || ch === ".") {
+      let j = i;
+      let hasDot = false;
+      let hasExp = false;
+      while (j < src.length) {
+        const c = src[j];
+        if (c >= "0" && c <= "9") {
+          j++;
+        } else if (c === "." && !hasDot && !hasExp) {
+          hasDot = true;
+          j++;
+        } else if ((c === "e" || c === "E") && !hasExp) {
+          hasExp = true;
+          j++;
+          if (src[j] === "+" || src[j] === "-") j++;
+        } else {
+          break;
+        }
+      }
+      const raw = src.slice(i, j);
+      if (!/[0-9]/.test(raw)) {
+        throw new Error(`S\u1ED1 kh\xF4ng h\u1EE3p l\u1EC7 t\u1EA1i v\u1ECB tr\xED ${i}: "${raw}"`);
+      }
+      tokens.push({ type: "NUMBER", value: raw, pos: i });
+      i = j;
+      continue;
+    }
+    if (ch >= "a" && ch <= "z" || ch >= "A" && ch <= "Z") {
+      let j = i;
+      while (j < src.length) {
+        const c = src[j];
+        if (c >= "a" && c <= "z" || c >= "A" && c <= "Z" || c >= "0" && c <= "9" || c === "_") {
+          j++;
+        } else {
+          break;
+        }
+      }
+      tokens.push({ type: "IDENT", value: src.slice(i, j), pos: i });
+      i = j;
+      continue;
+    }
+    if (OPERATORS.has(ch)) {
+      tokens.push({ type: "OP", value: ch, pos: i });
+      i++;
+      continue;
+    }
+    if (ch === "(") {
+      tokens.push({ type: "LPAREN", value: ch, pos: i });
+      i++;
+      continue;
+    }
+    if (ch === ")") {
+      tokens.push({ type: "RPAREN", value: ch, pos: i });
+      i++;
+      continue;
+    }
+    if (ch === ",") {
+      tokens.push({ type: "COMMA", value: ch, pos: i });
+      i++;
+      continue;
+    }
+    throw new Error(`K\xFD t\u1EF1 kh\xF4ng h\u1EE3p l\u1EC7 t\u1EA1i v\u1ECB tr\xED ${i}: "${ch}"`);
+  }
+  return tokens;
+}
+function parseAst(src) {
+  const tokens = tokenize(src);
+  if (tokens.length === 0) throw new Error("Bi\u1EC3u th\u1EE9c r\u1ED7ng");
+  const p = new Parser(tokens);
+  return p.parseExpression();
+}
+function evaluate(node, env) {
+  switch (node.kind) {
+    case "num":
+      return node.value;
+    case "ident": {
+      const name = node.name;
+      if (name === "x") return env.x;
+      if (Object.prototype.hasOwnProperty.call(ALLOWED_CONSTANTS, name)) {
+        return ALLOWED_CONSTANTS[name];
+      }
+      if (name.length === 1 && Object.prototype.hasOwnProperty.call(env.params, name)) {
+        return env.params[name];
+      }
+      throw new Error(`Identifier kh\xF4ng h\u1EE3p l\u1EC7: "${name}"`);
+    }
+    case "unary": {
+      const v = evaluate(node.arg, env);
+      return node.op === "-" ? -v : +v;
+    }
+    case "binary": {
+      const a = evaluate(node.lhs, env);
+      const b = evaluate(node.rhs, env);
+      switch (node.op) {
+        case "+":
+          return a + b;
+        case "-":
+          return a - b;
+        case "*":
+          return a * b;
+        case "/":
+          return a / b;
+        // có thể trả Infinity/NaN — đúng theo IEEE 754
+        case "^":
+          return Math.pow(a, b);
+      }
+      throw new Error(`To\xE1n t\u1EED kh\xF4ng h\u1ED7 tr\u1EE3: "${node.op}"`);
+    }
+    case "call": {
+      const fn = ALLOWED_FUNCTIONS[node.name];
+      if (typeof fn !== "function") {
+        throw new Error(`H\xE0m kh\xF4ng h\u1EE3p l\u1EC7: "${node.name}"`);
+      }
+      const args = node.args.map((a) => evaluate(a, env));
+      return fn(...args);
+    }
+  }
+}
+function collectFreeVars(node, out = /* @__PURE__ */ new Set()) {
+  switch (node.kind) {
+    case "num":
+      return out;
+    case "ident": {
+      const name = node.name;
+      if (name === "x") return out;
+      if (Object.prototype.hasOwnProperty.call(ALLOWED_CONSTANTS, name)) return out;
+      if (name.length === 1) out.add(name);
+      return out;
+    }
+    case "unary":
+      return collectFreeVars(node.arg, out);
+    case "binary":
+      collectFreeVars(node.lhs, out);
+      collectFreeVars(node.rhs, out);
+      return out;
+    case "call":
+      for (const a of node.args) collectFreeVars(a, out);
+      return out;
+  }
+}
+function checkIdentifiers(node) {
+  switch (node.kind) {
+    case "num":
+      return null;
+    case "ident": {
+      const name = node.name;
+      if (name === "x") return null;
+      if (Object.prototype.hasOwnProperty.call(ALLOWED_CONSTANTS, name)) return null;
+      if (name.length === 1) return null;
+      return `T\xEAn kh\xF4ng h\u1EE3p l\u1EC7: "${name}"`;
+    }
+    case "unary":
+      return checkIdentifiers(node.arg);
+    case "binary":
+      return checkIdentifiers(node.lhs) ?? checkIdentifiers(node.rhs);
+    case "call": {
+      if (!Object.prototype.hasOwnProperty.call(ALLOWED_FUNCTIONS, node.name)) {
+        return `T\xEAn h\xE0m kh\xF4ng h\u1EE3p l\u1EC7: "${node.name}"`;
+      }
+      for (const a of node.args) {
+        const e = checkIdentifiers(a);
+        if (e) return e;
+      }
+      return null;
+    }
+  }
+}
+var ALLOWED_FUNCTIONS, ALLOWED_CONSTANTS, OPERATORS, Parser, ALLOWED_FUNCTION_NAMES;
+var init_evaluator = __esm({
+  "src/stamps/graph-2d/evaluator.ts"() {
+    ALLOWED_FUNCTIONS = {
+      sin: Math.sin,
+      cos: Math.cos,
+      tan: Math.tan,
+      asin: Math.asin,
+      acos: Math.acos,
+      atan: Math.atan,
+      log: Math.log10,
+      // log = log10 (khớp với rewriteToJs)
+      ln: Math.log,
+      // ln = log tự nhiên
+      exp: Math.exp,
+      sqrt: Math.sqrt,
+      abs: Math.abs,
+      floor: Math.floor,
+      ceil: Math.ceil,
+      round: Math.round
+    };
+    ALLOWED_CONSTANTS = {
+      pi: Math.PI,
+      e: Math.E
+    };
+    OPERATORS = /* @__PURE__ */ new Set(["+", "-", "*", "/", "^"]);
+    Parser = class {
+      constructor(tokens) {
+        this.tokens = tokens;
+        this.pos = 0;
+      }
+      peek() {
+        return this.tokens[this.pos];
+      }
+      consume() {
+        const t = this.tokens[this.pos++];
+        if (!t) throw new Error("C\xFA ph\xE1p: h\u1EBFt token s\u1EDBm");
+        return t;
+      }
+      parseExpression() {
+        const node = this.parseAddSub();
+        if (this.pos < this.tokens.length) {
+          const t = this.tokens[this.pos];
+          throw new Error(`C\xFA ph\xE1p: token th\u1EEBa "${t.value}" t\u1EA1i v\u1ECB tr\xED ${t.pos}`);
+        }
+        return node;
+      }
+      // + - (left assoc)
+      parseAddSub() {
+        let lhs = this.parseMulDiv();
+        while (true) {
+          const t = this.peek();
+          if (t && t.type === "OP" && (t.value === "+" || t.value === "-")) {
+            this.consume();
+            const rhs = this.parseMulDiv();
+            lhs = { kind: "binary", op: t.value, lhs, rhs };
+          } else {
+            break;
+          }
+        }
+        return lhs;
+      }
+      // * / (left assoc)
+      parseMulDiv() {
+        let lhs = this.parseUnary();
+        while (true) {
+          const t = this.peek();
+          if (t && t.type === "OP" && (t.value === "*" || t.value === "/")) {
+            this.consume();
+            const rhs = this.parseUnary();
+            lhs = { kind: "binary", op: t.value, lhs, rhs };
+          } else {
+            break;
+          }
+        }
+        return lhs;
+      }
+      // unary + - (right assoc) sau đó parsePow
+      parseUnary() {
+        const t = this.peek();
+        if (t && t.type === "OP" && (t.value === "+" || t.value === "-")) {
+          this.consume();
+          const arg = this.parseUnary();
+          return { kind: "unary", op: t.value, arg };
+        }
+        return this.parsePow();
+      }
+      // ^ (right assoc)
+      parsePow() {
+        const lhs = this.parsePrimary();
+        const t = this.peek();
+        if (t && t.type === "OP" && t.value === "^") {
+          this.consume();
+          const rhs = this.parseUnary();
+          return { kind: "binary", op: "^", lhs, rhs };
+        }
+        return lhs;
+      }
+      parsePrimary() {
+        const t = this.peek();
+        if (!t) throw new Error("C\xFA ph\xE1p: thi\u1EBFu bi\u1EC3u th\u1EE9c");
+        if (t.type === "NUMBER") {
+          this.consume();
+          const v = Number(t.value);
+          return { kind: "num", value: v };
+        }
+        if (t.type === "IDENT") {
+          this.consume();
+          const next = this.peek();
+          if (next && next.type === "LPAREN") {
+            this.consume();
+            const args = [];
+            const lookahead = this.peek();
+            if (!lookahead || lookahead.type !== "RPAREN") {
+              args.push(this.parseAddSub());
+              while (true) {
+                const nx = this.peek();
+                if (nx && nx.type === "COMMA") {
+                  this.consume();
+                  args.push(this.parseAddSub());
+                } else {
+                  break;
+                }
+              }
+            }
+            const close = this.peek();
+            if (!close || close.type !== "RPAREN") {
+              throw new Error(`C\xFA ph\xE1p: thi\u1EBFu ")" sau h\xE0m "${t.value}"`);
+            }
+            this.consume();
+            return { kind: "call", name: t.value, args };
+          }
+          return { kind: "ident", name: t.value };
+        }
+        if (t.type === "LPAREN") {
+          this.consume();
+          const inner = this.parseAddSub();
+          const close = this.peek();
+          if (!close || close.type !== "RPAREN") {
+            throw new Error('C\xFA ph\xE1p: thi\u1EBFu ")"');
+          }
+          this.consume();
+          return inner;
+        }
+        throw new Error(`C\xFA ph\xE1p: token b\u1EA5t ng\u1EDD "${t.value}" t\u1EA1i v\u1ECB tr\xED ${t.pos}`);
+      }
+    };
+    ALLOWED_FUNCTION_NAMES = new Set(Object.keys(ALLOWED_FUNCTIONS));
+    new Set(Object.keys(ALLOWED_CONSTANTS));
+  }
+});
+
 // src/stamps/graph-2d/parser.ts
 function errResult(message) {
   return { ok: false, error: message, freeVars: /* @__PURE__ */ new Set() };
@@ -67,13 +396,20 @@ function validate(expr) {
   const trimmed = expr.trim();
   if (!trimmed) return errResult("Bi\u1EC3u th\u1EE9c r\u1ED7ng");
   if (!ALLOWED_CHARS.test(trimmed)) return errResult("K\xFD t\u1EF1 kh\xF4ng h\u1EE3p l\u1EC7");
-  const ids = trimmed.match(IDENTIFIER_RE) ?? [];
-  const freeVars = /* @__PURE__ */ new Set();
-  for (const id of ids) {
+  let tokens;
+  try {
+    tokens = tokenize(trimmed);
+  } catch {
+    return errResult("L\u1ED7i c\xFA ph\xE1p");
+  }
+  const earlyFree = /* @__PURE__ */ new Set();
+  for (const tok of tokens) {
+    if (tok.type !== "IDENT") continue;
+    const id = tok.value;
     if (id === "x" || id === "pi" || id === "e") continue;
-    if (ALLOWED_FUNCTIONS.has(id)) continue;
+    if (ALLOWED_FUNCTIONS2.has(id)) continue;
     if (id.length === 1) {
-      freeVars.add(id);
+      earlyFree.add(id);
       continue;
     }
     const hint = SUGGESTIONS[id];
@@ -81,90 +417,48 @@ function validate(expr) {
       hint ? `T\xEAn h\xE0m kh\xF4ng h\u1EE3p l\u1EC7: "${id}". B\u1EA1n c\xF3 \xFD l\xE0 "${hint}" kh\xF4ng?` : `T\xEAn kh\xF4ng h\u1EE3p l\u1EC7: "${id}"`
     );
   }
+  let ast;
   try {
-    const paramSubs = Object.fromEntries([...freeVars].map((v) => [v, 1]));
-    const rewritten = rewriteToJs(trimmed, paramSubs);
-    new Function("x", `return (${rewritten})`);
+    ast = parseAst(trimmed);
   } catch {
     return errResult("L\u1ED7i c\xFA ph\xE1p");
   }
+  const idErr = checkIdentifiers(ast);
+  if (idErr) return errResult(idErr);
+  const freeVars = collectFreeVars(ast);
+  for (const v of earlyFree) freeVars.add(v);
   return { ok: true, freeVars };
-}
-function rewriteToJs(expr, params) {
-  let s = expr.replace(/\^/g, "**");
-  s = s.replace(/\bpi\b/g, "Math.PI");
-  s = s.replace(/\be\b/g, "Math.E");
-  for (const [from, to] of FUNCTION_REPLACEMENTS) {
-    s = s.replace(new RegExp(`\\b${from}\\b`, "g"), to);
-  }
-  for (const [name, value] of Object.entries(params)) {
-    if (name.length !== 1) continue;
-    s = s.replace(new RegExp(`\\b${name}\\b`, "g"), `(${value})`);
-  }
-  return s;
 }
 function compile(expr, paramValues) {
   const v = validate(expr);
   if (!v.ok) return { error: v.error ?? "Invalid" };
+  let ast;
   try {
-    const rewritten = rewriteToJs(expr, paramValues);
-    const raw = new Function("x", `return (${rewritten})`);
-    return (x) => {
-      try {
-        const y = raw(x);
-        return typeof y === "number" ? y : NaN;
-      } catch {
-        return NaN;
-      }
-    };
+    ast = parseAst(expr.trim());
   } catch (err) {
     return { error: err instanceof Error ? err.message : String(err) };
   }
+  return (x) => {
+    try {
+      const y = evaluate(ast, { x, params: paramValues });
+      return typeof y === "number" ? y : NaN;
+    } catch {
+      return NaN;
+    }
+  };
 }
-var ALLOWED_FUNCTIONS, ALLOWED_CHARS, IDENTIFIER_RE, SUGGESTIONS, FUNCTION_REPLACEMENTS;
+var ALLOWED_FUNCTIONS2, ALLOWED_CHARS, SUGGESTIONS;
 var init_parser = __esm({
   "src/stamps/graph-2d/parser.ts"() {
-    ALLOWED_FUNCTIONS = /* @__PURE__ */ new Set([
-      "sin",
-      "cos",
-      "tan",
-      "asin",
-      "acos",
-      "atan",
-      "log",
-      "ln",
-      "exp",
-      "sqrt",
-      "abs",
-      "floor",
-      "ceil",
-      "round"
-    ]);
+    init_evaluator();
+    ALLOWED_FUNCTIONS2 = ALLOWED_FUNCTION_NAMES;
     ALLOWED_CHARS = /^[a-zA-Z0-9_.+\-*/^()\s,]+$/;
-    IDENTIFIER_RE = /[a-zA-Z][a-zA-Z0-9_]*/g;
     SUGGESTIONS = {
       tg: "tan",
       arcsin: "asin",
       arccos: "acos",
       arctan: "atan"
     };
-    FUNCTION_REPLACEMENTS = [
-      // longest first để tránh substring conflict (asin trước sin)
-      ["asin", "Math.asin"],
-      ["acos", "Math.acos"],
-      ["atan", "Math.atan"],
-      ["sqrt", "Math.sqrt"],
-      ["floor", "Math.floor"],
-      ["round", "Math.round"],
-      ["ceil", "Math.ceil"],
-      ["sin", "Math.sin"],
-      ["cos", "Math.cos"],
-      ["tan", "Math.tan"],
-      ["abs", "Math.abs"],
-      ["exp", "Math.exp"],
-      ["log", "Math.log10"],
-      ["ln", "Math.log"]
-    ];
   }
 });
 

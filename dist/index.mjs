@@ -6,9 +6,9 @@ import { geometry3dStamp } from './chunk-IUVV52HO.mjs';
 export { geometry3dStamp } from './chunk-IUVV52HO.mjs';
 import { latexStamp } from './chunk-7P7SQFOW.mjs';
 export { latexStamp } from './chunk-7P7SQFOW.mjs';
-import { graph2dStamp } from './chunk-3SSQKRRO.mjs';
-export { graph2dStamp } from './chunk-3SSQKRRO.mjs';
-export { isGraph2DCustomData } from './chunk-HM7RIXJE.mjs';
+import { graph2dStamp } from './chunk-ZVN356JZ.mjs';
+export { graph2dStamp } from './chunk-ZVN356JZ.mjs';
+export { isGraph2DCustomData } from './chunk-74VEEZBV.mjs';
 export { isGeometryCustomData } from './chunk-BJX4YNA5.mjs';
 export { isLatexCustomData } from './chunk-X5R72SSJ.mjs';
 export { isGeometry3DCustomData } from './chunk-DU2NFHRR.mjs';
@@ -380,6 +380,63 @@ async function restoreMissingStampFiles(api, elements, stamps = DEFAULT_STAMPS) 
   }
 }
 
+// src/core/persistence/validation.ts
+var STORAGE_KEY_RE = /^[a-zA-Z0-9_-]{1,128}$/;
+function validateStorageKey(key) {
+  if (typeof key !== "string" || !STORAGE_KEY_RE.test(key)) {
+    const sample = key === void 0 ? "undefined" : String(key).slice(0, 32);
+    throw new Error(
+      `[whiteboard] Invalid storageKey: must match ${STORAGE_KEY_RE} (got: ${sample})`
+    );
+  }
+  return key;
+}
+var DANGEROUS_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
+function sanitizingReviver(_key, value) {
+  if (DANGEROUS_KEYS.has(_key)) return void 0;
+  return value;
+}
+var MAX_NESTED_DEPTH = 64;
+function depthExceeds(v, max, depth = 0) {
+  if (depth > max) return true;
+  if (v === null || typeof v !== "object") return false;
+  const children = Array.isArray(v) ? v : Object.values(v);
+  for (const child of children) {
+    if (depthExceeds(child, max, depth + 1)) return true;
+  }
+  return false;
+}
+var ALLOWED_TOP_LEVEL_KEYS = /* @__PURE__ */ new Set(["version", "elements", "appState", "savedAt"]);
+function isPlainObject(v) {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+function safeParseScene(raw) {
+  let parsed;
+  try {
+    parsed = JSON.parse(raw, sanitizingReviver);
+  } catch {
+    return null;
+  }
+  if (!isPlainObject(parsed)) return null;
+  if (depthExceeds(parsed, MAX_NESTED_DEPTH)) return null;
+  const safe = {};
+  for (const k of Object.keys(parsed)) {
+    if (ALLOWED_TOP_LEVEL_KEYS.has(k)) safe[k] = parsed[k];
+  }
+  if (!Array.isArray(safe.elements)) return null;
+  for (const el of safe.elements) {
+    if (!isPlainObject(el)) return null;
+    if (typeof el.id !== "string" || typeof el.type !== "string") return null;
+  }
+  const appState = isPlainObject(safe.appState) ? safe.appState : {};
+  return {
+    version: safe.version,
+    elements: safe.elements,
+    appState,
+    savedAt: safe.savedAt
+  };
+}
+
 // src/core/persistence/sceneStore.ts
 var PREFIX = "whiteboard:scene:";
 var SCHEMA_VERSION = 1;
@@ -387,35 +444,34 @@ function fullKey(key) {
   return PREFIX + key;
 }
 function readScene(key) {
+  const validKey = validateStorageKey(key);
   if (typeof window === "undefined") return null;
-  const raw = window.localStorage.getItem(fullKey(key));
+  const raw = window.localStorage.getItem(fullKey(validKey));
   if (!raw) return null;
-  try {
-    const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== "object") return null;
-    if (parsed.version !== SCHEMA_VERSION) {
-      console.warn(
-        `[whiteboard] scene version ${parsed.version} kh\xF4ng kh\u1EDBp ${SCHEMA_VERSION}, b\u1ECF qua.`
-      );
-      return null;
-    }
-    if (!Array.isArray(parsed.elements)) return null;
-    return {
-      version: SCHEMA_VERSION,
-      elements: parsed.elements,
-      appState: parsed.appState ?? {},
-      savedAt: typeof parsed.savedAt === "number" ? parsed.savedAt : Date.now()
-    };
-  } catch (err) {
-    console.warn("[whiteboard] scene parse error, clear:", err);
+  const parsed = safeParseScene(raw);
+  if (!parsed) {
+    console.warn("[whiteboard] scene parse/validation failed, clear:", validKey);
     try {
-      window.localStorage.removeItem(fullKey(key));
+      window.localStorage.removeItem(fullKey(validKey));
     } catch {
     }
     return null;
   }
+  if (parsed.version !== SCHEMA_VERSION) {
+    console.warn(
+      `[whiteboard] scene version ${parsed.version} kh\xF4ng kh\u1EDBp ${SCHEMA_VERSION}, b\u1ECF qua.`
+    );
+    return null;
+  }
+  return {
+    version: SCHEMA_VERSION,
+    elements: parsed.elements,
+    appState: parsed.appState,
+    savedAt: typeof parsed.savedAt === "number" ? parsed.savedAt : Date.now()
+  };
 }
 function writeScene(key, payload) {
+  const validKey = validateStorageKey(key);
   if (typeof window === "undefined") return;
   const record = {
     version: SCHEMA_VERSION,
@@ -424,7 +480,7 @@ function writeScene(key, payload) {
     savedAt: Date.now()
   };
   try {
-    window.localStorage.setItem(fullKey(key), JSON.stringify(record));
+    window.localStorage.setItem(fullKey(validKey), JSON.stringify(record));
   } catch (err) {
     console.warn("[whiteboard] scene write failed:", err);
   }
@@ -493,12 +549,13 @@ async function withStore(mode, fn, fallback) {
   });
 }
 async function readFiles(storageKey) {
+  const validKey = validateStorageKey(storageKey);
   try {
     return await withStore(
       "readonly",
       (store, setResult, fail) => {
         const out = {};
-        const req = store.index("storageKey").openCursor(IDBKeyRange.only(storageKey));
+        const req = store.index("storageKey").openCursor(IDBKeyRange.only(validKey));
         req.onsuccess = () => {
           const cursor = req.result;
           if (!cursor) {
@@ -523,6 +580,7 @@ async function readFiles(storageKey) {
   }
 }
 async function writeFiles(storageKey, files) {
+  const validKey = validateStorageKey(storageKey);
   const entries = Object.entries(files);
   if (entries.length === 0) return;
   try {
@@ -545,7 +603,7 @@ async function writeFiles(storageKey, files) {
             }
             const rec = {
               id,
-              storageKey,
+              storageKey: validKey,
               dataURL: ff.dataURL,
               mimeType: ff.mimeType,
               created: ff.created ?? now,
@@ -566,11 +624,12 @@ async function writeFiles(storageKey, files) {
   }
 }
 async function pruneFiles(storageKey, keepIds) {
+  const validKey = validateStorageKey(storageKey);
   try {
     await withStore(
       "readwrite",
       (store, setResult, fail) => {
-        const req = store.index("storageKey").openCursor(IDBKeyRange.only(storageKey));
+        const req = store.index("storageKey").openCursor(IDBKeyRange.only(validKey));
         req.onsuccess = () => {
           const cursor = req.result;
           if (!cursor) {
@@ -619,9 +678,18 @@ function Whiteboard({
   const pruneThrottleRef = useRef(null);
   const latestSceneRef = useRef(null);
   const pendingFilesRef = useRef({});
+  const hashElementsVersionRef = useRef(null);
+  const stampsRef = useRef(stamps);
+  stampsRef.current = stamps;
   const persistEnabled = typeof storageKey === "string" && storageKey.length > 0;
   const persistKeyRef = useRef(storageKey);
   persistKeyRef.current = storageKey;
+  const onSceneChangeRef = useRef(onSceneChange);
+  onSceneChangeRef.current = onSceneChange;
+  const onFilesChangeRef = useRef(onFilesChange);
+  onFilesChangeRef.current = onFilesChange;
+  const persistEnabledRef = useRef(persistEnabled);
+  persistEnabledRef.current = persistEnabled;
   const persistedInitial = useMemo(
     () => persistEnabled ? readScene(storageKey) : null,
     [persistEnabled, storageKey]
@@ -709,21 +777,14 @@ function Whiteboard({
       if (!sceneThrottleRef.current) {
         sceneThrottleRef.current = setTimeout(async () => {
           sceneThrottleRef.current = null;
-          const mod = await import('@excalidraw/excalidraw');
-          const latestScene = latestSceneRef.current ?? { elements, appState };
-          const liveElements = latestScene.elements.filter((e) => !e.isDeleted);
-          const liveAppState = pickSyncableAppState(latestScene.appState);
-          const elementHash = mod.hashElementsVersion(liveElements);
-          const sceneHash = `${elementHash}:${JSON.stringify(liveAppState)}`;
-          if (sceneHash === lastSceneHashRef.current) return;
-          lastSceneHashRef.current = sceneHash;
-          onSceneChange?.({ elements: liveElements, appState: liveAppState });
-          if (persistEnabled) {
-            writeScene(storageKey, {
-              elements: liveElements,
-              appState: liveAppState
-            });
+          try {
+            const mod = await import('@excalidraw/excalidraw');
+            hashElementsVersionRef.current = mod.hashElementsVersion;
+          } catch (err) {
+            console.warn("[whiteboard] import excalidraw \u0111\u1EC3 flush scene th\u1EA5t b\u1EA1i:", err);
+            return;
           }
+          flushSceneRef.current();
         }, SYNC_THROTTLE_MS);
       }
       if (persistEnabled && newIds.length > 0) {
@@ -733,63 +794,112 @@ function Whiteboard({
         if (!fileThrottleRef.current) {
           fileThrottleRef.current = setTimeout(() => {
             fileThrottleRef.current = null;
-            const pending = pendingFilesRef.current;
-            pendingFilesRef.current = {};
-            const currentElements = api?.getSceneElements?.() ?? elements;
-            const stampIds = /* @__PURE__ */ new Set();
-            for (const el of currentElements) {
-              const fid = el.fileId;
-              if (fid && isStampElement(el)) stampIds.add(fid);
-            }
-            const raster = {};
-            for (const [id, f] of Object.entries(pending)) {
-              if (!stampIds.has(id)) raster[id] = f;
-            }
-            if (Object.keys(raster).length > 0) {
-              void writeFiles(persistKeyRef.current, raster);
-            }
+            flushFilesRef.current();
           }, 1e3);
         }
       }
       if (persistEnabled && !pruneThrottleRef.current) {
         pruneThrottleRef.current = setTimeout(() => {
           pruneThrottleRef.current = null;
-          const currentElements = api?.getSceneElements?.() ?? elements;
-          const keep = /* @__PURE__ */ new Set();
-          for (const el of currentElements) {
-            const fid = el.fileId;
-            if (fid && !isStampElement(el)) keep.add(fid);
-          }
-          void pruneFiles(persistKeyRef.current, keep);
+          flushPruneRef.current();
         }, 2e3);
       }
     },
     [readOnly, api, onSceneChange, onFilesChange, persistEnabled, storageKey, stamps, openStamp]
   );
+  const flushSceneRef = useRef(() => void 0);
+  flushSceneRef.current = () => {
+    try {
+      const latestScene = latestSceneRef.current;
+      if (!latestScene) return;
+      const liveElements = latestScene.elements.filter((e) => !e.isDeleted);
+      const liveAppState = pickSyncableAppState(latestScene.appState);
+      const hashFn = hashElementsVersionRef.current;
+      const elementHash = hashFn ? hashFn(liveElements) : liveElements.map((e) => e.id).join("|");
+      const sceneHash = `${elementHash}:${JSON.stringify(liveAppState)}`;
+      if (sceneHash === lastSceneHashRef.current) return;
+      lastSceneHashRef.current = sceneHash;
+      onSceneChangeRef.current?.({ elements: liveElements, appState: liveAppState });
+      if (persistEnabledRef.current) {
+        writeScene(persistKeyRef.current, {
+          elements: liveElements,
+          appState: liveAppState
+        });
+      }
+    } catch (err) {
+      console.warn("[whiteboard] flushScene th\u1EA5t b\u1EA1i:", err);
+    }
+  };
+  const flushFilesRef = useRef(() => void 0);
+  flushFilesRef.current = () => {
+    try {
+      const pending = pendingFilesRef.current;
+      pendingFilesRef.current = {};
+      if (Object.keys(pending).length === 0) return;
+      const currentElements = apiRef.current?.getSceneElements?.() ?? latestSceneRef.current?.elements ?? [];
+      const stampIds = /* @__PURE__ */ new Set();
+      for (const el of currentElements) {
+        const fid = el.fileId;
+        if (fid && isStampElement(el)) stampIds.add(fid);
+      }
+      const raster = {};
+      for (const [id, f] of Object.entries(pending)) {
+        if (!stampIds.has(id)) raster[id] = f;
+      }
+      if (Object.keys(raster).length > 0) {
+        void writeFiles(persistKeyRef.current, raster);
+      }
+    } catch (err) {
+      console.warn("[whiteboard] flushFiles th\u1EA5t b\u1EA1i:", err);
+    }
+  };
+  const flushPruneRef = useRef(() => void 0);
+  flushPruneRef.current = () => {
+    try {
+      const currentElements = apiRef.current?.getSceneElements?.() ?? latestSceneRef.current?.elements ?? [];
+      const keep = /* @__PURE__ */ new Set();
+      for (const el of currentElements) {
+        const fid = el.fileId;
+        if (fid && !isStampElement(el)) keep.add(fid);
+      }
+      void pruneFiles(persistKeyRef.current, keep);
+    } catch (err) {
+      console.warn("[whiteboard] flushPrune th\u1EA5t b\u1EA1i:", err);
+    }
+  };
   useEffect(() => {
     if (!api || !persistEnabled) return;
     let cancelled = false;
-    void readFiles(storageKey).then((files) => {
-      if (cancelled) return;
-      const entries = Object.entries(files);
-      if (entries.length === 0) return;
-      try {
-        api.addFiles(
-          entries.map(([id, f]) => ({
-            id,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            dataURL: f.dataURL,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            mimeType: f.mimeType,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            created: f.created ?? Date.now()
-          }))
-        );
-        entries.forEach(([id]) => knownFileIdsRef.current.add(id));
-      } catch (err) {
-        console.warn("[whiteboard] addFiles t\u1EEB IDB th\u1EA5t b\u1EA1i:", err);
+    void readFiles(storageKey).then(
+      (files) => {
+        if (cancelled) return;
+        const entries = Object.entries(files);
+        if (entries.length === 0) return;
+        if (cancelled) return;
+        try {
+          api.addFiles(
+            entries.map(([id, f]) => ({
+              id,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              dataURL: f.dataURL,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              mimeType: f.mimeType,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              created: f.created ?? Date.now()
+            }))
+          );
+          if (cancelled) return;
+          entries.forEach(([id]) => knownFileIdsRef.current.add(id));
+        } catch (err) {
+          if (cancelled) return;
+          console.warn("[whiteboard] addFiles t\u1EEB IDB th\u1EA5t b\u1EA1i:", err);
+        }
+      },
+      (err) => {
+        if (cancelled) return;
+        console.warn("[whiteboard] readFiles th\u1EA5t b\u1EA1i:", err);
       }
-    });
+    );
     return () => {
       cancelled = true;
     };
@@ -798,27 +908,43 @@ function Whiteboard({
     if (!api) return;
     let cancelled = false;
     const run = async () => {
+      if (cancelled) return;
       try {
         const elements = api.getSceneElements();
         if (!elements || elements.length === 0) return;
         if (cancelled) return;
-        await restoreMissingStampFiles(api, elements, stamps);
+        await restoreMissingStampFiles(api, elements, stampsRef.current);
       } catch (err) {
+        if (cancelled) return;
         console.warn("Math stamp restore pass failed:", err);
       }
     };
-    run();
-    const t = setTimeout(run, 400);
+    void run();
+    const t = setTimeout(() => {
+      void run();
+    }, 400);
     return () => {
       cancelled = true;
       clearTimeout(t);
     };
-  }, [api, persistedInitial, stamps]);
+  }, [api, persistedInitial]);
   useEffect(
     () => () => {
-      if (sceneThrottleRef.current) clearTimeout(sceneThrottleRef.current);
-      if (fileThrottleRef.current) clearTimeout(fileThrottleRef.current);
-      if (pruneThrottleRef.current) clearTimeout(pruneThrottleRef.current);
+      if (sceneThrottleRef.current) {
+        clearTimeout(sceneThrottleRef.current);
+        sceneThrottleRef.current = null;
+        flushSceneRef.current();
+      }
+      if (fileThrottleRef.current) {
+        clearTimeout(fileThrottleRef.current);
+        fileThrottleRef.current = null;
+        flushFilesRef.current();
+      }
+      if (pruneThrottleRef.current) {
+        clearTimeout(pruneThrottleRef.current);
+        pruneThrottleRef.current = null;
+        flushPruneRef.current();
+      }
     },
     []
   );

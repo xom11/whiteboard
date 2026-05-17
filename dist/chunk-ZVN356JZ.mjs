@@ -1,10 +1,10 @@
 "use client";
-import { isGraph2DCustomData, renderGraph2dSvgFromState } from './chunk-HM7RIXJE.mjs';
+import { isGraph2DCustomData, renderGraph2dSvgFromState } from './chunk-74VEEZBV.mjs';
 import { lazy } from 'react';
 import { jsxs, jsx } from 'react/jsx-runtime';
 
 var Graph2DStampHost = lazy(
-  () => import('./host-2QGKMGCT.mjs').then((m) => ({ default: m.Graph2DStampHost }))
+  () => import('./host-LZH2FZ2N.mjs').then((m) => ({ default: m.Graph2DStampHost }))
 );
 var Graph2DIcon = /* @__PURE__ */ jsxs(
   "svg",
@@ -54,5 +54,5 @@ var graph2dStamp = {
 };
 
 export { graph2dStamp };
-//# sourceMappingURL=chunk-3SSQKRRO.mjs.map
-//# sourceMappingURL=chunk-3SSQKRRO.mjs.map
+//# sourceMappingURL=chunk-ZVN356JZ.mjs.map
+//# sourceMappingURL=chunk-ZVN356JZ.mjs.map
