@@ -83,11 +83,54 @@ export class Scene3D {
       .filter((obj): obj is Scene3DObject => obj !== undefined);
   }
 
+  private referencedIds(obj: Scene3DObject): string[] {
+    switch (obj.kind) {
+      case 'point': {
+        const c = obj.constraint;
+        if (c.kind === 'onPlane') return [c.planeId];
+        if (c.kind === 'onLine') return [c.lineId];
+        if (c.kind === 'onPolygon') return [c.polygonId];
+        if (c.kind === 'onSphere') return [c.sphereId];
+        return [];
+      }
+      case 'segment':
+      case 'line': return [obj.p1, obj.p2];
+      case 'ray': return [obj.origin, obj.through];
+      case 'vector': return [obj.from, obj.to];
+      case 'polygon': return obj.vertices;
+      case 'plane': return [obj.p1, obj.p2, obj.p3];
+      case 'sphere': return [obj.center, obj.surfacePoint];
+      case 'polyhedron': return obj.vertices;
+      case 'cylinder': return [obj.baseCenter, obj.topCenter];
+      case 'cone': return [obj.baseCenter, obj.apex];
+    }
+  }
+
+  private collectDependents(targetId: string): Set<string> {
+    const dependents = new Set<string>([targetId]);
+    let grew = true;
+    while (grew) {
+      grew = false;
+      for (const obj of this.objects.values()) {
+        if (dependents.has(obj.id)) continue;
+        const refs = this.referencedIds(obj);
+        if (refs.some((r) => dependents.has(r))) {
+          dependents.add(obj.id);
+          grew = true;
+        }
+      }
+    }
+    return dependents;
+  }
+
   delete(id: string): void {
     if (!this.objects.has(id)) return;
-    this.objects.delete(id);
-    this.order = this.order.filter((x) => x !== id);
-    this.listeners.delete.forEach((cb) => cb(id));
+    const toDelete = this.collectDependents(id);
+    for (const dependentId of toDelete) {
+      this.objects.delete(dependentId);
+      this.order = this.order.filter((x) => x !== dependentId);
+      this.listeners.delete.forEach((cb) => cb(dependentId));
+    }
   }
 
   reset(): void {

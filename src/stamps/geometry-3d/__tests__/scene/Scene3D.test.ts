@@ -50,3 +50,30 @@ test('point labels are auto-assigned A, B, C', () => {
   const c = scene.get(scene.addPoint({ kind: 'free', x: 2, y: 0, z: 0 }));
   expect([a?.label, b?.label, c?.label]).toEqual(['A', 'B', 'C']);
 });
+
+test('delete cascades to objects referencing the deleted id', () => {
+  const scene = new Scene3D();
+  const a = scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
+  const b = scene.addPoint({ kind: 'free', x: 1, y: 0, z: 0 });
+  const c = scene.addPoint({ kind: 'free', x: 0, y: 1, z: 0 });
+  const seg = scene.addObject('segment', { p1: a, p2: b });
+  const pg = scene.addObject('polygon', { vertices: [a, b, c] });
+
+  scene.delete(a);
+
+  expect(scene.get(a)).toBeUndefined();
+  expect(scene.get(seg)).toBeUndefined();
+  expect(scene.get(pg)).toBeUndefined();
+  expect(scene.get(b)).toBeDefined();
+});
+
+test('delete emits delete event for each cascaded id', () => {
+  const scene = new Scene3D();
+  const a = scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
+  const b = scene.addPoint({ kind: 'free', x: 1, y: 0, z: 0 });
+  const seg = scene.addObject('segment', { p1: a, p2: b });
+  const deletes: string[] = [];
+  scene.on('delete', (id) => deletes.push(id));
+  scene.delete(a);
+  expect(deletes.sort()).toEqual([a, seg].sort());
+});
