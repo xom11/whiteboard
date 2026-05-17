@@ -124,9 +124,15 @@ export function MiniBoard({ graph, activeTool, isDark, onBoardEvent }: MiniBoard
     syncObjects(boardRef.current, graph, curvesRef.current);
   }, [graph]);
 
-  // Suppress unused warnings - palette consumed by syncObjects via isDark
-  void activeTool;
+  // Suppress unused palette warning - consumed by syncObjects via isDark
   void palette;
+
+  // Cursor visual feedback theo activeTool
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.style.cursor = activeTool === 'move' ? '' : 'crosshair';
+  }, [activeTool]);
 
   return (
     <div

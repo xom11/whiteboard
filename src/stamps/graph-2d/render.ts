@@ -1,6 +1,5 @@
-import { parseSerializedGraph, type SerializedGraph } from './serialize';
-import { compile } from './parser';
-import { graphPaletteFor } from './editor/theme';
+import { parseSerializedGraph } from './serialize';
+import { renderGraphObjects } from './renderObjects';
 
 /**
  * Re-render SVG cho graph-2d stamp từ jsonState đã serialize.
@@ -18,7 +17,6 @@ export async function renderGraph2dSvgFromState(jsonState: string): Promise<stri
   const parsed = parseSerializedGraph(jsonState);
   if (!parsed) throw new Error('renderGraph2dSvgFromState: jsonState corrupt');
 
-  const palette = graphPaletteFor(false);
   const JXG = (await import('jsxgraph')).default;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const opts = (JXG as any).Options;
@@ -49,7 +47,7 @@ export async function renderGraph2dSvgFromState(jsonState: string): Promise<stri
       showNavigation: false,
       keepAspectRatio: false,
     });
-    renderFunctions(board, parsed, palette);
+    renderGraphObjects(board, parsed);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (board as any).update();
     const svgEl = container.querySelector('svg');
@@ -63,34 +61,5 @@ export async function renderGraph2dSvgFromState(jsonState: string): Promise<stri
       /* ignore */
     }
     if (container.parentNode) container.parentNode.removeChild(container);
-  }
-}
-
-function renderFunctions(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  board: any,
-  graph: SerializedGraph,
-  palette: ReturnType<typeof graphPaletteFor>,
-): void {
-  void palette;
-  const paramMap: Record<string, number> = {};
-  for (const p of graph.parameters) paramMap[p.name] = p.value;
-
-  for (const f of graph.functions) {
-    if (!f.visible) continue;
-    const compiled = compile(f.expression, paramMap);
-    if (typeof compiled !== 'function') continue;
-    const domain = f.domain ?? { min: graph.view.xMin, max: graph.view.xMax };
-    board.create(
-      'functiongraph',
-      [compiled, domain.min, domain.max],
-      {
-        strokeColor: f.color,
-        strokeWidth: 2,
-        name: f.name,
-        withLabel: false,
-        highlight: false,
-      },
-    );
   }
 }
