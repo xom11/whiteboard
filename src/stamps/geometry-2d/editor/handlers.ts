@@ -16,6 +16,7 @@ type JxgObj = any;
 
 import { TOOLS, objKind, type GeomTool, type ToolDef } from './tools';
 import { buildTransformSpec } from './transforms';
+import { safeJsx } from '../../shared/safeJsx';
 
 // ─── Context shape ────────────────────────────────────────────────────────────
 
@@ -146,8 +147,8 @@ export function handleDown(ctx: HandlerCtx, e: any): void {
             const tmp1 = ctx.boardRef.current.create('intersection', [a, b, 1], { visible: false, withLabel: false });
             const d0 = Math.hypot((tmp0.X?.() ?? 0) - x, (tmp0.Y?.() ?? 0) - y);
             const d1 = Math.hypot((tmp1.X?.() ?? 0) - x, (tmp1.Y?.() ?? 0) - y);
-            try { ctx.boardRef.current.removeObject(tmp0); } catch { /* ignore */ }
-            try { ctx.boardRef.current.removeObject(tmp1); } catch { /* ignore */ }
+            safeJsx('handlers.removeObject(intersect.tmp0)', () => ctx.boardRef.current.removeObject(tmp0));
+            safeJsx('handlers.removeObject(intersect.tmp1)', () => ctx.boardRef.current.removeObject(tmp1));
             const idx = d0 <= d1 ? 0 : 1;
             ctx.create('intersection', [aId, bId, idx], attrs);
           }
@@ -197,7 +198,7 @@ export function handleDown(ctx: HandlerCtx, e: any): void {
     // this new one so the user sees the polygon being built.
     if (ctx.pendingRef.current.length > 0 && ctx.boardRef.current) {
       const prev = ctx.pendingRef.current[ctx.pendingRef.current.length - 1];
-      try {
+      safeJsx('handlers.createPreviewSegment', () => {
         const seg = ctx.boardRef.current.create('segment', [prev, pick], {
           strokeColor: '#3b82f6',
           strokeWidth: 1.5,
@@ -207,7 +208,7 @@ export function handleDown(ctx: HandlerCtx, e: any): void {
           withLabel: false,
         });
         ctx.previewSegRef.current.push(seg);
-      } catch { /* ignore */ }
+      });
     }
     ctx.pendingRef.current.push(pick);
     ctx.setPendingCount(ctx.pendingRef.current.length);
@@ -352,7 +353,7 @@ export function handleUp(ctx: HandlerCtx, e: any): void {
     const sc = ctx.screenCoordsOf(e);
     if (!sc) return;
     const [ex, ey] = sc;
-    if (mq.rect) { try { ctx.boardRef.current?.removeObject(mq.rect); } catch { /* ignore */ } }
+    if (mq.rect) { safeJsx('handlers.removeObject(marquee.rect)', () => ctx.boardRef.current?.removeObject(mq.rect)); }
     if (Math.hypot(ex - mq.startSx, ey - mq.startSy) < 4) return;  // not a real drag
     const x1 = Math.min(mq.startSx, ex), x2 = Math.max(mq.startSx, ex);
     const y1 = Math.min(mq.startSy, ey), y2 = Math.max(mq.startSy, ey);
@@ -390,7 +391,7 @@ export function handleUp(ctx: HandlerCtx, e: any): void {
       }
     }
     ctx.setSelectionTick((tt) => tt + 1);
-    try { board.update(); } catch { /* ignore */ }
+    safeJsx('handlers.board.update(marquee)', () => board.update());
     return;
   }
   if (t !== 'move') return;
@@ -449,10 +450,10 @@ export function handleMove(ctx: HandlerCtx, e: any): void {
       const [x2u, y2u] = ux2 && ux2.length >= 2 ? [ux2[0], ux2[1]] : toUsr(Math.max(startSx, sx), Math.max(startSy, sy));
       const rect = ctx.marqueeRef.current.rect;
       if (rect) {
-        try { ctx.boardRef.current.removeObject(rect); } catch { /* ignore */ }
+        safeJsx('handlers.removeObject(marquee.prevRect)', () => ctx.boardRef.current.removeObject(rect));
       }
-      try {
-        ctx.marqueeRef.current.rect = ctx.boardRef.current.create('polygon', [
+      safeJsx('handlers.createMarqueePolygon', () => {
+        ctx.marqueeRef.current!.rect = ctx.boardRef.current.create('polygon', [
           [x1u, y1u], [x2u, y1u], [x2u, y2u], [x1u, y2u],
         ], {
           fillColor: '#06b6d4', fillOpacity: 0.08,
@@ -460,7 +461,7 @@ export function handleMove(ctx: HandlerCtx, e: any): void {
           vertices: { visible: false },
           fixed: true, highlight: false, withLabel: false,
         });
-      } catch { /* ignore */ }
+      });
     }
     return;
   }
@@ -470,13 +471,13 @@ export function handleMove(ctx: HandlerCtx, e: any): void {
   ctx.previewRafRef.current = requestAnimationFrame(() => {
     ctx.previewRafRef.current = null;
     if (!ctx.boardRef.current || !ctx.phantomRef.current) return;
-    try {
+    safeJsx('handlers.phantomMove', () => {
       const coords = ctx.boardRef.current.getUsrCoordsOfMouse(e);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const JXG: any = ctx.jxgRef.current;
       if (!JXG) return;
       ctx.phantomRef.current.setPositionDirectly(JXG.COORDS_BY_USER, [coords[0], coords[1]]);
       ctx.boardRef.current.update();
-    } catch { /* ignore */ }
+    });
   });
 }

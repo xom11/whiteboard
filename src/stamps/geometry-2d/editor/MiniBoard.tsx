@@ -12,6 +12,7 @@ import {
 } from './tools';
 import { paletteFor, resolveAttrColors, themeAxis, themeGrid, themeLabel } from './theme';
 import { handleDown, handleUp, handleMove, type HandlerCtx } from './handlers';
+import { safeJsx } from '../../shared/safeJsx';
 
 // Re-export để backward-compat với consumer cũ.
 export { TOOLS, GROUP_LABELS };
@@ -283,10 +284,10 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
       // bỏ sót.
       const vl = valueLabelsRef.current.get(o);
       if (vl) {
-        try { boardRef.current.removeObject(vl); } catch { /* ignore */ }
+        safeJsx('MiniBoard.removeObject(valueLabel)', () => boardRef.current.removeObject(vl));
         valueLabelsRef.current.delete(o);
       }
-      try { boardRef.current.removeObject(o); } catch { /* ignore */ }
+      safeJsx('MiniBoard.removeObject(target)', () => boardRef.current.removeObject(o));
       // Cascade: walk log and drop entries whose JSXGraph object was also removed
       const board = boardRef.current;
       const aliveIds = new Set<string>();
@@ -325,7 +326,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
         const txt = valueLabelsRef.current.get(o);
         valueLabelsRef.current.delete(o);
         if (txt) {
-          try { boardRef.current.removeObject(txt); } catch { /* ignore */ }
+          safeJsx('MiniBoard.removeObject(valueLabel.text)', () => boardRef.current.removeObject(txt));
           // Xoá log entry value-label tương ứng
           const txtId = localIdOf(txt);
           if (txtId) {
@@ -337,7 +338,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
       }
     }
     if (patch.attrs) {
-      try { o.setAttribute(patch.attrs); } catch { /* ignore */ }
+      safeJsx('MiniBoard.setAttribute', () => o.setAttribute(patch.attrs));
       const id = localIdOf(o);
       if (id) {
         const entry = creationLogRef.current.find((e) => e.id === id);
@@ -345,14 +346,14 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
         setHistoryTick((t) => t + 1);
       }
     }
-    try { boardRef.current.update(); } catch { /* ignore */ }
+    safeJsx('MiniBoard.board.update(mutate)', () => boardRef.current.update());
   }, [createValueLabelFor, localIdOf, nextLocalId]);
 
   const clearPreviewSegs = useCallback(() => {
     const b = boardRef.current;
     if (!b) return;
     for (const s of previewSegRef.current) {
-      try { b.removeObject(s); } catch { /* ignore */ }
+      safeJsx('MiniBoard.removeObject(previewSeg)', () => b.removeObject(s));
     }
     previewSegRef.current = [];
   }, []);
@@ -361,11 +362,11 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     const b = boardRef.current;
     if (!b) return;
     if (previewShapeRef.current) {
-      try { b.removeObject(previewShapeRef.current); } catch { /* ignore */ }
+      safeJsx('MiniBoard.removeObject(previewShape)', () => b.removeObject(previewShapeRef.current));
       previewShapeRef.current = null;
     }
     if (phantomRef.current) {
-      try { b.removeObject(phantomRef.current); } catch { /* ignore */ }
+      safeJsx('MiniBoard.removeObject(phantom)', () => b.removeObject(phantomRef.current));
       phantomRef.current = null;
     }
   }, []);
@@ -380,7 +381,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
   // === Selection helpers (used by the `select` tool) ===
   const applySelectionStyle = useCallback((obj: JxgObj) => {
     if (!obj || selOriginalRef.current.has(obj)) return;
-    try {
+    safeJsx('MiniBoard.applySelectionStyle', () => {
       const visProp = obj.visProp ?? {};
       selOriginalRef.current.set(obj, {
         strokeColor: visProp.strokecolor,
@@ -392,18 +393,18 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
       } else {
         obj.setAttribute({ strokeColor: '#06b6d4', strokeWidth: 3 });
       }
-    } catch { /* ignore */ }
+    });
   }, []);
 
   const restoreSelectionStyle = useCallback((obj: JxgObj) => {
     const orig = selOriginalRef.current.get(obj);
     if (!orig) return;
-    try {
+    safeJsx('MiniBoard.restoreSelectionStyle', () => {
       const attrs: Record<string, unknown> = {};
       if (orig.strokeColor !== undefined) attrs.strokeColor = orig.strokeColor;
       if (orig.strokeWidth !== undefined) attrs.strokeWidth = orig.strokeWidth;
       obj.setAttribute(attrs);
-    } catch { /* ignore */ }
+    });
     selOriginalRef.current.delete(obj);
   }, []);
 
@@ -413,7 +414,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     }
     selectedSetRef.current.clear();
     setSelectionTick((t) => t + 1);
-    try { boardRef.current?.update(); } catch { /* ignore */ }
+    safeJsx('MiniBoard.board.update(clearSelection)', () => boardRef.current?.update());
   }, [restoreSelectionStyle]);
 
   const toggleSelect = useCallback((obj: JxgObj, additive: boolean) => {
@@ -435,7 +436,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
       }
     }
     setSelectionTick((t) => t + 1);
-    try { boardRef.current?.update(); } catch { /* ignore */ }
+    safeJsx('MiniBoard.board.update(toggleSelect)', () => boardRef.current?.update());
   }, [applySelectionStyle, restoreSelectionStyle]);
 
   const deleteSelected = useCallback(() => {
@@ -445,7 +446,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     // Drop highlight first so removal doesn't try to setAttribute on dead obj.
     for (const o of selectedSetRef.current) selOriginalRef.current.delete(o);
     for (const o of selectedSetRef.current) {
-      try { board.removeObject(o); } catch { /* ignore */ }
+      safeJsx('MiniBoard.removeObject(selected)', () => board.removeObject(o));
     }
     selectedSetRef.current.clear();
     // Cascade-prune log (same approach as delete tool)
@@ -526,7 +527,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     if (!b) return;
     // Tear down current preview shape (not the phantom)
     if (previewShapeRef.current) {
-      try { b.removeObject(previewShapeRef.current); } catch { /* ignore */ }
+      safeJsx('MiniBoard.removeObject(refreshPreview)', () => b.removeObject(previewShapeRef.current));
       previewShapeRef.current = null;
     }
     const t = toolRef.current;
@@ -660,7 +661,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
       }
       case 'toggleLabel': {
         const obj = picks[0];
-        try {
+        safeJsx('MiniBoard.toggleLabel', () => {
           if (obj.label) {
             const visible = obj.label.visProp.visible !== false;
             obj.label.setAttribute({ visible: !visible });
@@ -670,21 +671,21 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
             obj.setAttribute({ withLabel: !cur });
           }
           boardRef.current.update();
-        } catch { /* ignore */ }
+        });
         break;
       }
       case 'toggleVisible': {
         const obj = picks[0];
-        try {
+        safeJsx('MiniBoard.toggleVisible', () => {
           const visible = obj.visProp.visible !== false;
           obj.setAttribute({ visible: !visible });
           boardRef.current.update();
-        } catch { /* ignore */ }
+        });
         break;
       }
       case 'delete': {
         const obj = picks[0];
-        try {
+        safeJsx('MiniBoard.deleteOne', () => {
           boardRef.current.removeObject(obj);
           // JSXGraph cascade-removes dependents (e.g. xoá point → segment dùng
           // point đó cũng biến mất). Đồng bộ log: walk objMap, giữ lại id nào
@@ -705,7 +706,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
             if (!aliveIds.has(id)) objMapRef.current.delete(id);
           }
           setHistoryTick((t) => t + 1);
-        } catch { /* ignore */ }
+        });
         break;
       }
     }
@@ -826,12 +827,12 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
       const obj = objMapRef.current.get(last.id);
       objMapRef.current.delete(last.id);
       if (obj) {
-        try { b.removeObject(obj); } catch { /* ignore */ }
+        safeJsx('MiniBoard.removeObject(undo)', () => b.removeObject(obj));
         clearPending();
         // Push entry này vào redoStack (chỉ entry có object thật).
         redoStackRef.current.push(last);
         setHistoryTick((t) => t + 1);
-        try { b.update(); } catch { /* ignore */ }
+        safeJsx('MiniBoard.board.update(undo)', () => b.update());
         return;
       }
       // Skip stale log entry (object đã biến mất từ trước) — không push vào redoStack
@@ -853,7 +854,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
       creationLogRef.current.push(entry);
     }
     setHistoryTick((t) => t + 1);
-    try { b.update(); } catch { /* ignore */ }
+    safeJsx('MiniBoard.board.update(redo)', () => b.update());
   }, [recreateFromLogEntry]);
 
   // Global Ctrl/Cmd+Z + Esc while the panel is mounted. Skipped when focus is
@@ -941,14 +942,14 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     if (!sc) return [];
     const [sx, sy] = sc;
     const list: JxgObj[] = [];
-    try {
+    safeJsx('MiniBoard.objectsAt.loop', () => {
       const objs = b.objectsList || [];
       for (const o of objs) {
-        try {
+        safeJsx('MiniBoard.objectsAt.hasPoint', () => {
           if (o.hasPoint && o.hasPoint(sx, sy)) list.push(o);
-        } catch { /* ignore */ }
+        });
       }
-    } catch { /* ignore */ }
+    });
     return list;
   }, [screenCoordsOf]);
 
@@ -963,22 +964,24 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     if (!sc) return null;
     const [sx, sy] = sc;
     const tol2 = tolPx * tolPx;
-    let best: { obj: JxgObj; d2: number } | null = null;
-    try {
+    type Best = { obj: JxgObj; d2: number };
+    const bestRef: { current: Best | null } = { current: null };
+    safeJsx('MiniBoard.findNearestPoint.loop', () => {
       const objs = b.objectsList || [];
       for (const o of objs) {
-        try {
-          if (objKind(o) !== 'point') continue;
+        safeJsx('MiniBoard.findNearestPoint.iter', () => {
+          if (objKind(o) !== 'point') return;
           const pc = o.coords?.scrCoords;
-          if (!pc) continue;
+          if (!pc) return;
           const dx = pc[1] - sx;
           const dy = pc[2] - sy;
           const d2 = dx * dx + dy * dy;
-          if (d2 <= tol2 && (!best || d2 < best.d2)) best = { obj: o, d2 };
-        } catch { /* ignore */ }
+          const cur = bestRef.current;
+          if (d2 <= tol2 && (!cur || d2 < cur.d2)) bestRef.current = { obj: o, d2 };
+        });
       }
-    } catch { /* ignore */ }
-    return best ? best.obj : null;
+    });
+    return bestRef.current ? bestRef.current.obj : null;
   }, [screenCoordsOf]);
 
   // Label-aware snap: if the click landed on a JSXGraph text label (drawn near
@@ -993,12 +996,13 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     if (t !== 'text') return o;
     const b = boardRef.current;
     if (!b) return o;
-    try {
+    const promoted = safeJsx<JxgObj | null>('MiniBoard.promoteLabel', () => {
       for (const c of (b.objectsList || [])) {
         if (c.label === o) return c;
       }
-    } catch { /* ignore */ }
-    return o;
+      return null;
+    }, null);
+    return promoted ?? o;
   }, []);
 
   // Pending transform state for rotate/dilate/regularPolygon (needs param popover)
@@ -1014,13 +1018,13 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
   type TransformPopoverInfo = { tool: 'rotate' | 'dilate' | 'regularPolygon'; anchor: { x: number; y: number } } | null;
   const transformSubsRef = useRef<Set<(info: TransformPopoverInfo) => void>>(new Set());
   const emitTransform = useCallback((info: TransformPopoverInfo) => {
-    transformSubsRef.current.forEach((cb) => { try { cb(info); } catch { /* ignore */ } });
+    transformSubsRef.current.forEach((cb) => { safeJsx('MiniBoard.emitTransform.cb', () => cb(info)); });
   }, []);
 
   // Selection subscribers — emitted when Move tool single-clicks an object
   const selectSubsRef = useRef<Set<(snap: ObjectSnapshot) => void>>(new Set());
   const emitSelect = useCallback((snap: ObjectSnapshot) => {
-    selectSubsRef.current.forEach((cb) => { try { cb(snap); } catch { /* ignore */ } });
+    selectSubsRef.current.forEach((cb) => { safeJsx('MiniBoard.emitSelect.cb', () => cb(snap)); });
   }, []);
 
   // Track pointer-down position for click vs drag detection in Move tool
@@ -1041,7 +1045,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
       // Render text/labels as SVG <text> (default 'html' uses absolute-positioned
       // <div> overlays, which are NOT captured when we clone the SVG to export
       // the stamp → labels disappear in inserted image).
-      try {
+      safeJsx('MiniBoard.applyJxgOptions', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const opts = (JXG as any).Options;
         if (opts) {
@@ -1056,7 +1060,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
           opts.label.strokeColor = themeLabel(isDarkRef.current);
           opts.text.strokeColor = themeLabel(isDarkRef.current);
         }
-      } catch { /* ignore */ }
+      });
       const board = JXG.JSXGraph.initBoard(containerId, {
         boundingbox: initialState?.bbox ?? [-10, 10, 10, -10],
         axis: false, // We manage axis manually via toggle for clean default
@@ -1087,13 +1091,13 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
 
       // Initial axis/grid
       if (showAxisRef.current) {
-        try {
+        safeJsx('MiniBoard.initAxes', () => {
           axisObjsRef.current.x = board.create('axis', [[0, 0], [1, 0]], { strokeColor: themeAxis(isDarkRef.current), name: '', withLabel: false });
           axisObjsRef.current.y = board.create('axis', [[0, 0], [0, 1]], { strokeColor: themeAxis(isDarkRef.current), name: '', withLabel: false });
-        } catch { /* ignore */ }
+        });
       }
       if (showGridRef.current) {
-        try { board.create('grid', [], { strokeColor: themeGrid(isDarkRef.current), strokeOpacity: 1 }); } catch { /* ignore */ }
+        safeJsx('MiniBoard.initGrid', () => board.create('grid', [], { strokeColor: themeGrid(isDarkRef.current), strokeOpacity: 1 }));
       }
 
       // Pointer down: handle click-driven tool actions.
@@ -1192,14 +1196,14 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
           const b = boardRef.current;
           if (!b) return [];
           const out: string[] = [];
-          try {
+          safeJsx('MiniBoard.getAllPointNames', () => {
             const objs = b.objectsList || [];
             for (const o of objs) {
               if (objKind(o) === 'point' && typeof o.name === 'string' && o.name) {
                 out.push(o.name);
               }
             }
-          } catch { /* ignore */ }
+          });
           return out;
         },
         onSelect: (cb: (snap: ObjectSnapshot) => void) => {
@@ -1258,7 +1262,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
         previewRafRef.current = null;
       }
       if (boardRef.current && jxgRef.current) {
-        try { jxgRef.current.JSXGraph.freeBoard(boardRef.current); } catch { /* ignore */ }
+        safeJsx('MiniBoard.freeBoard', () => jxgRef.current!.JSXGraph.freeBoard(boardRef.current));
         boardRef.current = null;
       }
     };
@@ -1269,34 +1273,34 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
   useEffect(() => {
     const b = boardRef.current;
     if (!b) return;
-    try {
+    safeJsx('MiniBoard.toggleAxis', () => {
       // Remove existing axes if present
-      if (axisObjsRef.current.x) { try { b.removeObject(axisObjsRef.current.x); } catch { /* ignore */ } axisObjsRef.current.x = undefined; }
-      if (axisObjsRef.current.y) { try { b.removeObject(axisObjsRef.current.y); } catch { /* ignore */ } axisObjsRef.current.y = undefined; }
+      if (axisObjsRef.current.x) { safeJsx('MiniBoard.removeObject(axisX)', () => b.removeObject(axisObjsRef.current.x)); axisObjsRef.current.x = undefined; }
+      if (axisObjsRef.current.y) { safeJsx('MiniBoard.removeObject(axisY)', () => b.removeObject(axisObjsRef.current.y)); axisObjsRef.current.y = undefined; }
       if (showAxis) {
         axisObjsRef.current.x = b.create('axis', [[0, 0], [1, 0]], { strokeColor: themeAxis(isDarkRef.current), name: '', withLabel: false });
         axisObjsRef.current.y = b.create('axis', [[0, 0], [0, 1]], { strokeColor: themeAxis(isDarkRef.current), name: '', withLabel: false });
       }
       b.update();
-    } catch { /* ignore */ }
+    });
   }, [showAxis]);
 
   useEffect(() => {
     const b = boardRef.current;
     if (!b) return;
-    try {
+    safeJsx('MiniBoard.toggleGrid', () => {
       // Find existing grid objects and remove
       const objs = Object.values(b.objects || {}) as JxgObj[];
       for (const o of objs) {
         if (o && (o.elType === 'grid' || o.type === 'grid' || (o.visProp && o.visProp.type === 'grid'))) {
-          try { b.removeObject(o); } catch { /* ignore */ }
+          safeJsx('MiniBoard.removeObject(grid)', () => b.removeObject(o));
         }
       }
       if (showGrid) {
         b.create('grid', [], { strokeColor: themeGrid(isDarkRef.current), strokeOpacity: 1 });
       }
       b.update();
-    } catch { /* ignore */ }
+    });
   }, [showGrid]);
 
   const handleToolChange = useCallback((t: GeomTool) => {
@@ -1311,9 +1315,9 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     // Re-enable for every other tool (board pan is the default).
     const b = boardRef.current;
     if (b) {
-      try {
+      safeJsx('MiniBoard.setPanForTool', () => {
         if (b.attr?.pan) b.attr.pan.enabled = (t !== 'select');
-      } catch { /* ignore */ }
+      });
     }
   }, [clearPending]);
 
@@ -1325,7 +1329,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
   const subscribersRef = useRef<Set<() => void>>(new Set());
   const notifySubscribers = useCallback(() => {
     subscribersRef.current.forEach((cb) => {
-      try { cb(); } catch { /* ignore */ }
+      safeJsx('MiniBoard.notifySubscriber.cb', () => cb());
     });
   }, []);
 
