@@ -1,11 +1,17 @@
-const ALLOWED_FUNCTIONS = new Set([
-  'sin', 'cos', 'tan', 'asin', 'acos', 'atan',
-  'log', 'ln', 'exp', 'sqrt', 'abs',
-  'floor', 'ceil', 'round',
-]);
+import {
+  ALLOWED_FUNCTION_NAMES,
+  checkIdentifiers,
+  collectFreeVars,
+  evaluate,
+  parseAst,
+  tokenize,
+  type AstNode,
+} from './evaluator';
 
+const ALLOWED_FUNCTIONS = ALLOWED_FUNCTION_NAMES;
+
+// Giữ whitelist ký tự để fail-closed sớm — không cho ; = [ ] ' " ` { } \ v.v.
 const ALLOWED_CHARS = /^[a-zA-Z0-9_.+\-*/^()\s,]+$/;
-const IDENTIFIER_RE = /[a-zA-Z][a-zA-Z0-9_]*/g;
 
 const SUGGESTIONS: Record<string, string> = {
   tg: 'tan',
@@ -29,13 +35,22 @@ export function validate(expr: string): ParseResult {
   if (!trimmed) return errResult('Biểu thức rỗng');
   if (!ALLOWED_CHARS.test(trimmed)) return errResult('Ký tự không hợp lệ');
 
-  const ids = trimmed.match(IDENTIFIER_RE) ?? [];
-  const freeVars = new Set<string>();
-  for (const id of ids) {
+  // Tokenize trước để lấy danh sách IDENT thật sự (loại bỏ exponent `e` của số như `1e3`).
+  // Pre-check identifier để cho ra error message thân thiện (suggestion tg→tan, ...).
+  let tokens;
+  try {
+    tokens = tokenize(trimmed);
+  } catch {
+    return errResult('Lỗi cú pháp');
+  }
+  const earlyFree = new Set<string>();
+  for (const tok of tokens) {
+    if (tok.type !== 'IDENT') continue;
+    const id = tok.value;
     if (id === 'x' || id === 'pi' || id === 'e') continue;
     if (ALLOWED_FUNCTIONS.has(id)) continue;
     if (id.length === 1) {
-      freeVars.add(id);
+      earlyFree.add(id);
       continue;
     }
     const hint = SUGGESTIONS[id];
@@ -46,19 +61,24 @@ export function validate(expr: string): ParseResult {
     );
   }
 
+  let ast: AstNode;
   try {
-    const paramSubs = Object.fromEntries([...freeVars].map((v) => [v, 1]));
-    const rewritten = rewriteToJs(trimmed, paramSubs);
-    new Function('x', `return (${rewritten})`);
+    ast = parseAst(trimmed);
   } catch {
     return errResult('Lỗi cú pháp');
   }
 
+  const idErr = checkIdentifiers(ast);
+  if (idErr) return errResult(idErr);
+
+  const freeVars = collectFreeVars(ast);
+  // Hợp nhất với earlyFree (regex pass) — thường giống nhau, nhưng đảm bảo invariant.
+  for (const v of earlyFree) freeVars.add(v);
   return { ok: true, freeVars };
 }
 
+// FUNCTION_REPLACEMENTS giữ longest-first để rewriteToJs không nhầm asin→a-sin.
 const FUNCTION_REPLACEMENTS: Array<[string, string]> = [
-  // longest first để tránh substring conflict (asin trước sin)
   ['asin', 'Math.asin'],
   ['acos', 'Math.acos'],
   ['atan', 'Math.atan'],
@@ -75,6 +95,12 @@ const FUNCTION_REPLACEMENTS: Array<[string, string]> = [
   ['ln', 'Math.log'],
 ];
 
+/**
+ * Chuyển expression user-input sang JS string tương đương.
+ *
+ * Function này chỉ dùng cho debug / hiển thị / tương thích ngược.
+ * Runtime KHÔNG còn `eval` chuỗi này — `compile()` dùng AST evaluator.
+ */
 export function rewriteToJs(
   expr: string,
   params: Record<string, number>,
@@ -98,18 +124,18 @@ export function compile(
 ): ((x: number) => number) | { error: string } {
   const v = validate(expr);
   if (!v.ok) return { error: v.error ?? 'Invalid' };
+  let ast: AstNode;
   try {
-    const rewritten = rewriteToJs(expr, paramValues);
-    const raw = new Function('x', `return (${rewritten})`) as (x: number) => number;
-    return (x: number) => {
-      try {
-        const y = raw(x);
-        return typeof y === 'number' ? y : NaN;
-      } catch {
-        return NaN;
-      }
-    };
+    ast = parseAst(expr.trim());
   } catch (err) {
     return { error: err instanceof Error ? err.message : String(err) };
   }
+  return (x: number) => {
+    try {
+      const y = evaluate(ast, { x, params: paramValues });
+      return typeof y === 'number' ? y : NaN;
+    } catch {
+      return NaN;
+    }
+  };
 }
