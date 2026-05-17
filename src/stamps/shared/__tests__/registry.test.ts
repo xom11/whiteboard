@@ -5,17 +5,20 @@ import {
   geometryStamp,
   latexStamp,
   geometry3dStamp,
+  graph2dStamp,
   isGeometryCustomData,
   isLatexCustomData,
   isGeometry3DCustomData,
+  isGraph2DCustomData,
 } from '../registry';
 
 describe('DEFAULT_STAMPS', () => {
-  it('chứa đúng geometry + latex + geometry3d (theo thứ tự)', () => {
-    expect(DEFAULT_STAMPS).toHaveLength(3);
+  it('chứa đúng geometry + latex + geometry3d + graph2d (theo thứ tự)', () => {
+    expect(DEFAULT_STAMPS).toHaveLength(4);
     expect(DEFAULT_STAMPS[0]).toBe(geometryStamp);
     expect(DEFAULT_STAMPS[1]).toBe(latexStamp);
     expect(DEFAULT_STAMPS[2]).toBe(geometry3dStamp);
+    expect(DEFAULT_STAMPS[3]).toBe(graph2dStamp);
   });
 
   it('không thể mutate (frozen)', () => {
@@ -75,6 +78,10 @@ describe('findStampForCustomData / isStampElement', () => {
   it('trả về geometry3d stamp cho geometry3d customData', () => {
     const stamp = findStampForCustomData({ kind: 'geometry3d', version: 1, jsonState: '{}', svgWidth: 0, svgHeight: 0 });
     expect(stamp).toBe(geometry3dStamp);
+  });
+  it('trả về graph2d stamp cho graph2d customData', () => {
+    const stamp = findStampForCustomData({ kind: 'graph2d', version: 1, jsonState: '{}', svgWidth: 0, svgHeight: 0 });
+    expect(stamp).toBe(graph2dStamp);
   });
   it('trả về null nếu không match', () => {
     expect(findStampForCustomData({ kind: 'chart', version: 1 })).toBeNull();
