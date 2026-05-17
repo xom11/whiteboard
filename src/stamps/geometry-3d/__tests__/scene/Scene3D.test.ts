@@ -137,4 +137,41 @@ describe('Scene3D — history', () => {
     scene.addPoint({ kind: 'free', x: 5, y: 5, z: 5 });
     expect(scene.canRedo()).toBe(false);
   });
+
+  it('withoutHistory bypass capture', () => {
+    const scene = new Scene3D();
+    scene.withoutHistory(() => {
+      scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
+      scene.addPoint({ kind: 'free', x: 1, y: 1, z: 1 });
+    });
+    expect(scene.list().length).toBe(2);
+    expect(scene.canUndo()).toBe(false);
+  });
+
+  it('pushUndoCheckpoint thêm snapshot vào past + clear future', () => {
+    const scene = new Scene3D();
+    const before = scene.snapshot();
+    scene.withoutHistory(() => {
+      scene.addPoint({ kind: 'free', x: 5, y: 5, z: 5 });
+    });
+    scene.pushUndoCheckpoint(before);
+    expect(scene.canUndo()).toBe(true);
+    scene.undo();
+    expect(scene.list().length).toBe(0);
+  });
+
+  it('onHistoryChange listener fired sau mutation/undo/redo', () => {
+    const scene = new Scene3D();
+    let count = 0;
+    const unsub = scene.onHistoryChange(() => { count += 1; });
+    scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
+    expect(count).toBeGreaterThanOrEqual(1);
+    const before = count;
+    scene.undo();
+    expect(count).toBeGreaterThan(before);
+    unsub();
+    const after = count;
+    scene.redo();
+    expect(count).toBe(after);
+  });
 });

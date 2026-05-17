@@ -23,6 +23,7 @@ export class Scene3D {
   private historyPast: SceneSnapshot[] = [];
   private historyFuture: SceneSnapshot[] = [];
   private historySuspended = false;
+  private historyListeners = new Set<() => void>();
 
   on(event: 'add', cb: Listener<Scene3DObject>): () => void;
   on(event: 'change', cb: Listener<Scene3DObject>): () => void;
@@ -195,6 +196,7 @@ export class Scene3D {
     if (this.historySuspended) return;
     this.historyPast.push(this.snapshot());
     this.historyFuture = [];
+    this.notifyHistoryChange();
   }
 
   canUndo(): boolean {
@@ -210,6 +212,7 @@ export class Scene3D {
     if (!prev) return;
     this.historyFuture.push(this.snapshot());
     this.restore(prev);
+    this.notifyHistoryChange();
   }
 
   redo(): void {
@@ -217,5 +220,34 @@ export class Scene3D {
     if (!next) return;
     this.historyPast.push(this.snapshot());
     this.restore(next);
+    this.notifyHistoryChange();
+  }
+
+  withoutHistory(fn: () => void): void {
+    const prev = this.historySuspended;
+    this.historySuspended = true;
+    try {
+      fn();
+    } finally {
+      this.historySuspended = prev;
+    }
+  }
+
+  pushUndoCheckpoint(prev: SceneSnapshot): void {
+    if (this.historySuspended) return;
+    this.historyPast.push(prev);
+    this.historyFuture = [];
+    this.notifyHistoryChange();
+  }
+
+  onHistoryChange(cb: () => void): () => void {
+    this.historyListeners.add(cb);
+    return () => {
+      this.historyListeners.delete(cb);
+    };
+  }
+
+  private notifyHistoryChange(): void {
+    this.historyListeners.forEach((cb) => cb());
   }
 }
