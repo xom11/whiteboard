@@ -180,6 +180,7 @@ const Graph2DIcon = (
 
 export const graph2dStamp: StampType = {
   kind: 'graph2d',
+  experimental: true,
   shortcutKey: 'h',
   toolbarLabel: 'H',
   toolbarTitle: 'Chèn đồ thị 2D (H)',

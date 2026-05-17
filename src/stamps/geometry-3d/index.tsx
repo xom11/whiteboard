@@ -146,6 +146,7 @@ const Geometry3DIcon: ReactNode = (
 
 export const geometry3dStamp: StampType = {
   kind: 'geometry3d',
+  experimental: true,
   shortcutKey: 'd',
   toolbarLabel: 'D',
   toolbarTitle: 'Hình 3D (D)',
