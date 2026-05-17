@@ -16,3 +16,6 @@ examples/playground/dist/
 
 # Playwright screenshots — never commit
 *.png
+
+# superpowers brainstorming mockups
+.superpowers/
