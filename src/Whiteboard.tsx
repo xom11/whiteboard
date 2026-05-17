@@ -105,9 +105,25 @@ export function Whiteboard({
     appState: any;
   } | null>(null);
   const pendingFilesRef = useRef<BinaryFiles>({});
+  // Cached hashElementsVersion để flushScene chạy sync trong unmount cleanup
+  // (cleanup không thể await dynamic import).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const hashElementsVersionRef = useRef<((elements: readonly ExcalidrawElement[]) => any) | null>(null);
+  // Stamps prop có thể thay đổi — capture vào ref để callback trong setTimeout
+  // không bị stale closure.
+  const stampsRef = useRef(stamps);
+  stampsRef.current = stamps;
   const persistEnabled = typeof storageKey === 'string' && storageKey.length > 0;
   const persistKeyRef = useRef(storageKey);
   persistKeyRef.current = storageKey;
+  // Lưu callback refs để cleanup unmount truy cập được mà không bị stale closure
+  // (props onSceneChange/onFilesChange có thể thay đổi).
+  const onSceneChangeRef = useRef(onSceneChange);
+  onSceneChangeRef.current = onSceneChange;
+  const onFilesChangeRef = useRef(onFilesChange);
+  onFilesChangeRef.current = onFilesChange;
+  const persistEnabledRef = useRef(persistEnabled);
+  persistEnabledRef.current = persistEnabled;
 
   const persistedInitial = useMemo(
     () => (persistEnabled ? readScene(storageKey as string) : null),
@@ -225,23 +241,15 @@ export function Whiteboard({
       if (!sceneThrottleRef.current) {
         sceneThrottleRef.current = setTimeout(async () => {
           sceneThrottleRef.current = null;
-          const mod = await import('@excalidraw/excalidraw');
-          const latestScene = latestSceneRef.current ?? { elements, appState };
-          const liveElements = latestScene.elements.filter((e) => !e.isDeleted) as readonly ExcalidrawElement[];
-          const liveAppState = pickSyncableAppState(latestScene.appState);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const elementHash = (mod as any).hashElementsVersion(liveElements);
-          const sceneHash = `${elementHash}:${JSON.stringify(liveAppState)}`;
-          if (sceneHash === lastSceneHashRef.current) return;
-          lastSceneHashRef.current = sceneHash;
-          onSceneChange?.({ elements: liveElements, appState: liveAppState });
-
-          if (persistEnabled) {
-            writeScene(storageKey as string, {
-              elements: liveElements,
-              appState: liveAppState,
-            });
+          try {
+            const mod = await import('@excalidraw/excalidraw');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            hashElementsVersionRef.current = (mod as any).hashElementsVersion;
+          } catch (err) {
+            console.warn('[whiteboard] import excalidraw để flush scene thất bại:', err);
+            return;
           }
+          flushSceneRef.current();
         }, SYNC_THROTTLE_MS);
       }
 
@@ -253,22 +261,7 @@ export function Whiteboard({
         if (!fileThrottleRef.current) {
           fileThrottleRef.current = setTimeout(() => {
             fileThrottleRef.current = null;
-            const pending = pendingFilesRef.current;
-            pendingFilesRef.current = {};
-            const currentElements = (api?.getSceneElements?.() ?? elements) as readonly ExcalidrawElement[];
-            const stampIds = new Set<string>();
-            for (const el of currentElements) {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const fid = (el as any).fileId as string | undefined;
-              if (fid && isStampElement(el)) stampIds.add(fid);
-            }
-            const raster: BinaryFiles = {};
-            for (const [id, f] of Object.entries(pending)) {
-              if (!stampIds.has(id)) raster[id] = f;
-            }
-            if (Object.keys(raster).length > 0) {
-              void writeFiles(persistKeyRef.current as string, raster);
-            }
+            flushFilesRef.current();
           }, 1000);
         }
       }
@@ -277,45 +270,123 @@ export function Whiteboard({
       if (persistEnabled && !pruneThrottleRef.current) {
         pruneThrottleRef.current = setTimeout(() => {
           pruneThrottleRef.current = null;
-          const currentElements = (api?.getSceneElements?.() ?? elements) as readonly ExcalidrawElement[];
-          const keep = new Set<string>();
-          for (const el of currentElements) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const fid = (el as any).fileId as string | undefined;
-            if (fid && !isStampElement(el)) keep.add(fid);
-          }
-          void pruneFiles(persistKeyRef.current as string, keep);
+          flushPruneRef.current();
         }, 2000);
       }
     },
     [readOnly, api, onSceneChange, onFilesChange, persistEnabled, storageKey, stamps, openStamp],
   );
 
+  // ---- Flush helpers (gọi từ setTimeout VÀ unmount cleanup) ----
+  // Lưu vào ref để cleanup luôn dùng version mới nhất (closure-stable).
+  const flushSceneRef = useRef<() => void>(() => undefined);
+  flushSceneRef.current = () => {
+    try {
+      const latestScene = latestSceneRef.current;
+      if (!latestScene) return;
+      const liveElements = latestScene.elements.filter((e) => !e.isDeleted) as readonly ExcalidrawElement[];
+      const liveAppState = pickSyncableAppState(latestScene.appState);
+      const hashFn = hashElementsVersionRef.current;
+      // Nếu chưa load module → bỏ qua hash dedupe, cứ ghi (correctness > perf trong unmount path).
+      const elementHash = hashFn ? hashFn(liveElements) : liveElements.map((e) => e.id).join('|');
+      const sceneHash = `${elementHash}:${JSON.stringify(liveAppState)}`;
+      if (sceneHash === lastSceneHashRef.current) return;
+      lastSceneHashRef.current = sceneHash;
+      onSceneChangeRef.current?.({ elements: liveElements, appState: liveAppState });
+      if (persistEnabledRef.current) {
+        writeScene(persistKeyRef.current as string, {
+          elements: liveElements,
+          appState: liveAppState,
+        });
+      }
+    } catch (err) {
+      console.warn('[whiteboard] flushScene thất bại:', err);
+    }
+  };
+
+  const flushFilesRef = useRef<() => void>(() => undefined);
+  flushFilesRef.current = () => {
+    try {
+      const pending = pendingFilesRef.current;
+      pendingFilesRef.current = {};
+      if (Object.keys(pending).length === 0) return;
+      const currentElements = (apiRef.current?.getSceneElements?.()
+        ?? latestSceneRef.current?.elements
+        ?? []) as readonly ExcalidrawElement[];
+      const stampIds = new Set<string>();
+      for (const el of currentElements) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const fid = (el as any).fileId as string | undefined;
+        if (fid && isStampElement(el)) stampIds.add(fid);
+      }
+      const raster: BinaryFiles = {};
+      for (const [id, f] of Object.entries(pending)) {
+        if (!stampIds.has(id)) raster[id] = f;
+      }
+      if (Object.keys(raster).length > 0) {
+        void writeFiles(persistKeyRef.current as string, raster);
+      }
+    } catch (err) {
+      console.warn('[whiteboard] flushFiles thất bại:', err);
+    }
+  };
+
+  const flushPruneRef = useRef<() => void>(() => undefined);
+  flushPruneRef.current = () => {
+    try {
+      const currentElements = (apiRef.current?.getSceneElements?.()
+        ?? latestSceneRef.current?.elements
+        ?? []) as readonly ExcalidrawElement[];
+      const keep = new Set<string>();
+      for (const el of currentElements) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const fid = (el as any).fileId as string | undefined;
+        if (fid && !isStampElement(el)) keep.add(fid);
+      }
+      void pruneFiles(persistKeyRef.current as string, keep);
+    } catch (err) {
+      console.warn('[whiteboard] flushPrune thất bại:', err);
+    }
+  };
+
   // ---- Mount: load persisted raster files từ IDB -> addFiles ----
   useEffect(() => {
     if (!api || !persistEnabled) return;
     let cancelled = false;
-    void readFiles(storageKey as string).then((files) => {
-      if (cancelled) return;
-      const entries = Object.entries(files);
-      if (entries.length === 0) return;
-      try {
-        api.addFiles(
-          entries.map(([id, f]) => ({
-            id,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            dataURL: (f as any).dataURL,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            mimeType: (f as any).mimeType,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            created: (f as any).created ?? Date.now(),
-          })),
-        );
-        entries.forEach(([id]) => knownFileIdsRef.current.add(id));
-      } catch (err) {
-        console.warn('[whiteboard] addFiles từ IDB thất bại:', err);
-      }
-    });
+    void readFiles(storageKey as string).then(
+      (files) => {
+        // Recheck cancelled NGAY khi promise resolve — IDB onsuccess có thể
+        // fire sau component unmount (tx microtask).
+        if (cancelled) return;
+        const entries = Object.entries(files);
+        if (entries.length === 0) return;
+        // Recheck một lần nữa trước khi gọi api.addFiles để chắc chắn
+        // không invoke API trên instance đã teardown.
+        if (cancelled) return;
+        try {
+          api.addFiles(
+            entries.map(([id, f]) => ({
+              id,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              dataURL: (f as any).dataURL,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              mimeType: (f as any).mimeType,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              created: (f as any).created ?? Date.now(),
+            })),
+          );
+          if (cancelled) return;
+          entries.forEach(([id]) => knownFileIdsRef.current.add(id));
+        } catch (err) {
+          if (cancelled) return;
+          console.warn('[whiteboard] addFiles từ IDB thất bại:', err);
+        }
+      },
+      (err) => {
+        if (cancelled) return;
+        console.warn('[whiteboard] readFiles thất bại:', err);
+      },
+    );
     return () => {
       cancelled = true;
     };
@@ -325,28 +396,48 @@ export function Whiteboard({
     if (!api) return;
     let cancelled = false;
     const run = async () => {
+      if (cancelled) return;
       try {
         const elements = api.getSceneElements();
         if (!elements || elements.length === 0) return;
         if (cancelled) return;
-        await restoreMissingStampFiles(api, elements, stamps);
+        // Đọc stamps từ ref — props có thể đã thay đổi sau setTimeout 400ms,
+        // closure-captured `stamps` sẽ stale.
+        await restoreMissingStampFiles(api, elements, stampsRef.current);
       } catch (err) {
+        if (cancelled) return;
         console.warn('Math stamp restore pass failed:', err);
       }
     };
-    run();
-    const t = setTimeout(run, 400);
+    void run();
+    const t = setTimeout(() => {
+      void run();
+    }, 400);
     return () => {
       cancelled = true;
       clearTimeout(t);
     };
-  }, [api, persistedInitial, stamps]);
+  }, [api, persistedInitial]);
 
+  // Unmount cleanup: flush pending writes TRƯỚC khi clearTimeout để không
+  // mất scene/file write cuối khi user navigate giữa throttle window.
   useEffect(
     () => () => {
-      if (sceneThrottleRef.current) clearTimeout(sceneThrottleRef.current);
-      if (fileThrottleRef.current) clearTimeout(fileThrottleRef.current);
-      if (pruneThrottleRef.current) clearTimeout(pruneThrottleRef.current);
+      if (sceneThrottleRef.current) {
+        clearTimeout(sceneThrottleRef.current);
+        sceneThrottleRef.current = null;
+        flushSceneRef.current();
+      }
+      if (fileThrottleRef.current) {
+        clearTimeout(fileThrottleRef.current);
+        fileThrottleRef.current = null;
+        flushFilesRef.current();
+      }
+      if (pruneThrottleRef.current) {
+        clearTimeout(pruneThrottleRef.current);
+        pruneThrottleRef.current = null;
+        flushPruneRef.current();
+      }
     },
     [],
   );
