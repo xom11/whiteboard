@@ -2,6 +2,15 @@ import type { Scene3D } from '../scene/Scene3D';
 import type { SceneHit } from '../hitTest/hitTest';
 import { buildPoint, buildPointOnObject } from './handlers/point';
 import { buildSegment, buildLine, buildRay, buildVector } from './handlers/segment';
+import { buildPolygon } from './handlers/polygon';
+import { buildPlane } from './handlers/plane';
+import { buildPyramid } from './handlers/pyramid';
+import { buildPrism } from './handlers/prism';
+import { buildTetrahedron } from './handlers/tetrahedron';
+import { buildCube } from './handlers/cube';
+import { buildSphere } from './handlers/sphere';
+import { buildCylinder } from './handlers/cylinder';
+import { buildCone } from './handlers/cone';
 
 export type ToolKey =
   | 'move' | 'point' | 'pointOnObject'
@@ -117,7 +126,7 @@ export const TOOLS: ToolSpec[] = [
       { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Chọn đỉnh thứ 3' },
       { type: 'closingPoint', hint: 'Click điểm đầu để đóng (hoặc chọn thêm đỉnh)' },
     ],
-    build: stubBuild,
+    build: buildPolygon,
   },
   {
     key: 'plane',
@@ -128,7 +137,7 @@ export const TOOLS: ToolSpec[] = [
       { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Chọn điểm thứ 2' },
       { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Chọn điểm thứ 3' },
     ],
-    build: stubBuild,
+    build: buildPlane,
   },
   {
     key: 'pyramid',
@@ -141,7 +150,7 @@ export const TOOLS: ToolSpec[] = [
       { type: 'closingPoint', hint: 'Click đỉnh đáy đầu tiên để đóng (hoặc chọn thêm đỉnh)' },
       { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Chọn đỉnh chóp' },
     ],
-    build: stubBuild,
+    build: buildPyramid,
   },
   {
     key: 'prism',
@@ -154,7 +163,7 @@ export const TOOLS: ToolSpec[] = [
       { type: 'closingPoint', hint: 'Click đỉnh đầu để đóng đáy' },
       { type: 'number', prompt: 'Chiều cao (theo trục z)', min: 0.0001 },
     ],
-    build: stubBuild,
+    build: buildPrism,
   },
   {
     key: 'tetrahedron',
@@ -164,7 +173,7 @@ export const TOOLS: ToolSpec[] = [
       { type: 'point', allowExisting: true, allowNewOn: NO_SURFACE, hint: 'Chọn điểm 1' },
       { type: 'point', allowExisting: true, allowNewOn: NO_SURFACE, hint: 'Chọn điểm 2' },
     ],
-    build: stubBuild,
+    build: buildTetrahedron,
   },
   {
     key: 'cube',
@@ -174,7 +183,7 @@ export const TOOLS: ToolSpec[] = [
       { type: 'point', allowExisting: true, allowNewOn: ['ground'], hint: 'Chọn điểm 1 (trên nền)' },
       { type: 'point', allowExisting: true, allowNewOn: ['ground'], hint: 'Chọn điểm 2 (trên nền)' },
     ],
-    build: stubBuild,
+    build: buildCube,
   },
   {
     key: 'sphere',
@@ -184,7 +193,7 @@ export const TOOLS: ToolSpec[] = [
       { type: 'point', allowExisting: true, allowNewOn: NO_SURFACE, hint: 'Chọn tâm mặt cầu' },
       { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Chọn điểm trên mặt cầu' },
     ],
-    build: stubBuild,
+    build: buildSphere,
   },
   {
     key: 'cylinder',
@@ -195,7 +204,7 @@ export const TOOLS: ToolSpec[] = [
       { type: 'point', allowExisting: true, allowNewOn: NO_SURFACE, hint: 'Chọn tâm trên' },
       { type: 'number', prompt: 'Bán kính', min: 0.0001 },
     ],
-    build: stubBuild,
+    build: buildCylinder,
   },
   {
     key: 'cone',
@@ -206,7 +215,7 @@ export const TOOLS: ToolSpec[] = [
       { type: 'point', allowExisting: true, allowNewOn: NO_SURFACE, hint: 'Chọn đỉnh' },
       { type: 'number', prompt: 'Bán kính', min: 0.0001 },
     ],
-    build: stubBuild,
+    build: buildCone,
   },
 ];
 

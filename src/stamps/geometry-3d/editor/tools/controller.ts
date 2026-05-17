@@ -52,6 +52,29 @@ export class ToolController {
     if (!tool) return false;
     const step = tool.steps[this.state.stepIndex];
     if (!step) return false;
+
+    // Polygon-like variable-vertex flow: when current step is closingPoint, an
+    // existing-point hit matching the first collected vertex finalizes the
+    // sub-sequence; any other surface hit appends another vertex (and the
+    // controller stays at this stepIndex).
+    if (step.type === 'closingPoint') {
+      if (hit.kind === 'empty') return false;
+      if (hit.kind === 'existingPoint') {
+        this.state.collected.push({ step, hit });
+        this.state.stepIndex++;
+        this.advance();
+        return true;
+      }
+      // Otherwise append another vertex using the previous 'point' step's allowNewOn
+      const prevStep = tool.steps[this.state.stepIndex - 1];
+      if (!prevStep || prevStep.type !== 'point') return false;
+      if (!this.hitMatchesStep(hit, prevStep)) return false;
+      this.state.collected.push({ step: prevStep, hit });
+      // stepIndex stays at the closingPoint step
+      this.notify();
+      return true;
+    }
+
     if (!this.hitMatchesStep(hit, step)) return false;
     this.state.collected.push({ step, hit });
     this.state.stepIndex++;

@@ -63,3 +63,23 @@ test('completing all steps invokes build() and returns to move tool', () => {
   // Stub build() returns null but advance() still resets tool to 'move' after the last step
   expect(ctrl.getState().tool?.key).toBe('move');
 });
+
+test('closingPoint step appends extra vertices on non-existing-point hits', () => {
+  const scene = new Scene3D();
+  // Pre-seed an existing point so the close hit can reference it
+  const seed = scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
+  const ctrl = new ToolController(scene);
+  ctrl.selectTool('polygon');
+  // 3 base vertices satisfy steps 0, 1, 2 (point steps); use existingPoint for the first so close-by-id is meaningful.
+  ctrl.consumeHit({ kind: 'existingPoint', pointId: seed });
+  ctrl.consumeHit({ kind: 'onGround', world: [1, 0, 0] });
+  ctrl.consumeHit({ kind: 'onGround', world: [1, 1, 0] });
+  expect(ctrl.getState().stepIndex).toBe(3); // now at closingPoint
+  // A new surface hit appends but doesn't advance
+  ctrl.consumeHit({ kind: 'onGround', world: [0, 1, 0] });
+  expect(ctrl.getState().stepIndex).toBe(3);
+  expect(ctrl.getState().collected.length).toBe(4);
+  // An existing-point hit closes
+  ctrl.consumeHit({ kind: 'existingPoint', pointId: seed });
+  expect(ctrl.getState().tool?.key).toBe('move'); // build invoked, reset to move
+});
