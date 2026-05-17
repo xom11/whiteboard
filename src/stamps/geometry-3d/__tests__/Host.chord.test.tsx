@@ -1,7 +1,7 @@
 import { render, fireEvent, act } from '@testing-library/react';
 import React from 'react';
 import { createRef } from 'react';
-import { Geometry3DStampHost } from '../index';
+import { Geometry3DStampHost } from '../host';
 import type { StampHostHandle } from '../../shared/types';
 import type { MiniBoard3DHandle } from '../editor/MiniBoard3D';
 
