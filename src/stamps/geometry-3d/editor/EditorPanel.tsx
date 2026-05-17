@@ -82,6 +82,28 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       return unsub;
     }, [scene]);
 
+    // Global keyboard shortcuts: Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, Ctrl+Y.
+    React.useEffect(() => {
+      const onKey = (e: KeyboardEvent) => {
+        const ae = document.activeElement as HTMLElement | null;
+        const inField = !!(ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable));
+        if (inField) return;
+        if (!(e.metaKey || e.ctrlKey)) return;
+        const key = e.key.toLowerCase();
+        if (key === 'z' && !e.shiftKey) {
+          e.preventDefault();
+          e.stopPropagation();
+          scene.undo();
+        } else if ((key === 'z' && e.shiftKey) || (key === 'y' && !e.shiftKey)) {
+          e.preventDefault();
+          e.stopPropagation();
+          scene.redo();
+        }
+      };
+      window.addEventListener('keydown', onKey, { capture: true });
+      return () => window.removeEventListener('keydown', onKey, { capture: true });
+    }, [scene]);
+
     // Dispose renderer on unmount.
     React.useEffect(() => {
       return () => {
