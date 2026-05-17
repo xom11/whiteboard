@@ -1,4 +1,12 @@
+import { render } from '@testing-library/react';
+import { createRef } from 'react';
 import { geometry3dStamp, isGeometry3DCustomData } from '../index';
+import { Geometry3DStampHost } from '../host';
+import type { StampHostHandle } from '../../shared/types';
+
+jest.mock('../editor/MiniBoard3D', () => ({
+  MiniBoard3D: jest.fn(() => null),
+}));
 
 describe('geometry3dStamp', () => {
   it('có đủ trường StampType', () => {
@@ -20,6 +28,30 @@ describe('geometry3dStamp', () => {
     expect(
       geometry3dStamp.matchesCustomData({ kind: 'geometry', version: 1, jsonState: '{}' }),
     ).toBe(false);
+  });
+
+  it('Host mount với editingElement=null', () => {
+    const ref = createRef<StampHostHandle>();
+    const Host = Geometry3DStampHost;
+    const minimalApi = {
+      getSceneElements: () => [],
+      addFiles: jest.fn(),
+      getAppState: () => ({}),
+      updateScene: jest.fn(),
+      getFiles: () => ({}),
+    };
+    render(
+      <Host
+        ref={ref}
+        api={minimalApi as never}
+        editingElement={null}
+        onClose={jest.fn()}
+        isDark={false}
+      />,
+    );
+    expect(ref.current).toBeTruthy();
+    expect(typeof ref.current!.tryInsert).toBe('function');
+    expect(typeof ref.current!.hasContent).toBe('function');
   });
 
   it('re-exports isGeometry3DCustomData', () => {
