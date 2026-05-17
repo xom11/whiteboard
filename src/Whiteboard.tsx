@@ -1,7 +1,6 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   ExcalidrawElement,
   BinaryFiles,
@@ -27,16 +26,14 @@ import { readFiles, writeFiles, pruneFiles } from './core/persistence/fileStore'
 import '@excalidraw/excalidraw/index.css';
 import './stamps/shared/stamp.css';
 
-const Excalidraw = dynamic(
-  async () => (await import('./ExcalidrawWithMenus')).ExcalidrawWithMenus,
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex h-full items-center justify-center text-sm text-gray-500">
-        Đang tải bảng…
-      </div>
-    ),
-  },
+const Excalidraw = lazy(() =>
+  import('./ExcalidrawWithMenus').then((m) => ({ default: m.ExcalidrawWithMenus })),
+);
+
+const ExcalidrawLoadingFallback = () => (
+  <div className="flex h-full items-center justify-center text-sm text-gray-500">
+    Đang tải bảng…
+  </div>
 );
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -407,34 +404,36 @@ export function Whiteboard({
 
   return (
     <div className={`relative h-full w-full${isDarkTheme ? ' theme--dark' : ''}`}>
-      <Excalidraw
-        excalidrawAPI={(a: ExApi) => {
-          // Excalidraw có thể gọi callback này đồng bộ trong commit-phase của
-          // họ. Bail-out qua ref + defer setApi để tránh "update scheduled
-          // from inside an update function" trên React 19 / Next.js 16.
-          if (apiRef.current === a) return;
-          apiRef.current = a;
-          queueMicrotask(() => {
-            setApi(a);
-            onApi?.(a);
-          });
-        }}
-        langCode={langCode}
-        viewModeEnabled={readOnly}
-        initialData={
-          effectiveInitialScene
-            ? {
-                elements: effectiveInitialScene.elements,
-                appState: {
-                  ...effectiveInitialScene.appState,
-                  gridSize: effectiveInitialScene.appState.gridSize ?? undefined,
-                },
-              }
-            : { appState: { viewBackgroundColor: '#ffffff' } }
-        }
-        onChange={handleChange}
-        onPointerDown={handlePointerDown}
-      />
+      <Suspense fallback={<ExcalidrawLoadingFallback />}>
+        <Excalidraw
+          excalidrawAPI={(a: ExApi) => {
+            // Excalidraw có thể gọi callback này đồng bộ trong commit-phase của
+            // họ. Bail-out qua ref + defer setApi để tránh "update scheduled
+            // from inside an update function" trên React 19 / Next.js 16.
+            if (apiRef.current === a) return;
+            apiRef.current = a;
+            queueMicrotask(() => {
+              setApi(a);
+              onApi?.(a);
+            });
+          }}
+          langCode={langCode}
+          viewModeEnabled={readOnly}
+          initialData={
+            effectiveInitialScene
+              ? {
+                  elements: effectiveInitialScene.elements,
+                  appState: {
+                    ...effectiveInitialScene.appState,
+                    gridSize: effectiveInitialScene.appState.gridSize ?? undefined,
+                  },
+                }
+              : { appState: { viewBackgroundColor: '#ffffff' } }
+          }
+          onChange={handleChange}
+          onPointerDown={handlePointerDown}
+        />
+      </Suspense>
 
       <ToolbarInjector
         enabled={!readOnly}
