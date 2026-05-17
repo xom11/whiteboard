@@ -777,6 +777,33 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     setHistoryTick((t) => t + 1);
   }, [create, flashWarn, localIdOf, nextLabel, nextLocalId]);
 
+  // Tái dựng 1 object từ entry log đã serialize. Dùng chung cho cả
+  // initial-state replay và redo. Trả về true nếu tạo thành công.
+  const recreateFromLogEntry = useCallback((el: SerializedElement): boolean => {
+    const board = boardRef.current;
+    if (!board) return false;
+    const idMap = objMapRef.current;
+    const resolved = el.args.map(a => (typeof a === 'string' && idMap.has(a)) ? idMap.get(a) : a);
+    try {
+      if (el.type === 'valueLabel') {
+        const target = resolved[0];
+        if (!target) return false;
+        const txt = createValueLabelFor(target);
+        if (!txt) return false;
+        idMap.set(el.id, txt);
+        valueLabelsRef.current.set(target, txt);
+        return true;
+      }
+      const themedAttrs = resolveAttrColors({ ...el.attrs }, paletteFor(isDarkRef.current));
+      const obj = board.create(el.type, resolved, themedAttrs);
+      idMap.set(el.id, obj);
+      return true;
+    } catch (err) {
+      console.warn('Recreate failed for', el.type, err);
+      return false;
+    }
+  }, [createValueLabelFor]);
+
   // Undo: remove the most recently logged creation. Also clears any in-progress
   // polygon construction (pending picks + preview segments) so state is sane.
   const undoLast = useCallback(() => {
@@ -1007,28 +1034,8 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
 
       // Replay initial state if any
       if (initialState && initialState.elements.length > 0) {
-        const idMap = objMapRef.current;
         for (const el of initialState.elements) {
-          const resolved = el.args.map(a => (typeof a === 'string' && idMap.has(a)) ? idMap.get(a) : a);
-          try {
-            if (el.type === 'valueLabel') {
-              // Synthetic: regenerate dynamic text gắn với target.
-              const target = resolved[0];
-              if (target) {
-                const txt = createValueLabelFor(target);
-                if (txt) {
-                  idMap.set(el.id, txt);
-                  valueLabelsRef.current.set(target, txt);
-                }
-              }
-              continue;
-            }
-            const themedAttrs = resolveAttrColors({ ...el.attrs }, paletteFor(isDarkRef.current));
-            const obj = board.create(el.type, resolved, themedAttrs);
-            idMap.set(el.id, obj);
-          } catch (err) {
-            console.warn('Replay failed for', el.type, err);
-          }
+          recreateFromLogEntry(el);
         }
         creationLogRef.current = [...initialState.elements];
         labelIdxRef.current = initialState.elements.filter(e => e.type === 'point').length;
