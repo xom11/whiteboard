@@ -1,170 +1,163 @@
 'use client';
-import React, { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
+import * as React from 'react';
+import { Scene3D } from './scene/Scene3D';
+import { ToolController } from './tools/controller';
+import { JxgRenderer } from './renderer/JxgRenderer';
+import { hitTest } from './hitTest/hitTest';
+import { LeftPanel } from './LeftPanel';
 import { MiniBoard3D, type MiniBoard3DHandle } from './MiniBoard3D';
+import { StatusHint } from './StatusHint';
+import type { ToolKey } from './tools/spec';
 import type { SerializedBoard3D } from '../serialize';
+import { sceneToBoard, boardToScene } from './scene/persistence';
+
+export interface EditorPanelProps {
+  isDark?: boolean;
+  initialState?: SerializedBoard3D | null;
+  onInsert?: (board: SerializedBoard3D, svgWidth: number, svgHeight: number, svgString: string) => void;
+  onClose?: () => void;
+}
 
 export interface EditorPanelHandle {
-  tryInsert: () => boolean;
   hasContent: () => boolean;
+  /** Returns the current scene as a SerializedBoard3D. */
+  serialize: () => SerializedBoard3D;
 }
 
-interface Props {
-  isDark: boolean;
-  initial: SerializedBoard3D | null;
-  onInsert: (jsonState: string, svgString: string, width: number, height: number) => void;
-  onClose: () => void;
-  /** Mobile mode: full-screen + hamburger header. */
-  isMobile?: boolean;
-  /** Khi true, panel position offset left để chừa chỗ cho LeftPanel (240px). */
-  withLeftPanel?: boolean;
-  /** Callback expose board handle ra Host để LeftPanel sibling dùng được. */
-  onBoardReady?: (handle: MiniBoard3DHandle | null) => void;
-  /** Click hamburger trên mobile để mở LeftPanel drawer. */
-  onOpenDrawer?: () => void;
-}
+export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>(
+  function EditorPanel(props, ref) {
+    const isDark = props.isDark ?? false;
+    const sceneRef = React.useRef<Scene3D | null>(null);
+    if (!sceneRef.current) sceneRef.current = new Scene3D();
+    const controllerRef = React.useRef<ToolController | null>(null);
+    if (!controllerRef.current) controllerRef.current = new ToolController(sceneRef.current);
 
-export const EditorPanel = forwardRef<EditorPanelHandle, Props>(function EditorPanel(
-  { isDark, initial, onInsert, onClose, isMobile = false, withLeftPanel = false, onBoardReady, onOpenDrawer },
-  ref,
-) {
-  const boardRef = useRef<MiniBoard3DHandle | null>(null);
-  const [ready, setReady] = useState(false);
-  const onBoardReadyRef = useRef(onBoardReady);
-  onBoardReadyRef.current = onBoardReady;
+    const [selectedTool, setSelectedTool] = React.useState<ToolKey>('move');
+    const [hint, setHint] = React.useState<string>('Chọn công cụ trong bảng bên trái');
+    const [hoverLabel, setHoverLabel] = React.useState<string | null>(null);
 
-  const setBoard = useCallback((h: MiniBoard3DHandle | null) => {
-    boardRef.current = h;
-    setReady(!!h);
-    onBoardReadyRef.current?.(h);
-  }, []);
+    const boardRef = React.useRef<MiniBoard3DHandle | null>(null);
+    const rendererRef = React.useRef<JxgRenderer | null>(null);
 
-  const performInsert = useCallback((): boolean => {
-    const board = boardRef.current;
-    if (!board) return false;
-    const log = board.getCreationLog();
-    if (log.length === 0) return false;
-    const view = board.getViewState();
-    const state: SerializedBoard3D = {
-      version: 1,
-      bbox: board.getBbox(),
-      view,
-      showAxes: board.getShowAxes(),
-      showMesh: board.getShowMesh(),
-      elements: log,
-    };
-    const snap = board.snapshotSVG();
-    onInsert(JSON.stringify(state), snap.svgString, snap.width, snap.height);
-    return true;
-  }, [onInsert]);
+    // Initial state load (Phase 7 — currently a stub returning empty scene).
+    React.useEffect(() => {
+      if (props.initialState && sceneRef.current) {
+        const loaded = boardToScene(props.initialState);
+        sceneRef.current.reset();
+        for (const obj of loaded.list()) {
+          sceneRef.current.insert(obj);
+        }
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      tryInsert: performInsert,
-      hasContent: () => (boardRef.current?.getCreationLog().length ?? 0) > 0,
-    }),
-    [performInsert],
-  );
+    // Subscribe to controller state changes for hint + selected-tool updates.
+    React.useEffect(() => {
+      const ctrl = controllerRef.current!;
+      const unsub = ctrl.on((state) => {
+        setHint(state.hint);
+        setSelectedTool(state.tool?.key ?? 'move');
+      });
+      return unsub;
+    }, []);
 
-  const handleInsert = useCallback(() => {
-    performInsert();
-  }, [performInsert]);
-
-  const wrapperStyle: React.CSSProperties = isMobile
-    ? { position: 'fixed', inset: 0, zIndex: 40 }
-    : {
-        position: 'absolute',
-        top: '50%',
-        left: withLeftPanel ? 'calc(50% + 120px)' : '50%',
-        transform: 'translate(-50%, -50%)',
-        zIndex: 40,
+    // Dispose renderer on unmount.
+    React.useEffect(() => {
+      return () => {
+        rendererRef.current?.dispose();
+        rendererRef.current = null;
       };
+    }, []);
 
-  return (
-    <div
-      role="dialog"
-      aria-label="Dựng hình học 3D"
-      data-testid="geom3d-editor-panel"
-      data-stamp-area="true"
-      data-mobile-editor={isMobile ? 'true' : undefined}
-      style={wrapperStyle}
-      className={[
-        isDark ? 'theme--dark ' : '',
-        'flex flex-col overflow-hidden bg-white',
-        isMobile
-          ? 'h-full w-full'
-          : 'h-[600px] max-h-[85vh] w-[760px] max-w-[calc(100vw-280px)] rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5',
-      ].join(' ')}
-    >
-      <header className="flex items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-cyan-600 px-3 py-2 text-white">
-        {isMobile && (
-          <button
-            type="button"
-            onClick={onOpenDrawer}
-            aria-label="Mở ngăn công cụ"
-            className="-ml-1 inline-flex h-10 w-10 items-center justify-center rounded transition hover:bg-white/15"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="4" y1="6" x2="20" y2="6" />
-              <line x1="4" y1="12" x2="20" y2="12" />
-              <line x1="4" y1="18" x2="20" y2="18" />
-            </svg>
-          </button>
-        )}
-        <h3 className="flex flex-1 items-center gap-2 text-sm font-semibold">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 7 L14 4 L20 7 L14 10 Z M4 7 L4 17 L14 20 L14 10 M14 20 L20 17 L20 7" />
-          </svg>
-          Hình học không gian (3D)
-        </h3>
-        {isMobile && (
-          <button
-            type="button"
-            onClick={handleInsert}
-            disabled={!ready}
-            data-testid="geom3d-insert-btn-mobile"
-            className="rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50"
-          >
-            Chèn
-          </button>
-        )}
-        <button
-          onClick={onClose}
-          aria-label="Đóng"
-          className="inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="6" y1="6" x2="18" y2="18" />
-            <line x1="18" y1="6" x2="6" y2="18" />
-          </svg>
-        </button>
-      </header>
+    const handleView3DReady = React.useCallback((view: unknown) => {
+      if (!sceneRef.current) return;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      rendererRef.current = new JxgRenderer(sceneRef.current, view as any);
+    }, []);
 
-      <div className="min-h-0 flex-1">
-        <MiniBoard3D ref={setBoard} isDark={isDark} initialState={initial} />
-      </div>
+    const handleClick = React.useCallback((screen: { x: number; y: number }) => {
+      const board = boardRef.current;
+      if (!board) return;
+      const view = board.getView3D();
+      if (!view) return;
+      try {
+        const hit = hitTest(screen, view, sceneRef.current!);
+        controllerRef.current!.consumeHit(hit);
+      } catch {
+        /* swallow — view may not yet expose project3DTo2D in some mock paths */
+      }
+    }, []);
 
-      {!isMobile && (
-        <footer className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2">
-          <span className="text-xs text-slate-500">Chọn công cụ bên trái, click trên bảng để dựng hình.</span>
-          <div className="flex gap-2">
-            <button
-              onClick={onClose}
-              className="rounded border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
-            >
-              Huỷ
-            </button>
-            <button
-              onClick={handleInsert}
-              disabled={!ready}
-              data-testid="geom3d-insert-btn"
-              className="rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
-            >
-              Chèn
-            </button>
+    const handleMove = React.useCallback((screen: { x: number; y: number }) => {
+      const board = boardRef.current;
+      if (!board) return;
+      const view = board.getView3D();
+      if (!view) return;
+      let hit;
+      try {
+        hit = hitTest(screen, view, sceneRef.current!);
+      } catch {
+        setHoverLabel(null);
+        return;
+      }
+      if (hit.kind === 'empty') setHoverLabel(null);
+      else if (hit.kind === 'existingPoint') {
+        const obj = sceneRef.current!.get(hit.pointId);
+        setHoverLabel(obj?.label ?? null);
+      } else if (hit.kind === 'onGround') setHoverLabel('mặt nền');
+      else if (hit.kind === 'onAxis') setHoverLabel(`trục ${hit.axis.toUpperCase()}`);
+      else if (hit.kind === 'onPlane') setHoverLabel(`mặt phẳng ${hit.planeId}`);
+      else if (hit.kind === 'onSphere') setHoverLabel(`mặt cầu ${hit.sphereId}`);
+      else setHoverLabel(null);
+    }, []);
+
+    React.useImperativeHandle(
+      ref,
+      () => ({
+        hasContent: () => (sceneRef.current?.list().length ?? 0) > 0,
+        serialize: () => {
+          const view = boardRef.current?.getView3D();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const v = view as any;
+          const azimuth = typeof v?.az?.Value === 'function' ? v.az.Value() : 0;
+          const elevation = typeof v?.el?.Value === 'function' ? v.el.Value() : 0;
+          return sceneToBoard(
+            sceneRef.current!,
+            { azimuth, elevation, bbox3D: [-5, -5, -5, 5, 5, 5] },
+            [-6, -6, 6, 6],
+          );
+        },
+      }),
+      [],
+    );
+
+    return (
+      <div
+        data-testid="editor-panel-3d"
+        className={[
+          isDark ? 'theme--dark ' : '',
+          'flex h-full w-full overflow-hidden bg-white dark:bg-zinc-950',
+        ].join('')}
+      >
+        <LeftPanel
+          scene={sceneRef.current!}
+          selectedTool={selectedTool}
+          onSelectTool={(k) => controllerRef.current!.selectTool(k)}
+        />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1">
+            <MiniBoard3D
+              ref={boardRef}
+              isDark={isDark}
+              onView3DReady={handleView3DReady}
+              onPointerClick={handleClick}
+              onPointerMove={handleMove}
+              onPointerLeave={() => setHoverLabel(null)}
+            />
           </div>
-        </footer>
-      )}
-    </div>
-  );
-});
+          <StatusHint hint={hint} hoverLabel={hoverLabel} />
+        </div>
+      </div>
+    );
+  },
+);

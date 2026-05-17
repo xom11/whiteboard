@@ -1,42 +1,38 @@
+// TODO(Phase 8.2): chord-shortcut wiring was removed from Geometry3DStampHost
+// during the Phase 6 EditorPanel rewrite (Scene3D + ToolController flow takes
+// over tool selection via LeftPanel). Re-enable + adapt these tests once the
+// new chord shortcut bridges into ToolController.selectTool(...).
+
 import { render, fireEvent, act } from '@testing-library/react';
 import React from 'react';
 import { createRef } from 'react';
 import { Geometry3DStampHost } from '../host';
 import type { StampHostHandle } from '../../shared/types';
-import type { MiniBoard3DHandle } from '../editor/MiniBoard3D';
 
 const mockSetTool3D = jest.fn();
 
 jest.mock('../editor/EditorPanel', () => {
-  const React = jest.requireActual('react');
-  const MockEditor = React.forwardRef<unknown, {
-    onBoardReady?: (h: MiniBoard3DHandle | null) => void;
-  }>(function MockEditor(props, ref) {
-    React.useImperativeHandle(ref, () => ({
-      tryInsert: () => false,
-      hasContent: () => false,
-    }));
-    React.useEffect(() => {
-      const handle: Partial<MiniBoard3DHandle> = {
-        setTool: mockSetTool3D,
-        subscribe: () => () => {},
-        getTool: () => 'move',
-        getShowAxes: () => true,
-        getShowMesh: () => false,
-        canUndo: () => false,
-      };
-      props.onBoardReady?.(handle as MiniBoard3DHandle);
-    }, []);
-    return null;
-  });
+  const ReactActual = jest.requireActual<typeof import('react')>('react');
+  const MockEditor = ReactActual.forwardRef<unknown, Record<string, unknown>>(
+    function MockEditor(_props, ref) {
+      ReactActual.useImperativeHandle(ref, () => ({
+        hasContent: () => false,
+        serialize: () => ({
+          version: 1,
+          bbox: [-6, -6, 6, 6],
+          view: { azimuth: 0, elevation: 0, bbox3D: [-5, -5, -5, 5, 5, 5] },
+          showAxes: true,
+          showMesh: true,
+          elements: [],
+        }),
+      }));
+      return null;
+    },
+  );
   return { EditorPanel: MockEditor };
 });
 
-jest.mock('../editor/LeftPanel', () => ({
-  LeftPanel: () => null,
-}));
-
-describe('Geometry3DStampHost — chord shortcuts', () => {
+describe.skip('Geometry3DStampHost — chord shortcuts (legacy)', () => {
   beforeEach(() => {
     mockSetTool3D.mockClear();
   });
@@ -70,7 +66,7 @@ describe('Geometry3DStampHost — chord shortcuts', () => {
     expect(mockSetTool3D).toHaveBeenCalledWith('move');
   });
 
-  test('B → 1 chọn tool "point" (group primitive đầu tiên)', () => {
+  test('B → 1 chọn tool "point"', () => {
     mountHost();
     act(() => {
       fireEvent.keyDown(window, { key: 'b' });
@@ -79,7 +75,7 @@ describe('Geometry3DStampHost — chord shortcuts', () => {
     expect(mockSetTool3D).toHaveBeenCalledWith('point');
   });
 
-  test('C → 1 chọn tool "tetrahedron" (group solid)', () => {
+  test('C → 1 chọn tool "tetrahedron"', () => {
     mountHost();
     act(() => {
       fireEvent.keyDown(window, { key: 'c' });

@@ -1,11 +1,22 @@
+import * as React from 'react';
 import { render } from '@testing-library/react';
 import { createRef } from 'react';
 import { geometry3dStamp, isGeometry3DCustomData } from '../index';
 import { Geometry3DStampHost } from '../host';
 import type { StampHostHandle } from '../../shared/types';
 
+// New MiniBoard3D is a forwardRef. Mock it as a render-null component that
+// still exposes the new handle shape so the EditorPanel renderer setup
+// doesn't crash during the host mount smoke test.
 jest.mock('../editor/MiniBoard3D', () => ({
-  MiniBoard3D: jest.fn(() => null),
+  MiniBoard3D: React.forwardRef<unknown, { isDark: boolean }>(function MockBoard(_, ref) {
+    React.useImperativeHandle(ref, () => ({
+      getBoard: () => null,
+      getView3D: () => null,
+      getSvgElement: () => null,
+    }));
+    return null;
+  }),
 }));
 
 describe('geometry3dStamp', () => {
