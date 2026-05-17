@@ -5,9 +5,12 @@ import {
   useImperativeHandle,
   useMemo,
   useRef,
+  useState,
   type ReactNode,
 } from 'react';
 import { EditorPanel, type EditorPanelHandle } from './editor/EditorPanel';
+import { LeftPanel as Geometry3DLeftPanel } from './editor/LeftPanel';
+import type { MiniBoard3DHandle } from './editor/MiniBoard3D';
 import { insertStampImage } from '../shared/insertImage';
 import type {
   StampHostProps,
@@ -43,10 +46,21 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
   function Geometry3DStampHost({ api, editingElement, onClose, isDark }, ref) {
     const editorRef = useRef<EditorPanelHandle | null>(null);
     const { isMobile } = useIsMobile();
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [boardHandle, setBoardHandle] = useState<MiniBoard3DHandle | null>(null);
+
     const initial = useMemo(
       () => parseInitial(editingElement),
       [editingElement],
     );
+
+    const handleBoardReady = useCallback((h: MiniBoard3DHandle | null) => {
+      setBoardHandle((prev) => (prev === h ? prev : h));
+    }, []);
+
+    const handleResetView = useCallback(() => {
+      boardHandle?.resetView();
+    }, [boardHandle]);
 
     const handleInsert = useCallback(
       async (jsonState: string, svgString: string, width: number, height: number) => {
@@ -77,14 +91,28 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
     );
 
     return (
-      <EditorPanel
-        ref={editorRef}
-        isDark={isDark}
-        initial={initial}
-        onInsert={handleInsert}
-        onClose={onClose}
-        isMobile={isMobile}
-      />
+      <>
+        <Geometry3DLeftPanel
+          handle={boardHandle}
+          onResetView={handleResetView}
+          onClose={onClose}
+          isDark={isDark}
+          isMobile={isMobile}
+          drawerOpen={drawerOpen}
+          onDrawerClose={() => setDrawerOpen(false)}
+        />
+        <EditorPanel
+          ref={editorRef}
+          isDark={isDark}
+          initial={initial}
+          onInsert={handleInsert}
+          onClose={onClose}
+          isMobile={isMobile}
+          withLeftPanel={!isMobile}
+          onBoardReady={handleBoardReady}
+          onOpenDrawer={() => setDrawerOpen(true)}
+        />
+      </>
     );
   },
 );
