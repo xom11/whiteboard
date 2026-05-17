@@ -351,9 +351,9 @@ describe('Whiteboard — geometry3d stamp', () => {
     await act(async () => {
       fireEvent.keyDown(window, { key: 'd' });
     });
-    const closeBtn = screen.getByText('Đóng');
+    const closeBtns = screen.getAllByLabelText('Đóng');
     await act(async () => {
-      fireEvent.click(closeBtn);
+      fireEvent.click(closeBtns[0]);
     });
     expect(screen.queryByText(/Hình học không gian/)).toBeFalsy();
   });

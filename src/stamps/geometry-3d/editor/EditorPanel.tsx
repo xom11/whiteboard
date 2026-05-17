@@ -1,7 +1,6 @@
 'use client';
-import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
 import { MiniBoard3D, type MiniBoard3DHandle } from './MiniBoard3D';
-import { LeftPanel } from './LeftPanel';
 import type { SerializedBoard3D } from '../serialize';
 
 export interface EditorPanelHandle {
@@ -14,62 +13,36 @@ interface Props {
   initial: SerializedBoard3D | null;
   onInsert: (jsonState: string, svgString: string, width: number, height: number) => void;
   onClose: () => void;
+  /** Mobile mode: full-screen + hamburger header. */
   isMobile?: boolean;
+  /** Khi true, panel position offset left để chừa chỗ cho LeftPanel (240px). */
+  withLeftPanel?: boolean;
+  /** Callback expose board handle ra Host để LeftPanel sibling dùng được. */
+  onBoardReady?: (handle: MiniBoard3DHandle | null) => void;
+  /** Click hamburger trên mobile để mở LeftPanel drawer. */
+  onOpenDrawer?: () => void;
 }
 
 export const EditorPanel = forwardRef<EditorPanelHandle, Props>(function EditorPanel(
-  { isDark, initial, onInsert, onClose, isMobile = false },
+  { isDark, initial, onInsert, onClose, isMobile = false, withLeftPanel = false, onBoardReady, onOpenDrawer },
   ref,
 ) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  // Stable ref to the latest mounted handle so callbacks (tryInsert) read fresh state
-  // without triggering re-renders when the handle updates internally.
   const boardRef = useRef<MiniBoard3DHandle | null>(null);
-  // Re-render trigger for LeftPanel ONLY when the handle identity changes
-  // (mount → handle, unmount → null). Functional-equality guard breaks the
-  // ref-callback re-render loop seen with React 19 strict mode.
-  const [boardHandle, setBoardHandle] = useState<MiniBoard3DHandle | null>(null);
+  const [ready, setReady] = useState(false);
+  const onBoardReadyRef = useRef(onBoardReady);
+  onBoardReadyRef.current = onBoardReady;
 
   const setBoard = useCallback((h: MiniBoard3DHandle | null) => {
     boardRef.current = h;
-    setBoardHandle((prev) => (prev === h ? prev : h));
+    setReady(!!h);
+    onBoardReadyRef.current?.(h);
   }, []);
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      tryInsert: () => {
-        const board = boardRef.current;
-        if (!board) return false;
-        const log = board.getCreationLog();
-        if (log.length === 0) return false;
-        const view = board.getViewState();
-        const state: SerializedBoard3D = {
-          version: 1,
-          bbox: board.getBbox(),
-          view,
-          showAxes: board.getShowAxes(),
-          showMesh: board.getShowMesh(),
-          elements: log,
-        };
-        const snap = board.snapshotSVG();
-        onInsert(JSON.stringify(state), snap.svgString, snap.width, snap.height);
-        return true;
-      },
-      hasContent: () => (boardRef.current?.getCreationLog().length ?? 0) > 0,
-    }),
-    [onInsert],
-  );
-
-  const handleResetView = useCallback(() => {
-    boardRef.current?.resetView();
-  }, []);
-
-  const handleInsert = useCallback(() => {
+  const performInsert = useCallback((): boolean => {
     const board = boardRef.current;
-    if (!board) return;
+    if (!board) return false;
     const log = board.getCreationLog();
-    if (log.length === 0) return;
+    if (log.length === 0) return false;
     const view = board.getViewState();
     const state: SerializedBoard3D = {
       version: 1,
@@ -81,68 +54,55 @@ export const EditorPanel = forwardRef<EditorPanelHandle, Props>(function EditorP
     };
     const snap = board.snapshotSVG();
     onInsert(JSON.stringify(state), snap.svgString, snap.width, snap.height);
+    return true;
   }, [onInsert]);
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      tryInsert: performInsert,
+      hasContent: () => (boardRef.current?.getCreationLog().length ?? 0) > 0,
+    }),
+    [performInsert],
+  );
+
+  const handleInsert = useCallback(() => {
+    performInsert();
+  }, [performInsert]);
+
   const wrapperStyle: React.CSSProperties = isMobile
-    ? {
-        position: 'fixed',
-        inset: 0,
-        background: '#fff',
-        zIndex: 10,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-      }
+    ? { position: 'fixed', inset: 0, zIndex: 40 }
     : {
         position: 'absolute',
-        left: '50%',
         top: '50%',
+        left: withLeftPanel ? 'calc(50% + 120px)' : '50%',
         transform: 'translate(-50%, -50%)',
-        width: 900,
-        height: 700,
-        background: '#fff',
-        boxShadow: '0 6px 32px rgba(0,0,0,0.2)',
-        borderRadius: 8,
-        zIndex: 10,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
+        zIndex: 40,
       };
 
   return (
     <div
+      role="dialog"
+      aria-label="Dựng hình học 3D"
       data-testid="geom3d-editor-panel"
       data-stamp-area="true"
       data-mobile-editor={isMobile ? 'true' : undefined}
       style={wrapperStyle}
-      className={isDark ? 'theme--dark' : undefined}
+      className={[
+        isDark ? 'theme--dark ' : '',
+        'flex flex-col overflow-hidden bg-white',
+        isMobile
+          ? 'h-full w-full'
+          : 'h-[600px] max-h-[85vh] w-[760px] max-w-[calc(100vw-280px)] rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5',
+      ].join(' ')}
     >
-      <div
-        style={{
-          display: 'flex',
-          gap: 8,
-          padding: '8px 12px',
-          borderBottom: '1px solid #eee',
-          alignItems: 'center',
-        }}
-      >
+      <header className="flex items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-cyan-600 px-3 py-2 text-white">
         {isMobile && (
           <button
             type="button"
-            onClick={() => setDrawerOpen(true)}
+            onClick={onOpenDrawer}
             aria-label="Mở ngăn công cụ"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: 40,
-              width: 40,
-              border: 0,
-              background: 'transparent',
-              borderRadius: 6,
-              cursor: 'pointer',
-              color: 'inherit',
-            }}
+            className="-ml-1 inline-flex h-10 w-10 items-center justify-center rounded transition hover:bg-white/15"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="4" y1="6" x2="20" y2="6" />
@@ -151,65 +111,60 @@ export const EditorPanel = forwardRef<EditorPanelHandle, Props>(function EditorP
             </svg>
           </button>
         )}
-        <span style={{ fontWeight: 600, flex: 1 }}>Hình học không gian (3D)</span>
+        <h3 className="flex flex-1 items-center gap-2 text-sm font-semibold">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 7 L14 4 L20 7 L14 10 Z M4 7 L4 17 L14 20 L14 10 M14 20 L20 17 L20 7" />
+          </svg>
+          Hình học không gian (3D)
+        </h3>
         {isMobile && (
           <button
             type="button"
             onClick={handleInsert}
+            disabled={!ready}
             data-testid="geom3d-insert-btn-mobile"
-            style={{
-              background: '#2563eb',
-              color: '#fff',
-              border: 0,
-              padding: '6px 14px',
-              borderRadius: 6,
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
+            className="rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50"
           >
             Chèn
           </button>
         )}
         <button
-          type="button"
           onClick={onClose}
           aria-label="Đóng"
-          style={{
-            border: '1px solid #cbd5e1',
-            background: '#fff',
-            padding: isMobile ? '6px 10px' : '4px 10px',
-            borderRadius: 6,
-            cursor: 'pointer',
-            fontSize: 13,
-          }}
+          className="inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15"
         >
-          Đóng
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="6" y1="6" x2="18" y2="18" />
+            <line x1="18" y1="6" x2="6" y2="18" />
+          </svg>
         </button>
+      </header>
+
+      <div className="min-h-0 flex-1">
+        <MiniBoard3D ref={setBoard} isDark={isDark} initialState={initial} />
       </div>
-      <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
-        <LeftPanel
-          handle={boardHandle}
-          onResetView={handleResetView}
-          onClose={onClose}
-          isDark={isDark}
-          isMobile={isMobile}
-          drawerOpen={drawerOpen}
-          onDrawerClose={() => setDrawerOpen(false)}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            left: isMobile ? 0 : 120,
-            top: 0,
-            right: 0,
-            bottom: 0,
-            overflow: 'hidden',
-          }}
-        >
-          <MiniBoard3D ref={setBoard} isDark={isDark} initialState={initial} />
-        </div>
-      </div>
+
+      {!isMobile && (
+        <footer className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2">
+          <span className="text-xs text-slate-500">Chọn công cụ bên trái, click trên bảng để dựng hình.</span>
+          <div className="flex gap-2">
+            <button
+              onClick={onClose}
+              className="rounded border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+            >
+              Huỷ
+            </button>
+            <button
+              onClick={handleInsert}
+              disabled={!ready}
+              data-testid="geom3d-insert-btn"
+              className="rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
+            >
+              Chèn
+            </button>
+          </div>
+        </footer>
+      )}
     </div>
   );
 });
