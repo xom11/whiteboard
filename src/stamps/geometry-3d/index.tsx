@@ -139,8 +139,12 @@ const Geometry3DIcon: ReactNode = (
     strokeLinejoin="round"
     aria-hidden="true"
   >
-    <path d="M12 3 L20 8 L20 16 L12 21 L4 16 L4 8 Z" />
-    <path d="M12 3 L12 21 M4 8 L12 12 L20 8 M4 16 L12 12 L20 16" />
+    {/* Mặt trước */}
+    <path d="M4 9 L4 20 L14 20 L14 9 Z" />
+    {/* Mặt trên */}
+    <path d="M4 9 L10 4 L20 4 L14 9 Z" />
+    {/* Mặt phải */}
+    <path d="M14 9 L20 4 L20 15 L14 20 Z" />
   </svg>
 );
 
