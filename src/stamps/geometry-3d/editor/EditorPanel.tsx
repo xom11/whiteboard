@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { Scene3D } from './scene/Scene3D';
+import { Scene3D, type SceneSnapshot } from './scene/Scene3D';
 import { ToolController } from './tools/controller';
 import { JxgRenderer } from './renderer/JxgRenderer';
 import { hitTest } from './hitTest/hitTest';
@@ -28,6 +28,8 @@ export interface EditorPanelProps {
   showAxis: boolean;
   showGrid: boolean;
   onReadyChange?: (ready: boolean) => void;
+  /** Notifies the host when undo/redo availability changes (for wiring buttons). */
+  onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
 }
 
 export interface EditorPanelHandle {
@@ -36,6 +38,10 @@ export interface EditorPanelHandle {
   serialize: () => SerializedBoard3D;
   /** Select a tool by key (for chord shortcut / host control). */
   setTool: (k: ToolKey) => void;
+  /** Trigger an undo on the scene's history stack. */
+  undo: () => void;
+  /** Trigger a redo on the scene's history stack. */
+  redo: () => void;
 }
 
 export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>(
@@ -49,6 +55,7 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       showAxis,
       showGrid,
       onReadyChange,
+      onHistoryChange,
     } = props;
     const isDark = isDarkProp ?? false;
     const controllerRef = React.useRef<ToolController | null>(null);
@@ -63,22 +70,31 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
     const onSelectedToolChangeRef = React.useRef(onSelectedToolChange);
     onSelectedToolChangeRef.current = onSelectedToolChange;
 
+    const onHistoryChangeRef = React.useRef(onHistoryChange);
+    onHistoryChangeRef.current = onHistoryChange;
+
     // Latest selectedTool — read inside drag callbacks to avoid stale closures.
     const selectedToolRef = React.useRef(selectedTool);
     selectedToolRef.current = selectedTool;
 
-    // Point-drag state: which point is being dragged, starting screen + world.
+    // Point-drag state: which point is being dragged, starting screen + world,
+    // plus a scene snapshot captured before any mutation (used for undo
+    // checkpoints on drag-end).
     const draggedPointRef = React.useRef<string | null>(null);
     const dragStartRef = React.useRef<{ screen: { x: number; y: number }; world: Vec3 } | null>(null);
+    const dragSnapshotRef = React.useRef<SceneSnapshot | null>(null);
 
-    // Initial state load (Phase 7 — currently a stub returning empty scene).
+    // Initial state load — wrap in withoutHistory so loading doesn't pollute
+    // the undo stack with phantom "insert" entries.
     React.useEffect(() => {
       if (initialState) {
         const loaded = boardToScene(initialState);
-        scene.reset();
-        for (const obj of loaded.list()) {
-          scene.insert(obj);
-        }
+        scene.withoutHistory(() => {
+          scene.reset();
+          for (const obj of loaded.list()) {
+            scene.insert(obj);
+          }
+        });
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -93,10 +109,42 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       return unsub;
     }, []);
 
+    // Subscribe to history changes — propagate canUndo/canRedo upward.
+    React.useEffect(() => {
+      // Emit initial state once for the host's UI.
+      onHistoryChangeRef.current?.(scene.canUndo(), scene.canRedo());
+      const unsub = scene.onHistoryChange(() => {
+        onHistoryChangeRef.current?.(scene.canUndo(), scene.canRedo());
+      });
+      return unsub;
+    }, [scene]);
+
     // Sync controller when host changes selectedTool from outside (e.g. chord shortcut).
     React.useEffect(() => {
       controllerRef.current?.selectTool(selectedTool);
     }, [selectedTool]);
+
+    // Global keyboard shortcuts: Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, Ctrl+Y.
+    React.useEffect(() => {
+      const onKey = (e: KeyboardEvent) => {
+        const ae = document.activeElement as HTMLElement | null;
+        const inField = !!(ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable));
+        if (inField) return;
+        if (!(e.metaKey || e.ctrlKey)) return;
+        const key = e.key.toLowerCase();
+        if (key === 'z' && !e.shiftKey) {
+          e.preventDefault();
+          e.stopPropagation();
+          scene.undo();
+        } else if ((key === 'z' && e.shiftKey) || (key === 'y' && !e.shiftKey)) {
+          e.preventDefault();
+          e.stopPropagation();
+          scene.redo();
+        }
+      };
+      window.addEventListener('keydown', onKey, { capture: true });
+      return () => window.removeEventListener('keydown', onKey, { capture: true });
+    }, [scene]);
 
     // Dispose renderer on unmount.
     React.useEffect(() => {
@@ -152,6 +200,8 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       if (!board) return;
       const view = board.getView3D();
       if (!view) return;
+      // Suppress hover label updates while a drag is in progress.
+      if (draggedPointRef.current) return;
       let hit;
       try {
         hit = hitTest(screen, view, scene);
@@ -174,6 +224,8 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
     // Decides whether the pointerdown gesture is "ours" (drag/place a point)
     // or should fall through to MiniBoard3D's default view-rotate behaviour.
     // Returning true also suppresses view rotation for the rest of the gesture.
+    // Captures a scene snapshot before any mutation so onPointerDragEnd can
+    // push a single undo checkpoint for the whole gesture.
     const shouldStartPointDrag = React.useCallback((screen: { x: number; y: number }): boolean => {
       const view = boardRef.current?.getView3D();
       if (!view) return false;
@@ -183,9 +235,11 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       try { hit = hitTest(screen, view, scene); } catch { return false; }
 
       // Existing point: drag it (Z-only in Point mode, XY-raycast in Move mode).
+      // Snapshot before any mutation, drag-end will push a checkpoint.
       if (hit.kind === 'existingPoint') {
         const pt = scene.get(hit.pointId);
         if (!pt || pt.kind !== 'point') return false;
+        dragSnapshotRef.current = scene.snapshot();
         draggedPointRef.current = hit.pointId;
         dragStartRef.current = {
           screen,
@@ -194,16 +248,27 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
         return true;
       }
 
-      // Point tool: place-and-lift gesture. Create the point at the hit
-      // location now (Oxy ground or Ox/Oy/Oz axis) so the same gesture can
-      // immediately lift it along Oz on pointermove. Bypasses the controller
-      // (Point tool has repeatAfterBuild so there's no collected-state to
-      // unwind); the click→consumeHit→buildPoint path is short-circuited in
-      // MiniBoard3D.handlePointerUp when pointDragMode is set.
+      // Point tool: place-and-lift gesture. Capture snapshot first, then
+      // create the point inside withoutHistory so only the drag-end checkpoint
+      // ends up on the undo stack (otherwise addPoint would push an extra one).
+      // Bypasses the controller (Point tool has repeatAfterBuild so there's no
+      // collected-state to unwind); the click→consumeHit→buildPoint path is
+      // short-circuited in MiniBoard3D.handlePointerUp when pointDragMode is set.
       if (tool === 'point' && (hit.kind === 'onGround' || hit.kind === 'onAxis')) {
+        dragSnapshotRef.current = scene.snapshot();
         const constraint = hitToConstraint(hit);
-        if (!constraint) return false;
-        const id = scene.addPoint(constraint);
+        if (!constraint) {
+          dragSnapshotRef.current = null;
+          return false;
+        }
+        let id: string | null = null;
+        scene.withoutHistory(() => {
+          id = scene.addPoint(constraint);
+        });
+        if (!id) {
+          dragSnapshotRef.current = null;
+          return false;
+        }
         draggedPointRef.current = id;
         dragStartRef.current = {
           screen,
@@ -214,8 +279,9 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
 
       // Point tool but non-placeable surface (sphere/plane/empty): suppress
       // view rotation so the camera never rotates accidentally while the user
-      // is placing points, but don't enter a drag.
+      // is placing points, but don't enter a drag. Clear snapshot defensively.
       if (tool === 'point') {
+        dragSnapshotRef.current = null;
         draggedPointRef.current = null;
         dragStartRef.current = null;
         return true;
@@ -256,9 +322,14 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
     }, [scene]);
 
     const onPointerDragEnd = React.useCallback(() => {
+      const snap = dragSnapshotRef.current;
+      dragSnapshotRef.current = null;
       draggedPointRef.current = null;
       dragStartRef.current = null;
-    }, []);
+      if (snap) {
+        scene.pushUndoCheckpoint(snap);
+      }
+    }, [scene]);
 
     React.useImperativeHandle(
       ref,
@@ -279,6 +350,8 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
           );
         },
         setTool: (k) => controllerRef.current!.selectTool(k),
+        undo: () => scene.undo(),
+        redo: () => scene.redo(),
       }),
       [scene],
     );

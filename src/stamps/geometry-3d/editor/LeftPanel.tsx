@@ -32,6 +32,8 @@ export interface LeftPanelProps {
   onShowGridChange: (b: boolean) => void;
   onUndo: () => void;
   canUndo: boolean;
+  onRedo: () => void;
+  canRedo: boolean;
   onClose: () => void;
   isDark?: boolean;
   isMobile?: boolean;
@@ -71,11 +73,20 @@ function GridIcon() {
   );
 }
 
-function UndoIcon() {
+export function UndoIcon(): React.ReactElement {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M3 10 L8 5 L8 8 L15 8 A5 5 0 0 1 20 13 L20 16" />
       <path d="M3 10 L8 15 L8 12" />
+    </svg>
+  );
+}
+
+export function RedoIcon(): React.ReactElement {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M21 10 L16 5 L16 8 L9 8 A5 5 0 0 0 4 13 L4 16" />
+      <path d="M21 10 L16 15 L16 12" />
     </svg>
   );
 }
@@ -179,6 +190,8 @@ function DesktopPanel(props: LeftPanelProps) {
     onShowGridChange,
     onUndo,
     canUndo,
+    onRedo,
+    canRedo,
     onClose,
     isDark,
     chordGroup,
@@ -220,17 +233,30 @@ function DesktopPanel(props: LeftPanelProps) {
                   />
                   Lưới
                 </label>
-                <button
-                  type="button"
-                  onClick={onUndo}
-                  disabled={!canUndo}
-                  title="Hoàn tác (Ctrl/Cmd+Z)"
-                  aria-label="Hoàn tác"
-                  data-testid="undo-btn"
-                  className="ml-auto inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
-                >
-                  <UndoIcon />
-                </button>
+                <div className="ml-auto flex items-center gap-0.5">
+                  <button
+                    type="button"
+                    onClick={onUndo}
+                    disabled={!canUndo}
+                    title="Hoàn tác (Ctrl/Cmd+Z)"
+                    aria-label="Hoàn tác"
+                    data-testid="undo-btn"
+                    className="inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
+                  >
+                    <UndoIcon />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onRedo}
+                    disabled={!canRedo}
+                    title="Làm lại (Ctrl/Cmd+Shift+Z)"
+                    aria-label="Làm lại"
+                    data-testid="redo-btn"
+                    className="inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
+                  >
+                    <RedoIcon />
+                  </button>
+                </div>
               </div>
             </Section>
 
@@ -317,6 +343,8 @@ function MobilePanel(props: LeftPanelProps) {
     onShowGridChange,
     onUndo,
     canUndo,
+    onRedo,
+    canRedo,
     isDark,
     drawerOpen,
     onDrawerClose,
@@ -369,6 +397,15 @@ function MobilePanel(props: LeftPanelProps) {
           icon: <UndoIcon />,
           onClick: onUndo,
           disabled: !canUndo,
+          testId: 'undo-btn',
+        },
+        {
+          label: 'Làm lại',
+          title: 'Làm lại (Ctrl/Cmd+Shift+Z)',
+          icon: <RedoIcon />,
+          onClick: onRedo,
+          disabled: !canRedo,
+          testId: 'redo-btn',
         },
       ]}
       groups={groups}

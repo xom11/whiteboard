@@ -78,4 +78,44 @@ describe('GeometryEditorPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Huỷ' }));
     expect(onClose).toHaveBeenCalled();
   });
+
+  it('mobile header có undo/redo buttons', () => {
+    const onUndo = jest.fn();
+    const onRedo = jest.fn();
+    render(
+      <GeometryEditorPanel
+        initialState={null}
+        onInsert={() => {}}
+        onClose={() => {}}
+        isMobile
+        canUndo
+        canRedo
+        onUndo={onUndo}
+        onRedo={onRedo}
+      />,
+    );
+    const u = screen.getByTestId('undo-btn-mobile');
+    const r = screen.getByTestId('redo-btn-mobile');
+    expect(u).not.toBeDisabled();
+    expect(r).not.toBeDisabled();
+    fireEvent.click(u);
+    fireEvent.click(r);
+    expect(onUndo).toHaveBeenCalledTimes(1);
+    expect(onRedo).toHaveBeenCalledTimes(1);
+  });
+
+  it('mobile header undo/redo disabled khi canUndo/canRedo=false', () => {
+    render(
+      <GeometryEditorPanel
+        initialState={null}
+        onInsert={() => {}}
+        onClose={() => {}}
+        isMobile
+        canUndo={false}
+        canRedo={false}
+      />,
+    );
+    expect(screen.getByTestId('undo-btn-mobile')).toBeDisabled();
+    expect(screen.getByTestId('redo-btn-mobile')).toBeDisabled();
+  });
 });

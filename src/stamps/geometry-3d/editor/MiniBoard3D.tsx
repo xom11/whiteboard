@@ -27,6 +27,11 @@ export interface MiniBoard3DProps {
    */
   shouldStartPointDrag?: (screen: { x: number; y: number }) => boolean;
   onPointerDrag?: (screen: { x: number; y: number }) => void;
+  /**
+   * Called at the end of a point-drag gesture (also invoked defensively on
+   * pointerleave during an in-flight drag). The screen coord is in user-space.
+   * Consumers that only need a "drag ended" notification may ignore the arg.
+   */
   onPointerDragEnd?: (screen: { x: number; y: number }) => void;
 }
 
@@ -274,9 +279,10 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
             try { svgEl.releasePointerCapture?.(e.pointerId); } catch { /* ignore */ }
             // When the consumer claimed the gesture (pointDragMode), it owns
             // both placement and finalisation. Always run onPointerDragEnd so
-            // any consumer-side refs are cleared, and SKIP onPointerClick to
-            // avoid double-handling (e.g. Point-tool place-and-lift creates
-            // the point in shouldStartPointDrag; we mustn't also fire the
+            // any consumer-side refs are cleared (and an undo checkpoint can
+            // be pushed), and SKIP onPointerClick to avoid double-handling
+            // (e.g. Point-tool place-and-lift creates the point in
+            // shouldStartPointDrag; we mustn't also fire the
             // click→consumeHit→buildPoint path).
             if (hadDown && wasPointDrag) {
               onPointerDragEndRef.current?.(pixelToUser(e));

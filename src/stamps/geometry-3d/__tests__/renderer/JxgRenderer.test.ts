@@ -136,3 +136,18 @@ test('JxgRenderer creates faceted polygons for cone', () => {
   // 1 base + 16 triangles
   expect(polygons).toHaveLength(17);
 });
+
+test('reset event clears internal map', () => {
+  const scene = new Scene3D();
+  const view = mockView();
+  const renderer = new JxgRenderer(scene, view as never);
+  scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
+  scene.addPoint({ kind: 'free', x: 1, y: 1, z: 1 });
+  expect((renderer as unknown as { map: Map<string, unknown> }).map.size).toBe(2);
+
+  // Trigger reset event thông qua internal listeners của scene
+  (scene as unknown as { listeners: { reset: Set<() => void> } }).listeners.reset.forEach((cb) => cb());
+
+  expect((renderer as unknown as { map: Map<string, unknown> }).map.size).toBe(0);
+  renderer.dispose();
+});

@@ -33,6 +33,10 @@ export interface MiniBoardHandle {
   undo: () => void;
   /** Có gì để undo? */
   canUndo: () => boolean;
+  /** Redo bước vừa undo. */
+  redo: () => void;
+  /** Có gì để redo? */
+  canRedo: () => boolean;
   /** Subscribe khi state thay đổi (tool / showAxis / showGrid / undo). */
   subscribe: (cb: () => void) => () => void;
   /** Đọc snapshot thuộc tính object (cho popover). */
@@ -89,6 +93,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
   const jxgRef = useRef<JxgObj>(null);
   const axisObjsRef = useRef<{ x?: JxgObj; y?: JxgObj }>({});
   const creationLogRef = useRef<SerializedElement[]>([]);
+  const redoStackRef = useRef<SerializedElement[]>([]);
 
   const [tool, setTool] = useState<GeomTool>('move');
   const toolRef = useRef<GeomTool>('move');
@@ -167,13 +172,19 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     });
   }, []);
 
+  // Push entry mới vào creationLog + clear redoStack (chuẩn UX undo/redo).
+  const pushCreationLog = useCallback((entry: SerializedElement) => {
+    creationLogRef.current.push(entry);
+    redoStackRef.current = [];
+  }, []);
+
   const pushLog = useCallback(
     (id: string, type: string, args: unknown[], attrs: Record<string, unknown>, obj: JxgObj) => {
-      creationLogRef.current.push({ id, type, args, attrs });
+      pushCreationLog({ id, type, args, attrs });
       objMapRef.current.set(id, obj);
       setHistoryTick((t) => t + 1);
     },
-    [],
+    [pushCreationLog],
   );
 
   const create = useCallback(
@@ -305,7 +316,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
           const targetId = localIdOf(o);
           if (targetId) {
             const id = nextLocalId();
-            creationLogRef.current.push({ id, type: 'valueLabel', args: [targetId], attrs: {} });
+            pushCreationLog({ id, type: 'valueLabel', args: [targetId], attrs: {} });
             objMapRef.current.set(id, txt);
             setHistoryTick((t) => t + 1);
           }
@@ -735,7 +746,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
       }
       const stepId = nextLocalId();
       const stepObj = boardRef.current.create('transform', step.params, step.attrs);
-      creationLogRef.current.push({ id: stepId, type: 'transform', args: stepLogArgs, attrs: step.attrs as Record<string, unknown> });
+      pushCreationLog({ id: stepId, type: 'transform', args: stepLogArgs, attrs: step.attrs as Record<string, unknown> });
       objMapRef.current.set(stepId, stepObj);
       transformObjs.push(stepObj);
       transformIds.push(stepId);
@@ -756,7 +767,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
       const newName = srcName ? `${srcName}'` : nextLabel();
       const attrs = { name: newName, size: 3, color: '#0ea5e9', strokeColor: '#0ea5e9', fillColor: '#0ea5e9' };
       const obj = boardRef.current!.create('point', [src, transformParent], attrs);
-      creationLogRef.current.push({ id, type: 'point', args: [srcId ?? src, transformLogRef], attrs });
+      pushCreationLog({ id, type: 'point', args: [srcId ?? src, transformLogRef], attrs });
       objMapRef.current.set(id, obj);
       return obj;
     });
@@ -777,6 +788,33 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     setHistoryTick((t) => t + 1);
   }, [create, flashWarn, localIdOf, nextLabel, nextLocalId]);
 
+  // Tái dựng 1 object từ entry log đã serialize. Dùng chung cho cả
+  // initial-state replay và redo. Trả về true nếu tạo thành công.
+  const recreateFromLogEntry = useCallback((el: SerializedElement): boolean => {
+    const board = boardRef.current;
+    if (!board) return false;
+    const idMap = objMapRef.current;
+    const resolved = el.args.map(a => (typeof a === 'string' && idMap.has(a)) ? idMap.get(a) : a);
+    try {
+      if (el.type === 'valueLabel') {
+        const target = resolved[0];
+        if (!target) return false;
+        const txt = createValueLabelFor(target);
+        if (!txt) return false;
+        idMap.set(el.id, txt);
+        valueLabelsRef.current.set(target, txt);
+        return true;
+      }
+      const themedAttrs = resolveAttrColors({ ...el.attrs }, paletteFor(isDarkRef.current));
+      const obj = board.create(el.type, resolved, themedAttrs);
+      idMap.set(el.id, obj);
+      return true;
+    } catch (err) {
+      console.warn('Recreate failed for', el.type, err);
+      return false;
+    }
+  }, [createValueLabelFor]);
+
   // Undo: remove the most recently logged creation. Also clears any in-progress
   // polygon construction (pending picks + preview segments) so state is sane.
   const undoLast = useCallback(() => {
@@ -790,14 +828,33 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
       if (obj) {
         try { b.removeObject(obj); } catch { /* ignore */ }
         clearPending();
+        // Push entry này vào redoStack (chỉ entry có object thật).
+        redoStackRef.current.push(last);
         setHistoryTick((t) => t + 1);
         try { b.update(); } catch { /* ignore */ }
         return;
       }
-      // Skip stale log entry (object already gone) and continue popping
+      // Skip stale log entry (object đã biến mất từ trước) — không push vào redoStack
     }
     setHistoryTick((t) => t + 1);
   }, [clearPending]);
+
+  // Redo: pop entry cuối khỏi redoStack và tái tạo object.
+  const redoNext = useCallback(() => {
+    const b = boardRef.current;
+    if (!b) return;
+    const entry = redoStackRef.current.pop();
+    if (!entry) {
+      setHistoryTick((t) => t + 1);
+      return;
+    }
+    const ok = recreateFromLogEntry(entry);
+    if (ok) {
+      creationLogRef.current.push(entry);
+    }
+    setHistoryTick((t) => t + 1);
+    try { b.update(); } catch { /* ignore */ }
+  }, [recreateFromLogEntry]);
 
   // Global Ctrl/Cmd+Z + Esc while the panel is mounted. Skipped when focus is
   // in a text input so we don't hijack other undo flows. Capture phase + stop
@@ -812,6 +869,20 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
         e.preventDefault();
         e.stopPropagation();
         undoLastRef.current();
+        return;
+      }
+      // Ctrl/Cmd+Shift+Z hoặc Ctrl+Y → redo
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        (
+          (e.key.toLowerCase() === 'z' && e.shiftKey) ||
+          (e.key.toLowerCase() === 'y' && !e.shiftKey)
+        )
+      ) {
+        if (inField) return;
+        e.preventDefault();
+        e.stopPropagation();
+        redoNextRef.current();
         return;
       }
       if (e.key === 'Escape' && !inField) {
@@ -1007,28 +1078,8 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
 
       // Replay initial state if any
       if (initialState && initialState.elements.length > 0) {
-        const idMap = objMapRef.current;
         for (const el of initialState.elements) {
-          const resolved = el.args.map(a => (typeof a === 'string' && idMap.has(a)) ? idMap.get(a) : a);
-          try {
-            if (el.type === 'valueLabel') {
-              // Synthetic: regenerate dynamic text gắn với target.
-              const target = resolved[0];
-              if (target) {
-                const txt = createValueLabelFor(target);
-                if (txt) {
-                  idMap.set(el.id, txt);
-                  valueLabelsRef.current.set(target, txt);
-                }
-              }
-              continue;
-            }
-            const themedAttrs = resolveAttrColors({ ...el.attrs }, paletteFor(isDarkRef.current));
-            const obj = board.create(el.type, resolved, themedAttrs);
-            idMap.set(el.id, obj);
-          } catch (err) {
-            console.warn('Replay failed for', el.type, err);
-          }
+          recreateFromLogEntry(el);
         }
         creationLogRef.current = [...initialState.elements];
         labelIdxRef.current = initialState.elements.filter(e => e.type === 'point').length;
@@ -1129,6 +1180,8 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
         setShowGrid: (b: boolean) => setShowGridRef.current(b),
         undo: () => undoLastRef.current(),
         canUndo: () => creationLogRef.current.length > 0,
+        redo: () => redoNextRef.current(),
+        canRedo: () => redoStackRef.current.length > 0,
         subscribe: (cb: () => void) => {
           subscribersRef.current.add(cb);
           return () => { subscribersRef.current.delete(cb); };
@@ -1281,6 +1334,8 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
 
   const undoLastRef = useRef(undoLast);
   undoLastRef.current = undoLast;
+  const redoNextRef = useRef(redoNext);
+  redoNextRef.current = redoNext;
   const clearPendingRef = useRef(clearPending);
   clearPendingRef.current = clearPending;
   const finalizeTransformCreateRef = useRef(finalizeTransformCreate);

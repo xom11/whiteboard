@@ -53,6 +53,21 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
     const [selectedTool, setSelectedTool] = useState<ToolKey>('move');
     const [showAxis, setShowAxis] = useState<boolean>(true);
     const [showGrid, setShowGrid] = useState<boolean>(true);
+    const [canUndo, setCanUndo] = useState<boolean>(false);
+    const [canRedo, setCanRedo] = useState<boolean>(false);
+
+    const handleHistoryChange = useCallback((u: boolean, r: boolean) => {
+      setCanUndo(u);
+      setCanRedo(r);
+    }, []);
+
+    const handleUndo = useCallback(() => {
+      editorRef.current?.undo();
+    }, []);
+
+    const handleRedo = useCallback(() => {
+      editorRef.current?.redo();
+    }, []);
 
     const initial = useMemo(
       () => parseInitial(editingElement),
@@ -140,10 +155,10 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
             showGrid={showGrid}
             onShowAxisChange={setShowAxis}
             onShowGridChange={setShowGrid}
-            onUndo={() => {
-              /* TODO: wire to Scene3D history once available */
-            }}
-            canUndo={false}
+            onUndo={handleUndo}
+            canUndo={canUndo}
+            onRedo={handleRedo}
+            canRedo={canRedo}
             onClose={onClose}
             isDark={isDark}
             chordGroup={chordGroup}
@@ -218,6 +233,7 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
               showAxis={showAxis}
               showGrid={showGrid}
               onReadyChange={setReady}
+              onHistoryChange={handleHistoryChange}
             />
           </div>
           {!isMobile && (
@@ -251,10 +267,10 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
             showGrid={showGrid}
             onShowAxisChange={setShowAxis}
             onShowGridChange={setShowGrid}
-            onUndo={() => {
-              /* TODO: wire to Scene3D history once available */
-            }}
-            canUndo={false}
+            onUndo={handleUndo}
+            canUndo={canUndo}
+            onRedo={handleRedo}
+            canRedo={canRedo}
             onClose={onClose}
             isDark={isDark}
             isMobile

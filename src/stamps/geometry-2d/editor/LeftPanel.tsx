@@ -81,11 +81,20 @@ function CloseIcon() {
   );
 }
 
-function UndoIcon() {
+export function UndoIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="3 7 3 13 9 13" />
       <path d="M3.51 13a9 9 0 1 0 2.13-9.36L3 7" />
+    </svg>
+  );
+}
+
+export function RedoIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="21 7 21 13 15 13" />
+      <path d="M20.49 13a9 9 0 1 1-2.13-9.36L21 7" />
     </svg>
   );
 }
@@ -124,6 +133,8 @@ interface GeometryLeftPanelProps {
   onShowGridChange: (b: boolean) => void;
   onUndo: () => void;
   canUndo: boolean;
+  onRedo: () => void;
+  canRedo: boolean;
   onClose: () => void;
   isDark?: boolean;
   isMobile?: boolean;
@@ -169,7 +180,7 @@ function useToolHoverTooltip() {
 // ---------- Desktop left panel ----------
 
 function DesktopGeometryPanel(props: GeometryLeftPanelProps) {
-  const { activeTool, onToolChange, showAxis, showGrid, onShowAxisChange, onShowGridChange, onUndo, canUndo, onClose, isDark, chordGroup } = props;
+  const { activeTool, onToolChange, showAxis, showGrid, onShowAxisChange, onShowGridChange, onUndo, canUndo, onRedo, canRedo, onClose, isDark, chordGroup } = props;
 
   const grouped = useMemo(() => {
     return TOOLS.reduce<Record<string, ToolDef[]>>((acc, t) => {
@@ -217,9 +228,21 @@ function DesktopGeometryPanel(props: GeometryLeftPanelProps) {
               disabled={!canUndo}
               title="Hoàn tác (Ctrl/Cmd+Z)"
               aria-label="Hoàn tác"
+              data-testid="undo-btn"
               className="ml-auto inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
             >
               <UndoIcon />
+            </button>
+            <button
+              type="button"
+              onClick={onRedo}
+              disabled={!canRedo}
+              title="Làm lại (Ctrl/Cmd+Shift+Z)"
+              aria-label="Làm lại"
+              data-testid="redo-btn"
+              className="inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
+            >
+              <RedoIcon />
             </button>
           </div>
         </Section>
@@ -353,6 +376,8 @@ function MobileGeometryPanel(props: GeometryLeftPanelProps) {
     onShowGridChange,
     onUndo,
     canUndo,
+    onRedo,
+    canRedo,
     isDark,
     drawerOpen,
     onDrawerClose,
@@ -402,6 +427,13 @@ function MobileGeometryPanel(props: GeometryLeftPanelProps) {
           icon: <UndoIcon />,
           onClick: onUndo,
           disabled: !canUndo,
+        },
+        {
+          label: 'Làm lại',
+          title: 'Làm lại (Ctrl/Cmd+Shift+Z)',
+          icon: <RedoIcon />,
+          onClick: onRedo,
+          disabled: !canRedo,
         },
       ]}
       groups={groups}

@@ -1,4 +1,4 @@
-import { Scene3D } from '../../editor/scene/Scene3D';
+import { Scene3D, type SceneSnapshot } from '../../editor/scene/Scene3D';
 
 test('addPoint generates unique id and emits add', () => {
   const scene = new Scene3D();
@@ -76,4 +76,102 @@ test('delete emits delete event for each cascaded id', () => {
   scene.on('delete', (id) => deletes.push(id));
   scene.delete(a);
   expect(deletes.sort()).toEqual([a, seg].sort());
+});
+
+describe('Scene3D — history', () => {
+  it('snapshot() capture toàn bộ state hiện tại (immutable)', () => {
+    const scene = new Scene3D();
+    const id1 = scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
+    const snap = scene.snapshot();
+    scene.addPoint({ kind: 'free', x: 1, y: 1, z: 1 });
+    expect(snap.objects.size).toBe(1);
+    expect(snap.objects.has(id1)).toBe(true);
+    expect(snap.order).toEqual([id1]);
+    expect(scene.list().length).toBe(2);
+  });
+
+  it('restore() khôi phục đúng state từ snapshot + emit reset+add', () => {
+    const scene = new Scene3D();
+    const events: string[] = [];
+    scene.on('reset', () => events.push('reset'));
+    scene.on('add', (o) => events.push(`add:${o.id}`));
+    const id1 = scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
+    const snap = scene.snapshot();
+    scene.addPoint({ kind: 'free', x: 5, y: 5, z: 5 });
+    events.length = 0;
+    (scene as unknown as { restore: (s: SceneSnapshot) => void }).restore(snap);
+    expect(scene.list().length).toBe(1);
+    expect(scene.get(id1)).toBeDefined();
+    expect(events[0]).toBe('reset');
+    expect(events.some((e) => e === `add:${id1}`)).toBe(true);
+  });
+
+  it('addPoint → undo → state rỗng + canUndo=false', () => {
+    const scene = new Scene3D();
+    expect(scene.canUndo()).toBe(false);
+    scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
+    expect(scene.canUndo()).toBe(true);
+    expect(scene.canRedo()).toBe(false);
+    scene.undo();
+    expect(scene.list().length).toBe(0);
+    expect(scene.canUndo()).toBe(false);
+    expect(scene.canRedo()).toBe(true);
+  });
+
+  it('undo → redo → trở lại state cũ', () => {
+    const scene = new Scene3D();
+    const id1 = scene.addPoint({ kind: 'free', x: 1, y: 2, z: 3 });
+    scene.undo();
+    scene.redo();
+    expect(scene.list().length).toBe(1);
+    expect(scene.get(id1)).toBeDefined();
+    expect(scene.canUndo()).toBe(true);
+    expect(scene.canRedo()).toBe(false);
+  });
+
+  it('mutation mới sau undo clears redo future', () => {
+    const scene = new Scene3D();
+    scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
+    scene.undo();
+    expect(scene.canRedo()).toBe(true);
+    scene.addPoint({ kind: 'free', x: 5, y: 5, z: 5 });
+    expect(scene.canRedo()).toBe(false);
+  });
+
+  it('withoutHistory bypass capture', () => {
+    const scene = new Scene3D();
+    scene.withoutHistory(() => {
+      scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
+      scene.addPoint({ kind: 'free', x: 1, y: 1, z: 1 });
+    });
+    expect(scene.list().length).toBe(2);
+    expect(scene.canUndo()).toBe(false);
+  });
+
+  it('pushUndoCheckpoint thêm snapshot vào past + clear future', () => {
+    const scene = new Scene3D();
+    const before = scene.snapshot();
+    scene.withoutHistory(() => {
+      scene.addPoint({ kind: 'free', x: 5, y: 5, z: 5 });
+    });
+    scene.pushUndoCheckpoint(before);
+    expect(scene.canUndo()).toBe(true);
+    scene.undo();
+    expect(scene.list().length).toBe(0);
+  });
+
+  it('onHistoryChange listener fired sau mutation/undo/redo', () => {
+    const scene = new Scene3D();
+    let count = 0;
+    const unsub = scene.onHistoryChange(() => { count += 1; });
+    scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
+    expect(count).toBeGreaterThanOrEqual(1);
+    const before = count;
+    scene.undo();
+    expect(count).toBeGreaterThan(before);
+    unsub();
+    const after = count;
+    scene.redo();
+    expect(count).toBe(after);
+  });
 });

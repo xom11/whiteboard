@@ -29,6 +29,8 @@ export interface MobileActionButton {
   onClick: () => void;
   disabled?: boolean;
   title?: string;
+  /** data-testid optional (cho phép test target button cụ thể) */
+  testId?: string;
 }
 
 export interface MobileTool<TKey extends string> {
@@ -141,6 +143,7 @@ export function MobileToolDrawer<TKey extends string, TGroup extends string>({
                 disabled={a.disabled}
                 aria-label={a.label}
                 title={a.title ?? a.label}
+                data-testid={a.testId}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
               >
                 {a.icon}

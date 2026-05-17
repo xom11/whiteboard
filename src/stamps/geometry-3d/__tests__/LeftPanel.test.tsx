@@ -16,6 +16,8 @@ function renderPanel(overrides: Partial<React.ComponentProps<typeof LeftPanel>> 
       onShowGridChange={() => undefined}
       onUndo={() => undefined}
       canUndo={false}
+      onRedo={() => undefined}
+      canRedo={false}
       onClose={() => undefined}
       {...overrides}
     />,
@@ -63,5 +65,35 @@ describe('LeftPanel (3D — aligned with 2D)', () => {
   test('mobile renders MobileToolDrawer when isMobile + drawerOpen', () => {
     renderPanel({ isMobile: true, drawerOpen: true });
     expect(screen.getByTestId('left-panel')).toBeInTheDocument();
+  });
+});
+
+describe('LeftPanel — undo/redo buttons', () => {
+  it('Undo button enabled khi canUndo=true', () => {
+    const onUndo = jest.fn();
+    renderPanel({ onUndo, canUndo: true });
+    const btn = screen.getByTestId('undo-btn');
+    expect(btn).not.toBeDisabled();
+    fireEvent.click(btn);
+    expect(onUndo).toHaveBeenCalledTimes(1);
+  });
+
+  it('Undo button disabled khi canUndo=false', () => {
+    renderPanel({ canUndo: false });
+    expect(screen.getByTestId('undo-btn')).toBeDisabled();
+  });
+
+  it('Redo button rendered + enabled khi canRedo=true', () => {
+    const onRedo = jest.fn();
+    renderPanel({ onRedo, canRedo: true });
+    const btn = screen.getByTestId('redo-btn');
+    expect(btn).not.toBeDisabled();
+    fireEvent.click(btn);
+    expect(onRedo).toHaveBeenCalledTimes(1);
+  });
+
+  it('Redo button disabled khi canRedo=false', () => {
+    renderPanel({ canRedo: false });
+    expect(screen.getByTestId('redo-btn')).toBeDisabled();
   });
 });

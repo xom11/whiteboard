@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { GeometryLeftPanel } from '../editor/LeftPanel';
 
 function mount(chordGroup: 'move' | 'point' | 'line' | null) {
@@ -12,6 +12,8 @@ function mount(chordGroup: 'move' | 'point' | 'line' | null) {
       onShowGridChange={() => {}}
       onUndo={() => {}}
       canUndo={false}
+      onRedo={() => {}}
+      canRedo={false}
       onClose={() => {}}
       isMobile={false}
       chordGroup={chordGroup}
@@ -68,5 +70,49 @@ describe('GeometryLeftPanel — chord UI', () => {
       '[data-chord-group="move"]',
     );
     expect(otherSection?.getAttribute('data-chord-active')).toBe('false');
+  });
+});
+
+describe('GeometryLeftPanel — Redo button', () => {
+  it('hiển thị Redo button với state canRedo', () => {
+    const onRedo = jest.fn();
+    render(
+      <GeometryLeftPanel
+        activeTool="move"
+        onToolChange={() => {}}
+        showAxis={false}
+        showGrid={false}
+        onShowAxisChange={() => {}}
+        onShowGridChange={() => {}}
+        onUndo={() => {}}
+        canUndo={false}
+        onRedo={onRedo}
+        canRedo={true}
+        onClose={() => {}}
+      />,
+    );
+    const btn = screen.getByTestId('redo-btn');
+    expect(btn).not.toBeDisabled();
+    fireEvent.click(btn);
+    expect(onRedo).toHaveBeenCalledTimes(1);
+  });
+
+  it('Redo button disabled khi canRedo=false', () => {
+    render(
+      <GeometryLeftPanel
+        activeTool="move"
+        onToolChange={() => {}}
+        showAxis={false}
+        showGrid={false}
+        onShowAxisChange={() => {}}
+        onShowGridChange={() => {}}
+        onUndo={() => {}}
+        canUndo={true}
+        onRedo={() => {}}
+        canRedo={false}
+        onClose={() => {}}
+      />,
+    );
+    expect(screen.getByTestId('redo-btn')).toBeDisabled();
   });
 });

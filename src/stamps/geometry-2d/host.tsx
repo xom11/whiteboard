@@ -31,6 +31,7 @@ const INITIAL_GEOM_STATE: GeomBoardState = {
   showAxis: false,
   showGrid: false,
   canUndo: false,
+  canRedo: false,
 };
 
 export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
@@ -101,6 +102,8 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
           onShowGridChange={(b) => panelRef.current?.setShowGrid(b)}
           onUndo={() => panelRef.current?.undo()}
           canUndo={geomState.canUndo}
+          onRedo={() => panelRef.current?.redo()}
+          canRedo={geomState.canRedo}
           onClose={onClose}
           isDark={isDark}
           isMobile={isMobile}
@@ -118,6 +121,10 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
           isDark={isDark}
           isMobile={isMobile}
           onOpenDrawer={() => setDrawerOpen(true)}
+          onUndo={() => panelRef.current?.undo()}
+          onRedo={() => panelRef.current?.redo()}
+          canUndo={geomState.canUndo}
+          canRedo={geomState.canRedo}
         />
       </>
     );
