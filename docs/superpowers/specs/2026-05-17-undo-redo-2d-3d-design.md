@@ -72,10 +72,15 @@ Vẫn `preventDefault + stopPropagation` capture-phase để override Excalidraw
 - Thêm `RedoIcon` (mirror UndoIcon, flip horizontal)
 - `GeometryLeftPanelProps` thêm `onRedo: () => void; canRedo: boolean`
 - Desktop section "Bố cục": thêm button Redo bên phải Undo, cùng style, `title="Làm lại (Ctrl/Cmd+Shift+Z)"`, `aria-label="Làm lại"`
-- Mobile `actions` array: thêm action thứ 2 (Redo) ngay sau Undo
+- Mobile `actions` array: thêm action thứ 2 (Redo) ngay sau Undo (consistency với desktop, khi user mở drawer)
+
+**File:** `src/stamps/geometry-2d/editor/EditorPanel.tsx` (mobile header bar)
+- `Props` thêm `onUndo?, onRedo?, canUndo?, canRedo?` (host pass xuống)
+- Trong nhánh `{isMobile && ...}` của header gradient emerald-teal: thêm 2 icon-only button **Undo** + **Redo** ngay TRƯỚC button "Chèn", style đồng bộ ("inline-flex h-9 w-9 rounded transition hover:bg-white/15", disabled opacity-50)
+- Icon dùng chung file `LeftPanel.tsx` (export `UndoIcon`, `RedoIcon`)
 
 **File:** `src/Whiteboard.tsx` (hoặc nơi render `GeometryStampHost` 2D)
-- Wire `canRedo` từ `GeomBoardState` xuống `LeftPanel`, `onRedo` → `editorRef.current?.redo()`
+- Wire `canRedo` từ `GeomBoardState` xuống `LeftPanel` + `EditorPanel`, `onUndo`/`onRedo` → `editorRef.current?.undo()`/`.redo()`
 
 ### 3. 3D Scene3D: history layer
 
@@ -224,10 +229,16 @@ useEffect(() => {
 
 **File:** `src/stamps/geometry-3d/editor/LeftPanel.tsx`
 
-- Thêm `RedoIcon` (mirror `UndoIcon`)
+- Thêm `RedoIcon` (mirror `UndoIcon`), export `UndoIcon`+`RedoIcon` để host dùng chung
 - `LeftPanelProps` thêm `onRedo: () => void; canRedo: boolean`
 - Desktop `Góc nhìn` section: thêm button Redo bên cạnh Undo, cùng style, `title="Làm lại (Ctrl/Cmd+Shift+Z)"`, `data-testid="redo-btn"`
-- Mobile drawer `actions`: thêm action thứ 2 Redo
+- Mobile drawer `actions`: thêm action thứ 2 Redo (consistency với desktop, khi user mở drawer)
+
+**Mobile header bar (`host.tsx` nhánh `isMobile`)**:
+- Thêm 2 icon-only button **Undo** + **Redo** ngay TRƯỚC button "Chèn" trong header gradient emerald-teal
+- Style giống các icon button khác trong header: `inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15 disabled:opacity-40`
+- `disabled={!canUndo}` / `disabled={!canRedo}` (state đã có trong host từ subscribe)
+- `data-testid="undo-btn-mobile"`, `data-testid="redo-btn-mobile"`
 
 ## Data flow
 
@@ -332,22 +343,22 @@ Mọi assertion về handle (`undo`, `canUndo`) phải vẫn pass + thêm cho `r
 1. Mở 2D stamp → vẽ 3 đoạn → Ctrl+Z × 3 → 3 đoạn biến mất → Ctrl+Shift+Z × 3 → cả 3 quay lại.
 2. Mở 3D stamp → tạo 2 point + 1 segment → Ctrl+Z × 3 → empty → Ctrl+Shift+Z × 3 → khôi phục.
 3. Drag 1 point sang vị trí mới → Ctrl+Z → trở về vị trí cũ.
-4. Mobile: mở drawer → thấy nút Hoàn tác + Làm lại cạnh nhau.
+4. Mobile: header bar có 2 icon-only Undo+Redo ngay trước "Chèn", luôn hiện; tap được không cần mở drawer. Mở drawer cũng thấy 2 action tương ứng.
 5. Reopen stamp đã chèn → undo/redo state khởi tạo rỗng (history không persist qua serialize — đúng).
 
 ## Files thay đổi
 
 ```
 M  src/stamps/geometry-2d/editor/MiniBoard.tsx              (~+60 LoC: redoStack, redoNext, recreateFromLogEntry refactor, keyboard nhánh redo)
-M  src/stamps/geometry-2d/editor/EditorPanel.tsx            (~+10 LoC: canRedo state, redo handle)
-M  src/stamps/geometry-2d/editor/LeftPanel.tsx              (~+40 LoC: RedoIcon, props, button, mobile action)
+M  src/stamps/geometry-2d/editor/EditorPanel.tsx            (~+25 LoC: canRedo state, redo handle, mobile header undo/redo buttons)
+M  src/stamps/geometry-2d/editor/LeftPanel.tsx              (~+45 LoC: RedoIcon, props, button, mobile drawer action, export icons)
 M  src/Whiteboard.tsx                                       (~+5 LoC: wire canRedo/onRedo)
 
 M  src/stamps/geometry-3d/editor/scene/Scene3D.ts           (~+90 LoC: snapshot, undo, redo, history APIs)
 M  src/stamps/geometry-3d/editor/EditorPanel.tsx            (~+10 LoC: dragSnapshotRef + drag flow + withoutHistory init)
 M  src/stamps/geometry-3d/editor/renderer/JxgRenderer.ts    (~+10 LoC nếu cần handle 'reset' chưa có)
-M  src/stamps/geometry-3d/editor/LeftPanel.tsx              (~+40 LoC: RedoIcon, props, button, mobile action)
-M  src/stamps/geometry-3d/host.tsx                          (~+30 LoC: canUndo/canRedo state, subscribe, keyboard listener, wire LeftPanel)
+M  src/stamps/geometry-3d/editor/LeftPanel.tsx              (~+45 LoC: RedoIcon, props, button, mobile drawer action, export icons)
+M  src/stamps/geometry-3d/host.tsx                          (~+50 LoC: canUndo/canRedo state, subscribe, keyboard listener, mobile header undo/redo buttons, wire LeftPanel)
 
 A  src/stamps/geometry-3d/editor/scene/__tests__/Scene3D.history.test.ts
 A  src/stamps/geometry-2d/editor/__tests__/MiniBoard.redo.test.tsx
