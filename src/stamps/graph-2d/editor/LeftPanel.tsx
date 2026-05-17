@@ -20,7 +20,7 @@ export interface GraphLeftPanelProps extends AlgebraViewProps {
   onDrawerClose: () => void;
 }
 
-export function GraphLeftPanel(props: GraphLeftPanelProps): JSX.Element {
+export function GraphLeftPanel(props: GraphLeftPanelProps) {
   const { activeTool, onToolChange, showAxis, showGrid, canUndo } = props;
 
   return (

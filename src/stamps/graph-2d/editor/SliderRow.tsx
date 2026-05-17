@@ -11,7 +11,7 @@ export interface SliderRowProps {
   onRangeChange: (min: number, max: number, step: number) => void;
 }
 
-export function SliderRow(props: SliderRowProps): JSX.Element {
+export function SliderRow(props: SliderRowProps) {
   const { name, value, min, max, step } = props;
   return (
     <div className="graph-slider-row" data-testid={`graph-slider-row-${name}`}>

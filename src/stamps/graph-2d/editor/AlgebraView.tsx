@@ -17,7 +17,7 @@ export interface AlgebraViewProps {
   onRemoveParameter: (name: string) => void;
 }
 
-export function AlgebraView(props: AlgebraViewProps): JSX.Element {
+export function AlgebraView(props: AlgebraViewProps) {
   const { graph, errors } = props;
   const atMax = graph.functions.length >= MAX_FUNCTIONS;
 

@@ -14,7 +14,7 @@ export interface FunctionRowProps {
   onRemove: () => void;
 }
 
-export function FunctionRow(props: FunctionRowProps): JSX.Element {
+export function FunctionRow(props: FunctionRowProps) {
   const { id, name, expression, color, visible, error } = props;
   const [draft, setDraft] = useState(expression);
 

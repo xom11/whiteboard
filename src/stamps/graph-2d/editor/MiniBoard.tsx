@@ -30,7 +30,7 @@ interface CurveRef {
   paramSignature: string;
 }
 
-export function MiniBoard({ graph, activeTool, isDark, onBoardEvent }: MiniBoardProps): JSX.Element {
+export function MiniBoard({ graph, activeTool, isDark, onBoardEvent }: MiniBoardProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const boardRef = useRef<any>(null);
