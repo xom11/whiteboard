@@ -1,6 +1,7 @@
 import type { Scene3D } from '../scene/Scene3D';
 import type { Scene3DObject, Vec3, Constraint } from '../scene/types';
 import { constraintToWorld, worldToConstraint } from '../scene/constraintMath';
+import { cylinderFaces, coneFaces } from './faceted';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type JxgObj = any;
@@ -34,6 +35,7 @@ export class JxgRenderer {
 
   private handleAdd(obj: Scene3DObject): void {
     if (this.map.has(obj.id)) return;
+
     if (obj.kind === 'point') {
       const world = constraintToWorld(obj.constraint, this.scene);
       const attrs = { id: obj.id, name: obj.label, size: 4, visible: obj.visible };
@@ -42,7 +44,158 @@ export class JxgRenderer {
       this.attachDragHook(obj.id, jxg);
       return;
     }
-    // Non-point kinds — Tasks 3.2-3.4 extend this.
+
+    if (obj.kind === 'segment') {
+      const a = this.map.get(obj.p1);
+      const b = this.map.get(obj.p2);
+      const attrs = {
+        id: obj.id,
+        straightFirst: false,
+        straightLast: false,
+        visible: obj.visible,
+        strokeColor: obj.color ?? '#0066cc',
+        strokeWidth: 2,
+      };
+      this.map.set(obj.id, this.view.create('line3d', [a, b], attrs));
+      return;
+    }
+
+    if (obj.kind === 'line') {
+      const attrs = {
+        id: obj.id,
+        visible: obj.visible,
+        strokeColor: obj.color ?? '#0066cc',
+        strokeWidth: 2,
+      };
+      this.map.set(
+        obj.id,
+        this.view.create('line3d', [this.map.get(obj.p1), this.map.get(obj.p2)], attrs),
+      );
+      return;
+    }
+
+    if (obj.kind === 'ray') {
+      const attrs = { id: obj.id, straightFirst: false, visible: obj.visible };
+      this.map.set(
+        obj.id,
+        this.view.create('line3d', [this.map.get(obj.origin), this.map.get(obj.through)], attrs),
+      );
+      return;
+    }
+
+    if (obj.kind === 'vector') {
+      const attrs = {
+        id: obj.id,
+        lastArrow: true,
+        straightFirst: false,
+        straightLast: false,
+        visible: obj.visible,
+      };
+      this.map.set(
+        obj.id,
+        this.view.create('line3d', [this.map.get(obj.from), this.map.get(obj.to)], attrs),
+      );
+      return;
+    }
+
+    if (obj.kind === 'plane') {
+      const attrs = { id: obj.id, fillOpacity: 0.2, visible: obj.visible };
+      this.map.set(
+        obj.id,
+        this.view.create(
+          'plane3d',
+          [this.map.get(obj.p1), this.map.get(obj.p2), this.map.get(obj.p3)],
+          attrs,
+        ),
+      );
+      return;
+    }
+
+    if (obj.kind === 'polygon') {
+      const refs = obj.vertices.map((v) => this.map.get(v));
+      const attrs = { id: obj.id, fillOpacity: 0.3, visible: obj.visible };
+      this.map.set(obj.id, this.view.create('polygon3d', [refs], attrs));
+      return;
+    }
+
+    if (obj.kind === 'sphere') {
+      const attrs = { id: obj.id, fillOpacity: 0.25, visible: obj.visible };
+      this.map.set(
+        obj.id,
+        this.view.create('sphere3d', [this.map.get(obj.center), this.map.get(obj.surfacePoint)], attrs),
+      );
+      return;
+    }
+
+    if (obj.kind === 'polyhedron') {
+      const verts = obj.vertices.map((id) => this.map.get(id));
+      const faceJxgs = obj.faces.map((face) =>
+        this.view.create('polygon3d', [face.map((idx) => verts[idx])], {
+          id: `${obj.id}.face${face.join('-')}`,
+          fillOpacity: 0.25,
+          strokeColor: '#0066cc',
+          strokeWidth: 1.5,
+          visible: obj.visible,
+        }),
+      );
+      // Composite: store an object with _faces array + a remove() that disposes each face.
+      this.map.set(obj.id, {
+        _faces: faceJxgs,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        remove: () => faceJxgs.forEach((f: any) => f.remove?.()),
+      });
+      return;
+    }
+
+    if (obj.kind === 'cylinder' || obj.kind === 'cone') {
+      const baseCenterPt = this.scene.get(obj.baseCenter);
+      if (!baseCenterPt || baseCenterPt.kind !== 'point') return;
+      const base = constraintToWorld(baseCenterPt.constraint, this.scene);
+      let secondPt: Vec3;
+      if (obj.kind === 'cylinder') {
+        const topCenterPt = this.scene.get(obj.topCenter);
+        if (!topCenterPt || topCenterPt.kind !== 'point') return;
+        secondPt = constraintToWorld(topCenterPt.constraint, this.scene);
+      } else {
+        const apexPt = this.scene.get(obj.apex);
+        if (!apexPt || apexPt.kind !== 'point') return;
+        secondPt = constraintToWorld(apexPt.constraint, this.scene);
+      }
+      const geom =
+        obj.kind === 'cylinder'
+          ? cylinderFaces(base, secondPt, obj.radius)
+          : coneFaces(base, secondPt, obj.radius);
+      // Create vertex point3d's (hidden), then polygon3d per face.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const vertJxgs: any[] = geom.vertices.map((v, i) =>
+        this.view.create('point3d', v, {
+          id: `${obj.id}.v${i}`,
+          visible: false,
+          fixed: true,
+          withLabel: false,
+        }),
+      );
+      const faceJxgs = geom.faces.map((face) =>
+        this.view.create('polygon3d', [face.map((idx) => vertJxgs[idx])], {
+          id: `${obj.id}.face${face.join('-')}`,
+          fillOpacity: 0.25,
+          strokeColor: '#0066cc',
+          strokeWidth: 1.5,
+          visible: obj.visible,
+        }),
+      );
+      this.map.set(obj.id, {
+        _verts: vertJxgs,
+        _faces: faceJxgs,
+        remove: () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          faceJxgs.forEach((f: any) => f.remove?.());
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          vertJxgs.forEach((v: any) => v.remove?.());
+        },
+      });
+      return;
+    }
   }
 
   private attachDragHook(id: string, jxg: JxgObj): void {
