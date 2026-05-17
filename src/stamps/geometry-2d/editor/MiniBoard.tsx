@@ -33,6 +33,10 @@ export interface MiniBoardHandle {
   undo: () => void;
   /** Có gì để undo? */
   canUndo: () => boolean;
+  /** Redo bước vừa undo. */
+  redo: () => void;
+  /** Có gì để redo? */
+  canRedo: () => boolean;
   /** Subscribe khi state thay đổi (tool / showAxis / showGrid / undo). */
   subscribe: (cb: () => void) => () => void;
   /** Đọc snapshot thuộc tính object (cho popover). */
@@ -867,6 +871,20 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
         undoLastRef.current();
         return;
       }
+      // Ctrl/Cmd+Shift+Z hoặc Ctrl+Y → redo
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        (
+          (e.key.toLowerCase() === 'z' && e.shiftKey) ||
+          (e.key.toLowerCase() === 'y' && !e.shiftKey)
+        )
+      ) {
+        if (inField) return;
+        e.preventDefault();
+        e.stopPropagation();
+        redoNextRef.current();
+        return;
+      }
       if (e.key === 'Escape' && !inField) {
         if (pendingRef.current.length > 0) {
           e.preventDefault();
@@ -1162,6 +1180,8 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
         setShowGrid: (b: boolean) => setShowGridRef.current(b),
         undo: () => undoLastRef.current(),
         canUndo: () => creationLogRef.current.length > 0,
+        redo: () => redoNextRef.current(),
+        canRedo: () => redoStackRef.current.length > 0,
         subscribe: (cb: () => void) => {
           subscribersRef.current.add(cb);
           return () => { subscribersRef.current.delete(cb); };
@@ -1314,6 +1334,8 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
 
   const undoLastRef = useRef(undoLast);
   undoLastRef.current = undoLast;
+  const redoNextRef = useRef(redoNext);
+  redoNextRef.current = redoNext;
   const clearPendingRef = useRef(clearPending);
   clearPendingRef.current = clearPending;
   const finalizeTransformCreateRef = useRef(finalizeTransformCreate);
