@@ -1,7 +1,7 @@
 import { render, fireEvent, act } from '@testing-library/react';
 import React from 'react';
 import { createRef } from 'react';
-import { geometryStamp } from '../index';
+import { GeometryStampHost } from '../host';
 import type { StampHostHandle } from '../../shared/types';
 import type { GeometryEditorPanelHandle } from '../editor/EditorPanel';
 
@@ -41,7 +41,7 @@ describe('GeometryStampHost — chord shortcuts', () => {
 
   function mountHost() {
     const ref = createRef<StampHostHandle>();
-    const Host = geometryStamp.Host;
+    const Host = GeometryStampHost;
     const minimalApi = {
       getSceneElements: () => [],
       addFiles: jest.fn(),
