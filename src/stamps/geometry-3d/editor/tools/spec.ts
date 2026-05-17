@@ -1,5 +1,7 @@
 import type { Scene3D } from '../scene/Scene3D';
 import type { SceneHit } from '../hitTest/hitTest';
+import { buildPoint, buildPointOnObject } from './handlers/point';
+import { buildSegment, buildLine, buildRay, buildVector } from './handlers/segment';
 
 export type ToolKey =
   | 'move' | 'point' | 'pointOnObject'
@@ -56,14 +58,14 @@ export const TOOLS: ToolSpec[] = [
     label: 'Điểm',
     hintIdle: 'Chọn mặt phẳng / đường / mặt cầu để đặt điểm',
     steps: [{ type: 'point', allowExisting: false, allowNewOn: ALL_SURFACES, hint: 'Chọn vị trí để đặt điểm' }],
-    build: stubBuild,
+    build: buildPoint,
   },
   {
     key: 'pointOnObject',
     label: 'Điểm trên đối tượng',
     hintIdle: 'Chọn một đối tượng để đặt điểm',
     steps: [{ type: 'point', allowExisting: false, allowNewOn: OBJECT_ONLY, hint: 'Click lên mặt / đường để đặt điểm' }],
-    build: stubBuild,
+    build: buildPointOnObject,
   },
   {
     key: 'segment',
@@ -73,7 +75,7 @@ export const TOOLS: ToolSpec[] = [
       { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Chọn điểm thứ nhất' },
       { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Chọn điểm thứ hai' },
     ],
-    build: stubBuild,
+    build: buildSegment,
   },
   {
     key: 'line',
@@ -83,7 +85,7 @@ export const TOOLS: ToolSpec[] = [
       { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Chọn điểm thứ nhất' },
       { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Chọn điểm thứ hai' },
     ],
-    build: stubBuild,
+    build: buildLine,
   },
   {
     key: 'ray',
@@ -93,7 +95,7 @@ export const TOOLS: ToolSpec[] = [
       { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Chọn điểm gốc' },
       { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Chọn điểm trên tia' },
     ],
-    build: stubBuild,
+    build: buildRay,
   },
   {
     key: 'vector',
@@ -103,7 +105,7 @@ export const TOOLS: ToolSpec[] = [
       { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Chọn điểm đầu' },
       { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Chọn điểm cuối' },
     ],
-    build: stubBuild,
+    build: buildVector,
   },
   {
     key: 'polygon',
