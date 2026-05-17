@@ -16,11 +16,12 @@ test('symbolicFor onAxis z point', () => {
   expect(numericFor(scene.list()[0], scene)).toBe('(0, 0, 3.5)');
 });
 
-test('symbolicFor segment', () => {
+test('symbolicFor segment uses point labels', () => {
   const scene = new Scene3D();
   const a = scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
   const b = scene.addPoint({ kind: 'free', x: 1, y: 0, z: 0 });
   const segId = scene.addObject('segment', { p1: a, p2: b });
   const seg = scene.get(segId)!;
-  expect(symbolicFor(seg, scene)).toMatch(/^Segment\(/);
+  // Points get auto-labels A, B (not internal ids p1, p2)
+  expect(symbolicFor(seg, scene)).toBe('Segment(A, B)');
 });
