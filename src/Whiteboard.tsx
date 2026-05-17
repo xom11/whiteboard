@@ -17,6 +17,7 @@ import {
 } from './stamps/shared/registry';
 import { ToolbarInjector } from './stamps/shared/ToolbarInjector';
 import { useShortcuts } from './stamps/shared/useShortcuts';
+import { useStampDoubleClick } from './stamps/shared/useStampDoubleClick';
 import { restoreMissingStampFiles } from './stamps/shared/restoreStampFiles';
 import type { StampHostHandle } from './stamps/shared/types';
 import { readScene, writeScene } from './core/persistence/sceneStore';
@@ -40,7 +41,6 @@ const Excalidraw = dynamic(
 type ExApi = any;
 
 const SYNC_THROTTLE_MS = 200;
-const DOUBLE_CLICK_MS = 400;
 
 /** Element đang re-edit (double-click) — đủ tối thiểu để Host parse customData. */
 interface EditingElement {
@@ -126,10 +126,6 @@ export function Whiteboard({
   const [editingElement, setEditingElement] = useState<EditingElement | null>(null);
   const hostRef = useRef<StampHostHandle | null>(null);
 
-  const lastClickRef = useRef<{ time: number; elementId: string | null }>({
-    time: 0,
-    elementId: null,
-  });
   const handledCropIdRef = useRef<string | null>(null);
   const prevExcalidrawToolRef = useRef<string>('selection');
 
@@ -355,27 +351,11 @@ export function Whiteboard({
   );
 
   // ---- Double-click detection for re-edit ----
-  const handlePointerDown = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (_activeTool: any, pointerDownState: any) => {
-      if (readOnly) return;
-      const hitElement = pointerDownState?.hit?.element;
-      if (!hitElement || hitElement.type !== 'image') return;
-      const stamp = findStampForCustomData(hitElement.customData, stamps);
-      if (!stamp) return;
-      const now = Date.now();
-      const isDouble =
-        lastClickRef.current.elementId === hitElement.id &&
-        now - lastClickRef.current.time < DOUBLE_CLICK_MS;
-      lastClickRef.current = { time: now, elementId: hitElement.id };
-      if (!isDouble) return;
-      openStamp(stamp.kind, {
-        id: hitElement.id,
-        customData: hitElement.customData,
-      });
-    },
-    [readOnly, stamps, openStamp],
-  );
+  const handlePointerDown = useStampDoubleClick({
+    enabled: !readOnly,
+    stamps,
+    onOpen: openStamp,
+  });
 
   // ---- Keyboard shortcuts: đọc registry, mỗi stamp tự khai báo phím tắt ----
   useShortcuts({
