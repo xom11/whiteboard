@@ -13,6 +13,26 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
+    "./geometry-2d": {
+      "types": "./dist/geometry-2d.d.ts",
+      "import": "./dist/geometry-2d.mjs",
+      "require": "./dist/geometry-2d.js"
+    },
+    "./geometry-3d": {
+      "types": "./dist/geometry-3d.d.ts",
+      "import": "./dist/geometry-3d.mjs",
+      "require": "./dist/geometry-3d.js"
+    },
+    "./latex": {
+      "types": "./dist/latex.d.ts",
+      "import": "./dist/latex.mjs",
+      "require": "./dist/latex.js"
+    },
+    "./graph-2d": {
+      "types": "./dist/graph-2d.d.ts",
+      "import": "./dist/graph-2d.mjs",
+      "require": "./dist/graph-2d.js"
+    },
     "./styles.css": "./dist/index.css"
   },
   "files": [
