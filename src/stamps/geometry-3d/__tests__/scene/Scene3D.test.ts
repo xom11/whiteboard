@@ -1,4 +1,4 @@
-import { Scene3D } from '../../editor/scene/Scene3D';
+import { Scene3D, type SceneSnapshot } from '../../editor/scene/Scene3D';
 
 test('addPoint generates unique id and emits add', () => {
   const scene = new Scene3D();
@@ -76,4 +76,33 @@ test('delete emits delete event for each cascaded id', () => {
   scene.on('delete', (id) => deletes.push(id));
   scene.delete(a);
   expect(deletes.sort()).toEqual([a, seg].sort());
+});
+
+describe('Scene3D — history', () => {
+  it('snapshot() capture toàn bộ state hiện tại (immutable)', () => {
+    const scene = new Scene3D();
+    const id1 = scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
+    const snap = scene.snapshot();
+    scene.addPoint({ kind: 'free', x: 1, y: 1, z: 1 });
+    expect(snap.objects.size).toBe(1);
+    expect(snap.objects.has(id1)).toBe(true);
+    expect(snap.order).toEqual([id1]);
+    expect(scene.list().length).toBe(2);
+  });
+
+  it('restore() khôi phục đúng state từ snapshot + emit reset+add', () => {
+    const scene = new Scene3D();
+    const events: string[] = [];
+    scene.on('reset', () => events.push('reset'));
+    scene.on('add', (o) => events.push(`add:${o.id}`));
+    const id1 = scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
+    const snap = scene.snapshot();
+    scene.addPoint({ kind: 'free', x: 5, y: 5, z: 5 });
+    events.length = 0;
+    (scene as unknown as { restore: (s: SceneSnapshot) => void }).restore(snap);
+    expect(scene.list().length).toBe(1);
+    expect(scene.get(id1)).toBeDefined();
+    expect(events[0]).toBe('reset');
+    expect(events.some((e) => e === `add:${id1}`)).toBe(true);
+  });
 });

@@ -3,6 +3,12 @@ import type { Constraint, Scene3DObject, ObjectKind } from './types';
 
 type Listener<E> = (event: E) => void;
 
+export type SceneSnapshot = {
+  objects: ReadonlyMap<string, Scene3DObject>;
+  order: readonly string[];
+  counter: number;
+};
+
 export class Scene3D {
   private objects = new Map<string, Scene3DObject>();
   private order: string[] = [];
@@ -148,5 +154,31 @@ export class Scene3D {
     const obj = this.objects.get(id);
     if (!obj) return;
     this.listeners.change.forEach((cb) => cb(obj));
+  }
+
+  snapshot(): SceneSnapshot {
+    const cloned = new Map<string, Scene3DObject>();
+    for (const [id, obj] of this.objects) {
+      cloned.set(id, { ...obj } as Scene3DObject);
+    }
+    return {
+      objects: cloned,
+      order: [...this.order],
+      counter: this.counter,
+    };
+  }
+
+  private restore(snap: SceneSnapshot): void {
+    this.objects = new Map();
+    for (const [id, obj] of snap.objects) {
+      this.objects.set(id, { ...obj } as Scene3DObject);
+    }
+    this.order = [...snap.order];
+    this.counter = snap.counter;
+    this.listeners.reset.forEach((cb) => cb());
+    for (const id of this.order) {
+      const obj = this.objects.get(id);
+      if (obj) this.listeners.add.forEach((cb) => cb(obj));
+    }
   }
 }
