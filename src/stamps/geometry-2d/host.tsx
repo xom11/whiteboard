@@ -121,6 +121,10 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
           isDark={isDark}
           isMobile={isMobile}
           onOpenDrawer={() => setDrawerOpen(true)}
+          onUndo={() => panelRef.current?.undo()}
+          onRedo={() => panelRef.current?.redo()}
+          canUndo={geomState.canUndo}
+          canRedo={geomState.canRedo}
         />
       </>
     );
