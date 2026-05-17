@@ -3,7 +3,7 @@ require('./index.css');
 'use strict';
 
 var jsxRuntime = require('react/jsx-runtime');
-var React11 = require('react');
+var React8 = require('react');
 var reactDom = require('react-dom');
 var excalidraw = require('@excalidraw/excalidraw');
 require('@excalidraw/excalidraw/index.css');
@@ -26,7 +26,7 @@ function _interopNamespace(e) {
   return Object.freeze(n);
 }
 
-var React11__namespace = /*#__PURE__*/_interopNamespace(React11);
+var React8__namespace = /*#__PURE__*/_interopNamespace(React8);
 
 var __defProp = Object.defineProperty;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -866,56 +866,57 @@ var init_MiniBoard = __esm({
     init_theme();
     init_handlers();
     JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
-      const isDarkRef = React11.useRef(!!isDark);
+      const isDarkRef = React8.useRef(!!isDark);
       isDarkRef.current = !!isDark;
-      const containerId = React11.useId().replace(/:/g, "_") + "_jxgmini";
-      const containerRef = React11.useRef(null);
-      const boardRef = React11.useRef(null);
-      const jxgRef = React11.useRef(null);
-      const axisObjsRef = React11.useRef({});
-      const creationLogRef = React11.useRef([]);
-      const [tool, setTool] = React11.useState("move");
-      const toolRef = React11.useRef("move");
+      const containerId = React8.useId().replace(/:/g, "_") + "_jxgmini";
+      const containerRef = React8.useRef(null);
+      const boardRef = React8.useRef(null);
+      const jxgRef = React8.useRef(null);
+      const axisObjsRef = React8.useRef({});
+      const creationLogRef = React8.useRef([]);
+      const redoStackRef = React8.useRef([]);
+      const [tool, setTool] = React8.useState("move");
+      const toolRef = React8.useRef("move");
       toolRef.current = tool;
-      const [showAxis, setShowAxis] = React11.useState(initialState?.showAxis ?? false);
-      const [showGrid, setShowGrid] = React11.useState(initialState?.showGrid ?? false);
-      const showAxisRef = React11.useRef(showAxis);
+      const [showAxis, setShowAxis] = React8.useState(initialState?.showAxis ?? false);
+      const [showGrid, setShowGrid] = React8.useState(initialState?.showGrid ?? false);
+      const showAxisRef = React8.useRef(showAxis);
       showAxisRef.current = showAxis;
-      const showGridRef = React11.useRef(showGrid);
+      const showGridRef = React8.useRef(showGrid);
       showGridRef.current = showGrid;
-      const objMapRef = React11.useRef(/* @__PURE__ */ new Map());
-      const valueLabelsRef = React11.useRef(/* @__PURE__ */ new Map());
-      const pendingRef = React11.useRef([]);
-      const [, setPendingCount] = React11.useState(0);
-      const selectedSetRef = React11.useRef(/* @__PURE__ */ new Set());
-      const selOriginalRef = React11.useRef(/* @__PURE__ */ new Map());
-      const [, setSelectionTick] = React11.useState(0);
-      const marqueeRef = React11.useRef(null);
-      const previewSegRef = React11.useRef([]);
-      const phantomRef = React11.useRef(null);
-      const previewShapeRef = React11.useRef(null);
-      const previewRafRef = React11.useRef(null);
-      const [historyTick, setHistoryTick] = React11.useState(0);
-      const [, setWarn] = React11.useState(null);
-      const warnTimerRef = React11.useRef(null);
-      const flashWarn = React11.useCallback((msg) => {
+      const objMapRef = React8.useRef(/* @__PURE__ */ new Map());
+      const valueLabelsRef = React8.useRef(/* @__PURE__ */ new Map());
+      const pendingRef = React8.useRef([]);
+      const [, setPendingCount] = React8.useState(0);
+      const selectedSetRef = React8.useRef(/* @__PURE__ */ new Set());
+      const selOriginalRef = React8.useRef(/* @__PURE__ */ new Map());
+      const [, setSelectionTick] = React8.useState(0);
+      const marqueeRef = React8.useRef(null);
+      const previewSegRef = React8.useRef([]);
+      const phantomRef = React8.useRef(null);
+      const previewShapeRef = React8.useRef(null);
+      const previewRafRef = React8.useRef(null);
+      const [historyTick, setHistoryTick] = React8.useState(0);
+      const [, setWarn] = React8.useState(null);
+      const warnTimerRef = React8.useRef(null);
+      const flashWarn = React8.useCallback((msg) => {
         if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
         setWarn(msg);
         warnTimerRef.current = setTimeout(() => setWarn(null), 1800);
       }, []);
-      React11.useEffect(() => () => {
+      React8.useEffect(() => () => {
         if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
       }, []);
-      const labelIdxRef = React11.useRef(0);
-      const nextLabel = React11.useCallback(() => {
+      const labelIdxRef = React8.useRef(0);
+      const nextLabel = React8.useCallback(() => {
         const idx = labelIdxRef.current;
         const suffix = idx >= 26 ? String(Math.floor(idx / 26)) : "";
         const code = "A".charCodeAt(0) + idx % 26;
         labelIdxRef.current = idx + 1;
         return String.fromCharCode(code) + suffix;
       }, []);
-      const nextLocalId = React11.useCallback(() => "j" + creationLogRef.current.length, []);
-      const resolveArgs = React11.useCallback((args) => {
+      const nextLocalId = React8.useCallback(() => "j" + creationLogRef.current.length, []);
+      const resolveArgs = React8.useCallback((args) => {
         return args.map((a) => {
           if (typeof a === "string" && objMapRef.current.has(a)) {
             return objMapRef.current.get(a);
@@ -923,15 +924,19 @@ var init_MiniBoard = __esm({
           return a;
         });
       }, []);
-      const pushLog = React11.useCallback(
+      const pushCreationLog = React8.useCallback((entry) => {
+        creationLogRef.current.push(entry);
+        redoStackRef.current = [];
+      }, []);
+      const pushLog = React8.useCallback(
         (id, type, args, attrs, obj) => {
-          creationLogRef.current.push({ id, type, args, attrs });
+          pushCreationLog({ id, type, args, attrs });
           objMapRef.current.set(id, obj);
           setHistoryTick((t) => t + 1);
         },
-        []
+        [pushCreationLog]
       );
-      const create = React11.useCallback(
+      const create = React8.useCallback(
         (type, args, attrs = {}) => {
           if (!boardRef.current) return null;
           const id = nextLocalId();
@@ -943,13 +948,13 @@ var init_MiniBoard = __esm({
         },
         [nextLocalId, resolveArgs, pushLog]
       );
-      const localIdOf = React11.useCallback((obj) => {
+      const localIdOf = React8.useCallback((obj) => {
         for (const [id, o] of objMapRef.current.entries()) {
           if (o === obj) return id;
         }
         return null;
       }, []);
-      const snapshotObject = React11.useCallback((obj, anchorScreen) => {
+      const snapshotObject = React8.useCallback((obj, anchorScreen) => {
         const o = obj;
         const k = objKind(o);
         if (k !== "point" && k !== "line" && k !== "circle") return null;
@@ -969,7 +974,7 @@ var init_MiniBoard = __esm({
           screenCoords: anchorScreen
         };
       }, []);
-      const createValueLabelFor = React11.useCallback((target) => {
+      const createValueLabelFor = React8.useCallback((target) => {
         const b = boardRef.current;
         if (!b || !target) return null;
         const k = objKind(target);
@@ -1006,7 +1011,7 @@ var init_MiniBoard = __esm({
         }
         return null;
       }, []);
-      const mutateObject = React11.useCallback((obj, patch) => {
+      const mutateObject = React8.useCallback((obj, patch) => {
         if (!boardRef.current) return;
         const o = obj;
         if (patch.remove) {
@@ -1046,7 +1051,7 @@ var init_MiniBoard = __esm({
               const targetId = localIdOf(o);
               if (targetId) {
                 const id = nextLocalId();
-                creationLogRef.current.push({ id, type: "valueLabel", args: [targetId], attrs: {} });
+                pushCreationLog({ id, type: "valueLabel", args: [targetId], attrs: {} });
                 objMapRef.current.set(id, txt);
                 setHistoryTick((t) => t + 1);
               }
@@ -1085,7 +1090,7 @@ var init_MiniBoard = __esm({
         } catch {
         }
       }, [createValueLabelFor, localIdOf, nextLocalId]);
-      const clearPreviewSegs = React11.useCallback(() => {
+      const clearPreviewSegs = React8.useCallback(() => {
         const b = boardRef.current;
         if (!b) return;
         for (const s of previewSegRef.current) {
@@ -1096,7 +1101,7 @@ var init_MiniBoard = __esm({
         }
         previewSegRef.current = [];
       }, []);
-      const removePhantom = React11.useCallback(() => {
+      const removePhantom = React8.useCallback(() => {
         const b = boardRef.current;
         if (!b) return;
         if (previewShapeRef.current) {
@@ -1114,13 +1119,13 @@ var init_MiniBoard = __esm({
           phantomRef.current = null;
         }
       }, []);
-      const clearPending = React11.useCallback(() => {
+      const clearPending = React8.useCallback(() => {
         removePhantom();
         clearPreviewSegs();
         pendingRef.current = [];
         setPendingCount(0);
       }, [clearPreviewSegs, removePhantom]);
-      const applySelectionStyle = React11.useCallback((obj) => {
+      const applySelectionStyle = React8.useCallback((obj) => {
         if (!obj || selOriginalRef.current.has(obj)) return;
         try {
           const visProp = obj.visProp ?? {};
@@ -1137,7 +1142,7 @@ var init_MiniBoard = __esm({
         } catch {
         }
       }, []);
-      const restoreSelectionStyle = React11.useCallback((obj) => {
+      const restoreSelectionStyle = React8.useCallback((obj) => {
         const orig = selOriginalRef.current.get(obj);
         if (!orig) return;
         try {
@@ -1149,7 +1154,7 @@ var init_MiniBoard = __esm({
         }
         selOriginalRef.current.delete(obj);
       }, []);
-      const clearSelection = React11.useCallback(() => {
+      const clearSelection = React8.useCallback(() => {
         for (const o of selectedSetRef.current) {
           restoreSelectionStyle(o);
         }
@@ -1160,7 +1165,7 @@ var init_MiniBoard = __esm({
         } catch {
         }
       }, [restoreSelectionStyle]);
-      const toggleSelect = React11.useCallback((obj, additive) => {
+      const toggleSelect = React8.useCallback((obj, additive) => {
         if (!obj) return;
         if (!additive) {
           for (const o of selectedSetRef.current) {
@@ -1183,7 +1188,7 @@ var init_MiniBoard = __esm({
         } catch {
         }
       }, [applySelectionStyle, restoreSelectionStyle]);
-      const deleteSelected = React11.useCallback(() => {
+      const deleteSelected = React8.useCallback(() => {
         const board = boardRef.current;
         if (!board) return;
         if (selectedSetRef.current.size === 0) return;
@@ -1207,7 +1212,7 @@ var init_MiniBoard = __esm({
         setSelectionTick((t) => t + 1);
         setHistoryTick((t) => t + 1);
       }, []);
-      const buildPreview = React11.useCallback((toolDef, picks, phantom) => {
+      const buildPreview = React8.useCallback((toolDef, picks, phantom) => {
         const b = boardRef.current;
         if (!b) return null;
         const style = { strokeColor: "#3b82f6", strokeWidth: 1.5, strokeOpacity: 0.65, dash: 2, fixed: true, highlight: false, withLabel: false };
@@ -1261,7 +1266,7 @@ var init_MiniBoard = __esm({
           return null;
         }
       }, []);
-      const refreshPreview = React11.useCallback(() => {
+      const refreshPreview = React8.useCallback(() => {
         const b = boardRef.current;
         if (!b) return;
         if (previewShapeRef.current) {
@@ -1286,7 +1291,7 @@ var init_MiniBoard = __esm({
         }
         previewShapeRef.current = buildPreview(toolDef, picks, phantomRef.current);
       }, [buildPreview]);
-      const finalize = React11.useCallback((toolDef, picks) => {
+      const finalize = React8.useCallback((toolDef, picks) => {
         if (!boardRef.current) return;
         const labels = picks.map(localIdOf).filter(Boolean);
         const stroke = { strokeColor: "@stroke", strokeWidth: 2 };
@@ -1433,7 +1438,7 @@ var init_MiniBoard = __esm({
           }
         }
       }, [create, localIdOf, nextLabel]);
-      const finalizeTransformCreate = React11.useCallback((spec, source) => {
+      const finalizeTransformCreate = React8.useCallback((spec, source) => {
         if (!boardRef.current) return;
         const def = getDefiningPoints(source);
         if (!def) {
@@ -1463,7 +1468,7 @@ var init_MiniBoard = __esm({
           }
           const stepId = nextLocalId();
           const stepObj = boardRef.current.create("transform", step.params, step.attrs);
-          creationLogRef.current.push({ id: stepId, type: "transform", args: stepLogArgs, attrs: step.attrs });
+          pushCreationLog({ id: stepId, type: "transform", args: stepLogArgs, attrs: step.attrs });
           objMapRef.current.set(stepId, stepObj);
           transformObjs.push(stepObj);
           transformIds.push(stepId);
@@ -1477,7 +1482,7 @@ var init_MiniBoard = __esm({
           const newName = srcName ? `${srcName}'` : nextLabel();
           const attrs = { name: newName, size: 3, color: "#0ea5e9", strokeColor: "#0ea5e9", fillColor: "#0ea5e9" };
           const obj = boardRef.current.create("point", [src, transformParent], attrs);
-          creationLogRef.current.push({ id, type: "point", args: [srcId ?? src, transformLogRef], attrs });
+          pushCreationLog({ id, type: "point", args: [srcId ?? src, transformLogRef], attrs });
           objMapRef.current.set(id, obj);
           return obj;
         });
@@ -1508,7 +1513,31 @@ var init_MiniBoard = __esm({
         }
         setHistoryTick((t) => t + 1);
       }, [create, flashWarn, localIdOf, nextLabel, nextLocalId]);
-      const undoLast = React11.useCallback(() => {
+      const recreateFromLogEntry = React8.useCallback((el) => {
+        const board = boardRef.current;
+        if (!board) return false;
+        const idMap = objMapRef.current;
+        const resolved = el.args.map((a) => typeof a === "string" && idMap.has(a) ? idMap.get(a) : a);
+        try {
+          if (el.type === "valueLabel") {
+            const target = resolved[0];
+            if (!target) return false;
+            const txt = createValueLabelFor(target);
+            if (!txt) return false;
+            idMap.set(el.id, txt);
+            valueLabelsRef.current.set(target, txt);
+            return true;
+          }
+          const themedAttrs = resolveAttrColors({ ...el.attrs }, paletteFor(isDarkRef.current));
+          const obj = board.create(el.type, resolved, themedAttrs);
+          idMap.set(el.id, obj);
+          return true;
+        } catch (err) {
+          console.warn("Recreate failed for", el.type, err);
+          return false;
+        }
+      }, [createValueLabelFor]);
+      const undoLast = React8.useCallback(() => {
         const b = boardRef.current;
         if (!b) return;
         while (creationLogRef.current.length > 0) {
@@ -1522,6 +1551,7 @@ var init_MiniBoard = __esm({
             } catch {
             }
             clearPending();
+            redoStackRef.current.push(last);
             setHistoryTick((t) => t + 1);
             try {
               b.update();
@@ -1532,7 +1562,25 @@ var init_MiniBoard = __esm({
         }
         setHistoryTick((t) => t + 1);
       }, [clearPending]);
-      React11.useEffect(() => {
+      const redoNext = React8.useCallback(() => {
+        const b = boardRef.current;
+        if (!b) return;
+        const entry = redoStackRef.current.pop();
+        if (!entry) {
+          setHistoryTick((t) => t + 1);
+          return;
+        }
+        const ok = recreateFromLogEntry(entry);
+        if (ok) {
+          creationLogRef.current.push(entry);
+        }
+        setHistoryTick((t) => t + 1);
+        try {
+          b.update();
+        } catch {
+        }
+      }, [recreateFromLogEntry]);
+      React8.useEffect(() => {
         const onKey = (e) => {
           const ae = document.activeElement;
           const inField = !!(ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable));
@@ -1541,6 +1589,13 @@ var init_MiniBoard = __esm({
             e.preventDefault();
             e.stopPropagation();
             undoLastRef.current();
+            return;
+          }
+          if ((e.metaKey || e.ctrlKey) && (e.key.toLowerCase() === "z" && e.shiftKey || e.key.toLowerCase() === "y" && !e.shiftKey)) {
+            if (inField) return;
+            e.preventDefault();
+            e.stopPropagation();
+            redoNextRef.current();
             return;
           }
           if (e.key === "Escape" && !inField) {
@@ -1566,7 +1621,7 @@ var init_MiniBoard = __esm({
         window.addEventListener("keydown", onKey, { capture: true });
         return () => window.removeEventListener("keydown", onKey, { capture: true });
       }, []);
-      const screenCoordsOf = React11.useCallback((evt) => {
+      const screenCoordsOf = React8.useCallback((evt) => {
         const b = boardRef.current;
         if (!b) return null;
         try {
@@ -1582,7 +1637,7 @@ var init_MiniBoard = __esm({
         }
         return null;
       }, []);
-      const objectsAt = React11.useCallback((evt) => {
+      const objectsAt = React8.useCallback((evt) => {
         const b = boardRef.current;
         if (!b) return [];
         const sc = screenCoordsOf(evt);
@@ -1601,7 +1656,7 @@ var init_MiniBoard = __esm({
         }
         return list;
       }, [screenCoordsOf]);
-      const findNearestPoint = React11.useCallback((evt, tolPx = 12) => {
+      const findNearestPoint = React8.useCallback((evt, tolPx = 12) => {
         const b = boardRef.current;
         if (!b) return null;
         const sc = screenCoordsOf(evt);
@@ -1627,7 +1682,7 @@ var init_MiniBoard = __esm({
         }
         return best ? best.obj : null;
       }, [screenCoordsOf]);
-      const promoteLabel = React11.useCallback((o) => {
+      const promoteLabel = React8.useCallback((o) => {
         if (!o) return o;
         const t = (o.elType || o.type || "").toString().toLowerCase();
         if (t !== "text") return o;
@@ -1641,9 +1696,9 @@ var init_MiniBoard = __esm({
         }
         return o;
       }, []);
-      const pendingTransformRef = React11.useRef(null);
-      const transformSubsRef = React11.useRef(/* @__PURE__ */ new Set());
-      const emitTransform = React11.useCallback((info) => {
+      const pendingTransformRef = React8.useRef(null);
+      const transformSubsRef = React8.useRef(/* @__PURE__ */ new Set());
+      const emitTransform = React8.useCallback((info) => {
         transformSubsRef.current.forEach((cb) => {
           try {
             cb(info);
@@ -1651,8 +1706,8 @@ var init_MiniBoard = __esm({
           }
         });
       }, []);
-      const selectSubsRef = React11.useRef(/* @__PURE__ */ new Set());
-      const emitSelect = React11.useCallback((snap) => {
+      const selectSubsRef = React8.useRef(/* @__PURE__ */ new Set());
+      const emitSelect = React8.useCallback((snap) => {
         selectSubsRef.current.forEach((cb) => {
           try {
             cb(snap);
@@ -1660,9 +1715,9 @@ var init_MiniBoard = __esm({
           }
         });
       }, []);
-      const moveDownRef = React11.useRef(null);
-      const lastMoveClickRef = React11.useRef({ obj: null, time: 0 });
-      React11.useEffect(() => {
+      const moveDownRef = React8.useRef(null);
+      const lastMoveClickRef = React8.useRef({ obj: null, time: 0 });
+      React8.useEffect(() => {
         if (typeof window === "undefined" || !containerRef.current) return;
         let cancelled = false;
         (async () => {
@@ -1704,27 +1759,8 @@ var init_MiniBoard = __esm({
           });
           boardRef.current = board;
           if (initialState && initialState.elements.length > 0) {
-            const idMap = objMapRef.current;
             for (const el of initialState.elements) {
-              const resolved = el.args.map((a) => typeof a === "string" && idMap.has(a) ? idMap.get(a) : a);
-              try {
-                if (el.type === "valueLabel") {
-                  const target = resolved[0];
-                  if (target) {
-                    const txt = createValueLabelFor(target);
-                    if (txt) {
-                      idMap.set(el.id, txt);
-                      valueLabelsRef.current.set(target, txt);
-                    }
-                  }
-                  continue;
-                }
-                const themedAttrs = resolveAttrColors({ ...el.attrs }, paletteFor(isDarkRef.current));
-                const obj = board.create(el.type, resolved, themedAttrs);
-                idMap.set(el.id, obj);
-              } catch (err) {
-                console.warn("Replay failed for", el.type, err);
-              }
+              recreateFromLogEntry(el);
             }
             creationLogRef.current = [...initialState.elements];
             labelIdxRef.current = initialState.elements.filter((e) => e.type === "point").length;
@@ -1891,6 +1927,8 @@ var init_MiniBoard = __esm({
             setShowGrid: (b) => setShowGridRef.current(b),
             undo: () => undoLastRef.current(),
             canUndo: () => creationLogRef.current.length > 0,
+            redo: () => redoNextRef.current(),
+            canRedo: () => redoStackRef.current.length > 0,
             subscribe: (cb) => {
               subscribersRef.current.add(cb);
               return () => {
@@ -1980,7 +2018,7 @@ var init_MiniBoard = __esm({
           }
         };
       }, [containerId]);
-      React11.useEffect(() => {
+      React8.useEffect(() => {
         const b = boardRef.current;
         if (!b) return;
         try {
@@ -2006,7 +2044,7 @@ var init_MiniBoard = __esm({
         } catch {
         }
       }, [showAxis]);
-      React11.useEffect(() => {
+      React8.useEffect(() => {
         const b = boardRef.current;
         if (!b) return;
         try {
@@ -2026,7 +2064,7 @@ var init_MiniBoard = __esm({
         } catch {
         }
       }, [showGrid]);
-      const handleToolChange = React11.useCallback((t) => {
+      const handleToolChange = React8.useCallback((t) => {
         clearPending();
         toolRef.current = t;
         setTool(t);
@@ -2038,10 +2076,10 @@ var init_MiniBoard = __esm({
           }
         }
       }, [clearPending]);
-      const handleToolChangeRef = React11.useRef(handleToolChange);
+      const handleToolChangeRef = React8.useRef(handleToolChange);
       handleToolChangeRef.current = handleToolChange;
-      const subscribersRef = React11.useRef(/* @__PURE__ */ new Set());
-      const notifySubscribers = React11.useCallback(() => {
+      const subscribersRef = React8.useRef(/* @__PURE__ */ new Set());
+      const notifySubscribers = React8.useCallback(() => {
         subscribersRef.current.forEach((cb) => {
           try {
             cb();
@@ -2049,24 +2087,26 @@ var init_MiniBoard = __esm({
           }
         });
       }, []);
-      React11.useEffect(() => {
+      React8.useEffect(() => {
         notifySubscribers();
       }, [tool, showAxis, showGrid, historyTick, notifySubscribers]);
-      const undoLastRef = React11.useRef(undoLast);
+      const undoLastRef = React8.useRef(undoLast);
       undoLastRef.current = undoLast;
-      const clearPendingRef = React11.useRef(clearPending);
+      const redoNextRef = React8.useRef(redoNext);
+      redoNextRef.current = redoNext;
+      const clearPendingRef = React8.useRef(clearPending);
       clearPendingRef.current = clearPending;
-      const finalizeTransformCreateRef = React11.useRef(finalizeTransformCreate);
+      const finalizeTransformCreateRef = React8.useRef(finalizeTransformCreate);
       finalizeTransformCreateRef.current = finalizeTransformCreate;
-      const clearSelectionRef = React11.useRef(clearSelection);
+      const clearSelectionRef = React8.useRef(clearSelection);
       clearSelectionRef.current = clearSelection;
-      const deleteSelectedRef = React11.useRef(deleteSelected);
+      const deleteSelectedRef = React8.useRef(deleteSelected);
       deleteSelectedRef.current = deleteSelected;
-      const emitTransformRef = React11.useRef(emitTransform);
+      const emitTransformRef = React8.useRef(emitTransform);
       emitTransformRef.current = emitTransform;
-      const setShowAxisRef = React11.useRef(setShowAxis);
+      const setShowAxisRef = React8.useRef(setShowAxis);
       setShowAxisRef.current = setShowAxis;
-      const setShowGridRef = React11.useRef(setShowGrid);
+      const setShowGridRef = React8.useRef(setShowGrid);
       setShowGridRef.current = setShowGrid;
       return /* @__PURE__ */ jsxRuntime.jsx(
         "div",
@@ -2164,6 +2204,7 @@ function MobileToolDrawer({
                 disabled: a.disabled,
                 "aria-label": a.label,
                 title: a.title ?? a.label,
+                "data-testid": a.testId,
                 className: "inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
                 children: a.icon
               },
@@ -2269,6 +2310,12 @@ function UndoIcon() {
     /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M3.51 13a9 9 0 1 0 2.13-9.36L3 7" })
   ] });
 }
+function RedoIcon() {
+  return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+    /* @__PURE__ */ jsxRuntime.jsx("polyline", { points: "21 7 21 13 15 13" }),
+    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M20.49 13a9 9 0 1 1-2.13-9.36L21 7" })
+  ] });
+}
 function AxisIcon() {
   return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round", children: [
     /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "4", y1: "20", x2: "20", y2: "20" }),
@@ -2287,23 +2334,23 @@ function GridIcon() {
   ] });
 }
 function useToolHoverTooltip() {
-  const [hover, setHover] = React11.useState(null);
-  const [portalReady, setPortalReady] = React11.useState(false);
-  const hoverTimerRef = React11.useRef(null);
-  React11.useEffect(() => {
+  const [hover, setHover] = React8.useState(null);
+  const [portalReady, setPortalReady] = React8.useState(false);
+  const hoverTimerRef = React8.useRef(null);
+  React8.useEffect(() => {
     setPortalReady(true);
     return () => {
       if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     };
   }, []);
-  const showHover = React11.useCallback((el, t) => {
+  const showHover = React8.useCallback((el, t) => {
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     hoverTimerRef.current = setTimeout(() => {
       const r = el.getBoundingClientRect();
       setHover({ label: t.label, hint: t.hint, x: r.right, y: r.top + r.height / 2 });
     }, TOOLTIP_DELAY_MS);
   }, []);
-  const hideHover = React11.useCallback(() => {
+  const hideHover = React8.useCallback(() => {
     if (hoverTimerRef.current) {
       clearTimeout(hoverTimerRef.current);
       hoverTimerRef.current = null;
@@ -2313,15 +2360,15 @@ function useToolHoverTooltip() {
   return { hover, portalReady, showHover, hideHover };
 }
 function DesktopGeometryPanel(props) {
-  const { activeTool, onToolChange, showAxis, showGrid, onShowAxisChange, onShowGridChange, onUndo, canUndo, onClose, isDark, chordGroup } = props;
-  const grouped = React11.useMemo(() => {
+  const { activeTool, onToolChange, showAxis, showGrid, onShowAxisChange, onShowGridChange, onUndo, canUndo, onRedo, canRedo, onClose, isDark, chordGroup } = props;
+  const grouped = React8.useMemo(() => {
     return TOOLS.reduce((acc, t) => {
       var _a;
       (acc[_a = t.group] ?? (acc[_a] = [])).push(t);
       return acc;
     }, {});
   }, []);
-  const groupKeys = React11.useMemo(
+  const groupKeys = React8.useMemo(
     () => GROUP_ORDER.filter((g) => grouped[g]),
     [grouped]
   );
@@ -2362,8 +2409,22 @@ function DesktopGeometryPanel(props) {
             disabled: !canUndo,
             title: "Ho\xE0n t\xE1c (Ctrl/Cmd+Z)",
             "aria-label": "Ho\xE0n t\xE1c",
+            "data-testid": "undo-btn",
             className: "ml-auto inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
             children: /* @__PURE__ */ jsxRuntime.jsx(UndoIcon, {})
+          }
+        ),
+        /* @__PURE__ */ jsxRuntime.jsx(
+          "button",
+          {
+            type: "button",
+            onClick: onRedo,
+            disabled: !canRedo,
+            title: "L\xE0m l\u1EA1i (Ctrl/Cmd+Shift+Z)",
+            "aria-label": "L\xE0m l\u1EA1i",
+            "data-testid": "redo-btn",
+            className: "inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
+            children: /* @__PURE__ */ jsxRuntime.jsx(RedoIcon, {})
           }
         )
       ] }) }),
@@ -2485,11 +2546,13 @@ function MobileGeometryPanel(props) {
     onShowGridChange,
     onUndo,
     canUndo,
+    onRedo,
+    canRedo,
     isDark,
     drawerOpen,
     onDrawerClose
   } = props;
-  const groups = React11.useMemo(() => {
+  const groups = React8.useMemo(() => {
     const acc = /* @__PURE__ */ new Map();
     for (const t of TOOLS) {
       if (!acc.has(t.group)) acc.set(t.group, []);
@@ -2533,6 +2596,13 @@ function MobileGeometryPanel(props) {
           icon: /* @__PURE__ */ jsxRuntime.jsx(UndoIcon, {}),
           onClick: onUndo,
           disabled: !canUndo
+        },
+        {
+          label: "L\xE0m l\u1EA1i",
+          title: "L\xE0m l\u1EA1i (Ctrl/Cmd+Shift+Z)",
+          icon: /* @__PURE__ */ jsxRuntime.jsx(RedoIcon, {}),
+          onClick: onRedo,
+          disabled: !canRedo
         }
       ],
       groups,
@@ -2597,11 +2667,11 @@ function readMatch(query) {
   }
 }
 function useIsMobile() {
-  const [state, setState] = React11.useState(() => ({
+  const [state, setState] = React8.useState(() => ({
     isMobile: readMatch(MOBILE_QUERY),
     isTouchOnly: readMatch(NO_HOVER_QUERY)
   }));
-  React11.useEffect(() => {
+  React8.useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return;
     const mql = window.matchMedia(MOBILE_QUERY);
     const tql = window.matchMedia(NO_HOVER_QUERY);
@@ -2688,11 +2758,11 @@ var init_PropertiesPopover = __esm({
     };
     PropertiesPopover = (props) => {
       const { anchor, onClose, onMutate, isDark, getAllNames } = props;
-      const rootRef = React11.useRef(null);
-      const [section, setSection] = React11.useState(null);
+      const rootRef = React8.useRef(null);
+      const [section, setSection] = React8.useState(null);
       const { isMobile } = useIsMobile();
-      const [clamped, setClamped] = React11.useState(null);
-      React11.useLayoutEffect(() => {
+      const [clamped, setClamped] = React8.useState(null);
+      React8.useLayoutEffect(() => {
         if (typeof window === "undefined") return;
         const margin = 8;
         if (isMobile) {
@@ -2711,11 +2781,11 @@ var init_PropertiesPopover = __esm({
         setClamped({ left, top });
       }, [anchor.x, anchor.y, isMobile, section]);
       const initialName = props.kind === "point" ? props.currentName : props.kind === "line" || props.kind === "circle" ? props.currentName : "";
-      const [name, setName] = React11.useState(initialName);
-      React11.useEffect(() => {
+      const [name, setName] = React8.useState(initialName);
+      React8.useEffect(() => {
         setName(initialName);
       }, [initialName]);
-      React11.useEffect(() => {
+      React8.useEffect(() => {
         const onKey = (e) => {
           if (e.key === "Escape") {
             e.preventDefault();
@@ -2784,7 +2854,7 @@ var init_PropertiesPopover = __esm({
           ]
         }
       );
-      const colorIndicatorTint = React11.useMemo(() => currentColor, [currentColor]);
+      const colorIndicatorTint = React8.useMemo(() => currentColor, [currentColor]);
       const pos = clamped ?? { left: anchor.x, top: anchor.y };
       const node = /* @__PURE__ */ jsxRuntime.jsxs(
         "div",
@@ -2918,10 +2988,10 @@ var init_TransformParamPopover = __esm({
       regularPolygon: { aria: "S\u1ED1 c\u1EA1nh \u0111a gi\xE1c \u0111\u1EC1u", label: "S\u1ED1 c\u1EA1nh (n \u2265 3)", step: 1, min: 3 }
     };
     TransformParamPopover = ({ kind, anchor, defaultValue, onConfirm, onCancel, isDark }) => {
-      const [value, setValue] = React11.useState(defaultValue);
-      const inputRef = React11.useRef(null);
+      const [value, setValue] = React8.useState(defaultValue);
+      const inputRef = React8.useRef(null);
       const meta = LABELS[kind];
-      React11.useEffect(() => {
+      React8.useEffect(() => {
         inputRef.current?.focus();
         inputRef.current?.select();
       }, []);
@@ -2998,17 +3068,18 @@ var init_EditorPanel = __esm({
     init_render();
     init_PropertiesPopover();
     init_TransformParamPopover();
-    GeometryEditorPanel = React11.forwardRef(
-      function GeometryEditorPanel2({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer }, ref) {
-        const handleRef = React11.useRef(null);
-        const [ready, setReady] = React11.useState(false);
-        const [propsPopover, setPropsPopover] = React11.useState(null);
-        const [transformPopover, setTransformPopover] = React11.useState(null);
-        const onStateChangeRef = React11.useRef(onStateChange);
-        React11.useEffect(() => {
+    init_LeftPanel();
+    GeometryEditorPanel = React8.forwardRef(
+      function GeometryEditorPanel2({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer, onUndo, onRedo, canUndo, canRedo }, ref) {
+        const handleRef = React8.useRef(null);
+        const [ready, setReady] = React8.useState(false);
+        const [propsPopover, setPropsPopover] = React8.useState(null);
+        const [transformPopover, setTransformPopover] = React8.useState(null);
+        const onStateChangeRef = React8.useRef(onStateChange);
+        React8.useEffect(() => {
           onStateChangeRef.current = onStateChange;
         }, [onStateChange]);
-        const emitState = React11.useCallback(() => {
+        const emitState = React8.useCallback(() => {
           const h = handleRef.current;
           const cb = onStateChangeRef.current;
           if (!h || !cb) return;
@@ -3016,10 +3087,11 @@ var init_EditorPanel = __esm({
             tool: h.getTool(),
             showAxis: h.getShowAxis(),
             showGrid: h.getShowGrid(),
-            canUndo: h.canUndo()
+            canUndo: h.canUndo(),
+            canRedo: h.canRedo()
           });
         }, []);
-        const handleReady = React11.useCallback((h) => {
+        const handleReady = React8.useCallback((h) => {
           handleRef.current = h;
           setReady(true);
           emitState();
@@ -3027,7 +3099,7 @@ var init_EditorPanel = __esm({
           h.onSelect((snap) => setPropsPopover(snap));
           h.onTransformParam((info) => setTransformPopover(info));
         }, [emitState]);
-        const performInsert = React11.useCallback(() => {
+        const performInsert = React8.useCallback(() => {
           if (!handleRef.current) return false;
           const log = handleRef.current.getCreationLog();
           if (log.length === 0) return false;
@@ -3050,14 +3122,15 @@ var init_EditorPanel = __esm({
           })();
           return true;
         }, [onInsert]);
-        const handleInsert = React11.useCallback(() => {
+        const handleInsert = React8.useCallback(() => {
           performInsert();
         }, [performInsert]);
-        React11.useImperativeHandle(ref, () => ({
+        React8.useImperativeHandle(ref, () => ({
           setTool: (t) => handleRef.current?.setTool(t),
           setShowAxis: (b) => handleRef.current?.setShowAxis(b),
           setShowGrid: (b) => handleRef.current?.setShowGrid(b),
           undo: () => handleRef.current?.undo(),
+          redo: () => handleRef.current?.redo(),
           insert: performInsert,
           hasContent: () => (handleRef.current?.getCreationLog().length ?? 0) > 0
         }), [performInsert]);
@@ -3107,17 +3180,45 @@ var init_EditorPanel = __esm({
                   ] }),
                   "D\u1EF1ng h\xECnh h\u1ECDc"
                 ] }),
-                isMobile && /* @__PURE__ */ jsxRuntime.jsx(
-                  "button",
-                  {
-                    type: "button",
-                    onClick: handleInsert,
-                    disabled: !ready,
-                    "data-testid": "geometry-insert-btn-mobile",
-                    className: "rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50",
-                    children: "Ch\xE8n"
-                  }
-                ),
+                isMobile && /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+                  /* @__PURE__ */ jsxRuntime.jsx(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: onUndo,
+                      disabled: !canUndo,
+                      "aria-label": "Ho\xE0n t\xE1c",
+                      title: "Ho\xE0n t\xE1c (Ctrl/Cmd+Z)",
+                      "data-testid": "undo-btn-mobile",
+                      className: "inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15 disabled:opacity-40",
+                      children: /* @__PURE__ */ jsxRuntime.jsx(UndoIcon, {})
+                    }
+                  ),
+                  /* @__PURE__ */ jsxRuntime.jsx(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: onRedo,
+                      disabled: !canRedo,
+                      "aria-label": "L\xE0m l\u1EA1i",
+                      title: "L\xE0m l\u1EA1i (Ctrl/Cmd+Shift+Z)",
+                      "data-testid": "redo-btn-mobile",
+                      className: "inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15 disabled:opacity-40",
+                      children: /* @__PURE__ */ jsxRuntime.jsx(RedoIcon, {})
+                    }
+                  ),
+                  /* @__PURE__ */ jsxRuntime.jsx(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: handleInsert,
+                      disabled: !ready,
+                      "data-testid": "geometry-insert-btn-mobile",
+                      className: "rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50",
+                      children: "Ch\xE8n"
+                    }
+                  )
+                ] }),
                 /* @__PURE__ */ jsxRuntime.jsx("button", { onClick: onClose, "aria-label": "\u0110\xF3ng", className: "inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15", children: /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
                   /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
                   /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
@@ -3232,19 +3333,19 @@ function isFieldFocused() {
 }
 function useChordShortcut(args) {
   const { groupOrder, tools, onSelect, enabled } = args;
-  const [chordGroup, setChordGroup] = React11.useState(null);
-  const groupOrderRef = React11.useRef(groupOrder);
-  const toolsRef = React11.useRef(tools);
-  const onSelectRef = React11.useRef(onSelect);
-  const chordGroupRef = React11.useRef(null);
+  const [chordGroup, setChordGroup] = React8.useState(null);
+  const groupOrderRef = React8.useRef(groupOrder);
+  const toolsRef = React8.useRef(tools);
+  const onSelectRef = React8.useRef(onSelect);
+  const chordGroupRef = React8.useRef(null);
   groupOrderRef.current = groupOrder;
   toolsRef.current = tools;
   onSelectRef.current = onSelect;
-  const cancel = React11.useCallback(() => {
+  const cancel = React8.useCallback(() => {
     chordGroupRef.current = null;
     setChordGroup(null);
   }, []);
-  React11.useEffect(() => {
+  React8.useEffect(() => {
     if (!enabled) return;
     const setChord = (next) => {
       chordGroupRef.current = next;
@@ -3439,21 +3540,22 @@ var init_host = __esm({
       tool: "move",
       showAxis: false,
       showGrid: false,
-      canUndo: false
+      canUndo: false,
+      canRedo: false
     };
-    GeometryStampHost = React11.forwardRef(
+    GeometryStampHost = React8.forwardRef(
       function GeometryStampHost2({ api, editingElement, onClose, isDark }, ref) {
-        const panelRef = React11.useRef(null);
-        const [geomState, setGeomState] = React11.useState(INITIAL_GEOM_STATE);
+        const panelRef = React8.useRef(null);
+        const [geomState, setGeomState] = React8.useState(INITIAL_GEOM_STATE);
         const { isMobile } = useIsMobile();
-        const [drawerOpen, setDrawerOpen] = React11.useState(false);
+        const [drawerOpen, setDrawerOpen] = React8.useState(false);
         const { chordGroup } = useChordShortcut({
           groupOrder: GROUP_ORDER,
           tools: TOOLS,
           onSelect: (key) => panelRef.current?.setTool(key),
           enabled: !isMobile
         });
-        const initialState = React11.useMemo(() => {
+        const initialState = React8.useMemo(() => {
           if (!editingElement) return null;
           if (!isGeometryCustomData(editingElement.customData)) return null;
           try {
@@ -3463,7 +3565,7 @@ var init_host = __esm({
             return null;
           }
         }, [editingElement]);
-        const handleInsert = React11.useCallback(
+        const handleInsert = React8.useCallback(
           async (jsonState, svgString) => {
             if (!api) return;
             try {
@@ -3485,7 +3587,7 @@ var init_host = __esm({
           },
           [api, editingElement?.id, onClose]
         );
-        React11.useImperativeHandle(
+        React8.useImperativeHandle(
           ref,
           () => ({
             tryInsert: () => panelRef.current?.insert() ?? false,
@@ -3505,6 +3607,8 @@ var init_host = __esm({
               onShowGridChange: (b) => panelRef.current?.setShowGrid(b),
               onUndo: () => panelRef.current?.undo(),
               canUndo: geomState.canUndo,
+              onRedo: () => panelRef.current?.redo(),
+              canRedo: geomState.canRedo,
               onClose,
               isDark,
               isMobile,
@@ -3524,7 +3628,11 @@ var init_host = __esm({
               withLeftPanel: !isMobile,
               isDark,
               isMobile,
-              onOpenDrawer: () => setDrawerOpen(true)
+              onOpenDrawer: () => setDrawerOpen(true),
+              onUndo: () => panelRef.current?.undo(),
+              onRedo: () => panelRef.current?.redo(),
+              canUndo: geomState.canUndo,
+              canRedo: geomState.canRedo
             }
           )
         ] });
@@ -3774,7 +3882,7 @@ var init_EditorPopover = __esm({
     "use client";
     init_render2();
     DEBOUNCE_MS = 100;
-    EditorPopover = React11.forwardRef(function EditorPopover2({
+    EditorPopover = React8.forwardRef(function EditorPopover2({
       x,
       y,
       initialValue,
@@ -3786,14 +3894,14 @@ var init_EditorPopover = __esm({
       isMobile = false,
       onOpenDrawer
     }, ref) {
-      const [value, setValue] = React11.useState(initialValue);
-      const [internalDisplayMode] = React11.useState(false);
+      const [value, setValue] = React8.useState(initialValue);
+      const [internalDisplayMode] = React8.useState(false);
       const displayMode = controlledDisplayMode ?? internalDisplayMode;
-      const [previewSvg, setPreviewSvg] = React11.useState(null);
-      const [error, setError] = React11.useState(null);
-      const debounceRef = React11.useRef(null);
-      const inputRef = React11.useRef(null);
-      React11.useEffect(() => {
+      const [previewSvg, setPreviewSvg] = React8.useState(null);
+      const [error, setError] = React8.useState(null);
+      const debounceRef = React8.useRef(null);
+      const inputRef = React8.useRef(null);
+      React8.useEffect(() => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(async () => {
           try {
@@ -3809,11 +3917,11 @@ var init_EditorPopover = __esm({
           if (debounceRef.current) clearTimeout(debounceRef.current);
         };
       }, [value, displayMode]);
-      const handleInsert = React11.useCallback(() => {
+      const handleInsert = React8.useCallback(() => {
         if (!previewSvg) return;
         onInsert(previewSvg, value, displayMode);
       }, [previewSvg, value, displayMode, onInsert]);
-      const handleKeyDown = React11.useCallback(
+      const handleKeyDown = React8.useCallback(
         (e) => {
           if (e.key === "Escape") onClose();
           if (e.key === "Enter" && !e.shiftKey) {
@@ -3823,7 +3931,7 @@ var init_EditorPopover = __esm({
         },
         [onClose, handleInsert]
       );
-      React11.useImperativeHandle(
+      React8.useImperativeHandle(
         ref,
         () => ({
           insertAtCursor: (snippet) => {
@@ -3995,12 +4103,12 @@ var init_host2 = __esm({
     init_insertImage();
     init_useIsMobile();
     init_types2();
-    LatexStampHost = React11.forwardRef(
+    LatexStampHost = React8.forwardRef(
       function LatexStampHost2({ api, editingElement, onClose }, ref) {
-        const editorRef = React11.useRef(null);
+        const editorRef = React8.useRef(null);
         const { isMobile } = useIsMobile();
-        const [drawerOpen, setDrawerOpen] = React11.useState(false);
-        const initial = React11.useMemo(() => {
+        const [drawerOpen, setDrawerOpen] = React8.useState(false);
+        const initial = React8.useMemo(() => {
           if (editingElement && isLatexCustomData(editingElement.customData)) {
             return {
               initialValue: editingElement.customData.src,
@@ -4009,8 +4117,8 @@ var init_host2 = __esm({
           }
           return { initialValue: "", displayMode: false };
         }, [editingElement]);
-        const [displayMode, setDisplayMode] = React11.useState(initial.displayMode);
-        const handleInsert = React11.useCallback(
+        const [displayMode, setDisplayMode] = React8.useState(initial.displayMode);
+        const handleInsert = React8.useCallback(
           async (svgString, src, dm) => {
             if (!api) return;
             try {
@@ -4031,7 +4139,7 @@ var init_host2 = __esm({
           },
           [api, editingElement?.id, onClose]
         );
-        React11.useImperativeHandle(
+        React8.useImperativeHandle(
           ref,
           () => ({
             tryInsert: () => editorRef.current?.tryInsert() ?? false,
@@ -4102,193 +4210,82 @@ var init_serialize2 = __esm({
   }
 });
 
-// src/stamps/geometry-3d/editor/scene/labels.ts
-function nextPointLabel(existing) {
-  const used = new Set(existing);
-  for (let suffix = 0; suffix < 1e3; suffix++) {
-    for (let i = 0; i < 26; i++) {
-      const letter = String.fromCharCode(A + i);
-      const candidate = suffix === 0 ? letter : `${letter}_${suffix}`;
-      if (!used.has(candidate)) return candidate;
-    }
-  }
-  return `P_${used.size}`;
+// src/stamps/geometry-3d/editor/theme.ts
+function paletteFor2(isDark) {
+  const base = paletteFor(isDark);
+  return {
+    ...base,
+    view3dBg: isDark ? "#1a1a1a" : "#ffffff",
+    axisX: "#d63b3b",
+    axisY: "#2d8a2d",
+    axisZ: "#2d6dd6"
+  };
 }
-function nextDerivedLabel(kind, existing) {
-  const used = new Set(existing);
-  if (LOWERCASE_KINDS.includes(kind)) {
-    for (let i = 0; i < 26; i++) {
-      const c = String.fromCharCode("a".charCodeAt(0) + i);
-      if (!used.has(c)) return c;
-    }
-    for (let n = 1; n < 1e3; n++) {
-      const c = `a_${n}`;
-      if (!used.has(c)) return c;
-    }
-  }
-  const prefix = PREFIX[kind] ?? kind[0];
-  for (let n = 1; n < 1e3; n++) {
-    const candidate = `${prefix}_${n}`;
-    if (!used.has(candidate)) return candidate;
-  }
-  return `${prefix}_x`;
-}
-var A, LOWERCASE_KINDS, PREFIX;
-var init_labels = __esm({
-  "src/stamps/geometry-3d/editor/scene/labels.ts"() {
-    A = "A".charCodeAt(0);
-    LOWERCASE_KINDS = ["segment", "line", "ray", "vector"];
-    PREFIX = {
-      sphere: "s",
-      polyhedron: "h",
-      cylinder: "c",
-      cone: "k",
-      polygon: "g",
-      plane: "\u03C0"
+var DEFAULT_VIEW3D, VIEW3D_ATTRS, GROUND_PLANE_ATTRS, GROUND_PLANE_RANGE;
+var init_theme2 = __esm({
+  "src/stamps/geometry-3d/editor/theme.ts"() {
+    init_theme();
+    DEFAULT_VIEW3D = {
+      azimuth: 0.7,
+      elevation: 0.4,
+      bbox3D: [-3, -3, -3, 3, 3, 3]
     };
-  }
-});
-
-// src/stamps/geometry-3d/editor/scene/Scene3D.ts
-var Scene3D;
-var init_Scene3D = __esm({
-  "src/stamps/geometry-3d/editor/scene/Scene3D.ts"() {
-    init_labels();
-    Scene3D = class {
-      constructor() {
-        this.objects = /* @__PURE__ */ new Map();
-        this.order = [];
-        this.counter = 0;
-        this.listeners = {
-          add: /* @__PURE__ */ new Set(),
-          change: /* @__PURE__ */ new Set(),
-          delete: /* @__PURE__ */ new Set(),
-          reset: /* @__PURE__ */ new Set()
-        };
-      }
-      on(event, cb) {
-        const set = this.listeners[event];
-        set.add(cb);
-        return () => {
-          set.delete(cb);
-        };
-      }
-      nextId(prefix) {
-        this.counter += 1;
-        return `${prefix}${this.counter}`;
-      }
-      addPoint(constraint, label, color) {
-        const id = this.nextId("p");
-        const existingLabels = this.list().filter((o) => o.kind === "point").map((o) => o.label);
-        const autoLabel = label ?? nextPointLabel(existingLabels);
-        const obj = {
-          kind: "point",
-          id,
-          label: autoLabel,
-          visible: true,
-          color,
-          constraint
-        };
-        this.objects.set(id, obj);
-        this.order.push(id);
-        this.listeners.add.forEach((cb) => cb(obj));
-        return id;
-      }
-      addObject(kind, spec, label) {
-        const id = this.nextId(kind[0]);
-        const existingLabels = this.list().filter((o) => o.kind === kind).map((o) => o.label);
-        const autoLabel = label ?? nextDerivedLabel(kind, existingLabels);
-        const obj = { id, label: autoLabel, visible: true, kind, ...spec };
-        this.objects.set(id, obj);
-        this.order.push(id);
-        this.listeners.add.forEach((cb) => cb(obj));
-        return id;
-      }
-      insert(obj) {
-        if (this.objects.has(obj.id)) {
-          throw new Error(`Scene3D.insert: id ${obj.id} already exists`);
-        }
-        this.objects.set(obj.id, obj);
-        this.order.push(obj.id);
-        this.listeners.add.forEach((cb) => cb(obj));
-      }
-      get(id) {
-        return this.objects.get(id);
-      }
-      list() {
-        return this.order.map((id) => this.objects.get(id)).filter((obj) => obj !== void 0);
-      }
-      referencedIds(obj) {
-        switch (obj.kind) {
-          case "point": {
-            const c = obj.constraint;
-            if (c.kind === "onPlane") return [c.planeId];
-            if (c.kind === "onLine") return [c.lineId];
-            if (c.kind === "onPolygon") return [c.polygonId];
-            if (c.kind === "onSphere") return [c.sphereId];
-            return [];
-          }
-          case "segment":
-          case "line":
-            return [obj.p1, obj.p2];
-          case "ray":
-            return [obj.origin, obj.through];
-          case "vector":
-            return [obj.from, obj.to];
-          case "polygon":
-            return obj.vertices;
-          case "plane":
-            return [obj.p1, obj.p2, obj.p3];
-          case "sphere":
-            return [obj.center, obj.surfacePoint];
-          case "polyhedron":
-            return obj.vertices;
-          case "cylinder":
-            return [obj.baseCenter, obj.topCenter];
-          case "cone":
-            return [obj.baseCenter, obj.apex];
-        }
-      }
-      collectDependents(targetId) {
-        const dependents = /* @__PURE__ */ new Set([targetId]);
-        let grew = true;
-        while (grew) {
-          grew = false;
-          for (const obj of this.objects.values()) {
-            if (dependents.has(obj.id)) continue;
-            const refs = this.referencedIds(obj);
-            if (refs.some((r) => dependents.has(r))) {
-              dependents.add(obj.id);
-              grew = true;
-            }
-          }
-        }
-        return dependents;
-      }
-      delete(id) {
-        if (!this.objects.has(id)) return;
-        const toDelete = this.collectDependents(id);
-        for (const dependentId of toDelete) {
-          this.objects.delete(dependentId);
-          this.order = this.order.filter((x) => x !== dependentId);
-          this.listeners.delete.forEach((cb) => cb(dependentId));
-        }
-      }
-      reset() {
-        this.objects.clear();
-        this.order = [];
-        this.counter = 0;
-        this.listeners.reset.forEach((cb) => cb());
-      }
-      reserveId(prefix) {
-        return this.nextId(prefix);
-      }
-      emitChange(id) {
-        const obj = this.objects.get(id);
-        if (!obj) return;
-        this.listeners.change.forEach((cb) => cb(obj));
-      }
+    VIEW3D_ATTRS = (isDark) => {
+      const p = paletteFor2(isDark);
+      const axisLabel = (color) => ({
+        strokeColor: color,
+        fontSize: 14,
+        offset: [10, 0]
+      });
+      return {
+        az: { slider: { visible: false }, point2: { visible: false } },
+        el: { slider: { visible: false } },
+        projection: "central",
+        // GeoGebra-style: axes pass through origin (0,0,0) instead of bbox border.
+        axesPosition: "center",
+        xAxis: {
+          strokeColor: p.axisX,
+          strokeWidth: 2,
+          lastArrow: { type: 2, size: 8 },
+          name: "x",
+          withLabel: true,
+          label: axisLabel(p.axisX)
+        },
+        yAxis: {
+          strokeColor: p.axisY,
+          strokeWidth: 2,
+          lastArrow: { type: 2, size: 8 },
+          name: "y",
+          withLabel: true,
+          label: axisLabel(p.axisY)
+        },
+        zAxis: {
+          strokeColor: p.axisZ,
+          strokeWidth: 2,
+          lastArrow: { type: 2, size: 8 },
+          name: "z",
+          withLabel: true,
+          label: axisLabel(p.axisZ)
+        },
+        // GeoGebra-style: hide ALL bbox wall planes; the XY ground plane is drawn
+        // explicitly at z=0 via the helper below (so it coincides with Ox/Oy).
+        xPlaneRear: { visible: false, mesh3d: { visible: false } },
+        yPlaneRear: { visible: false, mesh3d: { visible: false } },
+        zPlaneRear: { visible: false, mesh3d: { visible: false } }
+      };
     };
+    GROUND_PLANE_ATTRS = (isDark) => ({
+      fillColor: isDark ? "#2a2a2a" : "#e6e6e6",
+      fillOpacity: isDark ? 0.5 : 0.55,
+      strokeColor: isDark ? "#3a3a3a" : "#cfcfcf",
+      strokeOpacity: 0.7,
+      strokeWidth: 1,
+      fixed: true,
+      highlight: false,
+      withLabel: false,
+      layer: 0
+    });
+    GROUND_PLANE_RANGE = [-3, 3];
   }
 });
 
@@ -4480,69 +4477,6 @@ function constraintToWorld(c, scene) {
       const y = center[1] + radius * Math.sin(c.phi) * Math.sin(c.theta);
       const z = center[2] + radius * Math.cos(c.phi);
       return [x, y, z];
-    }
-  }
-}
-function worldToConstraint(current, world, scene) {
-  switch (current.kind) {
-    case "free":
-      return { kind: "free", x: world[0], y: world[1], z: world[2] };
-    case "onGround":
-      return { kind: "onGround", x: world[0], y: world[1] };
-    case "onAxis": {
-      const t = current.axis === "x" ? world[0] : current.axis === "y" ? world[1] : world[2];
-      return { kind: "onAxis", axis: current.axis, t };
-    }
-    case "onPlane": {
-      const plane = scene.get(current.planeId);
-      if (!plane || plane.kind !== "plane") return current;
-      const { origin, basis1, basis2 } = getPlaneBasis(plane, scene);
-      const rel = sub(world, origin);
-      const b1n = dot(basis1, basis1);
-      const b2n = dot(basis2, basis2);
-      const u = b1n === 0 ? 0 : dot(rel, basis1) / b1n;
-      const v = b2n === 0 ? 0 : dot(rel, basis2) / b2n;
-      return { kind: "onPlane", planeId: current.planeId, u, v };
-    }
-    case "onLine": {
-      const line = scene.get(current.lineId);
-      if (!line) return current;
-      const p1Id = line.kind === "ray" ? line.origin : line.p1;
-      const p2Id = line.kind === "ray" ? line.through : line.p2;
-      const p1 = getPointWorld(p1Id, scene);
-      const p2 = getPointWorld(p2Id, scene);
-      const dir = sub(p2, p1);
-      const len2 = dot(dir, dir);
-      const t = len2 === 0 ? 0 : dot(sub(world, p1), dir) / len2;
-      return { kind: "onLine", lineId: current.lineId, t };
-    }
-    case "onPolygon": {
-      const pg = scene.get(current.polygonId);
-      if (!pg || pg.kind !== "polygon" || pg.vertices.length < 3) return current;
-      const p1 = getPointWorld(pg.vertices[0], scene);
-      const p2 = getPointWorld(pg.vertices[1], scene);
-      const p3 = getPointWorld(pg.vertices[2], scene);
-      const basis1 = sub(p2, p1);
-      const tmp = sub(p3, p1);
-      const normal = normalize(cross(basis1, tmp));
-      const basis2 = cross(normal, basis1);
-      const rel = sub(world, p1);
-      const b1n = dot(basis1, basis1);
-      const b2n = dot(basis2, basis2);
-      const u = b1n === 0 ? 0 : dot(rel, basis1) / b1n;
-      const v = b2n === 0 ? 0 : dot(rel, basis2) / b2n;
-      return { kind: "onPolygon", polygonId: current.polygonId, u, v };
-    }
-    case "onSphere": {
-      const sph = scene.get(current.sphereId);
-      if (!sph || sph.kind !== "sphere") return current;
-      const center = getPointWorld(sph.center, scene);
-      const rel = sub(world, center);
-      const r = norm(rel);
-      if (r === 0) return current;
-      const phi = Math.acos(rel[2] / r);
-      const theta = Math.atan2(rel[1], rel[0]);
-      return { kind: "onSphere", sphereId: current.sphereId, theta, phi };
     }
   }
 }
@@ -4853,9 +4787,19 @@ var init_spec = __esm({
       {
         key: "point",
         label: "\u0110i\u1EC3m",
-        hintIdle: "Ch\u1ECDn m\u1EB7t ph\u1EB3ng / \u0111\u01B0\u1EDDng / m\u1EB7t c\u1EA7u \u0111\u1EC3 \u0111\u1EB7t \u0111i\u1EC3m",
-        steps: [{ type: "point", allowExisting: false, allowNewOn: ALL_SURFACES, hint: "Ch\u1ECDn v\u1ECB tr\xED \u0111\u1EC3 \u0111\u1EB7t \u0111i\u1EC3m" }],
-        build: buildPoint
+        hintIdle: "Click tr\xEAn m\u1EB7t ph\u1EB3ng Oxy ho\u1EB7c tr\xEAn tr\u1EE5c \u0111\u1EC3 \u0111\u1EB7t \u0111i\u1EC3m",
+        steps: [
+          {
+            type: "point",
+            allowExisting: false,
+            // GeoGebra-style: a new point must lie on the XY ground plane or on
+            // one of the coordinate axes (Oz lets you place points off the plane).
+            allowNewOn: ["ground", "axis"],
+            hint: "Click tr\xEAn m\u1EB7t ph\u1EB3ng Oxy ho\u1EB7c tr\u1EE5c Ox/Oy/Oz"
+          }
+        ],
+        build: buildPoint,
+        repeatAfterBuild: true
       },
       {
         key: "pointOnObject",
@@ -5105,7 +5049,14 @@ var init_controller = __esm({
         const tool = this.state.tool;
         if (this.state.stepIndex >= tool.steps.length) {
           tool.build(this.state.collected, this.scene);
-          this.selectTool("move");
+          if (tool.repeatAfterBuild) {
+            this.state.stepIndex = 0;
+            this.state.collected = [];
+            this.state.hint = stepHint(tool.steps[0]);
+            this.notify();
+          } else {
+            this.selectTool("move");
+          }
           return;
         }
         this.state.hint = stepHint(tool.steps[this.state.stepIndex]);
@@ -5178,12 +5129,14 @@ var init_JxgRenderer = __esm({
         this.unsubAdd = scene.on("add", (o) => this.handleAdd(o));
         this.unsubChange = scene.on("change", (o) => this.handleChange(o));
         this.unsubDelete = scene.on("delete", (id) => this.handleDelete(id));
+        this.unsubReset = scene.on("reset", () => this.handleReset());
         for (const obj of scene.list()) this.handleAdd(obj);
       }
       dispose() {
         this.unsubAdd();
         this.unsubChange();
         this.unsubDelete();
+        this.unsubReset();
         for (const [id, j] of this.map) {
           try {
             j.remove?.();
@@ -5196,10 +5149,9 @@ var init_JxgRenderer = __esm({
         if (this.map.has(obj.id)) return;
         if (obj.kind === "point") {
           const world = constraintToWorld(obj.constraint, this.scene);
-          const attrs = { id: obj.id, name: obj.label, size: 4, visible: obj.visible };
+          const attrs = { id: obj.id, name: obj.label, size: 4, visible: obj.visible, fixed: true };
           const jxg = this.view.create("point3d", world, attrs);
           this.map.set(obj.id, jxg);
-          this.attachDragHook(obj.id, jxg);
           return;
         }
         if (obj.kind === "segment") {
@@ -5338,23 +5290,15 @@ var init_JxgRenderer = __esm({
           return;
         }
       }
-      attachDragHook(id, jxg) {
-        if (typeof jxg.on !== "function") return;
-        jxg.on("drag", () => {
-          const obj = this.scene.get(id);
-          if (!obj || obj.kind !== "point") return;
-          const world = [jxg.X(), jxg.Y(), jxg.Z()];
-          const updated = worldToConstraint(obj.constraint, world, this.scene);
-          obj.constraint = updated;
-          this.scene.emitChange(id);
-        });
-      }
       handleChange(obj) {
         const j = this.map.get(obj.id);
         if (!j) return;
         if (obj.kind === "point" && typeof j.moveTo === "function") {
           const w = constraintToWorld(obj.constraint, this.scene);
-          j.moveTo([w[0], w[1], w[2]]);
+          try {
+            j.moveTo([w[0], w[1], w[2]], 0);
+          } catch {
+          }
         }
       }
       handleDelete(id) {
@@ -5365,6 +5309,15 @@ var init_JxgRenderer = __esm({
         } catch {
         }
         this.map.delete(id);
+      }
+      handleReset() {
+        for (const [, j] of this.map) {
+          try {
+            j.remove?.();
+          } catch {
+          }
+        }
+        this.map.clear();
       }
     };
   }
@@ -5475,18 +5428,22 @@ var init_intersect = __esm({
 
 // src/stamps/geometry-3d/editor/hitTest/snapping.ts
 function findSnapPoint(screen, view, scene, pixelRadius = 8) {
+  const board = view?.board;
+  const ux = typeof board?.unitX === "number" && board.unitX > 0 ? board.unitX : 1;
+  const uy = typeof board?.unitY === "number" && board.unitY > 0 ? board.unitY : ux;
+  const rxUser = pixelRadius / ux;
+  const ryUser = pixelRadius / uy;
   let best = null;
-  const r2 = pixelRadius * pixelRadius;
   for (const obj of scene.list()) {
     if (obj.kind !== "point") continue;
     if (!obj.visible) continue;
     const world = constraintToWorld(obj.constraint, scene);
     const proj = view.project3DTo2D?.(world[0], world[1], world[2]);
     if (!proj) continue;
-    const dx = proj[1] - screen.x;
-    const dy = proj[2] - screen.y;
-    const d2 = dx * dx + dy * dy;
-    if (d2 <= r2 && (best === null || d2 < best.d2)) {
+    const dxN = (proj[1] - screen.x) / rxUser;
+    const dyN = (proj[2] - screen.y) / ryUser;
+    const d2 = dxN * dxN + dyN * dyN;
+    if (d2 <= 1 && (best === null || d2 < best.d2)) {
       best = { id: obj.id, d2 };
     }
   }
@@ -5500,6 +5457,9 @@ var init_snapping = __esm({
 
 // src/stamps/geometry-3d/editor/hitTest/hitTest.ts
 function hitTest(screen, view, scene) {
+  const board = view?.board;
+  const ux = typeof board?.unitX === "number" && board.unitX > 0 ? board.unitX : 1;
+  const axisThresholdUser = AXIS_PIXEL_THRESHOLD / ux;
   const snap = findSnapPoint(screen, view, scene);
   if (snap) return { kind: "existingPoint", pointId: snap };
   const ray = screenToRay(screen, view);
@@ -5532,7 +5492,7 @@ function hitTest(screen, view, scene) {
       const pa = view.project3DTo2D(ax.a[0], ax.a[1], ax.a[2]);
       const pb = view.project3DTo2D(ax.b[0], ax.b[1], ax.b[2]);
       const d = distScreenPointToSegment(screen, [pa[1], pa[2]], [pb[1], pb[2]]);
-      if (d <= AXIS_PIXEL_THRESHOLD) {
+      if (d <= axisThresholdUser) {
         const hit = rayLineSegment(ray, { a: ax.a, b: ax.b }, 1e3);
         if (hit) {
           const t = ax.axis === "x" ? hit.point[0] : ax.axis === "y" ? hit.point[1] : hit.point[2];
@@ -5633,6 +5593,1024 @@ var init_hitTest = __esm({
     init_snapping();
     init_constraintMath();
     AXIS_PIXEL_THRESHOLD = 12;
+  }
+});
+var MiniBoard3D;
+var init_MiniBoard3D = __esm({
+  "src/stamps/geometry-3d/editor/MiniBoard3D.tsx"() {
+    "use client";
+    init_theme2();
+    MiniBoard3D = React8__namespace.forwardRef(
+      function MiniBoard3D2(props, ref) {
+        const containerRef = React8__namespace.useRef(null);
+        const boardRef = React8__namespace.useRef(null);
+        const viewRef = React8__namespace.useRef(null);
+        const {
+          isDark,
+          onView3DReady,
+          onPointerClick,
+          onPointerMove,
+          onPointerLeave,
+          shouldStartPointDrag,
+          onPointerDrag,
+          onPointerDragEnd
+        } = props;
+        const onView3DReadyRef = React8__namespace.useRef(onView3DReady);
+        const onPointerClickRef = React8__namespace.useRef(onPointerClick);
+        const onPointerMoveRef = React8__namespace.useRef(onPointerMove);
+        const onPointerLeaveRef = React8__namespace.useRef(onPointerLeave);
+        const shouldStartPointDragRef = React8__namespace.useRef(shouldStartPointDrag);
+        const onPointerDragRef = React8__namespace.useRef(onPointerDrag);
+        const onPointerDragEndRef = React8__namespace.useRef(onPointerDragEnd);
+        onView3DReadyRef.current = onView3DReady;
+        onPointerClickRef.current = onPointerClick;
+        onPointerMoveRef.current = onPointerMove;
+        onPointerLeaveRef.current = onPointerLeave;
+        shouldStartPointDragRef.current = shouldStartPointDrag;
+        onPointerDragRef.current = onPointerDrag;
+        onPointerDragEndRef.current = onPointerDragEnd;
+        React8__namespace.useImperativeHandle(
+          ref,
+          () => ({
+            getBoard: () => boardRef.current,
+            getView3D: () => viewRef.current,
+            getSvgElement: () => containerRef.current?.querySelector("svg") ?? null
+          }),
+          []
+        );
+        React8__namespace.useEffect(() => {
+          const div = containerRef.current;
+          if (!div) return;
+          let cancelled = false;
+          let JXG = null;
+          let board = null;
+          let svgEl = null;
+          let handlePointerDown = null;
+          let handlePointerMove = null;
+          let handlePointerUp = null;
+          let handlePointerLeave = null;
+          void (async () => {
+            try {
+              JXG = (await import('jsxgraph')).default;
+            } catch {
+              return;
+            }
+            if (cancelled || !containerRef.current) return;
+            try {
+              JXG.Options.text.display = "internal";
+            } catch {
+            }
+            try {
+              board = JXG.JSXGraph.initBoard(div, {
+                boundingbox: [-6, 6, 6, -6],
+                keepaspectratio: true,
+                axis: false,
+                showCopyright: false,
+                showNavigation: false,
+                renderer: "svg"
+              });
+            } catch {
+              return;
+            }
+            if (cancelled || !board) return;
+            boardRef.current = board;
+            let view = null;
+            try {
+              const baseAttrs = VIEW3D_ATTRS(isDark);
+              view = board.create(
+                "view3d",
+                [
+                  [-5, -5],
+                  [10, 10],
+                  [
+                    [DEFAULT_VIEW3D.bbox3D[0], DEFAULT_VIEW3D.bbox3D[3]],
+                    [DEFAULT_VIEW3D.bbox3D[1], DEFAULT_VIEW3D.bbox3D[4]],
+                    [DEFAULT_VIEW3D.bbox3D[2], DEFAULT_VIEW3D.bbox3D[5]]
+                  ]
+                ],
+                {
+                  ...baseAttrs,
+                  az: { ...baseAttrs.az, value: DEFAULT_VIEW3D.azimuth },
+                  el: { ...baseAttrs.el, value: DEFAULT_VIEW3D.elevation }
+                }
+              );
+            } catch {
+            }
+            viewRef.current = view;
+            if (view) {
+              try {
+                view.create(
+                  "plane3d",
+                  [
+                    [0, 0, 0],
+                    [1, 0, 0],
+                    [0, 1, 0],
+                    GROUND_PLANE_RANGE,
+                    GROUND_PLANE_RANGE
+                  ],
+                  GROUND_PLANE_ATTRS(isDark)
+                );
+              } catch {
+              }
+              onView3DReadyRef.current?.(view, board);
+            }
+            svgEl = containerRef.current?.querySelector("svg") ?? null;
+            if (svgEl) {
+              const p2 = paletteFor2(isDark);
+              svgEl.style.background = p2.view3dBg;
+              const pixelToUser = (e) => {
+                const rect = svgEl.getBoundingClientRect();
+                const px = e.clientX - rect.left;
+                const py = e.clientY - rect.top;
+                const b = board;
+                if (!b || !b.origin || !b.origin.scrCoords) {
+                  return { x: px, y: py };
+                }
+                const ox = b.origin.scrCoords[1];
+                const oy = b.origin.scrCoords[2];
+                const ux = b.unitX || 1;
+                const uy = b.unitY || 1;
+                return { x: (px - ox) / ux, y: (oy - py) / uy };
+              };
+              const DRAG_THRESHOLD = 4;
+              const AZ_PER_PX = 0.01;
+              const EL_PER_PX = 0.01;
+              const EL_LIMIT = Math.PI / 2 - 0.05;
+              let dragStart = null;
+              let dragging = false;
+              let pointDragMode = false;
+              let startAz = 0;
+              let startEl = 0;
+              const readAng = (s) => {
+                if (!s) return 0;
+                if (typeof s.Value === "function") {
+                  try {
+                    return s.Value();
+                  } catch {
+                  }
+                }
+                return typeof s.value === "number" ? s.value : 0;
+              };
+              const setAng = (s, v) => {
+                if (!s) return;
+                if (typeof s.setValue === "function") {
+                  try {
+                    s.setValue(v);
+                    return;
+                  } catch {
+                  }
+                }
+                s.value = v;
+              };
+              handlePointerDown = (e) => {
+                if (!svgEl) return;
+                dragStart = { x: e.clientX, y: e.clientY };
+                dragging = false;
+                pointDragMode = false;
+                const screen = pixelToUser(e);
+                try {
+                  pointDragMode = shouldStartPointDragRef.current?.(screen) ?? false;
+                } catch {
+                  pointDragMode = false;
+                }
+                if (!pointDragMode) {
+                  const v = viewRef.current;
+                  startAz = readAng(v?.az_slide ?? v?.az);
+                  startEl = readAng(v?.el_slide ?? v?.el);
+                }
+                try {
+                  svgEl.setPointerCapture?.(e.pointerId);
+                } catch {
+                }
+              };
+              handlePointerMove = (e) => {
+                if (!svgEl) return;
+                if (dragStart) {
+                  const dx = e.clientX - dragStart.x;
+                  const dy = e.clientY - dragStart.y;
+                  if (!dragging && Math.hypot(dx, dy) > DRAG_THRESHOLD) dragging = true;
+                  if (dragging) {
+                    if (pointDragMode) {
+                      onPointerDragRef.current?.(pixelToUser(e));
+                      return;
+                    }
+                    const v = viewRef.current;
+                    const newAz = startAz + dx * AZ_PER_PX;
+                    let newEl = startEl - dy * EL_PER_PX;
+                    if (newEl > EL_LIMIT) newEl = EL_LIMIT;
+                    if (newEl < -EL_LIMIT) newEl = -EL_LIMIT;
+                    setAng(v?.az_slide ?? v?.az, newAz);
+                    setAng(v?.el_slide ?? v?.el, newEl);
+                    try {
+                      v?.board?.update?.();
+                    } catch {
+                    }
+                    return;
+                  }
+                }
+                onPointerMoveRef.current?.(pixelToUser(e));
+              };
+              handlePointerUp = (e) => {
+                if (!svgEl) return;
+                const wasDrag = dragging;
+                const hadDown = dragStart !== null;
+                const wasPointDrag = pointDragMode;
+                dragStart = null;
+                dragging = false;
+                pointDragMode = false;
+                try {
+                  svgEl.releasePointerCapture?.(e.pointerId);
+                } catch {
+                }
+                if (hadDown && wasPointDrag) {
+                  onPointerDragEndRef.current?.(pixelToUser(e));
+                  return;
+                }
+                if (hadDown && !wasDrag) {
+                  onPointerClickRef.current?.(pixelToUser(e));
+                }
+              };
+              handlePointerLeave = () => {
+                if (pointDragMode) {
+                  try {
+                    onPointerDragEndRef.current?.({ x: 0, y: 0 });
+                  } catch {
+                  }
+                }
+                dragStart = null;
+                dragging = false;
+                pointDragMode = false;
+                onPointerLeaveRef.current?.();
+              };
+              svgEl.addEventListener("pointerdown", handlePointerDown);
+              svgEl.addEventListener("pointermove", handlePointerMove);
+              svgEl.addEventListener("pointerup", handlePointerUp);
+              svgEl.addEventListener("pointercancel", handlePointerUp);
+              svgEl.addEventListener("pointerleave", handlePointerLeave);
+            }
+          })();
+          return () => {
+            cancelled = true;
+            if (svgEl) {
+              if (handlePointerDown) svgEl.removeEventListener("pointerdown", handlePointerDown);
+              if (handlePointerMove) svgEl.removeEventListener("pointermove", handlePointerMove);
+              if (handlePointerUp) {
+                svgEl.removeEventListener("pointerup", handlePointerUp);
+                svgEl.removeEventListener("pointercancel", handlePointerUp);
+              }
+              if (handlePointerLeave) svgEl.removeEventListener("pointerleave", handlePointerLeave);
+            }
+            try {
+              if (board && JXG) JXG.JSXGraph.freeBoard(board);
+            } catch {
+            }
+            boardRef.current = null;
+            viewRef.current = null;
+          };
+        }, [isDark]);
+        const p = paletteFor2(isDark);
+        return /* @__PURE__ */ jsxRuntime.jsx(
+          "div",
+          {
+            "data-testid": "mini-board-3d",
+            ref: containerRef,
+            style: {
+              width: "100%",
+              height: "100%",
+              minHeight: 400,
+              background: p.view3dBg,
+              position: "relative",
+              // Clip JSXGraph mesh3d paths projecting outside the container.
+              overflow: "hidden"
+            }
+          }
+        );
+      }
+    );
+  }
+});
+function StatusHint(props) {
+  const { hint, hoverLabel } = props;
+  return /* @__PURE__ */ jsxRuntime.jsxs(
+    "div",
+    {
+      "data-testid": "status-hint",
+      className: "border-t border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300",
+      children: [
+        /* @__PURE__ */ jsxRuntime.jsxs("span", { children: [
+          "\u{1F4D0} ",
+          hint || "Ch\u1ECDn c\xF4ng c\u1EE5 trong b\u1EA3ng b\xEAn tr\xE1i"
+        ] }),
+        hoverLabel ? /* @__PURE__ */ jsxRuntime.jsxs("span", { className: "ml-3 text-zinc-500", children: [
+          "\u2014 \u0111ang tr\xEAn: ",
+          hoverLabel
+        ] }) : null
+      ]
+    }
+  );
+}
+var init_StatusHint = __esm({
+  "src/stamps/geometry-3d/editor/StatusHint.tsx"() {
+    "use client";
+  }
+});
+
+// src/stamps/geometry-3d/editor/scene/labels.ts
+function nextPointLabel(existing) {
+  const used = new Set(existing);
+  for (let suffix = 0; suffix < 1e3; suffix++) {
+    for (let i = 0; i < 26; i++) {
+      const letter = String.fromCharCode(A + i);
+      const candidate = suffix === 0 ? letter : `${letter}_${suffix}`;
+      if (!used.has(candidate)) return candidate;
+    }
+  }
+  return `P_${used.size}`;
+}
+function nextDerivedLabel(kind, existing) {
+  const used = new Set(existing);
+  if (LOWERCASE_KINDS.includes(kind)) {
+    for (let i = 0; i < 26; i++) {
+      const c = String.fromCharCode("a".charCodeAt(0) + i);
+      if (!used.has(c)) return c;
+    }
+    for (let n = 1; n < 1e3; n++) {
+      const c = `a_${n}`;
+      if (!used.has(c)) return c;
+    }
+  }
+  const prefix = PREFIX[kind] ?? kind[0];
+  for (let n = 1; n < 1e3; n++) {
+    const candidate = `${prefix}_${n}`;
+    if (!used.has(candidate)) return candidate;
+  }
+  return `${prefix}_x`;
+}
+var A, LOWERCASE_KINDS, PREFIX;
+var init_labels = __esm({
+  "src/stamps/geometry-3d/editor/scene/labels.ts"() {
+    A = "A".charCodeAt(0);
+    LOWERCASE_KINDS = ["segment", "line", "ray", "vector"];
+    PREFIX = {
+      sphere: "s",
+      polyhedron: "h",
+      cylinder: "c",
+      cone: "k",
+      polygon: "g",
+      plane: "\u03C0"
+    };
+  }
+});
+
+// src/stamps/geometry-3d/editor/scene/Scene3D.ts
+var Scene3D;
+var init_Scene3D = __esm({
+  "src/stamps/geometry-3d/editor/scene/Scene3D.ts"() {
+    init_labels();
+    Scene3D = class {
+      constructor() {
+        this.objects = /* @__PURE__ */ new Map();
+        this.order = [];
+        this.counter = 0;
+        this.listeners = {
+          add: /* @__PURE__ */ new Set(),
+          change: /* @__PURE__ */ new Set(),
+          delete: /* @__PURE__ */ new Set(),
+          reset: /* @__PURE__ */ new Set()
+        };
+        this.historyPast = [];
+        this.historyFuture = [];
+        this.historySuspended = false;
+        this.historyListeners = /* @__PURE__ */ new Set();
+      }
+      on(event, cb) {
+        const set = this.listeners[event];
+        set.add(cb);
+        return () => {
+          set.delete(cb);
+        };
+      }
+      nextId(prefix) {
+        this.counter += 1;
+        return `${prefix}${this.counter}`;
+      }
+      addPoint(constraint, label, color) {
+        this.capture();
+        const id = this.nextId("p");
+        const existingLabels = this.list().filter((o) => o.kind === "point").map((o) => o.label);
+        const autoLabel = label ?? nextPointLabel(existingLabels);
+        const obj = {
+          kind: "point",
+          id,
+          label: autoLabel,
+          visible: true,
+          color,
+          constraint
+        };
+        this.objects.set(id, obj);
+        this.order.push(id);
+        this.listeners.add.forEach((cb) => cb(obj));
+        return id;
+      }
+      addObject(kind, spec, label) {
+        this.capture();
+        const id = this.nextId(kind[0]);
+        const existingLabels = this.list().filter((o) => o.kind === kind).map((o) => o.label);
+        const autoLabel = label ?? nextDerivedLabel(kind, existingLabels);
+        const obj = { id, label: autoLabel, visible: true, kind, ...spec };
+        this.objects.set(id, obj);
+        this.order.push(id);
+        this.listeners.add.forEach((cb) => cb(obj));
+        return id;
+      }
+      insert(obj) {
+        this.capture();
+        if (this.objects.has(obj.id)) {
+          throw new Error(`Scene3D.insert: id ${obj.id} already exists`);
+        }
+        this.objects.set(obj.id, obj);
+        this.order.push(obj.id);
+        this.listeners.add.forEach((cb) => cb(obj));
+      }
+      get(id) {
+        return this.objects.get(id);
+      }
+      list() {
+        return this.order.map((id) => this.objects.get(id)).filter((obj) => obj !== void 0);
+      }
+      referencedIds(obj) {
+        switch (obj.kind) {
+          case "point": {
+            const c = obj.constraint;
+            if (c.kind === "onPlane") return [c.planeId];
+            if (c.kind === "onLine") return [c.lineId];
+            if (c.kind === "onPolygon") return [c.polygonId];
+            if (c.kind === "onSphere") return [c.sphereId];
+            return [];
+          }
+          case "segment":
+          case "line":
+            return [obj.p1, obj.p2];
+          case "ray":
+            return [obj.origin, obj.through];
+          case "vector":
+            return [obj.from, obj.to];
+          case "polygon":
+            return obj.vertices;
+          case "plane":
+            return [obj.p1, obj.p2, obj.p3];
+          case "sphere":
+            return [obj.center, obj.surfacePoint];
+          case "polyhedron":
+            return obj.vertices;
+          case "cylinder":
+            return [obj.baseCenter, obj.topCenter];
+          case "cone":
+            return [obj.baseCenter, obj.apex];
+        }
+      }
+      collectDependents(targetId) {
+        const dependents = /* @__PURE__ */ new Set([targetId]);
+        let grew = true;
+        while (grew) {
+          grew = false;
+          for (const obj of this.objects.values()) {
+            if (dependents.has(obj.id)) continue;
+            const refs = this.referencedIds(obj);
+            if (refs.some((r) => dependents.has(r))) {
+              dependents.add(obj.id);
+              grew = true;
+            }
+          }
+        }
+        return dependents;
+      }
+      delete(id) {
+        if (!this.objects.has(id)) return;
+        this.capture();
+        const toDelete = this.collectDependents(id);
+        for (const dependentId of toDelete) {
+          this.objects.delete(dependentId);
+          this.order = this.order.filter((x) => x !== dependentId);
+          this.listeners.delete.forEach((cb) => cb(dependentId));
+        }
+      }
+      reset() {
+        this.capture();
+        this.objects.clear();
+        this.order = [];
+        this.counter = 0;
+        this.listeners.reset.forEach((cb) => cb());
+      }
+      reserveId(prefix) {
+        return this.nextId(prefix);
+      }
+      emitChange(id) {
+        const obj = this.objects.get(id);
+        if (!obj) return;
+        this.listeners.change.forEach((cb) => cb(obj));
+      }
+      snapshot() {
+        const cloned = /* @__PURE__ */ new Map();
+        for (const [id, obj] of this.objects) {
+          cloned.set(id, { ...obj });
+        }
+        return {
+          objects: cloned,
+          order: [...this.order],
+          counter: this.counter
+        };
+      }
+      restore(snap) {
+        this.objects = /* @__PURE__ */ new Map();
+        for (const [id, obj] of snap.objects) {
+          this.objects.set(id, { ...obj });
+        }
+        this.order = [...snap.order];
+        this.counter = snap.counter;
+        this.listeners.reset.forEach((cb) => cb());
+        for (const id of this.order) {
+          const obj = this.objects.get(id);
+          if (obj) this.listeners.add.forEach((cb) => cb(obj));
+        }
+      }
+      capture() {
+        if (this.historySuspended) return;
+        this.historyPast.push(this.snapshot());
+        this.historyFuture = [];
+        this.notifyHistoryChange();
+      }
+      canUndo() {
+        return this.historyPast.length > 0;
+      }
+      canRedo() {
+        return this.historyFuture.length > 0;
+      }
+      undo() {
+        const prev = this.historyPast.pop();
+        if (!prev) return;
+        this.historyFuture.push(this.snapshot());
+        this.restore(prev);
+        this.notifyHistoryChange();
+      }
+      redo() {
+        const next = this.historyFuture.pop();
+        if (!next) return;
+        this.historyPast.push(this.snapshot());
+        this.restore(next);
+        this.notifyHistoryChange();
+      }
+      withoutHistory(fn) {
+        const prev = this.historySuspended;
+        this.historySuspended = true;
+        try {
+          fn();
+        } finally {
+          this.historySuspended = prev;
+        }
+      }
+      pushUndoCheckpoint(prev) {
+        if (this.historySuspended) return;
+        this.historyPast.push(prev);
+        this.historyFuture = [];
+        this.notifyHistoryChange();
+      }
+      onHistoryChange(cb) {
+        this.historyListeners.add(cb);
+        return () => {
+          this.historyListeners.delete(cb);
+        };
+      }
+      notifyHistoryChange() {
+        this.historyListeners.forEach((cb) => cb());
+      }
+    };
+  }
+});
+
+// src/stamps/geometry-3d/editor/scene/persistence.ts
+function sceneToBoard(scene, view, bbox) {
+  const elements = [];
+  for (const obj of scene.list()) {
+    const els = sceneObjectToElements(obj, scene);
+    elements.push(...els);
+  }
+  return { version: 2, bbox, view, showAxes: true, showMesh: true, elements };
+}
+function sceneObjectToElements(obj, scene) {
+  const baseAttrs = { label: obj.label, visible: obj.visible, color: obj.color };
+  switch (obj.kind) {
+    case "point": {
+      let w;
+      try {
+        w = constraintToWorld(obj.constraint, scene);
+      } catch {
+        w = [0, 0, 0];
+      }
+      return [{
+        type: "point3d",
+        parents: [w[0], w[1], w[2]],
+        attributes: { id: obj.id, ...baseAttrs },
+        id: obj.id,
+        label: obj.label,
+        constraint: obj.constraint
+      }];
+    }
+    case "segment":
+    case "line":
+    case "ray":
+    case "vector":
+    case "plane":
+    case "sphere":
+    case "polygon":
+    case "polyhedron":
+    case "cylinder":
+    case "cone": {
+      return [{
+        type: pickJxgType(obj.kind),
+        parents: [],
+        attributes: { id: obj.id, ...baseAttrs, sceneKind: obj.kind, sceneSpec: encodeSpec(obj) },
+        id: obj.id,
+        label: obj.label
+      }];
+    }
+  }
+}
+function pickJxgType(kind) {
+  switch (kind) {
+    case "point":
+      return "point3d";
+    case "segment":
+    case "line":
+    case "ray":
+    case "vector":
+      return "line3d";
+    case "plane":
+      return "plane3d";
+    case "sphere":
+      return "sphere3d";
+    case "polygon":
+    case "polyhedron":
+    case "cylinder":
+    case "cone":
+      return "polygon3d";
+  }
+}
+function encodeSpec(obj) {
+  const rest = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (k === "id" || k === "label" || k === "visible" || k === "color" || k === "kind") continue;
+    rest[k] = v;
+  }
+  return rest;
+}
+function boardToScene(board) {
+  const scene = new Scene3D();
+  for (const el of board.elements) {
+    if (el.type === "point3d") {
+      const constraint = el.constraint ?? {
+        kind: "free",
+        x: Number(el.parents[0] ?? 0),
+        y: Number(el.parents[1] ?? 0),
+        z: Number(el.parents[2] ?? 0)
+      };
+      const color2 = el.attributes["color"];
+      const visible2 = el.attributes["visible"] !== false;
+      try {
+        scene.insert({
+          kind: "point",
+          id: el.id,
+          label: el.label ?? el.id,
+          visible: visible2,
+          color: color2,
+          constraint
+        });
+      } catch {
+      }
+      continue;
+    }
+    const sceneKind = el.attributes["sceneKind"];
+    const sceneSpec = el.attributes["sceneSpec"];
+    if (!sceneKind || !sceneSpec) continue;
+    const color = el.attributes["color"];
+    const visible = el.attributes["visible"] !== false;
+    const obj = {
+      id: el.id,
+      label: el.label ?? el.id,
+      visible,
+      color,
+      kind: sceneKind,
+      ...sceneSpec
+    };
+    try {
+      scene.insert(obj);
+    } catch {
+    }
+  }
+  return scene;
+}
+var init_persistence = __esm({
+  "src/stamps/geometry-3d/editor/scene/persistence.ts"() {
+    init_Scene3D();
+    init_constraintMath();
+  }
+});
+var EditorPanel;
+var init_EditorPanel2 = __esm({
+  "src/stamps/geometry-3d/editor/EditorPanel.tsx"() {
+    "use client";
+    init_controller();
+    init_JxgRenderer();
+    init_hitTest();
+    init_rayCast();
+    init_intersect();
+    init_constraintMath();
+    init_ensurePoint();
+    init_MiniBoard3D();
+    init_StatusHint();
+    init_persistence();
+    EditorPanel = React8__namespace.forwardRef(
+      function EditorPanel2(props, ref) {
+        const {
+          isDark: isDarkProp,
+          initialState,
+          scene,
+          selectedTool,
+          onSelectedToolChange,
+          showAxis,
+          showGrid,
+          onReadyChange,
+          onHistoryChange
+        } = props;
+        const isDark = isDarkProp ?? false;
+        const controllerRef = React8__namespace.useRef(null);
+        if (!controllerRef.current) controllerRef.current = new ToolController(scene);
+        const [hint, setHint] = React8__namespace.useState("Ch\u1ECDn c\xF4ng c\u1EE5 trong b\u1EA3ng b\xEAn tr\xE1i");
+        const [hoverLabel, setHoverLabel] = React8__namespace.useState(null);
+        const boardRef = React8__namespace.useRef(null);
+        const rendererRef = React8__namespace.useRef(null);
+        const onSelectedToolChangeRef = React8__namespace.useRef(onSelectedToolChange);
+        onSelectedToolChangeRef.current = onSelectedToolChange;
+        const onHistoryChangeRef = React8__namespace.useRef(onHistoryChange);
+        onHistoryChangeRef.current = onHistoryChange;
+        const selectedToolRef = React8__namespace.useRef(selectedTool);
+        selectedToolRef.current = selectedTool;
+        const draggedPointRef = React8__namespace.useRef(null);
+        const dragStartRef = React8__namespace.useRef(null);
+        const dragSnapshotRef = React8__namespace.useRef(null);
+        React8__namespace.useEffect(() => {
+          if (initialState) {
+            const loaded = boardToScene(initialState);
+            scene.withoutHistory(() => {
+              scene.reset();
+              for (const obj of loaded.list()) {
+                scene.insert(obj);
+              }
+            });
+          }
+        }, []);
+        React8__namespace.useEffect(() => {
+          const ctrl = controllerRef.current;
+          const unsub = ctrl.on((state) => {
+            setHint(state.hint);
+            onSelectedToolChangeRef.current(state.tool?.key ?? "move");
+          });
+          return unsub;
+        }, []);
+        React8__namespace.useEffect(() => {
+          onHistoryChangeRef.current?.(scene.canUndo(), scene.canRedo());
+          const unsub = scene.onHistoryChange(() => {
+            onHistoryChangeRef.current?.(scene.canUndo(), scene.canRedo());
+          });
+          return unsub;
+        }, [scene]);
+        React8__namespace.useEffect(() => {
+          controllerRef.current?.selectTool(selectedTool);
+        }, [selectedTool]);
+        React8__namespace.useEffect(() => {
+          const onKey = (e) => {
+            const ae = document.activeElement;
+            const inField = !!(ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable));
+            if (inField) return;
+            if (!(e.metaKey || e.ctrlKey)) return;
+            const key = e.key.toLowerCase();
+            if (key === "z" && !e.shiftKey) {
+              e.preventDefault();
+              e.stopPropagation();
+              scene.undo();
+            } else if (key === "z" && e.shiftKey || key === "y" && !e.shiftKey) {
+              e.preventDefault();
+              e.stopPropagation();
+              scene.redo();
+            }
+          };
+          window.addEventListener("keydown", onKey, { capture: true });
+          return () => window.removeEventListener("keydown", onKey, { capture: true });
+        }, [scene]);
+        React8__namespace.useEffect(() => {
+          return () => {
+            rendererRef.current?.dispose();
+            rendererRef.current = null;
+          };
+        }, []);
+        React8__namespace.useEffect(() => {
+          const view = boardRef.current?.getView3D();
+          const v = view;
+          if (!v || typeof v.setAttribute !== "function") return;
+          try {
+            v.setAttribute({
+              xAxis: { visible: showAxis },
+              yAxis: { visible: showAxis },
+              zAxis: { visible: showAxis },
+              // GeoGebra-style: only the XY ground plane is shown; side walls stay hidden.
+              xPlaneRear: { visible: false, mesh3d: { visible: false } },
+              yPlaneRear: { visible: false, mesh3d: { visible: false } },
+              zPlaneRear: { visible: showGrid, mesh3d: { visible: false } }
+            });
+            v.board?.update?.();
+          } catch {
+          }
+        }, [showAxis, showGrid]);
+        const handleView3DReady = React8__namespace.useCallback((view) => {
+          rendererRef.current = new JxgRenderer(scene, view);
+          onReadyChange?.(true);
+        }, [onReadyChange, scene]);
+        const handleClick = React8__namespace.useCallback((screen) => {
+          const board = boardRef.current;
+          if (!board) return;
+          const view = board.getView3D();
+          if (!view) return;
+          try {
+            const hit = hitTest(screen, view, scene);
+            controllerRef.current.consumeHit(hit);
+          } catch {
+          }
+        }, [scene]);
+        const handleMove2 = React8__namespace.useCallback((screen) => {
+          const board = boardRef.current;
+          if (!board) return;
+          const view = board.getView3D();
+          if (!view) return;
+          if (draggedPointRef.current) return;
+          let hit;
+          try {
+            hit = hitTest(screen, view, scene);
+          } catch {
+            setHoverLabel(null);
+            return;
+          }
+          if (hit.kind === "empty") setHoverLabel(null);
+          else if (hit.kind === "existingPoint") {
+            const obj = scene.get(hit.pointId);
+            setHoverLabel(obj?.label ?? null);
+          } else if (hit.kind === "onGround") setHoverLabel("m\u1EB7t n\u1EC1n");
+          else if (hit.kind === "onAxis") setHoverLabel(`tr\u1EE5c ${hit.axis.toUpperCase()}`);
+          else if (hit.kind === "onPlane") setHoverLabel(`m\u1EB7t ph\u1EB3ng ${hit.planeId}`);
+          else if (hit.kind === "onSphere") setHoverLabel(`m\u1EB7t c\u1EA7u ${hit.sphereId}`);
+          else setHoverLabel(null);
+        }, [scene]);
+        const shouldStartPointDrag = React8__namespace.useCallback((screen) => {
+          const view = boardRef.current?.getView3D();
+          if (!view) return false;
+          const tool = selectedToolRef.current;
+          if (tool !== "point" && tool !== "move") return false;
+          let hit;
+          try {
+            hit = hitTest(screen, view, scene);
+          } catch {
+            return false;
+          }
+          if (hit.kind === "existingPoint") {
+            const pt = scene.get(hit.pointId);
+            if (!pt || pt.kind !== "point") return false;
+            dragSnapshotRef.current = scene.snapshot();
+            draggedPointRef.current = hit.pointId;
+            dragStartRef.current = {
+              screen,
+              world: constraintToWorld(pt.constraint, scene)
+            };
+            return true;
+          }
+          if (tool === "point" && (hit.kind === "onGround" || hit.kind === "onAxis")) {
+            dragSnapshotRef.current = scene.snapshot();
+            const constraint = hitToConstraint(hit);
+            if (!constraint) {
+              dragSnapshotRef.current = null;
+              return false;
+            }
+            let id = null;
+            scene.withoutHistory(() => {
+              id = scene.addPoint(constraint);
+            });
+            if (!id) {
+              dragSnapshotRef.current = null;
+              return false;
+            }
+            draggedPointRef.current = id;
+            dragStartRef.current = {
+              screen,
+              world: [hit.world[0], hit.world[1], hit.world[2]]
+            };
+            return true;
+          }
+          if (tool === "point") {
+            dragSnapshotRef.current = null;
+            draggedPointRef.current = null;
+            dragStartRef.current = null;
+            return true;
+          }
+          return false;
+        }, [scene]);
+        const onPointerDrag = React8__namespace.useCallback((screen) => {
+          const pointId = draggedPointRef.current;
+          const start = dragStartRef.current;
+          if (!pointId || !start) return;
+          const view = boardRef.current?.getView3D();
+          if (!view) return;
+          const tool = selectedToolRef.current;
+          let nextWorld;
+          if (tool === "point") {
+            const dz = screen.y - start.screen.y;
+            nextWorld = [start.world[0], start.world[1], start.world[2] + dz];
+          } else if (tool === "move") {
+            try {
+              const ray = screenToRay(screen, view);
+              const hit = rayPlane(ray, { point: [0, 0, start.world[2]], normal: [0, 0, 1] });
+              if (!hit) return;
+              nextWorld = [hit.point[0], hit.point[1], start.world[2]];
+            } catch {
+              return;
+            }
+          } else {
+            return;
+          }
+          const obj = scene.get(pointId);
+          if (!obj || obj.kind !== "point") return;
+          const free = { kind: "free", x: nextWorld[0], y: nextWorld[1], z: nextWorld[2] };
+          obj.constraint = free;
+          scene.emitChange(pointId);
+        }, [scene]);
+        const onPointerDragEnd = React8__namespace.useCallback(() => {
+          const snap = dragSnapshotRef.current;
+          dragSnapshotRef.current = null;
+          draggedPointRef.current = null;
+          dragStartRef.current = null;
+          if (snap) {
+            scene.pushUndoCheckpoint(snap);
+          }
+        }, [scene]);
+        React8__namespace.useImperativeHandle(
+          ref,
+          () => ({
+            hasContent: () => scene.list().length > 0,
+            serialize: () => {
+              const view = boardRef.current?.getView3D();
+              const v = view;
+              const azSlider = v?.az_slide ?? v?.az;
+              const elSlider = v?.el_slide ?? v?.el;
+              const azimuth = typeof azSlider?.Value === "function" ? azSlider.Value() : 0;
+              const elevation = typeof elSlider?.Value === "function" ? elSlider.Value() : 0;
+              return sceneToBoard(
+                scene,
+                { azimuth, elevation, bbox3D: [-5, -5, -5, 5, 5, 5] },
+                [-6, -6, 6, 6]
+              );
+            },
+            setTool: (k) => controllerRef.current.selectTool(k),
+            undo: () => scene.undo(),
+            redo: () => scene.redo()
+          }),
+          [scene]
+        );
+        return /* @__PURE__ */ jsxRuntime.jsxs(
+          "div",
+          {
+            "data-testid": "editor-panel-3d",
+            className: [
+              isDark ? "theme--dark " : "",
+              "flex h-full w-full min-w-0 flex-col overflow-hidden bg-white"
+            ].join(""),
+            children: [
+              /* @__PURE__ */ jsxRuntime.jsx("div", { className: "min-h-0 flex-1", children: /* @__PURE__ */ jsxRuntime.jsx(
+                MiniBoard3D,
+                {
+                  ref: boardRef,
+                  isDark,
+                  onView3DReady: handleView3DReady,
+                  onPointerClick: handleClick,
+                  onPointerMove: handleMove2,
+                  onPointerLeave: () => setHoverLabel(null),
+                  shouldStartPointDrag,
+                  onPointerDrag,
+                  onPointerDragEnd
+                }
+              ) }),
+              /* @__PURE__ */ jsxRuntime.jsx(StatusHint, { hint, hoverLabel })
+            ]
+          }
+        );
+      }
+    );
   }
 });
 function ToolButton(props) {
@@ -5998,7 +6976,7 @@ var init_symbolic = __esm({
   }
 });
 function RowMenu(props) {
-  const [open, setOpen] = React11__namespace.useState(false);
+  const [open, setOpen] = React8__namespace.useState(false);
   return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "relative inline-block", children: [
     /* @__PURE__ */ jsxRuntime.jsx(
       "button",
@@ -6102,8 +7080,8 @@ var init_AlgebraRow = __esm({
 });
 function AlgebraList(props) {
   const { scene } = props;
-  const [, forceUpdate] = React11__namespace.useReducer((x) => x + 1, 0);
-  React11__namespace.useEffect(() => {
+  const [, forceUpdate] = React8__namespace.useReducer((x) => x + 1, 0);
+  React8__namespace.useEffect(() => {
     const unsubAdd = scene.on("add", () => forceUpdate());
     const unsubChange = scene.on("change", () => forceUpdate());
     const unsubDelete = scene.on("delete", () => forceUpdate());
@@ -6154,6 +7132,12 @@ function UndoIcon2() {
     /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M3 10 L8 15 L8 12" })
   ] });
 }
+function RedoIcon2() {
+  return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: [
+    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M21 10 L16 5 L16 8 L9 8 A5 5 0 0 0 4 13 L4 16" }),
+    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M21 10 L16 15 L16 12" })
+  ] });
+}
 function CloseIcon2() {
   return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: [
     /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
@@ -6170,7 +7154,7 @@ function Shell3({ title, icon, onClose, children, isDark }) {
       "data-stamp-area": "true",
       className: [
         isDark ? "theme--dark " : "",
-        "flex h-full w-60 flex-col border-r border-slate-200 bg-white"
+        "absolute left-0 top-0 z-30 flex h-full w-60 flex-col border-r border-slate-200 bg-white shadow-md animate-in slide-in-from-left duration-200"
       ].join(""),
       children: [
         /* @__PURE__ */ jsxRuntime.jsxs("header", { className: "flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-3 py-2", children: [
@@ -6200,20 +7184,20 @@ function Section3({ label, children }) {
   ] });
 }
 function useToolHoverTooltip2() {
-  const [hover, setHover] = React11__namespace.useState(null);
-  const [portalReady, setPortalReady] = React11__namespace.useState(false);
-  const hoverTimerRef = React11__namespace.useRef(null);
-  React11__namespace.useEffect(() => {
+  const [hover, setHover] = React8__namespace.useState(null);
+  const [portalReady, setPortalReady] = React8__namespace.useState(false);
+  const hoverTimerRef = React8__namespace.useRef(null);
+  React8__namespace.useEffect(() => {
     setPortalReady(true);
     return () => {
       if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     };
   }, []);
-  const showHover = React11__namespace.useCallback((next) => {
+  const showHover = React8__namespace.useCallback((next) => {
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     hoverTimerRef.current = setTimeout(() => setHover(next), TOOLTIP_DELAY_MS2);
   }, []);
-  const hideHover = React11__namespace.useCallback(() => {
+  const hideHover = React8__namespace.useCallback(() => {
     if (hoverTimerRef.current) {
       clearTimeout(hoverTimerRef.current);
       hoverTimerRef.current = null;
@@ -6233,11 +7217,13 @@ function DesktopPanel(props) {
     onShowGridChange,
     onUndo,
     canUndo,
+    onRedo,
+    canRedo,
     onClose,
     isDark,
     chordGroup
   } = props;
-  const [tab, setTab] = React11__namespace.useState("tools");
+  const [tab, setTab] = React8__namespace.useState("tools");
   const { hover, portalReady, showHover, hideHover } = useToolHoverTooltip2();
   return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
     /* @__PURE__ */ jsxRuntime.jsxs(Shell3, { title: "H\xECnh h\u1ECDc 3D", icon: Geom3DIconHeader, onClose, isDark, children: [
@@ -6271,19 +7257,34 @@ function DesktopPanel(props) {
             ),
             "L\u01B0\u1EDBi"
           ] }),
-          /* @__PURE__ */ jsxRuntime.jsx(
-            "button",
-            {
-              type: "button",
-              onClick: onUndo,
-              disabled: !canUndo,
-              title: "Ho\xE0n t\xE1c (Ctrl/Cmd+Z)",
-              "aria-label": "Ho\xE0n t\xE1c",
-              "data-testid": "undo-btn",
-              className: "ml-auto inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
-              children: /* @__PURE__ */ jsxRuntime.jsx(UndoIcon2, {})
-            }
-          )
+          /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "ml-auto flex items-center gap-0.5", children: [
+            /* @__PURE__ */ jsxRuntime.jsx(
+              "button",
+              {
+                type: "button",
+                onClick: onUndo,
+                disabled: !canUndo,
+                title: "Ho\xE0n t\xE1c (Ctrl/Cmd+Z)",
+                "aria-label": "Ho\xE0n t\xE1c",
+                "data-testid": "undo-btn",
+                className: "inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
+                children: /* @__PURE__ */ jsxRuntime.jsx(UndoIcon2, {})
+              }
+            ),
+            /* @__PURE__ */ jsxRuntime.jsx(
+              "button",
+              {
+                type: "button",
+                onClick: onRedo,
+                disabled: !canRedo,
+                title: "L\xE0m l\u1EA1i (Ctrl/Cmd+Shift+Z)",
+                "aria-label": "L\xE0m l\u1EA1i",
+                "data-testid": "redo-btn",
+                className: "inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
+                children: /* @__PURE__ */ jsxRuntime.jsx(RedoIcon2, {})
+              }
+            )
+          ] })
         ] }) }),
         /* @__PURE__ */ jsxRuntime.jsx(
           ToolPalette,
@@ -6364,11 +7365,13 @@ function MobilePanel(props) {
     onShowGridChange,
     onUndo,
     canUndo,
+    onRedo,
+    canRedo,
     isDark,
     drawerOpen,
     onDrawerClose
   } = props;
-  const groups = React11__namespace.useMemo(
+  const groups = React8__namespace.useMemo(
     () => GROUP_ORDER2.map((group) => {
       const keys = TOOLS_BY_GROUP[group];
       return {
@@ -6413,7 +7416,16 @@ function MobilePanel(props) {
           title: "Ho\xE0n t\xE1c (Ctrl/Cmd+Z)",
           icon: /* @__PURE__ */ jsxRuntime.jsx(UndoIcon2, {}),
           onClick: onUndo,
-          disabled: !canUndo
+          disabled: !canUndo,
+          testId: "undo-btn"
+        },
+        {
+          label: "L\xE0m l\u1EA1i",
+          title: "L\xE0m l\u1EA1i (Ctrl/Cmd+Shift+Z)",
+          icon: /* @__PURE__ */ jsxRuntime.jsx(RedoIcon2, {}),
+          onClick: onRedo,
+          disabled: !canRedo,
+          testId: "redo-btn"
         }
       ],
       groups,
@@ -6445,533 +7457,6 @@ var init_LeftPanel3 = __esm({
   }
 });
 
-// src/stamps/geometry-3d/editor/theme.ts
-function paletteFor2(isDark) {
-  const base = paletteFor(isDark);
-  return {
-    ...base,
-    view3dBg: isDark ? "#1a1a1a" : "#ffffff",
-    axisX: "#d63b3b",
-    axisY: "#2d8a2d",
-    axisZ: "#2d6dd6"
-  };
-}
-var DEFAULT_VIEW3D, VIEW3D_ATTRS;
-var init_theme2 = __esm({
-  "src/stamps/geometry-3d/editor/theme.ts"() {
-    init_theme();
-    DEFAULT_VIEW3D = {
-      azimuth: 0.7,
-      elevation: 0.4,
-      bbox3D: [-3, -3, -3, 3, 3, 3]
-    };
-    VIEW3D_ATTRS = (isDark) => {
-      const p = paletteFor2(isDark);
-      return {
-        az: { slider: { visible: false }, point2: { visible: false } },
-        el: { slider: { visible: false } },
-        projection: "central",
-        axesPosition: "border",
-        xAxis: { strokeColor: p.axisX, lastArrow: { type: 2 } },
-        yAxis: { strokeColor: p.axisY, lastArrow: { type: 2 } },
-        zAxis: { strokeColor: p.axisZ, lastArrow: { type: 2 } }
-      };
-    };
-  }
-});
-var MiniBoard3D;
-var init_MiniBoard3D = __esm({
-  "src/stamps/geometry-3d/editor/MiniBoard3D.tsx"() {
-    "use client";
-    init_theme2();
-    MiniBoard3D = React11__namespace.forwardRef(
-      function MiniBoard3D2(props, ref) {
-        const containerRef = React11__namespace.useRef(null);
-        const boardRef = React11__namespace.useRef(null);
-        const viewRef = React11__namespace.useRef(null);
-        const { isDark, onView3DReady, onPointerClick, onPointerMove, onPointerLeave } = props;
-        const onView3DReadyRef = React11__namespace.useRef(onView3DReady);
-        const onPointerClickRef = React11__namespace.useRef(onPointerClick);
-        const onPointerMoveRef = React11__namespace.useRef(onPointerMove);
-        const onPointerLeaveRef = React11__namespace.useRef(onPointerLeave);
-        onView3DReadyRef.current = onView3DReady;
-        onPointerClickRef.current = onPointerClick;
-        onPointerMoveRef.current = onPointerMove;
-        onPointerLeaveRef.current = onPointerLeave;
-        React11__namespace.useImperativeHandle(
-          ref,
-          () => ({
-            getBoard: () => boardRef.current,
-            getView3D: () => viewRef.current,
-            getSvgElement: () => containerRef.current?.querySelector("svg") ?? null
-          }),
-          []
-        );
-        React11__namespace.useEffect(() => {
-          const div = containerRef.current;
-          if (!div) return;
-          let cancelled = false;
-          let JXG = null;
-          let board = null;
-          let svgEl = null;
-          let handlePointerDown = null;
-          let handlePointerMove = null;
-          let handlePointerLeave = null;
-          void (async () => {
-            try {
-              JXG = (await import('jsxgraph')).default;
-            } catch {
-              return;
-            }
-            if (cancelled || !containerRef.current) return;
-            try {
-              JXG.Options.text.display = "internal";
-            } catch {
-            }
-            try {
-              board = JXG.JSXGraph.initBoard(div, {
-                boundingbox: [-6, 6, 6, -6],
-                keepaspectratio: true,
-                axis: false,
-                showCopyright: false,
-                showNavigation: false,
-                renderer: "svg"
-              });
-            } catch {
-              return;
-            }
-            if (cancelled || !board) return;
-            boardRef.current = board;
-            let view = null;
-            try {
-              const baseAttrs = VIEW3D_ATTRS(isDark);
-              view = board.create(
-                "view3d",
-                [
-                  [-5, -5],
-                  [10, 10],
-                  [
-                    [DEFAULT_VIEW3D.bbox3D[0], DEFAULT_VIEW3D.bbox3D[3]],
-                    [DEFAULT_VIEW3D.bbox3D[1], DEFAULT_VIEW3D.bbox3D[4]],
-                    [DEFAULT_VIEW3D.bbox3D[2], DEFAULT_VIEW3D.bbox3D[5]]
-                  ]
-                ],
-                {
-                  ...baseAttrs,
-                  az: { ...baseAttrs.az, value: DEFAULT_VIEW3D.azimuth },
-                  el: { ...baseAttrs.el, value: DEFAULT_VIEW3D.elevation }
-                }
-              );
-            } catch {
-            }
-            viewRef.current = view;
-            if (view) onView3DReadyRef.current?.(view, board);
-            svgEl = containerRef.current?.querySelector("svg") ?? null;
-            if (svgEl) {
-              const p2 = paletteFor2(isDark);
-              svgEl.style.background = p2.view3dBg;
-              const pixelToUser = (e) => {
-                const rect = svgEl.getBoundingClientRect();
-                const px = e.clientX - rect.left;
-                const py = e.clientY - rect.top;
-                const b = board;
-                if (!b || !b.origin || !b.origin.scrCoords) {
-                  return { x: px, y: py };
-                }
-                const ox = b.origin.scrCoords[1];
-                const oy = b.origin.scrCoords[2];
-                const ux = b.unitX || 1;
-                const uy = b.unitY || 1;
-                return { x: (px - ox) / ux, y: (oy - py) / uy };
-              };
-              handlePointerDown = (e) => {
-                if (!svgEl) return;
-                onPointerClickRef.current?.(pixelToUser(e));
-              };
-              handlePointerMove = (e) => {
-                if (!svgEl) return;
-                onPointerMoveRef.current?.(pixelToUser(e));
-              };
-              handlePointerLeave = () => onPointerLeaveRef.current?.();
-              svgEl.addEventListener("pointerdown", handlePointerDown);
-              svgEl.addEventListener("pointermove", handlePointerMove);
-              svgEl.addEventListener("pointerleave", handlePointerLeave);
-            }
-          })();
-          return () => {
-            cancelled = true;
-            if (svgEl) {
-              if (handlePointerDown) svgEl.removeEventListener("pointerdown", handlePointerDown);
-              if (handlePointerMove) svgEl.removeEventListener("pointermove", handlePointerMove);
-              if (handlePointerLeave) svgEl.removeEventListener("pointerleave", handlePointerLeave);
-            }
-            try {
-              if (board && JXG) JXG.JSXGraph.freeBoard(board);
-            } catch {
-            }
-            boardRef.current = null;
-            viewRef.current = null;
-          };
-        }, [isDark]);
-        const p = paletteFor2(isDark);
-        return /* @__PURE__ */ jsxRuntime.jsx(
-          "div",
-          {
-            "data-testid": "mini-board-3d",
-            ref: containerRef,
-            style: {
-              width: "100%",
-              height: "100%",
-              minHeight: 400,
-              background: p.view3dBg,
-              position: "relative",
-              // Clip JSXGraph mesh3d paths projecting outside the container.
-              overflow: "hidden"
-            }
-          }
-        );
-      }
-    );
-  }
-});
-function StatusHint(props) {
-  const { hint, hoverLabel } = props;
-  return /* @__PURE__ */ jsxRuntime.jsxs(
-    "div",
-    {
-      "data-testid": "status-hint",
-      className: "border-t border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300",
-      children: [
-        /* @__PURE__ */ jsxRuntime.jsxs("span", { children: [
-          "\u{1F4D0} ",
-          hint || "Ch\u1ECDn c\xF4ng c\u1EE5 trong b\u1EA3ng b\xEAn tr\xE1i"
-        ] }),
-        hoverLabel ? /* @__PURE__ */ jsxRuntime.jsxs("span", { className: "ml-3 text-zinc-500", children: [
-          "\u2014 \u0111ang tr\xEAn: ",
-          hoverLabel
-        ] }) : null
-      ]
-    }
-  );
-}
-var init_StatusHint = __esm({
-  "src/stamps/geometry-3d/editor/StatusHint.tsx"() {
-    "use client";
-  }
-});
-
-// src/stamps/geometry-3d/editor/scene/persistence.ts
-function sceneToBoard(scene, view, bbox) {
-  const elements = [];
-  for (const obj of scene.list()) {
-    const els = sceneObjectToElements(obj, scene);
-    elements.push(...els);
-  }
-  return { version: 2, bbox, view, showAxes: true, showMesh: true, elements };
-}
-function sceneObjectToElements(obj, scene) {
-  const baseAttrs = { label: obj.label, visible: obj.visible, color: obj.color };
-  switch (obj.kind) {
-    case "point": {
-      let w;
-      try {
-        w = constraintToWorld(obj.constraint, scene);
-      } catch {
-        w = [0, 0, 0];
-      }
-      return [{
-        type: "point3d",
-        parents: [w[0], w[1], w[2]],
-        attributes: { id: obj.id, ...baseAttrs },
-        id: obj.id,
-        label: obj.label,
-        constraint: obj.constraint
-      }];
-    }
-    case "segment":
-    case "line":
-    case "ray":
-    case "vector":
-    case "plane":
-    case "sphere":
-    case "polygon":
-    case "polyhedron":
-    case "cylinder":
-    case "cone": {
-      return [{
-        type: pickJxgType(obj.kind),
-        parents: [],
-        attributes: { id: obj.id, ...baseAttrs, sceneKind: obj.kind, sceneSpec: encodeSpec(obj) },
-        id: obj.id,
-        label: obj.label
-      }];
-    }
-  }
-}
-function pickJxgType(kind) {
-  switch (kind) {
-    case "point":
-      return "point3d";
-    case "segment":
-    case "line":
-    case "ray":
-    case "vector":
-      return "line3d";
-    case "plane":
-      return "plane3d";
-    case "sphere":
-      return "sphere3d";
-    case "polygon":
-    case "polyhedron":
-    case "cylinder":
-    case "cone":
-      return "polygon3d";
-  }
-}
-function encodeSpec(obj) {
-  const rest = {};
-  for (const [k, v] of Object.entries(obj)) {
-    if (k === "id" || k === "label" || k === "visible" || k === "color" || k === "kind") continue;
-    rest[k] = v;
-  }
-  return rest;
-}
-function boardToScene(board) {
-  const scene = new Scene3D();
-  for (const el of board.elements) {
-    if (el.type === "point3d") {
-      const constraint = el.constraint ?? {
-        kind: "free",
-        x: Number(el.parents[0] ?? 0),
-        y: Number(el.parents[1] ?? 0),
-        z: Number(el.parents[2] ?? 0)
-      };
-      const color2 = el.attributes["color"];
-      const visible2 = el.attributes["visible"] !== false;
-      try {
-        scene.insert({
-          kind: "point",
-          id: el.id,
-          label: el.label ?? el.id,
-          visible: visible2,
-          color: color2,
-          constraint
-        });
-      } catch {
-      }
-      continue;
-    }
-    const sceneKind = el.attributes["sceneKind"];
-    const sceneSpec = el.attributes["sceneSpec"];
-    if (!sceneKind || !sceneSpec) continue;
-    const color = el.attributes["color"];
-    const visible = el.attributes["visible"] !== false;
-    const obj = {
-      id: el.id,
-      label: el.label ?? el.id,
-      visible,
-      color,
-      kind: sceneKind,
-      ...sceneSpec
-    };
-    try {
-      scene.insert(obj);
-    } catch {
-    }
-  }
-  return scene;
-}
-var init_persistence = __esm({
-  "src/stamps/geometry-3d/editor/scene/persistence.ts"() {
-    init_Scene3D();
-    init_constraintMath();
-  }
-});
-var EditorPanel;
-var init_EditorPanel2 = __esm({
-  "src/stamps/geometry-3d/editor/EditorPanel.tsx"() {
-    "use client";
-    init_Scene3D();
-    init_controller();
-    init_JxgRenderer();
-    init_hitTest();
-    init_LeftPanel3();
-    init_MiniBoard3D();
-    init_StatusHint();
-    init_persistence();
-    EditorPanel = React11__namespace.forwardRef(
-      function EditorPanel2(props, ref) {
-        const {
-          isDark: isDarkProp,
-          initialState,
-          onClose,
-          isMobile = false,
-          drawerOpen,
-          onDrawerClose,
-          chordGroup,
-          onReadyChange
-        } = props;
-        const isDark = isDarkProp ?? false;
-        const sceneRef = React11__namespace.useRef(null);
-        if (!sceneRef.current) sceneRef.current = new Scene3D();
-        const controllerRef = React11__namespace.useRef(null);
-        if (!controllerRef.current) controllerRef.current = new ToolController(sceneRef.current);
-        const [selectedTool, setSelectedTool] = React11__namespace.useState("move");
-        const [hint, setHint] = React11__namespace.useState("Ch\u1ECDn c\xF4ng c\u1EE5 trong b\u1EA3ng b\xEAn tr\xE1i");
-        const [hoverLabel, setHoverLabel] = React11__namespace.useState(null);
-        const [showAxis, setShowAxis] = React11__namespace.useState(true);
-        const [showGrid, setShowGrid] = React11__namespace.useState(true);
-        const boardRef = React11__namespace.useRef(null);
-        const rendererRef = React11__namespace.useRef(null);
-        React11__namespace.useEffect(() => {
-          if (initialState && sceneRef.current) {
-            const loaded = boardToScene(initialState);
-            sceneRef.current.reset();
-            for (const obj of loaded.list()) {
-              sceneRef.current.insert(obj);
-            }
-          }
-        }, []);
-        React11__namespace.useEffect(() => {
-          const ctrl = controllerRef.current;
-          const unsub = ctrl.on((state) => {
-            setHint(state.hint);
-            setSelectedTool(state.tool?.key ?? "move");
-          });
-          return unsub;
-        }, []);
-        React11__namespace.useEffect(() => {
-          return () => {
-            rendererRef.current?.dispose();
-            rendererRef.current = null;
-          };
-        }, []);
-        React11__namespace.useEffect(() => {
-          const view = boardRef.current?.getView3D();
-          const v = view;
-          if (!v || typeof v.setAttribute !== "function") return;
-          try {
-            v.setAttribute({
-              xAxis: { visible: showAxis },
-              yAxis: { visible: showAxis },
-              zAxis: { visible: showAxis },
-              xPlaneRear: { visible: showGrid, mesh3d: { visible: showGrid } },
-              yPlaneRear: { visible: showGrid, mesh3d: { visible: showGrid } },
-              zPlaneRear: { visible: showGrid, mesh3d: { visible: showGrid } }
-            });
-            v.board?.update?.();
-          } catch {
-          }
-        }, [showAxis, showGrid]);
-        const handleView3DReady = React11__namespace.useCallback((view) => {
-          if (!sceneRef.current) return;
-          rendererRef.current = new JxgRenderer(sceneRef.current, view);
-          onReadyChange?.(true);
-        }, [onReadyChange]);
-        const handleClick = React11__namespace.useCallback((screen) => {
-          const board = boardRef.current;
-          if (!board) return;
-          const view = board.getView3D();
-          if (!view) return;
-          try {
-            const hit = hitTest(screen, view, sceneRef.current);
-            controllerRef.current.consumeHit(hit);
-          } catch {
-          }
-        }, []);
-        const handleMove2 = React11__namespace.useCallback((screen) => {
-          const board = boardRef.current;
-          if (!board) return;
-          const view = board.getView3D();
-          if (!view) return;
-          let hit;
-          try {
-            hit = hitTest(screen, view, sceneRef.current);
-          } catch {
-            setHoverLabel(null);
-            return;
-          }
-          if (hit.kind === "empty") setHoverLabel(null);
-          else if (hit.kind === "existingPoint") {
-            const obj = sceneRef.current.get(hit.pointId);
-            setHoverLabel(obj?.label ?? null);
-          } else if (hit.kind === "onGround") setHoverLabel("m\u1EB7t n\u1EC1n");
-          else if (hit.kind === "onAxis") setHoverLabel(`tr\u1EE5c ${hit.axis.toUpperCase()}`);
-          else if (hit.kind === "onPlane") setHoverLabel(`m\u1EB7t ph\u1EB3ng ${hit.planeId}`);
-          else if (hit.kind === "onSphere") setHoverLabel(`m\u1EB7t c\u1EA7u ${hit.sphereId}`);
-          else setHoverLabel(null);
-        }, []);
-        React11__namespace.useImperativeHandle(
-          ref,
-          () => ({
-            hasContent: () => (sceneRef.current?.list().length ?? 0) > 0,
-            serialize: () => {
-              const view = boardRef.current?.getView3D();
-              const v = view;
-              const azimuth = typeof v?.az?.Value === "function" ? v.az.Value() : 0;
-              const elevation = typeof v?.el?.Value === "function" ? v.el.Value() : 0;
-              return sceneToBoard(
-                sceneRef.current,
-                { azimuth, elevation, bbox3D: [-5, -5, -5, 5, 5, 5] },
-                [-6, -6, 6, 6]
-              );
-            },
-            setTool: (k) => controllerRef.current.selectTool(k)
-          }),
-          []
-        );
-        return /* @__PURE__ */ jsxRuntime.jsxs(
-          "div",
-          {
-            "data-testid": "editor-panel-3d",
-            className: [
-              isDark ? "theme--dark " : "",
-              "flex h-full w-full overflow-hidden bg-white"
-            ].join(""),
-            children: [
-              /* @__PURE__ */ jsxRuntime.jsx(
-                LeftPanel3,
-                {
-                  scene: sceneRef.current,
-                  selectedTool,
-                  onSelectTool: (k) => controllerRef.current.selectTool(k),
-                  showAxis,
-                  showGrid,
-                  onShowAxisChange: setShowAxis,
-                  onShowGridChange: setShowGrid,
-                  onUndo: () => {
-                  },
-                  canUndo: false,
-                  onClose: () => onClose?.(),
-                  isDark,
-                  isMobile,
-                  drawerOpen,
-                  onDrawerClose,
-                  chordGroup: chordGroup ?? null
-                }
-              ),
-              /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex min-w-0 flex-1 flex-col", children: [
-                /* @__PURE__ */ jsxRuntime.jsx("div", { className: "min-h-0 flex-1", children: /* @__PURE__ */ jsxRuntime.jsx(
-                  MiniBoard3D,
-                  {
-                    ref: boardRef,
-                    isDark,
-                    onView3DReady: handleView3DReady,
-                    onPointerClick: handleClick,
-                    onPointerMove: handleMove2,
-                    onPointerLeave: () => setHoverLabel(null)
-                  }
-                ) }),
-                /* @__PURE__ */ jsxRuntime.jsx(StatusHint, { hint, hoverLabel })
-              ] })
-            ]
-          }
-        );
-      }
-    );
-  }
-});
-
 // src/stamps/geometry-3d/host.tsx
 var host_exports3 = {};
 __export(host_exports3, {
@@ -6991,28 +7476,54 @@ var init_host3 = __esm({
   "src/stamps/geometry-3d/host.tsx"() {
     "use client";
     init_EditorPanel2();
+    init_LeftPanel3();
+    init_Scene3D();
     init_groups();
     init_useChordShortcut();
     init_insertImage();
     init_useIsMobile();
     init_serialize2();
-    Geometry3DStampHost = React11.forwardRef(
+    Geometry3DStampHost = React8.forwardRef(
       function Geometry3DStampHost2({ api, editingElement, onClose, isDark }, ref) {
-        const editorRef = React11.useRef(null);
+        const editorRef = React8.useRef(null);
+        const sceneRef = React8.useRef(null);
+        if (!sceneRef.current) sceneRef.current = new Scene3D();
         const { isMobile } = useIsMobile();
-        const [drawerOpen, setDrawerOpen] = React11.useState(false);
-        const [ready, setReady] = React11.useState(false);
-        const initial = React11.useMemo(
+        const [drawerOpen, setDrawerOpen] = React8.useState(false);
+        const [ready, setReady] = React8.useState(false);
+        const [selectedTool, setSelectedTool] = React8.useState("move");
+        const [showAxis, setShowAxis] = React8.useState(true);
+        const [showGrid, setShowGrid] = React8.useState(true);
+        const [canUndo, setCanUndo] = React8.useState(false);
+        const [canRedo, setCanRedo] = React8.useState(false);
+        const handleHistoryChange = React8.useCallback((u, r) => {
+          setCanUndo(u);
+          setCanRedo(r);
+        }, []);
+        const handleUndo = React8.useCallback(() => {
+          editorRef.current?.undo();
+        }, []);
+        const handleRedo = React8.useCallback(() => {
+          editorRef.current?.redo();
+        }, []);
+        const initial = React8.useMemo(
           () => parseInitial(editingElement),
           [editingElement]
         );
         const { chordGroup } = useChordShortcut({
           groupOrder: GROUP_ORDER2,
           tools: TOOLS_FLAT,
-          onSelect: (key) => editorRef.current?.setTool(key),
+          onSelect: (key) => {
+            setSelectedTool(key);
+            editorRef.current?.setTool(key);
+          },
           enabled: !isMobile
         });
-        const performInsert = React11.useCallback(
+        const handleSelectTool = React8.useCallback((k) => {
+          setSelectedTool(k);
+          editorRef.current?.setTool(k);
+        }, []);
+        const performInsert = React8.useCallback(
           async (board, width, height, svgString) => {
             if (!api) return;
             const jsonState = serializeBoard3D(board);
@@ -7031,7 +7542,7 @@ var init_host3 = __esm({
           },
           [api, editingElement, onClose]
         );
-        const tryInsert = React11.useCallback(() => {
+        const tryInsert = React8.useCallback(() => {
           if (!editorRef.current) return false;
           if (!editorRef.current.hasContent()) return false;
           const board = editorRef.current.serialize();
@@ -7039,7 +7550,7 @@ var init_host3 = __esm({
           void performInsert(board, 0, 0, "");
           return true;
         }, [performInsert]);
-        React11.useImperativeHandle(
+        React8.useImperativeHandle(
           ref,
           () => ({
             tryInsert,
@@ -7047,117 +7558,161 @@ var init_host3 = __esm({
           }),
           [tryInsert]
         );
-        const handleEditorInsert = React11.useCallback(
+        const handleEditorInsert = React8.useCallback(
           (board, width, height, svgString) => {
             void performInsert(board, width, height, svgString);
           },
           [performInsert]
         );
-        const wrapperStyle = isMobile ? { position: "fixed", inset: 0, zIndex: 40 } : {
+        const dialogStyle = isMobile ? { position: "fixed", inset: 0, zIndex: 40 } : {
           position: "absolute",
           top: "50%",
-          left: "50%",
+          left: "calc(50% + 120px)",
           transform: "translate(-50%, -50%)",
           zIndex: 40
         };
-        return /* @__PURE__ */ jsxRuntime.jsxs(
-          "div",
-          {
-            role: "dialog",
-            "aria-label": "D\u1EF1ng h\xECnh h\u1ECDc 3D",
-            "data-testid": "geom3d-host",
-            "data-stamp-area": "true",
-            style: wrapperStyle,
-            className: [
-              isDark ? "theme--dark " : "",
-              "flex flex-col overflow-hidden bg-white",
-              isMobile ? "h-full w-full" : "h-[600px] max-h-[85vh] w-[1040px] max-w-[calc(100vw-80px)] rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5"
-            ].join(" "),
-            children: [
-              /* @__PURE__ */ jsxRuntime.jsxs("header", { className: "flex items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2 text-white", children: [
-                isMobile && /* @__PURE__ */ jsxRuntime.jsx(
-                  "button",
-                  {
-                    type: "button",
-                    onClick: () => setDrawerOpen(true),
-                    "aria-label": "M\u1EDF ng\u0103n c\xF4ng c\u1EE5",
-                    className: "-ml-1 inline-flex h-10 w-10 items-center justify-center rounded transition hover:bg-white/15",
-                    children: /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
-                      /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "4", y1: "6", x2: "20", y2: "6" }),
-                      /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "4", y1: "12", x2: "20", y2: "12" }),
-                      /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "4", y1: "18", x2: "20", y2: "18" })
-                    ] })
-                  }
-                ),
-                /* @__PURE__ */ jsxRuntime.jsxs("h3", { className: "flex flex-1 items-center gap-2 text-sm font-semibold", children: [
-                  /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 9 L4 20 L14 20 L14 9 Z M4 9 L10 4 L20 4 L14 9 Z M14 9 L20 4 L20 15 L14 20 Z" }) }),
-                  "D\u1EF1ng h\xECnh h\u1ECDc kh\xF4ng gian"
-                ] }),
-                isMobile && /* @__PURE__ */ jsxRuntime.jsx(
-                  "button",
-                  {
-                    type: "button",
-                    onClick: tryInsert,
-                    disabled: !ready,
-                    "data-testid": "geom3d-insert-btn-mobile",
-                    className: "rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50",
-                    children: "Ch\xE8n"
-                  }
-                ),
-                /* @__PURE__ */ jsxRuntime.jsx(
-                  "button",
-                  {
-                    onClick: onClose,
-                    "aria-label": "\u0110\xF3ng",
-                    className: "inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15",
-                    children: /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
-                      /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
-                      /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
-                    ] })
-                  }
-                )
-              ] }),
-              /* @__PURE__ */ jsxRuntime.jsx("div", { className: "min-h-0 flex-1", children: /* @__PURE__ */ jsxRuntime.jsx(
-                EditorPanel,
-                {
-                  ref: editorRef,
-                  isDark,
-                  initialState: initial,
-                  onInsert: handleEditorInsert,
-                  onClose,
-                  isMobile,
-                  drawerOpen,
-                  onDrawerClose: () => setDrawerOpen(false),
-                  chordGroup,
-                  onReadyChange: setReady
-                }
-              ) }),
-              !isMobile && /* @__PURE__ */ jsxRuntime.jsxs("footer", { className: "flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2", children: [
-                /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-xs text-slate-500", children: "Ch\u1ECDn c\xF4ng c\u1EE5 b\xEAn tr\xE1i, click tr\xEAn b\u1EA3ng \u0111\u1EC3 d\u1EF1ng h\xECnh." }),
-                /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex gap-2", children: [
-                  /* @__PURE__ */ jsxRuntime.jsx(
+        return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+          !isMobile && /* @__PURE__ */ jsxRuntime.jsx(
+            LeftPanel3,
+            {
+              scene: sceneRef.current,
+              selectedTool,
+              onSelectTool: handleSelectTool,
+              showAxis,
+              showGrid,
+              onShowAxisChange: setShowAxis,
+              onShowGridChange: setShowGrid,
+              onUndo: handleUndo,
+              canUndo,
+              onRedo: handleRedo,
+              canRedo,
+              onClose,
+              isDark,
+              chordGroup
+            }
+          ),
+          /* @__PURE__ */ jsxRuntime.jsxs(
+            "div",
+            {
+              role: "dialog",
+              "aria-label": "D\u1EF1ng h\xECnh h\u1ECDc 3D",
+              "data-testid": "geom3d-host",
+              "data-stamp-area": "true",
+              style: dialogStyle,
+              className: [
+                isDark ? "theme--dark " : "",
+                "flex flex-col overflow-hidden bg-white",
+                isMobile ? "h-full w-full" : "h-[600px] max-h-[85vh] w-[800px] max-w-[calc(100vw-320px)] rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5"
+              ].join(" "),
+              children: [
+                /* @__PURE__ */ jsxRuntime.jsxs("header", { className: "flex items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2 text-white", children: [
+                  isMobile && /* @__PURE__ */ jsxRuntime.jsx(
                     "button",
                     {
-                      onClick: onClose,
-                      className: "rounded border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100",
-                      children: "Hu\u1EF7"
+                      type: "button",
+                      onClick: () => setDrawerOpen(true),
+                      "aria-label": "M\u1EDF ng\u0103n c\xF4ng c\u1EE5",
+                      className: "-ml-1 inline-flex h-10 w-10 items-center justify-center rounded transition hover:bg-white/15",
+                      children: /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+                        /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "4", y1: "6", x2: "20", y2: "6" }),
+                        /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "4", y1: "12", x2: "20", y2: "12" }),
+                        /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "4", y1: "18", x2: "20", y2: "18" })
+                      ] })
+                    }
+                  ),
+                  /* @__PURE__ */ jsxRuntime.jsxs("h3", { className: "flex flex-1 items-center gap-2 text-sm font-semibold", children: [
+                    /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 9 L4 20 L14 20 L14 9 Z M4 9 L10 4 L20 4 L14 9 Z M14 9 L20 4 L20 15 L14 20 Z" }) }),
+                    "D\u1EF1ng h\xECnh h\u1ECDc kh\xF4ng gian"
+                  ] }),
+                  isMobile && /* @__PURE__ */ jsxRuntime.jsx(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: tryInsert,
+                      disabled: !ready,
+                      "data-testid": "geom3d-insert-btn-mobile",
+                      className: "rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50",
+                      children: "Ch\xE8n"
                     }
                   ),
                   /* @__PURE__ */ jsxRuntime.jsx(
                     "button",
                     {
-                      onClick: tryInsert,
-                      disabled: !ready,
-                      "data-testid": "geom3d-insert-btn",
-                      className: "rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50",
-                      children: "Ch\xE8n"
+                      onClick: onClose,
+                      "aria-label": "\u0110\xF3ng",
+                      className: "inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15",
+                      children: /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+                        /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
+                        /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
+                      ] })
                     }
                   )
+                ] }),
+                /* @__PURE__ */ jsxRuntime.jsx("div", { className: "min-h-0 flex-1", children: /* @__PURE__ */ jsxRuntime.jsx(
+                  EditorPanel,
+                  {
+                    ref: editorRef,
+                    isDark,
+                    initialState: initial,
+                    onInsert: handleEditorInsert,
+                    scene: sceneRef.current,
+                    selectedTool,
+                    onSelectedToolChange: setSelectedTool,
+                    showAxis,
+                    showGrid,
+                    onReadyChange: setReady,
+                    onHistoryChange: handleHistoryChange
+                  }
+                ) }),
+                !isMobile && /* @__PURE__ */ jsxRuntime.jsxs("footer", { className: "flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2", children: [
+                  /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-xs text-slate-500", children: "Ch\u1ECDn c\xF4ng c\u1EE5 b\xEAn tr\xE1i, click tr\xEAn b\u1EA3ng \u0111\u1EC3 d\u1EF1ng h\xECnh." }),
+                  /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex gap-2", children: [
+                    /* @__PURE__ */ jsxRuntime.jsx(
+                      "button",
+                      {
+                        onClick: onClose,
+                        className: "rounded border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100",
+                        children: "Hu\u1EF7"
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntime.jsx(
+                      "button",
+                      {
+                        onClick: tryInsert,
+                        disabled: !ready,
+                        "data-testid": "geom3d-insert-btn",
+                        className: "rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50",
+                        children: "Ch\xE8n"
+                      }
+                    )
+                  ] })
                 ] })
-              ] })
-            ]
-          }
-        );
+              ]
+            }
+          ),
+          isMobile && /* @__PURE__ */ jsxRuntime.jsx(
+            LeftPanel3,
+            {
+              scene: sceneRef.current,
+              selectedTool,
+              onSelectTool: handleSelectTool,
+              showAxis,
+              showGrid,
+              onShowAxisChange: setShowAxis,
+              onShowGridChange: setShowGrid,
+              onUndo: handleUndo,
+              canUndo,
+              onRedo: handleRedo,
+              canRedo,
+              onClose,
+              isDark,
+              isMobile: true,
+              drawerOpen,
+              onDrawerClose: () => setDrawerOpen(false),
+              chordGroup
+            }
+          )
+        ] });
       }
     );
   }
@@ -7535,8 +8090,8 @@ var init_tools2 = __esm({
 });
 function FunctionRow(props) {
   const { id, name, expression, color, visible, error } = props;
-  const [draft, setDraft] = React11.useState(expression);
-  React11.useEffect(() => {
+  const [draft, setDraft] = React8.useState(expression);
+  React8.useEffect(() => {
     setDraft(expression);
   }, [expression]);
   const commit = () => {
@@ -7944,10 +8499,10 @@ var init_theme3 = __esm({
   }
 });
 function MiniBoard({ graph, activeTool, isDark, onBoardEvent }) {
-  const containerRef = React11.useRef(null);
-  const boardRef = React11.useRef(null);
-  const curvesRef = React11.useRef(/* @__PURE__ */ new Map());
-  React11.useEffect(() => {
+  const containerRef = React8.useRef(null);
+  const boardRef = React8.useRef(null);
+  const curvesRef = React8.useRef(/* @__PURE__ */ new Map());
+  React8.useEffect(() => {
     let cancelled = false;
     let createdBoard = null;
     const containerEl = containerRef.current;
@@ -8017,11 +8572,11 @@ function MiniBoard({ graph, activeTool, isDark, onBoardEvent }) {
       curvesRef.current.clear();
     };
   }, []);
-  React11.useEffect(() => {
+  React8.useEffect(() => {
     if (!boardRef.current) return;
     syncObjects(boardRef.current, graph, curvesRef.current);
   }, [graph]);
-  React11.useEffect(() => {
+  React8.useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
     el.style.cursor = activeTool === "move" ? "" : "crosshair";
@@ -8194,25 +8749,25 @@ var init_EditorPanel3 = __esm({
     init_render3();
     init_colors();
     init_handlers2();
-    GraphEditorPanel = React11.forwardRef(function GraphEditorPanel2(props, ref) {
+    GraphEditorPanel = React8.forwardRef(function GraphEditorPanel2(props, ref) {
       const initialGraph = props.initialState ?? EMPTY_GRAPH;
-      const graphRef = React11.useRef(initialGraph);
-      const [, forceUpdate] = React11.useState(0);
-      const [errors, setErrors] = React11.useState({});
-      const [tool, setToolState] = React11.useState("move");
-      const undoStackRef = React11.useRef([]);
-      const idCounterRef = React11.useRef(1);
-      const toolRef = React11.useRef(tool);
+      const graphRef = React8.useRef(initialGraph);
+      const [, forceUpdate] = React8.useState(0);
+      const [errors, setErrors] = React8.useState({});
+      const [tool, setToolState] = React8.useState("move");
+      const undoStackRef = React8.useRef([]);
+      const idCounterRef = React8.useRef(1);
+      const toolRef = React8.useRef(tool);
       toolRef.current = tool;
-      const intersectFirstRef = React11.useRef(null);
-      const propsRef = React11.useRef(props);
+      const intersectFirstRef = React8.useRef(null);
+      const propsRef = React8.useRef(props);
       propsRef.current = props;
-      const initialGraphNotifiedRef = React11.useRef(false);
-      const pushUndo = React11.useCallback((g) => {
+      const initialGraphNotifiedRef = React8.useRef(false);
+      const pushUndo = React8.useCallback((g) => {
         undoStackRef.current.push(g);
         if (undoStackRef.current.length > 30) undoStackRef.current.shift();
       }, []);
-      const setErrorsWithNotify = React11.useCallback(
+      const setErrorsWithNotify = React8.useCallback(
         (updater) => {
           setErrors((prev) => {
             const next = updater(prev);
@@ -8222,7 +8777,7 @@ var init_EditorPanel3 = __esm({
         },
         []
       );
-      const notifyStateChange = React11.useCallback((g, t) => {
+      const notifyStateChange = React8.useCallback((g, t) => {
         propsRef.current.onStateChange({
           tool: t,
           showAxis: g.view.showAxis,
@@ -8230,7 +8785,7 @@ var init_EditorPanel3 = __esm({
           canUndo: undoStackRef.current.length > 0
         });
       }, []);
-      const updateGraph = React11.useCallback(
+      const updateGraph = React8.useCallback(
         (mutator) => {
           const prev = graphRef.current;
           pushUndo(prev);
@@ -8242,7 +8797,7 @@ var init_EditorPanel3 = __esm({
         },
         [pushUndo, notifyStateChange]
       );
-      const onBoardEvent = React11.useCallback((ev) => {
+      const onBoardEvent = React8.useCallback((ev) => {
         const currentTool = toolRef.current;
         if (currentTool === "point-on-curve" && ev.type === "click-curve" && ev.functionId && ev.x !== void 0) {
           updateGraph(
@@ -8276,7 +8831,7 @@ var init_EditorPanel3 = __esm({
           setToolState("move");
         }
       }, [updateGraph]);
-      React11.useImperativeHandle(
+      React8.useImperativeHandle(
         ref,
         () => ({
           insert: () => {
@@ -8410,7 +8965,7 @@ var init_EditorPanel3 = __esm({
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [updateGraph, errors, setErrorsWithNotify]
       );
-      React11.useEffect(() => {
+      React8.useEffect(() => {
         if (!initialGraphNotifiedRef.current) {
           initialGraphNotifiedRef.current = true;
           propsRef.current.onGraphChange?.(graphRef.current);
@@ -8555,22 +9110,22 @@ var init_host4 = __esm({
       showGrid: true,
       canUndo: false
     };
-    Graph2DStampHost = React11.forwardRef(
+    Graph2DStampHost = React8.forwardRef(
       function Graph2DStampHost2({ api, editingElement, onClose, isDark }, ref) {
-        const panelRef = React11.useRef(null);
-        const [graphUIState, setGraphUIState] = React11.useState(INITIAL_GRAPH_STATE);
+        const panelRef = React8.useRef(null);
+        const [graphUIState, setGraphUIState] = React8.useState(INITIAL_GRAPH_STATE);
         const { isMobile } = useIsMobile();
-        const [drawerOpen, setDrawerOpen] = React11.useState(false);
-        const initialState = React11.useMemo(() => {
+        const [drawerOpen, setDrawerOpen] = React8.useState(false);
+        const initialState = React8.useMemo(() => {
           if (!editingElement) return null;
           if (!isGraph2DCustomData(editingElement.customData)) return null;
           return parseSerializedGraph(editingElement.customData.jsonState);
         }, [editingElement]);
-        const [graphSnapshot, setGraphSnapshot] = React11.useState(
+        const [graphSnapshot, setGraphSnapshot] = React8.useState(
           initialState ?? EMPTY_GRAPH
         );
-        const [errorsSnapshot, setErrorsSnapshot] = React11.useState({});
-        const handleInsert = React11.useCallback(
+        const [errorsSnapshot, setErrorsSnapshot] = React8.useState({});
+        const handleInsert = React8.useCallback(
           async (jsonState, svgString) => {
             if (!api) return;
             try {
@@ -8592,7 +9147,7 @@ var init_host4 = __esm({
           },
           [api, editingElement?.id, onClose]
         );
-        React11.useImperativeHandle(
+        React8.useImperativeHandle(
           ref,
           () => ({
             tryInsert: () => panelRef.current?.insert() ?? false,
@@ -8694,7 +9249,7 @@ function pickSyncableAppState(s) {
 // src/stamps/geometry-2d/index.tsx
 init_render();
 init_types();
-var GeometryStampHost3 = React11.lazy(
+var GeometryStampHost3 = React8.lazy(
   () => Promise.resolve().then(() => (init_host(), host_exports)).then((m) => ({ default: m.GeometryStampHost }))
 );
 var GeometryIcon = /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: [
@@ -8733,7 +9288,7 @@ var geometryStamp = {
 // src/stamps/latex/index.tsx
 init_render2();
 init_types2();
-var LatexStampHost3 = React11.lazy(
+var LatexStampHost3 = React8.lazy(
   () => Promise.resolve().then(() => (init_host2(), host_exports2)).then((m) => ({ default: m.LatexStampHost }))
 );
 var LatexIcon = /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M17 5 H7 L13 12 L7 19 H17" }) });
@@ -8769,6 +9324,7 @@ init_serialize2();
 
 // src/stamps/geometry-3d/render.ts
 init_serialize2();
+init_theme2();
 var OUTPUT_WIDTH = 1024;
 var OUTPUT_HEIGHT = 768;
 async function renderGeometry3DSvgFromState(jsonState) {
@@ -8786,6 +9342,7 @@ async function renderGeometry3DSvgFromState(jsonState) {
       showNavigation: false,
       renderer: "svg"
     });
+    const baseAttrs = VIEW3D_ATTRS(false);
     const view = board.create(
       "view3d",
       [
@@ -8798,13 +9355,27 @@ async function renderGeometry3DSvgFromState(jsonState) {
         ]
       ],
       {
-        az: { slider: { visible: false }, value: state.view.azimuth },
-        el: { slider: { visible: false }, value: state.view.elevation },
-        projection: "central"
+        ...baseAttrs,
+        az: { ...baseAttrs.az, value: state.view.azimuth },
+        el: { ...baseAttrs.el, value: state.view.elevation }
       }
     );
     if (!state.showAxes) {
       view.defaultAxes = [];
+    }
+    try {
+      view.create(
+        "plane3d",
+        [
+          [0, 0, 0],
+          [1, 0, 0],
+          [0, 1, 0],
+          GROUND_PLANE_RANGE,
+          GROUND_PLANE_RANGE
+        ],
+        GROUND_PLANE_ATTRS(false)
+      );
+    } catch {
     }
     const idMap = /* @__PURE__ */ new Map();
     for (const el of state.elements) {
@@ -8835,7 +9406,7 @@ async function renderGeometry3DSvgFromState(jsonState) {
     document.body.removeChild(div);
   }
 }
-var Geometry3DStampHost3 = React11.lazy(
+var Geometry3DStampHost3 = React8.lazy(
   () => Promise.resolve().then(() => (init_host3(), host_exports3)).then((m) => ({ default: m.Geometry3DStampHost }))
 );
 var Geometry3DIcon = /* @__PURE__ */ jsxRuntime.jsxs(
@@ -8892,7 +9463,7 @@ var geometry3dStamp = {
 // src/stamps/graph-2d/index.tsx
 init_render3();
 init_types3();
-var Graph2DStampHost3 = React11.lazy(
+var Graph2DStampHost3 = React8.lazy(
   () => Promise.resolve().then(() => (init_host4(), host_exports4)).then((m) => ({ default: m.Graph2DStampHost }))
 );
 var Graph2DIcon = /* @__PURE__ */ jsxRuntime.jsxs(
@@ -8973,9 +9544,9 @@ function ToolbarInjector({
   onToggle,
   stamps = DEFAULT_STAMPS
 }) {
-  const [menuMount, setMenuMount] = React11.useState(null);
-  const menuMountRef = React11.useRef(null);
-  React11.useEffect(() => {
+  const [menuMount, setMenuMount] = React8.useState(null);
+  const menuMountRef = React8.useRef(null);
+  React8.useEffect(() => {
     if (!enabled) {
       if (menuMountRef.current !== null) {
         menuMountRef.current = null;
@@ -9127,7 +9698,7 @@ function useShortcuts({
   onToggle,
   stamps = DEFAULT_STAMPS
 }) {
-  React11.useEffect(() => {
+  React8.useEffect(() => {
     if (!enabled) return;
     const keyToKind = /* @__PURE__ */ new Map();
     for (const s of stamps) keyToKind.set(s.shortcutKey, s.kind);
@@ -9147,11 +9718,11 @@ function useShortcuts({
 }
 var DOUBLE_CLICK_MS = 400;
 function useStampDoubleClick({ enabled, stamps, onOpen }) {
-  const lastClickRef = React11.useRef({
+  const lastClickRef = React8.useRef({
     time: 0,
     elementId: null
   });
-  return React11.useCallback(
+  return React8.useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (_activeTool, pointerDownState) => {
       if (!enabled) return;
@@ -9194,11 +9765,11 @@ function isEditable(el) {
   return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
 }
 function useStampShortcutBlocker({ activeStamp, stamps }) {
-  const shortcutKeys = React11.useMemo(
+  const shortcutKeys = React8.useMemo(
     () => new Set(stamps.map((s) => s.shortcutKey.toLowerCase())),
     [stamps]
   );
-  React11.useEffect(() => {
+  React8.useEffect(() => {
     if (!activeStamp) return;
     const blocker = (e) => {
       if (isEditable(e.target)) return;
@@ -9214,7 +9785,7 @@ function useStampShortcutBlocker({ activeStamp, stamps }) {
   }, [activeStamp, shortcutKeys]);
 }
 function useStampClickOutside({ activeStamp, hostRef, onClose }) {
-  React11.useEffect(() => {
+  React8.useEffect(() => {
     if (!activeStamp) return;
     let lastFire = 0;
     const handler = (e) => {
@@ -9504,7 +10075,7 @@ async function pruneFiles(storageKey, keepIds) {
     console.warn("[whiteboard] pruneFiles failed:", err);
   }
 }
-var Excalidraw2 = React11.lazy(
+var Excalidraw2 = React8.lazy(
   () => Promise.resolve().then(() => (init_ExcalidrawWithMenus(), ExcalidrawWithMenus_exports)).then((m) => ({ default: m.ExcalidrawWithMenus }))
 );
 var ExcalidrawLoadingFallback = () => /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex h-full items-center justify-center text-sm text-gray-500", children: "\u0110ang t\u1EA3i b\u1EA3ng\u2026" });
@@ -9518,21 +10089,21 @@ function Whiteboard({
   langCode = "vi-VN",
   stamps = DEFAULT_STAMPS
 }) {
-  const [api, setApi] = React11.useState(null);
-  const apiRef = React11.useRef(null);
-  const [isDarkTheme, setIsDarkTheme] = React11.useState(false);
-  const isDarkThemeRef = React11.useRef(false);
-  const knownFileIdsRef = React11.useRef(/* @__PURE__ */ new Set());
-  const lastSceneHashRef = React11.useRef("");
-  const sceneThrottleRef = React11.useRef(null);
-  const fileThrottleRef = React11.useRef(null);
-  const pruneThrottleRef = React11.useRef(null);
-  const latestSceneRef = React11.useRef(null);
-  const pendingFilesRef = React11.useRef({});
+  const [api, setApi] = React8.useState(null);
+  const apiRef = React8.useRef(null);
+  const [isDarkTheme, setIsDarkTheme] = React8.useState(false);
+  const isDarkThemeRef = React8.useRef(false);
+  const knownFileIdsRef = React8.useRef(/* @__PURE__ */ new Set());
+  const lastSceneHashRef = React8.useRef("");
+  const sceneThrottleRef = React8.useRef(null);
+  const fileThrottleRef = React8.useRef(null);
+  const pruneThrottleRef = React8.useRef(null);
+  const latestSceneRef = React8.useRef(null);
+  const pendingFilesRef = React8.useRef({});
   const persistEnabled = typeof storageKey === "string" && storageKey.length > 0;
-  const persistKeyRef = React11.useRef(storageKey);
+  const persistKeyRef = React8.useRef(storageKey);
   persistKeyRef.current = storageKey;
-  const persistedInitial = React11.useMemo(
+  const persistedInitial = React8.useMemo(
     () => persistEnabled ? readScene(storageKey) : null,
     [persistEnabled, storageKey]
   );
@@ -9540,21 +10111,21 @@ function Whiteboard({
     elements: persistedInitial.elements,
     appState: persistedInitial.appState
   } : null;
-  const [activeStamp, setActiveStamp] = React11.useState(null);
-  const activeStampRef = React11.useRef(activeStamp);
+  const [activeStamp, setActiveStamp] = React8.useState(null);
+  const activeStampRef = React8.useRef(activeStamp);
   activeStampRef.current = activeStamp;
-  const [editingElement, setEditingElement] = React11.useState(null);
-  const hostRef = React11.useRef(null);
-  const handledCropIdRef = React11.useRef(null);
-  const prevExcalidrawToolRef = React11.useRef("selection");
-  const stampByKind = React11.useMemo(() => {
+  const [editingElement, setEditingElement] = React8.useState(null);
+  const hostRef = React8.useRef(null);
+  const handledCropIdRef = React8.useRef(null);
+  const prevExcalidrawToolRef = React8.useRef("selection");
+  const stampByKind = React8.useMemo(() => {
     const m = /* @__PURE__ */ new Map();
     for (const s of stamps) m.set(s.kind, s);
     return m;
   }, [stamps]);
   const activeStampDef = activeStamp ? stampByKind.get(activeStamp) ?? null : null;
   const HostComponent = activeStampDef?.Host ?? null;
-  const openStamp = React11.useCallback(
+  const openStamp = React8.useCallback(
     (kind, element = null) => {
       if (readOnly) return;
       if (!stampByKind.has(kind)) return;
@@ -9563,18 +10134,18 @@ function Whiteboard({
     },
     [readOnly, stampByKind]
   );
-  const closeStamp = React11.useCallback(() => {
+  const closeStamp = React8.useCallback(() => {
     setActiveStamp(null);
     setEditingElement(null);
   }, []);
-  const toggleStampByKind = React11.useCallback(
+  const toggleStampByKind = React8.useCallback(
     (kind) => {
       if (activeStamp === kind) closeStamp();
       else openStamp(kind);
     },
     [activeStamp, openStamp, closeStamp]
   );
-  const handleChange = React11.useCallback(
+  const handleChange = React8.useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (elements, appState, files) => {
       const nextDark = appState?.theme === "dark";
@@ -9676,7 +10247,7 @@ function Whiteboard({
     },
     [readOnly, api, onSceneChange, onFilesChange, persistEnabled, storageKey, stamps, openStamp]
   );
-  React11.useEffect(() => {
+  React8.useEffect(() => {
     if (!api || !persistEnabled) return;
     let cancelled = false;
     void readFiles(storageKey).then((files) => {
@@ -9704,7 +10275,7 @@ function Whiteboard({
       cancelled = true;
     };
   }, [api, persistEnabled, storageKey]);
-  React11.useEffect(() => {
+  React8.useEffect(() => {
     if (!api) return;
     let cancelled = false;
     const run = async () => {
@@ -9724,7 +10295,7 @@ function Whiteboard({
       clearTimeout(t);
     };
   }, [api, persistedInitial, stamps]);
-  React11.useEffect(
+  React8.useEffect(
     () => () => {
       if (sceneThrottleRef.current) clearTimeout(sceneThrottleRef.current);
       if (fileThrottleRef.current) clearTimeout(fileThrottleRef.current);
@@ -9742,7 +10313,7 @@ function Whiteboard({
     onToggle: toggleStampByKind,
     stamps
   });
-  React11.useEffect(() => {
+  React8.useEffect(() => {
     if (!api) return;
     if (activeStamp) {
       try {
@@ -9759,7 +10330,7 @@ function Whiteboard({
     }
   }, [activeStamp, api]);
   useStampShortcutBlocker({ activeStamp, stamps });
-  React11.useEffect(() => {
+  React8.useEffect(() => {
     if (!activeStamp) return;
     const onKey = (e) => {
       if (e.key !== "Escape") return;
@@ -9776,7 +10347,7 @@ function Whiteboard({
   }, [activeStamp, closeStamp]);
   useStampClickOutside({ activeStamp, hostRef, onClose: closeStamp });
   return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: `relative h-full w-full${isDarkTheme ? " theme--dark" : ""}`, children: [
-    /* @__PURE__ */ jsxRuntime.jsx(React11.Suspense, { fallback: /* @__PURE__ */ jsxRuntime.jsx(ExcalidrawLoadingFallback, {}), children: /* @__PURE__ */ jsxRuntime.jsx(
+    /* @__PURE__ */ jsxRuntime.jsx(React8.Suspense, { fallback: /* @__PURE__ */ jsxRuntime.jsx(ExcalidrawLoadingFallback, {}), children: /* @__PURE__ */ jsxRuntime.jsx(
       Excalidraw2,
       {
         excalidrawAPI: (a) => {

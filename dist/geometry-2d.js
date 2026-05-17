@@ -845,6 +845,7 @@ var init_MiniBoard = __esm({
       const jxgRef = react.useRef(null);
       const axisObjsRef = react.useRef({});
       const creationLogRef = react.useRef([]);
+      const redoStackRef = react.useRef([]);
       const [tool, setTool] = react.useState("move");
       const toolRef = react.useRef("move");
       toolRef.current = tool;
@@ -894,13 +895,17 @@ var init_MiniBoard = __esm({
           return a;
         });
       }, []);
+      const pushCreationLog = react.useCallback((entry) => {
+        creationLogRef.current.push(entry);
+        redoStackRef.current = [];
+      }, []);
       const pushLog = react.useCallback(
         (id, type, args, attrs, obj) => {
-          creationLogRef.current.push({ id, type, args, attrs });
+          pushCreationLog({ id, type, args, attrs });
           objMapRef.current.set(id, obj);
           setHistoryTick((t) => t + 1);
         },
-        []
+        [pushCreationLog]
       );
       const create = react.useCallback(
         (type, args, attrs = {}) => {
@@ -1017,7 +1022,7 @@ var init_MiniBoard = __esm({
               const targetId = localIdOf(o);
               if (targetId) {
                 const id = nextLocalId();
-                creationLogRef.current.push({ id, type: "valueLabel", args: [targetId], attrs: {} });
+                pushCreationLog({ id, type: "valueLabel", args: [targetId], attrs: {} });
                 objMapRef.current.set(id, txt);
                 setHistoryTick((t) => t + 1);
               }
@@ -1434,7 +1439,7 @@ var init_MiniBoard = __esm({
           }
           const stepId = nextLocalId();
           const stepObj = boardRef.current.create("transform", step.params, step.attrs);
-          creationLogRef.current.push({ id: stepId, type: "transform", args: stepLogArgs, attrs: step.attrs });
+          pushCreationLog({ id: stepId, type: "transform", args: stepLogArgs, attrs: step.attrs });
           objMapRef.current.set(stepId, stepObj);
           transformObjs.push(stepObj);
           transformIds.push(stepId);
@@ -1448,7 +1453,7 @@ var init_MiniBoard = __esm({
           const newName = srcName ? `${srcName}'` : nextLabel();
           const attrs = { name: newName, size: 3, color: "#0ea5e9", strokeColor: "#0ea5e9", fillColor: "#0ea5e9" };
           const obj = boardRef.current.create("point", [src, transformParent], attrs);
-          creationLogRef.current.push({ id, type: "point", args: [srcId ?? src, transformLogRef], attrs });
+          pushCreationLog({ id, type: "point", args: [srcId ?? src, transformLogRef], attrs });
           objMapRef.current.set(id, obj);
           return obj;
         });
@@ -1479,6 +1484,30 @@ var init_MiniBoard = __esm({
         }
         setHistoryTick((t) => t + 1);
       }, [create, flashWarn, localIdOf, nextLabel, nextLocalId]);
+      const recreateFromLogEntry = react.useCallback((el) => {
+        const board = boardRef.current;
+        if (!board) return false;
+        const idMap = objMapRef.current;
+        const resolved = el.args.map((a) => typeof a === "string" && idMap.has(a) ? idMap.get(a) : a);
+        try {
+          if (el.type === "valueLabel") {
+            const target = resolved[0];
+            if (!target) return false;
+            const txt = createValueLabelFor(target);
+            if (!txt) return false;
+            idMap.set(el.id, txt);
+            valueLabelsRef.current.set(target, txt);
+            return true;
+          }
+          const themedAttrs = resolveAttrColors({ ...el.attrs }, paletteFor(isDarkRef.current));
+          const obj = board.create(el.type, resolved, themedAttrs);
+          idMap.set(el.id, obj);
+          return true;
+        } catch (err) {
+          console.warn("Recreate failed for", el.type, err);
+          return false;
+        }
+      }, [createValueLabelFor]);
       const undoLast = react.useCallback(() => {
         const b = boardRef.current;
         if (!b) return;
@@ -1493,6 +1522,7 @@ var init_MiniBoard = __esm({
             } catch {
             }
             clearPending();
+            redoStackRef.current.push(last);
             setHistoryTick((t) => t + 1);
             try {
               b.update();
@@ -1503,6 +1533,24 @@ var init_MiniBoard = __esm({
         }
         setHistoryTick((t) => t + 1);
       }, [clearPending]);
+      const redoNext = react.useCallback(() => {
+        const b = boardRef.current;
+        if (!b) return;
+        const entry = redoStackRef.current.pop();
+        if (!entry) {
+          setHistoryTick((t) => t + 1);
+          return;
+        }
+        const ok = recreateFromLogEntry(entry);
+        if (ok) {
+          creationLogRef.current.push(entry);
+        }
+        setHistoryTick((t) => t + 1);
+        try {
+          b.update();
+        } catch {
+        }
+      }, [recreateFromLogEntry]);
       react.useEffect(() => {
         const onKey = (e) => {
           const ae = document.activeElement;
@@ -1512,6 +1560,13 @@ var init_MiniBoard = __esm({
             e.preventDefault();
             e.stopPropagation();
             undoLastRef.current();
+            return;
+          }
+          if ((e.metaKey || e.ctrlKey) && (e.key.toLowerCase() === "z" && e.shiftKey || e.key.toLowerCase() === "y" && !e.shiftKey)) {
+            if (inField) return;
+            e.preventDefault();
+            e.stopPropagation();
+            redoNextRef.current();
             return;
           }
           if (e.key === "Escape" && !inField) {
@@ -1675,27 +1730,8 @@ var init_MiniBoard = __esm({
           });
           boardRef.current = board;
           if (initialState && initialState.elements.length > 0) {
-            const idMap = objMapRef.current;
             for (const el of initialState.elements) {
-              const resolved = el.args.map((a) => typeof a === "string" && idMap.has(a) ? idMap.get(a) : a);
-              try {
-                if (el.type === "valueLabel") {
-                  const target = resolved[0];
-                  if (target) {
-                    const txt = createValueLabelFor(target);
-                    if (txt) {
-                      idMap.set(el.id, txt);
-                      valueLabelsRef.current.set(target, txt);
-                    }
-                  }
-                  continue;
-                }
-                const themedAttrs = resolveAttrColors({ ...el.attrs }, paletteFor(isDarkRef.current));
-                const obj = board.create(el.type, resolved, themedAttrs);
-                idMap.set(el.id, obj);
-              } catch (err) {
-                console.warn("Replay failed for", el.type, err);
-              }
+              recreateFromLogEntry(el);
             }
             creationLogRef.current = [...initialState.elements];
             labelIdxRef.current = initialState.elements.filter((e) => e.type === "point").length;
@@ -1862,6 +1898,8 @@ var init_MiniBoard = __esm({
             setShowGrid: (b) => setShowGridRef.current(b),
             undo: () => undoLastRef.current(),
             canUndo: () => creationLogRef.current.length > 0,
+            redo: () => redoNextRef.current(),
+            canRedo: () => redoStackRef.current.length > 0,
             subscribe: (cb) => {
               subscribersRef.current.add(cb);
               return () => {
@@ -2025,6 +2063,8 @@ var init_MiniBoard = __esm({
       }, [tool, showAxis, showGrid, historyTick, notifySubscribers]);
       const undoLastRef = react.useRef(undoLast);
       undoLastRef.current = undoLast;
+      const redoNextRef = react.useRef(redoNext);
+      redoNextRef.current = redoNext;
       const clearPendingRef = react.useRef(clearPending);
       clearPendingRef.current = clearPending;
       const finalizeTransformCreateRef = react.useRef(finalizeTransformCreate);
@@ -2135,6 +2175,7 @@ function MobileToolDrawer({
                 disabled: a.disabled,
                 "aria-label": a.label,
                 title: a.title ?? a.label,
+                "data-testid": a.testId,
                 className: "inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
                 children: a.icon
               },
@@ -2240,6 +2281,12 @@ function UndoIcon() {
     /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M3.51 13a9 9 0 1 0 2.13-9.36L3 7" })
   ] });
 }
+function RedoIcon() {
+  return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+    /* @__PURE__ */ jsxRuntime.jsx("polyline", { points: "21 7 21 13 15 13" }),
+    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M20.49 13a9 9 0 1 1-2.13-9.36L21 7" })
+  ] });
+}
 function AxisIcon() {
   return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round", children: [
     /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "4", y1: "20", x2: "20", y2: "20" }),
@@ -2284,7 +2331,7 @@ function useToolHoverTooltip() {
   return { hover, portalReady, showHover, hideHover };
 }
 function DesktopGeometryPanel(props) {
-  const { activeTool, onToolChange, showAxis, showGrid, onShowAxisChange, onShowGridChange, onUndo, canUndo, onClose, isDark, chordGroup } = props;
+  const { activeTool, onToolChange, showAxis, showGrid, onShowAxisChange, onShowGridChange, onUndo, canUndo, onRedo, canRedo, onClose, isDark, chordGroup } = props;
   const grouped = react.useMemo(() => {
     return TOOLS.reduce((acc, t) => {
       var _a;
@@ -2333,8 +2380,22 @@ function DesktopGeometryPanel(props) {
             disabled: !canUndo,
             title: "Ho\xE0n t\xE1c (Ctrl/Cmd+Z)",
             "aria-label": "Ho\xE0n t\xE1c",
+            "data-testid": "undo-btn",
             className: "ml-auto inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
             children: /* @__PURE__ */ jsxRuntime.jsx(UndoIcon, {})
+          }
+        ),
+        /* @__PURE__ */ jsxRuntime.jsx(
+          "button",
+          {
+            type: "button",
+            onClick: onRedo,
+            disabled: !canRedo,
+            title: "L\xE0m l\u1EA1i (Ctrl/Cmd+Shift+Z)",
+            "aria-label": "L\xE0m l\u1EA1i",
+            "data-testid": "redo-btn",
+            className: "inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
+            children: /* @__PURE__ */ jsxRuntime.jsx(RedoIcon, {})
           }
         )
       ] }) }),
@@ -2456,6 +2517,8 @@ function MobileGeometryPanel(props) {
     onShowGridChange,
     onUndo,
     canUndo,
+    onRedo,
+    canRedo,
     isDark,
     drawerOpen,
     onDrawerClose
@@ -2504,6 +2567,13 @@ function MobileGeometryPanel(props) {
           icon: /* @__PURE__ */ jsxRuntime.jsx(UndoIcon, {}),
           onClick: onUndo,
           disabled: !canUndo
+        },
+        {
+          label: "L\xE0m l\u1EA1i",
+          title: "L\xE0m l\u1EA1i (Ctrl/Cmd+Shift+Z)",
+          icon: /* @__PURE__ */ jsxRuntime.jsx(RedoIcon, {}),
+          onClick: onRedo,
+          disabled: !canRedo
         }
       ],
       groups,
@@ -2969,8 +3039,9 @@ var init_EditorPanel = __esm({
     init_render();
     init_PropertiesPopover();
     init_TransformParamPopover();
+    init_LeftPanel();
     GeometryEditorPanel = react.forwardRef(
-      function GeometryEditorPanel2({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer }, ref) {
+      function GeometryEditorPanel2({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer, onUndo, onRedo, canUndo, canRedo }, ref) {
         const handleRef = react.useRef(null);
         const [ready, setReady] = react.useState(false);
         const [propsPopover, setPropsPopover] = react.useState(null);
@@ -2987,7 +3058,8 @@ var init_EditorPanel = __esm({
             tool: h.getTool(),
             showAxis: h.getShowAxis(),
             showGrid: h.getShowGrid(),
-            canUndo: h.canUndo()
+            canUndo: h.canUndo(),
+            canRedo: h.canRedo()
           });
         }, []);
         const handleReady = react.useCallback((h) => {
@@ -3029,6 +3101,7 @@ var init_EditorPanel = __esm({
           setShowAxis: (b) => handleRef.current?.setShowAxis(b),
           setShowGrid: (b) => handleRef.current?.setShowGrid(b),
           undo: () => handleRef.current?.undo(),
+          redo: () => handleRef.current?.redo(),
           insert: performInsert,
           hasContent: () => (handleRef.current?.getCreationLog().length ?? 0) > 0
         }), [performInsert]);
@@ -3078,17 +3151,45 @@ var init_EditorPanel = __esm({
                   ] }),
                   "D\u1EF1ng h\xECnh h\u1ECDc"
                 ] }),
-                isMobile && /* @__PURE__ */ jsxRuntime.jsx(
-                  "button",
-                  {
-                    type: "button",
-                    onClick: handleInsert,
-                    disabled: !ready,
-                    "data-testid": "geometry-insert-btn-mobile",
-                    className: "rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50",
-                    children: "Ch\xE8n"
-                  }
-                ),
+                isMobile && /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+                  /* @__PURE__ */ jsxRuntime.jsx(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: onUndo,
+                      disabled: !canUndo,
+                      "aria-label": "Ho\xE0n t\xE1c",
+                      title: "Ho\xE0n t\xE1c (Ctrl/Cmd+Z)",
+                      "data-testid": "undo-btn-mobile",
+                      className: "inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15 disabled:opacity-40",
+                      children: /* @__PURE__ */ jsxRuntime.jsx(UndoIcon, {})
+                    }
+                  ),
+                  /* @__PURE__ */ jsxRuntime.jsx(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: onRedo,
+                      disabled: !canRedo,
+                      "aria-label": "L\xE0m l\u1EA1i",
+                      title: "L\xE0m l\u1EA1i (Ctrl/Cmd+Shift+Z)",
+                      "data-testid": "redo-btn-mobile",
+                      className: "inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15 disabled:opacity-40",
+                      children: /* @__PURE__ */ jsxRuntime.jsx(RedoIcon, {})
+                    }
+                  ),
+                  /* @__PURE__ */ jsxRuntime.jsx(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: handleInsert,
+                      disabled: !ready,
+                      "data-testid": "geometry-insert-btn-mobile",
+                      className: "rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50",
+                      children: "Ch\xE8n"
+                    }
+                  )
+                ] }),
                 /* @__PURE__ */ jsxRuntime.jsx("button", { onClick: onClose, "aria-label": "\u0110\xF3ng", className: "inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15", children: /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
                   /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
                   /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
@@ -3410,7 +3511,8 @@ var init_host = __esm({
       tool: "move",
       showAxis: false,
       showGrid: false,
-      canUndo: false
+      canUndo: false,
+      canRedo: false
     };
     GeometryStampHost = react.forwardRef(
       function GeometryStampHost2({ api, editingElement, onClose, isDark }, ref) {
@@ -3476,6 +3578,8 @@ var init_host = __esm({
               onShowGridChange: (b) => panelRef.current?.setShowGrid(b),
               onUndo: () => panelRef.current?.undo(),
               canUndo: geomState.canUndo,
+              onRedo: () => panelRef.current?.redo(),
+              canRedo: geomState.canRedo,
               onClose,
               isDark,
               isMobile,
@@ -3495,7 +3599,11 @@ var init_host = __esm({
               withLeftPanel: !isMobile,
               isDark,
               isMobile,
-              onOpenDrawer: () => setDrawerOpen(true)
+              onOpenDrawer: () => setDrawerOpen(true),
+              onUndo: () => panelRef.current?.undo(),
+              onRedo: () => panelRef.current?.redo(),
+              canUndo: geomState.canUndo,
+              canRedo: geomState.canRedo
             }
           )
         ] });
