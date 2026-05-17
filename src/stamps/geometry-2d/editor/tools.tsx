@@ -192,6 +192,37 @@ export const GROUP_LABELS: Record<ToolDef['group'], string> = {
   transform: 'Phép biến hình',
 };
 
+export type GeomGroup = ToolDef['group'];
+
+// Positional A..I — letter shortcut cho chord 2-phím.
+// Khớp đúng thứ tự hiển thị trong LeftPanel (derive từ TOOLS phía trên).
+export const GROUP_ORDER: GeomGroup[] = [
+  'move',
+  'point',
+  'line',
+  'construct',
+  'polygon',
+  'circle',
+  'measure',
+  'edit',
+  'transform',
+];
+
+const A_CODE = 'A'.charCodeAt(0);
+
+export function letterForGroup(g: GeomGroup): string {
+  const idx = GROUP_ORDER.indexOf(g);
+  return idx >= 0 ? String.fromCharCode(A_CODE + idx) : '';
+}
+
+export function groupForLetter(ch: string): GeomGroup | null {
+  if (ch.length !== 1) return null;
+  const upper = ch.toUpperCase();
+  const idx = upper.charCodeAt(0) - A_CODE;
+  if (idx < 0 || idx >= GROUP_ORDER.length) return null;
+  return GROUP_ORDER[idx];
+}
+
 // ============== Object-type matching ==============
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

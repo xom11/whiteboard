@@ -15,6 +15,8 @@ import {
   type GeomBoardState,
 } from './editor/EditorPanel';
 import type { GeomTool } from './editor/MiniBoard';
+import { GROUP_ORDER, TOOLS } from './editor/tools';
+import { useChordShortcut } from '../shared/useChordShortcut';
 import { insertStampImage } from '../shared/insertImage';
 import { renderGeometrySvgFromState } from './render';
 import type { SerializedBoard } from './serialize';
@@ -58,6 +60,13 @@ const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
     const [geomState, setGeomState] = useState<GeomBoardState>(INITIAL_GEOM_STATE);
     const { isMobile } = useIsMobile();
     const [drawerOpen, setDrawerOpen] = useState(false);
+
+    const { chordGroup } = useChordShortcut({
+      groupOrder: GROUP_ORDER,
+      tools: TOOLS,
+      onSelect: (key) => panelRef.current?.setTool(key as GeomTool),
+      enabled: !isMobile,
+    });
 
     // Initial state cho editor: parse từ customData nếu đang re-edit, null nếu tạo mới.
     const initialState = useMemo<SerializedBoard | null>(() => {
@@ -119,6 +128,7 @@ const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
           isMobile={isMobile}
           drawerOpen={drawerOpen}
           onDrawerClose={() => setDrawerOpen(false)}
+          chordGroup={chordGroup}
         />
         <GeometryEditorPanel
           ref={panelRef}

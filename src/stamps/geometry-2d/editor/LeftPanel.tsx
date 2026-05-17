@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { TOOLS, GROUP_LABELS, type GeomTool, type ToolDef } from './MiniBoard';
+import { type GeomGroup } from './tools';
 import { MobileToolDrawer, type MobileToolGroup } from '../../shared/MobileToolDrawer';
 
 const TOOLTIP_DELAY_MS = 400;
@@ -128,6 +129,8 @@ interface GeometryLeftPanelProps {
   isMobile?: boolean;
   drawerOpen?: boolean;
   onDrawerClose?: () => void;
+  /** Chord shortcut: group đang được focus (sau khi bấm letter). null = không active. */
+  chordGroup?: GeomGroup | null;
 }
 
 // ---------- Tooltip portal (desktop hover) ----------

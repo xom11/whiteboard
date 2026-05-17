@@ -41,14 +41,22 @@ export function useChordShortcut<G extends string>(
   groupOrderRef.current = groupOrder;
   toolsRef.current = tools;
   onSelectRef.current = onSelect;
-  chordGroupRef.current = chordGroup;
+  // chordGroupRef được sync ngay trong handler (xem `setChord` dưới đây)
+  // thay vì ghi từ render body — nếu ghi ở body sẽ bị React batch hoá khi
+  // hai event xảy ra trong cùng một act() (event sau đọc giá trị cũ).
 
   const cancel = useCallback(() => {
+    chordGroupRef.current = null;
     setChordGroup(null);
   }, []);
 
   useEffect(() => {
     if (!enabled) return;
+
+    const setChord = (next: G | null) => {
+      chordGroupRef.current = next;
+      setChordGroup(next);
+    };
 
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -61,7 +69,7 @@ export function useChordShortcut<G extends string>(
         if (chordGroupRef.current !== null) {
           e.preventDefault();
           e.stopPropagation();
-          setChordGroup(null);
+          setChord(null);
         }
         return;
       }
@@ -71,7 +79,7 @@ export function useChordShortcut<G extends string>(
         if (idx < groupOrderRef.current.length) {
           e.preventDefault();
           e.stopPropagation();
-          setChordGroup(groupOrderRef.current[idx]);
+          setChord(groupOrderRef.current[idx]);
         }
         return;
       }
@@ -88,7 +96,7 @@ export function useChordShortcut<G extends string>(
         if (n < toolsInGroup.length) {
           onSelectRef.current(toolsInGroup[n].key);
         }
-        setChordGroup(null);
+        setChord(null);
         return;
       }
     };
