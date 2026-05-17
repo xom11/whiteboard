@@ -9,7 +9,6 @@ const IDENTIFIER_RE = /[a-zA-Z][a-zA-Z0-9_]*/g;
 
 const SUGGESTIONS: Record<string, string> = {
   tg: 'tan',
-  cotg: 'cos',
   arcsin: 'asin',
   arccos: 'acos',
   arctan: 'atan',
