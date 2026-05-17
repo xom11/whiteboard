@@ -18,6 +18,7 @@ import {
 import { ToolbarInjector } from './stamps/shared/ToolbarInjector';
 import { useShortcuts } from './stamps/shared/useShortcuts';
 import { useStampDoubleClick } from './stamps/shared/useStampDoubleClick';
+import { useStampShortcutBlocker } from './stamps/shared/useStampShortcutBlocker';
 import { restoreMissingStampFiles } from './stamps/shared/restoreStampFiles';
 import type { StampHostHandle } from './stamps/shared/types';
 import { readScene, writeScene } from './core/persistence/sceneStore';
@@ -382,41 +383,7 @@ export function Whiteboard({
   }, [activeStamp, api]);
 
   // ---- Block Excalidraw shortcuts khi stamp panel đang mở ----
-  // Capture-phase keydown: chặn mọi phím (trừ editable input + modifier + Esc +
-  // phím tắt của stamp đã đăng ký) để các shortcut 1-9, V, R, D... của
-  // Excalidraw không trigger tool change sau editor.
-  const stampShortcutKeys = useMemo(
-    () => new Set(stamps.map((s) => s.shortcutKey.toLowerCase())),
-    [stamps],
-  );
-
-  useEffect(() => {
-    if (!activeStamp) return;
-    const ALLOWED_KEYS = new Set([
-      'Tab', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-      'Shift', 'Control', 'Alt', 'Meta', 'CapsLock',
-      'Home', 'End', 'PageUp', 'PageDown',
-    ]);
-
-    const isEditable = (el: EventTarget | null): boolean => {
-      if (!(el instanceof HTMLElement)) return false;
-      if (el.isContentEditable) return true;
-      const tag = el.tagName;
-      return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
-    };
-
-    const blocker = (e: KeyboardEvent) => {
-      if (isEditable(e.target)) return;
-      if (e.ctrlKey || e.metaKey) return;
-      if (ALLOWED_KEYS.has(e.key)) return;
-      if (e.key === 'Escape') return;
-      if (stampShortcutKeys.has(e.key.toLowerCase())) return;
-      e.preventDefault();
-      e.stopPropagation();
-    };
-    window.addEventListener('keydown', blocker, { capture: true });
-    return () => window.removeEventListener('keydown', blocker, { capture: true });
-  }, [activeStamp, stampShortcutKeys]);
+  useStampShortcutBlocker({ activeStamp, stamps });
 
   // ---- Esc đóng panel (capture phase để chạy TRƯỚC Excalidraw) ----
   useEffect(() => {
