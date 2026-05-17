@@ -35,7 +35,6 @@
     "demo": "vite --config scripts/demo/vite.config.ts"
   },
   "peerDependencies": {
-    "next": ">=14.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

@@ -83,28 +83,6 @@ jest.mock('../stamps/geometry-3d/editor/MiniBoard3D', () => ({
   MiniBoard3D: jest.fn(() => null),
 }));
 
-jest.mock('next/dynamic', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const React = require('react');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return function dynamicMock(loader: () => Promise<any>) {
-    const Comp = (props: Record<string, unknown>) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const [Resolved, setResolved]: [any, (v: any) => void] = React.useState(null);
-      React.useEffect(() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        void loader().then((mod: any) => {
-          const Ctor = typeof mod === 'function' ? mod : mod.default;
-          setResolved(() => Ctor);
-        });
-      }, []);
-      if (!Resolved) return null;
-      return React.createElement(Resolved, props);
-    };
-    return Comp;
-  };
-});
-
 type ExcProps = {
   viewModeEnabled?: boolean;
   initialData?: { elements?: unknown[] };
