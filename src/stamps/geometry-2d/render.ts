@@ -1,6 +1,7 @@
 import { renderGeometryToSvg } from './renderInline';
 import { deserializeIntoBoard, type SerializedBoard } from './serialize';
 import { paletteFor } from './editor/theme';
+import { safeJsx } from '../shared/safeJsx';
 
 /**
  * Re-render geometry SVG từ jsonState đã serialize. Dùng cho:
@@ -25,7 +26,7 @@ export async function renderGeometrySvgFromState(jsonState: string): Promise<str
   // Excalidraw's THEME_FILTER tự đảo nét trong dark mode.
   const palette = paletteFor(false);
   const JXG = (await import('jsxgraph')).default;
-  try {
+  safeJsx('render.applyOptions', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const opts = (JXG as any).Options;
     if (opts) {
@@ -43,7 +44,7 @@ export async function renderGeometrySvgFromState(jsonState: string): Promise<str
       opts.grid = opts.grid || {};
       opts.grid.strokeColor = palette.grid;
     }
-  } catch { /* ignore */ }
+  });
   const container = document.createElement('div');
   const containerId = 'jxg_offscreen_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
   container.id = containerId;
@@ -66,10 +67,10 @@ export async function renderGeometrySvgFromState(jsonState: string): Promise<str
     (board as any).update();
     return renderGeometryToSvg(container);
   } finally {
-    try {
+    safeJsx('render.freeBoard', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (board) (JXG as any).JSXGraph.freeBoard(board);
-    } catch { /* ignore */ }
+    });
     if (container.parentNode) container.parentNode.removeChild(container);
   }
 }
