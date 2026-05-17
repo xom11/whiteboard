@@ -1,6 +1,7 @@
 import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Whiteboard } from '@xom11/whiteboard';
+import './tailwind.css';
 
 function App() {
   return (
