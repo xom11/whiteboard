@@ -16,3 +16,8 @@ examples/playground/dist/
 
 # superpowers brainstorming mockups
 .superpowers/
+
+# Playwright E2E
+test-results/
+playwright-report/
+tests/e2e/.auth/
