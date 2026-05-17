@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.7.0 (2026-05-17)
+
+### Breaking changes
+- `DEFAULT_STAMPS` giờ chỉ gồm 2 stamps stable: `geometry` + `latex`. `geometry3dStamp` và `graph2dStamp` chuyển sang opt-IN (experimental). Consumer phải pass `stamps={ALL_STAMPS}` hoặc `[...DEFAULT_STAMPS, geometry3dStamp]` để giữ behavior cũ.
+- `next` (Next.js) không còn là peer dependency. Whiteboard dùng `React.lazy + Suspense` thuần thay vì `next/dynamic`.
+
+### Added
+- `STABLE_STAMPS`, `EXPERIMENTAL_STAMPS`, `ALL_STAMPS` exports từ `@xom11/whiteboard`.
+- Field optional `experimental?: boolean` trong `StampType`.
+- Subpath exports: `@xom11/whiteboard/geometry-2d`, `/geometry-3d`, `/latex`, `/graph-2d`.
+- Hooks: `useStampDoubleClick`, `useStampShortcutBlocker`, `useStampClickOutside` (internal, không export).
+
+### Changed
+- **UI**: Tất cả stamp buttons (geometry, latex, 3D, graph) gom vào popover "More tools" của Excalidraw cho cả desktop + mobile (trước đây desktop inject inline vào main toolbar). Main toolbar Excalidraw giờ gọn hơn.
+- **Icon 3D**: Thay icon hexagon bằng cube isometric (3 mặt nhìn thấy).
+- **Bundle**: Host component của mỗi stamp được lazy-load qua `React.lazy`. Main entry `dist/index.mjs` giảm từ ~299 KB còn ~29 KB (90% reduction).
+
+### Fixed
+- Icon stamp 3D không còn nhìn nhầm thành lục giác.
+
+### Internal
+- `Whiteboard.tsx` shrunk by extracting 3 hooks (`useStampDoubleClick`, `useStampShortcutBlocker`, `useStampClickOutside`).
+- `ToolbarInjector.tsx` shrunk từ 438 dòng còn ~200 dòng (single-path injection vào More tools popover).
+- Mỗi stamp tách thành `index.tsx` (metadata + lazy import) + `host.tsx` (component) + `types.ts` (custom data type).
+
 ## 0.6.2 — 2026-05-16
 
 ### Fixed (consumer integration hotfixes)
