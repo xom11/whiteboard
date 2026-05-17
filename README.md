@@ -119,6 +119,17 @@ npm run build      # tsup → dist/{index.js, index.mjs, index.d.ts}
 npm run dev        # tsup watch mode
 ```
 
+## E2E tests
+
+Playwright smoke tests chạy qua headless Chromium, tự start vite demo:
+
+```bash
+npx playwright install chromium    # cài browser binary (chỉ làm 1 lần)
+npm run test:e2e                   # chạy specs
+```
+
+Chi tiết xem [`tests/e2e/README.md`](./tests/e2e/README.md).
+
 ## Workflow phát hành phiên bản mới
 
 `npm ci --ignore-scripts` ở consumer skip prepare hook → phải commit `dist/`:
