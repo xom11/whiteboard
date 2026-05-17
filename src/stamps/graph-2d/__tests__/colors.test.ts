@@ -2,6 +2,7 @@ import {
   GRAPH_PALETTE,
   FUNCTION_NAMES,
   MAX_FUNCTIONS,
+  MAX_PARAMETERS,
   nextColor,
   nextFunctionName,
 } from '../colors';
@@ -18,6 +19,10 @@ describe('graph-2d colors', () => {
 
   it('MAX_FUNCTIONS = 8', () => {
     expect(MAX_FUNCTIONS).toBe(8);
+  });
+
+  it('MAX_PARAMETERS = 8', () => {
+    expect(MAX_PARAMETERS).toBe(8);
   });
 
   it('nextColor trả màu chưa dùng', () => {
