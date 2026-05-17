@@ -102,6 +102,8 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
           onShowGridChange={(b) => panelRef.current?.setShowGrid(b)}
           onUndo={() => panelRef.current?.undo()}
           canUndo={geomState.canUndo}
+          onRedo={() => panelRef.current?.redo()}
+          canRedo={geomState.canRedo}
           onClose={onClose}
           isDark={isDark}
           isMobile={isMobile}
