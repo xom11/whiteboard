@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.9.1 (unreleased)
+
+Tiếp nối audit v0.9.0 — 3 issue đóng: #13, #14, #15.
+
+### Performance
+- **MutationObserver scope** (`src/stamps/shared/ToolbarInjector.tsx`): observer giờ scope xuống Excalidraw container (`.excalidraw`) thay vì `document.body`, kèm rAF coalesce nhiều mutation cùng tick → giảm callback fire khi user vẽ tích cực. (closes #13)
+
+### Quality
+- **safeJsx helper** (`src/stamps/shared/safeJsx.ts`): wrap 15+ silent `catch { /* ignore */ }` trong `geometry-2d/{handlers,MiniBoard,render}.ts`. Behavior runtime KHÔNG đổi — vẫn swallow ở prod — nhưng có `console.warn('[whiteboard:jsxgraph]', label, err)` ở dev mode để bắt regression sớm. (closes #14)
+
+### Tests
+- **Playwright E2E harness**: thêm `@playwright/test` (devDep), `playwright.config.ts` (chromium headless, webServer auto-start vite demo ở `localhost:5173`), `tests/e2e/smoke.spec.ts` cover 2 spec (canvas mount + stamp menu inject) + 2 spec TODO (editor panel + dark mode). Script `npm run test:e2e`. (closes #15)
+
+### Misc
+- Test count: 432 → 440 (+8 cho safeJsx + MutationObserver scope regression).
+
+---
+
 ## v0.9.0 (unreleased)
 
 Tổng quát: kết quả của 1 đợt audit (security + bugs + bundle contract + repo hygiene). 5 issue đóng: #3, #4, #5, #6, #7.

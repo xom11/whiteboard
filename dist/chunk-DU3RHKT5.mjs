@@ -1,10 +1,10 @@
 "use client";
-import { isGeometryCustomData, renderGeometrySvgFromState } from './chunk-BJX4YNA5.mjs';
+import { isGeometryCustomData, renderGeometrySvgFromState } from './chunk-KEYZ5EZT.mjs';
 import { lazy } from 'react';
 import { jsxs, jsx } from 'react/jsx-runtime';
 
 var GeometryStampHost = lazy(
-  () => import('./host-K5RDGVIR.mjs').then((m) => ({ default: m.GeometryStampHost }))
+  () => import('./host-VDNAJMLC.mjs').then((m) => ({ default: m.GeometryStampHost }))
 );
 var GeometryIcon = /* @__PURE__ */ jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: [
   /* @__PURE__ */ jsx("polygon", { points: "4,20 20,20 12,5" }),
@@ -40,5 +40,5 @@ var geometryStamp = {
 };
 
 export { geometryStamp };
-//# sourceMappingURL=chunk-5RBNRBFW.mjs.map
-//# sourceMappingURL=chunk-5RBNRBFW.mjs.map
+//# sourceMappingURL=chunk-DU3RHKT5.mjs.map
+//# sourceMappingURL=chunk-DU3RHKT5.mjs.map

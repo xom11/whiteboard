@@ -1,5 +1,5 @@
 "use client";
-import { serializeBoard, renderGeometrySvgFromState, isGeometryCustomData } from './chunk-BJX4YNA5.mjs';
+import { serializeBoard, renderGeometrySvgFromState, isGeometryCustomData, safeJsx } from './chunk-KEYZ5EZT.mjs';
 import { useChordShortcut, MobileToolDrawer } from './chunk-SBDMF4NQ.mjs';
 import { resolveAttrColors, paletteFor, themeLabel, themeAxis, themeGrid } from './chunk-HTBLO5JO.mjs';
 import { useIsMobile } from './chunk-P2AOIF7S.mjs';
@@ -320,14 +320,8 @@ function handleDown(ctx, e) {
             const tmp1 = ctx.boardRef.current.create("intersection", [a, b, 1], { visible: false, withLabel: false });
             const d0 = Math.hypot((tmp0.X?.() ?? 0) - x, (tmp0.Y?.() ?? 0) - y);
             const d1 = Math.hypot((tmp1.X?.() ?? 0) - x, (tmp1.Y?.() ?? 0) - y);
-            try {
-              ctx.boardRef.current.removeObject(tmp0);
-            } catch {
-            }
-            try {
-              ctx.boardRef.current.removeObject(tmp1);
-            } catch {
-            }
+            safeJsx("handlers.removeObject(intersect.tmp0)", () => ctx.boardRef.current.removeObject(tmp0));
+            safeJsx("handlers.removeObject(intersect.tmp1)", () => ctx.boardRef.current.removeObject(tmp1));
             const idx = d0 <= d1 ? 0 : 1;
             ctx.create("intersection", [aId, bId, idx], attrs);
           }
@@ -364,7 +358,7 @@ function handleDown(ctx, e) {
     })();
     if (ctx.pendingRef.current.length > 0 && ctx.boardRef.current) {
       const prev = ctx.pendingRef.current[ctx.pendingRef.current.length - 1];
-      try {
+      safeJsx("handlers.createPreviewSegment", () => {
         const seg = ctx.boardRef.current.create("segment", [prev, pick2], {
           strokeColor: "#3b82f6",
           strokeWidth: 1.5,
@@ -374,8 +368,7 @@ function handleDown(ctx, e) {
           withLabel: false
         });
         ctx.previewSegRef.current.push(seg);
-      } catch {
-      }
+      });
     }
     ctx.pendingRef.current.push(pick2);
     ctx.setPendingCount(ctx.pendingRef.current.length);
@@ -486,10 +479,7 @@ function handleUp(ctx, e) {
     if (!sc2) return;
     const [ex, ey] = sc2;
     if (mq.rect) {
-      try {
-        ctx.boardRef.current?.removeObject(mq.rect);
-      } catch {
-      }
+      safeJsx("handlers.removeObject(marquee.rect)", () => ctx.boardRef.current?.removeObject(mq.rect));
     }
     if (Math.hypot(ex - mq.startSx, ey - mq.startSy) < 4) return;
     const x1 = Math.min(mq.startSx, ex), x2 = Math.max(mq.startSx, ex);
@@ -522,10 +512,7 @@ function handleUp(ctx, e) {
       }
     }
     ctx.setSelectionTick((tt) => tt + 1);
-    try {
-      board.update();
-    } catch {
-    }
+    safeJsx("handlers.board.update(marquee)", () => board.update());
     return;
   }
   if (t !== "move") return;
@@ -572,12 +559,9 @@ function handleMove(ctx, e) {
       const [x2u, y2u] = ux2 && ux2.length >= 2 ? [ux2[0], ux2[1]] : toUsr(Math.max(startSx, sx), Math.max(startSy, sy));
       const rect = ctx.marqueeRef.current.rect;
       if (rect) {
-        try {
-          ctx.boardRef.current.removeObject(rect);
-        } catch {
-        }
+        safeJsx("handlers.removeObject(marquee.prevRect)", () => ctx.boardRef.current.removeObject(rect));
       }
-      try {
+      safeJsx("handlers.createMarqueePolygon", () => {
         ctx.marqueeRef.current.rect = ctx.boardRef.current.create("polygon", [
           [x1u, y1u],
           [x2u, y1u],
@@ -592,8 +576,7 @@ function handleMove(ctx, e) {
           highlight: false,
           withLabel: false
         });
-      } catch {
-      }
+      });
     }
     return;
   }
@@ -603,14 +586,13 @@ function handleMove(ctx, e) {
   ctx.previewRafRef.current = requestAnimationFrame(() => {
     ctx.previewRafRef.current = null;
     if (!ctx.boardRef.current || !ctx.phantomRef.current) return;
-    try {
+    safeJsx("handlers.phantomMove", () => {
       const coords = ctx.boardRef.current.getUsrCoordsOfMouse(e);
       const JXG = ctx.jxgRef.current;
       if (!JXG) return;
       ctx.phantomRef.current.setPositionDirectly(JXG.COORDS_BY_USER, [coords[0], coords[1]]);
       ctx.boardRef.current.update();
-    } catch {
-    }
+    });
   });
 }
 var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
@@ -765,16 +747,10 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
     if (patch.remove) {
       const vl = valueLabelsRef.current.get(o);
       if (vl) {
-        try {
-          boardRef.current.removeObject(vl);
-        } catch {
-        }
+        safeJsx("MiniBoard.removeObject(valueLabel)", () => boardRef.current.removeObject(vl));
         valueLabelsRef.current.delete(o);
       }
-      try {
-        boardRef.current.removeObject(o);
-      } catch {
-      }
+      safeJsx("MiniBoard.removeObject(target)", () => boardRef.current.removeObject(o));
       const board = boardRef.current;
       const aliveIds = /* @__PURE__ */ new Set();
       for (const [id, obj2] of objMapRef.current.entries()) {
@@ -808,10 +784,7 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
         const txt = valueLabelsRef.current.get(o);
         valueLabelsRef.current.delete(o);
         if (txt) {
-          try {
-            boardRef.current.removeObject(txt);
-          } catch {
-          }
+          safeJsx("MiniBoard.removeObject(valueLabel.text)", () => boardRef.current.removeObject(txt));
           const txtId = localIdOf(txt);
           if (txtId) {
             creationLogRef.current = creationLogRef.current.filter((e) => e.id !== txtId);
@@ -822,10 +795,7 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
       }
     }
     if (patch.attrs) {
-      try {
-        o.setAttribute(patch.attrs);
-      } catch {
-      }
+      safeJsx("MiniBoard.setAttribute", () => o.setAttribute(patch.attrs));
       const id = localIdOf(o);
       if (id) {
         const entry = creationLogRef.current.find((e) => e.id === id);
@@ -833,19 +803,13 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
         setHistoryTick((t) => t + 1);
       }
     }
-    try {
-      boardRef.current.update();
-    } catch {
-    }
+    safeJsx("MiniBoard.board.update(mutate)", () => boardRef.current.update());
   }, [createValueLabelFor, localIdOf, nextLocalId]);
   const clearPreviewSegs = useCallback(() => {
     const b = boardRef.current;
     if (!b) return;
     for (const s of previewSegRef.current) {
-      try {
-        b.removeObject(s);
-      } catch {
-      }
+      safeJsx("MiniBoard.removeObject(previewSeg)", () => b.removeObject(s));
     }
     previewSegRef.current = [];
   }, []);
@@ -853,17 +817,11 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
     const b = boardRef.current;
     if (!b) return;
     if (previewShapeRef.current) {
-      try {
-        b.removeObject(previewShapeRef.current);
-      } catch {
-      }
+      safeJsx("MiniBoard.removeObject(previewShape)", () => b.removeObject(previewShapeRef.current));
       previewShapeRef.current = null;
     }
     if (phantomRef.current) {
-      try {
-        b.removeObject(phantomRef.current);
-      } catch {
-      }
+      safeJsx("MiniBoard.removeObject(phantom)", () => b.removeObject(phantomRef.current));
       phantomRef.current = null;
     }
   }, []);
@@ -875,7 +833,7 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
   }, [clearPreviewSegs, removePhantom]);
   const applySelectionStyle = useCallback((obj) => {
     if (!obj || selOriginalRef.current.has(obj)) return;
-    try {
+    safeJsx("MiniBoard.applySelectionStyle", () => {
       const visProp = obj.visProp ?? {};
       selOriginalRef.current.set(obj, {
         strokeColor: visProp.strokecolor,
@@ -887,19 +845,17 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
       } else {
         obj.setAttribute({ strokeColor: "#06b6d4", strokeWidth: 3 });
       }
-    } catch {
-    }
+    });
   }, []);
   const restoreSelectionStyle = useCallback((obj) => {
     const orig = selOriginalRef.current.get(obj);
     if (!orig) return;
-    try {
+    safeJsx("MiniBoard.restoreSelectionStyle", () => {
       const attrs = {};
       if (orig.strokeColor !== void 0) attrs.strokeColor = orig.strokeColor;
       if (orig.strokeWidth !== void 0) attrs.strokeWidth = orig.strokeWidth;
       obj.setAttribute(attrs);
-    } catch {
-    }
+    });
     selOriginalRef.current.delete(obj);
   }, []);
   const clearSelection = useCallback(() => {
@@ -908,10 +864,7 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
     }
     selectedSetRef.current.clear();
     setSelectionTick((t) => t + 1);
-    try {
-      boardRef.current?.update();
-    } catch {
-    }
+    safeJsx("MiniBoard.board.update(clearSelection)", () => boardRef.current?.update());
   }, [restoreSelectionStyle]);
   const toggleSelect = useCallback((obj, additive) => {
     if (!obj) return;
@@ -931,10 +884,7 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
       }
     }
     setSelectionTick((t) => t + 1);
-    try {
-      boardRef.current?.update();
-    } catch {
-    }
+    safeJsx("MiniBoard.board.update(toggleSelect)", () => boardRef.current?.update());
   }, [applySelectionStyle, restoreSelectionStyle]);
   const deleteSelected = useCallback(() => {
     const board = boardRef.current;
@@ -942,10 +892,7 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
     if (selectedSetRef.current.size === 0) return;
     for (const o of selectedSetRef.current) selOriginalRef.current.delete(o);
     for (const o of selectedSetRef.current) {
-      try {
-        board.removeObject(o);
-      } catch {
-      }
+      safeJsx("MiniBoard.removeObject(selected)", () => board.removeObject(o));
     }
     selectedSetRef.current.clear();
     const aliveIds = /* @__PURE__ */ new Set();
@@ -1018,10 +965,7 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
     const b = boardRef.current;
     if (!b) return;
     if (previewShapeRef.current) {
-      try {
-        b.removeObject(previewShapeRef.current);
-      } catch {
-      }
+      safeJsx("MiniBoard.removeObject(refreshPreview)", () => b.removeObject(previewShapeRef.current));
       previewShapeRef.current = null;
     }
     const t = toolRef.current;
@@ -1140,7 +1084,7 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
       }
       case "toggleLabel": {
         const obj = picks[0];
-        try {
+        safeJsx("MiniBoard.toggleLabel", () => {
           if (obj.label) {
             const visible = obj.label.visProp.visible !== false;
             obj.label.setAttribute({ visible: !visible });
@@ -1149,23 +1093,21 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
             obj.setAttribute({ withLabel: !cur });
           }
           boardRef.current.update();
-        } catch {
-        }
+        });
         break;
       }
       case "toggleVisible": {
         const obj = picks[0];
-        try {
+        safeJsx("MiniBoard.toggleVisible", () => {
           const visible = obj.visProp.visible !== false;
           obj.setAttribute({ visible: !visible });
           boardRef.current.update();
-        } catch {
-        }
+        });
         break;
       }
       case "delete": {
         const obj = picks[0];
-        try {
+        safeJsx("MiniBoard.deleteOne", () => {
           boardRef.current.removeObject(obj);
           const board = boardRef.current;
           const aliveIds = /* @__PURE__ */ new Set();
@@ -1180,8 +1122,7 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
             if (!aliveIds.has(id)) objMapRef.current.delete(id);
           }
           setHistoryTick((t) => t + 1);
-        } catch {
-        }
+        });
         break;
       }
     }
@@ -1294,17 +1235,11 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
       const obj = objMapRef.current.get(last.id);
       objMapRef.current.delete(last.id);
       if (obj) {
-        try {
-          b.removeObject(obj);
-        } catch {
-        }
+        safeJsx("MiniBoard.removeObject(undo)", () => b.removeObject(obj));
         clearPending();
         redoStackRef.current.push(last);
         setHistoryTick((t) => t + 1);
-        try {
-          b.update();
-        } catch {
-        }
+        safeJsx("MiniBoard.board.update(undo)", () => b.update());
         return;
       }
     }
@@ -1323,10 +1258,7 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
       creationLogRef.current.push(entry);
     }
     setHistoryTick((t) => t + 1);
-    try {
-      b.update();
-    } catch {
-    }
+    safeJsx("MiniBoard.board.update(redo)", () => b.update());
   }, [recreateFromLogEntry]);
   useEffect(() => {
     const onKey = (e) => {
@@ -1392,16 +1324,14 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
     if (!sc) return [];
     const [sx, sy] = sc;
     const list = [];
-    try {
+    safeJsx("MiniBoard.objectsAt.loop", () => {
       const objs = b.objectsList || [];
       for (const o of objs) {
-        try {
+        safeJsx("MiniBoard.objectsAt.hasPoint", () => {
           if (o.hasPoint && o.hasPoint(sx, sy)) list.push(o);
-        } catch {
-        }
+        });
       }
-    } catch {
-    }
+    });
     return list;
   }, [screenCoordsOf]);
   const findNearestPoint = useCallback((evt, tolPx = 12) => {
@@ -1411,24 +1341,23 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
     if (!sc) return null;
     const [sx, sy] = sc;
     const tol2 = tolPx * tolPx;
-    let best = null;
-    try {
+    const bestRef = { current: null };
+    safeJsx("MiniBoard.findNearestPoint.loop", () => {
       const objs = b.objectsList || [];
       for (const o of objs) {
-        try {
-          if (objKind(o) !== "point") continue;
+        safeJsx("MiniBoard.findNearestPoint.iter", () => {
+          if (objKind(o) !== "point") return;
           const pc = o.coords?.scrCoords;
-          if (!pc) continue;
+          if (!pc) return;
           const dx = pc[1] - sx;
           const dy = pc[2] - sy;
           const d2 = dx * dx + dy * dy;
-          if (d2 <= tol2 && (!best || d2 < best.d2)) best = { obj: o, d2 };
-        } catch {
-        }
+          const cur = bestRef.current;
+          if (d2 <= tol2 && (!cur || d2 < cur.d2)) bestRef.current = { obj: o, d2 };
+        });
       }
-    } catch {
-    }
-    return best ? best.obj : null;
+    });
+    return bestRef.current ? bestRef.current.obj : null;
   }, [screenCoordsOf]);
   const promoteLabel = useCallback((o) => {
     if (!o) return o;
@@ -1436,31 +1365,25 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
     if (t !== "text") return o;
     const b = boardRef.current;
     if (!b) return o;
-    try {
+    const promoted = safeJsx("MiniBoard.promoteLabel", () => {
       for (const c of b.objectsList || []) {
         if (c.label === o) return c;
       }
-    } catch {
-    }
-    return o;
+      return null;
+    }, null);
+    return promoted ?? o;
   }, []);
   const pendingTransformRef = useRef(null);
   const transformSubsRef = useRef(/* @__PURE__ */ new Set());
   const emitTransform = useCallback((info) => {
     transformSubsRef.current.forEach((cb) => {
-      try {
-        cb(info);
-      } catch {
-      }
+      safeJsx("MiniBoard.emitTransform.cb", () => cb(info));
     });
   }, []);
   const selectSubsRef = useRef(/* @__PURE__ */ new Set());
   const emitSelect = useCallback((snap) => {
     selectSubsRef.current.forEach((cb) => {
-      try {
-        cb(snap);
-      } catch {
-      }
+      safeJsx("MiniBoard.emitSelect.cb", () => cb(snap));
     });
   }, []);
   const moveDownRef = useRef(null);
@@ -1472,7 +1395,7 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
       const JXG = (await import('jsxgraph')).default;
       if (cancelled || !containerRef.current) return;
       jxgRef.current = JXG;
-      try {
+      safeJsx("MiniBoard.applyJxgOptions", () => {
         const opts = JXG.Options;
         if (opts) {
           opts.text = opts.text || {};
@@ -1485,8 +1408,7 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
           opts.label.strokeColor = themeLabel(isDarkRef.current);
           opts.text.strokeColor = themeLabel(isDarkRef.current);
         }
-      } catch {
-      }
+      });
       const board = JXG.JSXGraph.initBoard(containerId, {
         boundingbox: initialState?.bbox ?? [-10, 10, 10, -10],
         axis: false,
@@ -1514,17 +1436,13 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
         labelIdxRef.current = initialState.elements.filter((e) => e.type === "point").length;
       }
       if (showAxisRef.current) {
-        try {
+        safeJsx("MiniBoard.initAxes", () => {
           axisObjsRef.current.x = board.create("axis", [[0, 0], [1, 0]], { strokeColor: themeAxis(isDarkRef.current), name: "", withLabel: false });
           axisObjsRef.current.y = board.create("axis", [[0, 0], [0, 1]], { strokeColor: themeAxis(isDarkRef.current), name: "", withLabel: false });
-        } catch {
-        }
+        });
       }
       if (showGridRef.current) {
-        try {
-          board.create("grid", [], { strokeColor: themeGrid(isDarkRef.current), strokeOpacity: 1 });
-        } catch {
-        }
+        safeJsx("MiniBoard.initGrid", () => board.create("grid", [], { strokeColor: themeGrid(isDarkRef.current), strokeOpacity: 1 }));
       }
       board.on("down", (e) => {
         const ctx = {
@@ -1689,15 +1607,14 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
           const b = boardRef.current;
           if (!b) return [];
           const out = [];
-          try {
+          safeJsx("MiniBoard.getAllPointNames", () => {
             const objs = b.objectsList || [];
             for (const o of objs) {
               if (objKind(o) === "point" && typeof o.name === "string" && o.name) {
                 out.push(o.name);
               }
             }
-          } catch {
-          }
+          });
           return out;
         },
         onSelect: (cb) => {
@@ -1758,10 +1675,7 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
         previewRafRef.current = null;
       }
       if (boardRef.current && jxgRef.current) {
-        try {
-          jxgRef.current.JSXGraph.freeBoard(boardRef.current);
-        } catch {
-        }
+        safeJsx("MiniBoard.freeBoard", () => jxgRef.current.JSXGraph.freeBoard(boardRef.current));
         boardRef.current = null;
       }
     };
@@ -1769,19 +1683,13 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
   useEffect(() => {
     const b = boardRef.current;
     if (!b) return;
-    try {
+    safeJsx("MiniBoard.toggleAxis", () => {
       if (axisObjsRef.current.x) {
-        try {
-          b.removeObject(axisObjsRef.current.x);
-        } catch {
-        }
+        safeJsx("MiniBoard.removeObject(axisX)", () => b.removeObject(axisObjsRef.current.x));
         axisObjsRef.current.x = void 0;
       }
       if (axisObjsRef.current.y) {
-        try {
-          b.removeObject(axisObjsRef.current.y);
-        } catch {
-        }
+        safeJsx("MiniBoard.removeObject(axisY)", () => b.removeObject(axisObjsRef.current.y));
         axisObjsRef.current.y = void 0;
       }
       if (showAxis) {
@@ -1789,28 +1697,23 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
         axisObjsRef.current.y = b.create("axis", [[0, 0], [0, 1]], { strokeColor: themeAxis(isDarkRef.current), name: "", withLabel: false });
       }
       b.update();
-    } catch {
-    }
+    });
   }, [showAxis]);
   useEffect(() => {
     const b = boardRef.current;
     if (!b) return;
-    try {
+    safeJsx("MiniBoard.toggleGrid", () => {
       const objs = Object.values(b.objects || {});
       for (const o of objs) {
         if (o && (o.elType === "grid" || o.type === "grid" || o.visProp && o.visProp.type === "grid")) {
-          try {
-            b.removeObject(o);
-          } catch {
-          }
+          safeJsx("MiniBoard.removeObject(grid)", () => b.removeObject(o));
         }
       }
       if (showGrid) {
         b.create("grid", [], { strokeColor: themeGrid(isDarkRef.current), strokeOpacity: 1 });
       }
       b.update();
-    } catch {
-    }
+    });
   }, [showGrid]);
   const handleToolChange = useCallback((t) => {
     clearPending();
@@ -1818,10 +1721,9 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
     setTool(t);
     const b = boardRef.current;
     if (b) {
-      try {
+      safeJsx("MiniBoard.setPanForTool", () => {
         if (b.attr?.pan) b.attr.pan.enabled = t !== "select";
-      } catch {
-      }
+      });
     }
   }, [clearPending]);
   const handleToolChangeRef = useRef(handleToolChange);
@@ -1829,10 +1731,7 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
   const subscribersRef = useRef(/* @__PURE__ */ new Set());
   const notifySubscribers = useCallback(() => {
     subscribersRef.current.forEach((cb) => {
-      try {
-        cb();
-      } catch {
-      }
+      safeJsx("MiniBoard.notifySubscriber.cb", () => cb());
     });
   }, []);
   useEffect(() => {
@@ -2961,5 +2860,5 @@ var GeometryStampHost = forwardRef(
 );
 
 export { GeometryStampHost };
-//# sourceMappingURL=host-K5RDGVIR.mjs.map
-//# sourceMappingURL=host-K5RDGVIR.mjs.map
+//# sourceMappingURL=host-VDNAJMLC.mjs.map
+//# sourceMappingURL=host-VDNAJMLC.mjs.map

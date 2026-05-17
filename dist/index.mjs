@@ -1,7 +1,7 @@
 "use client";
 import './index.css';
-import { geometryStamp } from './chunk-5RBNRBFW.mjs';
-export { geometryStamp } from './chunk-5RBNRBFW.mjs';
+import { geometryStamp } from './chunk-DU3RHKT5.mjs';
+export { geometryStamp } from './chunk-DU3RHKT5.mjs';
 import { geometry3dStamp } from './chunk-IUVV52HO.mjs';
 export { geometry3dStamp } from './chunk-IUVV52HO.mjs';
 import { latexStamp } from './chunk-7P7SQFOW.mjs';
@@ -9,7 +9,7 @@ export { latexStamp } from './chunk-7P7SQFOW.mjs';
 import { graph2dStamp } from './chunk-ZVN356JZ.mjs';
 export { graph2dStamp } from './chunk-ZVN356JZ.mjs';
 export { isGraph2DCustomData } from './chunk-74VEEZBV.mjs';
-export { isGeometryCustomData } from './chunk-BJX4YNA5.mjs';
+export { isGeometryCustomData } from './chunk-KEYZ5EZT.mjs';
 export { isLatexCustomData } from './chunk-X5R72SSJ.mjs';
 export { isGeometry3DCustomData } from './chunk-DU2NFHRR.mjs';
 import './chunk-HTBLO5JO.mjs';
@@ -77,6 +77,7 @@ function ToolbarInjector({
     let cancelled = false;
     let observer = null;
     let rafId = null;
+    let observedRoot = null;
     const apply = (next) => {
       if (cancelled || menuMountRef.current === next) return;
       menuMountRef.current = next;
@@ -102,21 +103,38 @@ function ToolbarInjector({
       }
       apply(wrapper);
     };
-    const schedule = () => {
+    const attachObserver = () => {
+      if (cancelled) return;
+      const excalidraw = document.querySelector(".excalidraw");
+      const nextRoot = excalidraw ?? document.body;
+      if (observedRoot === nextRoot) return;
+      observer?.disconnect();
+      observedRoot = nextRoot;
+      observer = new MutationObserver(onMutation);
+      observer.observe(nextRoot, { childList: true, subtree: true });
+    };
+    const onMutation = () => {
       if (rafId != null) return;
       rafId = requestAnimationFrame(() => {
         rafId = null;
+        if (cancelled) return;
+        if (observedRoot !== document.querySelector(".excalidraw")) {
+          attachObserver();
+        }
         findMenu();
       });
     };
     findMenu();
-    const root = document.querySelector(".excalidraw") ?? document.body;
-    observer = new MutationObserver(schedule);
-    observer.observe(root, { childList: true, subtree: true });
+    attachObserver();
     return () => {
       cancelled = true;
-      if (rafId != null) cancelAnimationFrame(rafId);
+      if (rafId != null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
       observer?.disconnect();
+      observer = null;
+      observedRoot = null;
       document.getElementById(MENU_WRAPPER_ID)?.remove();
     };
   }, [enabled]);

@@ -74,12 +74,31 @@ function deserializeIntoBoard(board, serialized, options = {}) {
   }
 }
 
+// src/stamps/shared/safeJsx.ts
+var isDev = (() => {
+  try {
+    return typeof process !== "undefined" && process.env?.NODE_ENV !== "production";
+  } catch {
+    return false;
+  }
+})();
+function safeJsx(label, fn, fallback) {
+  try {
+    return fn();
+  } catch (err) {
+    if (isDev) {
+      console.warn("[whiteboard:jsxgraph]", label, err);
+    }
+    return fallback;
+  }
+}
+
 // src/stamps/geometry-2d/render.ts
 async function renderGeometrySvgFromState(jsonState) {
   const parsed = JSON.parse(jsonState);
   const palette = paletteFor(false);
   const JXG = (await import('jsxgraph')).default;
-  try {
+  safeJsx("render.applyOptions", () => {
     const opts = JXG.Options;
     if (opts) {
       opts.text = opts.text || {};
@@ -96,8 +115,7 @@ async function renderGeometrySvgFromState(jsonState) {
       opts.grid = opts.grid || {};
       opts.grid.strokeColor = palette.grid;
     }
-  } catch {
-  }
+  });
   const container = document.createElement("div");
   const containerId = "jxg_offscreen_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
   container.id = containerId;
@@ -117,10 +135,9 @@ async function renderGeometrySvgFromState(jsonState) {
     board.update();
     return renderGeometryToSvg(container);
   } finally {
-    try {
+    safeJsx("render.freeBoard", () => {
       if (board) JXG.JSXGraph.freeBoard(board);
-    } catch {
-    }
+    });
     if (container.parentNode) container.parentNode.removeChild(container);
   }
 }
@@ -132,6 +149,6 @@ function isGeometryCustomData(data) {
   return d.kind === "geometry" && d.version === 1 && typeof d.jsonState === "string";
 }
 
-export { isGeometryCustomData, renderGeometrySvgFromState, serializeBoard };
-//# sourceMappingURL=chunk-BJX4YNA5.mjs.map
-//# sourceMappingURL=chunk-BJX4YNA5.mjs.map
+export { isGeometryCustomData, renderGeometrySvgFromState, safeJsx, serializeBoard };
+//# sourceMappingURL=chunk-KEYZ5EZT.mjs.map
+//# sourceMappingURL=chunk-KEYZ5EZT.mjs.map
