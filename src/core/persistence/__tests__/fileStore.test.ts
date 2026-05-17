@@ -53,4 +53,20 @@ describe('fileStore', () => {
     const k2 = await readFiles('k2');
     expect(Object.keys(k2)).toEqual(['g1']);
   });
+
+  test('invalid storageKey → throw ở mọi entry point', async () => {
+    await expect(readFiles('bad:key')).rejects.toThrow(/Invalid storageKey/);
+    await expect(writeFiles('bad:key', { f1: mkFile() as never })).rejects.toThrow(
+      /Invalid storageKey/,
+    );
+    await expect(pruneFiles('bad:key', new Set())).rejects.toThrow(/Invalid storageKey/);
+    await expect(clearAll('bad:key')).rejects.toThrow(/Invalid storageKey/);
+  });
+
+  test('storageKey "default" vẫn accept (backward compat)', async () => {
+    await expect(writeFiles('default', { f1: mkFile() as never })).resolves.toBeUndefined();
+    const got = await readFiles('default');
+    expect(Object.keys(got)).toEqual(['f1']);
+    await clearAll('default');
+  });
 });
