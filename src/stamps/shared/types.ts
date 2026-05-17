@@ -105,4 +105,10 @@ export interface StampType {
    * handler). Whiteboard mount Host khi activeStamp khớp kind.
    */
   Host: StampHostComponent;
+
+  /**
+   * Đánh dấu stamp chưa production-ready. Consumer mặc định bỏ qua
+   * (xem `DEFAULT_STAMPS` chỉ gồm stamp không `experimental`).
+   */
+  experimental?: boolean;
 }
