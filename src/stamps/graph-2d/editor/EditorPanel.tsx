@@ -9,6 +9,7 @@ import {
   type Ref,
 } from 'react';
 import { MiniBoard } from './MiniBoard';
+import type { BoardEvent } from './MiniBoard';
 import {
   EMPTY_GRAPH,
   stringifySerializedGraph,
@@ -20,6 +21,7 @@ import { validate } from '../parser';
 import { renderGraph2dSvgFromState } from '../render';
 import { nextColor, nextFunctionName, MAX_FUNCTIONS, MAX_PARAMETERS } from '../colors';
 import type { GraphTool } from './tools';
+import { addPointOnCurve, addIntersection } from './handlers';
 
 export interface GraphState {
   tool: GraphTool;
@@ -79,6 +81,8 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
   const toolRef = useRef<GraphTool>(tool);
   toolRef.current = tool;
 
+  const intersectFirstRef = useRef<string | null>(null);
+
   const propsRef = useRef(props);
   propsRef.current = props;
 
@@ -107,6 +111,41 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
     },
     [pushUndo, notifyStateChange],
   );
+
+  const onBoardEvent = useCallback((ev: BoardEvent) => {
+    const currentTool = toolRef.current;
+    if (currentTool === 'point-on-curve' && ev.type === 'click-curve' && ev.functionId && ev.x !== undefined) {
+      updateGraph((g) =>
+        addPointOnCurve(
+          g,
+          { x: ev.x!, y: ev.y ?? 0, functionId: ev.functionId },
+          () => `p${idCounterRef.current++}`,
+        ),
+      );
+      setToolState('move');
+    } else if (currentTool === 'intersect' && ev.type === 'click-curve' && ev.functionId) {
+      if (!intersectFirstRef.current) {
+        intersectFirstRef.current = ev.functionId;
+      } else {
+        const a = intersectFirstRef.current;
+        const b = ev.functionId;
+        intersectFirstRef.current = null;
+        updateGraph((g) =>
+          addIntersection(g, a, b, () => `i${idCounterRef.current++}`),
+        );
+        setToolState('move');
+      }
+    } else if (currentTool === 'tangent' && ev.type === 'click-curve' && ev.functionId && ev.x !== undefined) {
+      const pointId = `p${idCounterRef.current++}`;
+      const tangentId = `t${idCounterRef.current++}`;
+      updateGraph((g) => ({
+        ...g,
+        points: [...g.points, { id: pointId, functionId: ev.functionId!, x: ev.x! }],
+        tangents: [...g.tangents, { id: tangentId, pointId }],
+      }));
+      setToolState('move');
+    }
+  }, [updateGraph]);
 
   useImperativeHandle(
     ref,
@@ -276,9 +315,7 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
         graph={graph}
         activeTool={tool}
         isDark={props.isDark}
-        onBoardEvent={() => {
-          /* TODO Task 14: wire tool events */
-        }}
+        onBoardEvent={onBoardEvent}
       />
       {props.isMobile ? (
         <button
