@@ -29,7 +29,7 @@ describe('EditorPanel (new Scene3D-based)', () => {
     const ref = React.createRef<EditorPanelHandle>();
     render(<EditorPanel ref={ref} isDark={false} />);
     const board = ref.current!.serialize();
-    expect(board.version).toBe(1);
+    expect([1, 2]).toContain(board.version);
     expect(Array.isArray(board.elements)).toBe(true);
     expect(Array.isArray(board.bbox)).toBe(true);
     expect(typeof board.view.azimuth).toBe('number');

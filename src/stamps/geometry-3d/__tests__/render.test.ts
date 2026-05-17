@@ -39,7 +39,7 @@ describe('renderGeometry3DSvgFromState', () => {
 
   it('throws on wrong version', async () => {
     await expect(
-      renderGeometry3DSvgFromState('{"version":2,"elements":[]}'),
+      renderGeometry3DSvgFromState('{"version":3,"elements":[]}'),
     ).rejects.toThrow(/version/);
   });
 

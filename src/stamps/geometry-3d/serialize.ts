@@ -1,8 +1,9 @@
 import type { BaseStampCustomData } from '../shared/types';
+import type { Constraint } from './editor/scene/types';
 
 export interface Geometry3DCustomData extends BaseStampCustomData {
   kind: 'geometry3d';
-  version: 1;
+  version: 1 | 2;
   jsonState: string;
   svgWidth: number;
   svgHeight: number;
@@ -11,7 +12,11 @@ export interface Geometry3DCustomData extends BaseStampCustomData {
 export function isGeometry3DCustomData(data: unknown): data is Geometry3DCustomData {
   if (!data || typeof data !== 'object') return false;
   const d = data as Partial<Geometry3DCustomData>;
-  return d.kind === 'geometry3d' && d.version === 1 && typeof d.jsonState === 'string';
+  return (
+    d.kind === 'geometry3d' &&
+    (d.version === 1 || d.version === 2) &&
+    typeof d.jsonState === 'string'
+  );
 }
 
 export type Element3DType =
@@ -33,10 +38,12 @@ export interface SerializedElement3D {
   attributes: Record<string, unknown>;
   id: string;
   label?: string;
+  /** v2 only — present on point3d elements to encode the surface constraint. */
+  constraint?: Constraint;
 }
 
 export interface SerializedBoard3D {
-  version: 1;
+  version: 1 | 2;
   bbox: [number, number, number, number];
   view: {
     azimuth: number;
@@ -58,7 +65,7 @@ export function parseSerializedBoard3D(json: string): SerializedBoard3D {
     throw new Error('parseSerializedBoard3D: not an object');
   }
   const p = parsed as Partial<SerializedBoard3D>;
-  if (p.version !== 1) {
+  if (p.version !== 1 && p.version !== 2) {
     throw new Error(`parseSerializedBoard3D: unsupported version ${String(p.version)}`);
   }
   if (!Array.isArray(p.elements)) {
