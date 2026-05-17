@@ -26,5 +26,24 @@ function unproject(screen: { x: number; y: number }, view: View3DLike, depth: nu
     const v = view.unprojectScreen(screen.x, screen.y, depth);
     return [v[0], v[1], v[2]];
   }
-  throw new Error('rayCast: view.unprojectScreen unavailable and fallback not implemented');
+  // Fallback for real JSXGraph view3d (orthographic-affine projection).
+  // Extract the world→screen affine coefficients by sampling project3DTo2D at origin
+  // and the three unit-axis points, then solve the 2×2 in (x, y) at the given depth.
+  if (typeof view.project3DTo2D === 'function') {
+    const p0 = view.project3DTo2D(0, 0, 0);
+    const px = view.project3DTo2D(1, 0, 0);
+    const py = view.project3DTo2D(0, 1, 0);
+    const pz = view.project3DTo2D(0, 0, 1);
+    const ox = p0[1], oy = p0[2];
+    const a = px[1] - ox, b = py[1] - ox, c = pz[1] - ox;
+    const d = px[2] - oy, e = py[2] - oy, f = pz[2] - oy;
+    const rhsX = screen.x - ox - c * depth;
+    const rhsY = screen.y - oy - f * depth;
+    const det = a * e - b * d;
+    if (Math.abs(det) < 1e-9) return [0, 0, depth];
+    const x = (e * rhsX - b * rhsY) / det;
+    const y = (-d * rhsX + a * rhsY) / det;
+    return [x, y, depth];
+  }
+  throw new Error('rayCast: view has neither unprojectScreen nor project3DTo2D');
 }

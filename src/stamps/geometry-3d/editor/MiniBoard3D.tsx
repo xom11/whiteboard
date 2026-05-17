@@ -122,15 +122,31 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
           const p = paletteFor(isDark);
           svgEl.style.background = p.view3dBg;
 
+          // Convert browser pixel coords to JSXGraph user-space coords so that
+          // hitTest math (which compares against view.project3DTo2D output, also
+          // in user-space) is in the same coordinate system.
+          const pixelToUser = (e: PointerEvent): { x: number; y: number } => {
+            const rect = svgEl!.getBoundingClientRect();
+            const px = e.clientX - rect.left;
+            const py = e.clientY - rect.top;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const b = board as any;
+            if (!b || !b.origin || !b.origin.scrCoords) {
+              return { x: px, y: py };
+            }
+            const ox = b.origin.scrCoords[1];
+            const oy = b.origin.scrCoords[2];
+            const ux = b.unitX || 1;
+            const uy = b.unitY || 1;
+            return { x: (px - ox) / ux, y: (oy - py) / uy };
+          };
           handlePointerDown = (e: PointerEvent) => {
             if (!svgEl) return;
-            const rect = svgEl.getBoundingClientRect();
-            onPointerClickRef.current?.({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+            onPointerClickRef.current?.(pixelToUser(e));
           };
           handlePointerMove = (e: PointerEvent) => {
             if (!svgEl) return;
-            const rect = svgEl.getBoundingClientRect();
-            onPointerMoveRef.current?.({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+            onPointerMoveRef.current?.(pixelToUser(e));
           };
           handlePointerLeave = () => onPointerLeaveRef.current?.();
           svgEl.addEventListener('pointerdown', handlePointerDown);
