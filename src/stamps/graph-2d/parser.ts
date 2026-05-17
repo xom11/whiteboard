@@ -91,3 +91,25 @@ export function rewriteToJs(
   }
   return s;
 }
+
+export function compile(
+  expr: string,
+  paramValues: Record<string, number>,
+): ((x: number) => number) | { error: string } {
+  const v = validate(expr);
+  if (!v.ok) return { error: v.error ?? 'Invalid' };
+  try {
+    const rewritten = rewriteToJs(expr, paramValues);
+    const raw = new Function('x', `return (${rewritten})`) as (x: number) => number;
+    return (x: number) => {
+      try {
+        const y = raw(x);
+        return typeof y === 'number' ? y : NaN;
+      } catch {
+        return NaN;
+      }
+    };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : String(err) };
+  }
+}

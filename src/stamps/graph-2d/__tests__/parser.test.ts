@@ -1,4 +1,4 @@
-import { validate, rewriteToJs } from '../parser';
+import { validate, rewriteToJs, compile } from '../parser';
 
 describe('parser.validate', () => {
   it('chấp nhận biểu thức cơ bản', () => {
@@ -83,5 +83,48 @@ describe('parser.rewriteToJs', () => {
 
   it('không thay thế tham số tên dài (chỉ 1 ký tự)', () => {
     expect(rewriteToJs('x', { foo: 99 })).toBe('x');
+  });
+});
+
+describe('parser.compile', () => {
+  it('compile expression cơ bản', () => {
+    const fn = compile('x^2', {});
+    expect(typeof fn).toBe('function');
+    expect((fn as (x: number) => number)(3)).toBe(9);
+  });
+
+  it('substitute parameters', () => {
+    const fn = compile('a*x + b', { a: 2, b: 5 });
+    expect((fn as (x: number) => number)(3)).toBe(11);
+  });
+
+  it('hàm số học', () => {
+    const fn = compile('sin(x)', {}) as (x: number) => number;
+    expect(fn(0)).toBeCloseTo(0);
+    expect(fn(Math.PI / 2)).toBeCloseTo(1);
+  });
+
+  it('hằng pi và e', () => {
+    expect((compile('pi', {}) as (x: number) => number)(0)).toBeCloseTo(Math.PI);
+    expect((compile('e', {}) as (x: number) => number)(0)).toBeCloseTo(Math.E);
+  });
+
+  it('trả NaN khi runtime ném exception', () => {
+    const fn = compile('sqrt(x)', {}) as (x: number) => number;
+    expect(fn(4)).toBeCloseTo(2);
+    expect(Number.isNaN(fn(-1))).toBe(true);
+  });
+
+  it('reject expression invalid trả { error }', () => {
+    const r = compile('foo(x)', {});
+    expect(typeof r).toBe('object');
+    expect((r as { error: string }).error).toBeTruthy();
+  });
+
+  it('log = log10, ln = log tự nhiên', () => {
+    const lg = compile('log(x)', {}) as (x: number) => number;
+    const ln = compile('ln(x)', {}) as (x: number) => number;
+    expect(lg(100)).toBeCloseTo(2);
+    expect(ln(Math.E)).toBeCloseTo(1);
   });
 });
