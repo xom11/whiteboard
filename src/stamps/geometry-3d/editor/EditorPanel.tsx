@@ -38,6 +38,8 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
     const [selectedTool, setSelectedTool] = React.useState<ToolKey>('move');
     const [hint, setHint] = React.useState<string>('Chọn công cụ trong bảng bên trái');
     const [hoverLabel, setHoverLabel] = React.useState<string | null>(null);
+    const [canUndo, setCanUndo] = React.useState(false);
+    const [canRedo, setCanRedo] = React.useState(false);
 
     const boardRef = React.useRef<MiniBoard3DHandle | null>(null);
     const rendererRef = React.useRef<JxgRenderer | null>(null);
@@ -70,6 +72,15 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       });
       return unsub;
     }, []);
+
+    // Subscribe to history changes to update canUndo/canRedo.
+    React.useEffect(() => {
+      const unsub = scene.onHistoryChange(() => {
+        setCanUndo(scene.canUndo());
+        setCanRedo(scene.canRedo());
+      });
+      return unsub;
+    }, [scene]);
 
     // Dispose renderer on unmount.
     React.useEffect(() => {
@@ -244,6 +255,10 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
           scene={scene}
           selectedTool={selectedTool}
           onSelectTool={(k) => controllerRef.current!.selectTool(k)}
+          onUndo={() => { scene.undo(); }}
+          canUndo={canUndo}
+          onRedo={() => { scene.redo(); }}
+          canRedo={canRedo}
         />
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="min-h-0 flex-1">
