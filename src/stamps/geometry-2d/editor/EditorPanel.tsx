@@ -26,6 +26,7 @@ export interface GeomBoardState {
   showAxis: boolean;
   showGrid: boolean;
   canUndo: boolean;
+  canRedo: boolean;
 }
 
 export interface GeometryEditorPanelHandle {
@@ -33,6 +34,7 @@ export interface GeometryEditorPanelHandle {
   setShowAxis: (b: boolean) => void;
   setShowGrid: (b: boolean) => void;
   undo: () => void;
+  redo: () => void;
   /** Trigger Chèn programmatically (cho auto-insert khi click outside). */
   insert: () => boolean;
   /** Có nội dung để chèn không? */
@@ -57,6 +59,7 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
         showAxis: h.getShowAxis(),
         showGrid: h.getShowGrid(),
         canUndo: h.canUndo(),
+        canRedo: h.canRedo(),
       });
     }, []);
 
@@ -106,6 +109,7 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
       setShowAxis: (b) => handleRef.current?.setShowAxis(b),
       setShowGrid: (b) => handleRef.current?.setShowGrid(b),
       undo: () => handleRef.current?.undo(),
+      redo: () => handleRef.current?.redo(),
       insert: performInsert,
       hasContent: () => (handleRef.current?.getCreationLog().length ?? 0) > 0,
     }), [performInsert]);

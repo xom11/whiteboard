@@ -31,6 +31,7 @@ const INITIAL_GEOM_STATE: GeomBoardState = {
   showAxis: false,
   showGrid: false,
   canUndo: false,
+  canRedo: false,
 };
 
 export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
