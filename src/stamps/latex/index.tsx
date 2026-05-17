@@ -1,122 +1,19 @@
 'use client';
 
-import {
-  forwardRef,
-  useCallback,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { LeftPanel as LatexLeftPanel } from './editor/LeftPanel';
-import { EditorPopover as LatexEditorPopover, type EditorPopoverHandle as LatexEditorHandle } from './editor/EditorPopover';
-import { insertStampImage } from '../shared/insertImage';
+import { lazy } from 'react';
 import { renderLatexToSvg } from './render';
-import { useIsMobile } from '../shared/useIsMobile';
 import type {
-  BaseStampCustomData,
   RestoredStampFile,
-  StampHostProps,
-  StampHostHandle,
   StampType,
 } from '../shared/types';
+import { isLatexCustomData, type LatexCustomData } from './types';
 
-// ============== Custom data type + guard ==============
+export { isLatexCustomData };
+export type { LatexCustomData };
 
-export interface LatexCustomData extends BaseStampCustomData {
-  kind: 'latex';
-  version: 1;
-  src: string;
-  displayMode: boolean;
-}
-
-export function isLatexCustomData(data: unknown): data is LatexCustomData {
-  if (!data || typeof data !== 'object') return false;
-  const d = data as Partial<LatexCustomData>;
-  return d.kind === 'latex' && d.version === 1 && typeof d.src === 'string';
-}
-
-// ============== Host component ==============
-
-const LatexStampHost = forwardRef<StampHostHandle, StampHostProps>(
-  function LatexStampHost({ api, editingElement, onClose }, ref) {
-    const editorRef = useRef<LatexEditorHandle | null>(null);
-    const { isMobile } = useIsMobile();
-    const [drawerOpen, setDrawerOpen] = useState(false);
-
-    const initial = useMemo(() => {
-      if (editingElement && isLatexCustomData(editingElement.customData)) {
-        return {
-          initialValue: editingElement.customData.src,
-          displayMode: !!editingElement.customData.displayMode,
-        };
-      }
-      return { initialValue: '', displayMode: false };
-    }, [editingElement]);
-
-    const [displayMode, setDisplayMode] = useState(initial.displayMode);
-
-    const handleInsert = useCallback(
-      async (svgString: string, src: string, dm: boolean) => {
-        if (!api) return;
-        try {
-          await insertStampImage(api, {
-            svgString,
-            makeCustomData: (): LatexCustomData => ({
-              kind: 'latex',
-              version: 1,
-              src,
-              displayMode: dm,
-            }),
-            editingElementId: editingElement?.id ?? null,
-          });
-        } catch (err) {
-          console.error('Latex insert failed:', err);
-        }
-        onClose();
-      },
-      [api, editingElement?.id, onClose],
-    );
-
-    useImperativeHandle(
-      ref,
-      () => ({
-        tryInsert: () => editorRef.current?.tryInsert() ?? false,
-        hasContent: () => editorRef.current?.hasContent() ?? false,
-      }),
-      [],
-    );
-
-    return (
-      <>
-        <LatexLeftPanel
-          displayMode={displayMode}
-          onDisplayModeChange={setDisplayMode}
-          onInsertSnippet={(s) => editorRef.current?.insertAtCursor(s)}
-          onClose={onClose}
-          isMobile={isMobile}
-          drawerOpen={drawerOpen}
-          onDrawerClose={() => setDrawerOpen(false)}
-        />
-        <LatexEditorPopover
-          ref={editorRef}
-          x={0}
-          y={0}
-          initialValue={initial.initialValue}
-          displayMode={displayMode}
-          onDisplayModeChange={setDisplayMode}
-          onInsert={handleInsert}
-          onClose={onClose}
-          withLeftPanel={!isMobile}
-          isMobile={isMobile}
-          onOpenDrawer={() => setDrawerOpen(true)}
-        />
-      </>
-    );
-  },
+const LatexStampHost = lazy(() =>
+  import('./host').then((m) => ({ default: m.LatexStampHost })),
 );
-
-// ============== Stamp definition ==============
 
 const LatexIcon = (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
