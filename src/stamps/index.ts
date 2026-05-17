@@ -2,6 +2,9 @@
 // Barrel cho tất cả stamps + shared. Public API của package re-export từ đây.
 
 export {
+  STABLE_STAMPS,
+  EXPERIMENTAL_STAMPS,
+  ALL_STAMPS,
   DEFAULT_STAMPS,
   findStampForCustomData,
   isStampElement,
@@ -35,5 +38,14 @@ export { ToolbarInjector } from './shared/ToolbarInjector';
 export { useShortcuts } from './shared/useShortcuts';
 
 // Union helper for consumers
-import type { GeometryCustomData, LatexCustomData, Geometry3DCustomData, Graph2DCustomData } from './shared/registry';
-export type StampCustomData = GeometryCustomData | LatexCustomData | Geometry3DCustomData | Graph2DCustomData;
+import type {
+  GeometryCustomData,
+  LatexCustomData,
+  Geometry3DCustomData,
+  Graph2DCustomData,
+} from './shared/registry';
+export type StampCustomData =
+  | GeometryCustomData
+  | LatexCustomData
+  | Geometry3DCustomData
+  | Graph2DCustomData;

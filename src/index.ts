@@ -14,6 +14,9 @@ export type {
 
 // Stamps API
 export {
+  STABLE_STAMPS,
+  EXPERIMENTAL_STAMPS,
+  ALL_STAMPS,
   DEFAULT_STAMPS,
   findStampForCustomData,
   isStampElement,
@@ -34,4 +37,3 @@ export {
   type StampCustomData,
 } from './stamps';
 export { restoreMissingStampFiles } from './stamps';
-
