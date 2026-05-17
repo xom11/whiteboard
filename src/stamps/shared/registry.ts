@@ -14,21 +14,30 @@ export {
 export { graph2dStamp, type Graph2DCustomData, isGraph2DCustomData } from '../graph-2d';
 export type { StampType, BaseStampCustomData } from './types';
 
-/**
- * Set stamp mặc định dùng trong Whiteboard. Consumer có thể
- * truyền custom array để bật/tắt từng stamp hoặc đăng ký stamp mới.
- *
- * Để thêm 1 stamp mới (vd chart):
- *   1. Tạo `src/stamp/registry/chart.tsx` với StampType object.
- *   2. Add vào DEFAULT_STAMPS ở dưới, HOẶC consumer truyền
- *      `<Whiteboard stamps={[...DEFAULT_STAMPS, chartStamp]} />`.
- */
-export const DEFAULT_STAMPS: ReadonlyArray<StampType> = Object.freeze([
+/** Stamp ổn định, sẵn sàng production. */
+export const STABLE_STAMPS: ReadonlyArray<StampType> = Object.freeze([
   geometryStamp,
   latexStamp,
+]);
+
+/** Stamp experimental — chưa ổn định cho production. Consumer phải opt-in. */
+export const EXPERIMENTAL_STAMPS: ReadonlyArray<StampType> = Object.freeze([
   geometry3dStamp,
   graph2dStamp,
 ]);
+
+/** Tất cả stamp (stable + experimental). Dùng khi consumer muốn full feature. */
+export const ALL_STAMPS: ReadonlyArray<StampType> = Object.freeze([
+  ...STABLE_STAMPS,
+  ...EXPERIMENTAL_STAMPS,
+]);
+
+/**
+ * Set stamp mặc định cho Whiteboard. v0.7.0 trở đi = STABLE_STAMPS.
+ * Consumer muốn experimental: `<Whiteboard stamps={ALL_STAMPS} />` hoặc
+ * `[...DEFAULT_STAMPS, geometry3dStamp]`.
+ */
+export const DEFAULT_STAMPS: ReadonlyArray<StampType> = STABLE_STAMPS;
 
 /** Tìm stamp tương ứng với customData của element. null nếu không match. */
 export function findStampForCustomData(
@@ -41,7 +50,7 @@ export function findStampForCustomData(
   return null;
 }
 
-/** isMathStamp version dựa trên registry — replace logic hardcode trong types.ts. */
+/** isMathStamp version dựa trên registry. */
 export function isStampElement<T extends { customData?: unknown }>(
   element: T,
   stamps: ReadonlyArray<StampType> = DEFAULT_STAMPS,
