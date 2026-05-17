@@ -1,0 +1,102 @@
+import type { Scene3D } from '../scene/Scene3D';
+import type { SceneHit } from '../hitTest/hitTest';
+import type { ToolKey, ToolStep, ToolSpec, CollectedArg } from './spec';
+import { TOOLS } from './spec';
+
+interface ControllerState {
+  tool: ToolSpec | null;
+  stepIndex: number;
+  collected: CollectedArg[];
+  hint: string;
+}
+
+type Listener = (state: ControllerState) => void;
+
+function stepHint(step: ToolStep): string {
+  return step.type === 'number' ? step.prompt : step.hint;
+}
+
+export class ToolController {
+  private state: ControllerState = { tool: null, stepIndex: 0, collected: [], hint: '' };
+  private listeners = new Set<Listener>();
+
+  constructor(private scene: Scene3D) {
+    this.selectTool('move');
+  }
+
+  getState(): ControllerState { return this.state; }
+
+  on(cb: Listener): () => void {
+    this.listeners.add(cb);
+    return () => {
+      this.listeners.delete(cb);
+    };
+  }
+
+  selectTool(key: ToolKey): void {
+    const tool = TOOLS.find((t) => t.key === key) ?? TOOLS.find((t) => t.key === 'move')!;
+    const firstStep = tool.steps[0];
+    this.state = {
+      tool,
+      stepIndex: 0,
+      collected: [],
+      hint: firstStep ? stepHint(firstStep) : tool.hintIdle,
+    };
+    this.notify();
+  }
+
+  cancel(): void { this.selectTool('move'); }
+
+  consumeHit(hit: SceneHit): boolean {
+    const tool = this.state.tool;
+    if (!tool) return false;
+    const step = tool.steps[this.state.stepIndex];
+    if (!step) return false;
+    if (!this.hitMatchesStep(hit, step)) return false;
+    this.state.collected.push({ step, hit });
+    this.state.stepIndex++;
+    this.advance();
+    return true;
+  }
+
+  consumeNumber(value: number): boolean {
+    const tool = this.state.tool;
+    if (!tool) return false;
+    const step = tool.steps[this.state.stepIndex];
+    if (!step || step.type !== 'number') return false;
+    if (step.min != null && value < step.min) return false;
+    if (step.max != null && value > step.max) return false;
+    this.state.collected.push({ step, value });
+    this.state.stepIndex++;
+    this.advance();
+    return true;
+  }
+
+  private hitMatchesStep(hit: SceneHit, step: ToolStep): boolean {
+    if (step.type !== 'point' && step.type !== 'closingPoint') return false;
+    if (hit.kind === 'empty') return false;
+    if (step.type === 'closingPoint') return hit.kind === 'existingPoint';
+    if (hit.kind === 'existingPoint') return step.allowExisting;
+    const surfaceMap: Record<string, 'ground' | 'axis' | 'plane' | 'line' | 'polygon' | 'sphere'> = {
+      onGround: 'ground', onAxis: 'axis', onPlane: 'plane',
+      onLine: 'line', onPolygon: 'polygon', onSphere: 'sphere',
+    };
+    const k = surfaceMap[hit.kind];
+    return k != null && step.type === 'point' && step.allowNewOn.includes(k);
+  }
+
+  private advance(): void {
+    const tool = this.state.tool!;
+    if (this.state.stepIndex >= tool.steps.length) {
+      tool.build(this.state.collected, this.scene);
+      this.selectTool('move');
+      return;
+    }
+    this.state.hint = stepHint(tool.steps[this.state.stepIndex]);
+    this.notify();
+  }
+
+  private notify(): void {
+    for (const cb of this.listeners) cb(this.state);
+  }
+}
