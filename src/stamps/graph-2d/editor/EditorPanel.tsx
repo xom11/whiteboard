@@ -341,7 +341,7 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
   const graph = graphRef.current;
 
   return (
-    <div className="graph-editor-panel">
+    <div className="graph-editor-panel" data-stamp-area="true">
       <MiniBoard
         graph={graph}
         activeTool={tool}

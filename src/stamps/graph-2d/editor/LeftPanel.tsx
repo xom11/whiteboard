@@ -25,6 +25,8 @@ export function GraphLeftPanel(props: GraphLeftPanelProps) {
 
   return (
     <aside
+      data-stamp-area="true"
+      data-testid="graph-left-panel"
       className={`graph-left-panel${props.isMobile ? ' is-mobile' : ''}${props.isMobile && !props.drawerOpen ? ' is-closed' : ''}`}
       aria-hidden={props.isMobile && !props.drawerOpen}
     >
