@@ -8,26 +8,61 @@ export interface ToolButtonProps {
   selected: boolean;
   onClick: (key: ToolKey) => void;
   icon?: React.ReactNode;
+  /** Chord-mode positional digit (1..9) overlaid bottom-right. */
+  chordNum?: number | null;
+  /** Highlight ring when its parent group is the active chord group. */
+  chordActiveGroup?: boolean;
+  onMouseEnter?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  onMouseLeave?: () => void;
 }
 
 export function ToolButton(props: ToolButtonProps): React.ReactElement {
-  const { toolKey, label, selected, onClick, icon } = props;
+  const {
+    toolKey,
+    label,
+    selected,
+    onClick,
+    icon,
+    chordNum,
+    chordActiveGroup,
+    onMouseEnter,
+    onMouseLeave,
+  } = props;
   return (
     <button
       type="button"
       data-tool-key={toolKey}
+      data-testid={`tool-${toolKey}`}
+      aria-label={label}
       aria-pressed={selected}
       onClick={() => onClick(toolKey)}
-      className={
-        'flex flex-col items-center justify-center gap-1 rounded-md border p-2 text-xs ' +
-        (selected
-          ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-200'
-          : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800')
-      }
-      style={{ width: 80, height: 72 }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      className={[
+        'relative flex aspect-square items-center justify-center rounded-md transition',
+        selected
+          ? 'bg-emerald-600 text-white shadow-sm'
+          : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900',
+      ].join(' ')}
     >
-      <span aria-hidden className="text-lg">{icon ?? '⬛'}</span>
-      <span className="text-center leading-tight">{label}</span>
+      <span aria-hidden className="inline-flex">
+        {icon ?? null}
+      </span>
+      {chordNum != null && (
+        <span
+          data-testid={`chord-num-${toolKey}`}
+          className={[
+            'pointer-events-none absolute bottom-0 right-0.5 font-mono text-[9px] leading-none transition',
+            selected
+              ? 'text-white/70'
+              : chordActiveGroup
+                ? 'text-emerald-700'
+                : 'text-slate-300',
+          ].join(' ')}
+        >
+          {chordNum}
+        </span>
+      )}
     </button>
   );
 }

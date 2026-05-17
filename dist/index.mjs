@@ -1,9 +1,9 @@
 "use client";
 import './index.css';
-import { geometryStamp } from './chunk-5UFCFN6U.mjs';
-export { geometryStamp } from './chunk-5UFCFN6U.mjs';
-import { geometry3dStamp } from './chunk-4DNQWZFX.mjs';
-export { geometry3dStamp } from './chunk-4DNQWZFX.mjs';
+import { geometryStamp } from './chunk-SHFOGORM.mjs';
+export { geometryStamp } from './chunk-SHFOGORM.mjs';
+import { geometry3dStamp } from './chunk-KBFXMAV2.mjs';
+export { geometry3dStamp } from './chunk-KBFXMAV2.mjs';
 import { latexStamp } from './chunk-7P7SQFOW.mjs';
 export { latexStamp } from './chunk-7P7SQFOW.mjs';
 import { graph2dStamp } from './chunk-3SSQKRRO.mjs';
@@ -45,7 +45,7 @@ var ALL_STAMPS = Object.freeze([
   ...STABLE_STAMPS,
   ...EXPERIMENTAL_STAMPS
 ]);
-var DEFAULT_STAMPS = STABLE_STAMPS;
+var DEFAULT_STAMPS = ALL_STAMPS;
 function findStampForCustomData(data, stamps = DEFAULT_STAMPS) {
   for (const s of stamps) {
     if (s.matchesCustomData(data)) return s;

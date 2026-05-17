@@ -4,7 +4,11 @@ import { Scene3D } from './scene/Scene3D';
 import { ToolController } from './tools/controller';
 import { JxgRenderer } from './renderer/JxgRenderer';
 import { hitTest } from './hitTest/hitTest';
-import { LeftPanel } from './LeftPanel';
+import { screenToRay } from './hitTest/rayCast';
+import { rayPlane } from './hitTest/intersect';
+import { constraintToWorld } from './scene/constraintMath';
+import { hitToConstraint } from './tools/handlers/_ensurePoint';
+import type { Constraint, Vec3 } from './scene/types';
 import { MiniBoard3D, type MiniBoard3DHandle } from './MiniBoard3D';
 import { StatusHint } from './StatusHint';
 import type { ToolKey } from './tools/spec';
@@ -15,37 +19,65 @@ export interface EditorPanelProps {
   isDark?: boolean;
   initialState?: SerializedBoard3D | null;
   onInsert?: (board: SerializedBoard3D, svgWidth: number, svgHeight: number, svgString: string) => void;
-  onClose?: () => void;
+  /** Scene created by host (so LeftPanel sibling can share it). */
+  scene: Scene3D;
+  /** Currently selected tool — controlled by host. */
+  selectedTool: ToolKey;
+  /** Host gets notified when the controller switches the active tool. */
+  onSelectedToolChange: (k: ToolKey) => void;
+  showAxis: boolean;
+  showGrid: boolean;
+  onReadyChange?: (ready: boolean) => void;
 }
 
 export interface EditorPanelHandle {
   hasContent: () => boolean;
   /** Returns the current scene as a SerializedBoard3D. */
   serialize: () => SerializedBoard3D;
+  /** Select a tool by key (for chord shortcut / host control). */
+  setTool: (k: ToolKey) => void;
 }
 
 export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>(
   function EditorPanel(props, ref) {
-    const isDark = props.isDark ?? false;
-    const sceneRef = React.useRef<Scene3D | null>(null);
-    if (!sceneRef.current) sceneRef.current = new Scene3D();
+    const {
+      isDark: isDarkProp,
+      initialState,
+      scene,
+      selectedTool,
+      onSelectedToolChange,
+      showAxis,
+      showGrid,
+      onReadyChange,
+    } = props;
+    const isDark = isDarkProp ?? false;
     const controllerRef = React.useRef<ToolController | null>(null);
-    if (!controllerRef.current) controllerRef.current = new ToolController(sceneRef.current);
+    if (!controllerRef.current) controllerRef.current = new ToolController(scene);
 
-    const [selectedTool, setSelectedTool] = React.useState<ToolKey>('move');
     const [hint, setHint] = React.useState<string>('Chọn công cụ trong bảng bên trái');
     const [hoverLabel, setHoverLabel] = React.useState<string | null>(null);
 
     const boardRef = React.useRef<MiniBoard3DHandle | null>(null);
     const rendererRef = React.useRef<JxgRenderer | null>(null);
 
+    const onSelectedToolChangeRef = React.useRef(onSelectedToolChange);
+    onSelectedToolChangeRef.current = onSelectedToolChange;
+
+    // Latest selectedTool — read inside drag callbacks to avoid stale closures.
+    const selectedToolRef = React.useRef(selectedTool);
+    selectedToolRef.current = selectedTool;
+
+    // Point-drag state: which point is being dragged, starting screen + world.
+    const draggedPointRef = React.useRef<string | null>(null);
+    const dragStartRef = React.useRef<{ screen: { x: number; y: number }; world: Vec3 } | null>(null);
+
     // Initial state load (Phase 7 — currently a stub returning empty scene).
     React.useEffect(() => {
-      if (props.initialState && sceneRef.current) {
-        const loaded = boardToScene(props.initialState);
-        sceneRef.current.reset();
+      if (initialState) {
+        const loaded = boardToScene(initialState);
+        scene.reset();
         for (const obj of loaded.list()) {
-          sceneRef.current.insert(obj);
+          scene.insert(obj);
         }
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -56,10 +88,15 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       const ctrl = controllerRef.current!;
       const unsub = ctrl.on((state) => {
         setHint(state.hint);
-        setSelectedTool(state.tool?.key ?? 'move');
+        onSelectedToolChangeRef.current(state.tool?.key ?? 'move');
       });
       return unsub;
     }, []);
+
+    // Sync controller when host changes selectedTool from outside (e.g. chord shortcut).
+    React.useEffect(() => {
+      controllerRef.current?.selectTool(selectedTool);
+    }, [selectedTool]);
 
     // Dispose renderer on unmount.
     React.useEffect(() => {
@@ -69,11 +106,33 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       };
     }, []);
 
-    const handleView3DReady = React.useCallback((view: unknown) => {
-      if (!sceneRef.current) return;
+    // Apply showAxis / showGrid to the JSXGraph view3d when it (or the state) changes.
+    React.useEffect(() => {
+      const view = boardRef.current?.getView3D();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      rendererRef.current = new JxgRenderer(sceneRef.current, view as any);
-    }, []);
+      const v = view as any;
+      if (!v || typeof v.setAttribute !== 'function') return;
+      try {
+        v.setAttribute({
+          xAxis: { visible: showAxis },
+          yAxis: { visible: showAxis },
+          zAxis: { visible: showAxis },
+          // GeoGebra-style: only the XY ground plane is shown; side walls stay hidden.
+          xPlaneRear: { visible: false, mesh3d: { visible: false } },
+          yPlaneRear: { visible: false, mesh3d: { visible: false } },
+          zPlaneRear: { visible: showGrid, mesh3d: { visible: false } },
+        });
+        v.board?.update?.();
+      } catch {
+        /* swallow — older JSXGraph / mocks may not support runtime attr changes */
+      }
+    }, [showAxis, showGrid]);
+
+    const handleView3DReady = React.useCallback((view: unknown) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      rendererRef.current = new JxgRenderer(scene, view as any);
+      onReadyChange?.(true);
+    }, [onReadyChange, scene]);
 
     const handleClick = React.useCallback((screen: { x: number; y: number }) => {
       const board = boardRef.current;
@@ -81,12 +140,12 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       const view = board.getView3D();
       if (!view) return;
       try {
-        const hit = hitTest(screen, view, sceneRef.current!);
+        const hit = hitTest(screen, view, scene);
         controllerRef.current!.consumeHit(hit);
       } catch {
         /* swallow — view may not yet expose project3DTo2D in some mock paths */
       }
-    }, []);
+    }, [scene]);
 
     const handleMove = React.useCallback((screen: { x: number; y: number }) => {
       const board = boardRef.current;
@@ -95,40 +154,133 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       if (!view) return;
       let hit;
       try {
-        hit = hitTest(screen, view, sceneRef.current!);
+        hit = hitTest(screen, view, scene);
       } catch {
         setHoverLabel(null);
         return;
       }
       if (hit.kind === 'empty') setHoverLabel(null);
       else if (hit.kind === 'existingPoint') {
-        const obj = sceneRef.current!.get(hit.pointId);
+        const obj = scene.get(hit.pointId);
         setHoverLabel(obj?.label ?? null);
       } else if (hit.kind === 'onGround') setHoverLabel('mặt nền');
       else if (hit.kind === 'onAxis') setHoverLabel(`trục ${hit.axis.toUpperCase()}`);
       else if (hit.kind === 'onPlane') setHoverLabel(`mặt phẳng ${hit.planeId}`);
       else if (hit.kind === 'onSphere') setHoverLabel(`mặt cầu ${hit.sphereId}`);
       else setHoverLabel(null);
+    }, [scene]);
+
+    // ─── Point-drag handlers (delegated from MiniBoard3D) ────────────────────
+    // Decides whether the pointerdown gesture is "ours" (drag/place a point)
+    // or should fall through to MiniBoard3D's default view-rotate behaviour.
+    // Returning true also suppresses view rotation for the rest of the gesture.
+    const shouldStartPointDrag = React.useCallback((screen: { x: number; y: number }): boolean => {
+      const view = boardRef.current?.getView3D();
+      if (!view) return false;
+      const tool = selectedToolRef.current;
+      if (tool !== 'point' && tool !== 'move') return false;
+      let hit;
+      try { hit = hitTest(screen, view, scene); } catch { return false; }
+
+      // Existing point: drag it (Z-only in Point mode, XY-raycast in Move mode).
+      if (hit.kind === 'existingPoint') {
+        const pt = scene.get(hit.pointId);
+        if (!pt || pt.kind !== 'point') return false;
+        draggedPointRef.current = hit.pointId;
+        dragStartRef.current = {
+          screen,
+          world: constraintToWorld(pt.constraint, scene),
+        };
+        return true;
+      }
+
+      // Point tool: place-and-lift gesture. Create the point at the hit
+      // location now (Oxy ground or Ox/Oy/Oz axis) so the same gesture can
+      // immediately lift it along Oz on pointermove. Bypasses the controller
+      // (Point tool has repeatAfterBuild so there's no collected-state to
+      // unwind); the click→consumeHit→buildPoint path is short-circuited in
+      // MiniBoard3D.handlePointerUp when pointDragMode is set.
+      if (tool === 'point' && (hit.kind === 'onGround' || hit.kind === 'onAxis')) {
+        const constraint = hitToConstraint(hit);
+        if (!constraint) return false;
+        const id = scene.addPoint(constraint);
+        draggedPointRef.current = id;
+        dragStartRef.current = {
+          screen,
+          world: [hit.world[0], hit.world[1], hit.world[2]],
+        };
+        return true;
+      }
+
+      // Point tool but non-placeable surface (sphere/plane/empty): suppress
+      // view rotation so the camera never rotates accidentally while the user
+      // is placing points, but don't enter a drag.
+      if (tool === 'point') {
+        draggedPointRef.current = null;
+        dragStartRef.current = null;
+        return true;
+      }
+
+      return false;
+    }, [scene]);
+
+    const onPointerDrag = React.useCallback((screen: { x: number; y: number }) => {
+      const pointId = draggedPointRef.current;
+      const start = dragStartRef.current;
+      if (!pointId || !start) return;
+      const view = boardRef.current?.getView3D();
+      if (!view) return;
+      const tool = selectedToolRef.current;
+      let nextWorld: Vec3;
+      if (tool === 'point') {
+        // Vertical lift only: keep starting X,Y; map screen-Y delta to world Z
+        // 1:1 in user-space (pixelToUser already inverts Y).
+        const dz = screen.y - start.screen.y;
+        nextWorld = [start.world[0], start.world[1], start.world[2] + dz];
+      } else if (tool === 'move') {
+        // Free move on the horizontal plane at the point's starting Z.
+        try {
+          const ray = screenToRay(screen, view);
+          const hit = rayPlane(ray, { point: [0, 0, start.world[2]], normal: [0, 0, 1] });
+          if (!hit) return;
+          nextWorld = [hit.point[0], hit.point[1], start.world[2]];
+        } catch { return; }
+      } else {
+        return;
+      }
+      const obj = scene.get(pointId);
+      if (!obj || obj.kind !== 'point') return;
+      const free: Constraint = { kind: 'free', x: nextWorld[0], y: nextWorld[1], z: nextWorld[2] };
+      (obj as { constraint: Constraint }).constraint = free;
+      scene.emitChange(pointId);
+    }, [scene]);
+
+    const onPointerDragEnd = React.useCallback(() => {
+      draggedPointRef.current = null;
+      dragStartRef.current = null;
     }, []);
 
     React.useImperativeHandle(
       ref,
       () => ({
-        hasContent: () => (sceneRef.current?.list().length ?? 0) > 0,
+        hasContent: () => scene.list().length > 0,
         serialize: () => {
           const view = boardRef.current?.getView3D();
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const v = view as any;
-          const azimuth = typeof v?.az?.Value === 'function' ? v.az.Value() : 0;
-          const elevation = typeof v?.el?.Value === 'function' ? v.el.Value() : 0;
+          const azSlider = v?.az_slide ?? v?.az;
+          const elSlider = v?.el_slide ?? v?.el;
+          const azimuth = typeof azSlider?.Value === 'function' ? azSlider.Value() : 0;
+          const elevation = typeof elSlider?.Value === 'function' ? elSlider.Value() : 0;
           return sceneToBoard(
-            sceneRef.current!,
+            scene,
             { azimuth, elevation, bbox3D: [-5, -5, -5, 5, 5, 5] },
             [-6, -6, 6, 6],
           );
         },
+        setTool: (k) => controllerRef.current!.selectTool(k),
       }),
-      [],
+      [scene],
     );
 
     return (
@@ -136,27 +288,23 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
         data-testid="editor-panel-3d"
         className={[
           isDark ? 'theme--dark ' : '',
-          'flex h-full w-full overflow-hidden bg-white dark:bg-zinc-950',
+          'flex h-full w-full min-w-0 flex-col overflow-hidden bg-white',
         ].join('')}
       >
-        <LeftPanel
-          scene={sceneRef.current!}
-          selectedTool={selectedTool}
-          onSelectTool={(k) => controllerRef.current!.selectTool(k)}
-        />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <div className="min-h-0 flex-1">
-            <MiniBoard3D
-              ref={boardRef}
-              isDark={isDark}
-              onView3DReady={handleView3DReady}
-              onPointerClick={handleClick}
-              onPointerMove={handleMove}
-              onPointerLeave={() => setHoverLabel(null)}
-            />
-          </div>
-          <StatusHint hint={hint} hoverLabel={hoverLabel} />
+        <div className="min-h-0 flex-1">
+          <MiniBoard3D
+            ref={boardRef}
+            isDark={isDark}
+            onView3DReady={handleView3DReady}
+            onPointerClick={handleClick}
+            onPointerMove={handleMove}
+            onPointerLeave={() => setHoverLabel(null)}
+            shouldStartPointDrag={shouldStartPointDrag}
+            onPointerDrag={onPointerDrag}
+            onPointerDragEnd={onPointerDragEnd}
+          />
         </div>
+        <StatusHint hint={hint} hoverLabel={hoverLabel} />
       </div>
     );
   },

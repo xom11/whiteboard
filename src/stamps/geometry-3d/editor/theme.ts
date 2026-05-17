@@ -33,13 +33,60 @@ export const DEFAULT_VIEW3D: {
 
 export const VIEW3D_ATTRS = (isDark: boolean) => {
   const p = paletteFor(isDark);
+  const axisLabel = (color: string) => ({
+    strokeColor: color,
+    fontSize: 14,
+    offset: [10, 0] as [number, number],
+  });
   return {
     az: { slider: { visible: false }, point2: { visible: false } },
     el: { slider: { visible: false } },
     projection: 'central' as const,
-    axesPosition: 'border' as const,
-    xAxis: { strokeColor: p.axisX, lastArrow: { type: 2 } },
-    yAxis: { strokeColor: p.axisY, lastArrow: { type: 2 } },
-    zAxis: { strokeColor: p.axisZ, lastArrow: { type: 2 } },
+    // GeoGebra-style: axes pass through origin (0,0,0) instead of bbox border.
+    axesPosition: 'center' as const,
+    xAxis: {
+      strokeColor: p.axisX,
+      strokeWidth: 2,
+      lastArrow: { type: 2, size: 8 },
+      name: 'x',
+      withLabel: true,
+      label: axisLabel(p.axisX),
+    },
+    yAxis: {
+      strokeColor: p.axisY,
+      strokeWidth: 2,
+      lastArrow: { type: 2, size: 8 },
+      name: 'y',
+      withLabel: true,
+      label: axisLabel(p.axisY),
+    },
+    zAxis: {
+      strokeColor: p.axisZ,
+      strokeWidth: 2,
+      lastArrow: { type: 2, size: 8 },
+      name: 'z',
+      withLabel: true,
+      label: axisLabel(p.axisZ),
+    },
+    // GeoGebra-style: hide ALL bbox wall planes; the XY ground plane is drawn
+    // explicitly at z=0 via the helper below (so it coincides with Ox/Oy).
+    xPlaneRear: { visible: false, mesh3d: { visible: false } },
+    yPlaneRear: { visible: false, mesh3d: { visible: false } },
+    zPlaneRear: { visible: false, mesh3d: { visible: false } },
   };
 };
+
+export const GROUND_PLANE_ATTRS = (isDark: boolean) => ({
+  fillColor: isDark ? '#2a2a2a' : '#e6e6e6',
+  fillOpacity: isDark ? 0.5 : 0.55,
+  strokeColor: isDark ? '#3a3a3a' : '#cfcfcf',
+  strokeOpacity: 0.7,
+  strokeWidth: 1,
+  fixed: true,
+  highlight: false,
+  withLabel: false,
+  layer: 0,
+});
+
+/** XY ground plane extent (square around origin in user units). */
+export const GROUND_PLANE_RANGE: [number, number] = [-3, 3];

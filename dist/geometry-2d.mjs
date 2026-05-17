@@ -1,5 +1,5 @@
 "use client";
-export { geometryStamp } from './chunk-5UFCFN6U.mjs';
+export { geometryStamp } from './chunk-SHFOGORM.mjs';
 export { isGeometryCustomData } from './chunk-BJX4YNA5.mjs';
 import './chunk-HTBLO5JO.mjs';
 import './chunk-BJTO5JO5.mjs';

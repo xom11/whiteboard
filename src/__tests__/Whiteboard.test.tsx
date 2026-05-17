@@ -323,7 +323,7 @@ describe('Whiteboard — geometry3d stamp', () => {
     await act(async () => {
       fireEvent.keyDown(window, { key: 'd' });
     });
-    expect(screen.queryByText(/Hình học không gian/)).toBeTruthy();
+    expect(screen.queryByText(/hình học không gian/i)).toBeTruthy();
   });
 
   it('click Đóng → 3D editor unmount', async () => {
@@ -336,24 +336,26 @@ describe('Whiteboard — geometry3d stamp', () => {
     await act(async () => {
       fireEvent.click(closeBtns[0]);
     });
-    expect(screen.queryByText(/Hình học không gian/)).toBeFalsy();
+    expect(screen.queryByText(/hình học không gian/i)).toBeFalsy();
   });
 });
 
-describe('default stamps (v0.7.0+)', () => {
-  it('không mount 3D / graph2d Host khi không pass stamps prop', () => {
-    render(<Whiteboard storageKey={null} />);
-    // Default DEFAULT_STAMPS chỉ gồm geometry + latex.
-    expect(screen.queryByTestId('stamp-toolbar-geometry3d')).toBeNull();
-    expect(screen.queryByTestId('stamp-toolbar-graph2d')).toBeNull();
+describe('default stamps — mặc định bật tất cả tool', () => {
+  it('không pass stamps prop → phím D mở Geometry3D editor', async () => {
+    const { findByTestId } = render(<Whiteboard storageKey={null} />);
+    await findByTestId('excalidraw-mock');
+    await act(async () => {
+      fireEvent.keyDown(window, { key: 'd' });
+    });
+    expect(screen.queryByText(/hình học không gian/i)).toBeTruthy();
   });
 
-  it('mount geometry + latex testid trong default', () => {
-    const { container } = render(<Whiteboard storageKey={null} />);
-    // Hai stamps stable này KHÔNG bị filter out.
-    // Note: ToolbarInjector inject async qua MutationObserver — testid không
-    // xuất hiện ngay. Verify chỉ qua geometry3d/graph2d absence ở test trên.
-    // Test này chỉ verify component mount không crash.
-    expect(container.firstChild).toBeTruthy();
+  it('không pass stamps prop → phím H mở Graph2D editor', async () => {
+    const { findByTestId } = render(<Whiteboard storageKey={null} />);
+    await findByTestId('excalidraw-mock');
+    await act(async () => {
+      fireEvent.keyDown(window, { key: 'h' });
+    });
+    expect(screen.queryAllByText(/Đồ thị 2D/).length).toBeGreaterThan(0);
   });
 });

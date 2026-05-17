@@ -1,6 +1,7 @@
 "use client";
 
 import { parseSerializedBoard3D } from './serialize';
+import { GROUND_PLANE_ATTRS, GROUND_PLANE_RANGE, VIEW3D_ATTRS } from './editor/theme';
 
 export interface RenderResult {
   svgString: string;
@@ -35,6 +36,7 @@ export async function renderGeometry3DSvgFromState(
       renderer: 'svg',
     }) as { create: (k: string, p: unknown[], a: unknown) => JxgObj };
 
+    const baseAttrs = VIEW3D_ATTRS(false);
     const view: JxgObj = board.create(
       'view3d',
       [
@@ -47,14 +49,31 @@ export async function renderGeometry3DSvgFromState(
         ],
       ],
       {
-        az: { slider: { visible: false }, value: state.view.azimuth },
-        el: { slider: { visible: false }, value: state.view.elevation },
-        projection: 'central',
+        ...baseAttrs,
+        az: { ...baseAttrs.az, value: state.view.azimuth },
+        el: { ...baseAttrs.el, value: state.view.elevation },
       },
     );
 
     if (!state.showAxes) {
       (view as { defaultAxes?: unknown[] }).defaultAxes = [];
+    }
+
+    // XY ground plane through origin (matches editor's MiniBoard3D).
+    try {
+      (view as { create: (k: string, p: unknown[], a: unknown) => JxgObj }).create(
+        'plane3d',
+        [
+          [0, 0, 0],
+          [1, 0, 0],
+          [0, 1, 0],
+          GROUND_PLANE_RANGE,
+          GROUND_PLANE_RANGE,
+        ],
+        GROUND_PLANE_ATTRS(false),
+      );
+    } catch {
+      /* swallow */
     }
 
     const idMap = new Map<string, JxgObj>();

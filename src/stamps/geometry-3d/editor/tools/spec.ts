@@ -41,6 +41,12 @@ export interface ToolSpec {
   hintIdle: string;
   steps: ToolStep[];
   build(args: CollectedArg[], scene: Scene3D): string | null;
+  /**
+   * If true, after build completes the controller re-enters step 0 of this
+   * tool (clearing collected args) instead of switching to 'move'. Used by
+   * the Point tool so the user can place several points in a row.
+   */
+  repeatAfterBuild?: boolean;
 }
 
 const stubBuild = (): string | null => null;
@@ -65,9 +71,19 @@ export const TOOLS: ToolSpec[] = [
   {
     key: 'point',
     label: 'Điểm',
-    hintIdle: 'Chọn mặt phẳng / đường / mặt cầu để đặt điểm',
-    steps: [{ type: 'point', allowExisting: false, allowNewOn: ALL_SURFACES, hint: 'Chọn vị trí để đặt điểm' }],
+    hintIdle: 'Click trên mặt phẳng Oxy hoặc trên trục để đặt điểm',
+    steps: [
+      {
+        type: 'point',
+        allowExisting: false,
+        // GeoGebra-style: a new point must lie on the XY ground plane or on
+        // one of the coordinate axes (Oz lets you place points off the plane).
+        allowNewOn: ['ground', 'axis'],
+        hint: 'Click trên mặt phẳng Oxy hoặc trục Ox/Oy/Oz',
+      },
+    ],
     build: buildPoint,
+    repeatAfterBuild: true,
   },
   {
     key: 'pointOnObject',

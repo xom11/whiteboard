@@ -73,8 +73,10 @@ export interface WhiteboardProps {
 
   /**
    * Danh sách stamp đăng ký. Mỗi stamp khai báo phím tắt + toolbar button +
-   * Host component (UI editing). Mặc định DEFAULT_STAMPS (geometry + latex).
-   * Truyền `[...DEFAULT_STAMPS, customStamp]` để thêm stamp mới.
+   * Host component (UI editing). Mặc định DEFAULT_STAMPS (= ALL_STAMPS,
+   * gồm geometry + latex + geometry3d + graph2d).
+   * Truyền `[...DEFAULT_STAMPS, customStamp]` để thêm stamp mới hoặc
+   * `STABLE_STAMPS` để chỉ bật stamp ổn định.
    */
   stamps?: ReadonlyArray<StampType>;
 }

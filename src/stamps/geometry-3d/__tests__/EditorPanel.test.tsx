@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { render } from '@testing-library/react';
 import { EditorPanel, type EditorPanelHandle } from '../editor/EditorPanel';
+import { Scene3D } from '../editor/scene/Scene3D';
 
 jest.mock('../editor/MiniBoard3D', () => ({
   MiniBoard3D: React.forwardRef<unknown, { isDark: boolean }>(function MockBoard(_, ref) {
@@ -13,21 +14,36 @@ jest.mock('../editor/MiniBoard3D', () => ({
   }),
 }));
 
+function renderEditor(extra: Partial<React.ComponentProps<typeof EditorPanel>> = {}) {
+  const scene = new Scene3D();
+  return render(
+    <EditorPanel
+      isDark={false}
+      scene={scene}
+      selectedTool="move"
+      onSelectedToolChange={() => undefined}
+      showAxis
+      showGrid
+      {...extra}
+    />,
+  );
+}
+
 describe('EditorPanel (new Scene3D-based)', () => {
   test('renders without crashing', () => {
-    const { getByTestId } = render(<EditorPanel isDark={false} />);
+    const { getByTestId } = renderEditor();
     expect(getByTestId('editor-panel-3d')).toBeInTheDocument();
   });
 
   test('exposes hasContent imperative handle', () => {
     const ref = React.createRef<EditorPanelHandle>();
-    render(<EditorPanel ref={ref} isDark={false} />);
+    renderEditor({ ref });
     expect(ref.current?.hasContent()).toBe(false);
   });
 
   test('serialize returns SerializedBoard3D shape', () => {
     const ref = React.createRef<EditorPanelHandle>();
-    render(<EditorPanel ref={ref} isDark={false} />);
+    renderEditor({ ref });
     const board = ref.current!.serialize();
     expect([1, 2]).toContain(board.version);
     expect(Array.isArray(board.elements)).toBe(true);

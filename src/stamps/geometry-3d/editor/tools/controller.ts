@@ -112,7 +112,15 @@ export class ToolController {
     const tool = this.state.tool!;
     if (this.state.stepIndex >= tool.steps.length) {
       tool.build(this.state.collected, this.scene);
-      this.selectTool('move');
+      if (tool.repeatAfterBuild) {
+        // Stay in this tool so the user can place several items in a row.
+        this.state.stepIndex = 0;
+        this.state.collected = [];
+        this.state.hint = stepHint(tool.steps[0]);
+        this.notify();
+      } else {
+        this.selectTool('move');
+      }
       return;
     }
     this.state.hint = stepHint(tool.steps[this.state.stepIndex]);

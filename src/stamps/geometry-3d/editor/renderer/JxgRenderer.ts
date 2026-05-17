@@ -1,6 +1,6 @@
 import type { Scene3D } from '../scene/Scene3D';
-import type { Scene3DObject, Vec3, Constraint } from '../scene/types';
-import { constraintToWorld, worldToConstraint } from '../scene/constraintMath';
+import type { Scene3DObject, Vec3 } from '../scene/types';
+import { constraintToWorld } from '../scene/constraintMath';
 import { cylinderFaces, coneFaces } from './faceted';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,10 +38,13 @@ export class JxgRenderer {
 
     if (obj.kind === 'point') {
       const world = constraintToWorld(obj.constraint, this.scene);
-      const attrs = { id: obj.id, name: obj.label, size: 4, visible: obj.visible };
+      // fixed: true disables JSXGraph's native drag. Drag of existing points
+      // is handled exclusively by MiniBoard3D.shouldStartPointDrag +
+      // EditorPanel.onPointerDrag so the constraint math (Z-only in Point
+      // mode, XY raycast in Move mode) is the single source of truth.
+      const attrs = { id: obj.id, name: obj.label, size: 4, visible: obj.visible, fixed: true };
       const jxg = this.view.create('point3d', world, attrs);
       this.map.set(obj.id, jxg);
-      this.attachDragHook(obj.id, jxg);
       return;
     }
 
@@ -198,24 +201,14 @@ export class JxgRenderer {
     }
   }
 
-  private attachDragHook(id: string, jxg: JxgObj): void {
-    if (typeof jxg.on !== 'function') return;
-    jxg.on('drag', () => {
-      const obj = this.scene.get(id);
-      if (!obj || obj.kind !== 'point') return;
-      const world: Vec3 = [jxg.X(), jxg.Y(), jxg.Z()];
-      const updated: Constraint = worldToConstraint(obj.constraint, world, this.scene);
-      (obj as { constraint: Constraint }).constraint = updated;
-      this.scene.emitChange(id);
-    });
-  }
-
   private handleChange(obj: Scene3DObject): void {
     const j = this.map.get(obj.id);
     if (!j) return;
     if (obj.kind === 'point' && typeof j.moveTo === 'function') {
       const w = constraintToWorld(obj.constraint, this.scene);
-      j.moveTo([w[0], w[1], w[2]]);
+      // time=0 → instant teleport. Without it some JSXGraph builds tween the
+      // move, which under fast successive drag updates manifests as flicker.
+      try { j.moveTo([w[0], w[1], w[2]], 0); } catch { /* swallow */ }
     }
   }
 

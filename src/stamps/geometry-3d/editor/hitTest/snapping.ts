@@ -8,18 +8,29 @@ export function findSnapPoint(
   scene: Scene3D,
   pixelRadius = 8,
 ): string | null {
+  // `screen` arrives in JSXGraph user-space (pixelToUser-converted in MiniBoard3D),
+  // and project3DTo2D also returns user-space. Convert the desired pixel radius
+  // to user units via the board's px-per-unit scale so the snap stays small
+  // (a few real pixels) regardless of zoom or board size.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const board = (view as any)?.board;
+  // Fallback to 1 (no scaling) when board is missing — keeps unit tests, whose
+  // mock view emits pixel-space coords directly, working unchanged.
+  const ux = typeof board?.unitX === 'number' && board.unitX > 0 ? board.unitX : 1;
+  const uy = typeof board?.unitY === 'number' && board.unitY > 0 ? board.unitY : ux;
+  const rxUser = pixelRadius / ux;
+  const ryUser = pixelRadius / uy;
   let best: { id: string; d2: number } | null = null;
-  const r2 = pixelRadius * pixelRadius;
   for (const obj of scene.list()) {
     if (obj.kind !== 'point') continue;
     if (!obj.visible) continue;
     const world = constraintToWorld(obj.constraint, scene);
     const proj = view.project3DTo2D?.(world[0], world[1], world[2]);
     if (!proj) continue;
-    const dx = proj[1] - screen.x;
-    const dy = proj[2] - screen.y;
-    const d2 = dx * dx + dy * dy;
-    if (d2 <= r2 && (best === null || d2 < best.d2)) {
+    const dxN = (proj[1] - screen.x) / rxUser;
+    const dyN = (proj[2] - screen.y) / ryUser;
+    const d2 = dxN * dxN + dyN * dyN;
+    if (d2 <= 1 && (best === null || d2 < best.d2)) {
       best = { id: obj.id, d2 };
     }
   }

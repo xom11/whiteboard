@@ -30,8 +30,14 @@ describe('registry exports', () => {
     ]);
   });
 
-  it('DEFAULT_STAMPS = STABLE_STAMPS (production-safe)', () => {
-    expect(DEFAULT_STAMPS).toBe(STABLE_STAMPS);
+  it('DEFAULT_STAMPS = ALL_STAMPS (mặc định bật tất cả tool)', () => {
+    expect(DEFAULT_STAMPS).toBe(ALL_STAMPS);
+    expect(DEFAULT_STAMPS.map((s) => s.kind)).toEqual([
+      'geometry',
+      'latex',
+      'geometry3d',
+      'graph2d',
+    ]);
   });
 
   it('experimental stamps có field experimental=true', () => {

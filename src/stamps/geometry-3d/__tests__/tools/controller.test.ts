@@ -55,13 +55,29 @@ test('consumeNumber accepts when step is number and value passes min/max', () =>
   expect(ctrl.getState().tool?.key).toBe('move');
 });
 
-test('completing all steps invokes build() and returns to move tool', () => {
+test('completing all steps of a non-repeating tool returns to move tool', () => {
+  const scene = new Scene3D();
+  // Pre-seed 2 points so the plane tool can pick existing ones (build deps).
+  const p1 = scene.addPoint({ kind: 'onGround', x: 0, y: 0 });
+  const p2 = scene.addPoint({ kind: 'onGround', x: 1, y: 0 });
+  const p3 = scene.addPoint({ kind: 'onGround', x: 0, y: 1 });
+  const ctrl = new ToolController(scene);
+  ctrl.selectTool('plane');
+  ctrl.consumeHit({ kind: 'existingPoint', pointId: p1 });
+  ctrl.consumeHit({ kind: 'existingPoint', pointId: p2 });
+  ctrl.consumeHit({ kind: 'existingPoint', pointId: p3 });
+  expect(ctrl.getState().tool?.key).toBe('move');
+});
+
+test('point tool stays active after build (repeatAfterBuild)', () => {
   const scene = new Scene3D();
   const ctrl = new ToolController(scene);
   ctrl.selectTool('point');
   ctrl.consumeHit({ kind: 'onGround', world: [1, 2, 0] });
-  // Stub build() returns null but advance() still resets tool to 'move' after the last step
-  expect(ctrl.getState().tool?.key).toBe('move');
+  // After placing one point, tool stays 'point' so user can place more.
+  expect(ctrl.getState().tool?.key).toBe('point');
+  expect(ctrl.getState().stepIndex).toBe(0);
+  expect(ctrl.getState().collected).toEqual([]);
 });
 
 test('closingPoint step appends extra vertices on non-existing-point hits', () => {

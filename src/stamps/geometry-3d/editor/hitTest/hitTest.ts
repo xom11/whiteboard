@@ -26,6 +26,15 @@ export function hitTest(
   view: View3DLike,
   scene: Scene3D,
 ): SceneHit {
+  // `screen` arrives in user-space; thresholds below are in pixels and need to
+  // be converted to user units via the board's px-per-unit scale.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const board = (view as any)?.board;
+  // Fallback to 1 (no scaling) when board is missing so the hitTest unit tests,
+  // whose mock view emits pixel-space coords directly, keep working unchanged.
+  const ux = typeof board?.unitX === 'number' && board.unitX > 0 ? board.unitX : 1;
+  const axisThresholdUser = AXIS_PIXEL_THRESHOLD / ux;
+
   // 1. Existing point snap
   const snap = findSnapPoint(screen, view, scene);
   if (snap) return { kind: 'existingPoint', pointId: snap };
@@ -64,7 +73,7 @@ export function hitTest(
       const pa = view.project3DTo2D(ax.a[0], ax.a[1], ax.a[2]);
       const pb = view.project3DTo2D(ax.b[0], ax.b[1], ax.b[2]);
       const d = distScreenPointToSegment(screen, [pa[1], pa[2]], [pb[1], pb[2]]);
-      if (d <= AXIS_PIXEL_THRESHOLD) {
+      if (d <= axisThresholdUser) {
         const hit = rayLineSegment(ray, { a: ax.a, b: ax.b }, 1e3);
         if (hit) {
           const t = ax.axis === 'x' ? hit.point[0] : ax.axis === 'y' ? hit.point[1] : hit.point[2];

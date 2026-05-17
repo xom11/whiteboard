@@ -35,9 +35,8 @@ declare const EXPERIMENTAL_STAMPS: ReadonlyArray<StampType>;
 /** Tất cả stamp (stable + experimental). Dùng khi consumer muốn full feature. */
 declare const ALL_STAMPS: ReadonlyArray<StampType>;
 /**
- * Set stamp mặc định cho Whiteboard. v0.7.0 trở đi = STABLE_STAMPS.
- * Consumer muốn experimental: `<Whiteboard stamps={ALL_STAMPS} />` hoặc
- * `[...DEFAULT_STAMPS, geometry3dStamp]`.
+ * Set stamp mặc định cho Whiteboard = ALL_STAMPS (bật tất cả tool).
+ * Consumer muốn ẩn experimental: `<Whiteboard stamps={STABLE_STAMPS} />`.
  *
  * Để thêm 1 stamp mới (vd chart):
  *   1. Tạo `src/stamps/chart/index.tsx` export `chartStamp: StampType`.
@@ -73,8 +72,10 @@ interface WhiteboardProps {
     langCode?: string;
     /**
      * Danh sách stamp đăng ký. Mỗi stamp khai báo phím tắt + toolbar button +
-     * Host component (UI editing). Mặc định DEFAULT_STAMPS (geometry + latex).
-     * Truyền `[...DEFAULT_STAMPS, customStamp]` để thêm stamp mới.
+     * Host component (UI editing). Mặc định DEFAULT_STAMPS (= ALL_STAMPS,
+     * gồm geometry + latex + geometry3d + graph2d).
+     * Truyền `[...DEFAULT_STAMPS, customStamp]` để thêm stamp mới hoặc
+     * `STABLE_STAMPS` để chỉ bật stamp ổn định.
      */
     stamps?: ReadonlyArray<StampType>;
 }

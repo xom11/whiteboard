@@ -3,6 +3,7 @@
 
 var jsxRuntime = require('react/jsx-runtime');
 var React5 = require('react');
+var reactDom = require('react-dom');
 
 function _interopNamespace(e) {
   if (e && e.__esModule) return e;
@@ -784,7 +785,7 @@ var init_cone = __esm({
 });
 
 // src/stamps/geometry-3d/editor/tools/spec.ts
-var stubBuild, ALL_SURFACES, OBJECT_ONLY, NO_SURFACE, TOOLS, TOOL_GROUPS;
+var stubBuild, ALL_SURFACES, OBJECT_ONLY, NO_SURFACE, TOOLS;
 var init_spec = __esm({
   "src/stamps/geometry-3d/editor/tools/spec.ts"() {
     init_point();
@@ -966,14 +967,6 @@ var init_spec = __esm({
         build: buildCone
       }
     ];
-    TOOL_GROUPS = {
-      "C\u01A1 b\u1EA3n": ["move", "point", "segment", "line", "plane"],
-      "\u0110i\u1EC3m": ["point", "pointOnObject"],
-      "\u0110\u01B0\u1EDDng th\u1EB3ng": ["segment", "line", "ray", "vector", "polygon"],
-      "M\u1EB7t ph\u1EB3ng": ["plane"],
-      "Kh\u1ED1i \u0111a di\u1EC7n": ["pyramid", "prism", "tetrahedron", "cube"],
-      "Kh\u1ED1i cong": ["sphere", "cylinder", "cone"]
-    };
   }
 });
 
@@ -1604,19 +1597,45 @@ var init_hitTest = __esm({
   }
 });
 function ToolButton(props) {
-  const { toolKey, label, selected, onClick, icon } = props;
+  const {
+    toolKey,
+    label,
+    selected,
+    onClick,
+    icon,
+    chordNum,
+    chordActiveGroup,
+    onMouseEnter,
+    onMouseLeave
+  } = props;
   return /* @__PURE__ */ jsxRuntime.jsxs(
     "button",
     {
       type: "button",
       "data-tool-key": toolKey,
+      "data-testid": `tool-${toolKey}`,
+      "aria-label": label,
       "aria-pressed": selected,
       onClick: () => onClick(toolKey),
-      className: "flex flex-col items-center justify-center gap-1 rounded-md border p-2 text-xs " + (selected ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-200" : "border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"),
-      style: { width: 80, height: 72 },
+      onMouseEnter,
+      onMouseLeave,
+      className: [
+        "relative flex aspect-square items-center justify-center rounded-md transition",
+        selected ? "bg-emerald-600 text-white shadow-sm" : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+      ].join(" "),
       children: [
-        /* @__PURE__ */ jsxRuntime.jsx("span", { "aria-hidden": true, className: "text-lg", children: icon ?? "\u2B1B" }),
-        /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-center leading-tight", children: label })
+        /* @__PURE__ */ jsxRuntime.jsx("span", { "aria-hidden": true, className: "inline-flex", children: icon ?? null }),
+        chordNum != null && /* @__PURE__ */ jsxRuntime.jsx(
+          "span",
+          {
+            "data-testid": `chord-num-${toolKey}`,
+            className: [
+              "pointer-events-none absolute bottom-0 right-0.5 font-mono text-[9px] leading-none transition",
+              selected ? "text-white/70" : chordActiveGroup ? "text-emerald-700" : "text-slate-300"
+            ].join(" "),
+            children: chordNum
+          }
+        )
       ]
     }
   );
@@ -1626,50 +1645,248 @@ var init_ToolButton = __esm({
     "use client";
   }
 });
-function ToolPalette(props) {
-  const { selected, onSelect } = props;
-  return /* @__PURE__ */ jsxRuntime.jsx("div", { "data-testid": "tool-palette", className: "flex flex-col gap-4 p-3", children: Object.entries(TOOL_GROUPS).map(([groupLabel, keys]) => /* @__PURE__ */ jsxRuntime.jsxs("div", { children: [
-    /* @__PURE__ */ jsxRuntime.jsx("h4", { className: "mb-1 text-xs font-semibold text-zinc-600 dark:text-zinc-400", children: groupLabel }),
-    /* @__PURE__ */ jsxRuntime.jsx("div", { className: "grid grid-cols-3 gap-1.5", children: keys.map((k) => {
-      const tool = TOOLS.find((t) => t.key === k);
-      return /* @__PURE__ */ jsxRuntime.jsx(
-        ToolButton,
-        {
-          toolKey: k,
-          label: tool.label,
-          selected: selected === k,
-          onClick: onSelect,
-          icon: ICONS[k]
-        },
-        k
-      );
-    }) })
-  ] }, groupLabel)) });
+var wrap, dot4, ToolIcons;
+var init_icons = __esm({
+  "src/stamps/geometry-3d/editor/toolPanel/icons.tsx"() {
+    wrap = (children) => /* @__PURE__ */ jsxRuntime.jsx(
+      "svg",
+      {
+        width: "18",
+        height: "18",
+        viewBox: "0 0 24 24",
+        fill: "none",
+        stroke: "currentColor",
+        strokeWidth: "1.6",
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        "aria-hidden": "true",
+        children
+      }
+    );
+    dot4 = (cx, cy, r = 1.4) => /* @__PURE__ */ jsxRuntime.jsx("circle", { cx, cy, r, fill: "currentColor", stroke: "none" });
+    ToolIcons = {
+      move: wrap(
+        /* @__PURE__ */ jsxRuntime.jsx(jsxRuntime.Fragment, { children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M5 4 L5 14 L8 11 L10 16 L13 15 L11 10 L15 10 Z" }) })
+      ),
+      point: wrap(
+        /* @__PURE__ */ jsxRuntime.jsx(jsxRuntime.Fragment, { children: /* @__PURE__ */ jsxRuntime.jsx("circle", { cx: "12", cy: "12", r: "2.4", fill: "currentColor", stroke: "none" }) })
+      ),
+      pointOnObject: wrap(
+        /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M3 16 L21 12" }),
+          /* @__PURE__ */ jsxRuntime.jsx("circle", { cx: "12", cy: "13.5", r: "2.4", fill: "currentColor", stroke: "none" })
+        ] })
+      ),
+      segment: wrap(
+        /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "4", y1: "18", x2: "20", y2: "6" }),
+          dot4(4, 18, 1.6),
+          dot4(20, 6, 1.6)
+        ] })
+      ),
+      line: wrap(
+        /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "3", y1: "18", x2: "21", y2: "6" }),
+          dot4(8, 14.5, 1.4),
+          dot4(16, 9.5, 1.4)
+        ] })
+      ),
+      ray: wrap(
+        /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "5", y1: "18", x2: "19", y2: "7" }),
+          /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M19 7 L15 6 M19 7 L18 11" }),
+          dot4(5, 18, 1.6)
+        ] })
+      ),
+      vector: wrap(
+        /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "5", y1: "18", x2: "18", y2: "7" }),
+          /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M18 7 L13 7 M18 7 L18 12" }),
+          dot4(5, 18, 1.6)
+        ] })
+      ),
+      polygon: wrap(
+        /* @__PURE__ */ jsxRuntime.jsx(jsxRuntime.Fragment, { children: /* @__PURE__ */ jsxRuntime.jsx("polygon", { points: "12,4 20,10 17,19 7,19 4,10" }) })
+      ),
+      plane: wrap(
+        /* @__PURE__ */ jsxRuntime.jsx(jsxRuntime.Fragment, { children: /* @__PURE__ */ jsxRuntime.jsx("polygon", { points: "3,9 14,5 21,11 10,15" }) })
+      ),
+      pyramid: wrap(
+        /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 19 L20 19 L12 4 Z" }),
+          /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 19 L12 16 L20 19" }),
+          /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M12 4 L12 16", strokeDasharray: "2 2" })
+        ] })
+      ),
+      prism: wrap(
+        /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 8 L4 19 L14 19 L14 8 Z" }),
+          /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 8 L10 4 L20 4 L14 8" }),
+          /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M14 8 L14 19 L20 15 L20 4" }),
+          /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 8 L14 8" })
+        ] })
+      ),
+      tetrahedron: wrap(
+        /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 19 L20 19 L12 5 Z" }),
+          /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 19 L15 12 L20 19" }),
+          /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M15 12 L12 5" })
+        ] })
+      ),
+      cube: wrap(
+        /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 8 L4 19 L14 19 L14 8 Z" }),
+          /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 8 L10 4 L20 4 L14 8" }),
+          /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M14 8 L14 19 L20 15 L20 4" })
+        ] })
+      ),
+      sphere: wrap(
+        /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntime.jsx("circle", { cx: "12", cy: "12", r: "8" }),
+          /* @__PURE__ */ jsxRuntime.jsx("ellipse", { cx: "12", cy: "12", rx: "8", ry: "3" }),
+          dot4(12, 12, 1.2)
+        ] })
+      ),
+      cylinder: wrap(
+        /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntime.jsx("ellipse", { cx: "12", cy: "6", rx: "6", ry: "2" }),
+          /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M6 6 L6 18" }),
+          /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M18 6 L18 18" }),
+          /* @__PURE__ */ jsxRuntime.jsx("ellipse", { cx: "12", cy: "18", rx: "6", ry: "2" })
+        ] })
+      ),
+      cone: wrap(
+        /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "5", y1: "18", x2: "12", y2: "4" }),
+          /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "19", y1: "18", x2: "12", y2: "4" }),
+          /* @__PURE__ */ jsxRuntime.jsx("ellipse", { cx: "12", cy: "18", rx: "7", ry: "2" })
+        ] })
+      )
+    };
+  }
+});
+
+// src/stamps/geometry-3d/editor/toolPanel/groups.ts
+function letterForGroup(g) {
+  const idx = GROUP_ORDER.indexOf(g);
+  return idx >= 0 ? String.fromCharCode(A_CODE + idx) : "";
 }
-var ICONS;
+var GROUP_ORDER, GROUP_LABELS, TOOLS_BY_GROUP, SPEC_BY_KEY, TOOLS_FLAT, A_CODE;
+var init_groups = __esm({
+  "src/stamps/geometry-3d/editor/toolPanel/groups.ts"() {
+    init_spec();
+    GROUP_ORDER = [
+      "basic",
+      "point",
+      "line",
+      "plane",
+      "polyhedron",
+      "curve"
+    ];
+    GROUP_LABELS = {
+      basic: "C\u01A1 b\u1EA3n",
+      point: "\u0110i\u1EC3m",
+      line: "\u0110\u01B0\u1EDDng th\u1EB3ng",
+      plane: "M\u1EB7t ph\u1EB3ng",
+      polyhedron: "Kh\u1ED1i \u0111a di\u1EC7n",
+      curve: "Kh\u1ED1i cong"
+    };
+    TOOLS_BY_GROUP = {
+      basic: ["move"],
+      point: ["point", "pointOnObject"],
+      line: ["segment", "line", "ray", "vector", "polygon"],
+      plane: ["plane"],
+      polyhedron: ["pyramid", "prism", "tetrahedron", "cube"],
+      curve: ["sphere", "cylinder", "cone"]
+    };
+    SPEC_BY_KEY = TOOLS.reduce(
+      (acc, t) => {
+        acc[t.key] = t;
+        return acc;
+      },
+      {}
+    );
+    TOOLS_FLAT = GROUP_ORDER.flatMap(
+      (group) => TOOLS_BY_GROUP[group].map((key) => {
+        const spec = SPEC_BY_KEY[key];
+        return {
+          key,
+          label: spec?.label ?? key,
+          hint: spec?.hintIdle ?? "",
+          group
+        };
+      })
+    );
+    A_CODE = "A".charCodeAt(0);
+  }
+});
+function ToolPalette(props) {
+  const { selected, onSelect, chordGroup = null, onHoverTool } = props;
+  return /* @__PURE__ */ jsxRuntime.jsx("div", { "data-testid": "tool-palette", className: "flex flex-col gap-3", children: GROUP_ORDER.map((group) => {
+    const keys = TOOLS_BY_GROUP[group];
+    const isChordActive = chordGroup === group;
+    const dimmed = chordGroup !== null && !isChordActive;
+    return /* @__PURE__ */ jsxRuntime.jsxs(
+      "section",
+      {
+        "data-chord-group": group,
+        "data-chord-active": isChordActive ? "true" : "false",
+        className: [
+          "rounded-md transition",
+          isChordActive ? "bg-emerald-50 ring-1 ring-emerald-400 p-1" : "p-0",
+          dimmed ? "opacity-55" : "opacity-100"
+        ].join(" "),
+        children: [
+          /* @__PURE__ */ jsxRuntime.jsxs("h4", { className: "mb-1.5 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-slate-500", children: [
+            /* @__PURE__ */ jsxRuntime.jsx("span", { children: GROUP_LABELS[group] }),
+            /* @__PURE__ */ jsxRuntime.jsx(
+              "span",
+              {
+                "data-testid": `chord-letter-${group}`,
+                className: [
+                  "font-mono text-[10px] leading-none transition",
+                  isChordActive ? "text-emerald-700 font-bold" : "text-slate-400"
+                ].join(" "),
+                children: letterForGroup(group)
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxRuntime.jsx("div", { className: "grid grid-cols-4 gap-1", children: keys.map((k, i) => {
+            const tool = TOOLS.find((t) => t.key === k);
+            return /* @__PURE__ */ jsxRuntime.jsx(
+              ToolButton,
+              {
+                toolKey: k,
+                label: tool.label,
+                selected: selected === k,
+                onClick: onSelect,
+                icon: ToolIcons[k],
+                chordNum: i + 1,
+                chordActiveGroup: isChordActive,
+                onMouseEnter: (e) => onHoverTool?.({
+                  label: tool.label,
+                  hint: tool.hintIdle,
+                  x: e.clientX,
+                  y: e.clientY
+                }),
+                onMouseLeave: () => onHoverTool?.(null)
+              },
+              k
+            );
+          }) })
+        ]
+      },
+      group
+    );
+  }) });
+}
 var init_ToolPalette = __esm({
   "src/stamps/geometry-3d/editor/toolPanel/ToolPalette.tsx"() {
     "use client";
     init_ToolButton();
+    init_icons();
+    init_groups();
     init_spec();
-    ICONS = {
-      move: "\u2196",
-      point: "\xB7",
-      pointOnObject: "\u2299",
-      segment: "\u2014",
-      line: "\u27F7",
-      ray: "\u2192",
-      vector: "\u2197",
-      polygon: "\u2B20",
-      plane: "\u2B1C",
-      pyramid: "\u25B3",
-      prism: "\u25A6",
-      tetrahedron: "\u25EC",
-      cube: "\u2B1B",
-      sphere: "\u25CF",
-      cylinder: "\u232D",
-      cone: "\u23F6"
-    };
   }
 });
 
@@ -1875,27 +2092,349 @@ var init_AlgebraList = __esm({
     init_AlgebraRow();
   }
 });
-function LeftPanel(props) {
-  const { scene, selectedTool, onSelectTool } = props;
-  const [tab, setTab] = React5__namespace.useState("tools");
+function MobileToolDrawer({
+  title,
+  headerIcon,
+  chips,
+  actions,
+  groups,
+  activeTool,
+  onToolSelect,
+  drawerOpen,
+  onDrawerClose,
+  isDark,
+  testId
+}) {
+  return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+    drawerOpen && /* @__PURE__ */ jsxRuntime.jsx(
+      "div",
+      {
+        className: "stamp-drawer-backdrop",
+        onPointerDown: onDrawerClose,
+        "aria-hidden": "true"
+      }
+    ),
+    /* @__PURE__ */ jsxRuntime.jsxs(
+      "aside",
+      {
+        role: "complementary",
+        "aria-label": title,
+        "aria-hidden": !drawerOpen ? "true" : void 0,
+        "data-testid": testId,
+        "data-stamp-area": "true",
+        "data-mobile-drawer": "true",
+        "data-geo-mobile": "true",
+        "data-drawer-state": drawerOpen ? "open" : "closed",
+        className: [
+          isDark ? "theme--dark " : "",
+          "stamp-drawer-mobile flex flex-col border-r border-slate-200 bg-white shadow-md"
+        ].join(""),
+        children: [
+          /* @__PURE__ */ jsxRuntime.jsxs("header", { className: "flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-4 py-3", children: [
+            /* @__PURE__ */ jsxRuntime.jsxs("h3", { className: "flex items-center gap-2 text-base font-semibold text-slate-800", children: [
+              /* @__PURE__ */ jsxRuntime.jsx("span", { className: "inline-flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700", children: headerIcon }),
+              title
+            ] }),
+            /* @__PURE__ */ jsxRuntime.jsx(
+              "button",
+              {
+                type: "button",
+                onClick: onDrawerClose,
+                "aria-label": "\u0110\xF3ng ng\u0103n c\xF4ng c\u1EE5",
+                className: "inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-800",
+                children: /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+                  /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
+                  /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
+                ] })
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "sticky top-0 z-10 flex items-center gap-2 border-b border-slate-200 bg-white/95 px-3 py-2 backdrop-blur", children: [
+            chips.map((c) => /* @__PURE__ */ jsxRuntime.jsxs(
+              "button",
+              {
+                type: "button",
+                role: "switch",
+                "aria-pressed": c.pressed,
+                "aria-label": c.label,
+                "data-testid": c.testId,
+                onClick: () => c.onToggle(!c.pressed),
+                className: "geo-mobile-chip",
+                children: [
+                  c.icon,
+                  c.label
+                ]
+              },
+              c.label
+            )),
+            actions.length > 0 && /* @__PURE__ */ jsxRuntime.jsx("div", { className: "ml-auto flex items-center gap-1", children: actions.map((a) => /* @__PURE__ */ jsxRuntime.jsx(
+              "button",
+              {
+                type: "button",
+                onClick: a.onClick,
+                disabled: a.disabled,
+                "aria-label": a.label,
+                title: a.title ?? a.label,
+                className: "inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
+                children: a.icon
+              },
+              a.label
+            )) })
+          ] }),
+          /* @__PURE__ */ jsxRuntime.jsx(
+            "div",
+            {
+              className: "min-h-0 flex-1 overflow-y-auto",
+              style: { paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" },
+              children: groups.map((g) => /* @__PURE__ */ jsxRuntime.jsxs("section", { className: "px-3 pt-3 pb-1", children: [
+                /* @__PURE__ */ jsxRuntime.jsxs("h4", { className: "mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500", children: [
+                  /* @__PURE__ */ jsxRuntime.jsx("span", { className: "h-1 w-1 rounded-full bg-emerald-500" }),
+                  g.groupLabel
+                ] }),
+                /* @__PURE__ */ jsxRuntime.jsx("div", { className: "grid grid-cols-3 gap-2", children: g.tools.map((t) => {
+                  const active = activeTool === t.key;
+                  return /* @__PURE__ */ jsxRuntime.jsxs(
+                    "button",
+                    {
+                      type: "button",
+                      "aria-label": t.label,
+                      "aria-pressed": active,
+                      "data-tool": t.key,
+                      onClick: () => {
+                        onToolSelect(t.key);
+                        onDrawerClose();
+                      },
+                      className: [
+                        "flex flex-col items-center justify-center gap-1.5 rounded-2xl px-2 py-3 transition active:scale-95",
+                        active ? "geo-mobile-tool-active" : "bg-slate-50 text-slate-700 hover:bg-slate-100"
+                      ].join(" "),
+                      children: [
+                        /* @__PURE__ */ jsxRuntime.jsx("span", { className: "flex h-6 w-6 items-center justify-center", children: t.icon }),
+                        /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-center text-[11px] font-medium leading-tight line-clamp-2", children: t.label })
+                      ]
+                    },
+                    t.key
+                  );
+                }) })
+              ] }, g.group))
+            }
+          )
+        ]
+      }
+    )
+  ] });
+}
+var init_MobileToolDrawer = __esm({
+  "src/stamps/shared/MobileToolDrawer.tsx"() {
+    "use client";
+  }
+});
+function AxisIcon() {
+  return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: [
+    /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "4", y1: "20", x2: "20", y2: "20" }),
+    /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "4", y1: "20", x2: "4", y2: "4" }),
+    /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "4", y1: "20", x2: "16", y2: "8" })
+  ] });
+}
+function GridIcon() {
+  return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: [
+    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 8 L20 4" }),
+    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 14 L20 10" }),
+    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 20 L20 16" }),
+    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 8 L4 20" }),
+    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M12 6 L12 18" }),
+    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M20 4 L20 16" })
+  ] });
+}
+function UndoIcon() {
+  return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: [
+    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M3 10 L8 5 L8 8 L15 8 A5 5 0 0 1 20 13 L20 16" }),
+    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M3 10 L8 15 L8 12" })
+  ] });
+}
+function CloseIcon() {
+  return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: [
+    /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
+    /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
+  ] });
+}
+function Shell({ title, icon, onClose, children, isDark }) {
   return /* @__PURE__ */ jsxRuntime.jsxs(
-    "div",
+    "aside",
     {
+      role: "complementary",
+      "aria-label": title,
       "data-testid": "left-panel",
-      className: "flex h-full w-[280px] flex-col border-r border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900",
+      "data-stamp-area": "true",
+      className: [
+        isDark ? "theme--dark " : "",
+        "flex h-full w-60 flex-col border-r border-slate-200 bg-white"
+      ].join(""),
       children: [
-        /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex border-b border-zinc-200 dark:border-zinc-700", children: [
-          /* @__PURE__ */ jsxRuntime.jsx(TabButton, { active: tab === "tools", onClick: () => setTab("tools"), children: "\u{1F9F0} Tools" }),
-          /* @__PURE__ */ jsxRuntime.jsx(TabButton, { active: tab === "algebra", onClick: () => setTab("algebra"), children: "\u{1F4D0} Algebra" })
+        /* @__PURE__ */ jsxRuntime.jsxs("header", { className: "flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-3 py-2", children: [
+          /* @__PURE__ */ jsxRuntime.jsxs("h3", { className: "flex items-center gap-2 text-sm font-semibold text-slate-800", children: [
+            /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-base leading-none", children: icon }),
+            title
+          ] }),
+          /* @__PURE__ */ jsxRuntime.jsx(
+            "button",
+            {
+              onClick: onClose,
+              "aria-label": "\u0110\xF3ng",
+              className: "rounded p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800",
+              children: /* @__PURE__ */ jsxRuntime.jsx(CloseIcon, {})
+            }
+          )
         ] }),
-        /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex-1 overflow-y-auto", children: tab === "tools" ? /* @__PURE__ */ jsxRuntime.jsx(ToolPalette, { selected: selectedTool, onSelect: onSelectTool }) : /* @__PURE__ */ jsxRuntime.jsx(AlgebraList, { scene }) })
+        /* @__PURE__ */ jsxRuntime.jsx("div", { className: "min-h-0 flex-1 overflow-y-auto p-3 space-y-3", children })
       ]
     }
   );
 }
-function TabButton({
+function Section({ label, children }) {
+  return /* @__PURE__ */ jsxRuntime.jsxs("section", { children: [
+    /* @__PURE__ */ jsxRuntime.jsx("h4", { className: "mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500", children: label }),
+    children
+  ] });
+}
+function useToolHoverTooltip() {
+  const [hover, setHover] = React5__namespace.useState(null);
+  const [portalReady, setPortalReady] = React5__namespace.useState(false);
+  const hoverTimerRef = React5__namespace.useRef(null);
+  React5__namespace.useEffect(() => {
+    setPortalReady(true);
+    return () => {
+      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    };
+  }, []);
+  const showHover = React5__namespace.useCallback((next) => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    hoverTimerRef.current = setTimeout(() => setHover(next), TOOLTIP_DELAY_MS);
+  }, []);
+  const hideHover = React5__namespace.useCallback(() => {
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+    setHover(null);
+  }, []);
+  return { hover, portalReady, showHover, hideHover };
+}
+function DesktopPanel(props) {
+  const {
+    scene,
+    selectedTool,
+    onSelectTool,
+    showAxis,
+    showGrid,
+    onShowAxisChange,
+    onShowGridChange,
+    onUndo,
+    canUndo,
+    onClose,
+    isDark,
+    chordGroup
+  } = props;
+  const [tab, setTab] = React5__namespace.useState("tools");
+  const { hover, portalReady, showHover, hideHover } = useToolHoverTooltip();
+  return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+    /* @__PURE__ */ jsxRuntime.jsxs(Shell, { title: "H\xECnh h\u1ECDc 3D", icon: Geom3DIconHeader, onClose, isDark, children: [
+      /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex gap-1 rounded-md bg-slate-100 p-0.5", children: [
+        /* @__PURE__ */ jsxRuntime.jsx(TabPill, { active: tab === "tools", onClick: () => setTab("tools"), testId: "tab-tools", children: "\u{1F9F0} C\xF4ng c\u1EE5" }),
+        /* @__PURE__ */ jsxRuntime.jsx(TabPill, { active: tab === "algebra", onClick: () => setTab("algebra"), testId: "tab-algebra", children: "\u{1F4D0} \u0110\u1ED1i t\u01B0\u1EE3ng" })
+      ] }),
+      tab === "tools" ? /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+        /* @__PURE__ */ jsxRuntime.jsx(Section, { label: "G\xF3c nh\xECn", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-3 text-[11px] text-slate-700", children: [
+          /* @__PURE__ */ jsxRuntime.jsxs("label", { className: "inline-flex select-none items-center gap-1.5", children: [
+            /* @__PURE__ */ jsxRuntime.jsx(
+              "input",
+              {
+                type: "checkbox",
+                checked: showAxis,
+                onChange: (e) => onShowAxisChange(e.target.checked),
+                "data-testid": "toggle-axis"
+              }
+            ),
+            "Tr\u1EE5c"
+          ] }),
+          /* @__PURE__ */ jsxRuntime.jsxs("label", { className: "inline-flex select-none items-center gap-1.5", children: [
+            /* @__PURE__ */ jsxRuntime.jsx(
+              "input",
+              {
+                type: "checkbox",
+                checked: showGrid,
+                onChange: (e) => onShowGridChange(e.target.checked),
+                "data-testid": "toggle-grid"
+              }
+            ),
+            "L\u01B0\u1EDBi"
+          ] }),
+          /* @__PURE__ */ jsxRuntime.jsx(
+            "button",
+            {
+              type: "button",
+              onClick: onUndo,
+              disabled: !canUndo,
+              title: "Ho\xE0n t\xE1c (Ctrl/Cmd+Z)",
+              "aria-label": "Ho\xE0n t\xE1c",
+              "data-testid": "undo-btn",
+              className: "ml-auto inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
+              children: /* @__PURE__ */ jsxRuntime.jsx(UndoIcon, {})
+            }
+          )
+        ] }) }),
+        /* @__PURE__ */ jsxRuntime.jsx(
+          ToolPalette,
+          {
+            selected: selectedTool,
+            onSelect: onSelectTool,
+            chordGroup: chordGroup ?? null,
+            onHoverTool: (info) => info ? showHover(info) : hideHover()
+          }
+        ),
+        chordGroup && /* @__PURE__ */ jsxRuntime.jsxs(
+          "div",
+          {
+            "data-testid": "chord-hint",
+            className: "rounded border border-emerald-200 bg-emerald-50/60 px-2 py-1 text-[11px] leading-snug text-slate-600",
+            children: [
+              /* @__PURE__ */ jsxRuntime.jsx("span", { className: "font-mono font-semibold text-emerald-700", children: letterForGroup(chordGroup) }),
+              /* @__PURE__ */ jsxRuntime.jsxs("span", { className: "ml-1.5", children: [
+                "\u2192 ",
+                GROUP_LABELS[chordGroup],
+                ". B\u1EA5m s\u1ED1 1-9 \u0111\u1EC3 ch\u1ECDn c\xF4ng c\u1EE5, Esc hu\u1EF7."
+              ] })
+            ]
+          }
+        )
+      ] }) : /* @__PURE__ */ jsxRuntime.jsx("section", { "data-testid": "algebra-panel", children: /* @__PURE__ */ jsxRuntime.jsx(AlgebraList, { scene }) })
+    ] }),
+    portalReady && hover && typeof document !== "undefined" ? reactDom.createPortal(
+      /* @__PURE__ */ jsxRuntime.jsxs(
+        "div",
+        {
+          role: "tooltip",
+          className: "pointer-events-none fixed w-max max-w-[220px] rounded-md bg-slate-900 px-2 py-1 text-left text-[11px] leading-tight text-white shadow-lg",
+          style: {
+            left: hover.x + 8,
+            top: hover.y,
+            transform: "translate(0, -50%)",
+            zIndex: 2147483600
+          },
+          children: [
+            /* @__PURE__ */ jsxRuntime.jsx("span", { className: "block font-medium", children: hover.label }),
+            hover.hint && /* @__PURE__ */ jsxRuntime.jsx("span", { className: "mt-0.5 block text-slate-300", children: hover.hint })
+          ]
+        }
+      ),
+      document.body
+    ) : null
+  ] });
+}
+function TabPill({
   active,
   onClick,
+  testId,
   children
 }) {
   return /* @__PURE__ */ jsxRuntime.jsx(
@@ -1904,16 +2443,103 @@ function TabButton({
       type: "button",
       onClick,
       "aria-pressed": active,
-      className: "flex-1 px-3 py-2 text-sm font-medium " + (active ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"),
+      "data-testid": testId,
+      className: [
+        "flex-1 rounded px-2 py-1 text-[11px] font-medium transition",
+        active ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200" : "text-slate-500 hover:text-slate-800"
+      ].join(" "),
       children
     }
   );
 }
+function MobilePanel(props) {
+  const {
+    selectedTool,
+    onSelectTool,
+    showAxis,
+    showGrid,
+    onShowAxisChange,
+    onShowGridChange,
+    onUndo,
+    canUndo,
+    isDark,
+    drawerOpen,
+    onDrawerClose
+  } = props;
+  const groups = React5__namespace.useMemo(
+    () => GROUP_ORDER.map((group) => {
+      const keys = TOOLS_BY_GROUP[group];
+      return {
+        group,
+        groupLabel: GROUP_LABELS[group],
+        tools: keys.map((k) => {
+          const tool = TOOLS.find((t) => t.key === k);
+          return { key: k, label: tool.label, icon: ToolIcons[k] };
+        })
+      };
+    }),
+    []
+  );
+  return /* @__PURE__ */ jsxRuntime.jsx(
+    MobileToolDrawer,
+    {
+      title: "H\xECnh h\u1ECDc 3D",
+      headerIcon: Geom3DIconHeader,
+      testId: "left-panel",
+      isDark,
+      drawerOpen: !!drawerOpen,
+      onDrawerClose: () => onDrawerClose?.(),
+      chips: [
+        {
+          label: "Tr\u1EE5c",
+          icon: /* @__PURE__ */ jsxRuntime.jsx(AxisIcon, {}),
+          pressed: showAxis,
+          onToggle: onShowAxisChange,
+          testId: "toggle-axis"
+        },
+        {
+          label: "L\u01B0\u1EDBi",
+          icon: /* @__PURE__ */ jsxRuntime.jsx(GridIcon, {}),
+          pressed: showGrid,
+          onToggle: onShowGridChange,
+          testId: "toggle-grid"
+        }
+      ],
+      actions: [
+        {
+          label: "Ho\xE0n t\xE1c",
+          title: "Ho\xE0n t\xE1c (Ctrl/Cmd+Z)",
+          icon: /* @__PURE__ */ jsxRuntime.jsx(UndoIcon, {}),
+          onClick: onUndo,
+          disabled: !canUndo
+        }
+      ],
+      groups,
+      activeTool: selectedTool,
+      onToolSelect: onSelectTool
+    }
+  );
+}
+function LeftPanel(props) {
+  if (props.isMobile) return /* @__PURE__ */ jsxRuntime.jsx(MobilePanel, { ...props });
+  return /* @__PURE__ */ jsxRuntime.jsx(DesktopPanel, { ...props });
+}
+var TOOLTIP_DELAY_MS, Geom3DIconHeader;
 var init_LeftPanel = __esm({
   "src/stamps/geometry-3d/editor/LeftPanel.tsx"() {
     "use client";
     init_ToolPalette();
     init_AlgebraList();
+    init_icons();
+    init_groups();
+    init_spec();
+    init_MobileToolDrawer();
+    TOOLTIP_DELAY_MS = 400;
+    Geom3DIconHeader = /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: [
+      /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 9 L4 20 L14 20 L14 9 Z" }),
+      /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 9 L10 4 L20 4 L14 9 Z" }),
+      /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M14 9 L20 4 L20 15 L14 20 Z" })
+    ] });
   }
 });
 
@@ -2292,7 +2918,17 @@ var init_EditorPanel = __esm({
     init_persistence();
     EditorPanel = React5__namespace.forwardRef(
       function EditorPanel2(props, ref) {
-        const isDark = props.isDark ?? false;
+        const {
+          isDark: isDarkProp,
+          initialState,
+          onClose,
+          isMobile = false,
+          drawerOpen,
+          onDrawerClose,
+          chordGroup,
+          onReadyChange
+        } = props;
+        const isDark = isDarkProp ?? false;
         const sceneRef = React5__namespace.useRef(null);
         if (!sceneRef.current) sceneRef.current = new Scene3D();
         const controllerRef = React5__namespace.useRef(null);
@@ -2300,11 +2936,13 @@ var init_EditorPanel = __esm({
         const [selectedTool, setSelectedTool] = React5__namespace.useState("move");
         const [hint, setHint] = React5__namespace.useState("Ch\u1ECDn c\xF4ng c\u1EE5 trong b\u1EA3ng b\xEAn tr\xE1i");
         const [hoverLabel, setHoverLabel] = React5__namespace.useState(null);
+        const [showAxis, setShowAxis] = React5__namespace.useState(true);
+        const [showGrid, setShowGrid] = React5__namespace.useState(true);
         const boardRef = React5__namespace.useRef(null);
         const rendererRef = React5__namespace.useRef(null);
         React5__namespace.useEffect(() => {
-          if (props.initialState && sceneRef.current) {
-            const loaded = boardToScene(props.initialState);
+          if (initialState && sceneRef.current) {
+            const loaded = boardToScene(initialState);
             sceneRef.current.reset();
             for (const obj of loaded.list()) {
               sceneRef.current.insert(obj);
@@ -2325,10 +2963,28 @@ var init_EditorPanel = __esm({
             rendererRef.current = null;
           };
         }, []);
+        React5__namespace.useEffect(() => {
+          const view = boardRef.current?.getView3D();
+          const v = view;
+          if (!v || typeof v.setAttribute !== "function") return;
+          try {
+            v.setAttribute({
+              xAxis: { visible: showAxis },
+              yAxis: { visible: showAxis },
+              zAxis: { visible: showAxis },
+              xPlaneRear: { visible: showGrid, mesh3d: { visible: showGrid } },
+              yPlaneRear: { visible: showGrid, mesh3d: { visible: showGrid } },
+              zPlaneRear: { visible: showGrid, mesh3d: { visible: showGrid } }
+            });
+            v.board?.update?.();
+          } catch {
+          }
+        }, [showAxis, showGrid]);
         const handleView3DReady = React5__namespace.useCallback((view) => {
           if (!sceneRef.current) return;
           rendererRef.current = new JxgRenderer(sceneRef.current, view);
-        }, []);
+          onReadyChange?.(true);
+        }, [onReadyChange]);
         const handleClick = React5__namespace.useCallback((screen) => {
           const board = boardRef.current;
           if (!board) return;
@@ -2376,7 +3032,8 @@ var init_EditorPanel = __esm({
                 { azimuth, elevation, bbox3D: [-5, -5, -5, 5, 5, 5] },
                 [-6, -6, 6, 6]
               );
-            }
+            },
+            setTool: (k) => controllerRef.current.selectTool(k)
           }),
           []
         );
@@ -2386,7 +3043,7 @@ var init_EditorPanel = __esm({
             "data-testid": "editor-panel-3d",
             className: [
               isDark ? "theme--dark " : "",
-              "flex h-full w-full overflow-hidden bg-white dark:bg-zinc-950"
+              "flex h-full w-full overflow-hidden bg-white"
             ].join(""),
             children: [
               /* @__PURE__ */ jsxRuntime.jsx(
@@ -2394,7 +3051,20 @@ var init_EditorPanel = __esm({
                 {
                   scene: sceneRef.current,
                   selectedTool,
-                  onSelectTool: (k) => controllerRef.current.selectTool(k)
+                  onSelectTool: (k) => controllerRef.current.selectTool(k),
+                  showAxis,
+                  showGrid,
+                  onShowAxisChange: setShowAxis,
+                  onShowGridChange: setShowGrid,
+                  onUndo: () => {
+                  },
+                  canUndo: false,
+                  onClose: () => onClose?.(),
+                  isDark,
+                  isMobile,
+                  drawerOpen,
+                  onDrawerClose,
+                  chordGroup: chordGroup ?? null
                 }
               ),
               /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex min-w-0 flex-1 flex-col", children: [
@@ -2416,6 +3086,81 @@ var init_EditorPanel = __esm({
         );
       }
     );
+  }
+});
+function isFieldFocused() {
+  const ae = typeof document !== "undefined" ? document.activeElement : null;
+  return !!(ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable));
+}
+function useChordShortcut(args) {
+  const { groupOrder, tools, onSelect, enabled } = args;
+  const [chordGroup, setChordGroup] = React5.useState(null);
+  const groupOrderRef = React5.useRef(groupOrder);
+  const toolsRef = React5.useRef(tools);
+  const onSelectRef = React5.useRef(onSelect);
+  const chordGroupRef = React5.useRef(null);
+  groupOrderRef.current = groupOrder;
+  toolsRef.current = tools;
+  onSelectRef.current = onSelect;
+  const cancel = React5.useCallback(() => {
+    chordGroupRef.current = null;
+    setChordGroup(null);
+  }, []);
+  React5.useEffect(() => {
+    if (!enabled) return;
+    const setChord = (next) => {
+      chordGroupRef.current = next;
+      setChordGroup(next);
+    };
+    const onKey = (e) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (isFieldFocused()) return;
+      const key = e.key;
+      const lower = key.length === 1 ? key.toLowerCase() : key;
+      if (key === "Escape") {
+        if (chordGroupRef.current !== null) {
+          e.preventDefault();
+          e.stopPropagation();
+          setChord(null);
+        }
+        return;
+      }
+      if (lower.length === 1 && lower >= "a" && lower <= "z") {
+        const idx = lower.charCodeAt(0) - A_CODE2;
+        if (idx < groupOrderRef.current.length) {
+          e.preventDefault();
+          e.stopPropagation();
+          setChord(groupOrderRef.current[idx]);
+        }
+        return;
+      }
+      if (key >= "1" && key <= "9") {
+        const active = chordGroupRef.current;
+        if (active === null) return;
+        const n = key.charCodeAt(0) - "1".charCodeAt(0);
+        const toolsInGroup = toolsRef.current.filter(
+          (t) => t.group === active
+        );
+        e.preventDefault();
+        e.stopPropagation();
+        if (n < toolsInGroup.length) {
+          onSelectRef.current(toolsInGroup[n].key);
+        }
+        setChord(null);
+        return;
+      }
+    };
+    window.addEventListener("keydown", onKey, { capture: true });
+    return () => {
+      window.removeEventListener("keydown", onKey, { capture: true });
+    };
+  }, [enabled]);
+  return { chordGroup, cancel };
+}
+var A_CODE2;
+var init_useChordShortcut = __esm({
+  "src/stamps/shared/useChordShortcut.ts"() {
+    A_CODE2 = "a".charCodeAt(0);
   }
 });
 
@@ -2593,6 +3338,8 @@ var init_host = __esm({
   "src/stamps/geometry-3d/host.tsx"() {
     "use client";
     init_EditorPanel();
+    init_groups();
+    init_useChordShortcut();
     init_insertImage();
     init_useIsMobile();
     init_serialize();
@@ -2600,10 +3347,18 @@ var init_host = __esm({
       function Geometry3DStampHost2({ api, editingElement, onClose, isDark }, ref) {
         const editorRef = React5.useRef(null);
         const { isMobile } = useIsMobile();
+        const [drawerOpen, setDrawerOpen] = React5.useState(false);
+        const [ready, setReady] = React5.useState(false);
         const initial = React5.useMemo(
           () => parseInitial(editingElement),
           [editingElement]
         );
+        const { chordGroup } = useChordShortcut({
+          groupOrder: GROUP_ORDER,
+          tools: TOOLS_FLAT,
+          onSelect: (key) => editorRef.current?.setTool(key),
+          enabled: !isMobile
+        });
         const performInsert = React5.useCallback(
           async (board, width, height, svgString) => {
             if (!api) return;
@@ -2666,18 +3421,33 @@ var init_host = __esm({
               isMobile ? "h-full w-full" : "h-[600px] max-h-[85vh] w-[1040px] max-w-[calc(100vw-80px)] rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5"
             ].join(" "),
             children: [
-              /* @__PURE__ */ jsxRuntime.jsxs("header", { className: "flex items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-cyan-600 px-3 py-2 text-white", children: [
+              /* @__PURE__ */ jsxRuntime.jsxs("header", { className: "flex items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2 text-white", children: [
+                isMobile && /* @__PURE__ */ jsxRuntime.jsx(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: () => setDrawerOpen(true),
+                    "aria-label": "M\u1EDF ng\u0103n c\xF4ng c\u1EE5",
+                    className: "-ml-1 inline-flex h-10 w-10 items-center justify-center rounded transition hover:bg-white/15",
+                    children: /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+                      /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "4", y1: "6", x2: "20", y2: "6" }),
+                      /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "4", y1: "12", x2: "20", y2: "12" }),
+                      /* @__PURE__ */ jsxRuntime.jsx("line", { x1: "4", y1: "18", x2: "20", y2: "18" })
+                    ] })
+                  }
+                ),
                 /* @__PURE__ */ jsxRuntime.jsxs("h3", { className: "flex flex-1 items-center gap-2 text-sm font-semibold", children: [
-                  /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 7 L14 4 L20 7 L14 10 Z M4 7 L4 17 L14 20 L14 10 M14 20 L20 17 L20 7" }) }),
-                  "H\xECnh h\u1ECDc kh\xF4ng gian (3D)"
+                  /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M4 9 L4 20 L14 20 L14 9 Z M4 9 L10 4 L20 4 L14 9 Z M14 9 L20 4 L20 15 L14 20 Z" }) }),
+                  "D\u1EF1ng h\xECnh h\u1ECDc kh\xF4ng gian"
                 ] }),
-                /* @__PURE__ */ jsxRuntime.jsx(
+                isMobile && /* @__PURE__ */ jsxRuntime.jsx(
                   "button",
                   {
                     type: "button",
                     onClick: tryInsert,
-                    "data-testid": "geom3d-insert-btn",
-                    className: "rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25",
+                    disabled: !ready,
+                    "data-testid": "geom3d-insert-btn-mobile",
+                    className: "rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50",
                     children: "Ch\xE8n"
                   }
                 ),
@@ -2701,9 +3471,37 @@ var init_host = __esm({
                   isDark,
                   initialState: initial,
                   onInsert: handleEditorInsert,
-                  onClose
+                  onClose,
+                  isMobile,
+                  drawerOpen,
+                  onDrawerClose: () => setDrawerOpen(false),
+                  chordGroup,
+                  onReadyChange: setReady
                 }
-              ) })
+              ) }),
+              !isMobile && /* @__PURE__ */ jsxRuntime.jsxs("footer", { className: "flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2", children: [
+                /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-xs text-slate-500", children: "Ch\u1ECDn c\xF4ng c\u1EE5 b\xEAn tr\xE1i, click tr\xEAn b\u1EA3ng \u0111\u1EC3 d\u1EF1ng h\xECnh." }),
+                /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex gap-2", children: [
+                  /* @__PURE__ */ jsxRuntime.jsx(
+                    "button",
+                    {
+                      onClick: onClose,
+                      className: "rounded border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100",
+                      children: "Hu\u1EF7"
+                    }
+                  ),
+                  /* @__PURE__ */ jsxRuntime.jsx(
+                    "button",
+                    {
+                      onClick: tryInsert,
+                      disabled: !ready,
+                      "data-testid": "geom3d-insert-btn",
+                      className: "rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50",
+                      children: "Ch\xE8n"
+                    }
+                  )
+                ] })
+              ] })
             ]
           }
         );
