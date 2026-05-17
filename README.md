@@ -14,7 +14,33 @@ npm install github:xom11/whiteboard#v0.2.0
 "@xom11/whiteboard": "github:xom11/whiteboard#v0.2.0"
 ```
 
-Peer deps: `react >=18`, `react-dom >=18`, `next >=14`.
+### Peer dependencies
+
+Từ phiên bản này, `@excalidraw/excalidraw`, `jsxgraph` và `katex` được externalize khỏi bundle (giảm bundle ~70%). Consumer **bắt buộc** cài kèm:
+
+```bash
+npm install @excalidraw/excalidraw@^0.18.1 jsxgraph@^1.12.2 katex@^0.16.45 react@>=18 react-dom@>=18
+```
+
+Hoặc thêm vào `package.json` của consumer:
+
+```json
+{
+  "dependencies": {
+    "@excalidraw/excalidraw": "^0.18.1",
+    "jsxgraph": "^1.12.2",
+    "katex": "^0.16.45",
+    "react": ">=18",
+    "react-dom": ">=18"
+  }
+}
+```
+
+Lý do externalize:
+
+- **Tránh duplicate React** khi consumer cũng dùng Excalidraw trực tiếp.
+- **Bundle nhẹ hơn ~70%** (jsxgraph ~600KB + katex ~280KB + excalidraw ~2MB không còn nằm trong dist của whiteboard).
+- **Consumer kiểm soát version** + dedupe qua npm/pnpm tự nhiên.
 
 ## Usage
 

@@ -55,14 +55,13 @@
     "demo": "vite --config scripts/demo/vite.config.ts"
   },
   "peerDependencies": {
+    "@excalidraw/excalidraw": "^0.18.1",
+    "jsxgraph": "^1.12.2",
+    "katex": "^0.16.45",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
-  "dependencies": {
-    "@excalidraw/excalidraw": "^0.18.1",
-    "jsxgraph": "^1.12.2",
-    "katex": "^0.16.45"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.0",
     "@testing-library/jest-dom": "^6.9.1",

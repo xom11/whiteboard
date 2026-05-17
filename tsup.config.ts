@@ -12,7 +12,13 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   clean: true,
-  external: ['react', 'react-dom'],
+  external: [
+    'react',
+    'react-dom',
+    '@excalidraw/excalidraw',
+    'jsxgraph',
+    'katex',
+  ],
   treeshake: true,
   // "use client" được prepend qua scripts/inject-use-client.mjs (script lặp
   // toàn bộ dist/*.js + dist/*.mjs nên multi-entry tự động được handle).
