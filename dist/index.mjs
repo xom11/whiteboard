@@ -252,6 +252,22 @@ var GROUP_LABELS = {
   edit: "Ch\u1EC9nh s\u1EEDa",
   transform: "Ph\xE9p bi\u1EBFn h\xECnh"
 };
+var GROUP_ORDER = [
+  "move",
+  "point",
+  "line",
+  "construct",
+  "polygon",
+  "circle",
+  "measure",
+  "edit",
+  "transform"
+];
+var A_CODE = "A".charCodeAt(0);
+function letterForGroup(g) {
+  const idx = GROUP_ORDER.indexOf(g);
+  return idx >= 0 ? String.fromCharCode(A_CODE + idx) : "";
+}
 function objKind(obj) {
   if (!obj) return "other";
   const e = (obj.elType || obj.type || "").toString().toLowerCase();
@@ -2093,7 +2109,7 @@ function useToolHoverTooltip() {
   return { hover, portalReady, showHover, hideHover };
 }
 function DesktopGeometryPanel(props) {
-  const { activeTool, onToolChange, showAxis, showGrid, onShowAxisChange, onShowGridChange, onUndo, canUndo, onClose, isDark } = props;
+  const { activeTool, onToolChange, showAxis, showGrid, onShowAxisChange, onShowGridChange, onUndo, canUndo, onClose, isDark, chordGroup } = props;
   const grouped = useMemo(() => {
     return TOOLS.reduce((acc, t) => {
       var _a;
@@ -2101,7 +2117,11 @@ function DesktopGeometryPanel(props) {
       return acc;
     }, {});
   }, []);
-  const groupKeys = Object.keys(grouped);
+  const groupKeys = useMemo(
+    () => GROUP_ORDER.filter((g) => grouped[g]),
+    [grouped]
+  );
+  const activeGroupTools = chordGroup ? grouped[chordGroup] ?? null : null;
   const { hover, portalReady, showHover, hideHover } = useToolHoverTooltip();
   return /* @__PURE__ */ jsxs(Fragment, { children: [
     /* @__PURE__ */ jsxs(Shell, { title: "H\xECnh h\u1ECDc", icon: GeometryIconHeader, onClose, isDark, children: [
@@ -2143,29 +2163,91 @@ function DesktopGeometryPanel(props) {
           }
         )
       ] }) }),
-      groupKeys.map((group) => /* @__PURE__ */ jsx(Section, { label: GROUP_LABELS[group], children: /* @__PURE__ */ jsx("div", { className: "grid grid-cols-4 gap-1", children: grouped[group].map((t) => {
-        const active = activeTool === t.key;
-        return /* @__PURE__ */ jsx(
-          "button",
+      groupKeys.map((group) => {
+        const isChordActive = chordGroup === group;
+        const dimmed = chordGroup !== null && !isChordActive;
+        return /* @__PURE__ */ jsxs(
+          "section",
           {
-            type: "button",
-            "aria-label": t.label,
-            "aria-pressed": active,
-            "data-tool": t.key,
-            onClick: () => onToolChange(t.key),
-            onMouseEnter: (e) => showHover(e.currentTarget, t),
-            onMouseLeave: hideHover,
-            onFocus: (e) => showHover(e.currentTarget, t),
-            onBlur: hideHover,
+            "data-chord-group": group,
+            "data-chord-active": isChordActive ? "true" : "false",
             className: [
-              "flex h-8 items-center justify-center rounded-md transition",
-              active ? "bg-emerald-600 text-white shadow-sm" : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+              "rounded-md transition",
+              isChordActive ? "bg-emerald-50 ring-1 ring-emerald-400 p-1" : "p-0",
+              dimmed ? "opacity-55" : "opacity-100"
             ].join(" "),
-            children: t.icon
+            children: [
+              /* @__PURE__ */ jsxs("h4", { className: "mb-1.5 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-slate-500", children: [
+                /* @__PURE__ */ jsx("span", { children: GROUP_LABELS[group] }),
+                /* @__PURE__ */ jsx(
+                  "span",
+                  {
+                    "data-testid": `chord-letter-${group}`,
+                    className: [
+                      "font-mono text-[10px] leading-none transition",
+                      isChordActive ? "text-emerald-700 font-bold" : "text-slate-400"
+                    ].join(" "),
+                    children: letterForGroup(group)
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsx("div", { className: "grid grid-cols-4 gap-1", children: grouped[group].map((t, i) => {
+                const active = activeTool === t.key;
+                return /* @__PURE__ */ jsxs(
+                  "button",
+                  {
+                    type: "button",
+                    "aria-label": t.label,
+                    "aria-pressed": active,
+                    "data-tool": t.key,
+                    onClick: () => onToolChange(t.key),
+                    onMouseEnter: (e) => showHover(e.currentTarget, t),
+                    onMouseLeave: hideHover,
+                    onFocus: (e) => showHover(e.currentTarget, t),
+                    onBlur: hideHover,
+                    className: [
+                      "relative flex h-8 items-center justify-center rounded-md transition",
+                      active ? "bg-emerald-600 text-white shadow-sm" : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                    ].join(" "),
+                    children: [
+                      t.icon,
+                      /* @__PURE__ */ jsx(
+                        "span",
+                        {
+                          "data-testid": `chord-num-${t.key}`,
+                          className: [
+                            "pointer-events-none absolute bottom-0 right-0.5 font-mono text-[9px] leading-none transition",
+                            active ? "text-white/70" : isChordActive ? "text-emerald-700 font-bold" : "text-slate-400"
+                          ].join(" "),
+                          children: i + 1
+                        }
+                      )
+                    ]
+                  },
+                  t.key
+                );
+              }) })
+            ]
           },
-          t.key
+          group
         );
-      }) }) }, group))
+      }),
+      chordGroup && activeGroupTools && /* @__PURE__ */ jsxs(
+        "div",
+        {
+          "data-testid": "chord-hint",
+          className: "mt-1 rounded border border-emerald-200 bg-emerald-50/60 px-2 py-1 text-[11px] leading-snug text-slate-600",
+          children: [
+            /* @__PURE__ */ jsx("span", { className: "font-mono font-semibold text-emerald-700", children: letterForGroup(chordGroup) }),
+            /* @__PURE__ */ jsx("span", { className: "mx-1 text-slate-400", children: "\u2192" }),
+            activeGroupTools.map((t, i) => /* @__PURE__ */ jsxs("span", { className: "mr-2 inline-block", children: [
+              /* @__PURE__ */ jsx("span", { className: "font-mono font-semibold text-emerald-700", children: i + 1 }),
+              /* @__PURE__ */ jsx("span", { className: "ml-1", children: t.label })
+            ] }, t.key)),
+            /* @__PURE__ */ jsx("span", { className: "text-slate-400", children: "Esc hu\u1EF7" })
+          ]
+        }
+      )
     ] }),
     portalReady && hover && typeof document !== "undefined" ? createPortal(
       /* @__PURE__ */ jsxs(
@@ -3012,6 +3094,76 @@ var GeometryEditorPanel = forwardRef(
     );
   }
 );
+var A_CODE2 = "a".charCodeAt(0);
+function isFieldFocused() {
+  const ae = typeof document !== "undefined" ? document.activeElement : null;
+  return !!(ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable));
+}
+function useChordShortcut(args) {
+  const { groupOrder, tools, onSelect, enabled } = args;
+  const [chordGroup, setChordGroup] = useState(null);
+  const groupOrderRef = useRef(groupOrder);
+  const toolsRef = useRef(tools);
+  const onSelectRef = useRef(onSelect);
+  const chordGroupRef = useRef(null);
+  groupOrderRef.current = groupOrder;
+  toolsRef.current = tools;
+  onSelectRef.current = onSelect;
+  const cancel = useCallback(() => {
+    chordGroupRef.current = null;
+    setChordGroup(null);
+  }, []);
+  useEffect(() => {
+    if (!enabled) return;
+    const setChord = (next) => {
+      chordGroupRef.current = next;
+      setChordGroup(next);
+    };
+    const onKey = (e) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (isFieldFocused()) return;
+      const key = e.key;
+      const lower = key.length === 1 ? key.toLowerCase() : key;
+      if (key === "Escape") {
+        if (chordGroupRef.current !== null) {
+          e.preventDefault();
+          e.stopPropagation();
+          setChord(null);
+        }
+        return;
+      }
+      if (lower.length === 1 && lower >= "a" && lower <= "z") {
+        const idx = lower.charCodeAt(0) - A_CODE2;
+        if (idx < groupOrderRef.current.length) {
+          e.preventDefault();
+          e.stopPropagation();
+          setChord(groupOrderRef.current[idx]);
+        }
+        return;
+      }
+      if (key >= "1" && key <= "9") {
+        const active = chordGroupRef.current;
+        if (active === null) return;
+        const n = key.charCodeAt(0) - "1".charCodeAt(0);
+        const toolsInGroup = toolsRef.current.filter(
+          (t) => t.group === active
+        );
+        e.preventDefault();
+        e.stopPropagation();
+        if (n < toolsInGroup.length) {
+          onSelectRef.current(toolsInGroup[n].key);
+        }
+        setChord(null);
+        return;
+      }
+    };
+    window.addEventListener("keydown", onKey, { capture: true });
+    return () => {
+      window.removeEventListener("keydown", onKey, { capture: true });
+    };
+  }, [enabled]);
+  return { chordGroup, cancel };
+}
 
 // src/stamps/shared/svgToImage.ts
 async function hashString(input) {
@@ -3136,6 +3288,12 @@ var GeometryStampHost = forwardRef(
     const [geomState, setGeomState] = useState(INITIAL_GEOM_STATE);
     const { isMobile } = useIsMobile();
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const { chordGroup } = useChordShortcut({
+      groupOrder: GROUP_ORDER,
+      tools: TOOLS,
+      onSelect: (key) => panelRef.current?.setTool(key),
+      enabled: !isMobile
+    });
     const initialState = useMemo(() => {
       if (!editingElement) return null;
       if (!isGeometryCustomData(editingElement.customData)) return null;
@@ -3192,7 +3350,8 @@ var GeometryStampHost = forwardRef(
           isDark,
           isMobile,
           drawerOpen,
-          onDrawerClose: () => setDrawerOpen(false)
+          onDrawerClose: () => setDrawerOpen(false),
+          chordGroup
         }
       ),
       /* @__PURE__ */ jsx(
@@ -4464,6 +4623,138 @@ var MiniBoard3D = forwardRef(function MiniBoard3D2({ isDark, initialState }, ref
     }
   );
 });
+var EditorPanel = forwardRef(function EditorPanel2({ isDark, initial, onInsert, onClose, isMobile = false, withLeftPanel = false, onBoardReady, onOpenDrawer }, ref) {
+  const boardRef = useRef(null);
+  const [ready, setReady] = useState(false);
+  const onBoardReadyRef = useRef(onBoardReady);
+  onBoardReadyRef.current = onBoardReady;
+  const setBoard = useCallback((h) => {
+    boardRef.current = h;
+    setReady(!!h);
+    onBoardReadyRef.current?.(h);
+  }, []);
+  const performInsert = useCallback(() => {
+    const board = boardRef.current;
+    if (!board) return false;
+    const log = board.getCreationLog();
+    if (log.length === 0) return false;
+    const view = board.getViewState();
+    const state = {
+      version: 1,
+      bbox: board.getBbox(),
+      view,
+      showAxes: board.getShowAxes(),
+      showMesh: board.getShowMesh(),
+      elements: log
+    };
+    const snap = board.snapshotSVG();
+    onInsert(JSON.stringify(state), snap.svgString, snap.width, snap.height);
+    return true;
+  }, [onInsert]);
+  useImperativeHandle(
+    ref,
+    () => ({
+      tryInsert: performInsert,
+      hasContent: () => (boardRef.current?.getCreationLog().length ?? 0) > 0
+    }),
+    [performInsert]
+  );
+  const handleInsert = useCallback(() => {
+    performInsert();
+  }, [performInsert]);
+  const wrapperStyle = isMobile ? { position: "fixed", inset: 0, zIndex: 40 } : {
+    position: "absolute",
+    top: "50%",
+    left: withLeftPanel ? "calc(50% + 120px)" : "50%",
+    transform: "translate(-50%, -50%)",
+    zIndex: 40
+  };
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      role: "dialog",
+      "aria-label": "D\u1EF1ng h\xECnh h\u1ECDc 3D",
+      "data-testid": "geom3d-editor-panel",
+      "data-stamp-area": "true",
+      "data-mobile-editor": isMobile ? "true" : void 0,
+      style: wrapperStyle,
+      className: [
+        isDark ? "theme--dark " : "",
+        "flex flex-col overflow-hidden bg-white",
+        isMobile ? "h-full w-full" : "h-[600px] max-h-[85vh] w-[760px] max-w-[calc(100vw-280px)] rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5"
+      ].join(" "),
+      children: [
+        /* @__PURE__ */ jsxs("header", { className: "flex items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-cyan-600 px-3 py-2 text-white", children: [
+          isMobile && /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              onClick: onOpenDrawer,
+              "aria-label": "M\u1EDF ng\u0103n c\xF4ng c\u1EE5",
+              className: "-ml-1 inline-flex h-10 w-10 items-center justify-center rounded transition hover:bg-white/15",
+              children: /* @__PURE__ */ jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+                /* @__PURE__ */ jsx("line", { x1: "4", y1: "6", x2: "20", y2: "6" }),
+                /* @__PURE__ */ jsx("line", { x1: "4", y1: "12", x2: "20", y2: "12" }),
+                /* @__PURE__ */ jsx("line", { x1: "4", y1: "18", x2: "20", y2: "18" })
+              ] })
+            }
+          ),
+          /* @__PURE__ */ jsxs("h3", { className: "flex flex-1 items-center gap-2 text-sm font-semibold", children: [
+            /* @__PURE__ */ jsx("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: /* @__PURE__ */ jsx("path", { d: "M4 7 L14 4 L20 7 L14 10 Z M4 7 L4 17 L14 20 L14 10 M14 20 L20 17 L20 7" }) }),
+            "H\xECnh h\u1ECDc kh\xF4ng gian (3D)"
+          ] }),
+          isMobile && /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              onClick: handleInsert,
+              disabled: !ready,
+              "data-testid": "geom3d-insert-btn-mobile",
+              className: "rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50",
+              children: "Ch\xE8n"
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              onClick: onClose,
+              "aria-label": "\u0110\xF3ng",
+              className: "inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15",
+              children: /* @__PURE__ */ jsxs("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
+                /* @__PURE__ */ jsx("line", { x1: "6", y1: "6", x2: "18", y2: "18" }),
+                /* @__PURE__ */ jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
+              ] })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "min-h-0 flex-1", children: /* @__PURE__ */ jsx(MiniBoard3D, { ref: setBoard, isDark, initialState: initial }) }),
+        !isMobile && /* @__PURE__ */ jsxs("footer", { className: "flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2", children: [
+          /* @__PURE__ */ jsx("span", { className: "text-xs text-slate-500", children: "Ch\u1ECDn c\xF4ng c\u1EE5 b\xEAn tr\xE1i, click tr\xEAn b\u1EA3ng \u0111\u1EC3 d\u1EF1ng h\xECnh." }),
+          /* @__PURE__ */ jsxs("div", { className: "flex gap-2", children: [
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: onClose,
+                className: "rounded border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100",
+                children: "Hu\u1EF7"
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: handleInsert,
+                disabled: !ready,
+                "data-testid": "geom3d-insert-btn",
+                className: "rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-blue-700 disabled:opacity-50",
+                children: "Ch\xE8n"
+              }
+            )
+          ] })
+        ] })
+      ]
+    }
+  );
+});
 
 // src/stamps/geometry-3d/editor/tools.ts
 var GROUP_LABELS_3D = {
@@ -4473,6 +4764,18 @@ var GROUP_LABELS_3D = {
   curved: "Kh\u1ED1i cong",
   meta: "Kh\xE1c"
 };
+var GROUP_ORDER_3D = [
+  "view",
+  "primitive",
+  "solid",
+  "curved",
+  "meta"
+];
+var A_CODE_3D = "A".charCodeAt(0);
+function letterForGroup3D(g) {
+  const idx = GROUP_ORDER_3D.indexOf(g);
+  return idx >= 0 ? String.fromCharCode(A_CODE_3D + idx) : "";
+}
 var TOOLS_3D = [
   { key: "move", label: "Di chuy\u1EC3n", group: "view", stepsRequired: 0 },
   { key: "point", label: "\u0110i\u1EC3m", group: "primitive", stepsRequired: 1, hint: "Nh\u1EADp (x, y, z)" },
@@ -4526,8 +4829,8 @@ var TOOLS_3D = [
   },
   { key: "label", label: "Nh\xE3n", group: "meta", stepsRequired: 1, hint: "G\u1EAFn v\xE0o \u0111i\u1EC3m" }
 ];
-function ToolButton({ toolKey, label, hint, active, onClick, icon }) {
-  return /* @__PURE__ */ jsx(
+function ToolButton({ toolKey, label, hint, active, onClick, icon, badge }) {
+  return /* @__PURE__ */ jsxs(
     "button",
     {
       type: "button",
@@ -4538,10 +4841,13 @@ function ToolButton({ toolKey, label, hint, active, onClick, icon }) {
       "data-active": active || void 0,
       "data-tool": toolKey,
       className: [
-        "flex h-8 items-center justify-center rounded-md transition",
+        "relative flex h-8 items-center justify-center rounded-md transition",
         active ? "bg-blue-600 text-white shadow-sm" : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
       ].join(" "),
-      children: icon
+      children: [
+        icon,
+        badge
+      ]
     }
   );
 }
@@ -4702,7 +5008,7 @@ function useHandleState(handle) {
   return { tool, showAxes, showMesh, canUndo };
 }
 function DesktopPanel(props) {
-  const { handle, onResetView, onClose, isDark } = props;
+  const { handle, onResetView, onClose, isDark, chordGroup } = props;
   const { tool, showAxes, showMesh, canUndo } = useHandleState(handle);
   const { hover, portalReady, showHover, hideHover } = useToolHoverTooltip2();
   const grouped = useMemo(() => {
@@ -4715,6 +5021,11 @@ function DesktopPanel(props) {
       {}
     );
   }, []);
+  const orderedGroups = useMemo(
+    () => GROUP_ORDER_3D.filter((g) => grouped[g]),
+    [grouped]
+  );
+  const activeGroupTools = chordGroup ? grouped[chordGroup] ?? null : null;
   return /* @__PURE__ */ jsxs(Fragment, { children: [
     /* @__PURE__ */ jsxs(Shell3, { title: "H\xECnh h\u1ECDc 3D", icon: Geom3DIconHeader, onClose, isDark, children: [
       /* @__PURE__ */ jsx(Section3, { label: "B\u1ED1 c\u1EE5c", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 flex-wrap text-[11px] text-slate-700", children: [
@@ -4766,27 +5077,91 @@ function DesktopPanel(props) {
           }
         )
       ] }) }),
-      Object.entries(grouped).map(([group, tools]) => /* @__PURE__ */ jsx(Section3, { label: GROUP_LABELS_3D[group], children: /* @__PURE__ */ jsx("div", { className: "grid grid-cols-4 gap-1", children: tools.map((t) => /* @__PURE__ */ jsx(
-        ToolButton,
+      orderedGroups.map((group) => {
+        const tools = grouped[group];
+        const isChordActive = chordGroup === group;
+        const dimmed = chordGroup !== null && !isChordActive;
+        return /* @__PURE__ */ jsxs(
+          "section",
+          {
+            "data-chord-group": group,
+            "data-chord-active": isChordActive ? "true" : "false",
+            className: [
+              "rounded-md transition",
+              isChordActive ? "bg-blue-50 ring-1 ring-blue-400 p-1" : "p-0",
+              dimmed ? "opacity-55" : "opacity-100"
+            ].join(" "),
+            children: [
+              /* @__PURE__ */ jsxs("h4", { className: "mb-1.5 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-slate-500", children: [
+                /* @__PURE__ */ jsx("span", { children: GROUP_LABELS_3D[group] }),
+                /* @__PURE__ */ jsx(
+                  "span",
+                  {
+                    "data-testid": `chord-letter-${group}`,
+                    className: [
+                      "font-mono text-[10px] leading-none transition",
+                      isChordActive ? "text-blue-700 font-bold" : "text-slate-400"
+                    ].join(" "),
+                    children: letterForGroup3D(group)
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsx("div", { className: "grid grid-cols-4 gap-1", children: tools.map((t, i) => {
+                const isActive = tool === t.key;
+                return /* @__PURE__ */ jsx(
+                  ToolButton,
+                  {
+                    toolKey: t.key,
+                    label: t.label,
+                    hint: t.hint,
+                    active: isActive,
+                    onClick: () => handle?.setTool(t.key),
+                    icon: /* @__PURE__ */ jsx(
+                      "span",
+                      {
+                        onMouseEnter: (e) => showHover(e.currentTarget.closest("button"), t),
+                        onMouseLeave: hideHover,
+                        onFocus: (e) => showHover(e.currentTarget.closest("button"), t),
+                        onBlur: hideHover,
+                        children: ICONS_3D[t.key]
+                      }
+                    ),
+                    badge: /* @__PURE__ */ jsx(
+                      "span",
+                      {
+                        "data-testid": `chord-num-${t.key}`,
+                        className: [
+                          "pointer-events-none absolute bottom-0 right-0.5 font-mono text-[9px] leading-none transition",
+                          isActive ? "text-white/70" : isChordActive ? "text-blue-700 font-bold" : "text-slate-400"
+                        ].join(" "),
+                        children: i + 1
+                      }
+                    )
+                  },
+                  t.key
+                );
+              }) })
+            ]
+          },
+          group
+        );
+      }),
+      chordGroup && activeGroupTools && /* @__PURE__ */ jsxs(
+        "div",
         {
-          toolKey: t.key,
-          label: t.label,
-          hint: t.hint,
-          active: tool === t.key,
-          onClick: () => handle?.setTool(t.key),
-          icon: /* @__PURE__ */ jsx(
-            "span",
-            {
-              onMouseEnter: (e) => showHover(e.currentTarget.closest("button"), t),
-              onMouseLeave: hideHover,
-              onFocus: (e) => showHover(e.currentTarget.closest("button"), t),
-              onBlur: hideHover,
-              children: ICONS_3D[t.key]
-            }
-          )
-        },
-        t.key
-      )) }) }, group))
+          "data-testid": "chord-hint",
+          className: "mt-1 rounded border border-blue-200 bg-blue-50/60 px-2 py-1 text-[11px] leading-snug text-slate-600",
+          children: [
+            /* @__PURE__ */ jsx("span", { className: "font-mono font-semibold text-blue-700", children: letterForGroup3D(chordGroup) }),
+            /* @__PURE__ */ jsx("span", { className: "mx-1 text-slate-400", children: "\u2192" }),
+            activeGroupTools.map((t, i) => /* @__PURE__ */ jsxs("span", { className: "mr-2 inline-block", children: [
+              /* @__PURE__ */ jsx("span", { className: "font-mono font-semibold text-blue-700", children: i + 1 }),
+              /* @__PURE__ */ jsx("span", { className: "ml-1", children: t.label })
+            ] }, t.key)),
+            /* @__PURE__ */ jsx("span", { className: "text-slate-400", children: "Esc hu\u1EF7" })
+          ]
+        }
+      )
     ] }),
     portalReady && hover && typeof document !== "undefined" ? createPortal(
       /* @__PURE__ */ jsxs(
@@ -4875,199 +5250,6 @@ function LeftPanel3(props) {
   if (props.isMobile) return /* @__PURE__ */ jsx(MobilePanel, { ...props });
   return /* @__PURE__ */ jsx(DesktopPanel, { ...props });
 }
-var EditorPanel = forwardRef(function EditorPanel2({ isDark, initial, onInsert, onClose, isMobile = false }, ref) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const boardRef = useRef(null);
-  const [boardHandle, setBoardHandle] = useState(null);
-  const setBoard = useCallback((h) => {
-    boardRef.current = h;
-    setBoardHandle((prev) => prev === h ? prev : h);
-  }, []);
-  useImperativeHandle(
-    ref,
-    () => ({
-      tryInsert: () => {
-        const board = boardRef.current;
-        if (!board) return false;
-        const log = board.getCreationLog();
-        if (log.length === 0) return false;
-        const view = board.getViewState();
-        const state = {
-          version: 1,
-          bbox: board.getBbox(),
-          view,
-          showAxes: board.getShowAxes(),
-          showMesh: board.getShowMesh(),
-          elements: log
-        };
-        const snap = board.snapshotSVG();
-        onInsert(JSON.stringify(state), snap.svgString, snap.width, snap.height);
-        return true;
-      },
-      hasContent: () => (boardRef.current?.getCreationLog().length ?? 0) > 0
-    }),
-    [onInsert]
-  );
-  const handleResetView = useCallback(() => {
-    boardRef.current?.resetView();
-  }, []);
-  const handleInsert = useCallback(() => {
-    const board = boardRef.current;
-    if (!board) return;
-    const log = board.getCreationLog();
-    if (log.length === 0) return;
-    const view = board.getViewState();
-    const state = {
-      version: 1,
-      bbox: board.getBbox(),
-      view,
-      showAxes: board.getShowAxes(),
-      showMesh: board.getShowMesh(),
-      elements: log
-    };
-    const snap = board.snapshotSVG();
-    onInsert(JSON.stringify(state), snap.svgString, snap.width, snap.height);
-  }, [onInsert]);
-  const wrapperStyle = isMobile ? {
-    position: "fixed",
-    inset: 0,
-    background: "#fff",
-    zIndex: 10,
-    display: "flex",
-    flexDirection: "column",
-    overflow: "hidden"
-  } : {
-    position: "absolute",
-    left: "50%",
-    top: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 900,
-    height: 700,
-    background: "#fff",
-    boxShadow: "0 6px 32px rgba(0,0,0,0.2)",
-    borderRadius: 8,
-    zIndex: 10,
-    display: "flex",
-    flexDirection: "column",
-    overflow: "hidden"
-  };
-  return /* @__PURE__ */ jsxs(
-    "div",
-    {
-      "data-testid": "geom3d-editor-panel",
-      "data-stamp-area": "true",
-      "data-mobile-editor": isMobile ? "true" : void 0,
-      style: wrapperStyle,
-      className: isDark ? "theme--dark" : void 0,
-      children: [
-        /* @__PURE__ */ jsxs(
-          "div",
-          {
-            style: {
-              display: "flex",
-              gap: 8,
-              padding: "8px 12px",
-              borderBottom: "1px solid #eee",
-              alignItems: "center"
-            },
-            children: [
-              isMobile && /* @__PURE__ */ jsx(
-                "button",
-                {
-                  type: "button",
-                  onClick: () => setDrawerOpen(true),
-                  "aria-label": "M\u1EDF ng\u0103n c\xF4ng c\u1EE5",
-                  style: {
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    height: 40,
-                    width: 40,
-                    border: 0,
-                    background: "transparent",
-                    borderRadius: 6,
-                    cursor: "pointer",
-                    color: "inherit"
-                  },
-                  children: /* @__PURE__ */ jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
-                    /* @__PURE__ */ jsx("line", { x1: "4", y1: "6", x2: "20", y2: "6" }),
-                    /* @__PURE__ */ jsx("line", { x1: "4", y1: "12", x2: "20", y2: "12" }),
-                    /* @__PURE__ */ jsx("line", { x1: "4", y1: "18", x2: "20", y2: "18" })
-                  ] })
-                }
-              ),
-              /* @__PURE__ */ jsx("span", { style: { fontWeight: 600, flex: 1 }, children: "H\xECnh h\u1ECDc kh\xF4ng gian (3D)" }),
-              isMobile && /* @__PURE__ */ jsx(
-                "button",
-                {
-                  type: "button",
-                  onClick: handleInsert,
-                  "data-testid": "geom3d-insert-btn-mobile",
-                  style: {
-                    background: "#2563eb",
-                    color: "#fff",
-                    border: 0,
-                    padding: "6px 14px",
-                    borderRadius: 6,
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: "pointer"
-                  },
-                  children: "Ch\xE8n"
-                }
-              ),
-              /* @__PURE__ */ jsx(
-                "button",
-                {
-                  type: "button",
-                  onClick: onClose,
-                  "aria-label": "\u0110\xF3ng",
-                  style: {
-                    border: "1px solid #cbd5e1",
-                    background: "#fff",
-                    padding: isMobile ? "6px 10px" : "4px 10px",
-                    borderRadius: 6,
-                    cursor: "pointer",
-                    fontSize: 13
-                  },
-                  children: "\u0110\xF3ng"
-                }
-              )
-            ]
-          }
-        ),
-        /* @__PURE__ */ jsxs("div", { style: { position: "relative", flex: 1, minHeight: 0 }, children: [
-          /* @__PURE__ */ jsx(
-            LeftPanel3,
-            {
-              handle: boardHandle,
-              onResetView: handleResetView,
-              onClose,
-              isDark,
-              isMobile,
-              drawerOpen,
-              onDrawerClose: () => setDrawerOpen(false)
-            }
-          ),
-          /* @__PURE__ */ jsx(
-            "div",
-            {
-              style: {
-                position: "absolute",
-                left: isMobile ? 0 : 120,
-                top: 0,
-                right: 0,
-                bottom: 0,
-                overflow: "hidden"
-              },
-              children: /* @__PURE__ */ jsx(MiniBoard3D, { ref: setBoard, isDark, initialState: initial })
-            }
-          )
-        ] })
-      ]
-    }
-  );
-});
 
 // src/stamps/geometry-3d/serialize.ts
 function isGeometry3DCustomData(data) {
@@ -5170,10 +5352,24 @@ var Geometry3DStampHost = forwardRef(
   function Geometry3DStampHost2({ api, editingElement, onClose, isDark }, ref) {
     const editorRef = useRef(null);
     const { isMobile } = useIsMobile();
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [boardHandle, setBoardHandle] = useState(null);
     const initial = useMemo(
       () => parseInitial(editingElement),
       [editingElement]
     );
+    const handleBoardReady = useCallback((h) => {
+      setBoardHandle((prev) => prev === h ? prev : h);
+    }, []);
+    const { chordGroup } = useChordShortcut({
+      groupOrder: GROUP_ORDER_3D,
+      tools: TOOLS_3D,
+      onSelect: (key) => boardHandle?.setTool(key),
+      enabled: !isMobile
+    });
+    const handleResetView = useCallback(() => {
+      boardHandle?.resetView();
+    }, [boardHandle]);
     const handleInsert = useCallback(
       async (jsonState, svgString, width, height) => {
         if (!api) return;
@@ -5200,17 +5396,35 @@ var Geometry3DStampHost = forwardRef(
       }),
       []
     );
-    return /* @__PURE__ */ jsx(
-      EditorPanel,
-      {
-        ref: editorRef,
-        isDark,
-        initial,
-        onInsert: handleInsert,
-        onClose,
-        isMobile
-      }
-    );
+    return /* @__PURE__ */ jsxs(Fragment, { children: [
+      /* @__PURE__ */ jsx(
+        LeftPanel3,
+        {
+          handle: boardHandle,
+          onResetView: handleResetView,
+          onClose,
+          isDark,
+          isMobile,
+          drawerOpen,
+          onDrawerClose: () => setDrawerOpen(false),
+          chordGroup
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        EditorPanel,
+        {
+          ref: editorRef,
+          isDark,
+          initial,
+          onInsert: handleInsert,
+          onClose,
+          isMobile,
+          withLeftPanel: !isMobile,
+          onBoardReady: handleBoardReady,
+          onOpenDrawer: () => setDrawerOpen(true)
+        }
+      )
+    ] });
   }
 );
 var Geometry3DIcon = /* @__PURE__ */ jsxs(

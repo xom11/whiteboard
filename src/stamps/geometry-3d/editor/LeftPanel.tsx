@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { TOOLS_3D, GROUP_LABELS_3D, type GeomTool3D, type ToolDef3D, type ToolGroup3D } from './tools';
+import { TOOLS_3D, GROUP_LABELS_3D, GROUP_ORDER_3D, letterForGroup3D, type GeomTool3D, type ToolDef3D, type ToolGroup3D } from './tools';
 import { ToolButton, ICONS_3D } from './toolButtons';
 import type { MiniBoard3DHandle } from './MiniBoard3D';
 import { MobileToolDrawer, type MobileToolGroup } from '../../shared/MobileToolDrawer';
@@ -126,6 +126,8 @@ interface Props {
   isMobile?: boolean;
   drawerOpen?: boolean;
   onDrawerClose?: () => void;
+  /** Chord shortcut: group đang được focus (sau khi bấm letter). null = không active. */
+  chordGroup?: ToolGroup3D | null;
 }
 
 // ---------- Desktop tooltip helper ----------
@@ -187,7 +189,7 @@ function useHandleState(handle: MiniBoard3DHandle | null) {
 // ---------- Desktop panel ----------
 
 function DesktopPanel(props: Props) {
-  const { handle, onResetView, onClose, isDark } = props;
+  const { handle, onResetView, onClose, isDark, chordGroup } = props;
   const { tool, showAxes, showMesh, canUndo } = useHandleState(handle);
   const { hover, portalReady, showHover, hideHover } = useToolHoverTooltip();
 
@@ -200,6 +202,15 @@ function DesktopPanel(props: Props) {
       {} as Record<ToolGroup3D, ToolDef3D[]>,
     );
   }, []);
+
+  const orderedGroups = useMemo(
+    () => GROUP_ORDER_3D.filter((g) => grouped[g]),
+    [grouped],
+  );
+
+  const activeGroupTools: ToolDef3D[] | null = chordGroup
+    ? (grouped[chordGroup] ?? null)
+    : null;
 
   return (
     <>
@@ -246,32 +257,101 @@ function DesktopPanel(props: Props) {
           </div>
         </Section>
 
-        {(Object.entries(grouped) as [ToolGroup3D, ToolDef3D[]][]).map(([group, tools]) => (
-          <Section key={group} label={GROUP_LABELS_3D[group]}>
-            <div className="grid grid-cols-4 gap-1">
-              {tools.map((t) => (
-                <ToolButton
-                  key={t.key}
-                  toolKey={t.key}
-                  label={t.label}
-                  hint={t.hint}
-                  active={tool === t.key}
-                  onClick={() => handle?.setTool(t.key)}
-                  icon={
-                    <span
-                      onMouseEnter={(e) => showHover(e.currentTarget.closest('button') as HTMLElement, t)}
-                      onMouseLeave={hideHover}
-                      onFocus={(e) => showHover(e.currentTarget.closest('button') as HTMLElement, t)}
-                      onBlur={hideHover}
-                    >
-                      {ICONS_3D[t.key]}
-                    </span>
-                  }
-                />
-              ))}
-            </div>
-          </Section>
-        ))}
+        {orderedGroups.map((group) => {
+          const tools = grouped[group];
+          const isChordActive = chordGroup === group;
+          const dimmed = chordGroup !== null && !isChordActive;
+          return (
+            <section
+              key={group}
+              data-chord-group={group}
+              data-chord-active={isChordActive ? 'true' : 'false'}
+              className={[
+                'rounded-md transition',
+                isChordActive
+                  ? 'bg-blue-50 ring-1 ring-blue-400 p-1'
+                  : 'p-0',
+                dimmed ? 'opacity-55' : 'opacity-100',
+              ].join(' ')}
+            >
+              <h4 className="mb-1.5 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                <span>{GROUP_LABELS_3D[group]}</span>
+                <span
+                  data-testid={`chord-letter-${group}`}
+                  className={[
+                    'font-mono text-[10px] leading-none transition',
+                    isChordActive
+                      ? 'text-blue-700 font-bold'
+                      : 'text-slate-400',
+                  ].join(' ')}
+                >
+                  {letterForGroup3D(group)}
+                </span>
+              </h4>
+              <div className="grid grid-cols-4 gap-1">
+                {tools.map((t, i) => {
+                  const isActive = tool === t.key;
+                  return (
+                    <ToolButton
+                      key={t.key}
+                      toolKey={t.key}
+                      label={t.label}
+                      hint={t.hint}
+                      active={isActive}
+                      onClick={() => handle?.setTool(t.key)}
+                      icon={
+                        <span
+                          onMouseEnter={(e) => showHover(e.currentTarget.closest('button') as HTMLElement, t)}
+                          onMouseLeave={hideHover}
+                          onFocus={(e) => showHover(e.currentTarget.closest('button') as HTMLElement, t)}
+                          onBlur={hideHover}
+                        >
+                          {ICONS_3D[t.key]}
+                        </span>
+                      }
+                      badge={
+                        <span
+                          data-testid={`chord-num-${t.key}`}
+                          className={[
+                            'pointer-events-none absolute bottom-0 right-0.5 font-mono text-[9px] leading-none transition',
+                            isActive
+                              ? 'text-white/70'
+                              : isChordActive
+                                ? 'text-blue-700 font-bold'
+                                : 'text-slate-400',
+                          ].join(' ')}
+                        >
+                          {i + 1}
+                        </span>
+                      }
+                    />
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })}
+
+        {chordGroup && activeGroupTools && (
+          <div
+            data-testid="chord-hint"
+            className="mt-1 rounded border border-blue-200 bg-blue-50/60 px-2 py-1 text-[11px] leading-snug text-slate-600"
+          >
+            <span className="font-mono font-semibold text-blue-700">
+              {letterForGroup3D(chordGroup)}
+            </span>
+            <span className="mx-1 text-slate-400">→</span>
+            {activeGroupTools.map((t, i) => (
+              <span key={t.key} className="mr-2 inline-block">
+                <span className="font-mono font-semibold text-blue-700">
+                  {i + 1}
+                </span>
+                <span className="ml-1">{t.label}</span>
+              </span>
+            ))}
+            <span className="text-slate-400">Esc huỷ</span>
+          </div>
+        )}
       </Shell>
 
       {portalReady && hover && typeof document !== 'undefined'

@@ -11,6 +11,8 @@ import {
 import { EditorPanel, type EditorPanelHandle } from './editor/EditorPanel';
 import { LeftPanel as Geometry3DLeftPanel } from './editor/LeftPanel';
 import type { MiniBoard3DHandle } from './editor/MiniBoard3D';
+import { GROUP_ORDER_3D, TOOLS_3D, type GeomTool3D } from './editor/tools';
+import { useChordShortcut } from '../shared/useChordShortcut';
 import { insertStampImage } from '../shared/insertImage';
 import type {
   StampHostProps,
@@ -58,6 +60,13 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
       setBoardHandle((prev) => (prev === h ? prev : h));
     }, []);
 
+    const { chordGroup } = useChordShortcut({
+      groupOrder: GROUP_ORDER_3D,
+      tools: TOOLS_3D as unknown as Array<{ key: string; group: typeof GROUP_ORDER_3D[number] }>,
+      onSelect: (key) => boardHandle?.setTool(key as GeomTool3D),
+      enabled: !isMobile,
+    });
+
     const handleResetView = useCallback(() => {
       boardHandle?.resetView();
     }, [boardHandle]);
@@ -100,6 +109,7 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
           isMobile={isMobile}
           drawerOpen={drawerOpen}
           onDrawerClose={() => setDrawerOpen(false)}
+          chordGroup={chordGroup}
         />
         <EditorPanel
           ref={editorRef}
