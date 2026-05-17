@@ -1,4 +1,4 @@
-import type { ForwardRefExoticComponent, ReactNode, RefAttributes } from 'react';
+import type { ComponentType, ReactNode, RefAttributes } from 'react';
 import type { ExcalidrawElement } from '../../types';
 
 /**
@@ -50,7 +50,11 @@ export interface StampHostHandle {
   hasContent(): boolean;
 }
 
-export type StampHostComponent = ForwardRefExoticComponent<
+/**
+ * Component contract của Host. Chấp nhận cả `forwardRef` thông thường lẫn
+ * `React.lazy(() => import('./host'))` (LazyExoticComponent forwards ref).
+ */
+export type StampHostComponent = ComponentType<
   StampHostProps & RefAttributes<StampHostHandle>
 >;
 
