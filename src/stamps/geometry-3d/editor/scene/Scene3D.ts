@@ -1,4 +1,5 @@
-import type { Constraint, Scene3DObject } from './types';
+import { nextPointLabel, nextDerivedLabel } from './labels';
+import type { Constraint, Scene3DObject, ObjectKind } from './types';
 
 type Listener<E> = (event: E) => void;
 
@@ -32,14 +33,31 @@ export class Scene3D {
 
   addPoint(constraint: Constraint, label?: string, color?: string): string {
     const id = this.nextId('p');
+    const existingLabels = this.list().filter((o) => o.kind === 'point').map((o) => o.label);
+    const autoLabel = label ?? nextPointLabel(existingLabels);
     const obj: Scene3DObject = {
       kind: 'point',
       id,
-      label: label ?? id,
+      label: autoLabel,
       visible: true,
       color,
       constraint,
     };
+    this.objects.set(id, obj);
+    this.order.push(id);
+    this.listeners.add.forEach((cb) => cb(obj));
+    return id;
+  }
+
+  addObject<K extends Exclude<ObjectKind, 'point'>>(
+    kind: K,
+    spec: Omit<Extract<Scene3DObject, { kind: K }>, 'id' | 'label' | 'visible' | 'kind'>,
+    label?: string,
+  ): string {
+    const id = this.nextId(kind[0]);
+    const existingLabels = this.list().filter((o) => o.kind === kind).map((o) => o.label);
+    const autoLabel = label ?? nextDerivedLabel(kind, existingLabels);
+    const obj = { id, label: autoLabel, visible: true, kind, ...spec } as unknown as Scene3DObject;
     this.objects.set(id, obj);
     this.order.push(id);
     this.listeners.add.forEach((cb) => cb(obj));

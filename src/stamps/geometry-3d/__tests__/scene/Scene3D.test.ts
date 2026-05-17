@@ -32,3 +32,21 @@ test('list returns objects in insertion order', () => {
   const b = scene.addPoint({ kind: 'free', x: 1, y: 0, z: 0 });
   expect(scene.list().map((o) => o.id)).toEqual([a, b]);
 });
+
+test('addObject creates segment with auto-label', () => {
+  const scene = new Scene3D();
+  const p1 = scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
+  const p2 = scene.addPoint({ kind: 'free', x: 1, y: 0, z: 0 });
+  const s = scene.addObject('segment', { p1, p2 });
+  const seg = scene.get(s);
+  expect(seg?.kind).toBe('segment');
+  expect(seg?.label).toBe('a');
+});
+
+test('point labels are auto-assigned A, B, C', () => {
+  const scene = new Scene3D();
+  const a = scene.get(scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 }));
+  const b = scene.get(scene.addPoint({ kind: 'free', x: 1, y: 0, z: 0 }));
+  const c = scene.get(scene.addPoint({ kind: 'free', x: 2, y: 0, z: 0 }));
+  expect([a?.label, b?.label, c?.label]).toEqual(['A', 'B', 'C']);
+});
