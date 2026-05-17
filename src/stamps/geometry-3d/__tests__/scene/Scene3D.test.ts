@@ -105,4 +105,36 @@ describe('Scene3D — history', () => {
     expect(events[0]).toBe('reset');
     expect(events.some((e) => e === `add:${id1}`)).toBe(true);
   });
+
+  it('addPoint → undo → state rỗng + canUndo=false', () => {
+    const scene = new Scene3D();
+    expect(scene.canUndo()).toBe(false);
+    scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
+    expect(scene.canUndo()).toBe(true);
+    expect(scene.canRedo()).toBe(false);
+    scene.undo();
+    expect(scene.list().length).toBe(0);
+    expect(scene.canUndo()).toBe(false);
+    expect(scene.canRedo()).toBe(true);
+  });
+
+  it('undo → redo → trở lại state cũ', () => {
+    const scene = new Scene3D();
+    const id1 = scene.addPoint({ kind: 'free', x: 1, y: 2, z: 3 });
+    scene.undo();
+    scene.redo();
+    expect(scene.list().length).toBe(1);
+    expect(scene.get(id1)).toBeDefined();
+    expect(scene.canUndo()).toBe(true);
+    expect(scene.canRedo()).toBe(false);
+  });
+
+  it('mutation mới sau undo clears redo future', () => {
+    const scene = new Scene3D();
+    scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
+    scene.undo();
+    expect(scene.canRedo()).toBe(true);
+    scene.addPoint({ kind: 'free', x: 5, y: 5, z: 5 });
+    expect(scene.canRedo()).toBe(false);
+  });
 });

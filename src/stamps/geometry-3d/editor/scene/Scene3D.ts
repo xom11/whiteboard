@@ -20,6 +20,10 @@ export class Scene3D {
     reset: new Set<Listener<void>>(),
   };
 
+  private historyPast: SceneSnapshot[] = [];
+  private historyFuture: SceneSnapshot[] = [];
+  private historySuspended = false;
+
   on(event: 'add', cb: Listener<Scene3DObject>): () => void;
   on(event: 'change', cb: Listener<Scene3DObject>): () => void;
   on(event: 'delete', cb: Listener<string>): () => void;
@@ -38,6 +42,7 @@ export class Scene3D {
   }
 
   addPoint(constraint: Constraint, label?: string, color?: string): string {
+    this.capture();
     const id = this.nextId('p');
     const existingLabels = this.list().filter((o) => o.kind === 'point').map((o) => o.label);
     const autoLabel = label ?? nextPointLabel(existingLabels);
@@ -60,6 +65,7 @@ export class Scene3D {
     spec: Omit<Extract<Scene3DObject, { kind: K }>, 'id' | 'label' | 'visible' | 'kind'>,
     label?: string,
   ): string {
+    this.capture();
     const id = this.nextId(kind[0]);
     const existingLabels = this.list().filter((o) => o.kind === kind).map((o) => o.label);
     const autoLabel = label ?? nextDerivedLabel(kind, existingLabels);
@@ -71,6 +77,7 @@ export class Scene3D {
   }
 
   insert(obj: Scene3DObject): void {
+    this.capture();
     if (this.objects.has(obj.id)) {
       throw new Error(`Scene3D.insert: id ${obj.id} already exists`);
     }
@@ -131,6 +138,7 @@ export class Scene3D {
 
   delete(id: string): void {
     if (!this.objects.has(id)) return;
+    this.capture();
     const toDelete = this.collectDependents(id);
     for (const dependentId of toDelete) {
       this.objects.delete(dependentId);
@@ -140,6 +148,7 @@ export class Scene3D {
   }
 
   reset(): void {
+    this.capture();
     this.objects.clear();
     this.order = [];
     this.counter = 0;
@@ -180,5 +189,33 @@ export class Scene3D {
       const obj = this.objects.get(id);
       if (obj) this.listeners.add.forEach((cb) => cb(obj));
     }
+  }
+
+  private capture(): void {
+    if (this.historySuspended) return;
+    this.historyPast.push(this.snapshot());
+    this.historyFuture = [];
+  }
+
+  canUndo(): boolean {
+    return this.historyPast.length > 0;
+  }
+
+  canRedo(): boolean {
+    return this.historyFuture.length > 0;
+  }
+
+  undo(): void {
+    const prev = this.historyPast.pop();
+    if (!prev) return;
+    this.historyFuture.push(this.snapshot());
+    this.restore(prev);
+  }
+
+  redo(): void {
+    const next = this.historyFuture.pop();
+    if (!next) return;
+    this.historyPast.push(this.snapshot());
+    this.restore(next);
   }
 }
