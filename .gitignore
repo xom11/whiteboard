@@ -8,14 +8,11 @@ coverage/
 .tsbuildinfo
 .next/
 .playwright-mcp/
-dark-mode-*.png
 .worktrees/
-after-segment.png
-playground-initial.png
 examples/playground/dist/
 
-# Playwright screenshots — never commit
-*.png
+# Screenshots ở root — phải để vào docs/screenshots/
+/*.png
 
 # superpowers brainstorming mockups
 .superpowers/
