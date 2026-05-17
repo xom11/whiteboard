@@ -1,9 +1,13 @@
 import { screenToRay, type View3DLike } from './rayCast';
-import { rayGround, rayLineSegment, raySphere } from './intersect';
+import { rayGround, rayLineSegment, rayPlane, raySphere } from './intersect';
 import { findSnapPoint } from './snapping';
 import { constraintToWorld } from '../scene/constraintMath';
 import type { Scene3D } from '../scene/Scene3D';
-import type { Constraint, Vec3 } from '../scene/types';
+import type { Vec3 } from '../scene/types';
+
+// NOTE (v0.8.0): onPolygon and onLine SceneHit variants are typed but not yet
+// produced by hitTest. They will be added once tools require placing points
+// on user-defined lines/polygons (deferred from Task 2.4).
 
 export type SceneHit =
   | { kind: 'existingPoint'; pointId: string }
@@ -70,7 +74,32 @@ export function hitTest(
     }
   }
 
-  // 4. Sphere result (if found)
+  // 4. User-defined planes
+  let bestPlane: { id: string; t: number; world: Vec3; basis: NonNullable<ReturnType<typeof planeBasis>> } | null = null;
+  for (const obj of scene.list()) {
+    if (obj.kind !== 'plane' || !obj.visible) continue;
+    const basis = planeBasis(obj, scene);
+    if (!basis) continue;
+    const ph = rayPlane(ray, { point: basis.origin, normal: basis.normal });
+    if (ph && (bestPlane === null || ph.t < bestPlane.t)) {
+      bestPlane = { id: obj.id, t: ph.t, world: ph.point, basis };
+    }
+  }
+  // Compare best plane to best sphere — return whichever is closer
+  if (bestPlane && (!bestSphere || bestPlane.t < bestSphere.t)) {
+    const rel: Vec3 = [
+      bestPlane.world[0] - bestPlane.basis.origin[0],
+      bestPlane.world[1] - bestPlane.basis.origin[1],
+      bestPlane.world[2] - bestPlane.basis.origin[2],
+    ];
+    const b1n = dot3(bestPlane.basis.basis1, bestPlane.basis.basis1);
+    const b2n = dot3(bestPlane.basis.basis2, bestPlane.basis.basis2);
+    const u = b1n === 0 ? 0 : dot3(rel, bestPlane.basis.basis1) / b1n;
+    const v = b2n === 0 ? 0 : dot3(rel, bestPlane.basis.basis2) / b2n;
+    return { kind: 'onPlane', planeId: bestPlane.id, u, v, world: bestPlane.world };
+  }
+
+  // 5. Sphere result (if found)
   if (bestSphere) {
     const sph = scene.get(bestSphere.id);
     if (sph && sph.kind === 'sphere') {
@@ -88,7 +117,7 @@ export function hitTest(
     }
   }
 
-  // 5. Ground
+  // 6. Ground
   const g = rayGround(ray);
   if (g) return { kind: 'onGround', world: g.point };
 
@@ -114,6 +143,35 @@ function distScreenPointToSegment(
   return Math.hypot(p.x - px, p.y - py);
 }
 
-// The Constraint import is kept for future task 2.4 to extend with onPlane/onLine/onPolygon hits.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type _ReservedForNextTask = Constraint;
+function planeBasis(
+  planeObj: { p1: string; p2: string; p3: string },
+  scene: Scene3D,
+): { origin: Vec3; basis1: Vec3; basis2: Vec3; normal: Vec3 } | null {
+  const p1Obj = scene.get(planeObj.p1);
+  const p2Obj = scene.get(planeObj.p2);
+  const p3Obj = scene.get(planeObj.p3);
+  if (!p1Obj || p1Obj.kind !== 'point') return null;
+  if (!p2Obj || p2Obj.kind !== 'point') return null;
+  if (!p3Obj || p3Obj.kind !== 'point') return null;
+  const p1 = constraintToWorld(p1Obj.constraint, scene);
+  const p2 = constraintToWorld(p2Obj.constraint, scene);
+  const p3 = constraintToWorld(p3Obj.constraint, scene);
+  const basis1: Vec3 = [p2[0]-p1[0], p2[1]-p1[1], p2[2]-p1[2]];
+  const tmp: Vec3 = [p3[0]-p1[0], p3[1]-p1[1], p3[2]-p1[2]];
+  const cx = basis1[1]*tmp[2] - basis1[2]*tmp[1];
+  const cy = basis1[2]*tmp[0] - basis1[0]*tmp[2];
+  const cz = basis1[0]*tmp[1] - basis1[1]*tmp[0];
+  const cLen = Math.hypot(cx, cy, cz);
+  if (cLen === 0) return null;
+  const normal: Vec3 = [cx / cLen, cy / cLen, cz / cLen];
+  const basis2: Vec3 = [
+    normal[1]*basis1[2] - normal[2]*basis1[1],
+    normal[2]*basis1[0] - normal[0]*basis1[2],
+    normal[0]*basis1[1] - normal[1]*basis1[0],
+  ];
+  return { origin: p1, basis1, basis2, normal };
+}
+
+function dot3(a: Vec3, b: Vec3): number {
+  return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+}

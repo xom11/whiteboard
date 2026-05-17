@@ -31,3 +31,33 @@ test('hitTest snaps to z-axis when click near it', () => {
   const hit = hitTest({ x: 501, y: 200 }, mockView as never, scene);
   expect(['onAxis', 'onGround']).toContain(hit.kind);
 });
+
+test('hitTest onPlane: ray through user plane returns onPlane hit', () => {
+  const scene = new Scene3D();
+  const a = scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
+  const b = scene.addPoint({ kind: 'free', x: 1, y: 0, z: 0 });
+  const c = scene.addPoint({ kind: 'free', x: 0, y: 1, z: 0 });
+  const plane = scene.addObject('plane', { p1: a, p2: b, p3: c });
+  // The plane in this test coincides with ground z=0; hit should prefer plane over ground.
+  const hit = hitTest({ x: 700, y: 500 }, mockView as never, scene);
+  expect(hit.kind).toBe('onPlane');
+  if (hit.kind === 'onPlane') expect(hit.planeId).toBe(plane);
+});
+
+test('hitTest onPlane: u, v are basis coefficients', () => {
+  const scene = new Scene3D();
+  // Plane through (0,0,0), (1,0,0), (0,1,0) — same as xy plane
+  const a = scene.addPoint({ kind: 'free', x: 0, y: 0, z: 0 });
+  const b = scene.addPoint({ kind: 'free', x: 1, y: 0, z: 0 });
+  const c = scene.addPoint({ kind: 'free', x: 0, y: 1, z: 0 });
+  scene.addObject('plane', { p1: a, p2: b, p3: c });
+  // Click at screen (700, 500) → world (2, -1, 0) via the orthographic mock.
+  // basis1 = (1,0,0), basis2 = (0,1,0). u = 2, v = -1.
+  const hit = hitTest({ x: 700, y: 500 }, mockView as never, scene);
+  expect(hit.kind).toBe('onPlane');
+  if (hit.kind === 'onPlane') {
+    expect(hit.u).toBeCloseTo(2, 5);
+    expect(hit.v).toBeCloseTo(-1, 5);
+    expect(hit.world[2]).toBeCloseTo(0, 5);
+  }
+});
