@@ -66,4 +66,37 @@ describe('sceneStore', () => {
     setItem.mockRestore();
     warn.mockRestore();
   });
+
+  test('storageKey "default" vẫn accept (backward compat)', () => {
+    expect(() => writeScene('default', { elements: [], appState: {} as never })).not.toThrow();
+    expect(readScene('default')).not.toBeNull();
+  });
+
+  test('storageKey invalid throw ở read/write/clear', () => {
+    expect(() => readScene('bad:key')).toThrow(/Invalid storageKey/);
+    expect(() => writeScene('bad:key', { elements: [], appState: {} as never })).toThrow(
+      /Invalid storageKey/,
+    );
+    expect(() => clearScene('bad:key')).toThrow(/Invalid storageKey/);
+  });
+
+  test('prototype pollution payload trong stored scene bị strip', () => {
+    window.localStorage.setItem(
+      'whiteboard:scene:poison',
+      '{"version":1,"elements":[],"appState":{},"__proto__":{"polluted":1}}',
+    );
+    const got = readScene('poison');
+    expect(got).not.toBeNull();
+    expect((Object.prototype as unknown as { polluted?: number }).polluted).toBeUndefined();
+  });
+
+  test('elements không phải array → null (validation reject)', () => {
+    window.localStorage.setItem(
+      'whiteboard:scene:bad3',
+      JSON.stringify({ version: 1, elements: 'nope', appState: {}, savedAt: 0 }),
+    );
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(readScene('bad3')).toBeNull();
+    warn.mockRestore();
+  });
 });

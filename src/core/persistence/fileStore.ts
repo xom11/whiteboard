@@ -1,4 +1,5 @@
 import type { BinaryFiles } from '../../types';
+import { validateStorageKey } from './validation';
 
 const DB_NAME = 'whiteboard-files';
 const DB_VERSION = 1;
@@ -83,12 +84,13 @@ async function withStore<T>(
 }
 
 export async function readFiles(storageKey: string): Promise<BinaryFiles> {
+  const validKey = validateStorageKey(storageKey);
   try {
     return await withStore(
       'readonly',
       (store, setResult, fail) => {
         const out: BinaryFiles = {};
-        const req = store.index('storageKey').openCursor(IDBKeyRange.only(storageKey));
+        const req = store.index('storageKey').openCursor(IDBKeyRange.only(validKey));
         req.onsuccess = () => {
           const cursor = req.result;
           if (!cursor) {
@@ -115,6 +117,7 @@ export async function readFiles(storageKey: string): Promise<BinaryFiles> {
 }
 
 export async function writeFiles(storageKey: string, files: BinaryFiles): Promise<void> {
+  const validKey = validateStorageKey(storageKey);
   const entries = Object.entries(files);
   if (entries.length === 0) return;
   try {
@@ -139,7 +142,7 @@ export async function writeFiles(storageKey: string, files: BinaryFiles): Promis
             }
             const rec: FileRecord = {
               id,
-              storageKey,
+              storageKey: validKey,
               dataURL: ff.dataURL,
               mimeType: ff.mimeType,
               created: ff.created ?? now,
@@ -163,11 +166,12 @@ export async function pruneFiles(
   storageKey: string,
   keepIds: ReadonlySet<string>,
 ): Promise<void> {
+  const validKey = validateStorageKey(storageKey);
   try {
     await withStore<void>(
       'readwrite',
       (store, setResult, fail) => {
-        const req = store.index('storageKey').openCursor(IDBKeyRange.only(storageKey));
+        const req = store.index('storageKey').openCursor(IDBKeyRange.only(validKey));
         req.onsuccess = () => {
           const cursor = req.result;
           if (!cursor) {
@@ -193,11 +197,12 @@ export async function pruneFiles(
 }
 
 export async function clearAll(storageKey: string): Promise<void> {
+  const validKey = validateStorageKey(storageKey);
   try {
     await withStore<void>(
       'readwrite',
       (store, setResult, fail) => {
-        const req = store.index('storageKey').openCursor(IDBKeyRange.only(storageKey));
+        const req = store.index('storageKey').openCursor(IDBKeyRange.only(validKey));
         req.onsuccess = () => {
           const cursor = req.result;
           if (!cursor) {
