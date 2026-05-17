@@ -257,51 +257,11 @@
   color: rgb(167 243 208);
 }
 
-/* === graph-2d styles === */
-.graph-left-panel {
-  display: flex;
-  flex-direction: column;
-  width: 280px;
-  flex-shrink: 0;
-  background: var(--color-surface-low, #f9fafb);
-  border-right: 1px solid var(--color-border, #e5e7eb);
-  font-family: var(--ui-font, system-ui);
-}
-.graph-left-panel.is-mobile {
-  position: fixed;
-  top: 0; left: 0; bottom: 0;
-  z-index: 50;
-  box-shadow: 2px 0 8px rgba(0,0,0,0.2);
-  transition: transform 0.2s ease;
-}
-.graph-left-panel.is-mobile.is-closed {
-  transform: translateX(-100%);
-}
-.graph-tool-strip {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 4px;
-  padding: 8px;
-  border-bottom: 1px solid var(--color-border, #e5e7eb);
-}
-.graph-tool-btn {
-  width: 36px; height: 36px;
-  display: flex; align-items: center; justify-content: center;
-  background: white;
-  border: 1px solid var(--color-border, #d1d5db);
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-}
-.graph-tool-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.graph-tool-btn.is-active {
-  background: #dbeafe;
-  border-color: #2563eb;
-}
-.graph-tool-strip-sep {
-  width: 100%; height: 1px; background: var(--color-border, #e5e7eb); margin: 4px 0;
-}
+/* === graph-2d styles ===
+ * Panel chrome (positioning, header, sections) handled by Tailwind in LeftPanel.tsx
+ * and EditorPanel.tsx. CSS classes below cover AlgebraView/FunctionRow/SliderRow
+ * internals and MiniBoard container.
+ */
 .graph-algebra-view {
   flex: 1;
   overflow-y: auto;
@@ -391,46 +351,9 @@
   font-size: 10px;
   color: #9ca3af;
 }
-.graph-editor-panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  background: white;
-}
-.graph-miniboard { flex: 1; min-height: 0; }
-.graph-editor-footer {
-  display: flex;
-  justify-content: flex-end;
-  padding: 8px;
-  border-top: 1px solid var(--color-border, #e5e7eb);
-  gap: 8px;
-}
-.graph-btn-insert {
-  background: #2563eb;
-  color: white;
-  border: none;
-  padding: 6px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-}
-.graph-btn-cancel {
-  background: white;
-  border: 1px solid #d1d5db;
-  padding: 6px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.graph-drawer-toggle {
-  position: absolute;
-  top: 8px; left: 8px;
-  z-index: 10;
-  width: 36px; height: 36px;
-  background: white;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 18px;
+.graph-miniboard {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
 }
 

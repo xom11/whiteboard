@@ -7,6 +7,7 @@ import {
   useImperativeHandle,
   useRef,
   useState,
+  type CSSProperties,
   type Ref,
 } from 'react';
 import { MiniBoard } from './MiniBoard';
@@ -339,41 +340,121 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
   }, []);
 
   const graph = graphRef.current;
+  const hasContent = graph.functions.length > 0;
+
+  const handleInsert = () => {
+    const g = graphRef.current;
+    if (g.functions.length === 0) return;
+    const jsonState = stringifySerializedGraph(g);
+    renderGraph2dSvgFromState(jsonState)
+      .then((svg) => propsRef.current.onInsert(jsonState, svg))
+      .catch((err) => console.error('Graph2D insert render failed:', err));
+  };
+
+  const { isMobile, isDark, withLeftPanel } = props;
+  const wrapperStyle: CSSProperties = isMobile
+    ? { position: 'fixed', inset: 0, zIndex: 40 }
+    : {
+        position: 'absolute',
+        top: '50%',
+        left: withLeftPanel ? 'calc(50% + 120px)' : '50%',
+        transform: 'translate(-50%, -50%)',
+        zIndex: 40,
+      };
 
   return (
-    <div className="graph-editor-panel" data-stamp-area="true">
-      <MiniBoard
-        graph={graph}
-        activeTool={tool}
-        isDark={props.isDark}
-        onBoardEvent={onBoardEvent}
-      />
-      {props.isMobile ? (
+    <div
+      role="dialog"
+      aria-label="Đồ thị 2D"
+      data-testid="graph-editor-panel"
+      data-stamp-area="true"
+      data-mobile-editor={isMobile ? 'true' : undefined}
+      style={wrapperStyle}
+      className={[
+        isDark ? 'theme--dark ' : '',
+        'flex flex-col overflow-hidden bg-white',
+        isMobile
+          ? 'h-full w-full'
+          : 'h-[540px] max-h-[85vh] w-[640px] max-w-[calc(100vw-280px)] rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5',
+      ].join(' ')}
+    >
+      <header className="flex items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-orange-500 to-amber-600 px-3 py-2 text-white">
+        {isMobile && (
+          <button
+            type="button"
+            onClick={props.onOpenDrawer}
+            aria-label="Mở bảng đại số"
+            data-testid="graph-drawer-toggle"
+            className="-ml-1 inline-flex h-10 w-10 items-center justify-center rounded transition hover:bg-white/15"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="4" y1="6" x2="20" y2="6" />
+              <line x1="4" y1="12" x2="20" y2="12" />
+              <line x1="4" y1="18" x2="20" y2="18" />
+            </svg>
+          </button>
+        )}
+        <h3 className="flex flex-1 items-center gap-2 text-sm font-semibold">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 21 V3" />
+            <path d="M3 21 H21" />
+            <path d="M5 19 C8 5, 14 5, 19 17" />
+          </svg>
+          Đồ thị 2D
+        </h3>
+        {isMobile && (
+          <button
+            type="button"
+            onClick={handleInsert}
+            disabled={!hasContent}
+            data-testid="graph-insert-btn-mobile"
+            className="rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50"
+          >
+            Chèn
+          </button>
+        )}
         <button
-          type="button"
-          aria-label="Mở bảng đại số"
-          className="graph-drawer-toggle"
-          onClick={props.onOpenDrawer}
+          onClick={props.onClose}
+          aria-label="Đóng"
+          className="inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15"
         >
-          ☰
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="6" y1="6" x2="18" y2="18" />
+            <line x1="18" y1="6" x2="6" y2="18" />
+          </svg>
         </button>
-      ) : null}
-      <div className="graph-editor-footer">
-        <button
-          type="button"
-          className="graph-btn-insert"
-          onClick={() => {
-            const g = graphRef.current;
-            if (g.functions.length === 0) return;
-            const jsonState = stringifySerializedGraph(g);
-            renderGraph2dSvgFromState(jsonState)
-              .then((svg) => propsRef.current.onInsert(jsonState, svg))
-              .catch((err) => console.error('Graph2D insert render failed:', err));
-          }}
-        >
-          Chèn
-        </button>
+      </header>
+
+      <div className="min-h-0 flex-1">
+        <MiniBoard
+          graph={graph}
+          activeTool={tool}
+          isDark={isDark}
+          onBoardEvent={onBoardEvent}
+        />
       </div>
+
+      {!isMobile && (
+        <footer className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2">
+          <span className="text-xs text-slate-500">Nhập biểu thức trong bảng đại số bên trái.</span>
+          <div className="flex gap-2">
+            <button
+              onClick={props.onClose}
+              className="rounded border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+            >
+              Huỷ
+            </button>
+            <button
+              onClick={handleInsert}
+              disabled={!hasContent}
+              data-testid="graph-insert-btn"
+              className="rounded bg-orange-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-orange-700 disabled:opacity-50"
+            >
+              Chèn
+            </button>
+          </div>
+        </footer>
+      )}
     </div>
   );
 });
