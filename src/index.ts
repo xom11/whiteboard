@@ -20,14 +20,17 @@ export {
   geometryStamp,
   latexStamp,
   geometry3dStamp,
+  graph2dStamp,
   isGeometryCustomData,
   isLatexCustomData,
   isGeometry3DCustomData,
+  isGraph2DCustomData,
   type StampType,
   type BaseStampCustomData,
   type GeometryCustomData,
   type LatexCustomData,
   type Geometry3DCustomData,
+  type Graph2DCustomData,
   type StampCustomData,
 } from './stamps';
 export { restoreMissingStampFiles } from './stamps';

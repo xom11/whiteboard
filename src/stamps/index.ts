@@ -8,14 +8,17 @@ export {
   geometryStamp,
   latexStamp,
   geometry3dStamp,
+  graph2dStamp,
   type StampType,
   type BaseStampCustomData,
   type GeometryCustomData,
   type LatexCustomData,
   type Geometry3DCustomData,
+  type Graph2DCustomData,
   isGeometryCustomData,
   isLatexCustomData,
   isGeometry3DCustomData,
+  isGraph2DCustomData,
 } from './shared/registry';
 
 export type {
@@ -32,5 +35,5 @@ export { ToolbarInjector } from './shared/ToolbarInjector';
 export { useShortcuts } from './shared/useShortcuts';
 
 // Union helper for consumers
-import type { GeometryCustomData, LatexCustomData, Geometry3DCustomData } from './shared/registry';
-export type StampCustomData = GeometryCustomData | LatexCustomData | Geometry3DCustomData;
+import type { GeometryCustomData, LatexCustomData, Geometry3DCustomData, Graph2DCustomData } from './shared/registry';
+export type StampCustomData = GeometryCustomData | LatexCustomData | Geometry3DCustomData | Graph2DCustomData;

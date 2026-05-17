@@ -1,6 +1,7 @@
 import { geometryStamp } from '../geometry-2d';
 import { latexStamp } from '../latex';
 import { geometry3dStamp } from '../geometry-3d';
+import { graph2dStamp } from '../graph-2d';
 import type { StampType } from './types';
 
 export { geometryStamp, type GeometryCustomData, isGeometryCustomData } from '../geometry-2d';
@@ -10,6 +11,7 @@ export {
   type Geometry3DCustomData,
   isGeometry3DCustomData,
 } from '../geometry-3d';
+export { graph2dStamp, type Graph2DCustomData, isGraph2DCustomData } from '../graph-2d';
 export type { StampType, BaseStampCustomData } from './types';
 
 /**
@@ -25,6 +27,7 @@ export const DEFAULT_STAMPS: ReadonlyArray<StampType> = Object.freeze([
   geometryStamp,
   latexStamp,
   geometry3dStamp,
+  graph2dStamp,
 ]);
 
 /** Tìm stamp tương ứng với customData của element. null nếu không match. */
