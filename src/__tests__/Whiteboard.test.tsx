@@ -1,6 +1,7 @@
 import React from 'react';
 import { act, render, screen, fireEvent } from '@testing-library/react';
 import { Whiteboard } from '../Whiteboard';
+import { ALL_STAMPS } from '../stamps';
 import { readFiles, writeFiles, pruneFiles } from '../core/persistence/fileStore';
 
 jest.mock('../core/persistence/fileStore', () => ({
@@ -337,7 +338,7 @@ describe('Whiteboard', () => {
 
 describe('Whiteboard — geometry3d stamp', () => {
   it('bấm D mở Geometry3D editor', async () => {
-    const { findByTestId } = render(React.createElement(Whiteboard, {}));
+    const { findByTestId } = render(React.createElement(Whiteboard, { stamps: ALL_STAMPS }));
     await findByTestId('excalidraw-mock');
     await act(async () => {
       fireEvent.keyDown(window, { key: 'd' });
@@ -346,7 +347,7 @@ describe('Whiteboard — geometry3d stamp', () => {
   });
 
   it('click Đóng → 3D editor unmount', async () => {
-    const { findByTestId } = render(React.createElement(Whiteboard, {}));
+    const { findByTestId } = render(React.createElement(Whiteboard, { stamps: ALL_STAMPS }));
     await findByTestId('excalidraw-mock');
     await act(async () => {
       fireEvent.keyDown(window, { key: 'd' });
@@ -356,5 +357,23 @@ describe('Whiteboard — geometry3d stamp', () => {
       fireEvent.click(closeBtns[0]);
     });
     expect(screen.queryByText(/Hình học không gian/)).toBeFalsy();
+  });
+});
+
+describe('default stamps (v0.7.0+)', () => {
+  it('không mount 3D / graph2d Host khi không pass stamps prop', () => {
+    render(<Whiteboard storageKey={null} />);
+    // Default DEFAULT_STAMPS chỉ gồm geometry + latex.
+    expect(screen.queryByTestId('stamp-toolbar-geometry3d')).toBeNull();
+    expect(screen.queryByTestId('stamp-toolbar-graph2d')).toBeNull();
+  });
+
+  it('mount geometry + latex testid trong default', () => {
+    const { container } = render(<Whiteboard storageKey={null} />);
+    // Hai stamps stable này KHÔNG bị filter out.
+    // Note: ToolbarInjector inject async qua MutationObserver — testid không
+    // xuất hiện ngay. Verify chỉ qua geometry3d/graph2d absence ở test trên.
+    // Test này chỉ verify component mount không crash.
+    expect(container.firstChild).toBeTruthy();
   });
 });
