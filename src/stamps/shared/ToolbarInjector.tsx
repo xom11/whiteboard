@@ -58,6 +58,7 @@ export function ToolbarInjector({
     let cancelled = false;
     let observer: MutationObserver | null = null;
     let rafId: number | null = null;
+    let observedRoot: Element | null = null;
 
     const apply = (next: HTMLElement | null) => {
       if (cancelled || menuMountRef.current === next) return;
@@ -86,24 +87,53 @@ export function ToolbarInjector({
       apply(wrapper);
     };
 
-    const schedule = () => {
+    /**
+     * Scope observer xuống `.excalidraw` để giảm tần suất callback trigger
+     * (mutation ở các node ngoài Excalidraw không liên quan tới popover).
+     * Nếu `.excalidraw` chưa mount → tạm observe `document.body` để bắt
+     * lúc nó xuất hiện, rồi switch sang root nhỏ hơn.
+     */
+    const attachObserver = () => {
+      if (cancelled) return;
+      const excalidraw = document.querySelector<HTMLElement>('.excalidraw');
+      const nextRoot: Element = excalidraw ?? document.body;
+      if (observedRoot === nextRoot) return;
+      observer?.disconnect();
+      observedRoot = nextRoot;
+      observer = new MutationObserver(onMutation);
+      observer.observe(nextRoot, { childList: true, subtree: true });
+    };
+
+    /**
+     * rAF debounce: gộp nhiều mutation cùng tick thành 1 lần xử lý.
+     * Excalidraw có thể trigger hàng chục mutation khi mở/đóng popover —
+     * mỗi pass chỉ tốn 1 lần querySelector + DOM insert.
+     */
+    const onMutation = () => {
       if (rafId != null) return;
       rafId = requestAnimationFrame(() => {
         rafId = null;
+        if (cancelled) return;
+        // Nếu đang observe body mà giờ `.excalidraw` đã mount → switch sang nó.
+        if (observedRoot !== document.querySelector('.excalidraw')) {
+          attachObserver();
+        }
         findMenu();
       });
     };
 
     findMenu();
-
-    const root = document.querySelector('.excalidraw') ?? document.body;
-    observer = new MutationObserver(schedule);
-    observer.observe(root, { childList: true, subtree: true });
+    attachObserver();
 
     return () => {
       cancelled = true;
-      if (rafId != null) cancelAnimationFrame(rafId);
+      if (rafId != null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
       observer?.disconnect();
+      observer = null;
+      observedRoot = null;
       document.getElementById(MENU_WRAPPER_ID)?.remove();
     };
   }, [enabled]);
