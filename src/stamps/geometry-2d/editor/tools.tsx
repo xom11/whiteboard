@@ -228,11 +228,28 @@ export function groupForLetter(ch: string): GeomGroup | null {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type JxgObj = any;
 
-/** Phân loại JSXGraph element type vào nhóm dùng cho accept-matching. */
+/** Phân loại JSXGraph element type vào nhóm dùng cho accept-matching.
+ *
+ * Ưu tiên `elementClass` (numeric constant do JSXGraph set đúng cho mọi derived
+ * element — intersection, reflection, glider, parallelpoint, mirrorpoint, ...
+ * đều trả về OBJECT_CLASS_POINT). Nếu không có (test mocks), fallback sang
+ * `elType` string với danh sách mở rộng các kiểu thường gặp.
+ *
+ * Constants từ JSXGraph: OBJECT_CLASS_POINT=1, OBJECT_CLASS_LINE=2, OBJECT_CLASS_CIRCLE=3.
+ */
 export function objKind(obj: JxgObj): 'point' | 'line' | 'circle' | 'other' {
   if (!obj) return 'other';
+  const ec = typeof obj.elementClass === 'number' ? obj.elementClass : null;
+  if (ec === 1) return 'point';
+  if (ec === 2) return 'line';
+  if (ec === 3) return 'circle';
   const e = (obj.elType || obj.type || '').toString().toLowerCase();
-  if (e === 'point' || e === 'glider' || e === 'midpoint') return 'point';
+  if (
+    e === 'point' || e === 'glider' || e === 'midpoint' ||
+    e === 'intersection' || e === 'otherintersection' ||
+    e === 'reflection' || e === 'mirrorpoint' || e === 'mirrorelement' ||
+    e === 'orthogonalprojection' || e === 'parallelpoint'
+  ) return 'point';
   if (
     e === 'line' || e === 'segment' || e === 'arrow' || e === 'axis' ||
     e === 'normal' || e === 'parallel' || e === 'perpendicular' ||

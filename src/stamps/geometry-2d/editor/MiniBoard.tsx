@@ -164,10 +164,22 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
 
   // Build a fresh JSXGraph object id resolver for serialization.
   // We log args using local string IDs ("j0"); resolve to JSXGraph objects in-memory via objMapRef.
+  // Polygon edges (sub-segments) are referenced via "<polyId>:border:<i>" since
+  // they're auto-created by JSXGraph as part of the polygon and don't carry a
+  // separate top-level id of their own.
   const resolveArgs = useCallback((args: unknown[]): unknown[] => {
     return args.map((a) => {
-      if (typeof a === 'string' && objMapRef.current.has(a)) {
-        return objMapRef.current.get(a);
+      if (typeof a === 'string') {
+        if (objMapRef.current.has(a)) return objMapRef.current.get(a);
+        const m = /^(.+):border:(\d+)$/.exec(a);
+        if (m) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const poly = objMapRef.current.get(m[1]) as any;
+          const idx = parseInt(m[2], 10);
+          if (poly && Array.isArray(poly.borders) && poly.borders[idx]) {
+            return poly.borders[idx];
+          }
+        }
       }
       return a;
     });
@@ -204,9 +216,21 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
   );
 
   // Get local serialized id for a JSXGraph object (reverse lookup).
+  // Falls back to "<polyId>:border:<i>" when obj is a polygon edge — lets
+  // construct tools (perpendicular, parallel, ...) reference polygon cạnh as
+  // a line input even though edges aren't tracked as top-level entries.
   const localIdOf = useCallback((obj: JxgObj): string | null => {
+    if (!obj) return null;
     for (const [id, o] of objMapRef.current.entries()) {
       if (o === obj) return id;
+    }
+    for (const [id, o] of objMapRef.current.entries()) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const borders = (o as any)?.borders;
+      if (Array.isArray(borders)) {
+        const idx = borders.indexOf(obj);
+        if (idx >= 0) return `${id}:border:${idx}`;
+      }
     }
     return null;
   }, []);
@@ -216,6 +240,15 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     const o: any = obj;
     const k = objKind(o);
     if (k !== 'point' && k !== 'line' && k !== 'circle') return null;
+    // Polygon borders are sub-elements of a polygon — user's mental model treats
+    // the polygon as one atomic object, so editing a single edge's color/dash
+    // (without affecting siblings) is confusing. Reject the popover here; the
+    // edge is still usable as a `line` input for construction tools.
+    for (const owner of objMapRef.current.values()) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const borders = (owner as any)?.borders;
+      if (Array.isArray(borders) && borders.indexOf(o) >= 0) return null;
+    }
     const v = o.visProp ?? {};
     const showLabel = v.withlabel !== false;
     const showValue = valueLabelsRef.current.has(o);

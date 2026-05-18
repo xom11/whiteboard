@@ -161,6 +161,108 @@ var init_theme2 = __esm({
   }
 });
 
+// src/stamps/geometry-3d/render.ts
+async function renderGeometry3DSvgFromState(jsonState) {
+  const state = parseSerializedBoard3D(jsonState);
+  const JXG = (await import('jsxgraph')).default;
+  const div = document.createElement("div");
+  div.style.cssText = `position:absolute;left:-9999px;top:-9999px;width:${OUTPUT_WIDTH}px;height:${OUTPUT_HEIGHT}px;`;
+  document.body.appendChild(div);
+  try {
+    JXG.Options.text.display = "internal";
+    const board = JXG.JSXGraph.initBoard(div, {
+      boundingbox: state.bbox,
+      keepaspectratio: true,
+      axis: false,
+      showCopyright: false,
+      showNavigation: false,
+      renderer: "svg"
+    });
+    const baseAttrs = VIEW3D_ATTRS(false);
+    const view = board.create(
+      "view3d",
+      [
+        [-5, -5],
+        [10, 10],
+        [
+          [state.view.bbox3D[0], state.view.bbox3D[3]],
+          [state.view.bbox3D[1], state.view.bbox3D[4]],
+          [state.view.bbox3D[2], state.view.bbox3D[5]]
+        ]
+      ],
+      {
+        ...baseAttrs,
+        // JSXGraph view3d đọc azimuth/elevation từ az.slider.start (không phải
+        // az.value). Nếu pass `value` → JSXGraph bỏ qua → render rơi về default
+        // (1.0 rad / 0.3 rad), không khớp góc user xoay trong editor.
+        az: { ...baseAttrs.az, slider: { ...baseAttrs.az.slider, start: state.view.azimuth } },
+        el: { ...baseAttrs.el, slider: { ...baseAttrs.el.slider, start: state.view.elevation } }
+      }
+    );
+    try {
+      const v = view;
+      v?.az_slide?.setValue?.(state.view.azimuth);
+      v?.el_slide?.setValue?.(state.view.elevation);
+      v?.board?.update?.();
+    } catch {
+    }
+    if (!state.showAxes) {
+      view.defaultAxes = [];
+    }
+    try {
+      view.create(
+        "plane3d",
+        [
+          [0, 0, 0],
+          [1, 0, 0],
+          [0, 1, 0],
+          GROUND_PLANE_RANGE,
+          GROUND_PLANE_RANGE
+        ],
+        GROUND_PLANE_ATTRS(false)
+      );
+    } catch {
+    }
+    const idMap = /* @__PURE__ */ new Map();
+    for (const el of state.elements) {
+      const parents = el.parents.map(
+        (p) => typeof p === "string" && p.startsWith("@id:") ? idMap.get(p.slice(4)) : p
+      );
+      const obj = view.create(el.type, parents, {
+        ...el.attributes,
+        id: el.id,
+        name: el.label
+      });
+      idMap.set(el.id, obj);
+    }
+    const svg = div.querySelector("svg");
+    if (!svg) {
+      throw new Error("renderGeometry3DSvgFromState: SVG not produced");
+    }
+    const clone = svg.cloneNode(true);
+    clone.setAttribute("width", String(OUTPUT_WIDTH));
+    clone.setAttribute("height", String(OUTPUT_HEIGHT));
+    const svgString = new XMLSerializer().serializeToString(clone);
+    try {
+      JXG.JSXGraph.freeBoard(board);
+    } catch {
+    }
+    return { svgString, width: OUTPUT_WIDTH, height: OUTPUT_HEIGHT };
+  } finally {
+    document.body.removeChild(div);
+  }
+}
+var OUTPUT_WIDTH, OUTPUT_HEIGHT;
+var init_render = __esm({
+  "src/stamps/geometry-3d/render.ts"() {
+    "use client";
+    init_serialize();
+    init_theme2();
+    OUTPUT_WIDTH = 1024;
+    OUTPUT_HEIGHT = 768;
+  }
+});
+
 // src/stamps/geometry-3d/editor/tools/handlers/_ensurePoint.ts
 function hitToConstraint(hit) {
   switch (hit.kind) {
@@ -1562,8 +1664,11 @@ var init_MiniBoard3D = __esm({
                 ],
                 {
                   ...baseAttrs,
-                  az: { ...baseAttrs.az, value: DEFAULT_VIEW3D.azimuth },
-                  el: { ...baseAttrs.el, value: DEFAULT_VIEW3D.elevation }
+                  // JSXGraph view3d đọc giá trị khởi tạo từ az.slider.start (không
+                  // phải az.value). Pass nhầm `value` → JSXGraph dùng default
+                  // 1.0/0.3, khiến DEFAULT_VIEW3D bị bỏ qua.
+                  az: { ...baseAttrs.az, slider: { ...baseAttrs.az.slider, start: DEFAULT_VIEW3D.azimuth } },
+                  el: { ...baseAttrs.el, slider: { ...baseAttrs.el.slider, start: DEFAULT_VIEW3D.elevation } }
                 }
               );
             } catch {
@@ -2200,6 +2305,7 @@ var init_EditorPanel = __esm({
     init_ensurePoint();
     init_MiniBoard3D();
     init_StatusHint();
+    init_theme2();
     init_persistence();
     EditorPanel = React2__namespace.forwardRef(
       function EditorPanel2(props, ref) {
@@ -2305,8 +2411,17 @@ var init_EditorPanel = __esm({
         }, [showAxis, showGrid]);
         const handleView3DReady = React2__namespace.useCallback((view) => {
           rendererRef.current = new JxgRenderer(scene, view);
+          if (initialState) {
+            try {
+              const v = view;
+              v?.az_slide?.setValue?.(initialState.view.azimuth);
+              v?.el_slide?.setValue?.(initialState.view.elevation);
+              v?.board?.update?.();
+            } catch {
+            }
+          }
           onReadyChange?.(true);
-        }, [onReadyChange, scene]);
+        }, [onReadyChange, scene, initialState]);
         const handleClick = React2__namespace.useCallback((screen) => {
           const board = boardRef.current;
           if (!board) return;
@@ -2444,8 +2559,10 @@ var init_EditorPanel = __esm({
               const elevation = typeof elSlider?.Value === "function" ? elSlider.Value() : 0;
               return sceneToBoard(
                 scene,
-                { azimuth, elevation, bbox3D: [-5, -5, -5, 5, 5, 5] },
-                [-6, -6, 6, 6]
+                { azimuth, elevation, bbox3D: [...DEFAULT_VIEW3D.bbox3D] },
+                // JSXGraph boundingbox order: [xmin, ymax, xmax, ymin]. Must match
+                // MiniBoard3D.initBoard so render reproduces the editor's view.
+                [-6, 6, 6, -6]
               );
             },
             setTool: (k) => controllerRef.current.selectTool(k),
@@ -3722,6 +3839,7 @@ var init_host = __esm({
     init_useChordShortcut();
     init_insertImage();
     init_useIsMobile();
+    init_render();
     init_serialize();
     Geometry3DStampHost = React2.forwardRef(
       function Geometry3DStampHost2({ api, editingElement, onClose, isDark }, ref) {
@@ -3736,9 +3854,24 @@ var init_host = __esm({
         const [showGrid, setShowGrid] = React2.useState(true);
         const [canUndo, setCanUndo] = React2.useState(false);
         const [canRedo, setCanRedo] = React2.useState(false);
+        const [hasContent, setHasContent] = React2.useState(false);
         const handleHistoryChange = React2.useCallback((u, r) => {
           setCanUndo(u);
           setCanRedo(r);
+        }, []);
+        React2.useEffect(() => {
+          const scene = sceneRef.current;
+          if (!scene) return;
+          const sync = () => setHasContent(scene.list().length > 0);
+          sync();
+          const unsubs = [
+            scene.on("add", sync),
+            scene.on("delete", sync),
+            scene.on("reset", sync)
+          ];
+          return () => {
+            for (const u of unsubs) u();
+          };
         }, []);
         const handleUndo = React2.useCallback(() => {
           editorRef.current?.undo();
@@ -3787,7 +3920,15 @@ var init_host = __esm({
           if (!editorRef.current.hasContent()) return false;
           const board = editorRef.current.serialize();
           if (board.elements.length === 0) return false;
-          void performInsert(board, 0, 0, "");
+          void (async () => {
+            try {
+              const jsonState = serializeBoard3D(board);
+              const { svgString, width, height } = await renderGeometry3DSvgFromState(jsonState);
+              await performInsert(board, width, height, svgString);
+            } catch (err) {
+              console.error("Geometry3D insert failed:", err);
+            }
+          })();
           return true;
         }, [performInsert]);
         React2.useImperativeHandle(
@@ -3869,7 +4010,8 @@ var init_host = __esm({
                     {
                       type: "button",
                       onClick: tryInsert,
-                      disabled: !ready,
+                      disabled: !ready || !hasContent,
+                      title: !hasContent ? "V\u1EBD \xEDt nh\u1EA5t m\u1ED9t \u0111\u1ED1i t\u01B0\u1EE3ng tr\u01B0\u1EDBc khi ch\xE8n" : void 0,
                       "data-testid": "geom3d-insert-btn-mobile",
                       className: "rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50",
                       children: "Ch\xE8n"
@@ -3919,7 +4061,8 @@ var init_host = __esm({
                       "button",
                       {
                         onClick: tryInsert,
-                        disabled: !ready,
+                        disabled: !ready || !hasContent,
+                        title: !hasContent ? "V\u1EBD \xEDt nh\u1EA5t m\u1ED9t \u0111\u1ED1i t\u01B0\u1EE3ng tr\u01B0\u1EDBc khi ch\xE8n" : void 0,
                         "data-testid": "geom3d-insert-btn",
                         className: "rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50",
                         children: "Ch\xE8n"
@@ -3960,91 +4103,7 @@ var init_host = __esm({
 
 // src/stamps/geometry-3d/index.tsx
 init_serialize();
-
-// src/stamps/geometry-3d/render.ts
-init_serialize();
-init_theme2();
-var OUTPUT_WIDTH = 1024;
-var OUTPUT_HEIGHT = 768;
-async function renderGeometry3DSvgFromState(jsonState) {
-  const state = parseSerializedBoard3D(jsonState);
-  const JXG = (await import('jsxgraph')).default;
-  const div = document.createElement("div");
-  div.style.cssText = `position:absolute;left:-9999px;top:-9999px;width:${OUTPUT_WIDTH}px;height:${OUTPUT_HEIGHT}px;`;
-  document.body.appendChild(div);
-  try {
-    JXG.Options.text.display = "internal";
-    const board = JXG.JSXGraph.initBoard(div, {
-      boundingbox: state.bbox,
-      axis: false,
-      showCopyright: false,
-      showNavigation: false,
-      renderer: "svg"
-    });
-    const baseAttrs = VIEW3D_ATTRS(false);
-    const view = board.create(
-      "view3d",
-      [
-        [-5, -5],
-        [10, 10],
-        [
-          [state.view.bbox3D[0], state.view.bbox3D[3]],
-          [state.view.bbox3D[1], state.view.bbox3D[4]],
-          [state.view.bbox3D[2], state.view.bbox3D[5]]
-        ]
-      ],
-      {
-        ...baseAttrs,
-        az: { ...baseAttrs.az, value: state.view.azimuth },
-        el: { ...baseAttrs.el, value: state.view.elevation }
-      }
-    );
-    if (!state.showAxes) {
-      view.defaultAxes = [];
-    }
-    try {
-      view.create(
-        "plane3d",
-        [
-          [0, 0, 0],
-          [1, 0, 0],
-          [0, 1, 0],
-          GROUND_PLANE_RANGE,
-          GROUND_PLANE_RANGE
-        ],
-        GROUND_PLANE_ATTRS(false)
-      );
-    } catch {
-    }
-    const idMap = /* @__PURE__ */ new Map();
-    for (const el of state.elements) {
-      const parents = el.parents.map(
-        (p) => typeof p === "string" && p.startsWith("@id:") ? idMap.get(p.slice(4)) : p
-      );
-      const obj = view.create(el.type, parents, {
-        ...el.attributes,
-        id: el.id,
-        name: el.label
-      });
-      idMap.set(el.id, obj);
-    }
-    const svg = div.querySelector("svg");
-    if (!svg) {
-      throw new Error("renderGeometry3DSvgFromState: SVG not produced");
-    }
-    const clone = svg.cloneNode(true);
-    clone.setAttribute("width", String(OUTPUT_WIDTH));
-    clone.setAttribute("height", String(OUTPUT_HEIGHT));
-    const svgString = new XMLSerializer().serializeToString(clone);
-    try {
-      JXG.JSXGraph.freeBoard(board);
-    } catch {
-    }
-    return { svgString, width: OUTPUT_WIDTH, height: OUTPUT_HEIGHT };
-  } finally {
-    document.body.removeChild(div);
-  }
-}
+init_render();
 var Geometry3DStampHost3 = React2.lazy(
   () => Promise.resolve().then(() => (init_host(), host_exports)).then((m) => ({ default: m.Geometry3DStampHost }))
 );

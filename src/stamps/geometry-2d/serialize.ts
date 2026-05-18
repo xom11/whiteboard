@@ -93,8 +93,22 @@ export function deserializeIntoBoard(
   // transforms passed to `board.create('point', [src, [t1,t2,t3]])`).
   const palette = options.palette ?? paletteFor(false);
   const idMap = new Map<string, unknown>();
+  // "<polyId>:border:<i>" → polygon.borders[i]. Polygon borders are auto-created
+  // sub-segments of a (regular)polygon that user-driven tools can reference as
+  // line slots (vd. perpendicular từ điểm tới cạnh đa giác).
   const resolve = (a: unknown): unknown => {
-    if (typeof a === 'string' && idMap.has(a)) return idMap.get(a);
+    if (typeof a === 'string') {
+      if (idMap.has(a)) return idMap.get(a);
+      const m = /^(.+):border:(\d+)$/.exec(a);
+      if (m) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const poly = idMap.get(m[1]) as any;
+        const idx = parseInt(m[2], 10);
+        if (poly && Array.isArray(poly.borders) && poly.borders[idx]) {
+          return poly.borders[idx];
+        }
+      }
+    }
     if (Array.isArray(a)) return a.map(resolve);
     return a;
   };

@@ -82,7 +82,9 @@ export function handleDown(ctx: HandlerCtx, e: any): void {
     const hits = ctx.objectsAt(e)
       .map(ctx.promoteLabel)
       .filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y);
-    const obj = hits.find((o) => objKind(o) === 'point') ?? hits[0] ?? ctx.findNearestPoint(e, 12);
+    // Ưu tiên điểm: exact hit → nearest-within-12px → mới đến hit khác (line/circle).
+    // Tránh case click hơi lệch điểm mà line đi qua đó cướp mất pick.
+    const obj = hits.find((o) => objKind(o) === 'point') ?? ctx.findNearestPoint(e, 12) ?? hits[0];
     if (obj) {
       const shift = !!(e.shiftKey || e.altKey);
       ctx.toggleSelect(obj, shift);
@@ -406,8 +408,11 @@ export function handleUp(ctx: HandlerCtx, e: any): void {
   const hits = ctx.objectsAt(e)
     .map(ctx.promoteLabel)
     .filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y);
+  // Ưu tiên điểm (exact → nearest-within-12px) trước, rồi mới fallback object
+  // khác (line/circle). Đảm bảo double-click gần một điểm sẽ mở properties cho
+  // điểm đó kể cả khi có line đi sát qua.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const best: any = hits.find((o) => objKind(o) === 'point') ?? hits[0] ?? ctx.findNearestPoint(e, 12);
+  const best: any = hits.find((o) => objKind(o) === 'point') ?? ctx.findNearestPoint(e, 12) ?? hits[0];
   if (!best) {
     ctx.lastMoveClickRef.current = { obj: null, time: 0 };
     return;

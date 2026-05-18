@@ -116,7 +116,17 @@ function deserializeIntoBoard(board, serialized, options = {}) {
   const palette = options.palette ?? paletteFor(false);
   const idMap = /* @__PURE__ */ new Map();
   const resolve = (a) => {
-    if (typeof a === "string" && idMap.has(a)) return idMap.get(a);
+    if (typeof a === "string") {
+      if (idMap.has(a)) return idMap.get(a);
+      const m = /^(.+):border:(\d+)$/.exec(a);
+      if (m) {
+        const poly = idMap.get(m[1]);
+        const idx = parseInt(m[2], 10);
+        if (poly && Array.isArray(poly.borders) && poly.borders[idx]) {
+          return poly.borders[idx];
+        }
+      }
+    }
     if (Array.isArray(a)) return a.map(resolve);
     return a;
   };
@@ -313,8 +323,12 @@ function letterForGroup(g) {
 }
 function objKind(obj) {
   if (!obj) return "other";
+  const ec = typeof obj.elementClass === "number" ? obj.elementClass : null;
+  if (ec === 1) return "point";
+  if (ec === 2) return "line";
+  if (ec === 3) return "circle";
   const e = (obj.elType || obj.type || "").toString().toLowerCase();
-  if (e === "point" || e === "glider" || e === "midpoint") return "point";
+  if (e === "point" || e === "glider" || e === "midpoint" || e === "intersection" || e === "otherintersection" || e === "reflection" || e === "mirrorpoint" || e === "mirrorelement" || e === "orthogonalprojection" || e === "parallelpoint") return "point";
   if (e === "line" || e === "segment" || e === "arrow" || e === "axis" || e === "normal" || e === "parallel" || e === "perpendicular" || e === "tangent" || e === "bisector" || e === "perpendicularsegment") return "line";
   if (e === "circle" || e === "circumcircle") return "circle";
   return "other";
@@ -514,7 +528,7 @@ function handleDown(ctx, e) {
     if (!sc) return;
     const [sx, sy] = sc;
     const hits2 = ctx.objectsAt(e).map(ctx.promoteLabel).filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y);
-    const obj = hits2.find((o) => objKind(o) === "point") ?? hits2[0] ?? ctx.findNearestPoint(e, 12);
+    const obj = hits2.find((o) => objKind(o) === "point") ?? ctx.findNearestPoint(e, 12) ?? hits2[0];
     if (obj) {
       const shift = !!(e.shiftKey || e.altKey);
       ctx.toggleSelect(obj, shift);
@@ -757,7 +771,7 @@ function handleUp(ctx, e) {
   const moved = Math.hypot(sx - start.sx, sy - start.sy);
   if (moved > 4) return;
   const hits = ctx.objectsAt(e).map(ctx.promoteLabel).filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y);
-  const best = hits.find((o) => objKind(o) === "point") ?? hits[0] ?? ctx.findNearestPoint(e, 12);
+  const best = hits.find((o) => objKind(o) === "point") ?? ctx.findNearestPoint(e, 12) ?? hits[0];
   if (!best) {
     ctx.lastMoveClickRef.current = { obj: null, time: 0 };
     return;
@@ -896,8 +910,16 @@ var init_MiniBoard = __esm({
       const nextLocalId = react.useCallback(() => "j" + creationLogRef.current.length, []);
       const resolveArgs = react.useCallback((args) => {
         return args.map((a) => {
-          if (typeof a === "string" && objMapRef.current.has(a)) {
-            return objMapRef.current.get(a);
+          if (typeof a === "string") {
+            if (objMapRef.current.has(a)) return objMapRef.current.get(a);
+            const m = /^(.+):border:(\d+)$/.exec(a);
+            if (m) {
+              const poly = objMapRef.current.get(m[1]);
+              const idx = parseInt(m[2], 10);
+              if (poly && Array.isArray(poly.borders) && poly.borders[idx]) {
+                return poly.borders[idx];
+              }
+            }
           }
           return a;
         });
@@ -927,8 +949,16 @@ var init_MiniBoard = __esm({
         [nextLocalId, resolveArgs, pushLog]
       );
       const localIdOf = react.useCallback((obj) => {
+        if (!obj) return null;
         for (const [id, o] of objMapRef.current.entries()) {
           if (o === obj) return id;
+        }
+        for (const [id, o] of objMapRef.current.entries()) {
+          const borders = o?.borders;
+          if (Array.isArray(borders)) {
+            const idx = borders.indexOf(obj);
+            if (idx >= 0) return `${id}:border:${idx}`;
+          }
         }
         return null;
       }, []);
@@ -936,6 +966,10 @@ var init_MiniBoard = __esm({
         const o = obj;
         const k = objKind(o);
         if (k !== "point" && k !== "line" && k !== "circle") return null;
+        for (const owner of objMapRef.current.values()) {
+          const borders = owner?.borders;
+          if (Array.isArray(borders) && borders.indexOf(o) >= 0) return null;
+        }
         const v = o.visProp ?? {};
         const showLabel = v.withlabel !== false;
         const showValue = valueLabelsRef.current.has(o);
@@ -2968,6 +3002,7 @@ var init_EditorPanel = __esm({
       function GeometryEditorPanel2({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer, onUndo, onRedo, canUndo, canRedo }, ref) {
         const handleRef = react.useRef(null);
         const [ready, setReady] = react.useState(false);
+        const [hasContent, setHasContent] = react.useState(false);
         const [propsPopover, setPropsPopover] = react.useState(null);
         const [transformPopover, setTransformPopover] = react.useState(null);
         const onStateChangeRef = react.useRef(onStateChange);
@@ -2976,8 +3011,10 @@ var init_EditorPanel = __esm({
         }, [onStateChange]);
         const emitState = react.useCallback(() => {
           const h = handleRef.current;
+          if (!h) return;
+          setHasContent(h.getCreationLog().length > 0);
           const cb = onStateChangeRef.current;
-          if (!h || !cb) return;
+          if (!cb) return;
           cb({
             tool: h.getTool(),
             showAxis: h.getShowAxis(),
@@ -3107,7 +3144,8 @@ var init_EditorPanel = __esm({
                     {
                       type: "button",
                       onClick: handleInsert,
-                      disabled: !ready,
+                      disabled: !ready || !hasContent,
+                      title: !hasContent ? "V\u1EBD \xEDt nh\u1EA5t m\u1ED9t \u0111\u1ED1i t\u01B0\u1EE3ng tr\u01B0\u1EDBc khi ch\xE8n" : void 0,
                       "data-testid": "geometry-insert-btn-mobile",
                       className: "rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50",
                       children: "Ch\xE8n"
@@ -3207,7 +3245,8 @@ var init_EditorPanel = __esm({
                     "button",
                     {
                       onClick: handleInsert,
-                      disabled: !ready,
+                      disabled: !ready || !hasContent,
+                      title: !hasContent ? "V\u1EBD \xEDt nh\u1EA5t m\u1ED9t \u0111\u1ED1i t\u01B0\u1EE3ng tr\u01B0\u1EDBc khi ch\xE8n" : void 0,
                       "data-testid": "geometry-insert-btn",
                       className: "rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50",
                       children: "Ch\xE8n"
