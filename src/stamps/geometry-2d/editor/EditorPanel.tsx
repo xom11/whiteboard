@@ -51,6 +51,7 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
   function GeometryEditorPanel({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer, onUndo, onRedo, canUndo, canRedo }, ref) {
     const handleRef = useRef<MiniBoardHandle | null>(null);
     const [ready, setReady] = useState(false);
+    const [hasContent, setHasContent] = useState(false);
     const [propsPopover, setPropsPopover] = useState<ObjectSnapshot | null>(null);
     const [transformPopover, setTransformPopover] = useState<{ tool: 'rotate' | 'dilate' | 'regularPolygon'; anchor: { x: number; y: number } } | null>(null);
     const onStateChangeRef = useRef(onStateChange);
@@ -58,8 +59,10 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
 
     const emitState = useCallback(() => {
       const h = handleRef.current;
+      if (!h) return;
+      setHasContent(h.getCreationLog().length > 0);
       const cb = onStateChangeRef.current;
-      if (!h || !cb) return;
+      if (!cb) return;
       cb({
         tool: h.getTool(),
         showAxis: h.getShowAxis(),
@@ -197,7 +200,8 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
               <button
                 type="button"
                 onClick={handleInsert}
-                disabled={!ready}
+                disabled={!ready || !hasContent}
+                title={!hasContent ? 'Vẽ ít nhất một đối tượng trước khi chèn' : undefined}
                 data-testid="geometry-insert-btn-mobile"
                 className="rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50"
               >
@@ -296,7 +300,8 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
               </button>
               <button
                 onClick={handleInsert}
-                disabled={!ready}
+                disabled={!ready || !hasContent}
+                title={!hasContent ? 'Vẽ ít nhất một đối tượng trước khi chèn' : undefined}
                 data-testid="geometry-insert-btn"
                 className="rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50"
               >

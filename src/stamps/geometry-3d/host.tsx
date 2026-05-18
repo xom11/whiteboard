@@ -4,6 +4,7 @@ import type React from 'react';
 import {
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -16,6 +17,7 @@ import { GROUP_ORDER, TOOLS_FLAT } from './editor/toolPanel/groups';
 import { useChordShortcut } from '../shared/useChordShortcut';
 import { insertStampImage } from '../shared/insertImage';
 import { useIsMobile } from '../shared/useIsMobile';
+import { renderGeometry3DSvgFromState } from './render';
 import {
   isGeometry3DCustomData,
   parseSerializedBoard3D,
@@ -55,10 +57,26 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
     const [showGrid, setShowGrid] = useState<boolean>(true);
     const [canUndo, setCanUndo] = useState<boolean>(false);
     const [canRedo, setCanRedo] = useState<boolean>(false);
+    const [hasContent, setHasContent] = useState<boolean>(false);
 
     const handleHistoryChange = useCallback((u: boolean, r: boolean) => {
       setCanUndo(u);
       setCanRedo(r);
+    }, []);
+
+    useEffect(() => {
+      const scene = sceneRef.current;
+      if (!scene) return;
+      const sync = () => setHasContent(scene.list().length > 0);
+      sync();
+      const unsubs = [
+        scene.on('add', sync),
+        scene.on('delete', sync),
+        scene.on('reset', sync),
+      ];
+      return () => {
+        for (const u of unsubs) u();
+      };
     }, []);
 
     const handleUndo = useCallback(() => {
@@ -114,7 +132,15 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
       if (!editorRef.current.hasContent()) return false;
       const board = editorRef.current.serialize();
       if (board.elements.length === 0) return false;
-      void performInsert(board, 0, 0, '');
+      void (async () => {
+        try {
+          const jsonState = serializeBoard3D(board);
+          const { svgString, width, height } = await renderGeometry3DSvgFromState(jsonState);
+          await performInsert(board, width, height, svgString);
+        } catch (err) {
+          console.error('Geometry3D insert failed:', err);
+        }
+      })();
       return true;
     }, [performInsert]);
 
@@ -203,7 +229,8 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
               <button
                 type="button"
                 onClick={tryInsert}
-                disabled={!ready}
+                disabled={!ready || !hasContent}
+                title={!hasContent ? 'Vẽ ít nhất một đối tượng trước khi chèn' : undefined}
                 data-testid="geom3d-insert-btn-mobile"
                 className="rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50"
               >
@@ -248,7 +275,8 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
                 </button>
                 <button
                   onClick={tryInsert}
-                  disabled={!ready}
+                  disabled={!ready || !hasContent}
+                  title={!hasContent ? 'Vẽ ít nhất một đối tượng trước khi chèn' : undefined}
                   data-testid="geom3d-insert-btn"
                   className="rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50"
                 >

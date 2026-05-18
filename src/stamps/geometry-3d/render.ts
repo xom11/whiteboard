@@ -30,6 +30,7 @@ export async function renderGeometry3DSvgFromState(
 
     const board = JXG.JSXGraph.initBoard(div, {
       boundingbox: state.bbox,
+      keepaspectratio: true,
       axis: false,
       showCopyright: false,
       showNavigation: false,
@@ -50,10 +51,25 @@ export async function renderGeometry3DSvgFromState(
       ],
       {
         ...baseAttrs,
-        az: { ...baseAttrs.az, value: state.view.azimuth },
-        el: { ...baseAttrs.el, value: state.view.elevation },
+        // JSXGraph view3d đọc azimuth/elevation từ az.slider.start (không phải
+        // az.value). Nếu pass `value` → JSXGraph bỏ qua → render rơi về default
+        // (1.0 rad / 0.3 rad), không khớp góc user xoay trong editor.
+        az: { ...baseAttrs.az, slider: { ...baseAttrs.az.slider, start: state.view.azimuth } },
+        el: { ...baseAttrs.el, slider: { ...baseAttrs.el.slider, start: state.view.elevation } },
       },
     );
+
+    // Defensive: setValue post-creation để chắc chắn slider khớp với serialized
+    // angle, kể cả khi JSXGraph version khác xử lý `start` khác.
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const v = view as any;
+      v?.az_slide?.setValue?.(state.view.azimuth);
+      v?.el_slide?.setValue?.(state.view.elevation);
+      v?.board?.update?.();
+    } catch {
+      /* swallow — older JSXGraph may not expose az_slide on view3d */
+    }
 
     if (!state.showAxes) {
       (view as { defaultAxes?: unknown[] }).defaultAxes = [];

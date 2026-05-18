@@ -55,6 +55,24 @@ describe('EditorPanel (new Scene3D-based)', () => {
     expect(typeof board.view.azimuth).toBe('number');
     expect(typeof board.view.elevation).toBe('number');
   });
+
+  test('serialize bbox dùng JSXGraph order [xmin, ymax, xmax, ymin] (y1 > y2)', () => {
+    // Phòng regression: nếu bbox bị flip (y1 < y2), render offscreen sẽ ra
+    // ảnh lật trục Y — đúng triệu chứng "bấm Chèn thì bị xoay".
+    const ref = React.createRef<EditorPanelHandle>();
+    renderEditor({ ref });
+    const board = ref.current!.serialize();
+    const [x1, y1, x2, y2] = board.bbox;
+    expect(x1).toBeLessThan(x2);
+    expect(y1).toBeGreaterThan(y2);
+  });
+
+  test('serialize bbox3D khớp DEFAULT_VIEW3D để render không lệch zoom', () => {
+    const ref = React.createRef<EditorPanelHandle>();
+    renderEditor({ ref });
+    const board = ref.current!.serialize();
+    expect(board.view.bbox3D).toEqual([-3, -3, -3, 3, 3, 3]);
+  });
 });
 
 describe('EditorPanel — keyboard shortcuts', () => {

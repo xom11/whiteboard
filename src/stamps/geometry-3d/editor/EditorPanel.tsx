@@ -11,6 +11,7 @@ import { hitToConstraint } from './tools/handlers/_ensurePoint';
 import type { Constraint, Vec3 } from './scene/types';
 import { MiniBoard3D, type MiniBoard3DHandle } from './MiniBoard3D';
 import { StatusHint } from './StatusHint';
+import { DEFAULT_VIEW3D } from './theme';
 import type { ToolKey } from './tools/spec';
 import type { SerializedBoard3D } from '../serialize';
 import { sceneToBoard, boardToScene } from './scene/persistence';
@@ -179,8 +180,21 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
     const handleView3DReady = React.useCallback((view: unknown) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       rendererRef.current = new JxgRenderer(scene, view as any);
+      // Restore saved azimuth/elevation khi mở lại stamp cũ để re-edit, để
+      // editor view khớp với ảnh đã chèn.
+      if (initialState) {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const v = view as any;
+          v?.az_slide?.setValue?.(initialState.view.azimuth);
+          v?.el_slide?.setValue?.(initialState.view.elevation);
+          v?.board?.update?.();
+        } catch {
+          /* swallow — older JSXGraph may not expose az_slide */
+        }
+      }
       onReadyChange?.(true);
-    }, [onReadyChange, scene]);
+    }, [onReadyChange, scene, initialState]);
 
     const handleClick = React.useCallback((screen: { x: number; y: number }) => {
       const board = boardRef.current;
@@ -345,8 +359,10 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
           const elevation = typeof elSlider?.Value === 'function' ? elSlider.Value() : 0;
           return sceneToBoard(
             scene,
-            { azimuth, elevation, bbox3D: [-5, -5, -5, 5, 5, 5] },
-            [-6, -6, 6, 6],
+            { azimuth, elevation, bbox3D: [...DEFAULT_VIEW3D.bbox3D] as [number, number, number, number, number, number] },
+            // JSXGraph boundingbox order: [xmin, ymax, xmax, ymin]. Must match
+            // MiniBoard3D.initBoard so render reproduces the editor's view.
+            [-6, 6, 6, -6],
           );
         },
         setTool: (k) => controllerRef.current!.selectTool(k),

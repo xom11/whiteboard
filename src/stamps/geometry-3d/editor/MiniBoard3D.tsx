@@ -142,8 +142,11 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
             ],
             {
               ...baseAttrs,
-              az: { ...baseAttrs.az, value: DEFAULT_VIEW3D.azimuth },
-              el: { ...baseAttrs.el, value: DEFAULT_VIEW3D.elevation },
+              // JSXGraph view3d đọc giá trị khởi tạo từ az.slider.start (không
+              // phải az.value). Pass nhầm `value` → JSXGraph dùng default
+              // 1.0/0.3, khiến DEFAULT_VIEW3D bị bỏ qua.
+              az: { ...baseAttrs.az, slider: { ...baseAttrs.az.slider, start: DEFAULT_VIEW3D.azimuth } },
+              el: { ...baseAttrs.el, slider: { ...baseAttrs.el.slider, start: DEFAULT_VIEW3D.elevation } },
             },
           );
         } catch {
