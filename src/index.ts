@@ -37,3 +37,22 @@ export {
   type StampCustomData,
 } from './stamps';
 export { restoreMissingStampFiles } from './stamps';
+
+// PDF import API (không phải stamp — không re-edit, không customData)
+export {
+  insertPdfPages,
+  insertRasterizedPagesIntoScene,
+  type InsertPdfPagesOptions,
+  type InsertPdfPagesResult,
+  type InsertRasterizedPagesOptions,
+  type InsertRasterizedPagesResult,
+} from './pdf/insertPdfPages';
+export {
+  configurePdfWorker,
+  loadPdfDocument,
+  closePdfDocument,
+  rasterizePdf,
+  type RasterizedPage,
+  type RasterizeOptions,
+} from './pdf/rasterize';
+export { parsePageRange } from './pdf/parseRange';

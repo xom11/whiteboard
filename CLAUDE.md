@@ -10,6 +10,7 @@ Project context cho Claude Code. Đọc file này trước khi làm việc với
 - Stamp **hình học** (📐) — JSXGraph editor + serialize JSON state để re-edit
 - Stamp **hình học không gian 3D** (📐 3D) — JSXGraph 3D primitives + serialize JSON state để re-edit
 - Stamp **LaTeX** (∑) — KaTeX render → SVG
+- **Import PDF** (📄) — pdfjs-dist rasterize từng trang → image element xếp dọc. KHÔNG re-edit (ảnh tĩnh).
 - Roundtrip edit: double-click stamp → reopen editor với state cũ
 - Persist qua sessionStorage (consumer handle); SVG files regenerate khi reload
 
@@ -68,6 +69,13 @@ whiteboard/
 │   │           ├── handlers.ts
 │   │           ├── theme.ts
 │   │           └── LeftPanel.tsx
+│   ├── pdf/                           ← PDF importer (KHÔNG phải stamp)
+│   │   ├── index.ts                   ← barrel
+│   │   ├── parseRange.ts              ← "1,3,5-10" → number[]
+│   │   ├── rasterize.ts               ← pdfjs lazy-load + PNG render @ scale=2
+│   │   ├── insertPdfPages.ts          ← orchestrator + insertRasterizedPagesIntoScene
+│   │   ├── PageRangeDialog.tsx
+│   │   └── PdfImporterButton.tsx      ← portal vào More tools dropdown
 │   └── core/
 │       └── persistence/
 ├── dist/
@@ -147,6 +155,7 @@ git push --follow-tags
 - **JSXGraph point labels**: mặc định render bằng HTML `<div>` overlay → clone-SVG export missing labels. Fix: set `JXG.Options.text.display = 'internal'` (cả ở MiniBoard và offscreen restore).
 - **CSS-in-JS từ Excalidraw**: `import '@excalidraw/excalidraw/index.css'` trong `ExcalidrawWhiteboardView.tsx`. Consumer Next.js handle CSS imports từ JS thông qua webpack/turbopack loader.
 - **Tailwind v4 không scan node_modules**: consumer phải thêm `@source "../../../node_modules/@xom11/whiteboard/dist/**/*.{js,mjs}";` vào globals.css.
+- **pdfjs-dist worker**: mặc định trỏ CDN `cdn.jsdelivr.net` theo version đã cài. Consumer offline-first phải gọi `configurePdfWorker(url)` trước lần dùng đầu tiên (vd self-host `pdf.worker.min.mjs`). pdfjs lazy-load chỉ khi user trigger PDF import.
 
 ## Extracted from
 

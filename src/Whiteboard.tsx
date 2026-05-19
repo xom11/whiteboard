@@ -16,6 +16,15 @@ import {
 } from './stamps/shared/registry';
 import { ToolbarInjector } from './stamps/shared/ToolbarInjector';
 import { useShortcuts } from './stamps/shared/useShortcuts';
+import { PdfImporterButton } from './pdf/PdfImporterButton';
+import { PageRangeDialog } from './pdf/PageRangeDialog';
+import {
+  loadPdfDocument,
+  closePdfDocument,
+  rasterizePdf,
+} from './pdf/rasterize';
+import { insertRasterizedPagesIntoScene } from './pdf/insertPdfPages';
+import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { useStampDoubleClick } from './stamps/shared/useStampDoubleClick';
 import { useStampShortcutBlocker } from './stamps/shared/useStampShortcutBlocker';
 import { useStampClickOutside } from './stamps/shared/useStampClickOutside';
@@ -142,6 +151,16 @@ export function Whiteboard({
   activeStampRef.current = activeStamp;
   const [editingElement, setEditingElement] = useState<EditingElement | null>(null);
   const hostRef = useRef<StampHostHandle | null>(null);
+
+  // ---- PDF import state ----
+  // Sau khi user pick file, load doc lấy numPages → mở dialog hỏi range.
+  // Giữ doc instance để rasterize ngay (tránh load lại từ ArrayBuffer).
+  const [pdfPending, setPdfPending] = useState<{
+    doc: PDFDocumentProxy;
+    fileName: string;
+    totalPages: number;
+  } | null>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
 
   const handledCropIdRef = useRef<string | null>(null);
   const prevExcalidrawToolRef = useRef<string>('selection');
@@ -495,6 +514,91 @@ export function Whiteboard({
 
   useStampClickOutside({ activeStamp, hostRef, onClose: closeStamp });
 
+  // ---- PDF import handlers ----
+  const handlePdfPick = useCallback(
+    async (file: File) => {
+      if (readOnly || pdfBusy) return;
+      setPdfBusy(true);
+      try {
+        const doc = await loadPdfDocument(file);
+        setPdfPending({ doc, fileName: file.name, totalPages: doc.numPages });
+      } catch (err) {
+        console.warn('[whiteboard] Đọc PDF thất bại:', err);
+        window.alert('Không đọc được PDF. File có thể đã hỏng hoặc bị mật khẩu bảo vệ.');
+      } finally {
+        setPdfBusy(false);
+      }
+    },
+    [readOnly, pdfBusy],
+  );
+
+  const handlePdfConfirm = useCallback(
+    async (pages: number[]) => {
+      if (!pdfPending || !api) return;
+      const { doc } = pdfPending;
+      setPdfPending(null);
+      setPdfBusy(true);
+      const scale = 2;
+      try {
+        const rendered = await rasterizePdf(doc, { pages, scale });
+        await closePdfDocument(doc);
+        insertRasterizedPagesIntoScene(api, rendered, { scale });
+      } catch (err) {
+        console.warn('[whiteboard] Chèn PDF thất bại:', err);
+        window.alert('Chèn PDF thất bại. Xem console để biết chi tiết.');
+      } finally {
+        setPdfBusy(false);
+      }
+    },
+    [pdfPending, api],
+  );
+
+  const handlePdfCancel = useCallback(() => {
+    if (pdfPending) {
+      void closePdfDocument(pdfPending.doc);
+    }
+    setPdfPending(null);
+  }, [pdfPending]);
+
+  // ---- Drop handler: bắt PDF file kéo vào canvas TRƯỚC Excalidraw ----
+  // Excalidraw không hiểu application/pdf → mặc định sẽ reject (toast lỗi).
+  // Capture phase + preventDefault để ngắt sớm rồi tự xử lý.
+  useEffect(() => {
+    if (readOnly) return;
+    const root = document.querySelector<HTMLElement>('.excalidraw');
+    if (!root) return;
+
+    const onDragOver = (e: DragEvent) => {
+      const items = e.dataTransfer?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].kind === 'file' && items[i].type === 'application/pdf') {
+          e.preventDefault();
+          e.stopPropagation();
+          if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+          return;
+        }
+      }
+    };
+
+    const onDrop = (e: DragEvent) => {
+      const files = e.dataTransfer?.files;
+      if (!files || files.length === 0) return;
+      const pdf = Array.from(files).find((f) => f.type === 'application/pdf');
+      if (!pdf) return;
+      e.preventDefault();
+      e.stopPropagation();
+      void handlePdfPick(pdf);
+    };
+
+    root.addEventListener('dragover', onDragOver, { capture: true });
+    root.addEventListener('drop', onDrop, { capture: true });
+    return () => {
+      root.removeEventListener('dragover', onDragOver, { capture: true });
+      root.removeEventListener('drop', onDrop, { capture: true });
+    };
+  }, [readOnly, handlePdfPick, api]);
+
   return (
     <div className={`relative h-full w-full${isDarkTheme ? ' theme--dark' : ''}`}>
       <Suspense fallback={<ExcalidrawLoadingFallback />}>
@@ -534,6 +638,37 @@ export function Whiteboard({
         onToggle={toggleStampByKind}
         stamps={stamps}
       />
+
+      <PdfImporterButton enabled={!readOnly} onPick={handlePdfPick} />
+
+      {pdfPending && (
+        <PageRangeDialog
+          doc={pdfPending.doc}
+          fileName={pdfPending.fileName}
+          onConfirm={handlePdfConfirm}
+          onCancel={handlePdfCancel}
+        />
+      )}
+
+      {pdfBusy && !pdfPending && (
+        <div
+          aria-live="polite"
+          role="status"
+          style={{
+            position: 'fixed',
+            bottom: 16,
+            right: 16,
+            padding: '8px 14px',
+            background: 'rgba(0,0,0,0.75)',
+            color: '#fff',
+            borderRadius: 6,
+            fontSize: 12,
+            zIndex: 10000,
+          }}
+        >
+          Đang xử lý PDF…
+        </div>
+      )}
 
       {HostComponent && (
         <HostComponent

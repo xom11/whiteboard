@@ -174,6 +174,29 @@ var init_safeJsx = __esm({
 });
 
 // src/stamps/geometry-2d/render.ts
+function containerDimsForBbox(bbox) {
+  const [xmin, ymax, xmax, ymin] = bbox;
+  const w = Math.abs(xmax - xmin);
+  const h = Math.abs(ymax - ymin);
+  if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) {
+    return { width: FALLBACK_W, height: FALLBACK_H };
+  }
+  let width = w * PIXELS_PER_UNIT;
+  let height = h * PIXELS_PER_UNIT;
+  const maxAxis = Math.max(width, height);
+  if (maxAxis > MAX_DIM) {
+    const ratio = MAX_DIM / maxAxis;
+    width *= ratio;
+    height *= ratio;
+  }
+  const minAxis = Math.min(width, height);
+  if (minAxis < MIN_DIM) {
+    const ratio = MIN_DIM / minAxis;
+    width *= ratio;
+    height *= ratio;
+  }
+  return { width: Math.round(width), height: Math.round(height) };
+}
 async function renderGeometrySvgFromState(jsonState) {
   const parsed = JSON.parse(jsonState);
   const palette = paletteFor(false);
@@ -196,10 +219,11 @@ async function renderGeometrySvgFromState(jsonState) {
       opts.grid.strokeColor = palette.grid;
     }
   });
+  const { width, height } = containerDimsForBbox(parsed.bbox);
   const container = document.createElement("div");
   const containerId = "jxg_offscreen_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
   container.id = containerId;
-  container.style.cssText = "position:absolute;top:-99999px;left:-99999px;width:400px;height:300px;visibility:hidden;pointer-events:none;";
+  container.style.cssText = `position:absolute;top:-99999px;left:-99999px;width:${width}px;height:${height}px;visibility:hidden;pointer-events:none;`;
   document.body.appendChild(container);
   let board = null;
   try {
@@ -209,7 +233,7 @@ async function renderGeometrySvgFromState(jsonState) {
       grid: !!parsed.showGrid,
       showCopyright: false,
       showNavigation: false,
-      keepAspectRatio: false
+      keepAspectRatio: true
     });
     deserializeIntoBoard(board, parsed, { palette });
     board.update();
@@ -221,12 +245,18 @@ async function renderGeometrySvgFromState(jsonState) {
     if (container.parentNode) container.parentNode.removeChild(container);
   }
 }
+var PIXELS_PER_UNIT, MIN_DIM, MAX_DIM, FALLBACK_W, FALLBACK_H;
 var init_render = __esm({
   "src/stamps/geometry-2d/render.ts"() {
     init_renderInline();
     init_serialize();
     init_theme();
     init_safeJsx();
+    PIXELS_PER_UNIT = 20;
+    MIN_DIM = 100;
+    MAX_DIM = 1200;
+    FALLBACK_W = 400;
+    FALLBACK_H = 300;
   }
 });
 
@@ -1488,7 +1518,22 @@ var init_MiniBoard = __esm({
         const board = boardRef.current;
         if (!board) return false;
         const idMap = objMapRef.current;
-        const resolved = el.args.map((a) => typeof a === "string" && idMap.has(a) ? idMap.get(a) : a);
+        const resolve = (a) => {
+          if (typeof a === "string") {
+            if (idMap.has(a)) return idMap.get(a);
+            const m = /^(.+):border:(\d+)$/.exec(a);
+            if (m) {
+              const poly = idMap.get(m[1]);
+              const idx = parseInt(m[2], 10);
+              if (poly && Array.isArray(poly.borders) && poly.borders[idx]) {
+                return poly.borders[idx];
+              }
+            }
+          }
+          if (Array.isArray(a)) return a.map(resolve);
+          return a;
+        };
+        const resolved = el.args.map(resolve);
         try {
           if (el.type === "valueLabel") {
             const target = resolved[0];
