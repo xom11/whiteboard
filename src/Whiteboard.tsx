@@ -88,6 +88,24 @@ export interface WhiteboardProps {
    * `STABLE_STAMPS` để chỉ bật stamp ổn định.
    */
   stamps?: ReadonlyArray<StampType>;
+
+  /**
+   * Snapshot từ server. Precedence: `initialScene` > localStorage > blank.
+   * - `undefined` (default) → đọc từ localStorage qua `storageKey`
+   * - `null` → explicit blank, bỏ qua localStorage
+   * - object → dùng làm initialData của Excalidraw, bỏ qua localStorage
+   *
+   * Dùng để load board từ server. Thường đi cùng `storageKey={null}` để
+   * tránh localStorage stale override server data.
+   */
+  initialScene?: ExcalidrawSceneSnapshot | null;
+
+  /**
+   * Binary files (raster, base64) từ server. Add vào Excalidraw đúng 1 lần
+   * khi api ready. Dùng kèm `initialScene` cho flow load-from-server.
+   * Nếu cần inject files động về sau, dùng `onApi` rồi gọi `api.addFiles`.
+   */
+  initialFiles?: BinaryFiles;
 }
 
 export function Whiteboard({
@@ -98,6 +116,8 @@ export function Whiteboard({
   onApi,
   langCode = 'vi-VN',
   stamps = DEFAULT_STAMPS,
+  initialScene,
+  initialFiles,
 }: WhiteboardProps) {
   const [api, setApi] = useState<ExApi | null>(null);
   const apiRef = useRef<ExApi | null>(null);
@@ -138,12 +158,18 @@ export function Whiteboard({
     () => (persistEnabled ? readScene(storageKey as string) : null),
     [persistEnabled, storageKey],
   );
-  const effectiveInitialScene: ExcalidrawSceneSnapshot | null = persistedInitial
-    ? {
-        elements: persistedInitial.elements,
-        appState: persistedInitial.appState as SyncableAppState,
-      }
-    : null;
+  // Precedence: explicit initialScene (server) > localStorage (storageKey) > blank.
+  // `undefined` = consumer không truyền → fallback localStorage.
+  // `null` = consumer explicit blank → bỏ qua cả localStorage.
+  const effectiveInitialScene: ExcalidrawSceneSnapshot | null =
+    initialScene !== undefined
+      ? initialScene
+      : persistedInitial
+        ? {
+            elements: persistedInitial.elements,
+            appState: persistedInitial.appState as SyncableAppState,
+          }
+        : null;
 
   // ---- Stamp state (registry-driven) ----
   const [activeStamp, setActiveStamp] = useState<string | null>(null);
@@ -367,6 +393,35 @@ export function Whiteboard({
       console.warn('[whiteboard] flushPrune thất bại:', err);
     }
   };
+
+  // ---- Mount: load initialFiles (từ server) -> addFiles. Chạy đúng 1 lần
+  // khi api ready. Stable theo initialFiles của lần render đầu — đổi prop
+  // về sau không trigger re-add (consumer dùng onApi nếu cần inject động).
+  const initialFilesAddedRef = useRef(false);
+  useEffect(() => {
+    if (!api || initialFilesAddedRef.current) return;
+    initialFilesAddedRef.current = true;
+    if (!initialFiles) return;
+    const entries = Object.entries(initialFiles);
+    if (entries.length === 0) return;
+    try {
+      api.addFiles(
+        entries.map(([id, f]) => ({
+          id,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          dataURL: (f as any).dataURL,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          mimeType: (f as any).mimeType,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          created: (f as any).created ?? Date.now(),
+        })),
+      );
+      entries.forEach(([id]) => knownFileIdsRef.current.add(id));
+    } catch (err) {
+      console.warn('[whiteboard] addFiles initialFiles thất bại:', err);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [api]);
 
   // ---- Mount: load persisted raster files từ IDB -> addFiles ----
   useEffect(() => {

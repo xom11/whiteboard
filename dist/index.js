@@ -11429,7 +11429,9 @@ function Whiteboard({
   onFilesChange,
   onApi,
   langCode = "vi-VN",
-  stamps = DEFAULT_STAMPS
+  stamps = DEFAULT_STAMPS,
+  initialScene,
+  initialFiles
 }) {
   const [api, setApi] = React8.useState(null);
   const apiRef = React8.useRef(null);
@@ -11458,7 +11460,7 @@ function Whiteboard({
     () => persistEnabled ? readScene(storageKey) : null,
     [persistEnabled, storageKey]
   );
-  const effectiveInitialScene = persistedInitial ? {
+  const effectiveInitialScene = initialScene !== void 0 ? initialScene : persistedInitial ? {
     elements: persistedInitial.elements,
     appState: persistedInitial.appState
   } : null;
@@ -11633,6 +11635,30 @@ function Whiteboard({
       console.warn("[whiteboard] flushPrune th\u1EA5t b\u1EA1i:", err);
     }
   };
+  const initialFilesAddedRef = React8.useRef(false);
+  React8.useEffect(() => {
+    if (!api || initialFilesAddedRef.current) return;
+    initialFilesAddedRef.current = true;
+    if (!initialFiles) return;
+    const entries = Object.entries(initialFiles);
+    if (entries.length === 0) return;
+    try {
+      api.addFiles(
+        entries.map(([id, f]) => ({
+          id,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          dataURL: f.dataURL,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          mimeType: f.mimeType,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          created: f.created ?? Date.now()
+        }))
+      );
+      entries.forEach(([id]) => knownFileIdsRef.current.add(id));
+    } catch (err) {
+      console.warn("[whiteboard] addFiles initialFiles th\u1EA5t b\u1EA1i:", err);
+    }
+  }, [api]);
   React8.useEffect(() => {
     if (!api || !persistEnabled) return;
     let cancelled = false;

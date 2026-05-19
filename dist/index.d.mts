@@ -79,8 +79,24 @@ interface WhiteboardProps {
      * `STABLE_STAMPS` để chỉ bật stamp ổn định.
      */
     stamps?: ReadonlyArray<StampType>;
+    /**
+     * Snapshot từ server. Precedence: `initialScene` > localStorage > blank.
+     * - `undefined` (default) → đọc từ localStorage qua `storageKey`
+     * - `null` → explicit blank, bỏ qua localStorage
+     * - object → dùng làm initialData của Excalidraw, bỏ qua localStorage
+     *
+     * Dùng để load board từ server. Thường đi cùng `storageKey={null}` để
+     * tránh localStorage stale override server data.
+     */
+    initialScene?: ExcalidrawSceneSnapshot | null;
+    /**
+     * Binary files (raster, base64) từ server. Add vào Excalidraw đúng 1 lần
+     * khi api ready. Dùng kèm `initialScene` cho flow load-from-server.
+     * Nếu cần inject files động về sau, dùng `onApi` rồi gọi `api.addFiles`.
+     */
+    initialFiles?: BinaryFiles;
 }
-declare function Whiteboard({ storageKey, readOnly, onSceneChange, onFilesChange, onApi, langCode, stamps, }: WhiteboardProps): react_jsx_runtime.JSX.Element;
+declare function Whiteboard({ storageKey, readOnly, onSceneChange, onFilesChange, onApi, langCode, stamps, initialScene, initialFiles, }: WhiteboardProps): react_jsx_runtime.JSX.Element;
 
 declare function pickSyncableAppState(s: AppState): SyncableAppState;
 

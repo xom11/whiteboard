@@ -36,7 +36,7 @@ jest.mock('@excalidraw/excalidraw', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (globalThis as any).__excProps = props;
       React.useEffect(() => {
-        props.excalidrawAPI?.({
+        const api = {
           updateScene: jest.fn(),
           addFiles: jest.fn(),
           getSceneElements: () =>
@@ -51,7 +51,10 @@ jest.mock('@excalidraw/excalidraw', () => {
             height: 600,
           }),
           setActiveTool: jest.fn(),
-        });
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).__excApi = api;
+        props.excalidrawAPI?.(api);
       }, []);
       return React.createElement(
         'div',
@@ -107,6 +110,8 @@ beforeEach(() => {
   (globalThis as any).__excProps = null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (globalThis as any).__sceneElements = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (globalThis as any).__excApi = null;
 });
 
 afterEach(() => {
@@ -357,5 +362,125 @@ describe('default stamps — mặc định bật tất cả tool', () => {
       fireEvent.keyDown(window, { key: 'h' });
     });
     expect(screen.queryAllByText(/Đồ thị 2D/).length).toBeGreaterThan(0);
+  });
+});
+
+describe('Whiteboard — initialScene + initialFiles (server load)', () => {
+  const sampleAppState = {
+    viewBackgroundColor: '#fff',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    zoom: { value: 1 } as any,
+    scrollX: 0,
+    scrollY: 0,
+    gridSize: null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    theme: 'light' as any,
+  };
+
+  test('initialScene wins over localStorage', async () => {
+    window.localStorage.setItem(
+      'whiteboard:scene:default',
+      JSON.stringify({
+        version: 1,
+        elements: [{ id: 'fromLS', type: 'rectangle' }],
+        appState: { theme: 'light' },
+        savedAt: 0,
+      }),
+    );
+    const { findByTestId } = render(
+      React.createElement(Whiteboard, {
+        initialScene: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          elements: [{ id: 'fromServer', type: 'rectangle' }] as any,
+          appState: sampleAppState,
+        },
+      }),
+    );
+    await findByTestId('excalidraw-mock');
+    expect(getExcProps()?.initialData?.elements).toEqual([
+      { id: 'fromServer', type: 'rectangle' },
+    ]);
+  });
+
+  test('initialScene=null forces blank, ignores localStorage', async () => {
+    window.localStorage.setItem(
+      'whiteboard:scene:default',
+      JSON.stringify({
+        version: 1,
+        elements: [{ id: 'shouldNotAppear', type: 'rectangle' }],
+        appState: {},
+        savedAt: 0,
+      }),
+    );
+    const { findByTestId } = render(
+      React.createElement(Whiteboard, { initialScene: null }),
+    );
+    await findByTestId('excalidraw-mock');
+    expect(getExcProps()?.initialData?.elements).toBeUndefined();
+  });
+
+  test('initialScene=undefined (mặc định) vẫn đọc localStorage', async () => {
+    window.localStorage.setItem(
+      'whiteboard:scene:default',
+      JSON.stringify({
+        version: 1,
+        elements: [{ id: 'fromLS', type: 'rectangle' }],
+        appState: {},
+        savedAt: 0,
+      }),
+    );
+    const { findByTestId } = render(React.createElement(Whiteboard, {}));
+    await findByTestId('excalidraw-mock');
+    expect(getExcProps()?.initialData?.elements).toEqual([
+      { id: 'fromLS', type: 'rectangle' },
+    ]);
+  });
+
+  test('initialFiles → api.addFiles được gọi 1 lần khi api ready', async () => {
+    const initialFiles = { f1: { ...rasterFile } };
+    render(
+      React.createElement(Whiteboard, {
+        storageKey: null,
+        initialScene: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        initialFiles: initialFiles as any,
+      }),
+    );
+    await screen.findByTestId('excalidraw-mock');
+    // setApi defer qua queueMicrotask → cần flush vài tick + re-render.
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const api = (globalThis as any).__excApi as { addFiles: jest.Mock };
+    expect(api.addFiles).toHaveBeenCalledTimes(1);
+    expect(api.addFiles).toHaveBeenCalledWith([
+      {
+        id: 'f1',
+        dataURL: rasterFile.dataURL,
+        mimeType: rasterFile.mimeType,
+        created: rasterFile.created,
+      },
+    ]);
+  });
+
+  test('initialFiles không truyền → addFiles không bị gọi cho initial load', async () => {
+    render(
+      React.createElement(Whiteboard, {
+        storageKey: null,
+        initialScene: null,
+      }),
+    );
+    await screen.findByTestId('excalidraw-mock');
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const api = (globalThis as any).__excApi as { addFiles: jest.Mock };
+    expect(api.addFiles).not.toHaveBeenCalled();
   });
 });
