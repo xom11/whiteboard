@@ -17,9 +17,47 @@ import { safeJsx } from '../shared/safeJsx';
  * Implementation: tạo 1 div ẩn (off-screen, real dimensions để JSXGraph render
  * chuẩn), initBoard, replay creation log từ jsonState, dump SVG, dọn dẹp.
  *
+ * Container dimensions phải MATCH aspect ratio của bbox (đã được editor lưu
+ * sau khi JSXGraph adjust với keepAspectRatio:true). Trước đây hardcode
+ * 400×300 + keepAspectRatio:false làm shape bị kéo dãn (circle thành ellipse,
+ * góc vuông lệch) khi bbox không 4:3 → ảnh hiển thị khác với editor lúc
+ * double-click. Fix: tính container W/H từ bbox + keepAspectRatio:true để
+ * SVG output khớp với view trong editor.
+ *
  * Lý do JXG.Options.text.display = 'internal': JSXGraph mặc định render
  * label bằng HTML <div> overlay → clone SVG export sẽ thiếu label.
  */
+
+const PIXELS_PER_UNIT = 20;
+const MIN_DIM = 100;
+const MAX_DIM = 1200;
+const FALLBACK_W = 400;
+const FALLBACK_H = 300;
+
+export function containerDimsForBbox(bbox: [number, number, number, number]): { width: number; height: number } {
+  const [xmin, ymax, xmax, ymin] = bbox;
+  const w = Math.abs(xmax - xmin);
+  const h = Math.abs(ymax - ymin);
+  if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) {
+    return { width: FALLBACK_W, height: FALLBACK_H };
+  }
+  let width = w * PIXELS_PER_UNIT;
+  let height = h * PIXELS_PER_UNIT;
+  const maxAxis = Math.max(width, height);
+  if (maxAxis > MAX_DIM) {
+    const ratio = MAX_DIM / maxAxis;
+    width *= ratio;
+    height *= ratio;
+  }
+  const minAxis = Math.min(width, height);
+  if (minAxis < MIN_DIM) {
+    const ratio = MIN_DIM / minAxis;
+    width *= ratio;
+    height *= ratio;
+  }
+  return { width: Math.round(width), height: Math.round(height) };
+}
+
 export async function renderGeometrySvgFromState(jsonState: string): Promise<string> {
   const parsed = JSON.parse(jsonState) as SerializedBoard;
   // Stamps inserted vào Excalidraw canvas → luôn dùng light palette.
@@ -45,10 +83,11 @@ export async function renderGeometrySvgFromState(jsonState: string): Promise<str
       opts.grid.strokeColor = palette.grid;
     }
   });
+  const { width, height } = containerDimsForBbox(parsed.bbox);
   const container = document.createElement('div');
   const containerId = 'jxg_offscreen_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
   container.id = containerId;
-  container.style.cssText = 'position:absolute;top:-99999px;left:-99999px;width:400px;height:300px;visibility:hidden;pointer-events:none;';
+  container.style.cssText = `position:absolute;top:-99999px;left:-99999px;width:${width}px;height:${height}px;visibility:hidden;pointer-events:none;`;
   document.body.appendChild(container);
   let board: unknown = null;
   try {
@@ -59,7 +98,7 @@ export async function renderGeometrySvgFromState(jsonState: string): Promise<str
       grid: !!parsed.showGrid,
       showCopyright: false,
       showNavigation: false,
-      keepAspectRatio: false,
+      keepAspectRatio: true,
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     deserializeIntoBoard(board as any, parsed, { palette });

@@ -828,7 +828,27 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     const board = boardRef.current;
     if (!board) return false;
     const idMap = objMapRef.current;
-    const resolved = el.args.map(a => (typeof a === 'string' && idMap.has(a)) ? idMap.get(a) : a);
+    // Phải khớp logic với deserializeIntoBoard (serialize.ts): hỗ trợ cả nested
+    // array (dilate chain) lẫn "polyId:border:N" (perpendicular xuống cạnh
+    // polygon — vd đường cao). Trước đây chỉ flat-lookup → entry tham chiếu
+    // border bị skip → đường cao mất khi mở re-edit.
+    const resolve = (a: unknown): unknown => {
+      if (typeof a === 'string') {
+        if (idMap.has(a)) return idMap.get(a);
+        const m = /^(.+):border:(\d+)$/.exec(a);
+        if (m) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const poly = idMap.get(m[1]) as any;
+          const idx = parseInt(m[2], 10);
+          if (poly && Array.isArray(poly.borders) && poly.borders[idx]) {
+            return poly.borders[idx];
+          }
+        }
+      }
+      if (Array.isArray(a)) return a.map(resolve);
+      return a;
+    };
+    const resolved = el.args.map(resolve);
     try {
       if (el.type === 'valueLabel') {
         const target = resolved[0];

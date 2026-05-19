@@ -149,19 +149,27 @@ export function ToolbarInjector({
 
   return createPortal(
     <>
-      {stamps.map((stamp) => (
-        <StampMenuItem
-          key={stamp.kind}
-          icon={stamp.toolbarIcon}
-          label={stamp.toolbarTitle}
-          active={activeStampKind === stamp.kind}
-          onClick={() => {
-            onToggle(stamp.kind);
-            closePopover();
-          }}
-          dataTestId={stamp.toolbarTestId}
-        />
-      ))}
+      {stamps.map((stamp) => {
+        const { displayLabel, shortcut } = splitTitleAndShortcut(
+          stamp.toolbarTitle,
+          stamp.toolbarLabel,
+        );
+        return (
+          <StampMenuItem
+            key={stamp.kind}
+            icon={stamp.toolbarIcon}
+            label={displayLabel}
+            ariaLabel={stamp.toolbarTitle}
+            shortcut={shortcut}
+            active={activeStampKind === stamp.kind}
+            onClick={() => {
+              onToggle(stamp.kind);
+              closePopover();
+            }}
+            dataTestId={stamp.toolbarTestId}
+          />
+        );
+      })}
       <div
         aria-hidden="true"
         style={{
@@ -175,15 +183,41 @@ export function ToolbarInjector({
   );
 }
 
+/**
+ * Tách "(X)" cuối toolbarTitle thành shortcut hiển thị riêng ở góc phải
+ * (giống các tool gốc Excalidraw: Frame F, Laser K, ...). Nếu title không
+ * có pattern "(...)", fallback dùng toolbarLabel.
+ */
+function splitTitleAndShortcut(
+  title: string,
+  fallbackShortcut: string,
+): { displayLabel: string; shortcut: string } {
+  const match = title.match(/^(.*?)\s*\(([^()]+)\)\s*$/);
+  if (match) {
+    return { displayLabel: match[1].trim(), shortcut: match[2].trim() };
+  }
+  return { displayLabel: title, shortcut: fallbackShortcut };
+}
+
 interface StampMenuItemProps {
   icon: React.ReactNode;
   label: string;
+  ariaLabel: string;
+  shortcut: string;
   active: boolean;
   onClick: () => void;
   dataTestId?: string;
 }
 
-function StampMenuItem({ icon, label, active, onClick, dataTestId }: StampMenuItemProps) {
+function StampMenuItem({
+  icon,
+  label,
+  ariaLabel,
+  shortcut,
+  active,
+  onClick,
+  dataTestId,
+}: StampMenuItemProps) {
   const className = [
     'dropdown-menu-item',
     'dropdown-menu-item-base',
@@ -195,37 +229,19 @@ function StampMenuItem({ icon, label, active, onClick, dataTestId }: StampMenuIt
     <button
       type="button"
       onClick={onClick}
-      aria-label={label}
+      title={ariaLabel}
+      aria-label={ariaLabel}
       aria-pressed={active}
       data-testid={dataTestId}
       className={className}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        columnGap: '0.625rem',
-        width: '100%',
-        boxSizing: 'border-box',
-        background: 'transparent',
-        border: '1px solid transparent',
-        cursor: 'pointer',
-        fontFamily: 'inherit',
-        fontSize: '0.875rem',
-        color: 'var(--color-on-surface)',
-      }}
     >
-      <span
-        aria-hidden="true"
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '1rem',
-          height: '1rem',
-        }}
-      >
+      <div className="dropdown-menu-item__icon" aria-hidden="true">
         {icon}
-      </span>
-      <span>{label}</span>
+      </div>
+      <div className="dropdown-menu-item__text">{label}</div>
+      {shortcut ? (
+        <div className="dropdown-menu-item__shortcut">{shortcut}</div>
+      ) : null}
     </button>
   );
 }
