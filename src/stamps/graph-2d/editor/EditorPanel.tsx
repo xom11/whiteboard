@@ -30,6 +30,7 @@ export interface GraphState {
   showAxis: boolean;
   showGrid: boolean;
   canUndo: boolean;
+  canRedo: boolean;
 }
 
 export interface GraphEditorPanelHandle {
@@ -40,6 +41,7 @@ export interface GraphEditorPanelHandle {
   setShowGrid(b: boolean): void;
   resetView(): void;
   undo(): void;
+  redo(): void;
 
   addFunction(expr: string): { ok: true; id: string } | { ok: false; error: string };
   commitFunctionExpression(id: string, expr: string): void;
@@ -81,6 +83,7 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
   const [errors, setErrors] = useState<Record<string, string | null>>({});
   const [tool, setToolState] = useState<GraphTool>('move');
   const undoStackRef = useRef<SerializedGraph[]>([]);
+  const redoStackRef = useRef<SerializedGraph[]>([]);
   const idCounterRef = useRef(1);
 
   const toolRef = useRef<GraphTool>(tool);
@@ -97,6 +100,8 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
   const pushUndo = useCallback((g: SerializedGraph) => {
     undoStackRef.current.push(g);
     if (undoStackRef.current.length > 30) undoStackRef.current.shift();
+    // Bất kỳ thao tác mới nào cũng làm rớt nhánh redo
+    redoStackRef.current = [];
   }, []);
 
   const setErrorsWithNotify = useCallback(
@@ -116,6 +121,7 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
       showAxis: g.view.showAxis,
       showGrid: g.view.showGrid,
       canUndo: undoStackRef.current.length > 0,
+      canRedo: redoStackRef.current.length > 0,
     });
   }, []);
 
@@ -131,6 +137,65 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
     },
     [pushUndo, notifyStateChange],
   );
+
+  const doUndo = useCallback(() => {
+    const prev = undoStackRef.current.pop();
+    if (!prev) return;
+    redoStackRef.current.push(graphRef.current);
+    if (redoStackRef.current.length > 30) redoStackRef.current.shift();
+    graphRef.current = prev;
+    forceUpdate((n) => n + 1);
+    propsRef.current.onStateChange({
+      tool: toolRef.current,
+      showAxis: prev.view.showAxis,
+      showGrid: prev.view.showGrid,
+      canUndo: undoStackRef.current.length > 0,
+      canRedo: redoStackRef.current.length > 0,
+    });
+    propsRef.current.onGraphChange?.(prev);
+  }, []);
+
+  const doRedo = useCallback(() => {
+    const next = redoStackRef.current.pop();
+    if (!next) return;
+    undoStackRef.current.push(graphRef.current);
+    if (undoStackRef.current.length > 30) undoStackRef.current.shift();
+    graphRef.current = next;
+    forceUpdate((n) => n + 1);
+    propsRef.current.onStateChange({
+      tool: toolRef.current,
+      showAxis: next.view.showAxis,
+      showGrid: next.view.showGrid,
+      canUndo: undoStackRef.current.length > 0,
+      canRedo: redoStackRef.current.length > 0,
+    });
+    propsRef.current.onGraphChange?.(next);
+  }, []);
+
+  // Global keyboard shortcuts: Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, Ctrl+Y
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const ae = document.activeElement as HTMLElement | null;
+      const inField = !!(
+        ae &&
+        (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable)
+      );
+      if (inField) return;
+      if (!(e.metaKey || e.ctrlKey)) return;
+      const key = e.key.toLowerCase();
+      if (key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        doUndo();
+      } else if ((key === 'z' && e.shiftKey) || (key === 'y' && !e.shiftKey)) {
+        e.preventDefault();
+        e.stopPropagation();
+        doRedo();
+      }
+    };
+    window.addEventListener('keydown', onKey, { capture: true });
+    return () => window.removeEventListener('keydown', onKey, { capture: true });
+  }, [doUndo, doRedo]);
 
   const onBoardEvent = useCallback((ev: BoardEvent) => {
     const currentTool = toolRef.current;
@@ -190,6 +255,7 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
           showAxis: g.view.showAxis,
           showGrid: g.view.showGrid,
           canUndo: undoStackRef.current.length > 0,
+          canRedo: redoStackRef.current.length > 0,
         });
       },
 
@@ -205,19 +271,8 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
           view: { ...g.view, xMin: -10, xMax: 10, yMin: -10, yMax: 10 },
         })),
 
-      undo: () => {
-        const prev = undoStackRef.current.pop();
-        if (!prev) return;
-        graphRef.current = prev;
-        forceUpdate((n) => n + 1);
-        propsRef.current.onStateChange({
-          tool: toolRef.current,
-          showAxis: prev.view.showAxis,
-          showGrid: prev.view.showGrid,
-          canUndo: undoStackRef.current.length > 0,
-        });
-        propsRef.current.onGraphChange?.(prev);
-      },
+      undo: doUndo,
+      redo: doRedo,
 
       addFunction: (expr: string) => {
         const g = graphRef.current;
@@ -327,7 +382,7 @@ export const GraphEditorPanel = forwardRef(function GraphEditorPanel(
     }),
     // deps: updateGraph stable; errors changes when function errors change; setErrorsWithNotify stable
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [updateGraph, errors, setErrorsWithNotify],
+    [updateGraph, errors, setErrorsWithNotify, doUndo, doRedo],
   );
 
   // Notify Host of initial graph on mount (so AlgebraView renders correctly for re-edit)

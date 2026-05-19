@@ -1,13 +1,13 @@
 "use client";
 import './index.css';
-import { geometryStamp } from './chunk-PDKKDZ4H.mjs';
-export { geometryStamp } from './chunk-PDKKDZ4H.mjs';
+import { geometryStamp } from './chunk-YVJP7NRG.mjs';
+export { geometryStamp } from './chunk-YVJP7NRG.mjs';
 import { geometry3dStamp } from './chunk-PWIMZIB6.mjs';
 export { geometry3dStamp } from './chunk-PWIMZIB6.mjs';
 import { latexStamp } from './chunk-7P7SQFOW.mjs';
 export { latexStamp } from './chunk-7P7SQFOW.mjs';
-import { graph2dStamp } from './chunk-ZVN356JZ.mjs';
-export { graph2dStamp } from './chunk-ZVN356JZ.mjs';
+import { graph2dStamp } from './chunk-D257NCQW.mjs';
+export { graph2dStamp } from './chunk-D257NCQW.mjs';
 export { isGraph2DCustomData } from './chunk-74VEEZBV.mjs';
 export { isGeometryCustomData } from './chunk-G7FR3AIV.mjs';
 export { isLatexCustomData } from './chunk-X5R72SSJ.mjs';

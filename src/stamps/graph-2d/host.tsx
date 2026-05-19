@@ -34,6 +34,7 @@ const INITIAL_GRAPH_STATE: GraphState = {
   showAxis: true,
   showGrid: true,
   canUndo: false,
+  canRedo: false,
 };
 
 export const Graph2DStampHost = forwardRef<StampHostHandle, StampHostProps>(
@@ -99,6 +100,8 @@ export const Graph2DStampHost = forwardRef<StampHostHandle, StampHostProps>(
           onResetView={() => panelRef.current?.resetView()}
           onUndo={() => panelRef.current?.undo()}
           canUndo={graphUIState.canUndo}
+          onRedo={() => panelRef.current?.redo()}
+          canRedo={graphUIState.canRedo}
           onClose={onClose}
           isDark={isDark}
           isMobile={isMobile}

@@ -907,9 +907,15 @@ function CloseIcon() {
   ] });
 }
 function UndoIcon() {
-  return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
-    /* @__PURE__ */ jsxRuntime.jsx("polyline", { points: "3 7 3 13 9 13" }),
-    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M3.51 13a9 9 0 1 0 2.13-9.36L3 7" })
+  return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: [
+    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M3 10 L8 5 L8 8 L15 8 A5 5 0 0 1 20 13 L20 16" }),
+    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M3 10 L8 15 L8 12" })
+  ] });
+}
+function RedoIcon() {
+  return /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: [
+    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M21 10 L16 5 L16 8 L9 8 A5 5 0 0 0 4 13 L4 16" }),
+    /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M21 10 L16 15 L16 12" })
   ] });
 }
 function ResetViewIcon() {
@@ -994,8 +1000,22 @@ function PanelBody(props) {
           disabled: !props.canUndo,
           title: "Ho\xE0n t\xE1c (Ctrl/Cmd+Z)",
           "aria-label": "Ho\xE0n t\xE1c",
+          "data-testid": "undo-btn",
           className: "inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
           children: /* @__PURE__ */ jsxRuntime.jsx(UndoIcon, {})
+        }
+      ),
+      /* @__PURE__ */ jsxRuntime.jsx(
+        "button",
+        {
+          type: "button",
+          onClick: props.onRedo,
+          disabled: !props.canRedo,
+          title: "L\xE0m l\u1EA1i (Ctrl/Cmd+Shift+Z)",
+          "aria-label": "L\xE0m l\u1EA1i",
+          "data-testid": "redo-btn",
+          className: "inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent",
+          children: /* @__PURE__ */ jsxRuntime.jsx(RedoIcon, {})
         }
       )
     ] }) }),
@@ -1352,6 +1372,7 @@ var init_EditorPanel = __esm({
       const [errors, setErrors] = react.useState({});
       const [tool, setToolState] = react.useState("move");
       const undoStackRef = react.useRef([]);
+      const redoStackRef = react.useRef([]);
       const idCounterRef = react.useRef(1);
       const toolRef = react.useRef(tool);
       toolRef.current = tool;
@@ -1362,6 +1383,7 @@ var init_EditorPanel = __esm({
       const pushUndo = react.useCallback((g) => {
         undoStackRef.current.push(g);
         if (undoStackRef.current.length > 30) undoStackRef.current.shift();
+        redoStackRef.current = [];
       }, []);
       const setErrorsWithNotify = react.useCallback(
         (updater) => {
@@ -1378,7 +1400,8 @@ var init_EditorPanel = __esm({
           tool: t,
           showAxis: g.view.showAxis,
           showGrid: g.view.showGrid,
-          canUndo: undoStackRef.current.length > 0
+          canUndo: undoStackRef.current.length > 0,
+          canRedo: redoStackRef.current.length > 0
         });
       }, []);
       const updateGraph = react.useCallback(
@@ -1393,6 +1416,58 @@ var init_EditorPanel = __esm({
         },
         [pushUndo, notifyStateChange]
       );
+      const doUndo = react.useCallback(() => {
+        const prev = undoStackRef.current.pop();
+        if (!prev) return;
+        redoStackRef.current.push(graphRef.current);
+        if (redoStackRef.current.length > 30) redoStackRef.current.shift();
+        graphRef.current = prev;
+        forceUpdate((n) => n + 1);
+        propsRef.current.onStateChange({
+          tool: toolRef.current,
+          showAxis: prev.view.showAxis,
+          showGrid: prev.view.showGrid,
+          canUndo: undoStackRef.current.length > 0,
+          canRedo: redoStackRef.current.length > 0
+        });
+        propsRef.current.onGraphChange?.(prev);
+      }, []);
+      const doRedo = react.useCallback(() => {
+        const next = redoStackRef.current.pop();
+        if (!next) return;
+        undoStackRef.current.push(graphRef.current);
+        if (undoStackRef.current.length > 30) undoStackRef.current.shift();
+        graphRef.current = next;
+        forceUpdate((n) => n + 1);
+        propsRef.current.onStateChange({
+          tool: toolRef.current,
+          showAxis: next.view.showAxis,
+          showGrid: next.view.showGrid,
+          canUndo: undoStackRef.current.length > 0,
+          canRedo: redoStackRef.current.length > 0
+        });
+        propsRef.current.onGraphChange?.(next);
+      }, []);
+      react.useEffect(() => {
+        const onKey = (e) => {
+          const ae = document.activeElement;
+          const inField = !!(ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable));
+          if (inField) return;
+          if (!(e.metaKey || e.ctrlKey)) return;
+          const key = e.key.toLowerCase();
+          if (key === "z" && !e.shiftKey) {
+            e.preventDefault();
+            e.stopPropagation();
+            doUndo();
+          } else if (key === "z" && e.shiftKey || key === "y" && !e.shiftKey) {
+            e.preventDefault();
+            e.stopPropagation();
+            doRedo();
+          }
+        };
+        window.addEventListener("keydown", onKey, { capture: true });
+        return () => window.removeEventListener("keydown", onKey, { capture: true });
+      }, [doUndo, doRedo]);
       const onBoardEvent = react.useCallback((ev) => {
         const currentTool = toolRef.current;
         if (currentTool === "point-on-curve" && ev.type === "click-curve" && ev.functionId && ev.x !== void 0) {
@@ -1445,7 +1520,8 @@ var init_EditorPanel = __esm({
               tool: t,
               showAxis: g.view.showAxis,
               showGrid: g.view.showGrid,
-              canUndo: undoStackRef.current.length > 0
+              canUndo: undoStackRef.current.length > 0,
+              canRedo: redoStackRef.current.length > 0
             });
           },
           setShowAxis: (b) => updateGraph((g) => ({ ...g, view: { ...g.view, showAxis: b } })),
@@ -1454,19 +1530,8 @@ var init_EditorPanel = __esm({
             ...g,
             view: { ...g.view, xMin: -10, xMax: 10, yMin: -10, yMax: 10 }
           })),
-          undo: () => {
-            const prev = undoStackRef.current.pop();
-            if (!prev) return;
-            graphRef.current = prev;
-            forceUpdate((n) => n + 1);
-            propsRef.current.onStateChange({
-              tool: toolRef.current,
-              showAxis: prev.view.showAxis,
-              showGrid: prev.view.showGrid,
-              canUndo: undoStackRef.current.length > 0
-            });
-            propsRef.current.onGraphChange?.(prev);
-          },
+          undo: doUndo,
+          redo: doRedo,
           addFunction: (expr) => {
             const g = graphRef.current;
             if (g.functions.length >= MAX_FUNCTIONS) {
@@ -1559,7 +1624,7 @@ var init_EditorPanel = __esm({
         }),
         // deps: updateGraph stable; errors changes when function errors change; setErrorsWithNotify stable
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [updateGraph, errors, setErrorsWithNotify]
+        [updateGraph, errors, setErrorsWithNotify, doUndo, doRedo]
       );
       react.useEffect(() => {
         if (!initialGraphNotifiedRef.current) {
@@ -1859,7 +1924,8 @@ var init_host = __esm({
       tool: "move",
       showAxis: true,
       showGrid: true,
-      canUndo: false
+      canUndo: false,
+      canRedo: false
     };
     Graph2DStampHost = react.forwardRef(
       function Graph2DStampHost2({ api, editingElement, onClose, isDark }, ref) {
@@ -1919,6 +1985,8 @@ var init_host = __esm({
               onResetView: () => panelRef.current?.resetView(),
               onUndo: () => panelRef.current?.undo(),
               canUndo: graphUIState.canUndo,
+              onRedo: () => panelRef.current?.redo(),
+              canRedo: graphUIState.canRedo,
               onClose,
               isDark,
               isMobile,

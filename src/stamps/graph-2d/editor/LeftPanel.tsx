@@ -25,9 +25,18 @@ function CloseIcon() {
 
 function UndoIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="3 7 3 13 9 13" />
-      <path d="M3.51 13a9 9 0 1 0 2.13-9.36L3 7" />
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 10 L8 5 L8 8 L15 8 A5 5 0 0 1 20 13 L20 16" />
+      <path d="M3 10 L8 15 L8 12" />
+    </svg>
+  );
+}
+
+function RedoIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M21 10 L16 5 L16 8 L9 8 A5 5 0 0 0 4 13 L4 16" />
+      <path d="M21 10 L16 15 L16 12" />
     </svg>
   );
 }
@@ -96,6 +105,8 @@ export interface GraphLeftPanelProps extends AlgebraViewProps {
   onResetView: () => void;
   onUndo: () => void;
   canUndo: boolean;
+  onRedo: () => void;
+  canRedo: boolean;
   onClose: () => void;
   isDark: boolean;
   isMobile: boolean;
@@ -156,9 +167,21 @@ function PanelBody(props: GraphLeftPanelProps) {
             disabled={!props.canUndo}
             title="Hoàn tác (Ctrl/Cmd+Z)"
             aria-label="Hoàn tác"
+            data-testid="undo-btn"
             className="inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
           >
             <UndoIcon />
+          </button>
+          <button
+            type="button"
+            onClick={props.onRedo}
+            disabled={!props.canRedo}
+            title="Làm lại (Ctrl/Cmd+Shift+Z)"
+            aria-label="Làm lại"
+            data-testid="redo-btn"
+            className="inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
+          >
+            <RedoIcon />
           </button>
         </div>
       </Section>
