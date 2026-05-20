@@ -1,6 +1,6 @@
 // src/core/scene/kinds/point.ts
 import { registerKind } from '../registry';
-import type { KindDef, RenderCtx } from '../types';
+import type { KindDef } from '../types';
 import { type Constraint2D, constraintRefs2D } from './2d-constraint';
 
 export type PointAttrs = {
@@ -32,9 +32,41 @@ const def: KindDef<PointAttrs> = {
     if (c.kind === 'onPolygon') return `${obj.label} trên đa giác ${c.polygonId}`;
     return obj.label;
   },
-  render: (_obj, _ctx: RenderCtx) => {
-    // Render thực được implement ở JxgRenderer (PR 2.2 task 2.2.2).
-    return null;
+  render: (obj, ctx) => {
+    const board = ctx.jxg as any;
+    const c = obj.attrs.constraint;
+    const opts: Record<string, unknown> = {
+      name: obj.label,
+      withLabel: obj.attrs.showLabel ?? true,
+      visible: obj.visible,
+      fixed: obj.locked,
+      strokeColor: obj.attrs.color ?? '#1e40af',
+      fillColor: obj.attrs.color ?? '#1e40af',
+      face: obj.attrs.face ?? 'o',
+      size: obj.attrs.size ?? 4,
+    };
+    if (c.kind === 'free') return board.create('point', [c.x, c.y], opts);
+    if (c.kind === 'onAxis') {
+      const coords: [number, number] = c.axis === 'x' ? [c.t, 0] : [0, c.t];
+      return board.create('point', coords, opts);
+    }
+    if (c.kind === 'onLine') {
+      const line = ctx.resolveRef(c.lineId) as any;
+      return board.create('glider', [c.t, c.t, line], opts);
+    }
+    if (c.kind === 'onSegment') {
+      const seg = ctx.resolveRef(c.segmentId) as any;
+      return board.create('glider', [c.t, c.t, seg], opts);
+    }
+    if (c.kind === 'onCircle') {
+      const circle = ctx.resolveRef(c.circleId) as any;
+      return board.create('glider', [Math.cos(c.theta), Math.sin(c.theta), circle], opts);
+    }
+    if (c.kind === 'onPolygon') {
+      const poly = ctx.resolveRef(c.polygonId) as any;
+      return board.create('glider', [c.u, c.v, poly], opts);
+    }
+    return board.create('point', [0, 0], opts);
   },
 };
 

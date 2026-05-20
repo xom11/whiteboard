@@ -18,7 +18,18 @@ const def: KindDef<VectorAttrs> = {
   },
   dependsOn: (a) => [a.from, a.to],
   describe: (obj) => `Vector ${obj.attrs.from}${obj.attrs.to}`,
-  render: () => null,
+  render: (obj, ctx) => {
+    const board = ctx.jxg as any;
+    const f = ctx.resolveRef(obj.attrs.from);
+    const t = ctx.resolveRef(obj.attrs.to);
+    return board.create('arrow', [f, t], {
+      name: obj.label,
+      strokeColor: obj.attrs.color ?? '#0f172a',
+      strokeWidth: obj.attrs.width ?? 2,
+      visible: obj.visible,
+      fixed: obj.locked,
+    });
+  },
 };
 
 registerKind(def);

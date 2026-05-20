@@ -23,7 +23,21 @@ const def: KindDef<CircleAttrs> = {
   },
   dependsOn: (a) => [a.center, a.surfacePoint],
   describe: (obj) => `Đường tròn tâm ${obj.attrs.center} qua ${obj.attrs.surfacePoint}`,
-  render: () => null,
+  render: (obj, ctx) => {
+    const board = ctx.jxg as any;
+    const center = ctx.resolveRef(obj.attrs.center);
+    const surface = ctx.resolveRef(obj.attrs.surfacePoint);
+    return board.create('circle', [center, surface], {
+      name: obj.label,
+      withLabel: obj.attrs.showLabel ?? false,
+      strokeColor: obj.attrs.color ?? '#0f172a',
+      strokeWidth: obj.attrs.width ?? 2,
+      dash: obj.attrs.dash ?? 0,
+      fillColor: 'none',
+      visible: obj.visible,
+      fixed: obj.locked,
+    });
+  },
 };
 
 registerKind(def);

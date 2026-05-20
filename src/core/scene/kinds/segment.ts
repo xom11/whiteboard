@@ -21,7 +21,20 @@ const def: KindDef<SegmentAttrs> = {
   },
   dependsOn: (a) => [a.p1, a.p2],
   describe: (obj) => `Đoạn ${obj.attrs.p1}${obj.attrs.p2}`,
-  render: () => null,
+  render: (obj, ctx) => {
+    const board = ctx.jxg as any;
+    const p1 = ctx.resolveRef(obj.attrs.p1);
+    const p2 = ctx.resolveRef(obj.attrs.p2);
+    return board.create('segment', [p1, p2], {
+      name: obj.label,
+      withLabel: obj.attrs.showLabel ?? false,
+      strokeColor: obj.attrs.color ?? '#0f172a',
+      strokeWidth: obj.attrs.width ?? 2,
+      dash: obj.attrs.dash ?? 0,
+      visible: obj.visible,
+      fixed: obj.locked,
+    });
+  },
 };
 
 registerKind(def);

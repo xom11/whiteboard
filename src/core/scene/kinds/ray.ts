@@ -19,7 +19,21 @@ const def: KindDef<RayAttrs> = {
   },
   dependsOn: (a) => [a.origin, a.through],
   describe: (obj) => `Tia ${obj.attrs.origin}${obj.attrs.through}`,
-  render: () => null,
+  render: (obj, ctx) => {
+    const board = ctx.jxg as any;
+    const o = ctx.resolveRef(obj.attrs.origin);
+    const t = ctx.resolveRef(obj.attrs.through);
+    return board.create('line', [o, t], {
+      name: obj.label,
+      straightFirst: false,
+      straightLast: true,
+      strokeColor: obj.attrs.color ?? '#0f172a',
+      strokeWidth: obj.attrs.width ?? 2,
+      dash: obj.attrs.dash ?? 0,
+      visible: obj.visible,
+      fixed: obj.locked,
+    });
+  },
 };
 
 registerKind(def);

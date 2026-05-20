@@ -28,7 +28,25 @@ const def: KindDef<IntersectionAttrs> = {
     const a = obj.attrs;
     return `${obj.label} = giao ${a.ref1} ∩ ${a.ref2}`;
   },
-  render: () => null,
+  render: (obj, ctx) => {
+    const board = ctx.jxg as any;
+    const a = ctx.resolveRef(obj.attrs.ref1);
+    const b = ctx.resolveRef(obj.attrs.ref2);
+    const opts: Record<string, unknown> = {
+      name: obj.label,
+      withLabel: true,
+      strokeColor: obj.attrs.color ?? '#dc2626',
+      fillColor: obj.attrs.color ?? '#dc2626',
+      visible: obj.visible,
+      fixed: obj.locked,
+    };
+    if (obj.attrs.kind === 'lineLine') {
+      return board.create('intersection', [a, b, 0], opts);
+    }
+    // lineCircle hoặc circleCircle: branch 0/1
+    const branch = obj.attrs.branch ?? 0;
+    return board.create('intersection', [a, b, branch], opts);
+  },
 };
 
 registerKind(def);

@@ -20,7 +20,22 @@ const def: KindDef<LineAttrs> = {
   },
   dependsOn: (a) => [a.p1, a.p2],
   describe: (obj) => `Đường thẳng ${obj.attrs.p1}${obj.attrs.p2}`,
-  render: () => null,
+  render: (obj, ctx) => {
+    const board = ctx.jxg as any;
+    const p1 = ctx.resolveRef(obj.attrs.p1);
+    const p2 = ctx.resolveRef(obj.attrs.p2);
+    return board.create('line', [p1, p2], {
+      name: obj.label,
+      withLabel: obj.attrs.showLabel ?? false,
+      straightFirst: true,
+      straightLast: true,
+      strokeColor: obj.attrs.color ?? '#0f172a',
+      strokeWidth: obj.attrs.width ?? 2,
+      dash: obj.attrs.dash ?? 0,
+      visible: obj.visible,
+      fixed: obj.locked,
+    });
+  },
 };
 
 registerKind(def);
