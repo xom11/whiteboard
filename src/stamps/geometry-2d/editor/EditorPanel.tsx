@@ -6,7 +6,6 @@ import { renderGeometrySvgFromState } from '../render';
 import { PropertiesPopover } from './PropertiesPopover';
 import { TransformParamPopover } from './TransformParamPopover';
 import { UndoIcon, RedoIcon } from './LeftPanel';
-import { ObjectListPanel } from '../../../core/scene/ui/ObjectListPanel';
 import type { Store } from '../../../core/scene/store';
 
 interface Props {
@@ -27,6 +26,10 @@ interface Props {
   onRedo?: () => void;
   canUndo?: boolean;
   canRedo?: boolean;
+  /** Báo lên Host khi scene store sẵn sàng (sau MiniBoard.onReady). */
+  onStoreReady?: (store: Store) => void;
+  /** Báo lên Host khi selection đổi qua action trong editor. */
+  onSelectionChange?: (id: string | undefined) => void;
 }
 
 export interface GeomBoardState {
@@ -47,15 +50,15 @@ export interface GeometryEditorPanelHandle {
   insert: () => boolean;
   /** Có nội dung để chèn không? */
   hasContent: () => boolean;
+  /** Highlight object theo id từ bên ngoài (ObjectListPanel trong Host). */
+  selectObject: (id: string | null) => void;
 }
 
 export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
-  function GeometryEditorPanel({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer, onUndo, onRedo, canUndo, canRedo }, ref) {
+  function GeometryEditorPanel({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer, onUndo, onRedo, canUndo, canRedo, onStoreReady, onSelectionChange }, ref) {
     const handleRef = useRef<MiniBoardHandle | null>(null);
     const [ready, setReady] = useState(false);
     const [hasContent, setHasContent] = useState(false);
-    const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
-    const sceneStoreRef = useRef<Store | null>(null);
     const [propsPopover, setPropsPopover] = useState<ObjectSnapshot | null>(null);
     // Handlers emit cả 6 transform tool (rotate/dilate/regularPolygon/translate/
     // reflectLine/reflectPoint); TransformParamPopover chỉ render 3 tool có
@@ -63,6 +66,10 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
     const [transformPopover, setTransformPopover] = useState<TransformPopoverInfo>(null);
     const onStateChangeRef = useRef(onStateChange);
     useEffect(() => { onStateChangeRef.current = onStateChange; }, [onStateChange]);
+    const onStoreReadyRef = useRef(onStoreReady);
+    const onSelectionChangeRef = useRef(onSelectionChange);
+    useEffect(() => { onStoreReadyRef.current = onStoreReady; }, [onStoreReady]);
+    useEffect(() => { onSelectionChangeRef.current = onSelectionChange; }, [onSelectionChange]);
 
     const emitState = useCallback(() => {
       const h = handleRef.current;
@@ -81,7 +88,7 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
 
     const handleReady = useCallback((h: MiniBoardHandle) => {
       handleRef.current = h;
-      sceneStoreRef.current = h.getStore();
+      onStoreReadyRef.current?.(h.getStore());
       setReady(true);
       emitState();
       // Subscribe để parent biết khi nào tool/axis/grid/undo thay đổi
@@ -126,12 +133,8 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
       redo: () => handleRef.current?.redo(),
       insert: performInsert,
       hasContent: () => Object.keys(handleRef.current?.getState().objects ?? {}).length > 0,
+      selectObject: (id) => handleRef.current?.highlight(id),
     }), [performInsert]);
-
-    function handleSelectObject(id: string) {
-      setSelectedId(id);
-      handleRef.current?.highlight(id);
-    }
 
     const wrapperStyle: React.CSSProperties = isMobile
       ? { position: 'fixed', inset: 0, zIndex: 40 }
@@ -234,15 +237,6 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
               isDark={isDark}
             />
           </div>
-          {sceneStoreRef.current && (
-            <div className="w-56 border-l border-zinc-200 dark:border-zinc-800 overflow-y-auto">
-              <ObjectListPanel
-                store={sceneStoreRef.current}
-                selectedId={selectedId}
-                onSelect={handleSelectObject}
-              />
-            </div>
-          )}
         </div>
         {propsPopover && (
           propsPopover.kind === 'point' ? (
