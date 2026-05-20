@@ -151,13 +151,34 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
   }, []);
   useEffect(() => () => { if (warnTimerRef.current) clearTimeout(warnTimerRef.current); }, []);
 
-  const labelIdxRef = useRef(0);
+  // Scan-and-fill: trả về chữ A-Z đầu tiên chưa dùng giữa các điểm đang sống
+  // trên board. Đồng nhất hành vi với 3D stamp (xem scene/labels.ts) — xoá C
+  // rồi tạo điểm mới sẽ ra C, không phải D. User-renamed names (vd 'M', 'H')
+  // được giữ lại trong 'used' nên không bị cấp lại.
   const nextLabel = useCallback(() => {
-    const idx = labelIdxRef.current;
-    const suffix = idx >= 26 ? String(Math.floor(idx / 26)) : '';
-    const code = 'A'.charCodeAt(0) + (idx % 26);
-    labelIdxRef.current = idx + 1;
-    return String.fromCharCode(code) + suffix;
+    const used = new Set<string>();
+    const board = boardRef.current;
+    if (board) {
+      safeJsx('MiniBoard.nextLabel.scanNames', () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const objs = (board as any).objectsList || [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        for (const o of objs as any[]) {
+          if (objKind(o) === 'point' && typeof o.name === 'string' && o.name) {
+            used.add(o.name);
+          }
+        }
+      });
+    }
+    const A = 'A'.charCodeAt(0);
+    for (let suffix = 0; suffix < 1000; suffix++) {
+      for (let i = 0; i < 26; i++) {
+        const letter = String.fromCharCode(A + i);
+        const candidate = suffix === 0 ? letter : `${letter}${suffix}`;
+        if (!used.has(candidate)) return candidate;
+      }
+    }
+    return `P${used.size}`;
   }, []);
 
   const nextLocalId = useCallback(() => 'j' + creationLogRef.current.length, []);
@@ -1139,7 +1160,6 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
           recreateFromLogEntry(el);
         }
         creationLogRef.current = [...initialState.elements];
-        labelIdxRef.current = initialState.elements.filter(e => e.type === 'point').length;
       }
 
       // Initial axis/grid
