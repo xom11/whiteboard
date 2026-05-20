@@ -6,7 +6,6 @@ import {
   geometryStamp,
   latexStamp,
   geometry3dStamp,
-  graph2dStamp,
 } from '../registry';
 
 describe('registry exports', () => {
@@ -14,10 +13,9 @@ describe('registry exports', () => {
     expect(STABLE_STAMPS.map((s) => s.kind)).toEqual(['geometry', 'latex']);
   });
 
-  it('EXPERIMENTAL_STAMPS = [geometry3d, graph2d]', () => {
+  it('EXPERIMENTAL_STAMPS = [geometry3d]', () => {
     expect(EXPERIMENTAL_STAMPS.map((s) => s.kind)).toEqual([
       'geometry3d',
-      'graph2d',
     ]);
   });
 
@@ -26,7 +24,6 @@ describe('registry exports', () => {
       'geometry',
       'latex',
       'geometry3d',
-      'graph2d',
     ]);
   });
 
@@ -36,13 +33,11 @@ describe('registry exports', () => {
       'geometry',
       'latex',
       'geometry3d',
-      'graph2d',
     ]);
   });
 
   it('experimental stamps có field experimental=true', () => {
     expect(geometry3dStamp.experimental).toBe(true);
-    expect(graph2dStamp.experimental).toBe(true);
   });
 
   it('stable stamps KHÔNG có experimental=true', () => {

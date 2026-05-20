@@ -28,11 +28,6 @@
       "import": "./dist/latex.mjs",
       "require": "./dist/latex.js"
     },
-    "./graph-2d": {
-      "types": "./dist/graph-2d.d.ts",
-      "import": "./dist/graph-2d.mjs",
-      "require": "./dist/graph-2d.js"
-    },
     "./styles.css": "./dist/index.css"
   },
   "files": [

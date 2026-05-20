@@ -355,14 +355,8 @@ describe('default stamps — mặc định bật tất cả tool', () => {
     expect(screen.queryByText(/hình học không gian/i)).toBeTruthy();
   });
 
-  it('không pass stamps prop → phím H mở Graph2D editor', async () => {
-    const { findByTestId } = render(<Whiteboard storageKey={null} />);
-    await findByTestId('excalidraw-mock');
-    await act(async () => {
-      fireEvent.keyDown(window, { key: 'h' });
-    });
-    expect(screen.queryAllByText(/Đồ thị 2D/).length).toBeGreaterThan(0);
-  });
+  // Graph2D stamp tạm thời bị xoá (rebuild theo Scene v2 — PR G.1.1)
+  it.todo('không pass stamps prop → phím H mở Graph2D editor');
 });
 
 describe('Whiteboard — initialScene + initialFiles (server load)', () => {
