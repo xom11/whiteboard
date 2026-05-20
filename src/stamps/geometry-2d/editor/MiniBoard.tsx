@@ -522,8 +522,42 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
         subscribe: (cb) => { subscribersRef.current.add(cb); return () => { subscribersRef.current.delete(cb); }; },
         snapshotObject: (id, anchorScreen) => buildSnapshot(id, anchorScreen),
         mutateObject: (id, patch) => {
-          if (patch.remove) store.dispatch({ type: 'DELETE', payload: { id } });
-          else if (patch.attrs) store.dispatch({ type: 'UPDATE_ATTRS', payload: { id, patch: patch.attrs } });
+          if (patch.remove) {
+            store.dispatch({ type: 'DELETE', payload: { id } });
+            return;
+          }
+          if (!patch.attrs) return;
+          // PropertiesPopover phát attrs theo tên JSXGraph (strokeColor,
+          // strokeWidth, withLabel, name, …). Scene attrs dùng tên ngắn gọn
+          // (color, width, showLabel, …) và `label` là field top-level của
+          // SceneObject (không nằm trong attrs). Map ở đây để popover khỏi
+          // cần biết shape của scene.
+          const incoming = patch.attrs as Record<string, unknown>;
+          const { name, withLabel, strokeColor, fillColor, strokeWidth, ...rest } = incoming as {
+            name?: unknown;
+            withLabel?: unknown;
+            strokeColor?: unknown;
+            fillColor?: unknown;
+            strokeWidth?: unknown;
+            [k: string]: unknown;
+          };
+          // 1) Rename → UPDATE top-level `label`.
+          if (typeof name === 'string') {
+            store.dispatch({ type: 'UPDATE', payload: { id, patch: { label: name } } });
+          }
+          // 2) Map JSXGraph attr names → scene attr names.
+          const mapped: Record<string, unknown> = { ...rest };
+          // strokeColor / fillColor cùng đại diện cho cùng 1 thuộc tính `color`
+          // ở scene. PropertiesPopover đã thêm sẵn `color` cùng strokeColor,
+          // nên ưu tiên dùng `color` (đã có trong rest) — nhưng nếu user gọi
+          // mutateObject bằng tên JSXGraph thuần thì vẫn map fallback.
+          if (strokeColor !== undefined && mapped.color === undefined) mapped.color = strokeColor;
+          if (fillColor !== undefined && mapped.color === undefined) mapped.color = fillColor;
+          if (strokeWidth !== undefined && mapped.width === undefined) mapped.width = strokeWidth;
+          if (withLabel !== undefined && mapped.showLabel === undefined) mapped.showLabel = withLabel;
+          if (Object.keys(mapped).length > 0) {
+            store.dispatch({ type: 'UPDATE_ATTRS', payload: { id, patch: mapped } });
+          }
         },
         getAllPointNames: () => listObjects(store.getState())
           .filter((o) => o.kind === 'point' || o.kind === 'intersection')
