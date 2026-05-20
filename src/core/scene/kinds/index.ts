@@ -15,4 +15,5 @@ import './segment';
 import './line';
 import './ray';
 import './vector';
+import './circle';
 export {};
