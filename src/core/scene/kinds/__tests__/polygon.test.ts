@@ -30,4 +30,31 @@ describe('kinds/polygon (2D)', () => {
     expect(getKind('polygon').describe(obj)).toContain('B');
     expect(getKind('polygon').describe(obj)).toContain('C');
   });
+
+  describe('construction regular', () => {
+    const def = getKind('polygon');
+
+    test('validate cho phép omit vertices khi có construction regular', () => {
+      expect(() => def.validate?.({
+        construction: { kind: 'regular', p1: 'A', p2: 'B', n: 5 },
+      } as never)).not.toThrow();
+    });
+
+    test('validate throw nếu n < 3', () => {
+      expect(() => def.validate?.({
+        construction: { kind: 'regular', p1: 'A', p2: 'B', n: 2 },
+      } as never)).toThrow(/3/);
+    });
+
+    test('dependsOn regular → [p1, p2]', () => {
+      expect(def.dependsOn({
+        construction: { kind: 'regular', p1: 'A', p2: 'B', n: 6 },
+      } as never)).toEqual(['A', 'B']);
+    });
+
+    test('describe regular ghi rõ số cạnh', () => {
+      const obj = mkObj('polygon', 'rp1', { construction: { kind: 'regular', p1: 'A', p2: 'B', n: 5 } });
+      expect(def.describe(obj)).toMatch(/5.*cạnh|đều/i);
+    });
+  });
 });

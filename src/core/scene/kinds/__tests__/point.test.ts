@@ -49,4 +49,52 @@ describe('kinds/point (2D)', () => {
     const obj = mkObj('point', 'M', { constraint: { kind: 'midpoint', p1: 'A', p2: 'B' } });
     expect(def.describe(obj)).toMatch(/trung điểm AB/);
   });
+
+  describe('constraint transformed', () => {
+    const def = getKind('point');
+
+    test('dependsOn translate → [source]', () => {
+      expect(def.dependsOn({
+        constraint: { kind: 'transformed', source: 'A', transform: { kind: 'translate', dx: 1, dy: 2 } },
+      } as never)).toEqual(['A']);
+    });
+
+    test('dependsOn rotate → [source, center]', () => {
+      expect(def.dependsOn({
+        constraint: { kind: 'transformed', source: 'A', transform: { kind: 'rotate', angleRad: Math.PI / 2, center: 'O' } },
+      } as never)).toEqual(['A', 'O']);
+    });
+
+    test('dependsOn reflectLine → [source, line]', () => {
+      expect(def.dependsOn({
+        constraint: { kind: 'transformed', source: 'A', transform: { kind: 'reflectLine', line: 'l1' } },
+      } as never)).toEqual(['A', 'l1']);
+    });
+
+    test('dependsOn reflectPoint → [source, center]', () => {
+      expect(def.dependsOn({
+        constraint: { kind: 'transformed', source: 'A', transform: { kind: 'reflectPoint', center: 'O' } },
+      } as never)).toEqual(['A', 'O']);
+    });
+
+    test('dependsOn dilate → [source, center]', () => {
+      expect(def.dependsOn({
+        constraint: { kind: 'transformed', source: 'A', transform: { kind: 'dilate', k: 2, center: 'O' } },
+      } as never)).toEqual(['A', 'O']);
+    });
+
+    test('describe translate', () => {
+      const obj = mkObj('point', "A'", {
+        constraint: { kind: 'transformed', source: 'A', transform: { kind: 'translate', dx: 3, dy: 4 } },
+      });
+      expect(def.describe(obj)).toMatch(/A.*ảnh.*A.*tịnh tiến/);
+    });
+
+    test('describe rotate ghi rõ tâm + góc', () => {
+      const obj = mkObj('point', "A'", {
+        constraint: { kind: 'transformed', source: 'A', transform: { kind: 'rotate', angleRad: Math.PI, center: 'O' } },
+      });
+      expect(def.describe(obj)).toMatch(/180.*O|O.*180/);
+    });
+  });
 });

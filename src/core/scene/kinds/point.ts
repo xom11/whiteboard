@@ -1,7 +1,48 @@
 // src/core/scene/kinds/point.ts
 import { registerKind } from '../registry';
-import type { KindDef } from '../types';
-import { type Constraint2D, constraintRefs2D } from './2d-constraint';
+import type { KindDef, RenderCtx } from '../types';
+import { type Constraint2D, type TransformDef, constraintRefs2D } from './2d-constraint';
+
+/**
+ * Build mảng JSXGraph 'transform' elements cho TransformDef. Dilate → chain
+ * 3 transform (T(-c) → S(k) → T(+c)) vì JSXGraph 'scale' không nhận center.
+ *
+ * Center là pointId; resolve qua ctx + dùng function-based để dilate cập nhật
+ * live khi user kéo center.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function buildJxgTransforms(board: any, ctx: RenderCtx, t: TransformDef): any[] {
+  switch (t.kind) {
+    case 'translate':
+      return [board.create('transform', [t.dx, t.dy], { type: 'translate' })];
+    case 'rotate': {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const c: any = ctx.resolveRef(t.center);
+      return [board.create('transform', [t.angleRad, c], { type: 'rotate' })];
+    }
+    case 'reflectPoint': {
+      // Đối xứng qua điểm = quay π quanh điểm đó.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const c: any = ctx.resolveRef(t.center);
+      return [board.create('transform', [Math.PI, c], { type: 'rotate' })];
+    }
+    case 'reflectLine': {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const l: any = ctx.resolveRef(t.line);
+      return [board.create('transform', [l], { type: 'reflect' })];
+    }
+    case 'dilate': {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const c: any = ctx.resolveRef(t.center);
+      // Function-based để chain cập nhật khi user kéo center.
+      return [
+        board.create('transform', [() => -c.X(), () => -c.Y()], { type: 'translate' }),
+        board.create('transform', [t.k, t.k], { type: 'scale' }),
+        board.create('transform', [() => c.X(), () => c.Y()], { type: 'translate' }),
+      ];
+    }
+  }
+}
 
 export type PointAttrs = {
   constraint: Constraint2D;
@@ -31,6 +72,17 @@ const def: KindDef<PointAttrs> = {
     if (c.kind === 'onCircle') return `${obj.label} trên đường tròn ${c.circleId}`;
     if (c.kind === 'onPolygon') return `${obj.label} trên đa giác ${c.polygonId}`;
     if (c.kind === 'midpoint') return `${obj.label} = trung điểm ${c.p1}${c.p2}`;
+    if (c.kind === 'transformed') {
+      const t = c.transform;
+      const op =
+        t.kind === 'translate' ? `tịnh tiến (${t.dx.toFixed(2)}, ${t.dy.toFixed(2)})`
+        : t.kind === 'rotate' ? `quay ${((t.angleRad * 180) / Math.PI).toFixed(0)}° quanh ${t.center}`
+        : t.kind === 'reflectLine' ? `đối xứng qua ${t.line}`
+        : t.kind === 'reflectPoint' ? `đối xứng qua điểm ${t.center}`
+        : t.kind === 'dilate' ? `vị tự k=${t.k} quanh ${t.center}`
+        : '';
+      return `${obj.label} = ảnh của ${c.source} (${op})`;
+    }
     return obj.label;
   },
   render: (obj, ctx) => {
@@ -71,6 +123,18 @@ const def: KindDef<PointAttrs> = {
       const p1 = ctx.resolveRef(c.p1) as any;
       const p2 = ctx.resolveRef(c.p2) as any;
       return board.create('midpoint', [p1, p2], opts);
+    }
+    if (c.kind === 'transformed') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const src: any = ctx.resolveRef(c.source);
+      const transforms = buildJxgTransforms(board, ctx, c.transform);
+      const parent = transforms.length === 1 ? transforms[0] : transforms;
+      // JSXGraph: create('point', [src, transformParent]) — src first.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pt: any = board.create('point', [src, parent], opts);
+      // Renderer dọn _helpers khi remove element (xem JxgRenderer.remove).
+      pt._helpers = transforms;
+      return pt;
     }
     return board.create('point', [0, 0], opts);
   },

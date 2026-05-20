@@ -21,7 +21,7 @@ import {
 } from '../../../core/scene';
 import { JxgRenderer } from '../../../core/scene/render/JxgRenderer';
 import type { SerializedBoard } from '../serialize';
-import { handleDown, handleMove, handleUp, type HandlerCtx } from './handlers';
+import { handleDown, handleMove, handleUp, finalizeTransform, type HandlerCtx, type TransformToolKey } from './handlers';
 import { findNearestPoint } from './hitTest';
 import { paletteFor, themeAxis, themeGrid, themeLabel } from './theme';
 import { GROUP_LABELS, TOOLS, objKind, type GeomTool, type ToolDef } from './tools';
@@ -714,9 +714,15 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
           .map((o) => o.label),
         onSelect: (cb) => { selectSubsRef.current.add(cb); return () => { selectSubsRef.current.delete(cb); }; },
         onTransformParam: (cb) => { transformSubsRef.current.add(cb); return () => { transformSubsRef.current.delete(cb); }; },
-        confirmTransformParam: (_value: number) => {
-          // Transform finalize logic được port chính xác ở sub-PR sau (kind
-          // 'transform' chưa nằm trong scene registry). Hiện tại: cancel pending.
+        confirmTransformParam: (value: number) => {
+          const info = pendingTransformRef.current as
+            | { tool: TransformToolKey; pendingIds: string[]; anchorScreen: { x: number; y: number } }
+            | null;
+          if (info && ctxRef.current) {
+            safeJsx('MiniBoard.finalizeTransform', () =>
+              finalizeTransform(ctxRef.current!, info.tool, info.pendingIds, value),
+            );
+          }
           pendingTransformRef.current = null;
           emitTransform(null);
           clearPending();
