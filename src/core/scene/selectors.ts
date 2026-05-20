@@ -33,8 +33,22 @@ export function dependentsOf(state: State, rootId: string): Set<string> {
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
+/**
+ * Nhóm các kind chia chung namespace label. User nhìn point free, intersection,
+ * midpoint đều là "điểm" có tên 1 chữ cái — không được trùng tên dù khác kind
+ * trong scene store. Ví dụ tam giác ABC + giao điểm 2 đường: giao điểm phải là
+ * D (không phải A trùng đỉnh tam giác).
+ */
+const LABEL_GROUPS: Record<string, readonly string[]> = {
+  point: ['point', 'intersection'],
+  intersection: ['point', 'intersection'],
+};
+
 export function nextLabel(state: State, kind: string): string {
-  const used = new Set(byKind(state, kind).map(o => o.label));
+  const kinds = LABEL_GROUPS[kind] ?? [kind];
+  const used = new Set(
+    listObjects(state).filter(o => kinds.includes(o.kind)).map(o => o.label),
+  );
   for (const c of ALPHABET) if (!used.has(c)) return c;
   let idx = 1;
   while (true) {

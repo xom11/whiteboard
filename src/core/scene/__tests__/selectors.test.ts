@@ -14,6 +14,10 @@ const lineDef: KindDef = {
   type: 'line', schemaVersion: 1, migrate: {},
   dependsOn: (a: any) => [a.p1, a.p2], describe: () => '', render: () => null,
 };
+const intersectionDef: KindDef = {
+  type: 'intersection', schemaVersion: 1, migrate: {},
+  dependsOn: () => [], describe: () => '', render: () => null,
+};
 
 const mkPoint = (id: string, label = id): SceneObject => ({
   id, kind: 'point', label, visible: true, locked: false, layer: 'default',
@@ -36,6 +40,7 @@ describe('selectors', () => {
     __clearRegistryForTests();
     registerKind(pointDef);
     registerKind(lineDef);
+    registerKind(intersectionDef);
   });
 
   test('listObjects giữ thứ tự insert', () => {
@@ -68,5 +73,28 @@ describe('selectors', () => {
     }
     const s = build(...objs);
     expect(nextLabel(s, 'point')).toBe('A1');
+  });
+
+  test('nextLabel intersection không trùng tên với point có sẵn', () => {
+    // BUG regression: trước đây nextLabel('intersection') chỉ check
+    // intersection kind → giao điểm trong tam giác ABC bị đặt tên A trùng.
+    const s = build(
+      mkPoint('p1', 'A'),
+      mkPoint('p2', 'B'),
+      mkPoint('p3', 'C'),
+    );
+    expect(nextLabel(s, 'intersection')).toBe('D');
+  });
+
+  test('nextLabel point không trùng tên với intersection có sẵn', () => {
+    const mkIntersection = (id: string, label: string): SceneObject => ({
+      id, kind: 'intersection', label, visible: true, locked: false,
+      layer: 'default', schemaVersion: 1, attrs: {},
+    });
+    const s = build(
+      mkPoint('p1', 'A'),
+      mkIntersection('X1', 'B'),
+    );
+    expect(nextLabel(s, 'point')).toBe('C');
   });
 });
