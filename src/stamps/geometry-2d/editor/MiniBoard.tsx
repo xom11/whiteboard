@@ -12,6 +12,7 @@ import {
 } from './tools';
 import { paletteFor, resolveAttrColors, themeAxis, themeGrid, themeLabel } from './theme';
 import { handleDown, handleUp, handleMove, type HandlerCtx } from './handlers';
+import { hitObjectsAt, findNearestPointInList } from './hitTest';
 import { safeJsx } from '../../shared/safeJsx';
 
 // Re-export để backward-compat với consumer cũ.
@@ -1015,14 +1016,14 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     const sc = screenCoordsOf(evt);
     if (!sc) return [];
     const [sx, sy] = sc;
-    const list: JxgObj[] = [];
+    let list: JxgObj[] = [];
     safeJsx('MiniBoard.objectsAt.loop', () => {
-      const objs = b.objectsList || [];
-      for (const o of objs) {
-        safeJsx('MiniBoard.objectsAt.hasPoint', () => {
-          if (o.hasPoint && o.hasPoint(sx, sy)) list.push(o);
-        });
-      }
+      // Exclude invisible cursor-phantom + live preview shape — cả 2 nằm trong
+      // objectsList và sẽ shadow real hits nếu không loại trừ (bug freeze).
+      const exclude = new Set<JxgObj>();
+      if (phantomRef.current) exclude.add(phantomRef.current);
+      if (previewShapeRef.current) exclude.add(previewShapeRef.current);
+      list = hitObjectsAt(b.objectsList || [], sx, sy, exclude);
     });
     return list;
   }, [screenCoordsOf]);
@@ -1037,25 +1038,15 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     const sc = screenCoordsOf(evt);
     if (!sc) return null;
     const [sx, sy] = sc;
-    const tol2 = tolPx * tolPx;
-    type Best = { obj: JxgObj; d2: number };
-    const bestRef: { current: Best | null } = { current: null };
+    let result: JxgObj | null = null;
     safeJsx('MiniBoard.findNearestPoint.loop', () => {
-      const objs = b.objectsList || [];
-      for (const o of objs) {
-        safeJsx('MiniBoard.findNearestPoint.iter', () => {
-          if (objKind(o) !== 'point') return;
-          const pc = o.coords?.scrCoords;
-          if (!pc) return;
-          const dx = pc[1] - sx;
-          const dy = pc[2] - sy;
-          const d2 = dx * dx + dy * dy;
-          const cur = bestRef.current;
-          if (d2 <= tol2 && (!cur || d2 < cur.d2)) bestRef.current = { obj: o, d2 };
-        });
-      }
+      // Exclude phantom — invisible point luôn kéo theo cursor; nếu không bỏ,
+      // nó sẽ ăn mọi findNearestPoint(12px) → tool multi-điểm bị "đứng".
+      const exclude = new Set<JxgObj>();
+      if (phantomRef.current) exclude.add(phantomRef.current);
+      result = findNearestPointInList(b.objectsList || [], sx, sy, tolPx, exclude);
     });
-    return bestRef.current ? bestRef.current.obj : null;
+    return result;
   }, [screenCoordsOf]);
 
   // Label-aware snap: if the click landed on a JSXGraph text label (drawn near
