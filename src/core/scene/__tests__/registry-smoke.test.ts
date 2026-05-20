@@ -3,7 +3,7 @@ import '../kinds';
 import { listKinds } from '../registry';
 
 describe('registry smoke (sau khi import barrel kinds)', () => {
-  test('có đủ 21 kind (11 3D + 10 2D) đã đăng ký', () => {
+  test('có đủ 28 kind (11 3D + 10 2D + 7 graph2d) đã đăng ký', () => {
     const types = listKinds().map(k => k.type).sort();
     expect(types).toEqual([
       'angle',
@@ -11,20 +11,27 @@ describe('registry smoke (sau khi import barrel kinds)', () => {
       'cone3d',
       'cylinder3d',
       'distance',
+      'extremum2d',
+      'function2d',
       'intersection',
       'line',
       'line3d',
+      'parameter',
       'plane3d',
       'point',
       'point3d',
+      'pointOnCurve',
       'polygon',
       'polygon3d',
       'polyhedron3d',
       'ray',
       'ray3d',
+      'root2d',
       'segment',
       'segment3d',
+      'slope2d',
       'sphere3d',
+      'tangent2d',
       'vector',
       'vector3d',
     ]);
