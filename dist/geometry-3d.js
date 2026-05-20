@@ -2,7 +2,7 @@
 'use strict';
 
 var immer = require('immer');
-var React2 = require('react');
+var React4 = require('react');
 var jsxRuntime = require('react/jsx-runtime');
 var reactDom = require('react-dom');
 
@@ -24,7 +24,7 @@ function _interopNamespace(e) {
   return Object.freeze(n);
 }
 
-var React2__namespace = /*#__PURE__*/_interopNamespace(React2);
+var React4__namespace = /*#__PURE__*/_interopNamespace(React4);
 
 var __defProp = Object.defineProperty;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -393,6 +393,8 @@ var init_JxgRenderer3D = __esm({
       constructor(store, view, options = {}) {
         this.elements = /* @__PURE__ */ new Map();
         this.disposed = false;
+        this.highlightedId = null;
+        this.highlightOriginal = null;
         this.store = store;
         this.view = view;
         this.theme = options.theme ?? DEFAULT_THEME_3D;
@@ -494,6 +496,31 @@ var init_JxgRenderer3D = __esm({
         this.disposed = true;
         for (const id of Array.from(this.elements.keys())) {
           this.remove(id);
+        }
+      }
+      highlight(id) {
+        if (this.disposed) return;
+        if (this.highlightedId && this.highlightOriginal) {
+          const prev = this.elements.get(this.highlightedId);
+          try {
+            prev?.setAttribute?.(this.highlightOriginal);
+          } catch (err) {
+            console.warn("[scene/render/3d] highlight restore fail:", err);
+          }
+        }
+        this.highlightedId = null;
+        this.highlightOriginal = null;
+        if (!id) return;
+        const el = this.elements.get(id);
+        if (!el) return;
+        try {
+          const stroke = el.getAttribute?.("strokeColor") ?? "#1e40af";
+          const thick = el.getAttribute?.("strokeWidth") ?? 2;
+          this.highlightOriginal = { stroke, thick };
+          el.setAttribute?.({ strokeColor: "#ef4444", strokeWidth: thick + 2 });
+          this.highlightedId = id;
+        } catch (err) {
+          console.warn("[scene/render/3d] highlight apply fail:", err);
         }
       }
     };
@@ -1956,11 +1983,11 @@ var init_MiniBoard3D = __esm({
   "src/stamps/geometry-3d/editor/MiniBoard3D.tsx"() {
     "use client";
     init_theme2();
-    MiniBoard3D = React2__namespace.forwardRef(
+    MiniBoard3D = React4__namespace.forwardRef(
       function MiniBoard3D2(props, ref) {
-        const containerRef = React2__namespace.useRef(null);
-        const boardRef = React2__namespace.useRef(null);
-        const viewRef = React2__namespace.useRef(null);
+        const containerRef = React4__namespace.useRef(null);
+        const boardRef = React4__namespace.useRef(null);
+        const viewRef = React4__namespace.useRef(null);
         const {
           isDark,
           onView3DReady,
@@ -1971,13 +1998,13 @@ var init_MiniBoard3D = __esm({
           onPointerDrag,
           onPointerDragEnd
         } = props;
-        const onView3DReadyRef = React2__namespace.useRef(onView3DReady);
-        const onPointerClickRef = React2__namespace.useRef(onPointerClick);
-        const onPointerMoveRef = React2__namespace.useRef(onPointerMove);
-        const onPointerLeaveRef = React2__namespace.useRef(onPointerLeave);
-        const shouldStartPointDragRef = React2__namespace.useRef(shouldStartPointDrag);
-        const onPointerDragRef = React2__namespace.useRef(onPointerDrag);
-        const onPointerDragEndRef = React2__namespace.useRef(onPointerDragEnd);
+        const onView3DReadyRef = React4__namespace.useRef(onView3DReady);
+        const onPointerClickRef = React4__namespace.useRef(onPointerClick);
+        const onPointerMoveRef = React4__namespace.useRef(onPointerMove);
+        const onPointerLeaveRef = React4__namespace.useRef(onPointerLeave);
+        const shouldStartPointDragRef = React4__namespace.useRef(shouldStartPointDrag);
+        const onPointerDragRef = React4__namespace.useRef(onPointerDrag);
+        const onPointerDragEndRef = React4__namespace.useRef(onPointerDragEnd);
         onView3DReadyRef.current = onView3DReady;
         onPointerClickRef.current = onPointerClick;
         onPointerMoveRef.current = onPointerMove;
@@ -1985,7 +2012,7 @@ var init_MiniBoard3D = __esm({
         shouldStartPointDragRef.current = shouldStartPointDrag;
         onPointerDragRef.current = onPointerDrag;
         onPointerDragEndRef.current = onPointerDragEnd;
-        React2__namespace.useImperativeHandle(
+        React4__namespace.useImperativeHandle(
           ref,
           () => ({
             getBoard: () => boardRef.current,
@@ -1994,7 +2021,7 @@ var init_MiniBoard3D = __esm({
           }),
           []
         );
-        React2__namespace.useEffect(() => {
+        React4__namespace.useEffect(() => {
           const div = containerRef.current;
           if (!div) return;
           let cancelled = false;
@@ -2302,6 +2329,146 @@ var init_StatusHint = __esm({
     "use client";
   }
 });
+function useActionRecorder(store) {
+  const [history, setHistory] = React4__namespace.useState([]);
+  const isRecordingRef = React4__namespace.useRef(true);
+  const isReplayingRef = React4__namespace.useRef(false);
+  const [isRecording, setIsRecording] = React4__namespace.useState(true);
+  const [isReplaying, setIsReplaying] = React4__namespace.useState(false);
+  React4__namespace.useEffect(() => {
+    const unsub = store.subscribe((_next, _prev, action) => {
+      if (!isRecordingRef.current) return;
+      if (isReplayingRef.current) return;
+      setHistory((h) => [...h, { action, at: Date.now() }]);
+    });
+    return unsub;
+  }, [store]);
+  const record = React4__namespace.useCallback(() => {
+    isRecordingRef.current = true;
+    setIsRecording(true);
+  }, []);
+  const stop = React4__namespace.useCallback(() => {
+    isRecordingRef.current = false;
+    setIsRecording(false);
+  }, []);
+  const clear = React4__namespace.useCallback(() => {
+    setHistory([]);
+  }, []);
+  const replay = React4__namespace.useCallback(async (delayMs = 0) => {
+    if (history.length === 0) return;
+    isReplayingRef.current = true;
+    setIsReplaying(true);
+    try {
+      store.dispatch({ type: "RESET" });
+      for (const { action } of history) {
+        if (delayMs > 0) await new Promise((r) => setTimeout(r, delayMs));
+        store.dispatch(action);
+      }
+    } finally {
+      isReplayingRef.current = false;
+      setIsReplaying(false);
+    }
+  }, [history, store]);
+  return { history, isRecording, isReplaying, record, stop, clear, replay };
+}
+var init_useActionRecorder = __esm({
+  "src/core/scene/ui/useActionRecorder.ts"() {
+    "use client";
+  }
+});
+function RecorderPanel(props) {
+  const { recorder, defaultOpen = false } = props;
+  const [open, setOpen] = React4__namespace.useState(defaultOpen);
+  return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "fixed bottom-3 right-3 z-50 rounded-md border border-zinc-300 bg-white shadow-lg text-xs dark:border-zinc-700 dark:bg-zinc-900", children: [
+    /* @__PURE__ */ jsxRuntime.jsxs(
+      "button",
+      {
+        type: "button",
+        "aria-label": "Toggle recorder",
+        onClick: () => setOpen((v) => !v),
+        className: "flex items-center gap-2 px-3 py-1.5 font-semibold",
+        children: [
+          /* @__PURE__ */ jsxRuntime.jsx("span", { children: "\u{1F3AC} Recorder" }),
+          /* @__PURE__ */ jsxRuntime.jsx(
+            "span",
+            {
+              "data-testid": "recorder-count",
+              className: "rounded bg-zinc-100 px-1.5 py-0.5 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200",
+              children: recorder.history.length
+            }
+          )
+        ]
+      }
+    ),
+    open ? /* @__PURE__ */ jsxRuntime.jsxs("div", { "data-testid": "recorder-body", className: "border-t border-zinc-200 px-3 py-2 dark:border-zinc-800", children: [
+      /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "mb-2 flex gap-1", children: [
+        recorder.isRecording ? /* @__PURE__ */ jsxRuntime.jsx(
+          "button",
+          {
+            type: "button",
+            "aria-label": "Stop recording",
+            onClick: recorder.stop,
+            className: "rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700",
+            children: "\u23F8 Stop"
+          }
+        ) : /* @__PURE__ */ jsxRuntime.jsx(
+          "button",
+          {
+            type: "button",
+            "aria-label": "Start recording",
+            onClick: recorder.record,
+            className: "rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700",
+            children: "\u23FA Record"
+          }
+        ),
+        /* @__PURE__ */ jsxRuntime.jsx(
+          "button",
+          {
+            type: "button",
+            "aria-label": "Replay",
+            disabled: recorder.isReplaying || recorder.history.length === 0,
+            onClick: () => {
+              void recorder.replay(100);
+            },
+            className: "rounded border border-zinc-300 px-2 py-1 disabled:opacity-50 dark:border-zinc-700",
+            children: "\u25B6 Replay"
+          }
+        ),
+        /* @__PURE__ */ jsxRuntime.jsx(
+          "button",
+          {
+            type: "button",
+            "aria-label": "Clear history",
+            onClick: recorder.clear,
+            className: "rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700",
+            children: "\u{1F5D1}"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxRuntime.jsx("ul", { className: "max-h-40 overflow-y-auto font-mono text-[10px]", children: recorder.history.map((r, i) => /* @__PURE__ */ jsxRuntime.jsxs("li", { className: "border-b border-zinc-100 py-0.5 dark:border-zinc-800", children: [
+        r.action.type,
+        "payload" in r.action && r.action.payload?.id ? ` #${r.action.payload.id}` : ""
+      ] }, i)) })
+    ] }) : null
+  ] });
+}
+var init_RecorderPanel = __esm({
+  "src/core/scene/ui/RecorderPanel.tsx"() {
+    "use client";
+  }
+});
+function RecorderPanelDev(props) {
+  const { force, ...rest } = props;
+  const isDev = force || process.env.NODE_ENV === "development";
+  if (!isDev) return null;
+  return /* @__PURE__ */ jsxRuntime.jsx(RecorderPanel, { ...rest });
+}
+var init_RecorderPanelDev = __esm({
+  "src/core/scene/ui/RecorderPanelDev.tsx"() {
+    "use client";
+    init_RecorderPanel();
+  }
+});
 var EditorPanel;
 var init_EditorPanel = __esm({
   "src/stamps/geometry-3d/editor/EditorPanel.tsx"() {
@@ -2318,7 +2485,9 @@ var init_EditorPanel = __esm({
     init_StatusHint();
     init_theme2();
     init_serialize();
-    EditorPanel = React2__namespace.forwardRef(
+    init_useActionRecorder();
+    init_RecorderPanelDev();
+    EditorPanel = React4__namespace.forwardRef(
       function EditorPanel2(props, ref) {
         const {
           isDark: isDarkProp,
@@ -2332,23 +2501,24 @@ var init_EditorPanel = __esm({
           onHistoryChange
         } = props;
         const isDark = isDarkProp ?? false;
-        const controllerRef = React2__namespace.useRef(null);
+        const controllerRef = React4__namespace.useRef(null);
         if (!controllerRef.current) controllerRef.current = new ToolController(store);
-        const [hint, setHint] = React2__namespace.useState("Ch\u1ECDn c\xF4ng c\u1EE5 trong b\u1EA3ng b\xEAn tr\xE1i");
-        const [hoverLabel, setHoverLabel] = React2__namespace.useState(null);
-        const boardRef = React2__namespace.useRef(null);
-        const rendererRef = React2__namespace.useRef(null);
-        const onSelectedToolChangeRef = React2__namespace.useRef(onSelectedToolChange);
+        const recorder = useActionRecorder(store);
+        const [hint, setHint] = React4__namespace.useState("Ch\u1ECDn c\xF4ng c\u1EE5 trong b\u1EA3ng b\xEAn tr\xE1i");
+        const [hoverLabel, setHoverLabel] = React4__namespace.useState(null);
+        const boardRef = React4__namespace.useRef(null);
+        const rendererRef = React4__namespace.useRef(null);
+        const onSelectedToolChangeRef = React4__namespace.useRef(onSelectedToolChange);
         onSelectedToolChangeRef.current = onSelectedToolChange;
-        const onHistoryChangeRef = React2__namespace.useRef(onHistoryChange);
+        const onHistoryChangeRef = React4__namespace.useRef(onHistoryChange);
         onHistoryChangeRef.current = onHistoryChange;
-        const selectedToolRef = React2__namespace.useRef(selectedTool);
+        const selectedToolRef = React4__namespace.useRef(selectedTool);
         selectedToolRef.current = selectedTool;
-        const draggedPointRef = React2__namespace.useRef(null);
-        const dragStartRef = React2__namespace.useRef(null);
-        const dragSnapshotRef = React2__namespace.useRef(null);
-        const dragMutatedRef = React2__namespace.useRef(false);
-        React2__namespace.useEffect(() => {
+        const draggedPointRef = React4__namespace.useRef(null);
+        const dragStartRef = React4__namespace.useRef(null);
+        const dragSnapshotRef = React4__namespace.useRef(null);
+        const dragMutatedRef = React4__namespace.useRef(false);
+        React4__namespace.useEffect(() => {
           if (initialState?.state) {
             const loaded = initialState.state;
             store.withoutHistory(() => {
@@ -2356,7 +2526,7 @@ var init_EditorPanel = __esm({
             });
           }
         }, []);
-        React2__namespace.useEffect(() => {
+        React4__namespace.useEffect(() => {
           const ctrl = controllerRef.current;
           const unsub = ctrl.on((state) => {
             setHint(state.hint);
@@ -2364,17 +2534,17 @@ var init_EditorPanel = __esm({
           });
           return unsub;
         }, []);
-        React2__namespace.useEffect(() => {
+        React4__namespace.useEffect(() => {
           onHistoryChangeRef.current?.(store.canUndo(), store.canRedo());
           const unsub = store.subscribe(() => {
             onHistoryChangeRef.current?.(store.canUndo(), store.canRedo());
           });
           return unsub;
         }, [store]);
-        React2__namespace.useEffect(() => {
+        React4__namespace.useEffect(() => {
           controllerRef.current?.selectTool(selectedTool);
         }, [selectedTool]);
-        React2__namespace.useEffect(() => {
+        React4__namespace.useEffect(() => {
           const onKey = (e) => {
             const ae = document.activeElement;
             const inField = !!(ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable));
@@ -2394,13 +2564,13 @@ var init_EditorPanel = __esm({
           window.addEventListener("keydown", onKey, { capture: true });
           return () => window.removeEventListener("keydown", onKey, { capture: true });
         }, [store]);
-        React2__namespace.useEffect(() => {
+        React4__namespace.useEffect(() => {
           return () => {
             rendererRef.current?.dispose();
             rendererRef.current = null;
           };
         }, []);
-        React2__namespace.useEffect(() => {
+        React4__namespace.useEffect(() => {
           const view = boardRef.current?.getView3D();
           const v = view;
           if (!v || typeof v.setAttribute !== "function") return;
@@ -2418,7 +2588,7 @@ var init_EditorPanel = __esm({
           } catch {
           }
         }, [showAxis, showGrid]);
-        const handleView3DReady = React2__namespace.useCallback((view) => {
+        const handleView3DReady = React4__namespace.useCallback((view) => {
           rendererRef.current = new JxgRenderer3D(store, view);
           const savedView = initialState?.view;
           if (savedView) {
@@ -2432,7 +2602,7 @@ var init_EditorPanel = __esm({
           }
           onReadyChange?.(true);
         }, [onReadyChange, store, initialState]);
-        const handleClick = React2__namespace.useCallback((screen) => {
+        const handleClick = React4__namespace.useCallback((screen) => {
           const board = boardRef.current;
           if (!board) return;
           const view = board.getView3D();
@@ -2443,7 +2613,7 @@ var init_EditorPanel = __esm({
           } catch {
           }
         }, [store]);
-        const handleMove = React2__namespace.useCallback((screen) => {
+        const handleMove = React4__namespace.useCallback((screen) => {
           const board = boardRef.current;
           if (!board) return;
           const view = board.getView3D();
@@ -2466,7 +2636,7 @@ var init_EditorPanel = __esm({
           else if (hit.kind === "onSphere") setHoverLabel(`m\u1EB7t c\u1EA7u ${hit.sphereId}`);
           else setHoverLabel(null);
         }, [store]);
-        const shouldStartPointDrag = React2__namespace.useCallback((screen) => {
+        const shouldStartPointDrag = React4__namespace.useCallback((screen) => {
           const view = boardRef.current?.getView3D();
           if (!view) return false;
           const tool = selectedToolRef.current;
@@ -2538,7 +2708,7 @@ var init_EditorPanel = __esm({
           }
           return false;
         }, [store]);
-        const onPointerDrag = React2__namespace.useCallback((screen) => {
+        const onPointerDrag = React4__namespace.useCallback((screen) => {
           const pointId = draggedPointRef.current;
           const start = dragStartRef.current;
           if (!pointId || !start) return;
@@ -2569,7 +2739,7 @@ var init_EditorPanel = __esm({
           });
           dragMutatedRef.current = true;
         }, [store]);
-        const onPointerDragEnd = React2__namespace.useCallback(() => {
+        const onPointerDragEnd = React4__namespace.useCallback(() => {
           const snap = dragSnapshotRef.current;
           dragSnapshotRef.current = null;
           draggedPointRef.current = null;
@@ -2583,7 +2753,7 @@ var init_EditorPanel = __esm({
             store.dispatch({ type: "LOAD", payload: { state: current } });
           }
         }, [store]);
-        React2__namespace.useImperativeHandle(
+        React4__namespace.useImperativeHandle(
           ref,
           () => ({
             hasContent: () => Object.keys(store.getState().objects).length > 0,
@@ -2603,7 +2773,8 @@ var init_EditorPanel = __esm({
             },
             setTool: (k) => controllerRef.current.selectTool(k),
             undo: () => store.undo(),
-            redo: () => store.redo()
+            redo: () => store.redo(),
+            highlight: (id) => rendererRef.current?.highlight(id)
           }),
           [store]
         );
@@ -2630,7 +2801,8 @@ var init_EditorPanel = __esm({
                   onPointerDragEnd
                 }
               ) }),
-              /* @__PURE__ */ jsxRuntime.jsx(StatusHint, { hint, hoverLabel })
+              /* @__PURE__ */ jsxRuntime.jsx(StatusHint, { hint, hoverLabel }),
+              /* @__PURE__ */ jsxRuntime.jsx(RecorderPanelDev, { recorder })
             ]
           }
         );
@@ -2932,103 +3104,51 @@ var init_ToolPalette = __esm({
   }
 });
 
-// src/stamps/geometry-3d/editor/algebraPanel/symbolic.ts
-function symbolicFor(obj, state) {
-  const n = (id) => state.objects[id]?.label ?? id;
-  switch (obj.kind) {
-    case "point3d": {
-      const c = obj.attrs.constraint;
-      switch (c.kind) {
-        case "free":
-          return "Point";
-        case "onGround":
-          return "Point(xyPlane)";
-        case "onAxis":
-          return `Point(${c.axis}Axis)`;
-        case "onPlane":
-          return `Point(${n(c.planeId)})`;
-        case "onLine":
-          return `Point(${n(c.lineId)})`;
-        case "onPolygon":
-          return `Point(${n(c.polygonId)})`;
-        case "onSphere":
-          return `Point(${n(c.sphereId)})`;
-      }
-      return "Point";
-    }
-    case "segment3d": {
-      const a = obj.attrs;
-      return `Segment(${n(a.p1)}, ${n(a.p2)})`;
-    }
-    case "line3d": {
-      const a = obj.attrs;
-      return `Line(${n(a.p1)}, ${n(a.p2)})`;
-    }
-    case "ray3d": {
-      const a = obj.attrs;
-      return `Ray(${n(a.origin)}, ${n(a.through)})`;
-    }
-    case "vector3d": {
-      const a = obj.attrs;
-      return `Vector(${n(a.from)}, ${n(a.to)})`;
-    }
-    case "polygon3d": {
-      const a = obj.attrs;
-      return `Polygon(${a.vertices.map(n).join(", ")})`;
-    }
-    case "plane3d": {
-      const a = obj.attrs;
-      return `Plane(${n(a.p1)}, ${n(a.p2)}, ${n(a.p3)})`;
-    }
-    case "sphere3d": {
-      const a = obj.attrs;
-      return `Sphere(${n(a.center)}, ${n(a.surfacePoint)})`;
-    }
-    case "polyhedron3d": {
-      const a = obj.attrs;
-      const flavorVn = {
-        pyramid: "Ch\xF3p",
-        prism: "L\u0103ng tr\u1EE5",
-        tetrahedron: "T\u1EE9 di\u1EC7n",
-        cube: "L\u1EADp ph\u01B0\u01A1ng"
-      };
-      return `${flavorVn[a.flavor]}(${a.vertices.length} \u0111\u1EC9nh)`;
-    }
-    case "cylinder3d": {
-      const a = obj.attrs;
-      return `Cylinder(${n(a.baseCenter)}, ${n(a.topCenter)}, r=${a.radius})`;
-    }
-    case "cone3d": {
-      const a = obj.attrs;
-      return `Cone(${n(a.baseCenter)}, ${n(a.apex)}, r=${a.radius})`;
-    }
-  }
-  return obj.label;
+// src/core/scene/ui/kindMeta.ts
+function getKindUiMeta(kind) {
+  return KIND_UI_META[kind] ?? { displayName: kind, icon: "?" };
 }
-function numericFor(obj, state) {
-  if (obj.kind === "point3d") {
-    const w = constraintToWorld(obj.attrs.constraint, state);
-    return `(${round(w[0])}, ${round(w[1])}, ${round(w[2])})`;
-  }
-  return "";
-}
-function round(x) {
-  return Math.abs(x) < 1e-9 ? "0" : (Math.round(x * 100) / 100).toString();
-}
-var init_symbolic = __esm({
-  "src/stamps/geometry-3d/editor/algebraPanel/symbolic.ts"() {
-    init_constraintMath();
+var KIND_UI_META;
+var init_kindMeta = __esm({
+  "src/core/scene/ui/kindMeta.ts"() {
+    KIND_UI_META = {
+      // 2D
+      point: { displayName: "\u0110i\u1EC3m", icon: "\xB7" },
+      segment: { displayName: "\u0110o\u1EA1n th\u1EB3ng", icon: "\u2014" },
+      line: { displayName: "\u0110\u01B0\u1EDDng th\u1EB3ng", icon: "/" },
+      ray: { displayName: "Tia", icon: "\u2192" },
+      vector: { displayName: "Vector", icon: "\u2197" },
+      circle: { displayName: "\u0110\u01B0\u1EDDng tr\xF2n", icon: "\u25CB" },
+      polygon: { displayName: "\u0110a gi\xE1c", icon: "\u25C7" },
+      intersection: { displayName: "Giao \u0111i\u1EC3m", icon: "\u2715" },
+      // 3D
+      point3d: { displayName: "\u0110i\u1EC3m", icon: "\xB7" },
+      segment3d: { displayName: "\u0110o\u1EA1n th\u1EB3ng", icon: "\u2014" },
+      line3d: { displayName: "\u0110\u01B0\u1EDDng th\u1EB3ng", icon: "/" },
+      ray3d: { displayName: "Tia", icon: "\u2192" },
+      vector3d: { displayName: "Vector", icon: "\u2197" },
+      plane3d: { displayName: "M\u1EB7t ph\u1EB3ng", icon: "\u25B1" },
+      polygon3d: { displayName: "\u0110a gi\xE1c", icon: "\u25C7" },
+      sphere3d: { displayName: "M\u1EB7t c\u1EA7u", icon: "\u25EF" },
+      polyhedron3d: { displayName: "\u0110a di\u1EC7n", icon: "\u2B22" },
+      cylinder3d: { displayName: "H\xECnh tr\u1EE5", icon: "\u232D" },
+      cone3d: { displayName: "H\xECnh n\xF3n", icon: "\u25B2" }
+    };
   }
 });
-function RowMenu(props) {
-  const [open, setOpen] = React2__namespace.useState(false);
+function ObjectRowMenu(props) {
+  const { onRename, onChangeColor, onDelete } = props;
+  const [open, setOpen] = React4__namespace.useState(false);
   return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "relative inline-block", children: [
     /* @__PURE__ */ jsxRuntime.jsx(
       "button",
       {
         type: "button",
         "aria-label": "Row menu",
-        onClick: () => setOpen((v) => !v),
+        onClick: (e) => {
+          e.stopPropagation();
+          setOpen((v) => !v);
+        },
         className: "rounded px-1.5 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800",
         children: "\u22EE"
       }
@@ -3038,22 +3158,19 @@ function RowMenu(props) {
       {
         role: "menu",
         className: "absolute right-0 z-10 mt-1 w-40 rounded-md border border-zinc-200 bg-white py-1 text-xs shadow-lg dark:border-zinc-700 dark:bg-zinc-900",
+        onClick: (e) => e.stopPropagation(),
         children: [
           /* @__PURE__ */ jsxRuntime.jsx(MenuItem, { onClick: () => {
             setOpen(false);
-            props.onRename();
+            onRename();
           }, children: "\u0110\u1ED5i t\xEAn" }),
           /* @__PURE__ */ jsxRuntime.jsx(MenuItem, { onClick: () => {
             setOpen(false);
-            props.onChangeColor();
+            onChangeColor();
           }, children: "\u0110\u1ED5i m\xE0u" }),
           /* @__PURE__ */ jsxRuntime.jsx(MenuItem, { onClick: () => {
             setOpen(false);
-            props.onToggleVisibility();
-          }, children: props.visible ? "\u1EA8n" : "Hi\u1EC7n" }),
-          /* @__PURE__ */ jsxRuntime.jsx(MenuItem, { onClick: () => {
-            setOpen(false);
-            props.onDelete();
+            onDelete();
           }, className: "text-red-600", children: "Xo\xE1" })
         ]
       }
@@ -3072,44 +3189,64 @@ function MenuItem({ children, onClick, className }) {
     }
   );
 }
-var init_RowMenu = __esm({
-  "src/stamps/geometry-3d/editor/algebraPanel/RowMenu.tsx"() {
+var init_ObjectRowMenu = __esm({
+  "src/core/scene/ui/ObjectRowMenu.tsx"() {
     "use client";
   }
 });
-function AlgebraRow(props) {
-  const { obj, state, onDelete } = props;
-  const symbolic = symbolicFor(obj, state);
-  const numeric = numericFor(obj, state);
-  const color = obj.attrs.color ?? "#0066cc";
+function ObjectRow(props) {
+  const { obj, selected, onSelect, onToggleVisible, onToggleLocked, onRename, onChangeColor, onDelete } = props;
+  const meta = getKindUiMeta(obj.kind);
+  let summary = "";
+  try {
+    summary = getKind(obj.kind).describe(obj);
+  } catch {
+    summary = obj.label;
+  }
   return /* @__PURE__ */ jsxRuntime.jsxs(
     "li",
     {
-      "data-testid": `algebra-row-${obj.id}`,
-      className: "flex items-center gap-2 border-b border-zinc-100 px-3 py-1.5 text-xs dark:border-zinc-800",
+      "data-testid": `object-row-${obj.id}`,
+      "aria-selected": selected,
+      onClick: () => onSelect(obj.id),
+      className: "flex items-center gap-2 border-b border-zinc-100 px-3 py-1.5 text-xs cursor-pointer dark:border-zinc-800 " + (selected ? "bg-blue-50 dark:bg-blue-950" : "hover:bg-zinc-50 dark:hover:bg-zinc-900"),
       children: [
+        /* @__PURE__ */ jsxRuntime.jsx("span", { "aria-hidden": true, className: "inline-block w-4 text-center text-base leading-none", children: meta.icon }),
+        /* @__PURE__ */ jsxRuntime.jsx("span", { className: "min-w-[3ch] font-semibold", children: obj.label }),
+        /* @__PURE__ */ jsxRuntime.jsx("span", { className: "flex-1 truncate text-zinc-500", children: summary }),
         /* @__PURE__ */ jsxRuntime.jsx(
-          "span",
+          "button",
           {
-            "aria-hidden": true,
-            className: "inline-block size-3 rounded-full border",
-            style: { backgroundColor: color }
+            type: "button",
+            "aria-label": "Toggle visibility",
+            "aria-pressed": !obj.visible,
+            onClick: (e) => {
+              e.stopPropagation();
+              onToggleVisible(obj.id);
+            },
+            className: "rounded px-1 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+            children: obj.visible ? "\u{1F441}" : "\u{1F6AB}"
           }
         ),
-        /* @__PURE__ */ jsxRuntime.jsx("span", { className: "min-w-[3ch] font-semibold", children: obj.label }),
-        /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-zinc-500", children: "=" }),
-        /* @__PURE__ */ jsxRuntime.jsx("span", { className: "flex-1 truncate font-mono", children: symbolic }),
-        numeric ? /* @__PURE__ */ jsxRuntime.jsx("span", { className: "truncate text-zinc-500", children: numeric }) : null,
         /* @__PURE__ */ jsxRuntime.jsx(
-          RowMenu,
+          "button",
           {
-            visible: obj.visible,
-            onRename: () => {
+            type: "button",
+            "aria-label": "Toggle lock",
+            "aria-pressed": obj.locked,
+            onClick: (e) => {
+              e.stopPropagation();
+              onToggleLocked(obj.id);
             },
-            onChangeColor: () => {
-            },
-            onToggleVisibility: () => {
-            },
+            className: "rounded px-1 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+            children: obj.locked ? "\u{1F512}" : "\u{1F513}"
+          }
+        ),
+        /* @__PURE__ */ jsxRuntime.jsx(
+          ObjectRowMenu,
+          {
+            onRename: () => onRename(obj.id),
+            onChangeColor: () => onChangeColor(obj.id),
             onDelete: () => onDelete(obj.id)
           }
         )
@@ -3117,39 +3254,68 @@ function AlgebraRow(props) {
     }
   );
 }
-var init_AlgebraRow = __esm({
-  "src/stamps/geometry-3d/editor/algebraPanel/AlgebraRow.tsx"() {
+var init_ObjectRow = __esm({
+  "src/core/scene/ui/ObjectRow.tsx"() {
     "use client";
-    init_symbolic();
-    init_RowMenu();
+    init_registry();
+    init_kindMeta();
+    init_ObjectRowMenu();
   }
 });
-function AlgebraList(props) {
-  const { store } = props;
-  const state = React2__namespace.useSyncExternalStore(store.subscribe, store.getState, store.getState);
+function ObjectListPanel(props) {
+  const { store, selectedId, onSelect } = props;
+  const subscribe = React4__namespace.useCallback(
+    (cb) => store.subscribe(() => cb()),
+    [store]
+  );
+  const state = React4__namespace.useSyncExternalStore(subscribe, store.getState, store.getState);
   const objects = listObjects(state);
+  function handleSelect(id) {
+    onSelect?.(id);
+  }
+  function handleToggleVisible(id) {
+    const obj = state.objects[id];
+    if (!obj) return;
+    store.dispatch({ type: "UPDATE", payload: { id, patch: { visible: !obj.visible } } });
+  }
+  function handleToggleLocked(id) {
+    const obj = state.objects[id];
+    if (!obj) return;
+    store.dispatch({ type: "UPDATE", payload: { id, patch: { locked: !obj.locked } } });
+  }
+  function handleDelete(id) {
+    store.dispatch({ type: "DELETE", payload: { id } });
+  }
+  function noop() {
+  }
   return /* @__PURE__ */ jsxRuntime.jsx(
     "ul",
     {
-      "data-testid": "algebra-list",
+      "data-testid": "object-list-panel",
       className: "flex max-h-[calc(100vh-200px)] flex-col overflow-y-auto",
-      children: objects.length === 0 ? /* @__PURE__ */ jsxRuntime.jsx("li", { className: "px-3 py-4 text-center text-xs text-zinc-500", children: "Ch\u01B0a c\xF3 \u0111\u1ED1i t\u01B0\u1EE3ng n\xE0o" }) : objects.map((o) => /* @__PURE__ */ jsxRuntime.jsx(
-        AlgebraRow,
+      children: objects.length === 0 ? /* @__PURE__ */ jsxRuntime.jsx("li", { className: "px-3 py-4 text-center text-xs text-zinc-500", children: "Ch\u01B0a c\xF3 \u0111\u1ED1i t\u01B0\u1EE3ng n\xE0o" }) : objects.map((obj) => /* @__PURE__ */ jsxRuntime.jsx(
+        ObjectRow,
         {
-          obj: o,
+          obj,
           state,
-          onDelete: (id) => store.dispatch({ type: "DELETE", payload: { id } })
+          selected: obj.id === selectedId,
+          onSelect: handleSelect,
+          onToggleVisible: handleToggleVisible,
+          onToggleLocked: handleToggleLocked,
+          onRename: noop,
+          onChangeColor: noop,
+          onDelete: handleDelete
         },
-        o.id
+        obj.id
       ))
     }
   );
 }
-var init_AlgebraList = __esm({
-  "src/stamps/geometry-3d/editor/algebraPanel/AlgebraList.tsx"() {
+var init_ObjectListPanel = __esm({
+  "src/core/scene/ui/ObjectListPanel.tsx"() {
     "use client";
-    init_scene();
-    init_AlgebraRow();
+    init_selectors();
+    init_ObjectRow();
   }
 });
 function MobileToolDrawer({
@@ -3365,20 +3531,20 @@ function Section({ label, children }) {
   ] });
 }
 function useToolHoverTooltip() {
-  const [hover, setHover] = React2__namespace.useState(null);
-  const [portalReady, setPortalReady] = React2__namespace.useState(false);
-  const hoverTimerRef = React2__namespace.useRef(null);
-  React2__namespace.useEffect(() => {
+  const [hover, setHover] = React4__namespace.useState(null);
+  const [portalReady, setPortalReady] = React4__namespace.useState(false);
+  const hoverTimerRef = React4__namespace.useRef(null);
+  React4__namespace.useEffect(() => {
     setPortalReady(true);
     return () => {
       if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     };
   }, []);
-  const showHover = React2__namespace.useCallback((next) => {
+  const showHover = React4__namespace.useCallback((next) => {
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     hoverTimerRef.current = setTimeout(() => setHover(next), TOOLTIP_DELAY_MS);
   }, []);
-  const hideHover = React2__namespace.useCallback(() => {
+  const hideHover = React4__namespace.useCallback(() => {
     if (hoverTimerRef.current) {
       clearTimeout(hoverTimerRef.current);
       hoverTimerRef.current = null;
@@ -3402,9 +3568,11 @@ function DesktopPanel(props) {
     canRedo,
     onClose,
     isDark,
-    chordGroup
+    chordGroup,
+    selectedObjectId,
+    onObjectSelect
   } = props;
-  const [tab, setTab] = React2__namespace.useState("tools");
+  const [tab, setTab] = React4__namespace.useState("tools");
   const { hover, portalReady, showHover, hideHover } = useToolHoverTooltip();
   return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
     /* @__PURE__ */ jsxRuntime.jsxs(Shell, { title: "H\xECnh h\u1ECDc 3D", icon: Geom3DIconHeader, onClose, isDark, children: [
@@ -3491,7 +3659,14 @@ function DesktopPanel(props) {
             ]
           }
         )
-      ] }) : /* @__PURE__ */ jsxRuntime.jsx("section", { "data-testid": "algebra-panel", children: /* @__PURE__ */ jsxRuntime.jsx(AlgebraList, { store }) })
+      ] }) : /* @__PURE__ */ jsxRuntime.jsx("section", { "data-testid": "algebra-panel", children: /* @__PURE__ */ jsxRuntime.jsx(
+        ObjectListPanel,
+        {
+          store,
+          selectedId: selectedObjectId,
+          onSelect: onObjectSelect
+        }
+      ) })
     ] }),
     portalReady && hover && typeof document !== "undefined" ? reactDom.createPortal(
       /* @__PURE__ */ jsxRuntime.jsxs(
@@ -3552,7 +3727,7 @@ function MobilePanel(props) {
     drawerOpen,
     onDrawerClose
   } = props;
-  const groups = React2__namespace.useMemo(
+  const groups = React4__namespace.useMemo(
     () => GROUP_ORDER.map((group) => {
       const keys = TOOLS_BY_GROUP[group];
       return {
@@ -3624,7 +3799,7 @@ var init_LeftPanel = __esm({
   "src/stamps/geometry-3d/editor/LeftPanel.tsx"() {
     "use client";
     init_ToolPalette();
-    init_AlgebraList();
+    init_ObjectListPanel();
     init_icons();
     init_groups();
     init_spec();
@@ -3643,19 +3818,19 @@ function isFieldFocused() {
 }
 function useChordShortcut(args) {
   const { groupOrder, tools, onSelect, enabled } = args;
-  const [chordGroup, setChordGroup] = React2.useState(null);
-  const groupOrderRef = React2.useRef(groupOrder);
-  const toolsRef = React2.useRef(tools);
-  const onSelectRef = React2.useRef(onSelect);
-  const chordGroupRef = React2.useRef(null);
+  const [chordGroup, setChordGroup] = React4.useState(null);
+  const groupOrderRef = React4.useRef(groupOrder);
+  const toolsRef = React4.useRef(tools);
+  const onSelectRef = React4.useRef(onSelect);
+  const chordGroupRef = React4.useRef(null);
   groupOrderRef.current = groupOrder;
   toolsRef.current = tools;
   onSelectRef.current = onSelect;
-  const cancel = React2.useCallback(() => {
+  const cancel = React4.useCallback(() => {
     chordGroupRef.current = null;
     setChordGroup(null);
   }, []);
-  React2.useEffect(() => {
+  React4.useEffect(() => {
     if (!enabled) return;
     const setChord = (next) => {
       chordGroupRef.current = next;
@@ -3838,11 +4013,11 @@ function readMatch(query) {
   }
 }
 function useIsMobile() {
-  const [state, setState] = React2.useState(() => ({
+  const [state, setState] = React4.useState(() => ({
     isMobile: readMatch(MOBILE_QUERY),
     isTouchOnly: readMatch(NO_HOVER_QUERY)
   }));
-  React2.useEffect(() => {
+  React4.useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return;
     const mql = window.matchMedia(MOBILE_QUERY);
     const tql = window.matchMedia(NO_HOVER_QUERY);
@@ -3895,25 +4070,30 @@ var init_host = __esm({
     init_useIsMobile();
     init_render();
     init_serialize();
-    Geometry3DStampHost = React2.forwardRef(
+    Geometry3DStampHost = React4.forwardRef(
       function Geometry3DStampHost2({ api, editingElement, onClose, isDark }, ref) {
-        const editorRef = React2.useRef(null);
-        const storeRef = React2.useRef(null);
+        const editorRef = React4.useRef(null);
+        const storeRef = React4.useRef(null);
         if (!storeRef.current) storeRef.current = createStore(createEmptyState("3d"));
         const { isMobile } = useIsMobile();
-        const [drawerOpen, setDrawerOpen] = React2.useState(false);
-        const [ready, setReady] = React2.useState(false);
-        const [selectedTool, setSelectedTool] = React2.useState("move");
-        const [showAxis, setShowAxis] = React2.useState(true);
-        const [showGrid, setShowGrid] = React2.useState(true);
-        const [canUndo, setCanUndo] = React2.useState(false);
-        const [canRedo, setCanRedo] = React2.useState(false);
-        const [hasContent, setHasContent] = React2.useState(false);
-        const handleHistoryChange = React2.useCallback((u, r) => {
+        const [drawerOpen, setDrawerOpen] = React4.useState(false);
+        const [ready, setReady] = React4.useState(false);
+        const [selectedTool, setSelectedTool] = React4.useState("move");
+        const [showAxis, setShowAxis] = React4.useState(true);
+        const [showGrid, setShowGrid] = React4.useState(true);
+        const [canUndo, setCanUndo] = React4.useState(false);
+        const [canRedo, setCanRedo] = React4.useState(false);
+        const [hasContent, setHasContent] = React4.useState(false);
+        const [selectedObjectId, setSelectedObjectId] = React4.useState(void 0);
+        const handleHistoryChange = React4.useCallback((u, r) => {
           setCanUndo(u);
           setCanRedo(r);
         }, []);
-        React2.useEffect(() => {
+        const handleObjectSelect = React4.useCallback((id) => {
+          setSelectedObjectId(id);
+          editorRef.current?.highlight(id);
+        }, []);
+        React4.useEffect(() => {
           const store = storeRef.current;
           if (!store) return;
           const sync = () => setHasContent(Object.keys(store.getState().objects).length > 0);
@@ -3921,13 +4101,13 @@ var init_host = __esm({
           const unsub = store.subscribe(sync);
           return unsub;
         }, []);
-        const handleUndo = React2.useCallback(() => {
+        const handleUndo = React4.useCallback(() => {
           editorRef.current?.undo();
         }, []);
-        const handleRedo = React2.useCallback(() => {
+        const handleRedo = React4.useCallback(() => {
           editorRef.current?.redo();
         }, []);
-        const initial = React2.useMemo(
+        const initial = React4.useMemo(
           () => parseInitial(editingElement),
           [editingElement]
         );
@@ -3940,11 +4120,11 @@ var init_host = __esm({
           },
           enabled: !isMobile
         });
-        const handleSelectTool = React2.useCallback((k) => {
+        const handleSelectTool = React4.useCallback((k) => {
           setSelectedTool(k);
           editorRef.current?.setTool(k);
         }, []);
-        const performInsert = React2.useCallback(
+        const performInsert = React4.useCallback(
           async (board, width, height, svgString) => {
             if (!api) return;
             const jsonState = JSON.stringify(board);
@@ -3965,7 +4145,7 @@ var init_host = __esm({
           },
           [api, editingElement, onClose]
         );
-        const tryInsert = React2.useCallback(() => {
+        const tryInsert = React4.useCallback(() => {
           if (!editorRef.current) return false;
           if (!editorRef.current.hasContent()) return false;
           const board = editorRef.current.serialize();
@@ -3981,7 +4161,7 @@ var init_host = __esm({
           })();
           return true;
         }, [performInsert]);
-        React2.useImperativeHandle(
+        React4.useImperativeHandle(
           ref,
           () => ({
             tryInsert,
@@ -3989,7 +4169,7 @@ var init_host = __esm({
           }),
           [tryInsert]
         );
-        const handleEditorInsert = React2.useCallback(
+        const handleEditorInsert = React4.useCallback(
           (board, width, height, svgString) => {
             void performInsert(board, width, height, svgString);
           },
@@ -4019,7 +4199,9 @@ var init_host = __esm({
               canRedo,
               onClose,
               isDark,
-              chordGroup
+              chordGroup,
+              selectedObjectId,
+              onObjectSelect: handleObjectSelect
             }
           ),
           /* @__PURE__ */ jsxRuntime.jsxs(
@@ -4142,7 +4324,9 @@ var init_host = __esm({
               isMobile: true,
               drawerOpen,
               onDrawerClose: () => setDrawerOpen(false),
-              chordGroup
+              chordGroup,
+              selectedObjectId,
+              onObjectSelect: handleObjectSelect
             }
           )
         ] });
@@ -4154,7 +4338,7 @@ var init_host = __esm({
 // src/stamps/geometry-3d/index.tsx
 init_serialize();
 init_render();
-var Geometry3DStampHost3 = React2.lazy(
+var Geometry3DStampHost3 = React4.lazy(
   () => Promise.resolve().then(() => (init_host(), host_exports)).then((m) => ({ default: m.Geometry3DStampHost }))
 );
 var Geometry3DIcon = /* @__PURE__ */ jsxRuntime.jsxs(

@@ -1,6 +1,6 @@
 "use client";
-import { VIEW3D_ATTRS, DEFAULT_VIEW3D, GROUND_PLANE_RANGE, GROUND_PLANE_ATTRS, paletteFor, JxgRenderer3D, serializeBoard3D, renderGeometry3DSvgFromState, isGeometry3DCustomData, parseSerializedBoard3D } from './chunk-7WNDGXBJ.mjs';
-import { useChordShortcut, MobileToolDrawer } from './chunk-SBDMF4NQ.mjs';
+import { VIEW3D_ATTRS, DEFAULT_VIEW3D, GROUND_PLANE_RANGE, GROUND_PLANE_ATTRS, paletteFor, JxgRenderer3D, serializeBoard3D, renderGeometry3DSvgFromState, isGeometry3DCustomData, parseSerializedBoard3D } from './chunk-7WYGTUBK.mjs';
+import { useActionRecorder, RecorderPanelDev, useChordShortcut, MobileToolDrawer, ObjectListPanel } from './chunk-S3P5PCJ4.mjs';
 import { nextLabel, createStore, createEmptyState, listObjects } from './chunk-MBJVQIF6.mjs';
 import { useIsMobile } from './chunk-P2AOIF7S.mjs';
 import { insertStampImage } from './chunk-C6SCVOMC.mjs';
@@ -1478,6 +1478,7 @@ var EditorPanel = React2.forwardRef(
     const isDark = isDarkProp ?? false;
     const controllerRef = React2.useRef(null);
     if (!controllerRef.current) controllerRef.current = new ToolController(store);
+    const recorder = useActionRecorder(store);
     const [hint, setHint] = React2.useState("Ch\u1ECDn c\xF4ng c\u1EE5 trong b\u1EA3ng b\xEAn tr\xE1i");
     const [hoverLabel, setHoverLabel] = React2.useState(null);
     const boardRef = React2.useRef(null);
@@ -1747,7 +1748,8 @@ var EditorPanel = React2.forwardRef(
         },
         setTool: (k) => controllerRef.current.selectTool(k),
         undo: () => store.undo(),
-        redo: () => store.redo()
+        redo: () => store.redo(),
+        highlight: (id) => rendererRef.current?.highlight(id)
       }),
       [store]
     );
@@ -1774,7 +1776,8 @@ var EditorPanel = React2.forwardRef(
               onPointerDragEnd
             }
           ) }),
-          /* @__PURE__ */ jsx(StatusHint, { hint, hoverLabel })
+          /* @__PURE__ */ jsx(StatusHint, { hint, hoverLabel }),
+          /* @__PURE__ */ jsx(RecorderPanelDev, { recorder })
         ]
       }
     );
@@ -2048,203 +2051,6 @@ function ToolPalette(props) {
     );
   }) });
 }
-
-// src/stamps/geometry-3d/editor/algebraPanel/symbolic.ts
-function symbolicFor(obj, state) {
-  const n = (id) => state.objects[id]?.label ?? id;
-  switch (obj.kind) {
-    case "point3d": {
-      const c = obj.attrs.constraint;
-      switch (c.kind) {
-        case "free":
-          return "Point";
-        case "onGround":
-          return "Point(xyPlane)";
-        case "onAxis":
-          return `Point(${c.axis}Axis)`;
-        case "onPlane":
-          return `Point(${n(c.planeId)})`;
-        case "onLine":
-          return `Point(${n(c.lineId)})`;
-        case "onPolygon":
-          return `Point(${n(c.polygonId)})`;
-        case "onSphere":
-          return `Point(${n(c.sphereId)})`;
-      }
-      return "Point";
-    }
-    case "segment3d": {
-      const a = obj.attrs;
-      return `Segment(${n(a.p1)}, ${n(a.p2)})`;
-    }
-    case "line3d": {
-      const a = obj.attrs;
-      return `Line(${n(a.p1)}, ${n(a.p2)})`;
-    }
-    case "ray3d": {
-      const a = obj.attrs;
-      return `Ray(${n(a.origin)}, ${n(a.through)})`;
-    }
-    case "vector3d": {
-      const a = obj.attrs;
-      return `Vector(${n(a.from)}, ${n(a.to)})`;
-    }
-    case "polygon3d": {
-      const a = obj.attrs;
-      return `Polygon(${a.vertices.map(n).join(", ")})`;
-    }
-    case "plane3d": {
-      const a = obj.attrs;
-      return `Plane(${n(a.p1)}, ${n(a.p2)}, ${n(a.p3)})`;
-    }
-    case "sphere3d": {
-      const a = obj.attrs;
-      return `Sphere(${n(a.center)}, ${n(a.surfacePoint)})`;
-    }
-    case "polyhedron3d": {
-      const a = obj.attrs;
-      const flavorVn = {
-        pyramid: "Ch\xF3p",
-        prism: "L\u0103ng tr\u1EE5",
-        tetrahedron: "T\u1EE9 di\u1EC7n",
-        cube: "L\u1EADp ph\u01B0\u01A1ng"
-      };
-      return `${flavorVn[a.flavor]}(${a.vertices.length} \u0111\u1EC9nh)`;
-    }
-    case "cylinder3d": {
-      const a = obj.attrs;
-      return `Cylinder(${n(a.baseCenter)}, ${n(a.topCenter)}, r=${a.radius})`;
-    }
-    case "cone3d": {
-      const a = obj.attrs;
-      return `Cone(${n(a.baseCenter)}, ${n(a.apex)}, r=${a.radius})`;
-    }
-  }
-  return obj.label;
-}
-function numericFor(obj, state) {
-  if (obj.kind === "point3d") {
-    const w = constraintToWorld(obj.attrs.constraint, state);
-    return `(${round(w[0])}, ${round(w[1])}, ${round(w[2])})`;
-  }
-  return "";
-}
-function round(x) {
-  return Math.abs(x) < 1e-9 ? "0" : (Math.round(x * 100) / 100).toString();
-}
-function RowMenu(props) {
-  const [open, setOpen] = React2.useState(false);
-  return /* @__PURE__ */ jsxs("div", { className: "relative inline-block", children: [
-    /* @__PURE__ */ jsx(
-      "button",
-      {
-        type: "button",
-        "aria-label": "Row menu",
-        onClick: () => setOpen((v) => !v),
-        className: "rounded px-1.5 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800",
-        children: "\u22EE"
-      }
-    ),
-    open ? /* @__PURE__ */ jsxs(
-      "div",
-      {
-        role: "menu",
-        className: "absolute right-0 z-10 mt-1 w-40 rounded-md border border-zinc-200 bg-white py-1 text-xs shadow-lg dark:border-zinc-700 dark:bg-zinc-900",
-        children: [
-          /* @__PURE__ */ jsx(MenuItem, { onClick: () => {
-            setOpen(false);
-            props.onRename();
-          }, children: "\u0110\u1ED5i t\xEAn" }),
-          /* @__PURE__ */ jsx(MenuItem, { onClick: () => {
-            setOpen(false);
-            props.onChangeColor();
-          }, children: "\u0110\u1ED5i m\xE0u" }),
-          /* @__PURE__ */ jsx(MenuItem, { onClick: () => {
-            setOpen(false);
-            props.onToggleVisibility();
-          }, children: props.visible ? "\u1EA8n" : "Hi\u1EC7n" }),
-          /* @__PURE__ */ jsx(MenuItem, { onClick: () => {
-            setOpen(false);
-            props.onDelete();
-          }, className: "text-red-600", children: "Xo\xE1" })
-        ]
-      }
-    ) : null
-  ] });
-}
-function MenuItem({ children, onClick, className }) {
-  return /* @__PURE__ */ jsx(
-    "button",
-    {
-      type: "button",
-      role: "menuitem",
-      onClick,
-      className: `block w-full px-3 py-1 text-left hover:bg-zinc-100 dark:hover:bg-zinc-800 ${className ?? ""}`,
-      children
-    }
-  );
-}
-function AlgebraRow(props) {
-  const { obj, state, onDelete } = props;
-  const symbolic = symbolicFor(obj, state);
-  const numeric = numericFor(obj, state);
-  const color = obj.attrs.color ?? "#0066cc";
-  return /* @__PURE__ */ jsxs(
-    "li",
-    {
-      "data-testid": `algebra-row-${obj.id}`,
-      className: "flex items-center gap-2 border-b border-zinc-100 px-3 py-1.5 text-xs dark:border-zinc-800",
-      children: [
-        /* @__PURE__ */ jsx(
-          "span",
-          {
-            "aria-hidden": true,
-            className: "inline-block size-3 rounded-full border",
-            style: { backgroundColor: color }
-          }
-        ),
-        /* @__PURE__ */ jsx("span", { className: "min-w-[3ch] font-semibold", children: obj.label }),
-        /* @__PURE__ */ jsx("span", { className: "text-zinc-500", children: "=" }),
-        /* @__PURE__ */ jsx("span", { className: "flex-1 truncate font-mono", children: symbolic }),
-        numeric ? /* @__PURE__ */ jsx("span", { className: "truncate text-zinc-500", children: numeric }) : null,
-        /* @__PURE__ */ jsx(
-          RowMenu,
-          {
-            visible: obj.visible,
-            onRename: () => {
-            },
-            onChangeColor: () => {
-            },
-            onToggleVisibility: () => {
-            },
-            onDelete: () => onDelete(obj.id)
-          }
-        )
-      ]
-    }
-  );
-}
-function AlgebraList(props) {
-  const { store } = props;
-  const state = React2.useSyncExternalStore(store.subscribe, store.getState, store.getState);
-  const objects = listObjects(state);
-  return /* @__PURE__ */ jsx(
-    "ul",
-    {
-      "data-testid": "algebra-list",
-      className: "flex max-h-[calc(100vh-200px)] flex-col overflow-y-auto",
-      children: objects.length === 0 ? /* @__PURE__ */ jsx("li", { className: "px-3 py-4 text-center text-xs text-zinc-500", children: "Ch\u01B0a c\xF3 \u0111\u1ED1i t\u01B0\u1EE3ng n\xE0o" }) : objects.map((o) => /* @__PURE__ */ jsx(
-        AlgebraRow,
-        {
-          obj: o,
-          state,
-          onDelete: (id) => store.dispatch({ type: "DELETE", payload: { id } })
-        },
-        o.id
-      ))
-    }
-  );
-}
 var TOOLTIP_DELAY_MS = 400;
 var Geom3DIconHeader = /* @__PURE__ */ jsxs("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: [
   /* @__PURE__ */ jsx("path", { d: "M4 9 L4 20 L14 20 L14 9 Z" }),
@@ -2363,7 +2169,9 @@ function DesktopPanel(props) {
     canRedo,
     onClose,
     isDark,
-    chordGroup
+    chordGroup,
+    selectedObjectId,
+    onObjectSelect
   } = props;
   const [tab, setTab] = React2.useState("tools");
   const { hover, portalReady, showHover, hideHover } = useToolHoverTooltip();
@@ -2452,7 +2260,14 @@ function DesktopPanel(props) {
             ]
           }
         )
-      ] }) : /* @__PURE__ */ jsx("section", { "data-testid": "algebra-panel", children: /* @__PURE__ */ jsx(AlgebraList, { store }) })
+      ] }) : /* @__PURE__ */ jsx("section", { "data-testid": "algebra-panel", children: /* @__PURE__ */ jsx(
+        ObjectListPanel,
+        {
+          store,
+          selectedId: selectedObjectId,
+          onSelect: onObjectSelect
+        }
+      ) })
     ] }),
     portalReady && hover && typeof document !== "undefined" ? createPortal(
       /* @__PURE__ */ jsxs(
@@ -2603,9 +2418,14 @@ var Geometry3DStampHost = forwardRef(
     const [canUndo, setCanUndo] = useState(false);
     const [canRedo, setCanRedo] = useState(false);
     const [hasContent, setHasContent] = useState(false);
+    const [selectedObjectId, setSelectedObjectId] = useState(void 0);
     const handleHistoryChange = useCallback((u, r) => {
       setCanUndo(u);
       setCanRedo(r);
+    }, []);
+    const handleObjectSelect = useCallback((id) => {
+      setSelectedObjectId(id);
+      editorRef.current?.highlight(id);
     }, []);
     useEffect(() => {
       const store = storeRef.current;
@@ -2713,7 +2533,9 @@ var Geometry3DStampHost = forwardRef(
           canRedo,
           onClose,
           isDark,
-          chordGroup
+          chordGroup,
+          selectedObjectId,
+          onObjectSelect: handleObjectSelect
         }
       ),
       /* @__PURE__ */ jsxs(
@@ -2836,7 +2658,9 @@ var Geometry3DStampHost = forwardRef(
           isMobile: true,
           drawerOpen,
           onDrawerClose: () => setDrawerOpen(false),
-          chordGroup
+          chordGroup,
+          selectedObjectId,
+          onObjectSelect: handleObjectSelect
         }
       )
     ] });
@@ -2844,5 +2668,5 @@ var Geometry3DStampHost = forwardRef(
 );
 
 export { Geometry3DStampHost };
-//# sourceMappingURL=host-QASORHVP.mjs.map
-//# sourceMappingURL=host-QASORHVP.mjs.map
+//# sourceMappingURL=host-VGHPK4T3.mjs.map
+//# sourceMappingURL=host-VGHPK4T3.mjs.map

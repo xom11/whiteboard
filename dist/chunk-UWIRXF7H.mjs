@@ -1,10 +1,10 @@
 "use client";
-import { isGeometry3DCustomData, renderGeometry3DSvgFromState } from './chunk-7WNDGXBJ.mjs';
+import { isGeometry3DCustomData, renderGeometry3DSvgFromState } from './chunk-7WYGTUBK.mjs';
 import { lazy } from 'react';
 import { jsxs, jsx } from 'react/jsx-runtime';
 
 var Geometry3DStampHost = lazy(
-  () => import('./host-QASORHVP.mjs').then((m) => ({ default: m.Geometry3DStampHost }))
+  () => import('./host-VGHPK4T3.mjs').then((m) => ({ default: m.Geometry3DStampHost }))
 );
 var Geometry3DIcon = /* @__PURE__ */ jsxs(
   "svg",
@@ -58,5 +58,5 @@ var geometry3dStamp = {
 };
 
 export { geometry3dStamp };
-//# sourceMappingURL=chunk-ACBKFJWS.mjs.map
-//# sourceMappingURL=chunk-ACBKFJWS.mjs.map
+//# sourceMappingURL=chunk-UWIRXF7H.mjs.map
+//# sourceMappingURL=chunk-UWIRXF7H.mjs.map

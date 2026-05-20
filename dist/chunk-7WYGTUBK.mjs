@@ -31,6 +31,8 @@ var JxgRenderer3D = class {
   constructor(store, view, options = {}) {
     this.elements = /* @__PURE__ */ new Map();
     this.disposed = false;
+    this.highlightedId = null;
+    this.highlightOriginal = null;
     this.store = store;
     this.view = view;
     this.theme = options.theme ?? DEFAULT_THEME_3D;
@@ -132,6 +134,31 @@ var JxgRenderer3D = class {
     this.disposed = true;
     for (const id of Array.from(this.elements.keys())) {
       this.remove(id);
+    }
+  }
+  highlight(id) {
+    if (this.disposed) return;
+    if (this.highlightedId && this.highlightOriginal) {
+      const prev = this.elements.get(this.highlightedId);
+      try {
+        prev?.setAttribute?.(this.highlightOriginal);
+      } catch (err) {
+        console.warn("[scene/render/3d] highlight restore fail:", err);
+      }
+    }
+    this.highlightedId = null;
+    this.highlightOriginal = null;
+    if (!id) return;
+    const el = this.elements.get(id);
+    if (!el) return;
+    try {
+      const stroke = el.getAttribute?.("strokeColor") ?? "#1e40af";
+      const thick = el.getAttribute?.("strokeWidth") ?? 2;
+      this.highlightOriginal = { stroke, thick };
+      el.setAttribute?.({ strokeColor: "#ef4444", strokeWidth: thick + 2 });
+      this.highlightedId = id;
+    } catch (err) {
+      console.warn("[scene/render/3d] highlight apply fail:", err);
     }
   }
 };
@@ -307,5 +334,5 @@ async function renderGeometry3DSvgFromState(jsonState) {
 }
 
 export { DEFAULT_VIEW3D, GROUND_PLANE_ATTRS, GROUND_PLANE_RANGE, JxgRenderer3D, VIEW3D_ATTRS, isGeometry3DCustomData, paletteFor2 as paletteFor, parseSerializedBoard3D, renderGeometry3DSvgFromState, serializeBoard3D };
-//# sourceMappingURL=chunk-7WNDGXBJ.mjs.map
-//# sourceMappingURL=chunk-7WNDGXBJ.mjs.map
+//# sourceMappingURL=chunk-7WYGTUBK.mjs.map
+//# sourceMappingURL=chunk-7WYGTUBK.mjs.map

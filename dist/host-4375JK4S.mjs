@@ -1,6 +1,6 @@
 "use client";
-import { serializeBoard, renderGeometrySvgFromState, isGeometryCustomData, safeJsx, JxgRenderer } from './chunk-ZKDWJEBV.mjs';
-import { useChordShortcut, MobileToolDrawer } from './chunk-SBDMF4NQ.mjs';
+import { serializeBoard, renderGeometrySvgFromState, isGeometryCustomData, safeJsx, JxgRenderer } from './chunk-7FCFYGPI.mjs';
+import { ObjectListPanel, useChordShortcut, useActionRecorder, RecorderPanelDev, MobileToolDrawer } from './chunk-S3P5PCJ4.mjs';
 import { createEmptyState, nextLabel, themeAxis, themeGrid, themeLabel, paletteFor, listObjects, createStore } from './chunk-MBJVQIF6.mjs';
 import { useIsMobile } from './chunk-P2AOIF7S.mjs';
 import { insertStampImage } from './chunk-C6SCVOMC.mjs';
@@ -1128,6 +1128,10 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
         getContainer: () => containerRef.current,
         getBbox: () => board ? board.getBoundingBox() : [-10, 10, 10, -10],
         getState: () => store.getState(),
+        getStore: () => store,
+        highlight: (id) => {
+          rendererRef.current?.highlight(id);
+        },
         getShowAxis: () => showAxisRef.current,
         getShowGrid: () => showGridRef.current,
         setTool: handleToolChange,
@@ -1956,11 +1960,17 @@ var TransformParamPopover = ({ kind, anchor, defaultValue, onConfirm, onCancel, 
   );
   return createPortal(node, document.body);
 };
+function RecorderPanelWithStore({ store }) {
+  const recorder = useActionRecorder(store);
+  return /* @__PURE__ */ jsx(RecorderPanelDev, { recorder });
+}
 var GeometryEditorPanel = forwardRef(
   function GeometryEditorPanel2({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer, onUndo, onRedo, canUndo, canRedo }, ref) {
     const handleRef = useRef(null);
     const [ready, setReady] = useState(false);
     const [hasContent, setHasContent] = useState(false);
+    const [selectedId, setSelectedId] = useState(void 0);
+    const sceneStoreRef = useRef(null);
     const [propsPopover, setPropsPopover] = useState(null);
     const [transformPopover, setTransformPopover] = useState(null);
     const onStateChangeRef = useRef(onStateChange);
@@ -1983,6 +1993,7 @@ var GeometryEditorPanel = forwardRef(
     }, []);
     const handleReady = useCallback((h) => {
       handleRef.current = h;
+      sceneStoreRef.current = h.getStore();
       setReady(true);
       emitState();
       h.subscribe(emitState);
@@ -2021,6 +2032,10 @@ var GeometryEditorPanel = forwardRef(
       insert: performInsert,
       hasContent: () => Object.keys(handleRef.current?.getState().objects ?? {}).length > 0
     }), [performInsert]);
+    function handleSelectObject(id) {
+      setSelectedId(id);
+      handleRef.current?.highlight(id);
+    }
     const wrapperStyle = isMobile ? { position: "fixed", inset: 0, zIndex: 40 } : {
       position: "absolute",
       top: "50%",
@@ -2112,14 +2127,24 @@ var GeometryEditorPanel = forwardRef(
               /* @__PURE__ */ jsx("line", { x1: "18", y1: "6", x2: "6", y2: "18" })
             ] }) })
           ] }),
-          /* @__PURE__ */ jsx("div", { className: "min-h-0 flex-1", style: isMobile ? void 0 : { height: "420px" }, children: /* @__PURE__ */ jsx(
-            JSXGraphMiniBoard,
-            {
-              onReady: handleReady,
-              initialState,
-              isDark
-            }
-          ) }),
+          /* @__PURE__ */ jsxs("div", { className: "flex min-h-0 flex-1", style: isMobile ? void 0 : { height: "420px" }, children: [
+            /* @__PURE__ */ jsx("div", { className: "flex-1", children: /* @__PURE__ */ jsx(
+              JSXGraphMiniBoard,
+              {
+                onReady: handleReady,
+                initialState,
+                isDark
+              }
+            ) }),
+            sceneStoreRef.current && /* @__PURE__ */ jsx("div", { className: "w-56 border-l border-zinc-200 dark:border-zinc-800 overflow-y-auto", children: /* @__PURE__ */ jsx(
+              ObjectListPanel,
+              {
+                store: sceneStoreRef.current,
+                selectedId,
+                onSelect: handleSelectObject
+              }
+            ) })
+          ] }),
           propsPopover && (propsPopover.kind === "point" ? /* @__PURE__ */ jsx(
             PropertiesPopover,
             {
@@ -2208,7 +2233,8 @@ var GeometryEditorPanel = forwardRef(
                 }
               )
             ] })
-          ] })
+          ] }),
+          sceneStoreRef.current && /* @__PURE__ */ jsx(RecorderPanelWithStore, { store: sceneStoreRef.current })
         ]
       }
     );
@@ -2318,5 +2344,5 @@ var GeometryStampHost = forwardRef(
 );
 
 export { GeometryStampHost };
-//# sourceMappingURL=host-HK62ISKF.mjs.map
-//# sourceMappingURL=host-HK62ISKF.mjs.map
+//# sourceMappingURL=host-4375JK4S.mjs.map
+//# sourceMappingURL=host-4375JK4S.mjs.map
