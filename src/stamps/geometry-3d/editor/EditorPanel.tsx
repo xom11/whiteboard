@@ -19,6 +19,8 @@ import {
   type SerializedBoard3D,
   type SerializedView3D,
 } from '../serialize';
+import { useActionRecorder } from '../../../core/scene/ui/useActionRecorder';
+import { RecorderPanelDev } from '../../../core/scene/ui/RecorderPanelDev';
 
 export interface EditorPanelProps {
   isDark?: boolean;
@@ -68,6 +70,8 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
     const isDark = isDarkProp ?? false;
     const controllerRef = React.useRef<ToolController | null>(null);
     if (!controllerRef.current) controllerRef.current = new ToolController(store);
+
+    const recorder = useActionRecorder(store);
 
     const [hint, setHint] = React.useState<string>('Chọn công cụ trong bảng bên trái');
     const [hoverLabel, setHoverLabel] = React.useState<string | null>(null);
@@ -438,6 +442,7 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
           />
         </div>
         <StatusHint hint={hint} hoverLabel={hoverLabel} />
+        <RecorderPanelDev recorder={recorder} />
       </div>
     );
   },
