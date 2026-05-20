@@ -170,6 +170,7 @@ function DesktopGeometryPanel(props: GeometryLeftPanelProps) {
         icon={GeometryIconHeader}
         onClose={onClose}
         isDark={isDark}
+        testId="stamp-left-panel"
         tabs={hasStore ? TOOLS_TABS : undefined}
         activeTab={hasStore ? tab : undefined}
         onTabChange={hasStore ? setTab : undefined}

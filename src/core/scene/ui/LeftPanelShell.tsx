@@ -15,6 +15,8 @@ export interface LeftPanelShellProps<K extends string = string> {
   tabs?: readonly TabSpec<K>[];
   activeTab?: K;
   onTabChange?: (k: K) => void;
+  /** data-testid trên <aside> root. Mặc định "left-panel". */
+  testId?: string;
   children: React.ReactNode;
 }
 
@@ -28,14 +30,14 @@ function CloseIcon() {
 }
 
 export function LeftPanelShell<K extends string>(props: LeftPanelShellProps<K>): React.ReactElement {
-  const { title, icon, onClose, isDark, tabs, activeTab, onTabChange, children } = props;
+  const { title, icon, onClose, isDark, tabs, activeTab, onTabChange, testId, children } = props;
   const showTabs = !!tabs && tabs.length >= 2;
 
   return (
     <aside
       role="complementary"
       aria-label={title}
-      data-testid="left-panel"
+      data-testid={testId ?? 'left-panel'}
       data-stamp-area="true"
       className={[
         isDark ? 'theme--dark ' : '',
