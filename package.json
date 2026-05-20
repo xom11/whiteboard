@@ -87,6 +87,7 @@
     "vite": "^8.0.13"
   },
   "dependencies": {
+    "immer": "^10.2.0",
     "pdfjs-dist": "^5.7.284"
   }
 }
