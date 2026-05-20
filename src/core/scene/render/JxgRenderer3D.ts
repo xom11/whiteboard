@@ -131,4 +131,36 @@ export class JxgRenderer3D {
       this.remove(id);
     }
   }
+
+  private highlightedId: string | null = null;
+  private highlightOriginal: { stroke?: string; thick?: number } | null = null;
+
+  highlight(id: string | null): void {
+    if (this.disposed) return;
+    if (this.highlightedId && this.highlightOriginal) {
+      const prev = this.elements.get(this.highlightedId) as
+        | { setAttribute?: (a: Record<string, unknown>) => void }
+        | undefined;
+      try { prev?.setAttribute?.(this.highlightOriginal); } catch (err) {
+        console.warn('[scene/render/3d] highlight restore fail:', err);
+      }
+    }
+    this.highlightedId = null;
+    this.highlightOriginal = null;
+
+    if (!id) return;
+    const el = this.elements.get(id) as
+      | { getAttribute?: (k: string) => unknown; setAttribute?: (a: Record<string, unknown>) => void }
+      | undefined;
+    if (!el) return;
+    try {
+      const stroke = (el.getAttribute?.('strokeColor') as string | undefined) ?? '#1e40af';
+      const thick = (el.getAttribute?.('strokeWidth') as number | undefined) ?? 2;
+      this.highlightOriginal = { stroke, thick };
+      el.setAttribute?.({ strokeColor: '#ef4444', strokeWidth: thick + 2 });
+      this.highlightedId = id;
+    } catch (err) {
+      console.warn('[scene/render/3d] highlight apply fail:', err);
+    }
+  }
 }
