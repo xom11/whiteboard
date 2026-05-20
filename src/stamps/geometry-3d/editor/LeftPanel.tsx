@@ -17,6 +17,7 @@ import {
   MobileToolDrawer,
   type MobileToolGroup,
 } from '../../shared/MobileToolDrawer';
+import { LeftPanelShell, Section } from '../../../core/scene/ui/LeftPanelShell';
 
 const TOOLTIP_DELAY_MS = 400;
 
@@ -95,63 +96,6 @@ export function RedoIcon(): React.ReactElement {
   );
 }
 
-function CloseIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <line x1="6" y1="6" x2="18" y2="18" />
-      <line x1="18" y1="6" x2="6" y2="18" />
-    </svg>
-  );
-}
-
-interface ShellProps {
-  title: string;
-  icon: React.ReactNode;
-  onClose: () => void;
-  children: React.ReactNode;
-  isDark?: boolean;
-}
-
-function Shell({ title, icon, onClose, children, isDark }: ShellProps) {
-  return (
-    <aside
-      role="complementary"
-      aria-label={title}
-      data-testid="left-panel"
-      data-stamp-area="true"
-      className={[
-        isDark ? 'theme--dark ' : '',
-        'absolute left-0 top-0 z-30 flex h-full w-60 flex-col border-r border-slate-200 bg-white shadow-md animate-in slide-in-from-left duration-200',
-      ].join('')}
-    >
-      <header className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-3 py-2">
-        <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-          <span className="text-base leading-none">{icon}</span>
-          {title}
-        </h3>
-        <button
-          onClick={onClose}
-          aria-label="Đóng"
-          className="rounded p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
-        >
-          <CloseIcon />
-        </button>
-      </header>
-      <div className="min-h-0 flex-1 overflow-y-auto p-3 space-y-3">{children}</div>
-    </aside>
-  );
-}
-
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <section>
-      <h4 className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-        {label}
-      </h4>
-      {children}
-    </section>
-  );
-}
 
 function useToolHoverTooltip() {
   const [hover, setHover] = React.useState<HoverState>(null);
@@ -207,16 +151,18 @@ function DesktopPanel(props: LeftPanelProps) {
 
   return (
     <>
-      <Shell title="Hình học 3D" icon={Geom3DIconHeader} onClose={onClose} isDark={isDark}>
-        <div className="flex gap-1 rounded-md bg-slate-100 p-0.5">
-          <TabPill active={tab === 'tools'} onClick={() => setTab('tools')} testId="tab-tools">
-            🧰 Công cụ
-          </TabPill>
-          <TabPill active={tab === 'algebra'} onClick={() => setTab('algebra')} testId="tab-algebra">
-            📐 Đối tượng
-          </TabPill>
-        </div>
-
+      <LeftPanelShell
+        title="Hình học 3D"
+        icon={Geom3DIconHeader}
+        onClose={onClose}
+        isDark={isDark}
+        tabs={[
+          { key: 'tools', label: '🧰 Công cụ', testId: 'tab-tools' },
+          { key: 'algebra', label: '📐 Đối tượng', testId: 'tab-algebra' },
+        ]}
+        activeTab={tab}
+        onTabChange={setTab}
+      >
         {tab === 'tools' ? (
           <>
             <Section label="Góc nhìn">
@@ -296,7 +242,7 @@ function DesktopPanel(props: LeftPanelProps) {
             />
           </section>
         )}
-      </Shell>
+      </LeftPanelShell>
       {portalReady && hover && typeof document !== 'undefined'
         ? createPortal(
             <div
@@ -316,30 +262,6 @@ function DesktopPanel(props: LeftPanelProps) {
           )
         : null}
     </>
-  );
-}
-
-function TabPill({
-  active,
-  onClick,
-  testId,
-  children,
-}: React.PropsWithChildren<{ active: boolean; onClick: () => void; testId?: string }>) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      data-testid={testId}
-      className={[
-        'flex-1 rounded px-2 py-1 text-[11px] font-medium transition',
-        active
-          ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
-          : 'text-slate-500 hover:text-slate-800',
-      ].join(' ')}
-    >
-      {children}
-    </button>
   );
 }
 
