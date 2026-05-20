@@ -6,6 +6,8 @@ import { renderGeometrySvgFromState } from '../render';
 import { PropertiesPopover } from './PropertiesPopover';
 import { TransformParamPopover } from './TransformParamPopover';
 import { UndoIcon, RedoIcon } from './LeftPanel';
+import { ObjectListPanel } from '../../../core/scene/ui/ObjectListPanel';
+import type { Store } from '../../../core/scene/store';
 
 interface Props {
   initialState: SerializedBoard | null;
@@ -52,6 +54,8 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
     const handleRef = useRef<MiniBoardHandle | null>(null);
     const [ready, setReady] = useState(false);
     const [hasContent, setHasContent] = useState(false);
+    const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
+    const sceneStoreRef = useRef<Store | null>(null);
     const [propsPopover, setPropsPopover] = useState<ObjectSnapshot | null>(null);
     // Handlers emit cả 6 transform tool (rotate/dilate/regularPolygon/translate/
     // reflectLine/reflectPoint); TransformParamPopover chỉ render 3 tool có
@@ -77,6 +81,7 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
 
     const handleReady = useCallback((h: MiniBoardHandle) => {
       handleRef.current = h;
+      sceneStoreRef.current = h.getStore();
       setReady(true);
       emitState();
       // Subscribe để parent biết khi nào tool/axis/grid/undo thay đổi
@@ -122,6 +127,12 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
       insert: performInsert,
       hasContent: () => Object.keys(handleRef.current?.getState().objects ?? {}).length > 0,
     }), [performInsert]);
+
+    function handleSelectObject(id: string) {
+      setSelectedId(id);
+      // highlight: JxgRenderer is internal to MiniBoard; no direct renderer ref here.
+      // Visual highlight deferred to future refactor when MiniBoard exposes renderer.
+    }
 
     const wrapperStyle: React.CSSProperties = isMobile
       ? { position: 'fixed', inset: 0, zIndex: 40 }
@@ -216,12 +227,23 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
             </svg>
           </button>
         </header>
-        <div className="min-h-0 flex-1" style={isMobile ? undefined : { height: '420px' }}>
-          <JSXGraphMiniBoard
-            onReady={handleReady}
-            initialState={initialState}
-            isDark={isDark}
-          />
+        <div className="flex min-h-0 flex-1" style={isMobile ? undefined : { height: '420px' }}>
+          <div className="flex-1">
+            <JSXGraphMiniBoard
+              onReady={handleReady}
+              initialState={initialState}
+              isDark={isDark}
+            />
+          </div>
+          {sceneStoreRef.current && (
+            <div className="w-56 border-l border-zinc-200 dark:border-zinc-800 overflow-y-auto">
+              <ObjectListPanel
+                store={sceneStoreRef.current}
+                selectedId={selectedId}
+                onSelect={handleSelectObject}
+              />
+            </div>
+          )}
         </div>
         {propsPopover && (
           propsPopover.kind === 'point' ? (
