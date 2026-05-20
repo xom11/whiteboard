@@ -1,0 +1,288 @@
+'use client';
+// src/stamps/graph-2d/editor/MiniBoard.tsx
+//
+// JSXGraph mini-board cho graph-2d editor.
+// Reuses the pattern from geometry-2d/editor/MiniBoard.tsx adapted for graph2d domain:
+//  - createEmptyState('graph2d') instead of '2d'
+//  - Init view from state.meta.view (default [-10, 10])
+//  - getNearestFunctionId / findHitObject helpers for graph-specific hit-test
+//  - Tools from TOOLS / GraphTool
+
+import React, { useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import {
+  createEmptyState,
+  nextLabel as sceneNextLabel,
+  type State,
+} from '../../../core/scene';
+import { JxgRenderer } from '../../../core/scene/render/JxgRenderer';
+import type { Store } from '../../../core/scene/store';
+import { useSceneStore } from '../../geometry-2d/editor/useSceneStore';
+import { paletteFor } from './theme';
+import { handleDown, type HandlerCtx } from './handlers';
+import { useToolStateMachine } from './useToolStateMachine';
+import type { GraphTool } from './tools';
+import { safeJsx } from '../../shared/safeJsx';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type JxgObj = any;
+
+export interface MiniBoardHandle {
+  getState: () => State;
+  getStore: () => Store;
+  setTool: (t: GraphTool) => void;
+  getTool: () => GraphTool;
+  getShowAxis: () => boolean;
+  getShowGrid: () => boolean;
+  setShowAxis: (b: boolean) => void;
+  setShowGrid: (b: boolean) => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: () => boolean;
+  canRedo: () => boolean;
+  subscribe: (cb: () => void) => () => void;
+  highlight: (id: string | null) => void;
+  getContainer: () => HTMLDivElement | null;
+  getBbox: () => [number, number, number, number];
+}
+
+interface MiniBoardProps {
+  initialState?: State | null;
+  isDark?: boolean;
+  onReady?: () => void;
+  onSelectionChange?: (id: string | undefined) => void;
+}
+
+export const MiniBoard = React.forwardRef<MiniBoardHandle, MiniBoardProps>(
+  function MiniBoard({ initialState, isDark, onReady, onSelectionChange: _onSelectionChange }, ref) {
+    const isDarkRef = useRef(!!isDark); isDarkRef.current = !!isDark;
+    const containerId = useId().replace(/:/g, '_') + '_graph_jxg';
+    const containerRef = useRef<HTMLDivElement>(null);
+    const boardRef = useRef<JxgObj>(null);
+    const jxgRef = useRef<JxgObj>(null);
+    const rendererRef = useRef<JxgRenderer | null>(null);
+
+    const init = useMemo<State>(
+      () => initialState ?? createEmptyState('graph2d'),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [],
+    );
+    const { store } = useSceneStore(init);
+    const toolSM = useToolStateMachine('move');
+
+    const [showAxis, setShowAxisState] = useState<boolean>(
+      init.meta.view?.showAxis ?? true,
+    );
+    const [showGrid, setShowGridState] = useState<boolean>(
+      init.meta.view?.showGrid ?? true,
+    );
+    const showAxisRef = useRef(showAxis); showAxisRef.current = showAxis;
+    const showGridRef = useRef(showGrid); showGridRef.current = showGrid;
+
+    // Subscribers (external UI listens to state changes)
+    const subscribersRef = useRef<Set<() => void>>(new Set());
+    const notifySubscribers = useCallback(() => {
+      subscribersRef.current.forEach((cb) =>
+        safeJsx('MiniBoard.graph.notifySubscriber', () => cb()),
+      );
+    }, []);
+    useEffect(() => store.subscribe(() => notifySubscribers()), [store, notifySubscribers]);
+    useEffect(() => { notifySubscribers(); }, [showAxis, showGrid, toolSM.tool, notifySubscribers]);
+
+    // ─── Board init ────────────────────────────────────────────────────────────
+    useEffect(() => {
+      if (typeof window === 'undefined' || !containerRef.current) return;
+      let cancelled = false;
+      let wheelCleanup: (() => void) | null = null;
+
+      void (async () => {
+        const JXG = (await import('jsxgraph')).default;
+        if (cancelled || !containerRef.current) return;
+        jxgRef.current = JXG;
+
+        safeJsx('MiniBoard.graph.applyJxgOptions', () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const opts = (JXG as any).Options;
+          if (opts) {
+            opts.text = opts.text || {};
+            opts.text.display = 'internal';
+            opts.text.useASCIIMathML = false;
+            opts.text.useMathJax = false;
+            opts.text.useKatex = false;
+            opts.label = opts.label || {};
+            opts.label.display = 'internal';
+          }
+        });
+
+        const bbox: [number, number, number, number] = [-10, 10, 10, -10];
+        const board: JxgObj = JXG.JSXGraph.initBoard(containerId, {
+          boundingbox: bbox,
+          axis: showAxisRef.current,
+          grid: showGridRef.current,
+          showCopyright: false,
+          showNavigation: true,
+          keepAspectRatio: false,
+          pan: { enabled: true, needShift: false },
+          zoom: { wheel: false },
+        });
+        boardRef.current = board;
+
+        const theme = paletteFor(isDarkRef.current);
+        rendererRef.current = new JxgRenderer(store, board, { theme });
+
+        // Ctrl/Cmd + wheel zoom
+        if (containerRef.current) {
+          const wheelTarget = containerRef.current;
+          const onWheel = (e: WheelEvent) => {
+            if (!e.ctrlKey && !e.metaKey) return;
+            e.preventDefault(); e.stopPropagation();
+            let cx: number | undefined, cy: number | undefined;
+            safeJsx('MiniBoard.graph.wheelZoom.coords', () => {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const usr = (board as any).getUsrCoordsOfMouse?.(e);
+              if (Array.isArray(usr) && usr.length >= 2
+                  && Number.isFinite(usr[0]) && Number.isFinite(usr[1])) {
+                cx = usr[0] as number; cy = usr[1] as number;
+              }
+            });
+            if (e.deltaY < 0) safeJsx('MiniBoard.graph.wheelZoom.in', () => board.zoomIn(cx, cy));
+            else safeJsx('MiniBoard.graph.wheelZoom.out', () => board.zoomOut(cx, cy));
+          };
+          wheelTarget.addEventListener('wheel', onWheel, { passive: false });
+          wheelCleanup = () => wheelTarget.removeEventListener('wheel', onWheel);
+        }
+
+        // Pointer-down handler — only active when tool != move
+        const onDown = (evt: JxgObj) => {
+          const b = boardRef.current;
+          if (!b || toolSM.toolRef.current === 'move') return;
+
+          // Convert JSXGraph event → user-space coords.
+          // Pattern from geometry-3d MiniBoard3D: use getUsrCoordsOfMouse if available,
+          // fall back to manual calculation via board.origin + unitX/unitY.
+          let ux = 0, uy = 0;
+          safeJsx('MiniBoard.graph.pointerCoords', () => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const usr = (b as any).getUsrCoordsOfMouse?.(evt);
+            if (Array.isArray(usr) && usr.length >= 2
+                && Number.isFinite(usr[0]) && Number.isFinite(usr[1])) {
+              ux = usr[0] as number; uy = usr[1] as number;
+            } else if (b.origin?.scrCoords && containerRef.current) {
+              // Fallback: manual pixel → user-space
+              const rect = containerRef.current.getBoundingClientRect();
+              const px = (evt.clientX ?? 0) - rect.left;
+              const py = (evt.clientY ?? 0) - rect.top;
+              const ox = b.origin.scrCoords[1];
+              const oy = b.origin.scrCoords[2];
+              const bUnitX = b.unitX || 1;
+              const bUnitY = b.unitY || 1;
+              ux = (px - ox) / bUnitX;
+              uy = (oy - py) / bUnitY;
+            }
+          });
+
+          const ctx: HandlerCtx = {
+            store,
+            toolRef: toolSM.toolRef,
+            pendingIdsRef: toolSM.pendingIdsRef,
+            pushPending: toolSM.pushPending,
+            clearPending: toolSM.clearPending,
+            setTool: toolSM.setTool,
+            nextLabel: (kind) => sceneNextLabel(store.getState(), kind),
+            getNearestFunctionId: ({ x, y }) =>
+              findNearestFunction(b, store, rendererRef.current, x, y),
+            getHitObjectId: ({ x, y }) =>
+              findHitObject(b, rendererRef.current, x, y),
+          };
+          safeJsx('MiniBoard.graph.handleDown', () =>
+            handleDown(ctx, { x: ux, y: uy }),
+          );
+        };
+
+        board.on('down', onDown);
+        onReady?.();
+      })();
+
+      return () => {
+        cancelled = true;
+        if (wheelCleanup) { wheelCleanup(); wheelCleanup = null; }
+        rendererRef.current?.dispose();
+        rendererRef.current = null;
+        if (boardRef.current && jxgRef.current) {
+          safeJsx('MiniBoard.graph.freeBoard', () =>
+            jxgRef.current!.JSXGraph.freeBoard(boardRef.current),
+          );
+          boardRef.current = null;
+        }
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [containerId]);
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        getState: () => store.getState(),
+        getStore: () => store,
+        setTool: toolSM.setTool,
+        getTool: () => toolSM.toolRef.current,
+        getShowAxis: () => showAxisRef.current,
+        getShowGrid: () => showGridRef.current,
+        setShowAxis: (b: boolean) => {
+          setShowAxisState(b);
+          store.dispatch({ type: 'UPDATE_VIEW', payload: { patch: { showAxis: b } } });
+        },
+        setShowGrid: (b: boolean) => {
+          setShowGridState(b);
+          store.dispatch({ type: 'UPDATE_VIEW', payload: { patch: { showGrid: b } } });
+        },
+        undo: () => store.undo(),
+        redo: () => store.redo(),
+        canUndo: () => store.canUndo(),
+        canRedo: () => store.canRedo(),
+        subscribe: (cb) => {
+          subscribersRef.current.add(cb);
+          return () => { subscribersRef.current.delete(cb); };
+        },
+        highlight: (id) => rendererRef.current?.highlight(id),
+        getContainer: () => containerRef.current,
+        getBbox: () => boardRef.current?.getBoundingBox() ?? [-10, 10, 10, -10],
+      }),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [store, toolSM],
+    );
+
+    return (
+      <div
+        ref={containerRef}
+        id={containerId}
+        data-testid="graph-miniboard"
+        className="h-full w-full"
+        style={{ touchAction: 'none' }}
+      />
+    );
+  },
+);
+
+// ─── Hit-test helpers ──────────────────────────────────────────────────────────
+// Placeholders — replaced with real impl in Task G.3.7 after JxgRenderer exposes
+// getElement / listElements in Task G.3.6.
+
+function findNearestFunction(
+  _board: JxgObj,
+  _store: Store,
+  _renderer: JxgRenderer | null,
+  _x: number,
+  _y: number,
+): string | null {
+  // Implementation in Task G.3.7 (after JxgRenderer.getElement added in G.3.6)
+  return null;
+}
+
+function findHitObject(
+  _board: JxgObj,
+  _renderer: JxgRenderer | null,
+  _x: number,
+  _y: number,
+): string | null {
+  // Implementation in Task G.3.7
+  return null;
+}
