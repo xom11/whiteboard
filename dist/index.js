@@ -2,10 +2,10 @@
 require('./index.css');
 'use strict';
 
+var immer = require('immer');
 var jsxRuntime = require('react/jsx-runtime');
 var React8 = require('react');
 var reactDom = require('react-dom');
-var immer = require('immer');
 var excalidraw = require('@excalidraw/excalidraw');
 require('@excalidraw/excalidraw/index.css');
 
@@ -60,6 +60,354 @@ var init_renderInline = __esm({
   }
 });
 
+// src/core/scene/types.ts
+function createEmptyState(domain) {
+  return { ...EMPTY_STATE, meta: { domain, version: 1 } };
+}
+var EMPTY_STATE;
+var init_types = __esm({
+  "src/core/scene/types.ts"() {
+    EMPTY_STATE = {
+      objects: {},
+      order: [],
+      counter: 0,
+      meta: { domain: "3d", version: 1 }
+    };
+  }
+});
+
+// src/core/scene/registry.ts
+function getKind(type) {
+  const def = registry.get(type);
+  if (!def) throw new Error(`[scene] unknown kind: ${type}`);
+  return def;
+}
+var registry;
+var init_registry = __esm({
+  "src/core/scene/registry.ts"() {
+    registry = /* @__PURE__ */ new Map();
+  }
+});
+
+// src/core/scene/reducer.ts
+function collectDependents(state, rootId) {
+  const dependents = /* @__PURE__ */ new Set([rootId]);
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const obj of Object.values(state.objects)) {
+      if (dependents.has(obj.id)) continue;
+      let kindDef;
+      try {
+        kindDef = getKind(obj.kind);
+      } catch {
+        continue;
+      }
+      const refs = kindDef.dependsOn(obj.attrs);
+      if (refs.some((r) => dependents.has(r))) {
+        dependents.add(obj.id);
+        grew = true;
+      }
+    }
+  }
+  return dependents;
+}
+function reduce(draft, action) {
+  switch (action.type) {
+    case "ADD": {
+      const { obj } = action.payload;
+      if (draft.objects[obj.id]) throw new Error(`[scene] id "${obj.id}" \u0111\xE3 t\u1ED3n t\u1EA1i`);
+      const kindDef = getKind(obj.kind);
+      kindDef.validate?.(obj.attrs);
+      draft.objects[obj.id] = obj;
+      draft.order.push(obj.id);
+      draft.counter += 1;
+      return;
+    }
+    case "UPDATE": {
+      const { id, patch } = action.payload;
+      const obj = draft.objects[id];
+      if (!obj) return;
+      Object.assign(obj, patch);
+      return;
+    }
+    case "UPDATE_ATTRS": {
+      const { id, patch } = action.payload;
+      const obj = draft.objects[id];
+      if (!obj) return;
+      const kindDef = getKind(obj.kind);
+      const nextAttrs = { ...obj.attrs, ...patch };
+      kindDef.validate?.(nextAttrs);
+      obj.attrs = nextAttrs;
+      return;
+    }
+    case "DELETE": {
+      const { id } = action.payload;
+      if (!draft.objects[id]) return;
+      const toDelete = collectDependents(draft, id);
+      for (const delId of toDelete) {
+        delete draft.objects[delId];
+      }
+      draft.order = draft.order.filter((x) => !toDelete.has(x));
+      return;
+    }
+    case "RESET": {
+      draft.objects = {};
+      draft.order = [];
+      draft.counter = 0;
+      return;
+    }
+    case "LOAD": {
+      const { state } = action.payload;
+      draft.objects = { ...state.objects };
+      draft.order = [...state.order];
+      draft.counter = state.counter;
+      draft.meta = { ...state.meta };
+      return;
+    }
+    case "TRANSACTION": {
+      for (const sub3 of action.payload.actions) {
+        reduce(draft, sub3);
+      }
+      return;
+    }
+  }
+}
+var init_reducer = __esm({
+  "src/core/scene/reducer.ts"() {
+    init_registry();
+  }
+});
+function createStore(initial, options = {}) {
+  const limit = options.historyLimit ?? HISTORY_DEFAULT;
+  let state = initial;
+  const past = [];
+  const future = [];
+  const listeners = /* @__PURE__ */ new Set();
+  let dispatching = false;
+  let suspendHistory = false;
+  let transactionActions = null;
+  function notify(prev, action) {
+    listeners.forEach((l) => l(state, prev, action));
+  }
+  function pushHistory(prev) {
+    if (suspendHistory) return;
+    past.push(prev);
+    if (past.length > limit) past.shift();
+    future.length = 0;
+  }
+  function applyAction(action) {
+    const prev = state;
+    state = immer.produce(state, (draft) => {
+      reduce(draft, action);
+    });
+    if (state !== prev) {
+      pushHistory(prev);
+      notify(prev, action);
+    }
+  }
+  return {
+    getState: () => state,
+    dispatch(action) {
+      if (dispatching) throw new Error("[scene] kh\xF4ng \u0111\u01B0\u1EE3c dispatch trong subscriber");
+      if (transactionActions) {
+        transactionActions.push(action);
+        return;
+      }
+      dispatching = true;
+      try {
+        applyAction(action);
+      } finally {
+        dispatching = false;
+      }
+    },
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    undo() {
+      const prev = past.pop();
+      if (!prev) return;
+      future.push(state);
+      const old = state;
+      state = prev;
+      notify(old, UNDO_ACTION);
+    },
+    redo() {
+      const next = future.pop();
+      if (!next) return;
+      past.push(state);
+      if (past.length > limit) past.shift();
+      const old = state;
+      state = next;
+      notify(old, REDO_ACTION);
+    },
+    canUndo: () => past.length > 0,
+    canRedo: () => future.length > 0,
+    transaction(fn) {
+      if (transactionActions) throw new Error("[scene] transaction l\u1ED3ng nhau kh\xF4ng h\u1ED7 tr\u1EE3");
+      transactionActions = [];
+      try {
+        fn((a) => {
+          transactionActions.push(a);
+        });
+      } finally {
+        const actions = transactionActions;
+        transactionActions = null;
+        if (actions.length > 0) {
+          applyAction({ type: "TRANSACTION", payload: { actions } });
+        }
+      }
+    },
+    withoutHistory(fn) {
+      const prevSuspend = suspendHistory;
+      suspendHistory = true;
+      try {
+        fn();
+      } finally {
+        suspendHistory = prevSuspend;
+      }
+    }
+  };
+}
+var HISTORY_DEFAULT, UNDO_ACTION, REDO_ACTION;
+var init_store = __esm({
+  "src/core/scene/store.ts"() {
+    init_reducer();
+    HISTORY_DEFAULT = 100;
+    UNDO_ACTION = { type: "TRANSACTION", payload: { actions: [] } };
+    REDO_ACTION = { type: "TRANSACTION", payload: { actions: [] } };
+  }
+});
+
+// src/core/scene/selectors.ts
+function listObjects(state) {
+  return state.order.map((id) => state.objects[id]).filter((o) => o !== void 0);
+}
+function byKind(state, kind) {
+  return listObjects(state).filter((o) => o.kind === kind);
+}
+function nextLabel(state, kind) {
+  const used = new Set(byKind(state, kind).map((o) => o.label));
+  for (const c of ALPHABET) if (!used.has(c)) return c;
+  let idx = 1;
+  while (true) {
+    for (const c of ALPHABET) {
+      const candidate = `${c}${idx}`;
+      if (!used.has(candidate)) return candidate;
+    }
+    idx += 1;
+  }
+}
+var ALPHABET;
+var init_selectors = __esm({
+  "src/core/scene/selectors.ts"() {
+    ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  }
+});
+
+// src/core/scene/migrations/state.ts
+function listStateMigrations() {
+  return stateMigrations;
+}
+var stateMigrations, CURRENT_STATE_VERSION;
+var init_state = __esm({
+  "src/core/scene/migrations/state.ts"() {
+    stateMigrations = /* @__PURE__ */ new Map();
+    CURRENT_STATE_VERSION = 1;
+  }
+});
+
+// src/core/scene/migrations/runMigrations.ts
+function migrateState(raw) {
+  if (!raw || typeof raw !== "object") throw new Error("[scene] invalid state shape");
+  let state = raw;
+  const currentVersion = state.meta?.version ?? 1;
+  const stateMigs = listStateMigrations();
+  for (let v = currentVersion + 1; v <= Math.max(CURRENT_STATE_VERSION, ...stateMigs.keys()); v++) {
+    const fn = stateMigs.get(v);
+    if (fn) state = fn(state);
+  }
+  const migratedObjects = {};
+  for (const [id, obj] of Object.entries(state.objects ?? {})) {
+    const def = getKind(obj.kind);
+    let cur = obj;
+    while ((cur.schemaVersion ?? 0) < def.schemaVersion) {
+      const next = (cur.schemaVersion ?? 0) + 1;
+      const mig = def.migrate[next];
+      if (!mig) throw new Error(`[scene] missing migration cho ${obj.kind} v${next}`);
+      cur = mig(cur);
+      cur.schemaVersion = next;
+    }
+    if ((cur.schemaVersion ?? 0) !== def.schemaVersion) {
+      throw new Error(
+        `[scene] missing migration cho ${obj.kind}: stored v${cur.schemaVersion ?? 0}, current v${def.schemaVersion}`
+      );
+    }
+    migratedObjects[id] = cur;
+  }
+  return {
+    objects: migratedObjects,
+    order: state.order ?? [],
+    counter: state.counter ?? 0,
+    meta: state.meta ?? { domain: "3d", version: CURRENT_STATE_VERSION }
+  };
+}
+var init_runMigrations = __esm({
+  "src/core/scene/migrations/runMigrations.ts"() {
+    init_registry();
+    init_state();
+  }
+});
+
+// src/core/scene/index.ts
+var init_scene = __esm({
+  "src/core/scene/index.ts"() {
+    init_types();
+    init_store();
+    init_selectors();
+    init_runMigrations();
+  }
+});
+
+// src/stamps/geometry-2d/serialize.ts
+function serializeBoard(bbox, state, options = {}) {
+  return {
+    version: 2,
+    bbox,
+    state,
+    showAxis: !!options.showAxis,
+    showGrid: !!options.showGrid
+  };
+}
+function deserializeBoard(raw) {
+  if (raw && typeof raw === "object" && raw.version === 2) {
+    const r = raw;
+    return {
+      version: 2,
+      bbox: r.bbox,
+      state: migrateState(r.state),
+      showAxis: !!r.showAxis,
+      showGrid: !!r.showGrid
+    };
+  }
+  console.warn("[2d/serialize] format kh\xF4ng nh\u1EADn di\u1EC7n ho\u1EB7c v1 c\u0169 \u2014 d\xF9ng state r\u1ED7ng");
+  return {
+    version: 2,
+    bbox: [-5, 5, 5, -5],
+    state: createEmptyState("2d"),
+    showAxis: false,
+    showGrid: false
+  };
+}
+var init_serialize = __esm({
+  "src/stamps/geometry-2d/serialize.ts"() {
+    init_scene();
+  }
+});
+
 // src/stamps/geometry-2d/editor/theme.ts
 function paletteFor(isDark) {
   return {
@@ -69,113 +417,13 @@ function paletteFor(isDark) {
     label: themeLabel(isDark)
   };
 }
-function resolveAttrColors(attrs, palette) {
-  if (typeof attrs === "string") {
-    const key = SENTINEL_MAP[attrs];
-    return key ? palette[key] : attrs;
-  }
-  if (Array.isArray(attrs)) {
-    return attrs.map((a) => resolveAttrColors(a, palette));
-  }
-  if (attrs && typeof attrs === "object") {
-    const out = {};
-    for (const [k, v] of Object.entries(attrs)) {
-      out[k] = resolveAttrColors(v, palette);
-    }
-    return out;
-  }
-  return attrs;
-}
-var themeStroke, themeAxis, themeGrid, themeLabel, SENTINEL_MAP;
+var themeStroke, themeAxis, themeGrid, themeLabel;
 var init_theme = __esm({
   "src/stamps/geometry-2d/editor/theme.ts"() {
     themeStroke = (dark) => dark ? "#e2e8f0" : "#0f172a";
     themeAxis = (dark) => dark ? "#cbd5e1" : "#94a3b8";
     themeGrid = (dark) => dark ? "#475569" : "#e2e8f0";
     themeLabel = (dark) => dark ? "#e2e8f0" : "#000000";
-    SENTINEL_MAP = {
-      "@stroke": "stroke",
-      "@axis": "axis",
-      "@grid": "grid",
-      "@label": "label"
-    };
-  }
-});
-
-// src/stamps/geometry-2d/serialize.ts
-function serializeBoard(board, log, options = {}) {
-  return {
-    bbox: board.getBoundingBox(),
-    elements: log.map((e) => ({ type: e.type, args: e.args, attrs: e.attrs, id: e.id })),
-    showAxis: !!options.showAxis,
-    showGrid: !!options.showGrid
-  };
-}
-function createValueLabel(board, target) {
-  if (!board || !target) return null;
-  const e = (target.elType ?? target.type ?? "").toString().toLowerCase();
-  if (e === "segment" || e === "line" || e === "arrow") {
-    const p1 = target.point1, p2 = target.point2;
-    if (!p1 || !p2) return null;
-    return board.create("text", [
-      () => (p1.X() + p2.X()) / 2 + 0.15,
-      () => (p1.Y() + p2.Y()) / 2 + 0.25,
-      () => {
-        const len = Math.hypot(p2.X() - p1.X(), p2.Y() - p1.Y());
-        const name = typeof target.name === "string" && target.name ? target.name : "d";
-        return `${name} = ${len.toFixed(2)}`;
-      }
-    ], { fontSize: 12, color: "#dc2626", fixed: true, highlight: false });
-  }
-  if (e === "circle" || e === "circumcircle") {
-    const center = target.center ?? target.midpoint ?? target.point1;
-    if (!center) return null;
-    return board.create("text", [
-      () => center.X() + 0.3,
-      () => center.Y() + 0.3,
-      () => {
-        const r = typeof target.Radius === "function" ? target.Radius() : 0;
-        const name = typeof target.name === "string" && target.name ? target.name : "r";
-        return `${name} = ${r.toFixed(2)}`;
-      }
-    ], { fontSize: 12, color: "#dc2626", fixed: true, highlight: false });
-  }
-  return null;
-}
-function deserializeIntoBoard(board, serialized, options = {}) {
-  const palette = options.palette ?? paletteFor(false);
-  const idMap = /* @__PURE__ */ new Map();
-  const resolve = (a) => {
-    if (typeof a === "string") {
-      if (idMap.has(a)) return idMap.get(a);
-      const m = /^(.+):border:(\d+)$/.exec(a);
-      if (m) {
-        const poly = idMap.get(m[1]);
-        const idx = parseInt(m[2], 10);
-        if (poly && Array.isArray(poly.borders) && poly.borders[idx]) {
-          return poly.borders[idx];
-        }
-      }
-    }
-    if (Array.isArray(a)) return a.map(resolve);
-    return a;
-  };
-  for (const el of serialized.elements) {
-    const resolvedArgs = el.args.map(resolve);
-    if (el.type === "valueLabel") {
-      const target = resolvedArgs[0];
-      const txt = createValueLabel(board, target);
-      if (txt) idMap.set(el.id, txt);
-      continue;
-    }
-    const themedAttrs = resolveAttrColors({ ...el.attrs }, palette);
-    const created = board.create(el.type, resolvedArgs, themedAttrs);
-    idMap.set(el.id, created);
-  }
-}
-var init_serialize = __esm({
-  "src/stamps/geometry-2d/serialize.ts"() {
-    init_theme();
   }
 });
 
@@ -200,6 +448,106 @@ var init_safeJsx = __esm({
         return false;
       }
     })();
+  }
+});
+
+// src/core/scene/render/types2d.ts
+var DEFAULT_THEME_2D;
+var init_types2d = __esm({
+  "src/core/scene/render/types2d.ts"() {
+    DEFAULT_THEME_2D = {
+      stroke: "#0f172a",
+      fill: "#60a5fa",
+      label: "#0f172a",
+      axis: "#94a3b8",
+      grid: "#e2e8f0",
+      pointFill: "#1e40af"
+    };
+  }
+});
+
+// src/core/scene/render/JxgRenderer.ts
+var JxgRenderer;
+var init_JxgRenderer = __esm({
+  "src/core/scene/render/JxgRenderer.ts"() {
+    init_registry();
+    init_types2d();
+    JxgRenderer = class {
+      constructor(store, board, options = {}) {
+        this.elements = /* @__PURE__ */ new Map();
+        this.disposed = false;
+        this.store = store;
+        this.board = board;
+        this.theme = options.theme ?? DEFAULT_THEME_2D;
+        this.unsubscribe = store.subscribe((next, prev) => this.applyDiff(prev, next));
+        this.applyDiff(void 0, store.getState());
+      }
+      ctx() {
+        return {
+          jxg: this.board,
+          resolveRef: (id) => {
+            const el = this.elements.get(id);
+            if (!el) throw new Error(`[scene/2d] resolveRef: ch\u01B0a render id="${id}"`);
+            return el;
+          },
+          defaults: { theme: this.theme }
+        };
+      }
+      create(obj) {
+        try {
+          const def = getKind(obj.kind);
+          const el = def.render(obj, this.ctx());
+          this.elements.set(obj.id, el);
+        } catch (err) {
+          console.warn(`[scene/render/2d] kh\xF4ng render \u0111\u01B0\u1EE3c ${obj.kind} id="${obj.id}":`, err);
+        }
+      }
+      remove(id) {
+        const el = this.elements.get(id);
+        if (!el) return;
+        try {
+          this.board.removeObject?.(el);
+        } catch (err) {
+          console.warn(`[scene/render/2d] kh\xF4ng remove \u0111\u01B0\u1EE3c id="${id}":`, err);
+        }
+        this.elements.delete(id);
+      }
+      applyDiff(prev, next) {
+        if (this.disposed) return;
+        const prevObjs = prev?.objects ?? {};
+        const nextObjs = next.objects;
+        for (const id of Object.keys(prevObjs)) {
+          if (!(id in nextObjs)) this.remove(id);
+        }
+        for (const id of next.order) {
+          const cur = nextObjs[id];
+          const old = prevObjs[id];
+          if (!old) {
+            this.create(cur);
+            continue;
+          }
+          if (Object.is(old, cur)) continue;
+          const def = getKind(cur.kind);
+          const existing = this.elements.get(id);
+          if (def.update && existing) {
+            try {
+              def.update(cur, old, this.ctx(), existing);
+              continue;
+            } catch (err) {
+              console.warn(`[scene/render/2d] update fail, recreate:`, err);
+            }
+          }
+          this.remove(id);
+          this.create(cur);
+        }
+      }
+      dispose() {
+        if (this.disposed) return;
+        this.unsubscribe();
+        for (const id of Array.from(this.elements.keys())) this.remove(id);
+        this.disposed = true;
+      }
+    };
   }
 });
 
@@ -228,7 +576,7 @@ function containerDimsForBbox(bbox) {
   return { width: Math.round(width), height: Math.round(height) };
 }
 async function renderGeometrySvgFromState(jsonState) {
-  const parsed = JSON.parse(jsonState);
+  const parsed = deserializeBoard(JSON.parse(jsonState));
   const palette = paletteFor(false);
   const JXG = (await import('jsxgraph')).default;
   safeJsx("render.applyOptions", () => {
@@ -256,6 +604,7 @@ async function renderGeometrySvgFromState(jsonState) {
   container.style.cssText = `position:absolute;top:-99999px;left:-99999px;width:${width}px;height:${height}px;visibility:hidden;pointer-events:none;`;
   document.body.appendChild(container);
   let board = null;
+  let renderer = null;
   try {
     board = JXG.JSXGraph.initBoard(containerId, {
       boundingbox: parsed.bbox,
@@ -265,10 +614,15 @@ async function renderGeometrySvgFromState(jsonState) {
       showNavigation: false,
       keepAspectRatio: true
     });
-    deserializeIntoBoard(board, parsed, { palette });
+    const store = createStore(parsed.state);
+    renderer = new JxgRenderer(store, board);
     board.update();
     return renderGeometryToSvg(container);
   } finally {
+    try {
+      renderer?.dispose();
+    } catch {
+    }
     safeJsx("render.freeBoard", () => {
       if (board) JXG.JSXGraph.freeBoard(board);
     });
@@ -282,6 +636,8 @@ var init_render = __esm({
     init_serialize();
     init_theme();
     init_safeJsx();
+    init_scene();
+    init_JxgRenderer();
     PIXELS_PER_UNIT = 20;
     MIN_DIM = 100;
     MAX_DIM = 1200;
@@ -296,85 +652,8 @@ function isGeometryCustomData(data) {
   const d = data;
   return d.kind === "geometry" && d.version === 1 && typeof d.jsonState === "string";
 }
-var init_types = __esm({
+var init_types2 = __esm({
   "src/stamps/geometry-2d/types.ts"() {
-  }
-});
-
-// src/stamps/geometry-2d/editor/transforms.ts
-function copyVisAttrs(obj) {
-  const v = obj?.visProp ?? {};
-  const pick = (k) => v?.[k];
-  const out = {};
-  const mapping = [
-    ["strokecolor", "strokeColor"],
-    ["strokewidth", "strokeWidth"],
-    ["strokeopacity", "strokeOpacity"],
-    ["dash", "dash"],
-    ["fillcolor", "fillColor"],
-    ["fillopacity", "fillOpacity"]
-  ];
-  for (const [from, to] of mapping) {
-    const val = pick(from);
-    if (val !== void 0) out[to] = val;
-  }
-  return out;
-}
-function getDefiningPoints(obj) {
-  if (!obj) return null;
-  const e = (obj.elType ?? obj.type ?? "").toString().toLowerCase();
-  if (e === "point" || e === "glider" || e === "midpoint") {
-    return { kind: "point", points: [obj], attrs: copyVisAttrs(obj) };
-  }
-  if (LINE_LIKE.has(e) && obj.point1 && obj.point2) {
-    const kind = e === "segment" ? "segment" : e === "arrow" ? "arrow" : "line";
-    return { kind, points: [obj.point1, obj.point2], attrs: copyVisAttrs(obj) };
-  }
-  if (e === "circle" && obj.center && obj.point2) {
-    return { kind: "circleCenter", points: [obj.center, obj.point2], attrs: copyVisAttrs(obj) };
-  }
-  if (e === "circumcircle" && obj.point1 && obj.point2 && obj.point3) {
-    return {
-      kind: "circle3",
-      points: [obj.point1, obj.point2, obj.point3],
-      attrs: copyVisAttrs(obj)
-    };
-  }
-  return null;
-}
-function buildTransformSpec(input) {
-  switch (input.kind) {
-    case "translate": {
-      const [a, b] = input.vectorPoints;
-      const dx = b.X() - a.X();
-      const dy = b.Y() - a.Y();
-      return { params: [dx, dy], attrs: { type: "translate" } };
-    }
-    case "rotate":
-      return {
-        params: [input.angleDeg * Math.PI / 180, input.center],
-        attrs: { type: "rotate" }
-      };
-    case "reflectLine":
-      return { params: [input.line], attrs: { type: "reflect" } };
-    case "reflectPoint":
-      return { params: [Math.PI, input.center], attrs: { type: "rotate" } };
-    case "dilate":
-      return {
-        params: [],
-        attrs: { type: "scale" },
-        chain: [
-          { params: [-input.center.X(), -input.center.Y()], attrs: { type: "translate" } },
-          { params: [input.k, input.k], attrs: { type: "scale" } },
-          { params: [input.center.X(), input.center.Y()], attrs: { type: "translate" } }
-        ]
-      };
-  }
-}
-var LINE_LIKE;
-var init_transforms = __esm({
-  "src/stamps/geometry-2d/editor/transforms.ts"() {
-    LINE_LIKE = /* @__PURE__ */ new Set(["line", "segment", "arrow"]);
   }
 });
 function letterForGroup(g) {
@@ -573,6 +852,43 @@ var init_tools = __esm({
 });
 
 // src/stamps/geometry-2d/editor/handlers.ts
+function freshId(ctx, prefix) {
+  const counter = ctx.store.getState().counter;
+  let n = counter + 1;
+  let id = `${prefix}_${n}`;
+  const objs = ctx.store.getState().objects;
+  while (id in objs) {
+    n += 1;
+    id = `${prefix}_${n}`;
+  }
+  return id;
+}
+function mkSceneObj(id, kind, label, attrs) {
+  return {
+    id,
+    kind,
+    label,
+    visible: true,
+    locked: false,
+    layer: "default",
+    schemaVersion: 1,
+    attrs
+  };
+}
+function dispatchAddFreePoint(ctx, x, y) {
+  const id = freshId(ctx, "p");
+  const label = ctx.nextLabel("point");
+  const obj = mkSceneObj(id, "point", label, { constraint: { kind: "free", x, y } });
+  ctx.store.dispatch({ type: "ADD", payload: { obj } });
+  return id;
+}
+function dispatchAddIntersection(ctx, attrs) {
+  const id = freshId(ctx, "X");
+  const label = ctx.nextLabel("intersection");
+  const obj = mkSceneObj(id, "intersection", label, attrs);
+  ctx.store.dispatch({ type: "ADD", payload: { obj } });
+  return id;
+}
 function handleDown(ctx, e) {
   if (!ctx.boardRef.current) return;
   const t = ctx.toolRef.current;
@@ -588,10 +904,13 @@ function handleDown(ctx, e) {
     if (!sc) return;
     const [sx, sy] = sc;
     const hits2 = ctx.objectsAt(e).map(ctx.promoteLabel).filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y);
-    const obj = hits2.find((o) => objKind(o) === "point") ?? ctx.findNearestPoint(e, 12) ?? hits2[0];
+    const obj = hits2.find((o) => objKind(o) === "point") ?? ctx.findNearestPointJxg(e, 12) ?? hits2[0];
     if (obj) {
-      const shift = !!(e.shiftKey || e.altKey);
-      ctx.toggleSelect(obj, shift);
+      const sid = ctx.jxgIdToSceneId(obj);
+      if (sid) {
+        const shift = !!(e.shiftKey || e.altKey);
+        ctx.toggleSelect(sid, shift);
+      }
       ctx.moveDownRef.current = { sx, sy };
       ctx.marqueeRef.current = null;
       return;
@@ -606,66 +925,100 @@ function handleDown(ctx, e) {
   const x = coords[0], y = coords[1];
   const hits = ctx.objectsAt(e).map(ctx.promoteLabel).filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y);
   const bestHit = hits.find((o) => objKind(o) === "point") ?? hits[0] ?? null;
-  const snapPointForPointSlot = () => bestHit && objKind(bestHit) === "point" ? bestHit : ctx.findNearestPoint(e, 12);
+  const snapPointForPointSlot = () => bestHit && objKind(bestHit) === "point" ? bestHit : ctx.findNearestPointJxg(e, 12);
   if (t === "point") {
     const curves = hits.filter((o) => objKind(o) === "line" || objKind(o) === "circle");
     if (curves.length >= 2) {
       const a = curves[0];
       const b = curves[1];
-      const aId = ctx.localIdOf(a);
-      const bId = ctx.localIdOf(b);
+      const aId = ctx.jxgIdToSceneId(a);
+      const bId = ctx.jxgIdToSceneId(b);
       if (aId && bId) {
-        const name2 = ctx.nextLabel();
-        const attrs = { name: name2, color: "@stroke", size: 3, fillColor: "@stroke", strokeColor: "@stroke" };
         try {
-          const isLineLine = objKind(a) === "line" && objKind(b) === "line";
-          if (isLineLine) {
-            ctx.create("intersection", [aId, bId, 0], attrs);
+          const aKind = objKind(a);
+          const bKind = objKind(b);
+          if (aKind === "line" && bKind === "line") {
+            dispatchAddIntersection(ctx, { kind: "lineLine", ref1: aId, ref2: bId });
+            return;
+          }
+          const tmp0 = ctx.boardRef.current.create("intersection", [a, b, 0], { visible: false, withLabel: false });
+          const tmp1 = ctx.boardRef.current.create("intersection", [a, b, 1], { visible: false, withLabel: false });
+          const d0 = Math.hypot((tmp0.X?.() ?? 0) - x, (tmp0.Y?.() ?? 0) - y);
+          const d1 = Math.hypot((tmp1.X?.() ?? 0) - x, (tmp1.Y?.() ?? 0) - y);
+          safeJsx("handlers.removeObject(intersect.tmp0)", () => ctx.boardRef.current.removeObject(tmp0));
+          safeJsx("handlers.removeObject(intersect.tmp1)", () => ctx.boardRef.current.removeObject(tmp1));
+          const branch = d0 <= d1 ? 0 : 1;
+          const isLineCircle = aKind === "line" && bKind === "circle" || aKind === "circle" && bKind === "line";
+          if (isLineCircle) {
+            dispatchAddIntersection(ctx, { kind: "lineCircle", ref1: aId, ref2: bId, branch });
           } else {
-            const tmp0 = ctx.boardRef.current.create("intersection", [a, b, 0], { visible: false, withLabel: false });
-            const tmp1 = ctx.boardRef.current.create("intersection", [a, b, 1], { visible: false, withLabel: false });
-            const d0 = Math.hypot((tmp0.X?.() ?? 0) - x, (tmp0.Y?.() ?? 0) - y);
-            const d1 = Math.hypot((tmp1.X?.() ?? 0) - x, (tmp1.Y?.() ?? 0) - y);
-            safeJsx("handlers.removeObject(intersect.tmp0)", () => ctx.boardRef.current.removeObject(tmp0));
-            safeJsx("handlers.removeObject(intersect.tmp1)", () => ctx.boardRef.current.removeObject(tmp1));
-            const idx = d0 <= d1 ? 0 : 1;
-            ctx.create("intersection", [aId, bId, idx], attrs);
+            dispatchAddIntersection(ctx, { kind: "circleCircle", ref1: aId, ref2: bId, branch });
           }
           return;
         } catch {
         }
       }
     }
-    const name = ctx.nextLabel();
-    ctx.create("point", [x, y], { name, color: "@stroke", size: 3, fillColor: "@stroke", strokeColor: "@stroke" });
+    dispatchAddFreePoint(ctx, x, y);
     return;
   }
   if (toolDef.needs === 1 && toolDef.accepts) {
-    const hit = bestHit ?? ctx.findNearestPoint(e, 12);
-    if (hit) ctx.finalize(toolDef, [hit]);
-    else ctx.flashWarn("Click v\xE0o m\u1ED9t \u0111\u1ED1i t\u01B0\u1EE3ng \u0111\u1EC3 \xE1p d\u1EE5ng");
+    const hit = bestHit ?? ctx.findNearestPointJxg(e, 12);
+    if (!hit) {
+      ctx.flashWarn("Click v\xE0o m\u1ED9t \u0111\u1ED1i t\u01B0\u1EE3ng \u0111\u1EC3 \xE1p d\u1EE5ng");
+      return;
+    }
+    const sid = ctx.jxgIdToSceneId(hit);
+    if (!sid) return;
+    if (t === "delete") {
+      ctx.store.dispatch({ type: "DELETE", payload: { id: sid } });
+      return;
+    }
+    if (t === "toggleLabel") {
+      const obj = ctx.store.getState().objects[sid];
+      if (!obj) return;
+      const cur = obj.attrs.showLabel;
+      const next = !(cur ?? false);
+      ctx.store.dispatch({ type: "UPDATE_ATTRS", payload: { id: sid, patch: { showLabel: next } } });
+      return;
+    }
+    if (t === "toggleVisible") {
+      const obj = ctx.store.getState().objects[sid];
+      if (!obj) return;
+      ctx.store.dispatch({ type: "UPDATE", payload: { id: sid, patch: { visible: !obj.visible } } });
+      return;
+    }
     return;
   }
   if (toolDef.needs === -1) {
     const snappedPoint = snapPointForPointSlot();
-    if (ctx.pendingRef.current.length >= 3 && snappedPoint && snappedPoint === ctx.pendingRef.current[0]) {
+    const snappedId = snappedPoint ? ctx.jxgIdToSceneId(snappedPoint) : null;
+    if (ctx.pendingIdsRef.current.length >= 3 && snappedId && snappedId === ctx.pendingIdsRef.current[0]) {
       ctx.clearPreviewSegs();
-      ctx.finalize(toolDef, ctx.pendingRef.current);
+      const vertices = ctx.pendingIdsRef.current.slice();
+      const id = freshId(ctx, t === "area" ? "area" : "poly");
+      const label = ctx.nextLabel(t === "area" ? "polygon" : "polygon");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: { obj: mkSceneObj(id, "polygon", label, { vertices }) }
+      });
       ctx.clearPending();
       return;
     }
-    if (snappedPoint && ctx.pendingRef.current.includes(snappedPoint)) {
+    if (snappedId && ctx.pendingIdsRef.current.includes(snappedId)) {
       ctx.flashWarn("\u0110\u1EC9nh n\xE0y \u0111\xE3 c\xF3 \u2014 click \u0111i\u1EC3m kh\xE1c ho\u1EB7c click l\u1EA1i \u0111i\u1EC3m \u0111\u1EA7u \u0111\u1EC3 \u0111\xF3ng");
       return;
     }
-    const pick2 = snappedPoint ?? (() => {
-      const name = ctx.nextLabel();
-      return ctx.create("point", [x, y], { name, color: "@stroke", size: 3 });
-    })();
-    if (ctx.pendingRef.current.length > 0 && ctx.boardRef.current) {
+    let pickId2 = snappedId;
+    let pickJxg = snappedPoint;
+    if (!pickId2) {
+      pickId2 = dispatchAddFreePoint(ctx, x, y);
+      pickJxg = ctx.jxgFromSceneId(pickId2);
+    }
+    if (ctx.pendingRef.current.length > 0 && ctx.boardRef.current && pickJxg) {
       const prev = ctx.pendingRef.current[ctx.pendingRef.current.length - 1];
       safeJsx("handlers.createPreviewSegment", () => {
-        const seg = ctx.boardRef.current.create("segment", [prev, pick2], {
+        const seg = ctx.boardRef.current.create("segment", [prev, pickJxg], {
           strokeColor: "#3b82f6",
           strokeWidth: 1.5,
           strokeOpacity: 0.75,
@@ -676,11 +1029,13 @@ function handleDown(ctx, e) {
         ctx.previewSegRef.current.push(seg);
       });
     }
-    ctx.pendingRef.current.push(pick2);
-    ctx.setPendingCount(ctx.pendingRef.current.length);
+    if (pickJxg) ctx.pendingRef.current.push(pickJxg);
+    if (pickId2) ctx.pendingIdsRef.current.push(pickId2);
+    ctx.setPendingCount(ctx.pendingIdsRef.current.length);
     return;
   }
   let pick = null;
+  let pickId = null;
   if (toolDef.accepts) {
     const usedKinds = ctx.pendingRef.current.map((p) => objKind(p));
     const remaining = [...toolDef.accepts];
@@ -698,7 +1053,7 @@ function handleDown(ctx, e) {
     else if (remaining.includes("any") && (strictPoint || lineHit || circleHit)) {
       pick = strictPoint ?? lineHit ?? circleHit;
     } else if (remaining.includes("point")) {
-      const near = ctx.findNearestPoint(e, 12);
+      const near = ctx.findNearestPointJxg(e, 12);
       if (near) pick = near;
     }
     if (!pick) {
@@ -712,66 +1067,118 @@ function handleDown(ctx, e) {
       ctx.flashWarn("\u0110\xE3 ch\u1ECDn \u0111\u1ED1i t\u01B0\u1EE3ng n\xE0y \u2014 ch\u1ECDn \u0111\u1ED1i t\u01B0\u1EE3ng kh\xE1c");
       return;
     }
+    pickId = ctx.jxgIdToSceneId(pick);
   } else {
     const snapped = snapPointForPointSlot();
     if (snapped && ctx.pendingRef.current.includes(snapped)) {
       ctx.flashWarn("\u0110\xE3 ch\u1ECDn \u0111i\u1EC3m n\xE0y \u2014 ch\u1ECDn \u0111i\u1EC3m kh\xE1c ho\u1EB7c click ch\u1ED7 tr\u1ED1ng");
       return;
     }
-    if (snapped) pick = snapped;
-    else {
-      const name = ctx.nextLabel();
-      pick = ctx.create("point", [x, y], { name, color: "@stroke", size: 3, fillColor: "@stroke", strokeColor: "@stroke" });
+    if (snapped) {
+      pick = snapped;
+      pickId = ctx.jxgIdToSceneId(snapped);
+    } else {
+      pickId = dispatchAddFreePoint(ctx, x, y);
+      pick = ctx.jxgFromSceneId(pickId);
     }
   }
   if (!pick) return;
   ctx.pendingRef.current.push(pick);
-  ctx.setPendingCount(ctx.pendingRef.current.length);
-  if (ctx.pendingRef.current.length >= toolDef.needs) {
+  if (pickId) ctx.pendingIdsRef.current.push(pickId);
+  ctx.setPendingCount(ctx.pendingIdsRef.current.length);
+  if (ctx.pendingIdsRef.current.length >= toolDef.needs) {
     const tk = toolDef.key;
-    if (tk === "rotate" || tk === "dilate") {
-      const source = ctx.pendingRef.current[0];
-      const center = ctx.pendingRef.current[1];
+    if (tk === "rotate" || tk === "dilate" || tk === "regularPolygon" || tk === "translate" || tk === "reflectLine" || tk === "reflectPoint") {
       const cx = (e.clientX ?? 0) + 8;
       const cy = (e.clientY ?? 0) + 8;
-      ctx.pendingTransformRef.current = { tool: tk, source, center, anchorScreen: { x: cx, y: cy } };
+      ctx.pendingTransformRef.current = {
+        tool: tk,
+        sourceId: ctx.pendingIdsRef.current[0],
+        pendingIds: ctx.pendingIdsRef.current.slice(),
+        anchorScreen: { x: cx, y: cy }
+      };
       ctx.emitTransform({ tool: tk, anchor: { x: cx, y: cy } });
       return;
     }
-    if (tk === "regularPolygon") {
-      const p1 = ctx.pendingRef.current[0];
-      const p2 = ctx.pendingRef.current[1];
-      const cx = (e.clientX ?? 0) + 8;
-      const cy = (e.clientY ?? 0) + 8;
-      ctx.pendingTransformRef.current = { tool: tk, source: p1, center: p2, anchorScreen: { x: cx, y: cy } };
-      ctx.emitTransform({ tool: tk, anchor: { x: cx, y: cy } });
-      return;
-    }
-    if (tk === "translate") {
-      const source = ctx.pendingRef.current[0];
-      const spec = buildTransformSpec({ kind: "translate", vectorPoints: [ctx.pendingRef.current[1], ctx.pendingRef.current[2]] });
-      ctx.finalizeTransformCreate(spec, source);
-      ctx.clearPending();
-      return;
-    }
-    if (tk === "reflectLine") {
-      const source = ctx.pendingRef.current[0];
-      const spec = buildTransformSpec({ kind: "reflectLine", line: ctx.pendingRef.current[1] });
-      ctx.finalizeTransformCreate(spec, source);
-      ctx.clearPending();
-      return;
-    }
-    if (tk === "reflectPoint") {
-      const source = ctx.pendingRef.current[0];
-      const spec = buildTransformSpec({ kind: "reflectPoint", center: ctx.pendingRef.current[1] });
-      ctx.finalizeTransformCreate(spec, source);
-      ctx.clearPending();
-      return;
-    }
-    ctx.finalize(toolDef, ctx.pendingRef.current);
+    finalizeShape(ctx, toolDef);
     ctx.clearPending();
   } else {
     ctx.refreshPreview();
+  }
+}
+function finalizeShape(ctx, toolDef) {
+  const ids = ctx.pendingIdsRef.current;
+  const key = toolDef.key;
+  switch (key) {
+    case "segment": {
+      const id = freshId(ctx, "s");
+      const label = ctx.nextLabel("segment");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: { obj: mkSceneObj(id, "segment", label, { p1: ids[0], p2: ids[1] }) }
+      });
+      return;
+    }
+    case "line":
+    case "perpendicular":
+    case "parallel":
+    case "perpBisector":
+    case "angleBisector":
+    case "tangent": {
+      const id = freshId(ctx, "l");
+      const label = ctx.nextLabel("line");
+      const p1 = ids[0];
+      const p2 = ids[1] ?? ids[0];
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: { obj: mkSceneObj(id, "line", label, { p1, p2 }) }
+      });
+      return;
+    }
+    case "ray": {
+      const id = freshId(ctx, "r");
+      const label = ctx.nextLabel("ray");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: { obj: mkSceneObj(id, "ray", label, { origin: ids[0], through: ids[1] }) }
+      });
+      return;
+    }
+    case "vector": {
+      const id = freshId(ctx, "v");
+      const label = ctx.nextLabel("vector");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: { obj: mkSceneObj(id, "vector", label, { from: ids[0], to: ids[1] }) }
+      });
+      return;
+    }
+    case "circleCenter":
+    case "circle3": {
+      const id = freshId(ctx, "c");
+      const label = ctx.nextLabel("circle");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: {
+          obj: mkSceneObj(id, "circle", label, {
+            center: ids[0],
+            surfacePoint: ids[1] ?? ids[0]
+          })
+        }
+      });
+      return;
+    }
+    case "midpoint": {
+      const id = freshId(ctx, "mp");
+      const label = ctx.nextLabel("point");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: { obj: mkSceneObj(id, "point", label, { constraint: { kind: "free", x: 0, y: 0 } }) }
+      });
+      return;
+    }
+    default:
+      return;
   }
 }
 function handleUp(ctx, e) {
@@ -800,9 +1207,9 @@ function handleUp(ctx, e) {
         const pc = o.coords?.scrCoords;
         if (!pc) continue;
         if (pc[1] >= x1 && pc[1] <= x2 && pc[2] >= y1 && pc[2] <= y2) {
-          if (!ctx.selectedSetRef.current.has(o)) {
-            ctx.selectedSetRef.current.add(o);
-            ctx.applySelectionStyle(o);
+          const sid = ctx.jxgIdToSceneId(o);
+          if (sid && !ctx.selectedSetRef.current.has(sid)) {
+            ctx.selectedSetRef.current.add(sid);
           }
         }
       } else if (kind === "line" || kind === "circle") {
@@ -811,9 +1218,11 @@ function handleUp(ctx, e) {
           const pc = p?.coords?.scrCoords;
           return pc && pc[1] >= x1 && pc[1] <= x2 && pc[2] >= y1 && pc[2] <= y2;
         });
-        if (anyInside && !ctx.selectedSetRef.current.has(o)) {
-          ctx.selectedSetRef.current.add(o);
-          ctx.applySelectionStyle(o);
+        if (anyInside) {
+          const sid = ctx.jxgIdToSceneId(o);
+          if (sid && !ctx.selectedSetRef.current.has(sid)) {
+            ctx.selectedSetRef.current.add(sid);
+          }
         }
       }
     }
@@ -831,19 +1240,20 @@ function handleUp(ctx, e) {
   const moved = Math.hypot(sx - start.sx, sy - start.sy);
   if (moved > 4) return;
   const hits = ctx.objectsAt(e).map(ctx.promoteLabel).filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y);
-  const best = hits.find((o) => objKind(o) === "point") ?? ctx.findNearestPoint(e, 12) ?? hits[0];
+  const best = hits.find((o) => objKind(o) === "point") ?? ctx.findNearestPointJxg(e, 12) ?? hits[0] ?? null;
   if (!best) {
-    ctx.lastMoveClickRef.current = { obj: null, time: 0 };
+    ctx.lastMoveClickRef.current = { id: null, time: 0 };
     return;
   }
+  const bestId = ctx.jxgIdToSceneId(best);
   const now = Date.now();
-  const isDouble = ctx.lastMoveClickRef.current.obj === best && now - ctx.lastMoveClickRef.current.time < 400;
-  ctx.lastMoveClickRef.current = { obj: best, time: now };
+  const isDouble = bestId !== null && ctx.lastMoveClickRef.current.id === bestId && now - ctx.lastMoveClickRef.current.time < 400;
+  ctx.lastMoveClickRef.current = { id: bestId, time: now };
   if (!isDouble) return;
   const cx = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
   const cy = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
-  const snap = ctx.snapshotObject(best, { x: cx + 8, y: cy + 8 });
-  if (snap) ctx.emitSelect(snap);
+  if (!bestId) return;
+  ctx.emitSelect({ id: bestId, anchorScreen: { x: cx + 8, y: cy + 8 } });
 }
 function handleMove(ctx, e) {
   if (ctx.toolRef.current === "select" && ctx.marqueeRef.current) {
@@ -904,53 +1314,87 @@ function handleMove(ctx, e) {
 var init_handlers = __esm({
   "src/stamps/geometry-2d/editor/handlers.ts"() {
     init_tools();
-    init_transforms();
     init_safeJsx();
   }
 });
 
 // src/stamps/geometry-2d/editor/hitTest.ts
-function hitObjectsAt(objs, sx, sy, exclude) {
-  const list = [];
-  for (const o of objs) {
-    if (!o || exclude.has(o)) continue;
-    if (typeof o.hasPoint !== "function") continue;
-    try {
-      if (o.hasPoint(sx, sy)) list.push(o);
-    } catch {
+function findNearestPoint(state, pointCoord, x, y, tolPx, excludeIds = /* @__PURE__ */ new Set()) {
+  let best = null;
+  let bestDistSq = tolPx * tolPx;
+  for (const obj of listObjects(state)) {
+    if (obj.kind !== "point" && obj.kind !== "intersection") continue;
+    if (excludeIds.has(obj.id)) continue;
+    const coord = pointCoord(obj.id);
+    if (!coord) continue;
+    const dx = coord[0] - x;
+    const dy = coord[1] - y;
+    const d2 = dx * dx + dy * dy;
+    if (d2 < bestDistSq) {
+      bestDistSq = d2;
+      best = obj;
     }
   }
-  return list;
-}
-function findNearestPointInList(objs, sx, sy, tolPx, exclude) {
-  const tol2 = tolPx * tolPx;
-  let best = null;
-  for (const o of objs) {
-    if (!o || exclude.has(o)) continue;
-    if (objKind(o) !== "point") continue;
-    const pc = o.coords?.scrCoords;
-    if (!pc) continue;
-    const dx = pc[1] - sx;
-    const dy = pc[2] - sy;
-    const d2 = dx * dx + dy * dy;
-    if (d2 <= tol2 && (!best || d2 < best.d2)) best = { obj: o, d2 };
-  }
-  return best ? best.obj : null;
+  return best;
 }
 var init_hitTest = __esm({
   "src/stamps/geometry-2d/editor/hitTest.ts"() {
-    init_tools();
+    init_scene();
+  }
+});
+function useSceneStore(initialState) {
+  const store = React8.useMemo(() => createStore(initialState), []);
+  const state = React8.useSyncExternalStore(
+    (cb) => store.subscribe(() => cb()),
+    () => store.getState(),
+    () => store.getState()
+  );
+  const canUndo = store.canUndo();
+  const canRedo = store.canRedo();
+  return { store, state, canUndo, canRedo };
+}
+var init_useSceneStore = __esm({
+  "src/stamps/geometry-2d/editor/useSceneStore.ts"() {
+    init_scene();
+  }
+});
+function useToolStateMachine(initial = "move") {
+  const [tool, setToolState] = React8.useState(initial);
+  const [pendingIds, setPendingIds] = React8.useState([]);
+  const toolRef = React8.useRef(initial);
+  const pendingIdsRef = React8.useRef([]);
+  const setTool = React8.useCallback((t) => {
+    toolRef.current = t;
+    pendingIdsRef.current = [];
+    setToolState(t);
+    setPendingIds([]);
+  }, []);
+  const pushPending = React8.useCallback((id) => {
+    pendingIdsRef.current = [...pendingIdsRef.current, id];
+    setPendingIds(pendingIdsRef.current);
+  }, []);
+  const clearPending = React8.useCallback(() => {
+    pendingIdsRef.current = [];
+    setPendingIds([]);
+  }, []);
+  return { tool, pendingIds, toolRef, pendingIdsRef, setTool, pushPending, clearPending };
+}
+var init_useToolStateMachine = __esm({
+  "src/stamps/geometry-2d/editor/useToolStateMachine.ts"() {
   }
 });
 var JSXGraphMiniBoard;
 var init_MiniBoard = __esm({
   "src/stamps/geometry-2d/editor/MiniBoard.tsx"() {
     "use client";
-    init_transforms();
-    init_tools();
-    init_theme();
+    init_scene();
+    init_JxgRenderer();
     init_handlers();
     init_hitTest();
+    init_theme();
+    init_tools();
+    init_useSceneStore();
+    init_useToolStateMachine();
     init_safeJsx();
     JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
       const isDarkRef = React8.useRef(!!isDark);
@@ -959,244 +1403,143 @@ var init_MiniBoard = __esm({
       const containerRef = React8.useRef(null);
       const boardRef = React8.useRef(null);
       const jxgRef = React8.useRef(null);
+      const rendererRef = React8.useRef(null);
       const axisObjsRef = React8.useRef({});
-      const creationLogRef = React8.useRef([]);
-      const redoStackRef = React8.useRef([]);
-      const [tool, setTool] = React8.useState("move");
-      const toolRef = React8.useRef("move");
-      toolRef.current = tool;
-      const [showAxis, setShowAxis] = React8.useState(initialState?.showAxis ?? false);
-      const [showGrid, setShowGrid] = React8.useState(initialState?.showGrid ?? false);
+      const initState = React8.useMemo(
+        () => initialState?.state ?? createEmptyState("2d"),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        []
+      );
+      const { store } = useSceneStore(initState);
+      const toolSM = useToolStateMachine("move");
+      const [showAxis, setShowAxisState] = React8.useState(initialState?.showAxis ?? false);
+      const [showGrid, setShowGridState] = React8.useState(initialState?.showGrid ?? false);
       const showAxisRef = React8.useRef(showAxis);
       showAxisRef.current = showAxis;
       const showGridRef = React8.useRef(showGrid);
       showGridRef.current = showGrid;
-      const objMapRef = React8.useRef(/* @__PURE__ */ new Map());
-      const valueLabelsRef = React8.useRef(/* @__PURE__ */ new Map());
-      const pendingRef = React8.useRef([]);
-      const [, setPendingCount] = React8.useState(0);
       const selectedSetRef = React8.useRef(/* @__PURE__ */ new Set());
-      const selOriginalRef = React8.useRef(/* @__PURE__ */ new Map());
       const [, setSelectionTick] = React8.useState(0);
-      const marqueeRef = React8.useRef(null);
+      const pendingRef = React8.useRef([]);
       const previewSegRef = React8.useRef([]);
       const phantomRef = React8.useRef(null);
       const previewShapeRef = React8.useRef(null);
       const previewRafRef = React8.useRef(null);
-      const [historyTick, setHistoryTick] = React8.useState(0);
-      const [, setWarn] = React8.useState(null);
-      const warnTimerRef = React8.useRef(null);
-      const flashWarn = React8.useCallback((msg) => {
-        if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
-        setWarn(msg);
-        warnTimerRef.current = setTimeout(() => setWarn(null), 1800);
+      const marqueeRef = React8.useRef(null);
+      const moveDownRef = React8.useRef(null);
+      const lastMoveClickRef = React8.useRef({ id: null, time: 0 });
+      const pendingTransformRef = React8.useRef(null);
+      const subscribersRef = React8.useRef(/* @__PURE__ */ new Set());
+      const selectSubsRef = React8.useRef(/* @__PURE__ */ new Set());
+      const transformSubsRef = React8.useRef(/* @__PURE__ */ new Set());
+      const notifySubscribers = React8.useCallback(() => {
+        subscribersRef.current.forEach((cb) => safeJsx("MiniBoard.notifySubscriber.cb", () => cb()));
       }, []);
-      React8.useEffect(() => () => {
-        if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
-      }, []);
-      const nextLabel2 = React8.useCallback(() => {
-        const used = /* @__PURE__ */ new Set();
-        const board = boardRef.current;
-        if (board) {
-          safeJsx("MiniBoard.nextLabel.scanNames", () => {
-            const objs = board.objectsList || [];
-            for (const o of objs) {
-              if (objKind(o) === "point" && typeof o.name === "string" && o.name) {
-                used.add(o.name);
-              }
-            }
-          });
-        }
-        const A = "A".charCodeAt(0);
-        for (let suffix = 0; suffix < 1e3; suffix++) {
-          for (let i = 0; i < 26; i++) {
-            const letter = String.fromCharCode(A + i);
-            const candidate = suffix === 0 ? letter : `${letter}${suffix}`;
-            if (!used.has(candidate)) return candidate;
-          }
-        }
-        return `P${used.size}`;
-      }, []);
-      const nextLocalId = React8.useCallback(() => "j" + creationLogRef.current.length, []);
-      const resolveArgs = React8.useCallback((args) => {
-        return args.map((a) => {
-          if (typeof a === "string") {
-            if (objMapRef.current.has(a)) return objMapRef.current.get(a);
-            const m = /^(.+):border:(\d+)$/.exec(a);
-            if (m) {
-              const poly = objMapRef.current.get(m[1]);
-              const idx = parseInt(m[2], 10);
-              if (poly && Array.isArray(poly.borders) && poly.borders[idx]) {
-                return poly.borders[idx];
-              }
+      React8.useEffect(() => store.subscribe(() => notifySubscribers()), [store, notifySubscribers]);
+      React8.useEffect(() => {
+        notifySubscribers();
+      }, [showAxis, showGrid, toolSM.tool, notifySubscribers]);
+      const jxgIdToSceneRef = React8.useRef(/* @__PURE__ */ new Map());
+      React8.useEffect(() => {
+        const rebuild = () => {
+          const r = rendererRef.current;
+          if (!r) return;
+          const elements = r.elements;
+          const next = /* @__PURE__ */ new Map();
+          if (elements) {
+            for (const [sid, jxg] of elements) {
+              const jid = jxg?.id;
+              if (jid) next.set(String(jid), sid);
             }
           }
-          return a;
-        });
-      }, []);
-      const pushCreationLog = React8.useCallback((entry) => {
-        creationLogRef.current.push(entry);
-        redoStackRef.current = [];
-      }, []);
-      const pushLog = React8.useCallback(
-        (id, type, args, attrs, obj) => {
-          pushCreationLog({ id, type, args, attrs });
-          objMapRef.current.set(id, obj);
-          setHistoryTick((t) => t + 1);
-        },
-        [pushCreationLog]
-      );
-      const create = React8.useCallback(
-        (type, args, attrs = {}) => {
-          if (!boardRef.current) return null;
-          const id = nextLocalId();
-          const resolved = resolveArgs(args);
-          const resolvedAttrs = resolveAttrColors(attrs, paletteFor(isDarkRef.current));
-          const obj = boardRef.current.create(type, resolved, resolvedAttrs);
-          pushLog(id, type, args, attrs, obj);
-          return obj;
-        },
-        [nextLocalId, resolveArgs, pushLog]
-      );
-      const localIdOf = React8.useCallback((obj) => {
-        if (!obj) return null;
-        for (const [id, o] of objMapRef.current.entries()) {
-          if (o === obj) return id;
-        }
-        for (const [id, o] of objMapRef.current.entries()) {
-          const borders = o?.borders;
-          if (Array.isArray(borders)) {
-            const idx = borders.indexOf(obj);
-            if (idx >= 0) return `${id}:border:${idx}`;
-          }
-        }
-        return null;
-      }, []);
-      const snapshotObject = React8.useCallback((obj, anchorScreen) => {
-        const o = obj;
-        const k = objKind(o);
-        if (k !== "point" && k !== "line" && k !== "circle") return null;
-        for (const owner of objMapRef.current.values()) {
-          const borders = owner?.borders;
-          if (Array.isArray(borders) && borders.indexOf(o) >= 0) return null;
-        }
-        const v = o.visProp ?? {};
-        const showLabel = v.withlabel !== false;
-        const showValue = valueLabelsRef.current.has(o);
-        return {
-          obj: o,
-          kind: k,
-          name: typeof o.name === "string" ? o.name : "",
-          color: v.strokecolor ?? "#1e1e1e",
-          dash: typeof v.dash === "number" ? v.dash : 0,
-          width: typeof v.strokewidth === "number" ? v.strokewidth : 2,
-          face: v.face ?? "o",
-          showLabel,
-          showValue,
-          screenCoords: anchorScreen
+          jxgIdToSceneRef.current = next;
         };
+        rebuild();
+        return store.subscribe(() => rebuild());
+      }, [store]);
+      const jxgFromSceneId = React8.useCallback((id) => {
+        const r = rendererRef.current;
+        if (!r) return null;
+        return r.elements?.get(id) ?? null;
       }, []);
-      const createValueLabelFor = React8.useCallback((target) => {
+      const jxgIdToSceneId = React8.useCallback((jxgObj) => {
+        if (!jxgObj?.id) return null;
+        return jxgIdToSceneRef.current.get(String(jxgObj.id)) ?? null;
+      }, []);
+      const screenCoordsOf = React8.useCallback((evt) => {
         const b = boardRef.current;
-        if (!b || !target) return null;
-        const k = objKind(target);
-        if (k === "line") {
-          const p1 = target.point1;
-          const p2 = target.point2;
-          if (!p1 || !p2) return null;
-          const txt = b.create("text", [
-            () => (p1.X() + p2.X()) / 2 + 0.15,
-            () => (p1.Y() + p2.Y()) / 2 + 0.25,
-            () => {
-              const dx = p2.X() - p1.X();
-              const dy = p2.Y() - p1.Y();
-              const len = Math.hypot(dx, dy);
-              const name = typeof target.name === "string" && target.name ? target.name : "d";
-              return `${name} = ${len.toFixed(2)}`;
-            }
-          ], { fontSize: 12, color: "#dc2626", fixed: true, highlight: false });
-          return txt;
+        if (!b) return null;
+        try {
+          const mp = b.getMousePosition ? b.getMousePosition(evt) : null;
+          if (mp && mp.length >= 2) return [mp[0], mp[1]];
+        } catch {
         }
-        if (k === "circle") {
-          const center = target.center ?? target.midpoint;
-          if (!center) return null;
-          const txt = b.create("text", [
-            () => center.X() + 0.3,
-            () => center.Y() + 0.3,
-            () => {
-              const r = typeof target.Radius === "function" ? target.Radius() : 0;
-              const name = typeof target.name === "string" && target.name ? target.name : "r";
-              return `${name} = ${r.toFixed(2)}`;
-            }
-          ], { fontSize: 12, color: "#dc2626", fixed: true, highlight: false });
-          return txt;
+        if (containerRef.current) {
+          const rect = containerRef.current.getBoundingClientRect();
+          const cx = evt.clientX ?? evt.touches?.[0]?.clientX ?? 0;
+          const cy = evt.clientY ?? evt.touches?.[0]?.clientY ?? 0;
+          return [cx - rect.left, cy - rect.top];
         }
         return null;
       }, []);
-      const mutateObject = React8.useCallback((obj, patch) => {
-        if (!boardRef.current) return;
-        const o = obj;
-        if (patch.remove) {
-          const vl = valueLabelsRef.current.get(o);
-          if (vl) {
-            safeJsx("MiniBoard.removeObject(valueLabel)", () => boardRef.current.removeObject(vl));
-            valueLabelsRef.current.delete(o);
+      const objectsAt = React8.useCallback((evt) => {
+        const b = boardRef.current;
+        const sc = b ? screenCoordsOf(evt) : null;
+        if (!b || !sc) return [];
+        const [sx, sy] = sc;
+        const out = [];
+        safeJsx("MiniBoard.objectsAt", () => {
+          for (const o of b.objectsList || []) {
+            if (o && typeof o.hasPoint === "function" && o.hasPoint(sx, sy)) out.push(o);
           }
-          safeJsx("MiniBoard.removeObject(target)", () => boardRef.current.removeObject(o));
-          const board = boardRef.current;
-          const aliveIds = /* @__PURE__ */ new Set();
-          for (const [id, obj2] of objMapRef.current.entries()) {
-            const jxgId = obj2?.id;
-            if (jxgId && board && board.objects && board.objects[jxgId]) {
-              aliveIds.add(id);
-            }
+        });
+        return out;
+      }, [screenCoordsOf]);
+      const findNearestPointJxg = React8.useCallback((evt, tolPx = 12) => {
+        const b = boardRef.current;
+        const sc = b ? screenCoordsOf(evt) : null;
+        if (!b || !sc) return null;
+        const [sx, sy] = sc;
+        const pointCoord = (id) => {
+          const j = jxgFromSceneId(id);
+          const sc2 = j?.coords?.scrCoords;
+          return sc2 ? [sc2[1], sc2[2]] : null;
+        };
+        const result = findNearestPoint(store.getState(), pointCoord, sx, sy, tolPx);
+        return result ? jxgFromSceneId(result.id) : null;
+      }, [screenCoordsOf, jxgFromSceneId, store]);
+      const promoteLabel = React8.useCallback((o) => {
+        if (!o) return o;
+        const t = (o.elType || o.type || "").toString().toLowerCase();
+        if (t !== "text" || !boardRef.current) return o;
+        const promoted = safeJsx("MiniBoard.promoteLabel", () => {
+          for (const c of boardRef.current.objectsList || []) {
+            if (c.label === o) return c;
           }
-          creationLogRef.current = creationLogRef.current.filter((e) => aliveIds.has(e.id));
-          for (const id of Array.from(objMapRef.current.keys())) {
-            if (!aliveIds.has(id)) objMapRef.current.delete(id);
-          }
-          setHistoryTick((t) => t + 1);
-          return;
-        }
-        if (typeof patch.valueLabel === "boolean") {
-          const has = valueLabelsRef.current.has(o);
-          if (patch.valueLabel && !has) {
-            const txt = createValueLabelFor(o);
-            if (txt) {
-              valueLabelsRef.current.set(o, txt);
-              const targetId = localIdOf(o);
-              if (targetId) {
-                const id = nextLocalId();
-                pushCreationLog({ id, type: "valueLabel", args: [targetId], attrs: {} });
-                objMapRef.current.set(id, txt);
-                setHistoryTick((t) => t + 1);
-              }
-            }
-          } else if (!patch.valueLabel && has) {
-            const txt = valueLabelsRef.current.get(o);
-            valueLabelsRef.current.delete(o);
-            if (txt) {
-              safeJsx("MiniBoard.removeObject(valueLabel.text)", () => boardRef.current.removeObject(txt));
-              const txtId = localIdOf(txt);
-              if (txtId) {
-                creationLogRef.current = creationLogRef.current.filter((e) => e.id !== txtId);
-                objMapRef.current.delete(txtId);
-                setHistoryTick((t) => t + 1);
-              }
-            }
-          }
-        }
-        if (patch.attrs) {
-          safeJsx("MiniBoard.setAttribute", () => o.setAttribute(patch.attrs));
-          const id = localIdOf(o);
-          if (id) {
-            const entry = creationLogRef.current.find((e) => e.id === id);
-            if (entry) entry.attrs = { ...entry.attrs, ...patch.attrs };
-            setHistoryTick((t) => t + 1);
-          }
-        }
-        safeJsx("MiniBoard.board.update(mutate)", () => boardRef.current.update());
-      }, [createValueLabelFor, localIdOf, nextLocalId]);
+          return null;
+        }, null);
+        return promoted ?? o;
+      }, []);
+      const toggleSelect = React8.useCallback((id, additive) => {
+        if (!additive) {
+          selectedSetRef.current.clear();
+          selectedSetRef.current.add(id);
+        } else if (selectedSetRef.current.has(id)) selectedSetRef.current.delete(id);
+        else selectedSetRef.current.add(id);
+        setSelectionTick((t) => t + 1);
+      }, []);
+      const clearSelection = React8.useCallback(() => {
+        selectedSetRef.current.clear();
+        setSelectionTick((t) => t + 1);
+      }, []);
+      const deleteSelection = React8.useCallback(() => {
+        if (selectedSetRef.current.size === 0) return;
+        store.transaction((dispatch) => {
+          for (const id of selectedSetRef.current) dispatch({ type: "DELETE", payload: { id } });
+        });
+        selectedSetRef.current.clear();
+        setSelectionTick((t) => t + 1);
+      }, [store]);
       const clearPreviewSegs = React8.useCallback(() => {
         const b = boardRef.current;
         if (!b) return;
@@ -1221,891 +1564,132 @@ var init_MiniBoard = __esm({
         removePhantom();
         clearPreviewSegs();
         pendingRef.current = [];
-        setPendingCount(0);
-      }, [clearPreviewSegs, removePhantom]);
-      const applySelectionStyle = React8.useCallback((obj) => {
-        if (!obj || selOriginalRef.current.has(obj)) return;
-        safeJsx("MiniBoard.applySelectionStyle", () => {
-          const visProp = obj.visProp ?? {};
-          selOriginalRef.current.set(obj, {
-            strokeColor: visProp.strokecolor,
-            strokeWidth: visProp.strokewidth
-          });
-          const kind = objKind(obj);
-          if (kind === "point") {
-            obj.setAttribute({ strokeColor: "#06b6d4", strokeWidth: 3 });
-          } else {
-            obj.setAttribute({ strokeColor: "#06b6d4", strokeWidth: 3 });
-          }
-        });
-      }, []);
-      const restoreSelectionStyle = React8.useCallback((obj) => {
-        const orig = selOriginalRef.current.get(obj);
-        if (!orig) return;
-        safeJsx("MiniBoard.restoreSelectionStyle", () => {
-          const attrs = {};
-          if (orig.strokeColor !== void 0) attrs.strokeColor = orig.strokeColor;
-          if (orig.strokeWidth !== void 0) attrs.strokeWidth = orig.strokeWidth;
-          obj.setAttribute(attrs);
-        });
-        selOriginalRef.current.delete(obj);
-      }, []);
-      const clearSelection = React8.useCallback(() => {
-        for (const o of selectedSetRef.current) {
-          restoreSelectionStyle(o);
-        }
-        selectedSetRef.current.clear();
-        setSelectionTick((t) => t + 1);
-        safeJsx("MiniBoard.board.update(clearSelection)", () => boardRef.current?.update());
-      }, [restoreSelectionStyle]);
-      const toggleSelect = React8.useCallback((obj, additive) => {
-        if (!obj) return;
-        if (!additive) {
-          for (const o of selectedSetRef.current) {
-            if (o !== obj) restoreSelectionStyle(o);
-          }
-          selectedSetRef.current = /* @__PURE__ */ new Set([obj]);
-          applySelectionStyle(obj);
-        } else {
-          if (selectedSetRef.current.has(obj)) {
-            restoreSelectionStyle(obj);
-            selectedSetRef.current.delete(obj);
-          } else {
-            selectedSetRef.current.add(obj);
-            applySelectionStyle(obj);
-          }
-        }
-        setSelectionTick((t) => t + 1);
-        safeJsx("MiniBoard.board.update(toggleSelect)", () => boardRef.current?.update());
-      }, [applySelectionStyle, restoreSelectionStyle]);
-      const deleteSelected = React8.useCallback(() => {
-        const board = boardRef.current;
-        if (!board) return;
-        if (selectedSetRef.current.size === 0) return;
-        for (const o of selectedSetRef.current) selOriginalRef.current.delete(o);
-        for (const o of selectedSetRef.current) {
-          safeJsx("MiniBoard.removeObject(selected)", () => board.removeObject(o));
-        }
-        selectedSetRef.current.clear();
-        const aliveIds = /* @__PURE__ */ new Set();
-        for (const [id, o] of objMapRef.current.entries()) {
-          const jxgId = o?.id;
-          if (jxgId && board.objects && board.objects[jxgId]) aliveIds.add(id);
-        }
-        creationLogRef.current = creationLogRef.current.filter((e) => aliveIds.has(e.id));
-        for (const id of Array.from(objMapRef.current.keys())) {
-          if (!aliveIds.has(id)) objMapRef.current.delete(id);
-        }
-        setSelectionTick((t) => t + 1);
-        setHistoryTick((t) => t + 1);
-      }, []);
-      const buildPreview = React8.useCallback((toolDef, picks, phantom) => {
-        const b = boardRef.current;
-        if (!b) return null;
-        const style = { strokeColor: "#3b82f6", strokeWidth: 1.5, strokeOpacity: 0.65, dash: 2, fixed: true, highlight: false, withLabel: false };
-        const circStyle = { ...style, fillColor: "none", fillOpacity: 0 };
-        try {
-          switch (toolDef.key) {
-            case "segment":
-            case "midpoint":
-            case "distance":
-              return b.create("segment", [picks[0], phantom], style);
-            case "line":
-              return b.create("line", [picks[0], phantom], style);
-            case "ray":
-              return b.create("line", [picks[0], phantom], { ...style, straightFirst: false, straightLast: true });
-            case "vector":
-              return b.create("arrow", [picks[0], phantom], style);
-            case "circleCenter":
-              return b.create("circle", [picks[0], phantom], circStyle);
-            case "circle3":
-              if (picks.length === 1) return b.create("circle", [picks[0], phantom], circStyle);
-              if (picks.length === 2) return b.create("circumcircle", [picks[0], picks[1], phantom], circStyle);
-              return null;
-            case "angle":
-              if (picks.length === 1) return b.create("segment", [picks[0], phantom], style);
-              if (picks.length === 2) return b.create("angle", [picks[0], picks[1], phantom], { ...style, radius: 1, fillColor: "#22c55e", fillOpacity: 0.15 });
-              return null;
-            case "perpBisector":
-              return b.create("segment", [picks[0], phantom], style);
-            case "angleBisector":
-              if (picks.length === 1) return b.create("segment", [picks[0], phantom], style);
-              if (picks.length === 2) return b.create("bisector", [picks[0], picks[1], phantom], style);
-              return null;
-            case "perpendicular":
-            case "parallel":
-            case "tangent":
-              if (picks.length === 1) {
-                const k = objKind(picks[0]);
-                if (k === "line" && toolDef.key !== "tangent") {
-                  return b.create(toolDef.key, [picks[0], phantom], style);
-                }
-                if (k === "circle" && toolDef.key === "tangent") {
-                  const glider = b.create("glider", [phantom.X(), phantom.Y(), picks[0]], { visible: false, withLabel: false });
-                  return b.create("tangent", [glider], style);
-                }
-              }
-              return null;
-            default:
-              return null;
-          }
-        } catch {
-          return null;
-        }
-      }, []);
+        toolSM.clearPending();
+      }, [clearPreviewSegs, removePhantom, toolSM]);
       const refreshPreview = React8.useCallback(() => {
-        const b = boardRef.current;
-        if (!b) return;
-        if (previewShapeRef.current) {
-          safeJsx("MiniBoard.removeObject(refreshPreview)", () => b.removeObject(previewShapeRef.current));
-          previewShapeRef.current = null;
-        }
-        const t = toolRef.current;
-        const toolDef = TOOLS.find((td) => td.key === t);
-        if (!toolDef) return;
-        const picks = pendingRef.current;
-        if (picks.length === 0 || toolDef.needs <= 0) return;
-        if (picks.length >= toolDef.needs) return;
-        if (!phantomRef.current) {
-          try {
-            phantomRef.current = b.create("point", [0, 0], { visible: false, fixed: true, withLabel: false, name: "" });
-          } catch {
-            return;
-          }
-        }
-        previewShapeRef.current = buildPreview(toolDef, picks, phantomRef.current);
-      }, [buildPreview]);
-      const finalize = React8.useCallback((toolDef, picks) => {
-        if (!boardRef.current) return;
-        const labels = picks.map(localIdOf).filter(Boolean);
-        const stroke = { strokeColor: "@stroke", strokeWidth: 2 };
-        const strokeOnly = { ...stroke, fillColor: "none", fillOpacity: 0 };
-        const lblName = nextLabel2();
-        switch (toolDef.key) {
-          case "midpoint":
-            create("midpoint", labels, { name: lblName, color: "@stroke", size: 3 });
-            break;
-          case "segment":
-            create("segment", labels, stroke);
-            break;
-          case "line":
-            create("line", labels, stroke);
-            break;
-          case "ray": {
-            create("line", labels, { ...stroke, straightFirst: false, straightLast: true });
-            break;
-          }
-          case "vector":
-            create("arrow", labels, stroke);
-            break;
-          case "perpendicular": {
-            const [p, l] = picks[0] && objKind(picks[0]) === "point" ? [labels[0], labels[1]] : [labels[1], labels[0]];
-            create("perpendicular", [l, p], stroke);
-            break;
-          }
-          case "parallel": {
-            const [p, l] = picks[0] && objKind(picks[0]) === "point" ? [labels[0], labels[1]] : [labels[1], labels[0]];
-            create("parallel", [l, p], stroke);
-            break;
-          }
-          case "perpBisector": {
-            const mid = create("midpoint", labels, { visible: false, withLabel: false, name: "" });
-            const seg = create("segment", labels, { visible: false, withLabel: false });
-            const midId = localIdOf(mid);
-            const segId = localIdOf(seg);
-            if (midId && segId) create("perpendicular", [segId, midId], stroke);
-            break;
-          }
-          case "angleBisector":
-            create("bisector", labels, stroke);
-            break;
-          case "circleCenter":
-            create("circle", labels, strokeOnly);
-            break;
-          case "circle3":
-            create("circumcircle", labels, strokeOnly);
-            break;
-          case "tangent": {
-            const firstIsPoint = picks[0] && objKind(picks[0]) === "point";
-            const pointPick = firstIsPoint ? picks[0] : picks[1];
-            const circleLabel = firstIsPoint ? labels[1] : labels[0];
-            if (!pointPick || !circleLabel) break;
-            const px = typeof pointPick.X === "function" ? pointPick.X() : 0;
-            const py = typeof pointPick.Y === "function" ? pointPick.Y() : 0;
-            const glider = create("glider", [px, py, circleLabel], { name: "", size: 2, strokeColor: "#666", visible: false });
-            const gid = localIdOf(glider);
-            if (gid) create("tangent", [gid], stroke);
-            break;
-          }
-          case "angle": {
-            const [pa, pb, pc] = picks;
-            let order = labels;
-            try {
-              const ax = pa.X() - pb.X(), ay = pa.Y() - pb.Y();
-              const cx = pc.X() - pb.X(), cy = pc.Y() - pb.Y();
-              const cross2 = ax * cy - ay * cx;
-              if (cross2 < 0) order = [labels[2], labels[1], labels[0]];
-            } catch {
-            }
-            create("angle", order, {
-              radius: 1,
-              fillColor: "#22c55e",
-              fillOpacity: 0.25,
-              strokeColor: "#16a34a",
-              strokeWidth: 1.5,
-              name: "",
-              withLabel: false
-            });
-            break;
-          }
-          case "distance": {
-            const pA = picks[0], pB = picks[1];
-            const dist = Math.hypot(pA.X() - pB.X(), pA.Y() - pB.Y());
-            const midX = (pA.X() + pB.X()) / 2;
-            const midY = (pA.Y() + pB.Y()) / 2;
-            create("text", [midX, midY, `d = ${dist.toFixed(2)}`], { fontSize: 14, color: "#dc2626" });
-            break;
-          }
-          case "polygon": {
-            create("polygon", labels, { fillColor: "#1e3a8a", fillOpacity: 0.1, borders: { strokeColor: "@stroke", strokeWidth: 2 } });
-            break;
-          }
-          case "area": {
-            create("polygon", labels, { fillColor: "#3b82f6", fillOpacity: 0.18, borders: { strokeColor: "#1d4ed8", strokeWidth: 2 } });
-            break;
-          }
-          case "toggleLabel": {
-            const obj = picks[0];
-            safeJsx("MiniBoard.toggleLabel", () => {
-              if (obj.label) {
-                const visible = obj.label.visProp.visible !== false;
-                obj.label.setAttribute({ visible: !visible });
-              } else if (obj.setAttribute) {
-                const cur = obj.visProp.withlabel !== false;
-                obj.setAttribute({ withLabel: !cur });
-              }
-              boardRef.current.update();
-            });
-            break;
-          }
-          case "toggleVisible": {
-            const obj = picks[0];
-            safeJsx("MiniBoard.toggleVisible", () => {
-              const visible = obj.visProp.visible !== false;
-              obj.setAttribute({ visible: !visible });
-              boardRef.current.update();
-            });
-            break;
-          }
-          case "delete": {
-            const obj = picks[0];
-            safeJsx("MiniBoard.deleteOne", () => {
-              boardRef.current.removeObject(obj);
-              const board = boardRef.current;
-              const aliveIds = /* @__PURE__ */ new Set();
-              for (const [id, o] of objMapRef.current.entries()) {
-                const jxgId = o?.id;
-                if (jxgId && board && board.objects && board.objects[jxgId]) {
-                  aliveIds.add(id);
-                }
-              }
-              creationLogRef.current = creationLogRef.current.filter((e) => aliveIds.has(e.id));
-              for (const id of Array.from(objMapRef.current.keys())) {
-                if (!aliveIds.has(id)) objMapRef.current.delete(id);
-              }
-              setHistoryTick((t) => t + 1);
-            });
-            break;
-          }
-        }
-      }, [create, localIdOf, nextLabel2]);
-      const finalizeTransformCreate = React8.useCallback((spec, source) => {
-        if (!boardRef.current) return;
-        const def = getDefiningPoints(source);
-        if (!def) {
-          flashWarn("Kh\xF4ng th\u1EC3 bi\u1EBFn \u0111\u1ED5i \u0111\u1ED1i t\u01B0\u1EE3ng n\xE0y");
-          return;
-        }
-        const transformObjs = [];
-        const transformIds = [];
-        const steps = spec.chain ?? [{ params: spec.params, attrs: spec.attrs }];
-        for (const step of steps) {
-          const stepLogArgs = [];
-          for (const p of step.params) {
-            if (typeof p === "function") {
-              flashWarn("Tham s\u1ED1 transform kh\xF4ng serialize \u0111\u01B0\u1EE3c \u2014 b\u1ECF qua");
-              return;
-            }
-            if (p && typeof p === "object") {
-              const id = localIdOf(p);
-              if (!id) {
-                flashWarn("\u0110\u1ED1i t\u01B0\u1EE3ng tham chi\u1EBFu kh\xF4ng n\u1EB1m trong board \u2014 kh\xF4ng th\u1EC3 bi\u1EBFn \u0111\u1ED5i");
-                return;
-              }
-              stepLogArgs.push(id);
-            } else {
-              stepLogArgs.push(p);
-            }
-          }
-          const stepId = nextLocalId();
-          const stepObj = boardRef.current.create("transform", step.params, step.attrs);
-          pushCreationLog({ id: stepId, type: "transform", args: stepLogArgs, attrs: step.attrs });
-          objMapRef.current.set(stepId, stepObj);
-          transformObjs.push(stepObj);
-          transformIds.push(stepId);
-        }
-        const transformParent = transformObjs.length === 1 ? transformObjs[0] : transformObjs;
-        const transformLogRef = transformObjs.length === 1 ? transformIds[0] : transformIds;
-        const transformedPoints = def.points.map((src) => {
-          const srcId = localIdOf(src);
-          const id = nextLocalId();
-          const srcName = typeof src.name === "string" ? src.name : "";
-          const newName = srcName ? `${srcName}'` : nextLabel2();
-          const attrs = { name: newName, size: 3, color: "#0ea5e9", strokeColor: "#0ea5e9", fillColor: "#0ea5e9" };
-          const obj = boardRef.current.create("point", [src, transformParent], attrs);
-          pushCreationLog({ id, type: "point", args: [srcId ?? src, transformLogRef], attrs });
-          objMapRef.current.set(id, obj);
-          return obj;
-        });
-        const baseStyle = { ...def.attrs, strokeColor: "#0ea5e9" };
-        const strokeOnly = { ...baseStyle, fillColor: "none", fillOpacity: 0 };
-        const ids = transformedPoints.map((p) => localIdOf(p)).filter((s) => !!s);
-        switch (def.kind) {
-          case "point":
-            break;
-          case "segment":
-            create("segment", ids, baseStyle);
-            break;
-          case "line":
-            create("line", ids, baseStyle);
-            break;
-          case "ray":
-            create("line", ids, { ...baseStyle, straightFirst: false, straightLast: true });
-            break;
-          case "arrow":
-            create("arrow", ids, baseStyle);
-            break;
-          case "circleCenter":
-            create("circle", ids, strokeOnly);
-            break;
-          case "circle3":
-            create("circumcircle", ids, strokeOnly);
-            break;
-        }
-        setHistoryTick((t) => t + 1);
-      }, [create, flashWarn, localIdOf, nextLabel2, nextLocalId]);
-      const recreateFromLogEntry = React8.useCallback((el) => {
-        const board = boardRef.current;
-        if (!board) return false;
-        const idMap = objMapRef.current;
-        const resolve = (a) => {
-          if (typeof a === "string") {
-            if (idMap.has(a)) return idMap.get(a);
-            const m = /^(.+):border:(\d+)$/.exec(a);
-            if (m) {
-              const poly = idMap.get(m[1]);
-              const idx = parseInt(m[2], 10);
-              if (poly && Array.isArray(poly.borders) && poly.borders[idx]) {
-                return poly.borders[idx];
-              }
-            }
-          }
-          if (Array.isArray(a)) return a.map(resolve);
-          return a;
-        };
-        const resolved = el.args.map(resolve);
-        try {
-          if (el.type === "valueLabel") {
-            const target = resolved[0];
-            if (!target) return false;
-            const txt = createValueLabelFor(target);
-            if (!txt) return false;
-            idMap.set(el.id, txt);
-            valueLabelsRef.current.set(target, txt);
-            return true;
-          }
-          const themedAttrs = resolveAttrColors({ ...el.attrs }, paletteFor(isDarkRef.current));
-          const obj = board.create(el.type, resolved, themedAttrs);
-          idMap.set(el.id, obj);
-          return true;
-        } catch (err) {
-          console.warn("Recreate failed for", el.type, err);
-          return false;
-        }
-      }, [createValueLabelFor]);
-      const undoLast = React8.useCallback(() => {
-        const b = boardRef.current;
-        if (!b) return;
-        while (creationLogRef.current.length > 0) {
-          const last = creationLogRef.current.pop();
-          if (!last) break;
-          const obj = objMapRef.current.get(last.id);
-          objMapRef.current.delete(last.id);
-          if (obj) {
-            safeJsx("MiniBoard.removeObject(undo)", () => b.removeObject(obj));
-            clearPending();
-            redoStackRef.current.push(last);
-            setHistoryTick((t) => t + 1);
-            safeJsx("MiniBoard.board.update(undo)", () => b.update());
-            return;
-          }
-        }
-        setHistoryTick((t) => t + 1);
-      }, [clearPending]);
-      const redoNext = React8.useCallback(() => {
-        const b = boardRef.current;
-        if (!b) return;
-        const entry = redoStackRef.current.pop();
-        if (!entry) {
-          setHistoryTick((t) => t + 1);
-          return;
-        }
-        const ok = recreateFromLogEntry(entry);
-        if (ok) {
-          creationLogRef.current.push(entry);
-        }
-        setHistoryTick((t) => t + 1);
-        safeJsx("MiniBoard.board.update(redo)", () => b.update());
-      }, [recreateFromLogEntry]);
+      }, []);
+      const [, setWarn] = React8.useState(null);
+      const warnTimerRef = React8.useRef(null);
+      const flashWarn = React8.useCallback((msg) => {
+        if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
+        setWarn(msg);
+        warnTimerRef.current = setTimeout(() => setWarn(null), 1800);
+      }, []);
+      React8.useEffect(() => () => {
+        if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
+      }, []);
+      const nextLabelFor = React8.useCallback(
+        (kind) => nextLabel(store.getState(), kind),
+        [store]
+      );
+      const buildSnapshot = React8.useCallback(
+        (id, anchorScreen) => {
+          const obj = store.getState().objects[id];
+          if (!obj) return null;
+          const k = obj.kind;
+          if (k !== "point" && k !== "line" && k !== "circle" && k !== "segment" && k !== "ray" && k !== "vector") return null;
+          const a = obj.attrs;
+          const jKind = k === "point" ? "point" : k === "circle" ? "circle" : "line";
+          return {
+            id,
+            kind: jKind,
+            name: obj.label,
+            color: a.color ?? "#0f172a",
+            width: a.width ?? 2,
+            dash: a.dash ?? 0,
+            face: a.face ?? "o",
+            showLabel: a.showLabel ?? true,
+            showValue: a.showValue ?? false,
+            screenCoords: anchorScreen
+          };
+        },
+        [store]
+      );
+      const emitSelect = React8.useCallback((info) => {
+        const snap = buildSnapshot(info.id, info.anchorScreen);
+        if (!snap) return;
+        selectSubsRef.current.forEach((cb) => safeJsx("MiniBoard.emitSelect.cb", () => cb(snap)));
+      }, [buildSnapshot]);
+      const emitTransform = React8.useCallback((info) => {
+        transformSubsRef.current.forEach((cb) => safeJsx("MiniBoard.emitTransform.cb", () => cb(info)));
+      }, []);
+      const ctxRef = React8.useRef(null);
+      ctxRef.current = {
+        boardRef,
+        toolRef: toolSM.toolRef,
+        pendingRef,
+        pendingIdsRef: toolSM.pendingIdsRef,
+        previewSegRef,
+        axisObjsRef,
+        selectedSetRef,
+        marqueeRef,
+        moveDownRef,
+        lastMoveClickRef,
+        pendingTransformRef,
+        phantomRef,
+        previewShapeRef,
+        previewRafRef,
+        jxgRef,
+        store,
+        jxgIdToSceneId,
+        jxgFromSceneId,
+        screenCoordsOf,
+        objectsAt,
+        promoteLabel,
+        findNearestPointJxg,
+        toggleSelect,
+        clearSelection,
+        nextLabel: nextLabelFor,
+        clearPending,
+        clearPreviewSegs,
+        refreshPreview,
+        flashWarn,
+        emitTransform,
+        emitSelect,
+        setPendingCount: () => {
+        },
+        setSelectionTick: (fn) => setSelectionTick(fn)
+      };
       React8.useEffect(() => {
         const onKey = (e) => {
           const ae = document.activeElement;
           const inField = !!(ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable));
-          if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z" && !e.shiftKey) {
+          const lk = e.key.toLowerCase();
+          if ((e.metaKey || e.ctrlKey) && lk === "z" && !e.shiftKey) {
             if (inField) return;
             e.preventDefault();
             e.stopPropagation();
-            undoLastRef.current();
+            store.undo();
             return;
           }
-          if ((e.metaKey || e.ctrlKey) && (e.key.toLowerCase() === "z" && e.shiftKey || e.key.toLowerCase() === "y" && !e.shiftKey)) {
+          if ((e.metaKey || e.ctrlKey) && (lk === "z" && e.shiftKey || lk === "y" && !e.shiftKey)) {
             if (inField) return;
             e.preventDefault();
             e.stopPropagation();
-            redoNextRef.current();
+            store.redo();
             return;
           }
           if (e.key === "Escape" && !inField) {
-            if (pendingRef.current.length > 0) {
+            if (toolSM.pendingIdsRef.current.length > 0) {
               e.preventDefault();
               e.stopPropagation();
-              clearPendingRef.current();
+              clearPending();
             }
             if (selectedSetRef.current.size > 0) {
               e.preventDefault();
               e.stopPropagation();
-              clearSelectionRef.current();
+              clearSelection();
             }
           }
-          if ((e.key === "Delete" || e.key === "Backspace") && !inField) {
-            if (selectedSetRef.current.size > 0) {
-              e.preventDefault();
-              e.stopPropagation();
-              deleteSelectedRef.current();
-            }
+          if ((e.key === "Delete" || e.key === "Backspace") && !inField && selectedSetRef.current.size > 0) {
+            e.preventDefault();
+            e.stopPropagation();
+            deleteSelection();
           }
         };
         window.addEventListener("keydown", onKey, { capture: true });
         return () => window.removeEventListener("keydown", onKey, { capture: true });
-      }, []);
-      const screenCoordsOf = React8.useCallback((evt) => {
-        const b = boardRef.current;
-        if (!b) return null;
-        try {
-          const mp = b.getMousePosition ? b.getMousePosition(evt) : null;
-          if (mp && mp.length >= 2) return [mp[0], mp[1]];
-        } catch {
-        }
-        if (containerRef.current) {
-          const rect = containerRef.current.getBoundingClientRect();
-          const cx = evt.clientX ?? evt.touches?.[0]?.clientX ?? 0;
-          const cy = evt.clientY ?? evt.touches?.[0]?.clientY ?? 0;
-          return [cx - rect.left, cy - rect.top];
-        }
-        return null;
-      }, []);
-      const objectsAt = React8.useCallback((evt) => {
-        const b = boardRef.current;
-        if (!b) return [];
-        const sc = screenCoordsOf(evt);
-        if (!sc) return [];
-        const [sx, sy] = sc;
-        let list = [];
-        safeJsx("MiniBoard.objectsAt.loop", () => {
-          const exclude = /* @__PURE__ */ new Set();
-          if (phantomRef.current) exclude.add(phantomRef.current);
-          if (previewShapeRef.current) exclude.add(previewShapeRef.current);
-          list = hitObjectsAt(b.objectsList || [], sx, sy, exclude);
-        });
-        return list;
-      }, [screenCoordsOf]);
-      const findNearestPoint = React8.useCallback((evt, tolPx = 12) => {
-        const b = boardRef.current;
-        if (!b) return null;
-        const sc = screenCoordsOf(evt);
-        if (!sc) return null;
-        const [sx, sy] = sc;
-        let result = null;
-        safeJsx("MiniBoard.findNearestPoint.loop", () => {
-          const exclude = /* @__PURE__ */ new Set();
-          if (phantomRef.current) exclude.add(phantomRef.current);
-          result = findNearestPointInList(b.objectsList || [], sx, sy, tolPx, exclude);
-        });
-        return result;
-      }, [screenCoordsOf]);
-      const promoteLabel = React8.useCallback((o) => {
-        if (!o) return o;
-        const t = (o.elType || o.type || "").toString().toLowerCase();
-        if (t !== "text") return o;
-        const b = boardRef.current;
-        if (!b) return o;
-        const promoted = safeJsx("MiniBoard.promoteLabel", () => {
-          for (const c of b.objectsList || []) {
-            if (c.label === o) return c;
-          }
-          return null;
-        }, null);
-        return promoted ?? o;
-      }, []);
-      const pendingTransformRef = React8.useRef(null);
-      const transformSubsRef = React8.useRef(/* @__PURE__ */ new Set());
-      const emitTransform = React8.useCallback((info) => {
-        transformSubsRef.current.forEach((cb) => {
-          safeJsx("MiniBoard.emitTransform.cb", () => cb(info));
-        });
-      }, []);
-      const selectSubsRef = React8.useRef(/* @__PURE__ */ new Set());
-      const emitSelect = React8.useCallback((snap) => {
-        selectSubsRef.current.forEach((cb) => {
-          safeJsx("MiniBoard.emitSelect.cb", () => cb(snap));
-        });
-      }, []);
-      const moveDownRef = React8.useRef(null);
-      const lastMoveClickRef = React8.useRef({ obj: null, time: 0 });
-      React8.useEffect(() => {
-        if (typeof window === "undefined" || !containerRef.current) return;
-        let cancelled = false;
-        let wheelCleanup = null;
-        (async () => {
-          const JXG = (await import('jsxgraph')).default;
-          if (cancelled || !containerRef.current) return;
-          jxgRef.current = JXG;
-          safeJsx("MiniBoard.applyJxgOptions", () => {
-            const opts = JXG.Options;
-            if (opts) {
-              opts.text = opts.text || {};
-              opts.text.display = "internal";
-              opts.text.useASCIIMathML = false;
-              opts.text.useMathJax = false;
-              opts.text.useKatex = false;
-              opts.label = opts.label || {};
-              opts.label.display = "internal";
-              opts.label.strokeColor = themeLabel(isDarkRef.current);
-              opts.text.strokeColor = themeLabel(isDarkRef.current);
-            }
-          });
-          const board = JXG.JSXGraph.initBoard(containerId, {
-            boundingbox: initialState?.bbox ?? [-10, 10, 10, -10],
-            axis: false,
-            // We manage axis manually via toggle for clean default
-            grid: false,
-            showCopyright: false,
-            showNavigation: true,
-            // Keep 1:1 user→pixel ratio so circles stay circular regardless of the
-            // container aspect ratio (Excalidraw panel is taller than wide and
-            // without this circles became ellipses after reload).
-            keepAspectRatio: true,
-            pan: { enabled: true, needShift: false },
-            // Wheel zoom được tự xử lý bên dưới để bám phím Ctrl/Cmd như Excalidraw
-            // (cuộn lên = phóng to, cuộn xuống = thu nhỏ, tâm zoom là vị trí chuột).
-            // JSXGraph không có option `needCtrl` nên phải disable wheel built-in
-            // và bind listener riêng.
-            zoom: { wheel: false },
-            // Looser hit-test radius so clicking on a thin segment/line/circle
-            // actually registers without pixel-perfect aim. `precision` is a real
-            // JSXGraph option (Options.precision) but isn't in the d.ts file.
-            ...{ precision: { hasPoint: 8, mouse: 4, touch: 16 } }
-          });
-          boardRef.current = board;
-          const wheelTarget = containerRef.current;
-          if (wheelTarget) {
-            const onWheel = (e) => {
-              if (!e.ctrlKey && !e.metaKey) return;
-              e.preventDefault();
-              e.stopPropagation();
-              let cx;
-              let cy;
-              safeJsx("MiniBoard.wheelZoom.coords", () => {
-                const usr = board.getUsrCoordsOfMouse?.(e);
-                if (Array.isArray(usr) && usr.length === 2 && Number.isFinite(usr[0]) && Number.isFinite(usr[1])) {
-                  cx = usr[0];
-                  cy = usr[1];
-                }
-              });
-              if (e.deltaY < 0) {
-                safeJsx("MiniBoard.wheelZoom.in", () => board.zoomIn(cx, cy));
-              } else if (e.deltaY > 0) {
-                safeJsx("MiniBoard.wheelZoom.out", () => board.zoomOut(cx, cy));
-              }
-            };
-            wheelTarget.addEventListener("wheel", onWheel, { passive: false });
-            wheelCleanup = () => wheelTarget.removeEventListener("wheel", onWheel);
-          }
-          if (initialState && initialState.elements.length > 0) {
-            for (const el of initialState.elements) {
-              recreateFromLogEntry(el);
-            }
-            creationLogRef.current = [...initialState.elements];
-          }
-          if (showAxisRef.current) {
-            safeJsx("MiniBoard.initAxes", () => {
-              axisObjsRef.current.x = board.create("axis", [[0, 0], [1, 0]], { strokeColor: themeAxis(isDarkRef.current), name: "", withLabel: false });
-              axisObjsRef.current.y = board.create("axis", [[0, 0], [0, 1]], { strokeColor: themeAxis(isDarkRef.current), name: "", withLabel: false });
-            });
-          }
-          if (showGridRef.current) {
-            safeJsx("MiniBoard.initGrid", () => board.create("grid", [], { strokeColor: themeGrid(isDarkRef.current), strokeOpacity: 1 }));
-          }
-          board.on("down", (e) => {
-            const ctx = {
-              boardRef,
-              toolRef,
-              pendingRef,
-              previewSegRef,
-              axisObjsRef,
-              selectedSetRef,
-              marqueeRef,
-              moveDownRef,
-              lastMoveClickRef,
-              pendingTransformRef,
-              phantomRef,
-              previewShapeRef,
-              previewRafRef,
-              jxgRef,
-              screenCoordsOf,
-              objectsAt,
-              promoteLabel,
-              findNearestPoint,
-              toggleSelect,
-              clearSelection,
-              applySelectionStyle,
-              localIdOf,
-              nextLabel: nextLabel2,
-              create,
-              finalize,
-              finalizeTransformCreate,
-              clearPending,
-              clearPreviewSegs,
-              refreshPreview,
-              flashWarn,
-              emitTransform,
-              snapshotObject,
-              emitSelect,
-              setPendingCount,
-              setSelectionTick
-            };
-            handleDown(ctx, e);
-          });
-          board.on("up", (e) => {
-            const ctx = {
-              boardRef,
-              toolRef,
-              pendingRef,
-              previewSegRef,
-              axisObjsRef,
-              selectedSetRef,
-              marqueeRef,
-              moveDownRef,
-              lastMoveClickRef,
-              pendingTransformRef,
-              phantomRef,
-              previewShapeRef,
-              previewRafRef,
-              jxgRef,
-              screenCoordsOf,
-              objectsAt,
-              promoteLabel,
-              findNearestPoint,
-              toggleSelect,
-              clearSelection,
-              applySelectionStyle,
-              localIdOf,
-              nextLabel: nextLabel2,
-              create,
-              finalize,
-              finalizeTransformCreate,
-              clearPending,
-              clearPreviewSegs,
-              refreshPreview,
-              flashWarn,
-              emitTransform,
-              snapshotObject,
-              emitSelect,
-              setPendingCount,
-              setSelectionTick
-            };
-            handleUp(ctx, e);
-          });
-          board.on("move", (e) => {
-            const ctx = {
-              boardRef,
-              toolRef,
-              pendingRef,
-              previewSegRef,
-              axisObjsRef,
-              selectedSetRef,
-              marqueeRef,
-              moveDownRef,
-              lastMoveClickRef,
-              pendingTransformRef,
-              phantomRef,
-              previewShapeRef,
-              previewRafRef,
-              jxgRef,
-              screenCoordsOf,
-              objectsAt,
-              promoteLabel,
-              findNearestPoint,
-              toggleSelect,
-              clearSelection,
-              applySelectionStyle,
-              localIdOf,
-              nextLabel: nextLabel2,
-              create,
-              finalize,
-              finalizeTransformCreate,
-              clearPending,
-              clearPreviewSegs,
-              refreshPreview,
-              flashWarn,
-              emitTransform,
-              snapshotObject,
-              emitSelect,
-              setPendingCount,
-              setSelectionTick
-            };
-            handleMove(ctx, e);
-          });
-          onReady({
-            getContainer: () => containerRef.current,
-            // Sync toạ độ live của free point về log trước khi trả ra. JSXGraph
-            // cho phép drag free point (args=[x,y] không có ref), việc drag chỉ
-            // cập nhật obj.X()/Y() trên board chứ không đụng log → re-edit + Chèn
-            // sẽ serialize toạ độ cũ → SVG không đổi → fileId trùng → user thấy
-            // "k thay đổi". Line/segment/circle/polygon tham chiếu point qua id
-            // nên auto-update theo.
-            getCreationLog: () => creationLogRef.current.map((e) => {
-              if (e.type !== "point") return { ...e };
-              const args = e.args;
-              if (!Array.isArray(args) || args.length !== 2) return { ...e };
-              if (typeof args[0] !== "number" || typeof args[1] !== "number") return { ...e };
-              const obj = objMapRef.current.get(e.id);
-              if (!obj || typeof obj.X !== "function" || typeof obj.Y !== "function") return { ...e };
-              const x = obj.X();
-              const y = obj.Y();
-              if (!Number.isFinite(x) || !Number.isFinite(y)) return { ...e };
-              return { ...e, args: [x, y] };
-            }),
-            getBbox: () => boardRef.current ? boardRef.current.getBoundingBox() : [-10, 10, 10, -10],
-            getShowAxis: () => showAxisRef.current,
-            getShowGrid: () => showGridRef.current,
-            setTool: (t) => handleToolChangeRef.current(t),
-            getTool: () => toolRef.current,
-            setShowAxis: (b) => setShowAxisRef.current(b),
-            setShowGrid: (b) => setShowGridRef.current(b),
-            undo: () => undoLastRef.current(),
-            canUndo: () => creationLogRef.current.length > 0,
-            redo: () => redoNextRef.current(),
-            canRedo: () => redoStackRef.current.length > 0,
-            subscribe: (cb) => {
-              subscribersRef.current.add(cb);
-              return () => {
-                subscribersRef.current.delete(cb);
-              };
-            },
-            snapshotObject,
-            mutateObject,
-            getAllPointNames: () => {
-              const b = boardRef.current;
-              if (!b) return [];
-              const out = [];
-              safeJsx("MiniBoard.getAllPointNames", () => {
-                const objs = b.objectsList || [];
-                for (const o of objs) {
-                  if (objKind(o) === "point" && typeof o.name === "string" && o.name) {
-                    out.push(o.name);
-                  }
-                }
-              });
-              return out;
-            },
-            onSelect: (cb) => {
-              selectSubsRef.current.add(cb);
-              return () => {
-                selectSubsRef.current.delete(cb);
-              };
-            },
-            onTransformParam: (cb) => {
-              transformSubsRef.current.add(cb);
-              return () => {
-                transformSubsRef.current.delete(cb);
-              };
-            },
-            confirmTransformParam: (value) => {
-              const p = pendingTransformRef.current;
-              if (!p) return;
-              if (p.tool === "regularPolygon") {
-                const n = Math.max(3, Math.round(value));
-                const p1Id = localIdOf(p.source);
-                const p2Id = localIdOf(p.center);
-                if (p1Id && p2Id && boardRef.current) {
-                  try {
-                    create("regularpolygon", [p1Id, p2Id, n], {
-                      fillColor: "#1e3a8a",
-                      fillOpacity: 0.1,
-                      borders: { strokeColor: "@stroke", strokeWidth: 2 }
-                    });
-                  } catch (err) {
-                    console.warn("regularpolygon failed", err);
-                  }
-                }
-                pendingTransformRef.current = null;
-                emitTransformRef.current(null);
-                clearPendingRef.current();
-                return;
-              }
-              const spec = p.tool === "rotate" ? buildTransformSpec({ kind: "rotate", center: p.center, angleDeg: value }) : buildTransformSpec({ kind: "dilate", center: p.center, k: value });
-              finalizeTransformCreateRef.current(spec, p.source);
-              pendingTransformRef.current = null;
-              emitTransformRef.current(null);
-              clearPendingRef.current();
-            },
-            cancelTransformParam: () => {
-              pendingTransformRef.current = null;
-              emitTransformRef.current(null);
-              clearPendingRef.current();
-            },
-            getSelectionSize: () => selectedSetRef.current.size,
-            clearSelection: () => clearSelectionRef.current(),
-            deleteSelection: () => deleteSelectedRef.current()
-          });
-        })();
-        return () => {
-          cancelled = true;
-          if (wheelCleanup) {
-            wheelCleanup();
-            wheelCleanup = null;
-          }
-          if (previewRafRef.current != null) {
-            cancelAnimationFrame(previewRafRef.current);
-            previewRafRef.current = null;
-          }
-          if (boardRef.current && jxgRef.current) {
-            safeJsx("MiniBoard.freeBoard", () => jxgRef.current.JSXGraph.freeBoard(boardRef.current));
-            boardRef.current = null;
-          }
-        };
-      }, [containerId]);
+      }, [store, toolSM, clearPending, clearSelection, deleteSelection]);
       React8.useEffect(() => {
         const b = boardRef.current;
         if (!b) return;
@@ -2129,58 +1713,189 @@ var init_MiniBoard = __esm({
         const b = boardRef.current;
         if (!b) return;
         safeJsx("MiniBoard.toggleGrid", () => {
-          const objs = Object.values(b.objects || {});
-          for (const o of objs) {
+          for (const o of Object.values(b.objects || {})) {
             if (o && (o.elType === "grid" || o.type === "grid" || o.visProp && o.visProp.type === "grid")) {
               safeJsx("MiniBoard.removeObject(grid)", () => b.removeObject(o));
             }
           }
-          if (showGrid) {
-            b.create("grid", [], { strokeColor: themeGrid(isDarkRef.current), strokeOpacity: 1 });
-          }
+          if (showGrid) b.create("grid", [], { strokeColor: themeGrid(isDarkRef.current), strokeOpacity: 1 });
           b.update();
         });
       }, [showGrid]);
       const handleToolChange = React8.useCallback((t) => {
         clearPending();
-        toolRef.current = t;
-        setTool(t);
+        toolSM.setTool(t);
         const b = boardRef.current;
-        if (b) {
-          safeJsx("MiniBoard.setPanForTool", () => {
-            if (b.attr?.pan) b.attr.pan.enabled = t !== "select";
-          });
-        }
-      }, [clearPending]);
-      const handleToolChangeRef = React8.useRef(handleToolChange);
-      handleToolChangeRef.current = handleToolChange;
-      const subscribersRef = React8.useRef(/* @__PURE__ */ new Set());
-      const notifySubscribers = React8.useCallback(() => {
-        subscribersRef.current.forEach((cb) => {
-          safeJsx("MiniBoard.notifySubscriber.cb", () => cb());
+        if (b) safeJsx("MiniBoard.setPanForTool", () => {
+          if (b.attr?.pan) b.attr.pan.enabled = t !== "select";
         });
-      }, []);
+      }, [clearPending, toolSM]);
       React8.useEffect(() => {
-        notifySubscribers();
-      }, [tool, showAxis, showGrid, historyTick, notifySubscribers]);
-      const undoLastRef = React8.useRef(undoLast);
-      undoLastRef.current = undoLast;
-      const redoNextRef = React8.useRef(redoNext);
-      redoNextRef.current = redoNext;
-      const clearPendingRef = React8.useRef(clearPending);
-      clearPendingRef.current = clearPending;
-      const finalizeTransformCreateRef = React8.useRef(finalizeTransformCreate);
-      finalizeTransformCreateRef.current = finalizeTransformCreate;
-      const clearSelectionRef = React8.useRef(clearSelection);
-      clearSelectionRef.current = clearSelection;
-      const deleteSelectedRef = React8.useRef(deleteSelected);
-      deleteSelectedRef.current = deleteSelected;
-      const emitTransformRef = React8.useRef(emitTransform);
-      emitTransformRef.current = emitTransform;
-      const setShowAxisRef = React8.useRef(setShowAxis);
-      setShowAxisRef.current = setShowAxis;
-      const setShowGridRef = React8.useRef(setShowGrid);
-      setShowGridRef.current = setShowGrid;
+        if (typeof window === "undefined" || !containerRef.current) return;
+        let cancelled = false;
+        let wheelCleanup = null;
+        void (async () => {
+          const JXG = (await import('jsxgraph')).default;
+          if (cancelled || !containerRef.current) return;
+          jxgRef.current = JXG;
+          safeJsx("MiniBoard.applyJxgOptions", () => {
+            const opts = JXG.Options;
+            if (opts) {
+              opts.text = opts.text || {};
+              opts.text.display = "internal";
+              opts.text.useASCIIMathML = false;
+              opts.text.useMathJax = false;
+              opts.text.useKatex = false;
+              opts.label = opts.label || {};
+              opts.label.display = "internal";
+              opts.label.strokeColor = themeLabel(isDarkRef.current);
+              opts.text.strokeColor = themeLabel(isDarkRef.current);
+            }
+          });
+          const board = JXG.JSXGraph.initBoard(containerId, {
+            boundingbox: initialState?.bbox ?? [-10, 10, 10, -10],
+            axis: false,
+            grid: false,
+            showCopyright: false,
+            showNavigation: true,
+            keepAspectRatio: true,
+            pan: { enabled: true, needShift: false },
+            zoom: { wheel: false },
+            ...{ precision: { hasPoint: 8, mouse: 4, touch: 16 } }
+          });
+          boardRef.current = board;
+          const theme = paletteFor(isDarkRef.current);
+          rendererRef.current = new JxgRenderer(store, board, {
+            theme: {
+              stroke: theme.stroke,
+              fill: "#60a5fa",
+              axis: theme.axis,
+              grid: theme.grid,
+              label: theme.label,
+              pointFill: theme.stroke
+            }
+          });
+          if (containerRef.current) {
+            const wheelTarget = containerRef.current;
+            const onWheel = (e) => {
+              if (!e.ctrlKey && !e.metaKey) return;
+              e.preventDefault();
+              e.stopPropagation();
+              let cx, cy;
+              safeJsx("MiniBoard.wheelZoom.coords", () => {
+                const usr = board.getUsrCoordsOfMouse?.(e);
+                if (Array.isArray(usr) && usr.length === 2 && Number.isFinite(usr[0]) && Number.isFinite(usr[1])) {
+                  cx = usr[0];
+                  cy = usr[1];
+                }
+              });
+              if (e.deltaY < 0) safeJsx("MiniBoard.wheelZoom.in", () => board.zoomIn(cx, cy));
+              else if (e.deltaY > 0) safeJsx("MiniBoard.wheelZoom.out", () => board.zoomOut(cx, cy));
+            };
+            wheelTarget.addEventListener("wheel", onWheel, { passive: false });
+            wheelCleanup = () => wheelTarget.removeEventListener("wheel", onWheel);
+          }
+          if (showAxisRef.current) safeJsx("MiniBoard.initAxes", () => {
+            axisObjsRef.current.x = board.create("axis", [[0, 0], [1, 0]], { strokeColor: themeAxis(isDarkRef.current), name: "", withLabel: false });
+            axisObjsRef.current.y = board.create("axis", [[0, 0], [0, 1]], { strokeColor: themeAxis(isDarkRef.current), name: "", withLabel: false });
+          });
+          if (showGridRef.current) safeJsx(
+            "MiniBoard.initGrid",
+            () => board.create("grid", [], { strokeColor: themeGrid(isDarkRef.current), strokeOpacity: 1 })
+          );
+          const fire = (h) => (e) => {
+            if (ctxRef.current) h(ctxRef.current, e);
+          };
+          board.on("down", fire(handleDown));
+          board.on("up", fire(handleUp));
+          board.on("move", fire(handleMove));
+          onReady({
+            getContainer: () => containerRef.current,
+            getBbox: () => board ? board.getBoundingBox() : [-10, 10, 10, -10],
+            getState: () => store.getState(),
+            getShowAxis: () => showAxisRef.current,
+            getShowGrid: () => showGridRef.current,
+            setTool: handleToolChange,
+            getTool: () => toolSM.toolRef.current,
+            setShowAxis: (b) => setShowAxisState(b),
+            setShowGrid: (b) => setShowGridState(b),
+            undo: () => store.undo(),
+            canUndo: () => store.canUndo(),
+            redo: () => store.redo(),
+            canRedo: () => store.canRedo(),
+            subscribe: (cb) => {
+              subscribersRef.current.add(cb);
+              return () => {
+                subscribersRef.current.delete(cb);
+              };
+            },
+            snapshotObject: (id, anchorScreen) => buildSnapshot(id, anchorScreen),
+            mutateObject: (id, patch) => {
+              if (patch.remove) {
+                store.dispatch({ type: "DELETE", payload: { id } });
+                return;
+              }
+              if (!patch.attrs) return;
+              const incoming = patch.attrs;
+              const { name, withLabel, strokeColor, fillColor, strokeWidth, ...rest } = incoming;
+              if (typeof name === "string") {
+                store.dispatch({ type: "UPDATE", payload: { id, patch: { label: name } } });
+              }
+              const mapped = { ...rest };
+              if (strokeColor !== void 0 && mapped.color === void 0) mapped.color = strokeColor;
+              if (fillColor !== void 0 && mapped.color === void 0) mapped.color = fillColor;
+              if (strokeWidth !== void 0 && mapped.width === void 0) mapped.width = strokeWidth;
+              if (withLabel !== void 0 && mapped.showLabel === void 0) mapped.showLabel = withLabel;
+              if (Object.keys(mapped).length > 0) {
+                store.dispatch({ type: "UPDATE_ATTRS", payload: { id, patch: mapped } });
+              }
+            },
+            getAllPointNames: () => listObjects(store.getState()).filter((o) => o.kind === "point" || o.kind === "intersection").map((o) => o.label),
+            onSelect: (cb) => {
+              selectSubsRef.current.add(cb);
+              return () => {
+                selectSubsRef.current.delete(cb);
+              };
+            },
+            onTransformParam: (cb) => {
+              transformSubsRef.current.add(cb);
+              return () => {
+                transformSubsRef.current.delete(cb);
+              };
+            },
+            confirmTransformParam: (_value) => {
+              pendingTransformRef.current = null;
+              emitTransform(null);
+              clearPending();
+            },
+            cancelTransformParam: () => {
+              pendingTransformRef.current = null;
+              emitTransform(null);
+              clearPending();
+            },
+            getSelectionSize: () => selectedSetRef.current.size,
+            clearSelection,
+            deleteSelection
+          });
+        })();
+        return () => {
+          cancelled = true;
+          if (wheelCleanup) {
+            wheelCleanup();
+            wheelCleanup = null;
+          }
+          if (previewRafRef.current != null) {
+            cancelAnimationFrame(previewRafRef.current);
+            previewRafRef.current = null;
+          }
+          rendererRef.current?.dispose();
+          rendererRef.current = null;
+          if (boardRef.current && jxgRef.current) {
+            safeJsx("MiniBoard.freeBoard", () => jxgRef.current.JSXGraph.freeBoard(boardRef.current));
+            boardRef.current = null;
+          }
+        };
+      }, [containerId]);
       return /* @__PURE__ */ jsxRuntime.jsx(
         "div",
         {
@@ -3156,7 +2871,7 @@ var init_EditorPanel = __esm({
         const emitState = React8.useCallback(() => {
           const h = handleRef.current;
           if (!h) return;
-          setHasContent(h.getCreationLog().length > 0);
+          setHasContent(Object.keys(h.getState().objects).length > 0);
           const cb = onStateChangeRef.current;
           if (!cb) return;
           cb({
@@ -3177,16 +2892,13 @@ var init_EditorPanel = __esm({
         }, [emitState]);
         const performInsert = React8.useCallback(() => {
           if (!handleRef.current) return false;
-          const log = handleRef.current.getCreationLog();
-          if (log.length === 0) return false;
-          const bbox = handleRef.current.getBbox();
-          const showAxis = handleRef.current.getShowAxis();
-          const showGrid = handleRef.current.getShowGrid();
-          const serialized = serializeBoard(
-            { getBoundingBox: () => bbox, create: () => void 0 },
-            log,
-            { showAxis, showGrid }
-          );
+          const h = handleRef.current;
+          const state = h.getState();
+          if (Object.keys(state.objects).length === 0) return false;
+          const bbox = h.getBbox();
+          const showAxis = h.getShowAxis();
+          const showGrid = h.getShowGrid();
+          const serialized = serializeBoard(bbox, state, { showAxis, showGrid });
           const jsonState = JSON.stringify(serialized);
           void (async () => {
             try {
@@ -3208,7 +2920,7 @@ var init_EditorPanel = __esm({
           undo: () => handleRef.current?.undo(),
           redo: () => handleRef.current?.redo(),
           insert: performInsert,
-          hasContent: () => (handleRef.current?.getCreationLog().length ?? 0) > 0
+          hasContent: () => Object.keys(handleRef.current?.getState().objects ?? {}).length > 0
         }), [performInsert]);
         const wrapperStyle = isMobile ? { position: "fixed", inset: 0, zIndex: 40 } : {
           position: "absolute",
@@ -3324,7 +3036,7 @@ var init_EditorPanel = __esm({
                   getAllNames: () => handleRef.current?.getAllPointNames() ?? [],
                   onClose: () => setPropsPopover(null),
                   onMutate: (patch) => {
-                    handleRef.current?.mutateObject(propsPopover.obj, patch);
+                    handleRef.current?.mutateObject(propsPopover.id, patch);
                     if (patch.remove) setPropsPopover(null);
                     if (typeof patch.valueLabel === "boolean" || patch.attrs) {
                       setPropsPopover((cur) => cur ? { ...cur, showValue: patch.valueLabel ?? cur.showValue } : cur);
@@ -3346,7 +3058,7 @@ var init_EditorPanel = __esm({
                   getAllNames: () => handleRef.current?.getAllPointNames() ?? [],
                   onClose: () => setPropsPopover(null),
                   onMutate: (patch) => {
-                    handleRef.current?.mutateObject(propsPopover.obj, patch);
+                    handleRef.current?.mutateObject(propsPopover.id, patch);
                     if (patch.remove) setPropsPopover(null);
                     if (typeof patch.valueLabel === "boolean") {
                       setPropsPopover((cur) => cur ? { ...cur, showValue: patch.valueLabel ?? cur.showValue } : cur);
@@ -3357,7 +3069,7 @@ var init_EditorPanel = __esm({
                   }
                 }
               )),
-              transformPopover && /* @__PURE__ */ jsxRuntime.jsx(
+              transformPopover && (transformPopover.tool === "rotate" || transformPopover.tool === "dilate" || transformPopover.tool === "regularPolygon") && /* @__PURE__ */ jsxRuntime.jsx(
                 TransformParamPopover,
                 {
                   kind: transformPopover.tool,
@@ -3612,7 +3324,7 @@ var init_host = __esm({
     init_tools();
     init_useChordShortcut();
     init_insertImage();
-    init_types();
+    init_types2();
     init_useIsMobile();
     INITIAL_GEOM_STATE = {
       tool: "move",
@@ -3771,7 +3483,7 @@ function isLatexCustomData(data) {
   const d = data;
   return d.kind === "latex" && d.version === 1 && typeof d.src === "string";
 }
-var init_types2 = __esm({
+var init_types3 = __esm({
   "src/stamps/latex/types.ts"() {
   }
 });
@@ -4180,7 +3892,7 @@ var init_host2 = __esm({
     init_EditorPopover();
     init_insertImage();
     init_useIsMobile();
-    init_types2();
+    init_types3();
     LatexStampHost = React8.forwardRef(
       function LatexStampHost2({ api, editingElement, onClose }, ref) {
         const editorRef = React8.useRef(null);
@@ -4257,318 +3969,6 @@ var init_host2 = __esm({
         ] });
       }
     );
-  }
-});
-
-// src/core/scene/types.ts
-function createEmptyState(domain) {
-  return { ...EMPTY_STATE, meta: { domain, version: 1 } };
-}
-var EMPTY_STATE;
-var init_types3 = __esm({
-  "src/core/scene/types.ts"() {
-    EMPTY_STATE = {
-      objects: {},
-      order: [],
-      counter: 0,
-      meta: { domain: "3d", version: 1 }
-    };
-  }
-});
-
-// src/core/scene/registry.ts
-function getKind(type) {
-  const def = registry.get(type);
-  if (!def) throw new Error(`[scene] unknown kind: ${type}`);
-  return def;
-}
-var registry;
-var init_registry = __esm({
-  "src/core/scene/registry.ts"() {
-    registry = /* @__PURE__ */ new Map();
-  }
-});
-
-// src/core/scene/reducer.ts
-function collectDependents(state, rootId) {
-  const dependents = /* @__PURE__ */ new Set([rootId]);
-  let grew = true;
-  while (grew) {
-    grew = false;
-    for (const obj of Object.values(state.objects)) {
-      if (dependents.has(obj.id)) continue;
-      let kindDef;
-      try {
-        kindDef = getKind(obj.kind);
-      } catch {
-        continue;
-      }
-      const refs = kindDef.dependsOn(obj.attrs);
-      if (refs.some((r) => dependents.has(r))) {
-        dependents.add(obj.id);
-        grew = true;
-      }
-    }
-  }
-  return dependents;
-}
-function reduce(draft, action) {
-  switch (action.type) {
-    case "ADD": {
-      const { obj } = action.payload;
-      if (draft.objects[obj.id]) throw new Error(`[scene] id "${obj.id}" \u0111\xE3 t\u1ED3n t\u1EA1i`);
-      const kindDef = getKind(obj.kind);
-      kindDef.validate?.(obj.attrs);
-      draft.objects[obj.id] = obj;
-      draft.order.push(obj.id);
-      draft.counter += 1;
-      return;
-    }
-    case "UPDATE": {
-      const { id, patch } = action.payload;
-      const obj = draft.objects[id];
-      if (!obj) return;
-      Object.assign(obj, patch);
-      return;
-    }
-    case "UPDATE_ATTRS": {
-      const { id, patch } = action.payload;
-      const obj = draft.objects[id];
-      if (!obj) return;
-      const kindDef = getKind(obj.kind);
-      const nextAttrs = { ...obj.attrs, ...patch };
-      kindDef.validate?.(nextAttrs);
-      obj.attrs = nextAttrs;
-      return;
-    }
-    case "DELETE": {
-      const { id } = action.payload;
-      if (!draft.objects[id]) return;
-      const toDelete = collectDependents(draft, id);
-      for (const delId of toDelete) {
-        delete draft.objects[delId];
-      }
-      draft.order = draft.order.filter((x) => !toDelete.has(x));
-      return;
-    }
-    case "RESET": {
-      draft.objects = {};
-      draft.order = [];
-      draft.counter = 0;
-      return;
-    }
-    case "LOAD": {
-      const { state } = action.payload;
-      draft.objects = { ...state.objects };
-      draft.order = [...state.order];
-      draft.counter = state.counter;
-      draft.meta = { ...state.meta };
-      return;
-    }
-    case "TRANSACTION": {
-      for (const sub3 of action.payload.actions) {
-        reduce(draft, sub3);
-      }
-      return;
-    }
-  }
-}
-var init_reducer = __esm({
-  "src/core/scene/reducer.ts"() {
-    init_registry();
-  }
-});
-function createStore(initial, options = {}) {
-  const limit = options.historyLimit ?? HISTORY_DEFAULT;
-  let state = initial;
-  const past = [];
-  const future = [];
-  const listeners = /* @__PURE__ */ new Set();
-  let dispatching = false;
-  let suspendHistory = false;
-  let transactionActions = null;
-  function notify(prev, action) {
-    listeners.forEach((l) => l(state, prev, action));
-  }
-  function pushHistory(prev) {
-    if (suspendHistory) return;
-    past.push(prev);
-    if (past.length > limit) past.shift();
-    future.length = 0;
-  }
-  function applyAction(action) {
-    const prev = state;
-    state = immer.produce(state, (draft) => {
-      reduce(draft, action);
-    });
-    if (state !== prev) {
-      pushHistory(prev);
-      notify(prev, action);
-    }
-  }
-  return {
-    getState: () => state,
-    dispatch(action) {
-      if (dispatching) throw new Error("[scene] kh\xF4ng \u0111\u01B0\u1EE3c dispatch trong subscriber");
-      if (transactionActions) {
-        transactionActions.push(action);
-        return;
-      }
-      dispatching = true;
-      try {
-        applyAction(action);
-      } finally {
-        dispatching = false;
-      }
-    },
-    subscribe(listener) {
-      listeners.add(listener);
-      return () => {
-        listeners.delete(listener);
-      };
-    },
-    undo() {
-      const prev = past.pop();
-      if (!prev) return;
-      future.push(state);
-      const old = state;
-      state = prev;
-      notify(old, UNDO_ACTION);
-    },
-    redo() {
-      const next = future.pop();
-      if (!next) return;
-      past.push(state);
-      if (past.length > limit) past.shift();
-      const old = state;
-      state = next;
-      notify(old, REDO_ACTION);
-    },
-    canUndo: () => past.length > 0,
-    canRedo: () => future.length > 0,
-    transaction(fn) {
-      if (transactionActions) throw new Error("[scene] transaction l\u1ED3ng nhau kh\xF4ng h\u1ED7 tr\u1EE3");
-      transactionActions = [];
-      try {
-        fn((a) => {
-          transactionActions.push(a);
-        });
-      } finally {
-        const actions = transactionActions;
-        transactionActions = null;
-        if (actions.length > 0) {
-          applyAction({ type: "TRANSACTION", payload: { actions } });
-        }
-      }
-    },
-    withoutHistory(fn) {
-      const prevSuspend = suspendHistory;
-      suspendHistory = true;
-      try {
-        fn();
-      } finally {
-        suspendHistory = prevSuspend;
-      }
-    }
-  };
-}
-var HISTORY_DEFAULT, UNDO_ACTION, REDO_ACTION;
-var init_store = __esm({
-  "src/core/scene/store.ts"() {
-    init_reducer();
-    HISTORY_DEFAULT = 100;
-    UNDO_ACTION = { type: "TRANSACTION", payload: { actions: [] } };
-    REDO_ACTION = { type: "TRANSACTION", payload: { actions: [] } };
-  }
-});
-
-// src/core/scene/selectors.ts
-function listObjects(state) {
-  return state.order.map((id) => state.objects[id]).filter((o) => o !== void 0);
-}
-function byKind(state, kind) {
-  return listObjects(state).filter((o) => o.kind === kind);
-}
-function nextLabel(state, kind) {
-  const used = new Set(byKind(state, kind).map((o) => o.label));
-  for (const c of ALPHABET) if (!used.has(c)) return c;
-  let idx = 1;
-  while (true) {
-    for (const c of ALPHABET) {
-      const candidate = `${c}${idx}`;
-      if (!used.has(candidate)) return candidate;
-    }
-    idx += 1;
-  }
-}
-var ALPHABET;
-var init_selectors = __esm({
-  "src/core/scene/selectors.ts"() {
-    ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  }
-});
-
-// src/core/scene/migrations/state.ts
-function listStateMigrations() {
-  return stateMigrations;
-}
-var stateMigrations, CURRENT_STATE_VERSION;
-var init_state = __esm({
-  "src/core/scene/migrations/state.ts"() {
-    stateMigrations = /* @__PURE__ */ new Map();
-    CURRENT_STATE_VERSION = 1;
-  }
-});
-
-// src/core/scene/migrations/runMigrations.ts
-function migrateState(raw) {
-  if (!raw || typeof raw !== "object") throw new Error("[scene] invalid state shape");
-  let state = raw;
-  const currentVersion = state.meta?.version ?? 1;
-  const stateMigs = listStateMigrations();
-  for (let v = currentVersion + 1; v <= Math.max(CURRENT_STATE_VERSION, ...stateMigs.keys()); v++) {
-    const fn = stateMigs.get(v);
-    if (fn) state = fn(state);
-  }
-  const migratedObjects = {};
-  for (const [id, obj] of Object.entries(state.objects ?? {})) {
-    const def = getKind(obj.kind);
-    let cur = obj;
-    while ((cur.schemaVersion ?? 0) < def.schemaVersion) {
-      const next = (cur.schemaVersion ?? 0) + 1;
-      const mig = def.migrate[next];
-      if (!mig) throw new Error(`[scene] missing migration cho ${obj.kind} v${next}`);
-      cur = mig(cur);
-      cur.schemaVersion = next;
-    }
-    if ((cur.schemaVersion ?? 0) !== def.schemaVersion) {
-      throw new Error(
-        `[scene] missing migration cho ${obj.kind}: stored v${cur.schemaVersion ?? 0}, current v${def.schemaVersion}`
-      );
-    }
-    migratedObjects[id] = cur;
-  }
-  return {
-    objects: migratedObjects,
-    order: state.order ?? [],
-    counter: state.counter ?? 0,
-    meta: state.meta ?? { domain: "3d", version: CURRENT_STATE_VERSION }
-  };
-}
-var init_runMigrations = __esm({
-  "src/core/scene/migrations/runMigrations.ts"() {
-    init_registry();
-    init_state();
-  }
-});
-
-// src/core/scene/index.ts
-var init_scene = __esm({
-  "src/core/scene/index.ts"() {
-    init_types3();
-    init_store();
-    init_selectors();
-    init_runMigrations();
   }
 });
 
@@ -6776,12 +6176,11 @@ var init_EditorPanel2 = __esm({
         }, [store]);
         const onPointerDragEnd = React8__namespace.useCallback(() => {
           const snap = dragSnapshotRef.current;
-          const mutated = dragMutatedRef.current;
           dragSnapshotRef.current = null;
           draggedPointRef.current = null;
           dragStartRef.current = null;
           dragMutatedRef.current = false;
-          if (snap && mutated) {
+          if (snap) {
             const current = store.getState();
             store.withoutHistory(() => {
               store.dispatch({ type: "LOAD", payload: { state: snap } });
@@ -9881,7 +9280,7 @@ function pickSyncableAppState(s) {
 
 // src/stamps/geometry-2d/index.tsx
 init_render();
-init_types();
+init_types2();
 var GeometryStampHost3 = React8.lazy(
   () => Promise.resolve().then(() => (init_host(), host_exports)).then((m) => ({ default: m.GeometryStampHost }))
 );
@@ -9920,7 +9319,7 @@ var geometryStamp = {
 
 // src/stamps/latex/index.tsx
 init_render2();
-init_types2();
+init_types3();
 var LatexStampHost3 = React8.lazy(
   () => Promise.resolve().then(() => (init_host2(), host_exports2)).then((m) => ({ default: m.LatexStampHost }))
 );

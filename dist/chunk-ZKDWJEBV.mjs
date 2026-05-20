@@ -1,5 +1,5 @@
 "use client";
-import { paletteFor, resolveAttrColors } from './chunk-HTBLO5JO.mjs';
+import { getKind, paletteFor, createStore, migrateState, createEmptyState } from './chunk-MBJVQIF6.mjs';
 
 // src/stamps/geometry-2d/renderInline.ts
 function renderGeometryToSvg(boardContainer) {
@@ -13,75 +13,34 @@ function renderGeometryToSvg(boardContainer) {
 }
 
 // src/stamps/geometry-2d/serialize.ts
-function serializeBoard(board, log, options = {}) {
+function serializeBoard(bbox, state, options = {}) {
   return {
-    bbox: board.getBoundingBox(),
-    elements: log.map((e) => ({ type: e.type, args: e.args, attrs: e.attrs, id: e.id })),
+    version: 2,
+    bbox,
+    state,
     showAxis: !!options.showAxis,
     showGrid: !!options.showGrid
   };
 }
-function createValueLabel(board, target) {
-  if (!board || !target) return null;
-  const e = (target.elType ?? target.type ?? "").toString().toLowerCase();
-  if (e === "segment" || e === "line" || e === "arrow") {
-    const p1 = target.point1, p2 = target.point2;
-    if (!p1 || !p2) return null;
-    return board.create("text", [
-      () => (p1.X() + p2.X()) / 2 + 0.15,
-      () => (p1.Y() + p2.Y()) / 2 + 0.25,
-      () => {
-        const len = Math.hypot(p2.X() - p1.X(), p2.Y() - p1.Y());
-        const name = typeof target.name === "string" && target.name ? target.name : "d";
-        return `${name} = ${len.toFixed(2)}`;
-      }
-    ], { fontSize: 12, color: "#dc2626", fixed: true, highlight: false });
+function deserializeBoard(raw) {
+  if (raw && typeof raw === "object" && raw.version === 2) {
+    const r = raw;
+    return {
+      version: 2,
+      bbox: r.bbox,
+      state: migrateState(r.state),
+      showAxis: !!r.showAxis,
+      showGrid: !!r.showGrid
+    };
   }
-  if (e === "circle" || e === "circumcircle") {
-    const center = target.center ?? target.midpoint ?? target.point1;
-    if (!center) return null;
-    return board.create("text", [
-      () => center.X() + 0.3,
-      () => center.Y() + 0.3,
-      () => {
-        const r = typeof target.Radius === "function" ? target.Radius() : 0;
-        const name = typeof target.name === "string" && target.name ? target.name : "r";
-        return `${name} = ${r.toFixed(2)}`;
-      }
-    ], { fontSize: 12, color: "#dc2626", fixed: true, highlight: false });
-  }
-  return null;
-}
-function deserializeIntoBoard(board, serialized, options = {}) {
-  const palette = options.palette ?? paletteFor(false);
-  const idMap = /* @__PURE__ */ new Map();
-  const resolve = (a) => {
-    if (typeof a === "string") {
-      if (idMap.has(a)) return idMap.get(a);
-      const m = /^(.+):border:(\d+)$/.exec(a);
-      if (m) {
-        const poly = idMap.get(m[1]);
-        const idx = parseInt(m[2], 10);
-        if (poly && Array.isArray(poly.borders) && poly.borders[idx]) {
-          return poly.borders[idx];
-        }
-      }
-    }
-    if (Array.isArray(a)) return a.map(resolve);
-    return a;
+  console.warn("[2d/serialize] format kh\xF4ng nh\u1EADn di\u1EC7n ho\u1EB7c v1 c\u0169 \u2014 d\xF9ng state r\u1ED7ng");
+  return {
+    version: 2,
+    bbox: [-5, 5, 5, -5],
+    state: createEmptyState("2d"),
+    showAxis: false,
+    showGrid: false
   };
-  for (const el of serialized.elements) {
-    const resolvedArgs = el.args.map(resolve);
-    if (el.type === "valueLabel") {
-      const target = resolvedArgs[0];
-      const txt = createValueLabel(board, target);
-      if (txt) idMap.set(el.id, txt);
-      continue;
-    }
-    const themedAttrs = resolveAttrColors({ ...el.attrs }, palette);
-    const created = board.create(el.type, resolvedArgs, themedAttrs);
-    idMap.set(el.id, created);
-  }
 }
 
 // src/stamps/shared/safeJsx.ts
@@ -102,6 +61,94 @@ function safeJsx(label, fn, fallback) {
     return fallback;
   }
 }
+
+// src/core/scene/render/types2d.ts
+var DEFAULT_THEME_2D = {
+  stroke: "#0f172a",
+  fill: "#60a5fa",
+  label: "#0f172a",
+  axis: "#94a3b8",
+  grid: "#e2e8f0",
+  pointFill: "#1e40af"
+};
+
+// src/core/scene/render/JxgRenderer.ts
+var JxgRenderer = class {
+  constructor(store, board, options = {}) {
+    this.elements = /* @__PURE__ */ new Map();
+    this.disposed = false;
+    this.store = store;
+    this.board = board;
+    this.theme = options.theme ?? DEFAULT_THEME_2D;
+    this.unsubscribe = store.subscribe((next, prev) => this.applyDiff(prev, next));
+    this.applyDiff(void 0, store.getState());
+  }
+  ctx() {
+    return {
+      jxg: this.board,
+      resolveRef: (id) => {
+        const el = this.elements.get(id);
+        if (!el) throw new Error(`[scene/2d] resolveRef: ch\u01B0a render id="${id}"`);
+        return el;
+      },
+      defaults: { theme: this.theme }
+    };
+  }
+  create(obj) {
+    try {
+      const def = getKind(obj.kind);
+      const el = def.render(obj, this.ctx());
+      this.elements.set(obj.id, el);
+    } catch (err) {
+      console.warn(`[scene/render/2d] kh\xF4ng render \u0111\u01B0\u1EE3c ${obj.kind} id="${obj.id}":`, err);
+    }
+  }
+  remove(id) {
+    const el = this.elements.get(id);
+    if (!el) return;
+    try {
+      this.board.removeObject?.(el);
+    } catch (err) {
+      console.warn(`[scene/render/2d] kh\xF4ng remove \u0111\u01B0\u1EE3c id="${id}":`, err);
+    }
+    this.elements.delete(id);
+  }
+  applyDiff(prev, next) {
+    if (this.disposed) return;
+    const prevObjs = prev?.objects ?? {};
+    const nextObjs = next.objects;
+    for (const id of Object.keys(prevObjs)) {
+      if (!(id in nextObjs)) this.remove(id);
+    }
+    for (const id of next.order) {
+      const cur = nextObjs[id];
+      const old = prevObjs[id];
+      if (!old) {
+        this.create(cur);
+        continue;
+      }
+      if (Object.is(old, cur)) continue;
+      const def = getKind(cur.kind);
+      const existing = this.elements.get(id);
+      if (def.update && existing) {
+        try {
+          def.update(cur, old, this.ctx(), existing);
+          continue;
+        } catch (err) {
+          console.warn(`[scene/render/2d] update fail, recreate:`, err);
+        }
+      }
+      this.remove(id);
+      this.create(cur);
+    }
+  }
+  dispose() {
+    if (this.disposed) return;
+    this.unsubscribe();
+    for (const id of Array.from(this.elements.keys())) this.remove(id);
+    this.disposed = true;
+  }
+};
 
 // src/stamps/geometry-2d/render.ts
 var PIXELS_PER_UNIT = 20;
@@ -133,7 +180,7 @@ function containerDimsForBbox(bbox) {
   return { width: Math.round(width), height: Math.round(height) };
 }
 async function renderGeometrySvgFromState(jsonState) {
-  const parsed = JSON.parse(jsonState);
+  const parsed = deserializeBoard(JSON.parse(jsonState));
   const palette = paletteFor(false);
   const JXG = (await import('jsxgraph')).default;
   safeJsx("render.applyOptions", () => {
@@ -161,6 +208,7 @@ async function renderGeometrySvgFromState(jsonState) {
   container.style.cssText = `position:absolute;top:-99999px;left:-99999px;width:${width}px;height:${height}px;visibility:hidden;pointer-events:none;`;
   document.body.appendChild(container);
   let board = null;
+  let renderer = null;
   try {
     board = JXG.JSXGraph.initBoard(containerId, {
       boundingbox: parsed.bbox,
@@ -170,10 +218,15 @@ async function renderGeometrySvgFromState(jsonState) {
       showNavigation: false,
       keepAspectRatio: true
     });
-    deserializeIntoBoard(board, parsed, { palette });
+    const store = createStore(parsed.state);
+    renderer = new JxgRenderer(store, board);
     board.update();
     return renderGeometryToSvg(container);
   } finally {
+    try {
+      renderer?.dispose();
+    } catch {
+    }
     safeJsx("render.freeBoard", () => {
       if (board) JXG.JSXGraph.freeBoard(board);
     });
@@ -188,6 +241,6 @@ function isGeometryCustomData(data) {
   return d.kind === "geometry" && d.version === 1 && typeof d.jsonState === "string";
 }
 
-export { isGeometryCustomData, renderGeometrySvgFromState, safeJsx, serializeBoard };
-//# sourceMappingURL=chunk-G7FR3AIV.mjs.map
-//# sourceMappingURL=chunk-G7FR3AIV.mjs.map
+export { JxgRenderer, isGeometryCustomData, renderGeometrySvgFromState, safeJsx, serializeBoard };
+//# sourceMappingURL=chunk-ZKDWJEBV.mjs.map
+//# sourceMappingURL=chunk-ZKDWJEBV.mjs.map

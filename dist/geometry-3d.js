@@ -2571,12 +2571,11 @@ var init_EditorPanel = __esm({
         }, [store]);
         const onPointerDragEnd = React2__namespace.useCallback(() => {
           const snap = dragSnapshotRef.current;
-          const mutated = dragMutatedRef.current;
           dragSnapshotRef.current = null;
           draggedPointRef.current = null;
           dragStartRef.current = null;
           dragMutatedRef.current = false;
-          if (snap && mutated) {
+          if (snap) {
             const current = store.getState();
             store.withoutHistory(() => {
               store.dispatch({ type: "LOAD", payload: { state: snap } });

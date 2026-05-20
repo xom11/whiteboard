@@ -1,7 +1,7 @@
 "use client";
-import { VIEW3D_ATTRS, DEFAULT_VIEW3D, GROUND_PLANE_RANGE, GROUND_PLANE_ATTRS, paletteFor, JxgRenderer3D, nextLabel, serializeBoard3D, createStore, createEmptyState, renderGeometry3DSvgFromState, listObjects, isGeometry3DCustomData, parseSerializedBoard3D } from './chunk-DK357UJ3.mjs';
+import { VIEW3D_ATTRS, DEFAULT_VIEW3D, GROUND_PLANE_RANGE, GROUND_PLANE_ATTRS, paletteFor, JxgRenderer3D, serializeBoard3D, renderGeometry3DSvgFromState, isGeometry3DCustomData, parseSerializedBoard3D } from './chunk-7WNDGXBJ.mjs';
 import { useChordShortcut, MobileToolDrawer } from './chunk-SBDMF4NQ.mjs';
-import './chunk-HTBLO5JO.mjs';
+import { nextLabel, createStore, createEmptyState, listObjects } from './chunk-MBJVQIF6.mjs';
 import { useIsMobile } from './chunk-P2AOIF7S.mjs';
 import { insertStampImage } from './chunk-C6SCVOMC.mjs';
 import './chunk-BJTO5JO5.mjs';
@@ -1715,12 +1715,11 @@ var EditorPanel = React2.forwardRef(
     }, [store]);
     const onPointerDragEnd = React2.useCallback(() => {
       const snap = dragSnapshotRef.current;
-      const mutated = dragMutatedRef.current;
       dragSnapshotRef.current = null;
       draggedPointRef.current = null;
       dragStartRef.current = null;
       dragMutatedRef.current = false;
-      if (snap && mutated) {
+      if (snap) {
         const current = store.getState();
         store.withoutHistory(() => {
           store.dispatch({ type: "LOAD", payload: { state: snap } });
@@ -2845,5 +2844,5 @@ var Geometry3DStampHost = forwardRef(
 );
 
 export { Geometry3DStampHost };
-//# sourceMappingURL=host-D2BJDUNN.mjs.map
-//# sourceMappingURL=host-D2BJDUNN.mjs.map
+//# sourceMappingURL=host-QASORHVP.mjs.map
+//# sourceMappingURL=host-QASORHVP.mjs.map
