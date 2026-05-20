@@ -3,11 +3,11 @@ import type { KindDef } from './types';
 
 const registry = new Map<string, KindDef>();
 
-export function registerKind(def: KindDef): void {
+export function registerKind<A = Record<string, unknown>>(def: KindDef<A>): void {
   if (registry.has(def.type)) {
     console.warn(`[scene] kind "${def.type}" đã được đăng ký — ghi đè định nghĩa cũ`);
   }
-  registry.set(def.type, def);
+  registry.set(def.type, def as unknown as KindDef);
 }
 
 export function getKind(type: string): KindDef {
