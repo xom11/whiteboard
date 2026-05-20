@@ -20,7 +20,7 @@ Hai stamp hình học hiện tại có 2 kiến trúc khác nhau:
 ## 2. Goals / Non-goals
 
 ### Goals
-- 1 module pure TypeScript `src/core/scene-v2/` không phụ thuộc JSXGraph — test 100% không cần jsdom.
+- 1 module pure TypeScript `src/core/scene/` không phụ thuộc JSXGraph — test 100% không cần jsdom.
 - Immutable state qua Immer; structural sharing cho undo/redo; equality bằng `Object.is`.
 - Action layer (Redux-style) — mọi thay đổi state đi qua `dispatch(action)`. Action serializable JSON.
 - Kind registry: thêm kind mới = 1 file `kinds/<kind>.ts`, không sửa core.
@@ -38,7 +38,7 @@ Hai stamp hình học hiện tại có 2 kiến trúc khác nhau:
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│  src/core/scene-v2/                    (pure TS, 0 dep JSXGraph)  │
+│  src/core/scene/                    (pure TS, 0 dep JSXGraph)  │
 │  ┌────────────────────────────────────────────────────────────┐   │
 │  │  types.ts         State, Action, KindDef, SceneObject      │   │
 │  │  store.ts         createStore() → getState/dispatch/       │   │
@@ -59,7 +59,7 @@ Hai stamp hình học hiện tại có 2 kiến trúc khác nhau:
 │         ▲ dispatch(action)              │ state changes            │
 │         │                               ▼                          │
 │  ┌────────────────────────────────────────────────────────────┐   │
-│  │  src/core/scene-v2/render/         (dep: jsxgraph)         │   │
+│  │  src/core/scene/render/         (dep: jsxgraph)         │   │
 │  │    JxgRenderer.ts     subscribe store → diff → JXG board   │   │
 │  │    JxgRenderer3D.ts   subscribe store → diff → JXG view3d  │   │
 │  │    __tests__/         test với mock JSXGraph (như hiện tại)│   │
@@ -78,7 +78,7 @@ Hai stamp hình học hiện tại có 2 kiến trúc khác nhau:
 ```
 
 **Nguyên tắc**:
-- `core/scene-v2/` (trừ subdir `render/`) **không import JSXGraph** — chạy được trong Node, test thuần.
+- `core/scene/` (trừ subdir `render/`) **không import JSXGraph** — chạy được trong Node, test thuần.
 - `render/` là adapter layer duy nhất biết JSXGraph. Đổi engine sau này chỉ thay layer này.
 - `kinds/<kind>.ts` là **single source of truth** cho 1 kind: schema, migrate, render, describe, measure, dependsOn. Thêm kind = 1 file.
 - Store expose API hẹp. Không expose mutation trực tiếp.
@@ -175,7 +175,7 @@ export function getKind(type: string): KindDef;       // throw nếu unknown
 export function listKinds(): KindDef[];
 ```
 
-Side-effect at import: mỗi file trong `kinds/` gọi `registerKind` tại top-level. `kinds/index.ts` re-export tất cả → consumer chỉ cần `import 'core/scene-v2/kinds'` một lần (làm trong `core/scene-v2/index.ts`).
+Side-effect at import: mỗi file trong `kinds/` gọi `registerKind` tại top-level. `kinds/index.ts` re-export tất cả → consumer chỉ cần `import 'core/scene/kinds'` một lần (làm trong `core/scene/index.ts`).
 
 ### 4.5 `kinds/<kind>.ts`
 
@@ -341,7 +341,7 @@ Tận dụng test hiện tại của `EditorPanel.test.tsx`.
 - Object list panel hiển thị đúng.
 
 ### 7.5 Coverage gate
-- `core/scene-v2/` (excluding `render/`): 95%+ coverage required.
+- `core/scene/` (excluding `render/`): 95%+ coverage required.
 - `render/`: 80%+ coverage.
 - Existing tests sau migration: 100% pass (nếu test cũ bám API cũ, viết lại — không skip).
 
@@ -351,7 +351,7 @@ Tận dụng test hiện tại của `EditorPanel.test.tsx`.
 
 | PR | Scope | Acceptance |
 |---|---|---|
-| 1.1 | `core/scene-v2/` skeleton: types, store, reducer, registry, selectors, migrations runner. Chưa có kind. Add `immer` dep. | Tests pure pass. typecheck pass. |
+| 1.1 | `core/scene/` skeleton: types, store, reducer, registry, selectors, migrations runner. Chưa có kind. Add `immer` dep. | Tests pure pass. typecheck pass. |
 | 1.2 | Kinds 3D (point3d, segment3d, line3d, ray3d, vector3d, plane3d, polygon3d, sphere3d, polyhedron3d, cylinder3d, cone3d) + reducer cases + tests. | Mỗi kind có ≥3 test (validate, dependsOn, describe). |
 | 1.3 | `JxgRenderer3D` apply-diff + tests mock JSXGraph (re-purpose test hiện tại). | Tests pass. Coverage 80%+. |
 | 1.4 | Port `3D EditorPanel` + LeftPanel + tool handlers dùng store. **Xoá** `Scene3D.ts`, `persistence.ts`, `labels.ts` cũ. Update `serialize.ts` xuất state v2. | Playwright 3D smoke pass. Manual smoke đầy đủ. |
@@ -378,7 +378,7 @@ Tận dụng test hiện tại của `EditorPanel.test.tsx`.
 
 ## 9. Acceptance criteria (tổng hợp từ issue + design)
 
-- [ ] `src/core/scene-v2/` module mới — pure TS, 0 dep JSXGraph trong subdir chính.
+- [ ] `src/core/scene/` module mới — pure TS, 0 dep JSXGraph trong subdir chính.
 - [ ] Reducer pure function, mỗi action có test đơn vị (≥1 happy + ≥1 edge case).
 - [ ] Kind registry: 11 kind 3D (point3d, segment3d, line3d, ray3d, vector3d, plane3d, polygon3d, sphere3d, polyhedron3d, cylinder3d, cone3d) + 8 kind 2D (point, segment, line, ray, vector, circle, polygon, intersection) đăng ký, mỗi kind 1 file.
 - [ ] Migration chain runMigrations hoạt động, có test 1→3 qua 2 step.
@@ -400,7 +400,7 @@ Tận dụng test hiện tại của `EditorPanel.test.tsx`.
 
 ## 11. Trade-offs / rủi ro
 
-- **Freeze main 3-4 tuần**: bug fix khẩn cấp trên 2D/3D vẫn cho phép nhưng phải port lên scene-v2 trong phase tương ứng.
+- **Freeze main 3-4 tuần**: bug fix khẩn cấp trên 2D/3D vẫn cho phép nhưng phải port lên scene store trong phase tương ứng.
 - **PR 1.4 và PR 2.3 cao rủi ro nhất** — port toàn bộ EditorPanel. Mitigate: chia thêm sub-PR nếu cần (vd 1.4a port read-only, 1.4b port write actions).
 - **Test cũ phải viết lại nhiều** (~2200 dòng). Buffer 1 tuần riêng cho test.
 - **Immer overhead**: với scene 100+ objects và drag 60fps có thể nhận thấy. Mitigate: transaction batch trong drag, dispatch UPDATE_ATTRS chỉ tại pointer-up.
