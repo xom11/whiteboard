@@ -3,6 +3,7 @@ import type { Store } from '../store';
 import type { State, SceneObject, RenderCtx } from '../types';
 import { getKind } from '../registry';
 import { DEFAULT_THEME_2D, type Theme2D } from './types2d';
+import { collectFreeVars } from '../expressions/parser';
 
 export type JxgRendererOptions = { theme?: Theme2D };
 
@@ -13,6 +14,11 @@ export class JxgRenderer {
   private elements = new Map<string, unknown>();
   private unsubscribe: () => void;
   private disposed = false;
+
+  /** Chỉ dùng cho domain='graph2d': parameter.label → parameter.value */
+  private paramMap: Record<string, number> = {};
+  /** Chỉ dùng cho domain='graph2d': function2d.id → expression string */
+  private functionExpr: Record<string, string> = {};
 
   constructor(store: Store, board: unknown, options: JxgRendererOptions = {}) {
     this.store = store;
@@ -46,8 +52,29 @@ export class JxgRenderer {
         if (!el) throw new Error(`[scene/2d] resolveRef: chưa render id="${id}"`);
         return el;
       },
-      defaults: { theme: this.theme },
+      defaults: { theme: this.theme, _functionExpr: this.functionExpr },
+      paramMap: this.paramMap,
     };
+  }
+
+  /**
+   * Rebuild `paramMap` và `functionExpr` từ state hiện tại.
+   * Chỉ chạy khi domain='graph2d'. Chi phí thấp vì parameters thường ≤ 8.
+   */
+  private rebuildGraphMaps(state: State): void {
+    if (state.meta.domain !== 'graph2d') return;
+    const params: Record<string, number> = {};
+    const fns: Record<string, string> = {};
+    for (const id of state.order) {
+      const obj = state.objects[id];
+      if (obj.kind === 'parameter') {
+        params[obj.label] = (obj.attrs as { value: number }).value;
+      } else if (obj.kind === 'function2d') {
+        fns[obj.id] = (obj.attrs as { expression: string }).expression;
+      }
+    }
+    this.paramMap = params;
+    this.functionExpr = fns;
   }
 
   private create(obj: SceneObject): void {
@@ -121,6 +148,11 @@ export class JxgRenderer {
 
   private applyDiff(prev: State | undefined, next: State): void {
     if (this.disposed) return;
+
+    // Rebuild paramMap + functionExpr TRƯỚC khi diff, để ctx() có đúng
+    // paramMap khi render lần đầu tiên.
+    this.rebuildGraphMaps(next);
+
     const prevObjs = prev?.objects ?? {};
     const nextObjs = next.objects;
 
@@ -146,6 +178,32 @@ export class JxgRenderer {
       }
       this.remove(id);
       this.create(cur);
+    }
+
+    // Sau diff bình thường: nếu domain='graph2d', detect parameter value changes
+    // và force re-render các function2d phụ thuộc.
+    if (next.meta.domain === 'graph2d' && prev) {
+      const changedParams = new Set<string>();
+      for (const id of next.order) {
+        const cur = next.objects[id];
+        const old = prev.objects[id] as SceneObject | undefined;
+        if (cur.kind !== 'parameter' || old?.kind !== 'parameter') continue;
+        if ((cur.attrs as { value: number }).value !== (old.attrs as { value: number }).value) {
+          changedParams.add(cur.label);
+        }
+      }
+      if (changedParams.size > 0) {
+        for (const id of next.order) {
+          const obj = next.objects[id];
+          if (obj.kind !== 'function2d') continue;
+          const expr = (obj.attrs as { expression: string }).expression;
+          const refs = collectFreeVars(expr);
+          if (refs.some((r) => changedParams.has(r))) {
+            this.remove(id);
+            this.create(obj);
+          }
+        }
+      }
     }
   }
 
