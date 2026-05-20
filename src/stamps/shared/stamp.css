@@ -31,9 +31,13 @@
 }
 
 /* Left-panel header có gradient sáng — đổi sang slate */
-.theme--dark [data-testid="stamp-left-panel"] > header.bg-gradient-to-r,
-.theme--dark [data-testid="left-panel"] > header.bg-gradient-to-r {
+.theme--dark [data-stamp-area="true"] > header.bg-gradient-to-r {
   background-image: linear-gradient(to right, rgb(15 23 42), rgb(30 41 59));
+}
+
+/* Tab pill row (bg-slate-100) trong dark mode */
+.theme--dark [data-stamp-area="true"] [role="tablist"].bg-slate-100 {
+  background-color: rgb(30 41 59);
 }
 
 /* ---- Borders ---- */
