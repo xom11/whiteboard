@@ -11,4 +11,5 @@ import './polyhedron3d';
 import './cylinder3d';
 import './cone3d';
 import './point';
+import './segment';
 export {};
