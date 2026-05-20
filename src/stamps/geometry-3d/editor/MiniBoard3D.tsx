@@ -97,6 +97,7 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
       let handlePointerMove: ((e: PointerEvent) => void) | null = null;
       let handlePointerUp: ((e: PointerEvent) => void) | null = null;
       let handlePointerLeave: (() => void) | null = null;
+      let handleWheel: ((e: WheelEvent) => void) | null = null;
 
       void (async () => {
         try {
@@ -119,12 +120,39 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
             showCopyright: false,
             showNavigation: false,
             renderer: 'svg',
+            // Wheel zoom được tự xử lý bằng Ctrl/Cmd + wheel ở dưới (Excalidraw-style).
+            zoom: { wheel: false },
           });
         } catch {
           return;
         }
         if (cancelled || !board) return;
         boardRef.current = board;
+
+        // Ctrl/Cmd + wheel zoom: cuộn lên phóng to, cuộn xuống thu nhỏ. Không
+        // có modifier thì để page scroll bình thường.
+        const wheelBoard = board;
+        handleWheel = (e: WheelEvent) => {
+          if (!e.ctrlKey && !e.metaKey) return;
+          e.preventDefault();
+          e.stopPropagation();
+          let cx: number | undefined;
+          let cy: number | undefined;
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const usr = (wheelBoard as any).getUsrCoordsOfMouse?.(e);
+            if (Array.isArray(usr) && usr.length === 2
+                && Number.isFinite(usr[0]) && Number.isFinite(usr[1])) {
+              cx = usr[0] as number;
+              cy = usr[1] as number;
+            }
+          } catch { /* ignore */ }
+          try {
+            if (e.deltaY < 0) wheelBoard.zoomIn(cx, cy);
+            else if (e.deltaY > 0) wheelBoard.zoomOut(cx, cy);
+          } catch { /* ignore */ }
+        };
+        div.addEventListener('wheel', handleWheel, { passive: false });
 
         let view: JxgView3D | null = null;
         try {
@@ -316,6 +344,10 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
 
       return () => {
         cancelled = true;
+        if (handleWheel) {
+          div.removeEventListener('wheel', handleWheel);
+          handleWheel = null;
+        }
         if (svgEl) {
           if (handlePointerDown) svgEl.removeEventListener('pointerdown', handlePointerDown);
           if (handlePointerMove) svgEl.removeEventListener('pointermove', handlePointerMove);

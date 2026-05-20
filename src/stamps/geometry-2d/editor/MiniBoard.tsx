@@ -1103,6 +1103,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
   useEffect(() => {
     if (typeof window === 'undefined' || !containerRef.current) return;
     let cancelled = false;
+    let wheelCleanup: (() => void) | null = null;
     (async () => {
       const JXG = (await import('jsxgraph')).default;
       if (cancelled || !containerRef.current) return;
@@ -1137,13 +1138,46 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
         // without this circles became ellipses after reload).
         keepAspectRatio: true,
         pan: { enabled: true, needShift: false },
-        zoom: { wheel: true },
+        // Wheel zoom được tự xử lý bên dưới để bám phím Ctrl/Cmd như Excalidraw
+        // (cuộn lên = phóng to, cuộn xuống = thu nhỏ, tâm zoom là vị trí chuột).
+        // JSXGraph không có option `needCtrl` nên phải disable wheel built-in
+        // và bind listener riêng.
+        zoom: { wheel: false },
         // Looser hit-test radius so clicking on a thin segment/line/circle
         // actually registers without pixel-perfect aim. `precision` is a real
         // JSXGraph option (Options.precision) but isn't in the d.ts file.
         ...({ precision: { hasPoint: 8, mouse: 4, touch: 16 } } as Record<string, unknown>),
       });
       boardRef.current = board;
+
+      // Ctrl/Cmd + wheel zoom (Excalidraw-style). Wheel không có Ctrl/Cmd thì
+      // bỏ qua → page vẫn scroll bình thường. Tâm zoom đặt tại vị trí chuột.
+      const wheelTarget = containerRef.current;
+      if (wheelTarget) {
+        const onWheel = (e: WheelEvent) => {
+          if (!e.ctrlKey && !e.metaKey) return;
+          e.preventDefault();
+          e.stopPropagation();
+          let cx: number | undefined;
+          let cy: number | undefined;
+          safeJsx('MiniBoard.wheelZoom.coords', () => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const usr = (board as any).getUsrCoordsOfMouse?.(e);
+            if (Array.isArray(usr) && usr.length === 2
+                && Number.isFinite(usr[0]) && Number.isFinite(usr[1])) {
+              cx = usr[0] as number;
+              cy = usr[1] as number;
+            }
+          });
+          if (e.deltaY < 0) {
+            safeJsx('MiniBoard.wheelZoom.in', () => board.zoomIn(cx, cy));
+          } else if (e.deltaY > 0) {
+            safeJsx('MiniBoard.wheelZoom.out', () => board.zoomOut(cx, cy));
+          }
+        };
+        wheelTarget.addEventListener('wheel', onWheel, { passive: false });
+        wheelCleanup = () => wheelTarget.removeEventListener('wheel', onWheel);
+      }
 
       // Replay initial state if any
       if (initialState && initialState.elements.length > 0) {
@@ -1321,6 +1355,10 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     })();
     return () => {
       cancelled = true;
+      if (wheelCleanup) {
+        wheelCleanup();
+        wheelCleanup = null;
+      }
       if (previewRafRef.current != null) {
         cancelAnimationFrame(previewRafRef.current);
         previewRafRef.current = null;
