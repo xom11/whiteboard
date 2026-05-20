@@ -16,4 +16,5 @@ import './line';
 import './ray';
 import './vector';
 import './circle';
+import './polygon';
 export {};
