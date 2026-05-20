@@ -1109,6 +1109,11 @@ export function migrateState(raw: any): State {
       cur = mig(cur);
       cur.schemaVersion = next;
     }
+    if ((cur.schemaVersion ?? 0) !== def.schemaVersion) {
+      throw new Error(
+        `[scene] missing migration cho ${obj.kind}: stored v${cur.schemaVersion ?? 0}, current v${def.schemaVersion}`,
+      );
+    }
     migratedObjects[id] = cur;
   }
 
