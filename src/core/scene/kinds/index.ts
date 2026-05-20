@@ -12,4 +12,5 @@ import './cylinder3d';
 import './cone3d';
 import './point';
 import './segment';
+import './line';
 export {};
