@@ -52,7 +52,7 @@ function makeRenderRow(store: Store) {
     if (obj.kind === 'function2d') {
       return (
         <FunctionRow
-          obj={obj as SceneObject<Function2DAttrs>}
+          obj={obj as unknown as SceneObject<Function2DAttrs>}
           store={store}
           selected={defaults.selected}
           onClick={defaults.onClick}
@@ -62,7 +62,7 @@ function makeRenderRow(store: Store) {
     if (obj.kind === 'parameter') {
       return (
         <ParameterRow
-          obj={obj as SceneObject<ParameterAttrs>}
+          obj={obj as unknown as SceneObject<ParameterAttrs>}
           store={store}
           selected={defaults.selected}
           onClick={defaults.onClick}
