@@ -280,6 +280,9 @@ function MobilePanel(props: LeftPanelProps) {
     isDark,
     drawerOpen,
     onDrawerClose,
+    store,
+    selectedObjectId,
+    onObjectSelect,
   } = props;
 
   const groups = React.useMemo<MobileToolGroup<ToolKey, Geom3DGroup>[]>(
@@ -343,6 +346,16 @@ function MobilePanel(props: LeftPanelProps) {
       groups={groups}
       activeTool={selectedTool}
       onToolSelect={onSelectTool}
+      objectsTab={{
+        label: '📐 Đối tượng',
+        render: () => (
+          <ObjectListPanel
+            store={store}
+            selectedId={selectedObjectId}
+            onSelect={onObjectSelect}
+          />
+        ),
+      }}
     />
   );
 }
