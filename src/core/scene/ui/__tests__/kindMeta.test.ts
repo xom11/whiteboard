@@ -18,11 +18,12 @@ describe('kindMeta', () => {
     expect(meta.icon).toBe('?');
   });
 
-  it('has entries for all 19 registered kinds', () => {
+  it('has entries for all 26 registered kinds', () => {
     const kinds = [
       'point', 'segment', 'line', 'ray', 'vector', 'circle', 'polygon', 'intersection',
       'point3d', 'segment3d', 'line3d', 'ray3d', 'vector3d', 'plane3d',
       'polygon3d', 'sphere3d', 'polyhedron3d', 'cylinder3d', 'cone3d',
+      'function2d', 'parameter', 'pointOnCurve', 'tangent2d', 'extremum2d', 'root2d', 'slope2d',
     ];
     for (const k of kinds) {
       expect(KIND_UI_META[k]).toBeDefined();

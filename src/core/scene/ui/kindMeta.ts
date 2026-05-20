@@ -26,6 +26,14 @@ export const KIND_UI_META: Readonly<Record<string, KindUiMeta>> = {
   polyhedron3d: { displayName: 'Đa diện',     icon: '⬢' },
   cylinder3d:   { displayName: 'Hình trụ',    icon: '⌭' },
   cone3d:       { displayName: 'Hình nón',    icon: '▲' },
+  // Graph 2D
+  function2d:   { displayName: 'Hàm số',           icon: 'ƒ' },
+  parameter:    { displayName: 'Tham số',          icon: 'α' },
+  pointOnCurve: { displayName: 'Điểm trên đồ thị', icon: '◉' },
+  tangent2d:    { displayName: 'Tiếp tuyến',       icon: '╱' },
+  extremum2d:   { displayName: 'Cực trị',          icon: '∧' },
+  root2d:       { displayName: 'Nghiệm',           icon: '0' },
+  slope2d:      { displayName: 'Hệ số góc',        icon: '△' },
 };
 
 export function getKindUiMeta(kind: string): KindUiMeta {
