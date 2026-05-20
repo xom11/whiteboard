@@ -24,7 +24,7 @@ import type { SerializedBoard } from '../serialize';
 import { handleDown, handleMove, handleUp, type HandlerCtx } from './handlers';
 import { findNearestPoint } from './hitTest';
 import { paletteFor, themeAxis, themeGrid, themeLabel } from './theme';
-import { GROUP_LABELS, TOOLS, type GeomTool, type ToolDef } from './tools';
+import { GROUP_LABELS, TOOLS, objKind, type GeomTool, type ToolDef } from './tools';
 import { useSceneStore } from './useSceneStore';
 import { useToolStateMachine } from './useToolStateMachine';
 import { safeJsx } from '../../shared/safeJsx';
@@ -191,9 +191,19 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     const sc = b ? screenCoordsOf(evt) : null;
     if (!b || !sc) return [];
     const [sx, sy] = sc;
+    // Loại trừ phantom point + preview shape + preview segments khỏi hit-test.
+    // Phantom là invisible point JSXGraph kéo theo cursor để dựng live-preview;
+    // nếu không loại trừ, click chỗ trống sẽ snap trúng phantom (cách click 0px)
+    // → drawing 'đứng' vì pendingRef nhét phantom (không có scene id), tool
+    // không tiến tới được needs threshold. (Regression từ commit 95a6c13.)
+    const excludes = new Set<JxgObj>();
+    if (phantomRef.current) excludes.add(phantomRef.current);
+    if (previewShapeRef.current) excludes.add(previewShapeRef.current);
+    for (const s of previewSegRef.current) excludes.add(s);
     const out: JxgObj[] = [];
     safeJsx('MiniBoard.objectsAt', () => {
       for (const o of (b.objectsList || [])) {
+        if (excludes.has(o)) continue;
         if (o && typeof o.hasPoint === 'function' && o.hasPoint(sx, sy)) out.push(o);
       }
     });
@@ -273,8 +283,111 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     pendingRef.current = [];
     toolSM.clearPending();
   }, [clearPreviewSegs, removePhantom, toolSM]);
-  // Multi-pick live preview chuyển sang scene-driven sẽ làm ở sub-PR sau.
-  const refreshPreview = useCallback(() => { /* no-op */ }, []);
+
+  // Build a transient preview shape (not part of scene store) from pending
+  // picks + phantom point. Returns the created JSXGraph object so the caller
+  // can tear it down when picks change. Mirrors the legacy live-preview from
+  // commit ce78521, adapted to read picks via `pendingRef` (still JxgObj[]).
+  const buildPreview = useCallback((toolDef: ToolDef, picks: JxgObj[], phantom: JxgObj): JxgObj => {
+    const b = boardRef.current;
+    if (!b) return null;
+    const style: Record<string, unknown> = {
+      strokeColor: '#3b82f6',
+      strokeWidth: 1.5,
+      strokeOpacity: 0.65,
+      dash: 2,
+      fixed: true,
+      highlight: false,
+      withLabel: false,
+    };
+    const circStyle: Record<string, unknown> = { ...style, fillColor: 'none', fillOpacity: 0 };
+    return safeJsx<JxgObj>('MiniBoard.buildPreview', () => {
+      switch (toolDef.key) {
+        case 'segment':
+        case 'midpoint':
+        case 'distance':
+          return b.create('segment', [picks[0], phantom], style);
+        case 'line':
+          return b.create('line', [picks[0], phantom], style);
+        case 'ray':
+          return b.create('line', [picks[0], phantom], { ...style, straightFirst: false, straightLast: true });
+        case 'vector':
+          return b.create('arrow', [picks[0], phantom], style);
+        case 'circleCenter':
+          return b.create('circle', [picks[0], phantom], circStyle);
+        case 'circle3':
+          if (picks.length === 1) return b.create('circle', [picks[0], phantom], circStyle);
+          if (picks.length === 2) return b.create('circumcircle', [picks[0], picks[1], phantom], circStyle);
+          return null;
+        case 'angle':
+          if (picks.length === 1) return b.create('segment', [picks[0], phantom], style);
+          if (picks.length === 2) {
+            return b.create('angle', [picks[0], picks[1], phantom], {
+              ...style,
+              radius: 1,
+              fillColor: '#22c55e',
+              fillOpacity: 0.15,
+            });
+          }
+          return null;
+        case 'perpBisector':
+          return b.create('segment', [picks[0], phantom], style);
+        case 'angleBisector':
+          if (picks.length === 1) return b.create('segment', [picks[0], phantom], style);
+          if (picks.length === 2) return b.create('bisector', [picks[0], picks[1], phantom], style);
+          return null;
+        case 'perpendicular':
+        case 'parallel':
+        case 'tangent': {
+          if (picks.length !== 1) return null;
+          const k = objKind(picks[0]);
+          if (k === 'line' && toolDef.key !== 'tangent') {
+            return b.create(toolDef.key, [picks[0], phantom], style);
+          }
+          if (k === 'circle' && toolDef.key === 'tangent') {
+            const glider = b.create('glider', [phantom.X(), phantom.Y(), picks[0]], {
+              visible: false,
+              withLabel: false,
+            });
+            return b.create('tangent', [glider], style);
+          }
+          return null;
+        }
+        default:
+          return null;
+      }
+    }, null);
+  }, []);
+
+  // Tear down old preview shape and build a fresh one from the current picks
+  // + phantom. Phantom is created lazily so we don't spawn a hidden point until
+  // the user has at least one real pick.
+  const refreshPreview = useCallback(() => {
+    const b = boardRef.current;
+    if (!b) return;
+    if (previewShapeRef.current) {
+      safeJsx('MiniBoard.removeObject(previewShape)', () => b.removeObject(previewShapeRef.current));
+      previewShapeRef.current = null;
+    }
+    const t = toolSM.toolRef.current;
+    const toolDef = TOOLS.find((td) => td.key === t);
+    if (!toolDef) return;
+    const picks = pendingRef.current;
+    // toolDef.needs === -1 means polygon (variable-length); handlers.ts already
+    // emits per-vertex segments via previewSegRef, so we skip phantom-preview.
+    if (picks.length === 0 || toolDef.needs <= 0) return;
+    if (picks.length >= toolDef.needs) return;
+    if (!phantomRef.current) {
+      phantomRef.current = safeJsx<JxgObj>('MiniBoard.createPhantom', () => b.create('point', [0, 0], {
+        visible: false,
+        fixed: true,
+        withLabel: false,
+        name: '',
+      }), null);
+      if (!phantomRef.current) return;
+    }
+    previewShapeRef.current = buildPreview(toolDef, picks, phantomRef.current);
+  }, [buildPreview, toolSM]);
 
   // ─── Warning flash ─────────────────────────────────────────────────────────
   const [, setWarn] = useState<string | null>(null);

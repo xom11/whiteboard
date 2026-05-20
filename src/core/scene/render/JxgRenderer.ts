@@ -40,16 +40,64 @@ export class JxgRenderer {
       const def = getKind(obj.kind);
       const el = def.render(obj, this.ctx());
       this.elements.set(obj.id, el);
+      this.attachFreePointDragSync(obj, el);
     } catch (err) {
       console.warn(`[scene/render/2d] không render được ${obj.kind} id="${obj.id}":`, err);
     }
+  }
+
+  /**
+   * Đồng bộ toạ độ live của free point về scene.constraint khi user kéo bằng
+   * tay (Move tool / mobile drag). JSXGraph mutate obj.X()/Y() ngay nhưng
+   * constraint vẫn giữ giá trị lúc tạo → serialize sẽ ra SVG y hệt cũ →
+   * fileId SHA-256 trùng → Excalidraw bỏ qua refresh. (Regression từ
+   * commit f41f366 sau scene v2 port.)
+   *
+   * Chỉ áp dụng cho free point — glider/intersection/midpoint không drag được
+   * trực tiếp (toạ độ derived từ ref khác).
+   */
+  private attachFreePointDragSync(obj: SceneObject, el: unknown): void {
+    if (obj.kind !== 'point') return;
+    const c = (obj.attrs as { constraint?: { kind?: string } }).constraint;
+    if (!c || c.kind !== 'free') return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const point = el as any;
+    if (typeof point.on !== 'function') return;
+    const sceneId = obj.id;
+    point.on('up', () => {
+      if (this.disposed) return;
+      if (typeof point.X !== 'function' || typeof point.Y !== 'function') return;
+      const x = point.X();
+      const y = point.Y();
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+      const cur = this.store.getState().objects[sceneId];
+      if (!cur) return;
+      const curC = (cur.attrs as { constraint?: { kind?: string; x?: number; y?: number } }).constraint;
+      if (!curC || curC.kind !== 'free') return;
+      if (curC.x === x && curC.y === y) return;
+      this.store.dispatch({
+        type: 'UPDATE_ATTRS',
+        payload: { id: sceneId, patch: { constraint: { kind: 'free', x, y } } },
+      });
+    });
   }
 
   private remove(id: string): void {
     const el = this.elements.get(id);
     if (!el) return;
     try {
+      const helpers = (el as Record<string, unknown>)._helpers;
+      // Element chính bị remove trước, sau đó helpers (glider phụ trợ cho
+      // tangent ...). Helpers thường là parent của element chính — nếu xoá
+      // parent trước, JSXGraph có thể phàn nàn dangling reference.
       (this.board as { removeObject?: (e: unknown) => void }).removeObject?.(el);
+      if (Array.isArray(helpers)) {
+        for (const h of helpers) {
+          try {
+            (this.board as { removeObject?: (e: unknown) => void }).removeObject?.(h);
+          } catch { /* ignore */ }
+        }
+      }
     } catch (err) {
       console.warn(`[scene/render/2d] không remove được id="${id}":`, err);
     }

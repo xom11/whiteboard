@@ -37,4 +37,16 @@ describe('kinds/point (2D)', () => {
     const obj = mkObj('point', 'A', { constraint: { kind: 'free', x: 1.5, y: 2.5 } });
     expect(def.describe(obj)).toMatch(/A.*1\.50.*2\.50/);
   });
+
+  test('dependsOn midpoint → [p1, p2]', () => {
+    const def = getKind('point');
+    expect(def.dependsOn({ constraint: { kind: 'midpoint', p1: 'A', p2: 'B' } } as never))
+      .toEqual(['A', 'B']);
+  });
+
+  test('describe midpoint', () => {
+    const def = getKind('point');
+    const obj = mkObj('point', 'M', { constraint: { kind: 'midpoint', p1: 'A', p2: 'B' } });
+    expect(def.describe(obj)).toMatch(/trung điểm AB/);
+  });
 });

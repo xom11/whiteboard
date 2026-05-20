@@ -7,7 +7,8 @@ export type Constraint2D =
   | { kind: 'onLine'; lineId: string; t: number }
   | { kind: 'onSegment'; segmentId: string; t: number }
   | { kind: 'onCircle'; circleId: string; theta: number }
-  | { kind: 'onPolygon'; polygonId: string; u: number; v: number };
+  | { kind: 'onPolygon'; polygonId: string; u: number; v: number }
+  | { kind: 'midpoint'; p1: string; p2: string };
 
 export function constraintRefs2D(c: Constraint2D): string[] {
   switch (c.kind) {
@@ -15,6 +16,7 @@ export function constraintRefs2D(c: Constraint2D): string[] {
     case 'onSegment': return [c.segmentId];
     case 'onCircle': return [c.circleId];
     case 'onPolygon': return [c.polygonId];
+    case 'midpoint': return [c.p1, c.p2];
     default: return [];
   }
 }

@@ -7,15 +7,7 @@ import { PropertiesPopover } from './PropertiesPopover';
 import { TransformParamPopover } from './TransformParamPopover';
 import { UndoIcon, RedoIcon } from './LeftPanel';
 import { ObjectListPanel } from '../../../core/scene/ui/ObjectListPanel';
-import { useActionRecorder } from '../../../core/scene/ui/useActionRecorder';
-import { RecorderPanelDev } from '../../../core/scene/ui/RecorderPanelDev';
 import type { Store } from '../../../core/scene/store';
-
-/** Inner component so useActionRecorder can be called unconditionally once store is available. */
-function RecorderPanelWithStore({ store }: { store: Store }): React.ReactElement {
-  const recorder = useActionRecorder(store);
-  return <RecorderPanelDev recorder={recorder} />;
-}
 
 interface Props {
   initialState: SerializedBoard | null;
@@ -339,7 +331,6 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
             </div>
           </footer>
         )}
-        {sceneStoreRef.current && <RecorderPanelWithStore store={sceneStoreRef.current} />}
       </div>
     );
   },

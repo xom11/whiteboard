@@ -85,14 +85,18 @@ describe('JxgRenderer (2D)', () => {
     expect(removed.length).toBeGreaterThanOrEqual(2);
   });
 
-  test('UPDATE_ATTRS point → remove + recreate', () => {
+  test('UPDATE_ATTRS free→free point → giữ identity (không recreate)', () => {
+    // Point kind có `update` hook xử lý free→free coordinate change qua
+    // setPositionDirectly + setAttribute. Giữ JxgObj identity là yêu cầu
+    // để các object phụ thuộc (segment/line/polygon) không bị stale parent
+    // ref khi user kéo điểm bằng tay.
     const store = createStore(createEmptyState('2d'));
     const { board, created, removed } = mockBoard();
     new JxgRenderer(store, board as never);
     store.dispatch({ type: 'ADD', payload: { obj: mkPoint('A', 0, 0) } });
     store.dispatch({ type: 'UPDATE_ATTRS', payload: { id: 'A', patch: { constraint: { kind: 'free', x: 5, y: 5 } } } });
-    expect(removed).toHaveLength(1);
-    expect(created).toHaveLength(2);
+    expect(removed).toHaveLength(0);
+    expect(created).toHaveLength(1);
   });
 
   test('dispose unsubscribe + remove tất cả', () => {

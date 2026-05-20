@@ -23,4 +23,27 @@ describe('kinds/circle (2D)', () => {
     const obj = mkObj('circle', 'c1', { center: 'O', surfacePoint: 'A' });
     expect(getKind('circle').describe(obj)).toMatch(/đường tròn|O.*A/i);
   });
+
+  describe('construction discriminator', () => {
+    const def = getKind('circle');
+
+    test('validate cho phép omit center/surfacePoint khi có construction', () => {
+      expect(() => def.validate?.({
+        construction: { kind: 'circumscribed', p1: 'A', p2: 'B', p3: 'C' },
+      } as never)).not.toThrow();
+    });
+
+    test('dependsOn circumscribed = [p1, p2, p3]', () => {
+      expect(def.dependsOn({
+        construction: { kind: 'circumscribed', p1: 'A', p2: 'B', p3: 'C' },
+      } as never)).toEqual(['A', 'B', 'C']);
+    });
+
+    test('describe circumscribed', () => {
+      const obj = mkObj('circle', 'cc1', {
+        construction: { kind: 'circumscribed', p1: 'A', p2: 'B', p3: 'C' },
+      });
+      expect(def.describe(obj)).toMatch(/qua ABC/);
+    });
+  });
 });

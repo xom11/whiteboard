@@ -11,6 +11,7 @@ import { hitToConstraint } from './tools/handlers/_ensurePoint';
 import type { Constraint3D } from '../../../core/scene/kinds/3d-constraint';
 import type { Point3DAttrs } from '../../../core/scene/kinds/point3d';
 import { MiniBoard3D, type MiniBoard3DHandle } from './MiniBoard3D';
+import { Preview3DManager } from './preview3d';
 import { StatusHint } from './StatusHint';
 import { DEFAULT_VIEW3D } from './theme';
 import type { ToolKey } from './tools/spec';
@@ -19,9 +20,6 @@ import {
   type SerializedBoard3D,
   type SerializedView3D,
 } from '../serialize';
-import { useActionRecorder } from '../../../core/scene/ui/useActionRecorder';
-import { RecorderPanelDev } from '../../../core/scene/ui/RecorderPanelDev';
-
 export interface EditorPanelProps {
   isDark?: boolean;
   /** Initial state parsed from custom data (state + optional view orientation). */
@@ -71,13 +69,13 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
     const controllerRef = React.useRef<ToolController | null>(null);
     if (!controllerRef.current) controllerRef.current = new ToolController(store);
 
-    const recorder = useActionRecorder(store);
-
     const [hint, setHint] = React.useState<string>('Chọn công cụ trong bảng bên trái');
     const [hoverLabel, setHoverLabel] = React.useState<string | null>(null);
 
     const boardRef = React.useRef<MiniBoard3DHandle | null>(null);
     const rendererRef = React.useRef<JxgRenderer3D | null>(null);
+    const previewRef = React.useRef<Preview3DManager | null>(null);
+    const lastHoverHitRef = React.useRef<import('./hitTest/hitTest').SceneHit>({ kind: 'empty' });
 
     const onSelectedToolChangeRef = React.useRef(onSelectedToolChange);
     onSelectedToolChangeRef.current = onSelectedToolChange;
@@ -159,12 +157,28 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       return () => window.removeEventListener('keydown', onKey, { capture: true });
     }, [store]);
 
-    // Dispose renderer on unmount.
+    // Dispose renderer + preview on unmount.
     React.useEffect(() => {
       return () => {
         rendererRef.current?.dispose();
         rendererRef.current = null;
+        previewRef.current?.dispose();
+        previewRef.current = null;
       };
+    }, []);
+
+    // Clear preview whenever the controller resets — tool switch, build
+    // complete (collected → []), or cancel. Re-runs whenever the controller
+    // notifies listeners, which covers consumeHit / consumeNumber too: after a
+    // pick we redraw with the new collected count on the next pointer move.
+    React.useEffect(() => {
+      const controller = controllerRef.current;
+      if (!controller) return;
+      return controller.on((state) => {
+        if (!previewRef.current) return;
+        if (state.collected.length === 0) previewRef.current.clear();
+        else previewRef.current.update(state.tool?.key ?? null, state.collected, lastHoverHitRef.current);
+      });
     }, []);
 
     // Apply showAxis / showGrid to the JSXGraph view3d when it (or the state) changes.
@@ -191,6 +205,7 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
 
     const handleView3DReady = React.useCallback((view: unknown) => {
       rendererRef.current = new JxgRenderer3D(store, view);
+      previewRef.current = new Preview3DManager(view, store);
       // Restore saved azimuth/elevation khi mở lại stamp cũ để re-edit, để
       // editor view khớp với ảnh đã chèn.
       const savedView = initialState?.view;
@@ -234,6 +249,12 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       } catch {
         setHoverLabel(null);
         return;
+      }
+      lastHoverHitRef.current = hit;
+      const ctrl = controllerRef.current;
+      if (previewRef.current && ctrl) {
+        const cs = ctrl.getState();
+        previewRef.current.update(cs.tool?.key ?? null, cs.collected, hit);
       }
       if (hit.kind === 'empty') setHoverLabel(null);
       else if (hit.kind === 'existingPoint') {
@@ -435,14 +456,17 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
             onView3DReady={handleView3DReady}
             onPointerClick={handleClick}
             onPointerMove={handleMove}
-            onPointerLeave={() => setHoverLabel(null)}
+            onPointerLeave={() => {
+              setHoverLabel(null);
+              lastHoverHitRef.current = { kind: 'empty' };
+              previewRef.current?.clear();
+            }}
             shouldStartPointDrag={shouldStartPointDrag}
             onPointerDrag={onPointerDrag}
             onPointerDragEnd={onPointerDragEnd}
           />
         </div>
         <StatusHint hint={hint} hoverLabel={hoverLabel} />
-        <RecorderPanelDev recorder={recorder} />
       </div>
     );
   },

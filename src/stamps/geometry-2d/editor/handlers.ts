@@ -399,6 +399,20 @@ export function handleDown(ctx: HandlerCtx, e: any): void {
 
 // ─── Finalize shape (dispatch ADD per tool) ──────────────────────────────────
 
+/**
+ * Tìm scene id của pending pick theo `objKind`. Dùng cho tool order-flexible
+ * (perpendicular, parallel, tangent): user có thể click điểm trước hay đường
+ * trước, finalizeShape dò pendingRef theo kind để biết role.
+ */
+function findPickIdByKind(ctx: HandlerCtx, kind: 'point' | 'line' | 'circle'): string | null {
+  const picks = ctx.pendingRef.current;
+  const ids = ctx.pendingIdsRef.current;
+  for (let i = 0; i < picks.length; i += 1) {
+    if (objKind(picks[i]) === kind && ids[i]) return ids[i];
+  }
+  return null;
+}
+
 function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
   const ids = ctx.pendingIdsRef.current;
   const key = toolDef.key;
@@ -412,22 +426,63 @@ function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
       });
       return;
     }
-    case 'line':
-    case 'perpendicular':
-    case 'parallel':
-    case 'perpBisector':
-    case 'angleBisector':
-    case 'tangent': {
-      // Tất cả tool sinh ra "đường thẳng qua 2 điểm" — port chính xác sang scene
-      // `line` kind sẽ cần các kind phái sinh (perpendicular line through P perp L)
-      // ở sub-PR sau; hiện tại fallback về line p1=ids[0], p2=ids[1].
+    case 'line': {
       const id = freshId(ctx, 'l');
       const label = ctx.nextLabel('line');
-      const p1 = ids[0];
-      const p2 = ids[1] ?? ids[0];
       ctx.store.dispatch({
         type: 'ADD',
-        payload: { obj: mkSceneObj(id, 'line', label, { p1, p2 }) },
+        payload: { obj: mkSceneObj(id, 'line', label, { p1: ids[0], p2: ids[1] }) },
+      });
+      return;
+    }
+    case 'perpendicular':
+    case 'parallel': {
+      const throughPoint = findPickIdByKind(ctx, 'point');
+      const toLine = findPickIdByKind(ctx, 'line');
+      if (!throughPoint || !toLine) return;
+      const id = freshId(ctx, key === 'perpendicular' ? 'perp' : 'par');
+      const label = ctx.nextLabel('line');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'line', label, {
+          construction: { kind: key, throughPoint, toLine },
+        }) },
+      });
+      return;
+    }
+    case 'perpBisector': {
+      const id = freshId(ctx, 'pb');
+      const label = ctx.nextLabel('line');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'line', label, {
+          construction: { kind: 'perpBisector', p1: ids[0], p2: ids[1] },
+        }) },
+      });
+      return;
+    }
+    case 'angleBisector': {
+      const id = freshId(ctx, 'ab');
+      const label = ctx.nextLabel('line');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'line', label, {
+          construction: { kind: 'angleBisector', p1: ids[0], vertex: ids[1], p2: ids[2] },
+        }) },
+      });
+      return;
+    }
+    case 'tangent': {
+      const throughPoint = findPickIdByKind(ctx, 'point');
+      const toCircle = findPickIdByKind(ctx, 'circle');
+      if (!throughPoint || !toCircle) return;
+      const id = freshId(ctx, 't');
+      const label = ctx.nextLabel('line');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'line', label, {
+          construction: { kind: 'tangent', throughPoint, toCircle },
+        }) },
       });
       return;
     }
@@ -449,11 +504,7 @@ function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
       });
       return;
     }
-    case 'circleCenter':
-    case 'circle3': {
-      // circle3 cần kind phái sinh circumscribedCircle (3 điểm) — port ở sub-PR
-      // sau. Tạm fallback: nếu chỉ 2 ids → center/surface; nếu 3 ids → center +
-      // surface = ids[1].
+    case 'circleCenter': {
       const id = freshId(ctx, 'c');
       const label = ctx.nextLabel('circle');
       ctx.store.dispatch({
@@ -461,22 +512,33 @@ function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
         payload: {
           obj: mkSceneObj(id, 'circle', label, {
             center: ids[0],
-            surfacePoint: ids[1] ?? ids[0],
+            surfacePoint: ids[1],
+          }),
+        },
+      });
+      return;
+    }
+    case 'circle3': {
+      const id = freshId(ctx, 'cc');
+      const label = ctx.nextLabel('circle');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: {
+          obj: mkSceneObj(id, 'circle', label, {
+            construction: { kind: 'circumscribed', p1: ids[0], p2: ids[1], p3: ids[2] },
           }),
         },
       });
       return;
     }
     case 'midpoint': {
-      // midpoint là một point kind phái sinh — port chính xác ở sub-PR sau
-      // (cần Constraint2D 'midpoint'). Fallback: tạo free point ở (0,0) — chưa
-      // dùng trong unit-test, MiniBoard sẽ refactor cách tạo midpoint khi kind
-      // 'point' hỗ trợ constraint 'midpoint'.
       const id = freshId(ctx, 'mp');
       const label = ctx.nextLabel('point');
       ctx.store.dispatch({
         type: 'ADD',
-        payload: { obj: mkSceneObj(id, 'point', label, { constraint: { kind: 'free', x: 0, y: 0 } }) },
+        payload: { obj: mkSceneObj(id, 'point', label, {
+          constraint: { kind: 'midpoint', p1: ids[0], p2: ids[1] },
+        }) },
       });
       return;
     }
