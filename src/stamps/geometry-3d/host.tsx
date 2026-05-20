@@ -12,7 +12,7 @@ import {
 } from 'react';
 import { EditorPanel, type EditorPanelHandle } from './editor/EditorPanel';
 import { LeftPanel } from './editor/LeftPanel';
-import { Scene3D } from './editor/scene/Scene3D';
+import { createStore, createEmptyState, type Store, type State } from '../../core/scene';
 import { GROUP_ORDER, TOOLS_FLAT } from './editor/toolPanel/groups';
 import { useChordShortcut } from '../shared/useChordShortcut';
 import { insertStampImage } from '../shared/insertImage';
@@ -21,9 +21,9 @@ import { renderGeometry3DSvgFromState } from './render';
 import {
   isGeometry3DCustomData,
   parseSerializedBoard3D,
-  serializeBoard3D,
   type Geometry3DCustomData,
   type SerializedBoard3D,
+  type SerializedView3D,
 } from './serialize';
 import type {
   StampHostProps,
@@ -33,11 +33,11 @@ import type { ToolKey } from './editor/tools/spec';
 
 function parseInitial(
   editingElement: StampHostProps['editingElement'],
-): SerializedBoard3D | null {
+): { state: State; view?: SerializedView3D } | null {
   if (!editingElement) return null;
   if (!isGeometry3DCustomData(editingElement.customData)) return null;
   try {
-    return parseSerializedBoard3D(editingElement.customData.jsonState);
+    return parseSerializedBoard3D(JSON.parse(editingElement.customData.jsonState));
   } catch {
     return null;
   }
@@ -46,8 +46,8 @@ function parseInitial(
 export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
   function Geometry3DStampHost({ api, editingElement, onClose, isDark }, ref) {
     const editorRef = useRef<EditorPanelHandle | null>(null);
-    const sceneRef = useRef<Scene3D | null>(null);
-    if (!sceneRef.current) sceneRef.current = new Scene3D();
+    const storeRef = useRef<Store | null>(null);
+    if (!storeRef.current) storeRef.current = createStore(createEmptyState('3d'));
     const { isMobile } = useIsMobile();
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [ready, setReady] = useState(false);
@@ -65,18 +65,13 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
     }, []);
 
     useEffect(() => {
-      const scene = sceneRef.current;
-      if (!scene) return;
-      const sync = () => setHasContent(scene.list().length > 0);
+      const store = storeRef.current;
+      if (!store) return;
+      const sync = () => setHasContent(Object.keys(store.getState().objects).length > 0);
       sync();
-      const unsubs = [
-        scene.on('add', sync),
-        scene.on('delete', sync),
-        scene.on('reset', sync),
-      ];
-      return () => {
-        for (const u of unsubs) u();
-      };
+      // Any store change is a potential hasContent change.
+      const unsub = store.subscribe(sync);
+      return unsub;
     }, []);
 
     const handleUndo = useCallback(() => {
@@ -110,12 +105,14 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
     const performInsert = useCallback(
       async (board: SerializedBoard3D, width: number, height: number, svgString: string) => {
         if (!api) return;
-        const jsonState = serializeBoard3D(board);
+        const jsonState = JSON.stringify(board);
         await insertStampImage(api, {
           svgString,
           makeCustomData: (): Geometry3DCustomData => ({
             kind: 'geometry3d',
-            version: 1,
+            // Bump customData.version vẫn 2 (đã được hỗ trợ ở isGeometry3DCustomData)
+            // — payload bên trong là envelope v2 mới của state.
+            version: 2,
             jsonState,
             svgWidth: width,
             svgHeight: height,
@@ -131,10 +128,10 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
       if (!editorRef.current) return false;
       if (!editorRef.current.hasContent()) return false;
       const board = editorRef.current.serialize();
-      if (board.elements.length === 0) return false;
+      if (Object.keys(board.state.objects).length === 0) return false;
       void (async () => {
         try {
-          const jsonState = serializeBoard3D(board);
+          const jsonState = JSON.stringify(board);
           const { svgString, width, height } = await renderGeometry3DSvgFromState(jsonState);
           await performInsert(board, width, height, svgString);
         } catch (err) {
@@ -174,7 +171,7 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
       <>
         {!isMobile && (
           <LeftPanel
-            scene={sceneRef.current}
+            store={storeRef.current}
             selectedTool={selectedTool}
             onSelectTool={handleSelectTool}
             showAxis={showAxis}
@@ -254,7 +251,7 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
               isDark={isDark}
               initialState={initial}
               onInsert={handleEditorInsert}
-              scene={sceneRef.current}
+              store={storeRef.current}
               selectedTool={selectedTool}
               onSelectedToolChange={setSelectedTool}
               showAxis={showAxis}
@@ -288,7 +285,7 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
         </div>
         {isMobile && (
           <LeftPanel
-            scene={sceneRef.current}
+            store={storeRef.current}
             selectedTool={selectedTool}
             onSelectTool={handleSelectTool}
             showAxis={showAxis}
