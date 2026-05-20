@@ -1,22 +1,28 @@
 /**
  * handlers.ts — Pure pointer/tool handler functions extracted from MiniBoard.tsx.
  *
- * Each function receives a HandlerCtx object containing the refs and callbacks
- * it needs, and a raw JSXGraph event object. No React, no DOM manipulation
- * beyond what JSXGraph provides through its API.
+ * Sau Sub-PR 2.3.2 (Scene v2): handlers dispatch `ADD`/`DELETE`/`UPDATE_ATTRS`
+ * action vào `core/scene` Store thay vì gọi `ctx.create()` trực tiếp lên
+ * JSXGraph. JxgRenderer subscribe Store và render board → handlers truy cập
+ * JxgObj qua `ctx.jxgFromSceneId(id)` khi cần (vd: live preview segment).
  *
- * The ctx pattern lets MiniBoard.tsx pass a stable object reference captured
- * at useEffect time, while the individual properties stay up-to-date because
- * they are refs (whose .current is read at call time) or stable callbacks
- * (whose identities don't change across renders).
+ * Pending objects vẫn lưu cặp: `pendingRef` (JxgObj — cho hits line/circle ở
+ * tool transform/perpendicular) + `pendingIdsRef` (scene id tương ứng).
+ *
+ * Selection lưu theo scene id (`selectedSetRef`), MiniBoard nghe Store +
+ * selection để re-apply style.
+ *
+ * Transform tools (rotate/dilate/translate/reflectLine/reflectPoint/regularPolygon):
+ * handlers chỉ emit info qua `emitTransform`; finalize logic chuyển sang
+ * MiniBoard (sub-PR 2.3.3+).
  */
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type JxgObj = any;
 
 import { TOOLS, objKind, type GeomTool, type ToolDef } from './tools';
-import { buildTransformSpec } from './transforms';
 import { safeJsx } from '../../shared/safeJsx';
+import type { Store } from '../../../core/scene';
 
 // ─── Context shape ────────────────────────────────────────────────────────────
 
@@ -24,42 +30,105 @@ export interface HandlerCtx {
   // Refs (read .current at call time)
   boardRef: { current: JxgObj };
   toolRef: { current: GeomTool };
-  pendingRef: { current: JxgObj[] };
+  pendingRef: { current: JxgObj[] };          // pending JXG objects (line/circle hits)
+  pendingIdsRef: { current: string[] };       // scene ids tương ứng (point hits / create)
   previewSegRef: { current: JxgObj[] };
   axisObjsRef: { current: { x?: JxgObj; y?: JxgObj } };
-  selectedSetRef: { current: Set<JxgObj> };
+  selectedSetRef: { current: Set<string> };   // scene id
   marqueeRef: { current: { startSx: number; startSy: number; rect?: JxgObj } | null };
   moveDownRef: { current: { sx: number; sy: number } | null };
-  lastMoveClickRef: { current: { obj: JxgObj | null; time: number } };
-  pendingTransformRef: { current: { tool: 'rotate' | 'dilate' | 'regularPolygon'; source: JxgObj; center: JxgObj; anchorScreen: { x: number; y: number } } | null };
+  lastMoveClickRef: { current: { id: string | null; time: number } };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pendingTransformRef: { current: any };
   phantomRef: { current: JxgObj };
   previewShapeRef: { current: JxgObj };
   previewRafRef: { current: number | null };
   jxgRef: { current: JxgObj };
 
+  // Store-bound callbacks
+  store: Store;
+  jxgIdToSceneId: (jxgObj: JxgObj) => string | null;
+  jxgFromSceneId: (id: string) => JxgObj;
+
   // Stable callbacks (identity doesn't change)
   screenCoordsOf: (evt: JxgObj) => [number, number] | null;
   objectsAt: (evt: JxgObj) => JxgObj[];
   promoteLabel: (o: JxgObj) => JxgObj;
-  findNearestPoint: (evt: JxgObj, tolPx?: number) => JxgObj | null;
-  toggleSelect: (obj: JxgObj, additive: boolean) => void;
+  findNearestPointJxg: (evt: JxgObj, tolPx?: number) => JxgObj | null;
+  toggleSelect: (id: string, additive: boolean) => void;
   clearSelection: () => void;
-  applySelectionStyle: (obj: JxgObj) => void;
-  localIdOf: (obj: JxgObj) => string | null;
-  nextLabel: () => string;
-  create: (type: string, args: unknown[], attrs?: Record<string, unknown>) => JxgObj;
-  finalize: (toolDef: ToolDef, picks: JxgObj[]) => void;
-  finalizeTransformCreate: (spec: Parameters<typeof buildTransformSpec>[0] extends never ? never : ReturnType<typeof buildTransformSpec>, source: JxgObj) => void;
+  nextLabel: (kind: string) => string;
   clearPending: () => void;
   clearPreviewSegs: () => void;
   refreshPreview: () => void;
   flashWarn: (msg: string) => void;
-  emitTransform: (info: { tool: 'rotate' | 'dilate' | 'regularPolygon'; anchor: { x: number; y: number } } | null) => void;
-  snapshotObject: (obj: unknown, anchorScreen: { x: number; y: number }) => unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  emitTransform: (info: any | null) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   emitSelect: (snap: any) => void;
   setPendingCount: (n: number) => void;
   setSelectionTick: (fn: (t: number) => number) => void;
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+type SceneObj = {
+  id: string;
+  kind: string;
+  label: string;
+  visible: boolean;
+  locked: boolean;
+  layer: string;
+  schemaVersion: number;
+  attrs: Record<string, unknown>;
+};
+
+function freshId(ctx: HandlerCtx, prefix: string): string {
+  const counter = ctx.store.getState().counter;
+  // Loop until unique (counter is monotonic but ids may have been deleted/reused
+  // in non-trivial scenarios; safer to probe).
+  let n = counter + 1;
+  let id = `${prefix}_${n}`;
+  const objs = ctx.store.getState().objects;
+  while (id in objs) {
+    n += 1;
+    id = `${prefix}_${n}`;
+  }
+  return id;
+}
+
+function mkSceneObj(id: string, kind: string, label: string, attrs: Record<string, unknown>): SceneObj {
+  return {
+    id,
+    kind,
+    label,
+    visible: true,
+    locked: false,
+    layer: 'default',
+    schemaVersion: 1,
+    attrs,
+  };
+}
+
+/** Tạo point free + dispatch ADD; trả về scene id mới. */
+function dispatchAddFreePoint(ctx: HandlerCtx, x: number, y: number): string {
+  const id = freshId(ctx, 'p');
+  const label = ctx.nextLabel('point');
+  const obj = mkSceneObj(id, 'point', label, { constraint: { kind: 'free', x, y } });
+  ctx.store.dispatch({ type: 'ADD', payload: { obj } });
+  return id;
+}
+
+/** Tạo intersection point + dispatch ADD; trả về scene id mới. */
+function dispatchAddIntersection(
+  ctx: HandlerCtx,
+  attrs: Record<string, unknown>,
+): string {
+  const id = freshId(ctx, 'X');
+  const label = ctx.nextLabel('intersection');
+  const obj = mkSceneObj(id, 'intersection', label, attrs);
+  ctx.store.dispatch({ type: 'ADD', payload: { obj } });
+  return id;
 }
 
 // ─── board.on('down') ─────────────────────────────────────────────────────────
@@ -83,21 +152,19 @@ export function handleDown(ctx: HandlerCtx, e: any): void {
       .map(ctx.promoteLabel)
       .filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y);
     // Ưu tiên điểm: exact hit → nearest-within-12px → mới đến hit khác (line/circle).
-    // Tránh case click hơi lệch điểm mà line đi qua đó cướp mất pick.
-    const obj = hits.find((o) => objKind(o) === 'point') ?? ctx.findNearestPoint(e, 12) ?? hits[0];
+    const obj = hits.find((o) => objKind(o) === 'point') ?? ctx.findNearestPointJxg(e, 12) ?? hits[0];
     if (obj) {
-      const shift = !!(e.shiftKey || e.altKey);
-      ctx.toggleSelect(obj, shift);
-      // Stash so 'up' handler doesn't treat this as a marquee end.
+      const sid = ctx.jxgIdToSceneId(obj);
+      if (sid) {
+        const shift = !!(e.shiftKey || e.altKey);
+        ctx.toggleSelect(sid, shift);
+      }
       ctx.moveDownRef.current = { sx, sy };
       ctx.marqueeRef.current = null;
       return;
     }
-    // Empty space: start marquee. We disable board pan while marqueeing
-    // by not setting moveDownRef (board's internal pan listener relies on
-    // it being null elsewhere; here we record marquee start separately).
+    // Empty space: start marquee.
     ctx.marqueeRef.current = { startSx: sx, startSy: sy };
-    // Clear current selection unless shift is held (additive marquee).
     if (!(e.shiftKey || e.altKey)) ctx.clearSelection();
     return;
   }
@@ -107,52 +174,43 @@ export function handleDown(ctx: HandlerCtx, e: any): void {
   const coords = ctx.boardRef.current.getUsrCoordsOfMouse(e);
   const x = coords[0], y = coords[1];
 
-  // Detect if click hits any existing object (snap target). Text labels
-  // are promoted to their owning element so a click on the "A" label
-  // counts as a click on the point A.
+  // Detect if click hits any existing object (snap target).
   const hits = ctx.objectsAt(e)
     .map(ctx.promoteLabel)
     .filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y);
-  // Prefer points over other elements when present
   const bestHit: JxgObj | null = hits.find((o) => objKind(o) === 'point') ?? hits[0] ?? null;
-  // Generous fallback used when a slot expects a point: JSXGraph's `hasPoint`
-  // for a small point is ~3px which is too tight for clicking, so we look up
-  // the nearest existing point within 12px. Only applied where the active
-  // tool slot needs a point — otherwise we'd shadow valid line/circle hits.
   const snapPointForPointSlot = (): JxgObj | null =>
-    bestHit && objKind(bestHit) === 'point' ? bestHit : ctx.findNearestPoint(e, 12);
+    bestHit && objKind(bestHit) === 'point' ? bestHit : ctx.findNearestPointJxg(e, 12);
 
-  // Tool: point — nếu click trúng ≥2 đường/đường tròn → tạo giao điểm
-  // ràng buộc (khi kéo các đường, điểm này luôn là giao). Trường hợp 1
-  // đường + click thường vẫn tạo điểm tự do (không glide để tránh ràng
-  // buộc ngoài ý muốn).
+  // Tool: point — nếu click trúng ≥2 đường/đường tròn → tạo intersection point
   if (t === 'point') {
     const curves = hits.filter((o) => objKind(o) === 'line' || objKind(o) === 'circle');
     if (curves.length >= 2) {
       const a = curves[0];
       const b = curves[1];
-      const aId = ctx.localIdOf(a);
-      const bId = ctx.localIdOf(b);
+      const aId = ctx.jxgIdToSceneId(a);
+      const bId = ctx.jxgIdToSceneId(b);
       if (aId && bId) {
-        const name = ctx.nextLabel();
-        const attrs = { name, color: '@stroke', size: 3, fillColor: '@stroke', strokeColor: '@stroke' };
         try {
-          // intersection trả về element [obj1, obj2] với giao gần (x, y).
-          // JSXGraph cần index i (0 hoặc 1) cho trường hợp 2 giao (line-circle, circle-circle).
-          // Chọn index dựa vào điểm gần click hơn.
-          const isLineLine = objKind(a) === 'line' && objKind(b) === 'line';
-          if (isLineLine) {
-            ctx.create('intersection', [aId, bId, 0], attrs);
+          const aKind = objKind(a);
+          const bKind = objKind(b);
+          if (aKind === 'line' && bKind === 'line') {
+            dispatchAddIntersection(ctx, { kind: 'lineLine', ref1: aId, ref2: bId });
+            return;
+          }
+          // line-circle / circle-circle: pick branch nearest click.
+          const tmp0 = ctx.boardRef.current.create('intersection', [a, b, 0], { visible: false, withLabel: false });
+          const tmp1 = ctx.boardRef.current.create('intersection', [a, b, 1], { visible: false, withLabel: false });
+          const d0 = Math.hypot((tmp0.X?.() ?? 0) - x, (tmp0.Y?.() ?? 0) - y);
+          const d1 = Math.hypot((tmp1.X?.() ?? 0) - x, (tmp1.Y?.() ?? 0) - y);
+          safeJsx('handlers.removeObject(intersect.tmp0)', () => ctx.boardRef.current.removeObject(tmp0));
+          safeJsx('handlers.removeObject(intersect.tmp1)', () => ctx.boardRef.current.removeObject(tmp1));
+          const branch: 0 | 1 = d0 <= d1 ? 0 : 1;
+          const isLineCircle = (aKind === 'line' && bKind === 'circle') || (aKind === 'circle' && bKind === 'line');
+          if (isLineCircle) {
+            dispatchAddIntersection(ctx, { kind: 'lineCircle', ref1: aId, ref2: bId, branch });
           } else {
-            // Thử cả 2 index, chọn cái gần click hơn
-            const tmp0 = ctx.boardRef.current.create('intersection', [a, b, 0], { visible: false, withLabel: false });
-            const tmp1 = ctx.boardRef.current.create('intersection', [a, b, 1], { visible: false, withLabel: false });
-            const d0 = Math.hypot((tmp0.X?.() ?? 0) - x, (tmp0.Y?.() ?? 0) - y);
-            const d1 = Math.hypot((tmp1.X?.() ?? 0) - x, (tmp1.Y?.() ?? 0) - y);
-            safeJsx('handlers.removeObject(intersect.tmp0)', () => ctx.boardRef.current.removeObject(tmp0));
-            safeJsx('handlers.removeObject(intersect.tmp1)', () => ctx.boardRef.current.removeObject(tmp1));
-            const idx = d0 <= d1 ? 0 : 1;
-            ctx.create('intersection', [aId, bId, idx], attrs);
+            dispatchAddIntersection(ctx, { kind: 'circleCircle', ref1: aId, ref2: bId, branch });
           }
           return;
         } catch {
@@ -160,48 +218,77 @@ export function handleDown(ctx: HandlerCtx, e: any): void {
         }
       }
     }
-    const name = ctx.nextLabel();
-    ctx.create('point', [x, y], { name, color: '@stroke', size: 3, fillColor: '@stroke', strokeColor: '@stroke' });
+    dispatchAddFreePoint(ctx, x, y);
     return;
   }
 
-  // Edit / single-target tools (toggleLabel, toggleVisible, delete)
+  // Edit / single-target tools (toggleLabel, toggleVisible, delete).
   if (toolDef.needs === 1 && toolDef.accepts) {
-    // Fall back to generous point snap if hasPoint missed a small point.
-    const hit = bestHit ?? ctx.findNearestPoint(e, 12);
-    if (hit) ctx.finalize(toolDef, [hit]);
-    else ctx.flashWarn('Click vào một đối tượng để áp dụng');
+    const hit = bestHit ?? ctx.findNearestPointJxg(e, 12);
+    if (!hit) {
+      ctx.flashWarn('Click vào một đối tượng để áp dụng');
+      return;
+    }
+    const sid = ctx.jxgIdToSceneId(hit);
+    if (!sid) return;
+    if (t === 'delete') {
+      ctx.store.dispatch({ type: 'DELETE', payload: { id: sid } });
+      return;
+    }
+    if (t === 'toggleLabel') {
+      const obj = ctx.store.getState().objects[sid];
+      if (!obj) return;
+      const cur = (obj.attrs as { showLabel?: boolean }).showLabel;
+      const next = !(cur ?? false);
+      ctx.store.dispatch({ type: 'UPDATE_ATTRS', payload: { id: sid, patch: { showLabel: next } } });
+      return;
+    }
+    if (t === 'toggleVisible') {
+      const obj = ctx.store.getState().objects[sid];
+      if (!obj) return;
+      ctx.store.dispatch({ type: 'UPDATE', payload: { id: sid, patch: { visible: !obj.visible } } });
+      return;
+    }
     return;
   }
 
-  // Polygon / area: variable-length, close on click near starting point
+  // Polygon / area: variable-length, close on click near starting point.
   if (toolDef.needs === -1) {
     const snappedPoint = snapPointForPointSlot();
-    // Close ring first: if user clicks back on the first pending point
-    // (with at least 3 points already), finalize. Done before push so the
-    // first point isn't duplicated into pending.
-    if (ctx.pendingRef.current.length >= 3 && snappedPoint && snappedPoint === ctx.pendingRef.current[0]) {
+    const snappedId = snappedPoint ? ctx.jxgIdToSceneId(snappedPoint) : null;
+    // Close ring: click back on first pending point.
+    if (
+      ctx.pendingIdsRef.current.length >= 3 &&
+      snappedId &&
+      snappedId === ctx.pendingIdsRef.current[0]
+    ) {
       ctx.clearPreviewSegs();
-      ctx.finalize(toolDef, ctx.pendingRef.current);
+      const vertices = ctx.pendingIdsRef.current.slice();
+      const id = freshId(ctx, t === 'area' ? 'area' : 'poly');
+      const label = ctx.nextLabel(t === 'area' ? 'polygon' : 'polygon');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'polygon', label, { vertices }) },
+      });
       ctx.clearPending();
       return;
     }
-    // Reject re-picking an interior pending vertex (would create a degenerate edge).
-    if (snappedPoint && ctx.pendingRef.current.includes(snappedPoint)) {
+    if (snappedId && ctx.pendingIdsRef.current.includes(snappedId)) {
       ctx.flashWarn('Đỉnh này đã có — click điểm khác hoặc click lại điểm đầu để đóng');
       return;
     }
-    // Otherwise pick (snap-to-existing or create) a new vertex
-    const pick: JxgObj = snappedPoint ?? (() => {
-      const name = ctx.nextLabel();
-      return ctx.create('point', [x, y], { name, color: '@stroke', size: 3 });
-    })();
-    // Live preview: draw an edge from the previous pending vertex to
-    // this new one so the user sees the polygon being built.
-    if (ctx.pendingRef.current.length > 0 && ctx.boardRef.current) {
+    // Otherwise pick (snap-to-existing or create) a new vertex.
+    let pickId: string | null = snappedId;
+    let pickJxg: JxgObj | null = snappedPoint;
+    if (!pickId) {
+      pickId = dispatchAddFreePoint(ctx, x, y);
+      pickJxg = ctx.jxgFromSceneId(pickId);
+    }
+    // Live preview segment from previous vertex to new pick.
+    if (ctx.pendingRef.current.length > 0 && ctx.boardRef.current && pickJxg) {
       const prev = ctx.pendingRef.current[ctx.pendingRef.current.length - 1];
       safeJsx('handlers.createPreviewSegment', () => {
-        const seg = ctx.boardRef.current.create('segment', [prev, pick], {
+        const seg = ctx.boardRef.current.create('segment', [prev, pickJxg], {
           strokeColor: '#3b82f6',
           strokeWidth: 1.5,
           strokeOpacity: 0.75,
@@ -212,20 +299,17 @@ export function handleDown(ctx: HandlerCtx, e: any): void {
         ctx.previewSegRef.current.push(seg);
       });
     }
-    ctx.pendingRef.current.push(pick);
-    ctx.setPendingCount(ctx.pendingRef.current.length);
+    if (pickJxg) ctx.pendingRef.current.push(pickJxg);
+    if (pickId) ctx.pendingIdsRef.current.push(pickId);
+    ctx.setPendingCount(ctx.pendingIdsRef.current.length);
     return;
   }
 
   // Multi-click branch. Two sub-modes:
-  //   A) Strict + order-flexible: tool declared `accepts`. We bind each
-  //      click to whatever required kind is still unfilled, regardless
-  //      of click order. E.g. perpendicular accepts ['point', 'line']
-  //      and the user can click line-then-point or point-then-line.
-  //   B) Lenient + order-fixed: tool has no `accepts` (segment, line,
-  //      ray, vector, circle*, ...). All slots want points; missing
-  //      snaps create a fresh point.
+  //   A) Strict + order-flexible: tool declared `accepts`.
+  //   B) Lenient + order-fixed: all slots want points.
   let pick: JxgObj | null = null;
+  let pickId: string | null = null;
 
   if (toolDef.accepts) {
     // --- Mode A: strict, order-flexible ---
@@ -239,23 +323,13 @@ export function handleDown(ctx: HandlerCtx, e: any): void {
     const strictPoint = hits.find((o) => objKind(o) === 'point') ?? null;
     const lineHit = hits.find((o) => objKind(o) === 'line') ?? null;
     const circleHit = hits.find((o) => objKind(o) === 'circle') ?? null;
-    // Priority: an exact point hit binds to 'point' first (so a click
-    // landing right on a vertex isn't stolen by a line/circle passing
-    // through it). Typed line/circle bind next. 'any' slot accepts any
-    // remaining hit (point/line/circle). Generous point-snap is the
-    // last resort when only a 'point' slot is open.
-    //
-    // Previously 'any' was checked AFTER the snap fallback for point,
-    // which meant tools like dilate (accepts ['any', 'point']) couldn't
-    // pick a segment for the 'any' slot — the snap branch absorbed the
-    // click and 'any' was never evaluated.
     if (remaining.includes('point') && strictPoint) pick = strictPoint;
     else if (remaining.includes('line') && lineHit) pick = lineHit;
     else if (remaining.includes('circle') && circleHit) pick = circleHit;
     else if (remaining.includes('any') && (strictPoint || lineHit || circleHit)) {
       pick = strictPoint ?? lineHit ?? circleHit;
     } else if (remaining.includes('point')) {
-      const near = ctx.findNearestPoint(e, 12);
+      const near = ctx.findNearestPointJxg(e, 12);
       if (near) pick = near;
     }
     if (!pick) {
@@ -265,77 +339,151 @@ export function handleDown(ctx: HandlerCtx, e: any): void {
       ctx.flashWarn(`Còn cần click vào ${needs.join(' + ')} có sẵn`);
       return;
     }
-    // Reject duplicate picks (e.g. click the same point twice for midpoint
-    // would produce a degenerate object pointing at itself).
     if (ctx.pendingRef.current.includes(pick)) {
       ctx.flashWarn('Đã chọn đối tượng này — chọn đối tượng khác');
       return;
     }
+    pickId = ctx.jxgIdToSceneId(pick);
   } else {
     // --- Mode B: lenient, all slots want a point ---
     const snapped = snapPointForPointSlot();
     if (snapped && ctx.pendingRef.current.includes(snapped)) {
-      // Same point clicked twice → would produce a zero-length segment / etc.
       ctx.flashWarn('Đã chọn điểm này — chọn điểm khác hoặc click chỗ trống');
       return;
     }
-    if (snapped) pick = snapped;
-    else {
-      const name = ctx.nextLabel();
-      pick = ctx.create('point', [x, y], { name, color: '@stroke', size: 3, fillColor: '@stroke', strokeColor: '@stroke' });
+    if (snapped) {
+      pick = snapped;
+      pickId = ctx.jxgIdToSceneId(snapped);
+    } else {
+      pickId = dispatchAddFreePoint(ctx, x, y);
+      pick = ctx.jxgFromSceneId(pickId);
     }
   }
 
   if (!pick) return;
   ctx.pendingRef.current.push(pick);
-  ctx.setPendingCount(ctx.pendingRef.current.length);
+  if (pickId) ctx.pendingIdsRef.current.push(pickId);
+  ctx.setPendingCount(ctx.pendingIdsRef.current.length);
 
-  if (ctx.pendingRef.current.length >= toolDef.needs) {
+  if (ctx.pendingIdsRef.current.length >= toolDef.needs) {
     const tk = toolDef.key;
-    if (tk === 'rotate' || tk === 'dilate') {
-      const source = ctx.pendingRef.current[0];
-      const center = ctx.pendingRef.current[1];
+    // All transform tools: emit info → MiniBoard finalize.
+    if (
+      tk === 'rotate' ||
+      tk === 'dilate' ||
+      tk === 'regularPolygon' ||
+      tk === 'translate' ||
+      tk === 'reflectLine' ||
+      tk === 'reflectPoint'
+    ) {
       const cx = ((e.clientX ?? 0) as number) + 8;
       const cy = ((e.clientY ?? 0) as number) + 8;
-      ctx.pendingTransformRef.current = { tool: tk, source, center, anchorScreen: { x: cx, y: cy } };
+      ctx.pendingTransformRef.current = {
+        tool: tk,
+        sourceId: ctx.pendingIdsRef.current[0],
+        pendingIds: ctx.pendingIdsRef.current.slice(),
+        anchorScreen: { x: cx, y: cy },
+      };
       ctx.emitTransform({ tool: tk, anchor: { x: cx, y: cy } });
-      // Don't clearPending here — wait for confirm/cancel
+      // Don't clearPending — wait for confirm/cancel from MiniBoard.
       return;
     }
-    if (tk === 'regularPolygon') {
-      const p1 = ctx.pendingRef.current[0];
-      const p2 = ctx.pendingRef.current[1];
-      const cx = ((e.clientX ?? 0) as number) + 8;
-      const cy = ((e.clientY ?? 0) as number) + 8;
-      ctx.pendingTransformRef.current = { tool: tk, source: p1, center: p2, anchorScreen: { x: cx, y: cy } };
-      ctx.emitTransform({ tool: tk, anchor: { x: cx, y: cy } });
-      return;
-    }
-    if (tk === 'translate') {
-      const source = ctx.pendingRef.current[0];
-      const spec = buildTransformSpec({ kind: 'translate', vectorPoints: [ctx.pendingRef.current[1], ctx.pendingRef.current[2]] });
-      ctx.finalizeTransformCreate(spec, source);
-      ctx.clearPending();
-      return;
-    }
-    if (tk === 'reflectLine') {
-      const source = ctx.pendingRef.current[0];
-      const spec = buildTransformSpec({ kind: 'reflectLine', line: ctx.pendingRef.current[1] });
-      ctx.finalizeTransformCreate(spec, source);
-      ctx.clearPending();
-      return;
-    }
-    if (tk === 'reflectPoint') {
-      const source = ctx.pendingRef.current[0];
-      const spec = buildTransformSpec({ kind: 'reflectPoint', center: ctx.pendingRef.current[1] });
-      ctx.finalizeTransformCreate(spec, source);
-      ctx.clearPending();
-      return;
-    }
-    ctx.finalize(toolDef, ctx.pendingRef.current);
+
+    // Non-transform multi-click tools: dispatch ADD for the shape directly.
+    finalizeShape(ctx, toolDef);
     ctx.clearPending();
   } else {
     ctx.refreshPreview();
+  }
+}
+
+// ─── Finalize shape (dispatch ADD per tool) ──────────────────────────────────
+
+function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
+  const ids = ctx.pendingIdsRef.current;
+  const key = toolDef.key;
+  switch (key) {
+    case 'segment': {
+      const id = freshId(ctx, 's');
+      const label = ctx.nextLabel('segment');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'segment', label, { p1: ids[0], p2: ids[1] }) },
+      });
+      return;
+    }
+    case 'line':
+    case 'perpendicular':
+    case 'parallel':
+    case 'perpBisector':
+    case 'angleBisector':
+    case 'tangent': {
+      // Tất cả tool sinh ra "đường thẳng qua 2 điểm" — port chính xác sang scene
+      // `line` kind sẽ cần các kind phái sinh (perpendicular line through P perp L)
+      // ở sub-PR sau; hiện tại fallback về line p1=ids[0], p2=ids[1].
+      const id = freshId(ctx, 'l');
+      const label = ctx.nextLabel('line');
+      const p1 = ids[0];
+      const p2 = ids[1] ?? ids[0];
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'line', label, { p1, p2 }) },
+      });
+      return;
+    }
+    case 'ray': {
+      const id = freshId(ctx, 'r');
+      const label = ctx.nextLabel('ray');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'ray', label, { origin: ids[0], through: ids[1] }) },
+      });
+      return;
+    }
+    case 'vector': {
+      const id = freshId(ctx, 'v');
+      const label = ctx.nextLabel('vector');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'vector', label, { from: ids[0], to: ids[1] }) },
+      });
+      return;
+    }
+    case 'circleCenter':
+    case 'circle3': {
+      // circle3 cần kind phái sinh circumscribedCircle (3 điểm) — port ở sub-PR
+      // sau. Tạm fallback: nếu chỉ 2 ids → center/surface; nếu 3 ids → center +
+      // surface = ids[1].
+      const id = freshId(ctx, 'c');
+      const label = ctx.nextLabel('circle');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: {
+          obj: mkSceneObj(id, 'circle', label, {
+            center: ids[0],
+            surfacePoint: ids[1] ?? ids[0],
+          }),
+        },
+      });
+      return;
+    }
+    case 'midpoint': {
+      // midpoint là một point kind phái sinh — port chính xác ở sub-PR sau
+      // (cần Constraint2D 'midpoint'). Fallback: tạo free point ở (0,0) — chưa
+      // dùng trong unit-test, MiniBoard sẽ refactor cách tạo midpoint khi kind
+      // 'point' hỗ trợ constraint 'midpoint'.
+      const id = freshId(ctx, 'mp');
+      const label = ctx.nextLabel('point');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'point', label, { constraint: { kind: 'free', x: 0, y: 0 } }) },
+      });
+      return;
+    }
+    default:
+      // angle / distance / area — measurement tools; sub-PR sau sẽ dispatch
+      // UPDATE_ATTRS lên target (showValue: true) thay vì tạo object mới.
+      return;
   }
 }
 
@@ -345,9 +493,6 @@ export function handleDown(ctx: HandlerCtx, e: any): void {
 export function handleUp(ctx: HandlerCtx, e: any): void {
   const t = ctx.toolRef.current;
   if (t === 'select') {
-    // Finalize marquee: any object hit-tested inside the rectangle gets
-    // added to the selection. Single click on object was already handled
-    // in `down`; here we only care about drag end.
     const mq = ctx.marqueeRef.current;
     ctx.marqueeRef.current = null;
     ctx.moveDownRef.current = null;
@@ -364,31 +509,28 @@ export function handleUp(ctx: HandlerCtx, e: any): void {
     const list = (board.objectsList || []) as JxgObj[];
     for (const o of list) {
       if (o === ctx.axisObjsRef.current.x || o === ctx.axisObjsRef.current.y) continue;
-      // Points: include if their screen coord falls inside the rect.
       const kind = objKind(o);
       if (kind === 'point') {
         const pc = o.coords?.scrCoords;
         if (!pc) continue;
         if (pc[1] >= x1 && pc[1] <= x2 && pc[2] >= y1 && pc[2] <= y2) {
-          if (!ctx.selectedSetRef.current.has(o)) {
-            ctx.selectedSetRef.current.add(o);
-            ctx.applySelectionStyle(o);
+          const sid = ctx.jxgIdToSceneId(o);
+          if (sid && !ctx.selectedSetRef.current.has(sid)) {
+            ctx.selectedSetRef.current.add(sid);
           }
         }
-      }
-      // Lines/segments/circles: simple test — include if either defining
-      // point falls inside (good enough for marquee UX without doing
-      // expensive line-rectangle intersections).
-      else if (kind === 'line' || kind === 'circle') {
+      } else if (kind === 'line' || kind === 'circle') {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const defs: any[] = [o.point1, o.point2, o.center, o.midpoint, o.point3].filter(Boolean);
         const anyInside = defs.some((p) => {
           const pc = p?.coords?.scrCoords;
           return pc && pc[1] >= x1 && pc[1] <= x2 && pc[2] >= y1 && pc[2] <= y2;
         });
-        if (anyInside && !ctx.selectedSetRef.current.has(o)) {
-          ctx.selectedSetRef.current.add(o);
-          ctx.applySelectionStyle(o);
+        if (anyInside) {
+          const sid = ctx.jxgIdToSceneId(o);
+          if (sid && !ctx.selectedSetRef.current.has(sid)) {
+            ctx.selectedSetRef.current.add(sid);
+          }
         }
       }
     }
@@ -408,23 +550,22 @@ export function handleUp(ctx: HandlerCtx, e: any): void {
   const hits = ctx.objectsAt(e)
     .map(ctx.promoteLabel)
     .filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y);
-  // Ưu tiên điểm (exact → nearest-within-12px) trước, rồi mới fallback object
-  // khác (line/circle). Đảm bảo double-click gần một điểm sẽ mở properties cho
-  // điểm đó kể cả khi có line đi sát qua.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const best: any = hits.find((o) => objKind(o) === 'point') ?? ctx.findNearestPoint(e, 12) ?? hits[0];
+  const best: JxgObj | null =
+    hits.find((o) => objKind(o) === 'point') ?? ctx.findNearestPointJxg(e, 12) ?? hits[0] ?? null;
   if (!best) {
-    ctx.lastMoveClickRef.current = { obj: null, time: 0 };
+    ctx.lastMoveClickRef.current = { id: null, time: 0 };
     return;
   }
+  const bestId = ctx.jxgIdToSceneId(best);
   const now = Date.now();
-  const isDouble = ctx.lastMoveClickRef.current.obj === best && (now - ctx.lastMoveClickRef.current.time) < 400;
-  ctx.lastMoveClickRef.current = { obj: best, time: now };
+  const isDouble =
+    bestId !== null && ctx.lastMoveClickRef.current.id === bestId && (now - ctx.lastMoveClickRef.current.time) < 400;
+  ctx.lastMoveClickRef.current = { id: bestId, time: now };
   if (!isDouble) return;
   const cx = (e.clientX ?? e.touches?.[0]?.clientX ?? 0) as number;
   const cy = (e.clientY ?? e.touches?.[0]?.clientY ?? 0) as number;
-  const snap = ctx.snapshotObject(best, { x: cx + 8, y: cy + 8 });
-  if (snap) ctx.emitSelect(snap);
+  if (!bestId) return;
+  ctx.emitSelect({ id: bestId, anchorScreen: { x: cx + 8, y: cy + 8 } });
 }
 
 // ─── board.on('move') ────────────────────────────────────────────────────────
@@ -437,14 +578,10 @@ export function handleMove(ctx: HandlerCtx, e: any): void {
     if (sc && ctx.boardRef.current) {
       const [sx, sy] = sc;
       const { startSx, startSy } = ctx.marqueeRef.current;
-      // Convert screen px to user coords for JSXGraph polygon overlay.
       const b = ctx.boardRef.current;
       const ux1 = b.screenCoords2userCoords?.([Math.min(startSx, sx), Math.min(startSy, sy)]) ?? null;
       const ux2 = b.screenCoords2userCoords?.([Math.max(startSx, sx), Math.max(startSy, sy)]) ?? null;
-      // JSXGraph internal: getUsrCoordsByScreenCoords may not exist; fall
-      // back to using a known board API.
       const toUsr = (px: number, py: number): [number, number] => {
-        // Coords.getMouseCoordinates equivalent — use board.origin + unitX/Y.
         const ox = b.origin?.scrCoords?.[1] ?? 0;
         const oy = b.origin?.scrCoords?.[2] ?? 0;
         const ux = (px - ox) / b.unitX;
