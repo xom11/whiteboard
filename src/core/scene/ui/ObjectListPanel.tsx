@@ -1,6 +1,7 @@
 'use client';
 import * as React from 'react';
 import type { Store } from '../store';
+import type { SceneObject } from '../types';
 import { listObjects } from '../selectors';
 import { ObjectRow } from './ObjectRow';
 
@@ -8,10 +9,19 @@ export interface ObjectListPanelProps {
   store: Store;
   selectedId?: string;
   onSelect?: (id: string) => void;
+  /**
+   * Optional per-kind row renderer. Called with the SceneObject and default props
+   * (selected, onClick). Return a ReactNode to override the default ObjectRow.
+   * Return null/undefined to fall back to the default ObjectRow.
+   */
+  renderRow?: (
+    obj: SceneObject,
+    defaults: { selected: boolean; onClick: () => void },
+  ) => React.ReactNode;
 }
 
 export function ObjectListPanel(props: ObjectListPanelProps): React.ReactElement {
-  const { store, selectedId, onSelect } = props;
+  const { store, selectedId, onSelect, renderRow } = props;
   // useSyncExternalStore expects subscribe to receive () => void callback,
   // but Store.subscribe takes (next, prev, action) => void. Wrap to adapt.
   const subscribe = React.useCallback(
@@ -51,20 +61,30 @@ export function ObjectListPanel(props: ObjectListPanelProps): React.ReactElement
       {objects.length === 0 ? (
         <li className="px-3 py-4 text-center text-xs text-zinc-500">Chưa có đối tượng nào</li>
       ) : (
-        objects.map((obj) => (
-          <ObjectRow
-            key={obj.id}
-            obj={obj}
-            state={state}
-            selected={obj.id === selectedId}
-            onSelect={handleSelect}
-            onToggleVisible={handleToggleVisible}
-            onToggleLocked={handleToggleLocked}
-            onRename={noop}
-            onChangeColor={noop}
-            onDelete={handleDelete}
-          />
-        ))
+        objects.map((obj) => {
+          const selected = obj.id === selectedId;
+          const onClick = () => handleSelect(obj.id);
+          if (renderRow) {
+            const custom = renderRow(obj, { selected, onClick });
+            if (custom != null) {
+              return <React.Fragment key={obj.id}>{custom}</React.Fragment>;
+            }
+          }
+          return (
+            <ObjectRow
+              key={obj.id}
+              obj={obj}
+              state={state}
+              selected={selected}
+              onSelect={handleSelect}
+              onToggleVisible={handleToggleVisible}
+              onToggleLocked={handleToggleLocked}
+              onRename={noop}
+              onChangeColor={noop}
+              onDelete={handleDelete}
+            />
+          );
+        })
       )}
     </ul>
   );

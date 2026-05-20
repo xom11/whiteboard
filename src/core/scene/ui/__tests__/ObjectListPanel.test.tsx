@@ -4,6 +4,7 @@ import { ObjectListPanel } from '../ObjectListPanel';
 import { createStore } from '../../store';
 import { registerKind, getKind } from '../../registry';
 import type { SceneObject, State } from '../../types';
+import '../../kinds';
 
 const FAKE_KIND = 'fakepanel';
 try { getKind(FAKE_KIND); } catch {
@@ -122,5 +123,63 @@ describe('ObjectListPanel', () => {
     render(<ObjectListPanel store={store} selectedId="B" />);
     expect(screen.getByTestId('object-row-A')).toHaveAttribute('aria-selected', 'false');
     expect(screen.getByTestId('object-row-B')).toHaveAttribute('aria-selected', 'true');
+  });
+});
+
+describe('ObjectListPanel.renderRow', () => {
+  function setup() {
+    const store = createStore({ objects: {}, order: [], counter: 0, meta: { domain: 'graph2d' as const, version: 1 } });
+    store.dispatch({
+      type: 'ADD',
+      payload: {
+        obj: {
+          id: 'f1', kind: 'function2d', label: 'f', visible: true, locked: false,
+          layer: 'default', schemaVersion: 1,
+          attrs: { expression: 'x^2', color: '#000', visible: true },
+        },
+      },
+    });
+    return store;
+  }
+
+  it('renderRow overrides default row', () => {
+    const store = setup();
+    const renderRow = jest.fn((obj: SceneObject) => (
+      <div key={obj.id} data-testid={`custom-row-${obj.id}`}>{obj.label}</div>
+    ));
+    const { getByTestId, queryByTestId } = render(
+      <ObjectListPanel store={store} renderRow={renderRow} />,
+    );
+    expect(getByTestId('custom-row-f1')).toBeInTheDocument();
+    expect(queryByTestId('object-row-f1')).toBeNull();
+    expect(renderRow).toHaveBeenCalled();
+  });
+
+  it('default row khi renderRow undefined', () => {
+    const store = setup();
+    const { getByTestId } = render(<ObjectListPanel store={store} />);
+    expect(getByTestId('object-row-f1')).toBeInTheDocument();
+  });
+
+  it('renderRow nhận đúng selected và onClick', () => {
+    const store = setup();
+    const onSelect = jest.fn();
+    const renderRow = jest.fn((_obj: SceneObject, defaults: { selected: boolean; onClick: () => void }) => (
+      <div
+        key={_obj.id}
+        data-testid={`custom-row-${_obj.id}`}
+        data-selected={defaults.selected ? 'true' : 'false'}
+        onClick={defaults.onClick}
+      >
+        {_obj.label}
+      </div>
+    ));
+    const { getByTestId } = render(
+      <ObjectListPanel store={store} renderRow={renderRow} onSelect={onSelect} selectedId="f1" />,
+    );
+    const row = getByTestId('custom-row-f1');
+    expect(row).toHaveAttribute('data-selected', 'true');
+    fireEvent.click(row);
+    expect(onSelect).toHaveBeenCalledWith('f1');
   });
 });
