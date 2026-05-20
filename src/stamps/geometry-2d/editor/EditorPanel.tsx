@@ -93,7 +93,10 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
       emitState();
       // Subscribe để parent biết khi nào tool/axis/grid/undo thay đổi
       h.subscribe(emitState);
-      h.onSelect((snap: ObjectSnapshot) => setPropsPopover(snap));
+      h.onSelect((snap: ObjectSnapshot) => {
+        setPropsPopover(snap);
+        onSelectionChangeRef.current?.(snap.id);
+      });
       h.onTransformParam((info) => setTransformPopover(info));
     }, [emitState]);
 
