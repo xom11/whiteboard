@@ -1,27 +1,32 @@
 'use client';
 import * as React from 'react';
-import { Scene3D, type SceneSnapshot } from './scene/Scene3D';
+import { createStore, createEmptyState, nextLabel, type Store, type State } from '../../../core/scene';
+import { JxgRenderer3D } from '../../../core/scene/render/JxgRenderer3D';
 import { ToolController } from './tools/controller';
-import { JxgRenderer } from './renderer/JxgRenderer';
 import { hitTest } from './hitTest/hitTest';
 import { screenToRay } from './hitTest/rayCast';
 import { rayPlane } from './hitTest/intersect';
-import { constraintToWorld } from './scene/constraintMath';
+import { constraintToWorld, type Vec3 } from './scene/constraintMath';
 import { hitToConstraint } from './tools/handlers/_ensurePoint';
-import type { Constraint, Vec3 } from './scene/types';
+import type { Constraint3D } from '../../../core/scene/kinds/3d-constraint';
+import type { Point3DAttrs } from '../../../core/scene/kinds/point3d';
 import { MiniBoard3D, type MiniBoard3DHandle } from './MiniBoard3D';
 import { StatusHint } from './StatusHint';
 import { DEFAULT_VIEW3D } from './theme';
 import type { ToolKey } from './tools/spec';
-import type { SerializedBoard3D } from '../serialize';
-import { sceneToBoard, boardToScene } from './scene/persistence';
+import {
+  serializeBoard3D,
+  type SerializedBoard3D,
+  type SerializedView3D,
+} from '../serialize';
 
 export interface EditorPanelProps {
   isDark?: boolean;
-  initialState?: SerializedBoard3D | null;
+  /** Initial state parsed from custom data (state + optional view orientation). */
+  initialState?: { state: State; view?: SerializedView3D } | null;
   onInsert?: (board: SerializedBoard3D, svgWidth: number, svgHeight: number, svgString: string) => void;
-  /** Scene created by host (so LeftPanel sibling can share it). */
-  scene: Scene3D;
+  /** Store created by host (so LeftPanel sibling can share it). */
+  store: Store;
   /** Currently selected tool — controlled by host. */
   selectedTool: ToolKey;
   /** Host gets notified when the controller switches the active tool. */
@@ -39,9 +44,9 @@ export interface EditorPanelHandle {
   serialize: () => SerializedBoard3D;
   /** Select a tool by key (for chord shortcut / host control). */
   setTool: (k: ToolKey) => void;
-  /** Trigger an undo on the scene's history stack. */
+  /** Trigger an undo on the store's history stack. */
   undo: () => void;
-  /** Trigger a redo on the scene's history stack. */
+  /** Trigger a redo on the store's history stack. */
   redo: () => void;
 }
 
@@ -50,7 +55,7 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
     const {
       isDark: isDarkProp,
       initialState,
-      scene,
+      store,
       selectedTool,
       onSelectedToolChange,
       showAxis,
@@ -60,13 +65,13 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
     } = props;
     const isDark = isDarkProp ?? false;
     const controllerRef = React.useRef<ToolController | null>(null);
-    if (!controllerRef.current) controllerRef.current = new ToolController(scene);
+    if (!controllerRef.current) controllerRef.current = new ToolController(store);
 
     const [hint, setHint] = React.useState<string>('Chọn công cụ trong bảng bên trái');
     const [hoverLabel, setHoverLabel] = React.useState<string | null>(null);
 
     const boardRef = React.useRef<MiniBoard3DHandle | null>(null);
-    const rendererRef = React.useRef<JxgRenderer | null>(null);
+    const rendererRef = React.useRef<JxgRenderer3D | null>(null);
 
     const onSelectedToolChangeRef = React.useRef(onSelectedToolChange);
     onSelectedToolChangeRef.current = onSelectedToolChange;
@@ -79,22 +84,22 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
     selectedToolRef.current = selectedTool;
 
     // Point-drag state: which point is being dragged, starting screen + world,
-    // plus a scene snapshot captured before any mutation (used for undo
+    // plus a state snapshot captured before any mutation (used for undo
     // checkpoints on drag-end).
     const draggedPointRef = React.useRef<string | null>(null);
     const dragStartRef = React.useRef<{ screen: { x: number; y: number }; world: Vec3 } | null>(null);
-    const dragSnapshotRef = React.useRef<SceneSnapshot | null>(null);
+    const dragSnapshotRef = React.useRef<State | null>(null);
+    // Track whether we mutated state during drag so onPointerDragEnd knows
+    // whether to push a manual checkpoint via LOAD-then-LOAD.
+    const dragMutatedRef = React.useRef<boolean>(false);
 
     // Initial state load — wrap in withoutHistory so loading doesn't pollute
     // the undo stack with phantom "insert" entries.
     React.useEffect(() => {
-      if (initialState) {
-        const loaded = boardToScene(initialState);
-        scene.withoutHistory(() => {
-          scene.reset();
-          for (const obj of loaded.list()) {
-            scene.insert(obj);
-          }
+      if (initialState?.state) {
+        const loaded = initialState.state;
+        store.withoutHistory(() => {
+          store.dispatch({ type: 'LOAD', payload: { state: loaded } });
         });
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -110,15 +115,16 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       return unsub;
     }, []);
 
-    // Subscribe to history changes — propagate canUndo/canRedo upward.
+    // Subscribe to store changes — propagate canUndo/canRedo upward. Store's
+    // subscribe fires on any state change which is a superset of history change
+    // (undo/redo also mutates state).
     React.useEffect(() => {
-      // Emit initial state once for the host's UI.
-      onHistoryChangeRef.current?.(scene.canUndo(), scene.canRedo());
-      const unsub = scene.onHistoryChange(() => {
-        onHistoryChangeRef.current?.(scene.canUndo(), scene.canRedo());
+      onHistoryChangeRef.current?.(store.canUndo(), store.canRedo());
+      const unsub = store.subscribe(() => {
+        onHistoryChangeRef.current?.(store.canUndo(), store.canRedo());
       });
       return unsub;
-    }, [scene]);
+    }, [store]);
 
     // Sync controller when host changes selectedTool from outside (e.g. chord shortcut).
     React.useEffect(() => {
@@ -136,16 +142,16 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
         if (key === 'z' && !e.shiftKey) {
           e.preventDefault();
           e.stopPropagation();
-          scene.undo();
+          store.undo();
         } else if ((key === 'z' && e.shiftKey) || (key === 'y' && !e.shiftKey)) {
           e.preventDefault();
           e.stopPropagation();
-          scene.redo();
+          store.redo();
         }
       };
       window.addEventListener('keydown', onKey, { capture: true });
       return () => window.removeEventListener('keydown', onKey, { capture: true });
-    }, [scene]);
+    }, [store]);
 
     // Dispose renderer on unmount.
     React.useEffect(() => {
@@ -178,23 +184,23 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
     }, [showAxis, showGrid]);
 
     const handleView3DReady = React.useCallback((view: unknown) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      rendererRef.current = new JxgRenderer(scene, view as any);
+      rendererRef.current = new JxgRenderer3D(store, view);
       // Restore saved azimuth/elevation khi mở lại stamp cũ để re-edit, để
       // editor view khớp với ảnh đã chèn.
-      if (initialState) {
+      const savedView = initialState?.view;
+      if (savedView) {
         try {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const v = view as any;
-          v?.az_slide?.setValue?.(initialState.view.azimuth);
-          v?.el_slide?.setValue?.(initialState.view.elevation);
+          v?.az_slide?.setValue?.(savedView.azimuth);
+          v?.el_slide?.setValue?.(savedView.elevation);
           v?.board?.update?.();
         } catch {
           /* swallow — older JSXGraph may not expose az_slide */
         }
       }
       onReadyChange?.(true);
-    }, [onReadyChange, scene, initialState]);
+    }, [onReadyChange, store, initialState]);
 
     const handleClick = React.useCallback((screen: { x: number; y: number }) => {
       const board = boardRef.current;
@@ -202,12 +208,12 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       const view = board.getView3D();
       if (!view) return;
       try {
-        const hit = hitTest(screen, view, scene);
+        const hit = hitTest(screen, view, store.getState());
         controllerRef.current!.consumeHit(hit);
       } catch {
         /* swallow — view may not yet expose project3DTo2D in some mock paths */
       }
-    }, [scene]);
+    }, [store]);
 
     const handleMove = React.useCallback((screen: { x: number; y: number }) => {
       const board = boardRef.current;
@@ -218,27 +224,27 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       if (draggedPointRef.current) return;
       let hit;
       try {
-        hit = hitTest(screen, view, scene);
+        hit = hitTest(screen, view, store.getState());
       } catch {
         setHoverLabel(null);
         return;
       }
       if (hit.kind === 'empty') setHoverLabel(null);
       else if (hit.kind === 'existingPoint') {
-        const obj = scene.get(hit.pointId);
+        const obj = store.getState().objects[hit.pointId];
         setHoverLabel(obj?.label ?? null);
       } else if (hit.kind === 'onGround') setHoverLabel('mặt nền');
       else if (hit.kind === 'onAxis') setHoverLabel(`trục ${hit.axis.toUpperCase()}`);
       else if (hit.kind === 'onPlane') setHoverLabel(`mặt phẳng ${hit.planeId}`);
       else if (hit.kind === 'onSphere') setHoverLabel(`mặt cầu ${hit.sphereId}`);
       else setHoverLabel(null);
-    }, [scene]);
+    }, [store]);
 
     // ─── Point-drag handlers (delegated from MiniBoard3D) ────────────────────
     // Decides whether the pointerdown gesture is "ours" (drag/place a point)
     // or should fall through to MiniBoard3D's default view-rotate behaviour.
     // Returning true also suppresses view rotation for the rest of the gesture.
-    // Captures a scene snapshot before any mutation so onPointerDragEnd can
+    // Captures a state snapshot before any mutation so onPointerDragEnd can
     // push a single undo checkpoint for the whole gesture.
     const shouldStartPointDrag = React.useCallback((screen: { x: number; y: number }): boolean => {
       const view = boardRef.current?.getView3D();
@@ -246,18 +252,19 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       const tool = selectedToolRef.current;
       if (tool !== 'point' && tool !== 'move') return false;
       let hit;
-      try { hit = hitTest(screen, view, scene); } catch { return false; }
+      try { hit = hitTest(screen, view, store.getState()); } catch { return false; }
 
       // Existing point: drag it (Z-only in Point mode, XY-raycast in Move mode).
       // Snapshot before any mutation, drag-end will push a checkpoint.
       if (hit.kind === 'existingPoint') {
-        const pt = scene.get(hit.pointId);
-        if (!pt || pt.kind !== 'point') return false;
-        dragSnapshotRef.current = scene.snapshot();
+        const pt = store.getState().objects[hit.pointId];
+        if (!pt || pt.kind !== 'point3d') return false;
+        dragSnapshotRef.current = store.getState();
+        dragMutatedRef.current = false;
         draggedPointRef.current = hit.pointId;
         dragStartRef.current = {
           screen,
-          world: constraintToWorld(pt.constraint, scene),
+          world: constraintToWorld((pt.attrs as Point3DAttrs).constraint, store.getState()),
         };
         return true;
       }
@@ -269,15 +276,35 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       // collected-state to unwind); the click→consumeHit→buildPoint path is
       // short-circuited in MiniBoard3D.handlePointerUp when pointDragMode is set.
       if (tool === 'point' && (hit.kind === 'onGround' || hit.kind === 'onAxis')) {
-        dragSnapshotRef.current = scene.snapshot();
+        dragSnapshotRef.current = store.getState();
+        dragMutatedRef.current = false;
         const constraint = hitToConstraint(hit);
         if (!constraint) {
           dragSnapshotRef.current = null;
           return false;
         }
         let id: string | null = null;
-        scene.withoutHistory(() => {
-          id = scene.addPoint(constraint);
+        store.withoutHistory(() => {
+          // Inline addPoint so we can grab id from the dispatched obj.
+          const stateBefore = store.getState();
+          const newId = `p${stateBefore.counter + 1}`;
+          const label = nextLabel(stateBefore, 'point3d');
+          store.dispatch({
+            type: 'ADD',
+            payload: {
+              obj: {
+                id: newId,
+                kind: 'point3d',
+                label,
+                visible: true,
+                locked: false,
+                layer: 'default',
+                schemaVersion: 1,
+                attrs: { constraint },
+              },
+            },
+          });
+          id = newId;
         });
         if (!id) {
           dragSnapshotRef.current = null;
@@ -302,7 +329,7 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       }
 
       return false;
-    }, [scene]);
+    }, [store]);
 
     const onPointerDrag = React.useCallback((screen: { x: number; y: number }) => {
       const pointId = draggedPointRef.current;
@@ -328,27 +355,44 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       } else {
         return;
       }
-      const obj = scene.get(pointId);
-      if (!obj || obj.kind !== 'point') return;
-      const free: Constraint = { kind: 'free', x: nextWorld[0], y: nextWorld[1], z: nextWorld[2] };
-      (obj as { constraint: Constraint }).constraint = free;
-      scene.emitChange(pointId);
-    }, [scene]);
+      const obj = store.getState().objects[pointId];
+      if (!obj || obj.kind !== 'point3d') return;
+      const free: Constraint3D = { kind: 'free', x: nextWorld[0], y: nextWorld[1], z: nextWorld[2] };
+      // Mutate qua UPDATE_ATTRS — store sẽ fire subscribers, JxgRenderer3D
+      // diff và update JSXGraph object. Wrap trong withoutHistory: drag-end
+      // sẽ push một checkpoint duy nhất.
+      store.withoutHistory(() => {
+        store.dispatch({ type: 'UPDATE_ATTRS', payload: { id: pointId, patch: { constraint: free } } });
+      });
+      dragMutatedRef.current = true;
+    }, [store]);
 
     const onPointerDragEnd = React.useCallback(() => {
       const snap = dragSnapshotRef.current;
+      const mutated = dragMutatedRef.current;
       dragSnapshotRef.current = null;
       draggedPointRef.current = null;
       dragStartRef.current = null;
-      if (snap) {
-        scene.pushUndoCheckpoint(snap);
+      dragMutatedRef.current = false;
+      // Push undo checkpoint bằng cách dispatch LOAD-prev rồi LOAD-current
+      // bên ngoài withoutHistory. Đơn giản hơn pushUndoCheckpoint của Scene3D:
+      // store auto push qua state diff.
+      if (snap && mutated) {
+        const current = store.getState();
+        // Dispatch LOAD(snap) → state quay về trước drag (push past entry với current)
+        // rồi dispatch LOAD(current) → state về drag-end (push past entry với snap).
+        // Net effect: 1 entry duy nhất trong past stack = snap → current.
+        store.withoutHistory(() => {
+          store.dispatch({ type: 'LOAD', payload: { state: snap } });
+        });
+        store.dispatch({ type: 'LOAD', payload: { state: current } });
       }
-    }, [scene]);
+    }, [store]);
 
     React.useImperativeHandle(
       ref,
       () => ({
-        hasContent: () => scene.list().length > 0,
+        hasContent: () => Object.keys(store.getState().objects).length > 0,
         serialize: () => {
           const view = boardRef.current?.getView3D();
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -357,19 +401,18 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
           const elSlider = v?.el_slide ?? v?.el;
           const azimuth = typeof azSlider?.Value === 'function' ? azSlider.Value() : 0;
           const elevation = typeof elSlider?.Value === 'function' ? elSlider.Value() : 0;
-          return sceneToBoard(
-            scene,
-            { azimuth, elevation, bbox3D: [...DEFAULT_VIEW3D.bbox3D] as [number, number, number, number, number, number] },
-            // JSXGraph boundingbox order: [xmin, ymax, xmax, ymin]. Must match
-            // MiniBoard3D.initBoard so render reproduces the editor's view.
-            [-6, 6, 6, -6],
-          );
+          const viewInfo: SerializedView3D = {
+            azimuth,
+            elevation,
+            bbox3D: [...DEFAULT_VIEW3D.bbox3D] as [number, number, number, number, number, number],
+          };
+          return serializeBoard3D(store.getState(), viewInfo);
         },
         setTool: (k) => controllerRef.current!.selectTool(k),
-        undo: () => scene.undo(),
-        redo: () => scene.redo(),
+        undo: () => store.undo(),
+        redo: () => store.redo(),
       }),
-      [scene],
+      [store],
     );
 
     return (
@@ -398,3 +441,7 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
     );
   },
 );
+
+// Suppress unused createStore import warning — only re-exported here for any
+// consumer that wants to inject a test store; host owns the actual instance.
+export { createStore, createEmptyState };
