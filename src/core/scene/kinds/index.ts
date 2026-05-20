@@ -14,4 +14,5 @@ import './point';
 import './segment';
 import './line';
 import './ray';
+import './vector';
 export {};
