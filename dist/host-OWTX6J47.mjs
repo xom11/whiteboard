@@ -1,6 +1,6 @@
 "use client";
-import { serializeBoard, renderGeometrySvgFromState, isGeometryCustomData, safeJsx, JxgRenderer } from './chunk-7FCFYGPI.mjs';
-import { ObjectListPanel, useChordShortcut, useActionRecorder, RecorderPanelDev, MobileToolDrawer } from './chunk-S3P5PCJ4.mjs';
+import { serializeBoard, renderGeometrySvgFromState, isGeometryCustomData, safeJsx, JxgRenderer } from './chunk-S6WTYP4E.mjs';
+import { ObjectListPanel, useChordShortcut, MobileToolDrawer } from './chunk-IHC2SIRB.mjs';
 import { createEmptyState, nextLabel, themeAxis, themeGrid, themeLabel, paletteFor, listObjects, createStore } from './chunk-MBJVQIF6.mjs';
 import { useIsMobile } from './chunk-P2AOIF7S.mjs';
 import { insertStampImage } from './chunk-C6SCVOMC.mjs';
@@ -454,6 +454,14 @@ function handleDown(ctx, e) {
     ctx.refreshPreview();
   }
 }
+function findPickIdByKind(ctx, kind) {
+  const picks = ctx.pendingRef.current;
+  const ids = ctx.pendingIdsRef.current;
+  for (let i = 0; i < picks.length; i += 1) {
+    if (objKind(picks[i]) === kind && ids[i]) return ids[i];
+  }
+  return null;
+}
 function finalizeShape(ctx, toolDef) {
   const ids = ctx.pendingIdsRef.current;
   const key = toolDef.key;
@@ -467,19 +475,63 @@ function finalizeShape(ctx, toolDef) {
       });
       return;
     }
-    case "line":
-    case "perpendicular":
-    case "parallel":
-    case "perpBisector":
-    case "angleBisector":
-    case "tangent": {
+    case "line": {
       const id = freshId(ctx, "l");
       const label = ctx.nextLabel("line");
-      const p1 = ids[0];
-      const p2 = ids[1] ?? ids[0];
       ctx.store.dispatch({
         type: "ADD",
-        payload: { obj: mkSceneObj(id, "line", label, { p1, p2 }) }
+        payload: { obj: mkSceneObj(id, "line", label, { p1: ids[0], p2: ids[1] }) }
+      });
+      return;
+    }
+    case "perpendicular":
+    case "parallel": {
+      const throughPoint = findPickIdByKind(ctx, "point");
+      const toLine = findPickIdByKind(ctx, "line");
+      if (!throughPoint || !toLine) return;
+      const id = freshId(ctx, key === "perpendicular" ? "perp" : "par");
+      const label = ctx.nextLabel("line");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: { obj: mkSceneObj(id, "line", label, {
+          construction: { kind: key, throughPoint, toLine }
+        }) }
+      });
+      return;
+    }
+    case "perpBisector": {
+      const id = freshId(ctx, "pb");
+      const label = ctx.nextLabel("line");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: { obj: mkSceneObj(id, "line", label, {
+          construction: { kind: "perpBisector", p1: ids[0], p2: ids[1] }
+        }) }
+      });
+      return;
+    }
+    case "angleBisector": {
+      const id = freshId(ctx, "ab");
+      const label = ctx.nextLabel("line");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: { obj: mkSceneObj(id, "line", label, {
+          construction: { kind: "angleBisector", p1: ids[0], vertex: ids[1], p2: ids[2] }
+        }) }
+      });
+      return;
+    }
+    case "tangent": {
+      const throughPoint = findPickIdByKind(ctx, "point");
+      const toCircle = findPickIdByKind(ctx, "circle");
+      if (!throughPoint || !toCircle) return;
+      const id = freshId(ctx, "t");
+      const label = ctx.nextLabel("line");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: { obj: mkSceneObj(id, "line", label, {
+          construction: { kind: "tangent", throughPoint, toCircle }
+        }) }
       });
       return;
     }
@@ -501,8 +553,7 @@ function finalizeShape(ctx, toolDef) {
       });
       return;
     }
-    case "circleCenter":
-    case "circle3": {
+    case "circleCenter": {
       const id = freshId(ctx, "c");
       const label = ctx.nextLabel("circle");
       ctx.store.dispatch({
@@ -510,7 +561,20 @@ function finalizeShape(ctx, toolDef) {
         payload: {
           obj: mkSceneObj(id, "circle", label, {
             center: ids[0],
-            surfacePoint: ids[1] ?? ids[0]
+            surfacePoint: ids[1]
+          })
+        }
+      });
+      return;
+    }
+    case "circle3": {
+      const id = freshId(ctx, "cc");
+      const label = ctx.nextLabel("circle");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: {
+          obj: mkSceneObj(id, "circle", label, {
+            construction: { kind: "circumscribed", p1: ids[0], p2: ids[1], p3: ids[2] }
           })
         }
       });
@@ -521,7 +585,9 @@ function finalizeShape(ctx, toolDef) {
       const label = ctx.nextLabel("point");
       ctx.store.dispatch({
         type: "ADD",
-        payload: { obj: mkSceneObj(id, "point", label, { constraint: { kind: "free", x: 0, y: 0 } }) }
+        payload: { obj: mkSceneObj(id, "point", label, {
+          constraint: { kind: "midpoint", p1: ids[0], p2: ids[1] }
+        }) }
       });
       return;
     }
@@ -802,9 +868,14 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
     const sc = b ? screenCoordsOf(evt) : null;
     if (!b || !sc) return [];
     const [sx, sy] = sc;
+    const excludes = /* @__PURE__ */ new Set();
+    if (phantomRef.current) excludes.add(phantomRef.current);
+    if (previewShapeRef.current) excludes.add(previewShapeRef.current);
+    for (const s of previewSegRef.current) excludes.add(s);
     const out = [];
     safeJsx("MiniBoard.objectsAt", () => {
       for (const o of b.objectsList || []) {
+        if (excludes.has(o)) continue;
         if (o && typeof o.hasPoint === "function" && o.hasPoint(sx, sy)) out.push(o);
       }
     });
@@ -881,8 +952,100 @@ var JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
     pendingRef.current = [];
     toolSM.clearPending();
   }, [clearPreviewSegs, removePhantom, toolSM]);
-  const refreshPreview = useCallback(() => {
+  const buildPreview = useCallback((toolDef, picks, phantom) => {
+    const b = boardRef.current;
+    if (!b) return null;
+    const style = {
+      strokeColor: "#3b82f6",
+      strokeWidth: 1.5,
+      strokeOpacity: 0.65,
+      dash: 2,
+      fixed: true,
+      highlight: false,
+      withLabel: false
+    };
+    const circStyle = { ...style, fillColor: "none", fillOpacity: 0 };
+    return safeJsx("MiniBoard.buildPreview", () => {
+      switch (toolDef.key) {
+        case "segment":
+        case "midpoint":
+        case "distance":
+          return b.create("segment", [picks[0], phantom], style);
+        case "line":
+          return b.create("line", [picks[0], phantom], style);
+        case "ray":
+          return b.create("line", [picks[0], phantom], { ...style, straightFirst: false, straightLast: true });
+        case "vector":
+          return b.create("arrow", [picks[0], phantom], style);
+        case "circleCenter":
+          return b.create("circle", [picks[0], phantom], circStyle);
+        case "circle3":
+          if (picks.length === 1) return b.create("circle", [picks[0], phantom], circStyle);
+          if (picks.length === 2) return b.create("circumcircle", [picks[0], picks[1], phantom], circStyle);
+          return null;
+        case "angle":
+          if (picks.length === 1) return b.create("segment", [picks[0], phantom], style);
+          if (picks.length === 2) {
+            return b.create("angle", [picks[0], picks[1], phantom], {
+              ...style,
+              radius: 1,
+              fillColor: "#22c55e",
+              fillOpacity: 0.15
+            });
+          }
+          return null;
+        case "perpBisector":
+          return b.create("segment", [picks[0], phantom], style);
+        case "angleBisector":
+          if (picks.length === 1) return b.create("segment", [picks[0], phantom], style);
+          if (picks.length === 2) return b.create("bisector", [picks[0], picks[1], phantom], style);
+          return null;
+        case "perpendicular":
+        case "parallel":
+        case "tangent": {
+          if (picks.length !== 1) return null;
+          const k = objKind(picks[0]);
+          if (k === "line" && toolDef.key !== "tangent") {
+            return b.create(toolDef.key, [picks[0], phantom], style);
+          }
+          if (k === "circle" && toolDef.key === "tangent") {
+            const glider = b.create("glider", [phantom.X(), phantom.Y(), picks[0]], {
+              visible: false,
+              withLabel: false
+            });
+            return b.create("tangent", [glider], style);
+          }
+          return null;
+        }
+        default:
+          return null;
+      }
+    }, null);
   }, []);
+  const refreshPreview = useCallback(() => {
+    const b = boardRef.current;
+    if (!b) return;
+    if (previewShapeRef.current) {
+      safeJsx("MiniBoard.removeObject(previewShape)", () => b.removeObject(previewShapeRef.current));
+      previewShapeRef.current = null;
+    }
+    const t = toolSM.toolRef.current;
+    const toolDef = TOOLS.find((td) => td.key === t);
+    if (!toolDef) return;
+    const picks = pendingRef.current;
+    if (picks.length === 0 || toolDef.needs <= 0) return;
+    if (picks.length >= toolDef.needs) return;
+    if (!phantomRef.current) {
+      phantomRef.current = safeJsx("MiniBoard.createPhantom", () => b.create("point", [0, 0], {
+        visible: false,
+        fixed: true,
+        withLabel: false,
+        name: ""
+      }), null);
+      if (!phantomRef.current) return;
+    }
+    previewShapeRef.current = buildPreview(toolDef, picks, phantomRef.current);
+  }, [buildPreview, toolSM]);
   const [, setWarn] = useState(null);
   const warnTimerRef = useRef(null);
   const flashWarn = useCallback((msg) => {
@@ -1960,10 +2123,6 @@ var TransformParamPopover = ({ kind, anchor, defaultValue, onConfirm, onCancel, 
   );
   return createPortal(node, document.body);
 };
-function RecorderPanelWithStore({ store }) {
-  const recorder = useActionRecorder(store);
-  return /* @__PURE__ */ jsx(RecorderPanelDev, { recorder });
-}
 var GeometryEditorPanel = forwardRef(
   function GeometryEditorPanel2({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer, onUndo, onRedo, canUndo, canRedo }, ref) {
     const handleRef = useRef(null);
@@ -2233,8 +2392,7 @@ var GeometryEditorPanel = forwardRef(
                 }
               )
             ] })
-          ] }),
-          sceneStoreRef.current && /* @__PURE__ */ jsx(RecorderPanelWithStore, { store: sceneStoreRef.current })
+          ] })
         ]
       }
     );
@@ -2344,5 +2502,5 @@ var GeometryStampHost = forwardRef(
 );
 
 export { GeometryStampHost };
-//# sourceMappingURL=host-4375JK4S.mjs.map
-//# sourceMappingURL=host-4375JK4S.mjs.map
+//# sourceMappingURL=host-OWTX6J47.mjs.map
+//# sourceMappingURL=host-OWTX6J47.mjs.map

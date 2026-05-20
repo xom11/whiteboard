@@ -3,7 +3,7 @@
 
 var immer = require('immer');
 var jsxRuntime = require('react/jsx-runtime');
-var React7 = require('react');
+var React6 = require('react');
 var reactDom = require('react-dom');
 
 function _interopNamespace(e) {
@@ -24,7 +24,7 @@ function _interopNamespace(e) {
   return Object.freeze(n);
 }
 
-var React7__namespace = /*#__PURE__*/_interopNamespace(React7);
+var React6__namespace = /*#__PURE__*/_interopNamespace(React6);
 
 var __defProp = Object.defineProperty;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -491,15 +491,59 @@ var init_JxgRenderer = __esm({
           const def = getKind(obj.kind);
           const el = def.render(obj, this.ctx());
           this.elements.set(obj.id, el);
+          this.attachFreePointDragSync(obj, el);
         } catch (err) {
           console.warn(`[scene/render/2d] kh\xF4ng render \u0111\u01B0\u1EE3c ${obj.kind} id="${obj.id}":`, err);
         }
+      }
+      /**
+       * Đồng bộ toạ độ live của free point về scene.constraint khi user kéo bằng
+       * tay (Move tool / mobile drag). JSXGraph mutate obj.X()/Y() ngay nhưng
+       * constraint vẫn giữ giá trị lúc tạo → serialize sẽ ra SVG y hệt cũ →
+       * fileId SHA-256 trùng → Excalidraw bỏ qua refresh. (Regression từ
+       * commit f41f366 sau scene v2 port.)
+       *
+       * Chỉ áp dụng cho free point — glider/intersection/midpoint không drag được
+       * trực tiếp (toạ độ derived từ ref khác).
+       */
+      attachFreePointDragSync(obj, el) {
+        if (obj.kind !== "point") return;
+        const c = obj.attrs.constraint;
+        if (!c || c.kind !== "free") return;
+        const point = el;
+        if (typeof point.on !== "function") return;
+        const sceneId = obj.id;
+        point.on("up", () => {
+          if (this.disposed) return;
+          if (typeof point.X !== "function" || typeof point.Y !== "function") return;
+          const x = point.X();
+          const y = point.Y();
+          if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+          const cur = this.store.getState().objects[sceneId];
+          if (!cur) return;
+          const curC = cur.attrs.constraint;
+          if (!curC || curC.kind !== "free") return;
+          if (curC.x === x && curC.y === y) return;
+          this.store.dispatch({
+            type: "UPDATE_ATTRS",
+            payload: { id: sceneId, patch: { constraint: { kind: "free", x, y } } }
+          });
+        });
       }
       remove(id) {
         const el = this.elements.get(id);
         if (!el) return;
         try {
+          const helpers = el._helpers;
           this.board.removeObject?.(el);
+          if (Array.isArray(helpers)) {
+            for (const h of helpers) {
+              try {
+                this.board.removeObject?.(h);
+              } catch {
+              }
+            }
+          }
         } catch (err) {
           console.warn(`[scene/render/2d] kh\xF4ng remove \u0111\u01B0\u1EE3c id="${id}":`, err);
         }
@@ -1124,6 +1168,14 @@ function handleDown(ctx, e) {
     ctx.refreshPreview();
   }
 }
+function findPickIdByKind(ctx, kind) {
+  const picks = ctx.pendingRef.current;
+  const ids = ctx.pendingIdsRef.current;
+  for (let i = 0; i < picks.length; i += 1) {
+    if (objKind(picks[i]) === kind && ids[i]) return ids[i];
+  }
+  return null;
+}
 function finalizeShape(ctx, toolDef) {
   const ids = ctx.pendingIdsRef.current;
   const key = toolDef.key;
@@ -1137,19 +1189,63 @@ function finalizeShape(ctx, toolDef) {
       });
       return;
     }
-    case "line":
-    case "perpendicular":
-    case "parallel":
-    case "perpBisector":
-    case "angleBisector":
-    case "tangent": {
+    case "line": {
       const id = freshId(ctx, "l");
       const label = ctx.nextLabel("line");
-      const p1 = ids[0];
-      const p2 = ids[1] ?? ids[0];
       ctx.store.dispatch({
         type: "ADD",
-        payload: { obj: mkSceneObj(id, "line", label, { p1, p2 }) }
+        payload: { obj: mkSceneObj(id, "line", label, { p1: ids[0], p2: ids[1] }) }
+      });
+      return;
+    }
+    case "perpendicular":
+    case "parallel": {
+      const throughPoint = findPickIdByKind(ctx, "point");
+      const toLine = findPickIdByKind(ctx, "line");
+      if (!throughPoint || !toLine) return;
+      const id = freshId(ctx, key === "perpendicular" ? "perp" : "par");
+      const label = ctx.nextLabel("line");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: { obj: mkSceneObj(id, "line", label, {
+          construction: { kind: key, throughPoint, toLine }
+        }) }
+      });
+      return;
+    }
+    case "perpBisector": {
+      const id = freshId(ctx, "pb");
+      const label = ctx.nextLabel("line");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: { obj: mkSceneObj(id, "line", label, {
+          construction: { kind: "perpBisector", p1: ids[0], p2: ids[1] }
+        }) }
+      });
+      return;
+    }
+    case "angleBisector": {
+      const id = freshId(ctx, "ab");
+      const label = ctx.nextLabel("line");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: { obj: mkSceneObj(id, "line", label, {
+          construction: { kind: "angleBisector", p1: ids[0], vertex: ids[1], p2: ids[2] }
+        }) }
+      });
+      return;
+    }
+    case "tangent": {
+      const throughPoint = findPickIdByKind(ctx, "point");
+      const toCircle = findPickIdByKind(ctx, "circle");
+      if (!throughPoint || !toCircle) return;
+      const id = freshId(ctx, "t");
+      const label = ctx.nextLabel("line");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: { obj: mkSceneObj(id, "line", label, {
+          construction: { kind: "tangent", throughPoint, toCircle }
+        }) }
       });
       return;
     }
@@ -1171,8 +1267,7 @@ function finalizeShape(ctx, toolDef) {
       });
       return;
     }
-    case "circleCenter":
-    case "circle3": {
+    case "circleCenter": {
       const id = freshId(ctx, "c");
       const label = ctx.nextLabel("circle");
       ctx.store.dispatch({
@@ -1180,7 +1275,20 @@ function finalizeShape(ctx, toolDef) {
         payload: {
           obj: mkSceneObj(id, "circle", label, {
             center: ids[0],
-            surfacePoint: ids[1] ?? ids[0]
+            surfacePoint: ids[1]
+          })
+        }
+      });
+      return;
+    }
+    case "circle3": {
+      const id = freshId(ctx, "cc");
+      const label = ctx.nextLabel("circle");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: {
+          obj: mkSceneObj(id, "circle", label, {
+            construction: { kind: "circumscribed", p1: ids[0], p2: ids[1], p3: ids[2] }
           })
         }
       });
@@ -1191,7 +1299,9 @@ function finalizeShape(ctx, toolDef) {
       const label = ctx.nextLabel("point");
       ctx.store.dispatch({
         type: "ADD",
-        payload: { obj: mkSceneObj(id, "point", label, { constraint: { kind: "free", x: 0, y: 0 } }) }
+        payload: { obj: mkSceneObj(id, "point", label, {
+          constraint: { kind: "midpoint", p1: ids[0], p2: ids[1] }
+        }) }
       });
       return;
     }
@@ -1361,8 +1471,8 @@ var init_hitTest = __esm({
   }
 });
 function useSceneStore(initialState) {
-  const store = React7.useMemo(() => createStore(initialState), []);
-  const state = React7.useSyncExternalStore(
+  const store = React6.useMemo(() => createStore(initialState), []);
+  const state = React6.useSyncExternalStore(
     (cb) => store.subscribe(() => cb()),
     () => store.getState(),
     () => store.getState()
@@ -1377,21 +1487,21 @@ var init_useSceneStore = __esm({
   }
 });
 function useToolStateMachine(initial = "move") {
-  const [tool, setToolState] = React7.useState(initial);
-  const [pendingIds, setPendingIds] = React7.useState([]);
-  const toolRef = React7.useRef(initial);
-  const pendingIdsRef = React7.useRef([]);
-  const setTool = React7.useCallback((t) => {
+  const [tool, setToolState] = React6.useState(initial);
+  const [pendingIds, setPendingIds] = React6.useState([]);
+  const toolRef = React6.useRef(initial);
+  const pendingIdsRef = React6.useRef([]);
+  const setTool = React6.useCallback((t) => {
     toolRef.current = t;
     pendingIdsRef.current = [];
     setToolState(t);
     setPendingIds([]);
   }, []);
-  const pushPending = React7.useCallback((id) => {
+  const pushPending = React6.useCallback((id) => {
     pendingIdsRef.current = [...pendingIdsRef.current, id];
     setPendingIds(pendingIdsRef.current);
   }, []);
-  const clearPending = React7.useCallback(() => {
+  const clearPending = React6.useCallback(() => {
     pendingIdsRef.current = [];
     setPendingIds([]);
   }, []);
@@ -1415,50 +1525,50 @@ var init_MiniBoard = __esm({
     init_useToolStateMachine();
     init_safeJsx();
     JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
-      const isDarkRef = React7.useRef(!!isDark);
+      const isDarkRef = React6.useRef(!!isDark);
       isDarkRef.current = !!isDark;
-      const containerId = React7.useId().replace(/:/g, "_") + "_jxgmini";
-      const containerRef = React7.useRef(null);
-      const boardRef = React7.useRef(null);
-      const jxgRef = React7.useRef(null);
-      const rendererRef = React7.useRef(null);
-      const axisObjsRef = React7.useRef({});
-      const initState = React7.useMemo(
+      const containerId = React6.useId().replace(/:/g, "_") + "_jxgmini";
+      const containerRef = React6.useRef(null);
+      const boardRef = React6.useRef(null);
+      const jxgRef = React6.useRef(null);
+      const rendererRef = React6.useRef(null);
+      const axisObjsRef = React6.useRef({});
+      const initState = React6.useMemo(
         () => initialState?.state ?? createEmptyState("2d"),
         // eslint-disable-next-line react-hooks/exhaustive-deps
         []
       );
       const { store } = useSceneStore(initState);
       const toolSM = useToolStateMachine("move");
-      const [showAxis, setShowAxisState] = React7.useState(initialState?.showAxis ?? false);
-      const [showGrid, setShowGridState] = React7.useState(initialState?.showGrid ?? false);
-      const showAxisRef = React7.useRef(showAxis);
+      const [showAxis, setShowAxisState] = React6.useState(initialState?.showAxis ?? false);
+      const [showGrid, setShowGridState] = React6.useState(initialState?.showGrid ?? false);
+      const showAxisRef = React6.useRef(showAxis);
       showAxisRef.current = showAxis;
-      const showGridRef = React7.useRef(showGrid);
+      const showGridRef = React6.useRef(showGrid);
       showGridRef.current = showGrid;
-      const selectedSetRef = React7.useRef(/* @__PURE__ */ new Set());
-      const [, setSelectionTick] = React7.useState(0);
-      const pendingRef = React7.useRef([]);
-      const previewSegRef = React7.useRef([]);
-      const phantomRef = React7.useRef(null);
-      const previewShapeRef = React7.useRef(null);
-      const previewRafRef = React7.useRef(null);
-      const marqueeRef = React7.useRef(null);
-      const moveDownRef = React7.useRef(null);
-      const lastMoveClickRef = React7.useRef({ id: null, time: 0 });
-      const pendingTransformRef = React7.useRef(null);
-      const subscribersRef = React7.useRef(/* @__PURE__ */ new Set());
-      const selectSubsRef = React7.useRef(/* @__PURE__ */ new Set());
-      const transformSubsRef = React7.useRef(/* @__PURE__ */ new Set());
-      const notifySubscribers = React7.useCallback(() => {
+      const selectedSetRef = React6.useRef(/* @__PURE__ */ new Set());
+      const [, setSelectionTick] = React6.useState(0);
+      const pendingRef = React6.useRef([]);
+      const previewSegRef = React6.useRef([]);
+      const phantomRef = React6.useRef(null);
+      const previewShapeRef = React6.useRef(null);
+      const previewRafRef = React6.useRef(null);
+      const marqueeRef = React6.useRef(null);
+      const moveDownRef = React6.useRef(null);
+      const lastMoveClickRef = React6.useRef({ id: null, time: 0 });
+      const pendingTransformRef = React6.useRef(null);
+      const subscribersRef = React6.useRef(/* @__PURE__ */ new Set());
+      const selectSubsRef = React6.useRef(/* @__PURE__ */ new Set());
+      const transformSubsRef = React6.useRef(/* @__PURE__ */ new Set());
+      const notifySubscribers = React6.useCallback(() => {
         subscribersRef.current.forEach((cb) => safeJsx("MiniBoard.notifySubscriber.cb", () => cb()));
       }, []);
-      React7.useEffect(() => store.subscribe(() => notifySubscribers()), [store, notifySubscribers]);
-      React7.useEffect(() => {
+      React6.useEffect(() => store.subscribe(() => notifySubscribers()), [store, notifySubscribers]);
+      React6.useEffect(() => {
         notifySubscribers();
       }, [showAxis, showGrid, toolSM.tool, notifySubscribers]);
-      const jxgIdToSceneRef = React7.useRef(/* @__PURE__ */ new Map());
-      React7.useEffect(() => {
+      const jxgIdToSceneRef = React6.useRef(/* @__PURE__ */ new Map());
+      React6.useEffect(() => {
         const rebuild = () => {
           const r = rendererRef.current;
           if (!r) return;
@@ -1475,16 +1585,16 @@ var init_MiniBoard = __esm({
         rebuild();
         return store.subscribe(() => rebuild());
       }, [store]);
-      const jxgFromSceneId = React7.useCallback((id) => {
+      const jxgFromSceneId = React6.useCallback((id) => {
         const r = rendererRef.current;
         if (!r) return null;
         return r.elements?.get(id) ?? null;
       }, []);
-      const jxgIdToSceneId = React7.useCallback((jxgObj) => {
+      const jxgIdToSceneId = React6.useCallback((jxgObj) => {
         if (!jxgObj?.id) return null;
         return jxgIdToSceneRef.current.get(String(jxgObj.id)) ?? null;
       }, []);
-      const screenCoordsOf = React7.useCallback((evt) => {
+      const screenCoordsOf = React6.useCallback((evt) => {
         const b = boardRef.current;
         if (!b) return null;
         try {
@@ -1500,20 +1610,25 @@ var init_MiniBoard = __esm({
         }
         return null;
       }, []);
-      const objectsAt = React7.useCallback((evt) => {
+      const objectsAt = React6.useCallback((evt) => {
         const b = boardRef.current;
         const sc = b ? screenCoordsOf(evt) : null;
         if (!b || !sc) return [];
         const [sx, sy] = sc;
+        const excludes = /* @__PURE__ */ new Set();
+        if (phantomRef.current) excludes.add(phantomRef.current);
+        if (previewShapeRef.current) excludes.add(previewShapeRef.current);
+        for (const s of previewSegRef.current) excludes.add(s);
         const out = [];
         safeJsx("MiniBoard.objectsAt", () => {
           for (const o of b.objectsList || []) {
+            if (excludes.has(o)) continue;
             if (o && typeof o.hasPoint === "function" && o.hasPoint(sx, sy)) out.push(o);
           }
         });
         return out;
       }, [screenCoordsOf]);
-      const findNearestPointJxg = React7.useCallback((evt, tolPx = 12) => {
+      const findNearestPointJxg = React6.useCallback((evt, tolPx = 12) => {
         const b = boardRef.current;
         const sc = b ? screenCoordsOf(evt) : null;
         if (!b || !sc) return null;
@@ -1526,7 +1641,7 @@ var init_MiniBoard = __esm({
         const result = findNearestPoint(store.getState(), pointCoord, sx, sy, tolPx);
         return result ? jxgFromSceneId(result.id) : null;
       }, [screenCoordsOf, jxgFromSceneId, store]);
-      const promoteLabel = React7.useCallback((o) => {
+      const promoteLabel = React6.useCallback((o) => {
         if (!o) return o;
         const t = (o.elType || o.type || "").toString().toLowerCase();
         if (t !== "text" || !boardRef.current) return o;
@@ -1538,7 +1653,7 @@ var init_MiniBoard = __esm({
         }, null);
         return promoted ?? o;
       }, []);
-      const toggleSelect = React7.useCallback((id, additive) => {
+      const toggleSelect = React6.useCallback((id, additive) => {
         if (!additive) {
           selectedSetRef.current.clear();
           selectedSetRef.current.add(id);
@@ -1546,11 +1661,11 @@ var init_MiniBoard = __esm({
         else selectedSetRef.current.add(id);
         setSelectionTick((t) => t + 1);
       }, []);
-      const clearSelection = React7.useCallback(() => {
+      const clearSelection = React6.useCallback(() => {
         selectedSetRef.current.clear();
         setSelectionTick((t) => t + 1);
       }, []);
-      const deleteSelection = React7.useCallback(() => {
+      const deleteSelection = React6.useCallback(() => {
         if (selectedSetRef.current.size === 0) return;
         store.transaction((dispatch) => {
           for (const id of selectedSetRef.current) dispatch({ type: "DELETE", payload: { id } });
@@ -1558,7 +1673,7 @@ var init_MiniBoard = __esm({
         selectedSetRef.current.clear();
         setSelectionTick((t) => t + 1);
       }, [store]);
-      const clearPreviewSegs = React7.useCallback(() => {
+      const clearPreviewSegs = React6.useCallback(() => {
         const b = boardRef.current;
         if (!b) return;
         for (const s of previewSegRef.current) {
@@ -1566,7 +1681,7 @@ var init_MiniBoard = __esm({
         }
         previewSegRef.current = [];
       }, []);
-      const removePhantom = React7.useCallback(() => {
+      const removePhantom = React6.useCallback(() => {
         const b = boardRef.current;
         if (!b) return;
         if (previewShapeRef.current) {
@@ -1578,29 +1693,121 @@ var init_MiniBoard = __esm({
           phantomRef.current = null;
         }
       }, []);
-      const clearPending = React7.useCallback(() => {
+      const clearPending = React6.useCallback(() => {
         removePhantom();
         clearPreviewSegs();
         pendingRef.current = [];
         toolSM.clearPending();
       }, [clearPreviewSegs, removePhantom, toolSM]);
-      const refreshPreview = React7.useCallback(() => {
+      const buildPreview = React6.useCallback((toolDef, picks, phantom) => {
+        const b = boardRef.current;
+        if (!b) return null;
+        const style = {
+          strokeColor: "#3b82f6",
+          strokeWidth: 1.5,
+          strokeOpacity: 0.65,
+          dash: 2,
+          fixed: true,
+          highlight: false,
+          withLabel: false
+        };
+        const circStyle = { ...style, fillColor: "none", fillOpacity: 0 };
+        return safeJsx("MiniBoard.buildPreview", () => {
+          switch (toolDef.key) {
+            case "segment":
+            case "midpoint":
+            case "distance":
+              return b.create("segment", [picks[0], phantom], style);
+            case "line":
+              return b.create("line", [picks[0], phantom], style);
+            case "ray":
+              return b.create("line", [picks[0], phantom], { ...style, straightFirst: false, straightLast: true });
+            case "vector":
+              return b.create("arrow", [picks[0], phantom], style);
+            case "circleCenter":
+              return b.create("circle", [picks[0], phantom], circStyle);
+            case "circle3":
+              if (picks.length === 1) return b.create("circle", [picks[0], phantom], circStyle);
+              if (picks.length === 2) return b.create("circumcircle", [picks[0], picks[1], phantom], circStyle);
+              return null;
+            case "angle":
+              if (picks.length === 1) return b.create("segment", [picks[0], phantom], style);
+              if (picks.length === 2) {
+                return b.create("angle", [picks[0], picks[1], phantom], {
+                  ...style,
+                  radius: 1,
+                  fillColor: "#22c55e",
+                  fillOpacity: 0.15
+                });
+              }
+              return null;
+            case "perpBisector":
+              return b.create("segment", [picks[0], phantom], style);
+            case "angleBisector":
+              if (picks.length === 1) return b.create("segment", [picks[0], phantom], style);
+              if (picks.length === 2) return b.create("bisector", [picks[0], picks[1], phantom], style);
+              return null;
+            case "perpendicular":
+            case "parallel":
+            case "tangent": {
+              if (picks.length !== 1) return null;
+              const k = objKind(picks[0]);
+              if (k === "line" && toolDef.key !== "tangent") {
+                return b.create(toolDef.key, [picks[0], phantom], style);
+              }
+              if (k === "circle" && toolDef.key === "tangent") {
+                const glider = b.create("glider", [phantom.X(), phantom.Y(), picks[0]], {
+                  visible: false,
+                  withLabel: false
+                });
+                return b.create("tangent", [glider], style);
+              }
+              return null;
+            }
+            default:
+              return null;
+          }
+        }, null);
       }, []);
-      const [, setWarn] = React7.useState(null);
-      const warnTimerRef = React7.useRef(null);
-      const flashWarn = React7.useCallback((msg) => {
+      const refreshPreview = React6.useCallback(() => {
+        const b = boardRef.current;
+        if (!b) return;
+        if (previewShapeRef.current) {
+          safeJsx("MiniBoard.removeObject(previewShape)", () => b.removeObject(previewShapeRef.current));
+          previewShapeRef.current = null;
+        }
+        const t = toolSM.toolRef.current;
+        const toolDef = TOOLS.find((td) => td.key === t);
+        if (!toolDef) return;
+        const picks = pendingRef.current;
+        if (picks.length === 0 || toolDef.needs <= 0) return;
+        if (picks.length >= toolDef.needs) return;
+        if (!phantomRef.current) {
+          phantomRef.current = safeJsx("MiniBoard.createPhantom", () => b.create("point", [0, 0], {
+            visible: false,
+            fixed: true,
+            withLabel: false,
+            name: ""
+          }), null);
+          if (!phantomRef.current) return;
+        }
+        previewShapeRef.current = buildPreview(toolDef, picks, phantomRef.current);
+      }, [buildPreview, toolSM]);
+      const [, setWarn] = React6.useState(null);
+      const warnTimerRef = React6.useRef(null);
+      const flashWarn = React6.useCallback((msg) => {
         if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
         setWarn(msg);
         warnTimerRef.current = setTimeout(() => setWarn(null), 1800);
       }, []);
-      React7.useEffect(() => () => {
+      React6.useEffect(() => () => {
         if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
       }, []);
-      const nextLabelFor = React7.useCallback(
+      const nextLabelFor = React6.useCallback(
         (kind) => nextLabel(store.getState(), kind),
         [store]
       );
-      const buildSnapshot = React7.useCallback(
+      const buildSnapshot = React6.useCallback(
         (id, anchorScreen) => {
           const obj = store.getState().objects[id];
           if (!obj) return null;
@@ -1623,15 +1830,15 @@ var init_MiniBoard = __esm({
         },
         [store]
       );
-      const emitSelect = React7.useCallback((info) => {
+      const emitSelect = React6.useCallback((info) => {
         const snap = buildSnapshot(info.id, info.anchorScreen);
         if (!snap) return;
         selectSubsRef.current.forEach((cb) => safeJsx("MiniBoard.emitSelect.cb", () => cb(snap)));
       }, [buildSnapshot]);
-      const emitTransform = React7.useCallback((info) => {
+      const emitTransform = React6.useCallback((info) => {
         transformSubsRef.current.forEach((cb) => safeJsx("MiniBoard.emitTransform.cb", () => cb(info)));
       }, []);
-      const ctxRef = React7.useRef(null);
+      const ctxRef = React6.useRef(null);
       ctxRef.current = {
         boardRef,
         toolRef: toolSM.toolRef,
@@ -1668,7 +1875,7 @@ var init_MiniBoard = __esm({
         },
         setSelectionTick: (fn) => setSelectionTick(fn)
       };
-      React7.useEffect(() => {
+      React6.useEffect(() => {
         const onKey = (e) => {
           const ae = document.activeElement;
           const inField = !!(ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable));
@@ -1708,7 +1915,7 @@ var init_MiniBoard = __esm({
         window.addEventListener("keydown", onKey, { capture: true });
         return () => window.removeEventListener("keydown", onKey, { capture: true });
       }, [store, toolSM, clearPending, clearSelection, deleteSelection]);
-      React7.useEffect(() => {
+      React6.useEffect(() => {
         const b = boardRef.current;
         if (!b) return;
         safeJsx("MiniBoard.toggleAxis", () => {
@@ -1727,7 +1934,7 @@ var init_MiniBoard = __esm({
           b.update();
         });
       }, [showAxis]);
-      React7.useEffect(() => {
+      React6.useEffect(() => {
         const b = boardRef.current;
         if (!b) return;
         safeJsx("MiniBoard.toggleGrid", () => {
@@ -1740,7 +1947,7 @@ var init_MiniBoard = __esm({
           b.update();
         });
       }, [showGrid]);
-      const handleToolChange = React7.useCallback((t) => {
+      const handleToolChange = React6.useCallback((t) => {
         clearPending();
         toolSM.setTool(t);
         const b = boardRef.current;
@@ -1748,7 +1955,7 @@ var init_MiniBoard = __esm({
           if (b.attr?.pan) b.attr.pan.enabled = t !== "select";
         });
       }, [clearPending, toolSM]);
-      React7.useEffect(() => {
+      React6.useEffect(() => {
         if (typeof window === "undefined" || !containerRef.current) return;
         let cancelled = false;
         let wheelCleanup = null;
@@ -2144,23 +2351,23 @@ function GridIcon() {
   ] });
 }
 function useToolHoverTooltip() {
-  const [hover, setHover] = React7.useState(null);
-  const [portalReady, setPortalReady] = React7.useState(false);
-  const hoverTimerRef = React7.useRef(null);
-  React7.useEffect(() => {
+  const [hover, setHover] = React6.useState(null);
+  const [portalReady, setPortalReady] = React6.useState(false);
+  const hoverTimerRef = React6.useRef(null);
+  React6.useEffect(() => {
     setPortalReady(true);
     return () => {
       if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     };
   }, []);
-  const showHover = React7.useCallback((el, t) => {
+  const showHover = React6.useCallback((el, t) => {
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     hoverTimerRef.current = setTimeout(() => {
       const r = el.getBoundingClientRect();
       setHover({ label: t.label, hint: t.hint, x: r.right, y: r.top + r.height / 2 });
     }, TOOLTIP_DELAY_MS);
   }, []);
-  const hideHover = React7.useCallback(() => {
+  const hideHover = React6.useCallback(() => {
     if (hoverTimerRef.current) {
       clearTimeout(hoverTimerRef.current);
       hoverTimerRef.current = null;
@@ -2171,14 +2378,14 @@ function useToolHoverTooltip() {
 }
 function DesktopGeometryPanel(props) {
   const { activeTool, onToolChange, showAxis, showGrid, onShowAxisChange, onShowGridChange, onUndo, canUndo, onRedo, canRedo, onClose, isDark, chordGroup } = props;
-  const grouped = React7.useMemo(() => {
+  const grouped = React6.useMemo(() => {
     return TOOLS.reduce((acc, t) => {
       var _a;
       (acc[_a = t.group] ?? (acc[_a] = [])).push(t);
       return acc;
     }, {});
   }, []);
-  const groupKeys = React7.useMemo(
+  const groupKeys = React6.useMemo(
     () => GROUP_ORDER.filter((g) => grouped[g]),
     [grouped]
   );
@@ -2362,7 +2569,7 @@ function MobileGeometryPanel(props) {
     drawerOpen,
     onDrawerClose
   } = props;
-  const groups = React7.useMemo(() => {
+  const groups = React6.useMemo(() => {
     const acc = /* @__PURE__ */ new Map();
     for (const t of TOOLS) {
       if (!acc.has(t.group)) acc.set(t.group, []);
@@ -2477,11 +2684,11 @@ function readMatch(query) {
   }
 }
 function useIsMobile() {
-  const [state, setState] = React7.useState(() => ({
+  const [state, setState] = React6.useState(() => ({
     isMobile: readMatch(MOBILE_QUERY),
     isTouchOnly: readMatch(NO_HOVER_QUERY)
   }));
-  React7.useEffect(() => {
+  React6.useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return;
     const mql = window.matchMedia(MOBILE_QUERY);
     const tql = window.matchMedia(NO_HOVER_QUERY);
@@ -2568,11 +2775,11 @@ var init_PropertiesPopover = __esm({
     };
     PropertiesPopover = (props) => {
       const { anchor, onClose, onMutate, isDark, getAllNames } = props;
-      const rootRef = React7.useRef(null);
-      const [section, setSection] = React7.useState(null);
+      const rootRef = React6.useRef(null);
+      const [section, setSection] = React6.useState(null);
       const { isMobile } = useIsMobile();
-      const [clamped, setClamped] = React7.useState(null);
-      React7.useLayoutEffect(() => {
+      const [clamped, setClamped] = React6.useState(null);
+      React6.useLayoutEffect(() => {
         if (typeof window === "undefined") return;
         const margin = 8;
         if (isMobile) {
@@ -2591,11 +2798,11 @@ var init_PropertiesPopover = __esm({
         setClamped({ left, top });
       }, [anchor.x, anchor.y, isMobile, section]);
       const initialName = props.kind === "point" ? props.currentName : props.kind === "line" || props.kind === "circle" ? props.currentName : "";
-      const [name, setName] = React7.useState(initialName);
-      React7.useEffect(() => {
+      const [name, setName] = React6.useState(initialName);
+      React6.useEffect(() => {
         setName(initialName);
       }, [initialName]);
-      React7.useEffect(() => {
+      React6.useEffect(() => {
         const onKey = (e) => {
           if (e.key === "Escape") {
             e.preventDefault();
@@ -2664,7 +2871,7 @@ var init_PropertiesPopover = __esm({
           ]
         }
       );
-      const colorIndicatorTint = React7.useMemo(() => currentColor, [currentColor]);
+      const colorIndicatorTint = React6.useMemo(() => currentColor, [currentColor]);
       const pos = clamped ?? { left: anchor.x, top: anchor.y };
       const node = /* @__PURE__ */ jsxRuntime.jsxs(
         "div",
@@ -2798,10 +3005,10 @@ var init_TransformParamPopover = __esm({
       regularPolygon: { aria: "S\u1ED1 c\u1EA1nh \u0111a gi\xE1c \u0111\u1EC1u", label: "S\u1ED1 c\u1EA1nh (n \u2265 3)", step: 1, min: 3 }
     };
     TransformParamPopover = ({ kind, anchor, defaultValue, onConfirm, onCancel, isDark }) => {
-      const [value, setValue] = React7.useState(defaultValue);
-      const inputRef = React7.useRef(null);
+      const [value, setValue] = React6.useState(defaultValue);
+      const inputRef = React6.useRef(null);
       const meta = LABELS[kind];
-      React7.useEffect(() => {
+      React6.useEffect(() => {
         inputRef.current?.focus();
         inputRef.current?.select();
       }, []);
@@ -2904,7 +3111,7 @@ var init_kindMeta = __esm({
 });
 function ObjectRowMenu(props) {
   const { onRename, onChangeColor, onDelete } = props;
-  const [open, setOpen] = React7__namespace.useState(false);
+  const [open, setOpen] = React6__namespace.useState(false);
   return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "relative inline-block", children: [
     /* @__PURE__ */ jsxRuntime.jsx(
       "button",
@@ -3030,11 +3237,11 @@ var init_ObjectRow = __esm({
 });
 function ObjectListPanel(props) {
   const { store, selectedId, onSelect } = props;
-  const subscribe = React7__namespace.useCallback(
+  const subscribe = React6__namespace.useCallback(
     (cb) => store.subscribe(() => cb()),
     [store]
   );
-  const state = React7__namespace.useSyncExternalStore(subscribe, store.getState, store.getState);
+  const state = React6__namespace.useSyncExternalStore(subscribe, store.getState, store.getState);
   const objects = listObjects(state);
   function handleSelect(id) {
     onSelect?.(id);
@@ -3084,150 +3291,6 @@ var init_ObjectListPanel = __esm({
     init_ObjectRow();
   }
 });
-function useActionRecorder(store) {
-  const [history, setHistory] = React7__namespace.useState([]);
-  const isRecordingRef = React7__namespace.useRef(true);
-  const isReplayingRef = React7__namespace.useRef(false);
-  const [isRecording, setIsRecording] = React7__namespace.useState(true);
-  const [isReplaying, setIsReplaying] = React7__namespace.useState(false);
-  React7__namespace.useEffect(() => {
-    const unsub = store.subscribe((_next, _prev, action) => {
-      if (!isRecordingRef.current) return;
-      if (isReplayingRef.current) return;
-      setHistory((h) => [...h, { action, at: Date.now() }]);
-    });
-    return unsub;
-  }, [store]);
-  const record = React7__namespace.useCallback(() => {
-    isRecordingRef.current = true;
-    setIsRecording(true);
-  }, []);
-  const stop = React7__namespace.useCallback(() => {
-    isRecordingRef.current = false;
-    setIsRecording(false);
-  }, []);
-  const clear = React7__namespace.useCallback(() => {
-    setHistory([]);
-  }, []);
-  const replay = React7__namespace.useCallback(async (delayMs = 0) => {
-    if (history.length === 0) return;
-    isReplayingRef.current = true;
-    setIsReplaying(true);
-    try {
-      store.dispatch({ type: "RESET" });
-      for (const { action } of history) {
-        if (delayMs > 0) await new Promise((r) => setTimeout(r, delayMs));
-        store.dispatch(action);
-      }
-    } finally {
-      isReplayingRef.current = false;
-      setIsReplaying(false);
-    }
-  }, [history, store]);
-  return { history, isRecording, isReplaying, record, stop, clear, replay };
-}
-var init_useActionRecorder = __esm({
-  "src/core/scene/ui/useActionRecorder.ts"() {
-    "use client";
-  }
-});
-function RecorderPanel(props) {
-  const { recorder, defaultOpen = false } = props;
-  const [open, setOpen] = React7__namespace.useState(defaultOpen);
-  return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "fixed bottom-3 right-3 z-50 rounded-md border border-zinc-300 bg-white shadow-lg text-xs dark:border-zinc-700 dark:bg-zinc-900", children: [
-    /* @__PURE__ */ jsxRuntime.jsxs(
-      "button",
-      {
-        type: "button",
-        "aria-label": "Toggle recorder",
-        onClick: () => setOpen((v) => !v),
-        className: "flex items-center gap-2 px-3 py-1.5 font-semibold",
-        children: [
-          /* @__PURE__ */ jsxRuntime.jsx("span", { children: "\u{1F3AC} Recorder" }),
-          /* @__PURE__ */ jsxRuntime.jsx(
-            "span",
-            {
-              "data-testid": "recorder-count",
-              className: "rounded bg-zinc-100 px-1.5 py-0.5 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200",
-              children: recorder.history.length
-            }
-          )
-        ]
-      }
-    ),
-    open ? /* @__PURE__ */ jsxRuntime.jsxs("div", { "data-testid": "recorder-body", className: "border-t border-zinc-200 px-3 py-2 dark:border-zinc-800", children: [
-      /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "mb-2 flex gap-1", children: [
-        recorder.isRecording ? /* @__PURE__ */ jsxRuntime.jsx(
-          "button",
-          {
-            type: "button",
-            "aria-label": "Stop recording",
-            onClick: recorder.stop,
-            className: "rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700",
-            children: "\u23F8 Stop"
-          }
-        ) : /* @__PURE__ */ jsxRuntime.jsx(
-          "button",
-          {
-            type: "button",
-            "aria-label": "Start recording",
-            onClick: recorder.record,
-            className: "rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700",
-            children: "\u23FA Record"
-          }
-        ),
-        /* @__PURE__ */ jsxRuntime.jsx(
-          "button",
-          {
-            type: "button",
-            "aria-label": "Replay",
-            disabled: recorder.isReplaying || recorder.history.length === 0,
-            onClick: () => {
-              void recorder.replay(100);
-            },
-            className: "rounded border border-zinc-300 px-2 py-1 disabled:opacity-50 dark:border-zinc-700",
-            children: "\u25B6 Replay"
-          }
-        ),
-        /* @__PURE__ */ jsxRuntime.jsx(
-          "button",
-          {
-            type: "button",
-            "aria-label": "Clear history",
-            onClick: recorder.clear,
-            className: "rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700",
-            children: "\u{1F5D1}"
-          }
-        )
-      ] }),
-      /* @__PURE__ */ jsxRuntime.jsx("ul", { className: "max-h-40 overflow-y-auto font-mono text-[10px]", children: recorder.history.map((r, i) => /* @__PURE__ */ jsxRuntime.jsxs("li", { className: "border-b border-zinc-100 py-0.5 dark:border-zinc-800", children: [
-        r.action.type,
-        "payload" in r.action && r.action.payload?.id ? ` #${r.action.payload.id}` : ""
-      ] }, i)) })
-    ] }) : null
-  ] });
-}
-var init_RecorderPanel = __esm({
-  "src/core/scene/ui/RecorderPanel.tsx"() {
-    "use client";
-  }
-});
-function RecorderPanelDev(props) {
-  const { force, ...rest } = props;
-  const isDev2 = force || process.env.NODE_ENV === "development";
-  if (!isDev2) return null;
-  return /* @__PURE__ */ jsxRuntime.jsx(RecorderPanel, { ...rest });
-}
-var init_RecorderPanelDev = __esm({
-  "src/core/scene/ui/RecorderPanelDev.tsx"() {
-    "use client";
-    init_RecorderPanel();
-  }
-});
-function RecorderPanelWithStore({ store }) {
-  const recorder = useActionRecorder(store);
-  return /* @__PURE__ */ jsxRuntime.jsx(RecorderPanelDev, { recorder });
-}
 var GeometryEditorPanel;
 var init_EditorPanel = __esm({
   "src/stamps/geometry-2d/editor/EditorPanel.tsx"() {
@@ -3239,22 +3302,20 @@ var init_EditorPanel = __esm({
     init_TransformParamPopover();
     init_LeftPanel();
     init_ObjectListPanel();
-    init_useActionRecorder();
-    init_RecorderPanelDev();
-    GeometryEditorPanel = React7.forwardRef(
+    GeometryEditorPanel = React6.forwardRef(
       function GeometryEditorPanel2({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer, onUndo, onRedo, canUndo, canRedo }, ref) {
-        const handleRef = React7.useRef(null);
-        const [ready, setReady] = React7.useState(false);
-        const [hasContent, setHasContent] = React7.useState(false);
-        const [selectedId, setSelectedId] = React7.useState(void 0);
-        const sceneStoreRef = React7.useRef(null);
-        const [propsPopover, setPropsPopover] = React7.useState(null);
-        const [transformPopover, setTransformPopover] = React7.useState(null);
-        const onStateChangeRef = React7.useRef(onStateChange);
-        React7.useEffect(() => {
+        const handleRef = React6.useRef(null);
+        const [ready, setReady] = React6.useState(false);
+        const [hasContent, setHasContent] = React6.useState(false);
+        const [selectedId, setSelectedId] = React6.useState(void 0);
+        const sceneStoreRef = React6.useRef(null);
+        const [propsPopover, setPropsPopover] = React6.useState(null);
+        const [transformPopover, setTransformPopover] = React6.useState(null);
+        const onStateChangeRef = React6.useRef(onStateChange);
+        React6.useEffect(() => {
           onStateChangeRef.current = onStateChange;
         }, [onStateChange]);
-        const emitState = React7.useCallback(() => {
+        const emitState = React6.useCallback(() => {
           const h = handleRef.current;
           if (!h) return;
           setHasContent(Object.keys(h.getState().objects).length > 0);
@@ -3268,7 +3329,7 @@ var init_EditorPanel = __esm({
             canRedo: h.canRedo()
           });
         }, []);
-        const handleReady = React7.useCallback((h) => {
+        const handleReady = React6.useCallback((h) => {
           handleRef.current = h;
           sceneStoreRef.current = h.getStore();
           setReady(true);
@@ -3277,7 +3338,7 @@ var init_EditorPanel = __esm({
           h.onSelect((snap) => setPropsPopover(snap));
           h.onTransformParam((info) => setTransformPopover(info));
         }, [emitState]);
-        const performInsert = React7.useCallback(() => {
+        const performInsert = React6.useCallback(() => {
           if (!handleRef.current) return false;
           const h = handleRef.current;
           const state = h.getState();
@@ -3297,10 +3358,10 @@ var init_EditorPanel = __esm({
           })();
           return true;
         }, [onInsert]);
-        const handleInsert = React7.useCallback(() => {
+        const handleInsert = React6.useCallback(() => {
           performInsert();
         }, [performInsert]);
-        React7.useImperativeHandle(ref, () => ({
+        React6.useImperativeHandle(ref, () => ({
           setTool: (t) => handleRef.current?.setTool(t),
           setShowAxis: (b) => handleRef.current?.setShowAxis(b),
           setShowGrid: (b) => handleRef.current?.setShowGrid(b),
@@ -3510,8 +3571,7 @@ var init_EditorPanel = __esm({
                     }
                   )
                 ] })
-              ] }),
-              sceneStoreRef.current && /* @__PURE__ */ jsxRuntime.jsx(RecorderPanelWithStore, { store: sceneStoreRef.current })
+              ] })
             ]
           }
         );
@@ -3525,19 +3585,19 @@ function isFieldFocused() {
 }
 function useChordShortcut(args) {
   const { groupOrder, tools, onSelect, enabled } = args;
-  const [chordGroup, setChordGroup] = React7.useState(null);
-  const groupOrderRef = React7.useRef(groupOrder);
-  const toolsRef = React7.useRef(tools);
-  const onSelectRef = React7.useRef(onSelect);
-  const chordGroupRef = React7.useRef(null);
+  const [chordGroup, setChordGroup] = React6.useState(null);
+  const groupOrderRef = React6.useRef(groupOrder);
+  const toolsRef = React6.useRef(tools);
+  const onSelectRef = React6.useRef(onSelect);
+  const chordGroupRef = React6.useRef(null);
   groupOrderRef.current = groupOrder;
   toolsRef.current = tools;
   onSelectRef.current = onSelect;
-  const cancel = React7.useCallback(() => {
+  const cancel = React6.useCallback(() => {
     chordGroupRef.current = null;
     setChordGroup(null);
   }, []);
-  React7.useEffect(() => {
+  React6.useEffect(() => {
     if (!enabled) return;
     const setChord = (next) => {
       chordGroupRef.current = next;
@@ -3735,19 +3795,19 @@ var init_host = __esm({
       canUndo: false,
       canRedo: false
     };
-    GeometryStampHost = React7.forwardRef(
+    GeometryStampHost = React6.forwardRef(
       function GeometryStampHost2({ api, editingElement, onClose, isDark }, ref) {
-        const panelRef = React7.useRef(null);
-        const [geomState, setGeomState] = React7.useState(INITIAL_GEOM_STATE);
+        const panelRef = React6.useRef(null);
+        const [geomState, setGeomState] = React6.useState(INITIAL_GEOM_STATE);
         const { isMobile } = useIsMobile();
-        const [drawerOpen, setDrawerOpen] = React7.useState(false);
+        const [drawerOpen, setDrawerOpen] = React6.useState(false);
         const { chordGroup } = useChordShortcut({
           groupOrder: GROUP_ORDER,
           tools: TOOLS,
           onSelect: (key) => panelRef.current?.setTool(key),
           enabled: !isMobile
         });
-        const initialState = React7.useMemo(() => {
+        const initialState = React6.useMemo(() => {
           if (!editingElement) return null;
           if (!isGeometryCustomData(editingElement.customData)) return null;
           try {
@@ -3757,7 +3817,7 @@ var init_host = __esm({
             return null;
           }
         }, [editingElement]);
-        const handleInsert = React7.useCallback(
+        const handleInsert = React6.useCallback(
           async (jsonState, svgString) => {
             if (!api) return;
             try {
@@ -3779,7 +3839,7 @@ var init_host = __esm({
           },
           [api, editingElement?.id, onClose]
         );
-        React7.useImperativeHandle(
+        React6.useImperativeHandle(
           ref,
           () => ({
             tryInsert: () => panelRef.current?.insert() ?? false,
@@ -3836,7 +3896,7 @@ var init_host = __esm({
 // src/stamps/geometry-2d/index.tsx
 init_render();
 init_types2();
-var GeometryStampHost3 = React7.lazy(
+var GeometryStampHost3 = React6.lazy(
   () => Promise.resolve().then(() => (init_host(), host_exports)).then((m) => ({ default: m.GeometryStampHost }))
 );
 var GeometryIcon = /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: [

@@ -4,7 +4,7 @@ require('./index.css');
 
 var immer = require('immer');
 var jsxRuntime = require('react/jsx-runtime');
-var React12 = require('react');
+var React10 = require('react');
 var reactDom = require('react-dom');
 var excalidraw = require('@excalidraw/excalidraw');
 require('@excalidraw/excalidraw/index.css');
@@ -27,7 +27,7 @@ function _interopNamespace(e) {
   return Object.freeze(n);
 }
 
-var React12__namespace = /*#__PURE__*/_interopNamespace(React12);
+var React10__namespace = /*#__PURE__*/_interopNamespace(React10);
 
 var __defProp = Object.defineProperty;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -500,15 +500,59 @@ var init_JxgRenderer = __esm({
           const def = getKind(obj.kind);
           const el = def.render(obj, this.ctx());
           this.elements.set(obj.id, el);
+          this.attachFreePointDragSync(obj, el);
         } catch (err) {
           console.warn(`[scene/render/2d] kh\xF4ng render \u0111\u01B0\u1EE3c ${obj.kind} id="${obj.id}":`, err);
         }
+      }
+      /**
+       * Đồng bộ toạ độ live của free point về scene.constraint khi user kéo bằng
+       * tay (Move tool / mobile drag). JSXGraph mutate obj.X()/Y() ngay nhưng
+       * constraint vẫn giữ giá trị lúc tạo → serialize sẽ ra SVG y hệt cũ →
+       * fileId SHA-256 trùng → Excalidraw bỏ qua refresh. (Regression từ
+       * commit f41f366 sau scene v2 port.)
+       *
+       * Chỉ áp dụng cho free point — glider/intersection/midpoint không drag được
+       * trực tiếp (toạ độ derived từ ref khác).
+       */
+      attachFreePointDragSync(obj, el) {
+        if (obj.kind !== "point") return;
+        const c = obj.attrs.constraint;
+        if (!c || c.kind !== "free") return;
+        const point = el;
+        if (typeof point.on !== "function") return;
+        const sceneId = obj.id;
+        point.on("up", () => {
+          if (this.disposed) return;
+          if (typeof point.X !== "function" || typeof point.Y !== "function") return;
+          const x = point.X();
+          const y = point.Y();
+          if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+          const cur = this.store.getState().objects[sceneId];
+          if (!cur) return;
+          const curC = cur.attrs.constraint;
+          if (!curC || curC.kind !== "free") return;
+          if (curC.x === x && curC.y === y) return;
+          this.store.dispatch({
+            type: "UPDATE_ATTRS",
+            payload: { id: sceneId, patch: { constraint: { kind: "free", x, y } } }
+          });
+        });
       }
       remove(id) {
         const el = this.elements.get(id);
         if (!el) return;
         try {
+          const helpers = el._helpers;
           this.board.removeObject?.(el);
+          if (Array.isArray(helpers)) {
+            for (const h of helpers) {
+              try {
+                this.board.removeObject?.(h);
+              } catch {
+              }
+            }
+          }
         } catch (err) {
           console.warn(`[scene/render/2d] kh\xF4ng remove \u0111\u01B0\u1EE3c id="${id}":`, err);
         }
@@ -1133,6 +1177,14 @@ function handleDown(ctx, e) {
     ctx.refreshPreview();
   }
 }
+function findPickIdByKind(ctx, kind) {
+  const picks = ctx.pendingRef.current;
+  const ids = ctx.pendingIdsRef.current;
+  for (let i = 0; i < picks.length; i += 1) {
+    if (objKind(picks[i]) === kind && ids[i]) return ids[i];
+  }
+  return null;
+}
 function finalizeShape(ctx, toolDef) {
   const ids = ctx.pendingIdsRef.current;
   const key = toolDef.key;
@@ -1146,19 +1198,63 @@ function finalizeShape(ctx, toolDef) {
       });
       return;
     }
-    case "line":
-    case "perpendicular":
-    case "parallel":
-    case "perpBisector":
-    case "angleBisector":
-    case "tangent": {
+    case "line": {
       const id = freshId(ctx, "l");
       const label = ctx.nextLabel("line");
-      const p1 = ids[0];
-      const p2 = ids[1] ?? ids[0];
       ctx.store.dispatch({
         type: "ADD",
-        payload: { obj: mkSceneObj(id, "line", label, { p1, p2 }) }
+        payload: { obj: mkSceneObj(id, "line", label, { p1: ids[0], p2: ids[1] }) }
+      });
+      return;
+    }
+    case "perpendicular":
+    case "parallel": {
+      const throughPoint = findPickIdByKind(ctx, "point");
+      const toLine = findPickIdByKind(ctx, "line");
+      if (!throughPoint || !toLine) return;
+      const id = freshId(ctx, key === "perpendicular" ? "perp" : "par");
+      const label = ctx.nextLabel("line");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: { obj: mkSceneObj(id, "line", label, {
+          construction: { kind: key, throughPoint, toLine }
+        }) }
+      });
+      return;
+    }
+    case "perpBisector": {
+      const id = freshId(ctx, "pb");
+      const label = ctx.nextLabel("line");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: { obj: mkSceneObj(id, "line", label, {
+          construction: { kind: "perpBisector", p1: ids[0], p2: ids[1] }
+        }) }
+      });
+      return;
+    }
+    case "angleBisector": {
+      const id = freshId(ctx, "ab");
+      const label = ctx.nextLabel("line");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: { obj: mkSceneObj(id, "line", label, {
+          construction: { kind: "angleBisector", p1: ids[0], vertex: ids[1], p2: ids[2] }
+        }) }
+      });
+      return;
+    }
+    case "tangent": {
+      const throughPoint = findPickIdByKind(ctx, "point");
+      const toCircle = findPickIdByKind(ctx, "circle");
+      if (!throughPoint || !toCircle) return;
+      const id = freshId(ctx, "t");
+      const label = ctx.nextLabel("line");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: { obj: mkSceneObj(id, "line", label, {
+          construction: { kind: "tangent", throughPoint, toCircle }
+        }) }
       });
       return;
     }
@@ -1180,8 +1276,7 @@ function finalizeShape(ctx, toolDef) {
       });
       return;
     }
-    case "circleCenter":
-    case "circle3": {
+    case "circleCenter": {
       const id = freshId(ctx, "c");
       const label = ctx.nextLabel("circle");
       ctx.store.dispatch({
@@ -1189,7 +1284,20 @@ function finalizeShape(ctx, toolDef) {
         payload: {
           obj: mkSceneObj(id, "circle", label, {
             center: ids[0],
-            surfacePoint: ids[1] ?? ids[0]
+            surfacePoint: ids[1]
+          })
+        }
+      });
+      return;
+    }
+    case "circle3": {
+      const id = freshId(ctx, "cc");
+      const label = ctx.nextLabel("circle");
+      ctx.store.dispatch({
+        type: "ADD",
+        payload: {
+          obj: mkSceneObj(id, "circle", label, {
+            construction: { kind: "circumscribed", p1: ids[0], p2: ids[1], p3: ids[2] }
           })
         }
       });
@@ -1200,7 +1308,9 @@ function finalizeShape(ctx, toolDef) {
       const label = ctx.nextLabel("point");
       ctx.store.dispatch({
         type: "ADD",
-        payload: { obj: mkSceneObj(id, "point", label, { constraint: { kind: "free", x: 0, y: 0 } }) }
+        payload: { obj: mkSceneObj(id, "point", label, {
+          constraint: { kind: "midpoint", p1: ids[0], p2: ids[1] }
+        }) }
       });
       return;
     }
@@ -1370,8 +1480,8 @@ var init_hitTest = __esm({
   }
 });
 function useSceneStore(initialState) {
-  const store = React12.useMemo(() => createStore(initialState), []);
-  const state = React12.useSyncExternalStore(
+  const store = React10.useMemo(() => createStore(initialState), []);
+  const state = React10.useSyncExternalStore(
     (cb) => store.subscribe(() => cb()),
     () => store.getState(),
     () => store.getState()
@@ -1386,21 +1496,21 @@ var init_useSceneStore = __esm({
   }
 });
 function useToolStateMachine(initial = "move") {
-  const [tool, setToolState] = React12.useState(initial);
-  const [pendingIds, setPendingIds] = React12.useState([]);
-  const toolRef = React12.useRef(initial);
-  const pendingIdsRef = React12.useRef([]);
-  const setTool = React12.useCallback((t) => {
+  const [tool, setToolState] = React10.useState(initial);
+  const [pendingIds, setPendingIds] = React10.useState([]);
+  const toolRef = React10.useRef(initial);
+  const pendingIdsRef = React10.useRef([]);
+  const setTool = React10.useCallback((t) => {
     toolRef.current = t;
     pendingIdsRef.current = [];
     setToolState(t);
     setPendingIds([]);
   }, []);
-  const pushPending = React12.useCallback((id) => {
+  const pushPending = React10.useCallback((id) => {
     pendingIdsRef.current = [...pendingIdsRef.current, id];
     setPendingIds(pendingIdsRef.current);
   }, []);
-  const clearPending = React12.useCallback(() => {
+  const clearPending = React10.useCallback(() => {
     pendingIdsRef.current = [];
     setPendingIds([]);
   }, []);
@@ -1424,50 +1534,50 @@ var init_MiniBoard = __esm({
     init_useToolStateMachine();
     init_safeJsx();
     JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
-      const isDarkRef = React12.useRef(!!isDark);
+      const isDarkRef = React10.useRef(!!isDark);
       isDarkRef.current = !!isDark;
-      const containerId = React12.useId().replace(/:/g, "_") + "_jxgmini";
-      const containerRef = React12.useRef(null);
-      const boardRef = React12.useRef(null);
-      const jxgRef = React12.useRef(null);
-      const rendererRef = React12.useRef(null);
-      const axisObjsRef = React12.useRef({});
-      const initState = React12.useMemo(
+      const containerId = React10.useId().replace(/:/g, "_") + "_jxgmini";
+      const containerRef = React10.useRef(null);
+      const boardRef = React10.useRef(null);
+      const jxgRef = React10.useRef(null);
+      const rendererRef = React10.useRef(null);
+      const axisObjsRef = React10.useRef({});
+      const initState = React10.useMemo(
         () => initialState?.state ?? createEmptyState("2d"),
         // eslint-disable-next-line react-hooks/exhaustive-deps
         []
       );
       const { store } = useSceneStore(initState);
       const toolSM = useToolStateMachine("move");
-      const [showAxis, setShowAxisState] = React12.useState(initialState?.showAxis ?? false);
-      const [showGrid, setShowGridState] = React12.useState(initialState?.showGrid ?? false);
-      const showAxisRef = React12.useRef(showAxis);
+      const [showAxis, setShowAxisState] = React10.useState(initialState?.showAxis ?? false);
+      const [showGrid, setShowGridState] = React10.useState(initialState?.showGrid ?? false);
+      const showAxisRef = React10.useRef(showAxis);
       showAxisRef.current = showAxis;
-      const showGridRef = React12.useRef(showGrid);
+      const showGridRef = React10.useRef(showGrid);
       showGridRef.current = showGrid;
-      const selectedSetRef = React12.useRef(/* @__PURE__ */ new Set());
-      const [, setSelectionTick] = React12.useState(0);
-      const pendingRef = React12.useRef([]);
-      const previewSegRef = React12.useRef([]);
-      const phantomRef = React12.useRef(null);
-      const previewShapeRef = React12.useRef(null);
-      const previewRafRef = React12.useRef(null);
-      const marqueeRef = React12.useRef(null);
-      const moveDownRef = React12.useRef(null);
-      const lastMoveClickRef = React12.useRef({ id: null, time: 0 });
-      const pendingTransformRef = React12.useRef(null);
-      const subscribersRef = React12.useRef(/* @__PURE__ */ new Set());
-      const selectSubsRef = React12.useRef(/* @__PURE__ */ new Set());
-      const transformSubsRef = React12.useRef(/* @__PURE__ */ new Set());
-      const notifySubscribers = React12.useCallback(() => {
+      const selectedSetRef = React10.useRef(/* @__PURE__ */ new Set());
+      const [, setSelectionTick] = React10.useState(0);
+      const pendingRef = React10.useRef([]);
+      const previewSegRef = React10.useRef([]);
+      const phantomRef = React10.useRef(null);
+      const previewShapeRef = React10.useRef(null);
+      const previewRafRef = React10.useRef(null);
+      const marqueeRef = React10.useRef(null);
+      const moveDownRef = React10.useRef(null);
+      const lastMoveClickRef = React10.useRef({ id: null, time: 0 });
+      const pendingTransformRef = React10.useRef(null);
+      const subscribersRef = React10.useRef(/* @__PURE__ */ new Set());
+      const selectSubsRef = React10.useRef(/* @__PURE__ */ new Set());
+      const transformSubsRef = React10.useRef(/* @__PURE__ */ new Set());
+      const notifySubscribers = React10.useCallback(() => {
         subscribersRef.current.forEach((cb) => safeJsx("MiniBoard.notifySubscriber.cb", () => cb()));
       }, []);
-      React12.useEffect(() => store.subscribe(() => notifySubscribers()), [store, notifySubscribers]);
-      React12.useEffect(() => {
+      React10.useEffect(() => store.subscribe(() => notifySubscribers()), [store, notifySubscribers]);
+      React10.useEffect(() => {
         notifySubscribers();
       }, [showAxis, showGrid, toolSM.tool, notifySubscribers]);
-      const jxgIdToSceneRef = React12.useRef(/* @__PURE__ */ new Map());
-      React12.useEffect(() => {
+      const jxgIdToSceneRef = React10.useRef(/* @__PURE__ */ new Map());
+      React10.useEffect(() => {
         const rebuild = () => {
           const r = rendererRef.current;
           if (!r) return;
@@ -1484,16 +1594,16 @@ var init_MiniBoard = __esm({
         rebuild();
         return store.subscribe(() => rebuild());
       }, [store]);
-      const jxgFromSceneId = React12.useCallback((id) => {
+      const jxgFromSceneId = React10.useCallback((id) => {
         const r = rendererRef.current;
         if (!r) return null;
         return r.elements?.get(id) ?? null;
       }, []);
-      const jxgIdToSceneId = React12.useCallback((jxgObj) => {
+      const jxgIdToSceneId = React10.useCallback((jxgObj) => {
         if (!jxgObj?.id) return null;
         return jxgIdToSceneRef.current.get(String(jxgObj.id)) ?? null;
       }, []);
-      const screenCoordsOf = React12.useCallback((evt) => {
+      const screenCoordsOf = React10.useCallback((evt) => {
         const b = boardRef.current;
         if (!b) return null;
         try {
@@ -1509,20 +1619,25 @@ var init_MiniBoard = __esm({
         }
         return null;
       }, []);
-      const objectsAt = React12.useCallback((evt) => {
+      const objectsAt = React10.useCallback((evt) => {
         const b = boardRef.current;
         const sc = b ? screenCoordsOf(evt) : null;
         if (!b || !sc) return [];
         const [sx, sy] = sc;
+        const excludes = /* @__PURE__ */ new Set();
+        if (phantomRef.current) excludes.add(phantomRef.current);
+        if (previewShapeRef.current) excludes.add(previewShapeRef.current);
+        for (const s of previewSegRef.current) excludes.add(s);
         const out = [];
         safeJsx("MiniBoard.objectsAt", () => {
           for (const o of b.objectsList || []) {
+            if (excludes.has(o)) continue;
             if (o && typeof o.hasPoint === "function" && o.hasPoint(sx, sy)) out.push(o);
           }
         });
         return out;
       }, [screenCoordsOf]);
-      const findNearestPointJxg = React12.useCallback((evt, tolPx = 12) => {
+      const findNearestPointJxg = React10.useCallback((evt, tolPx = 12) => {
         const b = boardRef.current;
         const sc = b ? screenCoordsOf(evt) : null;
         if (!b || !sc) return null;
@@ -1535,7 +1650,7 @@ var init_MiniBoard = __esm({
         const result = findNearestPoint(store.getState(), pointCoord, sx, sy, tolPx);
         return result ? jxgFromSceneId(result.id) : null;
       }, [screenCoordsOf, jxgFromSceneId, store]);
-      const promoteLabel = React12.useCallback((o) => {
+      const promoteLabel = React10.useCallback((o) => {
         if (!o) return o;
         const t = (o.elType || o.type || "").toString().toLowerCase();
         if (t !== "text" || !boardRef.current) return o;
@@ -1547,7 +1662,7 @@ var init_MiniBoard = __esm({
         }, null);
         return promoted ?? o;
       }, []);
-      const toggleSelect = React12.useCallback((id, additive) => {
+      const toggleSelect = React10.useCallback((id, additive) => {
         if (!additive) {
           selectedSetRef.current.clear();
           selectedSetRef.current.add(id);
@@ -1555,11 +1670,11 @@ var init_MiniBoard = __esm({
         else selectedSetRef.current.add(id);
         setSelectionTick((t) => t + 1);
       }, []);
-      const clearSelection = React12.useCallback(() => {
+      const clearSelection = React10.useCallback(() => {
         selectedSetRef.current.clear();
         setSelectionTick((t) => t + 1);
       }, []);
-      const deleteSelection = React12.useCallback(() => {
+      const deleteSelection = React10.useCallback(() => {
         if (selectedSetRef.current.size === 0) return;
         store.transaction((dispatch) => {
           for (const id of selectedSetRef.current) dispatch({ type: "DELETE", payload: { id } });
@@ -1567,7 +1682,7 @@ var init_MiniBoard = __esm({
         selectedSetRef.current.clear();
         setSelectionTick((t) => t + 1);
       }, [store]);
-      const clearPreviewSegs = React12.useCallback(() => {
+      const clearPreviewSegs = React10.useCallback(() => {
         const b = boardRef.current;
         if (!b) return;
         for (const s of previewSegRef.current) {
@@ -1575,7 +1690,7 @@ var init_MiniBoard = __esm({
         }
         previewSegRef.current = [];
       }, []);
-      const removePhantom = React12.useCallback(() => {
+      const removePhantom = React10.useCallback(() => {
         const b = boardRef.current;
         if (!b) return;
         if (previewShapeRef.current) {
@@ -1587,29 +1702,121 @@ var init_MiniBoard = __esm({
           phantomRef.current = null;
         }
       }, []);
-      const clearPending = React12.useCallback(() => {
+      const clearPending = React10.useCallback(() => {
         removePhantom();
         clearPreviewSegs();
         pendingRef.current = [];
         toolSM.clearPending();
       }, [clearPreviewSegs, removePhantom, toolSM]);
-      const refreshPreview = React12.useCallback(() => {
+      const buildPreview = React10.useCallback((toolDef, picks, phantom) => {
+        const b = boardRef.current;
+        if (!b) return null;
+        const style = {
+          strokeColor: "#3b82f6",
+          strokeWidth: 1.5,
+          strokeOpacity: 0.65,
+          dash: 2,
+          fixed: true,
+          highlight: false,
+          withLabel: false
+        };
+        const circStyle = { ...style, fillColor: "none", fillOpacity: 0 };
+        return safeJsx("MiniBoard.buildPreview", () => {
+          switch (toolDef.key) {
+            case "segment":
+            case "midpoint":
+            case "distance":
+              return b.create("segment", [picks[0], phantom], style);
+            case "line":
+              return b.create("line", [picks[0], phantom], style);
+            case "ray":
+              return b.create("line", [picks[0], phantom], { ...style, straightFirst: false, straightLast: true });
+            case "vector":
+              return b.create("arrow", [picks[0], phantom], style);
+            case "circleCenter":
+              return b.create("circle", [picks[0], phantom], circStyle);
+            case "circle3":
+              if (picks.length === 1) return b.create("circle", [picks[0], phantom], circStyle);
+              if (picks.length === 2) return b.create("circumcircle", [picks[0], picks[1], phantom], circStyle);
+              return null;
+            case "angle":
+              if (picks.length === 1) return b.create("segment", [picks[0], phantom], style);
+              if (picks.length === 2) {
+                return b.create("angle", [picks[0], picks[1], phantom], {
+                  ...style,
+                  radius: 1,
+                  fillColor: "#22c55e",
+                  fillOpacity: 0.15
+                });
+              }
+              return null;
+            case "perpBisector":
+              return b.create("segment", [picks[0], phantom], style);
+            case "angleBisector":
+              if (picks.length === 1) return b.create("segment", [picks[0], phantom], style);
+              if (picks.length === 2) return b.create("bisector", [picks[0], picks[1], phantom], style);
+              return null;
+            case "perpendicular":
+            case "parallel":
+            case "tangent": {
+              if (picks.length !== 1) return null;
+              const k = objKind(picks[0]);
+              if (k === "line" && toolDef.key !== "tangent") {
+                return b.create(toolDef.key, [picks[0], phantom], style);
+              }
+              if (k === "circle" && toolDef.key === "tangent") {
+                const glider = b.create("glider", [phantom.X(), phantom.Y(), picks[0]], {
+                  visible: false,
+                  withLabel: false
+                });
+                return b.create("tangent", [glider], style);
+              }
+              return null;
+            }
+            default:
+              return null;
+          }
+        }, null);
       }, []);
-      const [, setWarn] = React12.useState(null);
-      const warnTimerRef = React12.useRef(null);
-      const flashWarn = React12.useCallback((msg) => {
+      const refreshPreview = React10.useCallback(() => {
+        const b = boardRef.current;
+        if (!b) return;
+        if (previewShapeRef.current) {
+          safeJsx("MiniBoard.removeObject(previewShape)", () => b.removeObject(previewShapeRef.current));
+          previewShapeRef.current = null;
+        }
+        const t = toolSM.toolRef.current;
+        const toolDef = TOOLS.find((td) => td.key === t);
+        if (!toolDef) return;
+        const picks = pendingRef.current;
+        if (picks.length === 0 || toolDef.needs <= 0) return;
+        if (picks.length >= toolDef.needs) return;
+        if (!phantomRef.current) {
+          phantomRef.current = safeJsx("MiniBoard.createPhantom", () => b.create("point", [0, 0], {
+            visible: false,
+            fixed: true,
+            withLabel: false,
+            name: ""
+          }), null);
+          if (!phantomRef.current) return;
+        }
+        previewShapeRef.current = buildPreview(toolDef, picks, phantomRef.current);
+      }, [buildPreview, toolSM]);
+      const [, setWarn] = React10.useState(null);
+      const warnTimerRef = React10.useRef(null);
+      const flashWarn = React10.useCallback((msg) => {
         if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
         setWarn(msg);
         warnTimerRef.current = setTimeout(() => setWarn(null), 1800);
       }, []);
-      React12.useEffect(() => () => {
+      React10.useEffect(() => () => {
         if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
       }, []);
-      const nextLabelFor = React12.useCallback(
+      const nextLabelFor = React10.useCallback(
         (kind) => nextLabel(store.getState(), kind),
         [store]
       );
-      const buildSnapshot = React12.useCallback(
+      const buildSnapshot = React10.useCallback(
         (id, anchorScreen) => {
           const obj = store.getState().objects[id];
           if (!obj) return null;
@@ -1632,15 +1839,15 @@ var init_MiniBoard = __esm({
         },
         [store]
       );
-      const emitSelect = React12.useCallback((info) => {
+      const emitSelect = React10.useCallback((info) => {
         const snap = buildSnapshot(info.id, info.anchorScreen);
         if (!snap) return;
         selectSubsRef.current.forEach((cb) => safeJsx("MiniBoard.emitSelect.cb", () => cb(snap)));
       }, [buildSnapshot]);
-      const emitTransform = React12.useCallback((info) => {
+      const emitTransform = React10.useCallback((info) => {
         transformSubsRef.current.forEach((cb) => safeJsx("MiniBoard.emitTransform.cb", () => cb(info)));
       }, []);
-      const ctxRef = React12.useRef(null);
+      const ctxRef = React10.useRef(null);
       ctxRef.current = {
         boardRef,
         toolRef: toolSM.toolRef,
@@ -1677,7 +1884,7 @@ var init_MiniBoard = __esm({
         },
         setSelectionTick: (fn) => setSelectionTick(fn)
       };
-      React12.useEffect(() => {
+      React10.useEffect(() => {
         const onKey = (e) => {
           const ae = document.activeElement;
           const inField = !!(ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable));
@@ -1717,7 +1924,7 @@ var init_MiniBoard = __esm({
         window.addEventListener("keydown", onKey, { capture: true });
         return () => window.removeEventListener("keydown", onKey, { capture: true });
       }, [store, toolSM, clearPending, clearSelection, deleteSelection]);
-      React12.useEffect(() => {
+      React10.useEffect(() => {
         const b = boardRef.current;
         if (!b) return;
         safeJsx("MiniBoard.toggleAxis", () => {
@@ -1736,7 +1943,7 @@ var init_MiniBoard = __esm({
           b.update();
         });
       }, [showAxis]);
-      React12.useEffect(() => {
+      React10.useEffect(() => {
         const b = boardRef.current;
         if (!b) return;
         safeJsx("MiniBoard.toggleGrid", () => {
@@ -1749,7 +1956,7 @@ var init_MiniBoard = __esm({
           b.update();
         });
       }, [showGrid]);
-      const handleToolChange = React12.useCallback((t) => {
+      const handleToolChange = React10.useCallback((t) => {
         clearPending();
         toolSM.setTool(t);
         const b = boardRef.current;
@@ -1757,7 +1964,7 @@ var init_MiniBoard = __esm({
           if (b.attr?.pan) b.attr.pan.enabled = t !== "select";
         });
       }, [clearPending, toolSM]);
-      React12.useEffect(() => {
+      React10.useEffect(() => {
         if (typeof window === "undefined" || !containerRef.current) return;
         let cancelled = false;
         let wheelCleanup = null;
@@ -2153,23 +2360,23 @@ function GridIcon() {
   ] });
 }
 function useToolHoverTooltip() {
-  const [hover, setHover] = React12.useState(null);
-  const [portalReady, setPortalReady] = React12.useState(false);
-  const hoverTimerRef = React12.useRef(null);
-  React12.useEffect(() => {
+  const [hover, setHover] = React10.useState(null);
+  const [portalReady, setPortalReady] = React10.useState(false);
+  const hoverTimerRef = React10.useRef(null);
+  React10.useEffect(() => {
     setPortalReady(true);
     return () => {
       if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     };
   }, []);
-  const showHover = React12.useCallback((el, t) => {
+  const showHover = React10.useCallback((el, t) => {
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     hoverTimerRef.current = setTimeout(() => {
       const r = el.getBoundingClientRect();
       setHover({ label: t.label, hint: t.hint, x: r.right, y: r.top + r.height / 2 });
     }, TOOLTIP_DELAY_MS);
   }, []);
-  const hideHover = React12.useCallback(() => {
+  const hideHover = React10.useCallback(() => {
     if (hoverTimerRef.current) {
       clearTimeout(hoverTimerRef.current);
       hoverTimerRef.current = null;
@@ -2180,14 +2387,14 @@ function useToolHoverTooltip() {
 }
 function DesktopGeometryPanel(props) {
   const { activeTool, onToolChange, showAxis, showGrid, onShowAxisChange, onShowGridChange, onUndo, canUndo, onRedo, canRedo, onClose, isDark, chordGroup } = props;
-  const grouped = React12.useMemo(() => {
+  const grouped = React10.useMemo(() => {
     return TOOLS.reduce((acc, t) => {
       var _a;
       (acc[_a = t.group] ?? (acc[_a] = [])).push(t);
       return acc;
     }, {});
   }, []);
-  const groupKeys = React12.useMemo(
+  const groupKeys = React10.useMemo(
     () => GROUP_ORDER.filter((g) => grouped[g]),
     [grouped]
   );
@@ -2371,7 +2578,7 @@ function MobileGeometryPanel(props) {
     drawerOpen,
     onDrawerClose
   } = props;
-  const groups = React12.useMemo(() => {
+  const groups = React10.useMemo(() => {
     const acc = /* @__PURE__ */ new Map();
     for (const t of TOOLS) {
       if (!acc.has(t.group)) acc.set(t.group, []);
@@ -2486,11 +2693,11 @@ function readMatch(query) {
   }
 }
 function useIsMobile() {
-  const [state, setState] = React12.useState(() => ({
+  const [state, setState] = React10.useState(() => ({
     isMobile: readMatch(MOBILE_QUERY),
     isTouchOnly: readMatch(NO_HOVER_QUERY)
   }));
-  React12.useEffect(() => {
+  React10.useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return;
     const mql = window.matchMedia(MOBILE_QUERY);
     const tql = window.matchMedia(NO_HOVER_QUERY);
@@ -2577,11 +2784,11 @@ var init_PropertiesPopover = __esm({
     };
     PropertiesPopover = (props) => {
       const { anchor, onClose, onMutate, isDark, getAllNames } = props;
-      const rootRef = React12.useRef(null);
-      const [section, setSection] = React12.useState(null);
+      const rootRef = React10.useRef(null);
+      const [section, setSection] = React10.useState(null);
       const { isMobile } = useIsMobile();
-      const [clamped, setClamped] = React12.useState(null);
-      React12.useLayoutEffect(() => {
+      const [clamped, setClamped] = React10.useState(null);
+      React10.useLayoutEffect(() => {
         if (typeof window === "undefined") return;
         const margin = 8;
         if (isMobile) {
@@ -2600,11 +2807,11 @@ var init_PropertiesPopover = __esm({
         setClamped({ left, top });
       }, [anchor.x, anchor.y, isMobile, section]);
       const initialName = props.kind === "point" ? props.currentName : props.kind === "line" || props.kind === "circle" ? props.currentName : "";
-      const [name, setName] = React12.useState(initialName);
-      React12.useEffect(() => {
+      const [name, setName] = React10.useState(initialName);
+      React10.useEffect(() => {
         setName(initialName);
       }, [initialName]);
-      React12.useEffect(() => {
+      React10.useEffect(() => {
         const onKey = (e) => {
           if (e.key === "Escape") {
             e.preventDefault();
@@ -2673,7 +2880,7 @@ var init_PropertiesPopover = __esm({
           ]
         }
       );
-      const colorIndicatorTint = React12.useMemo(() => currentColor, [currentColor]);
+      const colorIndicatorTint = React10.useMemo(() => currentColor, [currentColor]);
       const pos = clamped ?? { left: anchor.x, top: anchor.y };
       const node = /* @__PURE__ */ jsxRuntime.jsxs(
         "div",
@@ -2807,10 +3014,10 @@ var init_TransformParamPopover = __esm({
       regularPolygon: { aria: "S\u1ED1 c\u1EA1nh \u0111a gi\xE1c \u0111\u1EC1u", label: "S\u1ED1 c\u1EA1nh (n \u2265 3)", step: 1, min: 3 }
     };
     TransformParamPopover = ({ kind, anchor, defaultValue, onConfirm, onCancel, isDark }) => {
-      const [value, setValue] = React12.useState(defaultValue);
-      const inputRef = React12.useRef(null);
+      const [value, setValue] = React10.useState(defaultValue);
+      const inputRef = React10.useRef(null);
       const meta = LABELS[kind];
-      React12.useEffect(() => {
+      React10.useEffect(() => {
         inputRef.current?.focus();
         inputRef.current?.select();
       }, []);
@@ -2913,7 +3120,7 @@ var init_kindMeta = __esm({
 });
 function ObjectRowMenu(props) {
   const { onRename, onChangeColor, onDelete } = props;
-  const [open, setOpen] = React12__namespace.useState(false);
+  const [open, setOpen] = React10__namespace.useState(false);
   return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "relative inline-block", children: [
     /* @__PURE__ */ jsxRuntime.jsx(
       "button",
@@ -3039,11 +3246,11 @@ var init_ObjectRow = __esm({
 });
 function ObjectListPanel(props) {
   const { store, selectedId, onSelect } = props;
-  const subscribe = React12__namespace.useCallback(
+  const subscribe = React10__namespace.useCallback(
     (cb) => store.subscribe(() => cb()),
     [store]
   );
-  const state = React12__namespace.useSyncExternalStore(subscribe, store.getState, store.getState);
+  const state = React10__namespace.useSyncExternalStore(subscribe, store.getState, store.getState);
   const objects = listObjects(state);
   function handleSelect(id) {
     onSelect?.(id);
@@ -3093,150 +3300,6 @@ var init_ObjectListPanel = __esm({
     init_ObjectRow();
   }
 });
-function useActionRecorder(store) {
-  const [history, setHistory] = React12__namespace.useState([]);
-  const isRecordingRef = React12__namespace.useRef(true);
-  const isReplayingRef = React12__namespace.useRef(false);
-  const [isRecording, setIsRecording] = React12__namespace.useState(true);
-  const [isReplaying, setIsReplaying] = React12__namespace.useState(false);
-  React12__namespace.useEffect(() => {
-    const unsub = store.subscribe((_next, _prev, action) => {
-      if (!isRecordingRef.current) return;
-      if (isReplayingRef.current) return;
-      setHistory((h) => [...h, { action, at: Date.now() }]);
-    });
-    return unsub;
-  }, [store]);
-  const record = React12__namespace.useCallback(() => {
-    isRecordingRef.current = true;
-    setIsRecording(true);
-  }, []);
-  const stop = React12__namespace.useCallback(() => {
-    isRecordingRef.current = false;
-    setIsRecording(false);
-  }, []);
-  const clear = React12__namespace.useCallback(() => {
-    setHistory([]);
-  }, []);
-  const replay = React12__namespace.useCallback(async (delayMs = 0) => {
-    if (history.length === 0) return;
-    isReplayingRef.current = true;
-    setIsReplaying(true);
-    try {
-      store.dispatch({ type: "RESET" });
-      for (const { action } of history) {
-        if (delayMs > 0) await new Promise((r) => setTimeout(r, delayMs));
-        store.dispatch(action);
-      }
-    } finally {
-      isReplayingRef.current = false;
-      setIsReplaying(false);
-    }
-  }, [history, store]);
-  return { history, isRecording, isReplaying, record, stop, clear, replay };
-}
-var init_useActionRecorder = __esm({
-  "src/core/scene/ui/useActionRecorder.ts"() {
-    "use client";
-  }
-});
-function RecorderPanel(props) {
-  const { recorder, defaultOpen = false } = props;
-  const [open, setOpen] = React12__namespace.useState(defaultOpen);
-  return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "fixed bottom-3 right-3 z-50 rounded-md border border-zinc-300 bg-white shadow-lg text-xs dark:border-zinc-700 dark:bg-zinc-900", children: [
-    /* @__PURE__ */ jsxRuntime.jsxs(
-      "button",
-      {
-        type: "button",
-        "aria-label": "Toggle recorder",
-        onClick: () => setOpen((v) => !v),
-        className: "flex items-center gap-2 px-3 py-1.5 font-semibold",
-        children: [
-          /* @__PURE__ */ jsxRuntime.jsx("span", { children: "\u{1F3AC} Recorder" }),
-          /* @__PURE__ */ jsxRuntime.jsx(
-            "span",
-            {
-              "data-testid": "recorder-count",
-              className: "rounded bg-zinc-100 px-1.5 py-0.5 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200",
-              children: recorder.history.length
-            }
-          )
-        ]
-      }
-    ),
-    open ? /* @__PURE__ */ jsxRuntime.jsxs("div", { "data-testid": "recorder-body", className: "border-t border-zinc-200 px-3 py-2 dark:border-zinc-800", children: [
-      /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "mb-2 flex gap-1", children: [
-        recorder.isRecording ? /* @__PURE__ */ jsxRuntime.jsx(
-          "button",
-          {
-            type: "button",
-            "aria-label": "Stop recording",
-            onClick: recorder.stop,
-            className: "rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700",
-            children: "\u23F8 Stop"
-          }
-        ) : /* @__PURE__ */ jsxRuntime.jsx(
-          "button",
-          {
-            type: "button",
-            "aria-label": "Start recording",
-            onClick: recorder.record,
-            className: "rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700",
-            children: "\u23FA Record"
-          }
-        ),
-        /* @__PURE__ */ jsxRuntime.jsx(
-          "button",
-          {
-            type: "button",
-            "aria-label": "Replay",
-            disabled: recorder.isReplaying || recorder.history.length === 0,
-            onClick: () => {
-              void recorder.replay(100);
-            },
-            className: "rounded border border-zinc-300 px-2 py-1 disabled:opacity-50 dark:border-zinc-700",
-            children: "\u25B6 Replay"
-          }
-        ),
-        /* @__PURE__ */ jsxRuntime.jsx(
-          "button",
-          {
-            type: "button",
-            "aria-label": "Clear history",
-            onClick: recorder.clear,
-            className: "rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700",
-            children: "\u{1F5D1}"
-          }
-        )
-      ] }),
-      /* @__PURE__ */ jsxRuntime.jsx("ul", { className: "max-h-40 overflow-y-auto font-mono text-[10px]", children: recorder.history.map((r, i) => /* @__PURE__ */ jsxRuntime.jsxs("li", { className: "border-b border-zinc-100 py-0.5 dark:border-zinc-800", children: [
-        r.action.type,
-        "payload" in r.action && r.action.payload?.id ? ` #${r.action.payload.id}` : ""
-      ] }, i)) })
-    ] }) : null
-  ] });
-}
-var init_RecorderPanel = __esm({
-  "src/core/scene/ui/RecorderPanel.tsx"() {
-    "use client";
-  }
-});
-function RecorderPanelDev(props) {
-  const { force, ...rest } = props;
-  const isDev2 = force || process.env.NODE_ENV === "development";
-  if (!isDev2) return null;
-  return /* @__PURE__ */ jsxRuntime.jsx(RecorderPanel, { ...rest });
-}
-var init_RecorderPanelDev = __esm({
-  "src/core/scene/ui/RecorderPanelDev.tsx"() {
-    "use client";
-    init_RecorderPanel();
-  }
-});
-function RecorderPanelWithStore({ store }) {
-  const recorder = useActionRecorder(store);
-  return /* @__PURE__ */ jsxRuntime.jsx(RecorderPanelDev, { recorder });
-}
 var GeometryEditorPanel;
 var init_EditorPanel = __esm({
   "src/stamps/geometry-2d/editor/EditorPanel.tsx"() {
@@ -3248,22 +3311,20 @@ var init_EditorPanel = __esm({
     init_TransformParamPopover();
     init_LeftPanel();
     init_ObjectListPanel();
-    init_useActionRecorder();
-    init_RecorderPanelDev();
-    GeometryEditorPanel = React12.forwardRef(
+    GeometryEditorPanel = React10.forwardRef(
       function GeometryEditorPanel2({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer, onUndo, onRedo, canUndo, canRedo }, ref) {
-        const handleRef = React12.useRef(null);
-        const [ready, setReady] = React12.useState(false);
-        const [hasContent, setHasContent] = React12.useState(false);
-        const [selectedId, setSelectedId] = React12.useState(void 0);
-        const sceneStoreRef = React12.useRef(null);
-        const [propsPopover, setPropsPopover] = React12.useState(null);
-        const [transformPopover, setTransformPopover] = React12.useState(null);
-        const onStateChangeRef = React12.useRef(onStateChange);
-        React12.useEffect(() => {
+        const handleRef = React10.useRef(null);
+        const [ready, setReady] = React10.useState(false);
+        const [hasContent, setHasContent] = React10.useState(false);
+        const [selectedId, setSelectedId] = React10.useState(void 0);
+        const sceneStoreRef = React10.useRef(null);
+        const [propsPopover, setPropsPopover] = React10.useState(null);
+        const [transformPopover, setTransformPopover] = React10.useState(null);
+        const onStateChangeRef = React10.useRef(onStateChange);
+        React10.useEffect(() => {
           onStateChangeRef.current = onStateChange;
         }, [onStateChange]);
-        const emitState = React12.useCallback(() => {
+        const emitState = React10.useCallback(() => {
           const h = handleRef.current;
           if (!h) return;
           setHasContent(Object.keys(h.getState().objects).length > 0);
@@ -3277,7 +3338,7 @@ var init_EditorPanel = __esm({
             canRedo: h.canRedo()
           });
         }, []);
-        const handleReady = React12.useCallback((h) => {
+        const handleReady = React10.useCallback((h) => {
           handleRef.current = h;
           sceneStoreRef.current = h.getStore();
           setReady(true);
@@ -3286,7 +3347,7 @@ var init_EditorPanel = __esm({
           h.onSelect((snap) => setPropsPopover(snap));
           h.onTransformParam((info) => setTransformPopover(info));
         }, [emitState]);
-        const performInsert = React12.useCallback(() => {
+        const performInsert = React10.useCallback(() => {
           if (!handleRef.current) return false;
           const h = handleRef.current;
           const state = h.getState();
@@ -3306,10 +3367,10 @@ var init_EditorPanel = __esm({
           })();
           return true;
         }, [onInsert]);
-        const handleInsert = React12.useCallback(() => {
+        const handleInsert = React10.useCallback(() => {
           performInsert();
         }, [performInsert]);
-        React12.useImperativeHandle(ref, () => ({
+        React10.useImperativeHandle(ref, () => ({
           setTool: (t) => handleRef.current?.setTool(t),
           setShowAxis: (b) => handleRef.current?.setShowAxis(b),
           setShowGrid: (b) => handleRef.current?.setShowGrid(b),
@@ -3519,8 +3580,7 @@ var init_EditorPanel = __esm({
                     }
                   )
                 ] })
-              ] }),
-              sceneStoreRef.current && /* @__PURE__ */ jsxRuntime.jsx(RecorderPanelWithStore, { store: sceneStoreRef.current })
+              ] })
             ]
           }
         );
@@ -3534,19 +3594,19 @@ function isFieldFocused() {
 }
 function useChordShortcut(args) {
   const { groupOrder, tools, onSelect, enabled } = args;
-  const [chordGroup, setChordGroup] = React12.useState(null);
-  const groupOrderRef = React12.useRef(groupOrder);
-  const toolsRef = React12.useRef(tools);
-  const onSelectRef = React12.useRef(onSelect);
-  const chordGroupRef = React12.useRef(null);
+  const [chordGroup, setChordGroup] = React10.useState(null);
+  const groupOrderRef = React10.useRef(groupOrder);
+  const toolsRef = React10.useRef(tools);
+  const onSelectRef = React10.useRef(onSelect);
+  const chordGroupRef = React10.useRef(null);
   groupOrderRef.current = groupOrder;
   toolsRef.current = tools;
   onSelectRef.current = onSelect;
-  const cancel = React12.useCallback(() => {
+  const cancel = React10.useCallback(() => {
     chordGroupRef.current = null;
     setChordGroup(null);
   }, []);
-  React12.useEffect(() => {
+  React10.useEffect(() => {
     if (!enabled) return;
     const setChord = (next) => {
       chordGroupRef.current = next;
@@ -3744,19 +3804,19 @@ var init_host = __esm({
       canUndo: false,
       canRedo: false
     };
-    GeometryStampHost = React12.forwardRef(
+    GeometryStampHost = React10.forwardRef(
       function GeometryStampHost2({ api, editingElement, onClose, isDark }, ref) {
-        const panelRef = React12.useRef(null);
-        const [geomState, setGeomState] = React12.useState(INITIAL_GEOM_STATE);
+        const panelRef = React10.useRef(null);
+        const [geomState, setGeomState] = React10.useState(INITIAL_GEOM_STATE);
         const { isMobile } = useIsMobile();
-        const [drawerOpen, setDrawerOpen] = React12.useState(false);
+        const [drawerOpen, setDrawerOpen] = React10.useState(false);
         const { chordGroup } = useChordShortcut({
           groupOrder: GROUP_ORDER,
           tools: TOOLS,
           onSelect: (key) => panelRef.current?.setTool(key),
           enabled: !isMobile
         });
-        const initialState = React12.useMemo(() => {
+        const initialState = React10.useMemo(() => {
           if (!editingElement) return null;
           if (!isGeometryCustomData(editingElement.customData)) return null;
           try {
@@ -3766,7 +3826,7 @@ var init_host = __esm({
             return null;
           }
         }, [editingElement]);
-        const handleInsert = React12.useCallback(
+        const handleInsert = React10.useCallback(
           async (jsonState, svgString) => {
             if (!api) return;
             try {
@@ -3788,7 +3848,7 @@ var init_host = __esm({
           },
           [api, editingElement?.id, onClose]
         );
-        React12.useImperativeHandle(
+        React10.useImperativeHandle(
           ref,
           () => ({
             tryInsert: () => panelRef.current?.insert() ?? false,
@@ -4083,7 +4143,7 @@ var init_EditorPopover = __esm({
     "use client";
     init_render2();
     DEBOUNCE_MS = 100;
-    EditorPopover = React12.forwardRef(function EditorPopover2({
+    EditorPopover = React10.forwardRef(function EditorPopover2({
       x,
       y,
       initialValue,
@@ -4095,14 +4155,14 @@ var init_EditorPopover = __esm({
       isMobile = false,
       onOpenDrawer
     }, ref) {
-      const [value, setValue] = React12.useState(initialValue);
-      const [internalDisplayMode] = React12.useState(false);
+      const [value, setValue] = React10.useState(initialValue);
+      const [internalDisplayMode] = React10.useState(false);
       const displayMode = controlledDisplayMode ?? internalDisplayMode;
-      const [previewSvg, setPreviewSvg] = React12.useState(null);
-      const [error, setError] = React12.useState(null);
-      const debounceRef = React12.useRef(null);
-      const inputRef = React12.useRef(null);
-      React12.useEffect(() => {
+      const [previewSvg, setPreviewSvg] = React10.useState(null);
+      const [error, setError] = React10.useState(null);
+      const debounceRef = React10.useRef(null);
+      const inputRef = React10.useRef(null);
+      React10.useEffect(() => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(async () => {
           try {
@@ -4118,11 +4178,11 @@ var init_EditorPopover = __esm({
           if (debounceRef.current) clearTimeout(debounceRef.current);
         };
       }, [value, displayMode]);
-      const handleInsert = React12.useCallback(() => {
+      const handleInsert = React10.useCallback(() => {
         if (!previewSvg) return;
         onInsert(previewSvg, value, displayMode);
       }, [previewSvg, value, displayMode, onInsert]);
-      const handleKeyDown = React12.useCallback(
+      const handleKeyDown = React10.useCallback(
         (e) => {
           if (e.key === "Escape") onClose();
           if (e.key === "Enter" && !e.shiftKey) {
@@ -4132,7 +4192,7 @@ var init_EditorPopover = __esm({
         },
         [onClose, handleInsert]
       );
-      React12.useImperativeHandle(
+      React10.useImperativeHandle(
         ref,
         () => ({
           insertAtCursor: (snippet) => {
@@ -4304,12 +4364,12 @@ var init_host2 = __esm({
     init_insertImage();
     init_useIsMobile();
     init_types3();
-    LatexStampHost = React12.forwardRef(
+    LatexStampHost = React10.forwardRef(
       function LatexStampHost2({ api, editingElement, onClose }, ref) {
-        const editorRef = React12.useRef(null);
+        const editorRef = React10.useRef(null);
         const { isMobile } = useIsMobile();
-        const [drawerOpen, setDrawerOpen] = React12.useState(false);
-        const initial = React12.useMemo(() => {
+        const [drawerOpen, setDrawerOpen] = React10.useState(false);
+        const initial = React10.useMemo(() => {
           if (editingElement && isLatexCustomData(editingElement.customData)) {
             return {
               initialValue: editingElement.customData.src,
@@ -4318,8 +4378,8 @@ var init_host2 = __esm({
           }
           return { initialValue: "", displayMode: false };
         }, [editingElement]);
-        const [displayMode, setDisplayMode] = React12.useState(initial.displayMode);
-        const handleInsert = React12.useCallback(
+        const [displayMode, setDisplayMode] = React10.useState(initial.displayMode);
+        const handleInsert = React10.useCallback(
           async (svgString, src, dm) => {
             if (!api) return;
             try {
@@ -4340,7 +4400,7 @@ var init_host2 = __esm({
           },
           [api, editingElement?.id, onClose]
         );
-        React12.useImperativeHandle(
+        React10.useImperativeHandle(
           ref,
           () => ({
             tryInsert: () => editorRef.current?.tryInsert() ?? false,
@@ -5999,11 +6059,11 @@ var init_MiniBoard3D = __esm({
   "src/stamps/geometry-3d/editor/MiniBoard3D.tsx"() {
     "use client";
     init_theme2();
-    MiniBoard3D = React12__namespace.forwardRef(
+    MiniBoard3D = React10__namespace.forwardRef(
       function MiniBoard3D2(props, ref) {
-        const containerRef = React12__namespace.useRef(null);
-        const boardRef = React12__namespace.useRef(null);
-        const viewRef = React12__namespace.useRef(null);
+        const containerRef = React10__namespace.useRef(null);
+        const boardRef = React10__namespace.useRef(null);
+        const viewRef = React10__namespace.useRef(null);
         const {
           isDark,
           onView3DReady,
@@ -6014,13 +6074,13 @@ var init_MiniBoard3D = __esm({
           onPointerDrag,
           onPointerDragEnd
         } = props;
-        const onView3DReadyRef = React12__namespace.useRef(onView3DReady);
-        const onPointerClickRef = React12__namespace.useRef(onPointerClick);
-        const onPointerMoveRef = React12__namespace.useRef(onPointerMove);
-        const onPointerLeaveRef = React12__namespace.useRef(onPointerLeave);
-        const shouldStartPointDragRef = React12__namespace.useRef(shouldStartPointDrag);
-        const onPointerDragRef = React12__namespace.useRef(onPointerDrag);
-        const onPointerDragEndRef = React12__namespace.useRef(onPointerDragEnd);
+        const onView3DReadyRef = React10__namespace.useRef(onView3DReady);
+        const onPointerClickRef = React10__namespace.useRef(onPointerClick);
+        const onPointerMoveRef = React10__namespace.useRef(onPointerMove);
+        const onPointerLeaveRef = React10__namespace.useRef(onPointerLeave);
+        const shouldStartPointDragRef = React10__namespace.useRef(shouldStartPointDrag);
+        const onPointerDragRef = React10__namespace.useRef(onPointerDrag);
+        const onPointerDragEndRef = React10__namespace.useRef(onPointerDragEnd);
         onView3DReadyRef.current = onView3DReady;
         onPointerClickRef.current = onPointerClick;
         onPointerMoveRef.current = onPointerMove;
@@ -6028,7 +6088,7 @@ var init_MiniBoard3D = __esm({
         shouldStartPointDragRef.current = shouldStartPointDrag;
         onPointerDragRef.current = onPointerDrag;
         onPointerDragEndRef.current = onPointerDragEnd;
-        React12__namespace.useImperativeHandle(
+        React10__namespace.useImperativeHandle(
           ref,
           () => ({
             getBoard: () => boardRef.current,
@@ -6037,7 +6097,7 @@ var init_MiniBoard3D = __esm({
           }),
           []
         );
-        React12__namespace.useEffect(() => {
+        React10__namespace.useEffect(() => {
           const div = containerRef.current;
           if (!div) return;
           let cancelled = false;
@@ -6320,6 +6380,194 @@ var init_MiniBoard3D = __esm({
     );
   }
 });
+
+// src/stamps/geometry-3d/editor/preview3d.ts
+var PREVIEW_STYLE, Preview3DManager;
+var init_preview3d = __esm({
+  "src/stamps/geometry-3d/editor/preview3d.ts"() {
+    init_constraintMath();
+    PREVIEW_STYLE = {
+      strokeColor: "#3b82f6",
+      strokeWidth: 1.5,
+      strokeOpacity: 0.7,
+      dash: 2,
+      fixed: true,
+      highlight: false,
+      withLabel: false
+    };
+    Preview3DManager = class {
+      constructor(view, store) {
+        this.phantom = null;
+        this.pickPts = [];
+        this.shapes = [];
+        this.disposed = false;
+        this.view = view;
+        this.store = store;
+      }
+      clear() {
+        const v = this.view;
+        for (const s of this.shapes) {
+          try {
+            v.removeObject?.(s);
+          } catch {
+          }
+        }
+        this.shapes = [];
+        for (const p of this.pickPts) {
+          try {
+            v.removeObject?.(p);
+          } catch {
+          }
+        }
+        this.pickPts = [];
+        if (this.phantom) {
+          try {
+            v.removeObject?.(this.phantom);
+          } catch {
+          }
+          this.phantom = null;
+        }
+      }
+      dispose() {
+        if (this.disposed) return;
+        this.clear();
+        this.disposed = true;
+      }
+      /**
+       * Rebuild the preview from scratch using the controller's current `tool` +
+       * `collected` args + the live `hoverHit` from the most recent pointer move.
+       *
+       * Returns early (and clears) when there's nothing to preview:
+       *  - no tool selected
+       *  - no points collected yet
+       *  - hover is empty / off-surface
+       *  - any collected arg lacks a hit (number steps)
+       */
+      update(tool, collected, hoverHit) {
+        if (this.disposed) return;
+        this.clear();
+        if (!tool || tool === "move") return;
+        if (collected.length === 0) return;
+        if (hoverHit.kind === "empty") return;
+        const phantomCoords = this.hitToCoords(hoverHit);
+        if (!phantomCoords) return;
+        const pickCoords = [];
+        for (const c of collected) {
+          if (!c.hit) return;
+          const coords = this.hitToCoords(c.hit);
+          if (!coords) return;
+          pickCoords.push(coords);
+        }
+        try {
+          this.phantom = this.view.create("point3d", phantomCoords, {
+            visible: false,
+            fixed: true,
+            withLabel: false,
+            name: ""
+          });
+        } catch {
+          return;
+        }
+        for (const coords of pickCoords) {
+          try {
+            const p = this.view.create("point3d", coords, {
+              visible: false,
+              fixed: true,
+              withLabel: false,
+              name: ""
+            });
+            this.pickPts.push(p);
+          } catch {
+            return;
+          }
+        }
+        this.buildShape(tool);
+      }
+      buildShape(tool) {
+        const phantom = this.phantom;
+        const picks = this.pickPts;
+        if (!phantom || picks.length === 0) return;
+        const last = picks[picks.length - 1];
+        try {
+          switch (tool) {
+            case "segment":
+              this.shapes.push(this.makeLine3d(picks[0], phantom, false, false));
+              return;
+            case "line":
+              this.shapes.push(this.makeLine3d(picks[0], phantom, true, true));
+              return;
+            case "ray":
+              this.shapes.push(this.makeLine3d(picks[0], phantom, false, true));
+              return;
+            case "vector":
+              this.shapes.push(this.view.create("line3d", [picks[0], phantom], {
+                ...PREVIEW_STYLE,
+                straightFirst: false,
+                straightLast: false,
+                lastArrow: { type: 1 }
+              }));
+              return;
+            case "polygon":
+            case "pyramid":
+            case "prism": {
+              for (let i = 0; i < picks.length - 1; i += 1) {
+                this.shapes.push(this.makeLine3d(picks[i], picks[i + 1], false, false));
+              }
+              this.shapes.push(this.makeLine3d(last, phantom, false, false));
+              if (picks.length >= 2) {
+                this.shapes.push(this.makeLine3d(picks[0], phantom, false, false));
+              }
+              return;
+            }
+            case "plane": {
+              if (picks.length === 1) {
+                this.shapes.push(this.makeLine3d(picks[0], phantom, false, false));
+              } else if (picks.length === 2) {
+                this.shapes.push(this.makeLine3d(picks[0], picks[1], false, false));
+                this.shapes.push(this.makeLine3d(picks[1], phantom, false, false));
+                this.shapes.push(this.makeLine3d(picks[0], phantom, false, false));
+              }
+              return;
+            }
+            case "sphere": {
+              this.shapes.push(this.view.create("sphere3d", [picks[0], phantom], {
+                ...PREVIEW_STYLE,
+                fillColor: "none",
+                fillOpacity: 0
+              }));
+              return;
+            }
+            case "tetrahedron":
+            case "cube":
+            case "cylinder":
+            case "cone":
+              this.shapes.push(this.makeLine3d(picks[0], phantom, false, false));
+              return;
+            default:
+              return;
+          }
+        } catch {
+        }
+      }
+      makeLine3d(a, b, straightFirst, straightLast) {
+        return this.view.create("line3d", [a, b], {
+          ...PREVIEW_STYLE,
+          straightFirst,
+          straightLast
+        });
+      }
+      hitToCoords(hit) {
+        if (hit.kind === "existingPoint") {
+          const obj = this.store.getState().objects[hit.pointId];
+          if (!obj || obj.kind !== "point3d") return null;
+          return constraintToWorld(obj.attrs.constraint, this.store.getState());
+        }
+        if ("world" in hit) return hit.world;
+        return null;
+      }
+    };
+  }
+});
 function StatusHint(props) {
   const { hint, hoverLabel } = props;
   return /* @__PURE__ */ jsxRuntime.jsxs(
@@ -6358,12 +6606,11 @@ var init_EditorPanel2 = __esm({
     init_constraintMath();
     init_ensurePoint();
     init_MiniBoard3D();
+    init_preview3d();
     init_StatusHint();
     init_theme2();
     init_serialize2();
-    init_useActionRecorder();
-    init_RecorderPanelDev();
-    EditorPanel = React12__namespace.forwardRef(
+    EditorPanel = React10__namespace.forwardRef(
       function EditorPanel2(props, ref) {
         const {
           isDark: isDarkProp,
@@ -6377,24 +6624,25 @@ var init_EditorPanel2 = __esm({
           onHistoryChange
         } = props;
         const isDark = isDarkProp ?? false;
-        const controllerRef = React12__namespace.useRef(null);
+        const controllerRef = React10__namespace.useRef(null);
         if (!controllerRef.current) controllerRef.current = new ToolController(store);
-        const recorder = useActionRecorder(store);
-        const [hint, setHint] = React12__namespace.useState("Ch\u1ECDn c\xF4ng c\u1EE5 trong b\u1EA3ng b\xEAn tr\xE1i");
-        const [hoverLabel, setHoverLabel] = React12__namespace.useState(null);
-        const boardRef = React12__namespace.useRef(null);
-        const rendererRef = React12__namespace.useRef(null);
-        const onSelectedToolChangeRef = React12__namespace.useRef(onSelectedToolChange);
+        const [hint, setHint] = React10__namespace.useState("Ch\u1ECDn c\xF4ng c\u1EE5 trong b\u1EA3ng b\xEAn tr\xE1i");
+        const [hoverLabel, setHoverLabel] = React10__namespace.useState(null);
+        const boardRef = React10__namespace.useRef(null);
+        const rendererRef = React10__namespace.useRef(null);
+        const previewRef = React10__namespace.useRef(null);
+        const lastHoverHitRef = React10__namespace.useRef({ kind: "empty" });
+        const onSelectedToolChangeRef = React10__namespace.useRef(onSelectedToolChange);
         onSelectedToolChangeRef.current = onSelectedToolChange;
-        const onHistoryChangeRef = React12__namespace.useRef(onHistoryChange);
+        const onHistoryChangeRef = React10__namespace.useRef(onHistoryChange);
         onHistoryChangeRef.current = onHistoryChange;
-        const selectedToolRef = React12__namespace.useRef(selectedTool);
+        const selectedToolRef = React10__namespace.useRef(selectedTool);
         selectedToolRef.current = selectedTool;
-        const draggedPointRef = React12__namespace.useRef(null);
-        const dragStartRef = React12__namespace.useRef(null);
-        const dragSnapshotRef = React12__namespace.useRef(null);
-        const dragMutatedRef = React12__namespace.useRef(false);
-        React12__namespace.useEffect(() => {
+        const draggedPointRef = React10__namespace.useRef(null);
+        const dragStartRef = React10__namespace.useRef(null);
+        const dragSnapshotRef = React10__namespace.useRef(null);
+        const dragMutatedRef = React10__namespace.useRef(false);
+        React10__namespace.useEffect(() => {
           if (initialState?.state) {
             const loaded = initialState.state;
             store.withoutHistory(() => {
@@ -6402,7 +6650,7 @@ var init_EditorPanel2 = __esm({
             });
           }
         }, []);
-        React12__namespace.useEffect(() => {
+        React10__namespace.useEffect(() => {
           const ctrl = controllerRef.current;
           const unsub = ctrl.on((state) => {
             setHint(state.hint);
@@ -6410,17 +6658,17 @@ var init_EditorPanel2 = __esm({
           });
           return unsub;
         }, []);
-        React12__namespace.useEffect(() => {
+        React10__namespace.useEffect(() => {
           onHistoryChangeRef.current?.(store.canUndo(), store.canRedo());
           const unsub = store.subscribe(() => {
             onHistoryChangeRef.current?.(store.canUndo(), store.canRedo());
           });
           return unsub;
         }, [store]);
-        React12__namespace.useEffect(() => {
+        React10__namespace.useEffect(() => {
           controllerRef.current?.selectTool(selectedTool);
         }, [selectedTool]);
-        React12__namespace.useEffect(() => {
+        React10__namespace.useEffect(() => {
           const onKey = (e) => {
             const ae = document.activeElement;
             const inField = !!(ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable));
@@ -6440,13 +6688,24 @@ var init_EditorPanel2 = __esm({
           window.addEventListener("keydown", onKey, { capture: true });
           return () => window.removeEventListener("keydown", onKey, { capture: true });
         }, [store]);
-        React12__namespace.useEffect(() => {
+        React10__namespace.useEffect(() => {
           return () => {
             rendererRef.current?.dispose();
             rendererRef.current = null;
+            previewRef.current?.dispose();
+            previewRef.current = null;
           };
         }, []);
-        React12__namespace.useEffect(() => {
+        React10__namespace.useEffect(() => {
+          const controller = controllerRef.current;
+          if (!controller) return;
+          return controller.on((state) => {
+            if (!previewRef.current) return;
+            if (state.collected.length === 0) previewRef.current.clear();
+            else previewRef.current.update(state.tool?.key ?? null, state.collected, lastHoverHitRef.current);
+          });
+        }, []);
+        React10__namespace.useEffect(() => {
           const view = boardRef.current?.getView3D();
           const v = view;
           if (!v || typeof v.setAttribute !== "function") return;
@@ -6464,8 +6723,9 @@ var init_EditorPanel2 = __esm({
           } catch {
           }
         }, [showAxis, showGrid]);
-        const handleView3DReady = React12__namespace.useCallback((view) => {
+        const handleView3DReady = React10__namespace.useCallback((view) => {
           rendererRef.current = new JxgRenderer3D(store, view);
+          previewRef.current = new Preview3DManager(view, store);
           const savedView = initialState?.view;
           if (savedView) {
             try {
@@ -6478,7 +6738,7 @@ var init_EditorPanel2 = __esm({
           }
           onReadyChange?.(true);
         }, [onReadyChange, store, initialState]);
-        const handleClick = React12__namespace.useCallback((screen) => {
+        const handleClick = React10__namespace.useCallback((screen) => {
           const board = boardRef.current;
           if (!board) return;
           const view = board.getView3D();
@@ -6489,7 +6749,7 @@ var init_EditorPanel2 = __esm({
           } catch {
           }
         }, [store]);
-        const handleMove2 = React12__namespace.useCallback((screen) => {
+        const handleMove2 = React10__namespace.useCallback((screen) => {
           const board = boardRef.current;
           if (!board) return;
           const view = board.getView3D();
@@ -6502,6 +6762,12 @@ var init_EditorPanel2 = __esm({
             setHoverLabel(null);
             return;
           }
+          lastHoverHitRef.current = hit;
+          const ctrl = controllerRef.current;
+          if (previewRef.current && ctrl) {
+            const cs = ctrl.getState();
+            previewRef.current.update(cs.tool?.key ?? null, cs.collected, hit);
+          }
           if (hit.kind === "empty") setHoverLabel(null);
           else if (hit.kind === "existingPoint") {
             const obj = store.getState().objects[hit.pointId];
@@ -6512,7 +6778,7 @@ var init_EditorPanel2 = __esm({
           else if (hit.kind === "onSphere") setHoverLabel(`m\u1EB7t c\u1EA7u ${hit.sphereId}`);
           else setHoverLabel(null);
         }, [store]);
-        const shouldStartPointDrag = React12__namespace.useCallback((screen) => {
+        const shouldStartPointDrag = React10__namespace.useCallback((screen) => {
           const view = boardRef.current?.getView3D();
           if (!view) return false;
           const tool = selectedToolRef.current;
@@ -6584,7 +6850,7 @@ var init_EditorPanel2 = __esm({
           }
           return false;
         }, [store]);
-        const onPointerDrag = React12__namespace.useCallback((screen) => {
+        const onPointerDrag = React10__namespace.useCallback((screen) => {
           const pointId = draggedPointRef.current;
           const start = dragStartRef.current;
           if (!pointId || !start) return;
@@ -6615,7 +6881,7 @@ var init_EditorPanel2 = __esm({
           });
           dragMutatedRef.current = true;
         }, [store]);
-        const onPointerDragEnd = React12__namespace.useCallback(() => {
+        const onPointerDragEnd = React10__namespace.useCallback(() => {
           const snap = dragSnapshotRef.current;
           dragSnapshotRef.current = null;
           draggedPointRef.current = null;
@@ -6629,7 +6895,7 @@ var init_EditorPanel2 = __esm({
             store.dispatch({ type: "LOAD", payload: { state: current } });
           }
         }, [store]);
-        React12__namespace.useImperativeHandle(
+        React10__namespace.useImperativeHandle(
           ref,
           () => ({
             hasContent: () => Object.keys(store.getState().objects).length > 0,
@@ -6671,14 +6937,17 @@ var init_EditorPanel2 = __esm({
                   onView3DReady: handleView3DReady,
                   onPointerClick: handleClick,
                   onPointerMove: handleMove2,
-                  onPointerLeave: () => setHoverLabel(null),
+                  onPointerLeave: () => {
+                    setHoverLabel(null);
+                    lastHoverHitRef.current = { kind: "empty" };
+                    previewRef.current?.clear();
+                  },
                   shouldStartPointDrag,
                   onPointerDrag,
                   onPointerDragEnd
                 }
               ) }),
-              /* @__PURE__ */ jsxRuntime.jsx(StatusHint, { hint, hoverLabel }),
-              /* @__PURE__ */ jsxRuntime.jsx(RecorderPanelDev, { recorder })
+              /* @__PURE__ */ jsxRuntime.jsx(StatusHint, { hint, hoverLabel })
             ]
           }
         );
@@ -7054,20 +7323,20 @@ function Section3({ label, children }) {
   ] });
 }
 function useToolHoverTooltip2() {
-  const [hover, setHover] = React12__namespace.useState(null);
-  const [portalReady, setPortalReady] = React12__namespace.useState(false);
-  const hoverTimerRef = React12__namespace.useRef(null);
-  React12__namespace.useEffect(() => {
+  const [hover, setHover] = React10__namespace.useState(null);
+  const [portalReady, setPortalReady] = React10__namespace.useState(false);
+  const hoverTimerRef = React10__namespace.useRef(null);
+  React10__namespace.useEffect(() => {
     setPortalReady(true);
     return () => {
       if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     };
   }, []);
-  const showHover = React12__namespace.useCallback((next) => {
+  const showHover = React10__namespace.useCallback((next) => {
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     hoverTimerRef.current = setTimeout(() => setHover(next), TOOLTIP_DELAY_MS2);
   }, []);
-  const hideHover = React12__namespace.useCallback(() => {
+  const hideHover = React10__namespace.useCallback(() => {
     if (hoverTimerRef.current) {
       clearTimeout(hoverTimerRef.current);
       hoverTimerRef.current = null;
@@ -7095,7 +7364,7 @@ function DesktopPanel(props) {
     selectedObjectId,
     onObjectSelect
   } = props;
-  const [tab, setTab] = React12__namespace.useState("tools");
+  const [tab, setTab] = React10__namespace.useState("tools");
   const { hover, portalReady, showHover, hideHover } = useToolHoverTooltip2();
   return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
     /* @__PURE__ */ jsxRuntime.jsxs(Shell3, { title: "H\xECnh h\u1ECDc 3D", icon: Geom3DIconHeader, onClose, isDark, children: [
@@ -7250,7 +7519,7 @@ function MobilePanel(props) {
     drawerOpen,
     onDrawerClose
   } = props;
-  const groups = React12__namespace.useMemo(
+  const groups = React10__namespace.useMemo(
     () => GROUP_ORDER2.map((group) => {
       const keys = TOOLS_BY_GROUP[group];
       return {
@@ -7363,30 +7632,30 @@ var init_host3 = __esm({
     init_useIsMobile();
     init_render3();
     init_serialize2();
-    Geometry3DStampHost = React12.forwardRef(
+    Geometry3DStampHost = React10.forwardRef(
       function Geometry3DStampHost2({ api, editingElement, onClose, isDark }, ref) {
-        const editorRef = React12.useRef(null);
-        const storeRef = React12.useRef(null);
+        const editorRef = React10.useRef(null);
+        const storeRef = React10.useRef(null);
         if (!storeRef.current) storeRef.current = createStore(createEmptyState("3d"));
         const { isMobile } = useIsMobile();
-        const [drawerOpen, setDrawerOpen] = React12.useState(false);
-        const [ready, setReady] = React12.useState(false);
-        const [selectedTool, setSelectedTool] = React12.useState("move");
-        const [showAxis, setShowAxis] = React12.useState(true);
-        const [showGrid, setShowGrid] = React12.useState(true);
-        const [canUndo, setCanUndo] = React12.useState(false);
-        const [canRedo, setCanRedo] = React12.useState(false);
-        const [hasContent, setHasContent] = React12.useState(false);
-        const [selectedObjectId, setSelectedObjectId] = React12.useState(void 0);
-        const handleHistoryChange = React12.useCallback((u, r) => {
+        const [drawerOpen, setDrawerOpen] = React10.useState(false);
+        const [ready, setReady] = React10.useState(false);
+        const [selectedTool, setSelectedTool] = React10.useState("move");
+        const [showAxis, setShowAxis] = React10.useState(true);
+        const [showGrid, setShowGrid] = React10.useState(true);
+        const [canUndo, setCanUndo] = React10.useState(false);
+        const [canRedo, setCanRedo] = React10.useState(false);
+        const [hasContent, setHasContent] = React10.useState(false);
+        const [selectedObjectId, setSelectedObjectId] = React10.useState(void 0);
+        const handleHistoryChange = React10.useCallback((u, r) => {
           setCanUndo(u);
           setCanRedo(r);
         }, []);
-        const handleObjectSelect = React12.useCallback((id) => {
+        const handleObjectSelect = React10.useCallback((id) => {
           setSelectedObjectId(id);
           editorRef.current?.highlight(id);
         }, []);
-        React12.useEffect(() => {
+        React10.useEffect(() => {
           const store = storeRef.current;
           if (!store) return;
           const sync = () => setHasContent(Object.keys(store.getState().objects).length > 0);
@@ -7394,13 +7663,13 @@ var init_host3 = __esm({
           const unsub = store.subscribe(sync);
           return unsub;
         }, []);
-        const handleUndo = React12.useCallback(() => {
+        const handleUndo = React10.useCallback(() => {
           editorRef.current?.undo();
         }, []);
-        const handleRedo = React12.useCallback(() => {
+        const handleRedo = React10.useCallback(() => {
           editorRef.current?.redo();
         }, []);
-        const initial = React12.useMemo(
+        const initial = React10.useMemo(
           () => parseInitial(editingElement),
           [editingElement]
         );
@@ -7413,11 +7682,11 @@ var init_host3 = __esm({
           },
           enabled: !isMobile
         });
-        const handleSelectTool = React12.useCallback((k) => {
+        const handleSelectTool = React10.useCallback((k) => {
           setSelectedTool(k);
           editorRef.current?.setTool(k);
         }, []);
-        const performInsert = React12.useCallback(
+        const performInsert = React10.useCallback(
           async (board, width, height, svgString) => {
             if (!api) return;
             const jsonState = JSON.stringify(board);
@@ -7438,7 +7707,7 @@ var init_host3 = __esm({
           },
           [api, editingElement, onClose]
         );
-        const tryInsert = React12.useCallback(() => {
+        const tryInsert = React10.useCallback(() => {
           if (!editorRef.current) return false;
           if (!editorRef.current.hasContent()) return false;
           const board = editorRef.current.serialize();
@@ -7454,7 +7723,7 @@ var init_host3 = __esm({
           })();
           return true;
         }, [performInsert]);
-        React12.useImperativeHandle(
+        React10.useImperativeHandle(
           ref,
           () => ({
             tryInsert,
@@ -7462,7 +7731,7 @@ var init_host3 = __esm({
           }),
           [tryInsert]
         );
-        const handleEditorInsert = React12.useCallback(
+        const handleEditorInsert = React10.useCallback(
           (board, width, height, svgString) => {
             void performInsert(board, width, height, svgString);
           },
@@ -8294,8 +8563,8 @@ var init_tools2 = __esm({
 });
 function FunctionRow(props) {
   const { id, name, expression, color, visible, error } = props;
-  const [draft, setDraft] = React12.useState(expression);
-  React12.useEffect(() => {
+  const [draft, setDraft] = React10.useState(expression);
+  React10.useEffect(() => {
     setDraft(expression);
   }, [expression]);
   const commit = () => {
@@ -8723,10 +8992,10 @@ var init_theme3 = __esm({
   }
 });
 function MiniBoard({ graph, activeTool, isDark, onBoardEvent }) {
-  const containerRef = React12.useRef(null);
-  const boardRef = React12.useRef(null);
-  const curvesRef = React12.useRef(/* @__PURE__ */ new Map());
-  React12.useEffect(() => {
+  const containerRef = React10.useRef(null);
+  const boardRef = React10.useRef(null);
+  const curvesRef = React10.useRef(/* @__PURE__ */ new Map());
+  React10.useEffect(() => {
     let cancelled = false;
     let createdBoard = null;
     const containerEl = containerRef.current;
@@ -8796,11 +9065,11 @@ function MiniBoard({ graph, activeTool, isDark, onBoardEvent }) {
       curvesRef.current.clear();
     };
   }, []);
-  React12.useEffect(() => {
+  React10.useEffect(() => {
     if (!boardRef.current) return;
     syncObjects(boardRef.current, graph, curvesRef.current);
   }, [graph]);
-  React12.useEffect(() => {
+  React10.useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
     el.style.cursor = activeTool === "move" ? "" : "crosshair";
@@ -8973,27 +9242,27 @@ var init_EditorPanel3 = __esm({
     init_render4();
     init_colors();
     init_handlers2();
-    GraphEditorPanel = React12.forwardRef(function GraphEditorPanel2(props, ref) {
+    GraphEditorPanel = React10.forwardRef(function GraphEditorPanel2(props, ref) {
       const initialGraph = props.initialState ?? EMPTY_GRAPH;
-      const graphRef = React12.useRef(initialGraph);
-      const [, forceUpdate] = React12.useState(0);
-      const [errors, setErrors] = React12.useState({});
-      const [tool, setToolState] = React12.useState("move");
-      const undoStackRef = React12.useRef([]);
-      const redoStackRef = React12.useRef([]);
-      const idCounterRef = React12.useRef(1);
-      const toolRef = React12.useRef(tool);
+      const graphRef = React10.useRef(initialGraph);
+      const [, forceUpdate] = React10.useState(0);
+      const [errors, setErrors] = React10.useState({});
+      const [tool, setToolState] = React10.useState("move");
+      const undoStackRef = React10.useRef([]);
+      const redoStackRef = React10.useRef([]);
+      const idCounterRef = React10.useRef(1);
+      const toolRef = React10.useRef(tool);
       toolRef.current = tool;
-      const intersectFirstRef = React12.useRef(null);
-      const propsRef = React12.useRef(props);
+      const intersectFirstRef = React10.useRef(null);
+      const propsRef = React10.useRef(props);
       propsRef.current = props;
-      const initialGraphNotifiedRef = React12.useRef(false);
-      const pushUndo = React12.useCallback((g) => {
+      const initialGraphNotifiedRef = React10.useRef(false);
+      const pushUndo = React10.useCallback((g) => {
         undoStackRef.current.push(g);
         if (undoStackRef.current.length > 30) undoStackRef.current.shift();
         redoStackRef.current = [];
       }, []);
-      const setErrorsWithNotify = React12.useCallback(
+      const setErrorsWithNotify = React10.useCallback(
         (updater) => {
           setErrors((prev) => {
             const next = updater(prev);
@@ -9003,7 +9272,7 @@ var init_EditorPanel3 = __esm({
         },
         []
       );
-      const notifyStateChange = React12.useCallback((g, t) => {
+      const notifyStateChange = React10.useCallback((g, t) => {
         propsRef.current.onStateChange({
           tool: t,
           showAxis: g.view.showAxis,
@@ -9012,7 +9281,7 @@ var init_EditorPanel3 = __esm({
           canRedo: redoStackRef.current.length > 0
         });
       }, []);
-      const updateGraph = React12.useCallback(
+      const updateGraph = React10.useCallback(
         (mutator) => {
           const prev = graphRef.current;
           pushUndo(prev);
@@ -9024,7 +9293,7 @@ var init_EditorPanel3 = __esm({
         },
         [pushUndo, notifyStateChange]
       );
-      const doUndo = React12.useCallback(() => {
+      const doUndo = React10.useCallback(() => {
         const prev = undoStackRef.current.pop();
         if (!prev) return;
         redoStackRef.current.push(graphRef.current);
@@ -9040,7 +9309,7 @@ var init_EditorPanel3 = __esm({
         });
         propsRef.current.onGraphChange?.(prev);
       }, []);
-      const doRedo = React12.useCallback(() => {
+      const doRedo = React10.useCallback(() => {
         const next = redoStackRef.current.pop();
         if (!next) return;
         undoStackRef.current.push(graphRef.current);
@@ -9056,7 +9325,7 @@ var init_EditorPanel3 = __esm({
         });
         propsRef.current.onGraphChange?.(next);
       }, []);
-      React12.useEffect(() => {
+      React10.useEffect(() => {
         const onKey = (e) => {
           const ae = document.activeElement;
           const inField = !!(ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable));
@@ -9076,7 +9345,7 @@ var init_EditorPanel3 = __esm({
         window.addEventListener("keydown", onKey, { capture: true });
         return () => window.removeEventListener("keydown", onKey, { capture: true });
       }, [doUndo, doRedo]);
-      const onBoardEvent = React12.useCallback((ev) => {
+      const onBoardEvent = React10.useCallback((ev) => {
         const currentTool = toolRef.current;
         if (currentTool === "point-on-curve" && ev.type === "click-curve" && ev.functionId && ev.x !== void 0) {
           updateGraph(
@@ -9110,7 +9379,7 @@ var init_EditorPanel3 = __esm({
           setToolState("move");
         }
       }, [updateGraph]);
-      React12.useImperativeHandle(
+      React10.useImperativeHandle(
         ref,
         () => ({
           insert: () => {
@@ -9234,7 +9503,7 @@ var init_EditorPanel3 = __esm({
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [updateGraph, errors, setErrorsWithNotify, doUndo, doRedo]
       );
-      React12.useEffect(() => {
+      React10.useEffect(() => {
         if (!initialGraphNotifiedRef.current) {
           initialGraphNotifiedRef.current = true;
           propsRef.current.onGraphChange?.(graphRef.current);
@@ -9380,22 +9649,22 @@ var init_host4 = __esm({
       canUndo: false,
       canRedo: false
     };
-    Graph2DStampHost = React12.forwardRef(
+    Graph2DStampHost = React10.forwardRef(
       function Graph2DStampHost2({ api, editingElement, onClose, isDark }, ref) {
-        const panelRef = React12.useRef(null);
-        const [graphUIState, setGraphUIState] = React12.useState(INITIAL_GRAPH_STATE);
+        const panelRef = React10.useRef(null);
+        const [graphUIState, setGraphUIState] = React10.useState(INITIAL_GRAPH_STATE);
         const { isMobile } = useIsMobile();
-        const [drawerOpen, setDrawerOpen] = React12.useState(false);
-        const initialState = React12.useMemo(() => {
+        const [drawerOpen, setDrawerOpen] = React10.useState(false);
+        const initialState = React10.useMemo(() => {
           if (!editingElement) return null;
           if (!isGraph2DCustomData(editingElement.customData)) return null;
           return parseSerializedGraph(editingElement.customData.jsonState);
         }, [editingElement]);
-        const [graphSnapshot, setGraphSnapshot] = React12.useState(
+        const [graphSnapshot, setGraphSnapshot] = React10.useState(
           initialState ?? EMPTY_GRAPH
         );
-        const [errorsSnapshot, setErrorsSnapshot] = React12.useState({});
-        const handleInsert = React12.useCallback(
+        const [errorsSnapshot, setErrorsSnapshot] = React10.useState({});
+        const handleInsert = React10.useCallback(
           async (jsonState, svgString) => {
             if (!api) return;
             try {
@@ -9417,7 +9686,7 @@ var init_host4 = __esm({
           },
           [api, editingElement?.id, onClose]
         );
-        React12.useImperativeHandle(
+        React10.useImperativeHandle(
           ref,
           () => ({
             tryInsert: () => panelRef.current?.insert() ?? false,
@@ -9521,7 +9790,7 @@ function pickSyncableAppState(s) {
 // src/stamps/geometry-2d/index.tsx
 init_render();
 init_types2();
-var GeometryStampHost3 = React12.lazy(
+var GeometryStampHost3 = React10.lazy(
   () => Promise.resolve().then(() => (init_host(), host_exports)).then((m) => ({ default: m.GeometryStampHost }))
 );
 var GeometryIcon = /* @__PURE__ */ jsxRuntime.jsxs("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: [
@@ -9560,7 +9829,7 @@ var geometryStamp = {
 // src/stamps/latex/index.tsx
 init_render2();
 init_types3();
-var LatexStampHost3 = React12.lazy(
+var LatexStampHost3 = React10.lazy(
   () => Promise.resolve().then(() => (init_host2(), host_exports2)).then((m) => ({ default: m.LatexStampHost }))
 );
 var LatexIcon = /* @__PURE__ */ jsxRuntime.jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntime.jsx("path", { d: "M17 5 H7 L13 12 L7 19 H17" }) });
@@ -9594,7 +9863,7 @@ var latexStamp = {
 // src/stamps/geometry-3d/index.tsx
 init_serialize2();
 init_render3();
-var Geometry3DStampHost3 = React12.lazy(
+var Geometry3DStampHost3 = React10.lazy(
   () => Promise.resolve().then(() => (init_host3(), host_exports3)).then((m) => ({ default: m.Geometry3DStampHost }))
 );
 var Geometry3DIcon = /* @__PURE__ */ jsxRuntime.jsxs(
@@ -9651,7 +9920,7 @@ var geometry3dStamp = {
 // src/stamps/graph-2d/index.tsx
 init_render4();
 init_types5();
-var Graph2DStampHost3 = React12.lazy(
+var Graph2DStampHost3 = React10.lazy(
   () => Promise.resolve().then(() => (init_host4(), host_exports4)).then((m) => ({ default: m.Graph2DStampHost }))
 );
 var Graph2DIcon = /* @__PURE__ */ jsxRuntime.jsxs(
@@ -9732,9 +10001,9 @@ function ToolbarInjector({
   onToggle,
   stamps = DEFAULT_STAMPS
 }) {
-  const [menuMount, setMenuMount] = React12.useState(null);
-  const menuMountRef = React12.useRef(null);
-  React12.useEffect(() => {
+  const [menuMount, setMenuMount] = React10.useState(null);
+  const menuMountRef = React10.useRef(null);
+  React10.useEffect(() => {
     if (!enabled) {
       if (menuMountRef.current !== null) {
         menuMountRef.current = null;
@@ -9903,7 +10172,7 @@ function useShortcuts({
   onToggle,
   stamps = DEFAULT_STAMPS
 }) {
-  React12.useEffect(() => {
+  React10.useEffect(() => {
     if (!enabled) return;
     const keyToKind = /* @__PURE__ */ new Map();
     for (const s of stamps) keyToKind.set(s.shortcutKey, s.kind);
@@ -9924,10 +10193,10 @@ function useShortcuts({
 var WRAPPER_ID = "pdf-import-portal-wrapper";
 var POPOVER_SELECTOR2 = ".App-toolbar__extra-tools-dropdown .dropdown-menu-container";
 function PdfImporterButton({ enabled, onPick }) {
-  const [mount, setMount] = React12.useState(null);
-  const mountRef = React12.useRef(null);
-  const inputRef = React12.useRef(null);
-  React12.useEffect(() => {
+  const [mount, setMount] = React10.useState(null);
+  const mountRef = React10.useRef(null);
+  const inputRef = React10.useRef(null);
+  React10.useEffect(() => {
     if (!enabled) {
       mountRef.current = null;
       setMount(null);
@@ -10251,19 +10520,19 @@ function serializeSelection(pages) {
 }
 function PageRangeDialog({ doc, fileName, onConfirm, onCancel }) {
   const totalPages = doc.numPages;
-  const defaultPages = React12.useMemo(
+  const defaultPages = React10.useMemo(
     () => Array.from({ length: totalPages }, (_, i) => i + 1),
     [totalPages]
   );
-  const [selectedSet, setSelectedSet] = React12.useState(
+  const [selectedSet, setSelectedSet] = React10.useState(
     () => new Set(defaultPages)
   );
-  const [inputValue, setInputValue] = React12.useState(serializeSelection(defaultPages));
-  const [inputError, setInputError] = React12.useState(null);
-  const [thumbs, setThumbs] = React12.useState({});
-  const [thumbProgress, setThumbProgress] = React12.useState(0);
-  const inputRef = React12.useRef(null);
-  React12.useEffect(() => {
+  const [inputValue, setInputValue] = React10.useState(serializeSelection(defaultPages));
+  const [inputError, setInputError] = React10.useState(null);
+  const [thumbs, setThumbs] = React10.useState({});
+  const [thumbProgress, setThumbProgress] = React10.useState(0);
+  const inputRef = React10.useRef(null);
+  React10.useEffect(() => {
     const ctrl = new AbortController();
     void renderAllThumbnails(
       doc,
@@ -10278,7 +10547,7 @@ function PageRangeDialog({ doc, fileName, onConfirm, onCancel }) {
     });
     return () => ctrl.abort();
   }, [doc]);
-  React12.useEffect(() => {
+  React10.useEffect(() => {
     const onKey = (e) => {
       if (e.key === "Escape") {
         e.preventDefault();
@@ -10321,7 +10590,7 @@ function PageRangeDialog({ doc, fileName, onConfirm, onCancel }) {
     setInputError(null);
   };
   const canSubmit = inputError === null && selectedSet.size > 0;
-  const sortedSelected = React12.useMemo(
+  const sortedSelected = React10.useMemo(
     () => [...selectedSet].sort((a, b) => a - b),
     [selectedSet]
   );
@@ -10760,11 +11029,11 @@ async function insertPdfPages(api, source, options = {}) {
 }
 var DOUBLE_CLICK_MS = 400;
 function useStampDoubleClick({ enabled, stamps, onOpen }) {
-  const lastClickRef = React12.useRef({
+  const lastClickRef = React10.useRef({
     time: 0,
     elementId: null
   });
-  return React12.useCallback(
+  return React10.useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (_activeTool, pointerDownState) => {
       if (!enabled) return;
@@ -10807,11 +11076,11 @@ function isEditable(el) {
   return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
 }
 function useStampShortcutBlocker({ activeStamp, stamps }) {
-  const shortcutKeys = React12.useMemo(
+  const shortcutKeys = React10.useMemo(
     () => new Set(stamps.map((s) => s.shortcutKey.toLowerCase())),
     [stamps]
   );
-  React12.useEffect(() => {
+  React10.useEffect(() => {
     if (!activeStamp) return;
     const blocker = (e) => {
       if (isEditable(e.target)) return;
@@ -10827,7 +11096,7 @@ function useStampShortcutBlocker({ activeStamp, stamps }) {
   }, [activeStamp, shortcutKeys]);
 }
 function useStampClickOutside({ activeStamp, hostRef, onClose }) {
-  React12.useEffect(() => {
+  React10.useEffect(() => {
     if (!activeStamp) return;
     let lastFire = 0;
     const handler = (e) => {
@@ -11176,7 +11445,7 @@ async function pruneFiles(storageKey, keepIds) {
     console.warn("[whiteboard] pruneFiles failed:", err);
   }
 }
-var Excalidraw2 = React12.lazy(
+var Excalidraw2 = React10.lazy(
   () => Promise.resolve().then(() => (init_ExcalidrawWithMenus(), ExcalidrawWithMenus_exports)).then((m) => ({ default: m.ExcalidrawWithMenus }))
 );
 var ExcalidrawLoadingFallback = () => /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex h-full items-center justify-center text-sm text-gray-500", children: "\u0110ang t\u1EA3i b\u1EA3ng\u2026" });
@@ -11192,30 +11461,30 @@ function Whiteboard({
   initialScene,
   initialFiles
 }) {
-  const [api, setApi] = React12.useState(null);
-  const apiRef = React12.useRef(null);
-  const [isDarkTheme, setIsDarkTheme] = React12.useState(false);
-  const isDarkThemeRef = React12.useRef(false);
-  const knownFileIdsRef = React12.useRef(/* @__PURE__ */ new Set());
-  const lastSceneHashRef = React12.useRef("");
-  const sceneThrottleRef = React12.useRef(null);
-  const fileThrottleRef = React12.useRef(null);
-  const pruneThrottleRef = React12.useRef(null);
-  const latestSceneRef = React12.useRef(null);
-  const pendingFilesRef = React12.useRef({});
-  const hashElementsVersionRef = React12.useRef(null);
-  const stampsRef = React12.useRef(stamps);
+  const [api, setApi] = React10.useState(null);
+  const apiRef = React10.useRef(null);
+  const [isDarkTheme, setIsDarkTheme] = React10.useState(false);
+  const isDarkThemeRef = React10.useRef(false);
+  const knownFileIdsRef = React10.useRef(/* @__PURE__ */ new Set());
+  const lastSceneHashRef = React10.useRef("");
+  const sceneThrottleRef = React10.useRef(null);
+  const fileThrottleRef = React10.useRef(null);
+  const pruneThrottleRef = React10.useRef(null);
+  const latestSceneRef = React10.useRef(null);
+  const pendingFilesRef = React10.useRef({});
+  const hashElementsVersionRef = React10.useRef(null);
+  const stampsRef = React10.useRef(stamps);
   stampsRef.current = stamps;
   const persistEnabled = typeof storageKey === "string" && storageKey.length > 0;
-  const persistKeyRef = React12.useRef(storageKey);
+  const persistKeyRef = React10.useRef(storageKey);
   persistKeyRef.current = storageKey;
-  const onSceneChangeRef = React12.useRef(onSceneChange);
+  const onSceneChangeRef = React10.useRef(onSceneChange);
   onSceneChangeRef.current = onSceneChange;
-  const onFilesChangeRef = React12.useRef(onFilesChange);
+  const onFilesChangeRef = React10.useRef(onFilesChange);
   onFilesChangeRef.current = onFilesChange;
-  const persistEnabledRef = React12.useRef(persistEnabled);
+  const persistEnabledRef = React10.useRef(persistEnabled);
   persistEnabledRef.current = persistEnabled;
-  const persistedInitial = React12.useMemo(
+  const persistedInitial = React10.useMemo(
     () => persistEnabled ? readScene(storageKey) : null,
     [persistEnabled, storageKey]
   );
@@ -11223,23 +11492,23 @@ function Whiteboard({
     elements: persistedInitial.elements,
     appState: persistedInitial.appState
   } : null;
-  const [activeStamp, setActiveStamp] = React12.useState(null);
-  const activeStampRef = React12.useRef(activeStamp);
+  const [activeStamp, setActiveStamp] = React10.useState(null);
+  const activeStampRef = React10.useRef(activeStamp);
   activeStampRef.current = activeStamp;
-  const [editingElement, setEditingElement] = React12.useState(null);
-  const hostRef = React12.useRef(null);
-  const [pdfPending, setPdfPending] = React12.useState(null);
-  const [pdfBusy, setPdfBusy] = React12.useState(false);
-  const handledCropIdRef = React12.useRef(null);
-  const prevExcalidrawToolRef = React12.useRef("selection");
-  const stampByKind = React12.useMemo(() => {
+  const [editingElement, setEditingElement] = React10.useState(null);
+  const hostRef = React10.useRef(null);
+  const [pdfPending, setPdfPending] = React10.useState(null);
+  const [pdfBusy, setPdfBusy] = React10.useState(false);
+  const handledCropIdRef = React10.useRef(null);
+  const prevExcalidrawToolRef = React10.useRef("selection");
+  const stampByKind = React10.useMemo(() => {
     const m = /* @__PURE__ */ new Map();
     for (const s of stamps) m.set(s.kind, s);
     return m;
   }, [stamps]);
   const activeStampDef = activeStamp ? stampByKind.get(activeStamp) ?? null : null;
   const HostComponent = activeStampDef?.Host ?? null;
-  const openStamp = React12.useCallback(
+  const openStamp = React10.useCallback(
     (kind, element = null) => {
       if (readOnly) return;
       if (!stampByKind.has(kind)) return;
@@ -11248,18 +11517,18 @@ function Whiteboard({
     },
     [readOnly, stampByKind]
   );
-  const closeStamp = React12.useCallback(() => {
+  const closeStamp = React10.useCallback(() => {
     setActiveStamp(null);
     setEditingElement(null);
   }, []);
-  const toggleStampByKind = React12.useCallback(
+  const toggleStampByKind = React10.useCallback(
     (kind) => {
       if (activeStamp === kind) closeStamp();
       else openStamp(kind);
     },
     [activeStamp, openStamp, closeStamp]
   );
-  const handleChange = React12.useCallback(
+  const handleChange = React10.useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (elements, appState, files) => {
       const nextDark = appState?.theme === "dark";
@@ -11334,7 +11603,7 @@ function Whiteboard({
     },
     [readOnly, api, onSceneChange, onFilesChange, persistEnabled, storageKey, stamps, openStamp]
   );
-  const flushSceneRef = React12.useRef(() => void 0);
+  const flushSceneRef = React10.useRef(() => void 0);
   flushSceneRef.current = () => {
     try {
       const latestScene = latestSceneRef.current;
@@ -11357,7 +11626,7 @@ function Whiteboard({
       console.warn("[whiteboard] flushScene th\u1EA5t b\u1EA1i:", err);
     }
   };
-  const flushFilesRef = React12.useRef(() => void 0);
+  const flushFilesRef = React10.useRef(() => void 0);
   flushFilesRef.current = () => {
     try {
       const pending = pendingFilesRef.current;
@@ -11380,7 +11649,7 @@ function Whiteboard({
       console.warn("[whiteboard] flushFiles th\u1EA5t b\u1EA1i:", err);
     }
   };
-  const flushPruneRef = React12.useRef(() => void 0);
+  const flushPruneRef = React10.useRef(() => void 0);
   flushPruneRef.current = () => {
     try {
       const currentElements = apiRef.current?.getSceneElements?.() ?? latestSceneRef.current?.elements ?? [];
@@ -11394,8 +11663,8 @@ function Whiteboard({
       console.warn("[whiteboard] flushPrune th\u1EA5t b\u1EA1i:", err);
     }
   };
-  const initialFilesAddedRef = React12.useRef(false);
-  React12.useEffect(() => {
+  const initialFilesAddedRef = React10.useRef(false);
+  React10.useEffect(() => {
     if (!api || initialFilesAddedRef.current) return;
     initialFilesAddedRef.current = true;
     if (!initialFiles) return;
@@ -11418,7 +11687,7 @@ function Whiteboard({
       console.warn("[whiteboard] addFiles initialFiles th\u1EA5t b\u1EA1i:", err);
     }
   }, [api]);
-  React12.useEffect(() => {
+  React10.useEffect(() => {
     if (!api || !persistEnabled) return;
     let cancelled = false;
     void readFiles(storageKey).then(
@@ -11455,7 +11724,7 @@ function Whiteboard({
       cancelled = true;
     };
   }, [api, persistEnabled, storageKey]);
-  React12.useEffect(() => {
+  React10.useEffect(() => {
     if (!api) return;
     let cancelled = false;
     const run = async () => {
@@ -11479,7 +11748,7 @@ function Whiteboard({
       clearTimeout(t);
     };
   }, [api, persistedInitial]);
-  React12.useEffect(
+  React10.useEffect(
     () => () => {
       if (sceneThrottleRef.current) {
         clearTimeout(sceneThrottleRef.current);
@@ -11509,7 +11778,7 @@ function Whiteboard({
     onToggle: toggleStampByKind,
     stamps
   });
-  React12.useEffect(() => {
+  React10.useEffect(() => {
     if (!api) return;
     if (activeStamp) {
       try {
@@ -11526,7 +11795,7 @@ function Whiteboard({
     }
   }, [activeStamp, api]);
   useStampShortcutBlocker({ activeStamp, stamps });
-  React12.useEffect(() => {
+  React10.useEffect(() => {
     if (!activeStamp) return;
     const onKey = (e) => {
       if (e.key !== "Escape") return;
@@ -11542,7 +11811,7 @@ function Whiteboard({
     return () => window.removeEventListener("keydown", onKey, { capture: true });
   }, [activeStamp, closeStamp]);
   useStampClickOutside({ activeStamp, hostRef, onClose: closeStamp });
-  const handlePdfPick = React12.useCallback(
+  const handlePdfPick = React10.useCallback(
     async (file) => {
       if (readOnly || pdfBusy) return;
       setPdfBusy(true);
@@ -11558,7 +11827,7 @@ function Whiteboard({
     },
     [readOnly, pdfBusy]
   );
-  const handlePdfConfirm = React12.useCallback(
+  const handlePdfConfirm = React10.useCallback(
     async (pages) => {
       if (!pdfPending || !api) return;
       const { doc } = pdfPending;
@@ -11578,13 +11847,13 @@ function Whiteboard({
     },
     [pdfPending, api]
   );
-  const handlePdfCancel = React12.useCallback(() => {
+  const handlePdfCancel = React10.useCallback(() => {
     if (pdfPending) {
       void closePdfDocument(pdfPending.doc);
     }
     setPdfPending(null);
   }, [pdfPending]);
-  React12.useEffect(() => {
+  React10.useEffect(() => {
     if (readOnly) return;
     const root = document.querySelector(".excalidraw");
     if (!root) return;
@@ -11617,7 +11886,7 @@ function Whiteboard({
     };
   }, [readOnly, handlePdfPick, api]);
   return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: `relative h-full w-full${isDarkTheme ? " theme--dark" : ""}`, children: [
-    /* @__PURE__ */ jsxRuntime.jsx(React12.Suspense, { fallback: /* @__PURE__ */ jsxRuntime.jsx(ExcalidrawLoadingFallback, {}), children: /* @__PURE__ */ jsxRuntime.jsx(
+    /* @__PURE__ */ jsxRuntime.jsx(React10.Suspense, { fallback: /* @__PURE__ */ jsxRuntime.jsx(ExcalidrawLoadingFallback, {}), children: /* @__PURE__ */ jsxRuntime.jsx(
       Excalidraw2,
       {
         excalidrawAPI: (a) => {

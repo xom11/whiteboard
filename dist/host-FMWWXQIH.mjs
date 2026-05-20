@@ -1,6 +1,6 @@
 "use client";
 import { VIEW3D_ATTRS, DEFAULT_VIEW3D, GROUND_PLANE_RANGE, GROUND_PLANE_ATTRS, paletteFor, JxgRenderer3D, serializeBoard3D, renderGeometry3DSvgFromState, isGeometry3DCustomData, parseSerializedBoard3D } from './chunk-7WYGTUBK.mjs';
-import { useActionRecorder, RecorderPanelDev, useChordShortcut, MobileToolDrawer, ObjectListPanel } from './chunk-S3P5PCJ4.mjs';
+import { useChordShortcut, MobileToolDrawer, ObjectListPanel } from './chunk-IHC2SIRB.mjs';
 import { nextLabel, createStore, createEmptyState, listObjects } from './chunk-MBJVQIF6.mjs';
 import { useIsMobile } from './chunk-P2AOIF7S.mjs';
 import { insertStampImage } from './chunk-C6SCVOMC.mjs';
@@ -1442,6 +1442,188 @@ var MiniBoard3D = React2.forwardRef(
     );
   }
 );
+
+// src/stamps/geometry-3d/editor/preview3d.ts
+var PREVIEW_STYLE = {
+  strokeColor: "#3b82f6",
+  strokeWidth: 1.5,
+  strokeOpacity: 0.7,
+  dash: 2,
+  fixed: true,
+  highlight: false,
+  withLabel: false
+};
+var Preview3DManager = class {
+  constructor(view, store) {
+    this.phantom = null;
+    this.pickPts = [];
+    this.shapes = [];
+    this.disposed = false;
+    this.view = view;
+    this.store = store;
+  }
+  clear() {
+    const v = this.view;
+    for (const s of this.shapes) {
+      try {
+        v.removeObject?.(s);
+      } catch {
+      }
+    }
+    this.shapes = [];
+    for (const p of this.pickPts) {
+      try {
+        v.removeObject?.(p);
+      } catch {
+      }
+    }
+    this.pickPts = [];
+    if (this.phantom) {
+      try {
+        v.removeObject?.(this.phantom);
+      } catch {
+      }
+      this.phantom = null;
+    }
+  }
+  dispose() {
+    if (this.disposed) return;
+    this.clear();
+    this.disposed = true;
+  }
+  /**
+   * Rebuild the preview from scratch using the controller's current `tool` +
+   * `collected` args + the live `hoverHit` from the most recent pointer move.
+   *
+   * Returns early (and clears) when there's nothing to preview:
+   *  - no tool selected
+   *  - no points collected yet
+   *  - hover is empty / off-surface
+   *  - any collected arg lacks a hit (number steps)
+   */
+  update(tool, collected, hoverHit) {
+    if (this.disposed) return;
+    this.clear();
+    if (!tool || tool === "move") return;
+    if (collected.length === 0) return;
+    if (hoverHit.kind === "empty") return;
+    const phantomCoords = this.hitToCoords(hoverHit);
+    if (!phantomCoords) return;
+    const pickCoords = [];
+    for (const c of collected) {
+      if (!c.hit) return;
+      const coords = this.hitToCoords(c.hit);
+      if (!coords) return;
+      pickCoords.push(coords);
+    }
+    try {
+      this.phantom = this.view.create("point3d", phantomCoords, {
+        visible: false,
+        fixed: true,
+        withLabel: false,
+        name: ""
+      });
+    } catch {
+      return;
+    }
+    for (const coords of pickCoords) {
+      try {
+        const p = this.view.create("point3d", coords, {
+          visible: false,
+          fixed: true,
+          withLabel: false,
+          name: ""
+        });
+        this.pickPts.push(p);
+      } catch {
+        return;
+      }
+    }
+    this.buildShape(tool);
+  }
+  buildShape(tool) {
+    const phantom = this.phantom;
+    const picks = this.pickPts;
+    if (!phantom || picks.length === 0) return;
+    const last = picks[picks.length - 1];
+    try {
+      switch (tool) {
+        case "segment":
+          this.shapes.push(this.makeLine3d(picks[0], phantom, false, false));
+          return;
+        case "line":
+          this.shapes.push(this.makeLine3d(picks[0], phantom, true, true));
+          return;
+        case "ray":
+          this.shapes.push(this.makeLine3d(picks[0], phantom, false, true));
+          return;
+        case "vector":
+          this.shapes.push(this.view.create("line3d", [picks[0], phantom], {
+            ...PREVIEW_STYLE,
+            straightFirst: false,
+            straightLast: false,
+            lastArrow: { type: 1 }
+          }));
+          return;
+        case "polygon":
+        case "pyramid":
+        case "prism": {
+          for (let i = 0; i < picks.length - 1; i += 1) {
+            this.shapes.push(this.makeLine3d(picks[i], picks[i + 1], false, false));
+          }
+          this.shapes.push(this.makeLine3d(last, phantom, false, false));
+          if (picks.length >= 2) {
+            this.shapes.push(this.makeLine3d(picks[0], phantom, false, false));
+          }
+          return;
+        }
+        case "plane": {
+          if (picks.length === 1) {
+            this.shapes.push(this.makeLine3d(picks[0], phantom, false, false));
+          } else if (picks.length === 2) {
+            this.shapes.push(this.makeLine3d(picks[0], picks[1], false, false));
+            this.shapes.push(this.makeLine3d(picks[1], phantom, false, false));
+            this.shapes.push(this.makeLine3d(picks[0], phantom, false, false));
+          }
+          return;
+        }
+        case "sphere": {
+          this.shapes.push(this.view.create("sphere3d", [picks[0], phantom], {
+            ...PREVIEW_STYLE,
+            fillColor: "none",
+            fillOpacity: 0
+          }));
+          return;
+        }
+        case "tetrahedron":
+        case "cube":
+        case "cylinder":
+        case "cone":
+          this.shapes.push(this.makeLine3d(picks[0], phantom, false, false));
+          return;
+        default:
+          return;
+      }
+    } catch {
+    }
+  }
+  makeLine3d(a, b, straightFirst, straightLast) {
+    return this.view.create("line3d", [a, b], {
+      ...PREVIEW_STYLE,
+      straightFirst,
+      straightLast
+    });
+  }
+  hitToCoords(hit) {
+    if (hit.kind === "existingPoint") {
+      const obj = this.store.getState().objects[hit.pointId];
+      if (!obj || obj.kind !== "point3d") return null;
+      return constraintToWorld(obj.attrs.constraint, this.store.getState());
+    }
+    if ("world" in hit) return hit.world;
+    return null;
+  }
+};
 function StatusHint(props) {
   const { hint, hoverLabel } = props;
   return /* @__PURE__ */ jsxs(
@@ -1478,11 +1660,12 @@ var EditorPanel = React2.forwardRef(
     const isDark = isDarkProp ?? false;
     const controllerRef = React2.useRef(null);
     if (!controllerRef.current) controllerRef.current = new ToolController(store);
-    const recorder = useActionRecorder(store);
     const [hint, setHint] = React2.useState("Ch\u1ECDn c\xF4ng c\u1EE5 trong b\u1EA3ng b\xEAn tr\xE1i");
     const [hoverLabel, setHoverLabel] = React2.useState(null);
     const boardRef = React2.useRef(null);
     const rendererRef = React2.useRef(null);
+    const previewRef = React2.useRef(null);
+    const lastHoverHitRef = React2.useRef({ kind: "empty" });
     const onSelectedToolChangeRef = React2.useRef(onSelectedToolChange);
     onSelectedToolChangeRef.current = onSelectedToolChange;
     const onHistoryChangeRef = React2.useRef(onHistoryChange);
@@ -1543,7 +1726,18 @@ var EditorPanel = React2.forwardRef(
       return () => {
         rendererRef.current?.dispose();
         rendererRef.current = null;
+        previewRef.current?.dispose();
+        previewRef.current = null;
       };
+    }, []);
+    React2.useEffect(() => {
+      const controller = controllerRef.current;
+      if (!controller) return;
+      return controller.on((state) => {
+        if (!previewRef.current) return;
+        if (state.collected.length === 0) previewRef.current.clear();
+        else previewRef.current.update(state.tool?.key ?? null, state.collected, lastHoverHitRef.current);
+      });
     }, []);
     React2.useEffect(() => {
       const view = boardRef.current?.getView3D();
@@ -1565,6 +1759,7 @@ var EditorPanel = React2.forwardRef(
     }, [showAxis, showGrid]);
     const handleView3DReady = React2.useCallback((view) => {
       rendererRef.current = new JxgRenderer3D(store, view);
+      previewRef.current = new Preview3DManager(view, store);
       const savedView = initialState?.view;
       if (savedView) {
         try {
@@ -1600,6 +1795,12 @@ var EditorPanel = React2.forwardRef(
       } catch {
         setHoverLabel(null);
         return;
+      }
+      lastHoverHitRef.current = hit;
+      const ctrl = controllerRef.current;
+      if (previewRef.current && ctrl) {
+        const cs = ctrl.getState();
+        previewRef.current.update(cs.tool?.key ?? null, cs.collected, hit);
       }
       if (hit.kind === "empty") setHoverLabel(null);
       else if (hit.kind === "existingPoint") {
@@ -1770,14 +1971,17 @@ var EditorPanel = React2.forwardRef(
               onView3DReady: handleView3DReady,
               onPointerClick: handleClick,
               onPointerMove: handleMove,
-              onPointerLeave: () => setHoverLabel(null),
+              onPointerLeave: () => {
+                setHoverLabel(null);
+                lastHoverHitRef.current = { kind: "empty" };
+                previewRef.current?.clear();
+              },
               shouldStartPointDrag,
               onPointerDrag,
               onPointerDragEnd
             }
           ) }),
-          /* @__PURE__ */ jsx(StatusHint, { hint, hoverLabel }),
-          /* @__PURE__ */ jsx(RecorderPanelDev, { recorder })
+          /* @__PURE__ */ jsx(StatusHint, { hint, hoverLabel })
         ]
       }
     );
@@ -2668,5 +2872,5 @@ var Geometry3DStampHost = forwardRef(
 );
 
 export { Geometry3DStampHost };
-//# sourceMappingURL=host-VGHPK4T3.mjs.map
-//# sourceMappingURL=host-VGHPK4T3.mjs.map
+//# sourceMappingURL=host-FMWWXQIH.mjs.map
+//# sourceMappingURL=host-FMWWXQIH.mjs.map

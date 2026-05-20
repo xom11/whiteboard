@@ -1,6 +1,6 @@
 "use client";
 import { listObjects, getKind } from './chunk-MBJVQIF6.mjs';
-import * as React3 from 'react';
+import * as React2 from 'react';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { jsxs, Fragment, jsx } from 'react/jsx-runtime';
 
@@ -237,7 +237,7 @@ function getKindUiMeta(kind) {
 }
 function ObjectRowMenu(props) {
   const { onRename, onChangeColor, onDelete } = props;
-  const [open, setOpen] = React3.useState(false);
+  const [open, setOpen] = React2.useState(false);
   return /* @__PURE__ */ jsxs("div", { className: "relative inline-block", children: [
     /* @__PURE__ */ jsx(
       "button",
@@ -350,11 +350,11 @@ function ObjectRow(props) {
 }
 function ObjectListPanel(props) {
   const { store, selectedId, onSelect } = props;
-  const subscribe = React3.useCallback(
+  const subscribe = React2.useCallback(
     (cb) => store.subscribe(() => cb()),
     [store]
   );
-  const state = React3.useSyncExternalStore(subscribe, store.getState, store.getState);
+  const state = React2.useSyncExternalStore(subscribe, store.getState, store.getState);
   const objects = listObjects(state);
   function handleSelect(id) {
     onSelect?.(id);
@@ -397,131 +397,7 @@ function ObjectListPanel(props) {
     }
   );
 }
-function useActionRecorder(store) {
-  const [history, setHistory] = React3.useState([]);
-  const isRecordingRef = React3.useRef(true);
-  const isReplayingRef = React3.useRef(false);
-  const [isRecording, setIsRecording] = React3.useState(true);
-  const [isReplaying, setIsReplaying] = React3.useState(false);
-  React3.useEffect(() => {
-    const unsub = store.subscribe((_next, _prev, action) => {
-      if (!isRecordingRef.current) return;
-      if (isReplayingRef.current) return;
-      setHistory((h) => [...h, { action, at: Date.now() }]);
-    });
-    return unsub;
-  }, [store]);
-  const record = React3.useCallback(() => {
-    isRecordingRef.current = true;
-    setIsRecording(true);
-  }, []);
-  const stop = React3.useCallback(() => {
-    isRecordingRef.current = false;
-    setIsRecording(false);
-  }, []);
-  const clear = React3.useCallback(() => {
-    setHistory([]);
-  }, []);
-  const replay = React3.useCallback(async (delayMs = 0) => {
-    if (history.length === 0) return;
-    isReplayingRef.current = true;
-    setIsReplaying(true);
-    try {
-      store.dispatch({ type: "RESET" });
-      for (const { action } of history) {
-        if (delayMs > 0) await new Promise((r) => setTimeout(r, delayMs));
-        store.dispatch(action);
-      }
-    } finally {
-      isReplayingRef.current = false;
-      setIsReplaying(false);
-    }
-  }, [history, store]);
-  return { history, isRecording, isReplaying, record, stop, clear, replay };
-}
-function RecorderPanel(props) {
-  const { recorder, defaultOpen = false } = props;
-  const [open, setOpen] = React3.useState(defaultOpen);
-  return /* @__PURE__ */ jsxs("div", { className: "fixed bottom-3 right-3 z-50 rounded-md border border-zinc-300 bg-white shadow-lg text-xs dark:border-zinc-700 dark:bg-zinc-900", children: [
-    /* @__PURE__ */ jsxs(
-      "button",
-      {
-        type: "button",
-        "aria-label": "Toggle recorder",
-        onClick: () => setOpen((v) => !v),
-        className: "flex items-center gap-2 px-3 py-1.5 font-semibold",
-        children: [
-          /* @__PURE__ */ jsx("span", { children: "\u{1F3AC} Recorder" }),
-          /* @__PURE__ */ jsx(
-            "span",
-            {
-              "data-testid": "recorder-count",
-              className: "rounded bg-zinc-100 px-1.5 py-0.5 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200",
-              children: recorder.history.length
-            }
-          )
-        ]
-      }
-    ),
-    open ? /* @__PURE__ */ jsxs("div", { "data-testid": "recorder-body", className: "border-t border-zinc-200 px-3 py-2 dark:border-zinc-800", children: [
-      /* @__PURE__ */ jsxs("div", { className: "mb-2 flex gap-1", children: [
-        recorder.isRecording ? /* @__PURE__ */ jsx(
-          "button",
-          {
-            type: "button",
-            "aria-label": "Stop recording",
-            onClick: recorder.stop,
-            className: "rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700",
-            children: "\u23F8 Stop"
-          }
-        ) : /* @__PURE__ */ jsx(
-          "button",
-          {
-            type: "button",
-            "aria-label": "Start recording",
-            onClick: recorder.record,
-            className: "rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700",
-            children: "\u23FA Record"
-          }
-        ),
-        /* @__PURE__ */ jsx(
-          "button",
-          {
-            type: "button",
-            "aria-label": "Replay",
-            disabled: recorder.isReplaying || recorder.history.length === 0,
-            onClick: () => {
-              void recorder.replay(100);
-            },
-            className: "rounded border border-zinc-300 px-2 py-1 disabled:opacity-50 dark:border-zinc-700",
-            children: "\u25B6 Replay"
-          }
-        ),
-        /* @__PURE__ */ jsx(
-          "button",
-          {
-            type: "button",
-            "aria-label": "Clear history",
-            onClick: recorder.clear,
-            className: "rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700",
-            children: "\u{1F5D1}"
-          }
-        )
-      ] }),
-      /* @__PURE__ */ jsx("ul", { className: "max-h-40 overflow-y-auto font-mono text-[10px]", children: recorder.history.map((r, i) => /* @__PURE__ */ jsxs("li", { className: "border-b border-zinc-100 py-0.5 dark:border-zinc-800", children: [
-        r.action.type,
-        "payload" in r.action && r.action.payload?.id ? ` #${r.action.payload.id}` : ""
-      ] }, i)) })
-    ] }) : null
-  ] });
-}
-function RecorderPanelDev(props) {
-  const { force, ...rest } = props;
-  const isDev = force || process.env.NODE_ENV === "development";
-  if (!isDev) return null;
-  return /* @__PURE__ */ jsx(RecorderPanel, { ...rest });
-}
 
-export { MobileToolDrawer, ObjectListPanel, RecorderPanelDev, useActionRecorder, useChordShortcut };
-//# sourceMappingURL=chunk-S3P5PCJ4.mjs.map
-//# sourceMappingURL=chunk-S3P5PCJ4.mjs.map
+export { MobileToolDrawer, ObjectListPanel, useChordShortcut };
+//# sourceMappingURL=chunk-IHC2SIRB.mjs.map
+//# sourceMappingURL=chunk-IHC2SIRB.mjs.map

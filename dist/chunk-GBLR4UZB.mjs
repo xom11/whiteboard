@@ -4,7 +4,7 @@ import { lazy } from 'react';
 import { jsxs, jsx } from 'react/jsx-runtime';
 
 var Geometry3DStampHost = lazy(
-  () => import('./host-VGHPK4T3.mjs').then((m) => ({ default: m.Geometry3DStampHost }))
+  () => import('./host-FMWWXQIH.mjs').then((m) => ({ default: m.Geometry3DStampHost }))
 );
 var Geometry3DIcon = /* @__PURE__ */ jsxs(
   "svg",
@@ -58,5 +58,5 @@ var geometry3dStamp = {
 };
 
 export { geometry3dStamp };
-//# sourceMappingURL=chunk-UWIRXF7H.mjs.map
-//# sourceMappingURL=chunk-UWIRXF7H.mjs.map
+//# sourceMappingURL=chunk-GBLR4UZB.mjs.map
+//# sourceMappingURL=chunk-GBLR4UZB.mjs.map
