@@ -263,26 +263,77 @@ export const MiniBoard = React.forwardRef<MiniBoardHandle, MiniBoardProps>(
 );
 
 // ─── Hit-test helpers ──────────────────────────────────────────────────────────
-// Placeholders — replaced with real impl in Task G.3.7 after JxgRenderer exposes
-// getElement / listElements in Task G.3.6.
 
+/**
+ * Find the id of the nearest function2d object within vertical tolerance `tolY`
+ * (in world/user-space units — default 0.5 units; may need tuning for zoom levels).
+ *
+ * Iterates over function2d objects in state.order and evaluates el.Y(x) on the
+ * JSXGraph functiongraph element via JxgRenderer.getElement(id).
+ */
 function findNearestFunction(
   _board: JxgObj,
-  _store: Store,
-  _renderer: JxgRenderer | null,
-  _x: number,
-  _y: number,
+  store: Store,
+  renderer: JxgRenderer | null,
+  x: number,
+  y: number,
+  tolY = 0.5,
 ): string | null {
-  // Implementation in Task G.3.7 (after JxgRenderer.getElement added in G.3.6)
-  return null;
+  if (!renderer) return null;
+  const state = store.getState();
+  let bestId: string | null = null;
+  let bestDist = Infinity;
+  for (const id of state.order) {
+    const obj = state.objects[id];
+    if (obj.kind !== 'function2d') continue;
+    const el = renderer.getElement(id) as { Y?: (x: number) => number } | null;
+    if (!el || typeof el.Y !== 'function') continue;
+    let fy: number;
+    try {
+      fy = el.Y(x);
+    } catch {
+      continue;
+    }
+    if (!Number.isFinite(fy)) continue;
+    const d = Math.abs(y - fy);
+    if (d < tolY && d < bestDist) {
+      bestDist = d;
+      bestId = id;
+    }
+  }
+  return bestId;
 }
 
+/**
+ * Find the id of any rendered object at (x, y) by delegating to JSXGraph hasPoint.
+ * Creates a temporary invisible point at (x, y) in screen coords to call hasPoint.
+ */
 function findHitObject(
-  _board: JxgObj,
-  _renderer: JxgRenderer | null,
-  _x: number,
-  _y: number,
+  board: JxgObj,
+  renderer: JxgRenderer | null,
+  x: number,
+  y: number,
 ): string | null {
-  // Implementation in Task G.3.7
-  return null;
+  if (!renderer || !board) return null;
+  // Create a temporary invisible probe point at user coords
+  let screen: JxgObj | null = null;
+  try {
+    screen = board.create('point', [x, y], { visible: false, withLabel: false, name: '' });
+  } catch {
+    return null;
+  }
+  let result: string | null = null;
+  try {
+    for (const [id, el] of renderer.listElements().entries()) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const e = el as any;
+      if (e?.hasPoint?.(screen.X(), screen.Y())) {
+        result = id;
+        break;
+      }
+    }
+  } finally {
+    try { board.removeObject(screen); } catch { /* ignore */ }
+  }
+  return result;
 }
