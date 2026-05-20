@@ -48,6 +48,8 @@ export interface EditorPanelHandle {
   undo: () => void;
   /** Trigger a redo on the store's history stack. */
   redo: () => void;
+  /** Highlight an object in the scene by id (null = clear). */
+  highlight: (id: string | null) => void;
 }
 
 export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>(
@@ -409,6 +411,7 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
         setTool: (k) => controllerRef.current!.selectTool(k),
         undo: () => store.undo(),
         redo: () => store.redo(),
+        highlight: (id) => rendererRef.current?.highlight(id),
       }),
       [store],
     );

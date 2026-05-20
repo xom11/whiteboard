@@ -58,10 +58,16 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
     const [canUndo, setCanUndo] = useState<boolean>(false);
     const [canRedo, setCanRedo] = useState<boolean>(false);
     const [hasContent, setHasContent] = useState<boolean>(false);
+    const [selectedObjectId, setSelectedObjectId] = useState<string | undefined>(undefined);
 
     const handleHistoryChange = useCallback((u: boolean, r: boolean) => {
       setCanUndo(u);
       setCanRedo(r);
+    }, []);
+
+    const handleObjectSelect = useCallback((id: string) => {
+      setSelectedObjectId(id);
+      editorRef.current?.highlight(id);
     }, []);
 
     useEffect(() => {
@@ -185,6 +191,8 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
             onClose={onClose}
             isDark={isDark}
             chordGroup={chordGroup}
+            selectedObjectId={selectedObjectId}
+            onObjectSelect={handleObjectSelect}
           />
         )}
         <div
@@ -302,6 +310,8 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
             drawerOpen={drawerOpen}
             onDrawerClose={() => setDrawerOpen(false)}
             chordGroup={chordGroup}
+            selectedObjectId={selectedObjectId}
+            onObjectSelect={handleObjectSelect}
           />
         )}
       </>

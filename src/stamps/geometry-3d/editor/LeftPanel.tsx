@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { createPortal } from 'react-dom';
 import { ToolPalette } from './toolPanel/ToolPalette';
-import { AlgebraList } from './algebraPanel/AlgebraList';
+import { ObjectListPanel } from '../../../core/scene/ui/ObjectListPanel';
 import { ToolIcons } from './toolPanel/icons';
 import {
   GROUP_LABELS,
@@ -40,6 +40,10 @@ export interface LeftPanelProps {
   drawerOpen?: boolean;
   onDrawerClose?: () => void;
   chordGroup?: Geom3DGroup | null;
+  /** Currently selected object id (for ObjectListPanel row highlight). */
+  selectedObjectId?: string;
+  /** Called when user clicks a row in ObjectListPanel. */
+  onObjectSelect?: (id: string) => void;
 }
 
 const Geom3DIconHeader = (
@@ -195,6 +199,8 @@ function DesktopPanel(props: LeftPanelProps) {
     onClose,
     isDark,
     chordGroup,
+    selectedObjectId,
+    onObjectSelect,
   } = props;
   const [tab, setTab] = React.useState<Tab>('tools');
   const { hover, portalReady, showHover, hideHover } = useToolHoverTooltip();
@@ -283,7 +289,11 @@ function DesktopPanel(props: LeftPanelProps) {
           </>
         ) : (
           <section data-testid="algebra-panel">
-            <AlgebraList store={store} />
+            <ObjectListPanel
+              store={store}
+              selectedId={selectedObjectId}
+              onSelect={onObjectSelect}
+            />
           </section>
         )}
       </Shell>
