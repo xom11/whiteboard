@@ -100,6 +100,11 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
       h.onTransformParam((info) => setTransformPopover(info));
     }, [emitState]);
 
+    const dismissPropsPopover = useCallback(() => {
+      setPropsPopover(null);
+      onSelectionChangeRef.current?.(undefined);
+    }, []);
+
     // Build serialized state (format v2) — async vì SVG render offscreen
     // với light palette để Excalidraw filter tự đảo khi dark mode.
     const performInsert = useCallback((): boolean => {
@@ -254,10 +259,10 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
               currentFace={propsPopover.face}
               currentShowLabel={propsPopover.showLabel}
               getAllNames={() => handleRef.current?.getAllPointNames() ?? []}
-              onClose={() => setPropsPopover(null)}
+              onClose={dismissPropsPopover}
               onMutate={(patch) => {
                 handleRef.current?.mutateObject(propsPopover.id, patch);
-                if (patch.remove) setPropsPopover(null);
+                if (patch.remove) dismissPropsPopover();
                 // Refresh snapshot để UI checkbox phản ánh state mới
                 if (typeof patch.valueLabel === 'boolean' || patch.attrs) {
                   setPropsPopover((cur) => cur ? { ...cur, showValue: patch.valueLabel ?? cur.showValue } : cur);
@@ -276,10 +281,10 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
               currentShowLabel={propsPopover.showLabel}
               currentShowValue={propsPopover.showValue}
               getAllNames={() => handleRef.current?.getAllPointNames() ?? []}
-              onClose={() => setPropsPopover(null)}
+              onClose={dismissPropsPopover}
               onMutate={(patch) => {
                 handleRef.current?.mutateObject(propsPopover.id, patch);
-                if (patch.remove) setPropsPopover(null);
+                if (patch.remove) dismissPropsPopover();
                 if (typeof patch.valueLabel === 'boolean') {
                   setPropsPopover((cur) => cur ? { ...cur, showValue: patch.valueLabel ?? cur.showValue } : cur);
                 }
