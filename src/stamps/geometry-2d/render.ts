@@ -1,7 +1,9 @@
 import { renderGeometryToSvg } from './renderInline';
-import { deserializeIntoBoard, type SerializedBoard } from './serialize';
+import { deserializeBoard } from './serialize';
 import { paletteFor } from './editor/theme';
 import { safeJsx } from '../shared/safeJsx';
+import { createStore } from '../../core/scene';
+import { JxgRenderer } from '../../core/scene/render/JxgRenderer';
 
 /**
  * Re-render geometry SVG từ jsonState đã serialize. Dùng cho:
@@ -59,7 +61,7 @@ export function containerDimsForBbox(bbox: [number, number, number, number]): { 
 }
 
 export async function renderGeometrySvgFromState(jsonState: string): Promise<string> {
-  const parsed = JSON.parse(jsonState) as SerializedBoard;
+  const parsed = deserializeBoard(JSON.parse(jsonState));
   // Stamps inserted vào Excalidraw canvas → luôn dùng light palette.
   // Excalidraw's THEME_FILTER tự đảo nét trong dark mode.
   const palette = paletteFor(false);
@@ -90,6 +92,7 @@ export async function renderGeometrySvgFromState(jsonState: string): Promise<str
   container.style.cssText = `position:absolute;top:-99999px;left:-99999px;width:${width}px;height:${height}px;visibility:hidden;pointer-events:none;`;
   document.body.appendChild(container);
   let board: unknown = null;
+  let renderer: JxgRenderer | null = null;
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     board = (JXG as any).JSXGraph.initBoard(containerId, {
@@ -100,12 +103,17 @@ export async function renderGeometrySvgFromState(jsonState: string): Promise<str
       showNavigation: false,
       keepAspectRatio: true,
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    deserializeIntoBoard(board as any, parsed, { palette });
+    const store = createStore(parsed.state);
+    renderer = new JxgRenderer(store, board);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (board as any).update();
     return renderGeometryToSvg(container);
   } finally {
+    try {
+      renderer?.dispose();
+    } catch {
+      /* ignore */
+    }
     safeJsx('render.freeBoard', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (board) (JXG as any).JSXGraph.freeBoard(board);
