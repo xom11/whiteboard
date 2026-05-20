@@ -30,9 +30,56 @@ const def: KindDef<Point3DAttrs> = {
     return obj.label;
   },
   render: (obj, ctx: RenderCtx) => {
-    // Render thực được implement ở JxgRenderer3D (task 1.3.2).
-    // Helper này chỉ cần giữ signature; renderer gọi nó với jxg = view3d.
-    return null;
+    const view = ctx.jxg as any;
+    const c = obj.attrs.constraint;
+    const opts = {
+      name: obj.label,
+      visible: obj.visible,
+      fixed: obj.locked,
+      strokeColor: obj.attrs.color ?? '#1e40af',
+      fillColor: obj.attrs.color ?? '#1e40af',
+      size: 4,
+    };
+    if (c.kind === 'free') {
+      return view.create('point3d', [c.x, c.y, c.z], opts);
+    } else if (c.kind === 'onGround') {
+      return view.create('point3d', [c.x, c.y, 0], opts);
+    } else if (c.kind === 'onAxis') {
+      const coords =
+        c.axis === 'x' ? [c.t, 0, 0] :
+        c.axis === 'y' ? [0, c.t, 0] :
+                         [0, 0, c.t];
+      return view.create('point3d', coords, opts);
+    } else if (c.kind === 'onPlane') {
+      const plane = ctx.resolveRef(c.planeId) as any;
+      return view.create('point3d', [
+        () => plane.F(c.u, c.v)[0],
+        () => plane.F(c.u, c.v)[1],
+        () => plane.F(c.u, c.v)[2],
+      ], opts);
+    } else if (c.kind === 'onLine') {
+      const line = ctx.resolveRef(c.lineId) as any;
+      return view.create('point3d', [
+        () => line.F(c.t)[0],
+        () => line.F(c.t)[1],
+        () => line.F(c.t)[2],
+      ], opts);
+    } else if (c.kind === 'onPolygon') {
+      const poly = ctx.resolveRef(c.polygonId) as any;
+      return view.create('point3d', [
+        () => poly.F(c.u, c.v)[0],
+        () => poly.F(c.u, c.v)[1],
+        () => poly.F(c.u, c.v)[2],
+      ], opts);
+    } else if (c.kind === 'onSphere') {
+      const sph = ctx.resolveRef(c.sphereId) as any;
+      return view.create('point3d', [
+        () => sph.F(c.theta, c.phi)[0],
+        () => sph.F(c.theta, c.phi)[1],
+        () => sph.F(c.theta, c.phi)[2],
+      ], opts);
+    }
+    return view.create('point3d', [0, 0, 0], opts);
   },
 };
 

@@ -11,5 +11,15 @@ registerKind<Sphere3DAttrs>({
   validate: (a) => { if (!a?.center || !a?.surfacePoint) throw new Error('sphere3d: center/surfacePoint required'); },
   dependsOn: (a) => [a.center, a.surfacePoint],
   describe: (obj) => `Mặt cầu ${obj.label} tâm ${obj.attrs.center}`,
-  render: () => null,
+  render: (obj, ctx) => {
+    const view = ctx.jxg as any;
+    return view.create('sphere3d', [
+      ctx.resolveRef(obj.attrs.center),
+      ctx.resolveRef(obj.attrs.surfacePoint),
+    ], {
+      fillOpacity: 0.25,
+      fillColor: obj.attrs.color ?? '#60a5fa',
+      visible: obj.visible,
+    });
+  },
 });

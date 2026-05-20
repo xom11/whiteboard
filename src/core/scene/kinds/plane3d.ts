@@ -11,5 +11,17 @@ registerKind<Plane3DAttrs>({
   validate: (a) => { if (!a?.p1 || !a?.p2 || !a?.p3) throw new Error('plane3d: cần 3 điểm'); },
   dependsOn: (a) => [a.p1, a.p2, a.p3],
   describe: (obj) => `Mặt ${obj.label} qua ${obj.attrs.p1}, ${obj.attrs.p2}, ${obj.attrs.p3}`,
-  render: () => null,
+  render: (obj, ctx) => {
+    const view = ctx.jxg as any;
+    return view.create('plane3d', [
+      ctx.resolveRef(obj.attrs.p1),
+      ctx.resolveRef(obj.attrs.p2),
+      ctx.resolveRef(obj.attrs.p3),
+    ], {
+      fillOpacity: 0.15,
+      fillColor: obj.attrs.color ?? '#60a5fa',
+      strokeColor: obj.attrs.color ?? '#60a5fa',
+      visible: obj.visible,
+    });
+  },
 });

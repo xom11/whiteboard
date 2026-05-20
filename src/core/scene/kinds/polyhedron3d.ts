@@ -28,5 +28,19 @@ registerKind<Polyhedron3DAttrs>({
   },
   dependsOn: (a) => [...a.vertices],
   describe: (obj) => `Khối ${FLAVOR_LABEL[obj.attrs.flavor]} ${obj.label}`,
-  render: () => null,
+  render: (obj, ctx) => {
+    const view = ctx.jxg as any;
+    const verts = obj.attrs.vertices.map(id => ctx.resolveRef(id));
+    const faces = obj.attrs.faces.map((faceIndices, fi) =>
+      view.create('polygon3d', [faceIndices.map(i => verts[i])], {
+        id: `${obj.id}.face${faceIndices.join('-')}.${fi}`,
+        fillOpacity: 0.25,
+        fillColor: obj.attrs.color ?? '#fbbf24',
+        strokeColor: '#0066cc',
+        strokeWidth: 1.5,
+        visible: obj.visible,
+      })
+    );
+    return { faces };
+  },
 });

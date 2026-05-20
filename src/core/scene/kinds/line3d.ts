@@ -11,5 +11,16 @@ registerKind<Line3DAttrs>({
   validate: (a) => { if (!a?.p1 || !a?.p2) throw new Error('line3d: p1/p2 required'); },
   dependsOn: (a) => [a.p1, a.p2],
   describe: (obj) => `Đường ${obj.label} qua ${obj.attrs.p1}, ${obj.attrs.p2}`,
-  render: () => null,
+  render: (obj, ctx) => {
+    const view = ctx.jxg as any;
+    const pA = ctx.resolveRef(obj.attrs.p1);
+    const pB = ctx.resolveRef(obj.attrs.p2);
+    return view.create('line3d', [pA, pB], {
+      straightFirst: true,
+      straightLast: true,
+      strokeColor: obj.attrs.color ?? '#0f172a',
+      strokeWidth: 2,
+      visible: obj.visible,
+    });
+  },
 });
