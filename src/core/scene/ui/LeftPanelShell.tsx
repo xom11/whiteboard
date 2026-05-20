@@ -92,6 +92,7 @@ export function TabPill(props: {
   return (
     <button
       type="button"
+      role="tab"
       aria-selected={active}
       onClick={onClick}
       data-testid={testId}

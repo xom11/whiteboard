@@ -90,7 +90,7 @@ describe('LeftPanelShell', () => {
 describe('TabPill', () => {
   test('renders with aria-selected mirroring active', () => {
     render(<TabPill active={true} onClick={() => {}}>x</TabPill>);
-    expect(screen.getByRole('button')).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab')).toHaveAttribute('aria-selected', 'true');
   });
 });
 
