@@ -1,127 +1,54 @@
-// JSXGraph không có built-in getJSON. Component giữ MỘT LOG riêng của các create() call
-// do user trigger, pass log đó vào serializeBoard. Replay = gọi board.create() theo thứ tự log.
+// src/stamps/geometry-2d/serialize.ts
 //
-// type === 'transform': args là [refs đến điểm/đường/scalar], attrs là { type: 'translate'|'rotate'|'reflect'|'scale', ... }.
-// Object trả về (kết quả board.create('transform', ...)) được đăng ký vào idMap như mọi element khác
-// để point/line phụ thuộc reference được bằng id ('j5' → JSXGraph transform object).
+// Format v2: { version: 2, bbox, state, showAxis, showGrid }
+// `state` là core/scene `State` (objects/order/counter/meta). Replay = JxgRenderer
+// diff state → JSXGraph board (xem src/core/scene/render/2d/JxgRenderer.ts).
 //
-// Log lưu màu dưới dạng sentinel ('@stroke', '@axis', '@grid', '@label') để
-// theme-neutral. Khi replay, palette resolve thành màu thực theo `isDark` hiện
-// tại (truyền qua options.palette).
-
-import { paletteFor, resolveAttrColors, type GeomPalette } from './editor/theme';
-
-export interface SerializedElement {
-  type: string;
-  args: unknown[];
-  attrs: Record<string, unknown>;
-  id: string;
-}
+// Format v1 cũ (SerializedElement[] creation log) KHÔNG còn back-compat —
+// deserialize trả về empty state, log warning. Decision đã agreed ở Phase 1.
+import type { State } from '../../core/scene';
+import { createEmptyState, migrateState } from '../../core/scene';
 
 export interface SerializedBoard {
+  version: 2;
   bbox: [number, number, number, number];
-  elements: SerializedElement[];
+  state: State;
   showAxis?: boolean;
   showGrid?: boolean;
 }
 
-interface BoardLike {
-  getBoundingBox(): [number, number, number, number];
-  create(type: string, args: unknown[], attrs: Record<string, unknown>): unknown;
-}
-
 export function serializeBoard(
-  board: BoardLike,
-  log: SerializedElement[],
+  bbox: [number, number, number, number],
+  state: State,
   options: { showAxis?: boolean; showGrid?: boolean } = {},
 ): SerializedBoard {
   return {
-    bbox: board.getBoundingBox(),
-    elements: log.map(e => ({ type: e.type, args: e.args, attrs: e.attrs, id: e.id })),
+    version: 2,
+    bbox,
+    state,
     showAxis: !!options.showAxis,
     showGrid: !!options.showGrid,
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function createValueLabel(board: any, target: any): unknown {
-  if (!board || !target) return null;
-  const e = (target.elType ?? target.type ?? '').toString().toLowerCase();
-  if (e === 'segment' || e === 'line' || e === 'arrow') {
-    const p1 = target.point1, p2 = target.point2;
-    if (!p1 || !p2) return null;
-    return board.create('text', [
-      () => (p1.X() + p2.X()) / 2 + 0.15,
-      () => (p1.Y() + p2.Y()) / 2 + 0.25,
-      () => {
-        const len = Math.hypot(p2.X() - p1.X(), p2.Y() - p1.Y());
-        const name = typeof target.name === 'string' && target.name ? target.name : 'd';
-        return `${name} = ${len.toFixed(2)}`;
-      },
-    ], { fontSize: 12, color: '#dc2626', fixed: true, highlight: false });
+export function deserializeBoard(raw: unknown): SerializedBoard {
+  if (raw && typeof raw === 'object' && (raw as { version?: number }).version === 2) {
+    const r = raw as SerializedBoard;
+    return {
+      version: 2,
+      bbox: r.bbox,
+      state: migrateState(r.state),
+      showAxis: !!r.showAxis,
+      showGrid: !!r.showGrid,
+    };
   }
-  if (e === 'circle' || e === 'circumcircle') {
-    const center = target.center ?? target.midpoint ?? target.point1;
-    if (!center) return null;
-    return board.create('text', [
-      () => center.X() + 0.3,
-      () => center.Y() + 0.3,
-      () => {
-        const r = typeof target.Radius === 'function' ? target.Radius() : 0;
-        const name = typeof target.name === 'string' && target.name ? target.name : 'r';
-        return `${name} = ${r.toFixed(2)}`;
-      },
-    ], { fontSize: 12, color: '#dc2626', fixed: true, highlight: false });
-  }
-  return null;
-}
-
-export interface DeserializeOptions {
-  /** Theme-aware palette để resolve sentinel attrs. Mặc định = light. */
-  palette?: GeomPalette;
-}
-
-export function deserializeIntoBoard(
-  board: BoardLike,
-  serialized: SerializedBoard,
-  options: DeserializeOptions = {},
-): void {
-  // Replay: args may contain references to earlier elements by our serialized id ("j0", "j1"…).
-  // We resolve those to actual JSXGraph objects via a local id→object map. Nested
-  // arrays are also resolved recursively — needed for dilate, which logs the
-  // transform parent of a transformed point as ["j2","j3","j4"] (a chain of 3
-  // transforms passed to `board.create('point', [src, [t1,t2,t3]])`).
-  const palette = options.palette ?? paletteFor(false);
-  const idMap = new Map<string, unknown>();
-  // "<polyId>:border:<i>" → polygon.borders[i]. Polygon borders are auto-created
-  // sub-segments of a (regular)polygon that user-driven tools can reference as
-  // line slots (vd. perpendicular từ điểm tới cạnh đa giác).
-  const resolve = (a: unknown): unknown => {
-    if (typeof a === 'string') {
-      if (idMap.has(a)) return idMap.get(a);
-      const m = /^(.+):border:(\d+)$/.exec(a);
-      if (m) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const poly = idMap.get(m[1]) as any;
-        const idx = parseInt(m[2], 10);
-        if (poly && Array.isArray(poly.borders) && poly.borders[idx]) {
-          return poly.borders[idx];
-        }
-      }
-    }
-    if (Array.isArray(a)) return a.map(resolve);
-    return a;
+  // Format không nhận diện được (vd v1 cũ với SerializedElement[]) → wipe.
+  console.warn('[2d/serialize] format không nhận diện hoặc v1 cũ — dùng state rỗng');
+  return {
+    version: 2,
+    bbox: [-5, 5, 5, -5],
+    state: createEmptyState('2d'),
+    showAxis: false,
+    showGrid: false,
   };
-  for (const el of serialized.elements) {
-    const resolvedArgs = el.args.map(resolve);
-    if (el.type === 'valueLabel') {
-      const target = resolvedArgs[0];
-      const txt = createValueLabel(board, target);
-      if (txt) idMap.set(el.id, txt);
-      continue;
-    }
-    const themedAttrs = resolveAttrColors({ ...el.attrs }, palette);
-    const created = board.create(el.type, resolvedArgs, themedAttrs);
-    idMap.set(el.id, created);
-  }
 }
