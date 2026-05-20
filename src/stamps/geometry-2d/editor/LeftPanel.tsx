@@ -5,61 +5,12 @@ import { createPortal } from 'react-dom';
 import { TOOLS, GROUP_LABELS, type GeomTool, type ToolDef } from './MiniBoard';
 import { GROUP_ORDER, letterForGroup, type GeomGroup } from './tools';
 import { MobileToolDrawer, type MobileToolGroup } from '../../shared/MobileToolDrawer';
+import type { Store } from '../../../core/scene/store';
+import { ObjectListPanel } from '../../../core/scene/ui/ObjectListPanel';
+import { LeftPanelShell, Section } from '../../../core/scene/ui/LeftPanelShell';
 
 const TOOLTIP_DELAY_MS = 400;
 type HoverState = { label: string; hint?: string; x: number; y: number } | null;
-
-// ---------- Shared shell (desktop) ----------
-
-interface ShellProps {
-  title: string;
-  icon: React.ReactNode;
-  onClose: () => void;
-  children: React.ReactNode;
-  isDark?: boolean;
-  closeLabel?: string;
-}
-
-function Shell({ title, icon, onClose, children, isDark, closeLabel = 'Đóng' }: ShellProps) {
-  return (
-    <aside
-      role="complementary"
-      aria-label={title}
-      data-testid="stamp-left-panel"
-      data-stamp-area="true"
-      className={[
-        isDark ? 'theme--dark ' : '',
-        'absolute left-0 top-0 z-30 flex h-full w-60 flex-col border-r border-slate-200 bg-white shadow-md animate-in slide-in-from-left duration-200',
-      ].join('')}
-    >
-      <header className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-3 py-2">
-        <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-          <span className="text-base leading-none">{icon}</span>
-          {title}
-        </h3>
-        <button
-          onClick={onClose}
-          aria-label={closeLabel}
-          className="rounded p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
-        >
-          <CloseIcon />
-        </button>
-      </header>
-      <div className="min-h-0 flex-1 overflow-y-auto p-3 space-y-4">{children}</div>
-    </aside>
-  );
-}
-
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <section>
-      <h4 className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-        {label}
-      </h4>
-      {children}
-    </section>
-  );
-}
 
 // ---------- Icons ----------
 
@@ -71,15 +22,6 @@ const GeometryIconHeader = (
     <circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none" />
   </svg>
 );
-
-function CloseIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="6" y1="6" x2="18" y2="18" />
-      <line x1="18" y1="6" x2="6" y2="18" />
-    </svg>
-  );
-}
 
 export function UndoIcon() {
   return (
@@ -142,6 +84,10 @@ interface GeometryLeftPanelProps {
   onDrawerClose?: () => void;
   /** Chord shortcut: group đang được focus (sau khi bấm letter). null = không active. */
   chordGroup?: GeomGroup | null;
+  /** Scene store — bật tab "Đối tượng" khi truyền. */
+  store?: Store;
+  selectedObjectId?: string;
+  onObjectSelect?: (id: string) => void;
 }
 
 // ---------- Tooltip portal (desktop hover) ----------
@@ -179,8 +125,26 @@ function useToolHoverTooltip() {
 
 // ---------- Desktop left panel ----------
 
+const TOOLS_TABS = [
+  { key: 'tools' as const, label: '🧰 Công cụ', testId: 'tab-tools' },
+  { key: 'objects' as const, label: '📐 Đối tượng', testId: 'tab-objects' },
+];
+
 function DesktopGeometryPanel(props: GeometryLeftPanelProps) {
-  const { activeTool, onToolChange, showAxis, showGrid, onShowAxisChange, onShowGridChange, onUndo, canUndo, onRedo, canRedo, onClose, isDark, chordGroup } = props;
+  const {
+    activeTool, onToolChange,
+    showAxis, showGrid, onShowAxisChange, onShowGridChange,
+    onUndo, canUndo, onRedo, canRedo,
+    onClose, isDark, chordGroup,
+    store, selectedObjectId, onObjectSelect,
+  } = props;
+
+  const [tab, setTab] = useState<'tools' | 'objects'>('tools');
+  const hasStore = !!store;
+
+  useEffect(() => {
+    if (!hasStore && tab === 'objects') setTab('tools');
+  }, [hasStore, tab]);
 
   const grouped = useMemo(() => {
     return TOOLS.reduce<Record<string, ToolDef[]>>((acc, t) => {
@@ -201,147 +165,164 @@ function DesktopGeometryPanel(props: GeometryLeftPanelProps) {
 
   return (
     <>
-      <Shell title="Hình học" icon={GeometryIconHeader} onClose={onClose} isDark={isDark}>
-        <Section label="Bố cục">
-          <div className="flex items-center gap-3 text-[11px] text-slate-700">
-            <label className="inline-flex select-none items-center gap-1.5">
-              <input
-                type="checkbox"
-                checked={showAxis}
-                onChange={(e) => onShowAxisChange(e.target.checked)}
-                data-testid="toggle-axis"
-              />
-              Trục toạ độ
-            </label>
-            <label className="inline-flex select-none items-center gap-1.5">
-              <input
-                type="checkbox"
-                checked={showGrid}
-                onChange={(e) => onShowGridChange(e.target.checked)}
-                data-testid="toggle-grid"
-              />
-              Lưới
-            </label>
-            <button
-              type="button"
-              onClick={onUndo}
-              disabled={!canUndo}
-              title="Hoàn tác (Ctrl/Cmd+Z)"
-              aria-label="Hoàn tác"
-              data-testid="undo-btn"
-              className="ml-auto inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
-            >
-              <UndoIcon />
-            </button>
-            <button
-              type="button"
-              onClick={onRedo}
-              disabled={!canRedo}
-              title="Làm lại (Ctrl/Cmd+Shift+Z)"
-              aria-label="Làm lại"
-              data-testid="redo-btn"
-              className="inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
-            >
-              <RedoIcon />
-            </button>
-          </div>
-        </Section>
+      <LeftPanelShell
+        title="Hình học"
+        icon={GeometryIconHeader}
+        onClose={onClose}
+        isDark={isDark}
+        tabs={hasStore ? TOOLS_TABS : undefined}
+        activeTab={hasStore ? tab : undefined}
+        onTabChange={hasStore ? setTab : undefined}
+      >
+        {(!hasStore || tab === 'tools') ? (
+          <>
+            <Section label="Bố cục">
+              <div className="flex items-center gap-3 text-[11px] text-slate-700">
+                <label className="inline-flex select-none items-center gap-1.5">
+                  <input
+                    type="checkbox"
+                    checked={showAxis}
+                    onChange={(e) => onShowAxisChange(e.target.checked)}
+                    data-testid="toggle-axis"
+                  />
+                  Trục toạ độ
+                </label>
+                <label className="inline-flex select-none items-center gap-1.5">
+                  <input
+                    type="checkbox"
+                    checked={showGrid}
+                    onChange={(e) => onShowGridChange(e.target.checked)}
+                    data-testid="toggle-grid"
+                  />
+                  Lưới
+                </label>
+                <button
+                  type="button"
+                  onClick={onUndo}
+                  disabled={!canUndo}
+                  title="Hoàn tác (Ctrl/Cmd+Z)"
+                  aria-label="Hoàn tác"
+                  data-testid="undo-btn"
+                  className="ml-auto inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
+                >
+                  <UndoIcon />
+                </button>
+                <button
+                  type="button"
+                  onClick={onRedo}
+                  disabled={!canRedo}
+                  title="Làm lại (Ctrl/Cmd+Shift+Z)"
+                  aria-label="Làm lại"
+                  data-testid="redo-btn"
+                  className="inline-flex items-center justify-center rounded p-1 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
+                >
+                  <RedoIcon />
+                </button>
+              </div>
+            </Section>
 
-        {groupKeys.map((group) => {
-          const isChordActive = chordGroup === group;
-          const dimmed = chordGroup !== null && !isChordActive;
-          return (
-            <section
-              key={group}
-              data-chord-group={group}
-              data-chord-active={isChordActive ? 'true' : 'false'}
-              className={[
-                'rounded-md transition',
-                isChordActive
-                  ? 'bg-emerald-50 ring-1 ring-emerald-400 p-1'
-                  : 'p-0',
-                dimmed ? 'opacity-55' : 'opacity-100',
-              ].join(' ')}
-            >
-              <h4 className="mb-1.5 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                <span>{GROUP_LABELS[group]}</span>
-                <span
-                  data-testid={`chord-letter-${group}`}
+            {groupKeys.map((group) => {
+              const isChordActive = chordGroup === group;
+              const dimmed = chordGroup !== null && !isChordActive;
+              return (
+                <section
+                  key={group}
+                  data-chord-group={group}
+                  data-chord-active={isChordActive ? 'true' : 'false'}
                   className={[
-                    'font-mono text-[10px] leading-none transition',
+                    'rounded-md transition',
                     isChordActive
-                      ? 'text-emerald-700 font-bold'
-                      : 'text-slate-400',
+                      ? 'bg-emerald-50 ring-1 ring-emerald-400 p-1'
+                      : 'p-0',
+                    dimmed ? 'opacity-55' : 'opacity-100',
                   ].join(' ')}
                 >
-                  {letterForGroup(group)}
-                </span>
-              </h4>
-              <div className="grid grid-cols-4 gap-1">
-                {grouped[group].map((t, i) => {
-                  const active = activeTool === t.key;
-                  return (
-                    <button
-                      key={t.key}
-                      type="button"
-                      aria-label={t.label}
-                      aria-pressed={active}
-                      data-tool={t.key}
-                      onClick={() => onToolChange(t.key)}
-                      onMouseEnter={(e) => showHover(e.currentTarget, t)}
-                      onMouseLeave={hideHover}
-                      onFocus={(e) => showHover(e.currentTarget, t)}
-                      onBlur={hideHover}
+                  <h4 className="mb-1.5 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                    <span>{GROUP_LABELS[group]}</span>
+                    <span
+                      data-testid={`chord-letter-${group}`}
                       className={[
-                        'relative flex h-8 items-center justify-center rounded-md transition',
-                        active
-                          ? 'bg-emerald-600 text-white shadow-sm'
-                          : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900',
+                        'font-mono text-[10px] leading-none transition',
+                        isChordActive
+                          ? 'text-emerald-700 font-bold'
+                          : 'text-slate-400',
                       ].join(' ')}
                     >
-                      {t.icon}
-                      <span
-                        data-testid={`chord-num-${t.key}`}
-                        className={[
-                          'pointer-events-none absolute bottom-0 right-0.5 font-mono text-[9px] leading-none transition',
-                          active
-                            ? 'text-white/70'
-                            : isChordActive
-                              ? 'text-emerald-700 font-bold'
-                              : 'text-slate-400',
-                        ].join(' ')}
-                      >
-                        {i + 1}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-          );
-        })}
+                      {letterForGroup(group)}
+                    </span>
+                  </h4>
+                  <div className="grid grid-cols-4 gap-1">
+                    {grouped[group].map((t, i) => {
+                      const active = activeTool === t.key;
+                      return (
+                        <button
+                          key={t.key}
+                          type="button"
+                          aria-label={t.label}
+                          aria-pressed={active}
+                          data-tool={t.key}
+                          onClick={() => onToolChange(t.key)}
+                          onMouseEnter={(e) => showHover(e.currentTarget, t)}
+                          onMouseLeave={hideHover}
+                          onFocus={(e) => showHover(e.currentTarget, t)}
+                          onBlur={hideHover}
+                          className={[
+                            'relative flex h-8 items-center justify-center rounded-md transition',
+                            active
+                              ? 'bg-emerald-600 text-white shadow-sm'
+                              : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900',
+                          ].join(' ')}
+                        >
+                          {t.icon}
+                          <span
+                            data-testid={`chord-num-${t.key}`}
+                            className={[
+                              'pointer-events-none absolute bottom-0 right-0.5 font-mono text-[9px] leading-none transition',
+                              active
+                                ? 'text-white/70'
+                                : isChordActive
+                                  ? 'text-emerald-700 font-bold'
+                                  : 'text-slate-400',
+                            ].join(' ')}
+                          >
+                            {i + 1}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+              );
+            })}
 
-        {chordGroup && activeGroupTools && (
-          <div
-            data-testid="chord-hint"
-            className="mt-1 rounded border border-emerald-200 bg-emerald-50/60 px-2 py-1 text-[11px] leading-snug text-slate-600"
-          >
-            <span className="font-mono font-semibold text-emerald-700">
-              {letterForGroup(chordGroup)}
-            </span>
-            <span className="mx-1 text-slate-400">→</span>
-            {activeGroupTools.map((t, i) => (
-              <span key={t.key} className="mr-2 inline-block">
+            {chordGroup && activeGroupTools && (
+              <div
+                data-testid="chord-hint"
+                className="mt-1 rounded border border-emerald-200 bg-emerald-50/60 px-2 py-1 text-[11px] leading-snug text-slate-600"
+              >
                 <span className="font-mono font-semibold text-emerald-700">
-                  {i + 1}
+                  {letterForGroup(chordGroup)}
                 </span>
-                <span className="ml-1">{t.label}</span>
-              </span>
-            ))}
-            <span className="text-slate-400">Esc huỷ</span>
-          </div>
+                <span className="mx-1 text-slate-400">→</span>
+                {activeGroupTools.map((t, i) => (
+                  <span key={t.key} className="mr-2 inline-block">
+                    <span className="font-mono font-semibold text-emerald-700">
+                      {i + 1}
+                    </span>
+                    <span className="ml-1">{t.label}</span>
+                  </span>
+                ))}
+                <span className="text-slate-400">Esc huỷ</span>
+              </div>
+            )}
+          </>
+        ) : (
+          <section data-testid="objects-panel">
+            <ObjectListPanel store={store!} selectedId={selectedObjectId} onSelect={onObjectSelect} />
+          </section>
         )}
-      </Shell>
+      </LeftPanelShell>
+
       {portalReady && hover && typeof document !== 'undefined'
         ? createPortal(
             <div
@@ -381,6 +362,9 @@ function MobileGeometryPanel(props: GeometryLeftPanelProps) {
     isDark,
     drawerOpen,
     onDrawerClose,
+    store,
+    selectedObjectId,
+    onObjectSelect,
   } = props;
 
   const groups = useMemo<MobileToolGroup<GeomTool, ToolDef['group']>[]>(() => {
@@ -439,6 +423,16 @@ function MobileGeometryPanel(props: GeometryLeftPanelProps) {
       groups={groups}
       activeTool={activeTool}
       onToolSelect={onToolChange}
+      objectsTab={
+        store
+          ? {
+              label: '📐 Đối tượng',
+              render: () => (
+                <ObjectListPanel store={store} selectedId={selectedObjectId} onSelect={onObjectSelect} />
+              ),
+            }
+          : undefined
+      }
     />
   );
 }

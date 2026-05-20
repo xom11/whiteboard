@@ -31,7 +31,8 @@
 }
 
 /* Left-panel header có gradient sáng — đổi sang slate */
-.theme--dark [data-testid="stamp-left-panel"] > header.bg-gradient-to-r {
+.theme--dark [data-testid="stamp-left-panel"] > header.bg-gradient-to-r,
+.theme--dark [data-testid="left-panel"] > header.bg-gradient-to-r {
   background-image: linear-gradient(to right, rgb(15 23 42), rgb(30 41 59));
 }
 
