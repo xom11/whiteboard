@@ -1,5 +1,25 @@
+// src/stamps/geometry-3d/serialize.ts
+import type { State } from '../../core/scene';
+import { migrateState, createEmptyState } from '../../core/scene';
 import type { BaseStampCustomData } from '../shared/types';
-import type { Constraint } from './editor/scene/types';
+
+/**
+ * View info giữ lại trong format mới để khi re-edit khôi phục được azimuth/
+ * elevation/bbox3D mà user đã thiết lập trong editor. Spec PR 1.4.1 chỉ yêu
+ * cầu `{version, state}`, nhưng nếu drop view thì re-edit sẽ về DEFAULT_VIEW3D
+ * → UX regression. Ta giữ view ở envelope cấp trên, ngoài State.
+ */
+export type SerializedView3D = {
+  azimuth: number;
+  elevation: number;
+  bbox3D: [number, number, number, number, number, number];
+};
+
+export type SerializedBoard3D = {
+  version: 2;
+  state: State;
+  view?: SerializedView3D;
+};
 
 export interface Geometry3DCustomData extends BaseStampCustomData {
   kind: 'geometry3d';
@@ -19,57 +39,34 @@ export function isGeometry3DCustomData(data: unknown): data is Geometry3DCustomD
   );
 }
 
-export type Element3DType =
-  | 'point3d'
-  | 'line3d'
-  | 'plane3d'
-  | 'polygon3d'
-  | 'sphere3d'
-  | 'text3d';
-
-export interface SerializedElement3D {
-  type: Element3DType;
-  /**
-   * Parents passed to JSXGraph view.create. Either literal values (numbers,
-   * strings) or `"@id:<id>"` placeholder strings referencing earlier created
-   * objects in the log (resolved at deserialize time).
-   */
-  parents: unknown[];
-  attributes: Record<string, unknown>;
-  id: string;
-  label?: string;
-  /** v2 only — present on point3d elements to encode the surface constraint. */
-  constraint?: Constraint;
+/** Đóng gói State (+ view tuỳ chọn) thành envelope v2 để lưu jsonState. */
+export function serializeBoard3D(state: State, view?: SerializedView3D): SerializedBoard3D {
+  return view ? { version: 2, state, view } : { version: 2, state };
 }
 
-export interface SerializedBoard3D {
-  version: 1 | 2;
-  bbox: [number, number, number, number];
-  view: {
-    azimuth: number;
-    elevation: number;
-    bbox3D: [number, number, number, number, number, number];
-  };
-  showAxes: boolean;
-  showMesh: boolean;
-  elements: SerializedElement3D[];
+/**
+ * Giải mã envelope v2 thành State. Nếu format không nhận diện (vd v1 cũ), trả
+ * về State rỗng theo spec PR 1.4.1.
+ */
+export function deserializeBoard3D(raw: unknown): State {
+  if (raw && typeof raw === 'object' && (raw as { version?: unknown }).version === 2) {
+    return migrateState((raw as { state: State }).state);
+  }
+  console.warn('[3d/serialize] format không nhận diện, dùng state rỗng');
+  return createEmptyState('3d');
 }
 
-export function serializeBoard3D(state: SerializedBoard3D): string {
-  return JSON.stringify(state);
-}
-
-export function parseSerializedBoard3D(json: string): SerializedBoard3D {
-  const parsed = JSON.parse(json) as unknown;
-  if (!parsed || typeof parsed !== 'object') {
-    throw new Error('parseSerializedBoard3D: not an object');
+/**
+ * Trả về cả state lẫn view info nếu có (giúp render.ts + host khôi phục
+ * azimuth/elevation/bbox3D khi re-edit hoặc render SVG offscreen).
+ */
+export function parseSerializedBoard3D(
+  raw: unknown,
+): { state: State; view?: SerializedView3D } {
+  if (raw && typeof raw === 'object' && (raw as { version?: unknown }).version === 2) {
+    const envelope = raw as Partial<SerializedBoard3D>;
+    const state = envelope.state ? migrateState(envelope.state) : createEmptyState('3d');
+    return envelope.view ? { state, view: envelope.view } : { state };
   }
-  const p = parsed as Partial<SerializedBoard3D>;
-  if (p.version !== 1 && p.version !== 2) {
-    throw new Error(`parseSerializedBoard3D: unsupported version ${String(p.version)}`);
-  }
-  if (!Array.isArray(p.elements)) {
-    throw new Error('parseSerializedBoard3D: elements missing');
-  }
-  return parsed as SerializedBoard3D;
+  return { state: createEmptyState('3d') };
 }

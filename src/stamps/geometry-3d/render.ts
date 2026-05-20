@@ -1,7 +1,9 @@
 "use client";
 
-import { parseSerializedBoard3D } from './serialize';
-import { GROUND_PLANE_ATTRS, GROUND_PLANE_RANGE, VIEW3D_ATTRS } from './editor/theme';
+import { parseSerializedBoard3D, type SerializedView3D } from './serialize';
+import { createStore } from '../../core/scene';
+import { JxgRenderer3D } from '../../core/scene/render/JxgRenderer3D';
+import { DEFAULT_VIEW3D, GROUND_PLANE_ATTRS, GROUND_PLANE_RANGE, VIEW3D_ATTRS } from './editor/theme';
 
 export interface RenderResult {
   svgString: string;
@@ -11,6 +13,7 @@ export interface RenderResult {
 
 const OUTPUT_WIDTH = 1024;
 const OUTPUT_HEIGHT = 768;
+const BBOX_2D: [number, number, number, number] = [-6, 6, 6, -6];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type JxgObj = any;
@@ -18,7 +21,18 @@ type JxgObj = any;
 export async function renderGeometry3DSvgFromState(
   jsonState: string,
 ): Promise<RenderResult> {
-  const state = parseSerializedBoard3D(jsonState);
+  let parsed: { state: ReturnType<typeof parseSerializedBoard3D>['state']; view?: SerializedView3D };
+  try {
+    parsed = parseSerializedBoard3D(JSON.parse(jsonState));
+  } catch {
+    parsed = parseSerializedBoard3D(null);
+  }
+  const view3DInfo: SerializedView3D = parsed.view ?? {
+    azimuth: DEFAULT_VIEW3D.azimuth,
+    elevation: DEFAULT_VIEW3D.elevation,
+    bbox3D: [...DEFAULT_VIEW3D.bbox3D] as [number, number, number, number, number, number],
+  };
+
   const JXG = (await import('jsxgraph')).default;
 
   const div = document.createElement('div');
@@ -29,7 +43,7 @@ export async function renderGeometry3DSvgFromState(
     JXG.Options.text.display = 'internal';
 
     const board = JXG.JSXGraph.initBoard(div, {
-      boundingbox: state.bbox,
+      boundingbox: BBOX_2D,
       keepaspectratio: true,
       axis: false,
       showCopyright: false,
@@ -44,35 +58,26 @@ export async function renderGeometry3DSvgFromState(
         [-5, -5],
         [10, 10],
         [
-          [state.view.bbox3D[0], state.view.bbox3D[3]],
-          [state.view.bbox3D[1], state.view.bbox3D[4]],
-          [state.view.bbox3D[2], state.view.bbox3D[5]],
+          [view3DInfo.bbox3D[0], view3DInfo.bbox3D[3]],
+          [view3DInfo.bbox3D[1], view3DInfo.bbox3D[4]],
+          [view3DInfo.bbox3D[2], view3DInfo.bbox3D[5]],
         ],
       ],
       {
         ...baseAttrs,
-        // JSXGraph view3d đọc azimuth/elevation từ az.slider.start (không phải
-        // az.value). Nếu pass `value` → JSXGraph bỏ qua → render rơi về default
-        // (1.0 rad / 0.3 rad), không khớp góc user xoay trong editor.
-        az: { ...baseAttrs.az, slider: { ...baseAttrs.az.slider, start: state.view.azimuth } },
-        el: { ...baseAttrs.el, slider: { ...baseAttrs.el.slider, start: state.view.elevation } },
+        az: { ...baseAttrs.az, slider: { ...baseAttrs.az.slider, start: view3DInfo.azimuth } },
+        el: { ...baseAttrs.el, slider: { ...baseAttrs.el.slider, start: view3DInfo.elevation } },
       },
     );
 
-    // Defensive: setValue post-creation để chắc chắn slider khớp với serialized
-    // angle, kể cả khi JSXGraph version khác xử lý `start` khác.
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const v = view as any;
-      v?.az_slide?.setValue?.(state.view.azimuth);
-      v?.el_slide?.setValue?.(state.view.elevation);
+      v?.az_slide?.setValue?.(view3DInfo.azimuth);
+      v?.el_slide?.setValue?.(view3DInfo.elevation);
       v?.board?.update?.();
     } catch {
       /* swallow — older JSXGraph may not expose az_slide on view3d */
-    }
-
-    if (!state.showAxes) {
-      (view as { defaultAxes?: unknown[] }).defaultAxes = [];
     }
 
     // XY ground plane through origin (matches editor's MiniBoard3D).
@@ -92,21 +97,19 @@ export async function renderGeometry3DSvgFromState(
       /* swallow */
     }
 
-    const idMap = new Map<string, JxgObj>();
-    for (const el of state.elements) {
-      const parents = el.parents.map((p) =>
-        typeof p === 'string' && p.startsWith('@id:')
-          ? idMap.get(p.slice(4))
-          : p,
-      );
-      const obj = (
-        view as { create: (k: string, p: unknown[], a: unknown) => JxgObj }
-      ).create(el.type, parents, {
-        ...el.attributes,
-        id: el.id,
-        name: el.label,
-      });
-      idMap.set(el.id, obj);
+    // Hydrate JSXGraph từ State qua store + JxgRenderer3D. Store đã có sẵn LOAD
+    // action, nhưng vì state đã có objects sẵn nên ta khởi tạo store với state
+    // đó luôn — JxgRenderer3D sẽ render diff từ undefined → next.
+    const store = createStore(parsed.state);
+    const renderer = new JxgRenderer3D(store, view);
+
+    // Force board update để JSXGraph flush mọi pending object trước khi
+    // serialize SVG.
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (view as any)?.board?.update?.();
+    } catch {
+      /* swallow */
     }
 
     const svg = div.querySelector('svg');
@@ -117,6 +120,12 @@ export async function renderGeometry3DSvgFromState(
     clone.setAttribute('width', String(OUTPUT_WIDTH));
     clone.setAttribute('height', String(OUTPUT_HEIGHT));
     const svgString = new XMLSerializer().serializeToString(clone);
+
+    try {
+      renderer.dispose();
+    } catch {
+      /* ignore */
+    }
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
