@@ -1,6 +1,29 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import React from 'react';
-import { GeometryEditorPanel } from '../editor/EditorPanel';
+import { GeometryEditorPanel, type GeometryEditorPanelHandle } from '../editor/EditorPanel';
+import { createEmptyState } from '../../../core/scene';
+
+// Mock state có 1 point để hasContent() = true (object count > 0).
+const mockState = (() => {
+  const s = createEmptyState('2d');
+  return {
+    ...s,
+    objects: {
+      p1: {
+        id: 'p1',
+        kind: 'point',
+        label: 'A',
+        visible: true,
+        locked: false,
+        layer: 'default',
+        schemaVersion: 1,
+        attrs: { x: 1, y: 2, color: '#0f172a' },
+      },
+    },
+    order: ['p1'],
+    counter: 1,
+  };
+})();
 
 jest.mock('../editor/MiniBoard', () => ({
   __esModule: true,
@@ -15,7 +38,7 @@ jest.mock('../editor/MiniBoard', () => ({
           d.innerHTML = '<svg width="100" height="100"><circle/></svg>';
           return d;
         },
-        getCreationLog: () => [{ type: 'point', args: [1, 2], attrs: { name: 'A' }, id: 'j0' }],
+        getState: () => mockState,
         getBbox: () => [-10, 10, 10, -10],
         getShowAxis: () => false,
         getShowGrid: () => false,
@@ -25,6 +48,7 @@ jest.mock('../editor/MiniBoard', () => ({
         setShowGrid: () => {},
         undo: () => {},
         canUndo: () => true,
+        canRedo: () => false,
         subscribe: () => () => {},
         onSelect: () => () => {},
         onTransformParam: () => () => {},
@@ -32,15 +56,14 @@ jest.mock('../editor/MiniBoard', () => ({
         cancelTransformParam: () => {},
         mutateObject: () => {},
         snapshotObject: () => null,
+        getAllPointNames: () => [],
+        getSelectionSize: () => 0,
+        clearSelection: () => {},
+        deleteSelection: () => {},
       }), 0);
     }, []);
     return <div data-testid="mock-jxg" />;
   },
-}));
-
-jest.mock('../serialize', () => ({
-  serializeBoard: jest.fn((_b, log) => ({ bbox: [-10, 10, 10, -10], elements: log })),
-  deserializeIntoBoard: jest.fn(),
 }));
 
 jest.mock('../renderInline', () => ({
@@ -59,17 +82,30 @@ describe('GeometryEditorPanel', () => {
     expect(screen.getByRole('button', { name: 'Huỷ' })).toBeInTheDocument();
   });
 
-  test('Insert calls onInsert with (jsonState, svgString)', async () => {
+  test('Insert calls onInsert với (jsonState, svgString) — jsonState format v2', async () => {
     const onInsert = jest.fn();
-    render(<GeometryEditorPanel initialState={null} onInsert={onInsert} onClose={() => {}} />);
-    await act(async () => { await new Promise(r => setTimeout(r, 20)); });
-    fireEvent.click(screen.getByRole('button', { name: 'Chèn' }));
-    // performInsert tạo SVG async (qua renderGeometrySvgFromState).
-    await act(async () => { await new Promise(r => setTimeout(r, 20)); });
-    expect(onInsert).toHaveBeenCalledWith(
-      expect.stringContaining('"bbox"'),
-      '<svg>fake</svg>',
+    const ref = React.createRef<GeometryEditorPanelHandle>();
+    render(
+      <GeometryEditorPanel
+        ref={ref}
+        initialState={null}
+        onInsert={onInsert}
+        onClose={jest.fn()}
+        onStateChange={jest.fn()}
+      />,
     );
+    // Wait for MiniBoard onReady → handleRef populated.
+    await act(async () => { await new Promise(r => setTimeout(r, 20)); });
+    // Trigger insert; renderGeometrySvgFromState là async mock → await tiếp.
+    await act(async () => { ref.current?.insert(); });
+    await act(async () => { await new Promise(r => setTimeout(r, 0)); });
+    expect(onInsert).toHaveBeenCalledTimes(1);
+    const [jsonState, svg] = onInsert.mock.calls[0];
+    const parsed = JSON.parse(jsonState);
+    expect(parsed.version).toBe(2);
+    expect(parsed.state).toBeDefined();
+    expect(parsed.state.meta.domain).toBe('2d');
+    expect(typeof svg).toBe('string');
   });
 
   test('Cancel calls onClose', () => {

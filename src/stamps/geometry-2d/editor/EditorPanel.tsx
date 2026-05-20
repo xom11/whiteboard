@@ -1,6 +1,6 @@
 'use client';
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { JSXGraphMiniBoard, type MiniBoardHandle, type GeomTool, type ObjectSnapshot } from './MiniBoard';
+import { JSXGraphMiniBoard, type MiniBoardHandle, type GeomTool, type ObjectSnapshot, type TransformPopoverInfo } from './MiniBoard';
 import { serializeBoard, type SerializedBoard } from '../serialize';
 import { renderGeometrySvgFromState } from '../render';
 import { PropertiesPopover } from './PropertiesPopover';
@@ -53,14 +53,17 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
     const [ready, setReady] = useState(false);
     const [hasContent, setHasContent] = useState(false);
     const [propsPopover, setPropsPopover] = useState<ObjectSnapshot | null>(null);
-    const [transformPopover, setTransformPopover] = useState<{ tool: 'rotate' | 'dilate' | 'regularPolygon'; anchor: { x: number; y: number } } | null>(null);
+    // Handlers emit cả 6 transform tool (rotate/dilate/regularPolygon/translate/
+    // reflectLine/reflectPoint); TransformParamPopover chỉ render 3 tool có
+    // numeric param — guard ở chỗ render.
+    const [transformPopover, setTransformPopover] = useState<TransformPopoverInfo>(null);
     const onStateChangeRef = useRef(onStateChange);
     useEffect(() => { onStateChangeRef.current = onStateChange; }, [onStateChange]);
 
     const emitState = useCallback(() => {
       const h = handleRef.current;
       if (!h) return;
-      setHasContent(h.getCreationLog().length > 0);
+      setHasContent(Object.keys(h.getState().objects).length > 0);
       const cb = onStateChangeRef.current;
       if (!cb) return;
       cb({
@@ -82,20 +85,17 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
       h.onTransformParam((info) => setTransformPopover(info));
     }, [emitState]);
 
-    // Build serialized state (sentinels intact) — async vì SVG render offscreen
+    // Build serialized state (format v2) — async vì SVG render offscreen
     // với light palette để Excalidraw filter tự đảo khi dark mode.
     const performInsert = useCallback((): boolean => {
       if (!handleRef.current) return false;
-      const log = handleRef.current.getCreationLog();
-      if (log.length === 0) return false;
-      const bbox = handleRef.current.getBbox();
-      const showAxis = handleRef.current.getShowAxis();
-      const showGrid = handleRef.current.getShowGrid();
-      const serialized = serializeBoard(
-        { getBoundingBox: () => bbox, create: () => undefined },
-        log,
-        { showAxis, showGrid },
-      );
+      const h = handleRef.current;
+      const state = h.getState();
+      if (Object.keys(state.objects).length === 0) return false;
+      const bbox = h.getBbox();
+      const showAxis = h.getShowAxis();
+      const showGrid = h.getShowGrid();
+      const serialized = serializeBoard(bbox, state, { showAxis, showGrid });
       const jsonState = JSON.stringify(serialized);
       // Fire-and-forget. Caller (`tryInsert`) chỉ cần biết có nội dung không.
       void (async () => {
@@ -120,7 +120,7 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
       undo: () => handleRef.current?.undo(),
       redo: () => handleRef.current?.redo(),
       insert: performInsert,
-      hasContent: () => (handleRef.current?.getCreationLog().length ?? 0) > 0,
+      hasContent: () => Object.keys(handleRef.current?.getState().objects ?? {}).length > 0,
     }), [performInsert]);
 
     const wrapperStyle: React.CSSProperties = isMobile
@@ -238,7 +238,7 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
               getAllNames={() => handleRef.current?.getAllPointNames() ?? []}
               onClose={() => setPropsPopover(null)}
               onMutate={(patch) => {
-                handleRef.current?.mutateObject(propsPopover.obj, patch);
+                handleRef.current?.mutateObject(propsPopover.id, patch);
                 if (patch.remove) setPropsPopover(null);
                 // Refresh snapshot để UI checkbox phản ánh state mới
                 if (typeof patch.valueLabel === 'boolean' || patch.attrs) {
@@ -260,7 +260,7 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
               getAllNames={() => handleRef.current?.getAllPointNames() ?? []}
               onClose={() => setPropsPopover(null)}
               onMutate={(patch) => {
-                handleRef.current?.mutateObject(propsPopover.obj, patch);
+                handleRef.current?.mutateObject(propsPopover.id, patch);
                 if (patch.remove) setPropsPopover(null);
                 if (typeof patch.valueLabel === 'boolean') {
                   setPropsPopover((cur) => cur ? { ...cur, showValue: patch.valueLabel ?? cur.showValue } : cur);
@@ -273,7 +273,7 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
           )
         )}
 
-        {transformPopover && (
+        {transformPopover && (transformPopover.tool === 'rotate' || transformPopover.tool === 'dilate' || transformPopover.tool === 'regularPolygon') && (
           <TransformParamPopover
             kind={transformPopover.tool}
             anchor={transformPopover.anchor}
