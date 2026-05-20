@@ -878,6 +878,40 @@ var init_handlers = __esm({
     init_safeJsx();
   }
 });
+
+// src/stamps/geometry-2d/editor/hitTest.ts
+function hitObjectsAt(objs, sx, sy, exclude) {
+  const list = [];
+  for (const o of objs) {
+    if (!o || exclude.has(o)) continue;
+    if (typeof o.hasPoint !== "function") continue;
+    try {
+      if (o.hasPoint(sx, sy)) list.push(o);
+    } catch {
+    }
+  }
+  return list;
+}
+function findNearestPointInList(objs, sx, sy, tolPx, exclude) {
+  const tol2 = tolPx * tolPx;
+  let best = null;
+  for (const o of objs) {
+    if (!o || exclude.has(o)) continue;
+    if (objKind(o) !== "point") continue;
+    const pc = o.coords?.scrCoords;
+    if (!pc) continue;
+    const dx = pc[1] - sx;
+    const dy = pc[2] - sy;
+    const d2 = dx * dx + dy * dy;
+    if (d2 <= tol2 && (!best || d2 < best.d2)) best = { obj: o, d2 };
+  }
+  return best ? best.obj : null;
+}
+var init_hitTest = __esm({
+  "src/stamps/geometry-2d/editor/hitTest.ts"() {
+    init_tools();
+  }
+});
 var JSXGraphMiniBoard;
 var init_MiniBoard = __esm({
   "src/stamps/geometry-2d/editor/MiniBoard.tsx"() {
@@ -886,6 +920,7 @@ var init_MiniBoard = __esm({
     init_tools();
     init_theme();
     init_handlers();
+    init_hitTest();
     init_safeJsx();
     JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
       const isDarkRef = react.useRef(!!isDark);
@@ -929,13 +964,28 @@ var init_MiniBoard = __esm({
       react.useEffect(() => () => {
         if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
       }, []);
-      const labelIdxRef = react.useRef(0);
       const nextLabel = react.useCallback(() => {
-        const idx = labelIdxRef.current;
-        const suffix = idx >= 26 ? String(Math.floor(idx / 26)) : "";
-        const code = "A".charCodeAt(0) + idx % 26;
-        labelIdxRef.current = idx + 1;
-        return String.fromCharCode(code) + suffix;
+        const used = /* @__PURE__ */ new Set();
+        const board = boardRef.current;
+        if (board) {
+          safeJsx("MiniBoard.nextLabel.scanNames", () => {
+            const objs = board.objectsList || [];
+            for (const o of objs) {
+              if (objKind(o) === "point" && typeof o.name === "string" && o.name) {
+                used.add(o.name);
+              }
+            }
+          });
+        }
+        const A = "A".charCodeAt(0);
+        for (let suffix = 0; suffix < 1e3; suffix++) {
+          for (let i = 0; i < 26; i++) {
+            const letter = String.fromCharCode(A + i);
+            const candidate = suffix === 0 ? letter : `${letter}${suffix}`;
+            if (!used.has(candidate)) return candidate;
+          }
+        }
+        return `P${used.size}`;
       }, []);
       const nextLocalId = react.useCallback(() => "j" + creationLogRef.current.length, []);
       const resolveArgs = react.useCallback((args) => {
@@ -1650,14 +1700,12 @@ var init_MiniBoard = __esm({
         const sc = screenCoordsOf(evt);
         if (!sc) return [];
         const [sx, sy] = sc;
-        const list = [];
+        let list = [];
         safeJsx("MiniBoard.objectsAt.loop", () => {
-          const objs = b.objectsList || [];
-          for (const o of objs) {
-            safeJsx("MiniBoard.objectsAt.hasPoint", () => {
-              if (o.hasPoint && o.hasPoint(sx, sy)) list.push(o);
-            });
-          }
+          const exclude = /* @__PURE__ */ new Set();
+          if (phantomRef.current) exclude.add(phantomRef.current);
+          if (previewShapeRef.current) exclude.add(previewShapeRef.current);
+          list = hitObjectsAt(b.objectsList || [], sx, sy, exclude);
         });
         return list;
       }, [screenCoordsOf]);
@@ -1667,24 +1715,13 @@ var init_MiniBoard = __esm({
         const sc = screenCoordsOf(evt);
         if (!sc) return null;
         const [sx, sy] = sc;
-        const tol2 = tolPx * tolPx;
-        const bestRef = { current: null };
+        let result = null;
         safeJsx("MiniBoard.findNearestPoint.loop", () => {
-          const objs = b.objectsList || [];
-          for (const o of objs) {
-            safeJsx("MiniBoard.findNearestPoint.iter", () => {
-              if (objKind(o) !== "point") return;
-              const pc = o.coords?.scrCoords;
-              if (!pc) return;
-              const dx = pc[1] - sx;
-              const dy = pc[2] - sy;
-              const d2 = dx * dx + dy * dy;
-              const cur = bestRef.current;
-              if (d2 <= tol2 && (!cur || d2 < cur.d2)) bestRef.current = { obj: o, d2 };
-            });
-          }
+          const exclude = /* @__PURE__ */ new Set();
+          if (phantomRef.current) exclude.add(phantomRef.current);
+          result = findNearestPointInList(b.objectsList || [], sx, sy, tolPx, exclude);
         });
-        return bestRef.current ? bestRef.current.obj : null;
+        return result;
       }, [screenCoordsOf]);
       const promoteLabel = react.useCallback((o) => {
         if (!o) return o;
@@ -1718,6 +1755,7 @@ var init_MiniBoard = __esm({
       react.useEffect(() => {
         if (typeof window === "undefined" || !containerRef.current) return;
         let cancelled = false;
+        let wheelCleanup = null;
         (async () => {
           const JXG = (await import('jsxgraph')).default;
           if (cancelled || !containerRef.current) return;
@@ -1748,19 +1786,46 @@ var init_MiniBoard = __esm({
             // without this circles became ellipses after reload).
             keepAspectRatio: true,
             pan: { enabled: true, needShift: false },
-            zoom: { wheel: true },
+            // Wheel zoom được tự xử lý bên dưới để bám phím Ctrl/Cmd như Excalidraw
+            // (cuộn lên = phóng to, cuộn xuống = thu nhỏ, tâm zoom là vị trí chuột).
+            // JSXGraph không có option `needCtrl` nên phải disable wheel built-in
+            // và bind listener riêng.
+            zoom: { wheel: false },
             // Looser hit-test radius so clicking on a thin segment/line/circle
             // actually registers without pixel-perfect aim. `precision` is a real
             // JSXGraph option (Options.precision) but isn't in the d.ts file.
             ...{ precision: { hasPoint: 8, mouse: 4, touch: 16 } }
           });
           boardRef.current = board;
+          const wheelTarget = containerRef.current;
+          if (wheelTarget) {
+            const onWheel = (e) => {
+              if (!e.ctrlKey && !e.metaKey) return;
+              e.preventDefault();
+              e.stopPropagation();
+              let cx;
+              let cy;
+              safeJsx("MiniBoard.wheelZoom.coords", () => {
+                const usr = board.getUsrCoordsOfMouse?.(e);
+                if (Array.isArray(usr) && usr.length === 2 && Number.isFinite(usr[0]) && Number.isFinite(usr[1])) {
+                  cx = usr[0];
+                  cy = usr[1];
+                }
+              });
+              if (e.deltaY < 0) {
+                safeJsx("MiniBoard.wheelZoom.in", () => board.zoomIn(cx, cy));
+              } else if (e.deltaY > 0) {
+                safeJsx("MiniBoard.wheelZoom.out", () => board.zoomOut(cx, cy));
+              }
+            };
+            wheelTarget.addEventListener("wheel", onWheel, { passive: false });
+            wheelCleanup = () => wheelTarget.removeEventListener("wheel", onWheel);
+          }
           if (initialState && initialState.elements.length > 0) {
             for (const el of initialState.elements) {
               recreateFromLogEntry(el);
             }
             creationLogRef.current = [...initialState.elements];
-            labelIdxRef.current = initialState.elements.filter((e) => e.type === "point").length;
           }
           if (showAxisRef.current) {
             safeJsx("MiniBoard.initAxes", () => {
@@ -1997,6 +2062,10 @@ var init_MiniBoard = __esm({
         })();
         return () => {
           cancelled = true;
+          if (wheelCleanup) {
+            wheelCleanup();
+            wheelCleanup = null;
+          }
           if (previewRafRef.current != null) {
             cancelAnimationFrame(previewRafRef.current);
             previewRafRef.current = null;

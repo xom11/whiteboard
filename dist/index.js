@@ -5,6 +5,7 @@ require('./index.css');
 var jsxRuntime = require('react/jsx-runtime');
 var React8 = require('react');
 var reactDom = require('react-dom');
+var immer = require('immer');
 var excalidraw = require('@excalidraw/excalidraw');
 require('@excalidraw/excalidraw/index.css');
 
@@ -907,6 +908,40 @@ var init_handlers = __esm({
     init_safeJsx();
   }
 });
+
+// src/stamps/geometry-2d/editor/hitTest.ts
+function hitObjectsAt(objs, sx, sy, exclude) {
+  const list = [];
+  for (const o of objs) {
+    if (!o || exclude.has(o)) continue;
+    if (typeof o.hasPoint !== "function") continue;
+    try {
+      if (o.hasPoint(sx, sy)) list.push(o);
+    } catch {
+    }
+  }
+  return list;
+}
+function findNearestPointInList(objs, sx, sy, tolPx, exclude) {
+  const tol2 = tolPx * tolPx;
+  let best = null;
+  for (const o of objs) {
+    if (!o || exclude.has(o)) continue;
+    if (objKind(o) !== "point") continue;
+    const pc = o.coords?.scrCoords;
+    if (!pc) continue;
+    const dx = pc[1] - sx;
+    const dy = pc[2] - sy;
+    const d2 = dx * dx + dy * dy;
+    if (d2 <= tol2 && (!best || d2 < best.d2)) best = { obj: o, d2 };
+  }
+  return best ? best.obj : null;
+}
+var init_hitTest = __esm({
+  "src/stamps/geometry-2d/editor/hitTest.ts"() {
+    init_tools();
+  }
+});
 var JSXGraphMiniBoard;
 var init_MiniBoard = __esm({
   "src/stamps/geometry-2d/editor/MiniBoard.tsx"() {
@@ -915,6 +950,7 @@ var init_MiniBoard = __esm({
     init_tools();
     init_theme();
     init_handlers();
+    init_hitTest();
     init_safeJsx();
     JSXGraphMiniBoard = ({ onReady, initialState, isDark }) => {
       const isDarkRef = React8.useRef(!!isDark);
@@ -958,13 +994,28 @@ var init_MiniBoard = __esm({
       React8.useEffect(() => () => {
         if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
       }, []);
-      const labelIdxRef = React8.useRef(0);
-      const nextLabel = React8.useCallback(() => {
-        const idx = labelIdxRef.current;
-        const suffix = idx >= 26 ? String(Math.floor(idx / 26)) : "";
-        const code = "A".charCodeAt(0) + idx % 26;
-        labelIdxRef.current = idx + 1;
-        return String.fromCharCode(code) + suffix;
+      const nextLabel2 = React8.useCallback(() => {
+        const used = /* @__PURE__ */ new Set();
+        const board = boardRef.current;
+        if (board) {
+          safeJsx("MiniBoard.nextLabel.scanNames", () => {
+            const objs = board.objectsList || [];
+            for (const o of objs) {
+              if (objKind(o) === "point" && typeof o.name === "string" && o.name) {
+                used.add(o.name);
+              }
+            }
+          });
+        }
+        const A = "A".charCodeAt(0);
+        for (let suffix = 0; suffix < 1e3; suffix++) {
+          for (let i = 0; i < 26; i++) {
+            const letter = String.fromCharCode(A + i);
+            const candidate = suffix === 0 ? letter : `${letter}${suffix}`;
+            if (!used.has(candidate)) return candidate;
+          }
+        }
+        return `P${used.size}`;
       }, []);
       const nextLocalId = React8.useCallback(() => "j" + creationLogRef.current.length, []);
       const resolveArgs = React8.useCallback((args) => {
@@ -1329,7 +1380,7 @@ var init_MiniBoard = __esm({
         const labels = picks.map(localIdOf).filter(Boolean);
         const stroke = { strokeColor: "@stroke", strokeWidth: 2 };
         const strokeOnly = { ...stroke, fillColor: "none", fillOpacity: 0 };
-        const lblName = nextLabel();
+        const lblName = nextLabel2();
         switch (toolDef.key) {
           case "midpoint":
             create("midpoint", labels, { name: lblName, color: "@stroke", size: 3 });
@@ -1467,7 +1518,7 @@ var init_MiniBoard = __esm({
             break;
           }
         }
-      }, [create, localIdOf, nextLabel]);
+      }, [create, localIdOf, nextLabel2]);
       const finalizeTransformCreate = React8.useCallback((spec, source) => {
         if (!boardRef.current) return;
         const def = getDefiningPoints(source);
@@ -1509,7 +1560,7 @@ var init_MiniBoard = __esm({
           const srcId = localIdOf(src);
           const id = nextLocalId();
           const srcName = typeof src.name === "string" ? src.name : "";
-          const newName = srcName ? `${srcName}'` : nextLabel();
+          const newName = srcName ? `${srcName}'` : nextLabel2();
           const attrs = { name: newName, size: 3, color: "#0ea5e9", strokeColor: "#0ea5e9", fillColor: "#0ea5e9" };
           const obj = boardRef.current.create("point", [src, transformParent], attrs);
           pushCreationLog({ id, type: "point", args: [srcId ?? src, transformLogRef], attrs });
@@ -1542,7 +1593,7 @@ var init_MiniBoard = __esm({
             break;
         }
         setHistoryTick((t) => t + 1);
-      }, [create, flashWarn, localIdOf, nextLabel, nextLocalId]);
+      }, [create, flashWarn, localIdOf, nextLabel2, nextLocalId]);
       const recreateFromLogEntry = React8.useCallback((el) => {
         const board = boardRef.current;
         if (!board) return false;
@@ -1679,14 +1730,12 @@ var init_MiniBoard = __esm({
         const sc = screenCoordsOf(evt);
         if (!sc) return [];
         const [sx, sy] = sc;
-        const list = [];
+        let list = [];
         safeJsx("MiniBoard.objectsAt.loop", () => {
-          const objs = b.objectsList || [];
-          for (const o of objs) {
-            safeJsx("MiniBoard.objectsAt.hasPoint", () => {
-              if (o.hasPoint && o.hasPoint(sx, sy)) list.push(o);
-            });
-          }
+          const exclude = /* @__PURE__ */ new Set();
+          if (phantomRef.current) exclude.add(phantomRef.current);
+          if (previewShapeRef.current) exclude.add(previewShapeRef.current);
+          list = hitObjectsAt(b.objectsList || [], sx, sy, exclude);
         });
         return list;
       }, [screenCoordsOf]);
@@ -1696,24 +1745,13 @@ var init_MiniBoard = __esm({
         const sc = screenCoordsOf(evt);
         if (!sc) return null;
         const [sx, sy] = sc;
-        const tol2 = tolPx * tolPx;
-        const bestRef = { current: null };
+        let result = null;
         safeJsx("MiniBoard.findNearestPoint.loop", () => {
-          const objs = b.objectsList || [];
-          for (const o of objs) {
-            safeJsx("MiniBoard.findNearestPoint.iter", () => {
-              if (objKind(o) !== "point") return;
-              const pc = o.coords?.scrCoords;
-              if (!pc) return;
-              const dx = pc[1] - sx;
-              const dy = pc[2] - sy;
-              const d2 = dx * dx + dy * dy;
-              const cur = bestRef.current;
-              if (d2 <= tol2 && (!cur || d2 < cur.d2)) bestRef.current = { obj: o, d2 };
-            });
-          }
+          const exclude = /* @__PURE__ */ new Set();
+          if (phantomRef.current) exclude.add(phantomRef.current);
+          result = findNearestPointInList(b.objectsList || [], sx, sy, tolPx, exclude);
         });
-        return bestRef.current ? bestRef.current.obj : null;
+        return result;
       }, [screenCoordsOf]);
       const promoteLabel = React8.useCallback((o) => {
         if (!o) return o;
@@ -1747,6 +1785,7 @@ var init_MiniBoard = __esm({
       React8.useEffect(() => {
         if (typeof window === "undefined" || !containerRef.current) return;
         let cancelled = false;
+        let wheelCleanup = null;
         (async () => {
           const JXG = (await import('jsxgraph')).default;
           if (cancelled || !containerRef.current) return;
@@ -1777,19 +1816,46 @@ var init_MiniBoard = __esm({
             // without this circles became ellipses after reload).
             keepAspectRatio: true,
             pan: { enabled: true, needShift: false },
-            zoom: { wheel: true },
+            // Wheel zoom được tự xử lý bên dưới để bám phím Ctrl/Cmd như Excalidraw
+            // (cuộn lên = phóng to, cuộn xuống = thu nhỏ, tâm zoom là vị trí chuột).
+            // JSXGraph không có option `needCtrl` nên phải disable wheel built-in
+            // và bind listener riêng.
+            zoom: { wheel: false },
             // Looser hit-test radius so clicking on a thin segment/line/circle
             // actually registers without pixel-perfect aim. `precision` is a real
             // JSXGraph option (Options.precision) but isn't in the d.ts file.
             ...{ precision: { hasPoint: 8, mouse: 4, touch: 16 } }
           });
           boardRef.current = board;
+          const wheelTarget = containerRef.current;
+          if (wheelTarget) {
+            const onWheel = (e) => {
+              if (!e.ctrlKey && !e.metaKey) return;
+              e.preventDefault();
+              e.stopPropagation();
+              let cx;
+              let cy;
+              safeJsx("MiniBoard.wheelZoom.coords", () => {
+                const usr = board.getUsrCoordsOfMouse?.(e);
+                if (Array.isArray(usr) && usr.length === 2 && Number.isFinite(usr[0]) && Number.isFinite(usr[1])) {
+                  cx = usr[0];
+                  cy = usr[1];
+                }
+              });
+              if (e.deltaY < 0) {
+                safeJsx("MiniBoard.wheelZoom.in", () => board.zoomIn(cx, cy));
+              } else if (e.deltaY > 0) {
+                safeJsx("MiniBoard.wheelZoom.out", () => board.zoomOut(cx, cy));
+              }
+            };
+            wheelTarget.addEventListener("wheel", onWheel, { passive: false });
+            wheelCleanup = () => wheelTarget.removeEventListener("wheel", onWheel);
+          }
           if (initialState && initialState.elements.length > 0) {
             for (const el of initialState.elements) {
               recreateFromLogEntry(el);
             }
             creationLogRef.current = [...initialState.elements];
-            labelIdxRef.current = initialState.elements.filter((e) => e.type === "point").length;
           }
           if (showAxisRef.current) {
             safeJsx("MiniBoard.initAxes", () => {
@@ -1824,7 +1890,7 @@ var init_MiniBoard = __esm({
               clearSelection,
               applySelectionStyle,
               localIdOf,
-              nextLabel,
+              nextLabel: nextLabel2,
               create,
               finalize,
               finalizeTransformCreate,
@@ -1864,7 +1930,7 @@ var init_MiniBoard = __esm({
               clearSelection,
               applySelectionStyle,
               localIdOf,
-              nextLabel,
+              nextLabel: nextLabel2,
               create,
               finalize,
               finalizeTransformCreate,
@@ -1904,7 +1970,7 @@ var init_MiniBoard = __esm({
               clearSelection,
               applySelectionStyle,
               localIdOf,
-              nextLabel,
+              nextLabel: nextLabel2,
               create,
               finalize,
               finalizeTransformCreate,
@@ -2026,6 +2092,10 @@ var init_MiniBoard = __esm({
         })();
         return () => {
           cancelled = true;
+          if (wheelCleanup) {
+            wheelCleanup();
+            wheelCleanup = null;
+          }
           if (previewRafRef.current != null) {
             cancelAnimationFrame(previewRafRef.current);
             previewRafRef.current = null;
@@ -4190,31 +4260,467 @@ var init_host2 = __esm({
   }
 });
 
+// src/core/scene/types.ts
+function createEmptyState(domain) {
+  return { ...EMPTY_STATE, meta: { domain, version: 1 } };
+}
+var EMPTY_STATE;
+var init_types3 = __esm({
+  "src/core/scene/types.ts"() {
+    EMPTY_STATE = {
+      objects: {},
+      order: [],
+      counter: 0,
+      meta: { domain: "3d", version: 1 }
+    };
+  }
+});
+
+// src/core/scene/registry.ts
+function getKind(type) {
+  const def = registry.get(type);
+  if (!def) throw new Error(`[scene] unknown kind: ${type}`);
+  return def;
+}
+var registry;
+var init_registry = __esm({
+  "src/core/scene/registry.ts"() {
+    registry = /* @__PURE__ */ new Map();
+  }
+});
+
+// src/core/scene/reducer.ts
+function collectDependents(state, rootId) {
+  const dependents = /* @__PURE__ */ new Set([rootId]);
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const obj of Object.values(state.objects)) {
+      if (dependents.has(obj.id)) continue;
+      let kindDef;
+      try {
+        kindDef = getKind(obj.kind);
+      } catch {
+        continue;
+      }
+      const refs = kindDef.dependsOn(obj.attrs);
+      if (refs.some((r) => dependents.has(r))) {
+        dependents.add(obj.id);
+        grew = true;
+      }
+    }
+  }
+  return dependents;
+}
+function reduce(draft, action) {
+  switch (action.type) {
+    case "ADD": {
+      const { obj } = action.payload;
+      if (draft.objects[obj.id]) throw new Error(`[scene] id "${obj.id}" \u0111\xE3 t\u1ED3n t\u1EA1i`);
+      const kindDef = getKind(obj.kind);
+      kindDef.validate?.(obj.attrs);
+      draft.objects[obj.id] = obj;
+      draft.order.push(obj.id);
+      draft.counter += 1;
+      return;
+    }
+    case "UPDATE": {
+      const { id, patch } = action.payload;
+      const obj = draft.objects[id];
+      if (!obj) return;
+      Object.assign(obj, patch);
+      return;
+    }
+    case "UPDATE_ATTRS": {
+      const { id, patch } = action.payload;
+      const obj = draft.objects[id];
+      if (!obj) return;
+      const kindDef = getKind(obj.kind);
+      const nextAttrs = { ...obj.attrs, ...patch };
+      kindDef.validate?.(nextAttrs);
+      obj.attrs = nextAttrs;
+      return;
+    }
+    case "DELETE": {
+      const { id } = action.payload;
+      if (!draft.objects[id]) return;
+      const toDelete = collectDependents(draft, id);
+      for (const delId of toDelete) {
+        delete draft.objects[delId];
+      }
+      draft.order = draft.order.filter((x) => !toDelete.has(x));
+      return;
+    }
+    case "RESET": {
+      draft.objects = {};
+      draft.order = [];
+      draft.counter = 0;
+      return;
+    }
+    case "LOAD": {
+      const { state } = action.payload;
+      draft.objects = { ...state.objects };
+      draft.order = [...state.order];
+      draft.counter = state.counter;
+      draft.meta = { ...state.meta };
+      return;
+    }
+    case "TRANSACTION": {
+      for (const sub3 of action.payload.actions) {
+        reduce(draft, sub3);
+      }
+      return;
+    }
+  }
+}
+var init_reducer = __esm({
+  "src/core/scene/reducer.ts"() {
+    init_registry();
+  }
+});
+function createStore(initial, options = {}) {
+  const limit = options.historyLimit ?? HISTORY_DEFAULT;
+  let state = initial;
+  const past = [];
+  const future = [];
+  const listeners = /* @__PURE__ */ new Set();
+  let dispatching = false;
+  let suspendHistory = false;
+  let transactionActions = null;
+  function notify(prev, action) {
+    listeners.forEach((l) => l(state, prev, action));
+  }
+  function pushHistory(prev) {
+    if (suspendHistory) return;
+    past.push(prev);
+    if (past.length > limit) past.shift();
+    future.length = 0;
+  }
+  function applyAction(action) {
+    const prev = state;
+    state = immer.produce(state, (draft) => {
+      reduce(draft, action);
+    });
+    if (state !== prev) {
+      pushHistory(prev);
+      notify(prev, action);
+    }
+  }
+  return {
+    getState: () => state,
+    dispatch(action) {
+      if (dispatching) throw new Error("[scene] kh\xF4ng \u0111\u01B0\u1EE3c dispatch trong subscriber");
+      if (transactionActions) {
+        transactionActions.push(action);
+        return;
+      }
+      dispatching = true;
+      try {
+        applyAction(action);
+      } finally {
+        dispatching = false;
+      }
+    },
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    undo() {
+      const prev = past.pop();
+      if (!prev) return;
+      future.push(state);
+      const old = state;
+      state = prev;
+      notify(old, UNDO_ACTION);
+    },
+    redo() {
+      const next = future.pop();
+      if (!next) return;
+      past.push(state);
+      if (past.length > limit) past.shift();
+      const old = state;
+      state = next;
+      notify(old, REDO_ACTION);
+    },
+    canUndo: () => past.length > 0,
+    canRedo: () => future.length > 0,
+    transaction(fn) {
+      if (transactionActions) throw new Error("[scene] transaction l\u1ED3ng nhau kh\xF4ng h\u1ED7 tr\u1EE3");
+      transactionActions = [];
+      try {
+        fn((a) => {
+          transactionActions.push(a);
+        });
+      } finally {
+        const actions = transactionActions;
+        transactionActions = null;
+        if (actions.length > 0) {
+          applyAction({ type: "TRANSACTION", payload: { actions } });
+        }
+      }
+    },
+    withoutHistory(fn) {
+      const prevSuspend = suspendHistory;
+      suspendHistory = true;
+      try {
+        fn();
+      } finally {
+        suspendHistory = prevSuspend;
+      }
+    }
+  };
+}
+var HISTORY_DEFAULT, UNDO_ACTION, REDO_ACTION;
+var init_store = __esm({
+  "src/core/scene/store.ts"() {
+    init_reducer();
+    HISTORY_DEFAULT = 100;
+    UNDO_ACTION = { type: "TRANSACTION", payload: { actions: [] } };
+    REDO_ACTION = { type: "TRANSACTION", payload: { actions: [] } };
+  }
+});
+
+// src/core/scene/selectors.ts
+function listObjects(state) {
+  return state.order.map((id) => state.objects[id]).filter((o) => o !== void 0);
+}
+function byKind(state, kind) {
+  return listObjects(state).filter((o) => o.kind === kind);
+}
+function nextLabel(state, kind) {
+  const used = new Set(byKind(state, kind).map((o) => o.label));
+  for (const c of ALPHABET) if (!used.has(c)) return c;
+  let idx = 1;
+  while (true) {
+    for (const c of ALPHABET) {
+      const candidate = `${c}${idx}`;
+      if (!used.has(candidate)) return candidate;
+    }
+    idx += 1;
+  }
+}
+var ALPHABET;
+var init_selectors = __esm({
+  "src/core/scene/selectors.ts"() {
+    ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  }
+});
+
+// src/core/scene/migrations/state.ts
+function listStateMigrations() {
+  return stateMigrations;
+}
+var stateMigrations, CURRENT_STATE_VERSION;
+var init_state = __esm({
+  "src/core/scene/migrations/state.ts"() {
+    stateMigrations = /* @__PURE__ */ new Map();
+    CURRENT_STATE_VERSION = 1;
+  }
+});
+
+// src/core/scene/migrations/runMigrations.ts
+function migrateState(raw) {
+  if (!raw || typeof raw !== "object") throw new Error("[scene] invalid state shape");
+  let state = raw;
+  const currentVersion = state.meta?.version ?? 1;
+  const stateMigs = listStateMigrations();
+  for (let v = currentVersion + 1; v <= Math.max(CURRENT_STATE_VERSION, ...stateMigs.keys()); v++) {
+    const fn = stateMigs.get(v);
+    if (fn) state = fn(state);
+  }
+  const migratedObjects = {};
+  for (const [id, obj] of Object.entries(state.objects ?? {})) {
+    const def = getKind(obj.kind);
+    let cur = obj;
+    while ((cur.schemaVersion ?? 0) < def.schemaVersion) {
+      const next = (cur.schemaVersion ?? 0) + 1;
+      const mig = def.migrate[next];
+      if (!mig) throw new Error(`[scene] missing migration cho ${obj.kind} v${next}`);
+      cur = mig(cur);
+      cur.schemaVersion = next;
+    }
+    if ((cur.schemaVersion ?? 0) !== def.schemaVersion) {
+      throw new Error(
+        `[scene] missing migration cho ${obj.kind}: stored v${cur.schemaVersion ?? 0}, current v${def.schemaVersion}`
+      );
+    }
+    migratedObjects[id] = cur;
+  }
+  return {
+    objects: migratedObjects,
+    order: state.order ?? [],
+    counter: state.counter ?? 0,
+    meta: state.meta ?? { domain: "3d", version: CURRENT_STATE_VERSION }
+  };
+}
+var init_runMigrations = __esm({
+  "src/core/scene/migrations/runMigrations.ts"() {
+    init_registry();
+    init_state();
+  }
+});
+
+// src/core/scene/index.ts
+var init_scene = __esm({
+  "src/core/scene/index.ts"() {
+    init_types3();
+    init_store();
+    init_selectors();
+    init_runMigrations();
+  }
+});
+
 // src/stamps/geometry-3d/serialize.ts
 function isGeometry3DCustomData(data) {
   if (!data || typeof data !== "object") return false;
   const d = data;
   return d.kind === "geometry3d" && (d.version === 1 || d.version === 2) && typeof d.jsonState === "string";
 }
-function serializeBoard3D(state) {
-  return JSON.stringify(state);
+function serializeBoard3D(state, view) {
+  return view ? { version: 2, state, view } : { version: 2, state };
 }
-function parseSerializedBoard3D(json) {
-  const parsed = JSON.parse(json);
-  if (!parsed || typeof parsed !== "object") {
-    throw new Error("parseSerializedBoard3D: not an object");
+function parseSerializedBoard3D(raw) {
+  if (raw && typeof raw === "object" && raw.version === 2) {
+    const envelope = raw;
+    const state = envelope.state ? migrateState(envelope.state) : createEmptyState("3d");
+    return envelope.view ? { state, view: envelope.view } : { state };
   }
-  const p = parsed;
-  if (p.version !== 1 && p.version !== 2) {
-    throw new Error(`parseSerializedBoard3D: unsupported version ${String(p.version)}`);
-  }
-  if (!Array.isArray(p.elements)) {
-    throw new Error("parseSerializedBoard3D: elements missing");
-  }
-  return parsed;
+  return { state: createEmptyState("3d") };
 }
 var init_serialize2 = __esm({
   "src/stamps/geometry-3d/serialize.ts"() {
+    init_scene();
+  }
+});
+
+// src/core/scene/render/types.ts
+var DEFAULT_THEME_3D;
+var init_types4 = __esm({
+  "src/core/scene/render/types.ts"() {
+    DEFAULT_THEME_3D = {
+      point: { size: 4, color: "#1e40af" },
+      line: { strokeWidth: 2, color: "#0f172a" },
+      plane: { fillOpacity: 0.15, color: "#60a5fa" }
+    };
+  }
+});
+
+// src/core/scene/render/JxgRenderer3D.ts
+var JxgRenderer3D;
+var init_JxgRenderer3D = __esm({
+  "src/core/scene/render/JxgRenderer3D.ts"() {
+    init_registry();
+    init_types4();
+    JxgRenderer3D = class {
+      constructor(store, view, options = {}) {
+        this.elements = /* @__PURE__ */ new Map();
+        this.disposed = false;
+        this.store = store;
+        this.view = view;
+        this.theme = options.theme ?? DEFAULT_THEME_3D;
+        this.unsubscribe = store.subscribe((next, prev) => this.applyDiff(prev, next));
+        this.applyDiff(void 0, store.getState());
+      }
+      ctx() {
+        return {
+          jxg: this.view,
+          resolveRef: (id) => {
+            const el = this.elements.get(id);
+            if (el === void 0) {
+              throw new Error(`[scene] resolveRef: ch\u01B0a render id="${id}"`);
+            }
+            return el;
+          },
+          defaults: {}
+        };
+      }
+      create(obj) {
+        try {
+          const def = getKind(obj.kind);
+          const el = def.render(obj, this.ctx());
+          this.elements.set(obj.id, el);
+        } catch (err) {
+          console.warn(`[scene/render] kh\xF4ng render \u0111\u01B0\u1EE3c ${obj.kind} id="${obj.id}":`, err);
+        }
+      }
+      remove(id) {
+        const el = this.elements.get(id);
+        if (el === void 0) return;
+        try {
+          this.removeFromView(el);
+        } catch (err) {
+          console.warn(`[scene/render] kh\xF4ng remove \u0111\u01B0\u1EE3c id="${id}":`, err);
+        }
+        this.elements.delete(id);
+      }
+      removeFromView(el) {
+        const view = this.view;
+        if (el && typeof el === "object") {
+          const asObj = el;
+          if (Array.isArray(asObj["faces"])) {
+            for (const face of asObj["faces"]) {
+              view.removeObject?.(face);
+            }
+            if (Array.isArray(asObj["_verts"])) {
+              for (const v of asObj["_verts"]) {
+                view.removeObject?.(v);
+              }
+            }
+            return;
+          }
+        }
+        view.removeObject?.(el);
+      }
+      applyDiff(prev, next) {
+        if (this.disposed) return;
+        const prevObjs = prev?.objects ?? {};
+        const nextObjs = next.objects;
+        for (const id of Object.keys(prevObjs)) {
+          if (!(id in nextObjs)) {
+            this.remove(id);
+          }
+        }
+        for (const id of next.order) {
+          const cur = nextObjs[id];
+          if (!cur) continue;
+          const old = prevObjs[id];
+          if (!old) {
+            this.create(cur);
+            continue;
+          }
+          if (Object.is(old, cur)) {
+            continue;
+          }
+          let def;
+          try {
+            def = getKind(cur.kind);
+          } catch {
+            continue;
+          }
+          const existing = this.elements.get(id);
+          if (def.update && existing !== void 0) {
+            try {
+              def.update(cur, old, this.ctx(), existing);
+              continue;
+            } catch (err) {
+              console.warn(`[scene/render] update fail, recreate id="${id}":`, err);
+            }
+          }
+          this.remove(id);
+          this.create(cur);
+        }
+      }
+      dispose() {
+        if (this.disposed) return;
+        this.unsubscribe();
+        this.disposed = true;
+        for (const id of Array.from(this.elements.keys())) {
+          this.remove(id);
+        }
+      }
+    };
   }
 });
 
@@ -4299,7 +4805,17 @@ var init_theme2 = __esm({
 
 // src/stamps/geometry-3d/render.ts
 async function renderGeometry3DSvgFromState(jsonState) {
-  const state = parseSerializedBoard3D(jsonState);
+  let parsed;
+  try {
+    parsed = parseSerializedBoard3D(JSON.parse(jsonState));
+  } catch {
+    parsed = parseSerializedBoard3D(null);
+  }
+  const view3DInfo = parsed.view ?? {
+    azimuth: DEFAULT_VIEW3D.azimuth,
+    elevation: DEFAULT_VIEW3D.elevation,
+    bbox3D: [...DEFAULT_VIEW3D.bbox3D]
+  };
   const JXG = (await import('jsxgraph')).default;
   const div = document.createElement("div");
   div.style.cssText = `position:absolute;left:-9999px;top:-9999px;width:${OUTPUT_WIDTH}px;height:${OUTPUT_HEIGHT}px;`;
@@ -4307,7 +4823,7 @@ async function renderGeometry3DSvgFromState(jsonState) {
   try {
     JXG.Options.text.display = "internal";
     const board = JXG.JSXGraph.initBoard(div, {
-      boundingbox: state.bbox,
+      boundingbox: BBOX_2D,
       keepaspectratio: true,
       axis: false,
       showCopyright: false,
@@ -4321,29 +4837,23 @@ async function renderGeometry3DSvgFromState(jsonState) {
         [-5, -5],
         [10, 10],
         [
-          [state.view.bbox3D[0], state.view.bbox3D[3]],
-          [state.view.bbox3D[1], state.view.bbox3D[4]],
-          [state.view.bbox3D[2], state.view.bbox3D[5]]
+          [view3DInfo.bbox3D[0], view3DInfo.bbox3D[3]],
+          [view3DInfo.bbox3D[1], view3DInfo.bbox3D[4]],
+          [view3DInfo.bbox3D[2], view3DInfo.bbox3D[5]]
         ]
       ],
       {
         ...baseAttrs,
-        // JSXGraph view3d đọc azimuth/elevation từ az.slider.start (không phải
-        // az.value). Nếu pass `value` → JSXGraph bỏ qua → render rơi về default
-        // (1.0 rad / 0.3 rad), không khớp góc user xoay trong editor.
-        az: { ...baseAttrs.az, slider: { ...baseAttrs.az.slider, start: state.view.azimuth } },
-        el: { ...baseAttrs.el, slider: { ...baseAttrs.el.slider, start: state.view.elevation } }
+        az: { ...baseAttrs.az, slider: { ...baseAttrs.az.slider, start: view3DInfo.azimuth } },
+        el: { ...baseAttrs.el, slider: { ...baseAttrs.el.slider, start: view3DInfo.elevation } }
       }
     );
     try {
       const v = view;
-      v?.az_slide?.setValue?.(state.view.azimuth);
-      v?.el_slide?.setValue?.(state.view.elevation);
+      v?.az_slide?.setValue?.(view3DInfo.azimuth);
+      v?.el_slide?.setValue?.(view3DInfo.elevation);
       v?.board?.update?.();
     } catch {
-    }
-    if (!state.showAxes) {
-      view.defaultAxes = [];
     }
     try {
       view.create(
@@ -4359,17 +4869,11 @@ async function renderGeometry3DSvgFromState(jsonState) {
       );
     } catch {
     }
-    const idMap = /* @__PURE__ */ new Map();
-    for (const el of state.elements) {
-      const parents = el.parents.map(
-        (p) => typeof p === "string" && p.startsWith("@id:") ? idMap.get(p.slice(4)) : p
-      );
-      const obj = view.create(el.type, parents, {
-        ...el.attributes,
-        id: el.id,
-        name: el.label
-      });
-      idMap.set(el.id, obj);
+    const store = createStore(parsed.state);
+    const renderer = new JxgRenderer3D(store, view);
+    try {
+      view?.board?.update?.();
+    } catch {
     }
     const svg = div.querySelector("svg");
     if (!svg) {
@@ -4380,6 +4884,10 @@ async function renderGeometry3DSvgFromState(jsonState) {
     clone.setAttribute("height", String(OUTPUT_HEIGHT));
     const svgString = new XMLSerializer().serializeToString(clone);
     try {
+      renderer.dispose();
+    } catch {
+    }
+    try {
       JXG.JSXGraph.freeBoard(board);
     } catch {
     }
@@ -4388,14 +4896,17 @@ async function renderGeometry3DSvgFromState(jsonState) {
     document.body.removeChild(div);
   }
 }
-var OUTPUT_WIDTH, OUTPUT_HEIGHT;
+var OUTPUT_WIDTH, OUTPUT_HEIGHT, BBOX_2D;
 var init_render3 = __esm({
   "src/stamps/geometry-3d/render.ts"() {
     "use client";
     init_serialize2();
+    init_scene();
+    init_JxgRenderer3D();
     init_theme2();
     OUTPUT_WIDTH = 1024;
     OUTPUT_HEIGHT = 768;
+    BBOX_2D = [-6, 6, 6, -6];
   }
 });
 
@@ -4418,25 +4929,49 @@ function hitToConstraint(hit) {
       return null;
   }
 }
-function ensurePoint(hit, scene) {
+function makePointId(store, offset = 1) {
+  return `p${store.getState().counter + offset}`;
+}
+function buildPointObject(store, constraint, options = {}) {
+  const id = makePointId(store, options.idOffset ?? 1);
+  const state = store.getState();
+  const label = options.label ?? nextLabel(state, "point3d");
+  return {
+    id,
+    kind: "point3d",
+    label,
+    visible: true,
+    locked: false,
+    layer: "default",
+    schemaVersion: 1,
+    attrs: { constraint, ...options.color ? { color: options.color } : {} }
+  };
+}
+function addPoint(store, constraint, color) {
+  const obj = buildPointObject(store, constraint, {});
+  store.dispatch({ type: "ADD", payload: { obj } });
+  return obj.id;
+}
+function ensurePoint(hit, store) {
   if (hit.kind === "existingPoint") return hit.pointId;
   const c = hitToConstraint(hit);
   if (!c) return null;
-  return scene.addPoint(c);
+  return addPoint(store, c);
 }
 var init_ensurePoint = __esm({
   "src/stamps/geometry-3d/editor/tools/handlers/_ensurePoint.ts"() {
+    init_scene();
   }
 });
 
 // src/stamps/geometry-3d/editor/tools/handlers/point.ts
-function buildPoint(args, scene) {
+function buildPoint(args, store) {
   const hit = args[0]?.hit;
   if (!hit) return null;
   if (hit.kind === "existingPoint") return hit.pointId;
   const c = hitToConstraint(hit);
   if (!c) return null;
-  return scene.addPoint(c);
+  return addPoint(store, c);
 }
 var buildPointOnObject;
 var init_point = __esm({
@@ -4447,49 +4982,83 @@ var init_point = __esm({
 });
 
 // src/stamps/geometry-3d/editor/tools/handlers/segment.ts
-function buildSegment(args, scene) {
-  if (args.length < 2 || !args[0].hit || !args[1].hit) return null;
-  const p1 = ensurePoint(args[0].hit, scene);
-  const p2 = ensurePoint(args[1].hit, scene);
-  if (!p1 || !p2 || p1 === p2) return null;
-  return scene.addObject("segment", { p1, p2 });
+function makeDerivedId(store, prefix) {
+  return `${prefix}${store.getState().counter + 1}`;
 }
-function buildLine(args, scene) {
-  if (args.length < 2 || !args[0].hit || !args[1].hit) return null;
-  const p1 = ensurePoint(args[0].hit, scene);
-  const p2 = ensurePoint(args[1].hit, scene);
-  if (!p1 || !p2 || p1 === p2) return null;
-  return scene.addObject("line", { p1, p2 });
+function addDerived(store, kind, prefix, attrs) {
+  const id = makeDerivedId(store, prefix);
+  const label = nextLabel(store.getState(), kind);
+  const obj = {
+    id,
+    kind,
+    label,
+    visible: true,
+    locked: false,
+    layer: "default",
+    schemaVersion: 1,
+    attrs
+  };
+  store.dispatch({ type: "ADD", payload: { obj } });
+  return id;
 }
-function buildRay(args, scene) {
+function buildSegment(args, store) {
   if (args.length < 2 || !args[0].hit || !args[1].hit) return null;
-  const origin = ensurePoint(args[0].hit, scene);
-  const through = ensurePoint(args[1].hit, scene);
+  const p1 = ensurePoint(args[0].hit, store);
+  const p2 = ensurePoint(args[1].hit, store);
+  if (!p1 || !p2 || p1 === p2) return null;
+  return addDerived(store, "segment3d", "s", { p1, p2 });
+}
+function buildLine(args, store) {
+  if (args.length < 2 || !args[0].hit || !args[1].hit) return null;
+  const p1 = ensurePoint(args[0].hit, store);
+  const p2 = ensurePoint(args[1].hit, store);
+  if (!p1 || !p2 || p1 === p2) return null;
+  return addDerived(store, "line3d", "l", { p1, p2 });
+}
+function buildRay(args, store) {
+  if (args.length < 2 || !args[0].hit || !args[1].hit) return null;
+  const origin = ensurePoint(args[0].hit, store);
+  const through = ensurePoint(args[1].hit, store);
   if (!origin || !through || origin === through) return null;
-  return scene.addObject("ray", { origin, through });
+  return addDerived(store, "ray3d", "r", { origin, through });
 }
-function buildVector(args, scene) {
+function buildVector(args, store) {
   if (args.length < 2 || !args[0].hit || !args[1].hit) return null;
-  const from = ensurePoint(args[0].hit, scene);
-  const to = ensurePoint(args[1].hit, scene);
+  const from = ensurePoint(args[0].hit, store);
+  const to = ensurePoint(args[1].hit, store);
   if (!from || !to || from === to) return null;
-  return scene.addObject("vector", { from, to });
+  return addDerived(store, "vector3d", "v", { from, to });
 }
 var init_segment = __esm({
   "src/stamps/geometry-3d/editor/tools/handlers/segment.ts"() {
+    init_scene();
     init_ensurePoint();
   }
 });
 
 // src/stamps/geometry-3d/editor/tools/handlers/polygon.ts
-function buildPolygon(args, scene) {
+function buildPolygon(args, store) {
   const vertexArgs = args.filter((a) => a.step.type === "point");
-  const vertexIds = vertexArgs.map((a) => a.hit ? ensurePoint(a.hit, scene) : null).filter((x) => !!x);
+  const vertexIds = vertexArgs.map((a) => a.hit ? ensurePoint(a.hit, store) : null).filter((x) => !!x);
   if (vertexIds.length < 3) return null;
-  return scene.addObject("polygon", { vertices: vertexIds });
+  const id = `pg${store.getState().counter + 1}`;
+  const label = nextLabel(store.getState(), "polygon3d");
+  const obj = {
+    id,
+    kind: "polygon3d",
+    label,
+    visible: true,
+    locked: false,
+    layer: "default",
+    schemaVersion: 1,
+    attrs: { vertices: vertexIds }
+  };
+  store.dispatch({ type: "ADD", payload: { obj } });
+  return id;
 }
 var init_polygon = __esm({
   "src/stamps/geometry-3d/editor/tools/handlers/polygon.ts"() {
+    init_scene();
     init_ensurePoint();
   }
 });
@@ -4517,24 +5086,25 @@ function normalize(a) {
   const n = norm(a);
   return n === 0 ? a : scale(a, 1 / n);
 }
-function getPointWorld(id, scene) {
-  const obj = scene.get(id);
-  if (!obj || obj.kind !== "point") {
+function getPointWorld(id, state) {
+  const obj = state.objects[id];
+  if (!obj || obj.kind !== "point3d") {
     throw new Error(`constraintMath: point ${id} not found`);
   }
-  return constraintToWorld(obj.constraint, scene);
+  const attrs = obj.attrs;
+  return constraintToWorld(attrs.constraint, state);
 }
-function getPlaneBasis(planeObj, scene) {
-  const p1 = getPointWorld(planeObj.p1, scene);
-  const p2 = getPointWorld(planeObj.p2, scene);
-  const p3 = getPointWorld(planeObj.p3, scene);
+function getPlaneBasis(planeObj, state) {
+  const p1 = getPointWorld(planeObj.attrs.p1, state);
+  const p2 = getPointWorld(planeObj.attrs.p2, state);
+  const p3 = getPointWorld(planeObj.attrs.p3, state);
   const basis1 = sub(p2, p1);
   const tmp = sub(p3, p1);
   const normal = normalize(cross(basis1, tmp));
   const basis2 = cross(normal, basis1);
   return { origin: p1, basis1, basis2, normal };
 }
-function constraintToWorld(c, scene) {
+function constraintToWorld(c, state) {
   switch (c.kind) {
     case "free":
       return [c.x, c.y, c.z];
@@ -4546,31 +5116,44 @@ function constraintToWorld(c, scene) {
       return [0, 0, c.t];
     }
     case "onPlane": {
-      const plane = scene.get(c.planeId);
-      if (!plane || plane.kind !== "plane") throw new Error("onPlane: plane missing");
-      const { origin, basis1, basis2 } = getPlaneBasis(plane, scene);
+      const plane = state.objects[c.planeId];
+      if (!plane || plane.kind !== "plane3d") throw new Error("onPlane: plane missing");
+      const { origin, basis1, basis2 } = getPlaneBasis(plane, state);
       return add(add(origin, scale(basis1, c.u)), scale(basis2, c.v));
     }
     case "onLine": {
-      const line = scene.get(c.lineId);
-      if (!line || line.kind !== "line" && line.kind !== "segment" && line.kind !== "ray") {
-        throw new Error("onLine: parent missing");
+      const line = state.objects[c.lineId];
+      if (!line) throw new Error("onLine: parent missing");
+      let p1Id;
+      let p2Id;
+      if (line.kind === "line3d" || line.kind === "segment3d") {
+        const a = line.attrs;
+        p1Id = a.p1;
+        p2Id = a.p2;
+      } else if (line.kind === "ray3d") {
+        const a = line.attrs;
+        p1Id = a.origin;
+        p2Id = a.through;
+      } else if (line.kind === "vector3d") {
+        const a = line.attrs;
+        p1Id = a.from;
+        p2Id = a.to;
+      } else {
+        throw new Error("onLine: parent kind not supported");
       }
-      const p1Id = line.kind === "ray" ? line.origin : line.p1;
-      const p2Id = line.kind === "ray" ? line.through : line.p2;
-      const p1 = getPointWorld(p1Id, scene);
-      const p2 = getPointWorld(p2Id, scene);
+      const p1 = getPointWorld(p1Id, state);
+      const p2 = getPointWorld(p2Id, state);
       const dir = sub(p2, p1);
       return add(p1, scale(dir, c.t));
     }
     case "onPolygon": {
-      const pg = scene.get(c.polygonId);
-      if (!pg || pg.kind !== "polygon") throw new Error("onPolygon: parent missing");
-      const v = pg.vertices;
+      const pg = state.objects[c.polygonId];
+      if (!pg || pg.kind !== "polygon3d") throw new Error("onPolygon: parent missing");
+      const v = pg.attrs.vertices;
       if (v.length < 3) throw new Error("onPolygon: < 3 vertices");
-      const p1 = getPointWorld(v[0], scene);
-      const p2 = getPointWorld(v[1], scene);
-      const p3 = getPointWorld(v[2], scene);
+      const p1 = getPointWorld(v[0], state);
+      const p2 = getPointWorld(v[1], state);
+      const p3 = getPointWorld(v[2], state);
       const basis1 = sub(p2, p1);
       const tmp = sub(p3, p1);
       const normal = normalize(cross(basis1, tmp));
@@ -4578,10 +5161,11 @@ function constraintToWorld(c, scene) {
       return add(add(p1, scale(basis1, c.u)), scale(basis2, c.v));
     }
     case "onSphere": {
-      const sph = scene.get(c.sphereId);
-      if (!sph || sph.kind !== "sphere") throw new Error("onSphere: parent missing");
-      const center = getPointWorld(sph.center, scene);
-      const surface = getPointWorld(sph.surfacePoint, scene);
+      const sph = state.objects[c.sphereId];
+      if (!sph || sph.kind !== "sphere3d") throw new Error("onSphere: parent missing");
+      const a = sph.attrs;
+      const center = getPointWorld(a.center, state);
+      const surface = getPointWorld(a.surfacePoint, state);
       const radius = norm(sub(surface, center));
       const x = center[0] + radius * Math.sin(c.phi) * Math.cos(c.theta);
       const y = center[1] + radius * Math.sin(c.phi) * Math.sin(c.theta);
@@ -4596,27 +5180,28 @@ var init_constraintMath = __esm({
 });
 
 // src/stamps/geometry-3d/editor/scene/geometryChecks.ts
-function getWorld(id, scene) {
-  const obj = scene.get(id);
-  if (!obj || obj.kind !== "point") return null;
-  return constraintToWorld(obj.constraint, scene);
+function getWorld(id, state) {
+  const obj = state.objects[id];
+  if (!obj || obj.kind !== "point3d") return null;
+  const attrs = obj.attrs;
+  return constraintToWorld(attrs.constraint, state);
 }
-function areCollinear3(p1Id, p2Id, p3Id, scene) {
-  const p1 = getWorld(p1Id, scene);
-  const p2 = getWorld(p2Id, scene);
-  const p3 = getWorld(p3Id, scene);
+function areCollinear3(p1Id, p2Id, p3Id, state) {
+  const p1 = getWorld(p1Id, state);
+  const p2 = getWorld(p2Id, state);
+  const p3 = getWorld(p3Id, state);
   if (!p1 || !p2 || !p3) return true;
   const a = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
   const b = [p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]];
   const c = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
   return Math.hypot(c[0], c[1], c[2]) < EPS;
 }
-function apexCoplanarWithBase(baseIds, apexId, scene) {
+function apexCoplanarWithBase(baseIds, apexId, state) {
   if (baseIds.length < 3) return false;
-  const p1 = getWorld(baseIds[0], scene);
-  const p2 = getWorld(baseIds[1], scene);
-  const p3 = getWorld(baseIds[2], scene);
-  const apex = getWorld(apexId, scene);
+  const p1 = getWorld(baseIds[0], state);
+  const p2 = getWorld(baseIds[1], state);
+  const p3 = getWorld(baseIds[2], state);
+  const apex = getWorld(apexId, state);
   if (!p1 || !p2 || !p3 || !apex) return false;
   const a = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
   const b = [p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]];
@@ -4634,63 +5219,93 @@ var init_geometryChecks = __esm({
 });
 
 // src/stamps/geometry-3d/editor/tools/handlers/plane.ts
-function buildPlane(args, scene) {
+function buildPlane(args, store) {
   if (args.length < 3 || !args[0].hit || !args[1].hit || !args[2].hit) return null;
-  const p1 = ensurePoint(args[0].hit, scene);
-  const p2 = ensurePoint(args[1].hit, scene);
-  const p3 = ensurePoint(args[2].hit, scene);
+  const p1 = ensurePoint(args[0].hit, store);
+  const p2 = ensurePoint(args[1].hit, store);
+  const p3 = ensurePoint(args[2].hit, store);
   if (!p1 || !p2 || !p3) return null;
   if (p1 === p2 || p2 === p3 || p1 === p3) return null;
-  if (areCollinear3(p1, p2, p3, scene)) return null;
-  return scene.addObject("plane", { p1, p2, p3 });
+  if (areCollinear3(p1, p2, p3, store.getState())) return null;
+  const id = `pl${store.getState().counter + 1}`;
+  const label = nextLabel(store.getState(), "plane3d");
+  const obj = {
+    id,
+    kind: "plane3d",
+    label,
+    visible: true,
+    locked: false,
+    layer: "default",
+    schemaVersion: 1,
+    attrs: { p1, p2, p3 }
+  };
+  store.dispatch({ type: "ADD", payload: { obj } });
+  return id;
 }
 var init_plane = __esm({
   "src/stamps/geometry-3d/editor/tools/handlers/plane.ts"() {
+    init_scene();
     init_ensurePoint();
     init_geometryChecks();
   }
 });
 
 // src/stamps/geometry-3d/editor/tools/handlers/pyramid.ts
-function buildPyramid(args, scene) {
+function buildPyramid(args, store) {
   const pointArgs = args.filter((a) => a.step.type === "point");
   const baseArgs = pointArgs.slice(0, -1);
   const apexArg = pointArgs.slice(-1)[0];
   if (baseArgs.length < 3 || !apexArg?.hit) return null;
-  const baseIds = baseArgs.map((a) => a.hit ? ensurePoint(a.hit, scene) : null).filter((x) => !!x);
-  const apexId = ensurePoint(apexArg.hit, scene);
+  const baseIds = baseArgs.map((a) => a.hit ? ensurePoint(a.hit, store) : null).filter((x) => !!x);
+  const apexId = ensurePoint(apexArg.hit, store);
   if (!apexId || baseIds.length < 3) return null;
-  if (apexCoplanarWithBase(baseIds, apexId, scene)) return null;
+  if (apexCoplanarWithBase(baseIds, apexId, store.getState())) return null;
   const vertices = [...baseIds, apexId];
   const apexIdx = vertices.length - 1;
   const faces = [baseIds.map((_, i) => i)];
   for (let i = 0; i < baseIds.length; i++) {
     faces.push([i, (i + 1) % baseIds.length, apexIdx]);
   }
-  return scene.addObject("polyhedron", { flavor: "pyramid", vertices, faces });
+  const id = `ph${store.getState().counter + 1}`;
+  const label = nextLabel(store.getState(), "polyhedron3d");
+  const obj = {
+    id,
+    kind: "polyhedron3d",
+    label,
+    visible: true,
+    locked: false,
+    layer: "default",
+    schemaVersion: 1,
+    attrs: { flavor: "pyramid", vertices, faces }
+  };
+  store.dispatch({ type: "ADD", payload: { obj } });
+  return id;
 }
 var init_pyramid = __esm({
   "src/stamps/geometry-3d/editor/tools/handlers/pyramid.ts"() {
+    init_scene();
     init_ensurePoint();
     init_geometryChecks();
   }
 });
 
 // src/stamps/geometry-3d/editor/tools/handlers/prism.ts
-function buildPrism(args, scene) {
+function buildPrism(args, store) {
   const baseArgs = args.filter((a) => a.step.type === "point");
   const numberArg = args.find((a) => a.step.type === "number");
   if (baseArgs.length < 3 || !numberArg || typeof numberArg.value !== "number") return null;
   const height = numberArg.value;
   if (height <= 0) return null;
-  const baseIds = baseArgs.map((a) => a.hit ? ensurePoint(a.hit, scene) : null).filter((x) => !!x);
+  const baseIds = baseArgs.map((a) => a.hit ? ensurePoint(a.hit, store) : null).filter((x) => !!x);
   if (baseIds.length < 3) return null;
   const topIds = [];
-  for (const id of baseIds) {
-    const p = scene.get(id);
-    if (!p || p.kind !== "point") return null;
-    const w = constraintToWorld(p.constraint, scene);
-    topIds.push(scene.addPoint({ kind: "free", x: w[0], y: w[1], z: w[2] + height }));
+  for (const id2 of baseIds) {
+    const state = store.getState();
+    const p = state.objects[id2];
+    if (!p || p.kind !== "point3d") return null;
+    const attrs = p.attrs;
+    const w = constraintToWorld(attrs.constraint, state);
+    topIds.push(addPoint(store, { kind: "free", x: w[0], y: w[1], z: w[2] + height }));
   }
   const n = baseIds.length;
   const vertices = [...baseIds, ...topIds];
@@ -4701,26 +5316,41 @@ function buildPrism(args, scene) {
   for (let i = 0; i < n; i++) {
     faces.push([i, (i + 1) % n, n + (i + 1) % n, n + i]);
   }
-  return scene.addObject("polyhedron", { flavor: "prism", vertices, faces });
+  const id = `ph${store.getState().counter + 1}`;
+  const label = nextLabel(store.getState(), "polyhedron3d");
+  const obj = {
+    id,
+    kind: "polyhedron3d",
+    label,
+    visible: true,
+    locked: false,
+    layer: "default",
+    schemaVersion: 1,
+    attrs: { flavor: "prism", vertices, faces }
+  };
+  store.dispatch({ type: "ADD", payload: { obj } });
+  return id;
 }
 var init_prism = __esm({
   "src/stamps/geometry-3d/editor/tools/handlers/prism.ts"() {
+    init_scene();
     init_ensurePoint();
     init_constraintMath();
   }
 });
 
 // src/stamps/geometry-3d/editor/tools/handlers/tetrahedron.ts
-function buildTetrahedron(args, scene) {
+function buildTetrahedron(args, store) {
   if (args.length < 2 || !args[0].hit || !args[1].hit) return null;
-  const p1Id = ensurePoint(args[0].hit, scene);
-  const p2Id = ensurePoint(args[1].hit, scene);
+  const p1Id = ensurePoint(args[0].hit, store);
+  const p2Id = ensurePoint(args[1].hit, store);
   if (!p1Id || !p2Id || p1Id === p2Id) return null;
-  const p1Obj = scene.get(p1Id);
-  const p2Obj = scene.get(p2Id);
-  if (!p1Obj || p1Obj.kind !== "point" || !p2Obj || p2Obj.kind !== "point") return null;
-  const p1 = constraintToWorld(p1Obj.constraint, scene);
-  const p2 = constraintToWorld(p2Obj.constraint, scene);
+  const state0 = store.getState();
+  const p1Obj = state0.objects[p1Id];
+  const p2Obj = state0.objects[p2Id];
+  if (!p1Obj || p1Obj.kind !== "point3d" || !p2Obj || p2Obj.kind !== "point3d") return null;
+  const p1 = constraintToWorld(p1Obj.attrs.constraint, state0);
+  const p2 = constraintToWorld(p2Obj.attrs.constraint, state0);
   const z0 = Math.min(p1[2], p2[2]);
   const baseA = [p1[0], p1[1], z0];
   const baseB = [p2[0], p2[1], z0];
@@ -4741,8 +5371,8 @@ function buildTetrahedron(args, scene) {
   ];
   const apexHeight = edge * Math.sqrt(2 / 3);
   const apex = [centroid[0], centroid[1], z0 + apexHeight];
-  const cId = scene.addPoint({ kind: "free", x: baseC[0], y: baseC[1], z: baseC[2] });
-  const apexId = scene.addPoint({ kind: "free", x: apex[0], y: apex[1], z: apex[2] });
+  const cId = addPoint(store, { kind: "free", x: baseC[0], y: baseC[1], z: baseC[2] });
+  const apexId = addPoint(store, { kind: "free", x: apex[0], y: apex[1], z: apex[2] });
   const vertices = [p1Id, p2Id, cId, apexId];
   const faces = [
     [0, 1, 2],
@@ -4754,26 +5384,41 @@ function buildTetrahedron(args, scene) {
     [2, 0, 3]
     // face c-p1-apex
   ];
-  return scene.addObject("polyhedron", { flavor: "tetrahedron", vertices, faces });
+  const id = `ph${store.getState().counter + 1}`;
+  const label = nextLabel(store.getState(), "polyhedron3d");
+  const obj = {
+    id,
+    kind: "polyhedron3d",
+    label,
+    visible: true,
+    locked: false,
+    layer: "default",
+    schemaVersion: 1,
+    attrs: { flavor: "tetrahedron", vertices, faces }
+  };
+  store.dispatch({ type: "ADD", payload: { obj } });
+  return id;
 }
 var init_tetrahedron = __esm({
   "src/stamps/geometry-3d/editor/tools/handlers/tetrahedron.ts"() {
+    init_scene();
     init_ensurePoint();
     init_constraintMath();
   }
 });
 
 // src/stamps/geometry-3d/editor/tools/handlers/cube.ts
-function buildCube(args, scene) {
+function buildCube(args, store) {
   if (args.length < 2 || !args[0].hit || !args[1].hit) return null;
-  const p1Id = ensurePoint(args[0].hit, scene);
-  const p2Id = ensurePoint(args[1].hit, scene);
+  const p1Id = ensurePoint(args[0].hit, store);
+  const p2Id = ensurePoint(args[1].hit, store);
   if (!p1Id || !p2Id || p1Id === p2Id) return null;
-  const p1Obj = scene.get(p1Id);
-  const p2Obj = scene.get(p2Id);
-  if (!p1Obj || p1Obj.kind !== "point" || !p2Obj || p2Obj.kind !== "point") return null;
-  const p1 = constraintToWorld(p1Obj.constraint, scene);
-  const p2 = constraintToWorld(p2Obj.constraint, scene);
+  const state0 = store.getState();
+  const p1Obj = state0.objects[p1Id];
+  const p2Obj = state0.objects[p2Id];
+  if (!p1Obj || p1Obj.kind !== "point3d" || !p2Obj || p2Obj.kind !== "point3d") return null;
+  const p1 = constraintToWorld(p1Obj.attrs.constraint, state0);
+  const p2 = constraintToWorld(p2Obj.attrs.constraint, state0);
   if (Math.abs(p1[2]) > 1e-6 || Math.abs(p2[2]) > 1e-6) return null;
   const dx = p2[0] - p1[0];
   const dy = p2[1] - p1[1];
@@ -4787,12 +5432,12 @@ function buildCube(args, scene) {
   const t2 = [p2[0], p2[1], edge];
   const t3 = [p3[0], p3[1], edge];
   const t4 = [p4[0], p4[1], edge];
-  const p3Id = scene.addPoint({ kind: "onGround", x: p3[0], y: p3[1] });
-  const p4Id = scene.addPoint({ kind: "onGround", x: p4[0], y: p4[1] });
-  const t1Id = scene.addPoint({ kind: "free", x: t1[0], y: t1[1], z: t1[2] });
-  const t2Id = scene.addPoint({ kind: "free", x: t2[0], y: t2[1], z: t2[2] });
-  const t3Id = scene.addPoint({ kind: "free", x: t3[0], y: t3[1], z: t3[2] });
-  const t4Id = scene.addPoint({ kind: "free", x: t4[0], y: t4[1], z: t4[2] });
+  const p3Id = addPoint(store, { kind: "onGround", x: p3[0], y: p3[1] });
+  const p4Id = addPoint(store, { kind: "onGround", x: p4[0], y: p4[1] });
+  const t1Id = addPoint(store, { kind: "free", x: t1[0], y: t1[1], z: t1[2] });
+  const t2Id = addPoint(store, { kind: "free", x: t2[0], y: t2[1], z: t2[2] });
+  const t3Id = addPoint(store, { kind: "free", x: t3[0], y: t3[1], z: t3[2] });
+  const t4Id = addPoint(store, { kind: "free", x: t4[0], y: t4[1], z: t4[2] });
   const vertices = [p1Id, p2Id, p3Id, p4Id, t1Id, t2Id, t3Id, t4Id];
   const faces = [
     [0, 1, 2, 3],
@@ -4808,61 +5453,117 @@ function buildCube(args, scene) {
     [3, 0, 4, 7]
     // left
   ];
-  return scene.addObject("polyhedron", { flavor: "cube", vertices, faces });
+  const id = `ph${store.getState().counter + 1}`;
+  const label = nextLabel(store.getState(), "polyhedron3d");
+  const obj = {
+    id,
+    kind: "polyhedron3d",
+    label,
+    visible: true,
+    locked: false,
+    layer: "default",
+    schemaVersion: 1,
+    attrs: { flavor: "cube", vertices, faces }
+  };
+  store.dispatch({ type: "ADD", payload: { obj } });
+  return id;
 }
 var init_cube = __esm({
   "src/stamps/geometry-3d/editor/tools/handlers/cube.ts"() {
+    init_scene();
     init_ensurePoint();
     init_constraintMath();
   }
 });
 
 // src/stamps/geometry-3d/editor/tools/handlers/sphere.ts
-function buildSphere(args, scene) {
+function buildSphere(args, store) {
   if (args.length < 2 || !args[0].hit || !args[1].hit) return null;
-  const center = ensurePoint(args[0].hit, scene);
-  const surface = ensurePoint(args[1].hit, scene);
+  const center = ensurePoint(args[0].hit, store);
+  const surface = ensurePoint(args[1].hit, store);
   if (!center || !surface || center === surface) return null;
-  return scene.addObject("sphere", { center, surfacePoint: surface });
+  const id = `sp${store.getState().counter + 1}`;
+  const label = nextLabel(store.getState(), "sphere3d");
+  const obj = {
+    id,
+    kind: "sphere3d",
+    label,
+    visible: true,
+    locked: false,
+    layer: "default",
+    schemaVersion: 1,
+    attrs: { center, surfacePoint: surface }
+  };
+  store.dispatch({ type: "ADD", payload: { obj } });
+  return id;
 }
 var init_sphere = __esm({
   "src/stamps/geometry-3d/editor/tools/handlers/sphere.ts"() {
+    init_scene();
     init_ensurePoint();
   }
 });
 
 // src/stamps/geometry-3d/editor/tools/handlers/cylinder.ts
-function buildCylinder(args, scene) {
+function buildCylinder(args, store) {
   const points = args.filter((a) => a.step.type === "point");
   const numberArg = args.find((a) => a.step.type === "number");
   if (points.length < 2 || !points[0].hit || !points[1].hit || !numberArg || typeof numberArg.value !== "number") return null;
   const radius = numberArg.value;
   if (radius <= 0) return null;
-  const baseCenter = ensurePoint(points[0].hit, scene);
-  const topCenter = ensurePoint(points[1].hit, scene);
+  const baseCenter = ensurePoint(points[0].hit, store);
+  const topCenter = ensurePoint(points[1].hit, store);
   if (!baseCenter || !topCenter || baseCenter === topCenter) return null;
-  return scene.addObject("cylinder", { baseCenter, topCenter, radius });
+  const id = `cy${store.getState().counter + 1}`;
+  const label = nextLabel(store.getState(), "cylinder3d");
+  const obj = {
+    id,
+    kind: "cylinder3d",
+    label,
+    visible: true,
+    locked: false,
+    layer: "default",
+    schemaVersion: 1,
+    attrs: { baseCenter, topCenter, radius }
+  };
+  store.dispatch({ type: "ADD", payload: { obj } });
+  return id;
 }
 var init_cylinder = __esm({
   "src/stamps/geometry-3d/editor/tools/handlers/cylinder.ts"() {
+    init_scene();
     init_ensurePoint();
   }
 });
 
 // src/stamps/geometry-3d/editor/tools/handlers/cone.ts
-function buildCone(args, scene) {
+function buildCone(args, store) {
   const points = args.filter((a) => a.step.type === "point");
   const numberArg = args.find((a) => a.step.type === "number");
   if (points.length < 2 || !points[0].hit || !points[1].hit || !numberArg || typeof numberArg.value !== "number") return null;
   const radius = numberArg.value;
   if (radius <= 0) return null;
-  const baseCenter = ensurePoint(points[0].hit, scene);
-  const apex = ensurePoint(points[1].hit, scene);
+  const baseCenter = ensurePoint(points[0].hit, store);
+  const apex = ensurePoint(points[1].hit, store);
   if (!baseCenter || !apex || baseCenter === apex) return null;
-  return scene.addObject("cone", { baseCenter, apex, radius });
+  const id = `co${store.getState().counter + 1}`;
+  const label = nextLabel(store.getState(), "cone3d");
+  const obj = {
+    id,
+    kind: "cone3d",
+    label,
+    visible: true,
+    locked: false,
+    layer: "default",
+    schemaVersion: 1,
+    attrs: { baseCenter, apex, radius }
+  };
+  store.dispatch({ type: "ADD", payload: { obj } });
+  return id;
 }
 var init_cone = __esm({
   "src/stamps/geometry-3d/editor/tools/handlers/cone.ts"() {
+    init_scene();
     init_ensurePoint();
   }
 });
@@ -5072,8 +5773,8 @@ var init_controller = __esm({
   "src/stamps/geometry-3d/editor/tools/controller.ts"() {
     init_spec();
     ToolController = class {
-      constructor(scene) {
-        this.scene = scene;
+      constructor(store) {
+        this.store = store;
         this.state = { tool: null, stepIndex: 0, collected: [], hint: "" };
         this.listeners = /* @__PURE__ */ new Set();
         this.selectTool("move");
@@ -5158,7 +5859,7 @@ var init_controller = __esm({
       advance() {
         const tool = this.state.tool;
         if (this.state.stepIndex >= tool.steps.length) {
-          tool.build(this.state.collected, this.scene);
+          tool.build(this.state.collected, this.store);
           if (tool.repeatAfterBuild) {
             this.state.stepIndex = 0;
             this.state.collected = [];
@@ -5174,260 +5875,6 @@ var init_controller = __esm({
       }
       notify() {
         for (const cb of this.listeners) cb(this.state);
-      }
-    };
-  }
-});
-
-// src/stamps/geometry-3d/editor/renderer/faceted.ts
-function cylinderFaces(center, top, radius) {
-  const baseRing = [];
-  const topRing = [];
-  for (let i = 0; i < CURVED_SEGMENTS; i++) {
-    const theta = i / CURVED_SEGMENTS * Math.PI * 2;
-    const dx = radius * Math.cos(theta);
-    const dy = radius * Math.sin(theta);
-    baseRing.push([center[0] + dx, center[1] + dy, center[2]]);
-    topRing.push([top[0] + dx, top[1] + dy, top[2]]);
-  }
-  const vertices = [...baseRing, ...topRing];
-  const faces = [];
-  faces.push(baseRing.map((_, i) => i));
-  faces.push(topRing.map((_, i) => CURVED_SEGMENTS + i));
-  for (let i = 0; i < CURVED_SEGMENTS; i++) {
-    const next = (i + 1) % CURVED_SEGMENTS;
-    faces.push([i, next, CURVED_SEGMENTS + next, CURVED_SEGMENTS + i]);
-  }
-  return { vertices, faces };
-}
-function coneFaces(baseCenter, apex, radius) {
-  const baseRing = [];
-  for (let i = 0; i < CURVED_SEGMENTS; i++) {
-    const theta = i / CURVED_SEGMENTS * Math.PI * 2;
-    baseRing.push([
-      baseCenter[0] + radius * Math.cos(theta),
-      baseCenter[1] + radius * Math.sin(theta),
-      baseCenter[2]
-    ]);
-  }
-  const apexIdx = baseRing.length;
-  const vertices = [...baseRing, apex];
-  const faces = [baseRing.map((_, i) => i)];
-  for (let i = 0; i < CURVED_SEGMENTS; i++) {
-    faces.push([i, (i + 1) % CURVED_SEGMENTS, apexIdx]);
-  }
-  return { vertices, faces };
-}
-var CURVED_SEGMENTS;
-var init_faceted = __esm({
-  "src/stamps/geometry-3d/editor/renderer/faceted.ts"() {
-    CURVED_SEGMENTS = 16;
-  }
-});
-
-// src/stamps/geometry-3d/editor/renderer/JxgRenderer.ts
-var JxgRenderer;
-var init_JxgRenderer = __esm({
-  "src/stamps/geometry-3d/editor/renderer/JxgRenderer.ts"() {
-    init_constraintMath();
-    init_faceted();
-    JxgRenderer = class {
-      constructor(scene, view) {
-        this.scene = scene;
-        this.view = view;
-        this.map = /* @__PURE__ */ new Map();
-        this.unsubAdd = scene.on("add", (o) => this.handleAdd(o));
-        this.unsubChange = scene.on("change", (o) => this.handleChange(o));
-        this.unsubDelete = scene.on("delete", (id) => this.handleDelete(id));
-        this.unsubReset = scene.on("reset", () => this.handleReset());
-        for (const obj of scene.list()) this.handleAdd(obj);
-      }
-      dispose() {
-        this.unsubAdd();
-        this.unsubChange();
-        this.unsubDelete();
-        this.unsubReset();
-        for (const [id, j] of this.map) {
-          try {
-            j.remove?.();
-          } catch {
-          }
-          this.map.delete(id);
-        }
-      }
-      handleAdd(obj) {
-        if (this.map.has(obj.id)) return;
-        if (obj.kind === "point") {
-          const world = constraintToWorld(obj.constraint, this.scene);
-          const attrs = { id: obj.id, name: obj.label, size: 4, visible: obj.visible, fixed: true };
-          const jxg = this.view.create("point3d", world, attrs);
-          this.map.set(obj.id, jxg);
-          return;
-        }
-        if (obj.kind === "segment") {
-          const a = this.map.get(obj.p1);
-          const b = this.map.get(obj.p2);
-          const attrs = {
-            id: obj.id,
-            straightFirst: false,
-            straightLast: false,
-            visible: obj.visible,
-            strokeColor: obj.color ?? "#0066cc",
-            strokeWidth: 2
-          };
-          this.map.set(obj.id, this.view.create("line3d", [a, b], attrs));
-          return;
-        }
-        if (obj.kind === "line") {
-          const attrs = {
-            id: obj.id,
-            visible: obj.visible,
-            strokeColor: obj.color ?? "#0066cc",
-            strokeWidth: 2
-          };
-          this.map.set(
-            obj.id,
-            this.view.create("line3d", [this.map.get(obj.p1), this.map.get(obj.p2)], attrs)
-          );
-          return;
-        }
-        if (obj.kind === "ray") {
-          const attrs = { id: obj.id, straightFirst: false, visible: obj.visible };
-          this.map.set(
-            obj.id,
-            this.view.create("line3d", [this.map.get(obj.origin), this.map.get(obj.through)], attrs)
-          );
-          return;
-        }
-        if (obj.kind === "vector") {
-          const attrs = {
-            id: obj.id,
-            lastArrow: true,
-            straightFirst: false,
-            straightLast: false,
-            visible: obj.visible
-          };
-          this.map.set(
-            obj.id,
-            this.view.create("line3d", [this.map.get(obj.from), this.map.get(obj.to)], attrs)
-          );
-          return;
-        }
-        if (obj.kind === "plane") {
-          const attrs = { id: obj.id, fillOpacity: 0.2, visible: obj.visible };
-          this.map.set(
-            obj.id,
-            this.view.create(
-              "plane3d",
-              [this.map.get(obj.p1), this.map.get(obj.p2), this.map.get(obj.p3)],
-              attrs
-            )
-          );
-          return;
-        }
-        if (obj.kind === "polygon") {
-          const refs = obj.vertices.map((v) => this.map.get(v));
-          const attrs = { id: obj.id, fillOpacity: 0.3, visible: obj.visible };
-          this.map.set(obj.id, this.view.create("polygon3d", [refs], attrs));
-          return;
-        }
-        if (obj.kind === "sphere") {
-          const attrs = { id: obj.id, fillOpacity: 0.25, visible: obj.visible };
-          this.map.set(
-            obj.id,
-            this.view.create("sphere3d", [this.map.get(obj.center), this.map.get(obj.surfacePoint)], attrs)
-          );
-          return;
-        }
-        if (obj.kind === "polyhedron") {
-          const verts = obj.vertices.map((id) => this.map.get(id));
-          const faceJxgs = obj.faces.map(
-            (face) => this.view.create("polygon3d", [face.map((idx) => verts[idx])], {
-              id: `${obj.id}.face${face.join("-")}`,
-              fillOpacity: 0.25,
-              strokeColor: "#0066cc",
-              strokeWidth: 1.5,
-              visible: obj.visible
-            })
-          );
-          this.map.set(obj.id, {
-            _faces: faceJxgs,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            remove: () => faceJxgs.forEach((f) => f.remove?.())
-          });
-          return;
-        }
-        if (obj.kind === "cylinder" || obj.kind === "cone") {
-          const baseCenterPt = this.scene.get(obj.baseCenter);
-          if (!baseCenterPt || baseCenterPt.kind !== "point") return;
-          const base = constraintToWorld(baseCenterPt.constraint, this.scene);
-          let secondPt;
-          if (obj.kind === "cylinder") {
-            const topCenterPt = this.scene.get(obj.topCenter);
-            if (!topCenterPt || topCenterPt.kind !== "point") return;
-            secondPt = constraintToWorld(topCenterPt.constraint, this.scene);
-          } else {
-            const apexPt = this.scene.get(obj.apex);
-            if (!apexPt || apexPt.kind !== "point") return;
-            secondPt = constraintToWorld(apexPt.constraint, this.scene);
-          }
-          const geom = obj.kind === "cylinder" ? cylinderFaces(base, secondPt, obj.radius) : coneFaces(base, secondPt, obj.radius);
-          const vertJxgs = geom.vertices.map(
-            (v, i) => this.view.create("point3d", v, {
-              id: `${obj.id}.v${i}`,
-              visible: false,
-              fixed: true,
-              withLabel: false
-            })
-          );
-          const faceJxgs = geom.faces.map(
-            (face) => this.view.create("polygon3d", [face.map((idx) => vertJxgs[idx])], {
-              id: `${obj.id}.face${face.join("-")}`,
-              fillOpacity: 0.25,
-              strokeColor: "#0066cc",
-              strokeWidth: 1.5,
-              visible: obj.visible
-            })
-          );
-          this.map.set(obj.id, {
-            _verts: vertJxgs,
-            _faces: faceJxgs,
-            remove: () => {
-              faceJxgs.forEach((f) => f.remove?.());
-              vertJxgs.forEach((v) => v.remove?.());
-            }
-          });
-          return;
-        }
-      }
-      handleChange(obj) {
-        const j = this.map.get(obj.id);
-        if (!j) return;
-        if (obj.kind === "point" && typeof j.moveTo === "function") {
-          const w = constraintToWorld(obj.constraint, this.scene);
-          try {
-            j.moveTo([w[0], w[1], w[2]], 0);
-          } catch {
-          }
-        }
-      }
-      handleDelete(id) {
-        const j = this.map.get(id);
-        if (!j) return;
-        try {
-          j.remove?.();
-        } catch {
-        }
-        this.map.delete(id);
-      }
-      handleReset() {
-        for (const [, j] of this.map) {
-          try {
-            j.remove?.();
-          } catch {
-          }
-        }
-        this.map.clear();
       }
     };
   }
@@ -5537,17 +5984,18 @@ var init_intersect = __esm({
 });
 
 // src/stamps/geometry-3d/editor/hitTest/snapping.ts
-function findSnapPoint(screen, view, scene, pixelRadius = 8) {
+function findSnapPoint(screen, view, state, pixelRadius = 8) {
   const board = view?.board;
   const ux = typeof board?.unitX === "number" && board.unitX > 0 ? board.unitX : 1;
   const uy = typeof board?.unitY === "number" && board.unitY > 0 ? board.unitY : ux;
   const rxUser = pixelRadius / ux;
   const ryUser = pixelRadius / uy;
   let best = null;
-  for (const obj of scene.list()) {
-    if (obj.kind !== "point") continue;
+  for (const obj of listObjects(state)) {
+    if (obj.kind !== "point3d") continue;
     if (!obj.visible) continue;
-    const world = constraintToWorld(obj.constraint, scene);
+    const attrs = obj.attrs;
+    const world = constraintToWorld(attrs.constraint, state);
     const proj = view.project3DTo2D?.(world[0], world[1], world[2]);
     if (!proj) continue;
     const dxN = (proj[1] - screen.x) / rxUser;
@@ -5562,26 +6010,28 @@ function findSnapPoint(screen, view, scene, pixelRadius = 8) {
 var init_snapping = __esm({
   "src/stamps/geometry-3d/editor/hitTest/snapping.ts"() {
     init_constraintMath();
+    init_scene();
   }
 });
 
 // src/stamps/geometry-3d/editor/hitTest/hitTest.ts
-function hitTest(screen, view, scene) {
+function hitTest(screen, view, state) {
   const board = view?.board;
   const ux = typeof board?.unitX === "number" && board.unitX > 0 ? board.unitX : 1;
   const axisThresholdUser = AXIS_PIXEL_THRESHOLD / ux;
-  const snap = findSnapPoint(screen, view, scene);
+  const snap = findSnapPoint(screen, view, state);
   if (snap) return { kind: "existingPoint", pointId: snap };
   const ray = screenToRay(screen, view);
   let bestSphere = null;
-  for (const obj of scene.list()) {
-    if (obj.kind !== "sphere" || !obj.visible) continue;
-    const centerPoint = scene.get(obj.center);
-    const surfacePoint = scene.get(obj.surfacePoint);
-    if (!centerPoint || centerPoint.kind !== "point") continue;
-    if (!surfacePoint || surfacePoint.kind !== "point") continue;
-    const center = constraintToWorld(centerPoint.constraint, scene);
-    const surface = constraintToWorld(surfacePoint.constraint, scene);
+  for (const obj of listObjects(state)) {
+    if (obj.kind !== "sphere3d" || !obj.visible) continue;
+    const attrs = obj.attrs;
+    const centerPoint = state.objects[attrs.center];
+    const surfacePoint = state.objects[attrs.surfacePoint];
+    if (!centerPoint || centerPoint.kind !== "point3d") continue;
+    if (!surfacePoint || surfacePoint.kind !== "point3d") continue;
+    const center = constraintToWorld(centerPoint.attrs.constraint, state);
+    const surface = constraintToWorld(surfacePoint.attrs.constraint, state);
     const radius = Math.hypot(
       surface[0] - center[0],
       surface[1] - center[1],
@@ -5612,9 +6062,9 @@ function hitTest(screen, view, scene) {
     }
   }
   let bestPlane = null;
-  for (const obj of scene.list()) {
-    if (obj.kind !== "plane" || !obj.visible) continue;
-    const basis = planeBasis(obj, scene);
+  for (const obj of listObjects(state)) {
+    if (obj.kind !== "plane3d" || !obj.visible) continue;
+    const basis = planeBasis(obj.attrs, state);
     if (!basis) continue;
     const ph = rayPlane(ray, { point: basis.origin, normal: basis.normal });
     if (ph && (bestPlane === null || ph.t < bestPlane.t)) {
@@ -5634,11 +6084,11 @@ function hitTest(screen, view, scene) {
     return { kind: "onPlane", planeId: bestPlane.id, u, v, world: bestPlane.world };
   }
   if (bestSphere) {
-    const sph = scene.get(bestSphere.id);
-    if (sph && sph.kind === "sphere") {
-      const centerPt = scene.get(sph.center);
-      if (centerPt && centerPt.kind === "point") {
-        const center = constraintToWorld(centerPt.constraint, scene);
+    const sph = state.objects[bestSphere.id];
+    if (sph && sph.kind === "sphere3d") {
+      const centerPt = state.objects[sph.attrs.center];
+      if (centerPt && centerPt.kind === "point3d") {
+        const center = constraintToWorld(centerPt.attrs.constraint, state);
         const relX = bestSphere.world[0] - center[0];
         const relY = bestSphere.world[1] - center[1];
         const relZ = bestSphere.world[2] - center[2];
@@ -5667,16 +6117,16 @@ function distScreenPointToSegment(p, a, b) {
   const py = a[1] + t * vy;
   return Math.hypot(p.x - px, p.y - py);
 }
-function planeBasis(planeObj, scene) {
-  const p1Obj = scene.get(planeObj.p1);
-  const p2Obj = scene.get(planeObj.p2);
-  const p3Obj = scene.get(planeObj.p3);
-  if (!p1Obj || p1Obj.kind !== "point") return null;
-  if (!p2Obj || p2Obj.kind !== "point") return null;
-  if (!p3Obj || p3Obj.kind !== "point") return null;
-  const p1 = constraintToWorld(p1Obj.constraint, scene);
-  const p2 = constraintToWorld(p2Obj.constraint, scene);
-  const p3 = constraintToWorld(p3Obj.constraint, scene);
+function planeBasis(plane, state) {
+  const p1Obj = state.objects[plane.p1];
+  const p2Obj = state.objects[plane.p2];
+  const p3Obj = state.objects[plane.p3];
+  if (!p1Obj || p1Obj.kind !== "point3d") return null;
+  if (!p2Obj || p2Obj.kind !== "point3d") return null;
+  if (!p3Obj || p3Obj.kind !== "point3d") return null;
+  const p1 = constraintToWorld(p1Obj.attrs.constraint, state);
+  const p2 = constraintToWorld(p2Obj.attrs.constraint, state);
+  const p3 = constraintToWorld(p3Obj.attrs.constraint, state);
   const basis1 = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
   const tmp = [p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]];
   const cx = basis1[1] * tmp[2] - basis1[2] * tmp[1];
@@ -5696,12 +6146,13 @@ function dot3(a, b) {
   return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
 var AXIS_PIXEL_THRESHOLD;
-var init_hitTest = __esm({
+var init_hitTest2 = __esm({
   "src/stamps/geometry-3d/editor/hitTest/hitTest.ts"() {
     init_rayCast();
     init_intersect();
     init_snapping();
     init_constraintMath();
+    init_scene();
     AXIS_PIXEL_THRESHOLD = 12;
   }
 });
@@ -5759,6 +6210,7 @@ var init_MiniBoard3D = __esm({
           let handlePointerMove = null;
           let handlePointerUp = null;
           let handlePointerLeave = null;
+          let handleWheel = null;
           void (async () => {
             try {
               JXG = (await import('jsxgraph')).default;
@@ -5777,13 +6229,37 @@ var init_MiniBoard3D = __esm({
                 axis: false,
                 showCopyright: false,
                 showNavigation: false,
-                renderer: "svg"
+                renderer: "svg",
+                // Wheel zoom được tự xử lý bằng Ctrl/Cmd + wheel ở dưới (Excalidraw-style).
+                zoom: { wheel: false }
               });
             } catch {
               return;
             }
             if (cancelled || !board) return;
             boardRef.current = board;
+            const wheelBoard = board;
+            handleWheel = (e) => {
+              if (!e.ctrlKey && !e.metaKey) return;
+              e.preventDefault();
+              e.stopPropagation();
+              let cx;
+              let cy;
+              try {
+                const usr = wheelBoard.getUsrCoordsOfMouse?.(e);
+                if (Array.isArray(usr) && usr.length === 2 && Number.isFinite(usr[0]) && Number.isFinite(usr[1])) {
+                  cx = usr[0];
+                  cy = usr[1];
+                }
+              } catch {
+              }
+              try {
+                if (e.deltaY < 0) wheelBoard.zoomIn(cx, cy);
+                else if (e.deltaY > 0) wheelBoard.zoomOut(cx, cy);
+              } catch {
+              }
+            };
+            div.addEventListener("wheel", handleWheel, { passive: false });
             let view = null;
             try {
               const baseAttrs = VIEW3D_ATTRS(isDark);
@@ -5964,6 +6440,10 @@ var init_MiniBoard3D = __esm({
           })();
           return () => {
             cancelled = true;
+            if (handleWheel) {
+              div.removeEventListener("wheel", handleWheel);
+              handleWheel = null;
+            }
             if (svgEl) {
               if (handlePointerDown) svgEl.removeEventListener("pointerdown", handlePointerDown);
               if (handlePointerMove) svgEl.removeEventListener("pointermove", handlePointerMove);
@@ -6027,414 +6507,14 @@ var init_StatusHint = __esm({
     "use client";
   }
 });
-
-// src/stamps/geometry-3d/editor/scene/labels.ts
-function nextPointLabel(existing) {
-  const used = new Set(existing);
-  for (let suffix = 0; suffix < 1e3; suffix++) {
-    for (let i = 0; i < 26; i++) {
-      const letter = String.fromCharCode(A + i);
-      const candidate = suffix === 0 ? letter : `${letter}_${suffix}`;
-      if (!used.has(candidate)) return candidate;
-    }
-  }
-  return `P_${used.size}`;
-}
-function nextDerivedLabel(kind, existing) {
-  const used = new Set(existing);
-  if (LOWERCASE_KINDS.includes(kind)) {
-    for (let i = 0; i < 26; i++) {
-      const c = String.fromCharCode("a".charCodeAt(0) + i);
-      if (!used.has(c)) return c;
-    }
-    for (let n = 1; n < 1e3; n++) {
-      const c = `a_${n}`;
-      if (!used.has(c)) return c;
-    }
-  }
-  const prefix = PREFIX[kind] ?? kind[0];
-  for (let n = 1; n < 1e3; n++) {
-    const candidate = `${prefix}_${n}`;
-    if (!used.has(candidate)) return candidate;
-  }
-  return `${prefix}_x`;
-}
-var A, LOWERCASE_KINDS, PREFIX;
-var init_labels = __esm({
-  "src/stamps/geometry-3d/editor/scene/labels.ts"() {
-    A = "A".charCodeAt(0);
-    LOWERCASE_KINDS = ["segment", "line", "ray", "vector"];
-    PREFIX = {
-      sphere: "s",
-      polyhedron: "h",
-      cylinder: "c",
-      cone: "k",
-      polygon: "g",
-      plane: "\u03C0"
-    };
-  }
-});
-
-// src/stamps/geometry-3d/editor/scene/Scene3D.ts
-var Scene3D;
-var init_Scene3D = __esm({
-  "src/stamps/geometry-3d/editor/scene/Scene3D.ts"() {
-    init_labels();
-    Scene3D = class {
-      constructor() {
-        this.objects = /* @__PURE__ */ new Map();
-        this.order = [];
-        this.counter = 0;
-        this.listeners = {
-          add: /* @__PURE__ */ new Set(),
-          change: /* @__PURE__ */ new Set(),
-          delete: /* @__PURE__ */ new Set(),
-          reset: /* @__PURE__ */ new Set()
-        };
-        this.historyPast = [];
-        this.historyFuture = [];
-        this.historySuspended = false;
-        this.historyListeners = /* @__PURE__ */ new Set();
-      }
-      on(event, cb) {
-        const set = this.listeners[event];
-        set.add(cb);
-        return () => {
-          set.delete(cb);
-        };
-      }
-      nextId(prefix) {
-        this.counter += 1;
-        return `${prefix}${this.counter}`;
-      }
-      addPoint(constraint, label, color) {
-        this.capture();
-        const id = this.nextId("p");
-        const existingLabels = this.list().filter((o) => o.kind === "point").map((o) => o.label);
-        const autoLabel = label ?? nextPointLabel(existingLabels);
-        const obj = {
-          kind: "point",
-          id,
-          label: autoLabel,
-          visible: true,
-          color,
-          constraint
-        };
-        this.objects.set(id, obj);
-        this.order.push(id);
-        this.listeners.add.forEach((cb) => cb(obj));
-        return id;
-      }
-      addObject(kind, spec, label) {
-        this.capture();
-        const id = this.nextId(kind[0]);
-        const existingLabels = this.list().filter((o) => o.kind === kind).map((o) => o.label);
-        const autoLabel = label ?? nextDerivedLabel(kind, existingLabels);
-        const obj = { id, label: autoLabel, visible: true, kind, ...spec };
-        this.objects.set(id, obj);
-        this.order.push(id);
-        this.listeners.add.forEach((cb) => cb(obj));
-        return id;
-      }
-      insert(obj) {
-        this.capture();
-        if (this.objects.has(obj.id)) {
-          throw new Error(`Scene3D.insert: id ${obj.id} already exists`);
-        }
-        this.objects.set(obj.id, obj);
-        this.order.push(obj.id);
-        this.listeners.add.forEach((cb) => cb(obj));
-      }
-      get(id) {
-        return this.objects.get(id);
-      }
-      list() {
-        return this.order.map((id) => this.objects.get(id)).filter((obj) => obj !== void 0);
-      }
-      referencedIds(obj) {
-        switch (obj.kind) {
-          case "point": {
-            const c = obj.constraint;
-            if (c.kind === "onPlane") return [c.planeId];
-            if (c.kind === "onLine") return [c.lineId];
-            if (c.kind === "onPolygon") return [c.polygonId];
-            if (c.kind === "onSphere") return [c.sphereId];
-            return [];
-          }
-          case "segment":
-          case "line":
-            return [obj.p1, obj.p2];
-          case "ray":
-            return [obj.origin, obj.through];
-          case "vector":
-            return [obj.from, obj.to];
-          case "polygon":
-            return obj.vertices;
-          case "plane":
-            return [obj.p1, obj.p2, obj.p3];
-          case "sphere":
-            return [obj.center, obj.surfacePoint];
-          case "polyhedron":
-            return obj.vertices;
-          case "cylinder":
-            return [obj.baseCenter, obj.topCenter];
-          case "cone":
-            return [obj.baseCenter, obj.apex];
-        }
-      }
-      collectDependents(targetId) {
-        const dependents = /* @__PURE__ */ new Set([targetId]);
-        let grew = true;
-        while (grew) {
-          grew = false;
-          for (const obj of this.objects.values()) {
-            if (dependents.has(obj.id)) continue;
-            const refs = this.referencedIds(obj);
-            if (refs.some((r) => dependents.has(r))) {
-              dependents.add(obj.id);
-              grew = true;
-            }
-          }
-        }
-        return dependents;
-      }
-      delete(id) {
-        if (!this.objects.has(id)) return;
-        this.capture();
-        const toDelete = this.collectDependents(id);
-        for (const dependentId of toDelete) {
-          this.objects.delete(dependentId);
-          this.order = this.order.filter((x) => x !== dependentId);
-          this.listeners.delete.forEach((cb) => cb(dependentId));
-        }
-      }
-      reset() {
-        this.capture();
-        this.objects.clear();
-        this.order = [];
-        this.counter = 0;
-        this.listeners.reset.forEach((cb) => cb());
-      }
-      reserveId(prefix) {
-        return this.nextId(prefix);
-      }
-      emitChange(id) {
-        const obj = this.objects.get(id);
-        if (!obj) return;
-        this.listeners.change.forEach((cb) => cb(obj));
-      }
-      snapshot() {
-        const cloned = /* @__PURE__ */ new Map();
-        for (const [id, obj] of this.objects) {
-          cloned.set(id, { ...obj });
-        }
-        return {
-          objects: cloned,
-          order: [...this.order],
-          counter: this.counter
-        };
-      }
-      restore(snap) {
-        this.objects = /* @__PURE__ */ new Map();
-        for (const [id, obj] of snap.objects) {
-          this.objects.set(id, { ...obj });
-        }
-        this.order = [...snap.order];
-        this.counter = snap.counter;
-        this.listeners.reset.forEach((cb) => cb());
-        for (const id of this.order) {
-          const obj = this.objects.get(id);
-          if (obj) this.listeners.add.forEach((cb) => cb(obj));
-        }
-      }
-      capture() {
-        if (this.historySuspended) return;
-        this.historyPast.push(this.snapshot());
-        this.historyFuture = [];
-        this.notifyHistoryChange();
-      }
-      canUndo() {
-        return this.historyPast.length > 0;
-      }
-      canRedo() {
-        return this.historyFuture.length > 0;
-      }
-      undo() {
-        const prev = this.historyPast.pop();
-        if (!prev) return;
-        this.historyFuture.push(this.snapshot());
-        this.restore(prev);
-        this.notifyHistoryChange();
-      }
-      redo() {
-        const next = this.historyFuture.pop();
-        if (!next) return;
-        this.historyPast.push(this.snapshot());
-        this.restore(next);
-        this.notifyHistoryChange();
-      }
-      withoutHistory(fn) {
-        const prev = this.historySuspended;
-        this.historySuspended = true;
-        try {
-          fn();
-        } finally {
-          this.historySuspended = prev;
-        }
-      }
-      pushUndoCheckpoint(prev) {
-        if (this.historySuspended) return;
-        this.historyPast.push(prev);
-        this.historyFuture = [];
-        this.notifyHistoryChange();
-      }
-      onHistoryChange(cb) {
-        this.historyListeners.add(cb);
-        return () => {
-          this.historyListeners.delete(cb);
-        };
-      }
-      notifyHistoryChange() {
-        this.historyListeners.forEach((cb) => cb());
-      }
-    };
-  }
-});
-
-// src/stamps/geometry-3d/editor/scene/persistence.ts
-function sceneToBoard(scene, view, bbox) {
-  const elements = [];
-  for (const obj of scene.list()) {
-    const els = sceneObjectToElements(obj, scene);
-    elements.push(...els);
-  }
-  return { version: 2, bbox, view, showAxes: true, showMesh: true, elements };
-}
-function sceneObjectToElements(obj, scene) {
-  const baseAttrs = { label: obj.label, visible: obj.visible, color: obj.color };
-  switch (obj.kind) {
-    case "point": {
-      let w;
-      try {
-        w = constraintToWorld(obj.constraint, scene);
-      } catch {
-        w = [0, 0, 0];
-      }
-      return [{
-        type: "point3d",
-        parents: [w[0], w[1], w[2]],
-        attributes: { id: obj.id, ...baseAttrs },
-        id: obj.id,
-        label: obj.label,
-        constraint: obj.constraint
-      }];
-    }
-    case "segment":
-    case "line":
-    case "ray":
-    case "vector":
-    case "plane":
-    case "sphere":
-    case "polygon":
-    case "polyhedron":
-    case "cylinder":
-    case "cone": {
-      return [{
-        type: pickJxgType(obj.kind),
-        parents: [],
-        attributes: { id: obj.id, ...baseAttrs, sceneKind: obj.kind, sceneSpec: encodeSpec(obj) },
-        id: obj.id,
-        label: obj.label
-      }];
-    }
-  }
-}
-function pickJxgType(kind) {
-  switch (kind) {
-    case "point":
-      return "point3d";
-    case "segment":
-    case "line":
-    case "ray":
-    case "vector":
-      return "line3d";
-    case "plane":
-      return "plane3d";
-    case "sphere":
-      return "sphere3d";
-    case "polygon":
-    case "polyhedron":
-    case "cylinder":
-    case "cone":
-      return "polygon3d";
-  }
-}
-function encodeSpec(obj) {
-  const rest = {};
-  for (const [k, v] of Object.entries(obj)) {
-    if (k === "id" || k === "label" || k === "visible" || k === "color" || k === "kind") continue;
-    rest[k] = v;
-  }
-  return rest;
-}
-function boardToScene(board) {
-  const scene = new Scene3D();
-  for (const el of board.elements) {
-    if (el.type === "point3d") {
-      const constraint = el.constraint ?? {
-        kind: "free",
-        x: Number(el.parents[0] ?? 0),
-        y: Number(el.parents[1] ?? 0),
-        z: Number(el.parents[2] ?? 0)
-      };
-      const color2 = el.attributes["color"];
-      const visible2 = el.attributes["visible"] !== false;
-      try {
-        scene.insert({
-          kind: "point",
-          id: el.id,
-          label: el.label ?? el.id,
-          visible: visible2,
-          color: color2,
-          constraint
-        });
-      } catch {
-      }
-      continue;
-    }
-    const sceneKind = el.attributes["sceneKind"];
-    const sceneSpec = el.attributes["sceneSpec"];
-    if (!sceneKind || !sceneSpec) continue;
-    const color = el.attributes["color"];
-    const visible = el.attributes["visible"] !== false;
-    const obj = {
-      id: el.id,
-      label: el.label ?? el.id,
-      visible,
-      color,
-      kind: sceneKind,
-      ...sceneSpec
-    };
-    try {
-      scene.insert(obj);
-    } catch {
-    }
-  }
-  return scene;
-}
-var init_persistence = __esm({
-  "src/stamps/geometry-3d/editor/scene/persistence.ts"() {
-    init_Scene3D();
-    init_constraintMath();
-  }
-});
 var EditorPanel;
 var init_EditorPanel2 = __esm({
   "src/stamps/geometry-3d/editor/EditorPanel.tsx"() {
     "use client";
+    init_scene();
+    init_JxgRenderer3D();
     init_controller();
-    init_JxgRenderer();
-    init_hitTest();
+    init_hitTest2();
     init_rayCast();
     init_intersect();
     init_constraintMath();
@@ -6442,13 +6522,13 @@ var init_EditorPanel2 = __esm({
     init_MiniBoard3D();
     init_StatusHint();
     init_theme2();
-    init_persistence();
+    init_serialize2();
     EditorPanel = React8__namespace.forwardRef(
       function EditorPanel2(props, ref) {
         const {
           isDark: isDarkProp,
           initialState,
-          scene,
+          store,
           selectedTool,
           onSelectedToolChange,
           showAxis,
@@ -6458,7 +6538,7 @@ var init_EditorPanel2 = __esm({
         } = props;
         const isDark = isDarkProp ?? false;
         const controllerRef = React8__namespace.useRef(null);
-        if (!controllerRef.current) controllerRef.current = new ToolController(scene);
+        if (!controllerRef.current) controllerRef.current = new ToolController(store);
         const [hint, setHint] = React8__namespace.useState("Ch\u1ECDn c\xF4ng c\u1EE5 trong b\u1EA3ng b\xEAn tr\xE1i");
         const [hoverLabel, setHoverLabel] = React8__namespace.useState(null);
         const boardRef = React8__namespace.useRef(null);
@@ -6472,14 +6552,12 @@ var init_EditorPanel2 = __esm({
         const draggedPointRef = React8__namespace.useRef(null);
         const dragStartRef = React8__namespace.useRef(null);
         const dragSnapshotRef = React8__namespace.useRef(null);
+        const dragMutatedRef = React8__namespace.useRef(false);
         React8__namespace.useEffect(() => {
-          if (initialState) {
-            const loaded = boardToScene(initialState);
-            scene.withoutHistory(() => {
-              scene.reset();
-              for (const obj of loaded.list()) {
-                scene.insert(obj);
-              }
+          if (initialState?.state) {
+            const loaded = initialState.state;
+            store.withoutHistory(() => {
+              store.dispatch({ type: "LOAD", payload: { state: loaded } });
             });
           }
         }, []);
@@ -6492,12 +6570,12 @@ var init_EditorPanel2 = __esm({
           return unsub;
         }, []);
         React8__namespace.useEffect(() => {
-          onHistoryChangeRef.current?.(scene.canUndo(), scene.canRedo());
-          const unsub = scene.onHistoryChange(() => {
-            onHistoryChangeRef.current?.(scene.canUndo(), scene.canRedo());
+          onHistoryChangeRef.current?.(store.canUndo(), store.canRedo());
+          const unsub = store.subscribe(() => {
+            onHistoryChangeRef.current?.(store.canUndo(), store.canRedo());
           });
           return unsub;
-        }, [scene]);
+        }, [store]);
         React8__namespace.useEffect(() => {
           controllerRef.current?.selectTool(selectedTool);
         }, [selectedTool]);
@@ -6511,16 +6589,16 @@ var init_EditorPanel2 = __esm({
             if (key === "z" && !e.shiftKey) {
               e.preventDefault();
               e.stopPropagation();
-              scene.undo();
+              store.undo();
             } else if (key === "z" && e.shiftKey || key === "y" && !e.shiftKey) {
               e.preventDefault();
               e.stopPropagation();
-              scene.redo();
+              store.redo();
             }
           };
           window.addEventListener("keydown", onKey, { capture: true });
           return () => window.removeEventListener("keydown", onKey, { capture: true });
-        }, [scene]);
+        }, [store]);
         React8__namespace.useEffect(() => {
           return () => {
             rendererRef.current?.dispose();
@@ -6546,29 +6624,30 @@ var init_EditorPanel2 = __esm({
           }
         }, [showAxis, showGrid]);
         const handleView3DReady = React8__namespace.useCallback((view) => {
-          rendererRef.current = new JxgRenderer(scene, view);
-          if (initialState) {
+          rendererRef.current = new JxgRenderer3D(store, view);
+          const savedView = initialState?.view;
+          if (savedView) {
             try {
               const v = view;
-              v?.az_slide?.setValue?.(initialState.view.azimuth);
-              v?.el_slide?.setValue?.(initialState.view.elevation);
+              v?.az_slide?.setValue?.(savedView.azimuth);
+              v?.el_slide?.setValue?.(savedView.elevation);
               v?.board?.update?.();
             } catch {
             }
           }
           onReadyChange?.(true);
-        }, [onReadyChange, scene, initialState]);
+        }, [onReadyChange, store, initialState]);
         const handleClick = React8__namespace.useCallback((screen) => {
           const board = boardRef.current;
           if (!board) return;
           const view = board.getView3D();
           if (!view) return;
           try {
-            const hit = hitTest(screen, view, scene);
+            const hit = hitTest(screen, view, store.getState());
             controllerRef.current.consumeHit(hit);
           } catch {
           }
-        }, [scene]);
+        }, [store]);
         const handleMove2 = React8__namespace.useCallback((screen) => {
           const board = boardRef.current;
           if (!board) return;
@@ -6577,21 +6656,21 @@ var init_EditorPanel2 = __esm({
           if (draggedPointRef.current) return;
           let hit;
           try {
-            hit = hitTest(screen, view, scene);
+            hit = hitTest(screen, view, store.getState());
           } catch {
             setHoverLabel(null);
             return;
           }
           if (hit.kind === "empty") setHoverLabel(null);
           else if (hit.kind === "existingPoint") {
-            const obj = scene.get(hit.pointId);
+            const obj = store.getState().objects[hit.pointId];
             setHoverLabel(obj?.label ?? null);
           } else if (hit.kind === "onGround") setHoverLabel("m\u1EB7t n\u1EC1n");
           else if (hit.kind === "onAxis") setHoverLabel(`tr\u1EE5c ${hit.axis.toUpperCase()}`);
           else if (hit.kind === "onPlane") setHoverLabel(`m\u1EB7t ph\u1EB3ng ${hit.planeId}`);
           else if (hit.kind === "onSphere") setHoverLabel(`m\u1EB7t c\u1EA7u ${hit.sphereId}`);
           else setHoverLabel(null);
-        }, [scene]);
+        }, [store]);
         const shouldStartPointDrag = React8__namespace.useCallback((screen) => {
           const view = boardRef.current?.getView3D();
           if (!view) return false;
@@ -6599,31 +6678,51 @@ var init_EditorPanel2 = __esm({
           if (tool !== "point" && tool !== "move") return false;
           let hit;
           try {
-            hit = hitTest(screen, view, scene);
+            hit = hitTest(screen, view, store.getState());
           } catch {
             return false;
           }
           if (hit.kind === "existingPoint") {
-            const pt = scene.get(hit.pointId);
-            if (!pt || pt.kind !== "point") return false;
-            dragSnapshotRef.current = scene.snapshot();
+            const pt = store.getState().objects[hit.pointId];
+            if (!pt || pt.kind !== "point3d") return false;
+            dragSnapshotRef.current = store.getState();
+            dragMutatedRef.current = false;
             draggedPointRef.current = hit.pointId;
             dragStartRef.current = {
               screen,
-              world: constraintToWorld(pt.constraint, scene)
+              world: constraintToWorld(pt.attrs.constraint, store.getState())
             };
             return true;
           }
           if (tool === "point" && (hit.kind === "onGround" || hit.kind === "onAxis")) {
-            dragSnapshotRef.current = scene.snapshot();
+            dragSnapshotRef.current = store.getState();
+            dragMutatedRef.current = false;
             const constraint = hitToConstraint(hit);
             if (!constraint) {
               dragSnapshotRef.current = null;
               return false;
             }
             let id = null;
-            scene.withoutHistory(() => {
-              id = scene.addPoint(constraint);
+            store.withoutHistory(() => {
+              const stateBefore = store.getState();
+              const newId = `p${stateBefore.counter + 1}`;
+              const label = nextLabel(stateBefore, "point3d");
+              store.dispatch({
+                type: "ADD",
+                payload: {
+                  obj: {
+                    id: newId,
+                    kind: "point3d",
+                    label,
+                    visible: true,
+                    locked: false,
+                    layer: "default",
+                    schemaVersion: 1,
+                    attrs: { constraint }
+                  }
+                }
+              });
+              id = newId;
             });
             if (!id) {
               dragSnapshotRef.current = null;
@@ -6643,7 +6742,7 @@ var init_EditorPanel2 = __esm({
             return true;
           }
           return false;
-        }, [scene]);
+        }, [store]);
         const onPointerDrag = React8__namespace.useCallback((screen) => {
           const pointId = draggedPointRef.current;
           const start = dragStartRef.current;
@@ -6667,25 +6766,33 @@ var init_EditorPanel2 = __esm({
           } else {
             return;
           }
-          const obj = scene.get(pointId);
-          if (!obj || obj.kind !== "point") return;
+          const obj = store.getState().objects[pointId];
+          if (!obj || obj.kind !== "point3d") return;
           const free = { kind: "free", x: nextWorld[0], y: nextWorld[1], z: nextWorld[2] };
-          obj.constraint = free;
-          scene.emitChange(pointId);
-        }, [scene]);
+          store.withoutHistory(() => {
+            store.dispatch({ type: "UPDATE_ATTRS", payload: { id: pointId, patch: { constraint: free } } });
+          });
+          dragMutatedRef.current = true;
+        }, [store]);
         const onPointerDragEnd = React8__namespace.useCallback(() => {
           const snap = dragSnapshotRef.current;
+          const mutated = dragMutatedRef.current;
           dragSnapshotRef.current = null;
           draggedPointRef.current = null;
           dragStartRef.current = null;
-          if (snap) {
-            scene.pushUndoCheckpoint(snap);
+          dragMutatedRef.current = false;
+          if (snap && mutated) {
+            const current = store.getState();
+            store.withoutHistory(() => {
+              store.dispatch({ type: "LOAD", payload: { state: snap } });
+            });
+            store.dispatch({ type: "LOAD", payload: { state: current } });
           }
-        }, [scene]);
+        }, [store]);
         React8__namespace.useImperativeHandle(
           ref,
           () => ({
-            hasContent: () => scene.list().length > 0,
+            hasContent: () => Object.keys(store.getState().objects).length > 0,
             serialize: () => {
               const view = boardRef.current?.getView3D();
               const v = view;
@@ -6693,19 +6800,18 @@ var init_EditorPanel2 = __esm({
               const elSlider = v?.el_slide ?? v?.el;
               const azimuth = typeof azSlider?.Value === "function" ? azSlider.Value() : 0;
               const elevation = typeof elSlider?.Value === "function" ? elSlider.Value() : 0;
-              return sceneToBoard(
-                scene,
-                { azimuth, elevation, bbox3D: [...DEFAULT_VIEW3D.bbox3D] },
-                // JSXGraph boundingbox order: [xmin, ymax, xmax, ymin]. Must match
-                // MiniBoard3D.initBoard so render reproduces the editor's view.
-                [-6, 6, 6, -6]
-              );
+              const viewInfo = {
+                azimuth,
+                elevation,
+                bbox3D: [...DEFAULT_VIEW3D.bbox3D]
+              };
+              return serializeBoard3D(store.getState(), viewInfo);
             },
             setTool: (k) => controllerRef.current.selectTool(k),
-            undo: () => scene.undo(),
-            redo: () => scene.redo()
+            undo: () => store.undo(),
+            redo: () => store.redo()
           }),
-          [scene]
+          [store]
         );
         return /* @__PURE__ */ jsxRuntime.jsxs(
           "div",
@@ -7033,11 +7139,11 @@ var init_ToolPalette = __esm({
 });
 
 // src/stamps/geometry-3d/editor/algebraPanel/symbolic.ts
-function symbolicFor(obj, scene) {
-  const n = (id) => scene.get(id)?.label ?? id;
+function symbolicFor(obj, state) {
+  const n = (id) => state.objects[id]?.label ?? id;
   switch (obj.kind) {
-    case "point": {
-      const c = obj.constraint;
+    case "point3d": {
+      const c = obj.attrs.constraint;
       switch (c.kind) {
         case "free":
           return "Point";
@@ -7056,38 +7162,58 @@ function symbolicFor(obj, scene) {
       }
       return "Point";
     }
-    case "segment":
-      return `Segment(${n(obj.p1)}, ${n(obj.p2)})`;
-    case "line":
-      return `Line(${n(obj.p1)}, ${n(obj.p2)})`;
-    case "ray":
-      return `Ray(${n(obj.origin)}, ${n(obj.through)})`;
-    case "vector":
-      return `Vector(${n(obj.from)}, ${n(obj.to)})`;
-    case "polygon":
-      return `Polygon(${obj.vertices.map(n).join(", ")})`;
-    case "plane":
-      return `Plane(${n(obj.p1)}, ${n(obj.p2)}, ${n(obj.p3)})`;
-    case "sphere":
-      return `Sphere(${n(obj.center)}, ${n(obj.surfacePoint)})`;
-    case "polyhedron": {
+    case "segment3d": {
+      const a = obj.attrs;
+      return `Segment(${n(a.p1)}, ${n(a.p2)})`;
+    }
+    case "line3d": {
+      const a = obj.attrs;
+      return `Line(${n(a.p1)}, ${n(a.p2)})`;
+    }
+    case "ray3d": {
+      const a = obj.attrs;
+      return `Ray(${n(a.origin)}, ${n(a.through)})`;
+    }
+    case "vector3d": {
+      const a = obj.attrs;
+      return `Vector(${n(a.from)}, ${n(a.to)})`;
+    }
+    case "polygon3d": {
+      const a = obj.attrs;
+      return `Polygon(${a.vertices.map(n).join(", ")})`;
+    }
+    case "plane3d": {
+      const a = obj.attrs;
+      return `Plane(${n(a.p1)}, ${n(a.p2)}, ${n(a.p3)})`;
+    }
+    case "sphere3d": {
+      const a = obj.attrs;
+      return `Sphere(${n(a.center)}, ${n(a.surfacePoint)})`;
+    }
+    case "polyhedron3d": {
+      const a = obj.attrs;
       const flavorVn = {
         pyramid: "Ch\xF3p",
         prism: "L\u0103ng tr\u1EE5",
         tetrahedron: "T\u1EE9 di\u1EC7n",
         cube: "L\u1EADp ph\u01B0\u01A1ng"
       };
-      return `${flavorVn[obj.flavor]}(${obj.vertices.length} \u0111\u1EC9nh)`;
+      return `${flavorVn[a.flavor]}(${a.vertices.length} \u0111\u1EC9nh)`;
     }
-    case "cylinder":
-      return `Cylinder(${n(obj.baseCenter)}, ${n(obj.topCenter)}, r=${obj.radius})`;
-    case "cone":
-      return `Cone(${n(obj.baseCenter)}, ${n(obj.apex)}, r=${obj.radius})`;
+    case "cylinder3d": {
+      const a = obj.attrs;
+      return `Cylinder(${n(a.baseCenter)}, ${n(a.topCenter)}, r=${a.radius})`;
+    }
+    case "cone3d": {
+      const a = obj.attrs;
+      return `Cone(${n(a.baseCenter)}, ${n(a.apex)}, r=${a.radius})`;
+    }
   }
+  return obj.label;
 }
-function numericFor(obj, scene) {
-  if (obj.kind === "point") {
-    const w = constraintToWorld(obj.constraint, scene);
+function numericFor(obj, state) {
+  if (obj.kind === "point3d") {
+    const w = constraintToWorld(obj.attrs.constraint, state);
     return `(${round(w[0])}, ${round(w[1])}, ${round(w[2])})`;
   }
   return "";
@@ -7158,9 +7284,10 @@ var init_RowMenu = __esm({
   }
 });
 function AlgebraRow(props) {
-  const { obj, scene, onDelete } = props;
-  const symbolic = symbolicFor(obj, scene);
-  const numeric = numericFor(obj, scene);
+  const { obj, state, onDelete } = props;
+  const symbolic = symbolicFor(obj, state);
+  const numeric = numericFor(obj, state);
+  const color = obj.attrs.color ?? "#0066cc";
   return /* @__PURE__ */ jsxRuntime.jsxs(
     "li",
     {
@@ -7172,7 +7299,7 @@ function AlgebraRow(props) {
           {
             "aria-hidden": true,
             className: "inline-block size-3 rounded-full border",
-            style: { backgroundColor: obj.color ?? "#0066cc" }
+            style: { backgroundColor: color }
           }
         ),
         /* @__PURE__ */ jsxRuntime.jsx("span", { className: "min-w-[3ch] font-semibold", children: obj.label }),
@@ -7204,33 +7331,30 @@ var init_AlgebraRow = __esm({
   }
 });
 function AlgebraList(props) {
-  const { scene } = props;
-  const [, forceUpdate] = React8__namespace.useReducer((x) => x + 1, 0);
-  React8__namespace.useEffect(() => {
-    const unsubAdd = scene.on("add", () => forceUpdate());
-    const unsubChange = scene.on("change", () => forceUpdate());
-    const unsubDelete = scene.on("delete", () => forceUpdate());
-    const unsubReset = scene.on("reset", () => forceUpdate());
-    return () => {
-      unsubAdd();
-      unsubChange();
-      unsubDelete();
-      unsubReset();
-    };
-  }, [scene]);
-  const objects = scene.list();
+  const { store } = props;
+  const state = React8__namespace.useSyncExternalStore(store.subscribe, store.getState, store.getState);
+  const objects = listObjects(state);
   return /* @__PURE__ */ jsxRuntime.jsx(
     "ul",
     {
       "data-testid": "algebra-list",
       className: "flex max-h-[calc(100vh-200px)] flex-col overflow-y-auto",
-      children: objects.length === 0 ? /* @__PURE__ */ jsxRuntime.jsx("li", { className: "px-3 py-4 text-center text-xs text-zinc-500", children: "Ch\u01B0a c\xF3 \u0111\u1ED1i t\u01B0\u1EE3ng n\xE0o" }) : objects.map((o) => /* @__PURE__ */ jsxRuntime.jsx(AlgebraRow, { obj: o, scene, onDelete: (id) => scene.delete(id) }, o.id))
+      children: objects.length === 0 ? /* @__PURE__ */ jsxRuntime.jsx("li", { className: "px-3 py-4 text-center text-xs text-zinc-500", children: "Ch\u01B0a c\xF3 \u0111\u1ED1i t\u01B0\u1EE3ng n\xE0o" }) : objects.map((o) => /* @__PURE__ */ jsxRuntime.jsx(
+        AlgebraRow,
+        {
+          obj: o,
+          state,
+          onDelete: (id) => store.dispatch({ type: "DELETE", payload: { id } })
+        },
+        o.id
+      ))
     }
   );
 }
 var init_AlgebraList = __esm({
   "src/stamps/geometry-3d/editor/algebraPanel/AlgebraList.tsx"() {
     "use client";
+    init_scene();
     init_AlgebraRow();
   }
 });
@@ -7333,7 +7457,7 @@ function useToolHoverTooltip2() {
 }
 function DesktopPanel(props) {
   const {
-    scene,
+    store,
     selectedTool,
     onSelectTool,
     showAxis,
@@ -7435,7 +7559,7 @@ function DesktopPanel(props) {
             ]
           }
         )
-      ] }) : /* @__PURE__ */ jsxRuntime.jsx("section", { "data-testid": "algebra-panel", children: /* @__PURE__ */ jsxRuntime.jsx(AlgebraList, { scene }) })
+      ] }) : /* @__PURE__ */ jsxRuntime.jsx("section", { "data-testid": "algebra-panel", children: /* @__PURE__ */ jsxRuntime.jsx(AlgebraList, { store }) })
     ] }),
     portalReady && hover && typeof document !== "undefined" ? reactDom.createPortal(
       /* @__PURE__ */ jsxRuntime.jsxs(
@@ -7591,7 +7715,7 @@ function parseInitial(editingElement) {
   if (!editingElement) return null;
   if (!isGeometry3DCustomData(editingElement.customData)) return null;
   try {
-    return parseSerializedBoard3D(editingElement.customData.jsonState);
+    return parseSerializedBoard3D(JSON.parse(editingElement.customData.jsonState));
   } catch {
     return null;
   }
@@ -7602,7 +7726,7 @@ var init_host3 = __esm({
     "use client";
     init_EditorPanel2();
     init_LeftPanel3();
-    init_Scene3D();
+    init_scene();
     init_groups();
     init_useChordShortcut();
     init_insertImage();
@@ -7612,8 +7736,8 @@ var init_host3 = __esm({
     Geometry3DStampHost = React8.forwardRef(
       function Geometry3DStampHost2({ api, editingElement, onClose, isDark }, ref) {
         const editorRef = React8.useRef(null);
-        const sceneRef = React8.useRef(null);
-        if (!sceneRef.current) sceneRef.current = new Scene3D();
+        const storeRef = React8.useRef(null);
+        if (!storeRef.current) storeRef.current = createStore(createEmptyState("3d"));
         const { isMobile } = useIsMobile();
         const [drawerOpen, setDrawerOpen] = React8.useState(false);
         const [ready, setReady] = React8.useState(false);
@@ -7628,18 +7752,12 @@ var init_host3 = __esm({
           setCanRedo(r);
         }, []);
         React8.useEffect(() => {
-          const scene = sceneRef.current;
-          if (!scene) return;
-          const sync = () => setHasContent(scene.list().length > 0);
+          const store = storeRef.current;
+          if (!store) return;
+          const sync = () => setHasContent(Object.keys(store.getState().objects).length > 0);
           sync();
-          const unsubs = [
-            scene.on("add", sync),
-            scene.on("delete", sync),
-            scene.on("reset", sync)
-          ];
-          return () => {
-            for (const u of unsubs) u();
-          };
+          const unsub = store.subscribe(sync);
+          return unsub;
         }, []);
         const handleUndo = React8.useCallback(() => {
           editorRef.current?.undo();
@@ -7667,12 +7785,14 @@ var init_host3 = __esm({
         const performInsert = React8.useCallback(
           async (board, width, height, svgString) => {
             if (!api) return;
-            const jsonState = serializeBoard3D(board);
+            const jsonState = JSON.stringify(board);
             await insertStampImage(api, {
               svgString,
               makeCustomData: () => ({
                 kind: "geometry3d",
-                version: 1,
+                // Bump customData.version vẫn 2 (đã được hỗ trợ ở isGeometry3DCustomData)
+                // — payload bên trong là envelope v2 mới của state.
+                version: 2,
                 jsonState,
                 svgWidth: width,
                 svgHeight: height
@@ -7687,10 +7807,10 @@ var init_host3 = __esm({
           if (!editorRef.current) return false;
           if (!editorRef.current.hasContent()) return false;
           const board = editorRef.current.serialize();
-          if (board.elements.length === 0) return false;
+          if (Object.keys(board.state.objects).length === 0) return false;
           void (async () => {
             try {
-              const jsonState = serializeBoard3D(board);
+              const jsonState = JSON.stringify(board);
               const { svgString, width, height } = await renderGeometry3DSvgFromState(jsonState);
               await performInsert(board, width, height, svgString);
             } catch (err) {
@@ -7724,7 +7844,7 @@ var init_host3 = __esm({
           !isMobile && /* @__PURE__ */ jsxRuntime.jsx(
             LeftPanel3,
             {
-              scene: sceneRef.current,
+              store: storeRef.current,
               selectedTool,
               onSelectTool: handleSelectTool,
               showAxis,
@@ -7805,7 +7925,7 @@ var init_host3 = __esm({
                     isDark,
                     initialState: initial,
                     onInsert: handleEditorInsert,
-                    scene: sceneRef.current,
+                    store: storeRef.current,
                     selectedTool,
                     onSelectedToolChange: setSelectedTool,
                     showAxis,
@@ -7844,7 +7964,7 @@ var init_host3 = __esm({
           isMobile && /* @__PURE__ */ jsxRuntime.jsx(
             LeftPanel3,
             {
-              scene: sceneRef.current,
+              store: storeRef.current,
               selectedTool,
               onSelectTool: handleSelectTool,
               showAxis,
@@ -8516,7 +8636,7 @@ function isGraph2DCustomData(data) {
   const d = data;
   return d.kind === "graph2d" && d.version === 1 && typeof d.jsonState === "string";
 }
-var init_types3 = __esm({
+var init_types5 = __esm({
   "src/stamps/graph-2d/types.ts"() {
   }
 });
@@ -9613,7 +9733,7 @@ var init_host4 = __esm({
     init_insertImage();
     init_serialize3();
     init_useIsMobile();
-    init_types3();
+    init_types5();
     INITIAL_GRAPH_STATE = {
       tool: "move",
       showAxis: true,
@@ -9891,7 +10011,7 @@ var geometry3dStamp = {
 
 // src/stamps/graph-2d/index.tsx
 init_render4();
-init_types3();
+init_types5();
 var Graph2DStampHost3 = React8.lazy(
   () => Promise.resolve().then(() => (init_host4(), host_exports4)).then((m) => ({ default: m.Graph2DStampHost }))
 );
@@ -11202,10 +11322,10 @@ function safeParseScene(raw) {
 }
 
 // src/core/persistence/sceneStore.ts
-var PREFIX2 = "whiteboard:scene:";
+var PREFIX = "whiteboard:scene:";
 var SCHEMA_VERSION = 1;
 function fullKey(key) {
-  return PREFIX2 + key;
+  return PREFIX + key;
 }
 function readScene(key) {
   const validKey = validateStorageKey(key);
