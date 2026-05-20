@@ -214,6 +214,16 @@ export class JxgRenderer {
     this.disposed = true;
   }
 
+  /** Return the rendered JSXGraph element for a scene id, or null if not found. */
+  getElement(id: string): unknown {
+    return this.elements.get(id) ?? null;
+  }
+
+  /** Return a read-only view of the scene id → JSXGraph element map (for hit-test). */
+  listElements(): Map<string, unknown> {
+    return this.elements;
+  }
+
   private highlightedId: string | null = null;
   private highlightOriginal: { stroke?: string; thick?: number } | null = null;
 
