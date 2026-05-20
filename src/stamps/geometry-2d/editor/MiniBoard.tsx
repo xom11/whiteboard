@@ -161,12 +161,45 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     const r = rendererRef.current;
     if (!r) return null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return ((r as any).elements as Map<string, JxgObj> | undefined)?.get(id) ?? null;
+    const elements = (r as any).elements as Map<string, JxgObj> | undefined;
+    if (!elements) return null;
+    // Synthetic "<polyId>:border:<N>" → polygon.borders[N]. Cho phép preview
+    // shape của tool perpendicular/parallel kéo theo cạnh đa giác làm parent.
+    const m = /^(.+):border:(\d+)$/.exec(id);
+    if (m) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const poly = elements.get(m[1]) as any;
+      const idx = parseInt(m[2], 10);
+      const borders = poly?.borders;
+      if (Array.isArray(borders) && borders[idx]) return borders[idx];
+      return null;
+    }
+    return elements.get(id) ?? null;
   }, []);
 
   const jxgIdToSceneId = useCallback((jxgObj: JxgObj): string | null => {
     if (!jxgObj?.id) return null;
-    return jxgIdToSceneRef.current.get(String(jxgObj.id)) ?? null;
+    const direct = jxgIdToSceneRef.current.get(String(jxgObj.id));
+    if (direct) return direct;
+    // Fallback: dò polygon's borders → synthetic id "<polyId>:border:<idx>".
+    // Border là sub-segment do JSXGraph auto-tạo trong polygon, không có scene
+    // id riêng → không có trong jxgIdToSceneRef. Trả synthetic id để construct
+    // tools (perpendicular, parallel) có thể tham chiếu cạnh đa giác như một
+    // line input.
+    const r = rendererRef.current;
+    if (!r) return null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const elements = (r as any).elements as Map<string, JxgObj> | undefined;
+    if (!elements) return null;
+    for (const [sid, el] of elements) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const borders = (el as any)?.borders;
+      if (Array.isArray(borders)) {
+        const idx = borders.indexOf(jxgObj);
+        if (idx >= 0) return `${sid}:border:${idx}`;
+      }
+    }
+    return null;
   }, []);
 
   // ─── Hit-test helpers ──────────────────────────────────────────────────────

@@ -29,11 +29,21 @@ export type LineAttrs = {
   showLabel?: boolean;
 };
 
+// Polygon edges là sub-segment do JSXGraph tự tạo bên trong polygon — không có
+// scene id riêng. Synthetic id "<polyId>:border:<i>" cho phép construct tools
+// (perpendicular, parallel) tham chiếu cạnh đa giác như một line, nhưng
+// dependency graph cần biết line phụ thuộc vào polygon thật (để DELETE polygon
+// cascade xoá line). Strip suffix về polyId ở đây.
+function stripBorderSuffix(id: string): string {
+  const m = /^(.+):border:\d+$/.exec(id);
+  return m ? m[1] : id;
+}
+
 function constructionRefs(c: LineConstruction): string[] {
   switch (c.kind) {
     case 'perpendicular':
     case 'parallel':
-      return [c.throughPoint, c.toLine];
+      return [c.throughPoint, stripBorderSuffix(c.toLine)];
     case 'perpBisector':
       return [c.p1, c.p2];
     case 'angleBisector':

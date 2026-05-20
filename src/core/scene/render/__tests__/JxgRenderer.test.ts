@@ -10,7 +10,12 @@ function mockBoard() {
   const removed: any[] = [];
   const board = {
     create: jest.fn((type: string, parents: any, attrs: any) => {
-      const el = { type, parents, attrs, _id: `${type}_${created.length}` };
+      const el: any = { type, parents, attrs, _id: `${type}_${created.length}` };
+      // Mock JSXGraph polygon: auto-tạo borders array (sub-segment per edge).
+      // Cho phép resolveRef("<polyId>:border:<i>") trả về object đại diện cạnh.
+      if (type === 'polygon' && Array.isArray(parents)) {
+        el.borders = parents.map((_v, idx) => ({ type: 'segment_border', _borderIdx: idx, _polyParent: el }));
+      }
       created.push(el);
       return el;
     }),
@@ -137,5 +142,53 @@ describe('JxgRenderer (2D)', () => {
     expect(removed).toHaveLength(0);
     store.undo();
     expect(removed).toHaveLength(1);
+  });
+
+  // Polygon edges (sub-segment do JSXGraph auto-tạo) không có scene id riêng.
+  // Synthetic id "<polyId>:border:<i>" cho phép construct tools tham chiếu
+  // cạnh đa giác như một line input (perpendicular, parallel).
+  describe('polygon border (synthetic "<polyId>:border:<N>")', () => {
+    const mkPerp = (id: string, through: string, toLine: string): SceneObject => ({
+      id, kind: 'line', label: id, visible: true, locked: false, layer: 'default',
+      schemaVersion: 1,
+      attrs: { construction: { kind: 'perpendicular', throughPoint: through, toLine } },
+    });
+
+    test('resolveRef "<polyId>:border:<N>" → polygon.borders[N]', () => {
+      const store = createStore(createEmptyState('2d'));
+      const { board, created } = mockBoard();
+      new JxgRenderer(store, board as never);
+      store.dispatch({ type: 'ADD', payload: { obj: mkPoint('A') } });
+      store.dispatch({ type: 'ADD', payload: { obj: mkPoint('B') } });
+      store.dispatch({ type: 'ADD', payload: { obj: mkPoint('C') } });
+      store.dispatch({ type: 'ADD', payload: { obj: mkPoint('P', 5, 5) } });
+      store.dispatch({ type: 'ADD', payload: { obj: mkPolygon('poly1', ['A', 'B', 'C']) } });
+      store.dispatch({ type: 'ADD', payload: { obj: mkPerp('l1', 'P', 'poly1:border:1') } });
+
+      const polyEl = created.find(c => c.type === 'polygon');
+      const lineEl = created.find(c => c.type === 'perpendicular');
+      expect(polyEl).toBeDefined();
+      expect(lineEl).toBeDefined();
+      // JSXGraph: create('perpendicular', [line, point]) → parents[0] là line.
+      expect(lineEl!.parents[0]).toBe(polyEl!.borders[1]);
+      expect(lineEl!.parents[1]).toBe(created.find(c => c._id.startsWith('point_') && c.parents[0] === 5));
+    });
+
+    test('DELETE polygon cascade → perpendicular qua border cũng remove', () => {
+      const store = createStore(createEmptyState('2d'));
+      const { board, removed } = mockBoard();
+      new JxgRenderer(store, board as never);
+      store.dispatch({ type: 'ADD', payload: { obj: mkPoint('A') } });
+      store.dispatch({ type: 'ADD', payload: { obj: mkPoint('B') } });
+      store.dispatch({ type: 'ADD', payload: { obj: mkPoint('C') } });
+      store.dispatch({ type: 'ADD', payload: { obj: mkPoint('P', 5, 5) } });
+      store.dispatch({ type: 'ADD', payload: { obj: mkPolygon('poly1', ['A', 'B', 'C']) } });
+      store.dispatch({ type: 'ADD', payload: { obj: mkPerp('l1', 'P', 'poly1:border:0') } });
+
+      const before = removed.length;
+      store.dispatch({ type: 'DELETE', payload: { id: 'poly1' } });
+      // Cascade phải xoá cả polygon + line phụ thuộc cạnh polygon.
+      expect(removed.length).toBeGreaterThanOrEqual(before + 2);
+    });
   });
 });

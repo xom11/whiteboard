@@ -60,5 +60,21 @@ describe('kinds/line (2D)', () => {
         construction: { kind: 'tangent', throughPoint: 'P', toCircle: 'C' },
       } as never)).toEqual(['P', 'C']);
     });
+
+    // Polygon edges (sub-segments do JSXGraph auto-tạo) không có scene id riêng.
+    // Synthetic id "<polyId>:border:<i>" cho phép construct tools tham chiếu
+    // cạnh đa giác như một line; nhưng dependency graph cần biết line phụ thuộc
+    // vào polygon (để DELETE polygon cascade xoá line).
+    test('dependsOn perpendicular strip ":border:N" → polyId', () => {
+      expect(def.dependsOn({
+        construction: { kind: 'perpendicular', throughPoint: 'P', toLine: 'poly1:border:0' },
+      } as never)).toEqual(['P', 'poly1']);
+    });
+
+    test('dependsOn parallel strip ":border:N" → polyId', () => {
+      expect(def.dependsOn({
+        construction: { kind: 'parallel', throughPoint: 'P', toLine: 'poly1:border:2' },
+      } as never)).toEqual(['P', 'poly1']);
+    });
   });
 });

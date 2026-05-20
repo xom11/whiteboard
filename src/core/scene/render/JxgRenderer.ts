@@ -27,6 +27,21 @@ export class JxgRenderer {
     return {
       jxg: this.board,
       resolveRef: (id: string) => {
+        // Synthetic "<polyId>:border:<N>" → polygon.borders[N]. Polygon edges
+        // là sub-segment do JSXGraph auto-tạo bên trong polygon; chúng không
+        // có scene id riêng. Synthetic id cho phép construct tools (vd
+        // perpendicular qua một cạnh đa giác) tham chiếu cạnh như một line.
+        const m = /^(.+):border:(\d+)$/.exec(id);
+        if (m) {
+          const poly = this.elements.get(m[1]) as { borders?: unknown[] } | undefined;
+          if (!poly) throw new Error(`[scene/2d] resolveRef: chưa render polygon id="${m[1]}"`);
+          const borders = poly.borders;
+          const idx = parseInt(m[2], 10);
+          if (!Array.isArray(borders) || !borders[idx]) {
+            throw new Error(`[scene/2d] resolveRef: polygon "${m[1]}" không có border[${idx}]`);
+          }
+          return borders[idx];
+        }
         const el = this.elements.get(id);
         if (!el) throw new Error(`[scene/2d] resolveRef: chưa render id="${id}"`);
         return el;
