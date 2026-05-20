@@ -1,20 +1,20 @@
 'use client';
 import * as React from 'react';
-import type { Scene3DObject } from '../scene/types';
-import type { Scene3D } from '../scene/Scene3D';
+import type { SceneObject, State } from '../../../../core/scene';
 import { symbolicFor, numericFor } from './symbolic';
 import { RowMenu } from './RowMenu';
 
 export interface AlgebraRowProps {
-  obj: Scene3DObject;
-  scene: Scene3D;
+  obj: SceneObject;
+  state: State;
   onDelete: (id: string) => void;
 }
 
 export function AlgebraRow(props: AlgebraRowProps): React.ReactElement {
-  const { obj, scene, onDelete } = props;
-  const symbolic = symbolicFor(obj, scene);
-  const numeric = numericFor(obj, scene);
+  const { obj, state, onDelete } = props;
+  const symbolic = symbolicFor(obj, state);
+  const numeric = numericFor(obj, state);
+  const color = (obj.attrs as { color?: string }).color ?? '#0066cc';
   return (
     <li
       data-testid={`algebra-row-${obj.id}`}
@@ -23,7 +23,7 @@ export function AlgebraRow(props: AlgebraRowProps): React.ReactElement {
       <span
         aria-hidden
         className="inline-block size-3 rounded-full border"
-        style={{ backgroundColor: obj.color ?? '#0066cc' }}
+        style={{ backgroundColor: color }}
       />
       <span className="min-w-[3ch] font-semibold">{obj.label}</span>
       <span className="text-zinc-500">=</span>

@@ -11,7 +11,7 @@ import {
   letterForGroup,
   type Geom3DGroup,
 } from './toolPanel/groups';
-import type { Scene3D } from './scene/Scene3D';
+import type { Store } from '../../../core/scene';
 import { TOOLS, type ToolKey } from './tools/spec';
 import {
   MobileToolDrawer,
@@ -23,7 +23,7 @@ const TOOLTIP_DELAY_MS = 400;
 type HoverState = { label: string; hint?: string; x: number; y: number } | null;
 
 export interface LeftPanelProps {
-  scene: Scene3D;
+  store: Store;
   selectedTool: ToolKey;
   onSelectTool: (k: ToolKey) => void;
   showAxis: boolean;
@@ -181,7 +181,7 @@ type Tab = 'tools' | 'algebra';
 
 function DesktopPanel(props: LeftPanelProps) {
   const {
-    scene,
+    store,
     selectedTool,
     onSelectTool,
     showAxis,
@@ -283,7 +283,7 @@ function DesktopPanel(props: LeftPanelProps) {
           </>
         ) : (
           <section data-testid="algebra-panel">
-            <AlgebraList scene={scene} />
+            <AlgebraList store={store} />
           </section>
         )}
       </Shell>

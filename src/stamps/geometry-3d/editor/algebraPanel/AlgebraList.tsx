@@ -1,26 +1,17 @@
 'use client';
 import * as React from 'react';
-import type { Scene3D } from '../scene/Scene3D';
-import type { Scene3DObject } from '../scene/types';
+import type { Store } from '../../../../core/scene';
+import { listObjects } from '../../../../core/scene';
 import { AlgebraRow } from './AlgebraRow';
 
 export interface AlgebraListProps {
-  scene: Scene3D;
+  store: Store;
 }
 
 export function AlgebraList(props: AlgebraListProps): React.ReactElement {
-  const { scene } = props;
-  const [, forceUpdate] = React.useReducer((x: number) => x + 1, 0);
-
-  React.useEffect(() => {
-    const unsubAdd = scene.on('add', () => forceUpdate());
-    const unsubChange = scene.on('change', () => forceUpdate());
-    const unsubDelete = scene.on('delete', () => forceUpdate());
-    const unsubReset = scene.on('reset', () => forceUpdate());
-    return () => { unsubAdd(); unsubChange(); unsubDelete(); unsubReset(); };
-  }, [scene]);
-
-  const objects: Scene3DObject[] = scene.list();
+  const { store } = props;
+  const state = React.useSyncExternalStore(store.subscribe, store.getState, store.getState);
+  const objects = listObjects(state);
 
   return (
     <ul
@@ -31,7 +22,12 @@ export function AlgebraList(props: AlgebraListProps): React.ReactElement {
         <li className="px-3 py-4 text-center text-xs text-zinc-500">Chưa có đối tượng nào</li>
       ) : (
         objects.map((o) => (
-          <AlgebraRow key={o.id} obj={o} scene={scene} onDelete={(id) => scene.delete(id)} />
+          <AlgebraRow
+            key={o.id}
+            obj={o}
+            state={state}
+            onDelete={(id) => store.dispatch({ type: 'DELETE', payload: { id } })}
+          />
         ))
       )}
     </ul>

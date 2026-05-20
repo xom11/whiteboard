@@ -1,12 +1,22 @@
-import type { Scene3DObject } from '../scene/types';
-import type { Scene3D } from '../scene/Scene3D';
+import type { SceneObject, State } from '../../../../core/scene';
 import { constraintToWorld } from '../scene/constraintMath';
+import type { Point3DAttrs } from '../../../../core/scene/kinds/point3d';
+import type { Segment3DAttrs } from '../../../../core/scene/kinds/segment3d';
+import type { Line3DAttrs } from '../../../../core/scene/kinds/line3d';
+import type { Ray3DAttrs } from '../../../../core/scene/kinds/ray3d';
+import type { Vector3DAttrs } from '../../../../core/scene/kinds/vector3d';
+import type { Plane3DAttrs } from '../../../../core/scene/kinds/plane3d';
+import type { Polygon3DAttrs } from '../../../../core/scene/kinds/polygon3d';
+import type { Sphere3DAttrs } from '../../../../core/scene/kinds/sphere3d';
+import type { Polyhedron3DAttrs, PolyhedronFlavor } from '../../../../core/scene/kinds/polyhedron3d';
+import type { Cylinder3DAttrs } from '../../../../core/scene/kinds/cylinder3d';
+import type { Cone3DAttrs } from '../../../../core/scene/kinds/cone3d';
 
-export function symbolicFor(obj: Scene3DObject, scene: Scene3D): string {
-  const n = (id: string): string => scene.get(id)?.label ?? id;
+export function symbolicFor(obj: SceneObject, state: State): string {
+  const n = (id: string): string => state.objects[id]?.label ?? id;
   switch (obj.kind) {
-    case 'point': {
-      const c = obj.constraint;
+    case 'point3d': {
+      const c = (obj.attrs as Point3DAttrs).constraint;
       switch (c.kind) {
         case 'free': return 'Point';
         case 'onGround': return 'Point(xyPlane)';
@@ -18,31 +28,60 @@ export function symbolicFor(obj: Scene3DObject, scene: Scene3D): string {
       }
       return 'Point';
     }
-    case 'segment': return `Segment(${n(obj.p1)}, ${n(obj.p2)})`;
-    case 'line':    return `Line(${n(obj.p1)}, ${n(obj.p2)})`;
-    case 'ray':     return `Ray(${n(obj.origin)}, ${n(obj.through)})`;
-    case 'vector':  return `Vector(${n(obj.from)}, ${n(obj.to)})`;
-    case 'polygon': return `Polygon(${obj.vertices.map(n).join(', ')})`;
-    case 'plane':   return `Plane(${n(obj.p1)}, ${n(obj.p2)}, ${n(obj.p3)})`;
-    case 'sphere':  return `Sphere(${n(obj.center)}, ${n(obj.surfacePoint)})`;
-    case 'polyhedron': {
-      const flavorVn: Record<typeof obj.flavor, string> = {
+    case 'segment3d': {
+      const a = obj.attrs as Segment3DAttrs;
+      return `Segment(${n(a.p1)}, ${n(a.p2)})`;
+    }
+    case 'line3d': {
+      const a = obj.attrs as Line3DAttrs;
+      return `Line(${n(a.p1)}, ${n(a.p2)})`;
+    }
+    case 'ray3d': {
+      const a = obj.attrs as Ray3DAttrs;
+      return `Ray(${n(a.origin)}, ${n(a.through)})`;
+    }
+    case 'vector3d': {
+      const a = obj.attrs as Vector3DAttrs;
+      return `Vector(${n(a.from)}, ${n(a.to)})`;
+    }
+    case 'polygon3d': {
+      const a = obj.attrs as Polygon3DAttrs;
+      return `Polygon(${a.vertices.map(n).join(', ')})`;
+    }
+    case 'plane3d': {
+      const a = obj.attrs as Plane3DAttrs;
+      return `Plane(${n(a.p1)}, ${n(a.p2)}, ${n(a.p3)})`;
+    }
+    case 'sphere3d': {
+      const a = obj.attrs as Sphere3DAttrs;
+      return `Sphere(${n(a.center)}, ${n(a.surfacePoint)})`;
+    }
+    case 'polyhedron3d': {
+      const a = obj.attrs as Polyhedron3DAttrs;
+      const flavorVn: Record<PolyhedronFlavor, string> = {
         pyramid: 'Chóp', prism: 'Lăng trụ', tetrahedron: 'Tứ diện', cube: 'Lập phương',
       };
-      return `${flavorVn[obj.flavor]}(${obj.vertices.length} đỉnh)`;
+      return `${flavorVn[a.flavor]}(${a.vertices.length} đỉnh)`;
     }
-    case 'cylinder': return `Cylinder(${n(obj.baseCenter)}, ${n(obj.topCenter)}, r=${obj.radius})`;
-    case 'cone':     return `Cone(${n(obj.baseCenter)}, ${n(obj.apex)}, r=${obj.radius})`;
+    case 'cylinder3d': {
+      const a = obj.attrs as Cylinder3DAttrs;
+      return `Cylinder(${n(a.baseCenter)}, ${n(a.topCenter)}, r=${a.radius})`;
+    }
+    case 'cone3d': {
+      const a = obj.attrs as Cone3DAttrs;
+      return `Cone(${n(a.baseCenter)}, ${n(a.apex)}, r=${a.radius})`;
+    }
   }
+  return obj.label;
 }
 
 /**
  * Compact numeric value display for an object. Free / surface-projected points
  * show their world position; non-points show a summary.
  */
-export function numericFor(obj: Scene3DObject, scene: Scene3D): string {
-  if (obj.kind === 'point') {
-    const w = constraintToWorld(obj.constraint, scene);
+export function numericFor(obj: SceneObject, state: State): string {
+  if (obj.kind === 'point3d') {
+    const w = constraintToWorld((obj.attrs as Point3DAttrs).constraint, state);
     return `(${round(w[0])}, ${round(w[1])}, ${round(w[2])})`;
   }
   return '';
