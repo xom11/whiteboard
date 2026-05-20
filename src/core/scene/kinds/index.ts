@@ -1,4 +1,13 @@
 // src/core/scene/kinds/index.ts
-// Side-effect: mỗi kind file gọi registerKind tại import-time.
-// Sẽ được điền ở PR 1.2 (3D) và Phase 2 (2D).
+import './point3d';
+import './segment3d';
+import './line3d';
+import './ray3d';
+import './vector3d';
+import './plane3d';
+import './polygon3d';
+import './sphere3d';
+import './polyhedron3d';
+import './cylinder3d';
+import './cone3d';
 export {};
