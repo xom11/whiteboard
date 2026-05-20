@@ -207,18 +207,18 @@ board.create('slopetriangle', [pt], { ... });
 
 ### 4.4 Renderer cần access paramMap
 
-Vì function2d render cần compile expression với current parameter values, renderer phải truyền `paramMap` qua `ctx`. Extend `RenderCtx2D` **optional** (giữ backward-compat cho geometry-2d):
+Vì function2d render cần compile expression với current parameter values, renderer phải truyền `paramMap` qua `ctx`. Extend `RenderCtx` (in `core/scene/types.ts`) **optional** (giữ backward-compat cho geometry-2d/3d):
 
 ```ts
-interface RenderCtx2D {
-  board: JXG.Board;
-  resolveRef: (id: string) => JxgObject | null;
-  theme: Theme2D;
-  paramMap?: Readonly<Record<string, number>>;  // optional — chỉ graph2d dùng
-}
+export type RenderCtx = {
+  jxg: unknown;
+  resolveRef: (id: string) => unknown;
+  defaults: Readonly<Record<string, unknown>>;
+  paramMap?: Readonly<Record<string, number>>;  // NEW — chỉ graph2d dùng
+};
 ```
 
-`JxgRenderer` rebuild `paramMap` mỗi action **chỉ khi** `meta.domain === 'graph2d'`. Chi phí thấp (parameters thường ≤ 8). Geometry-2d không bị ảnh hưởng vì các kind render của nó không đọc `paramMap`.
+`JxgRenderer` rebuild `paramMap` mỗi action **chỉ khi** `state.meta.domain === 'graph2d'`. Chi phí thấp (parameters thường ≤ 8). Geometry-2d/3d không bị ảnh hưởng vì các kind render của chúng không đọc `paramMap`.
 
 ### 4.5 View settings (axis/grid)
 
