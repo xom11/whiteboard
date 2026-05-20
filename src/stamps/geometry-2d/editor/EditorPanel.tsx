@@ -130,8 +130,7 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
 
     function handleSelectObject(id: string) {
       setSelectedId(id);
-      // highlight: JxgRenderer is internal to MiniBoard; no direct renderer ref here.
-      // Visual highlight deferred to future refactor when MiniBoard exposes renderer.
+      handleRef.current?.highlight(id);
     }
 
     const wrapperStyle: React.CSSProperties = isMobile

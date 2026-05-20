@@ -58,6 +58,7 @@ export interface MiniBoardHandle {
   getBbox: () => [number, number, number, number];
   getState: () => State;
   getStore: () => import('../../../core/scene/store').Store;
+  highlight: (id: string | null) => void;
   getShowAxis: () => boolean;
   getShowGrid: () => boolean;
   setTool: (t: GeomTool) => void;
@@ -511,6 +512,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
         getBbox: () => board ? board.getBoundingBox() : [-10, 10, 10, -10],
         getState: () => store.getState(),
         getStore: () => store,
+        highlight: (id: string | null) => { rendererRef.current?.highlight(id); },
         getShowAxis: () => showAxisRef.current,
         getShowGrid: () => showGridRef.current,
         setTool: handleToolChange,

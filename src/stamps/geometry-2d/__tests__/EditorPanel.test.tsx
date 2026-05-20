@@ -40,6 +40,7 @@ jest.mock('../editor/MiniBoard', () => ({
         },
         getState: () => mockState,
         getStore: () => ({ getState: () => mockState, subscribe: () => () => {}, dispatch: () => {}, getState: () => mockState }),
+        highlight: () => {},
         getBbox: () => [-10, 10, 10, -10],
         getShowAxis: () => false,
         getShowGrid: () => false,
