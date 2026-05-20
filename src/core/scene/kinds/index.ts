@@ -13,4 +13,5 @@ import './cone3d';
 import './point';
 import './segment';
 import './line';
+import './ray';
 export {};
