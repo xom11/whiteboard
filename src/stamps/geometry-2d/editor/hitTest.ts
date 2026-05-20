@@ -1,61 +1,36 @@
+// src/stamps/geometry-2d/editor/hitTest.ts
+import type { State, SceneObject } from '../../../core/scene';
+import { listObjects } from '../../../core/scene';
+
 /**
- * Pure hit-test helpers cho MiniBoard 2D.
+ * Tìm point gần (x, y) nhất trong state, trong vòng tol.
  *
- * Tách khỏi MiniBoard.tsx (1) để unit-test được không cần JSXGraph runtime,
- * (2) để chỗ duy nhất khai báo "exclude phantom + preview" — invisible
- * cursor-phantom và live preview shape đều là JSXGraph elements nằm trong
- * board.objectsList; nếu không loại trừ, chúng sẽ shadow real hits và
- * findNearestPoint sẽ luôn trả về phantom (cách click ~0px) — khiến tool
- * multi-điểm bị "đứng" giữa chừng (xem `__tests__/hitTest.test.ts`).
+ * Sử dụng `pointCoord(id) => [x, y] | null` để hit-test theo toạ độ JSXGraph
+ * thực tế (resolve qua JxgRenderer Map). Trả về `null` nếu không có point nào
+ * trong vòng tol.
  */
-
-import { objKind } from './tools';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type JxgObj = any;
-
-/** Trả về các object có `hasPoint(sx, sy) === true`, bỏ qua exclude set. */
-export function hitObjectsAt(
-  objs: JxgObj[],
-  sx: number,
-  sy: number,
-  exclude: ReadonlySet<JxgObj>,
-): JxgObj[] {
-  const list: JxgObj[] = [];
-  for (const o of objs) {
-    if (!o || exclude.has(o)) continue;
-    if (typeof o.hasPoint !== 'function') continue;
-    try {
-      if (o.hasPoint(sx, sy)) list.push(o);
-    } catch {
-      // skip broken objects
+export function findNearestPoint(
+  state: State,
+  pointCoord: (id: string) => [number, number] | null,
+  x: number,
+  y: number,
+  tolPx: number,
+  excludeIds: Set<string> = new Set(),
+): SceneObject | null {
+  let best: SceneObject | null = null;
+  let bestDistSq = tolPx * tolPx;
+  for (const obj of listObjects(state)) {
+    if (obj.kind !== 'point' && obj.kind !== 'intersection') continue;
+    if (excludeIds.has(obj.id)) continue;
+    const coord = pointCoord(obj.id);
+    if (!coord) continue;
+    const dx = coord[0] - x;
+    const dy = coord[1] - y;
+    const d2 = dx * dx + dy * dy;
+    if (d2 < bestDistSq) {
+      bestDistSq = d2;
+      best = obj;
     }
   }
-  return list;
-}
-
-/**
- * Tìm point gần (sx, sy) nhất trong `tolPx`. Bỏ qua exclude set — quan trọng
- * để không trả về invisible cursor-phantom (luôn ngồi đúng dưới con trỏ).
- */
-export function findNearestPointInList(
-  objs: JxgObj[],
-  sx: number,
-  sy: number,
-  tolPx: number,
-  exclude: ReadonlySet<JxgObj>,
-): JxgObj | null {
-  const tol2 = tolPx * tolPx;
-  let best: { obj: JxgObj; d2: number } | null = null;
-  for (const o of objs) {
-    if (!o || exclude.has(o)) continue;
-    if (objKind(o) !== 'point') continue;
-    const pc = o.coords?.scrCoords;
-    if (!pc) continue;
-    const dx = pc[1] - sx;
-    const dy = pc[2] - sy;
-    const d2 = dx * dx + dy * dy;
-    if (d2 <= tol2 && (!best || d2 < best.d2)) best = { obj: o, d2 };
-  }
-  return best ? best.obj : null;
+  return best;
 }

@@ -1,103 +1,102 @@
-import { hitObjectsAt, findNearestPointInList } from '../editor/hitTest';
+// src/stamps/geometry-2d/__tests__/hitTest.test.ts
+import { findNearestPoint } from '../editor/hitTest';
+import { createEmptyState } from '../../../core/scene';
+import type { State, SceneObject } from '../../../core/scene';
 
-// Helper: build a fake JSXGraph point object with screen coords pc[1], pc[2]
-// (JSXGraph's scrCoords[0] is the homogeneous w; indices 1 and 2 are x, y).
-function fakePoint(scrX: number, scrY: number, opts: { hasPoint?: boolean } = {}) {
+function mkPoint(id: string, x: number, y: number): SceneObject {
   return {
-    elementClass: 1, // OBJECT_CLASS_POINT
-    coords: { scrCoords: [1, scrX, scrY] },
-    hasPoint: (x: number, y: number) =>
-      opts.hasPoint ?? (Math.hypot(x - scrX, y - scrY) < 3),
+    id,
+    kind: 'point',
+    label: id,
+    visible: true,
+    locked: false,
+    layer: 'default',
+    schemaVersion: 1,
+    attrs: { constraint: { kind: 'free', x, y } } as never,
   };
 }
 
-function fakeCircle(testHit: (x: number, y: number) => boolean) {
-  return {
-    elementClass: 3, // OBJECT_CLASS_CIRCLE
-    hasPoint: testHit,
-  };
+function withObjects(state: State, objs: SceneObject[]): State {
+  const objects: Record<string, SceneObject> = { ...state.objects };
+  const order: string[] = [...state.order];
+  for (const o of objs) {
+    objects[o.id] = o;
+    order.push(o.id);
+  }
+  return { ...state, objects, order, counter: state.counter + objs.length };
 }
 
-describe('findNearestPointInList', () => {
+describe('findNearestPoint', () => {
   test('returns the nearest existing point within tolerance', () => {
-    const a = fakePoint(100, 100);
-    const b = fakePoint(120, 100);
-    const c = fakePoint(200, 200);
-    const got = findNearestPointInList([a, b, c], 110, 100, 12, new Set());
-    expect(got).toBe(a);
+    const base = createEmptyState('2d');
+    const state = withObjects(base, [
+      mkPoint('A', 100, 100),
+      mkPoint('B', 120, 100),
+      mkPoint('C', 200, 200),
+    ]);
+    const coords: Record<string, [number, number]> = {
+      A: [100, 100],
+      B: [120, 100],
+      C: [200, 200],
+    };
+    const got = findNearestPoint(state, (id) => coords[id] ?? null, 110, 100, 12);
+    expect(got?.id).toBe('A');
   });
 
   test('returns null when no point falls within tolerance', () => {
-    const p = fakePoint(0, 0);
-    const got = findNearestPointInList([p], 50, 50, 12, new Set());
+    const base = createEmptyState('2d');
+    const state = withObjects(base, [mkPoint('A', 0, 0), mkPoint('B', 100, 0)]);
+    const coords: Record<string, [number, number]> = { A: [0, 0], B: [100, 0] };
+    const got = findNearestPoint(state, (id) => coords[id] ?? null, 50, 50, 10);
     expect(got).toBeNull();
   });
 
-  // BUG regression — circle3 / segment / line… freeze when phantom shadows real hits.
-  // Phantom là invisible point JSXGraph kéo theo cursor; nếu không loại trừ,
-  // findNearestPoint sẽ trả về phantom (cách click ~0px) thay vì điểm thật / null.
-  test('skips phantom in exclude set even if phantom sits exactly at click', () => {
-    const phantom = fakePoint(150, 150);
-    const real = fakePoint(160, 150);
-    const got = findNearestPointInList(
-      [phantom, real],
-      150, 150,
-      12,
-      new Set([phantom]),
-    );
-    expect(got).toBe(real);
+  test('excludes ids in excludeIds set', () => {
+    const base = createEmptyState('2d');
+    const state = withObjects(base, [mkPoint('A', 100, 100), mkPoint('B', 102, 100)]);
+    const coords: Record<string, [number, number]> = { A: [100, 100], B: [102, 100] };
+    const got = findNearestPoint(state, (id) => coords[id] ?? null, 101, 100, 12, new Set(['A']));
+    expect(got?.id).toBe('B');
   });
 
-  test('returns null when only the phantom would match', () => {
-    const phantom = fakePoint(50, 50);
-    const got = findNearestPointInList(
-      [phantom],
-      50, 50,
-      12,
-      new Set([phantom]),
-    );
+  test('skips points without resolved coord (pointCoord returns null)', () => {
+    const base = createEmptyState('2d');
+    const state = withObjects(base, [mkPoint('A', 0, 0), mkPoint('B', 1, 1)]);
+    const got = findNearestPoint(state, () => null, 0, 0, 100);
     expect(got).toBeNull();
   });
 
-  test('ignores non-point elements', () => {
-    const circle = fakeCircle(() => true);
-    const point = fakePoint(80, 80);
-    const got = findNearestPointInList([circle, point], 80, 80, 12, new Set());
-    expect(got).toBe(point);
-  });
-});
-
-describe('hitObjectsAt', () => {
-  test('returns objects whose hasPoint matches', () => {
-    const a = fakePoint(10, 10);
-    const b = fakePoint(100, 100);
-    const got = hitObjectsAt([a, b], 10, 10, new Set());
-    expect(got).toEqual([a]);
-  });
-
-  test('skips objects in exclude set', () => {
-    const phantom = fakePoint(10, 10);
-    const previewCircle = fakeCircle(() => true);
-    const real = fakePoint(11, 10);
-    const got = hitObjectsAt(
-      [phantom, previewCircle, real],
-      10, 10,
-      new Set([phantom, previewCircle]),
-    );
-    expect(got).toEqual([real]);
+  test('ignores non-point and non-intersection kinds', () => {
+    const base = createEmptyState('2d');
+    const seg: SceneObject = {
+      id: 's1',
+      kind: 'segment',
+      label: 's1',
+      visible: true,
+      locked: false,
+      layer: 'default',
+      schemaVersion: 1,
+      attrs: { p1: 'A', p2: 'B' } as never,
+    };
+    const state = withObjects(base, [seg]);
+    const got = findNearestPoint(state, () => [0, 0], 0, 0, 100);
+    expect(got).toBeNull();
   });
 
-  test('skips objects without hasPoint', () => {
-    const broken = { hasPoint: undefined };
-    const ok = fakePoint(5, 5);
-    const got = hitObjectsAt([broken, ok], 5, 5, new Set());
-    expect(got).toEqual([ok]);
-  });
-
-  test('swallows hasPoint exceptions', () => {
-    const throwing = { hasPoint: () => { throw new Error('stale'); } };
-    const ok = fakePoint(5, 5);
-    const got = hitObjectsAt([throwing, ok], 5, 5, new Set());
-    expect(got).toEqual([ok]);
+  test('includes intersection kind', () => {
+    const base = createEmptyState('2d');
+    const inter: SceneObject = {
+      id: 'X',
+      kind: 'intersection',
+      label: 'X',
+      visible: true,
+      locked: false,
+      layer: 'default',
+      schemaVersion: 1,
+      attrs: { kind: 'lineLine', ref1: 'l1', ref2: 'l2' } as never,
+    };
+    const state = withObjects(base, [inter]);
+    const got = findNearestPoint(state, (id) => (id === 'X' ? [10, 10] : null), 12, 10, 10);
+    expect(got?.id).toBe('X');
   });
 });
