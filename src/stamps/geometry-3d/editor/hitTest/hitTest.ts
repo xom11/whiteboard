@@ -1,9 +1,12 @@
 import { screenToRay, type View3DLike } from './rayCast';
 import { rayGround, rayLineSegment, rayPlane, raySphere } from './intersect';
 import { findSnapPoint } from './snapping';
-import { constraintToWorld } from '../scene/constraintMath';
-import type { Scene3D } from '../scene/Scene3D';
-import type { Vec3 } from '../scene/types';
+import { constraintToWorld, type Vec3 } from '../scene/constraintMath';
+import type { State } from '../../../../core/scene';
+import { listObjects } from '../../../../core/scene';
+import type { Point3DAttrs } from '../../../../core/scene/kinds/point3d';
+import type { Plane3DAttrs } from '../../../../core/scene/kinds/plane3d';
+import type { Sphere3DAttrs } from '../../../../core/scene/kinds/sphere3d';
 
 // NOTE (v0.8.0): onPolygon and onLine SceneHit variants are typed but not yet
 // produced by hitTest. They will be added once tools require placing points
@@ -24,7 +27,7 @@ const AXIS_PIXEL_THRESHOLD = 12;
 export function hitTest(
   screen: { x: number; y: number },
   view: View3DLike,
-  scene: Scene3D,
+  state: State,
 ): SceneHit {
   // `screen` arrives in user-space; thresholds below are in pixels and need to
   // be converted to user units via the board's px-per-unit scale.
@@ -36,21 +39,22 @@ export function hitTest(
   const axisThresholdUser = AXIS_PIXEL_THRESHOLD / ux;
 
   // 1. Existing point snap
-  const snap = findSnapPoint(screen, view, scene);
+  const snap = findSnapPoint(screen, view, state);
   if (snap) return { kind: 'existingPoint', pointId: snap };
 
   const ray = screenToRay(screen, view);
 
   // 2. Spheres
   let bestSphere: { id: string; t: number; world: Vec3 } | null = null;
-  for (const obj of scene.list()) {
-    if (obj.kind !== 'sphere' || !obj.visible) continue;
-    const centerPoint = scene.get(obj.center);
-    const surfacePoint = scene.get(obj.surfacePoint);
-    if (!centerPoint || centerPoint.kind !== 'point') continue;
-    if (!surfacePoint || surfacePoint.kind !== 'point') continue;
-    const center = constraintToWorld(centerPoint.constraint, scene);
-    const surface = constraintToWorld(surfacePoint.constraint, scene);
+  for (const obj of listObjects(state)) {
+    if (obj.kind !== 'sphere3d' || !obj.visible) continue;
+    const attrs = obj.attrs as Sphere3DAttrs;
+    const centerPoint = state.objects[attrs.center];
+    const surfacePoint = state.objects[attrs.surfacePoint];
+    if (!centerPoint || centerPoint.kind !== 'point3d') continue;
+    if (!surfacePoint || surfacePoint.kind !== 'point3d') continue;
+    const center = constraintToWorld((centerPoint.attrs as Point3DAttrs).constraint, state);
+    const surface = constraintToWorld((surfacePoint.attrs as Point3DAttrs).constraint, state);
     const radius = Math.hypot(
       surface[0] - center[0],
       surface[1] - center[1],
@@ -85,9 +89,9 @@ export function hitTest(
 
   // 4. User-defined planes
   let bestPlane: { id: string; t: number; world: Vec3; basis: NonNullable<ReturnType<typeof planeBasis>> } | null = null;
-  for (const obj of scene.list()) {
-    if (obj.kind !== 'plane' || !obj.visible) continue;
-    const basis = planeBasis(obj, scene);
+  for (const obj of listObjects(state)) {
+    if (obj.kind !== 'plane3d' || !obj.visible) continue;
+    const basis = planeBasis(obj.attrs as Plane3DAttrs, state);
     if (!basis) continue;
     const ph = rayPlane(ray, { point: basis.origin, normal: basis.normal });
     if (ph && (bestPlane === null || ph.t < bestPlane.t)) {
@@ -110,11 +114,11 @@ export function hitTest(
 
   // 5. Sphere result (if found)
   if (bestSphere) {
-    const sph = scene.get(bestSphere.id);
-    if (sph && sph.kind === 'sphere') {
-      const centerPt = scene.get(sph.center);
-      if (centerPt && centerPt.kind === 'point') {
-        const center = constraintToWorld(centerPt.constraint, scene);
+    const sph = state.objects[bestSphere.id];
+    if (sph && sph.kind === 'sphere3d') {
+      const centerPt = state.objects[(sph.attrs as Sphere3DAttrs).center];
+      if (centerPt && centerPt.kind === 'point3d') {
+        const center = constraintToWorld((centerPt.attrs as Point3DAttrs).constraint, state);
         const relX = bestSphere.world[0] - center[0];
         const relY = bestSphere.world[1] - center[1];
         const relZ = bestSphere.world[2] - center[2];
@@ -153,34 +157,34 @@ function distScreenPointToSegment(
 }
 
 function planeBasis(
-  planeObj: { p1: string; p2: string; p3: string },
-  scene: Scene3D,
+  plane: Plane3DAttrs,
+  state: State,
 ): { origin: Vec3; basis1: Vec3; basis2: Vec3; normal: Vec3 } | null {
-  const p1Obj = scene.get(planeObj.p1);
-  const p2Obj = scene.get(planeObj.p2);
-  const p3Obj = scene.get(planeObj.p3);
-  if (!p1Obj || p1Obj.kind !== 'point') return null;
-  if (!p2Obj || p2Obj.kind !== 'point') return null;
-  if (!p3Obj || p3Obj.kind !== 'point') return null;
-  const p1 = constraintToWorld(p1Obj.constraint, scene);
-  const p2 = constraintToWorld(p2Obj.constraint, scene);
-  const p3 = constraintToWorld(p3Obj.constraint, scene);
-  const basis1: Vec3 = [p2[0]-p1[0], p2[1]-p1[1], p2[2]-p1[2]];
-  const tmp: Vec3 = [p3[0]-p1[0], p3[1]-p1[1], p3[2]-p1[2]];
-  const cx = basis1[1]*tmp[2] - basis1[2]*tmp[1];
-  const cy = basis1[2]*tmp[0] - basis1[0]*tmp[2];
-  const cz = basis1[0]*tmp[1] - basis1[1]*tmp[0];
+  const p1Obj = state.objects[plane.p1];
+  const p2Obj = state.objects[plane.p2];
+  const p3Obj = state.objects[plane.p3];
+  if (!p1Obj || p1Obj.kind !== 'point3d') return null;
+  if (!p2Obj || p2Obj.kind !== 'point3d') return null;
+  if (!p3Obj || p3Obj.kind !== 'point3d') return null;
+  const p1 = constraintToWorld((p1Obj.attrs as Point3DAttrs).constraint, state);
+  const p2 = constraintToWorld((p2Obj.attrs as Point3DAttrs).constraint, state);
+  const p3 = constraintToWorld((p3Obj.attrs as Point3DAttrs).constraint, state);
+  const basis1: Vec3 = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
+  const tmp: Vec3 = [p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]];
+  const cx = basis1[1] * tmp[2] - basis1[2] * tmp[1];
+  const cy = basis1[2] * tmp[0] - basis1[0] * tmp[2];
+  const cz = basis1[0] * tmp[1] - basis1[1] * tmp[0];
   const cLen = Math.hypot(cx, cy, cz);
   if (cLen === 0) return null;
   const normal: Vec3 = [cx / cLen, cy / cLen, cz / cLen];
   const basis2: Vec3 = [
-    normal[1]*basis1[2] - normal[2]*basis1[1],
-    normal[2]*basis1[0] - normal[0]*basis1[2],
-    normal[0]*basis1[1] - normal[1]*basis1[0],
+    normal[1] * basis1[2] - normal[2] * basis1[1],
+    normal[2] * basis1[0] - normal[0] * basis1[2],
+    normal[0] * basis1[1] - normal[1] * basis1[0],
   ];
   return { origin: p1, basis1, basis2, normal };
 }
 
 function dot3(a: Vec3, b: Vec3): number {
-  return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }

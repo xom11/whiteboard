@@ -1,4 +1,4 @@
-import type { Vec3 } from '../scene/types';
+import type { Vec3 } from '../scene/constraintMath';
 import type { Ray3D } from './rayCast';
 
 const EPS = 1e-9;

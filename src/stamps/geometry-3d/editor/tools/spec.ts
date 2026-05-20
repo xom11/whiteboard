@@ -1,4 +1,4 @@
-import type { Scene3D } from '../scene/Scene3D';
+import type { Store } from '../../../../core/scene';
 import type { SceneHit } from '../hitTest/hitTest';
 import { buildPoint, buildPointOnObject } from './handlers/point';
 import { buildSegment, buildLine, buildRay, buildVector } from './handlers/segment';
@@ -40,7 +40,7 @@ export interface ToolSpec {
   label: string;
   hintIdle: string;
   steps: ToolStep[];
-  build(args: CollectedArg[], scene: Scene3D): string | null;
+  build(args: CollectedArg[], store: Store): string | null;
   /**
    * If true, after build completes the controller re-enters step 0 of this
    * tool (clearing collected args) instead of switching to 'move'. Used by

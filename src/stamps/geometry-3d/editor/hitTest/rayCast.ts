@@ -1,4 +1,4 @@
-import type { Vec3 } from '../scene/types';
+import type { Vec3 } from '../scene/constraintMath';
 
 export interface View3DLike {
   unprojectScreen?(sx: number, sy: number, depth: number): [number, number, number];

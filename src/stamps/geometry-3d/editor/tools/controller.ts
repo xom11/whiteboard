@@ -1,4 +1,4 @@
-import type { Scene3D } from '../scene/Scene3D';
+import type { Store } from '../../../../core/scene';
 import type { SceneHit } from '../hitTest/hitTest';
 import type { ToolKey, ToolStep, ToolSpec, CollectedArg } from './spec';
 import { TOOLS } from './spec';
@@ -20,7 +20,7 @@ export class ToolController {
   private state: ControllerState = { tool: null, stepIndex: 0, collected: [], hint: '' };
   private listeners = new Set<Listener>();
 
-  constructor(private scene: Scene3D) {
+  constructor(private store: Store) {
     this.selectTool('move');
   }
 
@@ -111,7 +111,7 @@ export class ToolController {
   private advance(): void {
     const tool = this.state.tool!;
     if (this.state.stepIndex >= tool.steps.length) {
-      tool.build(this.state.collected, this.scene);
+      tool.build(this.state.collected, this.store);
       if (tool.repeatAfterBuild) {
         // Stay in this tool so the user can place several items in a row.
         this.state.stepIndex = 0;
