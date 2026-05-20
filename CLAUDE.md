@@ -78,9 +78,11 @@ whiteboard/
 │   │   └── PdfImporterButton.tsx      ← portal vào More tools dropdown
 │   └── core/
 │       └── persistence/
-├── dist/
 ├── scripts/
 └── package.json
+```
+
+> `dist/` được generate bởi `npm run build` và publish lên npm (không track trong git từ v0.15+).
 ```
 
 ## Public API
@@ -114,18 +116,20 @@ npm run dev         # tsup --watch (auto rebuild + inject)
 
 ## Dev workflow phát hành phiên bản mới
 
-```bash
-# 1. Build + commit dist/ (consumer dùng `npm ci --ignore-scripts` nên không build được)
-npm run build
-git add dist/
-git commit -am "release vX.Y.Z"
+Package đã publish lên npm (`@xom11/whiteboard`). `dist/` không track git — `prepublishOnly` tự clean + build trước `npm publish`.
 
-# 2. Bump version + tag + push
-npm version patch        # 0.2.0 → 0.2.1 — tự commit + tag
+```bash
+# 1. Bump version + tag (tự commit + tag)
+npm version patch        # 0.14.0 → 0.14.1
+
+# 2. Publish lên npm (prepublishOnly tự chạy clean + build)
+npm publish --access public
+
+# 3. Push tag + commit
 git push --follow-tags
 
-# 3. Consumer pin tag mới trong package.json
-"@xom11/whiteboard": "github:xom11/whiteboard#vX.Y.Z"
+# Consumer cài qua npm như bình thường:
+# npm install @xom11/whiteboard@^0.14
 ```
 
 ## Conventions
