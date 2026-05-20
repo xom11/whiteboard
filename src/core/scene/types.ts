@@ -11,11 +11,24 @@ export type SceneObject<A = Record<string, unknown>> = {
   attrs: A;
 };
 
+export type ViewSettings = {
+  readonly xMin: number;
+  readonly xMax: number;
+  readonly yMin: number;
+  readonly yMax: number;
+  readonly showAxis: boolean;
+  readonly showGrid: boolean;
+};
+
 export type State = {
   readonly objects: Readonly<Record<string, SceneObject>>;
   readonly order: readonly string[];
   readonly counter: number;
-  readonly meta: { readonly domain: '2d' | '3d'; readonly version: number };
+  readonly meta: {
+    readonly domain: '2d' | '3d' | 'graph2d';
+    readonly version: number;
+    readonly view?: ViewSettings;
+  };
 };
 
 export type Action =
@@ -25,12 +38,15 @@ export type Action =
   | { type: 'DELETE'; payload: { id: string } }
   | { type: 'RESET' }
   | { type: 'LOAD'; payload: { state: State } }
-  | { type: 'TRANSACTION'; payload: { actions: Action[] } };
+  | { type: 'TRANSACTION'; payload: { actions: Action[] } }
+  | { type: 'UPDATE_VIEW'; payload: { patch: Partial<ViewSettings> } };
 
 export type RenderCtx = {
   jxg: unknown;
   resolveRef: (id: string) => unknown;
   defaults: Readonly<Record<string, unknown>>;
+  /** Map tham số (parameter.label → parameter.value). Chỉ graph2d dùng. */
+  paramMap?: Readonly<Record<string, number>>;
 };
 
 export type KindDef<A = Record<string, unknown>> = {
@@ -59,6 +75,16 @@ export const EMPTY_STATE: State = {
   meta: { domain: '3d', version: 1 },
 };
 
-export function createEmptyState(domain: '2d' | '3d'): State {
-  return { ...EMPTY_STATE, meta: { domain, version: 1 } };
+export function createEmptyState(domain: '2d' | '3d' | 'graph2d'): State {
+  const base: State = { ...EMPTY_STATE, meta: { domain, version: 1 } };
+  if (domain === 'graph2d') {
+    return {
+      ...base,
+      meta: {
+        ...base.meta,
+        view: { xMin: -10, xMax: 10, yMin: -10, yMax: 10, showAxis: true, showGrid: true },
+      },
+    };
+  }
+  return base;
 }

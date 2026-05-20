@@ -81,5 +81,10 @@ export function reduce(draft: Draft<State>, action: Action): void {
       }
       return;
     }
+    case 'UPDATE_VIEW': {
+      if (!draft.meta.view) return;
+      Object.assign(draft.meta.view, action.payload.patch);
+      return;
+    }
   }
 }
