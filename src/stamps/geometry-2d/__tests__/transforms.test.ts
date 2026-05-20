@@ -1,54 +1,71 @@
+// src/stamps/geometry-2d/__tests__/transforms.test.ts
 import { getDefiningPoints, buildTransformSpec } from '../editor/transforms';
+import { createEmptyState } from '../../../core/scene';
+import type { SceneObject } from '../../../core/scene';
 
-const mkPoint = () => ({ elType: 'point' });
+const state = createEmptyState('2d');
+
+function mk(kind: string, id: string, attrs: Record<string, unknown>): SceneObject {
+  return {
+    id,
+    kind,
+    label: id,
+    visible: true,
+    locked: false,
+    layer: 'default',
+    schemaVersion: 1,
+    attrs,
+  };
+}
 
 describe('getDefiningPoints', () => {
   it('point trả về chính nó', () => {
-    const p = mkPoint();
-    expect(getDefiningPoints(p)).toEqual({ kind: 'point', points: [p], attrs: {} });
-  });
-
-  it('segment trả về point1 + point2', () => {
-    const p1 = mkPoint(),
-      p2 = mkPoint();
-    const seg = { elType: 'segment', point1: p1, point2: p2, visProp: {} };
-    const r = getDefiningPoints(seg);
-    expect(r?.kind).toBe('segment');
-    expect(r?.points).toEqual([p1, p2]);
-  });
-
-  it('line, ray (line with straightFirst:false), arrow đều thuộc line family', () => {
-    const p1 = mkPoint(),
-      p2 = mkPoint();
     expect(
-      getDefiningPoints({ elType: 'line', point1: p1, point2: p2, visProp: {} })?.kind,
-    ).toBe('line');
+      getDefiningPoints(mk('point', 'A', { constraint: { kind: 'free', x: 0, y: 0 } }), state),
+    ).toEqual(['A']);
+  });
+
+  it('intersection trả về chính nó', () => {
     expect(
-      getDefiningPoints({ elType: 'arrow', point1: p1, point2: p2, visProp: {} })?.kind,
-    ).toBe('arrow');
+      getDefiningPoints(
+        mk('intersection', 'X', { kind: 'lineLine', ref1: 'l1', ref2: 'l2' }),
+        state,
+      ),
+    ).toEqual(['X']);
   });
 
-  it('circle (center+point) trả về [center, point2]', () => {
-    const c = mkPoint(),
-      p2 = mkPoint();
-    const circ = { elType: 'circle', center: c, point2: p2, visProp: {} };
-    const r = getDefiningPoints(circ);
-    expect(r?.kind).toBe('circleCenter');
-    expect(r?.points).toEqual([c, p2]);
+  it('segment trả về [p1, p2]', () => {
+    expect(getDefiningPoints(mk('segment', 's1', { p1: 'A', p2: 'B' }), state)).toEqual([
+      'A',
+      'B',
+    ]);
   });
 
-  it('circumcircle trả về 3 điểm', () => {
-    const a = mkPoint(),
-      b = mkPoint(),
-      d = mkPoint();
-    const cc = { elType: 'circumcircle', point1: a, point2: b, point3: d, visProp: {} };
-    const r = getDefiningPoints(cc);
-    expect(r?.kind).toBe('circle3');
-    expect(r?.points).toEqual([a, b, d]);
+  it('line, ray, vector', () => {
+    expect(getDefiningPoints(mk('line', 'l1', { p1: 'A', p2: 'B' }), state)).toEqual(['A', 'B']);
+    expect(
+      getDefiningPoints(mk('ray', 'r1', { origin: 'A', through: 'B' }), state),
+    ).toEqual(['A', 'B']);
+    expect(getDefiningPoints(mk('vector', 'v1', { from: 'A', to: 'B' }), state)).toEqual([
+      'A',
+      'B',
+    ]);
   });
 
-  it('null cho object không biết', () => {
-    expect(getDefiningPoints({ elType: 'angle' })).toBeNull();
+  it('circle trả về [center, surfacePoint]', () => {
+    expect(
+      getDefiningPoints(mk('circle', 'c1', { center: 'O', surfacePoint: 'A' }), state),
+    ).toEqual(['O', 'A']);
+  });
+
+  it('polygon trả về vertices', () => {
+    expect(
+      getDefiningPoints(mk('polygon', 'p1', { vertices: ['A', 'B', 'C', 'D'] }), state),
+    ).toEqual(['A', 'B', 'C', 'D']);
+  });
+
+  it('unknown kind trả về []', () => {
+    expect(getDefiningPoints(mk('unknownKind', 'u1', {}), state)).toEqual([]);
   });
 });
 
@@ -72,7 +89,8 @@ describe('buildTransformSpec', () => {
   it('reflectLine: 1 param là line', () => {
     const l = { elType: 'line' };
     expect(buildTransformSpec({ kind: 'reflectLine', line: l })).toEqual({
-      params: [l], attrs: { type: 'reflect' },
+      params: [l],
+      attrs: { type: 'reflect' },
     });
   });
 
