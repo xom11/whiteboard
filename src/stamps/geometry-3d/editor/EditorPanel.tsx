@@ -369,19 +369,17 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
 
     const onPointerDragEnd = React.useCallback(() => {
       const snap = dragSnapshotRef.current;
-      const mutated = dragMutatedRef.current;
       dragSnapshotRef.current = null;
       draggedPointRef.current = null;
       dragStartRef.current = null;
       dragMutatedRef.current = false;
-      // Push undo checkpoint bằng cách dispatch LOAD-prev rồi LOAD-current
-      // bên ngoài withoutHistory. Đơn giản hơn pushUndoCheckpoint của Scene3D:
-      // store auto push qua state diff.
-      if (snap && mutated) {
+      // Push undo checkpoint cho cả 2 flow: click-only (ADD point inside
+      // withoutHistory → cần checkpoint manual) và drag-and-lift (ADD +
+      // UPDATE_ATTRS đều bị withoutHistory wrap → cùng cần). Net effect: 1
+      // entry duy nhất trong past stack = snap → current. Nếu snap === current
+      // (degenerate), 2 LOAD đều no-op, không push gì cả.
+      if (snap) {
         const current = store.getState();
-        // Dispatch LOAD(snap) → state quay về trước drag (push past entry với current)
-        // rồi dispatch LOAD(current) → state về drag-end (push past entry với snap).
-        // Net effect: 1 entry duy nhất trong past stack = snap → current.
         store.withoutHistory(() => {
           store.dispatch({ type: 'LOAD', payload: { state: snap } });
         });
