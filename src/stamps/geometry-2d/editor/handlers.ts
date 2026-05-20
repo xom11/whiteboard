@@ -264,11 +264,20 @@ export function handleDown(ctx: HandlerCtx, e: any): void {
     ) {
       ctx.clearPreviewSegs();
       const vertices = ctx.pendingIdsRef.current.slice();
-      const id = freshId(ctx, t === 'area' ? 'area' : 'poly');
-      const label = ctx.nextLabel(t === 'area' ? 'polygon' : 'polygon');
+      const isArea = t === 'area';
+      const id = freshId(ctx, isArea ? 'area' : 'poly');
+      const label = ctx.nextLabel('polygon');
+      // Tool 'area' = polygon + showValue + fill phân biệt visual với polygon
+      // thường. JSXGraph polygon.Area() live-update khi đỉnh di chuyển.
+      const attrs: Record<string, unknown> = { vertices };
+      if (isArea) {
+        attrs.showValue = true;
+        attrs.fillOpacity = 0.18;
+        attrs.color = '#1d4ed8';
+      }
       ctx.store.dispatch({
         type: 'ADD',
-        payload: { obj: mkSceneObj(id, 'polygon', label, { vertices }) },
+        payload: { obj: mkSceneObj(id, 'polygon', label, attrs) },
       });
       ctx.clearPending();
       return;
@@ -542,9 +551,30 @@ function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
       });
       return;
     }
+    case 'angle': {
+      // ids = [p1, vertex, p2] — tool def 'accepts: ["point", "point", "point"]'
+      // và LeftPanel hint "Click 3 điểm có sẵn (đỉnh ở giữa)". User click theo
+      // thứ tự: cạnh-A, đỉnh, cạnh-B.
+      const id = freshId(ctx, 'ang');
+      const label = ctx.nextLabel('angle');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'angle', label, {
+          p1: ids[0], vertex: ids[1], p2: ids[2],
+        }) },
+      });
+      return;
+    }
+    case 'distance': {
+      const id = freshId(ctx, 'd');
+      const label = ctx.nextLabel('distance');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'distance', label, { p1: ids[0], p2: ids[1] }) },
+      });
+      return;
+    }
     default:
-      // angle / distance / area — measurement tools; sub-PR sau sẽ dispatch
-      // UPDATE_ATTRS lên target (showValue: true) thay vì tạo object mới.
       return;
   }
 }

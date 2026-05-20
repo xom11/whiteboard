@@ -25,9 +25,23 @@ const def: KindDef<PolygonAttrs> = {
   render: (obj, ctx) => {
     const board = ctx.jxg as any;
     const verts = obj.attrs.vertices.map(id => ctx.resolveRef(id));
-    return board.create('polygon', verts, {
-      name: obj.label,
-      withLabel: obj.attrs.showLabel ?? false,
+    const label = obj.label;
+    const showValue = obj.attrs.showValue ?? false;
+    // showValue=true: hiển thị label dạng "ABC: S = 8.50" với diện tích live.
+    // showLabel=false + showValue=true: chỉ số diện tích. JSXGraph polygon's
+    // Area() trả về |∮ x dy| theo đỉnh hiện tại → live update khi kéo đỉnh.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const poly = board.create('polygon', verts, {
+      name: showValue
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ? function (this: any) {
+            // `this` là polygon element; gọi Area() để lấy giá trị live.
+            const a = typeof this.Area === 'function' ? this.Area() : 0;
+            const prefix = (obj.attrs.showLabel ?? true) ? `${label}: ` : '';
+            return `${prefix}S = ${Math.abs(a).toFixed(2)}`;
+          }
+        : label,
+      withLabel: showValue ? true : (obj.attrs.showLabel ?? false),
       borders: {
         strokeColor: obj.attrs.color ?? '#0f172a',
         strokeWidth: obj.attrs.width ?? 2,
@@ -37,6 +51,7 @@ const def: KindDef<PolygonAttrs> = {
       visible: obj.visible,
       fixed: obj.locked,
     });
+    return poly;
   },
 };
 

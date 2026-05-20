@@ -18,4 +18,6 @@ import './vector';
 import './circle';
 import './polygon';
 import './intersection';
+import './angle';
+import './distance';
 export {};

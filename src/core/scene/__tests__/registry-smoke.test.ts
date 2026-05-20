@@ -3,12 +3,14 @@ import '../kinds';
 import { listKinds } from '../registry';
 
 describe('registry smoke (sau khi import barrel kinds)', () => {
-  test('có đủ 19 kind (11 3D + 8 2D) đã đăng ký', () => {
+  test('có đủ 21 kind (11 3D + 10 2D) đã đăng ký', () => {
     const types = listKinds().map(k => k.type).sort();
     expect(types).toEqual([
+      'angle',
       'circle',
       'cone3d',
       'cylinder3d',
+      'distance',
       'intersection',
       'line',
       'line3d',
