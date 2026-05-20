@@ -17,4 +17,5 @@ import './ray';
 import './vector';
 import './circle';
 import './polygon';
+import './intersection';
 export {};
