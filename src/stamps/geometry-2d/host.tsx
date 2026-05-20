@@ -20,6 +20,7 @@ import { useChordShortcut } from '../shared/useChordShortcut';
 import { insertStampImage } from '../shared/insertImage';
 import type { SerializedBoard } from './serialize';
 import { isGeometryCustomData, type GeometryCustomData } from './types';
+import type { Store } from '../../core/scene/store';
 import type {
   StampHostProps,
   StampHostHandle,
@@ -40,6 +41,8 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
     const [geomState, setGeomState] = useState<GeomBoardState>(INITIAL_GEOM_STATE);
     const { isMobile } = useIsMobile();
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const [sceneStore, setSceneStore] = useState<Store | null>(null);
+    const [selectedObjectId, setSelectedObjectId] = useState<string | undefined>(undefined);
 
     const { chordGroup } = useChordShortcut({
       groupOrder: GROUP_ORDER,
@@ -109,6 +112,12 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
           isMobile={isMobile}
           drawerOpen={drawerOpen}
           onDrawerClose={() => setDrawerOpen(false)}
+          store={sceneStore ?? undefined}
+          selectedObjectId={selectedObjectId}
+          onObjectSelect={(id) => {
+            setSelectedObjectId(id);
+            panelRef.current?.selectObject(id);
+          }}
           chordGroup={chordGroup}
         />
         <GeometryEditorPanel
@@ -125,6 +134,8 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
           onRedo={() => panelRef.current?.redo()}
           canUndo={geomState.canUndo}
           canRedo={geomState.canRedo}
+          onStoreReady={setSceneStore}
+          onSelectionChange={setSelectedObjectId}
         />
       </>
     );
