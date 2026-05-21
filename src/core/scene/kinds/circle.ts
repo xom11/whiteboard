@@ -39,6 +39,19 @@ const def: KindDef<CircleAttrs> = {
     }
   },
   dependsOn: (a) => (a.construction ? constructionRefs(a.construction) : [a.center!, a.surfacePoint!]),
+  measure: (obj, state) => {
+    // Circumscribed circles need full geometric derivation — skip for now.
+    if (obj.attrs.construction) return null;
+    const center = obj.attrs.center ? state.objects[obj.attrs.center] : undefined;
+    const surface = obj.attrs.surfacePoint ? state.objects[obj.attrs.surfacePoint] : undefined;
+    if (!center || !surface) return null;
+    const c1 = (center.attrs as { constraint?: { kind: string; x?: number; y?: number } }).constraint;
+    const c2 = (surface.attrs as { constraint?: { kind: string; x?: number; y?: number } }).constraint;
+    if (c1?.kind !== 'free' || c2?.kind !== 'free') return null;
+    const dx = (c2.x ?? 0) - (c1.x ?? 0);
+    const dy = (c2.y ?? 0) - (c1.y ?? 0);
+    return [{ label: 'r', value: Math.hypot(dx, dy) }];
+  },
   describe: (obj) => {
     const c = obj.attrs.construction;
     if (c?.kind === 'circumscribed') {

@@ -63,6 +63,16 @@ const def: KindDef<PointAttrs> = {
     }
   },
   dependsOn: (a) => constraintRefs2D(a.constraint),
+  measure: (obj) => {
+    const c = obj.attrs.constraint;
+    if (c.kind === 'free') {
+      return [
+        { label: 'x', value: c.x },
+        { label: 'y', value: c.y },
+      ];
+    }
+    return null;
+  },
   describe: (obj) => {
     const c = obj.attrs.constraint;
     if (c.kind === 'free') return `${obj.label} = (${c.x.toFixed(2)}, ${c.y.toFixed(2)})`;

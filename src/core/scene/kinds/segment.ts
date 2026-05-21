@@ -20,6 +20,17 @@ const def: KindDef<SegmentAttrs> = {
     if (!a?.p1 || !a?.p2) throw new Error('segment: p1 và p2 bắt buộc');
   },
   dependsOn: (a) => [a.p1, a.p2],
+  measure: (obj, state) => {
+    const p1 = state.objects[obj.attrs.p1];
+    const p2 = state.objects[obj.attrs.p2];
+    if (!p1 || !p2) return null;
+    const c1 = (p1.attrs as { constraint?: { kind: string; x?: number; y?: number } }).constraint;
+    const c2 = (p2.attrs as { constraint?: { kind: string; x?: number; y?: number } }).constraint;
+    if (c1?.kind !== 'free' || c2?.kind !== 'free') return null;
+    const dx = (c2.x ?? 0) - (c1.x ?? 0);
+    const dy = (c2.y ?? 0) - (c1.y ?? 0);
+    return [{ label: 'length', value: Math.hypot(dx, dy) }];
+  },
   describe: (obj) => `Đoạn ${obj.attrs.p1}${obj.attrs.p2}`,
   render: (obj, ctx) => {
     const board = ctx.jxg as any;
