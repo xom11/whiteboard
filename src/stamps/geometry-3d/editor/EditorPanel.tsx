@@ -22,6 +22,7 @@ import {
   type SerializedView3D,
 } from '../serialize';
 import { renderGeometry3DSvgFromState } from '../render';
+import { STAMP_PANEL_DESKTOP } from '../../shared/StampLeftPanel/constants';
 
 export interface EditorPanelProps {
   isDark?: boolean;
@@ -283,7 +284,7 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
           'flex flex-col overflow-hidden bg-white',
           isMobile
             ? 'h-full w-full'
-            : 'h-[600px] max-h-[85vh] w-[800px] max-w-[calc(100vw-320px)] rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5',
+            : `${STAMP_PANEL_DESKTOP} rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5`,
         ].join(' ')}
       >
         <header className="flex items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2 text-white">

@@ -7,6 +7,7 @@ import { PropertiesPopover } from './PropertiesPopover';
 import { TransformParamPopover } from './TransformParamPopover';
 import { UndoIcon, RedoIcon } from './icons';
 import type { Store } from '../../../core/scene/store';
+import { STAMP_PANEL_DESKTOP } from '../../shared/StampLeftPanel/constants';
 
 interface Props {
   initialState: SerializedBoard | null;
@@ -168,7 +169,7 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
           'flex flex-col overflow-hidden bg-white',
           isMobile
             ? 'h-full w-full'
-            : 'h-[540px] max-h-[85vh] w-[640px] max-w-[calc(100vw-280px)] rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5',
+            : `${STAMP_PANEL_DESKTOP} rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5`,
         ].join(' ')}
       >
         <header className="flex items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2 text-white">
@@ -238,7 +239,7 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
             </svg>
           </button>
         </header>
-        <div className="flex min-h-0 flex-1" style={isMobile ? undefined : { height: '420px' }}>
+        <div className="flex min-h-0 flex-1">
           <div className="flex-1">
             <MiniBoard2D
               ref={handleRef}
