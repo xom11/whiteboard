@@ -8,7 +8,6 @@ import React, {
   useState,
 } from 'react';
 import { MiniBoard, type MiniBoardHandle } from './MiniBoard';
-import { GraphLeftPanel } from './LeftPanel';
 import type { Store } from '../../../core/scene/store';
 import type { State } from '../../../core/scene/types';
 import type { GraphTool } from './tools';
@@ -19,6 +18,12 @@ export interface GraphEditorPanelHandle {
   insert: () => boolean;
   hasContent: () => boolean;
   getStore: () => Store | null;
+  setTool: (t: GraphTool) => void;
+  setShowAxis: (b: boolean) => void;
+  setShowGrid: (b: boolean) => void;
+  undo: () => void;
+  redo: () => void;
+  highlight: (id: string | null) => void;
 }
 
 // ---------- Props ----------
@@ -32,96 +37,90 @@ export interface GraphEditorPanelProps {
   onStoreReady?: (store: Store) => void;
   /** Callback khi selection thay đổi qua editor action. */
   onSelectionChange?: (id: string | undefined) => void;
+  /** Báo lên Host khi state thay đổi (tool/axis/grid/undo) — để sync UI. */
+  onStateChange?: (state: GraphBoardState) => void;
   isDark?: boolean;
+  /** Khi true (desktop) panel offset left chừa chỗ LeftPanel. */
   withLeftPanel?: boolean;
+  /** Mobile mode: full-screen + hamburger header. */
+  isMobile?: boolean;
+  /** Click hamburger trên mobile để mở LeftPanel drawer. */
+  onOpenDrawer?: () => void;
+  /** Mobile header: undo/redo/insert buttons. */
+  onUndo?: () => void;
+  onRedo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
+}
+
+export interface GraphBoardState {
+  tool: GraphTool;
+  showAxis: boolean;
+  showGrid: boolean;
+  canUndo: boolean;
+  canRedo: boolean;
 }
 
 // ---------- Component ----------
 
 export const GraphEditorPanel = forwardRef<GraphEditorPanelHandle, GraphEditorPanelProps>(
   function GraphEditorPanel(
-    { initialState, onInsert, onClose, onStoreReady, onSelectionChange, isDark, withLeftPanel = false },
+    {
+      initialState,
+      onInsert,
+      onClose,
+      onStoreReady,
+      onSelectionChange,
+      onStateChange,
+      isDark,
+      withLeftPanel = false,
+      isMobile = false,
+      onOpenDrawer,
+      onUndo,
+      onRedo,
+      canUndo,
+      canRedo,
+    },
     ref,
   ) {
     const miniRef = useRef<MiniBoardHandle | null>(null);
+    const [ready, setReady] = useState(false);
+    const [hasContent, setHasContent] = useState(false);
     const onStoreReadyRef = useRef(onStoreReady);
     const onSelectionChangeRef = useRef(onSelectionChange);
+    const onStateChangeRef = useRef(onStateChange);
     useEffect(() => { onStoreReadyRef.current = onStoreReady; }, [onStoreReady]);
     useEffect(() => { onSelectionChangeRef.current = onSelectionChange; }, [onSelectionChange]);
+    useEffect(() => { onStateChangeRef.current = onStateChange; }, [onStateChange]);
 
-    const [activeTool, setActiveTool] = useState<GraphTool>('move');
-    const [selectedObjectId, setSelectedObjectId] = useState<string | undefined>(undefined);
-    // Store ref for LeftPanel — available after onReady
-    const [store, setStore] = useState<Store | null>(null);
-
-    const emit = useCallback(() => {
+    const emitState = useCallback(() => {
       const h = miniRef.current;
       if (!h) return;
-      const s = h.getStore();
-      setStore(s);
-      onStoreReadyRef.current?.(s);
-    }, []);
-
-    // ---------- Add function / parameter ----------
-
-    const handleAddFunction = useCallback(() => {
-      const h = miniRef.current;
-      if (!h) return;
-      const s = h.getStore();
-      const existing = Object.values(s.getState().objects).filter((o) => o.kind === 'function2d');
-      const id = `f${existing.length + 1}`;
-      s.dispatch({
-        type: 'ADD',
-        payload: {
-          obj: {
-            id,
-            kind: 'function2d',
-            label: id,
-            visible: true,
-            locked: false,
-            layer: 'default',
-            schemaVersion: 1,
-            attrs: { expression: 'x', color: '#2563eb', visible: true },
-          },
-        },
+      setHasContent(Object.keys(h.getState().objects).length > 0);
+      onStateChangeRef.current?.({
+        tool: h.getTool(),
+        showAxis: h.getShowAxis(),
+        showGrid: h.getShowGrid(),
+        canUndo: h.canUndo(),
+        canRedo: h.canRedo(),
       });
     }, []);
 
-    const handleAddParameter = useCallback(() => {
+    const handleReady = useCallback(() => {
       const h = miniRef.current;
       if (!h) return;
-      const s = h.getStore();
-      const existing = Object.values(s.getState().objects).filter((o) => o.kind === 'parameter');
-      const labels = 'abcdefghijklmnopqrstuvwxyz';
-      const usedLabels = new Set(existing.map((o) => o.label));
-      let label = 'a';
-      for (const c of labels) {
-        if (!usedLabels.has(c)) { label = c; break; }
-      }
-      const id = label;
-      s.dispatch({
-        type: 'ADD',
-        payload: {
-          obj: {
-            id,
-            kind: 'parameter',
-            label,
-            visible: true,
-            locked: false,
-            layer: 'default',
-            schemaVersion: 1,
-            attrs: { value: 1, min: -5, max: 5, step: 0.1 },
-          },
-        },
-      });
-    }, []);
+      onStoreReadyRef.current?.(h.getStore());
+      setReady(true);
+      emitState();
+      h.subscribe(emitState);
+    }, [emitState]);
 
     // ---------- Insert ----------
 
     const performInsert = useCallback((): boolean => {
       const h = miniRef.current;
       if (!h) return false;
-      const state = h.getStore().getState();
+      const state = h.getState();
       if (Object.keys(state.objects).length === 0) return false;
       // Fire async SVG export
       void (async () => {
@@ -142,17 +141,25 @@ export const GraphEditorPanel = forwardRef<GraphEditorPanelHandle, GraphEditorPa
       insert: performInsert,
       hasContent: () => Object.keys(miniRef.current?.getState().objects ?? {}).length > 0,
       getStore: () => miniRef.current?.getStore() ?? null,
+      setTool: (t) => miniRef.current?.setTool(t),
+      setShowAxis: (b) => miniRef.current?.setShowAxis(b),
+      setShowGrid: (b) => miniRef.current?.setShowGrid(b),
+      undo: () => miniRef.current?.undo(),
+      redo: () => miniRef.current?.redo(),
+      highlight: (id) => miniRef.current?.highlight(id),
     }), [performInsert]);
 
     // ---------- Layout ----------
 
-    const wrapperStyle: React.CSSProperties = {
-      position: 'absolute',
-      top: '50%',
-      left: withLeftPanel ? 'calc(50% + 120px)' : '50%',
-      transform: 'translate(-50%, -50%)',
-      zIndex: 40,
-    };
+    const wrapperStyle: React.CSSProperties = isMobile
+      ? { position: 'fixed', inset: 0, zIndex: 40 }
+      : {
+          position: 'absolute',
+          top: '50%',
+          left: withLeftPanel ? 'calc(50% + 120px)' : '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 40,
+        };
 
     return (
       <div
@@ -160,72 +167,108 @@ export const GraphEditorPanel = forwardRef<GraphEditorPanelHandle, GraphEditorPa
         aria-label="Đồ thị hàm số"
         data-testid="graph-editor-panel"
         data-stamp-area="true"
+        data-mobile-editor={isMobile ? 'true' : undefined}
         style={wrapperStyle}
         className={[
           isDark ? 'theme--dark ' : '',
-          'flex h-[540px] max-h-[85vh] w-[640px] max-w-[calc(100vw-280px)] overflow-hidden rounded-lg border border-slate-300 bg-white shadow-2xl ring-1 ring-black/5',
-        ].join('')}
+          'flex flex-col overflow-hidden bg-white',
+          isMobile
+            ? 'h-full w-full'
+            : 'h-[540px] max-h-[85vh] w-[640px] max-w-[calc(100vw-280px)] rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5',
+        ].join(' ')}
       >
-        {/* LeftPanel */}
-        <GraphLeftPanel
-          store={store ?? miniRef.current?.getStore() ?? createFallbackStore()}
-          activeTool={activeTool}
-          onToolChange={(t) => {
-            setActiveTool(t);
-            miniRef.current?.setTool(t);
-          }}
-          onAddFunction={handleAddFunction}
-          onAddParameter={handleAddParameter}
-          onClose={onClose}
-          isDark={isDark}
-          selectedObjectId={selectedObjectId}
-          onObjectSelect={(id) => {
-            setSelectedObjectId(id ?? undefined);
-            miniRef.current?.highlight(id);
-            onSelectionChangeRef.current?.(id ?? undefined);
-          }}
-        />
-
-        {/* Board area */}
-        <div className="flex flex-1 flex-col min-w-0">
-          {/* Header */}
-          <header className="flex items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-indigo-600 px-3 py-2 text-white">
-            <h3 className="flex flex-1 items-center gap-2 text-sm font-semibold">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 3 L3 21 L21 21" />
-                <path d="M6 14 Q9 8 12 10 Q15 12 18 6" />
-              </svg>
-              Đồ thị hàm số
-            </h3>
+        <header className="flex items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2 text-white">
+          {isMobile && (
             <button
               type="button"
-              data-testid="graph-editor-close-btn"
-              onClick={onClose}
-              aria-label="Đóng"
-              className="inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15"
+              onClick={onOpenDrawer}
+              aria-label="Mở ngăn công cụ"
+              className="-ml-1 inline-flex h-10 w-10 items-center justify-center rounded transition hover:bg-white/15"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="6" y1="6" x2="18" y2="18" />
-                <line x1="18" y1="6" x2="6" y2="18" />
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="4" y1="6" x2="20" y2="6" />
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <line x1="4" y1="18" x2="20" y2="18" />
               </svg>
             </button>
-          </header>
+          )}
+          <h3 className="flex flex-1 items-center gap-2 text-sm font-semibold">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 3 L3 21 L21 21" />
+              <path d="M6 14 Q9 8 12 10 Q15 12 18 6" />
+            </svg>
+            Đồ thị hàm số
+          </h3>
+          {isMobile && (
+            <>
+              <button
+                type="button"
+                onClick={onUndo}
+                disabled={!canUndo}
+                aria-label="Hoàn tác"
+                title="Hoàn tác (Ctrl/Cmd+Z)"
+                data-testid="undo-btn-mobile"
+                className="inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15 disabled:opacity-40"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M3 10 L8 5 L8 8 L15 8 A5 5 0 0 1 20 13 L20 16" />
+                  <path d="M3 10 L8 15 L8 12" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={onRedo}
+                disabled={!canRedo}
+                aria-label="Làm lại"
+                title="Làm lại (Ctrl/Cmd+Shift+Z)"
+                data-testid="redo-btn-mobile"
+                className="inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15 disabled:opacity-40"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M21 10 L16 5 L16 8 L9 8 A5 5 0 0 0 4 13 L4 16" />
+                  <path d="M21 10 L16 15 L16 12" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={performInsert}
+                disabled={!ready || !hasContent}
+                title={!hasContent ? 'Vẽ ít nhất một đối tượng trước khi chèn' : undefined}
+                data-testid="graph-insert-btn-mobile"
+                className="rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50"
+              >
+                Chèn
+              </button>
+            </>
+          )}
+          <button
+            type="button"
+            data-testid="graph-editor-close-btn"
+            onClick={onClose}
+            aria-label="Đóng"
+            className="inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="6" y1="6" x2="18" y2="18" />
+              <line x1="18" y1="6" x2="6" y2="18" />
+            </svg>
+          </button>
+        </header>
 
-          {/* MiniBoard */}
-          <div className="flex-1 min-h-0">
-            <MiniBoard
-              ref={miniRef}
-              initialState={initialState ?? undefined}
-              isDark={isDark}
-              onReady={emit}
-              onSelectionChange={(id) => {
-                setSelectedObjectId(id);
-                onSelectionChangeRef.current?.(id);
-              }}
-            />
-          </div>
+        {/* MiniBoard */}
+        <div className="flex-1 min-h-0">
+          <MiniBoard
+            ref={miniRef}
+            initialState={initialState ?? undefined}
+            isDark={isDark}
+            onReady={handleReady}
+            onSelectionChange={(id) => {
+              onSelectionChangeRef.current?.(id);
+            }}
+          />
+        </div>
 
-          {/* Footer */}
+        {!isMobile && (
           <footer className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2">
             <span className="text-xs text-slate-500">Chọn công cụ bên trái, nhấp trên bảng để tương tác.</span>
             <div className="flex gap-2">
@@ -239,25 +282,17 @@ export const GraphEditorPanel = forwardRef<GraphEditorPanelHandle, GraphEditorPa
               <button
                 type="button"
                 onClick={performInsert}
+                disabled={!ready || !hasContent}
+                title={!hasContent ? 'Vẽ ít nhất một đối tượng trước khi chèn' : undefined}
                 data-testid="graph-insert-btn"
-                className="rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
+                className="rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50"
               >
                 Chèn
               </button>
             </div>
           </footer>
-        </div>
+        )}
       </div>
     );
   },
 );
-
-// Minimal stub store for initial render before MiniBoard is ready.
-// This avoids passing undefined to LeftPanel which requires a real Store.
-function createFallbackStore(): Store {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { createStore } = require('../../../core/scene/store');
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { createEmptyState } = require('../../../core/scene/types');
-  return createStore(createEmptyState('graph2d'));
-}

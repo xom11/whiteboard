@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { GraphEditorPanel } from '../EditorPanel';
 
 jest.mock('jsxgraph', () => ({
@@ -22,13 +22,14 @@ jest.mock('jsxgraph', () => ({
 }));
 
 describe('GraphEditorPanel smoke', () => {
-  it('render shell: stamp-left-panel + graph-miniboard + dialog', () => {
-    const { getByTestId } = render(
+  it('render shell: graph-miniboard + dialog (LeftPanel ở host, không trong panel)', () => {
+    const { getByTestId, queryByTestId } = render(
       <GraphEditorPanel initialState={null} onInsert={() => {}} onClose={() => {}} />,
     );
-    expect(getByTestId('stamp-left-panel')).toBeInTheDocument();
     expect(getByTestId('graph-miniboard')).toBeInTheDocument();
     expect(getByTestId('graph-editor-panel')).toBeInTheDocument();
+    // LeftPanel is now rendered by host, NOT inside EditorPanel.
+    expect(queryByTestId('stamp-left-panel')).toBeNull();
   });
 
   it('nút Huỷ gọi onClose', () => {
@@ -36,7 +37,6 @@ describe('GraphEditorPanel smoke', () => {
     const { getByTestId } = render(
       <GraphEditorPanel initialState={null} onInsert={() => {}} onClose={onClose} />,
     );
-    // Close button in header
     const closeBtn = getByTestId('graph-editor-close-btn');
     closeBtn.click();
     expect(onClose).toHaveBeenCalled();

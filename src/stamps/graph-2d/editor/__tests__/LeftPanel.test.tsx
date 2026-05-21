@@ -1,9 +1,18 @@
 'use client';
+// Integration test: graph-2d's TOOLS + StampLeftPanel objects tab + addButtons + custom renderRow.
+// (Trước Phase 4 từng test trực tiếp GraphLeftPanel — đã extract sang StampLeftPanel.)
 import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react';
-import { GraphLeftPanel } from '../LeftPanel';
+import { StampLeftPanel } from '../../../shared/StampLeftPanel';
+import { TOOLS, GROUPS, GROUP_LABELS, type GraphTool, type GraphToolGroup } from '../tools';
+import { FunctionRow } from '../rows/FunctionRow';
+import { ParameterRow } from '../rows/ParameterRow';
+import type { Function2DAttrs } from '../../../../core/scene/kinds/function2d';
+import type { ParameterAttrs } from '../../../../core/scene/kinds/parameter';
 import { createStore } from '../../../../core/scene/store';
 import { createEmptyState } from '../../../../core/scene/types';
+import type { SceneObject } from '../../../../core/scene/types';
+import type { Store } from '../../../../core/scene/store';
 import '../../../../core/scene/kinds';
 
 function makeStore() {
@@ -41,66 +50,85 @@ function makeStore() {
   return store;
 }
 
-describe('GraphLeftPanel smoke', () => {
+function makeRenderRow(store: Store) {
+  return function renderRow(
+    obj: SceneObject,
+    defaults: { selected: boolean; onClick: () => void },
+  ): React.ReactNode {
+    if (obj.kind === 'function2d') {
+      return (
+        <FunctionRow
+          obj={obj as unknown as SceneObject<Function2DAttrs>}
+          store={store}
+          selected={defaults.selected}
+          onClick={defaults.onClick}
+        />
+      );
+    }
+    if (obj.kind === 'parameter') {
+      return (
+        <ParameterRow
+          obj={obj as unknown as SceneObject<ParameterAttrs>}
+          store={store}
+          selected={defaults.selected}
+          onClick={defaults.onClick}
+        />
+      );
+    }
+    return null;
+  };
+}
+
+function mount(opts: { store?: Store; onAddFunction?: () => void; onAddParameter?: () => void } = {}) {
+  const addButtons = (opts.onAddFunction || opts.onAddParameter)
+    ? [
+        ...(opts.onAddFunction ? [{ label: '+ Hàm f(x)', testId: 'add-function-btn', onClick: opts.onAddFunction }] : []),
+        ...(opts.onAddParameter ? [{ label: '+ Tham số', testId: 'add-parameter-btn', onClick: opts.onAddParameter }] : []),
+      ]
+    : undefined;
+  return render(
+    <StampLeftPanel<GraphTool, GraphToolGroup>
+      title="Đồ thị"
+      icon={<span />}
+      tools={TOOLS}
+      groupOrder={GROUPS}
+      groupLabels={GROUP_LABELS}
+      activeTool="move"
+      onToolChange={() => {}}
+      onClose={() => {}}
+      objects={opts.store ? {
+        store: opts.store,
+        renderRow: makeRenderRow(opts.store),
+        addButtons,
+      } : undefined}
+    />,
+  );
+}
+
+describe('graph-2d × StampLeftPanel smoke', () => {
   it('renders LeftPanelShell với testId stamp-left-panel', () => {
     const store = makeStore();
-    render(
-      <GraphLeftPanel
-        store={store}
-        activeTool="move"
-        onToolChange={() => {}}
-        onAddFunction={() => {}}
-        onAddParameter={() => {}}
-        onClose={() => {}}
-      />,
-    );
+    mount({ store });
     expect(screen.getByTestId('stamp-left-panel')).toBeInTheDocument();
   });
 
   it('tab Công cụ và tab Đối tượng có mặt', () => {
     const store = makeStore();
-    render(
-      <GraphLeftPanel
-        store={store}
-        activeTool="move"
-        onToolChange={() => {}}
-        onAddFunction={() => {}}
-        onAddParameter={() => {}}
-        onClose={() => {}}
-      />,
-    );
+    mount({ store });
     expect(screen.getByTestId('tab-tools')).toBeInTheDocument();
     expect(screen.getByTestId('tab-objects')).toBeInTheDocument();
   });
 
   it('switch sang tab Đối tượng hiện ObjectListPanel', () => {
     const store = makeStore();
-    render(
-      <GraphLeftPanel
-        store={store}
-        activeTool="move"
-        onToolChange={() => {}}
-        onAddFunction={() => {}}
-        onAddParameter={() => {}}
-        onClose={() => {}}
-      />,
-    );
+    mount({ store });
     fireEvent.click(screen.getByTestId('tab-objects'));
     expect(screen.getByTestId('object-list-panel')).toBeInTheDocument();
   });
 
   it('tab Đối tượng hiển thị FunctionRow cho function2d', () => {
     const store = makeStore();
-    render(
-      <GraphLeftPanel
-        store={store}
-        activeTool="move"
-        onToolChange={() => {}}
-        onAddFunction={() => {}}
-        onAddParameter={() => {}}
-        onClose={() => {}}
-      />,
-    );
+    mount({ store });
     fireEvent.click(screen.getByTestId('tab-objects'));
     expect(screen.getByTestId('function-row-f1')).toBeInTheDocument();
     expect(screen.getByTestId('parameter-row-a')).toBeInTheDocument();
@@ -109,16 +137,7 @@ describe('GraphLeftPanel smoke', () => {
   it('onAddFunction được gọi khi click nút Thêm hàm', () => {
     const onAddFunction = jest.fn();
     const store = makeStore();
-    render(
-      <GraphLeftPanel
-        store={store}
-        activeTool="move"
-        onToolChange={() => {}}
-        onAddFunction={onAddFunction}
-        onAddParameter={() => {}}
-        onClose={() => {}}
-      />,
-    );
+    mount({ store, onAddFunction });
     fireEvent.click(screen.getByTestId('tab-objects'));
     fireEvent.click(screen.getByTestId('add-function-btn'));
     expect(onAddFunction).toHaveBeenCalled();
@@ -127,16 +146,7 @@ describe('GraphLeftPanel smoke', () => {
   it('onAddParameter được gọi khi click nút Thêm tham số', () => {
     const onAddParameter = jest.fn();
     const store = makeStore();
-    render(
-      <GraphLeftPanel
-        store={store}
-        activeTool="move"
-        onToolChange={() => {}}
-        onAddFunction={() => {}}
-        onAddParameter={onAddParameter}
-        onClose={() => {}}
-      />,
-    );
+    mount({ store, onAddParameter });
     fireEvent.click(screen.getByTestId('tab-objects'));
     fireEvent.click(screen.getByTestId('add-parameter-btn'));
     expect(onAddParameter).toHaveBeenCalled();

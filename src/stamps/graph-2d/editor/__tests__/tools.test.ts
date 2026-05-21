@@ -7,14 +7,15 @@ describe('graph-2d tools', () => {
   });
   it('all tools have group + label + title', () => {
     for (const t of TOOLS) {
-      expect(t.id).toBeTruthy();
+      expect(t.key).toBeTruthy();
       expect(t.label).toBeTruthy();
-      expect(t.title).toBeTruthy();
+      expect(t.hint).toBeTruthy();
       expect(t.group).toBeTruthy();
+      expect(t.icon).toBeTruthy();
     }
   });
   it('default tool is move', () => {
-    const first: GraphTool = TOOLS[0].id;
+    const first: GraphTool = TOOLS[0].key;
     expect(first).toBe('move');
   });
   it('groups defined', () => {
