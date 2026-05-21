@@ -1,7 +1,176 @@
-// Stub — replaced in Task 7.
-import type { ToolDef } from '../tools';
+import { objKind, type ToolDef } from '../tools';
 import type { HandlerCtx } from './ctx';
+import { freshId, mkSceneObj } from './utils';
 
-export function finalizeShape(_ctx: HandlerCtx, _toolDef: ToolDef): void {
-  throw new Error('finalizeShape stub — replaced in Task 7');
+// ─── Finalize shape (dispatch ADD per tool) ──────────────────────────────────
+
+/**
+ * Tìm scene id của pending pick theo `objKind`. Dùng cho tool order-flexible
+ * (perpendicular, parallel, tangent): user có thể click điểm trước hay đường
+ * trước, finalizeShape dò pendingRef theo kind để biết role.
+ */
+function findPickIdByKind(ctx: HandlerCtx, kind: 'point' | 'line' | 'circle'): string | null {
+  const picks = ctx.pendingRef.current;
+  const ids = ctx.pendingIdsRef.current;
+  for (let i = 0; i < picks.length; i += 1) {
+    if (objKind(picks[i]) === kind && ids[i]) return ids[i];
+  }
+  return null;
+}
+
+export function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
+  const ids = ctx.pendingIdsRef.current;
+  const key = toolDef.key;
+  switch (key) {
+    case 'segment': {
+      const id = freshId(ctx, 's');
+      const label = ctx.nextLabel('segment');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'segment', label, { p1: ids[0], p2: ids[1] }) },
+      });
+      return;
+    }
+    case 'line': {
+      const id = freshId(ctx, 'l');
+      const label = ctx.nextLabel('line');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'line', label, { p1: ids[0], p2: ids[1] }) },
+      });
+      return;
+    }
+    case 'perpendicular':
+    case 'parallel': {
+      const throughPoint = findPickIdByKind(ctx, 'point');
+      const toLine = findPickIdByKind(ctx, 'line');
+      if (!throughPoint || !toLine) return;
+      const id = freshId(ctx, key === 'perpendicular' ? 'perp' : 'par');
+      const label = ctx.nextLabel('line');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'line', label, {
+          construction: { kind: key, throughPoint, toLine },
+        }) },
+      });
+      return;
+    }
+    case 'perpBisector': {
+      const id = freshId(ctx, 'pb');
+      const label = ctx.nextLabel('line');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'line', label, {
+          construction: { kind: 'perpBisector', p1: ids[0], p2: ids[1] },
+        }) },
+      });
+      return;
+    }
+    case 'angleBisector': {
+      const id = freshId(ctx, 'ab');
+      const label = ctx.nextLabel('line');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'line', label, {
+          construction: { kind: 'angleBisector', p1: ids[0], vertex: ids[1], p2: ids[2] },
+        }) },
+      });
+      return;
+    }
+    case 'tangent': {
+      const throughPoint = findPickIdByKind(ctx, 'point');
+      const toCircle = findPickIdByKind(ctx, 'circle');
+      if (!throughPoint || !toCircle) return;
+      const id = freshId(ctx, 't');
+      const label = ctx.nextLabel('line');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'line', label, {
+          construction: { kind: 'tangent', throughPoint, toCircle },
+        }) },
+      });
+      return;
+    }
+    case 'ray': {
+      const id = freshId(ctx, 'r');
+      const label = ctx.nextLabel('ray');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'ray', label, { origin: ids[0], through: ids[1] }) },
+      });
+      return;
+    }
+    case 'vector': {
+      const id = freshId(ctx, 'v');
+      const label = ctx.nextLabel('vector');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'vector', label, { from: ids[0], to: ids[1] }) },
+      });
+      return;
+    }
+    case 'circleCenter': {
+      const id = freshId(ctx, 'c');
+      const label = ctx.nextLabel('circle');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: {
+          obj: mkSceneObj(id, 'circle', label, {
+            center: ids[0],
+            surfacePoint: ids[1],
+          }),
+        },
+      });
+      return;
+    }
+    case 'circle3': {
+      const id = freshId(ctx, 'cc');
+      const label = ctx.nextLabel('circle');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: {
+          obj: mkSceneObj(id, 'circle', label, {
+            construction: { kind: 'circumscribed', p1: ids[0], p2: ids[1], p3: ids[2] },
+          }),
+        },
+      });
+      return;
+    }
+    case 'midpoint': {
+      const id = freshId(ctx, 'mp');
+      const label = ctx.nextLabel('point');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'point', label, {
+          constraint: { kind: 'midpoint', p1: ids[0], p2: ids[1] },
+        }) },
+      });
+      return;
+    }
+    case 'angle': {
+      // ids = [p1, vertex, p2] — tool def 'accepts: ["point", "point", "point"]'
+      // và LeftPanel hint "Click 3 điểm có sẵn (đỉnh ở giữa)". User click theo
+      // thứ tự: cạnh-A, đỉnh, cạnh-B.
+      const id = freshId(ctx, 'ang');
+      const label = ctx.nextLabel('angle');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'angle', label, {
+          p1: ids[0], vertex: ids[1], p2: ids[2],
+        }) },
+      });
+      return;
+    }
+    case 'distance': {
+      const id = freshId(ctx, 'd');
+      const label = ctx.nextLabel('distance');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'distance', label, { p1: ids[0], p2: ids[1] }) },
+      });
+      return;
+    }
+    default:
+      return;
+  }
 }
