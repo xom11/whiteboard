@@ -110,6 +110,24 @@ import { latexStamp } from '@xom11/whiteboard/latex';
 
 `next` không còn là peer dependency. Whiteboard dùng `React.lazy + Suspense` thuần. Consumer cần Next.js App Router vẫn hoạt động (dist có sẵn `'use client'` directive).
 
+## Extending — thêm stamp mới
+
+Fork repo + viết stamp mới trong ~30 phút. Tham khảo:
+
+- **Howto:** [`docs/superpowers/specs/add-new-stamp-howto.md`](./docs/superpowers/specs/add-new-stamp-howto.md) — 6 bước có sẵn lệnh.
+- **Template:** [`examples/stamp-template/`](./examples/stamp-template/) — skeleton "color-swatch" stamp, copy + đổi `kind`.
+- **Contract test:** mỗi stamp PHẢI pass `runStampContract` (xem [`src/stamps/shared/__tests__/stamp-contract.ts`](./src/stamps/shared/__tests__/stamp-contract.ts)) để đảm bảo `matchesCustomData` / `renderSvgFromCustomData` / roundtrip restore không break.
+- **Catalog:** thêm entry vào [`src/stamps/shared/catalog.ts`](./src/stamps/shared/catalog.ts). Bundle size tự tính qua `scripts/build-catalog.mjs` khi `npm run build`.
+
+```tsx
+import { STAMP_CATALOG, findCatalogEntry } from '@xom11/whiteboard';
+
+// Render admin UI từ catalog
+STAMP_CATALOG.forEach((entry) => {
+  console.log(entry.id, entry.title, entry.bundleSize.js + 'KB gzip');
+});
+```
+
 ## Development
 
 ```bash
