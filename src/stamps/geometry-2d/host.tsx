@@ -8,14 +8,15 @@ import {
   useRef,
   useState,
 } from 'react';
-import { GeometryLeftPanel } from './editor/LeftPanel';
+import { StampLeftPanel } from '../shared/StampLeftPanel';
+import { GeometryIconHeader } from './editor/LeftPanel/icons';
 import {
   GeometryEditorPanel,
   type GeometryEditorPanelHandle,
   type GeomBoardState,
 } from './editor/EditorPanel';
 import type { GeomTool } from './editor/MiniBoard';
-import { GROUP_ORDER, TOOLS } from './editor/tools';
+import { GROUP_ORDER, GROUP_LABELS, TOOLS, letterForGroup, type GeomGroup } from './editor/tools';
 import { useChordShortcut } from '../shared/useChordShortcut';
 import { insertStampImage } from '../shared/insertImage';
 import type { SerializedBoard } from './serialize';
@@ -96,29 +97,41 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
 
     return (
       <>
-        <GeometryLeftPanel
-          activeTool={geomState.tool}
-          onToolChange={(t: GeomTool) => panelRef.current?.setTool(t)}
-          showAxis={geomState.showAxis}
-          showGrid={geomState.showGrid}
-          onShowAxisChange={(b) => panelRef.current?.setShowAxis(b)}
-          onShowGridChange={(b) => panelRef.current?.setShowGrid(b)}
-          onUndo={() => panelRef.current?.undo()}
-          canUndo={geomState.canUndo}
-          onRedo={() => panelRef.current?.redo()}
-          canRedo={geomState.canRedo}
+        <StampLeftPanel<GeomTool, GeomGroup>
+          title="Hình học"
+          icon={GeometryIconHeader}
           onClose={onClose}
           isDark={isDark}
+          testId="stamp-left-panel"
+          tools={TOOLS}
+          groupOrder={GROUP_ORDER}
+          groupLabels={GROUP_LABELS}
+          activeTool={geomState.tool}
+          onToolChange={(t) => panelRef.current?.setTool(t)}
+          view={{
+            showAxis: geomState.showAxis,
+            showGrid: geomState.showGrid,
+            onShowAxisChange: (b) => panelRef.current?.setShowAxis(b),
+            onShowGridChange: (b) => panelRef.current?.setShowGrid(b),
+          }}
+          history={{
+            onUndo: () => panelRef.current?.undo(),
+            canUndo: geomState.canUndo,
+            onRedo: () => panelRef.current?.redo(),
+            canRedo: geomState.canRedo,
+          }}
+          chord={{ activeGroup: chordGroup, letterForGroup }}
+          objects={sceneStore ? {
+            store: sceneStore,
+            selectedObjectId,
+            onObjectSelect: (id) => {
+              setSelectedObjectId(id ?? undefined);
+              panelRef.current?.selectObject(id);
+            },
+          } : undefined}
           isMobile={isMobile}
           drawerOpen={drawerOpen}
           onDrawerClose={() => setDrawerOpen(false)}
-          store={sceneStore ?? undefined}
-          selectedObjectId={selectedObjectId}
-          onObjectSelect={(id) => {
-            setSelectedObjectId(id ?? undefined);
-            panelRef.current?.selectObject(id);
-          }}
-          chordGroup={chordGroup}
         />
         <GeometryEditorPanel
           ref={panelRef}

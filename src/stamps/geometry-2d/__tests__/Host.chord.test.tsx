@@ -30,8 +30,8 @@ jest.mock('../editor/EditorPanel', () => {
   return { ...actual, GeometryEditorPanel: MockPanel };
 });
 
-jest.mock('../editor/LeftPanel', () => ({
-  GeometryLeftPanel: () => null,
+jest.mock('../../shared/StampLeftPanel', () => ({
+  StampLeftPanel: () => null,
 }));
 
 describe('GeometryStampHost — chord shortcuts', () => {

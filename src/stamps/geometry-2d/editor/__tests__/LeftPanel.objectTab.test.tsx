@@ -1,13 +1,14 @@
+// Integration test: 2D's TOOLS + StampLeftPanel objects tab.
+// (Trước Phase 2 từng test trực tiếp GeometryLeftPanel.)
 import * as React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { GeometryLeftPanel } from '../LeftPanel';
+import { StampLeftPanel } from '../../../shared/StampLeftPanel';
+import { TOOLS, GROUP_ORDER, GROUP_LABELS, letterForGroup, type GeomGroup } from '../tools';
+import type { GeomTool } from '../MiniBoard';
 import { createStore } from '../../../../core/scene/store';
 import { registerKind, getKind } from '../../../../core/scene/registry';
-import type { SceneObject, State } from '../../../../core/scene/types';
+import type { SceneObject, State, Store } from '../../../../core/scene/types';
 
-// ---------------------------------------------------------------------------
-// Fake kind — tránh side-effect JXG của 'point' kind thật
-// ---------------------------------------------------------------------------
 const FAKE_KIND = 'fakeobjlp';
 try {
   getKind(FAKE_KIND);
@@ -36,7 +37,7 @@ function makeObj(id: string, label: string, over: Partial<SceneObject> = {}): Sc
   };
 }
 
-function makeStoreWithPoint(label: string) {
+function makeStoreWithPoint(label: string): Store {
   const initial: State = {
     objects: { p1: makeObj('p1', label) },
     order: ['p1'],
@@ -46,27 +47,28 @@ function makeStoreWithPoint(label: string) {
   return createStore(initial);
 }
 
-// ---------------------------------------------------------------------------
-// Base props (no store) — matches GeometryLeftPanelProps
-// ---------------------------------------------------------------------------
-const baseProps = {
-  activeTool: 'move' as const,
-  onToolChange: () => {},
-  showAxis: false,
-  showGrid: false,
-  onShowAxisChange: () => {},
-  onShowGridChange: () => {},
-  onUndo: () => {},
-  canUndo: false,
-  onRedo: () => {},
-  canRedo: false,
-  onClose: () => {},
-  isMobile: false,
-};
+function mount(opts: { store?: Store; onObjectSelect?: (id: string | null) => void } = {}) {
+  return render(
+    <StampLeftPanel<GeomTool, GeomGroup>
+      title="Hình học"
+      icon={<span />}
+      tools={TOOLS}
+      groupOrder={GROUP_ORDER}
+      groupLabels={GROUP_LABELS}
+      activeTool="move"
+      onToolChange={() => {}}
+      view={{ showAxis: false, showGrid: false, onShowAxisChange: () => {}, onShowGridChange: () => {} }}
+      history={{ onUndo: () => {}, canUndo: false, onRedo: () => {}, canRedo: false }}
+      chord={{ activeGroup: null, letterForGroup }}
+      onClose={() => {}}
+      objects={opts.store ? { store: opts.store, onObjectSelect: opts.onObjectSelect } : undefined}
+    />,
+  );
+}
 
-describe('GeometryLeftPanel - Object tab', () => {
+describe('geometry-2d × StampLeftPanel — Object tab', () => {
   test('no store: tab row hidden, only tools visible', () => {
-    render(<GeometryLeftPanel {...baseProps} />);
+    mount();
     // LeftPanelShell renders role="tablist" only when tabs.length >= 2
     expect(screen.queryByRole('tablist')).toBeNull();
     // Tools content (Section "Bố cục") should still render
@@ -75,14 +77,14 @@ describe('GeometryLeftPanel - Object tab', () => {
 
   test('with store: tab row visible, default active=tools', () => {
     const store = makeStoreWithPoint('A');
-    render(<GeometryLeftPanel {...baseProps} store={store} />);
+    mount({ store });
     expect(screen.getByTestId('tab-tools')).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByTestId('tab-objects')).toHaveAttribute('aria-selected', 'false');
   });
 
   test('clicking objects tab shows ObjectListPanel with rows', () => {
     const store = makeStoreWithPoint('A');
-    render(<GeometryLeftPanel {...baseProps} store={store} />);
+    mount({ store });
     act(() => {
       fireEvent.click(screen.getByTestId('tab-objects'));
     });
@@ -93,7 +95,7 @@ describe('GeometryLeftPanel - Object tab', () => {
   test('clicking row triggers onObjectSelect with id', () => {
     const store = makeStoreWithPoint('A');
     const onObjectSelect = jest.fn();
-    render(<GeometryLeftPanel {...baseProps} store={store} onObjectSelect={onObjectSelect} />);
+    mount({ store, onObjectSelect });
     act(() => {
       fireEvent.click(screen.getByTestId('tab-objects'));
     });

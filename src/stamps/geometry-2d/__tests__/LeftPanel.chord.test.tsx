@@ -1,27 +1,29 @@
+// Integration test: verify 2D's TOOLS/GROUP_ORDER wire vào StampLeftPanel chord viz đúng.
+// (Trước Phase 2 từng test trực tiếp GeometryLeftPanel — đã extract sang StampLeftPanel.)
 import { render, screen, fireEvent } from '@testing-library/react';
-import { GeometryLeftPanel } from '../editor/LeftPanel';
+import { StampLeftPanel } from '../../shared/StampLeftPanel';
+import { TOOLS, GROUP_ORDER, GROUP_LABELS, letterForGroup, type GeomGroup } from '../editor/tools';
+import type { GeomTool } from '../editor/MiniBoard';
 
-function mount(chordGroup: 'move' | 'point' | 'line' | null) {
+function mount(activeGroup: GeomGroup | null) {
   return render(
-    <GeometryLeftPanel
+    <StampLeftPanel<GeomTool, GeomGroup>
+      title="Hình học"
+      icon={<span />}
+      tools={TOOLS}
+      groupOrder={GROUP_ORDER}
+      groupLabels={GROUP_LABELS}
       activeTool="move"
       onToolChange={() => {}}
-      showAxis={false}
-      showGrid={false}
-      onShowAxisChange={() => {}}
-      onShowGridChange={() => {}}
-      onUndo={() => {}}
-      canUndo={false}
-      onRedo={() => {}}
-      canRedo={false}
+      view={{ showAxis: false, showGrid: false, onShowAxisChange: () => {}, onShowGridChange: () => {} }}
+      history={{ onUndo: () => {}, canUndo: false, onRedo: () => {}, canRedo: false }}
+      chord={{ activeGroup, letterForGroup }}
       onClose={() => {}}
-      isMobile={false}
-      chordGroup={chordGroup}
     />,
   );
 }
 
-describe('GeometryLeftPanel — chord UI', () => {
+describe('geometry-2d × StampLeftPanel — chord UI', () => {
   test('Group header có badge letter (A, B, C...)', () => {
     const { container } = mount(null);
     expect(container.querySelector('[data-testid="chord-letter-move"]'))
@@ -62,32 +64,27 @@ describe('GeometryLeftPanel — chord UI', () => {
 
   test('chordGroup="point" → section "Điểm" có data-chord-active="true"', () => {
     const { container } = mount('point');
-    const activeSection = container.querySelector(
-      '[data-chord-group="point"]',
-    );
+    const activeSection = container.querySelector('[data-chord-group="point"]');
     expect(activeSection?.getAttribute('data-chord-active')).toBe('true');
-    const otherSection = container.querySelector(
-      '[data-chord-group="move"]',
-    );
+    const otherSection = container.querySelector('[data-chord-group="move"]');
     expect(otherSection?.getAttribute('data-chord-active')).toBe('false');
   });
 });
 
-describe('GeometryLeftPanel — Redo button', () => {
+describe('geometry-2d × StampLeftPanel — Redo button', () => {
   it('hiển thị Redo button với state canRedo', () => {
     const onRedo = jest.fn();
     render(
-      <GeometryLeftPanel
+      <StampLeftPanel<GeomTool, GeomGroup>
+        title="Hình học"
+        icon={<span />}
+        tools={TOOLS}
+        groupOrder={GROUP_ORDER}
+        groupLabels={GROUP_LABELS}
         activeTool="move"
         onToolChange={() => {}}
-        showAxis={false}
-        showGrid={false}
-        onShowAxisChange={() => {}}
-        onShowGridChange={() => {}}
-        onUndo={() => {}}
-        canUndo={false}
-        onRedo={onRedo}
-        canRedo={true}
+        view={{ showAxis: false, showGrid: false, onShowAxisChange: () => {}, onShowGridChange: () => {} }}
+        history={{ onUndo: () => {}, canUndo: false, onRedo, canRedo: true }}
         onClose={() => {}}
       />,
     );
@@ -99,17 +96,16 @@ describe('GeometryLeftPanel — Redo button', () => {
 
   it('Redo button disabled khi canRedo=false', () => {
     render(
-      <GeometryLeftPanel
+      <StampLeftPanel<GeomTool, GeomGroup>
+        title="Hình học"
+        icon={<span />}
+        tools={TOOLS}
+        groupOrder={GROUP_ORDER}
+        groupLabels={GROUP_LABELS}
         activeTool="move"
         onToolChange={() => {}}
-        showAxis={false}
-        showGrid={false}
-        onShowAxisChange={() => {}}
-        onShowGridChange={() => {}}
-        onUndo={() => {}}
-        canUndo={true}
-        onRedo={() => {}}
-        canRedo={false}
+        view={{ showAxis: false, showGrid: false, onShowAxisChange: () => {}, onShowGridChange: () => {} }}
+        history={{ onUndo: () => {}, canUndo: true, onRedo: () => {}, canRedo: false }}
         onClose={() => {}}
       />,
     );
