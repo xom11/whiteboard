@@ -2,13 +2,15 @@
 import * as React from 'react';
 
 export interface ObjectRowMenuProps {
+  locked: boolean;
+  onToggleLocked: () => void;
   onRename: () => void;
   onChangeColor: () => void;
   onDelete: () => void;
 }
 
 export function ObjectRowMenu(props: ObjectRowMenuProps): React.ReactElement {
-  const { onRename, onChangeColor, onDelete } = props;
+  const { locked, onToggleLocked, onRename, onChangeColor, onDelete } = props;
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -17,7 +19,7 @@ export function ObjectRowMenu(props: ObjectRowMenuProps): React.ReactElement {
         type="button"
         aria-label="Row menu"
         onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
-        className="rounded px-1.5 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+        className="rounded px-1.5 text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
       >
         ⋮
       </button>
@@ -29,7 +31,13 @@ export function ObjectRowMenu(props: ObjectRowMenuProps): React.ReactElement {
         >
           <MenuItem onClick={() => { setOpen(false); onRename(); }}>Đổi tên</MenuItem>
           <MenuItem onClick={() => { setOpen(false); onChangeColor(); }}>Đổi màu</MenuItem>
-          <MenuItem onClick={() => { setOpen(false); onDelete(); }} className="text-red-600">
+          <MenuItem onClick={() => { setOpen(false); onToggleLocked(); }}>
+            {locked ? 'Mở khoá' : 'Khoá'}
+          </MenuItem>
+          <MenuItem
+            onClick={() => { setOpen(false); onDelete(); }}
+            className="text-red-600 dark:text-red-400"
+          >
             Xoá
           </MenuItem>
         </div>
@@ -38,13 +46,17 @@ export function ObjectRowMenu(props: ObjectRowMenuProps): React.ReactElement {
   );
 }
 
-function MenuItem({ children, onClick, className }: React.PropsWithChildren<{ onClick: () => void; className?: string }>) {
+function MenuItem({
+  children,
+  onClick,
+  className,
+}: React.PropsWithChildren<{ onClick: () => void; className?: string }>) {
   return (
     <button
       type="button"
       role="menuitem"
       onClick={onClick}
-      className={`block w-full px-3 py-1 text-left hover:bg-zinc-100 dark:hover:bg-zinc-800 ${className ?? ''}`}
+      className={`block w-full px-3 py-1 text-left text-zinc-800 hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-800 ${className ?? ''}`}
     >
       {children}
     </button>

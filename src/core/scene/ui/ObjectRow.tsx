@@ -2,7 +2,6 @@
 import * as React from 'react';
 import type { SceneObject, State } from '../types';
 import { getKind } from '../registry';
-import { getKindUiMeta } from './kindMeta';
 import { ObjectRowMenu } from './ObjectRowMenu';
 
 export interface ObjectRowProps {
@@ -17,9 +16,12 @@ export interface ObjectRowProps {
   onDelete: (id: string) => void;
 }
 
+function formatMeasure(items: { label: string; value: number }[]): string {
+  return items.map((it) => `${it.label} = ${it.value.toFixed(2)}`).join(', ');
+}
+
 export function ObjectRow(props: ObjectRowProps): React.ReactElement {
-  const { obj, selected, onSelect, onToggleVisible, onToggleLocked, onRename, onChangeColor, onDelete } = props;
-  const meta = getKindUiMeta(obj.kind);
+  const { obj, state, selected, onSelect, onToggleVisible, onToggleLocked, onRename, onChangeColor, onDelete } = props;
 
   let summary = '';
   try {
@@ -28,42 +30,62 @@ export function ObjectRow(props: ObjectRowProps): React.ReactElement {
     summary = obj.label;
   }
 
+  let detail: string | null = null;
+  if (selected) {
+    try {
+      const measure = getKind(obj.kind).measure?.(obj, state);
+      if (measure && measure.length > 0) detail = formatMeasure(measure);
+    } catch {
+      detail = null;
+    }
+  }
+
+  const color = (obj.attrs as { color?: string }).color ?? '#888888';
+
   return (
     <li
       data-testid={`object-row-${obj.id}`}
       aria-selected={selected}
-      onClick={() => onSelect(obj.id)}
       className={
-        'flex items-center gap-2 border-b border-zinc-100 px-3 py-1.5 text-xs cursor-pointer dark:border-zinc-800 ' +
+        'flex flex-col border-b border-zinc-100 dark:border-zinc-800 ' +
         (selected ? 'bg-blue-50 dark:bg-blue-950' : 'hover:bg-zinc-50 dark:hover:bg-zinc-900')
       }
     >
-      <span aria-hidden className="inline-block w-4 text-center text-base leading-none">{meta.icon}</span>
-      <span className="min-w-[3ch] font-semibold">{obj.label}</span>
-      <span className="flex-1 truncate text-zinc-500">{summary}</span>
-      <button
-        type="button"
-        aria-label="Toggle visibility"
-        aria-pressed={!obj.visible}
-        onClick={(e) => { e.stopPropagation(); onToggleVisible(obj.id); }}
-        className="rounded px-1 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+      <div
+        className="flex items-center gap-2 px-3 py-1.5 text-xs cursor-pointer"
+        onClick={() => onSelect(obj.id)}
       >
-        {obj.visible ? '👁' : '🚫'}
-      </button>
-      <button
-        type="button"
-        aria-label="Toggle lock"
-        aria-pressed={obj.locked}
-        onClick={(e) => { e.stopPropagation(); onToggleLocked(obj.id); }}
-        className="rounded px-1 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-      >
-        {obj.locked ? '🔒' : '🔓'}
-      </button>
-      <ObjectRowMenu
-        onRename={() => onRename(obj.id)}
-        onChangeColor={() => onChangeColor(obj.id)}
-        onDelete={() => onDelete(obj.id)}
-      />
+        <button
+          type="button"
+          aria-label="Toggle visibility"
+          aria-pressed={!obj.visible}
+          onClick={(e) => { e.stopPropagation(); onToggleVisible(obj.id); }}
+          className="h-4 w-4 shrink-0 rounded-full border-2 transition"
+          style={{
+            backgroundColor: obj.visible ? color : 'transparent',
+            borderColor: color,
+          }}
+        />
+        <span className="flex-1 truncate text-zinc-700 dark:text-zinc-200">
+          <span className="font-semibold">{obj.label}</span>
+          <span className="ml-1 text-zinc-500 dark:text-zinc-400">{summary}</span>
+        </span>
+        <ObjectRowMenu
+          locked={obj.locked}
+          onToggleLocked={() => onToggleLocked(obj.id)}
+          onRename={() => onRename(obj.id)}
+          onChangeColor={() => onChangeColor(obj.id)}
+          onDelete={() => onDelete(obj.id)}
+        />
+      </div>
+      {detail && (
+        <div
+          data-testid={`object-row-detail-${obj.id}`}
+          className="pl-9 pr-3 pb-1.5 text-[11px] text-zinc-500 dark:text-zinc-400"
+        >
+          {detail}
+        </div>
+      )}
     </li>
   );
 }
