@@ -1,6 +1,7 @@
 // src/core/scene/kinds/line.ts
 import { registerKind } from '../registry';
 import type { KindDef } from '../types';
+import { labelOf } from './labelOf';
 
 /**
  * Cách dựng đường thẳng phái sinh. Khi `construction` có mặt, `p1`/`p2` ở
@@ -62,15 +63,16 @@ const def: KindDef<LineAttrs> = {
     if (!a?.p1 || !a?.p2) throw new Error('line: p1 và p2 bắt buộc (hoặc construction)');
   },
   dependsOn: (a) => (a.construction ? constructionRefs(a.construction) : [a.p1!, a.p2!]),
-  describe: (obj) => {
+  describe: (obj, state) => {
+    const L = (id: string) => labelOf(id, state);
     const c = obj.attrs.construction;
-    if (!c) return `Đường thẳng ${obj.attrs.p1}${obj.attrs.p2}`;
+    if (!c) return `Đường thẳng ${L(obj.attrs.p1!)}${L(obj.attrs.p2!)}`;
     switch (c.kind) {
-      case 'perpendicular': return `${obj.label} ⟂ ${c.toLine} qua ${c.throughPoint}`;
-      case 'parallel':      return `${obj.label} ∥ ${c.toLine} qua ${c.throughPoint}`;
-      case 'perpBisector':  return `${obj.label}: trung trực ${c.p1}${c.p2}`;
-      case 'angleBisector': return `${obj.label}: phân giác góc ${c.p1}${c.vertex}${c.p2}`;
-      case 'tangent':       return `${obj.label}: tiếp tuyến ${c.toCircle} qua ${c.throughPoint}`;
+      case 'perpendicular': return `${obj.label} ⟂ ${L(c.toLine)} qua ${L(c.throughPoint)}`;
+      case 'parallel':      return `${obj.label} ∥ ${L(c.toLine)} qua ${L(c.throughPoint)}`;
+      case 'perpBisector':  return `${obj.label}: trung trực ${L(c.p1)}${L(c.p2)}`;
+      case 'angleBisector': return `${obj.label}: phân giác góc ${L(c.p1)}${L(c.vertex)}${L(c.p2)}`;
+      case 'tangent':       return `${obj.label}: tiếp tuyến ${L(c.toCircle)} qua ${L(c.throughPoint)}`;
     }
   },
   render: (obj, ctx) => {

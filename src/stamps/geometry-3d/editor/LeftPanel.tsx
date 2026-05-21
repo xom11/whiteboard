@@ -43,8 +43,8 @@ export interface LeftPanelProps {
   chordGroup?: Geom3DGroup | null;
   /** Currently selected object id (for ObjectListPanel row highlight). */
   selectedObjectId?: string;
-  /** Called when user clicks a row in ObjectListPanel. */
-  onObjectSelect?: (id: string) => void;
+  /** Called when user clicks a row in ObjectListPanel. `null` = deselect. */
+  onObjectSelect?: (id: string | null) => void;
 }
 
 const Geom3DIconHeader = (

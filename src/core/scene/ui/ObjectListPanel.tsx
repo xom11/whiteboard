@@ -8,7 +8,12 @@ import { ObjectRow } from './ObjectRow';
 export interface ObjectListPanelProps {
   store: Store;
   selectedId?: string;
-  onSelect?: (id: string) => void;
+  /**
+   * Called when user clicks a row. Receives the row id, or `null` when the
+   * user clicks the already-selected row (toggle off — request to deselect).
+   * Parent should treat `null` as "clear selection".
+   */
+  onSelect?: (id: string | null) => void;
   /**
    * Optional per-kind row renderer. Called with the SceneObject and default props
    * (selected, onClick). Return a ReactNode to override the default ObjectRow.
@@ -32,7 +37,8 @@ export function ObjectListPanel(props: ObjectListPanelProps): React.ReactElement
   const objects = listObjects(state);
 
   function handleSelect(id: string) {
-    onSelect?.(id);
+    // Toggle: click vào row đang selected → deselect (collapse detail + tắt highlight).
+    onSelect?.(id === selectedId ? null : id);
   }
 
   function handleToggleVisible(id: string) {

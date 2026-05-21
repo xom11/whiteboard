@@ -1,6 +1,7 @@
 // src/core/scene/kinds/circle.ts
 import { registerKind } from '../registry';
 import type { KindDef } from '../types';
+import { labelOf } from './labelOf';
 
 /**
  * Cách dựng đường tròn phái sinh. Khi `construction` có mặt, `center`/
@@ -52,12 +53,13 @@ const def: KindDef<CircleAttrs> = {
     const dy = (c2.y ?? 0) - (c1.y ?? 0);
     return [{ label: 'r', value: Math.hypot(dx, dy) }];
   },
-  describe: (obj) => {
+  describe: (obj, state) => {
+    const L = (id: string) => labelOf(id, state);
     const c = obj.attrs.construction;
     if (c?.kind === 'circumscribed') {
-      return `${obj.label}: đường tròn qua ${c.p1}${c.p2}${c.p3}`;
+      return `${obj.label}: đường tròn qua ${L(c.p1)}${L(c.p2)}${L(c.p3)}`;
     }
-    return `Đường tròn tâm ${obj.attrs.center} qua ${obj.attrs.surfacePoint}`;
+    return `Đường tròn tâm ${L(obj.attrs.center!)} qua ${L(obj.attrs.surfacePoint!)}`;
   },
   render: (obj, ctx) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

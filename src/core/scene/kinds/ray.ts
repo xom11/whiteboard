@@ -1,6 +1,7 @@
 // src/core/scene/kinds/ray.ts
 import { registerKind } from '../registry';
 import type { KindDef } from '../types';
+import { labelOf } from './labelOf';
 
 export type RayAttrs = {
   origin: string;
@@ -18,7 +19,7 @@ const def: KindDef<RayAttrs> = {
     if (!a?.origin || !a?.through) throw new Error('ray: origin và through bắt buộc');
   },
   dependsOn: (a) => [a.origin, a.through],
-  describe: (obj) => `Tia ${obj.attrs.origin}${obj.attrs.through}`,
+  describe: (obj, state) => `Tia ${labelOf(obj.attrs.origin, state)}${labelOf(obj.attrs.through, state)}`,
   render: (obj, ctx) => {
     const board = ctx.jxg as any;
     const o = ctx.resolveRef(obj.attrs.origin);

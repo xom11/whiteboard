@@ -39,7 +39,7 @@ export interface GraphLeftPanelProps {
   onClose: () => void;
   isDark?: boolean;
   selectedObjectId?: string;
-  onObjectSelect?: (id: string) => void;
+  onObjectSelect?: (id: string | null) => void;
 }
 
 // ---------- renderRow for graph kinds ----------
@@ -135,7 +135,7 @@ function ObjectsTab({
 }: {
   store: Store;
   selectedObjectId?: string;
-  onObjectSelect?: (id: string) => void;
+  onObjectSelect?: (id: string | null) => void;
   onAddFunction: () => void;
   onAddParameter: () => void;
 }) {

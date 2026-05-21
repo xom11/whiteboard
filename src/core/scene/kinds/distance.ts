@@ -1,6 +1,7 @@
 // src/core/scene/kinds/distance.ts
 import { registerKind } from '../registry';
 import type { KindDef } from '../types';
+import { labelOf } from './labelOf';
 
 /**
  * Distance measurement: text "d = X.XX" hiển thị tại trung điểm p1-p2.
@@ -27,7 +28,7 @@ const def: KindDef<DistanceAttrs> = {
     if (!a?.p1 || !a?.p2) throw new Error('distance: p1 và p2 bắt buộc');
   },
   dependsOn: (a) => [a.p1, a.p2],
-  describe: (obj) => `Khoảng cách ${obj.attrs.p1}${obj.attrs.p2}`,
+  describe: (obj, state) => `Khoảng cách ${labelOf(obj.attrs.p1, state)}${labelOf(obj.attrs.p2, state)}`,
   render: (obj, ctx) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const board = ctx.jxg as any;

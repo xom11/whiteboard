@@ -65,8 +65,8 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
       setCanRedo(r);
     }, []);
 
-    const handleObjectSelect = useCallback((id: string) => {
-      setSelectedObjectId(id);
+    const handleObjectSelect = useCallback((id: string | null) => {
+      setSelectedObjectId(id ?? undefined);
       editorRef.current?.highlight(id);
     }, []);
 

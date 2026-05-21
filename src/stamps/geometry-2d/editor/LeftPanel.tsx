@@ -87,7 +87,7 @@ interface GeometryLeftPanelProps {
   /** Scene store — bật tab "Đối tượng" khi truyền. */
   store?: Store;
   selectedObjectId?: string;
-  onObjectSelect?: (id: string) => void;
+  onObjectSelect?: (id: string | null) => void;
 }
 
 // ---------- Tooltip portal (desktop hover) ----------

@@ -186,7 +186,7 @@ describe('ObjectListPanel.renderRow', () => {
     expect(getByTestId('object-row-f1')).toBeInTheDocument();
   });
 
-  it('renderRow nhận đúng selected và onClick', () => {
+  it('renderRow nhận đúng selected; click selected row → onSelect(null) (toggle off)', () => {
     const store = setup();
     const onSelect = jest.fn();
     const renderRow = jest.fn((_obj: SceneObject, defaults: { selected: boolean; onClick: () => void }) => (
@@ -205,6 +205,22 @@ describe('ObjectListPanel.renderRow', () => {
     const row = getByTestId('custom-row-f1');
     expect(row).toHaveAttribute('data-selected', 'true');
     fireEvent.click(row);
+    // selected row clicked → deselect
+    expect(onSelect).toHaveBeenCalledWith(null);
+  });
+
+  it('renderRow click unselected row → onSelect(id)', () => {
+    const store = setup();
+    const onSelect = jest.fn();
+    const renderRow = jest.fn((_obj: SceneObject, defaults: { selected: boolean; onClick: () => void }) => (
+      <div key={_obj.id} data-testid={`custom-row-${_obj.id}`} onClick={defaults.onClick}>
+        {_obj.label}
+      </div>
+    ));
+    const { getByTestId } = render(
+      <ObjectListPanel store={store} renderRow={renderRow} onSelect={onSelect} />,
+    );
+    fireEvent.click(getByTestId('custom-row-f1'));
     expect(onSelect).toHaveBeenCalledWith('f1');
   });
 });

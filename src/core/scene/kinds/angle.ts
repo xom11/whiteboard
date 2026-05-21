@@ -1,6 +1,7 @@
 // src/core/scene/kinds/angle.ts
 import { registerKind } from '../registry';
 import type { KindDef } from '../types';
+import { labelOf } from './labelOf';
 
 /**
  * Angle measurement: cung tròn + label giá trị tại đỉnh.
@@ -29,7 +30,7 @@ const def: KindDef<AngleAttrs> = {
     }
   },
   dependsOn: (a) => [a.p1, a.vertex, a.p2],
-  describe: (obj) => `Góc ${obj.attrs.p1}${obj.attrs.vertex}${obj.attrs.p2}`,
+  describe: (obj, state) => `Góc ${labelOf(obj.attrs.p1, state)}${labelOf(obj.attrs.vertex, state)}${labelOf(obj.attrs.p2, state)}`,
   render: (obj, ctx) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const board = ctx.jxg as any;

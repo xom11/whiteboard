@@ -1,6 +1,7 @@
 // src/core/scene/kinds/segment.ts
 import { registerKind } from '../registry';
 import type { KindDef } from '../types';
+import { labelOf } from './labelOf';
 
 export type SegmentAttrs = {
   p1: string;
@@ -31,7 +32,7 @@ const def: KindDef<SegmentAttrs> = {
     const dy = (c2.y ?? 0) - (c1.y ?? 0);
     return [{ label: 'length', value: Math.hypot(dx, dy) }];
   },
-  describe: (obj) => `Đoạn ${obj.attrs.p1}${obj.attrs.p2}`,
+  describe: (obj, state) => `Đoạn ${labelOf(obj.attrs.p1, state)}${labelOf(obj.attrs.p2, state)}`,
   render: (obj, ctx) => {
     const board = ctx.jxg as any;
     const p1 = ctx.resolveRef(obj.attrs.p1);

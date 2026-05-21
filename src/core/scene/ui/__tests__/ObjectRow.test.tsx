@@ -77,10 +77,19 @@ describe('ObjectRow', () => {
     return { ...utils, onSelect, onToggleVisible, onToggleLocked, onRename, onChangeColor, onDelete };
   }
 
-  it('renders label and describe summary', () => {
+  it('renders kindName + label (collapsed default)', () => {
     setup();
     expect(screen.getByTestId('object-row-A1')).toBeInTheDocument();
     expect(screen.getByText('A')).toBeInTheDocument();
+    // displayName comes from kindMeta — for 'fakepoint' it falls back to 'fakepoint' as displayName
+    expect(screen.getByText(/fakepoint/)).toBeInTheDocument();
+    // describe summary is NOT in collapsed row
+    expect(screen.queryByText(/fake\(1\)/)).not.toBeInTheDocument();
+  });
+
+  it('shows describe summary in expanded detail when selected', () => {
+    setup({ selected: true });
+    expect(screen.getByTestId('object-row-detail-A1')).toBeInTheDocument();
     expect(screen.getByText(/fake\(1\)/)).toBeInTheDocument();
   });
 
@@ -151,9 +160,10 @@ describe('ObjectRow', () => {
     expect(screen.queryByTestId('object-row-detail-A1')).not.toBeInTheDocument();
   });
 
-  it('does NOT render detail block when kind has no measure', () => {
+  it('renders detail block with describe even when kind has no measure', () => {
     setup({ selected: true }, makeObj({ kind: FAKE_NO_MEASURE }));
-    expect(screen.queryByTestId('object-row-detail-A1')).not.toBeInTheDocument();
+    // describe is required → detail block still renders
+    expect(screen.getByTestId('object-row-detail-A1')).toBeInTheDocument();
   });
 
   it('applies selected styling', () => {

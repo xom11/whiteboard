@@ -115,7 +115,7 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
           store={sceneStore ?? undefined}
           selectedObjectId={selectedObjectId}
           onObjectSelect={(id) => {
-            setSelectedObjectId(id);
+            setSelectedObjectId(id ?? undefined);
             panelRef.current?.selectObject(id);
           }}
           chordGroup={chordGroup}

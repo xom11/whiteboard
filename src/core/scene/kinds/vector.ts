@@ -1,6 +1,7 @@
 // src/core/scene/kinds/vector.ts
 import { registerKind } from '../registry';
 import type { KindDef } from '../types';
+import { labelOf } from './labelOf';
 
 export type VectorAttrs = {
   from: string;
@@ -17,7 +18,7 @@ const def: KindDef<VectorAttrs> = {
     if (!a?.from || !a?.to) throw new Error('vector: from và to bắt buộc');
   },
   dependsOn: (a) => [a.from, a.to],
-  describe: (obj) => `Vector ${obj.attrs.from}${obj.attrs.to}`,
+  describe: (obj, state) => `Vector ${labelOf(obj.attrs.from, state)}${labelOf(obj.attrs.to, state)}`,
   render: (obj, ctx) => {
     const board = ctx.jxg as any;
     const f = ctx.resolveRef(obj.attrs.from);

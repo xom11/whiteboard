@@ -55,7 +55,7 @@ export type KindDef<A = Record<string, unknown>> = {
   migrate: Record<number, (prev: any) => any>;
   validate?: (attrs: A) => void;
   dependsOn: (attrs: A) => string[];
-  describe: (obj: SceneObject<A>) => string;
+  describe: (obj: SceneObject<A>, state?: State) => string;
   measure?: (obj: SceneObject<A>, state: State) =>
     | { label: string; value: number }[]
     | null;

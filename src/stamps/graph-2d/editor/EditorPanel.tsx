@@ -180,9 +180,9 @@ export const GraphEditorPanel = forwardRef<GraphEditorPanelHandle, GraphEditorPa
           isDark={isDark}
           selectedObjectId={selectedObjectId}
           onObjectSelect={(id) => {
-            setSelectedObjectId(id);
+            setSelectedObjectId(id ?? undefined);
             miniRef.current?.highlight(id);
-            onSelectionChangeRef.current?.(id);
+            onSelectionChangeRef.current?.(id ?? undefined);
           }}
         />
 

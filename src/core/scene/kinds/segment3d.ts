@@ -1,6 +1,7 @@
 // src/core/scene/kinds/segment3d.ts
 import { registerKind } from '../registry';
 import type { KindDef } from '../types';
+import { labelOf } from './labelOf';
 
 export type Segment3DAttrs = { p1: string; p2: string; color?: string };
 
@@ -24,7 +25,7 @@ const def: KindDef<Segment3DAttrs> = {
     const dz = (c2.z ?? 0) - (c1.z ?? 0);
     return [{ label: 'length', value: Math.hypot(dx, dy, dz) }];
   },
-  describe: (obj) => `Đoạn ${obj.attrs.p1}${obj.attrs.p2}`,
+  describe: (obj, state) => `Đoạn ${labelOf(obj.attrs.p1, state)}${labelOf(obj.attrs.p2, state)}`,
   render: (obj, ctx) => {
     const view = ctx.jxg as any;
     const pA = ctx.resolveRef(obj.attrs.p1);
