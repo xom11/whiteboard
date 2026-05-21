@@ -108,6 +108,11 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
         if (cancelled || !containerRef.current) return;
         try {
           JXG.Options.text.display = 'internal';
+          // Tắt hover-highlight mặc định (đổi màu khi di chuột).
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const opts = (JXG as any).Options;
+          opts.elements = opts.elements || {};
+          opts.elements.highlight = false;
         } catch {
           /* ignore option set error in some mocks */
         }

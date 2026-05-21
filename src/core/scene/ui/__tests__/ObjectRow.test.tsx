@@ -77,20 +77,17 @@ describe('ObjectRow', () => {
     return { ...utils, onSelect, onToggleVisible, onToggleLocked, onRename, onChangeColor, onDelete };
   }
 
-  it('renders kindName + label (collapsed default)', () => {
+  it('renders describe(obj, state) as collapsed row title', () => {
     setup();
     expect(screen.getByTestId('object-row-A1')).toBeInTheDocument();
-    expect(screen.getByText('A')).toBeInTheDocument();
-    // displayName comes from kindMeta — for 'fakepoint' it falls back to 'fakepoint' as displayName
-    expect(screen.getByText(/fakepoint/)).toBeInTheDocument();
-    // describe summary is NOT in collapsed row
-    expect(screen.queryByText(/fake\(1\)/)).not.toBeInTheDocument();
+    // FAKE_KIND.describe returns "A = fake(1)" — shown directly in the row
+    expect(screen.getByText(/A = fake\(1\)/)).toBeInTheDocument();
   });
 
-  it('shows describe summary in expanded detail when selected', () => {
+  it('shows measure result in expanded detail when selected', () => {
     setup({ selected: true });
     expect(screen.getByTestId('object-row-detail-A1')).toBeInTheDocument();
-    expect(screen.getByText(/fake\(1\)/)).toBeInTheDocument();
+    expect(screen.getByTestId('object-row-detail-A1').textContent).toMatch(/x = 1\.00/);
   });
 
   it('renders fallback summary for unknown kind without throwing', () => {
@@ -139,7 +136,7 @@ describe('ObjectRow', () => {
 
   it('clicking row body triggers onSelect', () => {
     const { onSelect } = setup();
-    fireEvent.click(screen.getByText('A'));
+    fireEvent.click(screen.getByText(/A = fake\(1\)/));
     expect(onSelect).toHaveBeenCalledWith('A1');
   });
 
@@ -160,10 +157,10 @@ describe('ObjectRow', () => {
     expect(screen.queryByTestId('object-row-detail-A1')).not.toBeInTheDocument();
   });
 
-  it('renders detail block with describe even when kind has no measure', () => {
+  it('does NOT render detail block when kind has no measure', () => {
     setup({ selected: true }, makeObj({ kind: FAKE_NO_MEASURE }));
-    // describe is required → detail block still renders
-    expect(screen.getByTestId('object-row-detail-A1')).toBeInTheDocument();
+    // describe already shown in collapsed title; without measure → no extra detail.
+    expect(screen.queryByTestId('object-row-detail-A1')).not.toBeInTheDocument();
   });
 
   it('applies selected styling', () => {

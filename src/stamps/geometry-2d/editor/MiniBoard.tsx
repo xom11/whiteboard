@@ -595,6 +595,11 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
           opts.label.display = 'internal';
           opts.label.strokeColor = themeLabel(isDarkRef.current);
           opts.text.strokeColor = themeLabel(isDarkRef.current);
+          // Tắt hover-highlight mặc định của JSXGraph (đổi sang xanh/đen khi
+          // di chuột vào element). Highlight selection (đỏ) chủ động qua
+          // JxgRenderer.highlight() thay vì để JSXGraph tự xử lý.
+          opts.elements = opts.elements || {};
+          opts.elements.highlight = false;
         }
       });
       const board = JXG.JSXGraph.initBoard(containerId, {

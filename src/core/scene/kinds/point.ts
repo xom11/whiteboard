@@ -73,27 +73,32 @@ const def: KindDef<PointAttrs> = {
     }
     return null;
   },
-  describe: (obj) => {
+  describe: (obj, state) => {
     const c = obj.attrs.constraint;
-    if (c.kind === 'free') return `${obj.label} = (${c.x.toFixed(2)}, ${c.y.toFixed(2)})`;
-    if (c.kind === 'onAxis') return `${obj.label} trên trục ${c.axis} (t=${c.t.toFixed(2)})`;
-    if (c.kind === 'onLine') return `${obj.label} trên đường ${c.lineId}`;
-    if (c.kind === 'onSegment') return `${obj.label} trên đoạn ${c.segmentId}`;
-    if (c.kind === 'onCircle') return `${obj.label} trên đường tròn ${c.circleId}`;
-    if (c.kind === 'onPolygon') return `${obj.label} trên đa giác ${c.polygonId}`;
-    if (c.kind === 'midpoint') return `${obj.label} = trung điểm ${c.p1}${c.p2}`;
+    if (c.kind === 'free') return `Điểm ${obj.label}`;
+    if (c.kind === 'onAxis') return `${obj.label} trên trục ${c.axis}`;
+    if (c.kind === 'onLine') return `${obj.label} trên đường ${state?.objects[c.lineId]?.label ?? c.lineId}`;
+    if (c.kind === 'onSegment') return `${obj.label} trên đoạn ${state?.objects[c.segmentId]?.label ?? c.segmentId}`;
+    if (c.kind === 'onCircle') return `${obj.label} trên đường tròn ${state?.objects[c.circleId]?.label ?? c.circleId}`;
+    if (c.kind === 'onPolygon') return `${obj.label} trên đa giác ${state?.objects[c.polygonId]?.label ?? c.polygonId}`;
+    if (c.kind === 'midpoint') {
+      const l1 = state?.objects[c.p1]?.label ?? c.p1;
+      const l2 = state?.objects[c.p2]?.label ?? c.p2;
+      return `${obj.label} = trung điểm ${l1}${l2}`;
+    }
     if (c.kind === 'transformed') {
       const t = c.transform;
+      const labelRef = (id: string) => state?.objects[id]?.label ?? id;
       const op =
         t.kind === 'translate' ? `tịnh tiến (${t.dx.toFixed(2)}, ${t.dy.toFixed(2)})`
-        : t.kind === 'rotate' ? `quay ${((t.angleRad * 180) / Math.PI).toFixed(0)}° quanh ${t.center}`
-        : t.kind === 'reflectLine' ? `đối xứng qua ${t.line}`
-        : t.kind === 'reflectPoint' ? `đối xứng qua điểm ${t.center}`
-        : t.kind === 'dilate' ? `vị tự k=${t.k} quanh ${t.center}`
+        : t.kind === 'rotate' ? `quay ${((t.angleRad * 180) / Math.PI).toFixed(0)}° quanh ${labelRef(t.center)}`
+        : t.kind === 'reflectLine' ? `đối xứng qua ${labelRef(t.line)}`
+        : t.kind === 'reflectPoint' ? `đối xứng qua điểm ${labelRef(t.center)}`
+        : t.kind === 'dilate' ? `vị tự k=${t.k} quanh ${labelRef(t.center)}`
         : '';
-      return `${obj.label} = ảnh của ${c.source} (${op})`;
+      return `${obj.label} = ảnh của ${labelRef(c.source)} (${op})`;
     }
-    return obj.label;
+    return `Điểm ${obj.label}`;
   },
   render: (obj, ctx) => {
     const board = ctx.jxg as any;

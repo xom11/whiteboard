@@ -32,7 +32,7 @@ const def: KindDef<SegmentAttrs> = {
     const dy = (c2.y ?? 0) - (c1.y ?? 0);
     return [{ label: 'length', value: Math.hypot(dx, dy) }];
   },
-  describe: (obj, state) => `Đoạn ${labelOf(obj.attrs.p1, state)}${labelOf(obj.attrs.p2, state)}`,
+  describe: (obj, state) => `Đoạn thẳng ${labelOf(obj.attrs.p1, state)}${labelOf(obj.attrs.p2, state)}`,
   render: (obj, ctx) => {
     const board = ctx.jxg as any;
     const p1 = ctx.resolveRef(obj.attrs.p1);

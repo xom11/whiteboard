@@ -25,7 +25,7 @@ const def: KindDef<Segment3DAttrs> = {
     const dz = (c2.z ?? 0) - (c1.z ?? 0);
     return [{ label: 'length', value: Math.hypot(dx, dy, dz) }];
   },
-  describe: (obj, state) => `Đoạn ${labelOf(obj.attrs.p1, state)}${labelOf(obj.attrs.p2, state)}`,
+  describe: (obj, state) => `Đoạn thẳng ${labelOf(obj.attrs.p1, state)}${labelOf(obj.attrs.p2, state)}`,
   render: (obj, ctx) => {
     const view = ctx.jxg as any;
     const pA = ctx.resolveRef(obj.attrs.p1);

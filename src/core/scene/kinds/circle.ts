@@ -57,9 +57,9 @@ const def: KindDef<CircleAttrs> = {
     const L = (id: string) => labelOf(id, state);
     const c = obj.attrs.construction;
     if (c?.kind === 'circumscribed') {
-      return `${obj.label}: đường tròn qua ${L(c.p1)}${L(c.p2)}${L(c.p3)}`;
+      return `Đường tròn đi qua ${L(c.p1)}${L(c.p2)}${L(c.p3)}`;
     }
-    return `Đường tròn tâm ${L(obj.attrs.center!)} qua ${L(obj.attrs.surfacePoint!)}`;
+    return `Đường tròn tâm ${L(obj.attrs.center!)} bán kính ${L(obj.attrs.center!)}${L(obj.attrs.surfacePoint!)}`;
   },
   render: (obj, ctx) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

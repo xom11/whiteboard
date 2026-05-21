@@ -32,10 +32,10 @@ describe('kinds/point (2D)', () => {
       .toEqual(['c1']);
   });
 
-  test('describe in toạ độ', () => {
+  test('describe free → "Điểm <label>"', () => {
     const def = getKind('point');
     const obj = mkObj('point', 'A', { constraint: { kind: 'free', x: 1.5, y: 2.5 } });
-    expect(def.describe(obj)).toMatch(/A.*1\.50.*2\.50/);
+    expect(def.describe(obj)).toBe('Điểm A');
   });
 
   test('dependsOn midpoint → [p1, p2]', () => {

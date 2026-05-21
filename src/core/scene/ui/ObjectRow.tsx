@@ -26,14 +26,15 @@ export function ObjectRow(props: ObjectRowProps): React.ReactElement {
 
   const meta = getKindUiMeta(obj.kind);
 
-  let describeText: string | null = null;
+  let title = '';
+  try {
+    title = getKind(obj.kind).describe(obj, state);
+  } catch {
+    title = `${meta.displayName} ${obj.label}`;
+  }
+
   let measureText: string | null = null;
   if (selected) {
-    try {
-      describeText = getKind(obj.kind).describe(obj, state);
-    } catch {
-      describeText = null;
-    }
     try {
       const m = getKind(obj.kind).measure?.(obj, state);
       if (m && m.length > 0) measureText = formatMeasure(m);
@@ -67,8 +68,7 @@ export function ObjectRow(props: ObjectRowProps): React.ReactElement {
           }}
         />
         <span className="flex-1 truncate text-zinc-700 dark:text-zinc-200">
-          <span className="text-zinc-500 dark:text-zinc-400">{meta.displayName} </span>
-          <span className="font-semibold">{obj.label}</span>
+          {title}
         </span>
         <ObjectRowMenu
           locked={obj.locked}
@@ -78,13 +78,12 @@ export function ObjectRow(props: ObjectRowProps): React.ReactElement {
           onDelete={() => onDelete(obj.id)}
         />
       </div>
-      {selected && (describeText || measureText) && (
+      {selected && measureText && (
         <div
           data-testid={`object-row-detail-${obj.id}`}
           className="pl-9 pr-3 pb-1.5 text-[11px] text-zinc-500 dark:text-zinc-400"
         >
-          {describeText && <div>{describeText}</div>}
-          {measureText && <div>{measureText}</div>}
+          {measureText}
         </div>
       )}
     </li>
