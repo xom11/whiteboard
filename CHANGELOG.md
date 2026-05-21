@@ -1,5 +1,36 @@
 # Changelog
 
+## v0.17.0 — 2026-05-21
+
+Tier B refactor — Editor hook generalization + thu gọn 2 file lớn nhất + generic StampType. (closes #30)
+
+### Breaking changes
+- **Public API loại 4 type guard**: `isGeometryCustomData`, `isLatexCustomData`, `isGeometry3DCustomData`, `isGraph2DCustomData` KHÔNG còn export từ `@xom11/whiteboard`. Migration:
+  - Trước: `import { isGeometryCustomData } from '@xom11/whiteboard';`
+  - Sau: `import { geometryStamp } from '@xom11/whiteboard';` rồi dùng `geometryStamp.matchesCustomData(data)` — TypeScript narrow `data` sang `GeometryCustomData` tự động qua type guard. (Tương tự cho 3 stamp còn lại.)
+- Các `*CustomData` *type* (vd `GeometryCustomData`) vẫn được export — không đổi.
+
+### Refactor
+- **`StampType<TCustomData>` generic** (`src/stamps/shared/types.ts`): `matchesCustomData(data: unknown): data is TCustomData` + `renderSvgFromCustomData(data: TCustomData): Promise<string>`. Mỗi stamp typed `StampType<XxxCustomData>`. `findStampForCustomData` giữ signature default `StampType<BaseStampCustomData>` — method shorthand bivariance cho phép `ReadonlyArray<StampType>` chứa concrete generic stamps.
+- **`Whiteboard.tsx` 593 → 309 LoC**: tách `useScenePersist` (~335 LoC) ra `src/hooks/`. Hook bundle: effectiveInitialScene precedence + onSceneTick (3 throttle: scene 200ms / file 1s / prune 2s) + 3 mount effect (initialFiles / IDB raster / restoreMissingStampFiles) + unmount flush. `Whiteboard` còn giữ: theme sync + crop intercept (re-edit dispatch) + UI render.
+- **3D `EditorPanel.tsx` 477 → 243 LoC**: tách `usePointDrag` (point-drag handlers + 4 ref nội bộ) + `editorHelpers` (`hitToHoverLabel` + `getView3DInfo`). Dùng `useEditorState` mới thay 3 useEffect (initial-state LOAD + history sync + Ctrl-Z/Shift-Z/Ctrl-Y shortcuts).
+- **2D `LeftPanel.tsx` 452 → 17 LoC**: folder `LeftPanel/` cho `Desktop.tsx` (226), `Mobile.tsx` (97), `icons.tsx` (52), `types.ts` (36), `useToolHoverTooltip.ts` (35). `LeftPanel.tsx` entry chỉ dispatch isMobile + re-export `UndoIcon`/`RedoIcon`.
+
+### New shared hooks
+- **`useSceneStore`**: promote từ `geometry-2d/editor/` → `core/scene/hooks/`. Loại import cross-folder bẩn từ `graph-2d/editor/MiniBoard.tsx`. Re-export qua scene barrel.
+- **`useEditorState({ store, initialState?, onHistoryChange?, bindKeyboardShortcuts? })`**: bundle 3 side effect chung cho stamp editor panel: LOAD initial state (withoutHistory) + history sync callback + Ctrl-Z/Shift-Z/Ctrl-Y shortcut. Re-export qua scene barrel.
+
+### Tests
+- Mới: `StampType.generic.test.ts` (5 tests) verify generic narrowing qua `matchesCustomData` + method bivariance cho `ReadonlyArray<StampType<BaseStampCustomData>>`.
+- Update 2 test file import `isXxxCustomData` từ internal location (`../types`, `../serialize`) thay vì stamp public index.
+- Test count: 682 → 687 (+5 generic).
+
+### Misc
+- Loại 3 `eslint-disable max-lines` directives (Whiteboard.tsx, geometry-3d/EditorPanel.tsx, geometry-2d/LeftPanel.tsx).
+- Public API render path không đổi: cùng `Whiteboard` props + scene/files behavior. Chỉ breaking ở loại 4 type guard public.
+
+---
+
 ## v0.16.0 — 2026-05-22
 
 Tier A refactor — internal restructure, no public API change. (closes #28)
