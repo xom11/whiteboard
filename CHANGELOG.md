@@ -1,5 +1,42 @@
 # Changelog
 
+## v0.18.0 — 2026-05-21
+
+Tier B½ — stamp catalog + contract test + add-stamp howto. (closes #29)
+
+Cho phép fork repo + viết stamp mới mà không lo break contract; consumer build admin UI / picker chọn stamp từ manifest.
+
+### New public API
+
+- **`STAMP_CATALOG`** + **`findCatalogEntry(id)`** + type `StampCatalogEntry` (re-export từ `@xom11/whiteboard` + `@xom11/whiteboard/...` subpaths). Mỗi entry: `{ id, title, version, experimental, runtimeDeps, bundleSize: { js, css } }` — bundle size đo gzip transitive (entry + chunks + lazy host).
+  ```tsx
+  import { STAMP_CATALOG, findCatalogEntry } from '@xom11/whiteboard';
+  STAMP_CATALOG.forEach((e) => console.log(e.id, e.bundleSize.js + 'KB'));
+  ```
+  Bundle size lần đo này (gzip KB): geometry 43.19, latex 9.47, geometry3d 38.26, graph2d 25.90.
+
+### Test infrastructure
+
+- **`runStampContract(stamp, fixture)`** — generic contract suite ở `src/stamps/shared/__tests__/stamp-contract.ts`. Cover metadata, `matchesCustomData` (true/false/null/edge), `renderSvgFromCustomData` (SVG prefix + throws on foreign), Host shape, roundtrip qua `restoreFileFromCustomData`. 4 stamp hiện tại đăng ký fixture riêng → +84 tests đảm bảo public contract không silent break.
+
+### Build pipeline
+
+- **`scripts/build-catalog.mjs`** chạy postbuild — BFS từ `dist/{slug}.mjs` qua mọi `import './chunk-*.mjs'` (static + dynamic), gzip transitive, patch placeholder trong dist, ghi `dist/catalog.json` cho consumer fetch runtime.
+- Script `npm run build:catalog` cho regen độc lập sau khi đã có `dist/`.
+
+### Docs + DX
+
+- **[`docs/superpowers/specs/add-new-stamp-howto.md`](docs/superpowers/specs/add-new-stamp-howto.md)** — 6 bước có lệnh cụ thể, link tới contract suite + catalog + build script. Target ≤30 phút từ copy template → stamp mới pass contract.
+- **[`examples/stamp-template/`](examples/stamp-template/)** — skeleton "color-swatch" stamp (5 file: index.tsx, host.tsx, types.ts, render.ts, contract.test.ts + README). Pass full contract suite (21 tests) ngay khi copy.
+- README.md mục "Extending — thêm stamp mới" link howto + template + catalog usage.
+
+### Tests
+
+- 802 tests pass (687 → 802; +84 contract + 10 catalog + 21 template).
+- Mock jsxgraph nới: `initBoard` nhận cả `containerId` (string) lẫn DOM element (geometry-3d test path).
+
+---
+
 ## v0.17.0 — 2026-05-21
 
 Tier B refactor — Editor hook generalization + thu gọn 2 file lớn nhất + generic StampType. (closes #30)
