@@ -21,12 +21,16 @@ import {
   type SerializedBoard3D,
   type SerializedView3D,
 } from '../serialize';
+import { renderGeometry3DSvgFromState } from '../render';
 
 export interface EditorPanelProps {
   isDark?: boolean;
   /** Initial state parsed from custom data (state + optional view orientation). */
   initialState?: { state: State; view?: SerializedView3D } | null;
+  /** Triggered after serialize + svg render — host wires Excalidraw insertion. */
   onInsert?: (board: SerializedBoard3D, svgWidth: number, svgHeight: number, svgString: string) => void;
+  /** Close dialog. Host has the lifecycle hook for "close + remove host". */
+  onClose: () => void;
   /** Store created by host (so LeftPanel sibling can share it). */
   store: Store;
   /** Currently selected tool — controlled by host. */
@@ -35,14 +39,20 @@ export interface EditorPanelProps {
   onSelectedToolChange: (k: ToolKey) => void;
   showAxis: boolean;
   showGrid: boolean;
-  onReadyChange?: (ready: boolean) => void;
-  /** Notifies the host when undo/redo availability changes (for wiring buttons). */
+  /** Notifies host của ready/canUndo/canRedo để host wire LeftPanel buttons. */
   onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
+  /** Mobile mode: full-screen + hamburger header. */
+  isMobile?: boolean;
+  /** Mở mobile LeftPanel drawer (host owns drawer visibility). */
+  onOpenDrawer?: () => void;
+  /** Khi true, panel offset left để chừa chỗ cho LeftPanel (desktop). */
+  withLeftPanel?: boolean;
 }
 
 export interface EditorPanelHandle {
   hasContent: () => boolean;
-  serialize: () => SerializedBoard3D;
+  /** Try to serialize + render + onInsert. Returns false nếu rỗng. */
+  tryInsert: () => boolean;
   setTool: (k: ToolKey) => void;
   undo: () => void;
   redo: () => void;
@@ -54,13 +64,17 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
     const {
       isDark: isDarkProp,
       initialState,
+      onInsert,
+      onClose,
       store,
       selectedTool,
       onSelectedToolChange,
       showAxis,
       showGrid,
-      onReadyChange,
       onHistoryChange,
+      isMobile = false,
+      onOpenDrawer,
+      withLeftPanel = false,
     } = props;
     const isDark = isDarkProp ?? false;
 
@@ -69,6 +83,8 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
 
     const [hint, setHint] = React.useState<string>('Chọn công cụ trong bảng bên trái');
     const [hoverLabel, setHoverLabel] = React.useState<string | null>(null);
+    const [ready, setReady] = React.useState(false);
+    const [hasContent, setHasContent] = React.useState(false);
 
     const boardRef = React.useRef<MiniBoard3DHandle | null>(null);
     const rendererRef = React.useRef<JxgRenderer3D | null>(null);
@@ -80,6 +96,9 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
 
     const selectedToolRef = React.useRef(selectedTool);
     selectedToolRef.current = selectedTool;
+
+    const onInsertRef = React.useRef(onInsert);
+    onInsertRef.current = onInsert;
 
     useEditorState({ store, initialState, onHistoryChange });
 
@@ -110,9 +129,14 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       };
     }, []);
 
+    // hasContent: track store size để gate Insert button.
+    React.useEffect(() => {
+      const sync = (): void => setHasContent(Object.keys(store.getState().objects).length > 0);
+      sync();
+      return store.subscribe(sync);
+    }, [store]);
+
     // Clear preview khi controller reset (tool switch, build complete, cancel).
-    // Re-runs trên mỗi notify — sau consumeHit/consumeNumber sẽ redraw với
-    // collected count mới ở pointer move kế tiếp.
     React.useEffect(() => {
       const controller = controllerRef.current;
       if (!controller) return;
@@ -133,7 +157,6 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
           xAxis: { visible: showAxis },
           yAxis: { visible: showAxis },
           zAxis: { visible: showAxis },
-          // GeoGebra-style: chỉ XY ground plane hiện; side walls ẩn.
           xPlaneRear: { visible: false, mesh3d: { visible: false } },
           yPlaneRear: { visible: false, mesh3d: { visible: false } },
           zPlaneRear: { visible: showGrid, mesh3d: { visible: false } },
@@ -147,8 +170,6 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
     const handleView3DReady = React.useCallback((view: unknown) => {
       rendererRef.current = new JxgRenderer3D(store, view);
       previewRef.current = new Preview3DManager(view, store);
-      // Restore saved azimuth/elevation khi re-edit stamp cũ, để editor view
-      // khớp với ảnh đã chèn.
       const savedView = initialState?.view;
       if (savedView) {
         try {
@@ -161,8 +182,8 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
           /* swallow — JSXGraph cũ không expose az_slide */
         }
       }
-      onReadyChange?.(true);
-    }, [onReadyChange, store, initialState]);
+      setReady(true);
+    }, [store, initialState]);
 
     const handleClick = React.useCallback((screen: { x: number; y: number }) => {
       const view = boardRef.current?.getView3D();
@@ -195,27 +216,107 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       setHoverLabel(hitToHoverLabel(hit, store.getState()));
     }, [store, isDragging]);
 
+    const tryInsert = React.useCallback((): boolean => {
+      const state = store.getState();
+      if (Object.keys(state.objects).length === 0) return false;
+      const board: SerializedBoard3D = serializeBoard3D(
+        state,
+        getView3DInfo(boardRef.current?.getView3D()),
+      );
+      const jsonState = JSON.stringify(board);
+      void (async () => {
+        try {
+          const { svgString, width, height } = await renderGeometry3DSvgFromState(jsonState);
+          onInsertRef.current?.(board, width, height, svgString);
+        } catch (err) {
+          console.error('Geometry3D insert failed:', err);
+        }
+      })();
+      return true;
+    }, [store]);
+
     React.useImperativeHandle(
       ref,
       () => ({
         hasContent: () => Object.keys(store.getState().objects).length > 0,
-        serialize: () => serializeBoard3D(store.getState(), getView3DInfo(boardRef.current?.getView3D())),
+        tryInsert,
         setTool: (k) => controllerRef.current!.selectTool(k),
         undo: () => store.undo(),
         redo: () => store.redo(),
         highlight: (id) => rendererRef.current?.highlight(id),
       }),
-      [store],
+      [store, tryInsert],
     );
+
+    const dialogStyle: React.CSSProperties = isMobile
+      ? { position: 'fixed', inset: 0, zIndex: 40 }
+      : {
+          position: 'absolute',
+          top: '50%',
+          left: withLeftPanel ? 'calc(50% + 120px)' : '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 40,
+        };
 
     return (
       <div
-        data-testid="editor-panel-3d"
+        role="dialog"
+        aria-label="Dựng hình học 3D"
+        data-testid="geom3d-host"
+        data-stamp-area="true"
+        style={dialogStyle}
         className={[
           isDark ? 'theme--dark ' : '',
-          'flex h-full w-full min-w-0 flex-col overflow-hidden bg-white',
-        ].join('')}
+          'flex flex-col overflow-hidden bg-white',
+          isMobile
+            ? 'h-full w-full'
+            : 'h-[600px] max-h-[85vh] w-[800px] max-w-[calc(100vw-320px)] rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5',
+        ].join(' ')}
       >
+        <header className="flex items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2 text-white">
+          {isMobile && (
+            <button
+              type="button"
+              onClick={onOpenDrawer}
+              aria-label="Mở ngăn công cụ"
+              className="-ml-1 inline-flex h-10 w-10 items-center justify-center rounded transition hover:bg-white/15"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="4" y1="6" x2="20" y2="6" />
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <line x1="4" y1="18" x2="20" y2="18" />
+              </svg>
+            </button>
+          )}
+          <h3 className="flex flex-1 items-center gap-2 text-sm font-semibold">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 9 L4 20 L14 20 L14 9 Z M4 9 L10 4 L20 4 L14 9 Z M14 9 L20 4 L20 15 L14 20 Z" />
+            </svg>
+            Dựng hình học không gian
+          </h3>
+          {isMobile && (
+            <button
+              type="button"
+              onClick={tryInsert}
+              disabled={!ready || !hasContent}
+              title={!hasContent ? 'Vẽ ít nhất một đối tượng trước khi chèn' : undefined}
+              data-testid="geom3d-insert-btn-mobile"
+              className="rounded bg-white/15 px-3 py-1.5 text-xs font-semibold transition hover:bg-white/25 disabled:opacity-50"
+            >
+              Chèn
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            aria-label="Đóng"
+            className="inline-flex h-9 w-9 items-center justify-center rounded transition hover:bg-white/15"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="6" y1="6" x2="18" y2="18" />
+              <line x1="18" y1="6" x2="6" y2="18" />
+            </svg>
+          </button>
+        </header>
         <div className="min-h-0 flex-1">
           <MiniBoard3D
             ref={boardRef}
@@ -234,6 +335,28 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
           />
         </div>
         <StatusHint hint={hint} hoverLabel={hoverLabel} />
+        {!isMobile && (
+          <footer className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2">
+            <span className="text-xs text-slate-500">Chọn công cụ bên trái, click trên bảng để dựng hình.</span>
+            <div className="flex gap-2">
+              <button
+                onClick={onClose}
+                className="rounded border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+              >
+                Huỷ
+              </button>
+              <button
+                onClick={tryInsert}
+                disabled={!ready || !hasContent}
+                title={!hasContent ? 'Vẽ ít nhất một đối tượng trước khi chèn' : undefined}
+                data-testid="geom3d-insert-btn"
+                className="rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50"
+              >
+                Chèn
+              </button>
+            </div>
+          </footer>
+        )}
       </div>
     );
   },
