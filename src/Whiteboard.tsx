@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable max-lines -- TODO Tier B: extract useScenePersist hook (issue #30) */
 
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef } from 'react';
 import type {

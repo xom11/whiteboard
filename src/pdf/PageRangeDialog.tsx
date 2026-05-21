@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable max-lines -- TODO Tier B: extract sub-components/hooks (issue #30) */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -387,7 +388,6 @@ function ThumbnailItem({ pageNum, thumb, selected, onToggle }: ThumbProps) {
         }}
       >
         {thumb ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={thumb.dataURL}
             alt=""

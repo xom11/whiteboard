@@ -202,6 +202,9 @@ export const PropertiesPopover: React.FC<Props> = (props) => {
   const currentDash = props.currentDash;
   const currentWidth = props.currentWidth;
 
+  // Hooks must be called unconditionally — before any early return
+  const colorIndicatorTint = useMemo(() => currentColor, [currentColor]);
+
   if (typeof document === 'undefined') return null;
 
   // Pill toolbar: row of icon buttons, separator before trash. Click một icon
@@ -231,8 +234,6 @@ export const PropertiesPopover: React.FC<Props> = (props) => {
       )}
     </button>
   );
-
-  const colorIndicatorTint = useMemo(() => currentColor, [currentColor]);
 
   const pos = clamped ?? { left: anchor.x, top: anchor.y };
   const node = (

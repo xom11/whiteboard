@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable max-lines -- TODO Tier B: extract sub-components/hooks (issue #30) */
 import * as React from 'react';
 import { createStore, createEmptyState, nextLabel, type Store, type State } from '../../../core/scene';
 import { JxgRenderer3D } from '../../../core/scene/render/JxgRenderer3D';

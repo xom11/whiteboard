@@ -255,7 +255,9 @@ export const GraphEditorPanel = forwardRef<GraphEditorPanelHandle, GraphEditorPa
 // Minimal stub store for initial render before MiniBoard is ready.
 // This avoids passing undefined to LeftPanel which requires a real Store.
 function createFallbackStore(): Store {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { createStore } = require('../../../core/scene/store');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { createEmptyState } = require('../../../core/scene/types');
   return createStore(createEmptyState('graph2d'));
 }

@@ -15,7 +15,7 @@ export const ALLOWED_FUNCTIONS = [
 const ID_RE = /[A-Za-z_][A-Za-z0-9_]*/g;
 const UNSAFE_RE = /[=;{}]|\beval\b|\bnew\b|\breturn\b|\bthis\b|\bwindow\b|\bdocument\b|\bglobal\b|\bprocess\b/;
 
-const NUMBER_RE = /^[+\-]?(\d+\.?\d*|\.\d+)([eE][+\-]?\d+)?$/;
+const NUMBER_RE = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/;
 
 export type ValidateResult = { ok: true } | { ok: false; error: string };
 
