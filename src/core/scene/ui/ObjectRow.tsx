@@ -67,7 +67,7 @@ export function ObjectRow(props: ObjectRowProps): React.ReactElement {
             borderColor: color,
           }}
         />
-        <span className="flex-1 truncate text-black dark:text-white">
+        <span className="flex-1 truncate text-black">
           {title}
         </span>
         <ObjectRowMenu
@@ -81,7 +81,7 @@ export function ObjectRow(props: ObjectRowProps): React.ReactElement {
       {selected && measureText && (
         <div
           data-testid={`object-row-detail-${obj.id}`}
-          className="pl-9 pr-3 pb-1.5 text-[11px] text-black dark:text-white"
+          className="pl-9 pr-3 pb-1.5 text-[11px] text-black"
         >
           {measureText}
         </div>

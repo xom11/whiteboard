@@ -67,11 +67,10 @@ describe('ObjectRowMenu', () => {
     expect(onChangeColor).toHaveBeenCalledTimes(1);
   });
 
-  it('menu items use pure black/white text for readability', () => {
+  it('menu items use black text for readability', () => {
     setup();
     fireEvent.click(screen.getByLabelText('Row menu'));
     const item = screen.getByText('Khoá');
     expect(item.className).toContain('text-black');
-    expect(item.className).toContain('dark:text-white');
   });
 });

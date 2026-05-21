@@ -19,7 +19,7 @@ export function ObjectRowMenu(props: ObjectRowMenuProps): React.ReactElement {
         type="button"
         aria-label="Row menu"
         onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
-        className="rounded px-1.5 text-black dark:text-white"
+        className="rounded px-1.5 text-black"
       >
         ⋮
       </button>
@@ -56,7 +56,7 @@ function MenuItem({
       type="button"
       role="menuitem"
       onClick={onClick}
-      className={`block w-full px-3 py-1 text-left text-black dark:text-white ${className ?? ''}`}
+      className={`block w-full px-3 py-1 text-left text-black ${className ?? ''}`}
     >
       {children}
     </button>
