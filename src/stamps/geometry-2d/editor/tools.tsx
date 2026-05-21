@@ -60,91 +60,244 @@ export interface ToolDef {
   accepts?: Array<'point' | 'line' | 'circle' | 'any'>;
 }
 
-// ============== Tool icons — inline SVG ==============
+// ============== Tool icons — inline SVG (GeoGebra-inspired, MIT-clean redraw) ==============
+//
+// Design system:
+//   - Main strokes use currentColor → respect active state (white-on-emerald).
+//   - 4 accent colors stay fixed across states:
+//       point     → blue dot (signature từ GeoGebra)
+//       construct → red dashed/solid helper line (perpendicular, bisector, parallel, tangent)
+//       fill      → orange polygon/area fill (light)
+//       arc       → emerald arc cho measurement
+//   - ViewBox 24×24, stroke 1.4–1.7, round caps cho cảm giác sketch-like.
+const C_POINT = '#2563eb';
+const C_CONSTRUCT = '#dc2626';
+const C_FILL = '#f59e0b';
+const C_ARC = '#059669';
+
 const Icon = {
+  // ===== Basic =====
   cursor: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4 L20 12 L13 13 L11 20 Z"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M5 3 L5 18 L9.5 14 L12 20 L14 19.2 L11.5 13.5 L17.5 13.5 Z"
+        fill="currentColor" fillOpacity="0.12"
+        stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"
+      />
+    </svg>
   ),
   select: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4 L20 12 L13 13 L11 20 Z" fill="none"/><rect x="2.5" y="2.5" width="19" height="19" strokeDasharray="3 2" fill="none"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinejoin="round" strokeLinecap="round">
+      <rect x="2.5" y="2.5" width="14" height="14" rx="0.5" stroke="currentColor" strokeWidth="1.4" strokeDasharray="2 1.8"/>
+      <path d="M10 10 L21 14.5 L14.5 16 L12.5 22 Z" fill="currentColor" fillOpacity="0.5" stroke="currentColor" strokeWidth="1.2"/>
+    </svg>
   ),
+
+  // ===== Point =====
   point: (
-    <svg width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <circle cx="9.5" cy="14" r="3.2" fill={C_POINT}/>
+      <text x="13.5" y="10.5" fontSize="9.5" fontFamily="serif" fontStyle="italic" fontWeight="600" fill={C_POINT}>A</text>
+    </svg>
   ),
   midpoint: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="12" x2="20" y2="12"/><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="20" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
+      <line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" strokeWidth="1.5"/>
+      <circle cx="4" cy="12" r="1.7" fill={C_POINT}/>
+      <circle cx="20" cy="12" r="1.7" fill={C_POINT}/>
+      <circle cx="12" cy="12" r="2.5" fill={C_POINT}/>
+    </svg>
   ),
+
+  // ===== Line =====
   segment: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="18" x2="19" y2="6"/><circle cx="5" cy="18" r="1.7" fill="currentColor"/><circle cx="19" cy="6" r="1.7" fill="currentColor"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
+      <line x1="5" y1="18" x2="19" y2="6" stroke="currentColor" strokeWidth="1.6"/>
+      <circle cx="5" cy="18" r="2.2" fill={C_POINT}/>
+      <circle cx="19" cy="6" r="2.2" fill={C_POINT}/>
+    </svg>
   ),
   line: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="2" y1="20" x2="22" y2="4"/><circle cx="8" cy="16" r="1.6" fill="currentColor"/><circle cx="16" cy="8" r="1.6" fill="currentColor"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
+      <line x1="2" y1="21" x2="22" y2="3" stroke="currentColor" strokeWidth="1.6"/>
+      <circle cx="8.5" cy="15.5" r="1.9" fill={C_POINT}/>
+      <circle cx="15.5" cy="8.5" r="1.9" fill={C_POINT}/>
+    </svg>
   ),
   ray: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="19" x2="22" y2="2"/><circle cx="5" cy="19" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="5" y1="19" x2="22" y2="2" stroke="currentColor" strokeWidth="1.6"/>
+      <circle cx="5" cy="19" r="2.2" fill={C_POINT}/>
+      <circle cx="12" cy="12" r="1.7" fill={C_POINT}/>
+    </svg>
   ),
   vector: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="20" x2="20" y2="4"/><polyline points="14,4 20,4 20,10"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="5" y1="19" x2="18" y2="6"/>
+      <polyline points="13,5 19,5 19,11"/>
+      <circle cx="5" cy="19" r="2" fill={C_POINT} stroke="none"/>
+    </svg>
   ),
+
+  // ===== Construct =====
   perpendicular: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="18" x2="21" y2="18"/><line x1="12" y1="18" x2="12" y2="4"/><rect x="12" y="14" width="4" height="4" fill="none"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
+      <line x1="2" y1="17" x2="22" y2="17" stroke="currentColor" strokeWidth="1.5"/>
+      <line x1="12" y1="3" x2="12" y2="17" stroke={C_CONSTRUCT} strokeWidth="1.5"/>
+      <rect x="12" y="13.5" width="3.5" height="3.5" fill="none" stroke="currentColor" strokeWidth="1"/>
+      <circle cx="12" cy="17" r="1.8" fill={C_POINT}/>
+    </svg>
   ),
   parallel: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="9" x2="21" y2="5"/><line x1="3" y1="19" x2="21" y2="15"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
+      <line x1="2" y1="9" x2="22" y2="6" stroke="currentColor" strokeWidth="1.5"/>
+      <line x1="2" y1="19" x2="22" y2="16" stroke={C_CONSTRUCT} strokeWidth="1.5"/>
+      <circle cx="12" cy="7.5" r="1.8" fill={C_POINT}/>
+    </svg>
   ),
   perpBisector: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="18" x2="20" y2="18"/><line x1="12" y1="4" x2="12" y2="22" strokeDasharray="3 2"/><circle cx="6" cy="18" r="1.5" fill="currentColor"/><circle cx="18" cy="18" r="1.5" fill="currentColor"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
+      <line x1="4" y1="16" x2="20" y2="16" stroke="currentColor" strokeWidth="1.5"/>
+      <line x1="12" y1="3" x2="12" y2="22" stroke={C_CONSTRUCT} strokeWidth="1.4" strokeDasharray="2.5 2"/>
+      <circle cx="4" cy="16" r="2" fill={C_POINT}/>
+      <circle cx="20" cy="16" r="2" fill={C_POINT}/>
+    </svg>
   ),
   bisector: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="20" x2="20" y2="4"/><line x1="4" y1="20" x2="20" y2="20"/><line x1="4" y1="20" x2="22" y2="12" strokeDasharray="3 2"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
+      <line x1="4" y1="20" x2="22" y2="20" stroke="currentColor" strokeWidth="1.5"/>
+      <line x1="4" y1="20" x2="22" y2="4" stroke="currentColor" strokeWidth="1.5"/>
+      <line x1="4" y1="20" x2="23" y2="11" stroke={C_CONSTRUCT} strokeWidth="1.4" strokeDasharray="2.5 2"/>
+    </svg>
   ),
+
+  // ===== Polygon =====
   polygon: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><polygon points="6,6 18,6 22,14 12,22 4,14"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinejoin="round">
+      <polygon points="6,5 18,6 22,14 13,21 4,16" fill={C_FILL} fillOpacity="0.28" stroke={C_FILL} strokeWidth="1.5"/>
+      <circle cx="6" cy="5" r="1.5" fill={C_POINT}/>
+      <circle cx="18" cy="6" r="1.5" fill={C_POINT}/>
+      <circle cx="22" cy="14" r="1.5" fill={C_POINT}/>
+      <circle cx="13" cy="21" r="1.5" fill={C_POINT}/>
+      <circle cx="4" cy="16" r="1.5" fill={C_POINT}/>
+    </svg>
   ),
   regularPolygon: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><polygon points="12,3 20,8 20,17 12,22 4,17 4,8"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinejoin="round">
+      <polygon points="12,3 20.5,8 20.5,16 12,21 3.5,16 3.5,8" fill={C_FILL} fillOpacity="0.28" stroke={C_FILL} strokeWidth="1.5"/>
+      <circle cx="12" cy="3" r="1.7" fill={C_POINT}/>
+      <circle cx="20.5" cy="8" r="1.7" fill={C_POINT}/>
+    </svg>
   ),
+
+  // ===== Circle =====
   circleCenter: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <circle cx="11" cy="13" r="8" stroke="currentColor" strokeWidth="1.5"/>
+      <circle cx="11" cy="13" r="1.7" fill={C_POINT}/>
+      <circle cx="19" cy="13" r="1.7" fill={C_POINT}/>
+    </svg>
   ),
   circle3: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="4" r="1.5" fill="currentColor"/><circle cx="20" cy="14" r="1.5" fill="currentColor"/><circle cx="5" cy="16" r="1.5" fill="currentColor"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="13" r="8" stroke="currentColor" strokeWidth="1.5"/>
+      <circle cx="12" cy="5" r="1.7" fill={C_POINT}/>
+      <circle cx="19" cy="16" r="1.7" fill={C_POINT}/>
+      <circle cx="5" cy="16" r="1.7" fill={C_POINT}/>
+    </svg>
   ),
   tangent: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="13" r="6"/><line x1="2" y1="20" x2="22" y2="2"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
+      <circle cx="10" cy="14" r="5.5" stroke="currentColor" strokeWidth="1.5"/>
+      <line x1="2" y1="22" x2="22" y2="2" stroke={C_CONSTRUCT} strokeWidth="1.5"/>
+      <circle cx="20.5" cy="3.5" r="1.7" fill={C_POINT}/>
+      <circle cx="13.9" cy="10.1" r="1.5" fill={C_POINT}/>
+    </svg>
   ),
+
+  // ===== Measure =====
   angle: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="20" x2="20" y2="20"/><line x1="4" y1="20" x2="20" y2="6"/><path d="M14 20 A 10 10 0 0 0 11 13" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="4" y1="20" x2="22" y2="20" stroke="currentColor" strokeWidth="1.5"/>
+      <line x1="4" y1="20" x2="22" y2="6" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M14 20 A 10 10 0 0 0 11 13.4" stroke={C_ARC} strokeWidth="1.6" fill="none"/>
+      <circle cx="4" cy="20" r="1.7" fill={C_POINT}/>
+    </svg>
   ),
   distance: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="8" x2="4" y2="16"/><line x1="20" y1="8" x2="20" y2="16"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <line x1="5" y1="16" x2="19" y2="16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+      <circle cx="5" cy="16" r="2" fill={C_POINT}/>
+      <circle cx="19" cy="16" r="2" fill={C_POINT}/>
+      <text x="8.5" y="11" fontSize="7" fontFamily="serif" fontStyle="italic" fontWeight="600" fill="currentColor">cm</text>
+    </svg>
   ),
   area: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5,6 19,6 21,14 13,21 3,15" fill="currentColor" fillOpacity="0.2"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinejoin="round">
+      <polygon points="4,10 14,3.5 21,12 16,21 5,18" fill={C_FILL} fillOpacity="0.32" stroke={C_FILL} strokeWidth="1.4"/>
+      <text x="1.5" y="8" fontSize="6.5" fontFamily="serif" fontStyle="italic" fontWeight="600" fill="currentColor">cm²</text>
+    </svg>
   ),
+
+  // ===== Edit =====
   toggleLabel: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><text x="3" y="18" fontSize="16" fontFamily="serif" fontWeight="700" fill="currentColor" stroke="none">A</text><text x="13" y="14" fontSize="11" fontFamily="serif" fontWeight="700" fill="currentColor" stroke="none">A</text></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <text x="1.5" y="19" fontSize="15" fontFamily="serif" fontWeight="700" fill="currentColor">A</text>
+      <text x="12" y="19" fontSize="15" fontFamily="serif" fontWeight="700" fill="currentColor" fillOpacity="0.35">A</text>
+    </svg>
   ),
   toggleVisible: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3.5" fill="currentColor" fillOpacity="0.4"/><circle cx="12" cy="12" r="3.5"/><circle cx="20" cy="6" r="1.5" fill="currentColor"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <circle cx="8" cy="12" r="3.2" fill={C_POINT}/>
+      <circle cx="17" cy="12" r="3.2" fill="none" stroke={C_POINT} strokeWidth="1.6"/>
+    </svg>
   ),
   trash: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6 l-1 14 a 2 2 0 0 1 -2 2 H 8 a 2 2 0 0 1 -2 -2 l-1 -14"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+    // Eraser hình bình hành — GeoGebra dùng eraser, không phải trash bin.
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinejoin="round" strokeLinecap="round">
+      <path d="M14.5 3 L21 9.5 L11.5 19 L4 19 L4 11.5 Z" fill="currentColor" fillOpacity="0.14" stroke="currentColor" strokeWidth="1.5"/>
+      <line x1="9.5" y1="8" x2="16" y2="14.5" stroke="currentColor" strokeWidth="1.4"/>
+    </svg>
   ),
+
+  // ===== Transform =====
   translate: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4 L20 20"/><polygon points="14,4 20,4 20,10" fill="currentColor"/><circle cx="5" cy="5" r="1.5" fill="currentColor"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinejoin="round" strokeLinecap="round">
+      <polygon points="3,19 9,19 6,13.5" fill="currentColor" fillOpacity="0.25" stroke="currentColor" strokeWidth="1.3"/>
+      <polygon points="15,9 21,9 18,3.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeDasharray="2 1.5"/>
+      <line x1="9" y1="15" x2="15" y2="8" stroke={C_CONSTRUCT} strokeWidth="1.5"/>
+      <polyline points="12.5,7 15,7.5 14.5,10" stroke={C_CONSTRUCT} strokeWidth="1.5" fill="none"/>
+    </svg>
   ),
   rotate: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12 A8 8 0 1 1 12 20"/><polyline points="4,9 4,13 8,13"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 13 A 8 8 0 1 1 12 21" stroke="currentColor" strokeWidth="1.6"/>
+      <polyline points="2.5,10 5,13 7.5,11" stroke="currentColor" strokeWidth="1.6" fill="none"/>
+      <circle cx="12" cy="13" r="1.7" fill={C_POINT}/>
+    </svg>
   ),
   reflectLine: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="2" x2="12" y2="22" strokeDasharray="3 2"/><polygon points="4,6 9,12 4,18" fill="currentColor"/><polygon points="20,6 15,12 20,18" fill="currentColor"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinejoin="round">
+      <line x1="12" y1="2" x2="12" y2="22" stroke={C_CONSTRUCT} strokeWidth="1.5" strokeDasharray="2.5 2"/>
+      <polygon points="3,6 10,12 3,18" fill="currentColor" fillOpacity="0.22" stroke="currentColor" strokeWidth="1.3"/>
+      <polygon points="21,6 14,12 21,18" fill="currentColor" fillOpacity="0.22" stroke="currentColor" strokeWidth="1.3"/>
+    </svg>
   ),
   reflectPoint: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="5" cy="5" r="1.6" fill="currentColor"/><circle cx="19" cy="19" r="1.6" fill="currentColor"/><line x1="5" y1="5" x2="19" y2="19" strokeDasharray="2 2"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <line x1="4" y1="4" x2="20" y2="20" stroke={C_CONSTRUCT} strokeWidth="1.3" strokeDasharray="2 2"/>
+      <circle cx="12" cy="12" r="2" fill={C_CONSTRUCT}/>
+      <circle cx="4" cy="4" r="1.8" fill={C_POINT}/>
+      <circle cx="20" cy="20" r="1.8" fill={C_POINT}/>
+    </svg>
   ),
   dilate: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1.5" fill="currentColor"/><polygon points="6,18 18,18 12,6" fillOpacity="0.1" fill="currentColor"/><polygon points="9,15 15,15 12,11" fill="currentColor"/></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinejoin="round">
+      <line x1="4" y1="20" x2="22" y2="2" stroke={C_CONSTRUCT} strokeWidth="1" strokeDasharray="1.5 1.5"/>
+      <polygon points="7,17 11,17 9,13.5" fill="currentColor" fillOpacity="0.28" stroke="currentColor" strokeWidth="1.2"/>
+      <polygon points="13,11 21,11 17,3.5" fill="none" stroke="currentColor" strokeWidth="1.2" strokeDasharray="2 1.5"/>
+      <circle cx="4" cy="20" r="1.8" fill={C_CONSTRUCT}/>
+    </svg>
   ),
 };
 
