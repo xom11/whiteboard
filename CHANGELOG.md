@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.16.0 — 2026-05-22
+
+Tier A refactor — internal restructure, no public API change. (closes #28)
+
+### Refactor
+- **`Whiteboard.tsx` 739 → 593 LoC**: tách `useExcalidrawApi`, `useActiveStamp`, `usePdfImporter` về `src/hooks/`. Persist orchestration giữ inline (deferred Tier B — issue #30).
+- **`handlers.ts` 890 LoC → folder `handlers/`** (14 file, lớn nhất 176 LoC). `handleDown` 271 LoC tách theo tool branch trong `pointerDown/{move,select,point,singleTarget,polygon,multiClick,index}.ts`. `finalizeShape`/`transform`/`pointerMove`/`pointerUp` tách thành module riêng.
+- 9 file >400 LoC → 5 file (giữ lại với `eslint-disable max-lines` chờ Tier B issue #30).
+
+### Tooling
+- **ESLint 9 flat config** mới (`eslint.config.mjs`) với rule `max-lines: 400` chặn god-file mới. Script `npm run lint` + `npm run lint:fix`.
+- Bonus: fix 1 react-hooks violation thật (`PropertiesPopover.tsx`) phát hiện trong lint pass đầu tiên.
+
+### Docs
+- ADR mới: [`docs/superpowers/specs/2026-05-22-tools-dsl-adr.md`](docs/superpowers/specs/2026-05-22-tools-dsl-adr.md) — chốt giữ 3 Tools DSL patterns hiện có (option b).
+- Spec đầy đủ: [`docs/superpowers/specs/2026-05-21-refactor-tier-a-b-design.md`](docs/superpowers/specs/2026-05-21-refactor-tier-a-b-design.md).
+- Implementation plan: [`docs/superpowers/plans/2026-05-22-tier-a-refactor.md`](docs/superpowers/plans/2026-05-22-tier-a-refactor.md).
+
+### Misc
+- Test count: 682 + 1 todo, 111 suites — pass.
+- Public API unchanged: `Whiteboard`, `STABLE_STAMPS`, `findStampForCustomData`, `pickSyncableAppState`, `isStampElement`, `restoreMissingStampFiles`, types.
+
+---
+
 ## v0.9.1 (unreleased)
 
 Tiếp nối audit v0.9.0 — 3 issue đóng: #13, #14, #15.
