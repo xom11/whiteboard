@@ -1,28 +1,32 @@
 # Refactor Tier A + B + B½ — Codebase Structure to 9/10
 
-**Status:** draft
+**Status:** revised 2026-05-21 (corrected audit)
 **Date:** 2026-05-21
 **Owner:** @xinmotlanthua
 **Target version:** v0.16 (Tier A) → v0.17 (Tier B) → v0.18 (Tier B½)
 
+> **Note:** Bản đầu tiên dựa trên audit có sai sót (cho rằng `geometry-3d` dùng legacy `AlgebraList`/`Scene3D`, `JxgRenderer3D` là dead file, chỉ 2D dùng scene store). Verify thực tế cho thấy **cả 3 stamp interactive đã dùng `core/scene`** và `LeftPanelShell`+`ObjectListPanel` đã shared trong `core/scene/ui/`. Spec đã được sửa: A3 + B2 viết lại theo vấn đề thật. ADR `2026-05-22-scene-extend-3d-adr.md` đã đánh dấu SUPERSEDED.
+
 ## 1. Mục tiêu
 
-Đưa codebase từ điểm cấu trúc 6.5/10 lên ≥9.0/10 mà KHÔNG đổi public API hiện có
+Đưa codebase từ điểm cấu trúc ~7.5/10 lên ≥9.0/10 mà KHÔNG đổi public API hiện có
 (`Whiteboard`, `STABLE_STAMPS`, `findStampForCustomData`, …). Stamp thứ N (interactive)
 sau refactor chỉ tốn ≤300 LoC thay vì ~700 LoC như hiện tại.
 
 ### Acceptance KPI (đo được)
 
-| Chỉ số | Trước | Sau |
+| Chỉ số | Trước (audit corrected) | Sau |
 |---|---|---|
-| File >400 LoC | 9 | 0 |
+| File >400 LoC | 9 (kể cả test) | 0 |
 | `Whiteboard.tsx` LoC | 739 | ≤200 |
-| `geometry-2d/editor/handlers.ts` LoC | 890 | ≤300 mỗi module |
+| `handleDown` function LoC | ~470 (line 139→608 trong handlers.ts) | ≤120 mỗi nhánh, tách theo tool |
+| `geometry-2d/editor/handlers.ts` LoC | 890 | ≤350 mỗi module sau tách |
 | `HandlerCtx` field count | ~20 | ≤8 |
-| Duplicate `LeftPanel` patterns | 4 cách | 1 scaffold + N adapter |
+| Tools DSL khác nhau giữa stamp | 3 cách (2D `tools.tsx`, 3D `tools/spec.ts`+`toolPanel/groups`, graph-2d `tools.ts`+`rows/`) | 1 ToolSpec contract |
+| `useSceneStore` React hook vị trí | chỉ `geometry-2d/editor/useSceneStore.ts` | promoted lên `core/scene/` (hoặc `shared/editor/`) |
 | Stamp interactive mới (LoC) | ~700 | ≤300 |
 | Bundle khi consumer chỉ dùng latex | tất cả stamp | chỉ latex (verified by `npm run analyze`) |
-| `core/scene` consumer | chỉ 2D | 2D + 3D + graph-2d (hoặc xoá nếu vote drop) |
+| `core/scene` consumer | ✅ 2D + 3D + graph-2d (đã đủ — không phải gap) | giữ nguyên |
 
 ### Không nằm trong scope
 
@@ -55,27 +59,59 @@ src/hooks/
 
 **Acceptance:** `Whiteboard.tsx` ≤200 LoC. Existing tests + e2e pass không sửa.
 
-### A2. Tách `geometry-2d/editor/handlers.ts` 890 → 3 module
+### A2. Tách `handleDown` 470-dòng god-function trong handlers.ts
+
+**Verify từ grep:** `handlers.ts` 890 dòng, nhưng vấn đề thật là `handleDown` từ line 139→608 = **~470 dòng cho 1 function** (multi-branch theo tool). 3 hàm còn lại (`handleMove` 50, `handleUp` 80, `finalizeTransform` ~150) acceptable.
+
+Tạo folder `src/stamps/geometry-2d/editor/handlers/`:
 
 ```
 src/stamps/geometry-2d/editor/handlers/
-  index.ts                   ← public exports (giữ shape cũ)
-  pointer.ts                 ← handleDown + handleMove + handleUp
-  transform.ts               ← finalizeTransform + helpers
+  index.ts                   ← public exports (re-export giữ shape cũ)
   ctx.ts                     ← slim HandlerCtx (≤8 field; truyền store thay vì 20 ref)
+  pointerDown/
+    index.ts                 ← dispatcher (≤80 LoC) — switch theo activeTool
+    freePoint.ts             ← branch tạo điểm tự do
+    line.ts                  ← branch line/segment/ray
+    polygon.ts               ← branch polygon
+    circle.ts                ← branch circle/arc
+    intersection.ts
+    transformPick.ts         ← branch pick object cho transform tools
+    ...
+  pointerMove.ts             ← handleMove (giữ nguyên ~50 LoC)
+  pointerUp.ts               ← handleUp (giữ nguyên ~80 LoC)
+  transform.ts               ← finalizeTransform + helpers (~150 LoC)
 ```
 
-**Acceptance:** mỗi file ≤300 LoC. `HandlerCtx` ≤8 field. Existing tests pass.
+**Acceptance:**
+- [ ] `pointerDown/index.ts` ≤80 LoC.
+- [ ] Mỗi branch file ≤120 LoC.
+- [ ] `HandlerCtx` ≤8 field.
+- [ ] Existing test + e2e pass.
+- [ ] Snapshot e2e undo/redo trước/sau giống nhau.
 
-### A3. Quyết định scope `core/scene`
+### A3. ADR chuẩn hoá Tools DSL giữa 3 stamp
 
-Phase 2 (#21) + Phase 3 (#22) đã merge — hiện 2D dùng scene store. Câu hỏi mới:
+**Audit 2026-05-21 revealed:** 3 stamp interactive đã dùng `core/scene` rồi (không phải gap như audit cũ nói). Vấn đề thật là **Tools DSL khác nhau**:
 
-- **(a) Extend** → phase 4: viết adapter cho 3D + graph-2d cùng dùng `useSceneStore`.
-- **(b) Freeze 2D-only** → chấp nhận scene store chỉ phục vụ 2D, document rõ trong `core/scene/README.md` để không ai nhầm reuse được "for free".
+| Stamp | Tools layout | LoC |
+|---|---|---|
+| `geometry-2d` | `editor/tools.tsx` (single file, declarative `TOOLS` map) | 272 |
+| `geometry-3d` | `editor/tools/spec.ts` + `editor/toolPanel/groups.ts` + `editor/toolPanel/icons.tsx` (3 file) | 245+? |
+| `graph-2d` | `editor/tools.ts` + `editor/rows/FunctionRow.tsx` + `editor/rows/ParameterRow.tsx` | 100+? |
 
-Output: ADR ngắn `docs/superpowers/specs/YYYY-MM-DD-scene-scope-adr.md` chốt (a) hoặc (b).
-Nếu (a) → triển khai ở Tier B mục B2. Nếu (b) → B2 chỉ là 1 file README.
+**Câu hỏi cần chốt ADR:**
+- (a) **Chuẩn hoá hoá ToolSpec contract** dùng chung cho cả 3 (giống pattern 2D, phổ biến nhất) → 3D + graph-2d migrate.
+- (b) **Giữ nguyên 3 cách** — document lý do cho mỗi cách (e.g. graph-2d cần `rows/` vì có function/parameter cần inline edit, không phù hợp với plain tool button).
+
+**Output:**
+- [ ] ADR ngắn `docs/superpowers/specs/YYYY-MM-DD-tools-dsl-adr.md` chốt (a) hoặc (b).
+- [ ] Nếu (a): migration spec chuyển sang Tier B mục B2.
+- [ ] Nếu (b): document trong `src/stamps/README.md` lý do mỗi pattern + khi nào dùng cái nào.
+
+**Cost estimate:**
+- (a) Migration: ~3-5 ngày (chủ yếu 3D, vì graph-2d's `rows/` có thể giữ làm extension point cho ToolSpec).
+- (b) Doc only: ~2 giờ.
 
 ### A4. ESLint guard
 
@@ -115,21 +151,43 @@ src/stamps/shared/editor/
 
 Mỗi stamp khai báo `tools: ToolSpec[]` + render adapter, không tự dựng layout.
 
+**Audit revised:** `LeftPanelShell` + `ObjectListPanel` ĐÃ TỒN TẠI ở `core/scene/ui/` và được 3 stamp dùng. Tier B1 KHÔNG phải build mới — mà là **rút bớt** logic local trong từng stamp về scaffold chung.
+
 **Migration:**
-- `geometry-2d`: port trước (đã có pattern, dễ nhất).
-- `geometry-3d`: bỏ local state, dùng EditorShell + useEditorState.
-- `graph-2d`: port sau.
-- `latex`: giữ EditorPopover riêng (không cần Board slot) — vẫn dùng `useEditorState` cho dirty flag.
+- Tận dụng `LeftPanelShell` + `Section` + `ObjectListPanel` sẵn có.
+- Thêm vào `core/scene/hooks/`: `useEditorState` (undo/redo + selection + dirty flag, generalize từ pattern hiện có).
+- `geometry-2d/editor/LeftPanel.tsx` (451 dòng) → trừ phần icons + tool buttons (move xuống tools.tsx).
+- `geometry-3d/editor/LeftPanel.tsx` (366 dòng) → tương tự.
+- `graph-2d/editor/LeftPanel.tsx` (220 dòng) → giữ `rows/` slot.
+- `latex` giữ EditorPopover riêng (không cần Board slot) — vẫn dùng `useEditorState` cho dirty flag.
 
-**Acceptance:** `geometry-3d/editor/EditorPanel.tsx` 477 → ≤250. `geometry-2d/editor/LeftPanel.tsx` 451 → ≤250.
+**Acceptance:**
+- [ ] `geometry-2d/editor/LeftPanel.tsx` 451 → ≤250 LoC.
+- [ ] `geometry-3d/editor/EditorPanel.tsx` 477 → ≤250 LoC.
+- [ ] `useEditorState` hook share giữa 3 stamp + latex.
 
-### B2. Extend hoặc khoanh vùng `core/scene`
+### B2. Promote `useSceneStore` hook + chuẩn hoá Tools DSL (theo ADR A3)
 
-Tuỳ ADR ở A3:
-- Nếu (a) **Extend**: viết adapter `JxgRenderer3D` (đã có sẵn) wire vào store, viết `FunctionPlotRenderer` cho graph-2d. Cả 3 stamp `import { useSceneStore } from 'core/scene'`. Migration từng stamp 1 PR.
-- Nếu (b) **Freeze**: thêm `src/core/scene/README.md` ghi rõ "2D-only by design"; rename export thành `useGeometry2DSceneStore` để tránh ngộ nhận; B1 (EditorShell) KHÔNG dùng scene store, mỗi stamp tự quản state.
+**Audit revised:** Không phải "migrate 3D sang scene store" (3D đã dùng rồi). Vấn đề thật:
 
-**Acceptance:** mọi stamp interactive (2D/3D/graph-2d) cùng pattern (cùng dùng store HOẶC cùng dùng local state) — KHÔNG nửa nạc nửa mỡ như hiện tại.
+1. **`useSceneStore` hook chỉ tồn tại ở `geometry-2d/editor/useSceneStore.ts`** — 3D + graph-2d dùng `createStore` + `useRef` raw.
+2. **Tools DSL 3 cách khác nhau** (xem A3 audit).
+
+**Sub-steps:**
+
+1. **Promote hook** — move `geometry-2d/editor/useSceneStore.ts` lên `src/core/scene/hooks/useSceneStore.ts`. 3D + graph-2d adopt. (~1 ngày)
+2. **Nếu A3 chốt (a) chuẩn hoá Tools DSL:**
+   - Định nghĩa `ToolSpec` contract ở `src/core/scene/types.ts`.
+   - Migrate 3D từ `tools/spec.ts` + `toolPanel/groups.ts` về single `tools.ts` theo ToolSpec.
+   - Giữ `graph-2d/rows/` làm extension point (slot riêng cho function/parameter inline edit). (~3-4 ngày)
+3. **Nếu A3 chốt (b) document only:** không có code task ở đây.
+
+**Acceptance:**
+- [ ] `useSceneStore` import từ `core/scene/hooks` ở cả 3 stamp.
+- [ ] Nếu (a): 3 stamp dùng cùng `ToolSpec` contract; `geometry-3d/editor/toolPanel/` xoá hoặc thu gọn.
+- [ ] E2E + unit tests pass.
+
+**Estimate:** (a) ~1 tuần. (b) ~2 giờ.
 
 ### B3. Tool spec DSL
 
