@@ -12,11 +12,11 @@ import React, { useCallback, useEffect, useId, useImperativeHandle, useMemo, use
 import {
   createEmptyState,
   nextLabel as sceneNextLabel,
+  useSceneStore,
   type State,
 } from '../../../core/scene';
 import { JxgRenderer } from '../../../core/scene/render/JxgRenderer';
 import type { Store } from '../../../core/scene/store';
-import { useSceneStore } from '../../geometry-2d/editor/useSceneStore';
 import { paletteFor } from './theme';
 import { handleDown, type HandlerCtx } from './handlers';
 import { useToolStateMachine } from './useToolStateMachine';

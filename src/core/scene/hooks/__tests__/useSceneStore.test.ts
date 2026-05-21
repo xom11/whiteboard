@@ -1,7 +1,6 @@
-// src/stamps/geometry-2d/editor/__tests__/useSceneStore.test.ts
+// src/core/scene/hooks/__tests__/useSceneStore.test.ts
 import { renderHook, act } from '@testing-library/react';
-import { useSceneStore } from '../useSceneStore';
-import { createEmptyState } from '../../../../core/scene';
+import { createEmptyState, useSceneStore } from '../..';
 
 describe('useSceneStore', () => {
   test('khởi tạo store + state hiện tại', () => {

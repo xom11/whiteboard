@@ -15,5 +15,8 @@ export { listObjects, byKind, dependentsOf, nextLabel } from './selectors';
 export { migrateState } from './migrations/runMigrations';
 export { registerStateMigration, CURRENT_STATE_VERSION } from './migrations/state';
 
+export { useSceneStore } from './hooks';
+export type { SceneStoreApi } from './hooks';
+
 // IMPORTANT: import kinds barrel để side-effect register chạy.
 import './kinds';

@@ -18,6 +18,7 @@ import {
   createEmptyState,
   listObjects,
   nextLabel as sceneNextLabel,
+  useSceneStore,
   type State,
 } from '../../../core/scene';
 import { JxgRenderer } from '../../../core/scene/render/JxgRenderer';
@@ -26,7 +27,6 @@ import { handleDown, handleMove, handleUp, finalizeTransform, type HandlerCtx, t
 import { findNearestPoint } from './hitTest';
 import { paletteFor, themeAxis, themeGrid, themeLabel } from './theme';
 import { GROUP_LABELS, TOOLS, objKind, type GeomTool, type ToolDef } from './tools';
-import { useSceneStore } from './useSceneStore';
 import { useToolStateMachine } from './useToolStateMachine';
 import { safeJsx } from '../../shared/safeJsx';
 
