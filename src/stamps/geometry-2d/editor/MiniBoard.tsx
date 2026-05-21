@@ -39,6 +39,7 @@ import { GROUP_LABELS, TOOLS, objKind, type GeomTool, type ToolDef } from './too
 import { useToolStateMachine } from '../../shared/useToolStateMachine';
 import { safeJsx } from '../../shared/safeJsx';
 import { attachJxgWheelZoom } from '../../shared/attachJxgWheelZoom';
+import { initJxgBoard } from '../../shared/initJxgBoard';
 
 export { TOOLS, GROUP_LABELS };
 export type { GeomTool, ToolDef };
@@ -593,40 +594,32 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
     if (typeof window === 'undefined' || !containerRef.current) return;
     let cancelled = false;
     let wheelCleanup: (() => void) | null = null;
+    let freeBoard: (() => void) | null = null;
     void (async () => {
-      const JXG = (await import('jsxgraph')).default;
-      if (cancelled || !containerRef.current) return;
+      const { JXG, board, cleanup } = await initJxgBoard(containerId, {
+        label: 'MiniBoard.2d',
+        defaults: { disableElementHighlight: true },
+        boardOptions: {
+          boundingbox: initialState?.bbox ?? [-10, 10, 10, -10],
+          axis: false, grid: false,
+          showCopyright: false, showNavigation: true,
+          keepAspectRatio: true,
+          pan: { enabled: true, needShift: false },
+          zoom: { wheel: false },
+          precision: { hasPoint: 8, mouse: 4, touch: 16 },
+        },
+        extraOptionTweaks: (opts) => {
+          // Apply theme label/text stroke color sau common defaults. Selection
+          // highlight (đỏ) chủ động qua JxgRenderer.highlight() — đã disable
+          // JSXGraph hover-highlight qua defaults.disableElementHighlight.
+          if (opts.label) opts.label.strokeColor = themeLabel(isDarkRef.current);
+          if (opts.text) opts.text.strokeColor = themeLabel(isDarkRef.current);
+        },
+      });
+      if (cancelled || !containerRef.current) { cleanup(); return; }
       jxgRef.current = JXG;
-      safeJsx('MiniBoard.applyJxgOptions', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const opts = (JXG as any).Options;
-        if (opts) {
-          opts.text = opts.text || {};
-          opts.text.display = 'internal';
-          opts.text.useASCIIMathML = false;
-          opts.text.useMathJax = false;
-          opts.text.useKatex = false;
-          opts.label = opts.label || {};
-          opts.label.display = 'internal';
-          opts.label.strokeColor = themeLabel(isDarkRef.current);
-          opts.text.strokeColor = themeLabel(isDarkRef.current);
-          // Tắt hover-highlight mặc định của JSXGraph (đổi sang xanh/đen khi
-          // di chuột vào element). Highlight selection (đỏ) chủ động qua
-          // JxgRenderer.highlight() thay vì để JSXGraph tự xử lý.
-          opts.elements = opts.elements || {};
-          opts.elements.highlight = false;
-        }
-      });
-      const board = JXG.JSXGraph.initBoard(containerId, {
-        boundingbox: initialState?.bbox ?? [-10, 10, 10, -10],
-        axis: false, grid: false,
-        showCopyright: false, showNavigation: true,
-        keepAspectRatio: true,
-        pan: { enabled: true, needShift: false },
-        zoom: { wheel: false },
-        ...({ precision: { hasPoint: 8, mouse: 4, touch: 16 } } as Record<string, unknown>),
-      });
       boardRef.current = board;
+      freeBoard = cleanup;
 
       const theme = paletteFor(isDarkRef.current);
       rendererRef.current = new JxgRenderer(store, board, {
@@ -664,10 +657,8 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
       if (previewRafRef.current != null) { cancelAnimationFrame(previewRafRef.current); previewRafRef.current = null; }
       rendererRef.current?.dispose();
       rendererRef.current = null;
-      if (boardRef.current && jxgRef.current) {
-        safeJsx('MiniBoard.freeBoard', () => jxgRef.current!.JSXGraph.freeBoard(boardRef.current));
-        boardRef.current = null;
-      }
+      if (freeBoard) { freeBoard(); freeBoard = null; }
+      boardRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerId]);

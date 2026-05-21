@@ -8,6 +8,7 @@ import {
   paletteFor,
 } from './theme';
 import { attachJxgWheelZoom } from '../../shared/attachJxgWheelZoom';
+import { initJxgBoard } from '../../shared/initJxgBoard';
 
 // JSXGraph board / view types are not published — use minimal local shapes.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,8 +91,6 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
       const div = containerRef.current;
       if (!div) return;
       let cancelled = false;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let JXG: any = null;
       let board: JxgBoard | null = null;
       let svgEl: SVGSVGElement | null = null;
       let handlePointerDown: ((e: PointerEvent) => void) | null = null;
@@ -99,39 +98,31 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
       let handlePointerUp: ((e: PointerEvent) => void) | null = null;
       let handlePointerLeave: (() => void) | null = null;
       let wheelCleanup: (() => void) | null = null;
+      let freeBoard: (() => void) | null = null;
 
       void (async () => {
+        let initResult;
         try {
-          JXG = (await import('jsxgraph')).default;
-        } catch {
-          return;
-        }
-        if (cancelled || !containerRef.current) return;
-        try {
-          JXG.Options.text.display = 'internal';
-          // Tắt hover-highlight mặc định (đổi màu khi di chuột).
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const opts = (JXG as any).Options;
-          opts.elements = opts.elements || {};
-          opts.elements.highlight = false;
-        } catch {
-          /* ignore option set error in some mocks */
-        }
-
-        try {
-          board = JXG.JSXGraph.initBoard(div, {
-            boundingbox: [-6, 6, 6, -6],
-            keepaspectratio: true,
-            axis: false,
-            showCopyright: false,
-            showNavigation: false,
-            renderer: 'svg',
-            // Wheel zoom được tự xử lý bằng Ctrl/Cmd + wheel ở dưới (Excalidraw-style).
-            zoom: { wheel: false },
+          initResult = await initJxgBoard(div, {
+            label: 'MiniBoard.3d',
+            defaults: { disableElementHighlight: true },
+            boardOptions: {
+              boundingbox: [-6, 6, 6, -6],
+              keepaspectratio: true,
+              axis: false,
+              showCopyright: false,
+              showNavigation: false,
+              renderer: 'svg',
+              // Wheel zoom được tự xử lý bằng Ctrl/Cmd + wheel ở dưới (Excalidraw-style).
+              zoom: { wheel: false },
+            },
           });
         } catch {
           return;
         }
+        if (cancelled || !containerRef.current) { initResult.cleanup(); return; }
+        board = initResult.board;
+        freeBoard = initResult.cleanup;
         if (cancelled || !board) return;
         boardRef.current = board;
 
@@ -342,11 +333,7 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
           }
           if (handlePointerLeave) svgEl.removeEventListener('pointerleave', handlePointerLeave);
         }
-        try {
-          if (board && JXG) JXG.JSXGraph.freeBoard(board);
-        } catch {
-          /* swallow teardown errors in tests */
-        }
+        if (freeBoard) { freeBoard(); freeBoard = null; }
         boardRef.current = null;
         viewRef.current = null;
       };

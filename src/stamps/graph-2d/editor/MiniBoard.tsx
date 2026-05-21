@@ -23,6 +23,7 @@ import { useToolStateMachine } from '../../shared/useToolStateMachine';
 import type { GraphTool } from './tools';
 import { safeJsx } from '../../shared/safeJsx';
 import { attachJxgWheelZoom } from '../../shared/attachJxgWheelZoom';
+import { initJxgBoard } from '../../shared/initJxgBoard';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type JxgObj = any;
@@ -94,38 +95,26 @@ export const MiniBoard = React.forwardRef<MiniBoardHandle, MiniBoardProps>(
       if (typeof window === 'undefined' || !containerRef.current) return;
       let cancelled = false;
       let wheelCleanup: (() => void) | null = null;
+      let freeBoard: (() => void) | null = null;
 
       void (async () => {
-        const JXG = (await import('jsxgraph')).default;
-        if (cancelled || !containerRef.current) return;
+        const { JXG, board, cleanup } = await initJxgBoard(containerId, {
+          label: 'MiniBoard.graph',
+          boardOptions: {
+            boundingbox: [-10, 10, 10, -10],
+            axis: showAxisRef.current,
+            grid: showGridRef.current,
+            showCopyright: false,
+            showNavigation: true,
+            keepAspectRatio: false,
+            pan: { enabled: true, needShift: false },
+            zoom: { wheel: false },
+          },
+        });
+        if (cancelled || !containerRef.current) { cleanup(); return; }
         jxgRef.current = JXG;
-
-        safeJsx('MiniBoard.graph.applyJxgOptions', () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const opts = (JXG as any).Options;
-          if (opts) {
-            opts.text = opts.text || {};
-            opts.text.display = 'internal';
-            opts.text.useASCIIMathML = false;
-            opts.text.useMathJax = false;
-            opts.text.useKatex = false;
-            opts.label = opts.label || {};
-            opts.label.display = 'internal';
-          }
-        });
-
-        const bbox: [number, number, number, number] = [-10, 10, 10, -10];
-        const board: JxgObj = JXG.JSXGraph.initBoard(containerId, {
-          boundingbox: bbox,
-          axis: showAxisRef.current,
-          grid: showGridRef.current,
-          showCopyright: false,
-          showNavigation: true,
-          keepAspectRatio: false,
-          pan: { enabled: true, needShift: false },
-          zoom: { wheel: false },
-        });
         boardRef.current = board;
+        freeBoard = cleanup;
 
         const theme = paletteFor(isDarkRef.current);
         rendererRef.current = new JxgRenderer(store, board, { theme });
@@ -191,12 +180,8 @@ export const MiniBoard = React.forwardRef<MiniBoardHandle, MiniBoardProps>(
         if (wheelCleanup) { wheelCleanup(); wheelCleanup = null; }
         rendererRef.current?.dispose();
         rendererRef.current = null;
-        if (boardRef.current && jxgRef.current) {
-          safeJsx('MiniBoard.graph.freeBoard', () =>
-            jxgRef.current!.JSXGraph.freeBoard(boardRef.current),
-          );
-          boardRef.current = null;
-        }
+        if (freeBoard) { freeBoard(); freeBoard = null; }
+        boardRef.current = null;
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [containerId]);
