@@ -71,7 +71,7 @@ describe('ObjectListPanel', () => {
     expect(store.getState().objects.A.visible).toBe(false);
   });
 
-  it('lock toggle dispatches UPDATE patch locked=true', () => {
+  it('lock toggle via menu dispatches UPDATE patch locked=true', () => {
     const initial: State = {
       objects: { A: makeObj('A', 'A') },
       order: ['A'],
@@ -80,7 +80,8 @@ describe('ObjectListPanel', () => {
     };
     const store = createStore(initial);
     render(<ObjectListPanel store={store} />);
-    fireEvent.click(screen.getByLabelText('Toggle lock'));
+    fireEvent.click(screen.getByLabelText('Row menu'));
+    fireEvent.click(screen.getByText('Khoá'));
     expect(store.getState().objects.A.locked).toBe(true);
   });
 
@@ -123,6 +124,30 @@ describe('ObjectListPanel', () => {
     render(<ObjectListPanel store={store} selectedId="B" />);
     expect(screen.getByTestId('object-row-A')).toHaveAttribute('aria-selected', 'false');
     expect(screen.getByTestId('object-row-B')).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('only the selected row shows detail block', () => {
+    // Use real `point` kind so measure() returns a non-null result.
+    const A: SceneObject = {
+      id: 'A', kind: 'point', label: 'A', visible: true, locked: false,
+      attrs: { constraint: { kind: 'free', x: 1, y: 2 } },
+    } as SceneObject;
+    const B: SceneObject = {
+      id: 'B', kind: 'point', label: 'B', visible: true, locked: false,
+      attrs: { constraint: { kind: 'free', x: 3, y: 4 } },
+    } as SceneObject;
+    const initial: State = {
+      objects: { A, B }, order: ['A', 'B'], counter: 2,
+      meta: { domain: '2d', version: 1 },
+    };
+    const store = createStore(initial);
+    const { rerender } = render(<ObjectListPanel store={store} selectedId="A" />);
+    expect(screen.getByTestId('object-row-detail-A')).toBeInTheDocument();
+    expect(screen.queryByTestId('object-row-detail-B')).not.toBeInTheDocument();
+
+    rerender(<ObjectListPanel store={store} selectedId="B" />);
+    expect(screen.queryByTestId('object-row-detail-A')).not.toBeInTheDocument();
+    expect(screen.getByTestId('object-row-detail-B')).toBeInTheDocument();
   });
 });
 

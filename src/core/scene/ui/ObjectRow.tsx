@@ -46,15 +46,13 @@ export function ObjectRow(props: ObjectRowProps): React.ReactElement {
     <li
       data-testid={`object-row-${obj.id}`}
       aria-selected={selected}
+      onClick={() => onSelect(obj.id)}
       className={
-        'flex flex-col border-b border-zinc-100 dark:border-zinc-800 ' +
+        'flex flex-col border-b border-zinc-100 cursor-pointer dark:border-zinc-800 ' +
         (selected ? 'bg-blue-50 dark:bg-blue-950' : 'hover:bg-zinc-50 dark:hover:bg-zinc-900')
       }
     >
-      <div
-        className="flex items-center gap-2 px-3 py-1.5 text-xs cursor-pointer"
-        onClick={() => onSelect(obj.id)}
-      >
+      <div className="flex items-center gap-2 px-3 py-1.5 text-xs">
         <button
           type="button"
           aria-label="Toggle visibility"
