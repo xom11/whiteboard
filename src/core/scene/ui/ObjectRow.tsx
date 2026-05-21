@@ -52,7 +52,7 @@ export function ObjectRow(props: ObjectRowProps): React.ReactElement {
       onClick={() => onSelect(obj.id)}
       className={
         'flex flex-col border-b border-zinc-100 cursor-pointer dark:border-zinc-800 ' +
-        (selected ? 'bg-blue-50 dark:bg-blue-950' : 'hover:bg-zinc-50 dark:hover:bg-zinc-900')
+        (selected ? 'bg-blue-50 dark:bg-blue-950' : '')
       }
     >
       <div className="flex items-center gap-2 px-3 py-1.5 text-xs">
@@ -67,7 +67,7 @@ export function ObjectRow(props: ObjectRowProps): React.ReactElement {
             borderColor: color,
           }}
         />
-        <span className="flex-1 truncate text-zinc-700 dark:text-zinc-200">
+        <span className="flex-1 truncate text-black dark:text-white">
           {title}
         </span>
         <ObjectRowMenu
@@ -81,7 +81,7 @@ export function ObjectRow(props: ObjectRowProps): React.ReactElement {
       {selected && measureText && (
         <div
           data-testid={`object-row-detail-${obj.id}`}
-          className="pl-9 pr-3 pb-1.5 text-[11px] text-zinc-500 dark:text-zinc-400"
+          className="pl-9 pr-3 pb-1.5 text-[11px] text-black dark:text-white"
         >
           {measureText}
         </div>
