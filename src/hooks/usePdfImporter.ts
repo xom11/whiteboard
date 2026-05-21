@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import {
   loadPdfDocument,
@@ -51,6 +51,11 @@ export function usePdfImporter(opts: UsePdfImporterOptions): UsePdfImporterResul
     },
     [readOnly, pdfBusy],
   );
+
+  const handlePdfPickRef = useRef(handlePdfPick);
+  useLayoutEffect(() => {
+    handlePdfPickRef.current = handlePdfPick;
+  });
 
   const handlePdfConfirm = useCallback(
     async (pages: number[]) => {
@@ -106,7 +111,7 @@ export function usePdfImporter(opts: UsePdfImporterOptions): UsePdfImporterResul
       if (!pdf) return;
       e.preventDefault();
       e.stopPropagation();
-      void handlePdfPick(pdf);
+      void handlePdfPickRef.current(pdf);
     };
 
     root.addEventListener('dragover', onDragOver, { capture: true });
@@ -115,7 +120,7 @@ export function usePdfImporter(opts: UsePdfImporterOptions): UsePdfImporterResul
       root.removeEventListener('dragover', onDragOver, { capture: true });
       root.removeEventListener('drop', onDrop, { capture: true });
     };
-  }, [readOnly, handlePdfPick, api]);
+  }, [readOnly, api]);
 
   return { pdfPending, pdfBusy, handlePdfPick, handlePdfConfirm, handlePdfCancel };
 }

@@ -56,4 +56,26 @@ describe('usePdfImporter', () => {
     const { rasterizePdf } = jest.requireMock('../pdf/rasterize');
     expect(rasterizePdf).not.toHaveBeenCalled();
   });
+
+  it('handlePdfConfirm rasterize + insert when api + pending available', async () => {
+    const fakeApi = { id: 'api1' };
+    const { result } = renderHook(() =>
+      usePdfImporter({ readOnly: false, api: fakeApi }),
+    );
+    const file = new File(['x'], 'doc.pdf', { type: 'application/pdf' });
+    await act(async () => { await result.current.handlePdfPick(file); });
+    expect(result.current.pdfPending).not.toBeNull();
+    await act(async () => { await result.current.handlePdfConfirm([1, 2]); });
+    const { rasterizePdf, closePdfDocument } = jest.requireMock('../pdf/rasterize');
+    const { insertRasterizedPagesIntoScene } = jest.requireMock('../pdf/insertPdfPages');
+    expect(rasterizePdf).toHaveBeenCalledWith({ numPages: 3 }, { pages: [1, 2], scale: 2 });
+    expect(closePdfDocument).toHaveBeenCalledWith({ numPages: 3 });
+    expect(insertRasterizedPagesIntoScene).toHaveBeenCalledWith(
+      fakeApi,
+      [{ pageNumber: 1, dataURL: 'x', width: 100, height: 100 }],
+      { scale: 2 },
+    );
+    expect(result.current.pdfPending).toBeNull();
+    expect(result.current.pdfBusy).toBe(false);
+  });
 });
