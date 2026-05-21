@@ -1,6 +1,6 @@
 'use client';
 
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef } from 'react';
 import type {
   ExcalidrawElement,
   BinaryFiles,
@@ -18,13 +18,6 @@ import { ToolbarInjector } from './stamps/shared/ToolbarInjector';
 import { useShortcuts } from './stamps/shared/useShortcuts';
 import { PdfImporterButton } from './pdf/PdfImporterButton';
 import { PageRangeDialog } from './pdf/PageRangeDialog';
-import {
-  loadPdfDocument,
-  closePdfDocument,
-  rasterizePdf,
-} from './pdf/rasterize';
-import { insertRasterizedPagesIntoScene } from './pdf/insertPdfPages';
-import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { useStampDoubleClick } from './stamps/shared/useStampDoubleClick';
 import { useStampShortcutBlocker } from './stamps/shared/useStampShortcutBlocker';
 import { useStampClickOutside } from './stamps/shared/useStampClickOutside';
@@ -32,6 +25,9 @@ import { restoreMissingStampFiles } from './stamps/shared/restoreStampFiles';
 import type { StampHostHandle } from './stamps/shared/types';
 import { readScene, writeScene } from './core/persistence/sceneStore';
 import { readFiles, writeFiles, pruneFiles } from './core/persistence/fileStore';
+import { useExcalidrawApi } from './hooks/useExcalidrawApi';
+import { useActiveStamp } from './hooks/useActiveStamp';
+import { usePdfImporter } from './hooks/usePdfImporter';
 import '@excalidraw/excalidraw/index.css';
 import './stamps/shared/stamp.css';
 
@@ -49,12 +45,6 @@ const ExcalidrawLoadingFallback = () => (
 type ExApi = any;
 
 const SYNC_THROTTLE_MS = 200;
-
-/** Element đang re-edit (double-click) — đủ tối thiểu để Host parse customData. */
-interface EditingElement {
-  id: string;
-  customData: unknown;
-}
 
 export interface WhiteboardProps {
   /**
@@ -119,10 +109,27 @@ export function Whiteboard({
   initialScene,
   initialFiles,
 }: WhiteboardProps) {
-  const [api, setApi] = useState<ExApi | null>(null);
-  const apiRef = useRef<ExApi | null>(null);
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
-  const isDarkThemeRef = useRef(false);
+  const { api, apiRef, isDark, setApiFromExcalidraw, syncThemeFromAppState } =
+    useExcalidrawApi({ onApi });
+
+  const {
+    activeStamp,
+    editingElement,
+    HostComponent,
+    openStamp,
+    closeStamp,
+    toggleStampByKind,
+  } = useActiveStamp({ readOnly, stamps });
+
+  const {
+    pdfPending,
+    pdfBusy,
+    handlePdfPick,
+    handlePdfConfirm,
+    handlePdfCancel,
+  } = usePdfImporter({ readOnly, api });
+
+  const hostRef = useRef<StampHostHandle | null>(null);
   const knownFileIdsRef = useRef<Set<string>>(new Set());
   const lastSceneHashRef = useRef<string>('');
   const sceneThrottleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -153,6 +160,8 @@ export function Whiteboard({
   onFilesChangeRef.current = onFilesChange;
   const persistEnabledRef = useRef(persistEnabled);
   persistEnabledRef.current = persistEnabled;
+  const handledCropIdRef = useRef<string | null>(null);
+  const prevExcalidrawToolRef = useRef<string>('selection');
 
   const persistedInitial = useMemo(
     () => (persistEnabled ? readScene(storageKey as string) : null),
@@ -171,73 +180,84 @@ export function Whiteboard({
           }
         : null;
 
-  // ---- Stamp state (registry-driven) ----
-  const [activeStamp, setActiveStamp] = useState<string | null>(null);
-  const activeStampRef = useRef(activeStamp);
-  activeStampRef.current = activeStamp;
-  const [editingElement, setEditingElement] = useState<EditingElement | null>(null);
-  const hostRef = useRef<StampHostHandle | null>(null);
+  // ---- Flush helpers (gọi từ setTimeout VÀ unmount cleanup) ----
+  // Lưu vào ref để cleanup luôn dùng version mới nhất (closure-stable).
+  const flushSceneRef = useRef<() => void>(() => undefined);
+  flushSceneRef.current = () => {
+    try {
+      const latestScene = latestSceneRef.current;
+      if (!latestScene) return;
+      const liveElements = latestScene.elements.filter((e) => !e.isDeleted) as readonly ExcalidrawElement[];
+      const liveAppState = pickSyncableAppState(latestScene.appState);
+      const hashFn = hashElementsVersionRef.current;
+      // Nếu chưa load module → bỏ qua hash dedupe, cứ ghi (correctness > perf trong unmount path).
+      const elementHash = hashFn ? hashFn(liveElements) : liveElements.map((e) => e.id).join('|');
+      const sceneHash = `${elementHash}:${JSON.stringify(liveAppState)}`;
+      if (sceneHash === lastSceneHashRef.current) return;
+      lastSceneHashRef.current = sceneHash;
+      onSceneChangeRef.current?.({ elements: liveElements, appState: liveAppState });
+      if (persistEnabledRef.current) {
+        writeScene(persistKeyRef.current as string, {
+          elements: liveElements,
+          appState: liveAppState,
+        });
+      }
+    } catch (err) {
+      console.warn('[whiteboard] flushScene thất bại:', err);
+    }
+  };
 
-  // ---- PDF import state ----
-  // Sau khi user pick file, load doc lấy numPages → mở dialog hỏi range.
-  // Giữ doc instance để rasterize ngay (tránh load lại từ ArrayBuffer).
-  const [pdfPending, setPdfPending] = useState<{
-    doc: PDFDocumentProxy;
-    fileName: string;
-    totalPages: number;
-  } | null>(null);
-  const [pdfBusy, setPdfBusy] = useState(false);
+  const flushFilesRef = useRef<() => void>(() => undefined);
+  flushFilesRef.current = () => {
+    try {
+      const pending = pendingFilesRef.current;
+      pendingFilesRef.current = {};
+      if (Object.keys(pending).length === 0) return;
+      const currentElements = (apiRef.current?.getSceneElements?.()
+        ?? latestSceneRef.current?.elements
+        ?? []) as readonly ExcalidrawElement[];
+      const stampIds = new Set<string>();
+      for (const el of currentElements) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const fid = (el as any).fileId as string | undefined;
+        if (fid && isStampElement(el)) stampIds.add(fid);
+      }
+      const raster: BinaryFiles = {};
+      for (const [id, f] of Object.entries(pending)) {
+        if (!stampIds.has(id)) raster[id] = f;
+      }
+      if (Object.keys(raster).length > 0) {
+        void writeFiles(persistKeyRef.current as string, raster);
+      }
+    } catch (err) {
+      console.warn('[whiteboard] flushFiles thất bại:', err);
+    }
+  };
 
-  const handledCropIdRef = useRef<string | null>(null);
-  const prevExcalidrawToolRef = useRef<string>('selection');
-
-  const stampByKind = useMemo(() => {
-    const m = new Map<string, StampType>();
-    for (const s of stamps) m.set(s.kind, s);
-    return m;
-  }, [stamps]);
-
-  const activeStampDef = activeStamp ? stampByKind.get(activeStamp) ?? null : null;
-  const HostComponent = activeStampDef?.Host ?? null;
-
-  // ---- Open / close helpers ----
-  const openStamp = useCallback(
-    (kind: string, element: EditingElement | null = null) => {
-      if (readOnly) return;
-      if (!stampByKind.has(kind)) return;
-      setEditingElement(element);
-      setActiveStamp(kind);
-    },
-    [readOnly, stampByKind],
-  );
-
-  const closeStamp = useCallback(() => {
-    setActiveStamp(null);
-    setEditingElement(null);
-  }, []);
-
-  const toggleStampByKind = useCallback(
-    (kind: string) => {
-      if (activeStamp === kind) closeStamp();
-      else openStamp(kind);
-    },
-    [activeStamp, openStamp, closeStamp],
-  );
+  const flushPruneRef = useRef<() => void>(() => undefined);
+  flushPruneRef.current = () => {
+    try {
+      const currentElements = (apiRef.current?.getSceneElements?.()
+        ?? latestSceneRef.current?.elements
+        ?? []) as readonly ExcalidrawElement[];
+      const keep = new Set<string>();
+      for (const el of currentElements) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const fid = (el as any).fileId as string | undefined;
+        if (fid && !isStampElement(el)) keep.add(fid);
+      }
+      void pruneFiles(persistKeyRef.current as string, keep);
+    } catch (err) {
+      console.warn('[whiteboard] flushPrune thất bại:', err);
+    }
+  };
 
   // ---- Capture local changes ----
   const handleChange = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (elements: readonly ExcalidrawElement[], appState: any, files: BinaryFiles) => {
       // Sync theme từ Excalidraw appState -> React state.
-      // Excalidraw 0.18 gọi onChange đồng bộ trong state-updater của họ
-      // (React 19 / Next.js 16 sẽ warn: "scheduled from inside an update
-      // function"). Bail-out qua ref + defer setState bằng queueMicrotask để
-      // setState chạy SAU commit của Excalidraw, không nằm trong updater.
-      const nextDark = appState?.theme === 'dark';
-      if (isDarkThemeRef.current !== nextDark) {
-        isDarkThemeRef.current = nextDark;
-        queueMicrotask(() => setIsDarkTheme(nextDark));
-      }
+      syncThemeFromAppState(appState);
 
       if (readOnly) return;
       latestSceneRef.current = { elements, appState };
@@ -319,80 +339,8 @@ export function Whiteboard({
         }, 2000);
       }
     },
-    [readOnly, api, onSceneChange, onFilesChange, persistEnabled, storageKey, stamps, openStamp],
+    [readOnly, api, onFilesChange, persistEnabled, stamps, openStamp, syncThemeFromAppState],
   );
-
-  // ---- Flush helpers (gọi từ setTimeout VÀ unmount cleanup) ----
-  // Lưu vào ref để cleanup luôn dùng version mới nhất (closure-stable).
-  const flushSceneRef = useRef<() => void>(() => undefined);
-  flushSceneRef.current = () => {
-    try {
-      const latestScene = latestSceneRef.current;
-      if (!latestScene) return;
-      const liveElements = latestScene.elements.filter((e) => !e.isDeleted) as readonly ExcalidrawElement[];
-      const liveAppState = pickSyncableAppState(latestScene.appState);
-      const hashFn = hashElementsVersionRef.current;
-      // Nếu chưa load module → bỏ qua hash dedupe, cứ ghi (correctness > perf trong unmount path).
-      const elementHash = hashFn ? hashFn(liveElements) : liveElements.map((e) => e.id).join('|');
-      const sceneHash = `${elementHash}:${JSON.stringify(liveAppState)}`;
-      if (sceneHash === lastSceneHashRef.current) return;
-      lastSceneHashRef.current = sceneHash;
-      onSceneChangeRef.current?.({ elements: liveElements, appState: liveAppState });
-      if (persistEnabledRef.current) {
-        writeScene(persistKeyRef.current as string, {
-          elements: liveElements,
-          appState: liveAppState,
-        });
-      }
-    } catch (err) {
-      console.warn('[whiteboard] flushScene thất bại:', err);
-    }
-  };
-
-  const flushFilesRef = useRef<() => void>(() => undefined);
-  flushFilesRef.current = () => {
-    try {
-      const pending = pendingFilesRef.current;
-      pendingFilesRef.current = {};
-      if (Object.keys(pending).length === 0) return;
-      const currentElements = (apiRef.current?.getSceneElements?.()
-        ?? latestSceneRef.current?.elements
-        ?? []) as readonly ExcalidrawElement[];
-      const stampIds = new Set<string>();
-      for (const el of currentElements) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const fid = (el as any).fileId as string | undefined;
-        if (fid && isStampElement(el)) stampIds.add(fid);
-      }
-      const raster: BinaryFiles = {};
-      for (const [id, f] of Object.entries(pending)) {
-        if (!stampIds.has(id)) raster[id] = f;
-      }
-      if (Object.keys(raster).length > 0) {
-        void writeFiles(persistKeyRef.current as string, raster);
-      }
-    } catch (err) {
-      console.warn('[whiteboard] flushFiles thất bại:', err);
-    }
-  };
-
-  const flushPruneRef = useRef<() => void>(() => undefined);
-  flushPruneRef.current = () => {
-    try {
-      const currentElements = (apiRef.current?.getSceneElements?.()
-        ?? latestSceneRef.current?.elements
-        ?? []) as readonly ExcalidrawElement[];
-      const keep = new Set<string>();
-      for (const el of currentElements) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const fid = (el as any).fileId as string | undefined;
-        if (fid && !isStampElement(el)) keep.add(fid);
-      }
-      void pruneFiles(persistKeyRef.current as string, keep);
-    } catch (err) {
-      console.warn('[whiteboard] flushPrune thất bại:', err);
-    }
-  };
 
   // ---- Mount: load initialFiles (từ server) -> addFiles. Chạy đúng 1 lần
   // khi api ready. Stable theo initialFiles của lần render đầu — đổi prop
@@ -569,106 +517,11 @@ export function Whiteboard({
 
   useStampClickOutside({ activeStamp, hostRef, onClose: closeStamp });
 
-  // ---- PDF import handlers ----
-  const handlePdfPick = useCallback(
-    async (file: File) => {
-      if (readOnly || pdfBusy) return;
-      setPdfBusy(true);
-      try {
-        const doc = await loadPdfDocument(file);
-        setPdfPending({ doc, fileName: file.name, totalPages: doc.numPages });
-      } catch (err) {
-        console.warn('[whiteboard] Đọc PDF thất bại:', err);
-        window.alert('Không đọc được PDF. File có thể đã hỏng hoặc bị mật khẩu bảo vệ.');
-      } finally {
-        setPdfBusy(false);
-      }
-    },
-    [readOnly, pdfBusy],
-  );
-
-  const handlePdfConfirm = useCallback(
-    async (pages: number[]) => {
-      if (!pdfPending || !api) return;
-      const { doc } = pdfPending;
-      setPdfPending(null);
-      setPdfBusy(true);
-      const scale = 2;
-      try {
-        const rendered = await rasterizePdf(doc, { pages, scale });
-        await closePdfDocument(doc);
-        insertRasterizedPagesIntoScene(api, rendered, { scale });
-      } catch (err) {
-        console.warn('[whiteboard] Chèn PDF thất bại:', err);
-        window.alert('Chèn PDF thất bại. Xem console để biết chi tiết.');
-      } finally {
-        setPdfBusy(false);
-      }
-    },
-    [pdfPending, api],
-  );
-
-  const handlePdfCancel = useCallback(() => {
-    if (pdfPending) {
-      void closePdfDocument(pdfPending.doc);
-    }
-    setPdfPending(null);
-  }, [pdfPending]);
-
-  // ---- Drop handler: bắt PDF file kéo vào canvas TRƯỚC Excalidraw ----
-  // Excalidraw không hiểu application/pdf → mặc định sẽ reject (toast lỗi).
-  // Capture phase + preventDefault để ngắt sớm rồi tự xử lý.
-  useEffect(() => {
-    if (readOnly) return;
-    const root = document.querySelector<HTMLElement>('.excalidraw');
-    if (!root) return;
-
-    const onDragOver = (e: DragEvent) => {
-      const items = e.dataTransfer?.items;
-      if (!items) return;
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].kind === 'file' && items[i].type === 'application/pdf') {
-          e.preventDefault();
-          e.stopPropagation();
-          if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
-          return;
-        }
-      }
-    };
-
-    const onDrop = (e: DragEvent) => {
-      const files = e.dataTransfer?.files;
-      if (!files || files.length === 0) return;
-      const pdf = Array.from(files).find((f) => f.type === 'application/pdf');
-      if (!pdf) return;
-      e.preventDefault();
-      e.stopPropagation();
-      void handlePdfPick(pdf);
-    };
-
-    root.addEventListener('dragover', onDragOver, { capture: true });
-    root.addEventListener('drop', onDrop, { capture: true });
-    return () => {
-      root.removeEventListener('dragover', onDragOver, { capture: true });
-      root.removeEventListener('drop', onDrop, { capture: true });
-    };
-  }, [readOnly, handlePdfPick, api]);
-
   return (
-    <div className={`relative h-full w-full${isDarkTheme ? ' theme--dark' : ''}`}>
+    <div className={`relative h-full w-full${isDark ? ' theme--dark' : ''}`}>
       <Suspense fallback={<ExcalidrawLoadingFallback />}>
         <Excalidraw
-          excalidrawAPI={(a: ExApi) => {
-            // Excalidraw có thể gọi callback này đồng bộ trong commit-phase của
-            // họ. Bail-out qua ref + defer setApi để tránh "update scheduled
-            // from inside an update function" trên React 19 / Next.js 16.
-            if (apiRef.current === a) return;
-            apiRef.current = a;
-            queueMicrotask(() => {
-              setApi(a);
-              onApi?.(a);
-            });
-          }}
+          excalidrawAPI={setApiFromExcalidraw}
           langCode={langCode}
           viewModeEnabled={readOnly}
           initialData={
@@ -731,7 +584,7 @@ export function Whiteboard({
           api={api}
           editingElement={editingElement}
           onClose={closeStamp}
-          isDark={isDarkTheme}
+          isDark={isDark}
         />
       )}
     </div>
