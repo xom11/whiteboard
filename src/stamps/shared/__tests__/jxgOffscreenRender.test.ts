@@ -53,4 +53,45 @@ describe('renderJsxgOffscreen', () => {
     });
     expect(document.querySelectorAll('[id^="jxg_offscreen_"]').length).toBe(0);
   });
+
+  it('removes offscreen container even when setup throws', async () => {
+    await expect(
+      renderJsxgOffscreen({
+        bbox: [-10, 10, 10, -10],
+        dims: { width: 200, height: 200 },
+        setup: () => {
+          throw new Error('boom');
+        },
+      }),
+    ).rejects.toThrow('boom');
+    expect(document.querySelectorAll('[id^="jxg_offscreen_"]').length).toBe(0);
+  });
+
+  it('runs applyOptions before initBoard', async () => {
+    const calls: string[] = [];
+    await renderJsxgOffscreen({
+      bbox: [-10, 10, 10, -10],
+      dims: { width: 200, height: 200 },
+      applyOptions: () => calls.push('apply'),
+      setup: () => {
+        calls.push('setup');
+        return { dispose: () => undefined };
+      },
+    });
+    expect(calls).toEqual(['apply', 'setup']);
+  });
+
+  it('runs postProcessSvg on the cloned SVG before serialization', async () => {
+    const result = await renderJsxgOffscreen({
+      bbox: [-10, 10, 10, -10],
+      dims: { width: 200, height: 200 },
+      setup: () => ({ dispose: () => undefined }),
+      postProcessSvg: (clone) => {
+        clone.setAttribute('data-stamp', 'test');
+        clone.setAttribute('width', '999');
+      },
+    });
+    expect(result.svgString).toContain('data-stamp="test"');
+    expect(result.svgString).toContain('width="999"');
+  });
 });
