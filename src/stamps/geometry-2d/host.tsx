@@ -9,7 +9,7 @@ import {
   useState,
 } from 'react';
 import { StampLeftPanel } from '../shared/StampLeftPanel';
-import { GeometryIconHeader } from './editor/LeftPanel/icons';
+import { GeometryIconHeader } from './editor/icons';
 import {
   GeometryEditorPanel,
   type GeometryEditorPanelHandle,

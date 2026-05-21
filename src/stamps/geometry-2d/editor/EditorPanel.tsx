@@ -5,7 +5,7 @@ import { serializeBoard, type SerializedBoard } from '../serialize';
 import { renderGeometrySvgFromState } from '../render';
 import { PropertiesPopover } from './PropertiesPopover';
 import { TransformParamPopover } from './TransformParamPopover';
-import { UndoIcon, RedoIcon } from './LeftPanel/icons';
+import { UndoIcon, RedoIcon } from './icons';
 import type { Store } from '../../../core/scene/store';
 
 interface Props {

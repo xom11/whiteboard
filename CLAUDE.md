@@ -33,11 +33,23 @@ whiteboard/
 │   │   │   ├── svgToImage.ts
 │   │   │   ├── excalidrawPalette.ts
 │   │   │   ├── stamp.css
-│   │   │   ├── ToolbarInjector.tsx    ← (cũ: ToolbarStampInjector)
-│   │   │   ├── useShortcuts.ts        ← (cũ: useStampShortcuts)
-│   │   │   └── restoreStampFiles.ts   ← (cũ: restoreMathStampFiles)
+│   │   │   ├── ToolbarInjector.tsx
+│   │   │   ├── useShortcuts.ts
+│   │   │   ├── useChordShortcut.ts    ← chord 2-key (2D, 3D)
+│   │   │   ├── useIsMobile.ts
+│   │   │   ├── MobileToolDrawer.tsx   ← mobile drawer generic
+│   │   │   ├── restoreStampFiles.ts
+│   │   │   └── StampLeftPanel/        ← Tier C v0.19+: shared LeftPanel template cho 3 editor
+│   │   │       ├── index.tsx          ← public StampLeftPanel + dispatcher isMobile
+│   │   │       ├── Desktop.tsx        ← desktop orchestrator
+│   │   │       ├── Mobile.tsx         ← mobile wrap MobileToolDrawer
+│   │   │       ├── ToolGrid.tsx       ← chord-aware 4-col tool button grid
+│   │   │       ├── AxisGridSection.tsx ← axis/grid + undo/redo, optional
+│   │   │       ├── useToolHoverTooltip.ts
+│   │   │       └── types.ts           ← StampToolDef, StampLeftPanelProps
 │   │   ├── geometry-2d/
 │   │   │   ├── index.tsx              ← StampType + Host
+│   │   │   ├── host.tsx               ← dùng StampLeftPanel
 │   │   │   ├── serialize.ts
 │   │   │   ├── render.ts
 │   │   │   ├── renderInline.ts
@@ -45,10 +57,10 @@ whiteboard/
 │   │   │       ├── EditorPanel.tsx
 │   │   │       ├── MiniBoard.tsx
 │   │   │       ├── tools.tsx
+│   │   │       ├── icons.tsx          ← UndoIcon, RedoIcon, GeometryIconHeader
 │   │   │       ├── handlers.ts
 │   │   │       ├── theme.ts
 │   │   │       ├── transforms.ts
-│   │   │       ├── LeftPanel.tsx
 │   │   │       ├── PropertiesPopover.tsx
 │   │   │       └── TransformParamPopover.tsx
 │   │   ├── latex/
@@ -56,19 +68,33 @@ whiteboard/
 │   │   │   ├── render.ts
 │   │   │   └── editor/
 │   │   │       ├── EditorPopover.tsx
-│   │   │       └── LeftPanel.tsx
-│   │   └── geometry-3d/
+│   │   │       └── LeftPanel.tsx       ← latex riêng (đơn giản, không dùng template)
+│   │   ├── geometry-3d/
+│   │   │   ├── index.tsx              ← StampType + Host
+│   │   │   ├── host.tsx               ← dùng StampLeftPanel
+│   │   │   ├── serialize.ts
+│   │   │   ├── render.ts
+│   │   │   └── editor/
+│   │   │       ├── EditorPanel.tsx
+│   │   │       ├── MiniBoard3D.tsx
+│   │   │       ├── toolPanel/        ← chỉ giữ groups.ts + icons.tsx (data)
+│   │   │       │   ├── groups.ts
+│   │   │       │   └── icons.tsx
+│   │   │       ├── tools/
+│   │   │       ├── handlers.ts
+│   │   │       └── theme.ts
+│   │   └── graph-2d/
 │   │       ├── index.tsx              ← StampType + Host
+│   │       ├── host.tsx               ← dùng StampLeftPanel
 │   │       ├── serialize.ts
 │   │       ├── render.ts
 │   │       └── editor/
-│   │           ├── EditorPanel.tsx
-│   │           ├── MiniBoard3D.tsx
-│   │           ├── tools.ts
-│   │           ├── toolButtons.tsx
+│   │           ├── EditorPanel.tsx    ← flex-col (giống 2D/3D từ v0.19)
+│   │           ├── MiniBoard.tsx
+│   │           ├── tools.tsx          ← 12 tool + SVG icon, single-letter shortcut
 │   │           ├── handlers.ts
 │   │           ├── theme.ts
-│   │           └── LeftPanel.tsx
+│   │           └── rows/              ← FunctionRow, ParameterRow (custom renderRow)
 │   ├── pdf/                           ← PDF importer (KHÔNG phải stamp)
 │   │   ├── index.ts                   ← barrel
 │   │   ├── parseRange.ts              ← "1,3,5-10" → number[]

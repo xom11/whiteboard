@@ -1,4 +1,4 @@
-// src/stamps/geometry-2d/editor/LeftPanel/icons.tsx
+// src/stamps/geometry-2d/editor/icons.tsx
 import React from 'react';
 
 export const GeometryIconHeader = (
