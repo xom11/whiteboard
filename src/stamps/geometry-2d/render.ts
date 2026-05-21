@@ -1,9 +1,8 @@
-import { renderGeometryToSvg } from './renderInline';
 import { deserializeBoard } from './serialize';
 import { paletteFor } from './editor/theme';
-import { safeJsx } from '../shared/safeJsx';
 import { createStore } from '../../core/scene';
 import { JxgRenderer } from '../../core/scene/render/JxgRenderer';
+import { renderJsxgOffscreen } from '../shared/jxgOffscreenRender';
 
 /**
  * Re-render geometry SVG từ jsonState đã serialize. Dùng cho:
@@ -30,11 +29,11 @@ import { JxgRenderer } from '../../core/scene/render/JxgRenderer';
  * label bằng HTML <div> overlay → clone SVG export sẽ thiếu label.
  */
 
-const PIXELS_PER_UNIT = 20;
-const MIN_DIM = 100;
-const MAX_DIM = 1200;
-const FALLBACK_W = 400;
-const FALLBACK_H = 300;
+const PIXELS_PER_UNIT = 60;
+const MIN_DIM = 300;
+const MAX_DIM = 3600;
+const FALLBACK_W = 1200;
+const FALLBACK_H = 900;
 
 export function containerDimsForBbox(bbox: [number, number, number, number]): { width: number; height: number } {
   const [xmin, ymax, xmax, ymin] = bbox;
@@ -65,11 +64,17 @@ export async function renderGeometrySvgFromState(jsonState: string): Promise<str
   // Stamps inserted vào Excalidraw canvas → luôn dùng light palette.
   // Excalidraw's THEME_FILTER tự đảo nét trong dark mode.
   const palette = paletteFor(false);
-  const JXG = (await import('jsxgraph')).default;
-  safeJsx('render.applyOptions', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const opts = (JXG as any).Options;
-    if (opts) {
+  const dims = containerDimsForBbox(parsed.bbox);
+  const { svgString } = await renderJsxgOffscreen({
+    bbox: parsed.bbox,
+    dims,
+    axis: !!parsed.showAxis,
+    grid: !!parsed.showGrid,
+    keepAspectRatio: true,
+    applyOptions: (JXG) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const opts = (JXG as any).Options;
+      if (!opts) return;
       opts.text = opts.text || {};
       opts.text.display = 'internal';
       opts.text.useASCIIMathML = false;
@@ -83,41 +88,11 @@ export async function renderGeometrySvgFromState(jsonState: string): Promise<str
       opts.axis.strokeColor = palette.axis;
       opts.grid = opts.grid || {};
       opts.grid.strokeColor = palette.grid;
-    }
+    },
+    setup: (board) => {
+      const store = createStore(parsed.state);
+      return new JxgRenderer(store, board);
+    },
   });
-  const { width, height } = containerDimsForBbox(parsed.bbox);
-  const container = document.createElement('div');
-  const containerId = 'jxg_offscreen_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-  container.id = containerId;
-  container.style.cssText = `position:absolute;top:-99999px;left:-99999px;width:${width}px;height:${height}px;visibility:hidden;pointer-events:none;`;
-  document.body.appendChild(container);
-  let board: unknown = null;
-  let renderer: JxgRenderer | null = null;
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    board = (JXG as any).JSXGraph.initBoard(containerId, {
-      boundingbox: parsed.bbox,
-      axis: !!parsed.showAxis,
-      grid: !!parsed.showGrid,
-      showCopyright: false,
-      showNavigation: false,
-      keepAspectRatio: true,
-    });
-    const store = createStore(parsed.state);
-    renderer = new JxgRenderer(store, board);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (board as any).update();
-    return renderGeometryToSvg(container);
-  } finally {
-    try {
-      renderer?.dispose();
-    } catch {
-      /* ignore */
-    }
-    safeJsx('render.freeBoard', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (board) (JXG as any).JSXGraph.freeBoard(board);
-    });
-    if (container.parentNode) container.parentNode.removeChild(container);
-  }
+  return svgString;
 }
