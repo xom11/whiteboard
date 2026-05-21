@@ -216,6 +216,19 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
       setHoverLabel(hitToHoverLabel(hit, store.getState()));
     }, [store, isDragging]);
 
+    // Cursor hover hit-test — reuse `hitTest()` đã có. SceneHit.kind === 'empty'
+    // → không hover; else → hover (point/line/polygon/...). Try/catch để
+    // tolerate mock environment khi view chưa expose project3DTo2D.
+    const isHoveringObject = React.useCallback((screen: { x: number; y: number }): boolean => {
+      const view = boardRef.current?.getView3D();
+      if (!view) return false;
+      try {
+        return hitTest(screen, view, store.getState()).kind !== 'empty';
+      } catch {
+        return false;
+      }
+    }, [store]);
+
     const tryInsert = React.useCallback((): boolean => {
       const state = store.getState();
       if (Object.keys(state.objects).length === 0) return false;
@@ -332,6 +345,7 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
             shouldStartPointDrag={shouldStartPointDrag}
             onPointerDrag={onPointerDrag}
             onPointerDragEnd={onPointerDragEnd}
+            isHoveringObject={isHoveringObject}
           />
         </div>
         <StatusHint hint={hint} hoverLabel={hoverLabel} />

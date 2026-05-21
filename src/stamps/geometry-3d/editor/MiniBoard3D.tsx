@@ -35,6 +35,12 @@ export interface MiniBoard3DProps {
    * Consumers that only need a "drag ended" notification may ignore the arg.
    */
   onPointerDragEnd?: (screen: { x: number; y: number }) => void;
+  /**
+   * Called on pointermove (khi không đang drag) để biết có hover object không.
+   * Return true → cursor đổi 'pointer'; false → cursor reset về ''. Apply mọi
+   * tool — báo hiệu "object click/drag được".
+   */
+  isHoveringObject?: (screen: { x: number; y: number }) => boolean;
 }
 
 export interface MiniBoard3DHandle {
@@ -58,6 +64,7 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
       shouldStartPointDrag,
       onPointerDrag,
       onPointerDragEnd,
+      isHoveringObject,
     } = props;
 
     // Keep latest callback refs stable across re-renders so the init effect
@@ -69,6 +76,7 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
     const shouldStartPointDragRef = React.useRef(shouldStartPointDrag);
     const onPointerDragRef = React.useRef(onPointerDrag);
     const onPointerDragEndRef = React.useRef(onPointerDragEnd);
+    const isHoveringObjectRef = React.useRef(isHoveringObject);
     onView3DReadyRef.current = onView3DReady;
     onPointerClickRef.current = onPointerClick;
     onPointerMoveRef.current = onPointerMove;
@@ -76,6 +84,7 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
     shouldStartPointDragRef.current = shouldStartPointDrag;
     onPointerDragRef.current = onPointerDrag;
     onPointerDragEndRef.current = onPointerDragEnd;
+    isHoveringObjectRef.current = isHoveringObject;
 
     React.useImperativeHandle(
       ref,
@@ -273,7 +282,13 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
                 return;
               }
             }
-            onPointerMoveRef.current?.(pixelToUser(e));
+            const screen = pixelToUser(e);
+            onPointerMoveRef.current?.(screen);
+            // Hover cursor: pointer khi hover object (point/edge/...). Apply
+            // mọi tool — báo hiệu draggable/clickable. Khi đang drag thì skip
+            // (dragging branch ở trên đã return sớm).
+            const hovering = isHoveringObjectRef.current?.(screen) ?? false;
+            svgEl.style.cursor = hovering ? 'pointer' : '';
           };
           handlePointerUp = (e: PointerEvent) => {
             if (!svgEl) return;

@@ -340,6 +340,20 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
       board.on('up', fire(handleUp));
       board.on('move', fire(handleMove));
 
+      // Hover cursor: pointer khi di chuột qua bất kỳ object có scene id (loại
+      // phantom + preview transient). Apply mọi tool — drag (move), snap target
+      // (drawing tools), click-to-select (select). Reset về '' khi rời object.
+      board.on('move', (e: JxgObj) => {
+        const container = containerRef.current;
+        if (!container) return;
+        const hits = objectsAtImpl(boardRef.current, container, e, [
+          phantomRef.current,
+          previewShapeRef.current,
+          ...previewSegRef.current,
+        ]);
+        container.style.cursor = hits.length > 0 ? 'pointer' : '';
+      });
+
       onReady?.();
     })();
     return () => {
