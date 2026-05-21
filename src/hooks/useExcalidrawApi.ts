@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { type MutableRefObject, useCallback, useRef, useState } from 'react';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ExApi = any;
@@ -9,9 +9,9 @@ export interface UseExcalidrawApiOptions {
 
 export interface UseExcalidrawApiResult {
   api: ExApi | null;
-  apiRef: React.MutableRefObject<ExApi | null>;
+  apiRef: MutableRefObject<ExApi | null>;
   isDark: boolean;
-  isDarkRef: React.MutableRefObject<boolean>;
+  isDarkRef: MutableRefObject<boolean>;
   /** Gắn vào Excalidraw prop `excalidrawAPI`. Defer setState qua microtask
    *  để tránh React 19 "update from inside an update function" warning. */
   setApiFromExcalidraw: (api: ExApi) => void;

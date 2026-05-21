@@ -23,6 +23,15 @@ describe('useExcalidrawApi', () => {
     expect(result.current.api).toBe(fakeApi);
   });
 
+  it('syncThemeFromAppState handles undefined appState gracefully', async () => {
+    const { result } = renderHook(() => useExcalidrawApi());
+    expect(() => {
+      act(() => { result.current.syncThemeFromAppState(undefined); });
+    }).not.toThrow();
+    await act(async () => { await Promise.resolve(); });
+    expect(result.current.isDark).toBe(false);
+  });
+
   it('syncThemeFromAppState chỉ trigger setState khi đổi', async () => {
     const { result } = renderHook(() => useExcalidrawApi());
     act(() => { result.current.syncThemeFromAppState({ theme: 'dark' }); });
