@@ -225,7 +225,7 @@ export class JxgRenderer {
   }
 
   private highlightedId: string | null = null;
-  private highlightOriginal: { stroke?: string; thick?: number } | null = null;
+  private highlightOriginal: { strokeColor?: string; strokeWidth?: number } | null = null;
 
   highlight(id: string | null): void {
     if (this.disposed) return;
@@ -251,7 +251,7 @@ export class JxgRenderer {
     try {
       const stroke = (el.getAttribute?.('strokeColor') as string | undefined) ?? '#1e40af';
       const thick = (el.getAttribute?.('strokeWidth') as number | undefined) ?? 2;
-      this.highlightOriginal = { stroke, thick };
+      this.highlightOriginal = { strokeColor: stroke, strokeWidth: thick };
       el.setAttribute?.({ strokeColor: '#ef4444', strokeWidth: thick + 2 });
       this.highlightedId = id;
     } catch (err) {
