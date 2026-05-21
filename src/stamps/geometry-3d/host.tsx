@@ -9,9 +9,15 @@ import {
   useState,
 } from 'react';
 import { EditorPanel, type EditorPanelHandle } from './editor/EditorPanel';
-import { LeftPanel } from './editor/LeftPanel';
+import { StampLeftPanel } from '../shared/StampLeftPanel';
 import { createStore, createEmptyState, type Store, type State } from '../../core/scene';
-import { GROUP_ORDER, TOOLS_FLAT } from './editor/toolPanel/groups';
+import {
+  GROUP_ORDER,
+  GROUP_LABELS,
+  TOOLS_FLAT,
+  letterForGroup,
+  type Geom3DGroup,
+} from './editor/toolPanel/groups';
 import { useChordShortcut } from '../shared/useChordShortcut';
 import { insertStampImage } from '../shared/insertImage';
 import { useIsMobile } from '../shared/useIsMobile';
@@ -27,6 +33,14 @@ import type {
   StampHostHandle,
 } from '../shared/types';
 import type { ToolKey } from './editor/tools/spec';
+
+const Geom3DIconHeader = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M4 9 L4 20 L14 20 L14 9 Z" />
+    <path d="M4 9 L10 4 L20 4 L14 9 Z" />
+    <path d="M14 9 L20 4 L20 15 L14 20 Z" />
+  </svg>
+);
 
 function parseInitial(
   editingElement: StampHostProps['editingElement'],
@@ -96,8 +110,6 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
           svgString,
           makeCustomData: (): Geometry3DCustomData => ({
             kind: 'geometry3d',
-            // Bump customData.version vẫn 2 (đã được hỗ trợ ở isGeometry3DCustomData)
-            // — payload bên trong là envelope v2 mới của state.
             version: 2,
             jsonState,
             svgWidth: width,
@@ -121,26 +133,40 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
 
     return (
       <>
-        {!isMobile && (
-          <LeftPanel
-            store={storeRef.current}
-            selectedTool={selectedTool}
-            onSelectTool={handleSelectTool}
-            showAxis={showAxis}
-            showGrid={showGrid}
-            onShowAxisChange={setShowAxis}
-            onShowGridChange={setShowGrid}
-            onUndo={handleUndo}
-            canUndo={canUndo}
-            onRedo={handleRedo}
-            canRedo={canRedo}
-            onClose={onClose}
-            isDark={isDark}
-            chordGroup={chordGroup}
-            selectedObjectId={selectedObjectId}
-            onObjectSelect={handleObjectSelect}
-          />
-        )}
+        <StampLeftPanel<ToolKey, Geom3DGroup>
+          title="Hình học 3D"
+          icon={Geom3DIconHeader}
+          onClose={onClose}
+          isDark={isDark}
+          testId="stamp-left-panel"
+          tools={TOOLS_FLAT}
+          groupOrder={GROUP_ORDER}
+          groupLabels={GROUP_LABELS}
+          activeTool={selectedTool}
+          onToolChange={handleSelectTool}
+          view={{
+            sectionLabel: 'Góc nhìn',
+            showAxis,
+            showGrid,
+            onShowAxisChange: setShowAxis,
+            onShowGridChange: setShowGrid,
+          }}
+          history={{
+            onUndo: handleUndo,
+            canUndo,
+            onRedo: handleRedo,
+            canRedo,
+          }}
+          chord={{ activeGroup: chordGroup, letterForGroup }}
+          objects={{
+            store: storeRef.current,
+            selectedObjectId,
+            onObjectSelect: handleObjectSelect,
+          }}
+          isMobile={isMobile}
+          drawerOpen={drawerOpen}
+          onDrawerClose={() => setDrawerOpen(false)}
+        />
         <EditorPanel
           ref={editorRef}
           isDark={isDark}
@@ -157,29 +183,6 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
           onOpenDrawer={() => setDrawerOpen(true)}
           withLeftPanel={!isMobile}
         />
-        {isMobile && (
-          <LeftPanel
-            store={storeRef.current}
-            selectedTool={selectedTool}
-            onSelectTool={handleSelectTool}
-            showAxis={showAxis}
-            showGrid={showGrid}
-            onShowAxisChange={setShowAxis}
-            onShowGridChange={setShowGrid}
-            onUndo={handleUndo}
-            canUndo={canUndo}
-            onRedo={handleRedo}
-            canRedo={canRedo}
-            onClose={onClose}
-            isDark={isDark}
-            isMobile
-            drawerOpen={drawerOpen}
-            onDrawerClose={() => setDrawerOpen(false)}
-            chordGroup={chordGroup}
-            selectedObjectId={selectedObjectId}
-            onObjectSelect={handleObjectSelect}
-          />
-        )}
       </>
     );
   },

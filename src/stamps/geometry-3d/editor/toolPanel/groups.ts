@@ -1,4 +1,6 @@
+import type { ReactNode } from 'react';
 import { TOOLS, type ToolKey, type ToolSpec } from '../tools/spec';
+import { ToolIcons } from './icons';
 
 export type Geom3DGroup =
   | 'basic'
@@ -39,6 +41,7 @@ export interface Geom3DToolEntry {
   key: ToolKey;
   label: string;
   hint: string;
+  icon: ReactNode;
   group: Geom3DGroup;
 }
 
@@ -57,6 +60,7 @@ export const TOOLS_FLAT: Geom3DToolEntry[] = GROUP_ORDER.flatMap((group) =>
       key,
       label: spec?.label ?? key,
       hint: spec?.hintIdle ?? '',
+      icon: ToolIcons[key],
       group,
     };
   }),
