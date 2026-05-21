@@ -25,48 +25,55 @@ const mockState = (() => {
   };
 })();
 
-jest.mock('../editor/MiniBoard', () => ({
-  __esModule: true,
-  TOOLS: [],
-  GROUP_LABELS: {},
+jest.mock('../editor/MiniBoard', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  JSXGraphMiniBoard: ({ onReady }: { onReady: (h: any) => void }) => {
-    React.useEffect(() => {
-      setTimeout(() => onReady({
-        getContainer: () => {
-          const d = document.createElement('div');
-          d.innerHTML = '<svg width="100" height="100"><circle/></svg>';
-          return d;
-        },
-        getState: () => mockState,
-        getStore: () => ({ getState: () => mockState, subscribe: () => () => {}, dispatch: () => {}, getState: () => mockState }),
-        highlight: () => {},
-        getBbox: () => [-10, 10, 10, -10],
-        getShowAxis: () => false,
-        getShowGrid: () => false,
-        getTool: () => 'move',
-        setTool: () => {},
-        setShowAxis: () => {},
-        setShowGrid: () => {},
-        undo: () => {},
-        canUndo: () => true,
-        canRedo: () => false,
-        subscribe: () => () => {},
-        onSelect: () => () => {},
-        onTransformParam: () => () => {},
-        confirmTransformParam: () => {},
-        cancelTransformParam: () => {},
-        mutateObject: () => {},
-        snapshotObject: () => null,
-        getAllPointNames: () => [],
-        getSelectionSize: () => 0,
-        clearSelection: () => {},
-        deleteSelection: () => {},
-      }), 0);
-    }, []);
-    return <div data-testid="mock-jxg" />;
-  },
-}));
+  const mockHandle: any = {
+    getContainer: () => {
+      const d = document.createElement('div');
+      d.innerHTML = '<svg width="100" height="100"><circle/></svg>';
+      return d;
+    },
+    getState: () => mockState,
+    getStore: () => ({ getState: () => mockState, subscribe: () => () => {}, dispatch: () => {} }),
+    highlight: () => {},
+    getBbox: () => [-10, 10, 10, -10],
+    getShowAxis: () => false,
+    getShowGrid: () => false,
+    getTool: () => 'move',
+    setTool: () => {},
+    setShowAxis: () => {},
+    setShowGrid: () => {},
+    undo: () => {},
+    redo: () => {},
+    canUndo: () => true,
+    canRedo: () => false,
+    subscribe: () => () => {},
+    onSelect: () => () => {},
+    onTransformParam: () => () => {},
+    confirmTransformParam: () => {},
+    cancelTransformParam: () => {},
+    mutateObject: () => {},
+    snapshotObject: () => null,
+    getAllPointNames: () => [],
+    getSelectionSize: () => 0,
+    clearSelection: () => {},
+    deleteSelection: () => {},
+  };
+  return {
+    __esModule: true,
+    TOOLS: [],
+    GROUP_LABELS: {},
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    MiniBoard2D: React.forwardRef<any, { onReady?: () => void }>(function MiniBoard2DMock({ onReady }, ref) {
+      React.useImperativeHandle(ref, () => mockHandle, []);
+      React.useEffect(() => {
+        const t = setTimeout(() => onReady?.(), 0);
+        return () => clearTimeout(t);
+      }, [onReady]);
+      return <div data-testid="mock-jxg" />;
+    }),
+  };
+});
 
 jest.mock('../renderInline', () => ({
   renderGeometryToSvg: jest.fn(() => '<svg>fake</svg>'),

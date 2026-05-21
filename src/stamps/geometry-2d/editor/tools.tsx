@@ -4,7 +4,7 @@ import React from 'react';
  * Static catalog của tất cả GeomTool — không phụ thuộc board state, chỉ là
  * metadata (key, label, hint, icon SVG, group, số click cần, accept types).
  *
- * Tách khỏi JSXGraphMiniBoard.tsx để (1) giảm size file component và (2) dễ
+ * Tách khỏi MiniBoard.tsx để (1) giảm size file component và (2) dễ
  * mở rộng tool mới mà không cần đụng vào board logic.
  */
 

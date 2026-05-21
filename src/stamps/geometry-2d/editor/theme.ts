@@ -1,6 +1,6 @@
 // Theme-aware palette cho geometry stamps.
 //
-// Creation log của JSXGraphMiniBoard lưu attrs dưới dạng "sentinel" string
+// Creation log của MiniBoard2D lưu attrs dưới dạng "sentinel" string
 // (`@stroke`, `@axis`, `@grid`, `@label`) thay vì màu cụ thể. Khi:
 //   1. Editor render real-time → resolve theo `isDark` của editor.
 //   2. Offscreen re-render (sau reload / sau khi switch theme) → resolve theo

@@ -13,7 +13,16 @@
  * EditorPanel/host/render.ts vẫn dùng API cũ — clean ở 2.3.4 / 2.3.7.
  */
 
-import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   createEmptyState,
   listObjects,
@@ -85,12 +94,16 @@ export interface MiniBoardHandle {
 }
 
 interface Props {
-  onReady: (handle: MiniBoardHandle) => void;
+  /** Signal "board boot xong" — parent gọi handle methods qua ref sau khi nhận. */
+  onReady?: () => void;
   initialState: SerializedBoard | null;
   isDark?: boolean;
 }
 
-export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDark }) => {
+export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard2D(
+  { onReady, initialState, isDark },
+  ref,
+) {
   const isDarkRef = useRef(!!isDark); isDarkRef.current = !!isDark;
   const containerId = useId().replace(/:/g, '_') + '_jxgmini';
   const containerRef = useRef<HTMLDivElement>(null);
@@ -643,89 +656,7 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
       board.on('up', fire(handleUp));
       board.on('move', fire(handleMove));
 
-      onReady({
-        getContainer: () => containerRef.current,
-        getBbox: () => board ? board.getBoundingBox() : [-10, 10, 10, -10],
-        getState: () => store.getState(),
-        getStore: () => store,
-        highlight: (id: string | null) => { rendererRef.current?.highlight(id); },
-        getShowAxis: () => showAxisRef.current,
-        getShowGrid: () => showGridRef.current,
-        setTool: handleToolChange,
-        getTool: () => toolSM.toolRef.current,
-        setShowAxis: (b: boolean) => setShowAxisState(b),
-        setShowGrid: (b: boolean) => setShowGridState(b),
-        undo: () => store.undo(),
-        canUndo: () => store.canUndo(),
-        redo: () => store.redo(),
-        canRedo: () => store.canRedo(),
-        subscribe: (cb) => { subscribersRef.current.add(cb); return () => { subscribersRef.current.delete(cb); }; },
-        snapshotObject: (id, anchorScreen) => buildSnapshot(id, anchorScreen),
-        mutateObject: (id, patch) => {
-          if (patch.remove) {
-            store.dispatch({ type: 'DELETE', payload: { id } });
-            return;
-          }
-          if (!patch.attrs) return;
-          // PropertiesPopover phát attrs theo tên JSXGraph (strokeColor,
-          // strokeWidth, withLabel, name, …). Scene attrs dùng tên ngắn gọn
-          // (color, width, showLabel, …) và `label` là field top-level của
-          // SceneObject (không nằm trong attrs). Map ở đây để popover khỏi
-          // cần biết shape của scene.
-          const incoming = patch.attrs as Record<string, unknown>;
-          const { name, withLabel, strokeColor, fillColor, strokeWidth, ...rest } = incoming as {
-            name?: unknown;
-            withLabel?: unknown;
-            strokeColor?: unknown;
-            fillColor?: unknown;
-            strokeWidth?: unknown;
-            [k: string]: unknown;
-          };
-          // 1) Rename → UPDATE top-level `label`.
-          if (typeof name === 'string') {
-            store.dispatch({ type: 'UPDATE', payload: { id, patch: { label: name } } });
-          }
-          // 2) Map JSXGraph attr names → scene attr names.
-          const mapped: Record<string, unknown> = { ...rest };
-          // strokeColor / fillColor cùng đại diện cho cùng 1 thuộc tính `color`
-          // ở scene. PropertiesPopover đã thêm sẵn `color` cùng strokeColor,
-          // nên ưu tiên dùng `color` (đã có trong rest) — nhưng nếu user gọi
-          // mutateObject bằng tên JSXGraph thuần thì vẫn map fallback.
-          if (strokeColor !== undefined && mapped.color === undefined) mapped.color = strokeColor;
-          if (fillColor !== undefined && mapped.color === undefined) mapped.color = fillColor;
-          if (strokeWidth !== undefined && mapped.width === undefined) mapped.width = strokeWidth;
-          if (withLabel !== undefined && mapped.showLabel === undefined) mapped.showLabel = withLabel;
-          if (Object.keys(mapped).length > 0) {
-            store.dispatch({ type: 'UPDATE_ATTRS', payload: { id, patch: mapped } });
-          }
-        },
-        getAllPointNames: () => listObjects(store.getState())
-          .filter((o) => o.kind === 'point' || o.kind === 'intersection')
-          .map((o) => o.label),
-        onSelect: (cb) => { selectSubsRef.current.add(cb); return () => { selectSubsRef.current.delete(cb); }; },
-        onTransformParam: (cb) => { transformSubsRef.current.add(cb); return () => { transformSubsRef.current.delete(cb); }; },
-        confirmTransformParam: (value: number) => {
-          const info = pendingTransformRef.current as
-            | { tool: TransformToolKey; pendingIds: string[]; anchorScreen: { x: number; y: number } }
-            | null;
-          if (info && ctxRef.current) {
-            safeJsx('MiniBoard.finalizeTransform', () =>
-              finalizeTransform(ctxRef.current!, info.tool, info.pendingIds, value),
-            );
-          }
-          pendingTransformRef.current = null;
-          emitTransform(null);
-          clearPending();
-        },
-        cancelTransformParam: () => {
-          pendingTransformRef.current = null;
-          emitTransform(null);
-          clearPending();
-        },
-        getSelectionSize: () => selectedSetRef.current.size,
-        clearSelection,
-        deleteSelection,
-      });
+      onReady?.();
     })();
     return () => {
       cancelled = true;
@@ -741,6 +672,95 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerId]);
 
+  // Handle delivery qua ref (forwardRef). Methods đọc trực tiếp từ refs /
+  // closures component-scope, nên đối tượng handle có thể tạo trước khi board
+  // boot xong; gọi handle.foo() trước onReady?.() sẽ trả về stale refs (board
+  // null, store empty), nhưng nếu parent đợi onReady trước khi gọi thì OK.
+  useImperativeHandle(
+    ref,
+    (): MiniBoardHandle => ({
+      getContainer: () => containerRef.current,
+      getBbox: () => boardRef.current?.getBoundingBox() ?? [-10, 10, 10, -10],
+      getState: () => store.getState(),
+      getStore: () => store,
+      highlight: (id: string | null) => { rendererRef.current?.highlight(id); },
+      getShowAxis: () => showAxisRef.current,
+      getShowGrid: () => showGridRef.current,
+      setTool: handleToolChange,
+      getTool: () => toolSM.toolRef.current,
+      setShowAxis: (b: boolean) => setShowAxisState(b),
+      setShowGrid: (b: boolean) => setShowGridState(b),
+      undo: () => store.undo(),
+      canUndo: () => store.canUndo(),
+      redo: () => store.redo(),
+      canRedo: () => store.canRedo(),
+      subscribe: (cb) => { subscribersRef.current.add(cb); return () => { subscribersRef.current.delete(cb); }; },
+      snapshotObject: (id, anchorScreen) => buildSnapshot(id, anchorScreen),
+      mutateObject: (id, patch) => {
+        if (patch.remove) {
+          store.dispatch({ type: 'DELETE', payload: { id } });
+          return;
+        }
+        if (!patch.attrs) return;
+        // PropertiesPopover phát attrs theo tên JSXGraph (strokeColor,
+        // strokeWidth, withLabel, name, …). Scene attrs dùng tên ngắn gọn
+        // (color, width, showLabel, …) và `label` là field top-level của
+        // SceneObject (không nằm trong attrs). Map ở đây để popover khỏi
+        // cần biết shape của scene.
+        const incoming = patch.attrs as Record<string, unknown>;
+        const { name, withLabel, strokeColor, fillColor, strokeWidth, ...rest } = incoming as {
+          name?: unknown;
+          withLabel?: unknown;
+          strokeColor?: unknown;
+          fillColor?: unknown;
+          strokeWidth?: unknown;
+          [k: string]: unknown;
+        };
+        if (typeof name === 'string') {
+          store.dispatch({ type: 'UPDATE', payload: { id, patch: { label: name } } });
+        }
+        const mapped: Record<string, unknown> = { ...rest };
+        if (strokeColor !== undefined && mapped.color === undefined) mapped.color = strokeColor;
+        if (fillColor !== undefined && mapped.color === undefined) mapped.color = fillColor;
+        if (strokeWidth !== undefined && mapped.width === undefined) mapped.width = strokeWidth;
+        if (withLabel !== undefined && mapped.showLabel === undefined) mapped.showLabel = withLabel;
+        if (Object.keys(mapped).length > 0) {
+          store.dispatch({ type: 'UPDATE_ATTRS', payload: { id, patch: mapped } });
+        }
+      },
+      getAllPointNames: () => listObjects(store.getState())
+        .filter((o) => o.kind === 'point' || o.kind === 'intersection')
+        .map((o) => o.label),
+      onSelect: (cb) => { selectSubsRef.current.add(cb); return () => { selectSubsRef.current.delete(cb); }; },
+      onTransformParam: (cb) => { transformSubsRef.current.add(cb); return () => { transformSubsRef.current.delete(cb); }; },
+      confirmTransformParam: (value: number) => {
+        const info = pendingTransformRef.current as
+          | { tool: TransformToolKey; pendingIds: string[]; anchorScreen: { x: number; y: number } }
+          | null;
+        if (info && ctxRef.current) {
+          safeJsx('MiniBoard.finalizeTransform', () =>
+            finalizeTransform(ctxRef.current!, info.tool, info.pendingIds, value),
+          );
+        }
+        pendingTransformRef.current = null;
+        emitTransform(null);
+        clearPending();
+      },
+      cancelTransformParam: () => {
+        pendingTransformRef.current = null;
+        emitTransform(null);
+        clearPending();
+      },
+      getSelectionSize: () => selectedSetRef.current.size,
+      clearSelection,
+      deleteSelection,
+    }),
+    // Refs + useCallback identities ổn định (toolSM.setTool, các store callback
+    // dùng `[]` deps). Match pattern 3D/graph-2d.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [store, handleToolChange, buildSnapshot, clearSelection, deleteSelection, clearPending, emitTransform],
+  );
+
   return (
     <div
       ref={containerRef}
@@ -750,4 +770,4 @@ export const JSXGraphMiniBoard: React.FC<Props> = ({ onReady, initialState, isDa
       style={{ touchAction: 'none' }}
     />
   );
-};
+});

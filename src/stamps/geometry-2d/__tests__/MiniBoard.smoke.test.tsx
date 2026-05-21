@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react';
-import { JSXGraphMiniBoard } from '../editor/MiniBoard';
+import { MiniBoard2D } from '../editor/MiniBoard';
 
 jest.mock('jsxgraph', () => ({
   __esModule: true,
@@ -18,7 +18,7 @@ jest.mock('jsxgraph', () => ({
   },
 }));
 
-test('JSXGraphMiniBoard mounts and renders container', () => {
-  const { container } = render(<JSXGraphMiniBoard onReady={() => {}} initialState={null} />);
+test('MiniBoard2D mounts and renders container', () => {
+  const { container } = render(<MiniBoard2D initialState={null} />);
   expect(container.querySelector('[data-testid="jxgmini-container"]')).toBeTruthy();
 });

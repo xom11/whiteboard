@@ -1,6 +1,6 @@
 'use client';
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { JSXGraphMiniBoard, type MiniBoardHandle, type GeomTool, type ObjectSnapshot, type TransformPopoverInfo } from './MiniBoard';
+import { MiniBoard2D, type MiniBoardHandle, type GeomTool, type ObjectSnapshot, type TransformPopoverInfo } from './MiniBoard';
 import { serializeBoard, type SerializedBoard } from '../serialize';
 import { renderGeometrySvgFromState } from '../render';
 import { PropertiesPopover } from './PropertiesPopover';
@@ -86,8 +86,9 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
       });
     }, []);
 
-    const handleReady = useCallback((h: MiniBoardHandle) => {
-      handleRef.current = h;
+    const handleReady = useCallback(() => {
+      const h = handleRef.current;
+      if (!h) return;
       onStoreReadyRef.current?.(h.getStore());
       setReady(true);
       emitState();
@@ -239,7 +240,8 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
         </header>
         <div className="flex min-h-0 flex-1" style={isMobile ? undefined : { height: '420px' }}>
           <div className="flex-1">
-            <JSXGraphMiniBoard
+            <MiniBoard2D
+              ref={handleRef}
               onReady={handleReady}
               initialState={initialState}
               isDark={isDark}
