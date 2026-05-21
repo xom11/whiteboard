@@ -9,6 +9,11 @@ export { latexStamp, type LatexCustomData } from '../latex';
 export { geometry3dStamp, type Geometry3DCustomData } from '../geometry-3d';
 export { graph2dStamp, type Graph2DCustomData } from '../graph-2d';
 export type { StampType, BaseStampCustomData } from './types';
+export {
+  STAMP_CATALOG,
+  findCatalogEntry,
+  type StampCatalogEntry,
+} from './catalog';
 
 /** Stamp ổn định, sẵn sàng production. */
 export const STABLE_STAMPS: ReadonlyArray<StampType> = Object.freeze([

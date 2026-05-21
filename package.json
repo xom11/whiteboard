@@ -47,8 +47,9 @@
     "*.css"
   ],
   "scripts": {
-    "build": "tsup && node scripts/inject-use-client.mjs",
-    "dev": "tsup --watch --onSuccess \"node scripts/inject-use-client.mjs\"",
+    "build": "tsup && node scripts/inject-use-client.mjs && node scripts/build-catalog.mjs",
+    "build:catalog": "node scripts/build-catalog.mjs",
+    "dev": "tsup --watch --onSuccess \"node scripts/inject-use-client.mjs && node scripts/build-catalog.mjs\"",
     "test": "jest",
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
