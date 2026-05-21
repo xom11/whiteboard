@@ -122,3 +122,82 @@ describe('circle.measure', () => {
     expect(result).toBeNull();
   });
 });
+
+// ---------- 3D ----------
+
+import '../point3d';
+import '../segment3d';
+
+const empty3DState: State = {
+  objects: {},
+  order: [],
+  counter: 0,
+  meta: { domain: '3d', version: 1 },
+};
+
+function makePoint3D(label: string, x: number, y: number, z: number): SceneObject {
+  return {
+    id: label,
+    label,
+    kind: 'point3d',
+    visible: true,
+    locked: false,
+    attrs: { constraint: { kind: 'free', x, y, z } },
+  };
+}
+
+describe('point3d.measure', () => {
+  it('returns x, y, z for free 3D point', () => {
+    const obj = makePoint3D('P', 1.1, 2.2, 3.3);
+    const result = getKind('point3d').measure!(obj, empty3DState);
+    expect(result).toEqual([
+      { label: 'x', value: 1.1 },
+      { label: 'y', value: 2.2 },
+      { label: 'z', value: 3.3 },
+    ]);
+  });
+
+  it('returns null for non-free 3D point', () => {
+    const obj: SceneObject = {
+      id: 'P',
+      label: 'P',
+      kind: 'point3d',
+      visible: true,
+      locked: false,
+      attrs: { constraint: { kind: 'onAxis', axis: 'x', t: 1 } },
+    };
+    const result = getKind('point3d').measure!(obj, empty3DState);
+    expect(result).toBeNull();
+  });
+});
+
+describe('segment3d.measure', () => {
+  it('returns 3D length', () => {
+    const P = makePoint3D('P', 0, 0, 0);
+    const Q = makePoint3D('Q', 1, 2, 2);
+    const state: State = { ...empty3DState, objects: { P, Q }, order: ['P', 'Q'] };
+    const seg: SceneObject = {
+      id: 'f',
+      label: 'f',
+      kind: 'segment3d',
+      visible: true,
+      locked: false,
+      attrs: { p1: 'P', p2: 'Q' },
+    };
+    const result = getKind('segment3d').measure!(seg, state);
+    expect(result).toEqual([{ label: 'length', value: 3 }]);
+  });
+
+  it('returns null if endpoint missing', () => {
+    const seg: SceneObject = {
+      id: 'f',
+      label: 'f',
+      kind: 'segment3d',
+      visible: true,
+      locked: false,
+      attrs: { p1: 'P', p2: 'Q' },
+    };
+    const result = getKind('segment3d').measure!(seg, empty3DState);
+    expect(result).toBeNull();
+  });
+});

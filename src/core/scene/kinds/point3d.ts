@@ -18,6 +18,24 @@ const def: KindDef<Point3DAttrs> = {
     }
   },
   dependsOn: (a) => constraintRefs(a.constraint),
+  measure: (obj) => {
+    const c = obj.attrs.constraint;
+    if (c.kind === 'free') {
+      return [
+        { label: 'x', value: c.x },
+        { label: 'y', value: c.y },
+        { label: 'z', value: c.z },
+      ];
+    }
+    if (c.kind === 'onGround') {
+      return [
+        { label: 'x', value: c.x },
+        { label: 'y', value: c.y },
+        { label: 'z', value: 0 },
+      ];
+    }
+    return null;
+  },
   describe: (obj) => {
     const c = obj.attrs.constraint;
     if (c.kind === 'free') return `${obj.label} = (${c.x.toFixed(2)}, ${c.y.toFixed(2)}, ${c.z.toFixed(2)})`;
