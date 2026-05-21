@@ -29,11 +29,11 @@ import { renderJsxgOffscreen } from '../shared/jxgOffscreenRender';
  * label bằng HTML <div> overlay → clone SVG export sẽ thiếu label.
  */
 
-const PIXELS_PER_UNIT = 60;
-const MIN_DIM = 300;
-const MAX_DIM = 3600;
-const FALLBACK_W = 1200;
-const FALLBACK_H = 900;
+const PIXELS_PER_UNIT = 20;
+const MIN_DIM = 100;
+const MAX_DIM = 1200;
+const FALLBACK_W = 400;
+const FALLBACK_H = 300;
 
 export function containerDimsForBbox(bbox: [number, number, number, number]): { width: number; height: number } {
   const [xmin, ymax, xmax, ymin] = bbox;

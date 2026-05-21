@@ -2,16 +2,14 @@
 // Offscreen SVG export từ graph2d State. Dùng cho insert/restore stamp.
 //
 // LƯU Ý: Luôn dùng light palette — Excalidraw tự invert trong dark mode.
-// Intrinsic dims default 1800×1200 (bumped từ 600×400) để stamp sắc nét khi
-// zoom hoặc trên màn retina; caller có thể override qua args.
 import type { State } from '../../core/scene/types';
 import { createStore } from '../../core/scene/store';
 import { JxgRenderer } from '../../core/scene/render/JxgRenderer';
 import { paletteFor } from './editor/theme';
 import { renderJsxgOffscreen } from '../shared/jxgOffscreenRender';
 
-const DEFAULT_WIDTH = 1800;
-const DEFAULT_HEIGHT = 1200;
+const DEFAULT_WIDTH = 600;
+const DEFAULT_HEIGHT = 400;
 
 export async function renderGraphSvgFromState(
   state: State,

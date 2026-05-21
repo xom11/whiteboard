@@ -12,11 +12,8 @@ export interface RenderResult {
   height: number;
 }
 
-// Bumped từ 1024×768 → 2048×1536 (2x) để stamp sắc nét trên retina + khi zoom.
-// SVG intrinsic size truyền vào <img> rồi drawImage; upscale từ bitmap nội tại
-// nhỏ là nguyên nhân chính của mờ.
-const OUTPUT_WIDTH = 2048;
-const OUTPUT_HEIGHT = 1536;
+const OUTPUT_WIDTH = 1024;
+const OUTPUT_HEIGHT = 768;
 const BBOX_2D: [number, number, number, number] = [-6, 6, 6, -6];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
