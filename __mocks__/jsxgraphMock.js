@@ -3,14 +3,19 @@ module.exports = {
   default: {
     Options: { text: { display: 'html' } },
     JSXGraph: {
-      initBoard: jest.fn((containerId, _opts) => {
+      initBoard: jest.fn((target, _opts) => {
+        // `target` có thể là id (string) hoặc DOM element (vd geometry-3d truyền div).
+        const resolveEl = () => {
+          if (typeof document === 'undefined') return null;
+          if (typeof target === 'string') return document.getElementById(target);
+          if (target && typeof target === 'object' && 'appendChild' in target) return target;
+          return null;
+        };
         // Inject a minimal SVG into the container so render functions can extract it
-        if (typeof document !== 'undefined') {
-          const el = document.getElementById(containerId);
-          if (el) {
-            el.innerHTML =
-              '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"></svg>';
-          }
+        const initialEl = resolveEl();
+        if (initialEl) {
+          initialEl.innerHTML =
+            '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"></svg>';
         }
         const createdElements = [];
         const board = {
@@ -18,7 +23,7 @@ module.exports = {
             // When a functiongraph is created with a visible color, record it in SVG
             if (kind === 'functiongraph' && attrs && attrs.strokeColor) {
               if (typeof document !== 'undefined') {
-                const el = document.getElementById(containerId);
+                const el = resolveEl();
                 const svg = el && el.querySelector('svg');
                 if (svg) {
                   const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
