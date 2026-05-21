@@ -19,9 +19,10 @@ import { JxgRenderer } from '../../../core/scene/render/JxgRenderer';
 import type { Store } from '../../../core/scene/store';
 import { paletteFor } from './theme';
 import { handleDown, type HandlerCtx } from './handlers';
-import { useToolStateMachine } from './useToolStateMachine';
+import { useToolStateMachine } from '../../shared/useToolStateMachine';
 import type { GraphTool } from './tools';
 import { safeJsx } from '../../shared/safeJsx';
+import { attachJxgWheelZoom } from '../../shared/attachJxgWheelZoom';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type JxgObj = any;
@@ -67,7 +68,7 @@ export const MiniBoard = React.forwardRef<MiniBoardHandle, MiniBoardProps>(
       [],
     );
     const { store } = useSceneStore(init);
-    const toolSM = useToolStateMachine('move');
+    const toolSM = useToolStateMachine<GraphTool>('move');
 
     const [showAxis, setShowAxisState] = useState<boolean>(
       init.meta.view?.showAxis ?? true,
@@ -131,24 +132,7 @@ export const MiniBoard = React.forwardRef<MiniBoardHandle, MiniBoardProps>(
 
         // Ctrl/Cmd + wheel zoom
         if (containerRef.current) {
-          const wheelTarget = containerRef.current;
-          const onWheel = (e: WheelEvent) => {
-            if (!e.ctrlKey && !e.metaKey) return;
-            e.preventDefault(); e.stopPropagation();
-            let cx: number | undefined, cy: number | undefined;
-            safeJsx('MiniBoard.graph.wheelZoom.coords', () => {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const usr = (board as any).getUsrCoordsOfMouse?.(e);
-              if (Array.isArray(usr) && usr.length >= 2
-                  && Number.isFinite(usr[0]) && Number.isFinite(usr[1])) {
-                cx = usr[0] as number; cy = usr[1] as number;
-              }
-            });
-            if (e.deltaY < 0) safeJsx('MiniBoard.graph.wheelZoom.in', () => board.zoomIn(cx, cy));
-            else safeJsx('MiniBoard.graph.wheelZoom.out', () => board.zoomOut(cx, cy));
-          };
-          wheelTarget.addEventListener('wheel', onWheel, { passive: false });
-          wheelCleanup = () => wheelTarget.removeEventListener('wheel', onWheel);
+          wheelCleanup = attachJxgWheelZoom(containerRef.current, board, 'MiniBoard.graph');
         }
 
         // Pointer-down handler — only active when tool != move

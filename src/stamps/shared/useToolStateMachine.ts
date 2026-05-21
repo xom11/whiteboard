@@ -1,30 +1,32 @@
-// src/stamps/geometry-2d/editor/useToolStateMachine.ts
 import { useCallback, useRef, useState } from 'react';
-import type { GeomTool } from './tools';
 
-export type ToolStateMachine = {
-  tool: GeomTool;
+export type ToolStateMachine<T extends string> = {
+  tool: T;
   pendingIds: string[];
-  toolRef: { readonly current: GeomTool };
+  toolRef: { readonly current: T };
   pendingIdsRef: { readonly current: string[] };
-  setTool: (t: GeomTool) => void;
+  setTool: (t: T) => void;
   pushPending: (id: string) => void;
   clearPending: () => void;
 };
 
 /**
- * Tool + pending ids state machine.
- * - Tool change (setTool) clears pending — chuyển tool đang xây thì huỷ build dở.
+ * Tool + pending ids state machine, generic theo tool union type.
+ *
+ * - `setTool` clears pending — chuyển tool đang xây thì huỷ build dở.
  * - Ref + state song song để handler stable-closure read được giá trị mới
  *   mà UI vẫn re-render khi giá trị đổi.
+ *
+ * Shared cho geometry-2d (`GeomTool`) và graph-2d (`GraphTool`); thêm consumer
+ * mới chỉ cần pass union literal type.
  */
-export function useToolStateMachine(initial: GeomTool = 'move'): ToolStateMachine {
-  const [tool, setToolState] = useState<GeomTool>(initial);
+export function useToolStateMachine<T extends string>(initial: T): ToolStateMachine<T> {
+  const [tool, setToolState] = useState<T>(initial);
   const [pendingIds, setPendingIds] = useState<string[]>([]);
-  const toolRef = useRef<GeomTool>(initial);
+  const toolRef = useRef<T>(initial);
   const pendingIdsRef = useRef<string[]>([]);
 
-  const setTool = useCallback((t: GeomTool) => {
+  const setTool = useCallback((t: T) => {
     toolRef.current = t;
     pendingIdsRef.current = [];
     setToolState(t);
