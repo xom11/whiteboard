@@ -1,61 +1,25 @@
 // Theme-aware palette cho geometry stamps.
 //
-// Creation log của MiniBoard2D lưu attrs dưới dạng "sentinel" string
-// (`@stroke`, `@axis`, `@grid`, `@label`) thay vì màu cụ thể. Khi:
-//   1. Editor render real-time → resolve theo `isDark` của editor.
-//   2. Offscreen re-render (sau reload / sau khi switch theme) → resolve theo
-//      `isDark` của canvas Excalidraw hiện tại.
-//
-// Nhờ vậy stamp tự đổi màu khi user switch dark/light, giống các nét vẽ
-// native của Excalidraw.
+// Dùng `Theme2D` từ `core/scene/render/types2d` (cùng abstraction graph-2d).
+// JxgRenderer nhận theme qua constructor options và phân phối qua RenderCtx
+// đến mỗi kind handler — không cần sentinel string trong attrs nữa.
 
-export const themeStroke = (dark: boolean) => (dark ? '#e2e8f0' : '#0f172a');
-export const themeAxis = (dark: boolean) => (dark ? '#cbd5e1' : '#94a3b8');
-export const themeGrid = (dark: boolean) => (dark ? '#475569' : '#e2e8f0');
-export const themeLabel = (dark: boolean) => (dark ? '#e2e8f0' : '#000000');
+import { type Theme2D } from '../../../core/scene/render/types2d';
 
-export interface GeomPalette {
-  stroke: string;
-  axis: string;
-  grid: string;
-  label: string;
-}
+export const themeStroke = (dark: boolean): string => (dark ? '#e2e8f0' : '#0f172a');
+export const themeAxis = (dark: boolean): string => (dark ? '#cbd5e1' : '#94a3b8');
+export const themeGrid = (dark: boolean): string => (dark ? '#475569' : '#e2e8f0');
+export const themeLabel = (dark: boolean): string => (dark ? '#e2e8f0' : '#000000');
 
-export function paletteFor(isDark: boolean): GeomPalette {
+export function paletteFor(isDark: boolean): Theme2D {
+  const stroke = themeStroke(isDark);
   return {
-    stroke: themeStroke(isDark),
+    stroke,
+    fill: '#60a5fa',
     axis: themeAxis(isDark),
     grid: themeGrid(isDark),
     label: themeLabel(isDark),
+    // Geometry-2d điểm fill = stroke color (đồng bộ chấm điểm với nét vẽ).
+    pointFill: stroke,
   };
-}
-
-const SENTINEL_MAP: Record<string, keyof GeomPalette> = {
-  '@stroke': 'stroke',
-  '@axis': 'axis',
-  '@grid': 'grid',
-  '@label': 'label',
-};
-
-/**
- * Walk attrs object/array/string và thay sentinel bằng màu thực từ palette.
- * Đệ quy để hỗ trợ nested attrs (ví dụ polygon's `borders.strokeColor`).
- * Trả về object mới — input giữ nguyên (immutable, an toàn cho log).
- */
-export function resolveAttrColors<T>(attrs: T, palette: GeomPalette): T {
-  if (typeof attrs === 'string') {
-    const key = SENTINEL_MAP[attrs];
-    return (key ? palette[key] : attrs) as T;
-  }
-  if (Array.isArray(attrs)) {
-    return attrs.map((a) => resolveAttrColors(a, palette)) as unknown as T;
-  }
-  if (attrs && typeof attrs === 'object') {
-    const out: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(attrs as Record<string, unknown>)) {
-      out[k] = resolveAttrColors(v, palette);
-    }
-    return out as T;
-  }
-  return attrs;
 }

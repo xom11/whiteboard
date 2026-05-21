@@ -1,9 +1,9 @@
 import {
   paletteFor as palette2D,
-  type GeomPalette,
 } from '../../geometry-2d/editor/theme';
+import type { Theme2D } from '../../../core/scene/render/types2d';
 
-export type Geom3DPalette = GeomPalette & {
+export type Geom3DPalette = Theme2D & {
   view3dBg: string;
   axisX: string;
   axisY: string;

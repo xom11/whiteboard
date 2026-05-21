@@ -621,13 +621,8 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
       boardRef.current = board;
       freeBoard = cleanup;
 
-      const theme = paletteFor(isDarkRef.current);
       rendererRef.current = new JxgRenderer(store, board, {
-        theme: {
-          stroke: theme.stroke, fill: '#60a5fa',
-          axis: theme.axis, grid: theme.grid,
-          label: theme.label, pointFill: theme.stroke,
-        },
+        theme: paletteFor(isDarkRef.current),
       });
 
       // Ctrl/Cmd + wheel zoom (Excalidraw-style).
