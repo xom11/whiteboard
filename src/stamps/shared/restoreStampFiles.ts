@@ -46,6 +46,7 @@ async function buildFileForStamp(
   stamp: StampType,
 ): Promise<AddFileRecord | null> {
   try {
+    if (!stamp.matchesCustomData(customData)) return null;
     const svg = await stamp.renderSvgFromCustomData(customData);
     return { id: fileId, dataURL: svgToDataURL(svg), mimeType: 'image/svg+xml', created: Date.now() };
   } catch (err) {

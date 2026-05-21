@@ -4,18 +4,10 @@ import { geometry3dStamp } from '../geometry-3d';
 import { graph2dStamp } from '../graph-2d';
 import type { StampType } from './types';
 
-export { geometryStamp, type GeometryCustomData, isGeometryCustomData } from '../geometry-2d';
-export { latexStamp, type LatexCustomData, isLatexCustomData } from '../latex';
-export {
-  geometry3dStamp,
-  type Geometry3DCustomData,
-  isGeometry3DCustomData,
-} from '../geometry-3d';
-export {
-  graph2dStamp,
-  type Graph2DCustomData,
-  isGraph2DCustomData,
-} from '../graph-2d';
+export { geometryStamp, type GeometryCustomData } from '../geometry-2d';
+export { latexStamp, type LatexCustomData } from '../latex';
+export { geometry3dStamp, type Geometry3DCustomData } from '../geometry-3d';
+export { graph2dStamp, type Graph2DCustomData } from '../graph-2d';
 export type { StampType, BaseStampCustomData } from './types';
 
 /** Stamp ổn định, sẵn sàng production. */

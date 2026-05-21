@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { render } from '@testing-library/react';
 import { createRef } from 'react';
-import { geometry3dStamp, isGeometry3DCustomData } from '../index';
+import { geometry3dStamp } from '../index';
+import { isGeometry3DCustomData } from '../serialize';
 import { Geometry3DStampHost } from '../host';
 import type { StampHostHandle } from '../../shared/types';
 
@@ -65,7 +66,7 @@ describe('geometry3dStamp', () => {
     expect(typeof ref.current!.hasContent).toBe('function');
   });
 
-  it('re-exports isGeometry3DCustomData', () => {
+  it('isGeometry3DCustomData type guard importable from serialize', () => {
     expect(typeof isGeometry3DCustomData).toBe('function');
   });
 });

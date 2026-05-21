@@ -8,7 +8,6 @@ import type {
 } from '../shared/types';
 import { isLatexCustomData, type LatexCustomData } from './types';
 
-export { isLatexCustomData };
 export type { LatexCustomData };
 
 const LatexStampHost = lazy(() =>
@@ -21,7 +20,7 @@ const LatexIcon = (
   </svg>
 );
 
-export const latexStamp: StampType = {
+export const latexStamp: StampType<LatexCustomData> = {
   kind: 'latex',
   shortcutKey: 'l',
   toolbarLabel: 'L',

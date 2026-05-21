@@ -11,7 +11,6 @@ import {
   type GeometryCustomData,
 } from './types';
 
-export { isGeometryCustomData };
 export type { GeometryCustomData };
 
 const GeometryStampHost = lazy(() =>
@@ -27,7 +26,7 @@ const GeometryIcon: ReactNode = (
   </svg>
 );
 
-export const geometryStamp: StampType = {
+export const geometryStamp: StampType<GeometryCustomData> = {
   kind: 'geometry',
   shortcutKey: 'g',
   toolbarLabel: 'G',

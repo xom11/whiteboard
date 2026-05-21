@@ -18,10 +18,6 @@ export {
   type LatexCustomData,
   type Geometry3DCustomData,
   type Graph2DCustomData,
-  isGeometryCustomData,
-  isLatexCustomData,
-  isGeometry3DCustomData,
-  isGraph2DCustomData,
 } from './shared/registry';
 
 export type {

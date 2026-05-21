@@ -11,7 +11,6 @@ import type {
   StampType,
 } from '../shared/types';
 
-export { isGeometry3DCustomData };
 export type { Geometry3DCustomData };
 
 const Geometry3DStampHost = lazy(() =>
@@ -39,7 +38,7 @@ const Geometry3DIcon: ReactNode = (
   </svg>
 );
 
-export const geometry3dStamp: StampType = {
+export const geometry3dStamp: StampType<Geometry3DCustomData> = {
   kind: 'geometry3d',
   experimental: true,
   shortcutKey: 'd',

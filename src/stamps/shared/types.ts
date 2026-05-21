@@ -68,7 +68,7 @@ export type StampHostComponent = ComponentType<
  *
  * Main view dispatch generic: `<stamp.Host ... />` — không cần biết kind.
  */
-export interface StampType {
+export interface StampType<TCustomData extends BaseStampCustomData = BaseStampCustomData> {
   /** Unique kind. VD: 'geometry', 'latex'. Phải khớp với customData.kind. */
   kind: string;
   /** Phím tắt mở/đóng stamp (lowercase, 1 ký tự). VD: 'g', 'l'. */
@@ -83,7 +83,7 @@ export interface StampType {
   toolbarTestId?: string;
 
   /** Type guard: customData có thuộc về stamp này không. */
-  matchesCustomData(data: unknown): boolean;
+  matchesCustomData(data: unknown): data is TCustomData;
 
   /**
    * Re-render SVG từ customData. Dùng khi restore math-stamp file sau reload
@@ -91,7 +91,7 @@ export interface StampType {
    * element). SVG render với light palette (nét đậm) — Excalidraw tự đảo
    * màu trong dark mode qua CSS filter.
    */
-  renderSvgFromCustomData(data: unknown): Promise<string>;
+  renderSvgFromCustomData(data: TCustomData): Promise<string>;
 
   /**
    * Regenerate file SVG/PNG cho element thuộc stamp này khi reload từ persisted

@@ -1,5 +1,6 @@
 // src/stamps/graph-2d/__tests__/index.test.tsx
-import { graph2dStamp, isGraph2DCustomData } from '../index';
+import { graph2dStamp } from '../index';
+import { isGraph2DCustomData } from '../types';
 
 describe('graph2dStamp', () => {
   it('kind = "graph2d"', () => {

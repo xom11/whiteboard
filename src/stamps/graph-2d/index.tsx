@@ -6,7 +6,6 @@ import { parseSceneState } from './serialize';
 import { svgToImageElement } from '../shared/svgToImage';
 import type { RestoredStampFile, StampType } from '../shared/types';
 
-export { isGraph2DCustomData };
 export type { Graph2DCustomData };
 
 const Graph2DStampHost = lazy(() =>
@@ -30,7 +29,7 @@ const Graph2DIcon: ReactNode = (
   </svg>
 );
 
-export const graph2dStamp: StampType = {
+export const graph2dStamp: StampType<Graph2DCustomData> = {
   kind: 'graph2d',
   shortcutKey: 'h',
   toolbarLabel: '📈',
