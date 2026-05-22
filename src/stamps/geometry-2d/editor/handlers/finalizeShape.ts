@@ -166,6 +166,10 @@ export function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
       return;
     }
     case 'semicircle': {
+      if (ids[0] === ids[1]) {
+        ctx.toast?.('Cần 2 điểm phân biệt', { variant: 'warning', id: 'semicircle-dup' });
+        return;
+      }
       const id = freshId(ctx, 'arc');
       const label = ctx.nextLabel('arc');
       ctx.store.dispatch({
@@ -179,6 +183,10 @@ export function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
       return;
     }
     case 'arcCenter': {
+      if (ids[0] === ids[1] || ids[0] === ids[2] || ids[1] === ids[2]) {
+        ctx.toast?.('Cần 3 điểm phân biệt', { variant: 'warning', id: 'arc-center-dup' });
+        return;
+      }
       const id = freshId(ctx, 'arc');
       const label = ctx.nextLabel('arc');
       ctx.store.dispatch({
@@ -192,6 +200,21 @@ export function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
       return;
     }
     case 'arc3': {
+      if (ids[0] === ids[1] || ids[0] === ids[2] || ids[1] === ids[2]) {
+        ctx.toast?.('Cần 3 điểm phân biệt', { variant: 'warning', id: 'arc3-dup' });
+        return;
+      }
+      const picks = ctx.pendingRef.current;
+      const ax = picks[0].X(), ay = picks[0].Y();
+      const bx = picks[1].X(), by = picks[1].Y();
+      const cx = picks[2].X(), cy = picks[2].Y();
+      const cross = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+      if (Math.abs(cross) < 1e-6) {
+        ctx.toast?.('Không vẽ được cung qua 3 điểm thẳng hàng', {
+          variant: 'warning', id: 'arc3-collinear',
+        });
+        return;
+      }
       const id = freshId(ctx, 'arc');
       const label = ctx.nextLabel('arc');
       ctx.store.dispatch({
@@ -205,6 +228,10 @@ export function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
       return;
     }
     case 'sectorCenter': {
+      if (ids[0] === ids[1] || ids[0] === ids[2] || ids[1] === ids[2]) {
+        ctx.toast?.('Cần 3 điểm phân biệt', { variant: 'warning', id: 'sector-center-dup' });
+        return;
+      }
       const id = freshId(ctx, 'sec');
       const label = ctx.nextLabel('sector');
       ctx.store.dispatch({

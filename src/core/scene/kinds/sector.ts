@@ -35,7 +35,7 @@ const def: KindDef<SectorAttrs> = {
   describe: (obj, state) => {
     const L = (id: string) => labelOf(id, state);
     const c = obj.attrs.construction;
-    return `Hình quạt tâm ${L(c.center)} ${L(c.p1)}${L(c.p2)}`;
+    return `Hình quạt tâm ${L(c.center)} từ ${L(c.p1)} đến ${L(c.p2)}`;
   },
   render: (obj, ctx) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

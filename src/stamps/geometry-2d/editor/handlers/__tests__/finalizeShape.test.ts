@@ -45,6 +45,11 @@ describe('finalizeShape — circle tools Tier 2', () => {
 
   test('arc3 → ADD arc kind với construction by3Points', () => {
     const { ctx, dispatched } = mkCtx(['A', 'B', 'C']);
+    ctx.pendingRef.current = [
+      { X: () => 0, Y: () => 0 },
+      { X: () => 1, Y: () => 1 },
+      { X: () => 2, Y: () => 0 },
+    ] as any;
     finalizeShape(ctx, { key: 'arc3', label: '', hint: '', icon: null as any, group: 'circle', needs: 3 });
     expect(dispatched[0].payload.obj.kind).toBe('arc');
     expect(dispatched[0].payload.obj.attrs.construction).toEqual({ kind: 'by3Points', p1: 'A', p2: 'B', p3: 'C' });
@@ -55,5 +60,56 @@ describe('finalizeShape — circle tools Tier 2', () => {
     finalizeShape(ctx, { key: 'sectorCenter', label: '', hint: '', icon: null as any, group: 'circle', needs: 3 });
     expect(dispatched[0].payload.obj.kind).toBe('sector');
     expect(dispatched[0].payload.obj.attrs.construction).toEqual({ kind: 'byCenter', center: 'O', p1: 'A', p2: 'B' });
+  });
+
+  test('semicircle với 2 id trùng → toast + abort, không dispatch', () => {
+    const { ctx, dispatched } = mkCtx(['A', 'A']);
+    finalizeShape(ctx, { key: 'semicircle', label: '', hint: '', icon: null as any, group: 'circle', needs: 2 });
+    expect(dispatched).toHaveLength(0);
+    expect(ctx.toast).toHaveBeenCalledWith(
+      expect.stringMatching(/phân biệt/i),
+      expect.objectContaining({ variant: 'warning' }),
+    );
+  });
+
+  test('arcCenter với 2 id trùng → toast + abort', () => {
+    const { ctx, dispatched } = mkCtx(['O', 'O', 'B']);
+    finalizeShape(ctx, { key: 'arcCenter', label: '', hint: '', icon: null as any, group: 'circle', needs: 3 });
+    expect(dispatched).toHaveLength(0);
+    expect(ctx.toast).toHaveBeenCalled();
+  });
+
+  test('sectorCenter với 2 id trùng → toast + abort', () => {
+    const { ctx, dispatched } = mkCtx(['O', 'A', 'A']);
+    finalizeShape(ctx, { key: 'sectorCenter', label: '', hint: '', icon: null as any, group: 'circle', needs: 3 });
+    expect(dispatched).toHaveLength(0);
+    expect(ctx.toast).toHaveBeenCalled();
+  });
+
+  test('arc3 với 3 điểm thẳng hàng → toast collinear + abort', () => {
+    const { ctx, dispatched } = mkCtx(['A', 'B', 'C']);
+    ctx.pendingRef.current = [
+      { X: () => 0, Y: () => 0 },
+      { X: () => 1, Y: () => 0 },
+      { X: () => 2, Y: () => 0 },
+    ] as any;
+    finalizeShape(ctx, { key: 'arc3', label: '', hint: '', icon: null as any, group: 'circle', needs: 3 });
+    expect(dispatched).toHaveLength(0);
+    expect(ctx.toast).toHaveBeenCalledWith(
+      expect.stringMatching(/thẳng hàng/i),
+      expect.objectContaining({ variant: 'warning' }),
+    );
+  });
+
+  test('arc3 với 3 id trùng → toast distinct + abort', () => {
+    const { ctx, dispatched } = mkCtx(['A', 'A', 'A']);
+    ctx.pendingRef.current = [
+      { X: () => 0, Y: () => 0 },
+      { X: () => 0, Y: () => 0 },
+      { X: () => 0, Y: () => 0 },
+    ] as any;
+    finalizeShape(ctx, { key: 'arc3', label: '', hint: '', icon: null as any, group: 'circle', needs: 3 });
+    expect(dispatched).toHaveLength(0);
+    expect(ctx.toast).toHaveBeenCalled();
   });
 });
