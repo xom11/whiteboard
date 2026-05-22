@@ -12,6 +12,7 @@ import type { Store } from '../../../core/scene/store';
 import type { State } from '../../../core/scene/types';
 import type { GraphTool } from './tools';
 import { STAMP_PANEL_DESKTOP } from '../../shared/StampLeftPanel/constants';
+import { ToastProvider, ToastHost } from '../../shared/Toast';
 
 // ---------- Public handle ----------
 
@@ -64,7 +65,7 @@ export interface GraphBoardState {
 
 // ---------- Component ----------
 
-export const GraphEditorPanel = forwardRef<GraphEditorPanelHandle, GraphEditorPanelProps>(
+const GraphEditorPanelInner = forwardRef<GraphEditorPanelHandle, GraphEditorPanelProps>(
   function GraphEditorPanel(
     {
       initialState,
@@ -172,7 +173,7 @@ export const GraphEditorPanel = forwardRef<GraphEditorPanelHandle, GraphEditorPa
         style={wrapperStyle}
         className={[
           isDark ? 'theme--dark ' : '',
-          'flex flex-col overflow-hidden bg-white',
+          'relative flex flex-col overflow-hidden bg-white',
           isMobile
             ? 'h-full w-full'
             : `${STAMP_PANEL_DESKTOP} rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5`,
@@ -293,7 +294,18 @@ export const GraphEditorPanel = forwardRef<GraphEditorPanelHandle, GraphEditorPa
             </div>
           </footer>
         )}
+        <ToastHost />
       </div>
+    );
+  },
+);
+
+export const GraphEditorPanel = forwardRef<GraphEditorPanelHandle, GraphEditorPanelProps>(
+  function GraphEditorPanel(props, ref) {
+    return (
+      <ToastProvider>
+        <GraphEditorPanelInner {...props} ref={ref} />
+      </ToastProvider>
     );
   },
 );

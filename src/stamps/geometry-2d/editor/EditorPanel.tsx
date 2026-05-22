@@ -8,6 +8,7 @@ import { TransformParamPopover } from './TransformParamPopover';
 import { UndoIcon, RedoIcon } from './icons';
 import type { Store } from '../../../core/scene/store';
 import { STAMP_PANEL_DESKTOP } from '../../shared/StampLeftPanel/constants';
+import { ToastProvider, ToastHost } from '../../shared/Toast';
 
 interface Props {
   initialState: SerializedBoard | null;
@@ -55,8 +56,8 @@ export interface GeometryEditorPanelHandle {
   selectObject: (id: string | null) => void;
 }
 
-export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
-  function GeometryEditorPanel({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer, onUndo, onRedo, canUndo, canRedo, onStoreReady, onSelectionChange }, ref) {
+const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
+  function GeometryEditorPanelInner({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer, onUndo, onRedo, canUndo, canRedo, onStoreReady, onSelectionChange }, ref) {
     const handleRef = useRef<MiniBoardHandle | null>(null);
     const [ready, setReady] = useState(false);
     const [hasContent, setHasContent] = useState(false);
@@ -166,7 +167,7 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
         style={wrapperStyle}
         className={[
           isDark ? 'theme--dark ' : '',
-          'flex flex-col overflow-hidden bg-white',
+          'relative flex flex-col overflow-hidden bg-white',
           isMobile
             ? 'h-full w-full'
             : `${STAMP_PANEL_DESKTOP} rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5`,
@@ -336,7 +337,18 @@ export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
             </div>
           </footer>
         )}
+        <ToastHost />
       </div>
+    );
+  },
+);
+
+export const GeometryEditorPanel = forwardRef<GeometryEditorPanelHandle, Props>(
+  function GeometryEditorPanel(props, ref) {
+    return (
+      <ToastProvider>
+        <GeometryEditorPanelInner {...props} ref={ref} />
+      </ToastProvider>
     );
   },
 );

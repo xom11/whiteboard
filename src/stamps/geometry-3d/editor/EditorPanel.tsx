@@ -23,6 +23,7 @@ import {
 } from '../serialize';
 import { renderGeometry3DSvgFromState } from '../render';
 import { STAMP_PANEL_DESKTOP } from '../../shared/StampLeftPanel/constants';
+import { ToastProvider, ToastHost } from '../../shared/Toast';
 
 export interface EditorPanelProps {
   isDark?: boolean;
@@ -60,7 +61,7 @@ export interface EditorPanelHandle {
   highlight: (id: string | null) => void;
 }
 
-export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>(
+const EditorPanelInner = React.forwardRef<EditorPanelHandle, EditorPanelProps>(
   function EditorPanel(props, ref) {
     const {
       isDark: isDarkProp,
@@ -281,7 +282,7 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
         style={dialogStyle}
         className={[
           isDark ? 'theme--dark ' : '',
-          'flex flex-col overflow-hidden bg-white',
+          'relative flex flex-col overflow-hidden bg-white',
           isMobile
             ? 'h-full w-full'
             : `${STAMP_PANEL_DESKTOP} rounded-lg border border-slate-300 shadow-2xl ring-1 ring-black/5`,
@@ -372,7 +373,18 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
             </div>
           </footer>
         )}
+        <ToastHost />
       </div>
+    );
+  },
+);
+
+export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>(
+  function EditorPanel(props, ref) {
+    return (
+      <ToastProvider>
+        <EditorPanelInner {...props} ref={ref} />
+      </ToastProvider>
     );
   },
 );
