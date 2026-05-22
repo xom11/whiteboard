@@ -23,10 +23,12 @@ export function handleMultiClickTool(
   if (toolDef.accepts) {
     // --- Mode A: strict, order-flexible ---
     const usedKinds = ctx.pendingRef.current.map((p) => objKind(p));
-    const remaining: Array<'point' | 'line' | 'circle' | 'any'> = [...toolDef.accepts];
+    const remaining: Array<'point' | 'line' | 'circle' | 'any' | 'lineOrCircle'> = [...toolDef.accepts];
     for (const u of usedKinds) {
       if (u === 'other') continue;
-      const i = remaining.indexOf(u);
+      // 'lineOrCircle' slot có thể được lấp bởi line hoặc circle.
+      let i = remaining.indexOf(u);
+      if (i < 0 && (u === 'line' || u === 'circle')) i = remaining.indexOf('lineOrCircle');
       if (i >= 0) remaining.splice(i, 1);
     }
     const strictPoint = hits.find((o) => objKind(o) === 'point') ?? null;
@@ -35,6 +37,9 @@ export function handleMultiClickTool(
     if (remaining.includes('point') && strictPoint) pick = strictPoint;
     else if (remaining.includes('line') && lineHit) pick = lineHit;
     else if (remaining.includes('circle') && circleHit) pick = circleHit;
+    else if (remaining.includes('lineOrCircle') && (lineHit || circleHit)) {
+      pick = lineHit ?? circleHit;
+    }
     else if (remaining.includes('any') && (strictPoint || lineHit || circleHit)) {
       pick = strictPoint ?? lineHit ?? circleHit;
     } else if (remaining.includes('point')) {
@@ -56,7 +61,11 @@ export function handleMultiClickTool(
     }
     if (!pick) {
       const needs = remaining.map((k) =>
-        k === 'point' ? 'một điểm' : k === 'line' ? 'một đường/đoạn' : k === 'circle' ? 'một đường tròn' : 'một đối tượng',
+        k === 'point' ? 'một điểm'
+        : k === 'line' ? 'một đường/đoạn'
+        : k === 'circle' ? 'một đường tròn'
+        : k === 'lineOrCircle' ? 'một đường hoặc đường tròn'
+        : 'một đối tượng',
       );
       ctx.flashWarn(`Còn cần click vào ${needs.join(' + ')} có sẵn`);
       return;

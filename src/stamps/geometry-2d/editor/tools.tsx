@@ -14,6 +14,7 @@ export type GeomTool =
   | 'select'
   | 'point'
   | 'midpoint'
+  | 'intersect'
   | 'segment'
   | 'line'
   | 'ray'
@@ -56,8 +57,8 @@ export interface ToolDef {
     | 'transform';
   /** Số click cần trước khi action fire. -1 = mở (polygon đóng bằng click lại điểm đầu). */
   needs: number;
-  /** Loại object accept ở mỗi slot. 'any' = point hoặc non-point. */
-  accepts?: Array<'point' | 'line' | 'circle' | 'any'>;
+  /** Loại object accept ở mỗi slot. 'any' = point hoặc non-point. 'lineOrCircle' = line hoặc circle (loại trừ point). */
+  accepts?: Array<'point' | 'line' | 'circle' | 'any' | 'lineOrCircle'>;
 }
 
 // ============== Tool icons — inline SVG (GeoGebra-inspired, MIT-clean redraw) ==============
@@ -106,6 +107,13 @@ const Icon = {
       <circle cx="4" cy="12" r="1.7" fill={C_POINT}/>
       <circle cx="20" cy="12" r="1.7" fill={C_POINT}/>
       <circle cx="12" cy="12" r="2.5" fill={C_POINT}/>
+    </svg>
+  ),
+  intersect: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
+      <path d="M3 5 L21 19" stroke="currentColor" strokeWidth="1.6"/>
+      <path d="M21 5 L3 19" stroke="currentColor" strokeWidth="1.6"/>
+      <circle cx="12" cy="12" r="2.6" fill={C_CONSTRUCT}/>
     </svg>
   ),
 
@@ -310,6 +318,7 @@ export const TOOLS: ToolDef[] = [
   { key: 'select', label: 'Chọn', hint: 'Click để chọn 1 / Shift+click để bỏ thêm / Kéo nền để khoanh vùng / DEL để xoá', icon: Icon.select, group: 'move', needs: 0 },
   { key: 'point', label: 'Điểm mới', hint: 'Click để thêm điểm', icon: Icon.point, group: 'point', needs: 1 },
   { key: 'midpoint', label: 'Trung điểm', hint: 'Click 2 điểm có sẵn', icon: Icon.midpoint, group: 'point', needs: 2, accepts: ['point', 'point'] },
+  { key: 'intersect', label: 'Giao điểm của 2 đối tượng', hint: 'Click 2 đường/đường tròn có sẵn', icon: Icon.intersect, group: 'point', needs: 2, accepts: ['lineOrCircle', 'lineOrCircle'] },
   { key: 'segment', label: 'Đoạn thẳng', hint: 'Click 2 điểm', icon: Icon.segment, group: 'line', needs: 2 },
   { key: 'line', label: 'Đường thẳng qua 2 điểm', hint: 'Click 2 điểm', icon: Icon.line, group: 'line', needs: 2 },
   { key: 'ray', label: 'Tia qua 2 điểm', hint: 'Click 2 điểm', icon: Icon.ray, group: 'line', needs: 2 },
@@ -424,5 +433,6 @@ export function acceptMatches(
   const a = tool.accepts[slot];
   if (!a) return false;
   if (a === 'any') return kind !== 'other';
+  if (a === 'lineOrCircle') return kind === 'line' || kind === 'circle';
   return a === kind;
 }
