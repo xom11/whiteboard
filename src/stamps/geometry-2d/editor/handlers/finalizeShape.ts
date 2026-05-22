@@ -165,6 +165,58 @@ export function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
       });
       return;
     }
+    case 'semicircle': {
+      const id = freshId(ctx, 'arc');
+      const label = ctx.nextLabel('arc');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: {
+          obj: mkSceneObj(id, 'arc', label, {
+            construction: { kind: 'semicircle', p1: ids[0], p2: ids[1] },
+          }),
+        },
+      });
+      return;
+    }
+    case 'arcCenter': {
+      const id = freshId(ctx, 'arc');
+      const label = ctx.nextLabel('arc');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: {
+          obj: mkSceneObj(id, 'arc', label, {
+            construction: { kind: 'byCenter', center: ids[0], p1: ids[1], p2: ids[2] },
+          }),
+        },
+      });
+      return;
+    }
+    case 'arc3': {
+      const id = freshId(ctx, 'arc');
+      const label = ctx.nextLabel('arc');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: {
+          obj: mkSceneObj(id, 'arc', label, {
+            construction: { kind: 'by3Points', p1: ids[0], p2: ids[1], p3: ids[2] },
+          }),
+        },
+      });
+      return;
+    }
+    case 'sectorCenter': {
+      const id = freshId(ctx, 'sec');
+      const label = ctx.nextLabel('sector');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: {
+          obj: mkSceneObj(id, 'sector', label, {
+            construction: { kind: 'byCenter', center: ids[0], p1: ids[1], p2: ids[2] },
+          }),
+        },
+      });
+      return;
+    }
     case 'midpoint': {
       const id = freshId(ctx, 'mp');
       const label = ctx.nextLabel('point');
