@@ -44,7 +44,12 @@ export function jxgIdToSceneId(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const elements = (renderer as any).elements as Map<string, JxgObj> | undefined;
   if (!elements) return null;
+  // Direct fallback: idMap rebuild qua store.subscribe có thể chạy TRƯỚC
+  // JxgRenderer subscriber (cùng store, đăng ký theo order useEffect), nên
+  // idMap luôn thiếu entry của object vừa được renderer tạo trong dispatch
+  // hiện tại. Walk renderer.elements để bù.
   for (const [sid, el] of elements) {
+    if (el === jxgObj) return sid;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const borders = (el as any)?.borders;
     if (Array.isArray(borders)) {
