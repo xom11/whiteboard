@@ -26,6 +26,10 @@ export type GeomTool =
   | 'polygon'
   | 'regularPolygon'
   | 'circleCenter'
+  | 'semicircle'
+  | 'arcCenter'
+  | 'arc3'
+  | 'sectorCenter'
   | 'circle3'
   | 'tangent'
   | 'angle'
@@ -206,6 +210,48 @@ const Icon = {
       <circle cx="19" cy="13" r="1.7" fill={C_POINT}/>
     </svg>
   ),
+  semicircle: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
+      {/* Nửa đường tròn emerald-arc, 2 endpoint blue ở đáy */}
+      <path d="M 4 16 A 8 8 0 0 1 20 16" stroke={C_ARC} strokeWidth="1.6" fill="none"/>
+      <line x1="4" y1="16" x2="20" y2="16" stroke="currentColor" strokeWidth="1.2" strokeDasharray="2 1.6"/>
+      <circle cx="4" cy="16" r="1.9" fill={C_POINT}/>
+      <circle cx="20" cy="16" r="1.9" fill={C_POINT}/>
+    </svg>
+  ),
+  arcCenter: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
+      {/* Tâm blue (lớn) + cung emerald + 2 đầu cung blue (nhỏ), 2 bán kính nét đứt */}
+      <path d="M 6 6 A 9 9 0 0 1 18 18" stroke={C_ARC} strokeWidth="1.7" fill="none"/>
+      <line x1="12" y1="12" x2="6" y2="6" stroke="currentColor" strokeWidth="1" strokeDasharray="1.5 1.5" opacity="0.5"/>
+      <line x1="12" y1="12" x2="18" y2="18" stroke="currentColor" strokeWidth="1" strokeDasharray="1.5 1.5" opacity="0.5"/>
+      <circle cx="12" cy="12" r="2" fill={C_POINT}/>
+      <circle cx="6" cy="6" r="1.4" fill={C_POINT}/>
+      <circle cx="18" cy="18" r="1.4" fill={C_POINT}/>
+    </svg>
+  ),
+  arc3: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
+      {/* 3 điểm blue + cung emerald đi qua */}
+      <path d="M 4 18 Q 12 4 20 18" stroke={C_ARC} strokeWidth="1.7" fill="none"/>
+      <circle cx="4" cy="18" r="1.7" fill={C_POINT}/>
+      <circle cx="12" cy="7.5" r="1.7" fill={C_POINT}/>
+      <circle cx="20" cy="18" r="1.7" fill={C_POINT}/>
+    </svg>
+  ),
+  sectorCenter: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinejoin="round">
+      {/* Tâm blue + 2 bán kính + cung emerald + fill orange */}
+      <path d="M 12 12 L 5 7 A 8.6 8.6 0 0 1 19 7 Z"
+            fill={C_FILL} fillOpacity="0.25"
+            stroke={C_ARC} strokeWidth="1.6"/>
+      <line x1="12" y1="12" x2="5" y2="7" stroke="currentColor" strokeWidth="1.3"/>
+      <line x1="12" y1="12" x2="19" y2="7" stroke="currentColor" strokeWidth="1.3"/>
+      <circle cx="12" cy="12" r="1.8" fill={C_POINT}/>
+      <circle cx="5" cy="7" r="1.4" fill={C_POINT}/>
+      <circle cx="19" cy="7" r="1.4" fill={C_POINT}/>
+    </svg>
+  ),
   circle3: (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
       <circle cx="12" cy="13" r="8" stroke="currentColor" strokeWidth="1.5"/>
@@ -330,6 +376,10 @@ export const TOOLS: ToolDef[] = [
   { key: 'polygon', label: 'Đa giác', hint: 'Click các điểm, click lại điểm đầu để đóng', icon: Icon.polygon, group: 'polygon', needs: -1 },
   { key: 'regularPolygon', label: 'Đa giác đều', hint: 'Click 2 điểm rồi nhập số cạnh', icon: Icon.regularPolygon, group: 'polygon', needs: 2, accepts: ['point', 'point'] },
   { key: 'circleCenter', label: 'Đường tròn (tâm + điểm)', hint: 'Click tâm rồi 1 điểm trên đường tròn', icon: Icon.circleCenter, group: 'circle', needs: 2 },
+  { key: 'semicircle', label: 'Nửa đường tròn (đường kính)', hint: 'Click 2 điểm — bán nguyệt qua đường kính', icon: Icon.semicircle, group: 'circle', needs: 2 },
+  { key: 'arcCenter', label: 'Cung tròn (tâm + 2 điểm)', hint: 'Click tâm O → A → B (cung từ A đến B)', icon: Icon.arcCenter, group: 'circle', needs: 3 },
+  { key: 'arc3', label: 'Cung tròn qua 3 điểm', hint: 'Click 3 điểm trên cung', icon: Icon.arc3, group: 'circle', needs: 3 },
+  { key: 'sectorCenter', label: 'Hình quạt (tâm + 2 điểm)', hint: 'Click tâm O → A → B (quạt OAB)', icon: Icon.sectorCenter, group: 'circle', needs: 3 },
   { key: 'circle3', label: 'Đường tròn qua 3 điểm', hint: 'Click 3 điểm', icon: Icon.circle3, group: 'circle', needs: 3 },
   { key: 'tangent', label: 'Tiếp tuyến', hint: 'Click 1 điểm + 1 đường tròn có sẵn', icon: Icon.tangent, group: 'circle', needs: 2, accepts: ['point', 'circle'] },
   { key: 'angle', label: 'Góc', hint: 'Click 3 điểm có sẵn (đỉnh ở giữa)', icon: Icon.angle, group: 'measure', needs: 3, accepts: ['point', 'point', 'point'] },
