@@ -16,6 +16,8 @@ import './line';
 import './ray';
 import './vector';
 import './circle';
+import './arc';
+import './sector';
 import './polygon';
 import './intersection';
 import './angle';

@@ -191,4 +191,72 @@ describe('JxgRenderer (2D)', () => {
       expect(removed.length).toBeGreaterThanOrEqual(before + 2);
     });
   });
+
+  test('ADD arc semicircle → board.create("semicircle", [pA, pB], ...)', () => {
+    const store = createStore(createEmptyState('2d'));
+    const { board, created } = mockBoard();
+    new JxgRenderer(store, board as never);
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('A', 0, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('B', 2, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: {
+      id: 'arc1', kind: 'arc', label: 'arc1', visible: true, locked: false,
+      layer: 'default', schemaVersion: 1,
+      attrs: { construction: { kind: 'semicircle', p1: 'A', p2: 'B' } },
+    } } });
+    const arcEl = created.find((e) => e.type === 'semicircle');
+    expect(arcEl).toBeTruthy();
+    expect(arcEl.parents).toHaveLength(2);
+  });
+
+  test('ADD arc byCenter → board.create("arc", [O, A, B], ...)', () => {
+    const store = createStore(createEmptyState('2d'));
+    const { board, created } = mockBoard();
+    new JxgRenderer(store, board as never);
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('O', 0, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('A', 2, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('B', 0, 2) } });
+    store.dispatch({ type: 'ADD', payload: { obj: {
+      id: 'arc2', kind: 'arc', label: 'arc2', visible: true, locked: false,
+      layer: 'default', schemaVersion: 1,
+      attrs: { construction: { kind: 'byCenter', center: 'O', p1: 'A', p2: 'B' } },
+    } } });
+    const arcEl = created.find((e) => e.type === 'arc');
+    expect(arcEl).toBeTruthy();
+    expect(arcEl.parents).toHaveLength(3);
+  });
+
+  test('ADD arc by3Points → board.create("circumcirclearc", [A, B, C], ...)', () => {
+    const store = createStore(createEmptyState('2d'));
+    const { board, created } = mockBoard();
+    new JxgRenderer(store, board as never);
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('A', 0, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('B', 1, 1) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('C', 2, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: {
+      id: 'arc3', kind: 'arc', label: 'arc3', visible: true, locked: false,
+      layer: 'default', schemaVersion: 1,
+      attrs: { construction: { kind: 'by3Points', p1: 'A', p2: 'B', p3: 'C' } },
+    } } });
+    const arcEl = created.find((e) => e.type === 'circumcirclearc');
+    expect(arcEl).toBeTruthy();
+    expect(arcEl.parents).toHaveLength(3);
+  });
+
+  test('ADD sector byCenter → board.create("sector", [O, A, B], ...)', () => {
+    const store = createStore(createEmptyState('2d'));
+    const { board, created } = mockBoard();
+    new JxgRenderer(store, board as never);
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('O', 0, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('A', 2, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('B', 0, 2) } });
+    store.dispatch({ type: 'ADD', payload: { obj: {
+      id: 'sec1', kind: 'sector', label: 'sec1', visible: true, locked: false,
+      layer: 'default', schemaVersion: 1,
+      attrs: { construction: { kind: 'byCenter', center: 'O', p1: 'A', p2: 'B' } },
+    } } });
+    const secEl = created.find((e) => e.type === 'sector');
+    expect(secEl).toBeTruthy();
+    expect(secEl.parents).toHaveLength(3);
+    expect(secEl.attrs.fillColor).toBe('#f59e0b');
+  });
 });
