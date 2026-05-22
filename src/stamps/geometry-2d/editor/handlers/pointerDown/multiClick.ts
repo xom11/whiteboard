@@ -39,7 +39,20 @@ export function handleMultiClickTool(
       pick = strictPoint ?? lineHit ?? circleHit;
     } else if (remaining.includes('point')) {
       const near = ctx.findNearestPointJxg(e, 12);
-      if (near) pick = near;
+      if (near) {
+        pick = near;
+      } else {
+        // Mode A tool nhận 'point' + click khu vực rỗng → tự tạo free point
+        // tại vị trí click. Đỡ cho user phải đổi sang tool 'point' rồi quay lại
+        // (tangent / perpendicular / parallel / angleBisector ...). Các slot
+        // khác (line/circle) vẫn yêu cầu hit object có sẵn.
+        //
+        // pickId set trực tiếp từ return value của dispatchAddFreePoint vì
+        // reverse-map (jxgIdToSceneRef) được rebuild qua store subscribe →
+        // chưa sync xong tại thời điểm này; gọi jxgIdToSceneId(pick) sẽ ra null.
+        pickId = dispatchAddFreePoint(ctx, x, y);
+        pick = ctx.jxgFromSceneId(pickId);
+      }
     }
     if (!pick) {
       const needs = remaining.map((k) =>
@@ -52,7 +65,7 @@ export function handleMultiClickTool(
       ctx.flashWarn('Đã chọn đối tượng này — chọn đối tượng khác');
       return;
     }
-    pickId = ctx.jxgIdToSceneId(pick);
+    if (!pickId) pickId = ctx.jxgIdToSceneId(pick);
   } else {
     // --- Mode B: lenient, all slots want a point ---
     const snapped = bestHit && objKind(bestHit) === 'point' ? bestHit : ctx.findNearestPointJxg(e, 12);
