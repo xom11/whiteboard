@@ -17,7 +17,7 @@ export type LineConstruction =
   | { kind: 'parallel'; throughPoint: string; toLine: string }
   | { kind: 'perpBisector'; p1: string; p2: string }
   | { kind: 'angleBisector'; p1: string; vertex: string; p2: string }
-  | { kind: 'tangent'; throughPoint: string; toCircle: string };
+  | { kind: 'tangent'; throughPoint: string; toCircle: string; branch?: 0 | 1 | 'on' };
 
 export type LineAttrs = {
   /** Hai-điểm fallback — bắt buộc khi không có `construction`. */
@@ -110,9 +110,21 @@ const def: KindDef<LineAttrs> = {
         return board.create('parallel', [toLine, through], baseOpts);
       }
       case 'perpBisector': {
+        // JSXGraph 1.12 không có element 'perpendicularbisector' — compose từ
+        // midpoint + helper line + perpendicular. Helper objects được lưu vào
+        // `_helpers` để JxgRenderer.remove() dọn dẹp khi line bị xoá.
         const p1 = ctx.resolveRef(c.p1);
         const p2 = ctx.resolveRef(c.p2);
-        return board.create('perpendicularbisector', [p1, p2], baseOpts);
+        const mid = board.create('midpoint', [p1, p2], {
+          visible: false, withLabel: false, fixed: true, name: '',
+        });
+        const helperLine = board.create('line', [p1, p2], {
+          visible: false, withLabel: false, fixed: true, name: '',
+          straightFirst: true, straightLast: true,
+        });
+        const bisector = board.create('perpendicular', [helperLine, mid], baseOpts);
+        (bisector as Record<string, unknown>)._helpers = [mid, helperLine];
+        return bisector;
       }
       case 'angleBisector': {
         const p1 = ctx.resolveRef(c.p1);
@@ -123,16 +135,40 @@ const def: KindDef<LineAttrs> = {
       case 'tangent': {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const through = ctx.resolveRef(c.throughPoint) as any;
-        const toCircle = ctx.resolveRef(c.toCircle);
-        // JSXGraph: tangent(glider) where glider lives on the conic. Place an
-        // invisible glider near the `throughPoint` so the tangent direction
-        // matches the user's pick.
-        const glider = board.create('glider', [through.X(), through.Y(), toCircle], {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const toCircle = ctx.resolveRef(c.toCircle) as any;
+        const branch = c.branch ?? 'on';
+
+        if (branch === 'on') {
+          // P trên đường tròn (hoặc legacy data trước khi có branch): glider
+          // tại P + JXG tangent element. Backward-compat với data cũ.
+          const glider = board.create('glider', [through.X(), through.Y(), toCircle], {
+            visible: false, withLabel: false, fixed: true, name: '',
+          });
+          const tangent = board.create('tangent', [glider], baseOpts);
+          (tangent as Record<string, unknown>)._helpers = [glider];
+          return tangent;
+        }
+
+        // branch 0 | 1: dựng qua Thales-circle intersection.
+        //   M = midpoint(O, P). Auxiliary circle tâm M qua O và P → 2 giao
+        //   điểm với đường tròn gốc là 2 tiếp điểm T (∠OTP = 90°).
+        //   Tangent line = line(P, T_branch).
+        const center = toCircle.center;
+        const mid = board.create('midpoint', [center, through], {
           visible: false, withLabel: false, fixed: true, name: '',
         });
-        const tangent = board.create('tangent', [glider], baseOpts);
-        // JxgRenderer.remove() reads `_helpers` to dispose internal artefacts.
-        (tangent as Record<string, unknown>)._helpers = [glider];
+        const thales = board.create('circle', [mid, through], {
+          visible: false, withLabel: false, fixed: true,
+          strokeOpacity: 0, fillOpacity: 0,
+        });
+        const touch = board.create('intersection', [thales, toCircle, branch], {
+          visible: false, withLabel: false, fixed: true, name: '',
+        });
+        const tangent = board.create('line', [through, touch], {
+          ...baseOpts, straightFirst: true, straightLast: true,
+        });
+        (tangent as Record<string, unknown>)._helpers = [mid, thales, touch];
         return tangent;
       }
     }

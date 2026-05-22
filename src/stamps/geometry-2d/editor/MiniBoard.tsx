@@ -71,10 +71,12 @@ interface Props {
   onReady?: () => void;
   initialState: SerializedBoard | null;
   isDark?: boolean;
+  /** Toast hook từ EditorPanel ToastProvider — handlers dùng cho invalid construction. */
+  toast?: import('../../shared/Toast').ShowToastFn;
 }
 
 export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard2D(
-  { onReady, initialState, isDark },
+  { onReady, initialState, isDark, toast },
   ref,
 ) {
   const isDarkRef = useRef(!!isDark); isDarkRef.current = !!isDark;
@@ -260,6 +262,7 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
     clearPreviewSegs,
     refreshPreview,
     flashWarn,
+    toast,
     emitTransform: emitTransform as HandlerCtx['emitTransform'],
     emitSelect: emitSelect as HandlerCtx['emitSelect'],
     setPendingCount: () => { /* derived from toolSM */ },

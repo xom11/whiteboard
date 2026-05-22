@@ -61,6 +61,18 @@ describe('kinds/line (2D)', () => {
       } as never)).toEqual(['P', 'C']);
     });
 
+    test('dependsOn tangent ignores branch field', () => {
+      expect(def.dependsOn({
+        construction: { kind: 'tangent', throughPoint: 'P', toCircle: 'C', branch: 0 },
+      } as never)).toEqual(['P', 'C']);
+      expect(def.dependsOn({
+        construction: { kind: 'tangent', throughPoint: 'P', toCircle: 'C', branch: 1 },
+      } as never)).toEqual(['P', 'C']);
+      expect(def.dependsOn({
+        construction: { kind: 'tangent', throughPoint: 'P', toCircle: 'C', branch: 'on' },
+      } as never)).toEqual(['P', 'C']);
+    });
+
     // Polygon edges (sub-segments do JSXGraph auto-tạo) không có scene id riêng.
     // Synthetic id "<polyId>:border:<i>" cho phép construct tools tham chiếu
     // cạnh đa giác như một line; nhưng dependency graph cần biết line phụ thuộc

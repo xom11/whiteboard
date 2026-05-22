@@ -1,5 +1,6 @@
 import type { Store } from '../../../../core/scene';
 import type { GeomTool } from '../tools';
+import type { ShowToastFn } from '../../../shared/Toast';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type JxgObj = any;
@@ -48,6 +49,12 @@ export interface HandlerCtx {
   clearPreviewSegs: () => void;
   refreshPreview: () => void;
   flashWarn: (msg: string) => void;
+  /**
+   * Stamp-editor toast. Optional vì handler unit-test xây HandlerCtx mà
+   * không có ToastProvider. Dùng cho invalid-construction feedback (vd
+   * tangent: P trong đường tròn).
+   */
+  toast?: ShowToastFn;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   emitTransform: (info: any | null) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

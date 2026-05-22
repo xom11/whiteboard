@@ -208,10 +208,13 @@ const Icon = {
   ),
   tangent: (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
-      <circle cx="10" cy="14" r="5.5" stroke="currentColor" strokeWidth="1.5"/>
-      <line x1="2" y1="22" x2="22" y2="2" stroke={C_CONSTRUCT} strokeWidth="1.5"/>
-      <circle cx="20.5" cy="3.5" r="1.7" fill={C_POINT}/>
-      <circle cx="13.9" cy="10.1" r="1.5" fill={C_POINT}/>
+      <circle cx="9" cy="14" r="5" stroke="currentColor" strokeWidth="1.5"/>
+      {/* External point top-right + 2 tangent lines touching circle at T1, T2 */}
+      <line x1="20" y1="5" x2="11.1" y2="10.6" stroke={C_CONSTRUCT} strokeWidth="1.5"/>
+      <line x1="20" y1="5" x2="13.5" y2="17.5" stroke={C_CONSTRUCT} strokeWidth="1.5"/>
+      <circle cx="20" cy="5" r="1.7" fill={C_POINT}/>
+      <circle cx="11.1" cy="10.6" r="1.1" fill={C_POINT}/>
+      <circle cx="13.5" cy="17.5" r="1.1" fill={C_POINT}/>
     </svg>
   ),
 

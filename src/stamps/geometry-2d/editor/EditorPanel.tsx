@@ -8,7 +8,7 @@ import { TransformParamPopover } from './TransformParamPopover';
 import { UndoIcon, RedoIcon } from './icons';
 import type { Store } from '../../../core/scene/store';
 import { STAMP_PANEL_DESKTOP } from '../../shared/StampLeftPanel/constants';
-import { ToastProvider, ToastHost } from '../../shared/Toast';
+import { ToastProvider, ToastHost, useToast } from '../../shared/Toast';
 
 interface Props {
   initialState: SerializedBoard | null;
@@ -58,6 +58,7 @@ export interface GeometryEditorPanelHandle {
 
 const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
   function GeometryEditorPanelInner({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer, onUndo, onRedo, canUndo, canRedo, onStoreReady, onSelectionChange }, ref) {
+    const { showToast } = useToast();
     const handleRef = useRef<MiniBoardHandle | null>(null);
     const [ready, setReady] = useState(false);
     const [hasContent, setHasContent] = useState(false);
@@ -247,6 +248,7 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
               onReady={handleReady}
               initialState={initialState}
               isDark={isDark}
+              toast={showToast}
             />
           </div>
         </div>

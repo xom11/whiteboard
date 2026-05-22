@@ -1,6 +1,7 @@
 import { objKind, type ToolDef } from '../tools';
 import type { HandlerCtx } from './ctx';
 import { freshId, mkSceneObj } from './utils';
+import { classifyPointVsCircle } from './classifyPointVsCircle';
 
 // ─── Finalize shape (dispatch ADD per tool) ──────────────────────────────────
 
@@ -78,17 +79,45 @@ export function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
       return;
     }
     case 'tangent': {
-      const throughPoint = findPickIdByKind(ctx, 'point');
-      const toCircle = findPickIdByKind(ctx, 'circle');
-      if (!throughPoint || !toCircle) return;
-      const id = freshId(ctx, 't');
-      const label = ctx.nextLabel('line');
-      ctx.store.dispatch({
-        type: 'ADD',
-        payload: { obj: mkSceneObj(id, 'line', label, {
-          construction: { kind: 'tangent', throughPoint, toCircle },
-        }) },
-      });
+      const throughId = findPickIdByKind(ctx, 'point');
+      const circleId = findPickIdByKind(ctx, 'circle');
+      if (!throughId || !circleId) return;
+      // Lấy JXG object tương ứng để classify vị trí P vs đường tròn.
+      // pendingRef + pendingIdsRef cùng index → match qua indexOf id.
+      const picks = ctx.pendingRef.current;
+      const ids = ctx.pendingIdsRef.current;
+      const through = picks[ids.indexOf(throughId)];
+      const circle = picks[ids.indexOf(circleId)];
+      const pos = classifyPointVsCircle(through, circle);
+      if (pos === 'inside') {
+        ctx.toast?.('Điểm nằm trong đường tròn — không có tiếp tuyến', {
+          variant: 'warning',
+          id: 'tangent-invalid-inside',
+        });
+        return;
+      }
+      if (pos === 'on') {
+        const id = freshId(ctx, 't');
+        const label = ctx.nextLabel('line');
+        ctx.store.dispatch({
+          type: 'ADD',
+          payload: { obj: mkSceneObj(id, 'line', label, {
+            construction: { kind: 'tangent', throughPoint: throughId, toCircle: circleId, branch: 'on' },
+          }) },
+        });
+        return;
+      }
+      // outside → 2 scene element riêng, mỗi cái 1 nhánh tiếp tuyến.
+      for (const branch of [0, 1] as const) {
+        const id = freshId(ctx, 't');
+        const label = ctx.nextLabel('line');
+        ctx.store.dispatch({
+          type: 'ADD',
+          payload: { obj: mkSceneObj(id, 'line', label, {
+            construction: { kind: 'tangent', throughPoint: throughId, toCircle: circleId, branch },
+          }) },
+        });
+      }
       return;
     }
     case 'ray': {
