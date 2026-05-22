@@ -22,9 +22,14 @@ export function handleDown(ctx: HandlerCtx, e: any): void {
   const x = coords[0], y = coords[1];
 
   // Detect if click hits any existing object (snap target).
+  // Filter hits không có scene id (vd auxiliary points của 'regularpolygon' do
+  // JSXGraph tự sinh — không có id trong renderer.elements, không thể dùng làm
+  // pick cho tool). Nếu không filter, aux point sẽ cướp click khỏi border/edge
+  // bên cạnh, làm tool perp/parallel/... đứng yên không tiến tới needs.
   const hits = ctx.objectsAt(e)
     .map(ctx.promoteLabel)
-    .filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y);
+    .filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y)
+    .filter((o) => ctx.jxgIdToSceneId(o) != null);
   const bestHit = hits.find((o) => objKind(o) === 'point') ?? hits[0] ?? null;
 
   if (t === 'point') return handlePointTool(ctx, e, x, y, hits);

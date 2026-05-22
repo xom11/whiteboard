@@ -67,7 +67,8 @@ export function handleUp(ctx: HandlerCtx, e: any): void {
   if (moved > 4) return;  // drag, không phải click
   const hits = ctx.objectsAt(e)
     .map(ctx.promoteLabel)
-    .filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y);
+    .filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y)
+    .filter((o) => ctx.jxgIdToSceneId(o) != null);
   const best: JxgObj | null =
     hits.find((o) => objKind(o) === 'point') ?? ctx.findNearestPointJxg(e, 12) ?? hits[0] ?? null;
   if (!best) {

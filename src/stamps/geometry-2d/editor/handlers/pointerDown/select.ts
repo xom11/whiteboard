@@ -8,7 +8,8 @@ export function handleSelectTool(ctx: HandlerCtx, e: any): void {
   const [sx, sy] = sc;
   const hits = ctx.objectsAt(e)
     .map(ctx.promoteLabel)
-    .filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y);
+    .filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y)
+    .filter((o) => ctx.jxgIdToSceneId(o) != null);
   // Ưu tiên điểm: exact hit → nearest-within-12px → mới đến hit khác (line/circle).
   const obj = hits.find((o) => objKind(o) === 'point') ?? ctx.findNearestPointJxg(e, 12) ?? hits[0];
   if (obj) {
