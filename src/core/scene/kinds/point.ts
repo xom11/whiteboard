@@ -61,6 +61,12 @@ const def: KindDef<PointAttrs> = {
     if (!a || !a.constraint || !a.constraint.kind) {
       throw new Error('point: constraint required');
     }
+    const c = a.constraint;
+    if (c.kind === 'perpFoot') {
+      if (!c.from || !c.onLine) {
+        throw new Error('point.perpFoot: from và onLine bắt buộc');
+      }
+    }
   },
   dependsOn: (a) => constraintRefs2D(a.constraint),
   measure: (obj) => {
@@ -97,6 +103,11 @@ const def: KindDef<PointAttrs> = {
         : t.kind === 'dilate' ? `vị tự k=${t.k} quanh ${labelRef(t.center)}`
         : '';
       return `${obj.label} = ảnh của ${labelRef(c.source)} (${op})`;
+    }
+    if (c.kind === 'perpFoot') {
+      const fromLabel = state?.objects[c.from]?.label ?? c.from;
+      const lineLabel = state?.objects[c.onLine]?.label ?? c.onLine;
+      return `${obj.label} = chân ⟂ từ ${fromLabel} xuống ${lineLabel}`;
     }
     return `Điểm ${obj.label}`;
   },
@@ -150,6 +161,15 @@ const def: KindDef<PointAttrs> = {
       // Renderer dọn _helpers khi remove element (xem JxgRenderer.remove).
       pt._helpers = transforms;
       return pt;
+    }
+    if (c.kind === 'perpFoot') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const from: any = ctx.resolveRef(c.from);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const onLine: any = ctx.resolveRef(c.onLine);
+      // JSXGraph 'perpendicularpoint': create('perpendicularpoint', [line, point])
+      //   → trả về chân vuông góc của point xuống line.
+      return board.create('perpendicularpoint', [onLine, from], opts);
     }
     return board.create('point', [0, 0], opts);
   },

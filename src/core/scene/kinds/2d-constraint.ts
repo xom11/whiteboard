@@ -38,7 +38,8 @@ export type Constraint2D =
   | { kind: 'onCircle'; circleId: string; theta: number }
   | { kind: 'onPolygon'; polygonId: string; u: number; v: number }
   | { kind: 'midpoint'; p1: string; p2: string }
-  | { kind: 'transformed'; source: string; transform: TransformDef };
+  | { kind: 'transformed'; source: string; transform: TransformDef }
+  | { kind: 'perpFoot'; from: string; onLine: string };
 
 export function constraintRefs2D(c: Constraint2D): string[] {
   switch (c.kind) {
@@ -48,6 +49,7 @@ export function constraintRefs2D(c: Constraint2D): string[] {
     case 'onPolygon': return [c.polygonId];
     case 'midpoint': return [c.p1, c.p2];
     case 'transformed': return [c.source, ...transformRefs(c.transform)];
+    case 'perpFoot': return [c.from, c.onLine];
     default: return [];
   }
 }

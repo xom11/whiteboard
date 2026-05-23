@@ -259,4 +259,40 @@ describe('JxgRenderer (2D)', () => {
     expect(secEl.parents).toHaveLength(3);
     expect(secEl.attrs.fillColor).toBe('#f59e0b');
   });
+
+  test('ADD point perpFoot → board.create("perpendicularpoint", [line, from])', () => {
+    const store = createStore(createEmptyState('2d'));
+    const { board, created } = mockBoard();
+    new JxgRenderer(store, board as never);
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('A', 1, 2) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('B', 4, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('C', 4, 5) } });
+    // Một line qua B, C để làm onLine target.
+    store.dispatch({
+      type: 'ADD',
+      payload: {
+        obj: {
+          id: 'l1', kind: 'line', label: 'l1', visible: true, locked: false,
+          layer: 'default', schemaVersion: 1, attrs: { p1: 'B', p2: 'C' },
+        } as SceneObject,
+      },
+    });
+    // perpFoot từ A xuống l1.
+    store.dispatch({
+      type: 'ADD',
+      payload: {
+        obj: {
+          id: 'H', kind: 'point', label: 'H', visible: true, locked: false,
+          layer: 'default', schemaVersion: 1,
+          attrs: { constraint: { kind: 'perpFoot', from: 'A', onLine: 'l1' } },
+        } as SceneObject,
+      },
+    });
+    // Element cuối là H.
+    const hElement = created[created.length - 1];
+    expect(hElement.type).toBe('perpendicularpoint');
+    // JSXGraph perpendicularpoint API: parents = [line, point]
+    expect(hElement.parents[0]).toBe(created[3]); // line l1
+    expect(hElement.parents[1]).toBe(created[0]); // point A
+  });
 });

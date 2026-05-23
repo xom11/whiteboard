@@ -97,4 +97,33 @@ describe('kinds/point (2D)', () => {
       expect(def.describe(obj)).toMatch(/180.*O|O.*180/);
     });
   });
+
+  describe('constraint perpFoot', () => {
+    const def = getKind('point');
+
+    test('dependsOn perpFoot → [from, onLine]', () => {
+      expect(def.dependsOn({
+        constraint: { kind: 'perpFoot', from: 'A', onLine: 'l1' },
+      } as never)).toEqual(['A', 'l1']);
+    });
+
+    test('describe perpFoot ghi đúng từ/đến', () => {
+      const obj = mkObj('point', 'H', {
+        constraint: { kind: 'perpFoot', from: 'A', onLine: 'l1' },
+      });
+      expect(def.describe(obj)).toMatch(/chân ⟂ từ A xuống l1/);
+    });
+
+    test('validate perpFoot throw khi thiếu from', () => {
+      expect(() => def.validate?.({
+        constraint: { kind: 'perpFoot', onLine: 'l1' },
+      } as never)).toThrow(/perpFoot/);
+    });
+
+    test('validate perpFoot throw khi thiếu onLine', () => {
+      expect(() => def.validate?.({
+        constraint: { kind: 'perpFoot', from: 'A' },
+      } as never)).toThrow(/perpFoot/);
+    });
+  });
 });
