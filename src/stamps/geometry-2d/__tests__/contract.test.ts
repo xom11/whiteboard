@@ -5,20 +5,12 @@ import { geometryStamp } from '../index';
 import { createEmptyState } from '../../../core/scene';
 import type { GeometryCustomData } from '../types';
 
-const validJsonState = JSON.stringify({
-  version: 2,
-  bbox: [-5, 5, 5, -5] as [number, number, number, number],
-  state: createEmptyState('2d'),
-  showAxis: false,
-  showGrid: false,
-});
+const validJsonState = JSON.stringify(createEmptyState('2d'));
 
 const validCustomData: GeometryCustomData = {
   kind: 'geometry',
   version: 1,
   jsonState: validJsonState,
-  svgWidth: 400,
-  svgHeight: 300,
 };
 
 runStampContract(geometryStamp, {

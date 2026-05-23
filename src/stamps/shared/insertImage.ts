@@ -1,4 +1,4 @@
-import { svgToImageElement } from './svgToImage';
+import { createStampFile } from './svgToStampFile';
 import type { ExcalidrawElement } from '../../types';
 
 // Excalidraw imperative API — không có public type chính xác. Giữ untyped ở
@@ -10,11 +10,11 @@ export interface InsertStampImageOptions {
   /** SVG string sẵn sàng render (geometry export hoặc katex render). */
   svgString: string;
   /**
-   * Factory tạo customData từ kích thước SVG vừa đo được. Đặt làm factory để
-   * các stamp loại khác nhau (geometry cần svgWidth/svgHeight, latex không cần)
-   * đều có thể chèn data tuỳ ý.
+   * Factory tạo customData. Mỗi stamp tự define shape (kind, version, jsonState).
+   * width/height của element đã được Excalidraw track riêng — không cần lưu
+   * trong customData (drop tại Tier D cleanup v0.20).
    */
-  makeCustomData: (width: number, height: number) => unknown;
+  makeCustomData: () => unknown;
   /** Nếu đang re-edit, id của element cũ — sẽ update thay vì tạo mới. */
   editingElementId?: string | null;
   /** Vị trí gốc (lúc tạo mới). Bỏ qua khi đang re-edit. */
@@ -102,9 +102,9 @@ export async function insertStampImage(
   api: ExApi,
   opts: InsertStampImageOptions,
 ): Promise<InsertStampImageResult> {
-  const { dataURL, fileId, width, height, mimeType } = await svgToImageElement(opts.svgString);
+  const { dataURL, fileId, width, height, mimeType } = await createStampFile(opts.svgString);
   api.addFiles([{ id: fileId, dataURL, mimeType, created: Date.now() }]);
-  const customData = opts.makeCustomData(width, height);
+  const customData = opts.makeCustomData();
 
   const elements = api.getSceneElements() as readonly ExcalidrawElement[];
   const editingId = opts.editingElementId ?? null;

@@ -22,7 +22,7 @@ import { ToastProvider, ToastHost } from '../../shared/Toast';
 export interface EditorPanelProps {
   isDark?: boolean;
   /** Triggered after serialize + svg render — host wires Excalidraw insertion. */
-  onInsert?: (jsonState: string, svgWidth: number, svgHeight: number, svgString: string) => void;
+  onInsert?: (jsonState: string, svgString: string) => void;
   /** Close dialog. Host has the lifecycle hook for "close + remove host". */
   onClose: () => void;
   /** Store created by host (so LeftPanel sibling can share it). */
@@ -233,8 +233,8 @@ const EditorPanelInner = React.forwardRef<EditorPanelHandle, EditorPanelProps>(
       const jsonState = serializeBoard3D(state, view);
       void (async () => {
         try {
-          const { svgString, width, height } = await renderGeometry3DSvgFromState(jsonState);
-          onInsertRef.current?.(jsonState, width, height, svgString);
+          const { svgString } = await renderGeometry3DSvgFromState(jsonState);
+          onInsertRef.current?.(jsonState, svgString);
         } catch (err) {
           console.error('Geometry3D insert failed:', err);
         }

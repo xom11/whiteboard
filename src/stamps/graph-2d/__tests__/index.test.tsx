@@ -8,7 +8,7 @@ describe('graph2dStamp', () => {
   });
 
   it('matchesCustomData accepts v2', () => {
-    expect(graph2dStamp.matchesCustomData({ kind: 'graph2d', version: 2, sceneJson: '{}' })).toBe(true);
+    expect(graph2dStamp.matchesCustomData({ kind: 'graph2d', version: 2, jsonState: '{}' })).toBe(true);
   });
 
   it('matchesCustomData rejects v1', () => {
@@ -16,7 +16,7 @@ describe('graph2dStamp', () => {
   });
 
   it('matchesCustomData rejects other kinds', () => {
-    expect(graph2dStamp.matchesCustomData({ kind: 'geometry', version: 2, sceneJson: '{}' })).toBe(false);
+    expect(graph2dStamp.matchesCustomData({ kind: 'geometry', version: 2, jsonState: '{}' })).toBe(false);
   });
 
   it('matchesCustomData rejects null/undefined', () => {
@@ -35,14 +35,14 @@ describe('graph2dStamp', () => {
 
 describe('isGraph2DCustomData', () => {
   it('trả về true cho v2 hợp lệ', () => {
-    expect(isGraph2DCustomData({ kind: 'graph2d', version: 2, sceneJson: '{}' })).toBe(true);
+    expect(isGraph2DCustomData({ kind: 'graph2d', version: 2, jsonState: '{}' })).toBe(true);
   });
 
   it('trả về false cho v1', () => {
     expect(isGraph2DCustomData({ kind: 'graph2d', version: 1 })).toBe(false);
   });
 
-  it('trả về false nếu thiếu sceneJson', () => {
+  it('trả về false nếu thiếu jsonState', () => {
     expect(isGraph2DCustomData({ kind: 'graph2d', version: 2 })).toBe(false);
   });
 

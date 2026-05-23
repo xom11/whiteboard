@@ -5,14 +5,12 @@ import { graph2dStamp } from '../index';
 import { createEmptyState } from '../../../core/scene';
 import type { Graph2DCustomData } from '../types';
 
-const validSceneJson = JSON.stringify(createEmptyState('graph2d'));
+const validJsonState = JSON.stringify(createEmptyState('graph2d'));
 
 const validCustomData: Graph2DCustomData = {
   kind: 'graph2d',
   version: 2,
-  sceneJson: validSceneJson,
-  svgWidth: 600,
-  svgHeight: 400,
+  jsonState: validJsonState,
 };
 
 runStampContract(graph2dStamp, {
@@ -23,8 +21,8 @@ runStampContract(graph2dStamp, {
     customData: validCustomData,
   },
   extraInvalid: [
-    { kind: 'graph2d', version: 2 }, // thiếu sceneJson
+    { kind: 'graph2d', version: 2 }, // thiếu jsonState
     { kind: 'graph2d', version: 1, jsonState: '{}' }, // v1 format cũ
-    { kind: 'graph2d', version: 2, sceneJson: 42 }, // sceneJson không phải string
+    { kind: 'graph2d', version: 2, jsonState: 42 }, // jsonState không phải string
   ],
 });

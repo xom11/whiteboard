@@ -63,12 +63,10 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
         try {
           await insertStampImage(api, {
             svgString,
-            makeCustomData: (width, height): GeometryCustomData => ({
+            makeCustomData: (): GeometryCustomData => ({
               kind: 'geometry',
               version: 1,
               jsonState,
-              svgWidth: width,
-              svgHeight: height,
             }),
             editingElementId: editingElement?.id ?? null,
           });

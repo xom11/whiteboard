@@ -1,8 +1,8 @@
 import { insertStampImage } from '../insertImage';
 
-// Mock svgToImageElement để test không phụ thuộc crypto.subtle / btoa
-jest.mock('../svgToImage', () => ({
-  svgToImageElement: jest.fn(async (svg: string) => ({
+// Mock createStampFile (used internally) để test không phụ thuộc crypto.subtle / btoa.
+jest.mock('../svgToStampFile', () => ({
+  createStampFile: jest.fn(async (svg: string) => ({
     dataURL: 'data:image/svg+xml;base64,FAKE',
     fileId: 'file_' + svg.length,
     width: 100,
@@ -35,14 +35,14 @@ describe('insertStampImage', () => {
     const api = makeApiStub();
     const result = await insertStampImage(api, {
       svgString: '<svg></svg>',
-      makeCustomData: (w, h) => ({ kind: 'test', w, h }),
+      makeCustomData: () => ({ kind: 'test' }),
     });
 
     expect(api.addFiles).toHaveBeenCalledTimes(1);
     expect(api.updateScene).toHaveBeenCalledTimes(1);
     expect(api._state.elements).toHaveLength(1);
-    const inserted = api._state.elements[0] as { customData: { kind: string; w: number; h: number } };
-    expect(inserted.customData).toEqual({ kind: 'test', w: 100, h: 80 });
+    const inserted = api._state.elements[0] as { customData: { kind: string } };
+    expect(inserted.customData).toEqual({ kind: 'test' });
     expect(result.elementId).toMatch(/^stamp_/);
   });
 

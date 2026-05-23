@@ -75,9 +75,9 @@ function makeRenderRow(store: Store) {
 
 function parseInitialState(data: unknown): State | null {
   if (!isGraph2DCustomData(data)) return null;
-  const state = parseSceneState(data.sceneJson);
+  const state = parseSceneState(data.jsonState);
   if (!state) {
-    console.warn('Graph2DStampHost: sceneJson corrupted hoặc không hợp lệ');
+    console.warn('Graph2DStampHost: jsonState corrupted hoặc không hợp lệ');
     return null;
   }
   return state;
@@ -143,17 +143,15 @@ export const Graph2DStampHost = forwardRef<StampHostHandle, StampHostProps>(
     // ---------- Insert ----------
 
     const handleInsert = useCallback(
-      async (sceneJson: string, svgString: string) => {
+      async (jsonState: string, svgString: string) => {
         if (!api) return;
         try {
           await insertStampImage(api, {
             svgString,
-            makeCustomData: (width, height): Graph2DCustomData => ({
+            makeCustomData: (): Graph2DCustomData => ({
               kind: 'graph2d',
               version: 2,
-              sceneJson,
-              svgWidth: width,
-              svgHeight: height,
+              jsonState,
             }),
             editingElementId: editingElement?.id ?? null,
           });

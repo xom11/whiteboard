@@ -5,17 +5,12 @@ import { geometry3dStamp } from '../index';
 import { createEmptyState } from '../../../core/scene';
 import type { Geometry3DCustomData } from '../serialize';
 
-const validJsonState = JSON.stringify({
-  version: 2,
-  state: createEmptyState('3d'),
-});
+const validJsonState = JSON.stringify(createEmptyState('3d'));
 
 const validCustomData: Geometry3DCustomData = {
   kind: 'geometry3d',
   version: 2,
   jsonState: validJsonState,
-  svgWidth: 1024,
-  svgHeight: 768,
 };
 
 runStampContract(geometry3dStamp, {

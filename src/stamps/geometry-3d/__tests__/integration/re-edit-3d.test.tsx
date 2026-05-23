@@ -1,11 +1,11 @@
 /**
- * Integration tests: geometry-3d re-edit roundtrip (G3 spec).
+ * Integration tests: geometry-3d re-edit roundtrip (G3 spec, post Tier D PR 3).
  *
  * Kiểm tra rằng:
  * 1. serializeBoard3D → deserializeBoard3D → createStore → ObjectListPanel
  *    hiển thị đúng các row từ state đã khôi phục.
- * 2. serializeBoard3D → JSON.stringify → JSON.parse → parseSerializedBoard3D
- *    roundtrip giữ nguyên state + view.
+ * 2. View info (azimuth/elevation/bbox3D) bake vào state.meta.view sau
+ *    serialize/deserialize roundtrip.
  *
  * Test mid-level: mount ObjectListPanel + store (không mount toàn bộ Host vì
  * Host phụ thuộc ExcalidrawAPI không chạy được trong jsdom).

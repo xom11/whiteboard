@@ -29,7 +29,7 @@ export type {
   StampHostComponent,
 } from './shared/types';
 
-export { svgToImageElement } from './shared/svgToImage';
+export { svgToStampFile, createStampFile } from './shared/svgToStampFile';
 export { insertStampImage } from './shared/insertImage';
 export { restoreMissingStampFiles } from './shared/restoreStampFiles';
 

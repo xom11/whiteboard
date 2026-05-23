@@ -43,8 +43,8 @@ export const graph2dStamp: StampType<Graph2DCustomData> = {
     if (!isGraph2DCustomData(data)) {
       throw new Error('graph2dStamp.renderSvgFromCustomData: customData không phải graph2d v2');
     }
-    const state = parseSceneState(data.sceneJson);
-    if (!state) throw new Error('graph2dStamp.renderSvgFromCustomData: sceneJson không hợp lệ');
+    const state = parseSceneState(data.jsonState);
+    if (!state) throw new Error('graph2dStamp.renderSvgFromCustomData: jsonState không hợp lệ');
     return renderGraphSvgFromState(state, false);
   },
 
@@ -52,7 +52,7 @@ export const graph2dStamp: StampType<Graph2DCustomData> = {
     const data = element.customData;
     const fileId = (element as { fileId?: string | null }).fileId;
     if (!fileId || !isGraph2DCustomData(data)) return null;
-    const state = parseSceneState(data.sceneJson);
+    const state = parseSceneState(data.jsonState);
     if (!state) return null;
     const svgString = await renderGraphSvgFromState(state, false);
     return svgToStampFile(svgString, fileId);

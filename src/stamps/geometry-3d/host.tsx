@@ -88,7 +88,7 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
     }, []);
 
     const handleEditorInsert = useCallback(
-      async (jsonState: string, width: number, height: number, svgString: string) => {
+      async (jsonState: string, svgString: string) => {
         if (!api) return;
         await insertStampImage(api, {
           svgString,
@@ -96,8 +96,6 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
             kind: 'geometry3d',
             version: 2,
             jsonState,
-            svgWidth: width,
-            svgHeight: height,
           }),
           editingElementId: editingElement?.id ?? null,
         });

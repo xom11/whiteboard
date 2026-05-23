@@ -1,4 +1,4 @@
-import { svgToStampFile } from '../svgToStampFile';
+import { svgToStampFile, createStampFile } from '../svgToStampFile';
 
 describe('svgToStampFile', () => {
   test('returns SVG dataURL with svg+xml mime, fileId passed through', () => {
@@ -71,5 +71,28 @@ describe('svgToStampFile', () => {
     const result = svgToStampFile('<svg width="10" height="10"/>', 'file-mime');
     const mime: 'image/svg+xml' = result.mimeType;
     expect(mime).toBe('image/svg+xml');
+  });
+});
+
+describe('createStampFile (async — hash SVG → fileId)', () => {
+  test('generates fileId from SVG content', async () => {
+    const svg = '<svg width="100" height="50"/>';
+    const result = await createStampFile(svg);
+    expect(result.fileId.length).toBeGreaterThan(8);
+    expect(result.dataURL.startsWith('data:image/svg+xml;base64,')).toBe(true);
+    expect(result.width).toBe(100);
+    expect(result.height).toBe(50);
+  });
+
+  test('identical SVG → identical fileId (deterministic for dedupe)', async () => {
+    const a = await createStampFile('<svg width="10" height="10"/>');
+    const b = await createStampFile('<svg width="10" height="10"/>');
+    expect(a.fileId).toBe(b.fileId);
+  });
+
+  test('different SVG → different fileId', async () => {
+    const a = await createStampFile('<svg width="10" height="10"/>');
+    const b = await createStampFile('<svg width="20" height="20"/>');
+    expect(a.fileId).not.toBe(b.fileId);
   });
 });

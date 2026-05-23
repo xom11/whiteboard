@@ -14,8 +14,6 @@ export interface Geometry3DCustomData extends BaseStampCustomData {
   kind: 'geometry3d';
   version: 2;
   jsonState: string;
-  svgWidth: number;
-  svgHeight: number;
 }
 
 export function isGeometry3DCustomData(data: unknown): data is Geometry3DCustomData {
