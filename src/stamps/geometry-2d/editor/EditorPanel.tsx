@@ -11,6 +11,8 @@ import { STAMP_PANEL_DESKTOP } from '../../shared/StampLeftPanel/constants';
 import { ToastProvider, ToastHost, useToast } from '../../shared/Toast';
 
 interface Props {
+  /** Scene store do Host tạo qua `useStampStore`. */
+  store: Store;
   initialState: SerializedBoard | null;
   onInsert: (jsonState: string, svgString: string) => void;
   onClose: () => void;
@@ -28,8 +30,6 @@ interface Props {
   onRedo?: () => void;
   canUndo?: boolean;
   canRedo?: boolean;
-  /** Báo lên Host khi scene store sẵn sàng (sau MiniBoard.onReady). */
-  onStoreReady?: (store: Store) => void;
   /** Báo lên Host khi selection đổi qua action trong editor. */
   onSelectionChange?: (id: string | undefined) => void;
 }
@@ -57,7 +57,7 @@ export interface GeometryEditorPanelHandle {
 }
 
 const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
-  function GeometryEditorPanelInner({ initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer, onUndo, onRedo, canUndo, canRedo, onStoreReady, onSelectionChange }, ref) {
+  function GeometryEditorPanelInner({ store, initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer, onUndo, onRedo, canUndo, canRedo, onSelectionChange }, ref) {
     const { showToast } = useToast();
     const handleRef = useRef<MiniBoardHandle | null>(null);
     const [ready, setReady] = useState(false);
@@ -69,9 +69,7 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
     const [transformPopover, setTransformPopover] = useState<TransformPopoverInfo>(null);
     const onStateChangeRef = useRef(onStateChange);
     useEffect(() => { onStateChangeRef.current = onStateChange; }, [onStateChange]);
-    const onStoreReadyRef = useRef(onStoreReady);
     const onSelectionChangeRef = useRef(onSelectionChange);
-    useEffect(() => { onStoreReadyRef.current = onStoreReady; }, [onStoreReady]);
     useEffect(() => { onSelectionChangeRef.current = onSelectionChange; }, [onSelectionChange]);
 
     const emitState = useCallback(() => {
@@ -92,7 +90,6 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
     const handleReady = useCallback(() => {
       const h = handleRef.current;
       if (!h) return;
-      onStoreReadyRef.current?.(h.getStore());
       setReady(true);
       emitState();
       // Subscribe để parent biết khi nào tool/axis/grid/undo thay đổi
@@ -245,6 +242,7 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
           <div className="flex-1">
             <MiniBoard2D
               ref={handleRef}
+              store={store}
               onReady={handleReady}
               initialState={initialState}
               isDark={isDark}

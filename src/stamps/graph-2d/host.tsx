@@ -16,6 +16,7 @@ import {
 import { StampLeftPanel } from '../shared/StampLeftPanel';
 import { insertStampImage } from '../shared/insertImage';
 import { useIsMobile } from '../shared/useIsMobile';
+import { useStampStore } from '../shared/useStampStore';
 import { isGraph2DCustomData, type Graph2DCustomData } from './types';
 import { parseSceneState } from './serialize';
 import { TOOLS, GROUPS, GROUP_LABELS, type GraphTool, type GraphToolGroup } from './editor/tools';
@@ -24,7 +25,7 @@ import { ParameterRow } from './editor/rows/ParameterRow';
 import type { Function2DAttrs } from '../../core/scene/kinds/function2d';
 import type { ParameterAttrs } from '../../core/scene/kinds/parameter';
 import type { Store } from '../../core/scene/store';
-import type { SceneObject } from '../../core/scene/types';
+import type { SceneObject, State } from '../../core/scene/types';
 import type { StampHostProps, StampHostHandle } from '../shared/types';
 
 const INITIAL_STATE: GraphBoardState = {
@@ -72,34 +73,31 @@ function makeRenderRow(store: Store) {
   };
 }
 
+function parseInitialState(data: unknown): State | null {
+  if (!isGraph2DCustomData(data)) return null;
+  const state = parseSceneState(data.sceneJson);
+  if (!state) {
+    console.warn('Graph2DStampHost: sceneJson corrupted hoặc không hợp lệ');
+    return null;
+  }
+  return state;
+}
+
 export const Graph2DStampHost = forwardRef<StampHostHandle, StampHostProps>(
   function Graph2DStampHost({ api, editingElement, onClose, isDark }, ref) {
     const panelRef = useRef<GraphEditorPanelHandle | null>(null);
     const { isMobile } = useIsMobile();
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [boardState, setBoardState] = useState<GraphBoardState>(INITIAL_STATE);
-    const [sceneStore, setSceneStore] = useState<Store | null>(null);
+    const sceneStore = useStampStore('graph2d', editingElement, parseInitialState);
     const [selectedObjectId, setSelectedObjectId] = useState<string | undefined>(undefined);
-
-    const initialState = useMemo(() => {
-      if (!editingElement) return null;
-      if (!isGraph2DCustomData(editingElement.customData)) return null;
-      const state = parseSceneState(editingElement.customData.sceneJson);
-      if (!state) {
-        console.warn('Graph2DStampHost: sceneJson corrupted hoặc không hợp lệ');
-        return null;
-      }
-      return state;
-    }, [editingElement]);
 
     // ---------- Add buttons (dispatch trực tiếp vào store) ----------
 
     const handleAddFunction = useCallback(() => {
-      const s = sceneStore;
-      if (!s) return;
-      const existing = Object.values(s.getState().objects).filter((o) => o.kind === 'function2d');
+      const existing = Object.values(sceneStore.getState().objects).filter((o) => o.kind === 'function2d');
       const id = `f${existing.length + 1}`;
-      s.dispatch({
+      sceneStore.dispatch({
         type: 'ADD',
         payload: {
           obj: {
@@ -117,9 +115,7 @@ export const Graph2DStampHost = forwardRef<StampHostHandle, StampHostProps>(
     }, [sceneStore]);
 
     const handleAddParameter = useCallback(() => {
-      const s = sceneStore;
-      if (!s) return;
-      const existing = Object.values(s.getState().objects).filter((o) => o.kind === 'parameter');
+      const existing = Object.values(sceneStore.getState().objects).filter((o) => o.kind === 'parameter');
       const labels = 'abcdefghijklmnopqrstuvwxyz';
       const usedLabels = new Set(existing.map((o) => o.label));
       let label = 'a';
@@ -127,7 +123,7 @@ export const Graph2DStampHost = forwardRef<StampHostHandle, StampHostProps>(
         if (!usedLabels.has(c)) { label = c; break; }
       }
       const id = label;
-      s.dispatch({
+      sceneStore.dispatch({
         type: 'ADD',
         payload: {
           obj: {
@@ -178,10 +174,7 @@ export const Graph2DStampHost = forwardRef<StampHostHandle, StampHostProps>(
       [],
     );
 
-    const renderRow = useMemo(
-      () => sceneStore ? makeRenderRow(sceneStore) : undefined,
-      [sceneStore],
-    );
+    const renderRow = useMemo(() => makeRenderRow(sceneStore), [sceneStore]);
 
     return (
       <>
@@ -208,7 +201,7 @@ export const Graph2DStampHost = forwardRef<StampHostHandle, StampHostProps>(
             onRedo: () => panelRef.current?.redo(),
             canRedo: boardState.canRedo,
           }}
-          objects={sceneStore ? {
+          objects={{
             store: sceneStore,
             selectedObjectId,
             onObjectSelect: (id) => {
@@ -220,14 +213,14 @@ export const Graph2DStampHost = forwardRef<StampHostHandle, StampHostProps>(
               { label: '+ Hàm f(x)', testId: 'add-function-btn', onClick: handleAddFunction },
               { label: '+ Tham số', testId: 'add-parameter-btn', onClick: handleAddParameter },
             ],
-          } : undefined}
+          }}
           isMobile={isMobile}
           drawerOpen={drawerOpen}
           onDrawerClose={() => setDrawerOpen(false)}
         />
         <GraphEditorPanel
           ref={panelRef}
-          initialState={initialState}
+          store={sceneStore}
           onInsert={handleInsert}
           onClose={onClose}
           isDark={isDark}
@@ -238,7 +231,6 @@ export const Graph2DStampHost = forwardRef<StampHostHandle, StampHostProps>(
           onRedo={() => panelRef.current?.redo()}
           canUndo={boardState.canUndo}
           canRedo={boardState.canRedo}
-          onStoreReady={setSceneStore}
           onSelectionChange={setSelectedObjectId}
           onStateChange={setBoardState}
         />

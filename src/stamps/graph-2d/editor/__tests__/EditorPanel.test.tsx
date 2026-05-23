@@ -2,6 +2,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { GraphEditorPanel } from '../EditorPanel';
+import { createStore, createEmptyState } from '../../../../core/scene';
 
 jest.mock('jsxgraph', () => ({
   __esModule: true,
@@ -21,10 +22,12 @@ jest.mock('jsxgraph', () => ({
   },
 }));
 
+const makeStore = () => createStore(createEmptyState('graph2d'));
+
 describe('GraphEditorPanel smoke', () => {
   it('render shell: graph-miniboard + dialog (LeftPanel ở host, không trong panel)', () => {
     const { getByTestId, queryByTestId } = render(
-      <GraphEditorPanel initialState={null} onInsert={() => {}} onClose={() => {}} />,
+      <GraphEditorPanel store={makeStore()} onInsert={() => {}} onClose={() => {}} />,
     );
     expect(getByTestId('graph-miniboard')).toBeInTheDocument();
     expect(getByTestId('graph-editor-panel')).toBeInTheDocument();
@@ -35,7 +38,7 @@ describe('GraphEditorPanel smoke', () => {
   it('nút Huỷ gọi onClose', () => {
     const onClose = jest.fn();
     const { getByTestId } = render(
-      <GraphEditorPanel initialState={null} onInsert={() => {}} onClose={onClose} />,
+      <GraphEditorPanel store={makeStore()} onInsert={() => {}} onClose={onClose} />,
     );
     const closeBtn = getByTestId('graph-editor-close-btn');
     closeBtn.click();

@@ -18,15 +18,12 @@ import React, {
   useEffect,
   useId,
   useImperativeHandle,
-  useMemo,
   useRef,
   useState,
 } from 'react';
 import {
-  createEmptyState,
   nextLabel as sceneNextLabel,
-  useSceneStore,
-  type State,
+  type Store,
 } from '../../../core/scene';
 import { JxgRenderer } from '../../../core/scene/render/JxgRenderer';
 import type { SerializedBoard } from '../serialize';
@@ -69,6 +66,9 @@ type JxgObj = any;
 interface Props {
   /** Signal "board boot xong" — parent gọi handle methods qua ref sau khi nhận. */
   onReady?: () => void;
+  /** Scene store do Host tạo qua `useStampStore`. MiniBoard không tự create. */
+  store: Store;
+  /** Envelope view info (bbox/axis/grid). State đã được Host load vào `store`. */
   initialState: SerializedBoard | null;
   isDark?: boolean;
   /** Toast hook từ EditorPanel ToastProvider — handlers dùng cho invalid construction. */
@@ -76,7 +76,7 @@ interface Props {
 }
 
 export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard2D(
-  { onReady, initialState, isDark, toast },
+  { onReady, store, initialState, isDark, toast },
   ref,
 ) {
   const isDarkRef = useRef(!!isDark); isDarkRef.current = !!isDark;
@@ -87,12 +87,6 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
   const rendererRef = useRef<JxgRenderer | null>(null);
   const axisObjsRef = useRef<{ x?: JxgObj; y?: JxgObj }>({});
 
-  const initState = useMemo<State>(
-    () => initialState?.state ?? createEmptyState('2d'),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
-  const { store } = useSceneStore(initState);
   const toolSM = useToolStateMachine<GeomTool>('move');
 
   const [showAxis, setShowAxisState] = useState<boolean>(initialState?.showAxis ?? false);

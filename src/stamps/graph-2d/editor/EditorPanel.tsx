@@ -9,7 +9,6 @@ import React, {
 } from 'react';
 import { MiniBoard, type MiniBoardHandle } from './MiniBoard';
 import type { Store } from '../../../core/scene/store';
-import type { State } from '../../../core/scene/types';
 import type { GraphTool } from './tools';
 import { STAMP_PANEL_DESKTOP } from '../../shared/StampLeftPanel/constants';
 import { ToastProvider, ToastHost } from '../../shared/Toast';
@@ -31,12 +30,10 @@ export interface GraphEditorPanelHandle {
 // ---------- Props ----------
 
 export interface GraphEditorPanelProps {
-  /** Serialized state để restore. null = mới. */
-  initialState: State | null;
+  /** Scene store do Host tạo qua `useStampStore`. */
+  store: Store;
   onInsert: (jsonState: string, svgString: string) => void;
   onClose: () => void;
-  /** Callback khi store sẵn sàng sau MiniBoard.onReady. */
-  onStoreReady?: (store: Store) => void;
   /** Callback khi selection thay đổi qua editor action. */
   onSelectionChange?: (id: string | undefined) => void;
   /** Báo lên Host khi state thay đổi (tool/axis/grid/undo) — để sync UI. */
@@ -68,10 +65,9 @@ export interface GraphBoardState {
 const GraphEditorPanelInner = forwardRef<GraphEditorPanelHandle, GraphEditorPanelProps>(
   function GraphEditorPanel(
     {
-      initialState,
+      store,
       onInsert,
       onClose,
-      onStoreReady,
       onSelectionChange,
       onStateChange,
       isDark,
@@ -88,10 +84,8 @@ const GraphEditorPanelInner = forwardRef<GraphEditorPanelHandle, GraphEditorPane
     const miniRef = useRef<MiniBoardHandle | null>(null);
     const [ready, setReady] = useState(false);
     const [hasContent, setHasContent] = useState(false);
-    const onStoreReadyRef = useRef(onStoreReady);
     const onSelectionChangeRef = useRef(onSelectionChange);
     const onStateChangeRef = useRef(onStateChange);
-    useEffect(() => { onStoreReadyRef.current = onStoreReady; }, [onStoreReady]);
     useEffect(() => { onSelectionChangeRef.current = onSelectionChange; }, [onSelectionChange]);
     useEffect(() => { onStateChangeRef.current = onStateChange; }, [onStateChange]);
 
@@ -111,7 +105,6 @@ const GraphEditorPanelInner = forwardRef<GraphEditorPanelHandle, GraphEditorPane
     const handleReady = useCallback(() => {
       const h = miniRef.current;
       if (!h) return;
-      onStoreReadyRef.current?.(h.getStore());
       setReady(true);
       emitState();
       h.subscribe(emitState);
@@ -261,7 +254,7 @@ const GraphEditorPanelInner = forwardRef<GraphEditorPanelHandle, GraphEditorPane
         <div className="flex-1 min-h-0">
           <MiniBoard
             ref={miniRef}
-            initialState={initialState ?? undefined}
+            store={store}
             isDark={isDark}
             onReady={handleReady}
             onSelectionChange={(id) => {

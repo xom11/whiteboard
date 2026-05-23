@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react';
 import { MiniBoard2D } from '../editor/MiniBoard';
+import { createStore, createEmptyState } from '../../../core/scene';
 
 jest.mock('jsxgraph', () => ({
   __esModule: true,
@@ -19,6 +20,7 @@ jest.mock('jsxgraph', () => ({
 }));
 
 test('MiniBoard2D mounts and renders container', () => {
-  const { container } = render(<MiniBoard2D initialState={null} />);
+  const store = createStore(createEmptyState('2d'));
+  const { container } = render(<MiniBoard2D store={store} initialState={null} />);
   expect(container.querySelector('[data-testid="jxgmini-container"]')).toBeTruthy();
 });

@@ -10,7 +10,7 @@ import {
 } from 'react';
 import { EditorPanel, type EditorPanelHandle } from './editor/EditorPanel';
 import { StampLeftPanel } from '../shared/StampLeftPanel';
-import { createStore, createEmptyState, type Store, type State } from '../../core/scene';
+import type { State } from '../../core/scene';
 import {
   GROUP_ORDER,
   GROUP_LABELS,
@@ -21,6 +21,7 @@ import {
 import { useChordShortcut } from '../shared/useChordShortcut';
 import { insertStampImage } from '../shared/insertImage';
 import { useIsMobile } from '../shared/useIsMobile';
+import { useStampStore } from '../shared/useStampStore';
 import {
   isGeometry3DCustomData,
   parseSerializedBoard3D,
@@ -54,11 +55,15 @@ function parseInitial(
   }
 }
 
+// Hook's parseInitial trả null cho 3D vì hydration được handle qua
+// `useEditorState({ store, initialState })` ở EditorPanel — tránh double LOAD.
+// Hook chỉ dùng để thống nhất API với 2D + graph-2d (host owns store).
+const parseInitialState3D = (): State | null => null;
+
 export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
   function Geometry3DStampHost({ api, editingElement, onClose, isDark }, ref) {
     const editorRef = useRef<EditorPanelHandle | null>(null);
-    const storeRef = useRef<Store | null>(null);
-    if (!storeRef.current) storeRef.current = createStore(createEmptyState('3d'));
+    const sceneStore = useStampStore('3d', editingElement, parseInitialState3D);
     const { isMobile } = useIsMobile();
     const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -159,7 +164,7 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
           }}
           chord={{ activeGroup: chordGroup, letterForGroup }}
           objects={{
-            store: storeRef.current,
+            store: sceneStore,
             selectedObjectId,
             onObjectSelect: handleObjectSelect,
           }}
@@ -173,7 +178,7 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
           initialState={initial}
           onInsert={handleEditorInsert}
           onClose={onClose}
-          store={storeRef.current}
+          store={sceneStore}
           selectedTool={selectedTool}
           onSelectedToolChange={setSelectedTool}
           showAxis={showAxis}

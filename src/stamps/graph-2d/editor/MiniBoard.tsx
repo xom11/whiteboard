@@ -8,11 +8,9 @@
 //  - getNearestFunctionId / findHitObject helpers for graph-specific hit-test
 //  - Tools from TOOLS / GraphTool
 
-import React, { useCallback, useEffect, useId, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useImperativeHandle, useRef, useState } from 'react';
 import {
-  createEmptyState,
   nextLabel as sceneNextLabel,
-  useSceneStore,
   type State,
 } from '../../../core/scene';
 import { JxgRenderer } from '../../../core/scene/render/JxgRenderer';
@@ -48,14 +46,15 @@ export interface MiniBoardHandle {
 }
 
 interface MiniBoardProps {
-  initialState?: State | null;
+  /** Scene store do Host tạo qua `useStampStore`. */
+  store: Store;
   isDark?: boolean;
   onReady?: () => void;
   onSelectionChange?: (id: string | undefined) => void;
 }
 
 export const MiniBoard = React.forwardRef<MiniBoardHandle, MiniBoardProps>(
-  function MiniBoard({ initialState, isDark, onReady, onSelectionChange: _onSelectionChange }, ref) {
+  function MiniBoard({ store, isDark, onReady, onSelectionChange: _onSelectionChange }, ref) {
     const isDarkRef = useRef(!!isDark); isDarkRef.current = !!isDark;
     const containerId = useId().replace(/:/g, '_') + '_graph_jxg';
     const containerRef = useRef<HTMLDivElement>(null);
@@ -63,19 +62,14 @@ export const MiniBoard = React.forwardRef<MiniBoardHandle, MiniBoardProps>(
     const jxgRef = useRef<JxgObj>(null);
     const rendererRef = useRef<JxgRenderer | null>(null);
 
-    const init = useMemo<State>(
-      () => initialState ?? createEmptyState('graph2d'),
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      [],
-    );
-    const { store } = useSceneStore(init);
     const toolSM = useToolStateMachine<GraphTool>('move');
 
+    const initialView = store.getState().meta.view;
     const [showAxis, setShowAxisState] = useState<boolean>(
-      init.meta.view?.showAxis ?? true,
+      initialView?.showAxis ?? true,
     );
     const [showGrid, setShowGridState] = useState<boolean>(
-      init.meta.view?.showGrid ?? true,
+      initialView?.showGrid ?? true,
     );
     const showAxisRef = useRef(showAxis); showAxisRef.current = showAxis;
     const showGridRef = useRef(showGrid); showGridRef.current = showGrid;

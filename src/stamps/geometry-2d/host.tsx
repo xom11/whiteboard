@@ -21,12 +21,13 @@ import { useChordShortcut } from '../shared/useChordShortcut';
 import { insertStampImage } from '../shared/insertImage';
 import type { SerializedBoard } from './serialize';
 import { isGeometryCustomData, type GeometryCustomData } from './types';
-import type { Store } from '../../core/scene/store';
+import type { State } from '../../core/scene/types';
 import type {
   StampHostProps,
   StampHostHandle,
 } from '../shared/types';
 import { useIsMobile } from '../shared/useIsMobile';
+import { useStampStore } from '../shared/useStampStore';
 
 const INITIAL_GEOM_STATE: GeomBoardState = {
   tool: 'move',
@@ -36,13 +37,23 @@ const INITIAL_GEOM_STATE: GeomBoardState = {
   canRedo: false,
 };
 
+function parseInitialState(data: unknown): State | null {
+  if (!isGeometryCustomData(data)) return null;
+  try {
+    const envelope = JSON.parse(data.jsonState) as SerializedBoard;
+    return envelope?.state ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
   function GeometryStampHost({ api, editingElement, onClose, isDark }, ref) {
     const panelRef = useRef<GeometryEditorPanelHandle | null>(null);
     const [geomState, setGeomState] = useState<GeomBoardState>(INITIAL_GEOM_STATE);
     const { isMobile } = useIsMobile();
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [sceneStore, setSceneStore] = useState<Store | null>(null);
+    const sceneStore = useStampStore('2d', editingElement, parseInitialState);
     const [selectedObjectId, setSelectedObjectId] = useState<string | undefined>(undefined);
 
     const { chordGroup } = useChordShortcut({
@@ -121,20 +132,21 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
             canRedo: geomState.canRedo,
           }}
           chord={{ activeGroup: chordGroup, letterForGroup }}
-          objects={sceneStore ? {
+          objects={{
             store: sceneStore,
             selectedObjectId,
             onObjectSelect: (id) => {
               setSelectedObjectId(id ?? undefined);
               panelRef.current?.selectObject(id);
             },
-          } : undefined}
+          }}
           isMobile={isMobile}
           drawerOpen={drawerOpen}
           onDrawerClose={() => setDrawerOpen(false)}
         />
         <GeometryEditorPanel
           ref={panelRef}
+          store={sceneStore}
           initialState={initialState}
           onInsert={handleInsert}
           onClose={onClose}
@@ -147,7 +159,6 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
           onRedo={() => panelRef.current?.redo()}
           canUndo={geomState.canUndo}
           canRedo={geomState.canRedo}
-          onStoreReady={setSceneStore}
           onSelectionChange={setSelectedObjectId}
         />
       </>
