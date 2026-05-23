@@ -84,10 +84,10 @@ describe('GeometryStampHost — chord shortcuts', () => {
     expect(selectedToolHistory.slice(lenAfterMidpoint)).toContain('move');
   });
 
-  test('I → 5 chọn tool "dilate" (cuối group transform)', () => {
+  test('J → 5 chọn tool "dilate" (cuối group transform)', () => {
     mountHost();
     act(() => {
-      fireEvent.keyDown(window, { key: 'i' });
+      fireEvent.keyDown(window, { key: 'j' });
       fireEvent.keyDown(window, { key: '5' });
     });
     expect(selectedToolHistory).toContain('dilate');

@@ -14,6 +14,7 @@ export type GeomTool =
   | 'select'
   | 'point'
   | 'midpoint'
+  | 'perpFoot'
   | 'intersect'
   | 'segment'
   | 'line'
@@ -32,6 +33,10 @@ export type GeomTool =
   | 'sectorCenter'
   | 'circle3'
   | 'tangent'
+  | 'centroid'
+  | 'circumcenter'
+  | 'incenter'
+  | 'orthocenter'
   | 'angle'
   | 'distance'
   | 'area'
@@ -56,6 +61,7 @@ export interface ToolDef {
     | 'construct'
     | 'polygon'
     | 'circle'
+    | 'triangle'
     | 'measure'
     | 'edit'
     | 'transform';
@@ -111,6 +117,20 @@ const Icon = {
       <circle cx="4" cy="12" r="1.8" fill={C_POINT}/>
       <circle cx="20" cy="12" r="1.8" fill={C_POINT}/>
       <circle cx="12" cy="12" r="2.6" fill={C_CONSTRUCT}/>
+    </svg>
+  ),
+  perpFoot: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
+      {/* Base line ngang (input — currentColor) */}
+      <line x1="2" y1="17" x2="22" y2="17" stroke="currentColor" strokeWidth="1.5"/>
+      {/* Vertical dashed line từ BLUE point xuống chân (construct/red) */}
+      <line x1="9" y1="5" x2="9" y2="17" stroke={C_CONSTRUCT} strokeWidth="1.4" strokeDasharray="2.5 2"/>
+      {/* Right-angle mark tại chân */}
+      <rect x="9" y="13.5" width="3.5" height="3.5" fill="none" stroke="currentColor" strokeWidth="1"/>
+      {/* BLUE point gốc */}
+      <circle cx="9" cy="5" r="2" fill={C_POINT}/>
+      {/* RED point chân (output) */}
+      <circle cx="9" cy="17" r="2.4" fill={C_CONSTRUCT}/>
     </svg>
   ),
   intersect: (
@@ -273,6 +293,67 @@ const Icon = {
     </svg>
   ),
 
+  // ===== Triangle centers =====
+  centroid: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" strokeLinejoin="round">
+      {/* Tam giác outline + fill orange nhạt */}
+      <polygon points="4,20 20,20 12,4" fill={C_FILL} fillOpacity="0.18" stroke="currentColor" strokeWidth="1.4"/>
+      {/* 3 medians: vertex → midpoint cạnh đối diện (xám dashed) */}
+      <line x1="12" y1="4"  x2="12" y2="20" stroke="#94a3b8" strokeWidth="1" strokeDasharray="1.5 1.5"/>
+      <line x1="4"  y1="20" x2="16" y2="12" stroke="#94a3b8" strokeWidth="1" strokeDasharray="1.5 1.5"/>
+      <line x1="20" y1="20" x2="8"  y2="12" stroke="#94a3b8" strokeWidth="1" strokeDasharray="1.5 1.5"/>
+      {/* 3 đỉnh BLUE */}
+      <circle cx="4"  cy="20" r="1.5" fill={C_POINT}/>
+      <circle cx="20" cy="20" r="1.5" fill={C_POINT}/>
+      <circle cx="12" cy="4"  r="1.5" fill={C_POINT}/>
+      {/* Trọng tâm RED tại giao 3 medians */}
+      <circle cx="12" cy="14.67" r="2.4" fill={C_CONSTRUCT}/>
+    </svg>
+  ),
+  circumcenter: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      {/* Đường tròn ngoại tiếp */}
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.4"/>
+      {/* Tam giác nội tiếp */}
+      <polygon points="12,3 21,16 3,16" fill="none" stroke="currentColor" strokeWidth="1.3"/>
+      {/* 3 đỉnh BLUE */}
+      <circle cx="12" cy="3"  r="1.6" fill={C_POINT}/>
+      <circle cx="21" cy="16" r="1.6" fill={C_POINT}/>
+      <circle cx="3"  cy="16" r="1.6" fill={C_POINT}/>
+      {/* Tâm ngoại tiếp RED */}
+      <circle cx="12" cy="12" r="2.4" fill={C_CONSTRUCT}/>
+    </svg>
+  ),
+  incenter: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      {/* Tam giác outline */}
+      <polygon points="3,20 21,20 12,4" fill="none" stroke="currentColor" strokeWidth="1.4"/>
+      {/* Đường tròn nội tiếp */}
+      <circle cx="12" cy="14" r="4.5" stroke="currentColor" strokeWidth="1.3"/>
+      {/* 3 đỉnh BLUE */}
+      <circle cx="3"  cy="20" r="1.6" fill={C_POINT}/>
+      <circle cx="21" cy="20" r="1.6" fill={C_POINT}/>
+      <circle cx="12" cy="4"  r="1.6" fill={C_POINT}/>
+      {/* Tâm nội tiếp RED */}
+      <circle cx="12" cy="14" r="2.2" fill={C_CONSTRUCT}/>
+    </svg>
+  ),
+  orthocenter: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
+      {/* Tam giác outline */}
+      <polygon points="3,20 21,20 8,5" fill="none" stroke="currentColor" strokeWidth="1.4"/>
+      {/* 2 altitudes (dashed red) — đủ giao điểm */}
+      <line x1="8" y1="5"  x2="8"    y2="20"   stroke={C_CONSTRUCT} strokeWidth="1.2" strokeDasharray="2 1.6"/>
+      <line x1="3" y1="20" x2="14.5" y2="11.5" stroke={C_CONSTRUCT} strokeWidth="1.2" strokeDasharray="2 1.6"/>
+      {/* 3 đỉnh BLUE */}
+      <circle cx="3"  cy="20"  r="1.6" fill={C_POINT}/>
+      <circle cx="21" cy="20"  r="1.6" fill={C_POINT}/>
+      <circle cx="8"  cy="5"   r="1.6" fill={C_POINT}/>
+      {/* Trực tâm RED — giao 2 altitudes */}
+      <circle cx="8"  cy="14.5" r="2.4" fill={C_CONSTRUCT}/>
+    </svg>
+  ),
+
   // ===== Measure =====
   angle: (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
@@ -382,6 +463,7 @@ export const TOOLS: ToolDef[] = [
   { key: 'select', label: 'Chọn', hint: 'Click để chọn 1 / Shift+click để bỏ thêm / Kéo nền để khoanh vùng / DEL để xoá', icon: Icon.select, group: 'move', needs: 0 },
   { key: 'point', label: 'Điểm mới', hint: 'Click để thêm điểm', icon: Icon.point, group: 'point', needs: 1 },
   { key: 'midpoint', label: 'Trung điểm', hint: 'Click 2 điểm có sẵn', icon: Icon.midpoint, group: 'point', needs: 2, accepts: ['point', 'point'] },
+  { key: 'perpFoot', label: 'Chân đường vuông góc', hint: 'Click 1 điểm + 1 đường có sẵn', icon: Icon.perpFoot, group: 'point', needs: 2, accepts: ['point', 'line'] },
   { key: 'intersect', label: 'Giao điểm của 2 đối tượng', hint: 'Click 2 đường/đường tròn có sẵn', icon: Icon.intersect, group: 'point', needs: 2, accepts: ['lineOrCircle', 'lineOrCircle'] },
   { key: 'segment', label: 'Đoạn thẳng', hint: 'Click 2 điểm', icon: Icon.segment, group: 'line', needs: 2 },
   { key: 'line', label: 'Đường thẳng qua 2 điểm', hint: 'Click 2 điểm', icon: Icon.line, group: 'line', needs: 2 },
@@ -400,6 +482,10 @@ export const TOOLS: ToolDef[] = [
   { key: 'sectorCenter', label: 'Hình quạt (tâm + 2 điểm)', hint: 'Click tâm O → A → B (quạt OAB)', icon: Icon.sectorCenter, group: 'circle', needs: 3 },
   { key: 'circle3', label: 'Đường tròn qua 3 điểm', hint: 'Click 3 điểm', icon: Icon.circle3, group: 'circle', needs: 3 },
   { key: 'tangent', label: 'Tiếp tuyến', hint: 'Click 1 điểm + 1 đường tròn có sẵn', icon: Icon.tangent, group: 'circle', needs: 2, accepts: ['point', 'circle'] },
+  { key: 'centroid',     label: 'Trọng tâm tam giác',           hint: 'Click 3 đỉnh tam giác', icon: Icon.centroid,     group: 'triangle', needs: 3, accepts: ['point', 'point', 'point'] },
+  { key: 'circumcenter', label: 'Tâm đường tròn ngoại tiếp',    hint: 'Click 3 đỉnh tam giác', icon: Icon.circumcenter, group: 'triangle', needs: 3, accepts: ['point', 'point', 'point'] },
+  { key: 'incenter',     label: 'Tâm đường tròn nội tiếp',      hint: 'Click 3 đỉnh tam giác', icon: Icon.incenter,     group: 'triangle', needs: 3, accepts: ['point', 'point', 'point'] },
+  { key: 'orthocenter',  label: 'Trực tâm tam giác',            hint: 'Click 3 đỉnh tam giác', icon: Icon.orthocenter,  group: 'triangle', needs: 3, accepts: ['point', 'point', 'point'] },
   { key: 'angle', label: 'Góc', hint: 'Click 3 điểm có sẵn (đỉnh ở giữa)', icon: Icon.angle, group: 'measure', needs: 3, accepts: ['point', 'point', 'point'] },
   { key: 'distance', label: 'Khoảng cách', hint: 'Click 2 điểm có sẵn', icon: Icon.distance, group: 'measure', needs: 2, accepts: ['point', 'point'] },
   { key: 'area', label: 'Diện tích', hint: 'Click các đỉnh, click lại điểm đầu để đóng', icon: Icon.area, group: 'measure', needs: -1 },
@@ -420,6 +506,7 @@ export const GROUP_LABELS: Record<ToolDef['group'], string> = {
   construct: 'Dựng hình',
   polygon: 'Đa giác',
   circle: 'Đường tròn',
+  triangle: 'Tam giác',
   measure: 'Đo lường',
   edit: 'Chỉnh sửa',
   transform: 'Phép biến hình',
@@ -436,6 +523,7 @@ export const GROUP_ORDER: GeomGroup[] = [
   'construct',
   'polygon',
   'circle',
+  'triangle',
   'measure',
   'edit',
   'transform',

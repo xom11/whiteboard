@@ -272,6 +272,64 @@ export function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
       });
       return;
     }
+    case 'perpFoot': {
+      const fromPoint = findPickIdByKind(ctx, 'point');
+      const onLine = findPickIdByKind(ctx, 'line');
+      if (!fromPoint || !onLine) return;
+      const id = freshId(ctx, 'h');
+      const label = ctx.nextLabel('point');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'point', label, {
+          constraint: { kind: 'perpFoot', from: fromPoint, onLine },
+        }) },
+      });
+      return;
+    }
+    case 'centroid': {
+      const id = freshId(ctx, 'g');
+      const label = ctx.nextLabel('point');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'point', label, {
+          constraint: { kind: 'centroid', vertices: [ids[0], ids[1], ids[2]] },
+        }) },
+      });
+      return;
+    }
+    case 'circumcenter': {
+      const id = freshId(ctx, 'o');
+      const label = ctx.nextLabel('point');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'point', label, {
+          constraint: { kind: 'circumcenter', vertices: [ids[0], ids[1], ids[2]] },
+        }) },
+      });
+      return;
+    }
+    case 'incenter': {
+      const id = freshId(ctx, 'i');
+      const label = ctx.nextLabel('point');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'point', label, {
+          constraint: { kind: 'incenter', vertices: [ids[0], ids[1], ids[2]] },
+        }) },
+      });
+      return;
+    }
+    case 'orthocenter': {
+      const id = freshId(ctx, 'h');
+      const label = ctx.nextLabel('point');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'point', label, {
+          constraint: { kind: 'orthocenter', vertices: [ids[0], ids[1], ids[2]] },
+        }) },
+      });
+      return;
+    }
     case 'angle': {
       // ids = [p1, vertex, p2] — tool def 'accepts: ["point", "point", "point"]'
       // và LeftPanel hint "Click 3 điểm có sẵn (đỉnh ở giữa)". User click theo

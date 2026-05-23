@@ -142,3 +142,129 @@ describe('finalizeShape — angleBisector dual mode', () => {
     });
   });
 });
+
+describe('finalizeShape — Tier E.1 perpFoot', () => {
+  // mkCtx helper với mix point/line types (point=1, line=2 — JSXGraph elementClass).
+  function mkCtxMixed(picks: Array<{ id: string; cls: 1 | 2 }>): { ctx: HandlerCtx; dispatched: any[] } {
+    const dispatched: any[] = [];
+    const ctx = {
+      pendingRef: { current: picks.map((p) => ({ elementClass: p.cls })) },
+      pendingIdsRef: { current: picks.map((p) => p.id) },
+      store: {
+        getState: () => ({ counter: 0, objects: {}, order: [], meta: { domain: '2d', version: 1 } }),
+        dispatch: (a: any) => dispatched.push(a),
+      },
+      nextLabel: (kind: string) => `${kind}_label`,
+      flashWarn: jest.fn(),
+      refreshPreview: jest.fn(),
+      findNearestPointJxg: jest.fn(),
+      emitTransform: jest.fn(),
+      setPendingCount: jest.fn(),
+      clearPending: jest.fn(),
+      pendingTransformRef: { current: null },
+      jxgIdToSceneId: jest.fn(),
+      jxgFromSceneId: jest.fn(),
+      toast: jest.fn(),
+    } as unknown as HandlerCtx;
+    return { ctx, dispatched };
+  }
+
+  test('perpFoot → ADD point với constraint perpFoot (point trước line)', () => {
+    const { ctx, dispatched } = mkCtxMixed([
+      { id: 'A', cls: 1 }, // point
+      { id: 'l1', cls: 2 }, // line
+    ]);
+    finalizeShape(ctx, { key: 'perpFoot', label: '', hint: '', icon: null as any, group: 'point', needs: 2, accepts: ['point', 'line'] });
+    expect(dispatched).toHaveLength(1);
+    expect(dispatched[0].type).toBe('ADD');
+    expect(dispatched[0].payload.obj.kind).toBe('point');
+    expect(dispatched[0].payload.obj.attrs.constraint).toEqual({
+      kind: 'perpFoot', from: 'A', onLine: 'l1',
+    });
+  });
+
+  test('perpFoot → order-flexible (line trước point)', () => {
+    const { ctx, dispatched } = mkCtxMixed([
+      { id: 'l1', cls: 2 }, // line trước
+      { id: 'A', cls: 1 }, // point sau
+    ]);
+    finalizeShape(ctx, { key: 'perpFoot', label: '', hint: '', icon: null as any, group: 'point', needs: 2, accepts: ['point', 'line'] });
+    expect(dispatched).toHaveLength(1);
+    expect(dispatched[0].payload.obj.attrs.constraint).toEqual({
+      kind: 'perpFoot', from: 'A', onLine: 'l1',
+    });
+  });
+
+  test('perpFoot → no-op nếu thiếu point hoặc line', () => {
+    const { ctx, dispatched } = mkCtxMixed([
+      { id: 'A', cls: 1 }, // chỉ có point
+      { id: 'B', cls: 1 }, // 2 point, không có line
+    ]);
+    finalizeShape(ctx, { key: 'perpFoot', label: '', hint: '', icon: null as any, group: 'point', needs: 2, accepts: ['point', 'line'] });
+    expect(dispatched).toHaveLength(0);
+  });
+});
+
+describe('finalizeShape — Tier E.1 triangle centers', () => {
+  // Reuse mkCtx (3 points) — không cần mixed-type vì 4 centers chỉ nhận point.
+  function mkCtxPoints(ids: string[]): { ctx: HandlerCtx; dispatched: any[] } {
+    const dispatched: any[] = [];
+    const ctx = {
+      pendingRef: { current: ids.map(() => ({ elementClass: 1 })) },
+      pendingIdsRef: { current: [...ids] },
+      store: {
+        getState: () => ({ counter: 0, objects: {}, order: [], meta: { domain: '2d', version: 1 } }),
+        dispatch: (a: any) => dispatched.push(a),
+      },
+      nextLabel: (kind: string) => `${kind}_label`,
+      flashWarn: jest.fn(),
+      refreshPreview: jest.fn(),
+      findNearestPointJxg: jest.fn(),
+      emitTransform: jest.fn(),
+      setPendingCount: jest.fn(),
+      clearPending: jest.fn(),
+      pendingTransformRef: { current: null },
+      jxgIdToSceneId: jest.fn(),
+      jxgFromSceneId: jest.fn(),
+      toast: jest.fn(),
+    } as unknown as HandlerCtx;
+    return { ctx, dispatched };
+  }
+
+  test('centroid → ADD point với constraint centroid', () => {
+    const { ctx, dispatched } = mkCtxPoints(['A', 'B', 'C']);
+    finalizeShape(ctx, { key: 'centroid', label: '', hint: '', icon: null as any, group: 'triangle', needs: 3, accepts: ['point', 'point', 'point'] });
+    expect(dispatched).toHaveLength(1);
+    expect(dispatched[0].payload.obj.kind).toBe('point');
+    expect(dispatched[0].payload.obj.attrs.constraint).toEqual({
+      kind: 'centroid', vertices: ['A', 'B', 'C'],
+    });
+  });
+
+  test('circumcenter → ADD point với constraint circumcenter', () => {
+    const { ctx, dispatched } = mkCtxPoints(['A', 'B', 'C']);
+    finalizeShape(ctx, { key: 'circumcenter', label: '', hint: '', icon: null as any, group: 'triangle', needs: 3, accepts: ['point', 'point', 'point'] });
+    expect(dispatched).toHaveLength(1);
+    expect(dispatched[0].payload.obj.attrs.constraint).toEqual({
+      kind: 'circumcenter', vertices: ['A', 'B', 'C'],
+    });
+  });
+
+  test('incenter → ADD point với constraint incenter', () => {
+    const { ctx, dispatched } = mkCtxPoints(['A', 'B', 'C']);
+    finalizeShape(ctx, { key: 'incenter', label: '', hint: '', icon: null as any, group: 'triangle', needs: 3, accepts: ['point', 'point', 'point'] });
+    expect(dispatched).toHaveLength(1);
+    expect(dispatched[0].payload.obj.attrs.constraint).toEqual({
+      kind: 'incenter', vertices: ['A', 'B', 'C'],
+    });
+  });
+
+  test('orthocenter → ADD point với constraint orthocenter', () => {
+    const { ctx, dispatched } = mkCtxPoints(['A', 'B', 'C']);
+    finalizeShape(ctx, { key: 'orthocenter', label: '', hint: '', icon: null as any, group: 'triangle', needs: 3, accepts: ['point', 'point', 'point'] });
+    expect(dispatched).toHaveLength(1);
+    expect(dispatched[0].payload.obj.attrs.constraint).toEqual({
+      kind: 'orthocenter', vertices: ['A', 'B', 'C'],
+    });
+  });
+});
