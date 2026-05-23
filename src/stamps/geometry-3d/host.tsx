@@ -4,7 +4,6 @@ import {
   forwardRef,
   useCallback,
   useImperativeHandle,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -23,11 +22,9 @@ import { insertStampImage } from '../shared/insertImage';
 import { useIsMobile } from '../shared/useIsMobile';
 import { useStampStore } from '../shared/useStampStore';
 import {
+  deserializeBoard3D,
   isGeometry3DCustomData,
-  parseSerializedBoard3D,
   type Geometry3DCustomData,
-  type SerializedBoard3D,
-  type SerializedView3D,
 } from './serialize';
 import type {
   StampHostProps,
@@ -43,27 +40,15 @@ const Geom3DIconHeader = (
   </svg>
 );
 
-function parseInitial(
-  editingElement: StampHostProps['editingElement'],
-): { state: State; view?: SerializedView3D } | null {
-  if (!editingElement) return null;
-  if (!isGeometry3DCustomData(editingElement.customData)) return null;
-  try {
-    return parseSerializedBoard3D(JSON.parse(editingElement.customData.jsonState));
-  } catch {
-    return null;
-  }
+function parseInitialState(data: unknown): State | null {
+  if (!isGeometry3DCustomData(data)) return null;
+  return deserializeBoard3D(data.jsonState);
 }
-
-// Hook's parseInitial trả null cho 3D vì hydration được handle qua
-// `useEditorState({ store, initialState })` ở EditorPanel — tránh double LOAD.
-// Hook chỉ dùng để thống nhất API với 2D + graph-2d (host owns store).
-const parseInitialState3D = (): State | null => null;
 
 export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
   function Geometry3DStampHost({ api, editingElement, onClose, isDark }, ref) {
     const editorRef = useRef<EditorPanelHandle | null>(null);
-    const sceneStore = useStampStore('3d', editingElement, parseInitialState3D);
+    const sceneStore = useStampStore('3d', editingElement, parseInitialState);
     const { isMobile } = useIsMobile();
     const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -87,11 +72,6 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
     const handleUndo = useCallback(() => editorRef.current?.undo(), []);
     const handleRedo = useCallback(() => editorRef.current?.redo(), []);
 
-    const initial = useMemo(
-      () => parseInitial(editingElement),
-      [editingElement],
-    );
-
     const { chordGroup } = useChordShortcut({
       groupOrder: GROUP_ORDER,
       tools: TOOLS_FLAT,
@@ -108,9 +88,8 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
     }, []);
 
     const handleEditorInsert = useCallback(
-      async (board: SerializedBoard3D, width: number, height: number, svgString: string) => {
+      async (jsonState: string, width: number, height: number, svgString: string) => {
         if (!api) return;
-        const jsonState = JSON.stringify(board);
         await insertStampImage(api, {
           svgString,
           makeCustomData: (): Geometry3DCustomData => ({
@@ -175,7 +154,6 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
         <EditorPanel
           ref={editorRef}
           isDark={isDark}
-          initialState={initial}
           onInsert={handleEditorInsert}
           onClose={onClose}
           store={sceneStore}

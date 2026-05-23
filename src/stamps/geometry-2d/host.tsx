@@ -4,7 +4,6 @@ import {
   forwardRef,
   useCallback,
   useImperativeHandle,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -19,7 +18,7 @@ import type { GeomTool } from './editor/MiniBoard';
 import { GROUP_ORDER, GROUP_LABELS, TOOLS, letterForGroup, type GeomGroup } from './editor/tools';
 import { useChordShortcut } from '../shared/useChordShortcut';
 import { insertStampImage } from '../shared/insertImage';
-import type { SerializedBoard } from './serialize';
+import { deserializeBoard } from './serialize';
 import { isGeometryCustomData, type GeometryCustomData } from './types';
 import type { State } from '../../core/scene/types';
 import type {
@@ -39,12 +38,7 @@ const INITIAL_GEOM_STATE: GeomBoardState = {
 
 function parseInitialState(data: unknown): State | null {
   if (!isGeometryCustomData(data)) return null;
-  try {
-    const envelope = JSON.parse(data.jsonState) as SerializedBoard;
-    return envelope?.state ?? null;
-  } catch {
-    return null;
-  }
+  return deserializeBoard(data.jsonState);
 }
 
 export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
@@ -62,17 +56,6 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
       onSelect: (key) => panelRef.current?.setTool(key as GeomTool),
       enabled: !isMobile,
     });
-
-    const initialState = useMemo<SerializedBoard | null>(() => {
-      if (!editingElement) return null;
-      if (!isGeometryCustomData(editingElement.customData)) return null;
-      try {
-        return JSON.parse(editingElement.customData.jsonState) as SerializedBoard;
-      } catch {
-        console.warn('GeometryStampHost: customData jsonState corrupted');
-        return null;
-      }
-    }, [editingElement]);
 
     const handleInsert = useCallback(
       async (jsonState: string, svgString: string) => {
@@ -147,7 +130,6 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
         <GeometryEditorPanel
           ref={panelRef}
           store={sceneStore}
-          initialState={initialState}
           onInsert={handleInsert}
           onClose={onClose}
           onStateChange={setGeomState}

@@ -11,7 +11,20 @@ export type SceneObject<A = Record<string, unknown>> = {
   attrs: A;
 };
 
-export type ViewSettings = {
+// View per domain — narrow theo `state.meta.domain`.
+export type View2D = {
+  readonly bbox: readonly [number, number, number, number]; // [xmin, ymax, xmax, ymin]
+  readonly showAxis: boolean;
+  readonly showGrid: boolean;
+};
+
+export type View3D = {
+  readonly bbox3D: readonly [number, number, number, number, number, number]; // [xmin, xmax, ymin, ymax, zmin, zmax]
+  readonly azimuth: number;
+  readonly elevation: number;
+};
+
+export type ViewGraph2D = {
   readonly xMin: number;
   readonly xMax: number;
   readonly yMin: number;
@@ -20,15 +33,26 @@ export type ViewSettings = {
   readonly showGrid: boolean;
 };
 
+// Union of all view shapes — narrow qua state.meta.domain.
+export type SceneView = View2D | View3D | ViewGraph2D;
+
+// Discriminated union: domain narrow → view shape narrow.
+export type StateMeta =
+  | { readonly domain: '2d';      readonly version: number; readonly view: View2D }
+  | { readonly domain: '3d';      readonly version: number; readonly view: View3D }
+  | { readonly domain: 'graph2d'; readonly version: number; readonly view: ViewGraph2D };
+
+export type Domain = StateMeta['domain'];
+
+// Backward-compat alias: UPDATE_VIEW patch dùng graph-2d shape (chỉ graph-2d
+// dispatch action này hiện tại).
+export type ViewSettings = ViewGraph2D;
+
 export type State = {
   readonly objects: Readonly<Record<string, SceneObject>>;
   readonly order: readonly string[];
   readonly counter: number;
-  readonly meta: {
-    readonly domain: '2d' | '3d' | 'graph2d';
-    readonly version: number;
-    readonly view?: ViewSettings;
-  };
+  readonly meta: StateMeta;
 };
 
 export type Action =
@@ -68,23 +92,40 @@ export type KindDef<A = Record<string, unknown>> = {
   ) => void;
 };
 
+export const DEFAULT_VIEW_2D: View2D = {
+  bbox: [-10, 10, 10, -10],
+  showAxis: false,
+  showGrid: false,
+};
+
+export const DEFAULT_VIEW_3D: View3D = {
+  bbox3D: [-5, 5, -5, 5, -5, 5],
+  azimuth: 60,
+  elevation: 30,
+};
+
+export const DEFAULT_VIEW_GRAPH2D: ViewGraph2D = {
+  xMin: -10, xMax: 10, yMin: -10, yMax: 10,
+  showAxis: true, showGrid: true,
+};
+
+// EMPTY_STATE giữ shape '3d' (legacy default). Dùng `createEmptyState(domain)`
+// khi cần state cụ thể cho domain — đảm bảo meta.view khớp domain.
 export const EMPTY_STATE: State = {
   objects: {},
   order: [],
   counter: 0,
-  meta: { domain: '3d', version: 1 },
+  meta: { domain: '3d', version: 1, view: DEFAULT_VIEW_3D },
 };
 
-export function createEmptyState(domain: '2d' | '3d' | 'graph2d'): State {
-  const base: State = { ...EMPTY_STATE, meta: { domain, version: 1 } };
-  if (domain === 'graph2d') {
-    return {
-      ...base,
-      meta: {
-        ...base.meta,
-        view: { xMin: -10, xMax: 10, yMin: -10, yMax: 10, showAxis: true, showGrid: true },
-      },
-    };
+export function createEmptyState(domain: Domain): State {
+  const base = { objects: {}, order: [], counter: 0 } as const;
+  switch (domain) {
+    case '2d':
+      return { ...base, meta: { domain: '2d', version: 1, view: DEFAULT_VIEW_2D } };
+    case '3d':
+      return { ...base, meta: { domain: '3d', version: 1, view: DEFAULT_VIEW_3D } };
+    case 'graph2d':
+      return { ...base, meta: { domain: 'graph2d', version: 1, view: DEFAULT_VIEW_GRAPH2D } };
   }
-  return base;
 }

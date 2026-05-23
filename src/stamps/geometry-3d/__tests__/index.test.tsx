@@ -29,16 +29,16 @@ describe('geometry3dStamp', () => {
     expect(typeof geometry3dStamp.restoreFileFromCustomData).toBe('function');
   });
 
-  it('matchesCustomData chỉ accept kind=geometry3d', () => {
+  it('matchesCustomData chỉ accept kind=geometry3d version=2', () => {
     expect(
       geometry3dStamp.matchesCustomData({
         kind: 'geometry3d',
-        version: 1,
+        version: 2,
         jsonState: '{}',
       }),
     ).toBe(true);
     expect(
-      geometry3dStamp.matchesCustomData({ kind: 'geometry', version: 1, jsonState: '{}' }),
+      geometry3dStamp.matchesCustomData({ kind: 'geometry', version: 2, jsonState: '{}' }),
     ).toBe(false);
   });
 

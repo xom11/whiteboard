@@ -1,6 +1,7 @@
 import { deserializeBoard } from './serialize';
 import { paletteFor } from './editor/theme';
 import { createStore } from '../../core/scene';
+import { DEFAULT_VIEW_2D } from '../../core/scene/types';
 import { JxgRenderer } from '../../core/scene/render/JxgRenderer';
 import { renderJsxgOffscreen } from '../shared/jxgOffscreenRender';
 
@@ -60,16 +61,18 @@ export function containerDimsForBbox(bbox: [number, number, number, number]): { 
 }
 
 export async function renderGeometrySvgFromState(jsonState: string): Promise<string> {
-  const parsed = deserializeBoard(JSON.parse(jsonState));
+  const state = deserializeBoard(jsonState);
+  const view = state.meta.domain === '2d' ? state.meta.view : DEFAULT_VIEW_2D;
+  const bbox = view.bbox as [number, number, number, number];
   // Stamps inserted vào Excalidraw canvas → luôn dùng light palette.
   // Excalidraw's THEME_FILTER tự đảo nét trong dark mode.
   const palette = paletteFor(false);
-  const dims = containerDimsForBbox(parsed.bbox);
+  const dims = containerDimsForBbox(bbox);
   const { svgString } = await renderJsxgOffscreen({
-    bbox: parsed.bbox,
+    bbox,
     dims,
-    axis: !!parsed.showAxis,
-    grid: !!parsed.showGrid,
+    axis: view.showAxis,
+    grid: view.showGrid,
     keepAspectRatio: true,
     applyOptions: (JXG) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,7 +93,7 @@ export async function renderGeometrySvgFromState(jsonState: string): Promise<str
       opts.grid.strokeColor = palette.grid;
     },
     setup: (board) => {
-      const store = createStore(parsed.state);
+      const store = createStore(state);
       return new JxgRenderer(store, board);
     },
   });

@@ -25,7 +25,7 @@ describe('reducer UPDATE_VIEW', () => {
     expect(next.meta.view?.showGrid).toBe(false);
   });
 
-  it('no-op khi domain không có view (2d/3d)', () => {
+  it('no-op khi domain không phải graph2d (2d/3d có view shape khác)', () => {
     const state = createEmptyState('2d');
     const next = produce(state, (d) => reduce(d, {
       type: 'UPDATE_VIEW',

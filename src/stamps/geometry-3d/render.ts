@@ -1,9 +1,10 @@
 "use client";
 
-import { parseSerializedBoard3D, type SerializedView3D } from './serialize';
+import { deserializeBoard3D } from './serialize';
 import { createStore } from '../../core/scene';
+import { DEFAULT_VIEW_3D, type View3D } from '../../core/scene/types';
 import { JxgRenderer3D } from '../../core/scene/render/JxgRenderer3D';
-import { DEFAULT_VIEW3D, GROUND_PLANE_ATTRS, GROUND_PLANE_RANGE, VIEW3D_ATTRS } from './editor/theme';
+import { GROUND_PLANE_ATTRS, GROUND_PLANE_RANGE, VIEW3D_ATTRS } from './editor/theme';
 import { renderJsxgOffscreen } from '../shared/jxgOffscreenRender';
 
 export interface RenderResult {
@@ -20,17 +21,8 @@ const BBOX_2D: [number, number, number, number] = [-6, 6, 6, -6];
 type JxgObj = any;
 
 export async function renderGeometry3DSvgFromState(jsonState: string): Promise<RenderResult> {
-  let parsed: { state: ReturnType<typeof parseSerializedBoard3D>['state']; view?: SerializedView3D };
-  try {
-    parsed = parseSerializedBoard3D(JSON.parse(jsonState));
-  } catch {
-    parsed = parseSerializedBoard3D(null);
-  }
-  const view3DInfo: SerializedView3D = parsed.view ?? {
-    azimuth: DEFAULT_VIEW3D.azimuth,
-    elevation: DEFAULT_VIEW3D.elevation,
-    bbox3D: [...DEFAULT_VIEW3D.bbox3D] as [number, number, number, number, number, number],
-  };
+  const state = deserializeBoard3D(jsonState);
+  const view3DInfo: View3D = state.meta.domain === '3d' ? state.meta.view : DEFAULT_VIEW_3D;
 
   const { svgString } = await renderJsxgOffscreen({
     bbox: BBOX_2D,
@@ -87,7 +79,7 @@ export async function renderGeometry3DSvgFromState(jsonState: string): Promise<R
         /* swallow */
       }
 
-      const store = createStore(parsed.state);
+      const store = createStore(state);
       const renderer = new JxgRenderer3D(store, view);
 
       try {

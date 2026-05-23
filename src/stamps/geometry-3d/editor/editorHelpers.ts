@@ -1,8 +1,7 @@
 // src/stamps/geometry-3d/editor/editorHelpers.ts
-import type { State } from '../../../core/scene';
+import type { State, View3D } from '../../../core/scene';
 import type { SceneHit } from './hitTest/hitTest';
 import { DEFAULT_VIEW3D } from './theme';
-import type { SerializedView3D } from '../serialize';
 
 export function hitToHoverLabel(hit: SceneHit, state: State): string | null {
   if (hit.kind === 'empty') return null;
@@ -14,7 +13,7 @@ export function hitToHoverLabel(hit: SceneHit, state: State): string | null {
   return null;
 }
 
-export function getView3DInfo(view: unknown): SerializedView3D {
+export function getView3DInfo(view: unknown): View3D {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const v = view as any;
   const azSlider = v?.az_slide ?? v?.az;

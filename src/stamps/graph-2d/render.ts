@@ -18,7 +18,8 @@ export async function renderGraphSvgFromState(
   height = DEFAULT_HEIGHT,
 ): Promise<string> {
   const palette = paletteFor(false);
-  const view = state.meta.view;
+  const meta = state.meta;
+  const view = meta.domain === 'graph2d' ? meta.view : null;
   const bbox: [number, number, number, number] = [
     view?.xMin ?? -10,
     view?.yMax ?? 10,

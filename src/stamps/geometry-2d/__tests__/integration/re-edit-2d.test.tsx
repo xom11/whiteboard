@@ -50,7 +50,7 @@ describe('geometry-2d integration: re-edit roundtrip', () => {
     expect(store.getState().meta.domain).toBe('2d');
   });
 
-  it('serialize → deserialize roundtrip preserves order, attrs, meta', () => {
+  it('serialize → deserialize roundtrip preserves order, attrs, meta (view giờ ở state.meta.view)', () => {
     const A = makeObj('A', 'point', 'A', {
       constraint: { kind: 'free', x: 1, y: 2 },
     });
@@ -59,39 +59,36 @@ describe('geometry-2d integration: re-edit roundtrip', () => {
     });
     const AB = makeObj('AB', 'segment', 'AB', { p1: 'A', p2: 'B' });
     const state = makeState2D([A, B, AB]);
+    const view = { bbox: [-5, 5, 5, -5] as const, showAxis: true, showGrid: false };
 
-    const bbox: [number, number, number, number] = [-5, 5, 5, -5];
-    const serialized = serializeBoard(bbox, state, { showAxis: true, showGrid: false });
-
-    // Simulate JSON roundtrip (as stored in Excalidraw customData.jsonState)
-    const raw = JSON.parse(JSON.stringify(serialized));
+    const raw = serializeBoard(state, view);
     const restored = deserializeBoard(raw);
 
-    expect(restored.version).toBe(2);
-    expect(restored.bbox).toEqual(bbox);
-    expect(restored.showAxis).toBe(true);
-    expect(restored.showGrid).toBe(false);
-    expect(restored.state.order).toEqual(['A', 'B', 'AB']);
-    expect(restored.state.meta.domain).toBe('2d');
-    expect(restored.state.objects['A'].attrs).toEqual({
+    expect(restored.meta.domain).toBe('2d');
+    if (restored.meta.domain === '2d') {
+      expect(restored.meta.view.bbox).toEqual([-5, 5, 5, -5]);
+      expect(restored.meta.view.showAxis).toBe(true);
+      expect(restored.meta.view.showGrid).toBe(false);
+    }
+    expect(restored.order).toEqual(['A', 'B', 'AB']);
+    expect(restored.objects['A'].attrs).toEqual({
       constraint: { kind: 'free', x: 1, y: 2 },
     });
-    expect(restored.state.objects['AB'].attrs).toEqual({ p1: 'A', p2: 'B' });
+    expect(restored.objects['AB'].attrs).toEqual({ p1: 'A', p2: 'B' });
   });
 
-  it('re-edit path: deserialize → createStore → panel reflects correct object count', () => {
+  it('re-edit path: deserialize → createStore → object count đúng', () => {
     const A = makeObj('A', 'point', 'A', { constraint: { kind: 'free', x: 0, y: 0 } });
     const B = makeObj('B', 'point', 'B', { constraint: { kind: 'free', x: 1, y: 1 } });
     const C = makeObj('C', 'point', 'C', { constraint: { kind: 'free', x: 2, y: 0 } });
     const seg = makeObj('s1', 'segment', 's1', { p1: 'A', p2: 'B' });
     const state = makeState2D([A, B, C, seg]);
+    const view = { bbox: [-5, 5, 5, -5] as const, showAxis: false, showGrid: false };
 
-    const bbox: [number, number, number, number] = [-5, 5, 5, -5];
-    const serialized = serializeBoard(bbox, state);
-    const raw = JSON.parse(JSON.stringify(serialized));
+    const raw = serializeBoard(state, view);
     const restored = deserializeBoard(raw);
 
-    const store = createStore(restored.state);
+    const store = createStore(restored);
     expect(Object.keys(store.getState().objects)).toHaveLength(4);
     expect(store.getState().order).toEqual(['A', 'B', 'C', 's1']);
   });

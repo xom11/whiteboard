@@ -72,7 +72,9 @@ export function reduce(draft: Draft<State>, action: Action): void {
       draft.objects = { ...state.objects };
       draft.order = [...state.order];
       draft.counter = state.counter;
-      draft.meta = { ...state.meta };
+      // Cast qua Draft<State['meta']> — immer chấp nhận structurally
+      // identical shape, chỉ stricter readonly.
+      draft.meta = { ...state.meta } as typeof draft.meta;
       return;
     }
     case 'TRANSACTION': {
@@ -82,7 +84,9 @@ export function reduce(draft: Draft<State>, action: Action): void {
       return;
     }
     case 'UPDATE_VIEW': {
-      if (!draft.meta.view) return;
+      // Action payload typed cho graph-2d ViewSettings. Bỏ qua nếu domain
+      // khác (view shape không tương thích — 2d dùng bbox, 3d dùng bbox3D).
+      if (draft.meta.domain !== 'graph2d') return;
       Object.assign(draft.meta.view, action.payload.patch);
       return;
     }

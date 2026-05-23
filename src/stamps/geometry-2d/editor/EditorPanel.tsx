@@ -1,7 +1,7 @@
 'use client';
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { MiniBoard2D, type MiniBoardHandle, type GeomTool, type ObjectSnapshot, type TransformPopoverInfo } from './MiniBoard';
-import { serializeBoard, type SerializedBoard } from '../serialize';
+import { serializeBoard } from '../serialize';
 import { renderGeometrySvgFromState } from '../render';
 import { PropertiesPopover } from './PropertiesPopover';
 import { TransformParamPopover } from './TransformParamPopover';
@@ -11,9 +11,8 @@ import { STAMP_PANEL_DESKTOP } from '../../shared/StampLeftPanel/constants';
 import { ToastProvider, ToastHost, useToast } from '../../shared/Toast';
 
 interface Props {
-  /** Scene store do Host tạo qua `useStampStore`. */
+  /** Scene store do Host tạo qua `useStampStore`. View info đã ở store.meta.view. */
   store: Store;
-  initialState: SerializedBoard | null;
   onInsert: (jsonState: string, svgString: string) => void;
   onClose: () => void;
   /** Khi true, panel position offset left để chừa chỗ cho StampLeftPanel (240px). */
@@ -57,7 +56,7 @@ export interface GeometryEditorPanelHandle {
 }
 
 const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
-  function GeometryEditorPanelInner({ store, initialState, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer, onUndo, onRedo, canUndo, canRedo, onSelectionChange }, ref) {
+  function GeometryEditorPanelInner({ store, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer, onUndo, onRedo, canUndo, canRedo, onSelectionChange }, ref) {
     const { showToast } = useToast();
     const handleRef = useRef<MiniBoardHandle | null>(null);
     const [ready, setReady] = useState(false);
@@ -116,8 +115,7 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
       const bbox = h.getBbox();
       const showAxis = h.getShowAxis();
       const showGrid = h.getShowGrid();
-      const serialized = serializeBoard(bbox, state, { showAxis, showGrid });
-      const jsonState = JSON.stringify(serialized);
+      const jsonState = serializeBoard(state, { bbox, showAxis, showGrid });
       // Fire-and-forget. Caller (`tryInsert`) chỉ cần biết có nội dung không.
       void (async () => {
         try {
@@ -244,7 +242,6 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
               ref={handleRef}
               store={store}
               onReady={handleReady}
-              initialState={initialState}
               isDark={isDark}
               toast={showToast}
             />

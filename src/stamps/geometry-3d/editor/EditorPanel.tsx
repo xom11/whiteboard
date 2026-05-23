@@ -1,11 +1,9 @@
 'use client';
 import * as React from 'react';
 import {
-  createStore,
-  createEmptyState,
   useEditorState,
   type Store,
-  type State,
+  type View3D,
 } from '../../../core/scene';
 import { JxgRenderer3D } from '../../../core/scene/render/JxgRenderer3D';
 import { ToolController } from './tools/controller';
@@ -16,21 +14,15 @@ import { StatusHint } from './StatusHint';
 import type { ToolKey } from './tools/spec';
 import { usePointDrag } from './usePointDrag';
 import { getView3DInfo, hitToHoverLabel } from './editorHelpers';
-import {
-  serializeBoard3D,
-  type SerializedBoard3D,
-  type SerializedView3D,
-} from '../serialize';
+import { serializeBoard3D } from '../serialize';
 import { renderGeometry3DSvgFromState } from '../render';
 import { STAMP_PANEL_DESKTOP } from '../../shared/StampLeftPanel/constants';
 import { ToastProvider, ToastHost } from '../../shared/Toast';
 
 export interface EditorPanelProps {
   isDark?: boolean;
-  /** Initial state parsed from custom data (state + optional view orientation). */
-  initialState?: { state: State; view?: SerializedView3D } | null;
   /** Triggered after serialize + svg render — host wires Excalidraw insertion. */
-  onInsert?: (board: SerializedBoard3D, svgWidth: number, svgHeight: number, svgString: string) => void;
+  onInsert?: (jsonState: string, svgWidth: number, svgHeight: number, svgString: string) => void;
   /** Close dialog. Host has the lifecycle hook for "close + remove host". */
   onClose: () => void;
   /** Store created by host (so LeftPanel sibling can share it). */
@@ -65,7 +57,6 @@ const EditorPanelInner = React.forwardRef<EditorPanelHandle, EditorPanelProps>(
   function EditorPanel(props, ref) {
     const {
       isDark: isDarkProp,
-      initialState,
       onInsert,
       onClose,
       store,
@@ -102,7 +93,10 @@ const EditorPanelInner = React.forwardRef<EditorPanelHandle, EditorPanelProps>(
     const onInsertRef = React.useRef(onInsert);
     onInsertRef.current = onInsert;
 
-    useEditorState({ store, initialState, onHistoryChange });
+    // Hook đã pre-load state vào store qua parseInitialState3D — useEditorState
+    // không cần initialState LOAD nữa. Vẫn dùng cho canUndo/canRedo propagate
+    // + keyboard shortcuts.
+    useEditorState({ store, onHistoryChange });
 
     const { shouldStartPointDrag, onPointerDrag, onPointerDragEnd, isDragging } = usePointDrag({
       store,
@@ -172,7 +166,8 @@ const EditorPanelInner = React.forwardRef<EditorPanelHandle, EditorPanelProps>(
     const handleView3DReady = React.useCallback((view: unknown) => {
       rendererRef.current = new JxgRenderer3D(store, view);
       previewRef.current = new Preview3DManager(view, store);
-      const savedView = initialState?.view;
+      const meta = store.getState().meta;
+      const savedView: View3D | null = meta.domain === '3d' ? meta.view : null;
       if (savedView) {
         try {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -185,7 +180,7 @@ const EditorPanelInner = React.forwardRef<EditorPanelHandle, EditorPanelProps>(
         }
       }
       setReady(true);
-    }, [store, initialState]);
+    }, [store]);
 
     const handleClick = React.useCallback((screen: { x: number; y: number }) => {
       const view = boardRef.current?.getView3D();
@@ -234,15 +229,12 @@ const EditorPanelInner = React.forwardRef<EditorPanelHandle, EditorPanelProps>(
     const tryInsert = React.useCallback((): boolean => {
       const state = store.getState();
       if (Object.keys(state.objects).length === 0) return false;
-      const board: SerializedBoard3D = serializeBoard3D(
-        state,
-        getView3DInfo(boardRef.current?.getView3D()),
-      );
-      const jsonState = JSON.stringify(board);
+      const view = getView3DInfo(boardRef.current?.getView3D());
+      const jsonState = serializeBoard3D(state, view);
       void (async () => {
         try {
           const { svgString, width, height } = await renderGeometry3DSvgFromState(jsonState);
-          onInsertRef.current?.(board, width, height, svgString);
+          onInsertRef.current?.(jsonState, width, height, svgString);
         } catch (err) {
           console.error('Geometry3D insert failed:', err);
         }
@@ -389,5 +381,4 @@ export const EditorPanel = React.forwardRef<EditorPanelHandle, EditorPanelProps>
   },
 );
 
-// Re-export cho consumer test cần inject store; host owns instance thật.
-export { createStore, createEmptyState };
+// createStore / createEmptyState exported từ core/scene barrel.

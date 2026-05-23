@@ -26,7 +26,7 @@ import {
   type Store,
 } from '../../../core/scene';
 import { JxgRenderer } from '../../../core/scene/render/JxgRenderer';
-import type { SerializedBoard } from '../serialize';
+import { DEFAULT_VIEW_2D } from '../../../core/scene/types';
 import { handleDown, handleMove, handleUp, type HandlerCtx } from './handlers';
 import {
   findNearestJxgPoint,
@@ -66,17 +66,15 @@ type JxgObj = any;
 interface Props {
   /** Signal "board boot xong" — parent gọi handle methods qua ref sau khi nhận. */
   onReady?: () => void;
-  /** Scene store do Host tạo qua `useStampStore`. MiniBoard không tự create. */
+  /** Scene store do Host tạo qua `useStampStore`. View info đọc từ `store.getState().meta.view`. */
   store: Store;
-  /** Envelope view info (bbox/axis/grid). State đã được Host load vào `store`. */
-  initialState: SerializedBoard | null;
   isDark?: boolean;
   /** Toast hook từ EditorPanel ToastProvider — handlers dùng cho invalid construction. */
   toast?: import('../../shared/Toast').ShowToastFn;
 }
 
 export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard2D(
-  { onReady, store, initialState, isDark, toast },
+  { onReady, store, isDark, toast },
   ref,
 ) {
   const isDarkRef = useRef(!!isDark); isDarkRef.current = !!isDark;
@@ -89,8 +87,11 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
 
   const toolSM = useToolStateMachine<GeomTool>('move');
 
-  const [showAxis, setShowAxisState] = useState<boolean>(initialState?.showAxis ?? false);
-  const [showGrid, setShowGridState] = useState<boolean>(initialState?.showGrid ?? false);
+  // View info (bbox/axis/grid) đọc 1 lần lúc mount từ store.meta.view.
+  const initialMeta = store.getState().meta;
+  const initialView = initialMeta.domain === '2d' ? initialMeta.view : DEFAULT_VIEW_2D;
+  const [showAxis, setShowAxisState] = useState<boolean>(initialView.showAxis);
+  const [showGrid, setShowGridState] = useState<boolean>(initialView.showGrid);
   const showAxisRef = useRef(showAxis); showAxisRef.current = showAxis;
   const showGridRef = useRef(showGrid); showGridRef.current = showGrid;
 
@@ -293,7 +294,7 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
         label: 'MiniBoard.2d',
         defaults: { disableElementHighlight: true },
         boardOptions: {
-          boundingbox: initialState?.bbox ?? [-10, 10, 10, -10],
+          boundingbox: initialView.bbox as [number, number, number, number],
           axis: false, grid: false,
           showCopyright: false, showNavigation: true,
           keepAspectRatio: true,

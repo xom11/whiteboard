@@ -1,32 +1,30 @@
 // src/stamps/graph-2d/serialize.ts
-// Serialize/deserialize graph2d scene State ↔ JSON string.
-// Format: plain State JSON (objects/order/counter/meta).
+//
+// graph-2d đã dùng plain State (không envelope) ngay từ đầu. Sau Tier D PR 3,
+// thin wrapper qua shared helper cho serialize. parseSceneState giữ behavior
+// null-on-invalid để host/index.tsx có thể discriminate "customData hỏng".
+
+import { serializeScene } from '../shared/serializeScene';
 import type { State } from '../../core/scene/types';
 
-/**
- * Serialize State thành JSON string để lưu vào customData.
- */
 export function stringifySceneState(state: State): string {
-  return JSON.stringify(state);
+  return serializeScene(state);
 }
 
-/**
- * Parse JSON string thành State. Trả về null nếu:
- * - JSON không hợp lệ
- * - domain không phải 'graph2d'
- * - thiếu các trường bắt buộc
- */
 export function parseSceneState(json: string): State | null {
+  if (!json) return null;
+  let raw: unknown;
   try {
-    const raw = JSON.parse(json);
-    if (!raw || typeof raw !== 'object') return null;
-    if (raw.meta?.domain !== 'graph2d') return null;
-    if (raw.meta?.version !== 1) return null;
-    if (typeof raw.counter !== 'number') return null;
-    if (!Array.isArray(raw.order)) return null;
-    if (!raw.objects || typeof raw.objects !== 'object') return null;
-    return raw as State;
+    raw = JSON.parse(json);
   } catch {
     return null;
   }
+  if (!raw || typeof raw !== 'object') return null;
+  const v = raw as Partial<State>;
+  if (v.meta?.domain !== 'graph2d') return null;
+  if (!v.meta?.view || typeof v.meta.view !== 'object') return null;
+  if (typeof v.counter !== 'number') return null;
+  if (!Array.isArray(v.order)) return null;
+  if (!v.objects || typeof v.objects !== 'object') return null;
+  return raw as State;
 }

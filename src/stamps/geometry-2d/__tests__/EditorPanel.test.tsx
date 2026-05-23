@@ -1,7 +1,9 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import React from 'react';
 import { GeometryEditorPanel, type GeometryEditorPanelHandle } from '../editor/EditorPanel';
-import { createEmptyState } from '../../../core/scene';
+import { createStore, createEmptyState } from '../../../core/scene';
+
+const makeStore = () => createStore(createEmptyState('2d'));
 
 // Mock state có 1 point để hasContent() = true (object count > 0).
 const mockState = (() => {
@@ -85,7 +87,7 @@ jest.mock('../render', () => ({
 
 describe('GeometryEditorPanel', () => {
   test('renders panel header + Insert/Cancel buttons', () => {
-    render(<GeometryEditorPanel initialState={null} onInsert={() => {}} onClose={() => {}} />);
+    render(<GeometryEditorPanel store={makeStore()} onInsert={() => {}} onClose={() => {}} />);
     expect(screen.getByText(/dựng hình học/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Chèn' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Huỷ' })).toBeInTheDocument();
@@ -97,7 +99,7 @@ describe('GeometryEditorPanel', () => {
     render(
       <GeometryEditorPanel
         ref={ref}
-        initialState={null}
+        store={makeStore()}
         onInsert={onInsert}
         onClose={jest.fn()}
         onStateChange={jest.fn()}
@@ -111,15 +113,14 @@ describe('GeometryEditorPanel', () => {
     expect(onInsert).toHaveBeenCalledTimes(1);
     const [jsonState, svg] = onInsert.mock.calls[0];
     const parsed = JSON.parse(jsonState);
-    expect(parsed.version).toBe(2);
-    expect(parsed.state).toBeDefined();
-    expect(parsed.state.meta.domain).toBe('2d');
+    expect(parsed.meta.domain).toBe('2d');
+    expect(parsed.meta.view).toBeDefined();
     expect(typeof svg).toBe('string');
   });
 
   test('Cancel calls onClose', () => {
     const onClose = jest.fn();
-    render(<GeometryEditorPanel initialState={null} onInsert={() => {}} onClose={onClose} />);
+    render(<GeometryEditorPanel store={makeStore()} onInsert={() => {}} onClose={onClose} />);
     fireEvent.click(screen.getByRole('button', { name: 'Huỷ' }));
     expect(onClose).toHaveBeenCalled();
   });
@@ -129,7 +130,7 @@ describe('GeometryEditorPanel', () => {
     const onRedo = jest.fn();
     render(
       <GeometryEditorPanel
-        initialState={null}
+        store={makeStore()}
         onInsert={() => {}}
         onClose={() => {}}
         isMobile
@@ -152,7 +153,7 @@ describe('GeometryEditorPanel', () => {
   it('mobile header undo/redo disabled khi canUndo/canRedo=false', () => {
     render(
       <GeometryEditorPanel
-        initialState={null}
+        store={makeStore()}
         onInsert={() => {}}
         onClose={() => {}}
         isMobile

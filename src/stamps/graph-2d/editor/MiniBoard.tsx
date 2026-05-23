@@ -64,7 +64,8 @@ export const MiniBoard = React.forwardRef<MiniBoardHandle, MiniBoardProps>(
 
     const toolSM = useToolStateMachine<GraphTool>('move');
 
-    const initialView = store.getState().meta.view;
+    const initialMeta = store.getState().meta;
+    const initialView = initialMeta.domain === 'graph2d' ? initialMeta.view : null;
     const [showAxis, setShowAxisState] = useState<boolean>(
       initialView?.showAxis ?? true,
     );

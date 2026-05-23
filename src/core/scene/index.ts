@@ -2,11 +2,24 @@
 export type {
   SceneObject,
   State,
+  StateMeta,
+  Domain,
+  SceneView,
+  View2D,
+  View3D,
+  ViewGraph2D,
+  ViewSettings,
   Action,
   KindDef,
   RenderCtx,
 } from './types';
-export { EMPTY_STATE, createEmptyState } from './types';
+export {
+  EMPTY_STATE,
+  DEFAULT_VIEW_2D,
+  DEFAULT_VIEW_3D,
+  DEFAULT_VIEW_GRAPH2D,
+  createEmptyState,
+} from './types';
 export { createStore } from './store';
 export type { Store, StoreListener, StoreOptions } from './store';
 export { reduce } from './reducer';
