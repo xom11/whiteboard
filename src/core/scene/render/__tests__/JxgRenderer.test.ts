@@ -260,6 +260,107 @@ describe('JxgRenderer (2D)', () => {
     expect(secEl.attrs.fillColor).toBe('#f59e0b');
   });
 
+  test('ADD point circumcenter → board.create("circumcenter", [A, B, C])', () => {
+    const store = createStore(createEmptyState('2d'));
+    const { board, created } = mockBoard();
+    new JxgRenderer(store, board as never);
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('A', 0, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('B', 4, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('C', 2, 3) } });
+    store.dispatch({
+      type: 'ADD',
+      payload: {
+        obj: {
+          id: 'O', kind: 'point', label: 'O', visible: true, locked: false,
+          layer: 'default', schemaVersion: 1,
+          attrs: { constraint: { kind: 'circumcenter', vertices: ['A', 'B', 'C'] } },
+        } as SceneObject,
+      },
+    });
+    const oElement = created[created.length - 1];
+    expect(oElement.type).toBe('circumcenter');
+    expect(oElement.parents).toEqual([created[0], created[1], created[2]]);
+  });
+
+  test('ADD point incenter → board.create("incenter", [A, B, C])', () => {
+    const store = createStore(createEmptyState('2d'));
+    const { board, created } = mockBoard();
+    new JxgRenderer(store, board as never);
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('A', 0, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('B', 4, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('C', 2, 3) } });
+    store.dispatch({
+      type: 'ADD',
+      payload: {
+        obj: {
+          id: 'I', kind: 'point', label: 'I', visible: true, locked: false,
+          layer: 'default', schemaVersion: 1,
+          attrs: { constraint: { kind: 'incenter', vertices: ['A', 'B', 'C'] } },
+        } as SceneObject,
+      },
+    });
+    const iElement = created[created.length - 1];
+    expect(iElement.type).toBe('incenter');
+    expect(iElement.parents).toEqual([created[0], created[1], created[2]]);
+  });
+
+  test('ADD point centroid → board.create("point", [fnX, fnY]) function-based', () => {
+    const store = createStore(createEmptyState('2d'));
+    const { board, created } = mockBoard();
+    new JxgRenderer(store, board as never);
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('A', 0, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('B', 6, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('C', 3, 9) } });
+    // Mock points cần có .X() và .Y() để centroid functions chạy được khi gọi.
+    created[0].X = () => 0; created[0].Y = () => 0;
+    created[1].X = () => 6; created[1].Y = () => 0;
+    created[2].X = () => 3; created[2].Y = () => 9;
+    store.dispatch({
+      type: 'ADD',
+      payload: {
+        obj: {
+          id: 'G', kind: 'point', label: 'G', visible: true, locked: false,
+          layer: 'default', schemaVersion: 1,
+          attrs: { constraint: { kind: 'centroid', vertices: ['A', 'B', 'C'] } },
+        } as SceneObject,
+      },
+    });
+    const gElement = created[created.length - 1];
+    expect(gElement.type).toBe('point');
+    expect(typeof gElement.parents[0]).toBe('function');
+    expect(typeof gElement.parents[1]).toBe('function');
+    expect(gElement.parents[0]()).toBeCloseTo(3);
+    expect(gElement.parents[1]()).toBeCloseTo(3);
+  });
+
+  test('ADD point orthocenter → intersection có _helpers cho cleanup', () => {
+    const store = createStore(createEmptyState('2d'));
+    const { board, created } = mockBoard();
+    new JxgRenderer(store, board as never);
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('A', 0, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('B', 6, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPoint('C', 2, 5) } });
+    store.dispatch({
+      type: 'ADD',
+      payload: {
+        obj: {
+          id: 'H', kind: 'point', label: 'H', visible: true, locked: false,
+          layer: 'default', schemaVersion: 1,
+          attrs: { constraint: { kind: 'orthocenter', vertices: ['A', 'B', 'C'] } },
+        } as SceneObject,
+      },
+    });
+    // Phải tạo: 3 point gốc + lineBC, altA (perpendicular), lineAC, altB (perpendicular), intersection = 8 total.
+    expect(created).toHaveLength(8);
+    const hElement = created[7];
+    expect(hElement.type).toBe('intersection');
+    expect(hElement._helpers).toHaveLength(4);
+    // Helpers: 2 line + 2 perpendicular (xen kẽ).
+    expect(hElement._helpers.map((h: any) => h.type)).toEqual(
+      ['line', 'perpendicular', 'line', 'perpendicular'],
+    );
+  });
+
   test('ADD point perpFoot → board.create("perpendicularpoint", [line, from])', () => {
     const store = createStore(createEmptyState('2d'));
     const { board, created } = mockBoard();

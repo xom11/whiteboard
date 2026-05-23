@@ -39,7 +39,11 @@ export type Constraint2D =
   | { kind: 'onPolygon'; polygonId: string; u: number; v: number }
   | { kind: 'midpoint'; p1: string; p2: string }
   | { kind: 'transformed'; source: string; transform: TransformDef }
-  | { kind: 'perpFoot'; from: string; onLine: string };
+  | { kind: 'perpFoot'; from: string; onLine: string }
+  | { kind: 'circumcenter'; vertices: [string, string, string] }
+  | { kind: 'incenter'; vertices: [string, string, string] }
+  | { kind: 'centroid'; vertices: [string, string, string] }
+  | { kind: 'orthocenter'; vertices: [string, string, string] };
 
 export function constraintRefs2D(c: Constraint2D): string[] {
   switch (c.kind) {
@@ -50,6 +54,10 @@ export function constraintRefs2D(c: Constraint2D): string[] {
     case 'midpoint': return [c.p1, c.p2];
     case 'transformed': return [c.source, ...transformRefs(c.transform)];
     case 'perpFoot': return [c.from, c.onLine];
+    case 'circumcenter': return [c.vertices[0], c.vertices[1], c.vertices[2]];
+    case 'incenter': return [c.vertices[0], c.vertices[1], c.vertices[2]];
+    case 'centroid': return [c.vertices[0], c.vertices[1], c.vertices[2]];
+    case 'orthocenter': return [c.vertices[0], c.vertices[1], c.vertices[2]];
     default: return [];
   }
 }

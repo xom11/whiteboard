@@ -67,6 +67,38 @@ const def: KindDef<PointAttrs> = {
         throw new Error('point.perpFoot: from và onLine bắt buộc');
       }
     }
+    if (c.kind === 'circumcenter') {
+      if (!Array.isArray(c.vertices) || c.vertices.length !== 3) {
+        throw new Error('point.circumcenter: vertices phải là tuple 3 id');
+      }
+      if (!c.vertices[0] || !c.vertices[1] || !c.vertices[2]) {
+        throw new Error('point.circumcenter: 3 vertex id phải non-empty');
+      }
+    }
+    if (c.kind === 'incenter') {
+      if (!Array.isArray(c.vertices) || c.vertices.length !== 3) {
+        throw new Error('point.incenter: vertices phải là tuple 3 id');
+      }
+      if (!c.vertices[0] || !c.vertices[1] || !c.vertices[2]) {
+        throw new Error('point.incenter: 3 vertex id phải non-empty');
+      }
+    }
+    if (c.kind === 'centroid') {
+      if (!Array.isArray(c.vertices) || c.vertices.length !== 3) {
+        throw new Error('point.centroid: vertices phải là tuple 3 id');
+      }
+      if (!c.vertices[0] || !c.vertices[1] || !c.vertices[2]) {
+        throw new Error('point.centroid: 3 vertex id phải non-empty');
+      }
+    }
+    if (c.kind === 'orthocenter') {
+      if (!Array.isArray(c.vertices) || c.vertices.length !== 3) {
+        throw new Error('point.orthocenter: vertices phải là tuple 3 id');
+      }
+      if (!c.vertices[0] || !c.vertices[1] || !c.vertices[2]) {
+        throw new Error('point.orthocenter: 3 vertex id phải non-empty');
+      }
+    }
   },
   dependsOn: (a) => constraintRefs2D(a.constraint),
   measure: (obj) => {
@@ -108,6 +140,22 @@ const def: KindDef<PointAttrs> = {
       const fromLabel = state?.objects[c.from]?.label ?? c.from;
       const lineLabel = state?.objects[c.onLine]?.label ?? c.onLine;
       return `${obj.label} = chân ⟂ từ ${fromLabel} xuống ${lineLabel}`;
+    }
+    if (c.kind === 'circumcenter') {
+      const labels = c.vertices.map((id) => state?.objects[id]?.label ?? id).join('');
+      return `${obj.label} = tâm ngoại tiếp Δ${labels}`;
+    }
+    if (c.kind === 'incenter') {
+      const labels = c.vertices.map((id) => state?.objects[id]?.label ?? id).join('');
+      return `${obj.label} = tâm nội tiếp Δ${labels}`;
+    }
+    if (c.kind === 'centroid') {
+      const labels = c.vertices.map((id) => state?.objects[id]?.label ?? id).join('');
+      return `${obj.label} = trọng tâm Δ${labels}`;
+    }
+    if (c.kind === 'orthocenter') {
+      const labels = c.vertices.map((id) => state?.objects[id]?.label ?? id).join('');
+      return `${obj.label} = trực tâm Δ${labels}`;
     }
     return `Điểm ${obj.label}`;
   },
@@ -170,6 +218,59 @@ const def: KindDef<PointAttrs> = {
       // JSXGraph 'perpendicularpoint': create('perpendicularpoint', [line, point])
       //   → trả về chân vuông góc của point xuống line.
       return board.create('perpendicularpoint', [onLine, from], opts);
+    }
+    if (c.kind === 'circumcenter') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const a: any = ctx.resolveRef(c.vertices[0]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const b: any = ctx.resolveRef(c.vertices[1]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const c3: any = ctx.resolveRef(c.vertices[2]);
+      // JSXGraph 'circumcenter': create('circumcenter', [A, B, C])
+      return board.create('circumcenter', [a, b, c3], opts);
+    }
+    if (c.kind === 'incenter') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const a: any = ctx.resolveRef(c.vertices[0]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const b: any = ctx.resolveRef(c.vertices[1]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const c3: any = ctx.resolveRef(c.vertices[2]);
+      return board.create('incenter', [a, b, c3], opts);
+    }
+    if (c.kind === 'centroid') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const a: any = ctx.resolveRef(c.vertices[0]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const b: any = ctx.resolveRef(c.vertices[1]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const c3: any = ctx.resolveRef(c.vertices[2]);
+      // JSXGraph function-based point: parents = [() => x, () => y]
+      // Function được gọi lại mỗi frame → live update khi user kéo vertex.
+      return board.create('point', [
+        () => (a.X() + b.X() + c3.X()) / 3,
+        () => (a.Y() + b.Y() + c3.Y()) / 3,
+      ], opts);
+    }
+    if (c.kind === 'orthocenter') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const a: any = ctx.resolveRef(c.vertices[0]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const b: any = ctx.resolveRef(c.vertices[1]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const c3: any = ctx.resolveRef(c.vertices[2]);
+      const hide = { visible: false, withLabel: false, fixed: true, name: '' };
+      // Altitude A→BC: line BC + perpendicular từ A xuống BC.
+      const lineBC = board.create('line', [b, c3], hide);
+      const altA = board.create('perpendicular', [lineBC, a], hide);
+      // Altitude B→AC: line AC + perpendicular từ B xuống AC.
+      const lineAC = board.create('line', [a, c3], hide);
+      const altB = board.create('perpendicular', [lineAC, b], hide);
+      // Trực tâm = giao 2 altitude (branch 0 — chỉ có 1 giao điểm).
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const ortho: any = board.create('intersection', [altA, altB, 0], opts);
+      ortho._helpers = [lineBC, altA, lineAC, altB];
+      return ortho;
     }
     return board.create('point', [0, 0], opts);
   },

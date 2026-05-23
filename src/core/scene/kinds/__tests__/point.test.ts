@@ -126,4 +126,102 @@ describe('kinds/point (2D)', () => {
       } as never)).toThrow(/perpFoot/);
     });
   });
+
+  describe('constraint circumcenter', () => {
+    const def = getKind('point');
+
+    test('dependsOn → 3 vertices', () => {
+      expect(def.dependsOn({
+        constraint: { kind: 'circumcenter', vertices: ['A', 'B', 'C'] },
+      } as never)).toEqual(['A', 'B', 'C']);
+    });
+
+    test('describe ghi rõ tâm ngoại tiếp', () => {
+      const obj = mkObj('point', 'O', {
+        constraint: { kind: 'circumcenter', vertices: ['A', 'B', 'C'] },
+      });
+      expect(def.describe(obj)).toMatch(/tâm ngoại tiếp.*ABC/);
+    });
+
+    test('validate throw khi vertices không phải tuple 3', () => {
+      expect(() => def.validate?.({
+        constraint: { kind: 'circumcenter', vertices: ['A', 'B'] },
+      } as never)).toThrow(/circumcenter/);
+    });
+
+    test('validate throw khi vertex id rỗng', () => {
+      expect(() => def.validate?.({
+        constraint: { kind: 'circumcenter', vertices: ['A', '', 'C'] },
+      } as never)).toThrow(/circumcenter/);
+    });
+  });
+
+  describe('constraint incenter', () => {
+    const def = getKind('point');
+
+    test('dependsOn → 3 vertices', () => {
+      expect(def.dependsOn({
+        constraint: { kind: 'incenter', vertices: ['A', 'B', 'C'] },
+      } as never)).toEqual(['A', 'B', 'C']);
+    });
+
+    test('describe ghi rõ tâm nội tiếp', () => {
+      const obj = mkObj('point', 'I', {
+        constraint: { kind: 'incenter', vertices: ['A', 'B', 'C'] },
+      });
+      expect(def.describe(obj)).toMatch(/tâm nội tiếp.*ABC/);
+    });
+
+    test('validate throw khi vertices không phải tuple 3', () => {
+      expect(() => def.validate?.({
+        constraint: { kind: 'incenter', vertices: ['A'] },
+      } as never)).toThrow(/incenter/);
+    });
+  });
+
+  describe('constraint centroid', () => {
+    const def = getKind('point');
+
+    test('dependsOn → 3 vertices', () => {
+      expect(def.dependsOn({
+        constraint: { kind: 'centroid', vertices: ['A', 'B', 'C'] },
+      } as never)).toEqual(['A', 'B', 'C']);
+    });
+
+    test('describe ghi rõ trọng tâm', () => {
+      const obj = mkObj('point', 'G', {
+        constraint: { kind: 'centroid', vertices: ['A', 'B', 'C'] },
+      });
+      expect(def.describe(obj)).toMatch(/trọng tâm.*ABC/);
+    });
+
+    test('validate throw khi vertices không phải tuple 3', () => {
+      expect(() => def.validate?.({
+        constraint: { kind: 'centroid', vertices: ['A', 'B'] },
+      } as never)).toThrow(/centroid/);
+    });
+  });
+
+  describe('constraint orthocenter', () => {
+    const def = getKind('point');
+
+    test('dependsOn → 3 vertices', () => {
+      expect(def.dependsOn({
+        constraint: { kind: 'orthocenter', vertices: ['A', 'B', 'C'] },
+      } as never)).toEqual(['A', 'B', 'C']);
+    });
+
+    test('describe ghi rõ trực tâm', () => {
+      const obj = mkObj('point', 'H', {
+        constraint: { kind: 'orthocenter', vertices: ['A', 'B', 'C'] },
+      });
+      expect(def.describe(obj)).toMatch(/trực tâm.*ABC/);
+    });
+
+    test('validate throw khi vertices không phải tuple 3', () => {
+      expect(() => def.validate?.({
+        constraint: { kind: 'orthocenter', vertices: ['A', 'B', 'C', 'D'] },
+      } as never)).toThrow(/orthocenter/);
+    });
+  });
 });
