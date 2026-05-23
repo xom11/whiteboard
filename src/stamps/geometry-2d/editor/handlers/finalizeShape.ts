@@ -276,7 +276,7 @@ export function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
       const fromPoint = findPickIdByKind(ctx, 'point');
       const onLine = findPickIdByKind(ctx, 'line');
       if (!fromPoint || !onLine) return;
-      const id = freshId(ctx, 'h');
+      const id = freshId(ctx, 'pf');
       const label = ctx.nextLabel('point');
       ctx.store.dispatch({
         type: 'ADD',
