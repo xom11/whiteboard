@@ -113,3 +113,32 @@ describe('finalizeShape — circle tools Tier 2', () => {
     expect(ctx.toast).toHaveBeenCalled();
   });
 });
+
+describe('finalizeShape — angleBisector dual mode', () => {
+  test('3 picks point → 1 ADD line với construction angleBisector', () => {
+    const { ctx, dispatched } = mkCtx(['A', 'V', 'B']);
+    // pendingRef mặc định là 3 point (elementClass: 1).
+    finalizeShape(ctx, { key: 'angleBisector', label: '', hint: '', icon: null as any, group: 'construct', needs: 3, accepts: ['pointOrLine', 'pointOrLine', 'pointOrLine'] });
+    expect(dispatched).toHaveLength(1);
+    expect(dispatched[0].payload.obj.kind).toBe('line');
+    expect(dispatched[0].payload.obj.attrs.construction).toEqual({
+      kind: 'angleBisector', p1: 'A', vertex: 'V', p2: 'B',
+    });
+  });
+
+  test('2 picks line → 2 ADD line với construction angleBisectorLines (branch 0 + 1)', () => {
+    const { ctx, dispatched } = mkCtx(['L1', 'L2']);
+    ctx.pendingRef.current = [
+      { elementClass: 2 }, // line
+      { elementClass: 2 },
+    ] as any;
+    finalizeShape(ctx, { key: 'angleBisector', label: '', hint: '', icon: null as any, group: 'construct', needs: 3, accepts: ['pointOrLine', 'pointOrLine', 'pointOrLine'] });
+    expect(dispatched).toHaveLength(2);
+    expect(dispatched[0].payload.obj.attrs.construction).toEqual({
+      kind: 'angleBisectorLines', line1: 'L1', line2: 'L2', branch: 0,
+    });
+    expect(dispatched[1].payload.obj.attrs.construction).toEqual({
+      kind: 'angleBisectorLines', line1: 'L1', line2: 'L2', branch: 1,
+    });
+  });
+});

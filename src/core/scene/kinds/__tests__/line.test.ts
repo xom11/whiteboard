@@ -55,6 +55,18 @@ describe('kinds/line (2D)', () => {
       } as never)).toEqual(['A', 'V', 'B']);
     });
 
+    test('dependsOn angleBisectorLines = [line1, line2]', () => {
+      expect(def.dependsOn({
+        construction: { kind: 'angleBisectorLines', line1: 'L1', line2: 'L2', branch: 0 },
+      } as never)).toEqual(['L1', 'L2']);
+    });
+
+    test('dependsOn angleBisectorLines strip ":border:N" → polyId', () => {
+      expect(def.dependsOn({
+        construction: { kind: 'angleBisectorLines', line1: 'poly1:border:0', line2: 'L2', branch: 1 },
+      } as never)).toEqual(['poly1', 'L2']);
+    });
+
     test('dependsOn tangent = [throughPoint, toCircle]', () => {
       expect(def.dependsOn({
         construction: { kind: 'tangent', throughPoint: 'P', toCircle: 'C' },

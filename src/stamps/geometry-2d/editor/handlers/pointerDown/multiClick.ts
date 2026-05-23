@@ -23,12 +23,14 @@ export function handleMultiClickTool(
   if (toolDef.accepts) {
     // --- Mode A: strict, order-flexible ---
     const usedKinds = ctx.pendingRef.current.map((p) => objKind(p));
-    const remaining: Array<'point' | 'line' | 'circle' | 'any' | 'lineOrCircle'> = [...toolDef.accepts];
+    const remaining: Array<'point' | 'line' | 'circle' | 'any' | 'lineOrCircle' | 'pointOrLine'> = [...toolDef.accepts];
     for (const u of usedKinds) {
       if (u === 'other') continue;
       // 'lineOrCircle' slot có thể được lấp bởi line hoặc circle.
+      // 'pointOrLine' slot có thể được lấp bởi point hoặc line.
       let i = remaining.indexOf(u);
       if (i < 0 && (u === 'line' || u === 'circle')) i = remaining.indexOf('lineOrCircle');
+      if (i < 0 && (u === 'point' || u === 'line')) i = remaining.indexOf('pointOrLine');
       if (i >= 0) remaining.splice(i, 1);
     }
     const strictPoint = hits.find((o) => objKind(o) === 'point') ?? null;
@@ -40,21 +42,32 @@ export function handleMultiClickTool(
     else if (remaining.includes('lineOrCircle') && (lineHit || circleHit)) {
       pick = lineHit ?? circleHit;
     }
+    else if (remaining.includes('pointOrLine') && (strictPoint || lineHit)) {
+      pick = strictPoint ?? lineHit;
+    }
     else if (remaining.includes('any') && (strictPoint || lineHit || circleHit)) {
       pick = strictPoint ?? lineHit ?? circleHit;
-    } else if (remaining.includes('point')) {
+    } else if (remaining.includes('point') || remaining.includes('pointOrLine')) {
       const near = ctx.findNearestPointJxg(e, 12);
       if (near) {
         pick = near;
       } else {
-        // Mode A tool nhận 'point' + click khu vực rỗng → tự tạo free point
-        // tại vị trí click. Đỡ cho user phải đổi sang tool 'point' rồi quay lại
-        // (tangent / perpendicular / parallel / angleBisector ...). Các slot
-        // khác (line/circle) vẫn yêu cầu hit object có sẵn.
+        // Mode A tool nhận 'point' / 'pointOrLine' + click khu vực rỗng → tự tạo
+        // free point tại vị trí click. Đỡ cho user phải đổi sang tool 'point'
+        // rồi quay lại (tangent / perpendicular / parallel / angleBisector ...).
+        // Các slot khác (line/circle) vẫn yêu cầu hit object có sẵn.
+        //
+        // angleBisector: nếu lần click đầu đã là line thì cấm tạo free-point
+        // (mode 2-line đã chốt) — handled by mode-consistency check phía dưới.
         //
         // pickId set trực tiếp từ return value của dispatchAddFreePoint vì
         // reverse-map (jxgIdToSceneRef) được rebuild qua store subscribe →
         // chưa sync xong tại thời điểm này; gọi jxgIdToSceneId(pick) sẽ ra null.
+        if (toolDef.key === 'angleBisector' && ctx.pendingRef.current.length > 0
+            && objKind(ctx.pendingRef.current[0]) === 'line') {
+          ctx.flashWarn('Đã chọn đường — click thêm 1 đường/đoạn nữa để tạo 2 tia phân giác');
+          return;
+        }
         pickId = dispatchAddFreePoint(ctx, x, y);
         pick = ctx.jxgFromSceneId(pickId);
       }
@@ -65,6 +78,7 @@ export function handleMultiClickTool(
         : k === 'line' ? 'một đường/đoạn'
         : k === 'circle' ? 'một đường tròn'
         : k === 'lineOrCircle' ? 'một đường hoặc đường tròn'
+        : k === 'pointOrLine' ? 'một điểm hoặc đường/đoạn'
         : 'một đối tượng',
       );
       ctx.flashWarn(`Còn cần click vào ${needs.join(' + ')} có sẵn`);
@@ -73,6 +87,19 @@ export function handleMultiClickTool(
     if (ctx.pendingRef.current.includes(pick)) {
       ctx.flashWarn('Đã chọn đối tượng này — chọn đối tượng khác');
       return;
+    }
+    // angleBisector: ép tính nhất quán mode (3-point ↔ 2-line) — không trộn lẫn.
+    if (toolDef.key === 'angleBisector' && ctx.pendingRef.current.length > 0) {
+      const firstKind = objKind(ctx.pendingRef.current[0]);
+      const newKind = objKind(pick);
+      if (firstKind === 'line' && newKind !== 'line') {
+        ctx.flashWarn('Đã chọn đường — chỉ click thêm 1 đường/đoạn nữa');
+        return;
+      }
+      if (firstKind === 'point' && newKind !== 'point') {
+        ctx.flashWarn('Đã chọn điểm — click thêm điểm (đỉnh ở giữa)');
+        return;
+      }
     }
     if (!pickId) pickId = ctx.jxgIdToSceneId(pick);
   } else {
@@ -95,6 +122,15 @@ export function handleMultiClickTool(
   ctx.pendingRef.current.push(pick);
   if (pickId) ctx.pendingIdsRef.current.push(pickId);
   ctx.setPendingCount(ctx.pendingIdsRef.current.length);
+
+  // angleBisector 2-line mode: finalize ngay khi đủ 2 đường (không chờ 3 picks).
+  if (toolDef.key === 'angleBisector'
+      && ctx.pendingIdsRef.current.length === 2
+      && objKind(ctx.pendingRef.current[0]) === 'line') {
+    finalizeShape(ctx, toolDef);
+    ctx.clearPending();
+    return;
+  }
 
   if (ctx.pendingIdsRef.current.length >= toolDef.needs) {
     const tk = toolDef.key;

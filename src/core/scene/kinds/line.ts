@@ -17,6 +17,7 @@ export type LineConstruction =
   | { kind: 'parallel'; throughPoint: string; toLine: string }
   | { kind: 'perpBisector'; p1: string; p2: string }
   | { kind: 'angleBisector'; p1: string; vertex: string; p2: string }
+  | { kind: 'angleBisectorLines'; line1: string; line2: string; branch: 0 | 1 }
   | { kind: 'tangent'; throughPoint: string; toCircle: string; branch?: 0 | 1 | 'on' };
 
 export type LineAttrs = {
@@ -49,6 +50,8 @@ function constructionRefs(c: LineConstruction): string[] {
       return [c.p1, c.p2];
     case 'angleBisector':
       return [c.p1, c.vertex, c.p2];
+    case 'angleBisectorLines':
+      return [stripBorderSuffix(c.line1), stripBorderSuffix(c.line2)];
     case 'tangent':
       return [c.throughPoint, c.toCircle];
   }
@@ -72,6 +75,7 @@ const def: KindDef<LineAttrs> = {
       case 'parallel':      return `${obj.label} ∥ ${L(c.toLine)} qua ${L(c.throughPoint)}`;
       case 'perpBisector':  return `${obj.label}: trung trực ${L(c.p1)}${L(c.p2)}`;
       case 'angleBisector': return `${obj.label}: phân giác góc ${L(c.p1)}${L(c.vertex)}${L(c.p2)}`;
+      case 'angleBisectorLines': return `${obj.label}: phân giác ${L(c.line1)} & ${L(c.line2)} (${c.branch === 0 ? '1' : '2'})`;
       case 'tangent':       return `${obj.label}: tiếp tuyến ${L(c.toCircle)} qua ${L(c.throughPoint)}`;
     }
   },
@@ -131,6 +135,31 @@ const def: KindDef<LineAttrs> = {
         const vertex = ctx.resolveRef(c.vertex);
         const p2 = ctx.resolveRef(c.p2);
         return board.create('bisector', [p1, vertex, p2], baseOpts);
+      }
+      case 'angleBisectorLines': {
+        // JSXGraph 'bisectorlines' tạo 2 đường phân giác vuông góc của góc giữa
+        // 2 đường thẳng (qua giao điểm). Composition trả về có .line1 và .line2.
+        // Mỗi scene entry chỉ hiển thị 1 nhánh (branch 0/1) — nhánh còn lại lưu
+        // trong _helpers để JxgRenderer dọn dẹp khi entry bị xoá.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const line1Jxg = ctx.resolveRef(c.line1) as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const line2Jxg = ctx.resolveRef(c.line2) as any;
+        const comp = board.create('bisectorlines', [line1Jxg, line2Jxg], {
+          line1: { visible: false, withLabel: false, fixed: true, name: '' },
+          line2: { visible: false, withLabel: false, fixed: true, name: '' },
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const selected = (c.branch === 0 ? comp.line1 : comp.line2) as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const other = (c.branch === 0 ? comp.line2 : comp.line1) as any;
+        selected.setAttribute({
+          ...baseOpts,
+          visible: obj.visible,
+          fixed: obj.locked,
+        });
+        (selected as Record<string, unknown>)._helpers = [other];
+        return selected;
       }
       case 'tangent': {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -94,7 +94,7 @@ export function ToolGrid<TKey extends string, TGroup extends string>(
                     onFocus={(e) => showHover(e.currentTarget, t)}
                     onBlur={hideHover}
                     className={[
-                      'relative flex h-8 items-center justify-center rounded-md transition',
+                      'relative flex h-10 items-center justify-center rounded-md transition',
                       active
                         ? 'bg-emerald-600 text-white shadow-sm'
                         : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900',

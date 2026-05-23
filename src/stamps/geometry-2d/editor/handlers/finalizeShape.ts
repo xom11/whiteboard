@@ -68,6 +68,23 @@ export function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
       return;
     }
     case 'angleBisector': {
+      const picks = ctx.pendingRef.current;
+      // Mode 2-line: 2 picks đều là line/segment → tạo 2 scene line (2 tia
+      // phân giác vuông góc với nhau qua giao điểm 2 đường).
+      if (picks.length === 2 && objKind(picks[0]) === 'line' && objKind(picks[1]) === 'line') {
+        for (const branch of [0, 1] as const) {
+          const id = freshId(ctx, 'ab');
+          const label = ctx.nextLabel('line');
+          ctx.store.dispatch({
+            type: 'ADD',
+            payload: { obj: mkSceneObj(id, 'line', label, {
+              construction: { kind: 'angleBisectorLines', line1: ids[0], line2: ids[1], branch },
+            }) },
+          });
+        }
+        return;
+      }
+      // Mode 3-point: behavior cũ.
       const id = freshId(ctx, 'ab');
       const label = ctx.nextLabel('line');
       ctx.store.dispatch({

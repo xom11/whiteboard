@@ -234,7 +234,7 @@ export function MobileToolDrawer<TKey extends string, TGroup extends string>({
                             : 'bg-slate-50 text-slate-700 hover:bg-slate-100',
                         ].join(' ')}
                       >
-                        <span className="flex h-6 w-6 items-center justify-center">{t.icon}</span>
+                        <span className="flex h-8 w-8 items-center justify-center">{t.icon}</span>
                         <span className="text-center text-[11px] font-medium leading-tight line-clamp-2">
                           {t.label}
                         </span>

@@ -1,6 +1,36 @@
 // src/core/scene/kinds/polygon.ts
 import { registerKind } from '../registry';
 import type { KindDef } from '../types';
+import { labelOf } from './labelOf';
+
+/** Tên tiếng Việt cho đa giác đều theo số cạnh. */
+function regularPolygonName(n: number): string {
+  if (n === 3) return 'Tam giác đều';
+  if (n === 4) return 'Hình vuông';
+  if (n === 5) return 'Ngũ giác đều';
+  if (n === 6) return 'Lục giác đều';
+  return `${n}-giác đều`;
+}
+
+/**
+ * Sinh nhãn đỉnh dạng "ABCDE..." khi p1/p2 là 2 chữ cái in hoa liên tiếp.
+ * Vd p1=A, p2=B, n=4 → "ABCD". Vd p1=C, p2=D, n=3 → "CDE".
+ * Fallback "p1Label · p2Label…" khi không suy ra được dãy chữ.
+ */
+function regularVertexLabels(p1Label: string, p2Label: string, n: number): string {
+  const A = 'A'.charCodeAt(0);
+  const Z = 'Z'.charCodeAt(0);
+  if (p1Label.length === 1 && p2Label.length === 1) {
+    const c1 = p1Label.charCodeAt(0);
+    const c2 = p2Label.charCodeAt(0);
+    if (c1 >= A && c1 <= Z && c2 === c1 + 1 && c1 + n - 1 <= Z) {
+      let out = '';
+      for (let i = 0; i < n; i++) out += String.fromCharCode(c1 + i);
+      return out;
+    }
+  }
+  return `${p1Label}${p2Label}…`;
+}
 
 /**
  * Cách dựng đa giác phái sinh. Khi `construction` có mặt, `vertices` bị bỏ qua
@@ -47,12 +77,13 @@ const def: KindDef<PolygonAttrs> = {
     if (a.construction?.kind === 'regular') return [a.construction.p1, a.construction.p2];
     return [...(a.vertices ?? [])];
   },
-  describe: (obj) => {
+  describe: (obj, state) => {
     if (obj.attrs.construction?.kind === 'regular') {
       const c = obj.attrs.construction;
-      return `Đa giác đều ${c.n} cạnh (${c.p1}, ${c.p2})`;
+      const labels = regularVertexLabels(labelOf(c.p1, state), labelOf(c.p2, state), c.n);
+      return `${regularPolygonName(c.n)} ${labels}`;
     }
-    return `Đa giác ${(obj.attrs.vertices ?? []).join('')}`;
+    return `Đa giác ${(obj.attrs.vertices ?? []).map((id) => labelOf(id, state)).join('')}`;
   },
   render: (obj, ctx) => {
     const board = ctx.jxg as any;
