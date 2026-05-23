@@ -89,7 +89,7 @@ function buildStampImageElement(
  * Chèn (hoặc thay thế) một stamp image vào Excalidraw scene.
  *
  * Flow:
- *   1. svgToImageElement(svg) → fileId + dataURL + kích thước
+ *   1. createStampFile(svg) → fileId + dataURL + kích thước
  *   2. api.addFiles([...]) — đăng ký SVG dưới fileId
  *   3. Nếu editingElementId → update element cũ (giữ position, đổi fileId+customData+size)
  *      Còn lại → tạo image element mới ở giữa viewport (hoặc position truyền vào)

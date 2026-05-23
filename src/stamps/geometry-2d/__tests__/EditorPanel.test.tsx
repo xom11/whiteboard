@@ -39,17 +39,6 @@ jest.mock('../editor/MiniBoard', () => {
     getStore: () => ({ getState: () => mockState, subscribe: () => () => {}, dispatch: () => {} }),
     highlight: () => {},
     getBbox: () => [-10, 10, 10, -10],
-    getShowAxis: () => false,
-    getShowGrid: () => false,
-    getTool: () => 'move',
-    setTool: () => {},
-    setShowAxis: () => {},
-    setShowGrid: () => {},
-    undo: () => {},
-    redo: () => {},
-    canUndo: () => true,
-    canRedo: () => false,
-    subscribe: () => () => {},
     onSelect: () => () => {},
     onTransformParam: () => () => {},
     confirmTransformParam: () => {},
@@ -102,7 +91,9 @@ describe('GeometryEditorPanel', () => {
         store={makeStore()}
         onInsert={onInsert}
         onClose={jest.fn()}
-        onStateChange={jest.fn()}
+        selectedTool="move"
+        showAxis={false}
+        showGrid={false}
       />,
     );
     // Wait for MiniBoard onReady → handleRef populated.

@@ -33,8 +33,6 @@ describe('3d/serialize: customData type guard', () => {
         kind: 'geometry3d',
         version: 2,
         jsonState: '{}',
-        svgWidth: 100,
-        svgHeight: 100,
       }),
     ).toBe(true);
   });
