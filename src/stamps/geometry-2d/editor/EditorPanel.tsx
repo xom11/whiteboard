@@ -6,7 +6,7 @@ import { renderGeometrySvgFromState } from '../render';
 import { PropertiesPopover } from './PropertiesPopover';
 import { TransformParamPopover } from './TransformParamPopover';
 import { UndoIcon, RedoIcon } from './icons';
-import type { Store } from '../../../core/scene/store';
+import { useEditorState, type Store } from '../../../core/scene';
 import { STAMP_PANEL_DESKTOP } from '../../shared/StampLeftPanel/constants';
 import { ToastProvider, ToastHost, useToast } from '../../shared/Toast';
 
@@ -17,8 +17,14 @@ interface Props {
   onClose: () => void;
   /** Khi true, panel position offset left để chừa chỗ cho StampLeftPanel (240px). */
   withLeftPanel?: boolean;
-  /** Callback khi handle/state thay đổi — parent sync LeftPanel state. */
-  onStateChange?: (state: GeomBoardState) => void;
+  /** Controlled prop — host owns (Tier 2 F). */
+  selectedTool: GeomTool;
+  /** Controlled prop — host owns (Tier 2 F). */
+  showAxis: boolean;
+  /** Controlled prop — host owns (Tier 2 F). */
+  showGrid: boolean;
+  /** Notify host về canUndo/canRedo qua store subscribe (Tier 2 F). */
+  onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
   isDark?: boolean;
   /** Mobile mode: full-screen + hamburger header. */
   isMobile?: boolean;
@@ -33,20 +39,7 @@ interface Props {
   onSelectionChange?: (id: string | undefined) => void;
 }
 
-export interface GeomBoardState {
-  tool: GeomTool;
-  showAxis: boolean;
-  showGrid: boolean;
-  canUndo: boolean;
-  canRedo: boolean;
-}
-
 export interface GeometryEditorPanelHandle {
-  setTool: (t: GeomTool) => void;
-  setShowAxis: (b: boolean) => void;
-  setShowGrid: (b: boolean) => void;
-  undo: () => void;
-  redo: () => void;
   /** Trigger Chèn programmatically (cho auto-insert khi click outside). */
   insert: () => boolean;
   /** Có nội dung để chèn không? */
@@ -56,7 +49,27 @@ export interface GeometryEditorPanelHandle {
 }
 
 const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
-  function GeometryEditorPanelInner({ store, onInsert, onClose, withLeftPanel = false, onStateChange, isDark, isMobile = false, onOpenDrawer, onUndo, onRedo, canUndo, canRedo, onSelectionChange }, ref) {
+  function GeometryEditorPanelInner(
+    {
+      store,
+      onInsert,
+      onClose,
+      withLeftPanel = false,
+      selectedTool,
+      showAxis,
+      showGrid,
+      onHistoryChange,
+      isDark,
+      isMobile = false,
+      onOpenDrawer,
+      onUndo,
+      onRedo,
+      canUndo,
+      canRedo,
+      onSelectionChange,
+    },
+    ref,
+  ) {
     const { showToast } = useToast();
     const handleRef = useRef<MiniBoardHandle | null>(null);
     const [ready, setReady] = useState(false);
@@ -66,39 +79,29 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
     // reflectLine/reflectPoint); TransformParamPopover chỉ render 3 tool có
     // numeric param — guard ở chỗ render.
     const [transformPopover, setTransformPopover] = useState<TransformPopoverInfo>(null);
-    const onStateChangeRef = useRef(onStateChange);
-    useEffect(() => { onStateChangeRef.current = onStateChange; }, [onStateChange]);
     const onSelectionChangeRef = useRef(onSelectionChange);
     useEffect(() => { onSelectionChangeRef.current = onSelectionChange; }, [onSelectionChange]);
 
-    const emitState = useCallback(() => {
-      const h = handleRef.current;
-      if (!h) return;
-      setHasContent(Object.keys(h.getState().objects).length > 0);
-      const cb = onStateChangeRef.current;
-      if (!cb) return;
-      cb({
-        tool: h.getTool(),
-        showAxis: h.getShowAxis(),
-        showGrid: h.getShowGrid(),
-        canUndo: h.canUndo(),
-        canRedo: h.canRedo(),
-      });
-    }, []);
+    // Tier 2 F — propagate canUndo/canRedo + keyboard shortcuts qua shared hook.
+    useEditorState({ store, onHistoryChange });
+
+    // hasContent: track store size để gate Insert button.
+    useEffect(() => {
+      const sync = () => setHasContent(Object.keys(store.getState().objects).length > 0);
+      sync();
+      return store.subscribe(sync);
+    }, [store]);
 
     const handleReady = useCallback(() => {
       const h = handleRef.current;
       if (!h) return;
       setReady(true);
-      emitState();
-      // Subscribe để parent biết khi nào tool/axis/grid/undo thay đổi
-      h.subscribe(emitState);
       h.onSelect((snap: ObjectSnapshot) => {
         setPropsPopover(snap);
         onSelectionChangeRef.current?.(snap.id);
       });
       h.onTransformParam((info) => setTransformPopover(info));
-    }, [emitState]);
+    }, []);
 
     const dismissPropsPopover = useCallback(() => {
       setPropsPopover(null);
@@ -113,8 +116,6 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
       const state = h.getState();
       if (Object.keys(state.objects).length === 0) return false;
       const bbox = h.getBbox();
-      const showAxis = h.getShowAxis();
-      const showGrid = h.getShowGrid();
       const jsonState = serializeBoard(state, { bbox, showAxis, showGrid });
       // Fire-and-forget. Caller (`tryInsert`) chỉ cần biết có nội dung không.
       void (async () => {
@@ -126,18 +127,13 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
         }
       })();
       return true;
-    }, [onInsert]);
+    }, [onInsert, showAxis, showGrid]);
 
     const handleInsert = useCallback(() => {
       performInsert();
     }, [performInsert]);
 
     useImperativeHandle(ref, () => ({
-      setTool: (t) => handleRef.current?.setTool(t),
-      setShowAxis: (b) => handleRef.current?.setShowAxis(b),
-      setShowGrid: (b) => handleRef.current?.setShowGrid(b),
-      undo: () => handleRef.current?.undo(),
-      redo: () => handleRef.current?.redo(),
       insert: performInsert,
       hasContent: () => Object.keys(handleRef.current?.getState().objects ?? {}).length > 0,
       selectObject: (id) => handleRef.current?.highlight(id),
@@ -241,6 +237,9 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
             <MiniBoard2D
               ref={handleRef}
               store={store}
+              selectedTool={selectedTool}
+              showAxis={showAxis}
+              showGrid={showGrid}
               onReady={handleReady}
               isDark={isDark}
               toast={showToast}

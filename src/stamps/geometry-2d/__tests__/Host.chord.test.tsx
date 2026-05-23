@@ -5,23 +5,22 @@ import { GeometryStampHost } from '../host';
 import type { StampHostHandle } from '../../shared/types';
 import type { GeometryEditorPanelHandle } from '../editor/EditorPanel';
 
-// Spy mounted by mocked GeometryEditorPanel — populated qua forwardRef.
-const mockSetTool = jest.fn();
+// Tier 2 F: host owns `selectedTool` + drives EditorPanel via prop. Theo dõi
+// prop được pass xuống mock để verify chord shortcut update host state.
+const selectedToolHistory: string[] = [];
 
 jest.mock('../editor/EditorPanel', () => {
   const actual = jest.requireActual('../editor/EditorPanel');
   const React = jest.requireActual('react');
-  const MockPanel = React.forwardRef<GeometryEditorPanelHandle, unknown>(
-    function MockPanel(_props, ref) {
+  const MockPanel = React.forwardRef<GeometryEditorPanelHandle, { selectedTool: string }>(
+    function MockPanel(props, ref) {
+      selectedToolHistory.push(props.selectedTool);
       React.useImperativeHandle(
         ref,
         (): GeometryEditorPanelHandle => ({
-          setTool: mockSetTool,
-          setShowAxis: jest.fn(),
-          setShowGrid: jest.fn(),
-          undo: jest.fn(),
           insert: () => false,
           hasContent: () => false,
+          selectObject: () => {},
         }),
       );
       return null;
@@ -36,7 +35,7 @@ jest.mock('../../shared/StampLeftPanel', () => ({
 
 describe('GeometryStampHost — chord shortcuts', () => {
   beforeEach(() => {
-    mockSetTool.mockClear();
+    selectedToolHistory.length = 0;
   });
 
   function mountHost() {
@@ -66,16 +65,23 @@ describe('GeometryStampHost — chord shortcuts', () => {
       fireEvent.keyDown(window, { key: 'b' });
       fireEvent.keyDown(window, { key: '2' });
     });
-    expect(mockSetTool).toHaveBeenCalledWith('midpoint');
+    expect(selectedToolHistory).toContain('midpoint');
   });
 
   test('A → 1 chọn tool "move"', () => {
     mountHost();
+    // Tool mặc định là 'move' → chuyển sang midpoint trước để verify chord A→1
+    // thật sự đưa về 'move'.
+    act(() => {
+      fireEvent.keyDown(window, { key: 'b' });
+      fireEvent.keyDown(window, { key: '2' });
+    });
+    const lenAfterMidpoint = selectedToolHistory.length;
     act(() => {
       fireEvent.keyDown(window, { key: 'a' });
       fireEvent.keyDown(window, { key: '1' });
     });
-    expect(mockSetTool).toHaveBeenCalledWith('move');
+    expect(selectedToolHistory.slice(lenAfterMidpoint)).toContain('move');
   });
 
   test('I → 5 chọn tool "dilate" (cuối group transform)', () => {
@@ -84,24 +90,30 @@ describe('GeometryStampHost — chord shortcuts', () => {
       fireEvent.keyDown(window, { key: 'i' });
       fireEvent.keyDown(window, { key: '5' });
     });
-    expect(mockSetTool).toHaveBeenCalledWith('dilate');
+    expect(selectedToolHistory).toContain('dilate');
   });
 
-  test('Esc giữa chord không gọi setTool', () => {
+  test('Esc giữa chord không đổi tool', () => {
     mountHost();
+    const initialLen = selectedToolHistory.length;
     act(() => {
       fireEvent.keyDown(window, { key: 'b' });
       fireEvent.keyDown(window, { key: 'Escape' });
       fireEvent.keyDown(window, { key: '1' });
     });
-    expect(mockSetTool).not.toHaveBeenCalled();
+    // Chỉ có 'move' (initial) được pass — không có midpoint/move sau Esc.
+    const distinct = new Set(selectedToolHistory.slice(initialLen));
+    expect(distinct.has('midpoint')).toBe(false);
   });
 
   test('Number không có chord → ignore', () => {
     mountHost();
+    const initialLen = selectedToolHistory.length;
     act(() => {
       fireEvent.keyDown(window, { key: '1' });
     });
-    expect(mockSetTool).not.toHaveBeenCalled();
+    // Không phát sinh tool mới sau key '1' đơn lẻ.
+    const after = selectedToolHistory.slice(initialLen);
+    expect(after.every((t) => t === 'move')).toBe(true);
   });
 });

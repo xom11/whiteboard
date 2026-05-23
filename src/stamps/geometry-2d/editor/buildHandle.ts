@@ -10,8 +10,6 @@ import type {
   TransformPopoverInfo,
 } from './MiniBoard.types';
 import { buildObjectSnapshot } from './snapshot';
-import type { GeomTool } from './tools';
-import type { ToolStateMachine } from '../../shared/useToolStateMachine';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type JxgObj = any;
@@ -21,9 +19,6 @@ export interface BuildHandleDeps {
   containerRef: { readonly current: HTMLDivElement | null };
   boardRef: { readonly current: JxgObj };
   rendererRef: { readonly current: JxgRenderer | null };
-  showAxisRef: { readonly current: boolean };
-  showGridRef: { readonly current: boolean };
-  subscribersRef: { readonly current: Set<() => void> };
   selectSubsRef: { readonly current: Set<(snap: ObjectSnapshot) => void> };
   transformSubsRef: { readonly current: Set<(info: TransformPopoverInfo) => void> };
   selectedSetRef: { readonly current: Set<string> };
@@ -32,14 +27,10 @@ export interface BuildHandleDeps {
   ctxRef: { readonly current: HandlerCtx | null };
   // callbacks / values
   store: Store;
-  toolSM: ToolStateMachine<GeomTool>;
-  handleToolChange: (t: GeomTool) => void;
   clearPending: () => void;
   clearSelection: () => void;
   deleteSelection: () => void;
   emitTransform: (info: TransformPopoverInfo) => void;
-  setShowAxisState: (b: boolean) => void;
-  setShowGridState: (b: boolean) => void;
 }
 
 /**
@@ -57,20 +48,6 @@ export function buildMiniBoardHandle(d: BuildHandleDeps): MiniBoardHandle {
     getState: () => d.store.getState(),
     getStore: () => d.store,
     highlight: (id) => { d.rendererRef.current?.highlight(id); },
-    getShowAxis: () => d.showAxisRef.current,
-    getShowGrid: () => d.showGridRef.current,
-    setTool: d.handleToolChange,
-    getTool: () => d.toolSM.toolRef.current,
-    setShowAxis: (b) => d.setShowAxisState(b),
-    setShowGrid: (b) => d.setShowGridState(b),
-    undo: () => d.store.undo(),
-    canUndo: () => d.store.canUndo(),
-    redo: () => d.store.redo(),
-    canRedo: () => d.store.canRedo(),
-    subscribe: (cb) => {
-      d.subscribersRef.current.add(cb);
-      return () => { d.subscribersRef.current.delete(cb); };
-    },
     snapshotObject: (id, anchorScreen) => buildObjectSnapshot(d.store.getState(), id, anchorScreen),
     mutateObject: (id, patch) => applyMutatePatch(d.store, id, patch),
     getAllPointNames: () => listObjects(d.store.getState())

@@ -8,7 +8,7 @@
 //  - getNearestFunctionId / findHitObject helpers for graph-specific hit-test
 //  - Tools from TOOLS / GraphTool
 
-import React, { useCallback, useEffect, useId, useImperativeHandle, useRef, useState } from 'react';
+import React, { useEffect, useId, useImperativeHandle, useRef } from 'react';
 import {
   nextLabel as sceneNextLabel,
   type State,
@@ -26,20 +26,14 @@ import { initJxgBoard } from '../../shared/initJxgBoard';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type JxgObj = any;
 
+/**
+ * Imperative handle exposed bởi MiniBoard. Sau Tier 2 F: tool / showAxis /
+ * showGrid / undo-redo do host owns; handle chỉ giữ state read + highlight +
+ * bbox.
+ */
 export interface MiniBoardHandle {
   getState: () => State;
   getStore: () => Store;
-  setTool: (t: GraphTool) => void;
-  getTool: () => GraphTool;
-  getShowAxis: () => boolean;
-  getShowGrid: () => boolean;
-  setShowAxis: (b: boolean) => void;
-  setShowGrid: (b: boolean) => void;
-  undo: () => void;
-  redo: () => void;
-  canUndo: () => boolean;
-  canRedo: () => boolean;
-  subscribe: (cb: () => void) => () => void;
   highlight: (id: string | null) => void;
   getContainer: () => HTMLDivElement | null;
   getBbox: () => [number, number, number, number];
@@ -48,13 +42,22 @@ export interface MiniBoardHandle {
 interface MiniBoardProps {
   /** Scene store do Host tạo qua `useStampStore`. */
   store: Store;
+  /** Controlled prop — host owns (Tier 2 F). */
+  selectedTool: GraphTool;
+  /** Controlled prop — host owns (Tier 2 F). */
+  showAxis: boolean;
+  /** Controlled prop — host owns (Tier 2 F). */
+  showGrid: boolean;
   isDark?: boolean;
   onReady?: () => void;
   onSelectionChange?: (id: string | undefined) => void;
 }
 
 export const MiniBoard = React.forwardRef<MiniBoardHandle, MiniBoardProps>(
-  function MiniBoard({ store, isDark, onReady, onSelectionChange: _onSelectionChange }, ref) {
+  function MiniBoard(
+    { store, selectedTool, showAxis, showGrid, isDark, onReady, onSelectionChange: _onSelectionChange },
+    ref,
+  ) {
     const isDarkRef = useRef(!!isDark); isDarkRef.current = !!isDark;
     const containerId = useId().replace(/:/g, '_') + '_graph_jxg';
     const containerRef = useRef<HTMLDivElement>(null);
@@ -62,28 +65,16 @@ export const MiniBoard = React.forwardRef<MiniBoardHandle, MiniBoardProps>(
     const jxgRef = useRef<JxgObj>(null);
     const rendererRef = useRef<JxgRenderer | null>(null);
 
-    const toolSM = useToolStateMachine<GraphTool>('move');
+    const toolSM = useToolStateMachine<GraphTool>(selectedTool);
 
-    const initialMeta = store.getState().meta;
-    const initialView = initialMeta.domain === 'graph2d' ? initialMeta.view : null;
-    const [showAxis, setShowAxisState] = useState<boolean>(
-      initialView?.showAxis ?? true,
-    );
-    const [showGrid, setShowGridState] = useState<boolean>(
-      initialView?.showGrid ?? true,
-    );
     const showAxisRef = useRef(showAxis); showAxisRef.current = showAxis;
     const showGridRef = useRef(showGrid); showGridRef.current = showGrid;
 
-    // Subscribers (external UI listens to state changes)
-    const subscribersRef = useRef<Set<() => void>>(new Set());
-    const notifySubscribers = useCallback(() => {
-      subscribersRef.current.forEach((cb) =>
-        safeJsx('MiniBoard.graph.notifySubscriber', () => cb()),
-      );
-    }, []);
-    useEffect(() => store.subscribe(() => notifySubscribers()), [store, notifySubscribers]);
-    useEffect(() => { notifySubscribers(); }, [showAxis, showGrid, toolSM.tool, notifySubscribers]);
+    // Tier 2 F — sync `selectedTool` prop → internal toolSM.
+    useEffect(() => {
+      if (toolSM.toolRef.current !== selectedTool) toolSM.setTool(selectedTool);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedTool]);
 
     // ─── Board init ────────────────────────────────────────────────────────────
     useEffect(() => {
@@ -186,32 +177,11 @@ export const MiniBoard = React.forwardRef<MiniBoardHandle, MiniBoardProps>(
       () => ({
         getState: () => store.getState(),
         getStore: () => store,
-        setTool: toolSM.setTool,
-        getTool: () => toolSM.toolRef.current,
-        getShowAxis: () => showAxisRef.current,
-        getShowGrid: () => showGridRef.current,
-        setShowAxis: (b: boolean) => {
-          setShowAxisState(b);
-          store.dispatch({ type: 'UPDATE_VIEW', payload: { patch: { showAxis: b } } });
-        },
-        setShowGrid: (b: boolean) => {
-          setShowGridState(b);
-          store.dispatch({ type: 'UPDATE_VIEW', payload: { patch: { showGrid: b } } });
-        },
-        undo: () => store.undo(),
-        redo: () => store.redo(),
-        canUndo: () => store.canUndo(),
-        canRedo: () => store.canRedo(),
-        subscribe: (cb) => {
-          subscribersRef.current.add(cb);
-          return () => { subscribersRef.current.delete(cb); };
-        },
         highlight: (id) => rendererRef.current?.highlight(id),
         getContainer: () => containerRef.current,
         getBbox: () => boardRef.current?.getBoundingBox() ?? [-10, 10, 10, -10],
       }),
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      [store, toolSM],
+      [store],
     );
 
     return (

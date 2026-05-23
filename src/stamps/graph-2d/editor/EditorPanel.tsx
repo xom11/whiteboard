@@ -8,7 +8,7 @@ import React, {
   useState,
 } from 'react';
 import { MiniBoard, type MiniBoardHandle } from './MiniBoard';
-import type { Store } from '../../../core/scene/store';
+import { useEditorState, type Store } from '../../../core/scene';
 import type { GraphTool } from './tools';
 import { STAMP_PANEL_DESKTOP } from '../../shared/StampLeftPanel/constants';
 import { ToastProvider, ToastHost } from '../../shared/Toast';
@@ -19,11 +19,6 @@ export interface GraphEditorPanelHandle {
   insert: () => boolean;
   hasContent: () => boolean;
   getStore: () => Store | null;
-  setTool: (t: GraphTool) => void;
-  setShowAxis: (b: boolean) => void;
-  setShowGrid: (b: boolean) => void;
-  undo: () => void;
-  redo: () => void;
   highlight: (id: string | null) => void;
 }
 
@@ -36,8 +31,14 @@ export interface GraphEditorPanelProps {
   onClose: () => void;
   /** Callback khi selection thay đổi qua editor action. */
   onSelectionChange?: (id: string | undefined) => void;
-  /** Báo lên Host khi state thay đổi (tool/axis/grid/undo) — để sync UI. */
-  onStateChange?: (state: GraphBoardState) => void;
+  /** Controlled prop — host owns (Tier 2 F). */
+  selectedTool: GraphTool;
+  /** Controlled prop — host owns (Tier 2 F). */
+  showAxis: boolean;
+  /** Controlled prop — host owns (Tier 2 F). */
+  showGrid: boolean;
+  /** Notify host về canUndo/canRedo qua store subscribe (Tier 2 F). */
+  onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
   isDark?: boolean;
   /** Khi true (desktop) panel offset left chừa chỗ LeftPanel. */
   withLeftPanel?: boolean;
@@ -52,14 +53,6 @@ export interface GraphEditorPanelProps {
   canRedo?: boolean;
 }
 
-export interface GraphBoardState {
-  tool: GraphTool;
-  showAxis: boolean;
-  showGrid: boolean;
-  canUndo: boolean;
-  canRedo: boolean;
-}
-
 // ---------- Component ----------
 
 const GraphEditorPanelInner = forwardRef<GraphEditorPanelHandle, GraphEditorPanelProps>(
@@ -69,7 +62,10 @@ const GraphEditorPanelInner = forwardRef<GraphEditorPanelHandle, GraphEditorPane
       onInsert,
       onClose,
       onSelectionChange,
-      onStateChange,
+      selectedTool,
+      showAxis,
+      showGrid,
+      onHistoryChange,
       isDark,
       withLeftPanel = false,
       isMobile = false,
@@ -85,30 +81,20 @@ const GraphEditorPanelInner = forwardRef<GraphEditorPanelHandle, GraphEditorPane
     const [ready, setReady] = useState(false);
     const [hasContent, setHasContent] = useState(false);
     const onSelectionChangeRef = useRef(onSelectionChange);
-    const onStateChangeRef = useRef(onStateChange);
     useEffect(() => { onSelectionChangeRef.current = onSelectionChange; }, [onSelectionChange]);
-    useEffect(() => { onStateChangeRef.current = onStateChange; }, [onStateChange]);
 
-    const emitState = useCallback(() => {
-      const h = miniRef.current;
-      if (!h) return;
-      setHasContent(Object.keys(h.getState().objects).length > 0);
-      onStateChangeRef.current?.({
-        tool: h.getTool(),
-        showAxis: h.getShowAxis(),
-        showGrid: h.getShowGrid(),
-        canUndo: h.canUndo(),
-        canRedo: h.canRedo(),
-      });
-    }, []);
+    // Tier 2 F — propagate canUndo/canRedo + keyboard shortcuts qua shared hook.
+    useEditorState({ store, onHistoryChange });
+
+    useEffect(() => {
+      const sync = () => setHasContent(Object.keys(store.getState().objects).length > 0);
+      sync();
+      return store.subscribe(sync);
+    }, [store]);
 
     const handleReady = useCallback(() => {
-      const h = miniRef.current;
-      if (!h) return;
       setReady(true);
-      emitState();
-      h.subscribe(emitState);
-    }, [emitState]);
+    }, []);
 
     // ---------- Insert ----------
 
@@ -136,11 +122,6 @@ const GraphEditorPanelInner = forwardRef<GraphEditorPanelHandle, GraphEditorPane
       insert: performInsert,
       hasContent: () => Object.keys(miniRef.current?.getState().objects ?? {}).length > 0,
       getStore: () => miniRef.current?.getStore() ?? null,
-      setTool: (t) => miniRef.current?.setTool(t),
-      setShowAxis: (b) => miniRef.current?.setShowAxis(b),
-      setShowGrid: (b) => miniRef.current?.setShowGrid(b),
-      undo: () => miniRef.current?.undo(),
-      redo: () => miniRef.current?.redo(),
       highlight: (id) => miniRef.current?.highlight(id),
     }), [performInsert]);
 
@@ -255,6 +236,9 @@ const GraphEditorPanelInner = forwardRef<GraphEditorPanelHandle, GraphEditorPane
           <MiniBoard
             ref={miniRef}
             store={store}
+            selectedTool={selectedTool}
+            showAxis={showAxis}
+            showGrid={showGrid}
             isDark={isDark}
             onReady={handleReady}
             onSelectionChange={(id) => {

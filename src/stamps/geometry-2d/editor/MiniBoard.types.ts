@@ -31,6 +31,9 @@ export type TransformPopoverInfo = {
 /**
  * Imperative handle MiniBoard2D expose qua forwardRef. Parent (EditorPanel)
  * gọi methods sau khi nhận `onReady?.()` signal.
+ *
+ * Sau Tier 2 (F): tool / showAxis / showGrid / undo-redo do host owns.
+ * Handle chỉ expose state read + popover + selection internal.
  */
 export interface MiniBoardHandle {
   getContainer: () => HTMLDivElement | null;
@@ -38,17 +41,6 @@ export interface MiniBoardHandle {
   getState: () => State;
   getStore: () => Store;
   highlight: (id: string | null) => void;
-  getShowAxis: () => boolean;
-  getShowGrid: () => boolean;
-  setTool: (t: import('./tools').GeomTool) => void;
-  getTool: () => import('./tools').GeomTool;
-  setShowAxis: (b: boolean) => void;
-  setShowGrid: (b: boolean) => void;
-  undo: () => void;
-  canUndo: () => boolean;
-  redo: () => void;
-  canRedo: () => boolean;
-  subscribe: (cb: () => void) => () => void;
   snapshotObject: (id: string, anchorScreen: { x: number; y: number }) => ObjectSnapshot | null;
   mutateObject: (id: string, patch: { attrs?: Record<string, unknown>; remove?: boolean }) => void;
   getAllPointNames: () => string[];

@@ -11,7 +11,6 @@ import React from 'react';
 import {
   GraphEditorPanel,
   type GraphEditorPanelHandle,
-  type GraphBoardState,
 } from './editor/EditorPanel';
 import { StampLeftPanel } from '../shared/StampLeftPanel';
 import { insertStampImage } from '../shared/insertImage';
@@ -27,14 +26,6 @@ import type { ParameterAttrs } from '../../core/scene/kinds/parameter';
 import type { Store } from '../../core/scene/store';
 import type { SceneObject, State } from '../../core/scene/types';
 import type { StampHostProps, StampHostHandle } from '../shared/types';
-
-const INITIAL_STATE: GraphBoardState = {
-  tool: 'move',
-  showAxis: true,
-  showGrid: true,
-  canUndo: false,
-  canRedo: false,
-};
 
 const GraphIconHeader = (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -88,9 +79,35 @@ export const Graph2DStampHost = forwardRef<StampHostHandle, StampHostProps>(
     const panelRef = useRef<GraphEditorPanelHandle | null>(null);
     const { isMobile } = useIsMobile();
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [boardState, setBoardState] = useState<GraphBoardState>(INITIAL_STATE);
     const sceneStore = useStampStore('graph2d', editingElement, parseInitialState);
     const [selectedObjectId, setSelectedObjectId] = useState<string | undefined>(undefined);
+
+    // Tier 2 F — host owns editor UI state.
+    const initialMeta = sceneStore.getState().meta;
+    const initialView = initialMeta.domain === 'graph2d' ? initialMeta.view : null;
+    const [selectedTool, setSelectedTool] = useState<GraphTool>('move');
+    const [showAxis, setShowAxisState] = useState<boolean>(initialView?.showAxis ?? true);
+    const [showGrid, setShowGridState] = useState<boolean>(initialView?.showGrid ?? true);
+    const [canUndo, setCanUndo] = useState<boolean>(false);
+    const [canRedo, setCanRedo] = useState<boolean>(false);
+
+    const handleHistoryChange = useCallback((u: boolean, r: boolean) => {
+      setCanUndo(u);
+      setCanRedo(r);
+    }, []);
+
+    const handleUndo = useCallback(() => sceneStore.undo(), [sceneStore]);
+    const handleRedo = useCallback(() => sceneStore.redo(), [sceneStore]);
+
+    const handleShowAxisChange = useCallback((b: boolean) => {
+      setShowAxisState(b);
+      sceneStore.dispatch({ type: 'UPDATE_VIEW', payload: { patch: { showAxis: b } } });
+    }, [sceneStore]);
+
+    const handleShowGridChange = useCallback((b: boolean) => {
+      setShowGridState(b);
+      sceneStore.dispatch({ type: 'UPDATE_VIEW', payload: { patch: { showGrid: b } } });
+    }, [sceneStore]);
 
     // ---------- Add buttons (dispatch trực tiếp vào store) ----------
 
@@ -185,19 +202,19 @@ export const Graph2DStampHost = forwardRef<StampHostHandle, StampHostProps>(
           tools={TOOLS}
           groupOrder={GROUPS}
           groupLabels={GROUP_LABELS}
-          activeTool={boardState.tool}
-          onToolChange={(t) => panelRef.current?.setTool(t)}
+          activeTool={selectedTool}
+          onToolChange={setSelectedTool}
           view={{
-            showAxis: boardState.showAxis,
-            showGrid: boardState.showGrid,
-            onShowAxisChange: (b) => panelRef.current?.setShowAxis(b),
-            onShowGridChange: (b) => panelRef.current?.setShowGrid(b),
+            showAxis,
+            showGrid,
+            onShowAxisChange: handleShowAxisChange,
+            onShowGridChange: handleShowGridChange,
           }}
           history={{
-            onUndo: () => panelRef.current?.undo(),
-            canUndo: boardState.canUndo,
-            onRedo: () => panelRef.current?.redo(),
-            canRedo: boardState.canRedo,
+            onUndo: handleUndo,
+            canUndo,
+            onRedo: handleRedo,
+            canRedo,
           }}
           objects={{
             store: sceneStore,
@@ -221,16 +238,19 @@ export const Graph2DStampHost = forwardRef<StampHostHandle, StampHostProps>(
           store={sceneStore}
           onInsert={handleInsert}
           onClose={onClose}
+          selectedTool={selectedTool}
+          showAxis={showAxis}
+          showGrid={showGrid}
+          onHistoryChange={handleHistoryChange}
           isDark={isDark}
           withLeftPanel={!isMobile}
           isMobile={isMobile}
           onOpenDrawer={() => setDrawerOpen(true)}
-          onUndo={() => panelRef.current?.undo()}
-          onRedo={() => panelRef.current?.redo()}
-          canUndo={boardState.canUndo}
-          canRedo={boardState.canRedo}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          canUndo={canUndo}
+          canRedo={canRedo}
           onSelectionChange={setSelectedObjectId}
-          onStateChange={setBoardState}
         />
       </>
     );

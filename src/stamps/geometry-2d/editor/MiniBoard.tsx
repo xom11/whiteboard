@@ -68,13 +68,19 @@ interface Props {
   onReady?: () => void;
   /** Scene store do Host tạo qua `useStampStore`. View info đọc từ `store.getState().meta.view`. */
   store: Store;
+  /** Tool hiện tại — host owns state (Tier 2 F). */
+  selectedTool: GeomTool;
+  /** Hiển thị axis — host owns state (Tier 2 F). */
+  showAxis: boolean;
+  /** Hiển thị grid — host owns state (Tier 2 F). */
+  showGrid: boolean;
   isDark?: boolean;
   /** Toast hook từ EditorPanel ToastProvider — handlers dùng cho invalid construction. */
   toast?: import('../../shared/Toast').ShowToastFn;
 }
 
 export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard2D(
-  { onReady, store, isDark, toast },
+  { onReady, store, selectedTool, showAxis, showGrid, isDark, toast },
   ref,
 ) {
   const isDarkRef = useRef(!!isDark); isDarkRef.current = !!isDark;
@@ -85,13 +91,11 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
   const rendererRef = useRef<JxgRenderer | null>(null);
   const axisObjsRef = useRef<{ x?: JxgObj; y?: JxgObj }>({});
 
-  const toolSM = useToolStateMachine<GeomTool>('move');
+  const toolSM = useToolStateMachine<GeomTool>(selectedTool);
 
-  // View info (bbox/axis/grid) đọc 1 lần lúc mount từ store.meta.view.
+  // bbox init đọc 1 lần lúc mount từ store.meta.view; axis/grid drive bằng prop.
   const initialMeta = store.getState().meta;
   const initialView = initialMeta.domain === '2d' ? initialMeta.view : DEFAULT_VIEW_2D;
-  const [showAxis, setShowAxisState] = useState<boolean>(initialView.showAxis);
-  const [showGrid, setShowGridState] = useState<boolean>(initialView.showGrid);
   const showAxisRef = useRef(showAxis); showAxisRef.current = showAxis;
   const showGridRef = useRef(showGrid); showGridRef.current = showGrid;
 
@@ -109,15 +113,11 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
   const lastMoveClickRef = useRef<{ id: string | null; time: number }>({ id: null, time: 0 });
   const pendingTransformRef = useRef<any>(null);
 
-  // Subscribers.
-  const subscribersRef = useRef<Set<() => void>>(new Set());
+  // Subscribers cho popover (select + transform). Store-level changes propagate
+  // qua `useEditorState` ở EditorPanel level — MiniBoard không owns store
+  // subscription nữa (Tier 2 F).
   const selectSubsRef = useRef<Set<(snap: ObjectSnapshot) => void>>(new Set());
   const transformSubsRef = useRef<Set<(info: TransformPopoverInfo) => void>>(new Set());
-  const notifySubscribers = useCallback(() => {
-    subscribersRef.current.forEach((cb) => safeJsx('MiniBoard.notifySubscriber.cb', () => cb()));
-  }, []);
-  useEffect(() => store.subscribe(() => notifySubscribers()), [store, notifySubscribers]);
-  useEffect(() => { notifySubscribers(); }, [showAxis, showGrid, toolSM.tool, notifySubscribers]);
 
   const { jxgIdToSceneRef } = useJxgSceneIdMap({ store, rendererRef });
 
@@ -283,6 +283,12 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
     });
   }, [clearPending, toolSM]);
 
+  // Tier 2 F — host owns `selectedTool`. Sync prop → internal toolSM khi đổi.
+  useEffect(() => {
+    if (toolSM.toolRef.current !== selectedTool) handleToolChange(selectedTool);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTool]);
+
   // ─── Board init (async JSXGraph load) ───────────────────────────────────────
   useEffect(() => {
     if (typeof window === 'undefined' || !containerRef.current) return;
@@ -373,17 +379,14 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
     ref,
     () => buildMiniBoardHandle({
       containerRef, boardRef, rendererRef,
-      showAxisRef, showGridRef,
-      subscribersRef, selectSubsRef, transformSubsRef,
+      selectSubsRef, transformSubsRef,
       selectedSetRef, pendingTransformRef, ctxRef,
-      store, toolSM,
-      handleToolChange,
+      store,
       clearPending, clearSelection, deleteSelection,
       emitTransform,
-      setShowAxisState, setShowGridState,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [store, handleToolChange, clearSelection, deleteSelection, clearPending, emitTransform],
+    [store, clearSelection, deleteSelection, clearPending, emitTransform],
   );
 
   return (
