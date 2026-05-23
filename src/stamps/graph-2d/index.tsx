@@ -3,7 +3,7 @@ import { lazy, type ReactNode } from 'react';
 import { renderGraphSvgFromState } from './render';
 import { isGraph2DCustomData, type Graph2DCustomData } from './types';
 import { parseSceneState } from './serialize';
-import { svgToImageElement } from '../shared/svgToImage';
+import { svgToStampFile } from '../shared/svgToStampFile';
 import type { RestoredStampFile, StampType } from '../shared/types';
 
 export type { Graph2DCustomData };
@@ -50,14 +50,12 @@ export const graph2dStamp: StampType<Graph2DCustomData> = {
 
   async restoreFileFromCustomData(element): Promise<RestoredStampFile | null> {
     const data = element.customData;
-    if (!isGraph2DCustomData(data)) return null;
     const fileId = (element as { fileId?: string | null }).fileId;
-    if (!fileId) return null;
+    if (!fileId || !isGraph2DCustomData(data)) return null;
     const state = parseSceneState(data.sceneJson);
     if (!state) return null;
     const svgString = await renderGraphSvgFromState(state, false);
-    const result = await svgToImageElement(svgString);
-    return { fileId, dataURL: result.dataURL, mimeType: result.mimeType };
+    return svgToStampFile(svgString, fileId);
   },
 
   Host: Graph2DStampHost,

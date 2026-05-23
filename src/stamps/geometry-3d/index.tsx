@@ -10,6 +10,7 @@ import type {
   RestoredStampFile,
   StampType,
 } from '../shared/types';
+import { svgToStampFile } from '../shared/svgToStampFile';
 
 export type { Geometry3DCustomData };
 
@@ -57,16 +58,10 @@ export const geometry3dStamp: StampType<Geometry3DCustomData> = {
   restoreFileFromCustomData: async (element): Promise<RestoredStampFile | null> => {
     const data = element.customData as Geometry3DCustomData | undefined;
     const fileId = (element as { fileId?: string | null }).fileId;
-    if (!data || !fileId) return null;
-    if (!isGeometry3DCustomData(data)) return null;
+    if (!data || !fileId || !isGeometry3DCustomData(data)) return null;
     try {
       const { svgString } = await renderGeometry3DSvgFromState(data.jsonState);
-      const dataURL = `data:image/svg+xml;base64,${
-        typeof btoa !== 'undefined'
-          ? btoa(unescape(encodeURIComponent(svgString)))
-          : Buffer.from(svgString).toString('base64')
-      }`;
-      return { fileId, dataURL, mimeType: 'image/svg+xml' };
+      return svgToStampFile(svgString, fileId);
     } catch {
       return null;
     }
