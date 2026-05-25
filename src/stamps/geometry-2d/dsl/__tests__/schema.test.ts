@@ -1,5 +1,5 @@
 // src/stamps/geometry-2d/dsl/__tests__/schema.test.ts
-import { NameZ, DslInput, DslPoint } from '../schema';
+import { NameZ, DslInput, DslPoint, DslShape } from '../schema';
 
 describe('NameZ regex', () => {
   it.each([
@@ -70,5 +70,40 @@ describe('DslPoint kinds', () => {
 
   it.each(invalid)('rejects %s', (_, obj) => {
     expect(DslPoint.safeParse(obj).success).toBe(false);
+  });
+});
+
+describe('DslShape kinds', () => {
+  const valid: Array<[string, unknown]> = [
+    ['segment',        { name: 'AB', kind: 'segment', p1: 'A', p2: 'B' }],
+    ['line',           { name: 'L',  kind: 'line', p1: 'A', p2: 'B' }],
+    ['ray',            { name: 'r',  kind: 'ray', origin: 'A', through: 'B' }],
+    ['polygon 3',      { name: 'T',  kind: 'polygon', vertices: ['A','B','C'] }],
+    ['polygon 4',      { name: 'Q',  kind: 'polygon', vertices: ['A','B','C','D'] }],
+    ['perpendicular',  { name: 'L',  kind: 'perpendicular', throughPoint: 'A', toLine: 'BC' }],
+    ['parallel',       { name: 'L',  kind: 'parallel', throughPoint: 'A', toLine: 'BC' }],
+    ['perpBisector',   { name: 'd',  kind: 'perpBisector', p1: 'A', p2: 'B' }],
+    ['angleBisector',  { name: 'b',  kind: 'angleBisector', p1: 'A', vertex: 'B', p2: 'C' }],
+    ['tangent',        { name: 't',  kind: 'tangent', throughPoint: 'P', toCircle: 'C' }],
+    ['tangent branch', { name: 't',  kind: 'tangent', throughPoint: 'P', toCircle: 'C', branch: 1 }],
+    ['tangent on',     { name: 't',  kind: 'tangent', throughPoint: 'P', toCircle: 'C', branch: 'on' }],
+    ['circleCP',       { name: 'c',  kind: 'circleCP', center: 'O', surfacePoint: 'A' }],
+    ['circle3',        { name: 'c',  kind: 'circle3', p1: 'A', p2: 'B', p3: 'C' }],
+  ];
+
+  it.each(valid)('accepts %s', (_, obj) => {
+    expect(DslShape.safeParse(obj).success).toBe(true);
+  });
+
+  const invalid: Array<[string, unknown]> = [
+    ['unknown kind',    { name: 'X', kind: 'foo', p1: 'A', p2: 'B' }],
+    ['polygon 2 verts', { name: 'P', kind: 'polygon', vertices: ['A','B'] }],
+    ['segment missing p2', { name: 'AB', kind: 'segment', p1: 'A' }],
+    ['tangent branch 2', { name: 't', kind: 'tangent', throughPoint: 'P', toCircle: 'C', branch: 2 }],
+    ['circle3 missing p3', { name: 'c', kind: 'circle3', p1: 'A', p2: 'B' }],
+  ];
+
+  it.each(invalid)('rejects %s', (_, obj) => {
+    expect(DslShape.safeParse(obj).success).toBe(false);
   });
 });
