@@ -55,3 +55,11 @@ export {
   type RasterizeOptions,
 } from './pdf/rasterize';
 export { parsePageRange } from './pdf/parseRange';
+
+// AI API (geometry-2d)
+export { generateFigure } from './stamps/geometry-2d/ai';
+export type {
+  GenerateOptions,
+  GenerateResult,
+  TokenUsage,
+} from './stamps/geometry-2d/ai';
