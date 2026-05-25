@@ -48,7 +48,7 @@ Xây dựng nền móng AI figure generation: định nghĩa **DSL** (declarativ
 2. **Named entities + ref by name.** Mọi entity có `name` field. Constraints reference bằng name. Transpiler resolve name → id.
 3. **Core MVP primitives (22).** Đủ cho tam giác + tứ giác + đường tròn + đường phụ.
 4. **Strict + collected errors.** Transpiler return `{ ok: true, state } | { ok: false, errors[] }`. Collect tất cả errors từ stage 2-4 trước khi return.
-5. **Colocated trong stamp.** `src/stamps/geometry-2d/ai/`. Phase 2.1 sẽ tách `src/ai/provider.ts` nếu cần share.
+5. **DSL là data layer chung, không phải AI-only.** Đặt `src/stamps/geometry-2d/dsl/` (KHÔNG nest trong `ai/`). Tương lai tab "Đối tượng" (`ObjectRow`) sẽ đọc DSL như source of truth display. Phase 2.1 `src/stamps/geometry-2d/ai/` chứa provider + prompt riêng, import từ `dsl/`.
 6. **Minimal DSL — chỉ entities.** Scene metadata (axes, grid, viewport) dùng default geometry-2d State.
 7. **Id generation counter-based.** Prefix theo State kind (`p`, `s`, `l`, `r`, `poly`, `c`, `i`). Reset mỗi lần transpile. Deterministic theo thứ tự DSL.
 8. **Drop `circleCR` từ DSL v1.** State không hỗ trợ center+radius (chỉ center+surfacePoint hoặc circumscribed). LLM dùng workaround: anchor helper + `circleCP`.
@@ -59,7 +59,7 @@ Xây dựng nền móng AI figure generation: định nghĩa **DSL** (declarativ
 
 ### DSL grammar v1 (Zod)
 
-File: `src/stamps/geometry-2d/ai/dsl.ts`
+File: `src/stamps/geometry-2d/dsl/schema.ts`
 
 ```ts
 import { z } from 'zod';
@@ -149,7 +149,7 @@ export type DslInputT = z.infer<typeof DslInput>;
 
 ### Transpiler pipeline (6 stage)
 
-File: `src/stamps/geometry-2d/ai/transpile.ts` (orchestrator)
+File: `src/stamps/geometry-2d/dsl/transpile.ts` (orchestrator)
 
 ```
 transpile(dslRaw: unknown): TranspileResult
@@ -172,7 +172,7 @@ Errors stage 2-4 thu thập trước khi return. Stage 1 phải pass mới qua s
 
 ### Error model
 
-File: `src/stamps/geometry-2d/ai/transpile/errors.ts`
+File: `src/stamps/geometry-2d/dsl/transpile/errors.ts`
 
 ```ts
 export type TranspileErrorCode =
@@ -294,35 +294,42 @@ Lưu ý: State emit theo thứ tự DSL declared. JxgRenderer sẽ topo-sort khi
 ### File layout
 
 ```
-src/stamps/geometry-2d/ai/
-├── dsl.ts                       Zod schema + types + NameZ
-├── transpile.ts                 main entry, orchestrate 6 stages
-├── transpile/
-│   ├── symbols.ts               build Map<name, entity> + dup check
-│   ├── refs.ts                  ref existence + kind compat (table-driven)
-│   ├── cycles.ts                3-color DFS dep graph
-│   ├── ids.ts                   counter-based id assignment
-│   ├── emitPoint.ts             DSL point/intersection → State object
-│   ├── emitShape.ts             DSL shape → State line/ray/segment/polygon/circle
-│   └── errors.ts                TranspileError type + helpers
-├── fixtures/
-│   ├── triangle-equilateral.ts
-│   ├── triangle-median.ts
-│   ├── triangle-altitude.ts
-│   ├── triangle-centroid.ts
-│   ├── triangle-orthocenter.ts
-│   ├── triangle-circumcircle.ts
-│   ├── triangle-incircle.ts
-│   ├── parallelogram.ts
-│   └── two-circles-intersect.ts
-└── __tests__/
-    ├── dsl.schema.test.ts
-    ├── transpile.symbols.test.ts
-    ├── transpile.refs.test.ts
-    ├── transpile.cycles.test.ts
-    ├── transpile.emit.test.ts
-    └── transpile.fixtures.test.ts
+src/stamps/geometry-2d/
+├── dsl/                             ← DSL là data layer chung (NOT AI-only)
+│   ├── schema.ts                    Zod schema + types + NameZ
+│   ├── transpile.ts                 main entry, orchestrate 6 stages
+│   ├── transpile/
+│   │   ├── symbols.ts               build Map<name, entity> + dup check
+│   │   ├── refs.ts                  ref existence + kind compat (table-driven)
+│   │   ├── cycles.ts                3-color DFS dep graph
+│   │   ├── ids.ts                   counter-based id assignment
+│   │   ├── emitPoint.ts             DSL point/intersection → State
+│   │   ├── emitShape.ts             DSL shape → State line/ray/segment/polygon/circle
+│   │   └── errors.ts                TranspileError type + helpers
+│   ├── fixtures/
+│   │   ├── triangle-equilateral.ts
+│   │   ├── triangle-median.ts
+│   │   ├── triangle-altitude.ts
+│   │   ├── triangle-centroid.ts
+│   │   ├── triangle-orthocenter.ts
+│   │   ├── triangle-circumcircle.ts
+│   │   ├── triangle-incircle.ts
+│   │   ├── parallelogram.ts
+│   │   └── two-circles-intersect.ts
+│   └── __tests__/
+│       ├── schema.test.ts
+│       ├── transpile.symbols.test.ts
+│       ├── transpile.refs.test.ts
+│       ├── transpile.cycles.test.ts
+│       ├── transpile.emit.test.ts
+│       └── transpile.fixtures.test.ts
+└── ai/                              ← Phase 2.1+ (NOT in scope Phase 2.0)
+    ├── provider.ts                  Claude SDK wrap
+    └── prompt.ts                    system prompt + few-shot
 ```
+
+**Public re-export** (cho `ObjectRow` / future consumers):
+- `src/stamps/geometry-2d/dsl/index.ts` re-export `DslInput`, `DslInputT`, `transpile`, `TranspileResult` (NOT internal transpile/* modules).
 
 ---
 
@@ -398,32 +405,33 @@ export const fixture: { problem: string; dsl: DslInputT } = {
 
 Theo pattern subagent (`[[feedback_subagent_execution_pattern]]`): 1 subagent / PR, TDD scaffolding, Sonnet đủ. 4 PR.
 
-### PR 1 — DSL Zod schema + error type
-- `dsl.ts` (Zod schema + types + NameZ)
-- `transpile/errors.ts` (TranspileError type + TranspileResult)
-- `__tests__/dsl.schema.test.ts`
+### PR 1 — DSL Zod schema + error type + barrel
+- `dsl/schema.ts` (Zod schema + types + NameZ)
+- `dsl/transpile/errors.ts` (TranspileError type + TranspileResult)
+- `dsl/index.ts` (barrel — re-export schema + types, stub transpile placeholder)
+- `dsl/__tests__/schema.test.ts`
 - ~25 tests
 
 ### PR 2 — Validation pipeline (symbols + refs + cycles + ids)
-- `transpile/symbols.ts`
-- `transpile/refs.ts` (kind compat table)
-- `transpile/cycles.ts`
-- `transpile/ids.ts`
-- `__tests__/transpile.symbols.test.ts`
-- `__tests__/transpile.refs.test.ts`
-- `__tests__/transpile.cycles.test.ts`
+- `dsl/transpile/symbols.ts`
+- `dsl/transpile/refs.ts` (kind compat table)
+- `dsl/transpile/cycles.ts`
+- `dsl/transpile/ids.ts`
+- `dsl/__tests__/transpile.symbols.test.ts`
+- `dsl/__tests__/transpile.refs.test.ts`
+- `dsl/__tests__/transpile.cycles.test.ts`
 - ~26 tests
 
 ### PR 3 — State emit + main orchestrator
-- `transpile/emitPoint.ts` (cover point + intersection inference)
-- `transpile/emitShape.ts` (cover 11 shape kinds → State Attrs)
-- `transpile.ts` (orchestrate 6 stages)
-- `__tests__/transpile.emit.test.ts`
+- `dsl/transpile/emitPoint.ts` (cover point + intersection inference)
+- `dsl/transpile/emitShape.ts` (cover 11 shape kinds → State Attrs)
+- `dsl/transpile.ts` (orchestrate 6 stages, replace stub in barrel)
+- `dsl/__tests__/transpile.emit.test.ts`
 - ~22 tests
 
 ### PR 4 — Fixture corpus + integration tests
-- 9 fixture files
-- `__tests__/transpile.fixtures.test.ts`
+- 9 `dsl/fixtures/*.ts` files
+- `dsl/__tests__/transpile.fixtures.test.ts`
 - 2 inline snapshots
 - ~11 tests
 
@@ -443,10 +451,11 @@ Theo pattern subagent (`[[feedback_subagent_execution_pattern]]`): 1 subagent / 
 
 ## Out of scope — phase 2 follow-ups
 
-- **Phase 2.1** — `@anthropic-ai/sdk` provider, tool use `build_figure` với DSL JSON Schema, system prompt tiếng Việt + few-shot examples (dùng 9 fixtures), refusal handling, prompt caching.
+- **Phase 2.1** — `@anthropic-ai/sdk` provider, tool use `build_figure` với DSL JSON Schema, system prompt tiếng Việt + few-shot examples (dùng 9 fixtures), refusal handling, prompt caching. Code đặt `src/stamps/geometry-2d/ai/`, import DSL từ `../dsl/`.
 - **Phase 2.2** — UX input "AI prompt" trong EditorPanel/StampLeftPanel, loading state, error message, insert State vào MiniBoard.
 - **Phase 2.3** — Eval harness 20-30 đề SGK.
 - **Phase 2.5 (nếu cần)** — Decorations: length label, right-angle mark, angle marker.
+- **State → DSL serializer** — Reverse direction để tab "Đối tượng" (`ObjectRow`) hiển thị DSL-style descriptions thay vì raw State. Tracked riêng, không trong Phase 2.0.
 - Transforms (translate, rotate, reflect, dilate) — lớp 11+.
 - `circleCR` (center+radius numeric) — State chưa hỗ trợ; revisit khi cần.
 - Multi-turn AI, image input đề.
