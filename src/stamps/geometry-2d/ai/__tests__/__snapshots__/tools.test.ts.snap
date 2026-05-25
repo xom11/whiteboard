@@ -1,0 +1,714 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BUILD_FIGURE_TOOL input_schema snapshot stable 1`] = `
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "points": {
+      "items": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "free",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "x": {
+                "type": "number",
+              },
+              "y": {
+                "type": "number",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "x",
+              "y",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "midpoint",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "p1": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "p2": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "p1",
+              "p2",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "onSegment",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "segmentId": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "t": {
+                "maximum": 1,
+                "minimum": 0,
+                "type": "number",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "segmentId",
+              "t",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "onLine",
+                "type": "string",
+              },
+              "lineId": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "t": {
+                "type": "number",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "lineId",
+              "t",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "circleId": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "kind": {
+                "const": "onCircle",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "theta": {
+                "type": "number",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "circleId",
+              "theta",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "from": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "kind": {
+                "const": "perpFoot",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "onLine": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "from",
+              "onLine",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "circumcenter",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "vertices": {
+                "items": [
+                  {
+                    "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                    "type": "string",
+                  },
+                  {
+                    "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                    "type": "string",
+                  },
+                  {
+                    "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                    "type": "string",
+                  },
+                ],
+                "maxItems": 3,
+                "minItems": 3,
+                "type": "array",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "vertices",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "incenter",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "vertices": {
+                "items": [
+                  {
+                    "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                    "type": "string",
+                  },
+                  {
+                    "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                    "type": "string",
+                  },
+                  {
+                    "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                    "type": "string",
+                  },
+                ],
+                "maxItems": 3,
+                "minItems": 3,
+                "type": "array",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "vertices",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "centroid",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "vertices": {
+                "items": [
+                  {
+                    "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                    "type": "string",
+                  },
+                  {
+                    "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                    "type": "string",
+                  },
+                  {
+                    "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                    "type": "string",
+                  },
+                ],
+                "maxItems": 3,
+                "minItems": 3,
+                "type": "array",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "vertices",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "orthocenter",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "vertices": {
+                "items": [
+                  {
+                    "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                    "type": "string",
+                  },
+                  {
+                    "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                    "type": "string",
+                  },
+                  {
+                    "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                    "type": "string",
+                  },
+                ],
+                "maxItems": 3,
+                "minItems": 3,
+                "type": "array",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "vertices",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "branch": {
+                "enum": [
+                  0,
+                  1,
+                ],
+                "type": "number",
+              },
+              "kind": {
+                "const": "intersection",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "ref1": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "ref2": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "ref1",
+              "ref2",
+            ],
+            "type": "object",
+          },
+        ],
+      },
+      "type": "array",
+    },
+    "shapes": {
+      "default": [],
+      "items": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "segment",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "p1": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "p2": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "p1",
+              "p2",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "line",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "p1": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "p2": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "p1",
+              "p2",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "ray",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "origin": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "through": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "origin",
+              "through",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "polygon",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "vertices": {
+                "items": {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                  "type": "string",
+                },
+                "minItems": 3,
+                "type": "array",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "vertices",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "perpendicular",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "throughPoint": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "toLine": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "throughPoint",
+              "toLine",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "parallel",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "throughPoint": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "toLine": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "throughPoint",
+              "toLine",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "perpBisector",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "p1": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "p2": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "p1",
+              "p2",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "angleBisector",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "p1": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "p2": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "vertex": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "p1",
+              "vertex",
+              "p2",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "branch": {
+                "enum": [
+                  0,
+                  1,
+                  "on",
+                ],
+                "type": [
+                  "number",
+                  "string",
+                ],
+              },
+              "kind": {
+                "const": "tangent",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "throughPoint": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "toCircle": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "throughPoint",
+              "toCircle",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "center": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "kind": {
+                "const": "circleCP",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "surfacePoint": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "center",
+              "surfacePoint",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "circle3",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "p1": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "p2": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "p3": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "p1",
+              "p2",
+              "p3",
+            ],
+            "type": "object",
+          },
+        ],
+      },
+      "type": "array",
+    },
+    "version": {
+      "const": 1,
+      "type": "number",
+    },
+  },
+  "required": [
+    "version",
+    "points",
+  ],
+  "type": "object",
+}
+`;
