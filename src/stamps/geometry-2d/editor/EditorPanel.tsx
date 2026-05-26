@@ -1,14 +1,18 @@
 'use client';
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { MiniBoard2D, type MiniBoardHandle, type GeomTool, type ObjectSnapshot, type TransformPopoverInfo } from './MiniBoard';
+import { MiniBoard2D, type MiniBoardHandle, type GeomTool, type ObjectSnapshot, type SelectionStateSnapshot, type TransformPopoverInfo } from './MiniBoard';
 import { serializeBoard } from '../serialize';
 import { renderGeometrySvgFromState } from '../render';
 import { PropertiesPopover } from './PropertiesPopover';
+import { MultiPropertiesPopover } from './MultiPropertiesPopover';
 import { TransformParamPopover } from './TransformParamPopover';
+import { buildObjectSnapshot } from './snapshot';
 import { UndoIcon, RedoIcon } from './icons';
-import { useEditorState, type Store } from '../../../core/scene';
+import { useEditorState, type State, type Store } from '../../../core/scene';
 import { STAMP_PANEL_DESKTOP } from '../../shared/StampLeftPanel/constants';
 import { ToastProvider, ToastHost, useToast } from '../../shared/Toast';
+import type { GenerateGeometryFigure } from '../../shared/types';
+import { AiFigurePrompt } from './AiFigurePrompt';
 
 interface Props {
   /** Scene store do Host tạo qua `useStampStore`. View info đã ở store.meta.view. */
@@ -37,6 +41,8 @@ interface Props {
   canRedo?: boolean;
   /** Báo lên Host khi selection đổi qua action trong editor. */
   onSelectionChange?: (id: string | undefined) => void;
+  /** Client-safe bridge to a server-side AI generation call. */
+  generateGeometryFigure?: GenerateGeometryFigure;
 }
 
 export interface GeometryEditorPanelHandle {
@@ -67,6 +73,7 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
       canUndo,
       canRedo,
       onSelectionChange,
+      generateGeometryFigure,
     },
     ref,
   ) {
@@ -75,6 +82,8 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
     const [ready, setReady] = useState(false);
     const [hasContent, setHasContent] = useState(false);
     const [propsPopover, setPropsPopover] = useState<ObjectSnapshot | null>(null);
+    /** Multi-select snapshot — render compact popover khi ids.length > 1. */
+    const [multiSelection, setMultiSelection] = useState<SelectionStateSnapshot | null>(null);
     // Handlers emit cả 6 transform tool (rotate/dilate/regularPolygon/translate/
     // reflectLine/reflectPoint); TransformParamPopover chỉ render 3 tool có
     // numeric param — guard ở chỗ render.
@@ -98,15 +107,69 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
       setReady(true);
       h.onSelect((snap: ObjectSnapshot) => {
         setPropsPopover(snap);
+        setMultiSelection(null);
         onSelectionChangeRef.current?.(snap.id);
       });
       h.onTransformParam((info) => setTransformPopover(info));
-    }, []);
+      // selection-state channel: fire mỗi khi selectedSetRef đổi (click,
+      // shift-click, marquee, clearSelection). Derive popover từ size:
+      //   0  → ẩn cả 2 popover
+      //   1  → single PropertiesPopover (derive ObjectSnapshot từ store)
+      //   ≥2 → MultiPropertiesPopover (compact: color + delete)
+      h.onSelectionState((snap) => {
+        if (!snap || snap.ids.length === 0) {
+          setPropsPopover(null);
+          setMultiSelection(null);
+          onSelectionChangeRef.current?.(undefined);
+          return;
+        }
+        if (snap.ids.length === 1) {
+          const id = snap.ids[0];
+          const single = buildObjectSnapshot(store.getState(), id, snap.anchor);
+          if (single) {
+            setPropsPopover(single);
+            setMultiSelection(null);
+            onSelectionChangeRef.current?.(id);
+          }
+          return;
+        }
+        setMultiSelection(snap);
+        setPropsPopover(null);
+        onSelectionChangeRef.current?.(undefined);
+      });
+    }, [store]);
 
     const dismissPropsPopover = useCallback(() => {
       setPropsPopover(null);
       onSelectionChangeRef.current?.(undefined);
     }, []);
+
+    const dismissMultiPopover = useCallback(() => {
+      setMultiSelection(null);
+      handleRef.current?.clearSelection();
+      onSelectionChangeRef.current?.(undefined);
+    }, []);
+
+    const applyMultiColor = useCallback((color: string) => {
+      const ids = multiSelection?.ids ?? [];
+      const h = handleRef.current;
+      if (!h) return;
+      for (const id of ids) {
+        h.mutateObject(id, { attrs: { strokeColor: color, color } });
+      }
+    }, [multiSelection]);
+
+    const applyMultiDelete = useCallback(() => {
+      const ids = multiSelection?.ids ?? [];
+      const h = handleRef.current;
+      if (!h) return;
+      for (const id of ids) {
+        h.mutateObject(id, { remove: true });
+      }
+      h.clearSelection();
+      setMultiSelection(null);
+      onSelectionChangeRef.current?.(undefined);
+    }, [multiSelection]);
 
     // Build serialized state (format v2) — async vì SVG render offscreen
     // với light palette để Excalidraw filter tự đảo khi dark mode.
@@ -132,6 +195,19 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
     const handleInsert = useCallback(() => {
       performInsert();
     }, [performInsert]);
+
+    const loadAiFigure = useCallback((generated: State) => {
+      handleRef.current?.clearSelection();
+      setPropsPopover(null);
+      setMultiSelection(null);
+      setTransformPopover(null);
+      onSelectionChangeRef.current?.(undefined);
+      const current = store.getState();
+      store.dispatch({
+        type: 'LOAD',
+        payload: { state: { ...generated, meta: current.meta } },
+      });
+    }, [store]);
 
     useImperativeHandle(ref, () => ({
       insert: performInsert,
@@ -232,6 +308,9 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
             </svg>
           </button>
         </header>
+        {generateGeometryFigure && (
+          <AiFigurePrompt generator={generateGeometryFigure} onGenerated={loadAiFigure} />
+        )}
         <div className="flex min-h-0 flex-1">
           <div className="flex-1">
             <MiniBoard2D
@@ -294,6 +373,17 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
               }}
             />
           )
+        )}
+
+        {multiSelection && multiSelection.ids.length > 1 && (
+          <MultiPropertiesPopover
+            anchor={multiSelection.anchor}
+            count={multiSelection.ids.length}
+            isDark={isDark}
+            onColor={applyMultiColor}
+            onDelete={applyMultiDelete}
+            onClose={dismissMultiPopover}
+          />
         )}
 
         {transformPopover && (transformPopover.tool === 'rotate' || transformPopover.tool === 'dilate' || transformPopover.tool === 'regularPolygon') && (

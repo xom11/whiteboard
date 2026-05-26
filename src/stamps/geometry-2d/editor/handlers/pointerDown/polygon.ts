@@ -4,14 +4,14 @@ import type { GeomTool, ToolDef } from '../../tools';
 import type { HandlerCtx } from '../ctx';
 import { dispatchAddFreePoint, freshId, mkSceneObj } from '../utils';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgObj = any;
 
 export function handlePolygonTool(
   ctx: HandlerCtx,
   t: GeomTool,
   toolDef: ToolDef,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   e: any,
   x: number,
   y: number,

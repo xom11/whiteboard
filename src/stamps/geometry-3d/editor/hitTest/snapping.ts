@@ -14,7 +14,7 @@ export function findSnapPoint(
   // and project3DTo2D also returns user-space. Convert the desired pixel radius
   // to user units via the board's px-per-unit scale so the snap stays small
   // (a few real pixels) regardless of zoom or board size.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const board = (view as any)?.board;
   // Fallback to 1 (no scaling) when board is missing — keeps unit tests, whose
   // mock view emits pixel-space coords directly, working unchanged.

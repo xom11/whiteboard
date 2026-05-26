@@ -3,7 +3,7 @@ import type { State, SceneObject } from '../../../core/scene';
 import { listObjects } from '../../../core/scene';
 import { safeJsx } from '../../shared/safeJsx';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgObj = any;
 
 /**

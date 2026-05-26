@@ -1,4 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgObj = any;
 
 export type PointVsCircle = 'inside' | 'on' | 'outside';

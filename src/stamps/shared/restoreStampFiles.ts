@@ -70,7 +70,7 @@ async function buildFileForStamp(
  * @param stamps Registry. Default = DEFAULT_STAMPS.
  */
 export async function restoreMissingStampFiles(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   api: any,
   elements: readonly ElementLike[],
   stamps: ReadonlyArray<StampType> = DEFAULT_STAMPS,
@@ -84,7 +84,7 @@ export async function restoreMissingStampFiles(
   for (const el of elements) {
     const stamp = findStampForCustomData(el.customData, stamps);
     if (!stamp?.restoreFileFromCustomData) continue;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const restored = await stamp.restoreFileFromCustomData(el as any);
     if (!restored) continue;
     newPathHandled.add(el.id);

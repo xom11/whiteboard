@@ -49,6 +49,9 @@ export class JxgRenderer3D {
   }
 
   private remove(id: string): void {
+    // Selection halo phải bị xoá TRƯỚC element gốc (halo tham chiếu parent).
+    this.removeHalo(id);
+    this.selectedIds.delete(id);
     const el = this.elements.get(id);
     if (el === undefined) return;
     try {
@@ -136,35 +139,119 @@ export class JxgRenderer3D {
     return this.elements;
   }
 
-  private highlightedId: string | null = null;
-  private highlightOriginal: { strokeColor?: string; strokeWidth?: number } | null = null;
+  // Selection halo overlay (3D): multi-select, halo phía sau element gốc cho
+  // các kind đơn giản (point3d, segment/line/ray/vector). Các composite shape
+  // (polyhedron/cone/cylinder/plane) chưa hỗ trợ halo overlay — bỏ qua.
+  private selectedIds: Set<string> = new Set();
+  private haloMap: Map<string, unknown[]> = new Map();
 
-  highlight(id: string | null): void {
+  highlight(ids: string | string[] | null): void {
     if (this.disposed) return;
-    if (this.highlightedId && this.highlightOriginal) {
-      const prev = this.elements.get(this.highlightedId) as
-        | { setAttribute?: (a: Record<string, unknown>) => void }
-        | undefined;
-      try { prev?.setAttribute?.(this.highlightOriginal); } catch (err) {
-        console.warn('[scene/render/3d] highlight restore fail:', err);
-      }
+    const newIds = new Set<string>(
+      ids == null ? [] : Array.isArray(ids) ? ids : [ids],
+    );
+    for (const id of this.selectedIds) {
+      if (!newIds.has(id)) this.removeHalo(id);
     }
-    this.highlightedId = null;
-    this.highlightOriginal = null;
+    for (const id of newIds) {
+      if (!this.selectedIds.has(id) && this.elements.has(id)) this.addHalo(id);
+    }
+    this.selectedIds = newIds;
+    try {
+      (this.view as { update?: () => void }).update?.();
+    } catch { /* ignore */ }
+  }
 
-    if (!id) return;
+  private removeHalo(id: string): void {
+    const halos = this.haloMap.get(id);
+    if (!halos) return;
+    const view = this.view as { removeObject?: (e: unknown) => void };
+    for (const h of halos) {
+      try { view.removeObject?.(h); } catch { /* ignore */ }
+    }
+    this.haloMap.delete(id);
+  }
+
+  private addHalo(id: string): void {
     const el = this.elements.get(id) as
-      | { getAttribute?: (k: string) => unknown; setAttribute?: (a: Record<string, unknown>) => void }
+      | {
+          elType?: string;
+          getAttribute?: (k: string) => unknown;
+          point1?: unknown;
+          point2?: unknown;
+          element2D?: { X?: () => number; Y?: () => number };
+        }
       | undefined;
     if (!el) return;
+    const view = this.view as {
+      create?: (kind: string, parents: unknown[], attrs?: unknown) => unknown;
+    };
+    if (!view.create) return;
+
+    const SEL_STROKE = '#475569';
+    const SEL_FILL = '#cbd5e1';
+    const haloBase = {
+      strokeColor: SEL_STROKE,
+      strokeOpacity: 0.55,
+      fillColor: SEL_FILL,
+      fillOpacity: 0.3,
+      fixed: true,
+      withLabel: false,
+      name: '',
+      highlight: false,
+      needsRegularUpdate: true,
+    };
+    const halos: unknown[] = [];
     try {
-      const stroke = (el.getAttribute?.('strokeColor') as string | undefined) ?? '#1e40af';
-      const thick = (el.getAttribute?.('strokeWidth') as number | undefined) ?? 2;
-      this.highlightOriginal = { strokeColor: stroke, strokeWidth: thick };
-      el.setAttribute?.({ strokeColor: '#ef4444', strokeWidth: thick + 2 });
-      this.highlightedId = id;
+      switch (el.elType) {
+        case 'point3d': {
+          // 3D point: tạo point3d ở cùng coords với size to + gray. Lấy coords
+          // qua element2D.X/Y (JSXGraph 3D nội bộ chiếu xuống 2D plane), nhưng
+          // an toàn nhất là reference element gốc và đọc Z() / coords() runtime.
+          const elAny = el as unknown as {
+            X?: () => number; Y?: () => number; Z?: () => number;
+            getAttribute?: (k: string) => unknown;
+          };
+          const baseSize = (elAny.getAttribute?.('size') as number | undefined) ?? 4;
+          if (typeof elAny.X === 'function' && typeof elAny.Y === 'function' && typeof elAny.Z === 'function') {
+            const halo = view.create('point3d', [
+              () => elAny.X?.() ?? 0,
+              () => elAny.Y?.() ?? 0,
+              () => elAny.Z?.() ?? 0,
+            ], {
+              ...haloBase,
+              size: baseSize + 6,
+              face: 'o',
+              strokeWidth: 2,
+              strokeOpacity: 0.75,
+              fillOpacity: 0.25,
+            });
+            halos.push(halo);
+          }
+          break;
+        }
+        case 'line3d': {
+          if (el.point1 && el.point2) {
+            const halo = view.create('line3d', [el.point1, el.point2], {
+              ...haloBase,
+              strokeWidth: 9,
+              straightFirst: (el.getAttribute?.('straightFirst') as boolean | undefined) ?? false,
+              straightLast: (el.getAttribute?.('straightLast') as boolean | undefined) ?? false,
+            });
+            halos.push(halo);
+          }
+          break;
+        }
+        default:
+          // Composite/plane/sphere/cone/cylinder/polygon3d/polyhedron3d:
+          // halo overlay khó (composite faces, depth ordering) — bỏ qua.
+          // Selection visible qua ObjectListPanel row highlight thay vì
+          // halo trên canvas.
+          break;
+      }
     } catch (err) {
-      console.warn('[scene/render/3d] highlight apply fail:', err);
+      console.warn('[scene/render/3d] halo create fail:', err);
     }
+    if (halos.length) this.haloMap.set(id, halos);
   }
 }

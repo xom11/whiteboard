@@ -10,7 +10,7 @@ describe('useStampDoubleClick', () => {
     );
     const customData = { kind: 'geometry', version: 1, jsonState: '{}' };
     const pds = { hit: { element: { id: 'a', type: 'image', customData } } };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     result.current(null as any, pds as any);
     expect(onOpen).not.toHaveBeenCalled();
   });
@@ -22,9 +22,9 @@ describe('useStampDoubleClick', () => {
     );
     const customData = { kind: 'geometry', version: 1, jsonState: '{}' };
     const pds = { hit: { element: { id: 'a', type: 'image', customData } } };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     result.current(null as any, pds as any);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     result.current(null as any, pds as any);
     expect(onOpen).toHaveBeenCalledWith(geometryStamp.kind, {
       id: 'a',
@@ -39,9 +39,9 @@ describe('useStampDoubleClick', () => {
     );
     const customData = { kind: 'geometry', version: 1, jsonState: '{}' };
     const pds = { hit: { element: { id: 'a', type: 'image', customData } } };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     result.current(null as any, pds as any);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     result.current(null as any, pds as any);
     expect(onOpen).not.toHaveBeenCalled();
   });

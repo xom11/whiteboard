@@ -1,5 +1,5 @@
 'use client';
-/* eslint-disable max-lines -- TODO Tier B: extract sub-components/hooks (issue #30) */
+ 
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';

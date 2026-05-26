@@ -21,7 +21,7 @@ export function safeJsx<T>(label: string, fn: () => T, fallback?: T): T | undefi
     return fn();
   } catch (err) {
     if (isDev) {
-      // eslint-disable-next-line no-console
+       
       console.warn('[whiteboard:jsxgraph]', label, err);
     }
     return fallback;

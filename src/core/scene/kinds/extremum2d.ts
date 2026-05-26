@@ -28,7 +28,7 @@ const def: KindDef<Extremum2DAttrs> = {
   dependsOn: (a) => [a.functionId],
   describe: (obj) => `${obj.attrs.mode === 'max' ? 'Cực đại' : 'Cực tiểu'} của ${obj.attrs.functionId} trong [${obj.attrs.interval.min}, ${obj.attrs.interval.max}]`,
   render: (obj, ctx) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const board = ctx.jxg as any;
     // Need expression from function — look up via state if needed.
     // Simplified: use compiled-from-attrs cached in ctx.defaults._functionExpr (renderer populates).

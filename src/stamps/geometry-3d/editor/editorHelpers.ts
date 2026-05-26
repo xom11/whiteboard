@@ -14,7 +14,7 @@ export function hitToHoverLabel(hit: SceneHit, state: State): string | null {
 }
 
 export function getView3DInfo(view: unknown): View3D {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const v = view as any;
   const azSlider = v?.az_slide ?? v?.az;
   const elSlider = v?.el_slide ?? v?.el;

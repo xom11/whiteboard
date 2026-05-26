@@ -52,7 +52,7 @@ export function ObjectRow(props: ObjectRowProps): React.ReactElement {
       onClick={() => onSelect(obj.id)}
       className={
         'flex flex-col border-b border-zinc-100 cursor-pointer dark:border-zinc-800 ' +
-        (selected ? 'bg-blue-50 dark:bg-blue-950' : '')
+        (selected ? 'bg-slate-200' : '')
       }
     >
       <div className="flex items-center gap-2 px-3 py-1.5 text-xs">

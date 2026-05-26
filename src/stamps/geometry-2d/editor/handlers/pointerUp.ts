@@ -1,4 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgObj = any;
 
 import { objKind } from '../tools';
@@ -7,7 +7,7 @@ import type { HandlerCtx } from './ctx';
 
 // ─── board.on('up') ───────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export function handleUp(ctx: HandlerCtx, e: any): void {
   const t = ctx.toolRef.current;
   if (t === 'select') {
@@ -38,7 +38,7 @@ export function handleUp(ctx: HandlerCtx, e: any): void {
           }
         }
       } else if (kind === 'line' || kind === 'circle') {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const defs: any[] = [o.point1, o.point2, o.center, o.midpoint, o.point3].filter(Boolean);
         const anyInside = defs.some((p) => {
           const pc = p?.coords?.scrCoords;

@@ -80,7 +80,7 @@ const def: KindDef<LineAttrs> = {
     }
   },
   render: (obj, ctx) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const board = ctx.jxg as any;
     const baseOpts: Record<string, unknown> = {
       name: obj.label,
@@ -141,17 +141,17 @@ const def: KindDef<LineAttrs> = {
         // 2 đường thẳng (qua giao điểm). Composition trả về có .line1 và .line2.
         // Mỗi scene entry chỉ hiển thị 1 nhánh (branch 0/1) — nhánh còn lại lưu
         // trong _helpers để JxgRenderer dọn dẹp khi entry bị xoá.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const line1Jxg = ctx.resolveRef(c.line1) as any;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const line2Jxg = ctx.resolveRef(c.line2) as any;
         const comp = board.create('bisectorlines', [line1Jxg, line2Jxg], {
           line1: { visible: false, withLabel: false, fixed: true, name: '' },
           line2: { visible: false, withLabel: false, fixed: true, name: '' },
         });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const selected = (c.branch === 0 ? comp.line1 : comp.line2) as any;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const other = (c.branch === 0 ? comp.line2 : comp.line1) as any;
         selected.setAttribute({
           ...baseOpts,
@@ -162,9 +162,9 @@ const def: KindDef<LineAttrs> = {
         return selected;
       }
       case 'tangent': {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const through = ctx.resolveRef(c.throughPoint) as any;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const toCircle = ctx.resolveRef(c.toCircle) as any;
         const branch = c.branch ?? 'on';
 

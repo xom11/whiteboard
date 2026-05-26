@@ -16,7 +16,7 @@ function makeMockStamp(): {
     toolbarIcon: null,
     matchesCustomData: (d) => !!d && typeof d === 'object' && (d as { kind?: string }).kind === 'geometry',
     renderSvgFromCustomData: renderSpy,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     Host: (() => null) as any,
   };
   return { stamp, renderSpy };
@@ -31,7 +31,7 @@ describe('restoreMissingStampFiles (registry-driven via restoreFileFromCustomDat
       toolbarLabel: 'A',
       toolbarTitle: 'A',
       toolbarIcon: null,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       Host: (() => null) as any,
       renderSvgFromCustomData: async () => '<svg/>',
       matchesCustomData: (d: unknown) =>
@@ -51,7 +51,7 @@ describe('restoreMissingStampFiles (registry-driven via restoreFileFromCustomDat
       toolbarLabel: 'B',
       toolbarTitle: 'B',
       toolbarIcon: null,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       Host: (() => null) as any,
       renderSvgFromCustomData: async () => '<svg/>',
       matchesCustomData: (d: unknown) =>
@@ -68,7 +68,7 @@ describe('restoreMissingStampFiles (registry-driven via restoreFileFromCustomDat
     const addFiles = jest.fn();
     const api = { addFiles };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await restoreMissingStampFiles(api as never, elements as never, [fakeStampA, fakeStampB]);
 
     expect(calls).toEqual(['a:1']);
@@ -80,7 +80,7 @@ describe('restoreMissingStampFiles (registry-driven via restoreFileFromCustomDat
 
   it('bỏ qua element không match stamp nào', async () => {
     const api = { addFiles: jest.fn() };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await restoreMissingStampFiles(api as never, [{ id: '1', customData: null }] as never, []);
     expect(api.addFiles).not.toHaveBeenCalled();
   });
@@ -92,7 +92,7 @@ describe('restoreMissingStampFiles (registry-driven via restoreFileFromCustomDat
       toolbarLabel: 'A',
       toolbarTitle: 'A',
       toolbarIcon: null,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       Host: (() => null) as any,
       renderSvgFromCustomData: async () => '<svg/>',
       matchesCustomData: (d: unknown) =>
@@ -100,7 +100,7 @@ describe('restoreMissingStampFiles (registry-driven via restoreFileFromCustomDat
       restoreFileFromCustomData: async () => null,
     };
     const api = { addFiles: jest.fn() };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await restoreMissingStampFiles(api as never, [{ id: '1', customData: { kind: 'a' } }] as never, [fakeStamp]);
     expect(api.addFiles).not.toHaveBeenCalled();
   });

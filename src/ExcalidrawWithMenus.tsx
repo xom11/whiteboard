@@ -12,7 +12,7 @@ import {
   Footer,
   WelcomeScreen,
 } from '@excalidraw/excalidraw';
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type ExcalidrawProps = any;
 
 export function ExcalidrawWithMenus(props: ExcalidrawProps) {

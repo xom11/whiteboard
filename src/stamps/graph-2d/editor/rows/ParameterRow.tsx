@@ -30,7 +30,7 @@ export function ParameterRow({ obj, store, selected, onClick }: ParameterRowProp
       onClick={onClick}
       className={
         'flex items-center gap-1.5 border-b border-zinc-100 px-2 py-1 text-xs cursor-pointer dark:border-zinc-800 ' +
-        (selected ? 'bg-blue-50 dark:bg-blue-950' : 'hover:bg-zinc-50 dark:hover:bg-zinc-900')
+        (selected ? 'bg-slate-200' : 'hover:bg-zinc-50 dark:hover:bg-zinc-900')
       }
     >
       {/* Label */}

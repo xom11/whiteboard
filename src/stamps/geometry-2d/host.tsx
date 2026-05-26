@@ -33,7 +33,7 @@ function parseInitialState(data: unknown): State | null {
 }
 
 export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
-  function GeometryStampHost({ api, editingElement, onClose, isDark }, ref) {
+  function GeometryStampHost({ api, editingElement, onClose, isDark, generateGeometryFigure }, ref) {
     const panelRef = useRef<GeometryEditorPanelHandle | null>(null);
     const { isMobile } = useIsMobile();
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -150,6 +150,7 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
           canUndo={canUndo}
           canRedo={canRedo}
           onSelectionChange={setSelectedObjectId}
+          generateGeometryFigure={generateGeometryFigure}
         />
       </>
     );

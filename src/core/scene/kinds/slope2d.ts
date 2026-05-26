@@ -18,7 +18,7 @@ const def: KindDef<Slope2DAttrs> = {
   dependsOn: (a) => [a.pointId],
   describe: (obj) => `Slope tại ${obj.attrs.pointId}`,
   render: (obj, ctx) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const board = ctx.jxg as any;
     const pt = ctx.resolveRef(obj.attrs.pointId);
     if (!pt) return null;

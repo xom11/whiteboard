@@ -2,7 +2,7 @@ import type { Store } from '../../../../core/scene';
 import type { GeomTool } from '../tools';
 import type { ShowToastFn } from '../../../shared/Toast';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgObj = any;
 
 export type TransformToolKey =
@@ -25,7 +25,13 @@ export interface HandlerCtx {
   marqueeRef: { current: { startSx: number; startSy: number; rect?: JxgObj } | null };
   moveDownRef: { current: { sx: number; sy: number } | null };
   lastMoveClickRef: { current: { id: string | null; time: number } };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  /**
+   * clientX/clientY của pointerDown gần nhất từ select-like handlers
+   * (move tool, select tool). Dùng làm anchor cho PropertiesPopover khi
+   * selection thay đổi qua click thay vì double-click.
+   */
+  lastClickClientRef: { current: { x: number; y: number } | null };
+   
   pendingTransformRef: { current: any };
   phantomRef: { current: JxgObj };
   previewShapeRef: { current: JxgObj };
@@ -55,9 +61,9 @@ export interface HandlerCtx {
    * tangent: P trong đường tròn).
    */
   toast?: ShowToastFn;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   emitTransform: (info: any | null) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   emitSelect: (snap: any) => void;
   setPendingCount: (n: number) => void;
   setSelectionTick: (fn: (t: number) => number) => void;

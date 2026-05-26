@@ -4,6 +4,7 @@ import { GeometryEditorPanel, type GeometryEditorPanelHandle } from '../editor/E
 import { createStore, createEmptyState } from '../../../core/scene';
 
 const makeStore = () => createStore(createEmptyState('2d'));
+const mockClearSelection = jest.fn();
 
 // Mock state có 1 point để hasContent() = true (object count > 0).
 const mockState = (() => {
@@ -28,7 +29,7 @@ const mockState = (() => {
 })();
 
 jest.mock('../editor/MiniBoard', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const mockHandle: any = {
     getContainer: () => {
       const d = document.createElement('div');
@@ -41,20 +42,21 @@ jest.mock('../editor/MiniBoard', () => {
     getBbox: () => [-10, 10, 10, -10],
     onSelect: () => () => {},
     onTransformParam: () => () => {},
+    onSelectionState: () => () => {},
     confirmTransformParam: () => {},
     cancelTransformParam: () => {},
     mutateObject: () => {},
     snapshotObject: () => null,
     getAllPointNames: () => [],
     getSelectionSize: () => 0,
-    clearSelection: () => {},
+    clearSelection: () => mockClearSelection(),
     deleteSelection: () => {},
   };
   return {
     __esModule: true,
     TOOLS: [],
     GROUP_LABELS: {},
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     MiniBoard2D: React.forwardRef<any, { onReady?: () => void }>(function MiniBoard2DMock({ onReady }, ref) {
       React.useImperativeHandle(ref, () => mockHandle, []);
       React.useEffect(() => {
@@ -75,6 +77,10 @@ jest.mock('../render', () => ({
 }));
 
 describe('GeometryEditorPanel', () => {
+  beforeEach(() => {
+    mockClearSelection.mockClear();
+  });
+
   test('renders panel header + Insert/Cancel buttons', () => {
     render(<GeometryEditorPanel store={makeStore()} onInsert={() => {}} onClose={() => {}} />);
     expect(screen.getByText(/dựng hình học/i)).toBeInTheDocument();
@@ -154,5 +160,75 @@ describe('GeometryEditorPanel', () => {
     );
     expect(screen.getByTestId('undo-btn-mobile')).toBeDisabled();
     expect(screen.getByTestId('redo-btn-mobile')).toBeDisabled();
+  });
+
+  it('khong hien AI prompt khi consumer chua cau hinh generator', () => {
+    render(<GeometryEditorPanel store={makeStore()} onInsert={() => {}} onClose={() => {}} />);
+    expect(screen.queryByLabelText('Đề bài cho AI')).not.toBeInTheDocument();
+  });
+
+  it('AI prompt nap state sinh ra va giu view dang mo', async () => {
+    const store = makeStore();
+    const metaBefore = store.getState().meta;
+    const aiState = {
+      ...mockState,
+      meta: {
+        domain: '2d' as const,
+        version: 1,
+        view: { bbox: [-2, 2, 2, -2] as const, showAxis: true, showGrid: true },
+      },
+    };
+    const generateGeometryFigure = jest.fn(async () => ({ ok: true as const, state: aiState }));
+    render(
+      <GeometryEditorPanel
+        store={store}
+        onInsert={() => {}}
+        onClose={() => {}}
+        generateGeometryFigure={generateGeometryFigure}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText('Đề bài cho AI'), {
+      target: { value: '  Cho tam giác ABC  ' },
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Dựng bằng AI' }));
+      await Promise.resolve();
+    });
+
+    expect(generateGeometryFigure).toHaveBeenCalledWith(
+      'Cho tam giác ABC',
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+    expect(store.getState().objects).toEqual(aiState.objects);
+    expect(store.getState().meta).toEqual(metaBefore);
+    expect(mockClearSelection).toHaveBeenCalledTimes(1);
+  });
+
+  it('AI prompt hien loading va loi tra ve tu generator', async () => {
+    let resolve: ((value: { ok: false; message: string }) => void) | undefined;
+    const generateGeometryFigure = jest.fn(
+      () => new Promise<{ ok: false; message: string }>((done) => { resolve = done; }),
+    );
+    render(
+      <GeometryEditorPanel
+        store={makeStore()}
+        onInsert={() => {}}
+        onClose={() => {}}
+        generateGeometryFigure={generateGeometryFigure}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText('Đề bài cho AI'), {
+      target: { value: 'Vẽ hình ngoài phạm vi' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Dựng bằng AI' }));
+    expect(screen.getByRole('button', { name: 'Đang dựng...' })).toBeDisabled();
+
+    await act(async () => {
+      resolve?.({ ok: false, message: 'Không dựng được hình này.' });
+      await Promise.resolve();
+    });
+    expect(screen.getByRole('alert')).toHaveTextContent('Không dựng được hình này.');
   });
 });

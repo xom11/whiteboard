@@ -1,11 +1,14 @@
 import { objKind } from '../../tools';
 import type { HandlerCtx } from '../ctx';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export function handleSelectTool(ctx: HandlerCtx, e: any): void {
   const sc = ctx.screenCoordsOf(e);
   if (!sc) return;
   const [sx, sy] = sc;
+  const cx = (e.clientX ?? e.touches?.[0]?.clientX ?? 0) as number;
+  const cy = (e.clientY ?? e.touches?.[0]?.clientY ?? 0) as number;
+  ctx.lastClickClientRef.current = { x: cx, y: cy };
   const hits = ctx.objectsAt(e)
     .map(ctx.promoteLabel)
     .filter((o) => o !== ctx.axisObjsRef.current.x && o !== ctx.axisObjsRef.current.y)

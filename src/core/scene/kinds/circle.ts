@@ -62,7 +62,7 @@ const def: KindDef<CircleAttrs> = {
     return `Đường tròn tâm ${L(obj.attrs.center!)} bán kính ${L(obj.attrs.center!)}${L(obj.attrs.surfacePoint!)}`;
   },
   render: (obj, ctx) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const board = ctx.jxg as any;
     const baseOpts: Record<string, unknown> = {
       name: obj.label,

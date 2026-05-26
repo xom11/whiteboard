@@ -31,7 +31,7 @@ export function hitTest(
 ): SceneHit {
   // `screen` arrives in user-space; thresholds below are in pixels and need to
   // be converted to user units via the board's px-per-unit scale.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const board = (view as any)?.board;
   // Fallback to 1 (no scaling) when board is missing so the hitTest unit tests,
   // whose mock view emits pixel-space coords directly, keep working unchanged.

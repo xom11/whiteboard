@@ -2,7 +2,7 @@ import type { ExcalidrawElement } from '../types';
 import { closePdfDocument, loadPdfDocument, rasterizePdf, type RasterizedPage } from './rasterize';
 
 // Excalidraw imperative API — không có public type chính xác.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type ExApi = any;
 
 /** Khoảng cách dọc giữa các trang PDF khi xếp dọc, ở scene units. */

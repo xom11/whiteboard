@@ -2,12 +2,12 @@ import { finalizeShape } from '../finalizeShape';
 import type { HandlerCtx } from '../ctx';
 import { TOOLS } from '../../tools';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 function mkPoint(x: number, y: number): any {
   return { X: () => x, Y: () => y, elType: 'point' };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 function mkCircle(cx: number, cy: number, r: number): any {
   return {
     center: mkPoint(cx, cy),
@@ -21,7 +21,7 @@ function makeCtx(picks: unknown[], ids: string[]) {
   const ctx: Partial<HandlerCtx> = {
     pendingRef: { current: picks },
     pendingIdsRef: { current: ids },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     store: {
       getState: () => ({ counter: 0, objects: {} }),
       dispatch: (a: unknown) => { dispatched.push(a); },
@@ -52,7 +52,7 @@ describe('finalizeShape: tangent', () => {
     const { ctx, dispatched } = makeCtx([p, c], ['P', 'C']);
     finalizeShape(ctx, tangentDef);
     expect(dispatched).toHaveLength(1);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const construction = (dispatched[0] as any).payload.obj.attrs.construction;
     expect(construction.kind).toBe('tangent');
     expect(construction.branch).toBe('on');
@@ -66,7 +66,7 @@ describe('finalizeShape: tangent', () => {
     const { ctx, dispatched } = makeCtx([p, c], ['P', 'C']);
     finalizeShape(ctx, tangentDef);
     expect(dispatched).toHaveLength(2);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const branches = dispatched.map((a) => (a as any).payload.obj.attrs.construction.branch);
     expect(branches.sort()).toEqual([0, 1]);
   });

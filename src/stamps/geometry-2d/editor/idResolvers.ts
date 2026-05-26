@@ -1,6 +1,6 @@
 import type { JxgRenderer } from '../../../core/scene/render/JxgRenderer';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgObj = any;
 
 /**
@@ -12,12 +12,12 @@ type JxgObj = any;
  */
 export function jxgFromSceneId(renderer: JxgRenderer | null, id: string): JxgObj {
   if (!renderer) return null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const elements = (renderer as any).elements as Map<string, JxgObj> | undefined;
   if (!elements) return null;
   const m = /^(.+):border:(\d+)$/.exec(id);
   if (m) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const poly = elements.get(m[1]) as any;
     const idx = parseInt(m[2], 10);
     const borders = poly?.borders;
@@ -41,7 +41,7 @@ export function jxgIdToSceneId(
   const direct = idMap.get(String(jxgObj.id));
   if (direct) return direct;
   if (!renderer) return null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const elements = (renderer as any).elements as Map<string, JxgObj> | undefined;
   if (!elements) return null;
   // Direct fallback: idMap rebuild qua store.subscribe có thể chạy TRƯỚC
@@ -50,7 +50,7 @@ export function jxgIdToSceneId(
   // hiện tại. Walk renderer.elements để bù.
   for (const [sid, el] of elements) {
     if (el === jxgObj) return sid;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const borders = (el as any)?.borders;
     if (Array.isArray(borders)) {
       const idx = borders.indexOf(jxgObj);

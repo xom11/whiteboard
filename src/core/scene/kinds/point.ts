@@ -10,29 +10,29 @@ import { type Constraint2D, type TransformDef, constraintRefs2D } from './2d-con
  * Center là pointId; resolve qua ctx + dùng function-based để dilate cập nhật
  * live khi user kéo center.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 function buildJxgTransforms(board: any, ctx: RenderCtx, t: TransformDef): any[] {
   switch (t.kind) {
     case 'translate':
       return [board.create('transform', [t.dx, t.dy], { type: 'translate' })];
     case 'rotate': {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const c: any = ctx.resolveRef(t.center);
       return [board.create('transform', [t.angleRad, c], { type: 'rotate' })];
     }
     case 'reflectPoint': {
       // Đối xứng qua điểm = quay π quanh điểm đó.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const c: any = ctx.resolveRef(t.center);
       return [board.create('transform', [Math.PI, c], { type: 'rotate' })];
     }
     case 'reflectLine': {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const l: any = ctx.resolveRef(t.line);
       return [board.create('transform', [l], { type: 'reflect' })];
     }
     case 'dilate': {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const c: any = ctx.resolveRef(t.center);
       // Function-based để chain cập nhật khi user kéo center.
       return [
@@ -199,51 +199,51 @@ const def: KindDef<PointAttrs> = {
       return board.create('midpoint', [p1, p2], opts);
     }
     if (c.kind === 'transformed') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const src: any = ctx.resolveRef(c.source);
       const transforms = buildJxgTransforms(board, ctx, c.transform);
       const parent = transforms.length === 1 ? transforms[0] : transforms;
       // JSXGraph: create('point', [src, transformParent]) — src first.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const pt: any = board.create('point', [src, parent], opts);
       // Renderer dọn _helpers khi remove element (xem JxgRenderer.remove).
       pt._helpers = transforms;
       return pt;
     }
     if (c.kind === 'perpFoot') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const from: any = ctx.resolveRef(c.from);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const onLine: any = ctx.resolveRef(c.onLine);
       // JSXGraph 'perpendicularpoint': create('perpendicularpoint', [line, point])
       //   → trả về chân vuông góc của point xuống line.
       return board.create('perpendicularpoint', [onLine, from], opts);
     }
     if (c.kind === 'circumcenter') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const a: any = ctx.resolveRef(c.vertices[0]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const b: any = ctx.resolveRef(c.vertices[1]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const c3: any = ctx.resolveRef(c.vertices[2]);
       // JSXGraph 'circumcenter': create('circumcenter', [A, B, C])
       return board.create('circumcenter', [a, b, c3], opts);
     }
     if (c.kind === 'incenter') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const a: any = ctx.resolveRef(c.vertices[0]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const b: any = ctx.resolveRef(c.vertices[1]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const c3: any = ctx.resolveRef(c.vertices[2]);
       return board.create('incenter', [a, b, c3], opts);
     }
     if (c.kind === 'centroid') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const a: any = ctx.resolveRef(c.vertices[0]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const b: any = ctx.resolveRef(c.vertices[1]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const c3: any = ctx.resolveRef(c.vertices[2]);
       // JSXGraph function-based point: parents = [() => x, () => y]
       // Function được gọi lại mỗi frame → live update khi user kéo vertex.
@@ -253,11 +253,11 @@ const def: KindDef<PointAttrs> = {
       ], opts);
     }
     if (c.kind === 'orthocenter') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const a: any = ctx.resolveRef(c.vertices[0]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const b: any = ctx.resolveRef(c.vertices[1]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const c3: any = ctx.resolveRef(c.vertices[2]);
       const hide = { visible: false, withLabel: false, fixed: true, name: '' };
       // Altitude A→BC: line BC + perpendicular từ A xuống BC.
@@ -267,7 +267,7 @@ const def: KindDef<PointAttrs> = {
       const lineAC = board.create('line', [a, c3], hide);
       const altB = board.create('perpendicular', [lineAC, b], hide);
       // Trực tâm = giao 2 altitude (branch 0 — chỉ có 1 giao điểm).
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const ortho: any = board.create('intersection', [altA, altB, 0], opts);
       ortho._helpers = [lineBC, altA, lineAC, altB];
       return ortho;
@@ -288,7 +288,7 @@ const def: KindDef<PointAttrs> = {
     const c = obj.attrs.constraint;
     const oldC = prev.attrs.constraint;
     if (c.kind === 'free' && oldC.kind === 'free') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const el = existing as any;
       // JXG.COORDS_BY_USER = 1 (hardcoded constant — JSXGraph không export
       // qua module API, lấy qua window.JXG sẽ phải gánh thêm phụ thuộc).

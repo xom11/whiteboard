@@ -22,7 +22,7 @@ const def: KindDef<PointOnCurveAttrs> = {
   dependsOn: (a) => [a.functionId],
   describe: (obj) => `${obj.label} trên ${obj.attrs.functionId} tại x=${obj.attrs.x.toFixed(3)}`,
   render: (obj, ctx) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const board = ctx.jxg as any;
     const curve = ctx.resolveRef(obj.attrs.functionId);
     if (!curve) return null;

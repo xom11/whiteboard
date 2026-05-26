@@ -3,12 +3,12 @@ import { safeJsx } from '../../../../shared/safeJsx';
 import type { HandlerCtx } from '../ctx';
 import { dispatchAddFreePoint, dispatchAddIntersection } from '../utils';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgObj = any;
 
 export function handlePointTool(
   ctx: HandlerCtx,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   _e: any,
   x: number,
   y: number,

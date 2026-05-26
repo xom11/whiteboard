@@ -1,4 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export type JxgObj = any;
 
 import type { State, SceneObject } from '../../../core/scene';

@@ -34,7 +34,7 @@ describe('useStampStore', () => {
           locked: false,
           layer: 'default',
           schemaVersion: 1,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           attrs: { expression: 'x', color: '#000', visible: true } as any,
         },
       },

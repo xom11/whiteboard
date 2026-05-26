@@ -24,16 +24,16 @@ export interface UseScenePersistOptions {
   readOnly: boolean;
   onSceneChange?: (snapshot: ExcalidrawSceneSnapshot) => void;
   onFilesChange?: (files: BinaryFiles, newFileIds: string[]) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   api: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   apiRef: React.MutableRefObject<any>;
   stamps: ReadonlyArray<StampType>;
 }
 
 export interface UseScenePersistResult {
   effectiveInitialScene: ExcalidrawSceneSnapshot | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   onSceneTick: (elements: readonly ExcalidrawElement[], appState: any, files: BinaryFiles) => void;
 }
 
@@ -65,13 +65,13 @@ export function useScenePersist(opts: UseScenePersistOptions): UseScenePersistRe
   const pruneThrottleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latestSceneRef = useRef<{
     elements: readonly ExcalidrawElement[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     appState: any;
   } | null>(null);
   const pendingFilesRef = useRef<BinaryFiles>({});
   // Cached hashElementsVersion để flushScene chạy sync trong unmount cleanup
   // (cleanup không thể await dynamic import).
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const hashElementsVersionRef = useRef<((elements: readonly ExcalidrawElement[]) => any) | null>(null);
 
   const stampsRef = useRef(stamps);
@@ -135,7 +135,7 @@ export function useScenePersist(opts: UseScenePersistOptions): UseScenePersistRe
         ?? []) as readonly ExcalidrawElement[];
       const stampIds = new Set<string>();
       for (const el of currentElements) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const fid = (el as any).fileId as string | undefined;
         if (fid && isStampElement(el)) stampIds.add(fid);
       }
@@ -159,7 +159,7 @@ export function useScenePersist(opts: UseScenePersistOptions): UseScenePersistRe
         ?? []) as readonly ExcalidrawElement[];
       const keep = new Set<string>();
       for (const el of currentElements) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const fid = (el as any).fileId as string | undefined;
         if (fid && !isStampElement(el)) keep.add(fid);
       }
@@ -185,7 +185,7 @@ export function useScenePersist(opts: UseScenePersistOptions): UseScenePersistRe
         sceneThrottleRef.current = null;
         try {
           const mod = await import('@excalidraw/excalidraw');
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           hashElementsVersionRef.current = (mod as any).hashElementsVersion;
         } catch (err) {
           console.warn('[whiteboard] import excalidraw để flush scene thất bại:', err);
@@ -227,11 +227,11 @@ export function useScenePersist(opts: UseScenePersistOptions): UseScenePersistRe
       api.addFiles(
         entries.map(([id, f]) => ({
           id,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           dataURL: (f as any).dataURL,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           mimeType: (f as any).mimeType,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           created: (f as any).created ?? Date.now(),
         })),
       );
@@ -257,11 +257,11 @@ export function useScenePersist(opts: UseScenePersistOptions): UseScenePersistRe
           api.addFiles(
             entries.map(([id, f]) => ({
               id,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+               
               dataURL: (f as any).dataURL,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+               
               mimeType: (f as any).mimeType,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+               
               created: (f as any).created ?? Date.now(),
             })),
           );

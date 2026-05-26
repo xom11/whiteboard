@@ -50,7 +50,7 @@ const def: KindDef<ArcAttrs> = {
     }
   },
   render: (obj, ctx) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const board = ctx.jxg as any;
     const baseOpts: Record<string, unknown> = {
       name: obj.label,

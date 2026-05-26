@@ -113,10 +113,10 @@ const def: KindDef<PolygonAttrs> = {
     // showValue=true: hiển thị label dạng "ABC: S = 8.50" với diện tích live.
     // showLabel=false + showValue=true: chỉ số diện tích. JSXGraph polygon's
     // Area() trả về |∮ x dy| theo đỉnh hiện tại → live update khi kéo đỉnh.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const poly = board.create('polygon', verts, {
       name: showValue
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         ? function (this: any) {
             // `this` là polygon element; gọi Area() để lấy giá trị live.
             const a = typeof this.Area === 'function' ? this.Area() : 0;

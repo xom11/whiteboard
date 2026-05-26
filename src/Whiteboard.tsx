@@ -18,7 +18,7 @@ import { PageRangeDialog } from './pdf/PageRangeDialog';
 import { useStampDoubleClick } from './stamps/shared/useStampDoubleClick';
 import { useStampShortcutBlocker } from './stamps/shared/useStampShortcutBlocker';
 import { useStampClickOutside } from './stamps/shared/useStampClickOutside';
-import type { StampHostHandle } from './stamps/shared/types';
+import type { GenerateGeometryFigure, StampHostHandle } from './stamps/shared/types';
 import { useExcalidrawApi } from './hooks/useExcalidrawApi';
 import { useActiveStamp } from './hooks/useActiveStamp';
 import { usePdfImporter } from './hooks/usePdfImporter';
@@ -54,7 +54,7 @@ export interface WhiteboardProps {
   onFilesChange?: (files: BinaryFiles, newFileIds: string[]) => void;
 
   /** Excalidraw imperative API. Consumer dung inject remote scene khi can. */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   onApi?: (api: any) => void;
 
   /** Excalidraw UI language. Defaults to 'vi-VN'. See @excalidraw/excalidraw locales. */
@@ -86,6 +86,12 @@ export interface WhiteboardProps {
    * Nếu cần inject files động về sau, dùng `onApi` rồi gọi `api.addFiles`.
    */
   initialFiles?: BinaryFiles;
+
+  /**
+   * Opt-in bridge for the geometry editor AI prompt. This callback should call
+   * `generateFigure()` on a server boundary so API credentials never reach the browser.
+   */
+  generateGeometryFigure?: GenerateGeometryFigure;
 }
 
 export function Whiteboard({
@@ -98,6 +104,7 @@ export function Whiteboard({
   stamps = DEFAULT_STAMPS,
   initialScene,
   initialFiles,
+  generateGeometryFigure,
 }: WhiteboardProps) {
   const { api, apiRef, isDark, setApiFromExcalidraw, syncThemeFromAppState } =
     useExcalidrawApi({ onApi });
@@ -137,7 +144,7 @@ export function Whiteboard({
 
   // Capture local changes: theme sync → crop intercept (re-edit) → persist tick.
   const handleChange = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (elements: readonly ExcalidrawElement[], appState: any, files: BinaryFiles) => {
       syncThemeFromAppState(appState);
 
@@ -206,7 +213,7 @@ export function Whiteboard({
       } catch { /* ignore */ }
     } else {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         api.setActiveTool?.({ type: prevExcalidrawToolRef.current as any });
       } catch { /* ignore */ }
     }
@@ -302,6 +309,7 @@ export function Whiteboard({
           editingElement={editingElement}
           onClose={closeStamp}
           isDark={isDark}
+          generateGeometryFigure={generateGeometryFigure}
         />
       )}
     </div>

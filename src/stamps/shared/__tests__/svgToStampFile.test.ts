@@ -53,7 +53,7 @@ describe('svgToStampFile', () => {
 
   test('uses Buffer fallback when btoa is undefined (Node-only path)', () => {
     const originalBtoa = (globalThis as { btoa?: (s: string) => string }).btoa;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     delete (globalThis as any).btoa;
     try {
       const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="20"><text>Đoạn ∫</text></svg>';

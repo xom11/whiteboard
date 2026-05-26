@@ -2,7 +2,7 @@
 import { jxgFromSceneId, jxgIdToSceneId } from '../idResolvers';
 import type { JxgRenderer } from '../../../../core/scene/render/JxgRenderer';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgObj = any;
 
 /**

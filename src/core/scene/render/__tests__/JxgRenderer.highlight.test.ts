@@ -19,13 +19,13 @@ try { getKind(FAKE); } catch {
   });
 }
 
-// JSXGraph-mock kind: element exposes getAttribute/setAttribute on a real
-// attrs bag, so we can assert that highlight() restores using the correct
-// JSXGraph attribute names.
-const FAKE_ATTR = 'highlight_attr_kind';
-try { getKind(FAKE_ATTR); } catch {
+// Mock kind giả lập một JSXGraph "segment" element: có elType + point1/point2
+// để renderer.addHalo() đi vào nhánh tạo halo. Test này verify halo overlay
+// được tạo qua board.create (giữ nguyên màu gốc của element).
+const FAKE_SEG = 'highlight_segment_kind';
+try { getKind(FAKE_SEG); } catch {
   registerKind({
-    type: FAKE_ATTR,
+    type: FAKE_SEG,
     schemaVersion: 1,
     migrate: {},
     dependsOn: () => [],
@@ -37,6 +37,9 @@ try { getKind(FAKE_ATTR); } catch {
         strokeWidth: a.width ?? 2,
       };
       return {
+        elType: 'segment',
+        point1: { id: `${obj.id}_p1` },
+        point2: { id: `${obj.id}_p2` },
         attrs,
         getAttribute(k: string) { return attrs[k]; },
         setAttribute(patch: Record<string, unknown>) { Object.assign(attrs, patch); },
@@ -46,25 +49,36 @@ try { getKind(FAKE_ATTR); } catch {
 }
 
 function mockBoard() {
+  const created: Array<{ kind: string; parents: unknown[]; attrs?: unknown; id: number }> = [];
+  let counter = 0;
+  const removed: unknown[] = [];
   return {
-    removeObject: jest.fn(),
+    created,
+    removed,
+    create: jest.fn((kind: string, parents: unknown[], attrs?: unknown) => {
+      const el = { __halo: true, id: ++counter, kind, parents, attrs };
+      created.push({ kind, parents, attrs, id: counter });
+      return el;
+    }),
+    removeObject: jest.fn((el: unknown) => { removed.push(el); }),
+    update: jest.fn(),
   };
 }
 
 type AttrEl = { attrs: Record<string, unknown> };
 
-function makeAttrObj(id: string, color: string, width: number): SceneObject {
+function makeSegObj(id: string, color: string, width: number): SceneObject {
   return {
     id,
     label: id,
-    kind: FAKE_ATTR,
+    kind: FAKE_SEG,
     visible: true,
     locked: false,
     attrs: { color, width },
   };
 }
 
-function makeAttrState(...objs: SceneObject[]): State {
+function makeState(...objs: SceneObject[]): State {
   const map: Record<string, SceneObject> = {};
   for (const o of objs) map[o.id] = o;
   return {
@@ -75,7 +89,7 @@ function makeAttrState(...objs: SceneObject[]): State {
   };
 }
 
-describe('JxgRenderer.highlight', () => {
+describe('JxgRenderer.highlight (halo overlay)', () => {
   it('exposes highlight method', () => {
     const store = createStore({ objects: {}, order: [], counter: 0, meta: { domain: '2d', version: 1 } });
     const r = new JxgRenderer(store, mockBoard());
@@ -97,37 +111,79 @@ describe('JxgRenderer.highlight', () => {
     r.dispose();
   });
 
-  it('restores original strokeColor + strokeWidth after switching highlight', () => {
-    const A = makeAttrObj('A', '#1e40af', 2);
-    const B = makeAttrObj('B', '#16a34a', 3);
-    const store = createStore(makeAttrState(A, B));
-    const r = new JxgRenderer(store, mockBoard());
+  it('does NOT mutate original element strokeColor/strokeWidth', () => {
+    const A = makeSegObj('A', '#1e40af', 2);
+    const store = createStore(makeState(A));
+    const board = mockBoard();
+    const r = new JxgRenderer(store, board);
 
     const elA = r.listElements().get('A') as AttrEl;
-    const elB = r.listElements().get('B') as AttrEl;
 
     r.highlight('A');
-    expect(elA.attrs.strokeColor).toBe('#ef4444');
-    expect(elA.attrs.strokeWidth).toBe(4);
-
-    r.highlight('B');
-    // A must be reverted to its original colors — not stay red.
+    // Halo overlay model giữ nguyên màu gốc.
     expect(elA.attrs.strokeColor).toBe('#1e40af');
     expect(elA.attrs.strokeWidth).toBe(2);
-    expect(elB.attrs.strokeColor).toBe('#ef4444');
-    expect(elB.attrs.strokeWidth).toBe(5);
 
     r.dispose();
   });
 
-  it('does not accumulate strokeWidth across repeated highlight cycles', () => {
-    const A = makeAttrObj('A', '#1e40af', 2);
-    const B = makeAttrObj('B', '#16a34a', 3);
-    const store = createStore(makeAttrState(A, B));
-    const r = new JxgRenderer(store, mockBoard());
+  it('creates a gray segment halo via board.create when highlighting a segment', () => {
+    const A = makeSegObj('A', '#1e40af', 2);
+    const store = createStore(makeState(A));
+    const board = mockBoard();
+    const r = new JxgRenderer(store, board);
 
-    const elA = r.listElements().get('A') as AttrEl;
-    const elB = r.listElements().get('B') as AttrEl;
+    r.highlight('A');
+    // Tạo đúng 1 halo segment.
+    const seghalos = board.created.filter((c) => c.kind === 'segment');
+    expect(seghalos.length).toBe(1);
+    const attrs = seghalos[0].attrs as Record<string, unknown>;
+    expect(attrs.strokeColor).toBe('#475569');
+    expect(attrs.strokeWidth).toBe(9);
+
+    r.dispose();
+  });
+
+  it('switches halo from one id to another (removes old, creates new)', () => {
+    const A = makeSegObj('A', '#1e40af', 2);
+    const B = makeSegObj('B', '#16a34a', 3);
+    const store = createStore(makeState(A, B));
+    const board = mockBoard();
+    const r = new JxgRenderer(store, board);
+
+    r.highlight('A');
+    expect(board.created.filter((c) => c.kind === 'segment').length).toBe(1);
+
+    r.highlight('B');
+    // Halo A bị removeObject, halo B mới được create.
+    expect(board.removeObject).toHaveBeenCalledTimes(1);
+    expect(board.created.filter((c) => c.kind === 'segment').length).toBe(2);
+
+    r.dispose();
+  });
+
+  it('supports multi-id selection: creates N halos for N selected ids', () => {
+    const A = makeSegObj('A', '#1e40af', 2);
+    const B = makeSegObj('B', '#16a34a', 3);
+    const store = createStore(makeState(A, B));
+    const board = mockBoard();
+    const r = new JxgRenderer(store, board);
+
+    r.highlight(['A', 'B']);
+    expect(board.created.filter((c) => c.kind === 'segment').length).toBe(2);
+
+    r.highlight(null);
+    expect(board.removeObject).toHaveBeenCalledTimes(2);
+
+    r.dispose();
+  });
+
+  it('repeated highlight cycles do not leak halos', () => {
+    const A = makeSegObj('A', '#1e40af', 2);
+    const B = makeSegObj('B', '#16a34a', 3);
+    const store = createStore(makeState(A, B));
+    const board = mockBoard();
+    const r = new JxgRenderer(store, board);
 
     for (let i = 0; i < 5; i++) {
       r.highlight('A');
@@ -135,6 +191,14 @@ describe('JxgRenderer.highlight', () => {
     }
     r.highlight(null);
 
+    // Mỗi lần switch tạo 1 halo, remove 1 halo → net 0.
+    const totalCreated = board.created.filter((c) => c.kind === 'segment').length;
+    const totalRemoved = board.removed.length;
+    expect(totalCreated).toBe(totalRemoved);
+
+    // Element gốc giữ nguyên màu.
+    const elA = r.listElements().get('A') as AttrEl;
+    const elB = r.listElements().get('B') as AttrEl;
     expect(elA.attrs.strokeColor).toBe('#1e40af');
     expect(elA.attrs.strokeWidth).toBe(2);
     expect(elB.attrs.strokeColor).toBe('#16a34a');

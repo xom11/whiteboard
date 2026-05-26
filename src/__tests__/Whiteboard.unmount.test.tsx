@@ -30,7 +30,7 @@ jest.mock('../core/persistence/fileStore', () => ({
 
 // Mock Excalidraw — share __excApi để test gọi addFiles dễ assert.
 jest.mock('@excalidraw/excalidraw', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+   
   const ReactMod = require('react');
   const NoopChildren = ({ children }: { children?: React.ReactNode }) =>
     ReactMod.createElement(ReactMod.Fragment, null, children);
@@ -53,14 +53,14 @@ jest.mock('@excalidraw/excalidraw', () => {
         files: Record<string, unknown>,
       ) => void;
     }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       (globalThis as any).__excProps = props;
       ReactMod.useEffect(() => {
         const api = {
           updateScene: jest.fn(),
           addFiles: jest.fn(),
           getSceneElements: () =>
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             ((globalThis as any).__sceneElements ?? []),
           getFiles: () => ({}),
           getAppState: () => ({
@@ -72,7 +72,7 @@ jest.mock('@excalidraw/excalidraw', () => {
           }),
           setActiveTool: jest.fn(),
         };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         (globalThis as any).__excApi = api;
         props.excalidrawAPI?.(api);
       }, []);
@@ -112,11 +112,11 @@ type ExcProps = {
 };
 
 const getExcProps = () =>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   (globalThis as any).__excProps as ExcProps | null;
 
 const getExcApi = () =>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   (globalThis as any).__excApi as { addFiles: jest.Mock } | null;
 
 beforeEach(() => {
@@ -124,11 +124,11 @@ beforeEach(() => {
   window.localStorage.clear();
   jest.clearAllMocks();
   pendingReadFilesResolve = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   (globalThis as any).__excProps = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   (globalThis as any).__excApi = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   (globalThis as any).__sceneElements = [];
 });
 
@@ -187,7 +187,7 @@ describe('Whiteboard — unmount safety (regression cho #5)', () => {
       fileId: 'file-late',
       isDeleted: false,
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (globalThis as any).__sceneElements = [imageElement];
 
     const { findByTestId, unmount } = render(React.createElement(Whiteboard, {}));

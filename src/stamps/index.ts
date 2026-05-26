@@ -27,6 +27,8 @@ export type {
   StampHostProps,
   StampHostHandle,
   StampHostComponent,
+  AiFigureUiResult,
+  GenerateGeometryFigure,
 } from './shared/types';
 
 export { svgToStampFile, createStampFile } from './shared/svgToStampFile';

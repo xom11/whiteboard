@@ -150,7 +150,7 @@ export const PropertiesPopover: React.FC<Props> = (props) => {
   // Khi popover mở lại trên đối tượng khác, đồng bộ name input.
   useEffect(() => {
     setName(initialName);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [initialName]);
 
   useEffect(() => {

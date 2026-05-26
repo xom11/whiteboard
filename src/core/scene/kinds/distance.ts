@@ -30,11 +30,11 @@ const def: KindDef<DistanceAttrs> = {
   dependsOn: (a) => [a.p1, a.p2],
   describe: (obj, state) => `Khoảng cách ${labelOf(obj.attrs.p1, state)}${labelOf(obj.attrs.p2, state)}`,
   render: (obj, ctx) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const board = ctx.jxg as any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const p1: any = ctx.resolveRef(obj.attrs.p1);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const p2: any = ctx.resolveRef(obj.attrs.p2);
     const prefix = obj.attrs.prefix ?? 'd = ';
     const precision = obj.attrs.precision ?? 2;

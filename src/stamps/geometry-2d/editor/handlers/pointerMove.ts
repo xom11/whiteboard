@@ -3,7 +3,7 @@ import type { HandlerCtx } from './ctx';
 
 // ─── board.on('move') ────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export function handleMove(ctx: HandlerCtx, e: any): void {
   // Marquee rectangle redraw while user drags with the select tool on empty space.
   if (ctx.toolRef.current === 'select' && ctx.marqueeRef.current) {
@@ -48,7 +48,7 @@ export function handleMove(ctx: HandlerCtx, e: any): void {
     if (!ctx.boardRef.current || !ctx.phantomRef.current) return;
     safeJsx('handlers.phantomMove', () => {
       const coords = ctx.boardRef.current.getUsrCoordsOfMouse(e);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const JXG: any = ctx.jxgRef.current;
       if (!JXG) return;
       ctx.phantomRef.current.setPositionDirectly(JXG.COORDS_BY_USER, [coords[0], coords[1]]);

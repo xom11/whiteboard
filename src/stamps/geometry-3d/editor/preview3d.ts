@@ -22,9 +22,9 @@ import { constraintToWorld, type Vec3 } from './scene/constraintMath';
 import type { SceneHit } from './hitTest/hitTest';
 import type { CollectedArg, ToolKey } from './tools/spec';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgView3D = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgEl = any;
 
 const PREVIEW_STYLE = {

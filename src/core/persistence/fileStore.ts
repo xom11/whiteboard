@@ -98,7 +98,7 @@ export async function readFiles(storageKey: string): Promise<BinaryFiles> {
             return;
           }
           const record = cursor.value as FileRecord;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           (out as any)[record.id] = {
             dataURL: record.dataURL,
             mimeType: record.mimeType,
@@ -132,7 +132,7 @@ export async function writeFiles(storageKey: string, files: BinaryFiles): Promis
 
         const now = Date.now();
         for (const [id, f] of entries) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           const ff = f as any;
           const getReq = store.get(id);
           getReq.onsuccess = () => {

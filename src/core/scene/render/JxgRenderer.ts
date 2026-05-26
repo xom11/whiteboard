@@ -102,7 +102,7 @@ export class JxgRenderer {
     if (obj.kind !== 'point') return;
     const c = (obj.attrs as { constraint?: { kind?: string } }).constraint;
     if (!c || c.kind !== 'free') return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const point = el as any;
     if (typeof point.on !== 'function') return;
     const sceneId = obj.id;
@@ -125,6 +125,11 @@ export class JxgRenderer {
   }
 
   private remove(id: string): void {
+    // Selection halo (nếu có) phải bị xoá TRƯỚC element gốc — halo tham chiếu
+    // tới point1/point2/center/vertices của element gốc qua lambda; xoá element
+    // gốc trước sẽ làm halo dangling.
+    this.removeHalo(id);
+    this.selectedIds.delete(id);
     const el = this.elements.get(id);
     if (!el) return;
     try {
@@ -224,38 +229,168 @@ export class JxgRenderer {
     return this.elements;
   }
 
-  private highlightedId: string | null = null;
-  private highlightOriginal: { strokeColor?: string; strokeWidth?: number } | null = null;
+  // Selection halo overlay model: thay vì đổi màu element gốc thành đỏ, tạo
+  // một halo element gray phía sau (lower layer) → giữ nguyên màu gốc. Hỗ
+  // trợ multi-select cho cả canvas click-selection lẫn ObjectListPanel.
+  private selectedIds: Set<string> = new Set();
+  private haloMap: Map<string, unknown[]> = new Map();
 
-  highlight(id: string | null): void {
+  highlight(ids: string | string[] | null): void {
     if (this.disposed) return;
-    // Clear previous.
-    if (this.highlightedId && this.highlightOriginal) {
-      const prev = this.elements.get(this.highlightedId) as
-        | { setAttribute?: (a: Record<string, unknown>) => void }
-        | undefined;
-      try {
-        prev?.setAttribute?.(this.highlightOriginal);
-      } catch (err) {
-        console.warn('[scene/render/2d] highlight restore fail:', err);
-      }
+    const newIds = new Set<string>(
+      ids == null ? [] : Array.isArray(ids) ? ids : [ids],
+    );
+    // Remove halos cho ids đã bị bỏ chọn.
+    for (const id of this.selectedIds) {
+      if (!newIds.has(id)) this.removeHalo(id);
     }
-    this.highlightedId = null;
-    this.highlightOriginal = null;
+    // Add halos cho ids mới chọn.
+    for (const id of newIds) {
+      if (!this.selectedIds.has(id) && this.elements.has(id)) this.addHalo(id);
+    }
+    this.selectedIds = newIds;
+    try {
+      (this.board as { update?: () => void }).update?.();
+    } catch { /* ignore */ }
+  }
 
-    if (!id) return;
+  private removeHalo(id: string): void {
+    const halos = this.haloMap.get(id);
+    if (!halos) return;
+    const board = this.board as { removeObject?: (e: unknown) => void };
+    for (const h of halos) {
+      try { board.removeObject?.(h); } catch { /* ignore */ }
+    }
+    this.haloMap.delete(id);
+  }
+
+  private addHalo(id: string): void {
     const el = this.elements.get(id) as
-      | { getAttribute?: (k: string) => unknown; setAttribute?: (a: Record<string, unknown>) => void }
+      | {
+          elType?: string;
+          getAttribute?: (k: string) => unknown;
+          X?: () => number;
+          Y?: () => number;
+          point1?: unknown;
+          point2?: unknown;
+          center?: unknown;
+          Radius?: () => number;
+          vertices?: unknown[];
+        }
       | undefined;
     if (!el) return;
+    const board = this.board as {
+      create?: (kind: string, parents: unknown[], attrs?: unknown) => unknown;
+    };
+    if (!board.create) return;
+
+    // Selection palette — gray fill + darker gray border (xem
+    // tham chiếu /tmp/ss.png).
+    const SEL_STROKE = '#475569'; // slate-600
+    const SEL_FILL = '#cbd5e1';   // slate-300
+    const haloBase = {
+      strokeColor: SEL_STROKE,
+      strokeOpacity: 0.55,
+      fillColor: SEL_FILL,
+      fillOpacity: 0.3,
+      fixed: true,
+      withLabel: false,
+      name: '',
+      highlight: false,
+      layer: 4,
+      needsRegularUpdate: true,
+    };
+    const halos: unknown[] = [];
     try {
-      const stroke = (el.getAttribute?.('strokeColor') as string | undefined) ?? '#1e40af';
-      const thick = (el.getAttribute?.('strokeWidth') as number | undefined) ?? 2;
-      this.highlightOriginal = { strokeColor: stroke, strokeWidth: thick };
-      el.setAttribute?.({ strokeColor: '#ef4444', strokeWidth: thick + 2 });
-      this.highlightedId = id;
+      switch (el.elType) {
+        case 'point':
+        case 'glider':
+        case 'intersection': {
+          const baseSize = (el.getAttribute?.('size') as number | undefined) ?? 4;
+          const halo = board.create('point', [
+            () => el.X?.() ?? 0,
+            () => el.Y?.() ?? 0,
+          ], {
+            ...haloBase,
+            size: baseSize + 6,
+            face: 'o',
+            strokeWidth: 2,
+            strokeOpacity: 0.75,
+            fillOpacity: 0.25,
+          });
+          halos.push(halo);
+          break;
+        }
+        case 'segment': {
+          if (el.point1 && el.point2) {
+            const halo = board.create('segment', [el.point1, el.point2], {
+              ...haloBase,
+              strokeWidth: 9,
+              straightFirst: false,
+              straightLast: false,
+            });
+            halos.push(halo);
+          }
+          break;
+        }
+        case 'line':
+        case 'arrow':
+        case 'ray':
+        case 'vector':
+        case 'tangent':
+        case 'normal':
+        case 'parallel':
+        case 'perpendicular':
+        case 'bisector': {
+          if (el.point1 && el.point2) {
+            const halo = board.create('line', [el.point1, el.point2], {
+              ...haloBase,
+              strokeWidth: 9,
+            });
+            halos.push(halo);
+          }
+          break;
+        }
+        case 'circle': {
+          if (el.center && typeof el.Radius === 'function') {
+            const halo = board.create('circle', [el.center, () => el.Radius?.() ?? 0], {
+              ...haloBase,
+              strokeWidth: 9,
+              fillOpacity: 0,
+            });
+            halos.push(halo);
+          }
+          break;
+        }
+        case 'polygon': {
+          if (Array.isArray(el.vertices) && el.vertices.length >= 3) {
+            // JSXGraph polygon.vertices có thể append vertex đầu lặp lại ở
+            // cuối để đóng path — trim cho an toàn.
+            const last = el.vertices.length - 1;
+            const verts = el.vertices[last] === el.vertices[0]
+              ? el.vertices.slice(0, last)
+              : el.vertices.slice();
+            const halo = board.create('polygon', verts, {
+              ...haloBase,
+              fillOpacity: 0.2,
+              borders: {
+                strokeColor: SEL_STROKE,
+                strokeWidth: 7,
+                strokeOpacity: 0.55,
+                highlight: false,
+              },
+            });
+            halos.push(halo);
+          }
+          break;
+        }
+        default:
+          // Các kind khác (curve, arc, sector, angle, ...) — chưa hỗ trợ halo.
+          break;
+      }
     } catch (err) {
-      console.warn('[scene/render/2d] highlight apply fail:', err);
+      console.warn('[scene/render/2d] halo create fail:', err);
     }
+    if (halos.length) this.haloMap.set(id, halos);
   }
 }

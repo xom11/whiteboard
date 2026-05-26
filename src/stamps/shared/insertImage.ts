@@ -3,7 +3,7 @@ import type { ExcalidrawElement } from '../../types';
 
 // Excalidraw imperative API — không có public type chính xác. Giữ untyped ở
 // boundary và yêu cầu caller pass đúng instance.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type ExApi = any;
 
 export interface InsertStampImageOptions {
@@ -32,7 +32,7 @@ export interface InsertStampImageResult {
 // Bỏ qua appState (selectedElementIds + croppingElementId) sau khi insert để
 // Excalidraw không tự động bật crop mode cho element vừa thêm → tránh trigger
 // crop intercept handler vô tận.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const clearAppStateAfterInsert = (): any => ({
   selectedElementIds: {},
   croppingElementId: null,

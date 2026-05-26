@@ -7,7 +7,7 @@ import { handleSingleTargetTool } from './singleTarget';
 import { handlePolygonTool } from './polygon';
 import { handleMultiClickTool } from './multiClick';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export function handleDown(ctx: HandlerCtx, e: any): void {
   if (!ctx.boardRef.current) return;
   const t = ctx.toolRef.current;

@@ -6,13 +6,13 @@ jest.mock('../rasterize', () => ({
   renderAllThumbnails: jest.fn(),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+ 
 const { renderAllThumbnails } = require('../rasterize') as {
   renderAllThumbnails: jest.Mock;
 };
 
 function makeFakeDoc(numPages: number) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   return { numPages } as any;
 }
 

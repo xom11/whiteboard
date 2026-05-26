@@ -1,5 +1,20 @@
 import type { ComponentType, ReactNode, RefAttributes } from 'react';
 import type { ExcalidrawElement } from '../../types';
+import type { State } from '../../core/scene/types';
+
+/** Minimal client-safe response required by the geometry AI editor. */
+export type AiFigureUiResult =
+  | { ok: true; state: State }
+  | { ok: false; message: string };
+
+/**
+ * Consumer-provided bridge to a server-side `generateFigure()` call.
+ * Implementations must keep API credentials outside the browser bundle.
+ */
+export type GenerateGeometryFigure = (
+  problem: string,
+  options: { signal: AbortSignal },
+) => Promise<AiFigureUiResult>;
 
 /**
  * Kết quả trả về từ `restoreFileFromCustomData`. Chứa đủ thông tin để
@@ -26,7 +41,7 @@ export interface BaseStampCustomData {
  * chỉ điều phối show/hide.
  */
 export interface StampHostProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   api: any;
   /**
    * Element đang re-edit (double-click) hoặc null nếu đang tạo mới.
@@ -37,6 +52,8 @@ export interface StampHostProps {
   onClose: () => void;
   /** Dark theme flag. */
   isDark: boolean;
+  /** Optional client-safe bridge for the geometry-2d AI prompt editor. */
+  generateGeometryFigure?: GenerateGeometryFigure;
 }
 
 /**

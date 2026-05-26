@@ -6,7 +6,7 @@
 import { safeJsx } from '../../shared/safeJsx';
 import { objKind, type ToolDef } from './tools';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgObj = any;
 
 const PREVIEW_STYLE: Record<string, unknown> = {

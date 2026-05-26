@@ -1,11 +1,11 @@
 import { classifyPointVsCircle } from '../classifyPointVsCircle';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 function mkPoint(x: number, y: number): any {
   return { X: () => x, Y: () => y };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 function mkCircle(cx: number, cy: number, r: number): any {
   return {
     center: mkPoint(cx, cy),

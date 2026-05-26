@@ -1,14 +1,14 @@
 import type { ToolDef, GeomTool } from '../../tools';
 import type { HandlerCtx } from '../ctx';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgObj = any;
 
 export function handleSingleTargetTool(
   ctx: HandlerCtx,
   t: GeomTool,
   toolDef: ToolDef,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   e: any,
   bestHit: JxgObj | null,
 ): boolean {

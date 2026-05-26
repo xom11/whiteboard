@@ -61,6 +61,55 @@ export function ClassroomBoard() {
 }
 ```
 
+### AI dựng hình học 2D (opt-in)
+
+Textarea AI chỉ xuất hiện khi truyền `generateGeometryFigure`. Callback này chạy từ client nên phải gọi một server boundary của ứng dụng; không đưa `ANTHROPIC_API_KEY` vào component hoặc biến môi trường public.
+
+```tsx
+'use client';
+
+import { Whiteboard, type GenerateGeometryFigure } from '@xom11/whiteboard';
+
+const generateGeometryFigure: GenerateGeometryFigure = async (problem, { signal }) => {
+  const response = await fetch('/api/geometry/ai', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ problem }),
+    signal,
+  });
+  return response.json();
+};
+
+export function ClassroomBoard() {
+  return <Whiteboard generateGeometryFigure={generateGeometryFigure} />;
+}
+```
+
+Ví dụ route phía server trong Next.js:
+
+```ts
+import { generateFigure } from '@xom11/whiteboard';
+
+export async function POST(request: Request) {
+  const { problem } = await request.json();
+  const result = await generateFigure(problem, {
+    apiKey: process.env.ANTHROPIC_API_KEY ?? '',
+  });
+  return Response.json(
+    result.ok
+      ? { ok: true, state: result.state }
+      : { ok: false, message: result.message },
+  );
+}
+```
+
+Trong repo package, chạy smoke/eval với API key chỉ ở local shell:
+
+```bash
+ANTHROPIC_API_KEY=... npm run ai:smoke
+ANTHROPIC_API_KEY=... npm run ai:eval -- --limit 5
+```
+
 ## Migration to v0.8.0 (geometry-3d redesign)
 
 `geometry3dStamp` được viết lại theo UX của GeoGebra 3D Calculator:

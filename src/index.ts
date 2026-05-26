@@ -63,3 +63,7 @@ export type {
   GenerateResult,
   TokenUsage,
 } from './stamps/geometry-2d/ai';
+export type {
+  AiFigureUiResult,
+  GenerateGeometryFigure,
+} from './stamps/shared/types';

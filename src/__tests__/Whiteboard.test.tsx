@@ -12,7 +12,7 @@ jest.mock('../core/persistence/fileStore', () => ({
 
 // Mock Excalidraw: real package is too heavy for jsdom (canvas/fonts).
 jest.mock('@excalidraw/excalidraw', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+   
   const React = require('react');
   const NoopChildren = ({ children }: { children?: React.ReactNode }) =>
     React.createElement(React.Fragment, null, children);
@@ -33,14 +33,14 @@ jest.mock('@excalidraw/excalidraw', () => {
       initialData?: unknown;
       onChange?: (elements: unknown[], appState: unknown, files: Record<string, unknown>) => void;
     }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       (globalThis as any).__excProps = props;
       React.useEffect(() => {
         const api = {
           updateScene: jest.fn(),
           addFiles: jest.fn(),
           getSceneElements: () =>
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             ((globalThis as any).__sceneElements ?? []),
           getFiles: () => ({}),
           getAppState: () => ({
@@ -52,7 +52,7 @@ jest.mock('@excalidraw/excalidraw', () => {
           }),
           setActiveTool: jest.fn(),
         };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         (globalThis as any).__excApi = api;
         props.excalidrawAPI?.(api);
       }, []);
@@ -93,7 +93,7 @@ type ExcProps = {
 };
 
 const getExcProps = () =>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   (globalThis as any).__excProps as ExcProps | null;
 
 const rasterFile = {
@@ -106,11 +106,11 @@ beforeEach(() => {
   jest.useRealTimers();
   window.localStorage.clear();
   jest.clearAllMocks();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   (globalThis as any).__excProps = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   (globalThis as any).__sceneElements = [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   (globalThis as any).__excApi = null;
 });
 
@@ -270,7 +270,7 @@ describe('Whiteboard', () => {
   test('new raster file is written to fileStore after throttle', async () => {
     jest.useFakeTimers();
     const imageElement = { id: 'img1', type: 'image', fileId: 'file1', isDeleted: false };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (globalThis as any).__sceneElements = [imageElement];
     const { findByTestId } = render(React.createElement(Whiteboard, {}));
     await findByTestId('excalidraw-mock');
@@ -300,7 +300,7 @@ describe('Whiteboard', () => {
       isDeleted: false,
       customData: { kind: 'latex', version: 1, src: 'x', displayMode: false },
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (globalThis as any).__sceneElements = [stampElement];
     const { findByTestId } = render(React.createElement(Whiteboard, {}));
     await findByTestId('excalidraw-mock');
@@ -362,12 +362,12 @@ describe('default stamps — mặc định bật tất cả tool', () => {
 describe('Whiteboard — initialScene + initialFiles (server load)', () => {
   const sampleAppState = {
     viewBackgroundColor: '#fff',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     zoom: { value: 1 } as any,
     scrollX: 0,
     scrollY: 0,
     gridSize: null,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     theme: 'light' as any,
   };
 
@@ -384,7 +384,7 @@ describe('Whiteboard — initialScene + initialFiles (server load)', () => {
     const { findByTestId } = render(
       React.createElement(Whiteboard, {
         initialScene: {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           elements: [{ id: 'fromServer', type: 'rectangle' }] as any,
           appState: sampleAppState,
         },
@@ -436,7 +436,7 @@ describe('Whiteboard — initialScene + initialFiles (server load)', () => {
       React.createElement(Whiteboard, {
         storageKey: null,
         initialScene: null,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         initialFiles: initialFiles as any,
       }),
     );
@@ -447,7 +447,7 @@ describe('Whiteboard — initialScene + initialFiles (server load)', () => {
       await Promise.resolve();
       await Promise.resolve();
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const api = (globalThis as any).__excApi as { addFiles: jest.Mock };
     expect(api.addFiles).toHaveBeenCalledTimes(1);
     expect(api.addFiles).toHaveBeenCalledWith([
@@ -473,7 +473,7 @@ describe('Whiteboard — initialScene + initialFiles (server load)', () => {
       await Promise.resolve();
       await Promise.resolve();
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const api = (globalThis as any).__excApi as { addFiles: jest.Mock };
     expect(api.addFiles).not.toHaveBeenCalled();
   });

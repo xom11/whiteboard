@@ -3,7 +3,7 @@ import { renderLatexToSvg } from '../render';
 jest.mock('katex', () => ({
   __esModule: true,
   default: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     renderToString: (src: string, opts: any) => {
       if (src.includes('\\invalid')) {
         const err = new Error('ParseError');

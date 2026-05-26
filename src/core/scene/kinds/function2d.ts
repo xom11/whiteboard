@@ -32,7 +32,7 @@ const def: KindDef<Function2DAttrs> = {
   dependsOn: () => [],
   describe: (obj) => `${obj.label}(x) = ${obj.attrs.expression}`,
   render: (obj, ctx) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const board = ctx.jxg as any;
     if (!obj.visible || !obj.attrs.visible) return null;
     const fn = compile(obj.attrs.expression, (ctx.paramMap ?? {}) as Record<string, number>);

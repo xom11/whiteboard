@@ -4,13 +4,13 @@ import { dispatchAddFreePoint } from '../utils';
 import { finalizeShape } from '../finalizeShape';
 import { finalizeTransform } from '../transform';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgObj = any;
 
 export function handleMultiClickTool(
   ctx: HandlerCtx,
   toolDef: ToolDef,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   e: any,
   x: number,
   y: number,

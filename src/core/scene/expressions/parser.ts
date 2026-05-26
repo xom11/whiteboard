@@ -97,7 +97,7 @@ export function compile(
 
   try {
     const body = buildFunctionBody(jsExpr, paramNames);
-    // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+     
     const fn = new Function('x', ...paramNames, body) as (
       x: number,
       ...args: number[]

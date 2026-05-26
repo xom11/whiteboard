@@ -1,18 +1,18 @@
 import { insertRasterizedPagesIntoScene } from '../insertPdfPages';
 import type { RasterizedPage } from '../rasterize';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type FakeApi = any;
 
 function makeFakeApi(): FakeApi {
   const api = {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     added: [] as any[],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     sceneElements: [] as any[],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     lastUpdate: null as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     addFiles(files: any[]) {
       api.added.push(...files);
     },
@@ -28,7 +28,7 @@ function makeFakeApi(): FakeApi {
         zoom: { value: 1 },
       };
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     updateScene(next: any) {
       api.lastUpdate = next;
       if (next.elements) api.sceneElements = next.elements;
@@ -110,7 +110,7 @@ describe('insertRasterizedPagesIntoScene', () => {
 
   it('throw nếu api null', () => {
     expect(() =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       insertRasterizedPagesIntoScene(null as any, [makePage(1)], { scale: 2 }),
     ).toThrow(/API/);
   });

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { safeJsx } from '../../shared/safeJsx';
 import { themeAxis, themeGrid } from './theme';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgObj = any;
 
 interface Params {

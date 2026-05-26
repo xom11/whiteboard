@@ -11,9 +11,9 @@ import { attachJxgWheelZoom } from '../../shared/attachJxgWheelZoom';
 import { initJxgBoard } from '../../shared/initJxgBoard';
 
 // JSXGraph board / view types are not published — use minimal local shapes.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgBoard = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgView3D = any;
 
 export interface MiniBoard3DProps {
@@ -200,7 +200,7 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
             const rect = svgEl!.getBoundingClientRect();
             const px = e.clientX - rect.left;
             const py = e.clientY - rect.top;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             const b = board as any;
             if (!b || !b.origin || !b.origin.scrCoords) {
               return { x: px, y: py };
@@ -252,7 +252,7 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
               pointDragMode = shouldStartPointDragRef.current?.(screen) ?? false;
             } catch { pointDragMode = false; }
             if (!pointDragMode) {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+               
               const v = viewRef.current as any;
               startAz = readAng(v?.az_slide ?? v?.az);
               startEl = readAng(v?.el_slide ?? v?.el);
@@ -270,7 +270,7 @@ export const MiniBoard3D = React.forwardRef<MiniBoard3DHandle, MiniBoard3DProps>
                   onPointerDragRef.current?.(pixelToUser(e));
                   return;
                 }
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                 
                 const v = viewRef.current as any;
                 const newAz = startAz + dx * AZ_PER_PX;
                 let newEl = startEl - dy * EL_PER_PX;

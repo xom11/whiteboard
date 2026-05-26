@@ -24,7 +24,7 @@ const def: KindDef<Root2DAttrs> = {
   dependsOn: (a) => [a.functionId],
   describe: (obj) => `Nghiệm của ${obj.attrs.functionId} trong [${obj.attrs.interval.min}, ${obj.attrs.interval.max}]`,
   render: (obj, ctx) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const board = ctx.jxg as any;
     const expr = (ctx.defaults as { _functionExpr?: Record<string, string> })._functionExpr?.[obj.attrs.functionId];
     if (!expr) return null;

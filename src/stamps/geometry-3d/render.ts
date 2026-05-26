@@ -17,7 +17,7 @@ const OUTPUT_WIDTH = 1024;
 const OUTPUT_HEIGHT = 768;
 const BBOX_2D: [number, number, number, number] = [-6, 6, 6, -6];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgObj = any;
 
 export async function renderGeometry3DSvgFromState(jsonState: string): Promise<RenderResult> {
@@ -54,7 +54,7 @@ export async function renderGeometry3DSvgFromState(jsonState: string): Promise<R
       );
 
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const v = view as any;
         v?.az_slide?.setValue?.(view3DInfo.azimuth);
         v?.el_slide?.setValue?.(view3DInfo.elevation);
@@ -83,7 +83,7 @@ export async function renderGeometry3DSvgFromState(jsonState: string): Promise<R
       const renderer = new JxgRenderer3D(store, view);
 
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         (view as any)?.board?.update?.();
       } catch {
         /* swallow */

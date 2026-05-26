@@ -7,11 +7,12 @@ import { finalizeTransform, type HandlerCtx, type TransformToolKey } from './han
 import type {
   MiniBoardHandle,
   ObjectSnapshot,
+  SelectionStateSnapshot,
   TransformPopoverInfo,
 } from './MiniBoard.types';
 import { buildObjectSnapshot } from './snapshot';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgObj = any;
 
 export interface BuildHandleDeps {
@@ -21,8 +22,9 @@ export interface BuildHandleDeps {
   rendererRef: { readonly current: JxgRenderer | null };
   selectSubsRef: { readonly current: Set<(snap: ObjectSnapshot) => void> };
   transformSubsRef: { readonly current: Set<(info: TransformPopoverInfo) => void> };
+  selectionStateSubsRef: { readonly current: Set<(snap: SelectionStateSnapshot | null) => void> };
   selectedSetRef: { readonly current: Set<string> };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   pendingTransformRef: { current: any };
   ctxRef: { readonly current: HandlerCtx | null };
   // callbacks / values
@@ -60,6 +62,10 @@ export function buildMiniBoardHandle(d: BuildHandleDeps): MiniBoardHandle {
     onTransformParam: (cb) => {
       d.transformSubsRef.current.add(cb);
       return () => { d.transformSubsRef.current.delete(cb); };
+    },
+    onSelectionState: (cb) => {
+      d.selectionStateSubsRef.current.add(cb);
+      return () => { d.selectionStateSubsRef.current.delete(cb); };
     },
     confirmTransformParam: (value: number) => {
       const info = d.pendingTransformRef.current as

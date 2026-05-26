@@ -14,7 +14,7 @@
  * downscales (sharp) instead of upscales (blurry) when the user zooms or views
  * on a retina display.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgModule = any;
 
 export interface JxgOffscreenRenderOpts {
@@ -80,7 +80,7 @@ export async function renderJsxgOffscreen(
     });
     disposable = await opts.setup(board, JXG);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       (board as any)?.update?.();
     } catch {
       /* ignore — board may already be in valid state */

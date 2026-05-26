@@ -145,7 +145,7 @@ const EditorPanelInner = React.forwardRef<EditorPanelHandle, EditorPanelProps>(
 
     React.useEffect(() => {
       const view = boardRef.current?.getView3D();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const v = view as any;
       if (!v || typeof v.setAttribute !== 'function') return;
       try {
@@ -170,7 +170,7 @@ const EditorPanelInner = React.forwardRef<EditorPanelHandle, EditorPanelProps>(
       const savedView: View3D | null = meta.domain === '3d' ? meta.view : null;
       if (savedView) {
         try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           const v = view as any;
           v?.az_slide?.setValue?.(savedView.azimuth);
           v?.el_slide?.setValue?.(savedView.elevation);

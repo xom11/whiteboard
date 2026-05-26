@@ -4,7 +4,7 @@ import { TOOLS } from './tools';
 import type { ToolStateMachine } from '../../shared/useToolStateMachine';
 import type { GeomTool } from './tools';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgObj = any;
 
 export interface PreviewRefs {

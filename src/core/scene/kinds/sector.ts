@@ -38,7 +38,7 @@ const def: KindDef<SectorAttrs> = {
     return `Hình quạt tâm ${L(c.center)} từ ${L(c.p1)} đến ${L(c.p2)}`;
   },
   render: (obj, ctx) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const board = ctx.jxg as any;
     const c = obj.attrs.construction;
     const O = ctx.resolveRef(c.center);

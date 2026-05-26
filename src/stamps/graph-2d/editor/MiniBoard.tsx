@@ -23,7 +23,7 @@ import { safeJsx } from '../../shared/safeJsx';
 import { attachJxgWheelZoom } from '../../shared/attachJxgWheelZoom';
 import { initJxgBoard } from '../../shared/initJxgBoard';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type JxgObj = any;
 
 /**
@@ -120,7 +120,7 @@ export const MiniBoard = React.forwardRef<MiniBoardHandle, MiniBoardProps>(
           // fall back to manual calculation via board.origin + unitX/unitY.
           let ux = 0, uy = 0;
           safeJsx('MiniBoard.graph.pointerCoords', () => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             const usr = (b as any).getUsrCoordsOfMouse?.(evt);
             if (Array.isArray(usr) && usr.length >= 2
                 && Number.isFinite(usr[0]) && Number.isFinite(usr[1])) {
@@ -259,7 +259,7 @@ function findHitObject(
   let result: string | null = null;
   try {
     for (const [id, el] of renderer.listElements().entries()) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const e = el as any;
       if (e?.hasPoint?.(screen.X(), screen.Y())) {
         result = id;

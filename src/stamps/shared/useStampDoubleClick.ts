@@ -24,7 +24,7 @@ export function useStampDoubleClick({ enabled, stamps, onOpen }: Opts) {
   });
 
   return useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (_activeTool: any, pointerDownState: any) => {
       if (!enabled) return;
       const hitElement = pointerDownState?.hit?.element;

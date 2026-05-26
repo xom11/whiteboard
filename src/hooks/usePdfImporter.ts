@@ -8,7 +8,7 @@ import {
 import { insertRasterizedPagesIntoScene } from '../pdf/insertPdfPages';
 
 // Excalidraw imperative API — không có public type chính xác.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type ExApi = any;
 
 export interface PdfPendingState {

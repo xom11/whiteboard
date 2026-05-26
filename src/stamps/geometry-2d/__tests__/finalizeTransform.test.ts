@@ -14,7 +14,7 @@ type Mutable<T> = { -readonly [K in keyof T]: T[K] };
 function makeCtx(): HandlerCtx & { _flashes: string[] } {
   const store = createStore(createEmptyState('2d'));
   const flashes: string[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const noop = (): any => undefined;
   const ctx: Partial<Mutable<HandlerCtx>> = {
     store,
@@ -32,7 +32,7 @@ function makeCtx(): HandlerCtx & { _flashes: string[] } {
     nextLabel: (kind: string) => `${kind[0].toUpperCase()}`,
     flashWarn: (msg: string) => { flashes.push(msg); },
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   (ctx as any)._flashes = flashes;
   return ctx as HandlerCtx & { _flashes: string[] };
 }
@@ -73,11 +73,11 @@ describe('finalizeTransform', () => {
     expect(Object.keys(after).length).toBe(before + 3);  // 2 point + 1 segment
     // Tìm transformed point đầu tiên
     const newPoints = Object.values(after).filter(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       (o: any) => o.kind === 'point' && o.attrs.constraint?.kind === 'transformed',
     );
     expect(newPoints).toHaveLength(2);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const tx = (newPoints[0] as any).attrs.constraint.transform;
     expect(tx.kind).toBe('translate');
     expect(tx.dx).toBeCloseTo(3, 6);
@@ -93,11 +93,11 @@ describe('finalizeTransform', () => {
     finalizeTransform(ctx, 'rotate', ['s1', 'O'], 90);
     const objs = ctx.store.getState().objects;
     const transformedPts = Object.values(objs).filter(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       (o: any) => o.kind === 'point' && o.attrs.constraint?.kind === 'transformed',
     );
     expect(transformedPts).toHaveLength(2);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const tx = (transformedPts[0] as any).attrs.constraint.transform;
     expect(tx.kind).toBe('rotate');
     expect(tx.angleRad).toBeCloseTo(Math.PI / 2, 6);
@@ -121,11 +121,11 @@ describe('finalizeTransform', () => {
     finalizeTransform(ctx, 'reflectLine', ['s1', 'l1'], 0);
     const objs = ctx.store.getState().objects;
     const tps = Object.values(objs).filter(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       (o: any) => o.kind === 'point' && o.attrs.constraint?.kind === 'transformed',
     );
     expect(tps).toHaveLength(2);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const tx = (tps[0] as any).attrs.constraint.transform;
     expect(tx.kind).toBe('reflectLine');
     expect(tx.line).toBe('l1');
@@ -139,10 +139,10 @@ describe('finalizeTransform', () => {
     addPoint(ctx, 'O', 0, 0);
     finalizeTransform(ctx, 'dilate', ['s1', 'O'], 1.5);
     const tps = Object.values(ctx.store.getState().objects).filter(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       (o: any) => o.kind === 'point' && o.attrs.constraint?.kind === 'transformed',
     );
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const tx = (tps[0] as any).attrs.constraint.transform;
     expect(tx.kind).toBe('dilate');
     expect(tx.k).toBe(1.5);
@@ -155,11 +155,11 @@ describe('finalizeTransform', () => {
     addPoint(ctx, 'B', 1, 0);
     finalizeTransform(ctx, 'regularPolygon', ['A', 'B'], 6);
     const polys = Object.values(ctx.store.getState().objects).filter(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       (o: any) => o.kind === 'polygon',
     );
     expect(polys).toHaveLength(1);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const c = (polys[0] as any).attrs.construction;
     expect(c).toEqual({ kind: 'regular', p1: 'A', p2: 'B', n: 6 });
   });
@@ -169,9 +169,9 @@ describe('finalizeTransform', () => {
     addPoint(ctx, 'A', 0, 0);
     addPoint(ctx, 'B', 1, 0);
     finalizeTransform(ctx, 'regularPolygon', ['A', 'B'], 2);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const polys = Object.values(ctx.store.getState().objects).filter((o: any) => o.kind === 'polygon');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     expect((polys[0] as any).attrs.construction.n).toBe(3);
   });
 

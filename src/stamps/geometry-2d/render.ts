@@ -75,7 +75,7 @@ export async function renderGeometrySvgFromState(jsonState: string): Promise<str
     grid: view.showGrid,
     keepAspectRatio: true,
     applyOptions: (JXG) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const opts = (JXG as any).Options;
       if (!opts) return;
       opts.text = opts.text || {};

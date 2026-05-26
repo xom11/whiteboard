@@ -34,7 +34,7 @@ export async function renderGraphSvgFromState(
       grid: view?.showGrid ?? true,
       keepAspectRatio: false,
       applyOptions: (JXG) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const opts = (JXG as any).Options;
         if (!opts) return;
         opts.text = opts.text || {};

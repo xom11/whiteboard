@@ -28,16 +28,16 @@ export interface InitJxgBoardConfig {
    * Hook để tweak options sau khi defaults được apply. Dùng cho per-stamp
    * customization (vd themeLabel color cho 2D, axesPosition cho 3D view3d).
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   extraOptionTweaks?: (opts: any) => void;
   /** Tag cho safeJsx log (vd "MiniBoard.2d"). Default: "JxgBoard". */
   label?: string;
 }
 
 export interface InitJxgBoardResult {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   JXG: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   board: any;
   /** Gọi để free JSXGraph board (safe-wrapped). */
   cleanup: () => void;
@@ -58,7 +58,7 @@ export async function initJxgBoard(
   config: InitJxgBoardConfig,
 ): Promise<InitJxgBoardResult> {
   const label = config.label ?? 'JxgBoard';
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const JXG = (await import('jsxgraph')).default as any;
   const {
     textDisplayInternal = true,

@@ -32,13 +32,13 @@ const def: KindDef<AngleAttrs> = {
   dependsOn: (a) => [a.p1, a.vertex, a.p2],
   describe: (obj, state) => `Góc ${labelOf(obj.attrs.p1, state)}${labelOf(obj.attrs.vertex, state)}${labelOf(obj.attrs.p2, state)}`,
   render: (obj, ctx) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const board = ctx.jxg as any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const pa: any = ctx.resolveRef(obj.attrs.p1);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const pv: any = ctx.resolveRef(obj.attrs.vertex);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const pc: any = ctx.resolveRef(obj.attrs.p2);
     // Cross-product check: reorder để tránh cung reflex (> 180°). Chỉ check
     // một lần tại render-time (không live) — user có thể di chuyển điểm sau

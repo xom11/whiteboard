@@ -55,11 +55,11 @@ import { useAxisGridSync } from './useAxisGridSync';
 import { useEditorShortcuts } from './useEditorShortcuts';
 import { useJxgSceneIdMap } from './useJxgSceneIdMap';
 
-import type { MiniBoardHandle, ObjectSnapshot, TransformPopoverInfo } from './MiniBoard.types';
+import type { MiniBoardHandle, ObjectSnapshot, SelectionStateSnapshot, TransformPopoverInfo } from './MiniBoard.types';
 
 export { TOOLS, GROUP_LABELS };
 export type { GeomTool, ToolDef };
-export type { ObjectSnapshot, TransformPopoverInfo, MiniBoardHandle } from './MiniBoard.types';
+export type { ObjectSnapshot, SelectionStateSnapshot, TransformPopoverInfo, MiniBoardHandle } from './MiniBoard.types';
 
 type JxgObj = any;
 
@@ -100,7 +100,21 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
   const showGridRef = useRef(showGrid); showGridRef.current = showGrid;
 
   const selectedSetRef = useRef<Set<string>>(new Set());
-  const [, setSelectionTick] = useState(0);
+  const [selectionTick, setSelectionTick] = useState(0);
+
+  // Sync selection halo overlay + emit selection state snapshot khi
+  // selectedSetRef đổi. Dùng tick để notify (selectedSetRef là ref nên
+  // React không track trực tiếp).
+  useEffect(() => {
+    const ids = [...selectedSetRef.current];
+    rendererRef.current?.highlight(ids);
+    const anchor = lastClickClientRef.current ?? { x: 0, y: 0 };
+    const snap: SelectionStateSnapshot | null =
+      ids.length === 0 ? null : { ids, anchor: { x: anchor.x + 8, y: anchor.y + 8 } };
+    selectionStateSubsRef.current.forEach((cb) =>
+      safeJsx('MiniBoard.emitSelectionState.cb', () => cb(snap)),
+    );
+  }, [selectionTick]);
 
   // Pending / preview / marquee state.
   const pendingRef = useRef<JxgObj[]>([]);
@@ -111,6 +125,7 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
   const marqueeRef = useRef<{ startSx: number; startSy: number; rect?: JxgObj } | null>(null);
   const moveDownRef = useRef<{ sx: number; sy: number } | null>(null);
   const lastMoveClickRef = useRef<{ id: string | null; time: number }>({ id: null, time: 0 });
+  const lastClickClientRef = useRef<{ x: number; y: number } | null>(null);
   const pendingTransformRef = useRef<any>(null);
 
   // Subscribers cho popover (select + transform). Store-level changes propagate
@@ -118,6 +133,7 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
   // subscription nữa (Tier 2 F).
   const selectSubsRef = useRef<Set<(snap: ObjectSnapshot) => void>>(new Set());
   const transformSubsRef = useRef<Set<(info: TransformPopoverInfo) => void>>(new Set());
+  const selectionStateSubsRef = useRef<Set<(snap: SelectionStateSnapshot | null) => void>>(new Set());
 
   const { jxgIdToSceneRef } = useJxgSceneIdMap({ store, rendererRef });
 
@@ -159,10 +175,12 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
     if (!additive) { selectedSetRef.current.clear(); selectedSetRef.current.add(id); }
     else if (selectedSetRef.current.has(id)) selectedSetRef.current.delete(id);
     else selectedSetRef.current.add(id);
+    rendererRef.current?.highlight([...selectedSetRef.current]);
     setSelectionTick((t) => t + 1);
   }, []);
   const clearSelection = useCallback(() => {
     selectedSetRef.current.clear();
+    rendererRef.current?.highlight(null);
     setSelectionTick((t) => t + 1);
   }, []);
   const deleteSelection = useCallback(() => {
@@ -171,6 +189,7 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
       for (const id of selectedSetRef.current) dispatch({ type: 'DELETE', payload: { id } });
     });
     selectedSetRef.current.clear();
+    rendererRef.current?.highlight(null);
     setSelectionTick((t) => t + 1);
   }, [store]);
 
@@ -238,6 +257,7 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
     marqueeRef,
     moveDownRef,
     lastMoveClickRef,
+    lastClickClientRef,
     pendingTransformRef,
     phantomRef,
     previewShapeRef,
@@ -379,13 +399,13 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
     ref,
     () => buildMiniBoardHandle({
       containerRef, boardRef, rendererRef,
-      selectSubsRef, transformSubsRef,
+      selectSubsRef, transformSubsRef, selectionStateSubsRef,
       selectedSetRef, pendingTransformRef, ctxRef,
       store,
       clearPending, clearSelection, deleteSelection,
       emitTransform,
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     [store, clearSelection, deleteSelection, clearPending, emitTransform],
   );
 
