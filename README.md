@@ -88,7 +88,7 @@ export function ClassroomBoard() {
 Ví dụ route phía server trong Next.js:
 
 ```ts
-import { generateFigure } from '@xom11/whiteboard';
+import { generateFigure } from '@xom11/whiteboard/ai';
 
 export async function POST(request: Request) {
   const { problem } = await request.json();

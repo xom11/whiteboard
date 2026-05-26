@@ -2,7 +2,9 @@ import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const dir = 'dist';
-const files = readdirSync(dir).filter((f) => f.endsWith('.js') || f.endsWith('.mjs'));
+const files = readdirSync(dir).filter(
+  (f) => (f.endsWith('.js') || f.endsWith('.mjs')) && !f.startsWith('ai.'),
+);
 const directive = '"use client";\n';
 const hasCss = existsSync(join(dir, 'index.css'));
 

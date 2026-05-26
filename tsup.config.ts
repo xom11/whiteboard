@@ -7,6 +7,7 @@ export default defineConfig({
     'geometry-3d': 'src/stamps/geometry-3d/index.tsx',
     latex: 'src/stamps/latex/index.tsx',
     'graph-2d': 'src/stamps/graph-2d/index.tsx',
+    ai: 'src/stamps/geometry-2d/ai/index.ts',
   },
   format: ['cjs', 'esm'],
   dts: true,
@@ -18,6 +19,8 @@ export default defineConfig({
     '@excalidraw/excalidraw',
     'jsxgraph',
     'katex',
+    '@anthropic-ai/sdk',
+    'zod-to-json-schema',
   ],
   treeshake: true,
   // "use client" được prepend qua scripts/inject-use-client.mjs (script lặp
