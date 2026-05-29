@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { NameZ } from '../../names';
 import type { DslPointT } from '../../schema';
 import { defineModule } from '../_types';
+import { emitPointObject } from '../_shared';
 
 type Input = Extract<DslPointT, { kind: 'perpFoot' }>;
 
@@ -18,7 +19,12 @@ export const perpFootModule = defineModule<'perpFoot', Input>({
     onLine: NameZ,
   }),
   collectRefs: (e) => [e.from, e.onLine],
-  emit: () => {
-    throw new Error('perpFoot.emit: not yet migrated (Phase 5 / Task 8)');
-  },
+  emit: (e, ctx) => [{
+    role: 'primary',
+    object: emitPointObject(
+      ctx.resolveId(e.name),
+      e.name,
+      { kind: 'perpFoot', from: ctx.resolveId(e.from), onLine: ctx.resolveId(e.onLine) },
+    ),
+  }],
 });

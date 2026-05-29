@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { NameZ } from '../../names';
 import type { DslPointT } from '../../schema';
 import { defineModule } from '../_types';
+import { POINT_BASE_FIELDS } from '../_shared';
 
 type Input = Extract<DslPointT, { kind: 'intersection' }>;
 
@@ -19,7 +20,31 @@ export const intersectionModule = defineModule<'intersection', Input>({
     branch: z.union([z.literal(0), z.literal(1)]).optional(),
   }),
   collectRefs: (e) => [e.ref1, e.ref2],
-  emit: () => {
-    throw new Error('intersection.emit: not yet migrated (Phase 5 / Task 8)');
+  emit: (e, ctx) => {
+    const r1IsCircle = ctx.hintOf(e.ref1) === 'circle';
+    const r2IsCircle = ctx.hintOf(e.ref2) === 'circle';
+    let intersectKind: 'lineLine' | 'lineCircle' | 'circleCircle';
+    if (r1IsCircle && r2IsCircle) intersectKind = 'circleCircle';
+    else if (r1IsCircle || r2IsCircle) intersectKind = 'lineCircle';
+    else intersectKind = 'lineLine';
+
+    const attrs: Record<string, unknown> = {
+      kind: intersectKind,
+      ref1: ctx.resolveId(e.ref1),
+      ref2: ctx.resolveId(e.ref2),
+    };
+    if (intersectKind !== 'lineLine') {
+      attrs.branch = e.branch ?? 0;
+    }
+    return [{
+      role: 'primary',
+      object: {
+        id: ctx.resolveId(e.name),
+        kind: 'intersection',
+        label: e.name,
+        ...POINT_BASE_FIELDS,
+        attrs,
+      },
+    }];
   },
 });

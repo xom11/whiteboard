@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { NameZ } from '../../names';
 import type { DslPointT } from '../../schema';
 import { defineModule } from '../_types';
+import { emitPointObject, resolveTriangleVertices } from '../_shared';
 
 type Input = Extract<DslPointT, { kind: 'centroid' }>;
 
@@ -17,7 +18,12 @@ export const centroidModule = defineModule<'centroid', Input>({
     vertices: z.tuple([NameZ, NameZ, NameZ]),
   }),
   collectRefs: (e) => [...e.vertices],
-  emit: () => {
-    throw new Error('centroid.emit: not yet migrated (Phase 5 / Task 8)');
-  },
+  emit: (e, ctx) => [{
+    role: 'primary',
+    object: emitPointObject(
+      ctx.resolveId(e.name),
+      e.name,
+      { kind: 'centroid', vertices: resolveTriangleVertices(ctx, e.vertices) },
+    ),
+  }],
 });

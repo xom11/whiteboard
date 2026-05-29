@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { NameZ } from '../../names';
 import type { DslPointT } from '../../schema';
 import { defineModule } from '../_types';
+import { emitPointObject } from '../_shared';
 
 type Input = Extract<DslPointT, { kind: 'onSegment' }>;
 
@@ -18,7 +19,12 @@ export const onSegmentModule = defineModule<'onSegment', Input>({
     t: z.number().min(0).max(1),
   }),
   collectRefs: (e) => [e.segmentId],
-  emit: () => {
-    throw new Error('onSegment.emit: not yet migrated (Phase 5 / Task 8)');
-  },
+  emit: (e, ctx) => [{
+    role: 'primary',
+    object: emitPointObject(
+      ctx.resolveId(e.name),
+      e.name,
+      { kind: 'onSegment', segmentId: ctx.resolveId(e.segmentId), t: e.t },
+    ),
+  }],
 });

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { NameZ } from '../../names';
 import type { DslPointT } from '../../schema';
 import { defineModule } from '../_types';
+import { emitPointObject } from '../_shared';
 
 type Input = Extract<DslPointT, { kind: 'free' }>;
 
@@ -18,7 +19,8 @@ export const freeModule = defineModule<'free', Input>({
     y: z.number().finite(),
   }),
   collectRefs: () => [],
-  emit: () => {
-    throw new Error('free.emit: not yet migrated (Phase 5 / Task 8)');
-  },
+  emit: (e, ctx) => [{
+    role: 'primary',
+    object: emitPointObject(ctx.resolveId(e.name), e.name, { kind: 'free', x: e.x, y: e.y }),
+  }],
 });
