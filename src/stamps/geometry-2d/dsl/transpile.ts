@@ -9,27 +9,13 @@ import { assignIds } from './transpile/ids';
 import { emitPoint, type EntityKindHint } from './transpile/emitPoint';
 import { emitShape } from './transpile/emitShape';
 import { mkError, type TranspileError, type TranspileResult } from './transpile/errors';
+import { KIND_REGISTRY } from './registry';
 
 function hintOf(entity: DslPointT | DslShapeT): EntityKindHint {
-  // points (including intersection) are point-like at scene level.
-  if ('kind' in entity) {
-    switch (entity.kind) {
-      case 'free': case 'midpoint': case 'onSegment': case 'onLine':
-      case 'onCircle': case 'perpFoot': case 'circumcenter':
-      case 'incenter': case 'centroid': case 'orthocenter': case 'intersection':
-        return 'point';
-      case 'segment':  return 'segment';
-      case 'line':     return 'line';
-      case 'ray':      return 'ray';
-      case 'polygon':  return 'point'; // not used as ref target in MVP
-      case 'perpendicular': case 'parallel': case 'perpBisector':
-      case 'angleBisector': case 'tangent':
-        return 'lineConstruction';
-      case 'circleCP': case 'circle3':
-        return 'circle';
-    }
-  }
-  return 'point';
+  const mod = KIND_REGISTRY.get(entity.kind);
+  if (!mod) throw new Error(`hintOf: no registry entry for kind "${entity.kind}"`);
+  // 'polygon' role maps to 'point' for legacy MVP behavior (polygon never used as ref target).
+  return mod.role === 'polygon' ? 'point' : (mod.role as EntityKindHint);
 }
 
 export function transpile(dslRaw: unknown): TranspileResult {
