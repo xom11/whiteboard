@@ -1,21 +1,12 @@
 // src/stamps/geometry-2d/dsl/transpile/refs.ts
 import type { DslInputT, DslPointT, DslShapeT } from '../schema';
+import { KIND_REGISTRY, LINE_LIKE_SHAPE_KINDS, CIRCLE_KINDS } from '../registry';
 import type { Symbol } from './symbols';
 import { mkError, type TranspileError } from './errors';
 
-// "Point-like" = DslPoint of any kind. State sẽ emit `kind: 'point'` hoặc
-// `kind: 'intersection'`; cả hai visualize as points.
 function isPointLike(sym: Symbol | undefined): boolean {
   return !!sym && sym.role === 'point';
 }
-
-// "Line-like" gồm: line / segment / ray + 5 line-constructions.
-const LINE_LIKE_SHAPE_KINDS = new Set<DslShapeT['kind']>([
-  'line', 'segment', 'ray',
-  'perpendicular', 'parallel', 'perpBisector', 'angleBisector', 'tangent',
-]);
-
-const CIRCLE_KINDS = new Set<DslShapeT['kind']>(['circleCP', 'circle3']);
 
 function isLineLike(sym: Symbol | undefined): boolean {
   if (!sym || sym.role !== 'shape') return false;
@@ -146,31 +137,7 @@ export function validateRefs(dsl: DslInputT, symbols: Map<string, Symbol>): Refs
 
 // Helper export cho cycles.ts: collect refs cho mỗi entity (name) trả về list ref names.
 export function collectRefs(entity: DslPointT | DslShapeT): string[] {
-  if ('kind' in entity) {
-    switch (entity.kind) {
-      case 'free':         return [];
-      case 'midpoint':     return [entity.p1, entity.p2];
-      case 'onSegment':    return [entity.segmentId];
-      case 'onLine':       return [entity.lineId];
-      case 'onCircle':     return [entity.circleId];
-      case 'perpFoot':     return [entity.from, entity.onLine];
-      case 'circumcenter':
-      case 'incenter':
-      case 'centroid':
-      case 'orthocenter':  return [...entity.vertices];
-      case 'intersection': return [entity.ref1, entity.ref2];
-      case 'segment':
-      case 'line':         return [entity.p1, entity.p2];
-      case 'ray':          return [entity.origin, entity.through];
-      case 'polygon':      return [...entity.vertices];
-      case 'perpendicular':
-      case 'parallel':     return [entity.throughPoint, entity.toLine];
-      case 'perpBisector': return [entity.p1, entity.p2];
-      case 'angleBisector':return [entity.p1, entity.vertex, entity.p2];
-      case 'tangent':      return [entity.throughPoint, entity.toCircle];
-      case 'circleCP':     return [entity.center, entity.surfacePoint];
-      case 'circle3':      return [entity.p1, entity.p2, entity.p3];
-    }
-  }
-  return [];
+  const mod = KIND_REGISTRY.get(entity.kind);
+  if (!mod) throw new Error(`collectRefs: no registry entry for kind "${entity.kind}"`);
+  return mod.collectRefs(entity as never);
 }
