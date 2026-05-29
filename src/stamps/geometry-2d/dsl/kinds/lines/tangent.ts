@@ -2,15 +2,15 @@
 import { z } from 'zod';
 import { NameZ } from '../../names';
 import type { DslShapeT } from '../../schema';
-import type { DslKindModule } from '../_types';
+import { defineModule } from '../_types';
 
 type Input = Extract<DslShapeT, { kind: 'tangent' }>;
 
-export const tangentModule: DslKindModule<'tangent', Input> = {
+export const tangentModule = defineModule<'tangent', Input>({
   kind: 'tangent',
   role: 'lineConstruction',
   category: 'lines',
-  prefix: '',
+  prefix: 'l',
   schema: z.object({
     name: NameZ,
     kind: z.literal('tangent'),
@@ -22,4 +22,4 @@ export const tangentModule: DslKindModule<'tangent', Input> = {
   emit: () => {
     throw new Error('tangent.emit: not yet migrated (Phase 5 / Task 9)');
   },
-};
+});

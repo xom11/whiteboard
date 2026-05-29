@@ -2,15 +2,15 @@
 import { z } from 'zod';
 import { NameZ } from '../../names';
 import type { DslShapeT } from '../../schema';
-import type { DslKindModule } from '../_types';
+import { defineModule } from '../_types';
 
 type Input = Extract<DslShapeT, { kind: 'perpBisector' }>;
 
-export const perpBisectorModule: DslKindModule<'perpBisector', Input> = {
+export const perpBisectorModule = defineModule<'perpBisector', Input>({
   kind: 'perpBisector',
   role: 'lineConstruction',
   category: 'lines',
-  prefix: '',
+  prefix: 'l',
   schema: z.object({
     name: NameZ,
     kind: z.literal('perpBisector'),
@@ -21,4 +21,4 @@ export const perpBisectorModule: DslKindModule<'perpBisector', Input> = {
   emit: () => {
     throw new Error('perpBisector.emit: not yet migrated (Phase 5 / Task 9)');
   },
-};
+});

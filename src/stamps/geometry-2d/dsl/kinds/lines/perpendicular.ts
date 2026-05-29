@@ -2,15 +2,15 @@
 import { z } from 'zod';
 import { NameZ } from '../../names';
 import type { DslShapeT } from '../../schema';
-import type { DslKindModule } from '../_types';
+import { defineModule } from '../_types';
 
 type Input = Extract<DslShapeT, { kind: 'perpendicular' }>;
 
-export const perpendicularModule: DslKindModule<'perpendicular', Input> = {
+export const perpendicularModule = defineModule<'perpendicular', Input>({
   kind: 'perpendicular',
   role: 'lineConstruction',
   category: 'lines',
-  prefix: '',
+  prefix: 'l',
   schema: z.object({
     name: NameZ,
     kind: z.literal('perpendicular'),
@@ -21,4 +21,4 @@ export const perpendicularModule: DslKindModule<'perpendicular', Input> = {
   emit: () => {
     throw new Error('perpendicular.emit: not yet migrated (Phase 5 / Task 9)');
   },
-};
+});

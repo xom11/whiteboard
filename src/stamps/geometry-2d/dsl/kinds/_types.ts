@@ -37,3 +37,14 @@ export interface DslKindModule<TKind extends string = string, TInput = unknown> 
   collectRefs: (entity: TInput) => string[];
   emit: (entity: TInput, ctx: EmitContext) => EmittedEntity[];
 }
+
+/**
+ * Factory that widens a typed module into the registry's generic shape.
+ * Each kind module exports its module via this factory so `ALL_MODULES`
+ * in registry.ts can be typed as ReadonlyArray<DslKindModule> without a cast.
+ */
+export function defineModule<TKind extends string, TInput>(
+  m: DslKindModule<TKind, TInput>,
+): DslKindModule {
+  return m as DslKindModule;
+}

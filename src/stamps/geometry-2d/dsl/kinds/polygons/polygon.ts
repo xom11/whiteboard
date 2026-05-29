@@ -2,15 +2,15 @@
 import { z } from 'zod';
 import { NameZ } from '../../names';
 import type { DslShapeT } from '../../schema';
-import type { DslKindModule } from '../_types';
+import { defineModule } from '../_types';
 
 type Input = Extract<DslShapeT, { kind: 'polygon' }>;
 
-export const polygonModule: DslKindModule<'polygon', Input> = {
+export const polygonModule = defineModule<'polygon', Input>({
   kind: 'polygon',
   role: 'polygon',
   category: 'polygons',
-  prefix: '',
+  prefix: 'poly',
   schema: z.object({
     name: NameZ,
     kind: z.literal('polygon'),
@@ -20,4 +20,4 @@ export const polygonModule: DslKindModule<'polygon', Input> = {
   emit: () => {
     throw new Error('polygon.emit: not yet migrated (Phase 5 / Task 9)');
   },
-};
+});

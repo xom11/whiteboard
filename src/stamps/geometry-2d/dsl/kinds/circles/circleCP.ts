@@ -2,15 +2,15 @@
 import { z } from 'zod';
 import { NameZ } from '../../names';
 import type { DslShapeT } from '../../schema';
-import type { DslKindModule } from '../_types';
+import { defineModule } from '../_types';
 
 type Input = Extract<DslShapeT, { kind: 'circleCP' }>;
 
-export const circleCPModule: DslKindModule<'circleCP', Input> = {
+export const circleCPModule = defineModule<'circleCP', Input>({
   kind: 'circleCP',
   role: 'circle',
   category: 'circles',
-  prefix: '',
+  prefix: 'c',
   schema: z.object({
     name: NameZ,
     kind: z.literal('circleCP'),
@@ -21,4 +21,4 @@ export const circleCPModule: DslKindModule<'circleCP', Input> = {
   emit: () => {
     throw new Error('circleCP.emit: not yet migrated (Phase 5 / Task 9)');
   },
-};
+});

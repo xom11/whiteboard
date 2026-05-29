@@ -2,15 +2,15 @@
 import { z } from 'zod';
 import { NameZ } from '../../names';
 import type { DslShapeT } from '../../schema';
-import type { DslKindModule } from '../_types';
+import { defineModule } from '../_types';
 
 type Input = Extract<DslShapeT, { kind: 'line' }>;
 
-export const lineModule: DslKindModule<'line', Input> = {
+export const lineModule = defineModule<'line', Input>({
   kind: 'line',
   role: 'line',
   category: 'lines',
-  prefix: '',
+  prefix: 'l',
   schema: z.object({
     name: NameZ,
     kind: z.literal('line'),
@@ -21,4 +21,4 @@ export const lineModule: DslKindModule<'line', Input> = {
   emit: () => {
     throw new Error('line.emit: not yet migrated (Phase 5 / Task 9)');
   },
-};
+});

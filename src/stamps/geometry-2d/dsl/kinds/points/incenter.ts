@@ -2,15 +2,15 @@
 import { z } from 'zod';
 import { NameZ } from '../../names';
 import type { DslPointT } from '../../schema';
-import type { DslKindModule } from '../_types';
+import { defineModule } from '../_types';
 
 type Input = Extract<DslPointT, { kind: 'incenter' }>;
 
-export const incenterModule: DslKindModule<'incenter', Input> = {
+export const incenterModule = defineModule<'incenter', Input>({
   kind: 'incenter',
   role: 'point',
   category: 'points',
-  prefix: '',
+  prefix: 'p',
   schema: z.object({
     name: NameZ,
     kind: z.literal('incenter'),
@@ -20,4 +20,4 @@ export const incenterModule: DslKindModule<'incenter', Input> = {
   emit: () => {
     throw new Error('incenter.emit: not yet migrated (Phase 5 / Task 8)');
   },
-};
+});

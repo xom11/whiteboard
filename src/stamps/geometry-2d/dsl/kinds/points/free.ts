@@ -2,15 +2,15 @@
 import { z } from 'zod';
 import { NameZ } from '../../names';
 import type { DslPointT } from '../../schema';
-import type { DslKindModule } from '../_types';
+import { defineModule } from '../_types';
 
 type Input = Extract<DslPointT, { kind: 'free' }>;
 
-export const freeModule: DslKindModule<'free', Input> = {
+export const freeModule = defineModule<'free', Input>({
   kind: 'free',
   role: 'point',
   category: 'points',
-  prefix: '',
+  prefix: 'p',
   schema: z.object({
     name: NameZ,
     kind: z.literal('free'),
@@ -21,4 +21,4 @@ export const freeModule: DslKindModule<'free', Input> = {
   emit: () => {
     throw new Error('free.emit: not yet migrated (Phase 5 / Task 8)');
   },
-};
+});

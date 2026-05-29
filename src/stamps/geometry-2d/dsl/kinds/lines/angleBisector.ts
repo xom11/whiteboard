@@ -2,15 +2,15 @@
 import { z } from 'zod';
 import { NameZ } from '../../names';
 import type { DslShapeT } from '../../schema';
-import type { DslKindModule } from '../_types';
+import { defineModule } from '../_types';
 
 type Input = Extract<DslShapeT, { kind: 'angleBisector' }>;
 
-export const angleBisectorModule: DslKindModule<'angleBisector', Input> = {
+export const angleBisectorModule = defineModule<'angleBisector', Input>({
   kind: 'angleBisector',
   role: 'lineConstruction',
   category: 'lines',
-  prefix: '',
+  prefix: 'l',
   schema: z.object({
     name: NameZ,
     kind: z.literal('angleBisector'),
@@ -22,4 +22,4 @@ export const angleBisectorModule: DslKindModule<'angleBisector', Input> = {
   emit: () => {
     throw new Error('angleBisector.emit: not yet migrated (Phase 5 / Task 9)');
   },
-};
+});

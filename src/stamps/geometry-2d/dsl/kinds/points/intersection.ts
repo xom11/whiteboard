@@ -2,15 +2,15 @@
 import { z } from 'zod';
 import { NameZ } from '../../names';
 import type { DslPointT } from '../../schema';
-import type { DslKindModule } from '../_types';
+import { defineModule } from '../_types';
 
 type Input = Extract<DslPointT, { kind: 'intersection' }>;
 
-export const intersectionModule: DslKindModule<'intersection', Input> = {
+export const intersectionModule = defineModule<'intersection', Input>({
   kind: 'intersection',
   role: 'point',
   category: 'points',
-  prefix: '',
+  prefix: 'i',
   schema: z.object({
     name: NameZ,
     kind: z.literal('intersection'),
@@ -22,4 +22,4 @@ export const intersectionModule: DslKindModule<'intersection', Input> = {
   emit: () => {
     throw new Error('intersection.emit: not yet migrated (Phase 5 / Task 8)');
   },
-};
+});

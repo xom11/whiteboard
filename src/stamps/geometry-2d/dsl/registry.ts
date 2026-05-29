@@ -33,7 +33,7 @@ const ALL_MODULES: ReadonlyArray<DslKindModule> = [
   angleBisectorModule, tangentModule,
   polygonModule,
   circleCPModule, circle3Module,
-] as unknown as ReadonlyArray<DslKindModule>;
+];
 
 export const KIND_REGISTRY: ReadonlyMap<string, DslKindModule> =
   new Map(ALL_MODULES.map((m) => [m.kind, m]));

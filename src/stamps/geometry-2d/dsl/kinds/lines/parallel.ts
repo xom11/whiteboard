@@ -2,15 +2,15 @@
 import { z } from 'zod';
 import { NameZ } from '../../names';
 import type { DslShapeT } from '../../schema';
-import type { DslKindModule } from '../_types';
+import { defineModule } from '../_types';
 
 type Input = Extract<DslShapeT, { kind: 'parallel' }>;
 
-export const parallelModule: DslKindModule<'parallel', Input> = {
+export const parallelModule = defineModule<'parallel', Input>({
   kind: 'parallel',
   role: 'lineConstruction',
   category: 'lines',
-  prefix: '',
+  prefix: 'l',
   schema: z.object({
     name: NameZ,
     kind: z.literal('parallel'),
@@ -21,4 +21,4 @@ export const parallelModule: DslKindModule<'parallel', Input> = {
   emit: () => {
     throw new Error('parallel.emit: not yet migrated (Phase 5 / Task 9)');
   },
-};
+});
