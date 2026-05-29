@@ -1,0 +1,24 @@
+// src/stamps/geometry-2d/dsl/kinds/points/onCircle.ts
+import { z } from 'zod';
+import { NameZ } from '../../names';
+import type { DslPointT } from '../../schema';
+import type { DslKindModule } from '../_types';
+
+type Input = Extract<DslPointT, { kind: 'onCircle' }>;
+
+export const onCircleModule: DslKindModule<'onCircle', Input> = {
+  kind: 'onCircle',
+  role: 'point',
+  category: 'points',
+  prefix: '',
+  schema: z.object({
+    name: NameZ,
+    kind: z.literal('onCircle'),
+    circleId: NameZ,
+    theta: z.number().finite(),
+  }),
+  collectRefs: (e) => [e.circleId],
+  emit: () => {
+    throw new Error('onCircle.emit: not yet migrated (Phase 5 / Task 8)');
+  },
+};
