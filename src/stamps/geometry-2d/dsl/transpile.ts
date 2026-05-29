@@ -6,16 +6,57 @@ import { buildSymbols } from './transpile/symbols';
 import { validateRefs } from './transpile/refs';
 import { detectCycles } from './transpile/cycles';
 import { assignIds } from './transpile/ids';
-import { emitPoint, type EntityKindHint } from './transpile/emitPoint';
-import { emitShape } from './transpile/emitShape';
+import type { EntityKindHint } from './transpile/emitPoint';
 import { mkError, type TranspileError, type TranspileResult } from './transpile/errors';
 import { KIND_REGISTRY } from './registry';
+import type { EmitContext, EmittedEntity, KindRole } from './kinds/_types';
 
 function hintOf(entity: DslPointT | DslShapeT): EntityKindHint {
-  const mod = KIND_REGISTRY.get(entity.kind);
-  if (!mod) throw new Error(`hintOf: no registry entry for kind "${entity.kind}"`);
-  // 'polygon' role maps to 'point' for legacy MVP behavior (polygon never used as ref target).
-  return mod.role === 'polygon' ? 'point' : (mod.role as EntityKindHint);
+  // points (including intersection) are point-like at scene level.
+  if ('kind' in entity) {
+    switch (entity.kind) {
+      case 'free': case 'midpoint': case 'onSegment': case 'onLine':
+      case 'onCircle': case 'perpFoot': case 'circumcenter':
+      case 'incenter': case 'centroid': case 'orthocenter': case 'intersection':
+        return 'point';
+      case 'segment':  return 'segment';
+      case 'line':     return 'line';
+      case 'ray':      return 'ray';
+      case 'polygon':  return 'point'; // not used as ref target in MVP
+      case 'perpendicular': case 'parallel': case 'perpBisector':
+      case 'angleBisector': case 'tangent':
+        return 'lineConstruction';
+      case 'circleCP': case 'circle3':
+        return 'circle';
+    }
+  }
+  return 'point';
+}
+
+function buildEmitContext(
+  ids: Map<string, string>,
+  kindHints: Map<string, EntityKindHint>,
+): EmitContext {
+  const auxCounters = new Map<string, number>();
+  return {
+    resolveId(name) {
+      const id = ids.get(name);
+      if (!id) throw new Error(`emit: id not assigned for "${name}"`);
+      return id;
+    },
+    hintOf(name) {
+      const hint = kindHints.get(name);
+      if (!hint) throw new Error(`emit: hint not assigned for "${name}"`);
+      // EntityKindHint and KindRole share these literals; safe to widen.
+      return hint as KindRole;
+    },
+    mintAuxId(parentName, suffix) {
+      const key = `${parentName}.${suffix}`;
+      auxCounters.set(key, (auxCounters.get(key) ?? 0) + 1);
+      const seq = auxCounters.get(key)!;
+      return `aux_${parentName}_${suffix}${seq}`;
+    },
+  };
 }
 
 export function transpile(dslRaw: unknown): TranspileResult {
@@ -46,20 +87,23 @@ export function transpile(dslRaw: unknown): TranspileResult {
     kindHints.set(name, hintOf(sym.entity));
   }
 
-  // Stage 6: emit
+  // Stage 6: emit via registry
   const objects: Record<string, SceneObject> = {};
   const order: string[] = [];
+  const ctx = buildEmitContext(ids, kindHints);
 
-  for (const p of dsl.points) {
-    const obj = emitPoint(p, ids, kindHints);
-    objects[obj.id] = obj;
-    order.push(obj.id);
-  }
-  for (const s of dsl.shapes) {
-    const obj = emitShape(s, ids);
-    objects[obj.id] = obj;
-    order.push(obj.id);
-  }
+  const emitEntity = (entity: DslPointT | DslShapeT) => {
+    const mod = KIND_REGISTRY.get(entity.kind);
+    if (!mod) throw new Error(`emit: no registry entry for kind "${entity.kind}"`);
+    const emitted: EmittedEntity[] = mod.emit(entity as never, ctx);
+    for (const ent of emitted) {
+      objects[ent.object.id] = ent.object;
+      order.push(ent.object.id);
+    }
+  };
+
+  for (const p of dsl.points) emitEntity(p);
+  for (const s of dsl.shapes) emitEntity(s);
 
   const empty = createEmptyState('2d');
   const state: State = {
