@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { NameZ } from '../../names';
 import type { DslShapeT } from '../../schema';
 import { defineModule } from '../_types';
+import { SHAPE_BASE_FIELDS } from '../_shared';
 
 type Input = Extract<DslShapeT, { kind: 'circleCP' }>;
 
@@ -18,7 +19,14 @@ export const circleCPModule = defineModule<'circleCP', Input>({
     surfacePoint: NameZ,
   }),
   collectRefs: (e) => [e.center, e.surfacePoint],
-  emit: () => {
-    throw new Error('circleCP.emit: not yet migrated (Phase 5 / Task 9)');
-  },
+  emit: (e, ctx) => [{
+    role: 'primary',
+    object: {
+      id: ctx.resolveId(e.name),
+      kind: 'circle',
+      label: e.name,
+      ...SHAPE_BASE_FIELDS,
+      attrs: { center: ctx.resolveId(e.center), surfacePoint: ctx.resolveId(e.surfacePoint) },
+    },
+  }],
 });

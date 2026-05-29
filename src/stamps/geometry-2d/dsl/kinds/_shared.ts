@@ -31,3 +31,10 @@ export function resolveTriangleVertices(
 ): [string, string, string] {
   return [ctx.resolveId(vertices[0]), ctx.resolveId(vertices[1]), ctx.resolveId(vertices[2])];
 }
+
+export const SHAPE_BASE_FIELDS = {
+  visible: true,
+  locked: false,
+  layer: 'default',
+  schemaVersion: 1,
+} as const;
