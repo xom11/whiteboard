@@ -1,5 +1,5 @@
 'use client';
-import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, useSyncExternalStore } from 'react';
 import { MiniBoard2D, type MiniBoardHandle, type GeomTool, type ObjectSnapshot, type SelectionStateSnapshot, type TransformPopoverInfo } from './MiniBoard';
 import { serializeBoard } from '../serialize';
 import { renderGeometrySvgFromState } from '../render';
@@ -93,6 +93,13 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
 
     // Tier 2 F — propagate canUndo/canRedo + keyboard shortcuts qua shared hook.
     useEditorState({ store, onHistoryChange });
+
+    // Reactive scene state — for AiFigurePrompt currentState (multi-step refine).
+    const currentSceneState = useSyncExternalStore(
+      (cb) => store.subscribe(cb),
+      () => store.getState(),
+      () => store.getState(),
+    );
 
     // hasContent: track store size để gate Insert button.
     useEffect(() => {
@@ -309,7 +316,7 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
           </button>
         </header>
         {generateGeometryFigure && (
-          <AiFigurePrompt generator={generateGeometryFigure} onGenerated={loadAiFigure} />
+          <AiFigurePrompt generator={generateGeometryFigure} onGenerated={loadAiFigure} currentState={currentSceneState} />
         )}
         <div className="flex min-h-0 flex-1">
           <div className="flex-1">
