@@ -321,6 +321,132 @@ function detectTriangleVertices(prompt: string): readonly string[] | null {
   return [up(m[1]), up(m[2]), up(m[3])];
 }
 
+// -----------------------------------------------------------------------------
+// Deterministic completion (Hướng B).
+//
+// Áp dụng extractRequirements(prompt) → inject/replace point/shape vào DSL
+// TRƯỚC khi transpile. Mục tiêu:
+//   1. Cứu round 1 transpile_error khi LLM output sai struct (vd centroid với
+//      ref tới shape không tồn tại) — thay bằng stub đúng → transpile được.
+//   2. Bỏ qua retry round 2 cho các case extraction cover được — tiết kiệm
+//      latency + token.
+//
+// Safety:
+//   - Chỉ apply khi name có trong extraction (match keyword pattern rõ).
+//   - Nếu LLM đã emit point/shape ĐÚNG kind → no-op (skip).
+//   - Nếu LLM emit cùng name nhưng kind SAI → REPLACE bằng stub.
+// -----------------------------------------------------------------------------
+
+export interface CompletionAction {
+  readonly target: 'point' | 'shape';
+  readonly name: string;
+  readonly kind: string;
+  readonly action: 'added' | 'replaced' | 'kept';
+}
+
+export interface CompletionResult {
+  readonly dsl: DslInputT;
+  readonly actions: readonly CompletionAction[];
+}
+
+/**
+ * Inject/replace point + shape stubs từ extractRequirements vào DSL.
+ * Trả về DSL mới (không mutate input) + log actions để debug.
+ *
+ * NOTE: Cast qua `unknown` vì DslPointT/DslShapeT là discriminated union với
+ * field strict theo kind — stub construction từ Record<string,unknown> không
+ * strictly assignable, nhưng schema.parse downstream re-validate, an toàn
+ * runtime.
+ */
+export function applyDeterministicCompletion(
+  userPrompt: string,
+  dsl: DslInputT,
+): CompletionResult {
+  const extraction = extractRequirements(userPrompt);
+  const actions: CompletionAction[] = [];
+
+  type AnyPoint = DslInputT['points'][number];
+  type AnyShape = DslInputT['shapes'][number];
+
+  const points: AnyPoint[] = [...dsl.points];
+  const shapes: AnyShape[] = [...dsl.shapes];
+
+  for (const stub of extraction.points) {
+    const idx = points.findIndex((p) => p.name === stub.name);
+    const stubElement = {
+      name: stub.name,
+      kind: stub.kind,
+      ...stub.fields,
+    } as unknown as AnyPoint;
+    if (idx >= 0) {
+      if (points[idx].kind === stub.kind) {
+        actions.push({
+          target: 'point',
+          name: stub.name,
+          kind: stub.kind,
+          action: 'kept',
+        });
+        continue;
+      }
+      points[idx] = stubElement;
+      actions.push({
+        target: 'point',
+        name: stub.name,
+        kind: stub.kind,
+        action: 'replaced',
+      });
+    } else {
+      points.push(stubElement);
+      actions.push({
+        target: 'point',
+        name: stub.name,
+        kind: stub.kind,
+        action: 'added',
+      });
+    }
+  }
+
+  for (const stub of extraction.shapes) {
+    const idx = shapes.findIndex((s) => s.name === stub.name);
+    const stubElement = {
+      name: stub.name,
+      kind: stub.kind,
+      ...stub.fields,
+    } as unknown as AnyShape;
+    if (idx >= 0) {
+      if (shapes[idx].kind === stub.kind) {
+        actions.push({
+          target: 'shape',
+          name: stub.name,
+          kind: stub.kind,
+          action: 'kept',
+        });
+        continue;
+      }
+      shapes[idx] = stubElement;
+      actions.push({
+        target: 'shape',
+        name: stub.name,
+        kind: stub.kind,
+        action: 'replaced',
+      });
+    } else {
+      shapes.push(stubElement);
+      actions.push({
+        target: 'shape',
+        name: stub.name,
+        kind: stub.kind,
+        action: 'added',
+      });
+    }
+  }
+
+  return {
+    dsl: { ...dsl, points, shapes },
+    actions,
+  };
+}
+
 /**
  * Quét đề bài + DSL output. Trả về missing kinds nếu LLM bỏ qua từ khoá
  * MANDATORY. Không throw — caller quyết định retry hay chỉ warning.

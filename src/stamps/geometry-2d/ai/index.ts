@@ -59,9 +59,12 @@ export {
   validateKindCoverage,
   buildRetryHint,
   extractRequirements,
+  applyDeterministicCompletion,
   type ValidatorIssue,
   type ValidatorResult,
   type PointStub,
   type ShapeStub,
   type RequirementExtraction,
+  type CompletionAction,
+  type CompletionResult,
 } from './validator';

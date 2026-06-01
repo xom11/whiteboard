@@ -22,7 +22,9 @@ import {
   validateKindCoverage,
   buildRetryHint,
   extractRequirements,
+  applyDeterministicCompletion,
   type ValidatorIssue,
+  type CompletionAction,
 } from './validator';
 
 const DEFAULT_MAX_TOKENS = 8192;
@@ -39,6 +41,13 @@ export interface GenerateOptions extends SelectProviderOptions {
    * hoặc khi UX cho phép +1 round trip để đổi accuracy.
    */
   retryOnValidatorMiss?: boolean;
+  /**
+   * Nếu true, sau khi parse LLM output, áp dụng deterministic completion
+   * (inject/replace point+shape stub từ extractRequirements vào DSL TRƯỚC
+   * khi transpile). Cứu các case round 1 transpile_error do LLM bịa cấu trúc
+   * (vd centroid với ref tới shape không tồn tại). Default: true.
+   */
+  applyCompletion?: boolean;
 }
 
 export interface TokenUsage {
@@ -59,6 +68,8 @@ export type GenerateResult =
       validatorWarnings?: readonly ValidatorIssue[];
       /** Số lần retry đã thực hiện do validator miss (0 hoặc 1). */
       retries?: number;
+      /** Deterministic completion actions applied trước transpile. */
+      completionActions?: readonly CompletionAction[];
     }
   | { ok: false; reason: 'refused'; message: string; usage?: TokenUsage; provider?: string }
   | { ok: false; reason: 'parse_error'; message: string; raw?: unknown; usage?: TokenUsage; provider?: string }
@@ -83,16 +94,22 @@ export async function generateFigure(
 
   const systemPrompt = buildSystemPrompt();
   const schema = envelopeJsonSchema();
+  const applyCompletion = opts.applyCompletion ?? true;
 
   // Round 1.
-  const round1 = await runOneRound(provider, {
-    systemPrompt,
-    userPrompt: problem,
-    schema,
-    model: opts.model ?? provider.defaultModel,
-    maxTokens: opts.maxTokens ?? DEFAULT_MAX_TOKENS,
-    signal: opts.signal,
-  });
+  const round1 = await runOneRound(
+    provider,
+    {
+      systemPrompt,
+      userPrompt: problem,
+      schema,
+      model: opts.model ?? provider.defaultModel,
+      maxTokens: opts.maxTokens ?? DEFAULT_MAX_TOKENS,
+      signal: opts.signal,
+    },
+    problem,
+    applyCompletion,
+  );
   if (!round1.ok && round1.kind === 'api_error') return round1.result;
   if (!round1.ok && round1.kind === 'parse_error') return round1.result;
   if (!round1.ok && round1.kind === 'refused') return round1.result;
@@ -117,6 +134,9 @@ export async function generateFigure(
       ...(validation.missing.length > 0
         ? { validatorWarnings: validation.missing }
         : {}),
+      ...(success1.completionActions && success1.completionActions.length > 0
+        ? { completionActions: success1.completionActions }
+        : {}),
       retries: 0,
     };
   }
@@ -125,14 +145,19 @@ export async function generateFigure(
   // detect được pattern "X là <keyword>" trong đề).
   const extraction = extractRequirements(problem);
   const hint = buildRetryHint(validation.missing, extraction);
-  const round2 = await runOneRound(provider, {
-    systemPrompt,
-    userPrompt: `${problem}\n\n${hint}`,
-    schema,
-    model: opts.model ?? provider.defaultModel,
-    maxTokens: opts.maxTokens ?? DEFAULT_MAX_TOKENS,
-    signal: opts.signal,
-  });
+  const round2 = await runOneRound(
+    provider,
+    {
+      systemPrompt,
+      userPrompt: `${problem}\n\n${hint}`,
+      schema,
+      model: opts.model ?? provider.defaultModel,
+      maxTokens: opts.maxTokens ?? DEFAULT_MAX_TOKENS,
+      signal: opts.signal,
+    },
+    problem,
+    applyCompletion,
+  );
 
   // Nếu round 2 fail bất kỳ lý do nào → fallback về round 1 success (vì
   // round 1 ít nhất đã transpile được, chỉ thiếu kind).
@@ -144,6 +169,9 @@ export async function generateFigure(
       usage: mergeUsage(success1.usage, getUsageFromRound(round2)),
       provider: provider.name,
       validatorWarnings: validation.missing,
+      ...(success1.completionActions && success1.completionActions.length > 0
+        ? { completionActions: success1.completionActions }
+        : {}),
       retries: 1,
     };
   }
@@ -161,6 +189,9 @@ export async function generateFigure(
     ...(validation2.missing.length > 0
       ? { validatorWarnings: validation2.missing }
       : {}),
+    ...(success2.completionActions && success2.completionActions.length > 0
+      ? { completionActions: success2.completionActions }
+      : {}),
     retries: 1,
   };
 }
@@ -174,6 +205,7 @@ interface RoundSuccess {
   state: SceneState;
   dsl: DslInputT;
   usage: TokenUsage;
+  completionActions?: readonly CompletionAction[];
 }
 
 type RoundResult =
@@ -195,6 +227,9 @@ async function runOneRound(
     maxTokens: number;
     signal?: AbortSignal;
   },
+  /** Đề bài gốc (KHÔNG kèm hint) — dùng cho extractRequirements. */
+  originalProblem: string,
+  applyCompletion: boolean,
 ): Promise<RoundResult> {
   const out = await provider.call({
     systemPrompt: req.systemPrompt,
@@ -253,7 +288,13 @@ async function runOneRound(
     };
   }
 
-  const dsl = envelopeBuildDsl(env);
+  let dsl = envelopeBuildDsl(env);
+  let completionActions: readonly CompletionAction[] = [];
+  if (applyCompletion) {
+    const completion = applyDeterministicCompletion(originalProblem, dsl);
+    dsl = completion.dsl;
+    completionActions = completion.actions;
+  }
   const tResult = transpile(dsl);
   if (!tResult.ok) {
     return {
@@ -273,7 +314,12 @@ async function runOneRound(
 
   return {
     ok: true,
-    success: { state: tResult.state, dsl, usage },
+    success: {
+      state: tResult.state,
+      dsl,
+      usage,
+      ...(completionActions.length > 0 ? { completionActions } : {}),
+    },
   };
 }
 

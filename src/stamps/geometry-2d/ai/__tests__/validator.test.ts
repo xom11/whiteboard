@@ -1,6 +1,10 @@
 // src/stamps/geometry-2d/ai/__tests__/validator.test.ts
 import type { DslInputT } from '../../dsl/schema';
-import { validateKindCoverage, buildRetryHint } from '../validator';
+import {
+  validateKindCoverage,
+  buildRetryHint,
+  applyDeterministicCompletion,
+} from '../validator';
 
 function dsl(points: DslInputT['points'], shapes: DslInputT['shapes'] = []): DslInputT {
   return { version: 1, points, shapes };
@@ -394,5 +398,140 @@ describe('buildRetryHint with extraction (DSL stub)', () => {
     );
     expect(txt).toContain('Ngoài ra');
     expect(txt).toContain('Dùng tangent kind');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// applyDeterministicCompletion (Hướng B)
+// ---------------------------------------------------------------------------
+
+describe('applyDeterministicCompletion — add missing element', () => {
+  it('adds G centroid khi LLM hoàn toàn quên (cứu các case kind missing)', () => {
+    const out = applyDeterministicCompletion(
+      'Tam giác ABC, G là trọng tâm',
+      dsl(
+        [
+          { name: 'A', kind: 'free', x: 0, y: 3 },
+          { name: 'B', kind: 'free', x: -2, y: 0 },
+          { name: 'C', kind: 'free', x: 3, y: 0 },
+        ],
+        [{ name: 'ABC', kind: 'polygon', vertices: ['A', 'B', 'C'] }],
+      ),
+    );
+    const g = out.dsl.points.find((p) => p.name === 'G');
+    expect(g).toMatchObject({ kind: 'centroid' });
+    expect(out.actions).toContainEqual({
+      target: 'point',
+      name: 'G',
+      kind: 'centroid',
+      action: 'added',
+    });
+  });
+
+  it('adds segment BC khi LLM emit perpFoot nhưng quên dependency shape', () => {
+    const out = applyDeterministicCompletion(
+      'Tam giác ABC, H là chân đường cao kẻ từ A xuống BC',
+      dsl(
+        [
+          { name: 'A', kind: 'free', x: 0, y: 3 },
+          { name: 'B', kind: 'free', x: -2, y: 0 },
+          { name: 'C', kind: 'free', x: 3, y: 0 },
+        ],
+        [{ name: 'ABC', kind: 'polygon', vertices: ['A', 'B', 'C'] }],
+      ),
+    );
+    expect(out.dsl.points.find((p) => p.name === 'H')).toMatchObject({
+      kind: 'perpFoot',
+    });
+    expect(out.dsl.shapes.find((s) => s.name === 'BC')).toMatchObject({
+      kind: 'segment',
+    });
+  });
+});
+
+describe('applyDeterministicCompletion — replace wrong kind', () => {
+  it('replaces G:intersection (LLM bịa) với G:centroid (đúng theo đề)', () => {
+    const out = applyDeterministicCompletion(
+      'Tam giác ABC, G là trọng tâm',
+      dsl(
+        [
+          { name: 'A', kind: 'free', x: 0, y: 3 },
+          { name: 'B', kind: 'free', x: -2, y: 0 },
+          { name: 'C', kind: 'free', x: 3, y: 0 },
+          { name: 'G', kind: 'intersection', ref1: 'AB', ref2: 'AC' },
+        ],
+        [{ name: 'ABC', kind: 'polygon', vertices: ['A', 'B', 'C'] }],
+      ),
+    );
+    const g = out.dsl.points.find((p) => p.name === 'G');
+    expect(g).toMatchObject({
+      kind: 'centroid',
+      vertices: ['A', 'B', 'C'],
+    });
+    // Quan trọng: G CŨ với kind intersection phải bị thay (không append).
+    expect(out.dsl.points.filter((p) => p.name === 'G')).toHaveLength(1);
+    expect(out.actions).toContainEqual({
+      target: 'point',
+      name: 'G',
+      kind: 'centroid',
+      action: 'replaced',
+    });
+  });
+
+  it('replaces M:free với M:midpoint (case user nhắc)', () => {
+    const out = applyDeterministicCompletion(
+      'Tam giác ABC, M là trung điểm BC',
+      dsl([
+        { name: 'A', kind: 'free', x: 0, y: 0 },
+        { name: 'B', kind: 'free', x: 4, y: 0 },
+        { name: 'C', kind: 'free', x: 0, y: 3 },
+        { name: 'M', kind: 'free', x: 2, y: 1.5 },
+      ]),
+    );
+    const m = out.dsl.points.find((p) => p.name === 'M');
+    expect(m).toMatchObject({ kind: 'midpoint', p1: 'B', p2: 'C' });
+  });
+});
+
+describe('applyDeterministicCompletion — no-op khi đã đúng', () => {
+  it('keeps M:midpoint nếu LLM đã emit đúng', () => {
+    const inputDsl = dsl([
+      { name: 'A', kind: 'free', x: 0, y: 3 },
+      { name: 'B', kind: 'free', x: -2, y: 0 },
+      { name: 'C', kind: 'free', x: 3, y: 0 },
+      { name: 'M', kind: 'midpoint', p1: 'B', p2: 'C' },
+    ]);
+    const out = applyDeterministicCompletion(
+      'Tam giác ABC, M là trung điểm BC',
+      inputDsl,
+    );
+    expect(out.dsl.points.find((p) => p.name === 'M')).toMatchObject({
+      kind: 'midpoint',
+    });
+    const mAction = out.actions.find((a) => a.name === 'M');
+    expect(mAction?.action).toBe('kept');
+  });
+
+  it('keeps mọi point khi prompt không có keyword (no extraction)', () => {
+    const inputDsl = dsl([
+      { name: 'A', kind: 'free', x: 0, y: 0 },
+      { name: 'B', kind: 'free', x: 1, y: 0 },
+    ]);
+    const out = applyDeterministicCompletion('Cho hai điểm A, B', inputDsl);
+    expect(out.actions).toHaveLength(0);
+    expect(out.dsl).toEqual(inputDsl);
+  });
+});
+
+describe('applyDeterministicCompletion — input không bị mutate', () => {
+  it('input DSL points array không bị thay đổi', () => {
+    const inputDsl = dsl([
+      { name: 'A', kind: 'free', x: 0, y: 0 },
+      { name: 'B', kind: 'free', x: 4, y: 0 },
+      { name: 'C', kind: 'free', x: 0, y: 3 },
+    ]);
+    const beforeLen = inputDsl.points.length;
+    applyDeterministicCompletion('Tam giác ABC, G là trọng tâm', inputDsl);
+    expect(inputDsl.points.length).toBe(beforeLen);
   });
 });
