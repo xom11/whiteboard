@@ -51,4 +51,56 @@ describe('buildSystemPrompt', () => {
   it('is deterministic — 2 calls return identical string', () => {
     expect(buildSystemPrompt()).toBe(buildSystemPrompt());
   });
+
+  // -----------------------------------------------------------------------
+  // New: strengthened directives for keyword→kind mapping + anti-bias.
+  // Khoá rule cứng để regression cảnh báo nếu ai xoá.
+  // -----------------------------------------------------------------------
+
+  it('contains MANDATORY keyword→kind mapping section', () => {
+    const p = buildSystemPrompt();
+    // Section heading should signal mandatory force.
+    expect(p).toMatch(/BẮT BUỘC.+từ\s*khoá.+kind/i);
+    // Concrete trigger words paired with kinds.
+    const mappings: ReadonlyArray<[string, string]> = [
+      ['trung điểm', 'midpoint'],
+      ['chân đường cao', 'perpFoot'],
+      ['trọng tâm', 'centroid'],
+      ['trực tâm', 'orthocenter'],
+      ['ngoại tiếp', 'circumcenter'],
+      ['nội tiếp', 'incenter'],
+      ['phân giác', 'angleBisector'],
+      ['trung trực', 'perpBisector'],
+      ['tiếp tuyến', 'tangent'],
+      ['giao điểm', 'intersection'],
+    ];
+    for (const [keyword, kind] of mappings) {
+      expect(p).toContain(keyword);
+      expect(p).toContain(kind);
+    }
+  });
+
+  it('contains anti-right-triangle-at-origin guidance', () => {
+    const p = buildSystemPrompt();
+    // Explicit warning về (0,0)/(a,0)/(0,b) pattern.
+    expect(p).toMatch(/A\(0,\s*0\)/);
+    expect(p).toMatch(/tam giác\s+(vuông|VUÔNG)/i);
+    expect(p).toMatch(/scalene/i);
+  });
+
+  it('contains contrast WRONG vs CORRECT for midpoint/centroid/perpFoot', () => {
+    const p = buildSystemPrompt();
+    // Đảm bảo có cặp ❌ / ✅ làm contrast.
+    expect(p).toContain('❌');
+    expect(p).toContain('✅');
+    // Concrete contrast cho midpoint case (user-reported).
+    expect(p).toMatch(/kind:"midpoint"/);
+    expect(p).toMatch(/kind:"centroid"/);
+    expect(p).toMatch(/kind:"perpFoot"/);
+  });
+
+  it('explicitly forbids free-coord for derived points', () => {
+    const p = buildSystemPrompt();
+    expect(p).toMatch(/TUYỆT ĐỐI KHÔNG|KHÔNG được dùng kind:"free"/i);
+  });
 });

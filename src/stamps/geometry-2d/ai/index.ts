@@ -53,3 +53,11 @@ export {
   refineEnvelopeJsonSchema,
   type FigureRefineEnvelopeT,
 } from './refineEnvelope';
+
+// Keyword→kind validator (model-agnostic safety net).
+export {
+  validateKindCoverage,
+  buildRetryHint,
+  type ValidatorIssue,
+  type ValidatorResult,
+} from './validator';

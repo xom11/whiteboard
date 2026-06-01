@@ -66,7 +66,12 @@ async function run(model: string) {
     process.stdout.write(`[${p.id}] ${p.text.slice(0, 60)}... `);
     const t0 = Date.now();
     try {
-      const r = await generateFigure(p.text, { provider, model, maxTokens: 4096 });
+      const r = await generateFigure(p.text, {
+        provider,
+        model,
+        maxTokens: 4096,
+        retryOnValidatorMiss: true,
+      });
       const ms = Date.now() - t0;
       if (r.ok) {
         const pk = r.dsl.points.map((x) => x.kind);
