@@ -17,10 +17,10 @@ import { DslInput, type DslInputT } from '../dsl';
 export const FigureEnvelopeZ = z
   .object({
     decision: z.enum(['build', 'refuse']),
-    // figure: DslInput khi build; null/undefined khi refuse.
-    figure: DslInput.optional().nullable(),
-    // reason: lý do từ chối (Việt) khi refuse; null/undefined khi build.
-    reason: z.string().optional().nullable(),
+    // figure: DslInput khi build; bỏ qua khi refuse.
+    figure: DslInput.optional(),
+    // reason: lý do từ chối (Việt) khi refuse; bỏ qua khi build.
+    reason: z.string().optional(),
   })
   .refine(
     (e) => (e.decision === 'build' ? e.figure != null : e.reason != null && e.reason.length > 0),
