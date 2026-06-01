@@ -4,21 +4,20 @@ import {
   Whiteboard,
   type AiFigureUiResult,
   type AiFigureProgress,
+  type GenerateGeometryFigure,
 } from '@xom11/whiteboard';
 import './tailwind.css';
 
 /**
  * Streaming adapter: gọi SSE endpoint, parse `data:` events,
  * forward `progress` events ra onProgress callback, return final result.
+ *
+ * Branch URL theo `currentDsl`: có → refine endpoint, không → build endpoint.
  */
-async function generateGeometryFigure(
-  problem: string,
-  {
-    signal,
-    onProgress,
-    currentDsl,
-  }: { signal: AbortSignal; onProgress?: (info: AiFigureProgress) => void; currentDsl?: string },
-): Promise<AiFigureUiResult> {
+const generateGeometryFigure: GenerateGeometryFigure = async (
+  problem,
+  { signal, onProgress, currentDsl },
+) => {
   try {
     const url = currentDsl
       ? '/api/generate-figure-refine/stream'
@@ -78,7 +77,7 @@ async function generateGeometryFigure(
     }
     return { ok: false, message: (err as Error).message };
   }
-}
+};
 
 function App() {
   return (
