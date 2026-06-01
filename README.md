@@ -63,7 +63,7 @@ export function ClassroomBoard() {
 
 ### AI dựng hình học 2D (opt-in)
 
-Textarea AI chỉ xuất hiện khi truyền `generateGeometryFigure`. Callback này chạy từ client nên phải gọi một server boundary của ứng dụng; không đưa `ANTHROPIC_API_KEY` vào component hoặc biến môi trường public.
+Textarea AI chỉ xuất hiện khi truyền `generateGeometryFigure`. Callback chạy từ client nên phải gọi server boundary của ứng dụng; không bao giờ đặt API key vào component / biến môi trường public.
 
 ```tsx
 'use client';
@@ -85,29 +85,89 @@ export function ClassroomBoard() {
 }
 ```
 
-Ví dụ route phía server trong Next.js:
+#### Provider backend (chọn 1)
+
+Từ phiên bản hỗ trợ multi-provider, có 2 lựa chọn:
+
+**A. Local Gemma 3 qua Ollama (mặc định, miễn phí, không cần API key)**
+
+Setup máy chạy server:
+
+```bash
+# macOS
+brew install ollama
+ollama serve                 # chạy nền cổng 11434
+ollama pull gemma3:4b        # ~3.3GB Q4, chạy tốt trên M4 16GB
+
+# Linux
+curl -fsSL https://ollama.com/install.sh | sh
+ollama serve &
+ollama pull gemma3:4b
+```
+
+Server-side route Next.js:
 
 ```ts
 import { generateFigure } from '@xom11/whiteboard/ai';
 
 export async function POST(request: Request) {
   const { problem } = await request.json();
-  const result = await generateFigure(problem, {
-    apiKey: process.env.ANTHROPIC_API_KEY ?? '',
-  });
+  // Default: provider=ollama, model=gemma3:4b, baseUrl=http://localhost:11434
+  const result = await generateFigure(problem);
   return Response.json(
-    result.ok
-      ? { ok: true, state: result.state }
-      : { ok: false, message: result.message },
+    result.ok ? { ok: true, state: result.state } : { ok: false, message: result.message },
   );
 }
 ```
 
-Trong repo package, chạy smoke/eval với API key chỉ ở local shell:
+Env override (optional):
 
 ```bash
-ANTHROPIC_API_KEY=... npm run ai:smoke
-ANTHROPIC_API_KEY=... npm run ai:eval -- --limit 5
+WHITEBOARD_AI_PROVIDER=ollama          # default
+OLLAMA_BASE_URL=http://localhost:11434 # default
+OLLAMA_DEFAULT_MODEL=gemma3:4b         # default; gemma3:1b nhẹ hơn nhưng kém chính xác
+```
+
+**B. Anthropic Claude (chính xác cao, tốn API cost)**
+
+```ts
+import { generateFigure } from '@xom11/whiteboard/ai';
+
+const result = await generateFigure(problem, {
+  apiKey: process.env.ANTHROPIC_API_KEY ?? '',
+});
+```
+
+Hoặc qua env:
+
+```bash
+WHITEBOARD_AI_PROVIDER=anthropic
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+**C. Provider tuỳ biến** (vd OpenAI, OpenRouter, vLLM): implement interface `AIProvider`:
+
+```ts
+import { generateFigure, type AIProvider } from '@xom11/whiteboard/ai';
+
+const customProvider: AIProvider = {
+  name: 'my-llm',
+  defaultModel: 'my-model',
+  async call(req) {
+    // req.systemPrompt, req.userPrompt, req.schema (JSON Schema cho envelope)
+    // ...
+    return { kind: 'json', data: envelopeObject };
+  },
+};
+
+const result = await generateFigure(problem, { provider: customProvider });
+```
+
+#### Smoke test local Ollama
+
+```bash
+brew install ollama && ollama serve & ollama pull gemma3:4b
+OLLAMA_SMOKE=1 npx jest ollama.smoke
 ```
 
 ## Migration to v0.8.0 (geometry-3d redesign)

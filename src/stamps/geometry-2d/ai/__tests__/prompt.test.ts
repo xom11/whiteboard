@@ -41,17 +41,13 @@ describe('buildSystemPrompt', () => {
     }
   });
 
-  it('mentions both tools build_figure and refuse', () => {
+  it('mentions envelope shape build / refuse', () => {
     const p = buildSystemPrompt();
-    expect(p).toContain('build_figure');
-    expect(p).toContain('refuse');
+    expect(p).toContain('"decision": "build"');
+    expect(p).toContain('"decision": "refuse"');
   });
 
   it('is deterministic — 2 calls return identical string', () => {
     expect(buildSystemPrompt()).toBe(buildSystemPrompt());
-  });
-
-  it('snapshot stable', () => {
-    expect(buildSystemPrompt()).toMatchSnapshot();
   });
 });

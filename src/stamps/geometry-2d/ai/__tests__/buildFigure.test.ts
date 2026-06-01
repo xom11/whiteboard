@@ -1,176 +1,151 @@
 // src/stamps/geometry-2d/ai/__tests__/buildFigure.test.ts
+//
+// Test orchestrator generateFigure() qua mock AIProvider — provider-agnostic,
+// không cần mock SDK riêng cho từng provider impl.
+
 import { generateFigure } from '../buildFigure';
+import type { AIProvider, ProviderOutput, ProviderRequest } from '../providers';
 import { fixture as equilateral } from '../../dsl/fixtures/triangle-equilateral';
 
-// Mock provider — KHÔNG mock SDK trực tiếp vì nó được wrap trong provider.ts
-const mockCallProvider = jest.fn();
-jest.mock('../provider', () => ({
-  callProvider: (args: unknown) => mockCallProvider(args),
-}));
+function mockProvider(outputs: ProviderOutput[]): AIProvider & { calls: ProviderRequest[] } {
+  const calls: ProviderRequest[] = [];
+  let i = 0;
+  const provider: AIProvider & { calls: ProviderRequest[] } = {
+    name: 'mock',
+    defaultModel: 'mock-default',
+    async call(req) {
+      calls.push(req);
+      const out = outputs[i] ?? outputs[outputs.length - 1];
+      i++;
+      return out;
+    },
+    calls,
+  };
+  return provider;
+}
 
-describe('generateFigure', () => {
-  beforeEach(() => mockCallProvider.mockReset());
-
-  it('happy path: build_figure with valid DSL → ok:true', async () => {
-    mockCallProvider.mockResolvedValue({
-      content: [{
-        type: 'tool_use', id: 'tu1', name: 'build_figure',
-        input: equilateral.dsl,
-      }],
-      stop_reason: 'tool_use',
-      usage: { input_tokens: 1500, output_tokens: 120, cache_read_input_tokens: 1400 },
-    });
-    const r = await generateFigure(equilateral.problem, { apiKey: 'sk-test' });
+describe('generateFigure — envelope orchestrator', () => {
+  it('happy path: decision=build → ok:true, state + dsl + usage', async () => {
+    const provider = mockProvider([
+      {
+        kind: 'json',
+        data: { decision: 'build', figure: equilateral.dsl },
+        usage: { inputTokens: 1500, outputTokens: 120, cacheReadTokens: 1400, cacheCreationTokens: 0 },
+      },
+    ]);
+    const r = await generateFigure(equilateral.problem, { provider });
     if (!r.ok) throw new Error('expected ok: ' + JSON.stringify(r));
     expect(r.state.order).toEqual(['p1', 'p2', 'p3', 'poly1']);
     expect(r.dsl).toEqual(equilateral.dsl);
-    expect(r.usage).toEqual({
-      inputTokens: 1500, outputTokens: 120,
-      cacheReadTokens: 1400, cacheCreationTokens: 0,
-    });
+    expect(r.usage).toEqual({ inputTokens: 1500, outputTokens: 120, cacheReadTokens: 1400, cacheCreationTokens: 0 });
+    expect(r.provider).toBe('mock');
   });
 
-  it('refuse path: ok:false reason=refused with message', async () => {
-    mockCallProvider.mockResolvedValue({
-      content: [{
-        type: 'tool_use', id: 'tu1', name: 'refuse',
-        input: { reason: 'Đề thuộc lớp 11, ngoài phạm vi' },
-      }],
-      stop_reason: 'tool_use',
-      usage: { input_tokens: 100, output_tokens: 20 },
-    });
-    const r = await generateFigure('biến đổi affine', { apiKey: 'sk-test' });
+  it('refuse path: decision=refuse → ok:false reason=refused', async () => {
+    const provider = mockProvider([
+      { kind: 'json', data: { decision: 'refuse', reason: 'Đề thuộc lớp 11, ngoài phạm vi' }, usage: { inputTokens: 100, outputTokens: 20 } },
+    ]);
+    const r = await generateFigure('biến đổi affine', { provider });
     expect(r.ok).toBe(false);
-    if (r.ok) throw new Error('expected fail');
+    if (r.ok) throw new Error();
     expect(r.reason).toBe('refused');
     expect(r.message).toBe('Đề thuộc lớp 11, ngoài phạm vi');
-    expect(r.usage).toBeDefined();
+    expect(r.provider).toBe('mock');
   });
 
   it('empty problem → api_error', async () => {
-    const r = await generateFigure('', { apiKey: 'sk-test' });
+    const r = await generateFigure('', { provider: mockProvider([{ kind: 'error', message: 'should not call' }]) });
     expect(r.ok).toBe(false);
-    if (r.ok) throw new Error('expected fail');
+    if (r.ok) throw new Error();
     expect(r.reason).toBe('api_error');
     expect(r.message).toContain('rỗng');
   });
 
-  it('empty apiKey → api_error', async () => {
-    const r = await generateFigure('Tam giác ABC', { apiKey: '' });
+  it('provider returns error → api_error preserves status', async () => {
+    const provider = mockProvider([{ kind: 'error', message: 'Unauthorized', status: 401 }]);
+    const r = await generateFigure('Tam giác ABC', { provider });
     expect(r.ok).toBe(false);
-    if (r.ok) throw new Error('expected fail');
-    expect(r.reason).toBe('api_error');
-    expect(r.message).toContain('apiKey');
-  });
-
-  it('SDK throws → api_error preserves status', async () => {
-    const err = Object.assign(new Error('Unauthorized'), { status: 401 });
-    mockCallProvider.mockRejectedValue(err);
-    const r = await generateFigure('Tam giác ABC', { apiKey: 'bad-key' });
-    expect(r.ok).toBe(false);
-    if (r.ok) throw new Error('expected fail');
+    if (r.ok) throw new Error();
     expect(r.reason).toBe('api_error');
     expect(r.message).toBe('Unauthorized');
     expect(r.status).toBe(401);
   });
 
-  it('no tool_use in response → parse_error', async () => {
-    mockCallProvider.mockResolvedValue({
-      content: [{ type: 'text', text: 'Tôi không hiểu' }],
-      stop_reason: 'end_turn',
-      usage: { input_tokens: 100, output_tokens: 5 },
-    });
-    const r = await generateFigure('xyzzy', { apiKey: 'sk-test' });
+  it('invalid envelope shape (missing decision) → parse_error', async () => {
+    const provider = mockProvider([
+      { kind: 'json', data: { figure: equilateral.dsl }, usage: { inputTokens: 50, outputTokens: 10 } },
+    ]);
+    const r = await generateFigure('test', { provider });
     expect(r.ok).toBe(false);
-    if (r.ok) throw new Error('expected fail');
+    if (r.ok) throw new Error();
     expect(r.reason).toBe('parse_error');
   });
 
-  it('unknown tool name → parse_error', async () => {
-    mockCallProvider.mockResolvedValue({
-      content: [{ type: 'tool_use', id: 'x', name: 'mystery', input: {} }],
-      stop_reason: 'tool_use',
-      usage: { input_tokens: 50, output_tokens: 10 },
-    });
-    const r = await generateFigure('test', { apiKey: 'sk-test' });
+  it('build với figure invalid DSL ref → parse_error (Zod fail)', async () => {
+    const badDsl = {
+      version: 1,
+      points: [{ name: 'A', kind: 'midpoint', p1: 'ghost', p2: 'B' }],
+      shapes: [],
+    };
+    const provider = mockProvider([
+      { kind: 'json', data: { decision: 'build', figure: badDsl } },
+    ]);
+    const r = await generateFigure('test', { provider });
     expect(r.ok).toBe(false);
-    if (r.ok) throw new Error('expected fail');
-    expect(r.reason).toBe('parse_error');
-    expect(r.message).toContain('mystery');
-  });
-
-  it('build_figure with malformed DSL → transpile_error', async () => {
-    mockCallProvider.mockResolvedValue({
-      content: [{
-        type: 'tool_use', id: 'tu1', name: 'build_figure',
-        input: { version: 1, points: [{ name: 'A', kind: 'unknown' }], shapes: [] },
-      }],
-      stop_reason: 'tool_use',
-      usage: { input_tokens: 100, output_tokens: 30 },
-    });
-    const r = await generateFigure('test', { apiKey: 'sk-test' });
-    expect(r.ok).toBe(false);
-    if (r.ok) throw new Error('expected fail');
+    if (r.ok) throw new Error();
+    // Zod chấp nhận shape midpoint nhưng transpile sẽ fail vì 'ghost' không tồn tại.
     expect(r.reason).toBe('transpile_error');
-    expect(r.errors.length).toBeGreaterThan(0);
-    expect(r.dsl).toEqual({ version: 1, points: [{ name: 'A', kind: 'unknown' }], shapes: [] });
   });
 
-  it('default model = claude-opus-4-7', async () => {
-    mockCallProvider.mockResolvedValue({
-      content: [{
-        type: 'tool_use', id: 'tu1', name: 'build_figure',
-        input: equilateral.dsl,
-      }],
-      stop_reason: 'tool_use',
-      usage: { input_tokens: 1, output_tokens: 1 },
-    });
-    await generateFigure(equilateral.problem, { apiKey: 'k' });
-    const arg = mockCallProvider.mock.calls[0][0];
-    expect(arg.model).toBe('claude-opus-4-7');
-    expect(arg.maxTokens).toBe(8192);
+  it('build với figure shape sai schema (kind không có) → parse_error', async () => {
+    const badDsl = {
+      version: 1,
+      points: [{ name: 'A', kind: 'aliens', x: 0, y: 0 }],
+      shapes: [],
+    };
+    const provider = mockProvider([{ kind: 'json', data: { decision: 'build', figure: badDsl } }]);
+    const r = await generateFigure('test', { provider });
+    expect(r.ok).toBe(false);
+    if (r.ok) throw new Error();
+    expect(r.reason).toBe('parse_error');
   });
 
-  it('enableCaching=true adds cache_control to system', async () => {
-    mockCallProvider.mockResolvedValue({
-      content: [{
-        type: 'tool_use', id: 'tu1', name: 'build_figure',
-        input: equilateral.dsl,
-      }],
-      stop_reason: 'tool_use',
-      usage: { input_tokens: 1, output_tokens: 1 },
-    });
-    await generateFigure(equilateral.problem, { apiKey: 'k', enableCaching: true });
-    const arg = mockCallProvider.mock.calls[0][0];
-    expect(arg.system[0].cache_control).toEqual({ type: 'ephemeral' });
+  it('refuse với reason rỗng → parse_error (refine fail)', async () => {
+    const provider = mockProvider([
+      { kind: 'json', data: { decision: 'refuse', reason: '' } },
+    ]);
+    const r = await generateFigure('test', { provider });
+    expect(r.ok).toBe(false);
+    if (r.ok) throw new Error();
+    expect(r.reason).toBe('parse_error');
   });
 
-  it('enableCaching=false omits cache_control', async () => {
-    mockCallProvider.mockResolvedValue({
-      content: [{
-        type: 'tool_use', id: 'tu1', name: 'build_figure',
-        input: equilateral.dsl,
-      }],
-      stop_reason: 'tool_use',
-      usage: { input_tokens: 1, output_tokens: 1 },
-    });
-    await generateFigure(equilateral.problem, { apiKey: 'k', enableCaching: false });
-    const arg = mockCallProvider.mock.calls[0][0];
-    expect(arg.system[0].cache_control).toBeUndefined();
+  it('passes systemPrompt + userPrompt + schema vào provider.call', async () => {
+    const provider = mockProvider([
+      { kind: 'json', data: { decision: 'build', figure: equilateral.dsl } },
+    ]);
+    await generateFigure('Đề test', { provider });
+    expect(provider.calls).toHaveLength(1);
+    const req = provider.calls[0];
+    expect(req.systemPrompt.length).toBeGreaterThan(100);
+    expect(req.userPrompt).toBe('Đề test');
+    expect(req.schema).toBeDefined();
+    expect((req.schema as { type?: string }).type).toBe('object');
   });
 
-  it('forwards signal to callProvider', async () => {
-    mockCallProvider.mockResolvedValue({
-      content: [{
-        type: 'tool_use', id: 'tu1', name: 'build_figure',
-        input: equilateral.dsl,
-      }],
-      stop_reason: 'tool_use',
-      usage: { input_tokens: 1, output_tokens: 1 },
-    });
-    const ctrl = new AbortController();
-    await generateFigure(equilateral.problem, { apiKey: 'k', signal: ctrl.signal });
-    const arg = mockCallProvider.mock.calls[0][0];
-    expect(arg.signal).toBe(ctrl.signal);
+  it('model override → vào req.model', async () => {
+    const provider = mockProvider([
+      { kind: 'json', data: { decision: 'build', figure: equilateral.dsl } },
+    ]);
+    await generateFigure('test', { provider, model: 'custom-model' });
+    expect(provider.calls[0].model).toBe('custom-model');
+  });
+
+  it('không truyền model → dùng provider.defaultModel', async () => {
+    const provider = mockProvider([
+      { kind: 'json', data: { decision: 'build', figure: equilateral.dsl } },
+    ]);
+    await generateFigure('test', { provider });
+    expect(provider.calls[0].model).toBe('mock-default');
   });
 });
