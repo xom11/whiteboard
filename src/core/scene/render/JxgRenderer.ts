@@ -83,9 +83,100 @@ export class JxgRenderer {
       const el = def.render(obj, this.ctx());
       this.elements.set(obj.id, el);
       this.attachFreePointDragSync(obj, el);
+      this.attachGliderDragSync(obj, el);
     } catch (err) {
       console.warn(`[scene/render/2d] không render được ${obj.kind} id="${obj.id}":`, err);
     }
+  }
+
+  /**
+   * Sync vị trí glider của 3 constraint mới (onPerpendicular / onPerpBisector /
+   * onCircleAroundPoint) — kéo → recompute t/theta dựa trên ref points + vị trí
+   * glider hiện tại → UPDATE_ATTRS. Không đụng onLine/onSegment/onCircle hiện
+   * tại (giữ behavior cũ).
+   */
+  private attachGliderDragSync(obj: SceneObject, el: unknown): void {
+    if (obj.kind !== 'point') return;
+    const c = (obj.attrs as { constraint?: { kind?: string } }).constraint as
+      | { kind: string; [k: string]: unknown }
+      | undefined;
+    if (!c) return;
+    if (
+      c.kind !== 'onPerpendicular' &&
+      c.kind !== 'onPerpBisector' &&
+      c.kind !== 'onCircleAroundPoint'
+    ) {
+      return;
+    }
+
+    const point = el as { on?: (ev: string, cb: () => void) => void; X?: () => number; Y?: () => number };
+    if (typeof point.on !== 'function') return;
+    const sceneId = obj.id;
+
+    point.on('up', () => {
+      if (this.disposed) return;
+      const cur = this.store.getState().objects[sceneId];
+      if (!cur) return;
+      const curC = (cur.attrs as { constraint?: { kind?: string; [k: string]: unknown } }).constraint as
+        | { kind: string; [k: string]: unknown }
+        | undefined;
+      if (!curC) return;
+      if (typeof point.X !== 'function' || typeof point.Y !== 'function') return;
+      const x = point.X();
+      const y = point.Y();
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+
+      if (curC.kind === 'onPerpendicular') {
+        const T = this.elements.get(curC.through as string) as { X: () => number; Y: () => number } | null;
+        const A = this.elements.get(curC.perpToA as string) as { X: () => number; Y: () => number } | null;
+        const B = this.elements.get(curC.perpToB as string) as { X: () => number; Y: () => number } | null;
+        if (!T || !A || !B) return;
+        const dx = B.X() - A.X();
+        const dy = B.Y() - A.Y();
+        const len = Math.hypot(dx, dy) || 1;
+        const ux = -dy / len;
+        const uy = dx / len;
+        const newT = (x - T.X()) * ux + (y - T.Y()) * uy;
+        if (Math.abs(newT - (curC.t as number)) < 1e-9) return;
+        this.store.dispatch({
+          type: 'UPDATE_ATTRS',
+          payload: { id: sceneId, patch: { constraint: { ...curC, t: newT } } },
+        });
+        return;
+      }
+
+      if (curC.kind === 'onPerpBisector') {
+        const A = this.elements.get(curC.p1 as string) as { X: () => number; Y: () => number } | null;
+        const B = this.elements.get(curC.p2 as string) as { X: () => number; Y: () => number } | null;
+        if (!A || !B) return;
+        const Mx = (A.X() + B.X()) / 2;
+        const My = (A.Y() + B.Y()) / 2;
+        const dx = B.X() - A.X();
+        const dy = B.Y() - A.Y();
+        const len = Math.hypot(dx, dy) || 1;
+        const ux = -dy / len;
+        const uy = dx / len;
+        const newT = (x - Mx) * ux + (y - My) * uy;
+        if (Math.abs(newT - (curC.t as number)) < 1e-9) return;
+        this.store.dispatch({
+          type: 'UPDATE_ATTRS',
+          payload: { id: sceneId, patch: { constraint: { ...curC, t: newT } } },
+        });
+        return;
+      }
+
+      if (curC.kind === 'onCircleAroundPoint') {
+        const C = this.elements.get(curC.center as string) as { X: () => number; Y: () => number } | null;
+        if (!C) return;
+        const newTheta = Math.atan2(y - C.Y(), x - C.X());
+        if (Math.abs(newTheta - (curC.theta as number)) < 1e-9) return;
+        this.store.dispatch({
+          type: 'UPDATE_ATTRS',
+          payload: { id: sceneId, patch: { constraint: { ...curC, theta: newTheta } } },
+        });
+        return;
+      }
+    });
   }
 
   /**
