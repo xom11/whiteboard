@@ -2,7 +2,7 @@
 // Mock AIProvider để tránh hit Anthropic/Ollama thật.
 
 import { handleGenerateFigure } from '../handleGenerateFigure';
-import type { AIProvider, ProviderOutput } from '../providers';
+import type { AIProvider, ProviderOutput, ProviderRequest } from '../providers';
 import { fixture as equilateral } from '../../dsl/fixtures/triangle-equilateral';
 
 function mockProvider(out: ProviderOutput): AIProvider {
@@ -14,6 +14,30 @@ function mockProvider(out: ProviderOutput): AIProvider {
     },
   };
 }
+
+/** Provider lặp queue output (mỗi call lấy 1 item, hết thì trả item cuối). */
+function sequenceProvider(outputs: ProviderOutput[]): AIProvider & { calls: ProviderRequest[] } {
+  const calls: ProviderRequest[] = [];
+  let i = 0;
+  return {
+    name: 'mock-seq',
+    defaultModel: 'mock-default',
+    async call(req) {
+      calls.push(req);
+      const out = outputs[i] ?? outputs[outputs.length - 1];
+      i++;
+      return out;
+    },
+    calls,
+  };
+}
+
+// DSL không hợp lệ → transpile_error. Tham chiếu tới point chưa định nghĩa.
+const INVALID_DSL = {
+  version: 1,
+  points: [{ name: 'A', kind: 'midpoint', p1: 'B', p2: 'C' }], // B,C không tồn tại
+  shapes: [],
+};
 
 describe('handleGenerateFigure — Façade', () => {
   it('ok=true: trả về { ok: true, state } (drop dsl/usage/provider)', async () => {
@@ -107,5 +131,97 @@ describe('handleGenerateFigure — Façade', () => {
     );
 
     expect(r.ok).toBe(true);
+  });
+
+  describe('auto-retry', () => {
+    it('transpile_error → retry → ok (attempt 2 success)', async () => {
+      const provider = sequenceProvider([
+        // Attempt 1: transpile_error
+        { kind: 'json', data: { decision: 'build', figure: INVALID_DSL }, usage: { inputTokens: 100, outputTokens: 20 } },
+        // Attempt 2: ok
+        { kind: 'json', data: { decision: 'build', figure: equilateral.dsl }, usage: { inputTokens: 100, outputTokens: 20 } },
+      ]);
+
+      const attempts: number[] = [];
+      const r = await handleGenerateFigure(
+        { problem: 'Tam giác đều' },
+        { provider, onResult: (_, attempt) => attempts.push(attempt) },
+      );
+
+      expect(provider.calls).toHaveLength(2);
+      expect(attempts).toEqual([1, 2]);
+      expect(r.ok).toBe(true);
+    });
+
+    it('transpile_error 2 lần liên tiếp → fail với message đã thử lại', async () => {
+      const provider = sequenceProvider([
+        { kind: 'json', data: { decision: 'build', figure: INVALID_DSL }, usage: { inputTokens: 100, outputTokens: 20 } },
+      ]);
+
+      const r = await handleGenerateFigure({ problem: 'test' }, { provider });
+
+      expect(provider.calls).toHaveLength(2); // default maxAttempts=2
+      expect(r.ok).toBe(false);
+      if (r.ok) throw new Error();
+      expect(r.message).toMatch(/đã thử lại/i);
+    });
+
+    it('refused KHÔNG retry (AI cố ý từ chối)', async () => {
+      const provider = sequenceProvider([
+        { kind: 'json', data: { decision: 'refuse', reason: 'Đề lớp 11' }, usage: { inputTokens: 50, outputTokens: 10 } },
+      ]);
+
+      await handleGenerateFigure({ problem: 'affine' }, { provider });
+
+      expect(provider.calls).toHaveLength(1); // không retry
+    });
+
+    it('parse_error KHÔNG retry (envelope sai schema → chắc chắn sai mọi lần)', async () => {
+      const provider = sequenceProvider([
+        { kind: 'json', data: { figure: equilateral.dsl }, usage: { inputTokens: 50, outputTokens: 10 } },
+      ]);
+
+      await handleGenerateFigure({ problem: 'test' }, { provider });
+
+      expect(provider.calls).toHaveLength(1);
+    });
+
+    it('api_error KHÔNG retry (network/config, không phải model)', async () => {
+      const provider = sequenceProvider([{ kind: 'error', message: 'connection refused' }]);
+
+      await handleGenerateFigure({ problem: 'test' }, { provider });
+
+      expect(provider.calls).toHaveLength(1);
+    });
+
+    it('maxAttempts=3 → thử tối đa 3 lần với transpile_error', async () => {
+      const provider = sequenceProvider([
+        { kind: 'json', data: { decision: 'build', figure: INVALID_DSL }, usage: { inputTokens: 50, outputTokens: 10 } },
+      ]);
+
+      await handleGenerateFigure({ problem: 'test' }, { provider, maxAttempts: 3 });
+
+      expect(provider.calls).toHaveLength(3);
+    });
+
+    it('maxAttempts=1 → không retry', async () => {
+      const provider = sequenceProvider([
+        { kind: 'json', data: { decision: 'build', figure: INVALID_DSL }, usage: { inputTokens: 50, outputTokens: 10 } },
+      ]);
+
+      await handleGenerateFigure({ problem: 'test' }, { provider, maxAttempts: 1 });
+
+      expect(provider.calls).toHaveLength(1);
+    });
+
+    it('maxAttempts ngoài range → clamp [1,5]', async () => {
+      const provider = sequenceProvider([
+        { kind: 'json', data: { decision: 'build', figure: INVALID_DSL }, usage: { inputTokens: 50, outputTokens: 10 } },
+      ]);
+
+      await handleGenerateFigure({ problem: 'test' }, { provider, maxAttempts: 99 });
+
+      expect(provider.calls).toHaveLength(5); // clamp tối đa 5
+    });
   });
 });

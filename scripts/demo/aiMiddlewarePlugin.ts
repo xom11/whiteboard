@@ -49,13 +49,13 @@ export function aiMiddlewarePlugin(options: AiMiddlewareOptions = {}): Plugin {
             { problem },
             {
               ...opts,
-              onResult: (raw) => {
-                // Tối thiểu: log provider + reason (hoặc 'ok') để dev quan sát.
+              onResult: (raw, attempt) => {
+                // Log mỗi attempt để dev quan sát retry behavior.
                 const tag = raw.ok ? 'ok' : raw.reason;
                 const provider = raw.ok ? raw.provider : raw.provider ?? '?';
                 // eslint-disable-next-line no-console
-                console.log(`[ai] ${provider} → ${tag}`);
-                opts.onResult?.(raw);
+                console.log(`[ai] attempt ${attempt} | ${provider} → ${tag}`);
+                opts.onResult?.(raw, attempt);
               },
             },
           );

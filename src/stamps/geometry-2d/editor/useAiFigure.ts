@@ -10,6 +10,8 @@ export interface UseAiFigureResult {
   isLoading: boolean;
   error: string | null;
   submit: () => Promise<State | null>;
+  /** Huỷ request đang chạy. No-op nếu không có request inflight. */
+  cancel: () => void;
 }
 
 export function useAiFigure(generator?: GenerateGeometryFigure): UseAiFigureResult {
@@ -65,5 +67,9 @@ export function useAiFigure(generator?: GenerateGeometryFigure): UseAiFigureResu
     }
   }, [generator, prompt]);
 
-  return { prompt, setPrompt, isLoading, error, submit };
+  const cancel = useCallback(() => {
+    abortRef.current?.abort();
+  }, []);
+
+  return { prompt, setPrompt, isLoading, error, submit, cancel };
 }

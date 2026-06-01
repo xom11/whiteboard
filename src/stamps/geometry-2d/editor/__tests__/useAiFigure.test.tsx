@@ -83,6 +83,46 @@ describe('useAiFigure', () => {
     expect(result.current.isLoading).toBe(false);
   });
 
+  it('cancel() aborts the inflight request', async () => {
+    const seenSignals: AbortSignal[] = [];
+    const generator: GenerateGeometryFigure = jest.fn(
+      (_problem, options) => {
+        seenSignals.push(options.signal);
+        return new Promise<{ ok: true; state: State }>((_resolve, reject) => {
+          options.signal.addEventListener(
+            'abort',
+            () => reject(new DOMException('aborted', 'AbortError')),
+            { once: true },
+          );
+        });
+      },
+    );
+    const { result } = renderHook(() => useAiFigure(generator));
+
+    act(() => result.current.setPrompt('long prompt'));
+    let pending: Promise<State | null>;
+    act(() => { pending = result.current.submit(); });
+    expect(result.current.isLoading).toBe(true);
+
+    act(() => result.current.cancel());
+
+    await act(async () => {
+      const state = await pending;
+      expect(state).toBeNull();
+    });
+
+    expect(seenSignals[0]?.aborted).toBe(true);
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it('cancel() is a no-op when no request is inflight', () => {
+    const generator: GenerateGeometryFigure = jest.fn();
+    const { result } = renderHook(() => useAiFigure(generator));
+
+    expect(() => result.current.cancel()).not.toThrow();
+    expect(generator).not.toHaveBeenCalled();
+  });
+
   it('aborts an older request when a new submission starts', async () => {
     const seenSignals: AbortSignal[] = [];
     const generator: GenerateGeometryFigure = jest.fn((problem, options) => {

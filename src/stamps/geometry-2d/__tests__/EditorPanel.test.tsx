@@ -223,7 +223,9 @@ describe('GeometryEditorPanel', () => {
       target: { value: 'Vẽ hình ngoài phạm vi' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Dựng bằng AI' }));
-    expect(screen.getByRole('button', { name: 'Đang dựng...' })).toBeDisabled();
+    // Loading state: button đổi sang cancel mode "Đang dựng... <giây> — Huỷ"
+    expect(screen.getByRole('button', { name: /Đang dựng/i })).toBeInTheDocument();
+    expect(screen.getByLabelText('Đề bài cho AI')).toBeDisabled();
 
     await act(async () => {
       resolve?.({ ok: false, message: 'Không dựng được hình này.' });
