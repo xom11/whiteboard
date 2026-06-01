@@ -197,21 +197,147 @@ export function extractRequirements(userPrompt: string): RequirementExtraction {
   }
 
   // H là chân đường cao kẻ từ A xuống BC  /  chân đường vuông góc từ A đến BC
+  // Full explicit pattern. Track tên để tránh duplicate ở named-cevian block.
+  const seenCevianFeet = new Set<string>(); // tên foot point đã extract
   const foot = userPrompt.match(
     /([A-Z])\s+(?:là\s+)?chân\s+(?:của\s+)?đường\s+(?:cao|vuông\s*góc)[^A-Za-z]*?(?:kẻ\s+)?(?:từ\s+)?([A-Z])[^A-Za-z]*?(?:xuống|đến|tới)\s+(?:cạnh\s+|đoạn\s+)?([A-Z])([A-Z])/i,
   );
   if (foot) {
+    const footName = up(foot[1]);
+    const vertexName = up(foot[2]);
     const lineId = up(foot[3]) + up(foot[4]);
     points.push({
-      name: up(foot[1]),
+      name: footName,
       kind: 'perpFoot',
-      fields: { from: up(foot[2]), onLine: lineId },
+      fields: { from: vertexName, onLine: lineId },
     });
     shapes.push({
       name: lineId,
       kind: 'segment',
       fields: { p1: up(foot[3]), p2: up(foot[4]) },
     });
+    // Segment AH (đường cao visible) — đoạn từ đỉnh đến chân. Đây là cái
+    // user thật sự muốn THẤY khi viết "đường cao".
+    shapes.push({
+      name: vertexName + footName,
+      kind: 'segment',
+      fields: { p1: vertexName, p2: footName },
+    });
+    seenCevianFeet.add(footName);
+  }
+
+  // -----------------------------------------------------------------------
+  // Named-cevian patterns (real-world phrasing).
+  //
+  // User thường viết tên cevian dạng VF (đỉnh + chân), vd "đường cao AH",
+  // "AM là trung tuyến", "vẽ phân giác AD". Patterns dưới cover các phrasing
+  // phổ biến. Cần triangle context để suy ra cạnh đối diện.
+  // -----------------------------------------------------------------------
+
+  if (triVertices && triVertices.length === 3) {
+    const cevianMatches: Array<{
+      vertex: string;
+      foot: string;
+      type: 'altitude' | 'median' | 'bisector';
+    }> = [];
+
+    const cevianTypes: Array<{
+      type: 'altitude' | 'median' | 'bisector';
+      patterns: readonly RegExp[];
+    }> = [
+      {
+        type: 'altitude',
+        patterns: [
+          /đường\s*cao\s+([A-Z])([A-Z])(?![A-Z])/i,
+          /\b([A-Z])([A-Z])\s+(?:là\s+|=\s+)?đường\s*cao/i,
+          /(?:kẻ|vẽ|hạ|dựng)\s+đường\s*cao\s+([A-Z])([A-Z])(?![A-Z])/i,
+        ],
+      },
+      {
+        type: 'median',
+        patterns: [
+          /trung\s*tuyến\s+([A-Z])([A-Z])(?![A-Z])/i,
+          /\b([A-Z])([A-Z])\s+(?:là\s+|=\s+)?trung\s*tuyến/i,
+          /(?:kẻ|vẽ|dựng)\s+trung\s*tuyến\s+([A-Z])([A-Z])(?![A-Z])/i,
+        ],
+      },
+      {
+        type: 'bisector',
+        patterns: [
+          /(?:đường\s*phân\s*giác|tia\s+phân\s*giác|phân\s*giác)\s+([A-Z])([A-Z])(?![A-Z])/i,
+          /\b([A-Z])([A-Z])\s+(?:là\s+|=\s+)?(?:đường\s*|tia\s+)?phân\s*giác/i,
+          /(?:kẻ|vẽ|dựng)\s+(?:đường\s*|tia\s+)?phân\s*giác\s+([A-Z])([A-Z])(?![A-Z])/i,
+        ],
+      },
+    ];
+
+    for (const cp of cevianTypes) {
+      for (const re of cp.patterns) {
+        const m = userPrompt.match(re);
+        if (!m) continue;
+        const vertex = up(m[1]);
+        const footName = up(m[2]);
+        // Vertex phải nằm trong triangle vertices (else có thể match nhầm
+        // pair khác như "BD" trong "BD cắt").
+        if (!triVertices.includes(vertex)) continue;
+        if (seenCevianFeet.has(footName)) continue;
+        cevianMatches.push({ vertex, foot: footName, type: cp.type });
+        seenCevianFeet.add(footName);
+        break;
+      }
+    }
+
+    for (const c of cevianMatches) {
+      const opp = triVertices.filter((v) => v !== c.vertex);
+      if (opp.length !== 2) continue;
+      const baseSegmentName = opp[0] + opp[1];
+      const cevianSegName = c.vertex + c.foot;
+
+      // Đảm bảo base segment có (mọi cevian đều cần để reference).
+      if (!shapes.some((s) => s.name === baseSegmentName)) {
+        shapes.push({
+          name: baseSegmentName,
+          kind: 'segment',
+          fields: { p1: opp[0], p2: opp[1] },
+        });
+      }
+
+      if (c.type === 'altitude') {
+        points.push({
+          name: c.foot,
+          kind: 'perpFoot',
+          fields: { from: c.vertex, onLine: baseSegmentName },
+        });
+      } else if (c.type === 'median') {
+        points.push({
+          name: c.foot,
+          kind: 'midpoint',
+          fields: { p1: opp[0], p2: opp[1] },
+        });
+      } else {
+        // bisector: foot là giao của đường phân giác với cạnh đối diện
+        const bisLineName = 'bis' + c.vertex;
+        if (!shapes.some((s) => s.name === bisLineName)) {
+          shapes.push({
+            name: bisLineName,
+            kind: 'angleBisector',
+            fields: { p1: opp[0], vertex: c.vertex, p2: opp[1] },
+          });
+        }
+        points.push({
+          name: c.foot,
+          kind: 'intersection',
+          fields: { ref1: bisLineName, ref2: baseSegmentName },
+        });
+      }
+
+      // Đoạn cevian visible (AH/AM/AD) — cái user muốn thấy.
+      shapes.push({
+        name: cevianSegName,
+        kind: 'segment',
+        fields: { p1: c.vertex, p2: c.foot },
+      });
+    }
   }
 
   if (triVertices) {

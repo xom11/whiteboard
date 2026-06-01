@@ -15,6 +15,12 @@ interface Problem {
   text: string;
   /** Primitive kind kỳ vọng AI dùng (heuristic accuracy check). */
   expectKinds?: string[];
+  /**
+   * Tên shape kỳ vọng có trong DSL output (vd "AH" cho đường cao). Verify
+   * đoạn cevian visible được dựng. User-facing concern: kind có nhưng segment
+   * thiếu = vẽ ra điểm lơ lửng, không thấy đường.
+   */
+  expectShapeNames?: string[];
   /** Đề ngoài phạm vi → kỳ vọng refuse. */
   expectRefuse?: boolean;
 }
@@ -29,6 +35,11 @@ const PROBLEMS: Problem[] = [
   { id: 'mid',       text: 'Tam giác ABC, M là trung điểm BC, vẽ đoạn AM.', expectKinds: ['midpoint'] },
   { id: 'altitude',  text: 'Tam giác ABC, H là chân đường cao kẻ từ A xuống BC.', expectKinds: ['perpFoot'] },
   { id: 'bisector',  text: 'Tam giác ABC, AD là phân giác góc A (D thuộc BC).', expectKinds: ['angleBisector'] },
+
+  // Real-world phrasing (user feedback: cần đoạn cevian visible)
+  { id: 'alt-named', text: 'Cho tam giác ABC, hạ đường cao AH.',  expectKinds: ['perpFoot'],      expectShapeNames: ['AH'] },
+  { id: 'med-named', text: 'Cho tam giác ABC, AM là trung tuyến.', expectKinds: ['midpoint'],     expectShapeNames: ['AM'] },
+  { id: 'bis-named', text: 'Cho tam giác ABC, vẽ phân giác AD.',   expectKinds: ['angleBisector'], expectShapeNames: ['AD'] },
 
   // Tâm tam giác (Tier E)
   { id: 'centroid',  text: 'Tam giác ABC, G là trọng tâm.', expectKinds: ['centroid'] },
@@ -80,10 +91,16 @@ async function run(model: string) {
         const expected = p.expectKinds ?? [];
         const allKinds = [...pk, ...sk];
         const missingExpected = expected.filter((k) => !allKinds.includes(k));
+        const shapeNames = new Set(r.dsl.shapes.map((s) => s.name));
+        const missingShapes = (p.expectShapeNames ?? []).filter(
+          (n) => !shapeNames.has(n),
+        );
         if (p.expectRefuse) {
           console.log(`✗ built (đáng lẽ refuse) ${ms}ms ${pk.length}P+${sk.length}S`);
         } else if (missingExpected.length > 0) {
           console.log(`△ ok ${ms}ms ${pk.length}P+${sk.length}S — thiếu kind: ${missingExpected.join(', ')}`);
+        } else if (missingShapes.length > 0) {
+          console.log(`△ ok ${ms}ms ${pk.length}P+${sk.length}S — thiếu shape name: ${missingShapes.join(', ')}`);
         } else {
           console.log(`✓ ${ms}ms ${pk.length}P+${sk.length}S`);
         }

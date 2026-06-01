@@ -535,3 +535,129 @@ describe('applyDeterministicCompletion — input không bị mutate', () => {
     expect(inputDsl.points.length).toBe(beforeLen);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Named-cevian patterns (real-world phrasing: "đường cao AH", "AM là trung
+// tuyến", "vẽ phân giác AD"). Đảm bảo segment vertex→foot (visible cevian)
+// được auto-add.
+// ---------------------------------------------------------------------------
+
+describe('extractRequirements — altitude named-pair patterns', () => {
+  it('"đường cao AH" → H perpFoot + segment AH + segment BC', () => {
+    const ex = extractRequirements('Cho tam giác ABC, vẽ đường cao AH');
+    expect(ex.points.find((p) => p.name === 'H')).toMatchObject({
+      kind: 'perpFoot',
+      fields: { from: 'A', onLine: 'BC' },
+    });
+    expect(ex.shapes.find((s) => s.name === 'AH')).toMatchObject({
+      kind: 'segment',
+      fields: { p1: 'A', p2: 'H' },
+    });
+    expect(ex.shapes.find((s) => s.name === 'BC')).toMatchObject({
+      kind: 'segment',
+    });
+  });
+
+  it('"hạ đường cao AH" — user case nhắc trực tiếp', () => {
+    const ex = extractRequirements('Cho tam giác ABC, hạ đường cao AH');
+    expect(ex.points.find((p) => p.kind === 'perpFoot')).toMatchObject({
+      name: 'H',
+    });
+    expect(ex.shapes.find((s) => s.name === 'AH')).toBeDefined();
+  });
+
+  it('"AH là đường cao của tam giác"', () => {
+    const ex = extractRequirements('Tam giác ABC, AH là đường cao');
+    expect(ex.points.find((p) => p.name === 'H')?.kind).toBe('perpFoot');
+    expect(ex.shapes.find((s) => s.name === 'AH')).toBeDefined();
+  });
+
+  it('"H là chân đường cao kẻ từ A xuống BC" cũng cần thêm segment AH', () => {
+    const ex = extractRequirements(
+      'Tam giác ABC, H là chân đường cao kẻ từ A xuống BC',
+    );
+    expect(ex.points.find((p) => p.name === 'H')?.kind).toBe('perpFoot');
+    expect(ex.shapes.find((s) => s.name === 'AH')).toMatchObject({
+      kind: 'segment',
+      fields: { p1: 'A', p2: 'H' },
+    });
+  });
+});
+
+describe('extractRequirements — median named-pair patterns', () => {
+  it('"AM là trung tuyến" → M midpoint + segment AM', () => {
+    const ex = extractRequirements('Tam giác ABC, AM là trung tuyến');
+    expect(ex.points.find((p) => p.name === 'M')).toMatchObject({
+      kind: 'midpoint',
+      fields: { p1: 'B', p2: 'C' },
+    });
+    expect(ex.shapes.find((s) => s.name === 'AM')).toMatchObject({
+      kind: 'segment',
+      fields: { p1: 'A', p2: 'M' },
+    });
+  });
+
+  it('"vẽ trung tuyến BM" (vertex B → opposite AC)', () => {
+    const ex = extractRequirements('Tam giác ABC, vẽ trung tuyến BM');
+    expect(ex.points.find((p) => p.name === 'M')).toMatchObject({
+      kind: 'midpoint',
+      fields: { p1: 'A', p2: 'C' },
+    });
+    expect(ex.shapes.find((s) => s.name === 'BM')).toBeDefined();
+  });
+});
+
+describe('extractRequirements — bisector named-pair patterns', () => {
+  it('"vẽ phân giác AD" → D intersection + segment AD + bisA line', () => {
+    const ex = extractRequirements('Tam giác ABC, vẽ phân giác AD');
+    expect(ex.points.find((p) => p.name === 'D')).toMatchObject({
+      kind: 'intersection',
+    });
+    expect(ex.shapes.find((s) => s.name === 'AD')).toMatchObject({
+      kind: 'segment',
+      fields: { p1: 'A', p2: 'D' },
+    });
+    expect(ex.shapes.find((s) => s.kind === 'angleBisector')).toBeDefined();
+    expect(ex.shapes.find((s) => s.name === 'BC')).toBeDefined();
+  });
+
+  it('"AD là phân giác góc A" (đã có ở eval cũ)', () => {
+    const ex = extractRequirements(
+      'Tam giác ABC, AD là phân giác góc A (D thuộc BC)',
+    );
+    expect(ex.points.find((p) => p.name === 'D')?.kind).toBe('intersection');
+    expect(ex.shapes.find((s) => s.name === 'AD')?.kind).toBe('segment');
+  });
+});
+
+describe('extractRequirements — no false positive', () => {
+  it('"hình bình hành ABCD" không bị match cevian (BD/AC là đường chéo)', () => {
+    // Triangle-vertices detection: "ABCD" — regex `tam\s*giác\s+ABC` không
+    // match vì đề không có "tam giác". Nhưng "hình bình hành ABCD" cũng
+    // KHÔNG có triangle context → cevian skip.
+    const ex = extractRequirements(
+      'Hình bình hành ABCD, hai đường chéo AC, BD cắt nhau tại O',
+    );
+    expect(ex.points.find((p) => p.kind === 'perpFoot')).toBeUndefined();
+    expect(ex.shapes.find((s) => s.kind === 'segment' && (s.name === 'AC' || s.name === 'BD'))).toBeUndefined();
+  });
+});
+
+describe('applyDeterministicCompletion + cevian (integration)', () => {
+  it('User case "hạ đường cao AH" → DSL có H + AH + BC ngay cả khi LLM chỉ emit polygon', () => {
+    const out = applyDeterministicCompletion(
+      'Cho tam giác ABC, hạ đường cao AH',
+      dsl(
+        [
+          { name: 'A', kind: 'free', x: 1, y: 3 },
+          { name: 'B', kind: 'free', x: -2, y: 0 },
+          { name: 'C', kind: 'free', x: 3, y: 0 },
+        ],
+        [{ name: 'ABC', kind: 'polygon', vertices: ['A', 'B', 'C'] }],
+      ),
+    );
+    expect(out.dsl.points.find((p) => p.name === 'H')?.kind).toBe('perpFoot');
+    expect(out.dsl.shapes.find((s) => s.name === 'AH')?.kind).toBe('segment');
+    expect(out.dsl.shapes.find((s) => s.name === 'BC')?.kind).toBe('segment');
+  });
+});
