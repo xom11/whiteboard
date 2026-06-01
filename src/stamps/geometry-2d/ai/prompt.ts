@@ -15,8 +15,9 @@ import { fixture as ic } from '../dsl/fixtures/triangle-incircle';
 import { fixture as par } from '../dsl/fixtures/parallelogram';
 import { fixture as two } from '../dsl/fixtures/two-circles-intersect';
 import { fixture as bis } from '../dsl/fixtures/triangle-angle-bisector';
+import { fixture as mdAlt } from '../dsl/fixtures/triangle-median-altitude';
 
-const FIXTURES = [eq, md, alt, ce, oc, cc, ic, bis, par, two];
+const FIXTURES = [eq, md, alt, ce, oc, cc, ic, bis, mdAlt, par, two];
 
 export function buildSystemPrompt(): string {
   const examples = FIXTURES.map((f, i) =>
@@ -49,6 +50,7 @@ hoặc
 6. **Đường tròn ngoại tiếp**: dùng \`circle3\` (3 điểm), không phải \`polygon\`.
 7. **Đường tròn nội tiếp / tiếp xúc**: tâm bằng \`incenter\`, điểm tiếp xúc bằng \`perpFoot\` từ tâm xuống cạnh tương ứng, rồi \`circleCP\`.
 8. **Đường tròn (O; R) bán kính số**: emit free helper trên đường tròn rồi dùng \`circleCP\` (DSL không hỗ trợ radius numeric trực tiếp).
+9. **Đề ghép nhiều yêu cầu** (vd "trung điểm M và đường cao AH"): mỗi yêu cầu là 1 derived point riêng với kind đúng. KHÔNG đặt chung 1 point thoả nhiều ràng buộc. Vẽ thêm segment cho từng yêu cầu (AM, AH, ...) khi đề mô tả "dựng" hoặc "vẽ".
 
 ## Anti-pattern (BẮT BUỘC tránh)
 - **Cycle / forward-ref**: KHÔNG được tham chiếu chéo. Nếu point D ∈ segment AD → cycle (AD cần D, D cần AD). Đúng pattern: D = intersection của line nào đó với BC, sau đó AD = segment(A, D).
