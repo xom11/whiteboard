@@ -6,10 +6,11 @@ import { buildSymbols } from './transpile/symbols';
 import { validateRefs } from './transpile/refs';
 import { detectCycles } from './transpile/cycles';
 import { assignIds } from './transpile/ids';
-import type { EntityKindHint } from './transpile/emitPoint';
 import { mkError, type TranspileError, type TranspileResult } from './transpile/errors';
 import { KIND_REGISTRY } from './registry';
 import type { EmitContext, EmittedEntity, KindRole } from './kinds/_types';
+
+type EntityKindHint = 'point' | 'line' | 'segment' | 'ray' | 'lineConstruction' | 'circle';
 
 function hintOf(entity: DslPointT | DslShapeT): EntityKindHint {
   // points (including intersection) are point-like at scene level.
