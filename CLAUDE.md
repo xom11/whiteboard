@@ -158,6 +158,15 @@ git push --follow-tags
 # npm install @xom11/whiteboard@^0.14
 ```
 
+## Gotchas (AI/DSL pipeline)
+
+- **LLM nhỏ (Gemma 4B) hay bịa DSL** dù prompt có MANDATORY rule + ví dụ. Pipeline đã có 3 lớp chống bias trong `src/stamps/geometry-2d/ai/`:
+  1. `prompt.ts` — section "BẮT BUỘC" + bảng từ khoá→kind + anti-pattern tam-giác-vuông-tại-gốc.
+  2. `validator.ts` `extractRequirements()` — regex Vietnamese keyword → JSON stub cho mid/perpFoot/centroid/ortho/circum/incenter/circle3.
+  3. `validator.ts` `applyDeterministicCompletion()` — inject/replace stub vào DSL **TRƯỚC** transpile (LLM-independent fallback).
+- Khi thêm primitive kind mới: cập nhật cả 3 nơi + thêm fixture vào `dsl/fixtures/` để embed vào system prompt.
+- Eval suite: `npx tsx scripts/eval-ollama.ts gemma3:4b` (cần Ollama local). Đạt 8/8 kind accuracy với commit `9e10a5e` (2026-06-01).
+
 ## Conventions
 
 ### Code
