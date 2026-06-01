@@ -456,33 +456,6 @@ exports[`BUILD_FIGURE_TOOL input_schema snapshot stable 1`] = `
             "additionalProperties": false,
             "properties": {
               "kind": {
-                "const": "polygon",
-                "type": "string",
-              },
-              "name": {
-                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
-                "type": "string",
-              },
-              "vertices": {
-                "items": {
-                  "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
-                  "type": "string",
-                },
-                "minItems": 3,
-                "type": "array",
-              },
-            },
-            "required": [
-              "name",
-              "kind",
-              "vertices",
-            ],
-            "type": "object",
-          },
-          {
-            "additionalProperties": false,
-            "properties": {
-              "kind": {
                 "const": "perpendicular",
                 "type": "string",
               },
@@ -632,6 +605,33 @@ exports[`BUILD_FIGURE_TOOL input_schema snapshot stable 1`] = `
               "kind",
               "throughPoint",
               "toCircle",
+            ],
+            "type": "object",
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "const": "polygon",
+                "type": "string",
+              },
+              "name": {
+                "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                "type": "string",
+              },
+              "vertices": {
+                "items": {
+                  "pattern": "^[A-Za-z][A-Za-z0-9_'₀-₉]{0,11}$",
+                  "type": "string",
+                },
+                "minItems": 3,
+                "type": "array",
+              },
+            },
+            "required": [
+              "name",
+              "kind",
+              "vertices",
             ],
             "type": "object",
           },

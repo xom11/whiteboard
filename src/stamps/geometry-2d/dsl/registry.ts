@@ -56,5 +56,8 @@ export const CIRCLE_KINDS: ReadonlySet<string> = new Set(
   ALL_MODULES.filter((m) => m.role === 'circle').map((m) => m.kind),
 );
 
-// Built in Phase 6 (Task 11). Until then `dsl/schema.ts` keeps its inline union.
-export const DslEntitySchema: z.ZodTypeAny = z.never();
+// Top-level entity discriminated union — used internally by schema.ts for building DslPoint/DslShape.
+export const DslEntitySchema = z.discriminatedUnion(
+  'kind',
+  ALL_MODULES.map((m) => m.schema) as unknown as [z.ZodObject<any>, z.ZodObject<any>, ...z.ZodObject<any>[]],
+);

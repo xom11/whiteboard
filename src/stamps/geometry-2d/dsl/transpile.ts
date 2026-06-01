@@ -1,7 +1,7 @@
 // src/stamps/geometry-2d/dsl/transpile.ts
 import type { SceneObject, State } from '../../../core/scene/types';
 import { createEmptyState } from '../../../core/scene/types';
-import { DslInput, type DslPointT, type DslShapeT } from './schema';
+import { DslInput, type DslInputT, type DslPointT, type DslShapeT } from './schema';
 import { buildSymbols } from './transpile/symbols';
 import { validateRefs } from './transpile/refs';
 import { detectCycles } from './transpile/cycles';
@@ -68,7 +68,10 @@ export function transpile(dslRaw: unknown): TranspileResult {
     );
     return { ok: false, errors };
   }
-  const dsl = parsed.data;
+  // Cast: parsed.data is statically `{[x: string]: any}[]` because the registry
+  // stores schemas as the erased `z.ZodObject<any>`. Runtime parse already
+  // validated the variant shape, so widening to DslInputT is safe.
+  const dsl = parsed.data as DslInputT;
 
   // Stage 2-4: collect errors
   const { symbols, errors: dupErrors } = buildSymbols(dsl);
