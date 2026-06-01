@@ -2,6 +2,8 @@ import { act, renderHook } from '@testing-library/react';
 import { createEmptyState, type State } from '../../../../core/scene';
 import type { GenerateGeometryFigure } from '../../../shared/types';
 import { useAiFigure } from '../useAiFigure';
+import { transpile } from '../../dsl';
+import type { DslInputT } from '../../dsl/schema';
 
 function generatedState(label = 'A'): State {
   const empty = createEmptyState('2d');
@@ -153,5 +155,84 @@ describe('useAiFigure', () => {
     expect(seenSignals[0]?.aborted).toBe(true);
     expect(second?.objects.p1?.label).toBe('B');
     expect(result.current.error).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Fixture states built from transpile (real State objects)
+// ---------------------------------------------------------------------------
+
+const triangleDsl: DslInputT = {
+  version: 1,
+  points: [
+    { name: 'A', kind: 'free', x: 0, y: 3 },
+    { name: 'B', kind: 'free', x: -2, y: 0 },
+    { name: 'C', kind: 'free', x: 3, y: 0 },
+  ],
+  shapes: [{ name: 'ABC', kind: 'polygon', vertices: ['A', 'B', 'C'] }],
+};
+
+const triangleState: State = (() => {
+  const r = transpile(triangleDsl);
+  if (!r.ok) throw new Error('Failed to build triangleState fixture');
+  return r.state;
+})();
+
+const emptyState: State = (() => {
+  const r = transpile({ version: 1, points: [], shapes: [] });
+  if (!r.ok) throw new Error('Failed to build emptyState fixture');
+  return r.state;
+})();
+
+describe('useAiFigure — mode auto-detect', () => {
+  it('empty state → mode=build', () => {
+    const { result } = renderHook(() => useAiFigure(undefined, { currentState: emptyState }));
+    expect(result.current.mode).toBe('build');
+    expect(result.current.entityCount).toEqual({ points: 0, shapes: 0 });
+  });
+
+  it('state with triangle → mode=refine + correct counts', () => {
+    const { result } = renderHook(() => useAiFigure(undefined, { currentState: triangleState }));
+    expect(result.current.mode).toBe('refine');
+    expect(result.current.entityCount.points).toBe(3);
+    expect(result.current.entityCount.shapes).toBe(1);
+    expect(result.current.hasUnsupported).toBe(false);
+  });
+
+  it('setMode toggles between build and refine', () => {
+    const { result } = renderHook(() => useAiFigure(undefined, { currentState: triangleState }));
+    act(() => result.current.setMode('build'));
+    expect(result.current.mode).toBe('build');
+    act(() => result.current.setMode('refine'));
+    expect(result.current.mode).toBe('refine');
+  });
+
+  it('submit in mode=refine passes currentDsl to generator', async () => {
+    const generator = jest.fn(async () => ({ ok: true as const, state: emptyState }));
+    const { result } = renderHook(() =>
+      useAiFigure(generator, { currentState: triangleState }),
+    );
+    act(() => result.current.setPrompt('thêm M là trung điểm BC'));
+    await act(async () => {
+      await result.current.submit();
+    });
+    expect(generator).toHaveBeenCalled();
+    const opts = generator.mock.calls[0][1];
+    expect(opts.currentDsl).toBeDefined();
+    expect(opts.currentDsl.points).toHaveLength(3);
+  });
+
+  it('submit in mode=build does NOT pass currentDsl', async () => {
+    const generator = jest.fn(async () => ({ ok: true as const, state: emptyState }));
+    const { result } = renderHook(() =>
+      useAiFigure(generator, { currentState: triangleState }),
+    );
+    act(() => result.current.setMode('build'));
+    act(() => result.current.setPrompt('vẽ tam giác đều'));
+    await act(async () => {
+      await result.current.submit();
+    });
+    const opts = generator.mock.calls[0][1];
+    expect(opts.currentDsl).toBeUndefined();
   });
 });
