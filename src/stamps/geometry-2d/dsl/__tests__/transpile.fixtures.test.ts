@@ -10,6 +10,7 @@ import { fixture as circumcircle } from '../fixtures/triangle-circumcircle';
 import { fixture as incircle } from '../fixtures/triangle-incircle';
 import { fixture as parallelogram } from '../fixtures/parallelogram';
 import { fixture as twoCirclesIntersect } from '../fixtures/two-circles-intersect';
+import { fixture as angleBisector } from '../fixtures/triangle-angle-bisector';
 
 const ALL = [
   ['triangle-equilateral', equilateral, 4],
@@ -19,6 +20,7 @@ const ALL = [
   ['triangle-orthocenter', orthocenter, 5],
   ['triangle-circumcircle', circumcircle, 6],
   ['triangle-incircle', incircle, 8],
+  ['triangle-angle-bisector', angleBisector, 8],
   ['parallelogram', parallelogram, 8],
   ['two-circles-intersect', twoCirclesIntersect, 8],
 ] as const;

@@ -21,6 +21,7 @@ import { fixture as circumcircle } from '../fixtures/triangle-circumcircle';
 import { fixture as incircle } from '../fixtures/triangle-incircle';
 import { fixture as parallelogram } from '../fixtures/parallelogram';
 import { fixture as twoCirclesIntersect } from '../fixtures/two-circles-intersect';
+import { fixture as angleBisector } from '../fixtures/triangle-angle-bisector';
 
 // ---------------------------------------------------------------------------
 // helpers
@@ -404,6 +405,7 @@ describe('roundtrip fixtures: transpile → serialize ≡ original', () => {
     ['triangle-orthocenter', orthocenter],
     ['triangle-circumcircle', circumcircle],
     ['triangle-incircle', incircle],
+    ['triangle-angle-bisector', angleBisector],
     ['parallelogram', parallelogram],
     ['two-circles-intersect', twoCirclesIntersect],
   ] as const;

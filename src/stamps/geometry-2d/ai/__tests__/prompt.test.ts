@@ -8,7 +8,7 @@ describe('buildSystemPrompt', () => {
     expect(p.length).toBeGreaterThan(1000);
   });
 
-  it('contains 9 fixture problem statements', () => {
+  it('contains all 10 fixture problem statements', () => {
     const p = buildSystemPrompt();
     const problems = [
       'Cho tam giác đều ABC cạnh 4',
@@ -18,6 +18,7 @@ describe('buildSystemPrompt', () => {
       'trực tâm',
       'nội tiếp đường tròn tâm O',
       'tâm nội tiếp',
+      'phân giác góc A',
       'Hình bình hành ABCD',
       'Hai đường tròn',
     ];

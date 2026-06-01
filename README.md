@@ -96,14 +96,27 @@ Setup máy chạy server:
 ```bash
 # macOS
 brew install ollama
-ollama serve                 # chạy nền cổng 11434
-ollama pull gemma3:4b        # ~3.3GB Q4, chạy tốt trên M4 16GB
+ollama serve                  # chạy nền cổng 11434
+
+# Chọn 1 trong 2 model:
+ollama pull gemma3:4b         # ~3.3GB Q4 — nhanh ~20s/đề, accuracy 75%
+ollama pull gemma3:12b        # ~8GB Q4  — chậm ~60s/đề, accuracy 92% (recommended cho production)
 
 # Linux
 curl -fsSL https://ollama.com/install.sh | sh
 ollama serve &
-ollama pull gemma3:4b
+ollama pull gemma3:12b
 ```
+
+**Eval 12 đề THCS/lớp 10** (transpile success rate + dùng đúng primitive):
+
+| Model     | Transpile OK | Kind đúng | Refuse đúng | Avg latency |
+|-----------|--------------|-----------|-------------|-------------|
+| gemma3:4b  | 75%         | 63%       | 0/1         | 20s         |
+| gemma3:12b | 92%         | 88%       | 1/1         | 62s         |
+| Claude Opus 4.7 | ~100%  | ~100%     | 1/1         | ~5s (cost ~$0.01/đề) |
+
+Đề nghị: 12b cho production, 4b cho prototype/máy yếu, Anthropic cho accuracy tuyệt đối.
 
 Server-side route Next.js:
 
@@ -125,7 +138,7 @@ Env override (optional):
 ```bash
 WHITEBOARD_AI_PROVIDER=ollama          # default
 OLLAMA_BASE_URL=http://localhost:11434 # default
-OLLAMA_DEFAULT_MODEL=gemma3:4b         # default; gemma3:1b nhẹ hơn nhưng kém chính xác
+OLLAMA_DEFAULT_MODEL=gemma3:12b        # default gemma3:4b; recommend gemma3:12b cho production
 ```
 
 **B. Anthropic Claude (chính xác cao, tốn API cost)**
