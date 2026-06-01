@@ -68,3 +68,31 @@ export {
   type CompletionAction,
   type CompletionResult,
 } from './validator';
+
+// Intent pipeline (4-stage: extract→translate→render→verify).
+export {
+  IntentZ,
+  IntentEnvelopeZ,
+  type IntentT,
+  type IntentEnvelopeT,
+  type DrawShapeIntentT,
+  type AddPointIntentT,
+  type ConnectIntentT,
+  type DrawCircleIntentT,
+} from './intent';
+export { intentEnvelopeJsonSchema, envelopeIntentList } from './intentEnvelope';
+export { intentsToDsl, IntentBuilderError } from './intentToDsl';
+export { buildIntentSystemPrompt } from './intentPrompt';
+export {
+  generateFigureIntent,
+  type GenerateIntentOptions,
+  type IntentGenerateResult,
+  type IntentSuccessResult,
+  type IntentFailureResult,
+} from './buildFigureIntent';
+export {
+  compareIntents,
+  verifyGeometry,
+  type VerifyIssue,
+  type VerifyReport,
+} from './verify';
