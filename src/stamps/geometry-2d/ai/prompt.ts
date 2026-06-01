@@ -16,8 +16,16 @@ import { fixture as par } from '../dsl/fixtures/parallelogram';
 import { fixture as two } from '../dsl/fixtures/two-circles-intersect';
 import { fixture as bis } from '../dsl/fixtures/triangle-angle-bisector';
 import { fixture as mdAlt } from '../dsl/fixtures/triangle-median-altitude';
+import { fixture as trap } from '../dsl/fixtures/trapezoid';
+import { fixture as rho } from '../dsl/fixtures/rhombus';
+import { fixture as rta } from '../dsl/fixtures/right-triangle-altitude';
+import { fixture as tan } from '../dsl/fixtures/tangent-from-point';
+import { fixture as ieBis } from '../dsl/fixtures/internal-external-bisector';
 
-const FIXTURES = [eq, md, alt, ce, oc, cc, ic, bis, mdAlt, par, two];
+const FIXTURES = [
+  eq, md, alt, ce, oc, cc, ic, bis, mdAlt,
+  rta, ieBis, tan, par, rho, trap, two,
+];
 
 export function buildSystemPrompt(): string {
   const examples = FIXTURES.map((f, i) =>
