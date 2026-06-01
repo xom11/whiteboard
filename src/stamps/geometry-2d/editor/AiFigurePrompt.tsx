@@ -8,17 +8,28 @@ import { useAiFigure } from './useAiFigure';
 interface Props {
   generator: GenerateGeometryFigure;
   onGenerated: (state: State) => void;
+  /**
+   * Current editor state. Khi non-empty + no unsupported entity → mode='refine'
+   * mặc định. User toggle "Dựng mới" sẽ confirm trước khi thay state.
+   */
+  currentState?: State | null;
 }
 
-/** Gợi ý prompt mẫu hiển thị khi textarea rỗng. Click → fill textarea. */
-const EXAMPLE_PROMPTS = [
+const BUILD_EXAMPLES = [
   'Tam giác ABC, dựng trung điểm M của BC',
   'Tam giác ABC vuông tại A, AH là đường cao xuống BC',
   'Hình thoi ABCD, hai đường chéo cắt nhau tại O',
   'Từ điểm M ngoài đường tròn (O), kẻ hai tiếp tuyến',
 ];
 
-export function AiFigurePrompt({ generator, onGenerated }: Props) {
+const REFINE_EXAMPLES = [
+  'Thêm trung điểm M của BC',
+  'Dựng đường cao AH xuống BC',
+  'Vẽ đường tròn ngoại tiếp',
+  'Thêm tiếp tuyến tại A',
+];
+
+export function AiFigurePrompt({ generator, onGenerated, currentState }: Props) {
   const {
     prompt,
     setPrompt,
@@ -27,9 +38,12 @@ export function AiFigurePrompt({ generator, onGenerated }: Props) {
     submit,
     cancel,
     tokens,
-  } = useAiFigure(generator);
+    mode,
+    setMode,
+    entityCount,
+    hasUnsupported,
+  } = useAiFigure(generator, { currentState });
 
-  // Đếm giây từ lúc bắt đầu, reset khi xong → UX tốt hơn vì AI chạy ~20s.
   const [elapsed, setElapsed] = useState(0);
   useEffect(() => {
     if (!isLoading) {
@@ -41,11 +55,24 @@ export function AiFigurePrompt({ generator, onGenerated }: Props) {
     return () => clearInterval(id);
   }, [isLoading]);
 
-  const handleSubmit = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const generated = await submit();
-    if (generated) onGenerated(generated);
-  }, [onGenerated, submit]);
+  const handleSubmit = useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const generated = await submit();
+      if (generated) onGenerated(generated);
+    },
+    [onGenerated, submit],
+  );
+
+  const handleSwitchToBuild = useCallback(() => {
+    if (currentState && currentState.order.length > 0) {
+      const ok = window.confirm(
+        'Dựng mới sẽ thay toàn bộ hình hiện tại bằng hình mới từ AI. Tiếp tục?',
+      );
+      if (!ok) return;
+    }
+    setMode('build');
+  }, [currentState, setMode]);
 
   const primaryLabel = isLoading
     ? tokens > 0
@@ -53,15 +80,72 @@ export function AiFigurePrompt({ generator, onGenerated }: Props) {
       : `Đang dựng... ${elapsed}s — Huỷ`
     : 'Dựng bằng AI';
 
+  const hasContent = currentState != null && currentState.order.length > 0;
+  const examples = mode === 'refine' ? REFINE_EXAMPLES : BUILD_EXAMPLES;
+  const refineChipLabel =
+    entityCount.points + entityCount.shapes > 0
+      ? `Thêm vào · ${entityCount.points}đ, ${entityCount.shapes}đoạn`
+      : 'Thêm vào';
+
   return (
     <form
       data-testid="geometry-ai-form"
-      onSubmit={(event) => { void handleSubmit(event); }}
+      onSubmit={(event) => {
+        void handleSubmit(event);
+      }}
       className="border-b border-slate-200 bg-slate-50 px-3 py-2"
     >
-      <label htmlFor="geometry-ai-prompt" className="mb-1 block text-xs font-medium text-slate-600">
+      <label
+        htmlFor="geometry-ai-prompt"
+        className="mb-1 block text-xs font-medium text-slate-600"
+      >
         Dựng hình bằng AI
       </label>
+
+      {hasContent && (
+        <div className="mb-2 flex items-center gap-2">
+          <button
+            type="button"
+            data-testid="geometry-ai-mode-refine"
+            onClick={() => setMode('refine')}
+            disabled={isLoading || hasUnsupported}
+            className={`rounded-full border px-2 py-0.5 text-[11px] transition ${
+              mode === 'refine'
+                ? 'border-emerald-600 bg-emerald-100 text-emerald-800'
+                : 'border-slate-300 bg-white text-slate-600 hover:border-emerald-400'
+            } ${hasUnsupported ? 'cursor-not-allowed opacity-50' : ''}`}
+            title={
+              hasUnsupported
+                ? 'Hình hiện tại có đối tượng ngoài DSL — chỉ dựng mới được'
+                : refineChipLabel
+            }
+          >
+            {refineChipLabel}
+          </button>
+          <button
+            type="button"
+            data-testid="geometry-ai-mode-build"
+            onClick={handleSwitchToBuild}
+            disabled={isLoading}
+            className={`rounded-full border px-2 py-0.5 text-[11px] transition ${
+              mode === 'build'
+                ? 'border-emerald-600 bg-emerald-100 text-emerald-800'
+                : 'border-slate-300 bg-white text-slate-600 hover:border-emerald-400'
+            }`}
+          >
+            Dựng mới
+          </button>
+          {hasUnsupported && (
+            <span
+              className="text-[10px] text-amber-700"
+              data-testid="geometry-ai-unsupported-warning"
+            >
+              Hình có đối tượng ngoài DSL
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="flex items-start gap-2">
         <textarea
           id="geometry-ai-prompt"
@@ -70,7 +154,11 @@ export function AiFigurePrompt({ generator, onGenerated }: Props) {
           onChange={(event) => setPrompt(event.target.value)}
           disabled={isLoading}
           rows={2}
-          placeholder="Ví dụ: Cho tam giác ABC, dựng đường cao AH."
+          placeholder={
+            mode === 'refine'
+              ? 'Ví dụ: thêm trung điểm M của BC'
+              : 'Ví dụ: Cho tam giác ABC, dựng đường cao AH.'
+          }
           className="min-h-12 flex-1 resize-none rounded border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-800 outline-none focus:border-emerald-500 disabled:opacity-60"
         />
         {isLoading ? (
@@ -91,13 +179,17 @@ export function AiFigurePrompt({ generator, onGenerated }: Props) {
           </button>
         )}
       </div>
+
       {error && (
-        <p role="alert" className="mt-1 text-xs text-red-600">{error}</p>
+        <p role="alert" className="mt-1 text-xs text-red-600">
+          {error}
+        </p>
       )}
+
       {!isLoading && !prompt.trim() && !error && (
         <div className="mt-1.5 flex flex-wrap items-center gap-1">
           <span className="text-[10px] text-slate-500">Gợi ý:</span>
-          {EXAMPLE_PROMPTS.map((ex) => (
+          {examples.map((ex) => (
             <button
               key={ex}
               type="button"
