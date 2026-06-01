@@ -15,6 +15,11 @@ export interface ObjectRowProps {
   onRename: (id: string) => void;
   onChangeColor: (id: string) => void;
   onDelete: (id: string) => void;
+  /**
+   * Override mô tả title của row. Mặc định dùng `getKind(obj.kind).describe()`.
+   * Stamp consumer (vd geometry-2d) có thể inject DSL-style description.
+   */
+  describe?: (obj: SceneObject, state: State) => string;
 }
 
 function formatMeasure(items: { label: string; value: number }[]): string {
@@ -22,13 +27,15 @@ function formatMeasure(items: { label: string; value: number }[]): string {
 }
 
 export function ObjectRow(props: ObjectRowProps): React.ReactElement {
-  const { obj, state, selected, onSelect, onToggleVisible, onToggleLocked, onRename, onChangeColor, onDelete } = props;
+  const { obj, state, selected, onSelect, onToggleVisible, onToggleLocked, onRename, onChangeColor, onDelete, describe } = props;
 
   const meta = getKindUiMeta(obj.kind);
 
   let title = '';
   try {
-    title = getKind(obj.kind).describe(obj, state);
+    title = describe
+      ? describe(obj, state)
+      : getKind(obj.kind).describe(obj, state);
   } catch {
     title = `${meta.displayName} ${obj.label}`;
   }

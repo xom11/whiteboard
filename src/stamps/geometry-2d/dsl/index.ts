@@ -19,3 +19,13 @@ export type {
 } from './transpile/errors';
 
 export { transpile } from './transpile';
+
+// Reverse path State → DSL (issue #41).
+export { serializeObject, serializeState } from './serialize';
+export type {
+  SerializeReason,
+  SerializedEntity,
+  SerializeStateResult,
+  UnsupportedEntry,
+} from './serialize';
+export { describeDsl } from './describeDsl';

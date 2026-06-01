@@ -1,0 +1,71 @@
+// src/stamps/geometry-2d/dsl/describeDsl.ts
+//
+// DSL-style description tiếng Việt cho tab Đối tượng (issue #41). Reuse
+// serializeObject để đảm bảo mô tả khớp với DSL hỗ trợ; out-of-DSL object
+// fallback về `kindDef.describe()` qua getKind, kèm suffix "(không hỗ trợ DSL)"
+// để rõ ràng cho user.
+
+import type { SceneObject, State } from '../../../core/scene/types';
+import { getKind } from '../../../core/scene/registry';
+import type { DslPointT, DslShapeT } from './schema';
+import { serializeObject } from './serialize';
+
+function describeEntity(e: DslPointT | DslShapeT): string {
+  switch (e.kind) {
+    case 'free':         return `${e.name} = (${e.x}, ${e.y})`;
+    case 'midpoint':     return `${e.name} = trung điểm ${e.p1}${e.p2}`;
+    case 'onSegment':    return `${e.name} ∈ đoạn ${e.segmentId} (t = ${e.t})`;
+    case 'onLine':       return `${e.name} ∈ đường ${e.lineId} (t = ${e.t})`;
+    case 'onCircle':     return `${e.name} ∈ đường tròn ${e.circleId} (θ = ${e.theta})`;
+    case 'perpFoot':     return `${e.name} = chân vuông góc từ ${e.from} xuống ${e.onLine}`;
+    case 'circumcenter': return `${e.name} = tâm ngoại tiếp ${e.vertices.join('')}`;
+    case 'incenter':     return `${e.name} = tâm nội tiếp ${e.vertices.join('')}`;
+    case 'centroid':     return `${e.name} = trọng tâm ${e.vertices.join('')}`;
+    case 'orthocenter':  return `${e.name} = trực tâm ${e.vertices.join('')}`;
+    case 'intersection': {
+      const branch = 'branch' in e && e.branch !== undefined ? ` (nhánh ${e.branch})` : '';
+      return `${e.name} = ${e.ref1} ∩ ${e.ref2}${branch}`;
+    }
+    case 'segment':       return `${e.name} = đoạn ${e.p1}${e.p2}`;
+    case 'line':          return `${e.name} = đường thẳng ${e.p1}${e.p2}`;
+    case 'ray':           return `${e.name} = tia ${e.origin}${e.through}`;
+    case 'polygon':       return `${e.name} = đa giác ${e.vertices.join('')}`;
+    case 'perpendicular': return `${e.name} ⟂ ${e.toLine} qua ${e.throughPoint}`;
+    case 'parallel':      return `${e.name} ∥ ${e.toLine} qua ${e.throughPoint}`;
+    case 'perpBisector':  return `${e.name} = trung trực ${e.p1}${e.p2}`;
+    case 'angleBisector': return `${e.name} = phân giác ∠${e.p1}${e.vertex}${e.p2}`;
+    case 'tangent': {
+      const branch = 'branch' in e && e.branch !== undefined ? ` (nhánh ${e.branch})` : '';
+      return `${e.name} = tiếp tuyến ${e.toCircle} qua ${e.throughPoint}${branch}`;
+    }
+    case 'circleCP':      return `${e.name} = (${e.center}; ${e.center}${e.surfacePoint})`;
+    case 'circle3':       return `${e.name} = đường tròn qua ${e.p1}${e.p2}${e.p3}`;
+    default: {
+      const _exhaust: never = e;
+      void _exhaust;
+      return '';
+    }
+  }
+}
+
+/**
+ * Mô tả DSL-style cho 1 SceneObject. Dùng cho `ObjectListPanel.renderRow`.
+ *
+ * - Object trong miền DSL → mô tả Việt ngắn gọn (vd "M = trung điểm BC").
+ * - Object ngoài miền DSL → fallback `kindDef.describe()` + suffix
+ *   "(không hỗ trợ DSL)" để user biết object này không export sang DSL được.
+ */
+export function describeDsl(obj: SceneObject, state: State): string {
+  const r = serializeObject(obj, state);
+  if (r.ok) return describeEntity(r.entity);
+
+  // Fallback — dùng describe từ scene kind registry. Mặc định "(không hỗ trợ DSL)"
+  // để user thấy rõ giới hạn.
+  let base: string;
+  try {
+    base = getKind(obj.kind).describe(obj, state);
+  } catch {
+    base = `${obj.kind} ${obj.label}`;
+  }
+  return `${base} (không hỗ trợ DSL)`;
+}

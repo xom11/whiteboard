@@ -4,6 +4,7 @@ import {
   forwardRef,
   useCallback,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -26,6 +27,7 @@ import type {
 } from '../shared/types';
 import { useIsMobile } from '../shared/useIsMobile';
 import { useStampStore } from '../shared/useStampStore';
+import { makeDslRenderRow } from './editor/dslRenderRow';
 
 function parseInitialState(data: unknown): State | null {
   if (!isGeometryCustomData(data)) return null;
@@ -63,6 +65,8 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
       onSelect: (key) => setSelectedTool(key as GeomTool),
       enabled: !isMobile,
     });
+
+    const renderRow = useMemo(() => makeDslRenderRow(sceneStore), [sceneStore]);
 
     const handleInsert = useCallback(
       async (jsonState: string, svgString: string) => {
@@ -127,6 +131,7 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
               setSelectedObjectId(id ?? undefined);
               panelRef.current?.selectObject(id);
             },
+            renderRow,
           }}
           isMobile={isMobile}
           drawerOpen={drawerOpen}
