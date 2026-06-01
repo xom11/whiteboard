@@ -162,25 +162,99 @@ const def: KindDef<PolygonAttrs> = {
     const board = ctx.jxg as any;
     const label = obj.label;
     const showValue = obj.attrs.showValue ?? false;
-    // Construction 'regular': dùng JSXGraph 'regularpolygon' với 2 đỉnh kề + n.
-    // showValue không support cho regular (JSXGraph 'regularpolygon' không expose
-    // Area() — nếu cần, user có thể đo qua tool 'area' riêng).
-    if (obj.attrs.construction?.kind === 'regular') {
-      const c = obj.attrs.construction;
-      const p1 = ctx.resolveRef(c.p1);
-      const p2 = ctx.resolveRef(c.p2);
-      return board.create('regularpolygon', [p1, p2, c.n], {
-        name: label,
-        withLabel: obj.attrs.showLabel ?? false,
-        borders: {
-          strokeColor: obj.attrs.color ?? '#0f172a',
-          strokeWidth: obj.attrs.width ?? 2,
-        },
-        fillColor: obj.attrs.color ?? '#60a5fa',
-        fillOpacity: obj.attrs.fillOpacity ?? 0.15,
-        visible: obj.visible,
-        fixed: obj.locked,
+    const cons = obj.attrs.construction;
+    const commonAttrs = {
+      name: label,
+      withLabel: obj.attrs.showLabel ?? false,
+      borders: {
+        strokeColor: obj.attrs.color ?? '#0f172a',
+        strokeWidth: obj.attrs.width ?? 2,
+      },
+      fillColor: obj.attrs.color ?? '#60a5fa',
+      fillOpacity: obj.attrs.fillOpacity ?? 0.15,
+      visible: obj.visible,
+      fixed: obj.locked,
+    };
+
+    // Construction 'regular' / 'square': dùng JSXGraph 'regularpolygon'.
+    if (cons?.kind === 'regular') {
+      const p1 = ctx.resolveRef(cons.p1);
+      const p2 = ctx.resolveRef(cons.p2);
+      return board.create('regularpolygon', [p1, p2, cons.n], commonAttrs);
+    }
+    if (cons?.kind === 'square') {
+      const p1 = ctx.resolveRef(cons.p1);
+      const p2 = ctx.resolveRef(cons.p2);
+      return board.create('regularpolygon', [p1, p2, 4], commonAttrs);
+    }
+
+    // rectangle / rhombus / parallelogram: D = A + (C − B) (derived in-render).
+    // - rectangle/parallelogram: same formula; rectangle's right-angle invariant
+    //   được đảm bảo bởi onPerpendicular constraint trên p3.
+    // - rhombus: cùng formula; |AB|=|BC| được đảm bảo bởi onCircleAroundPoint.
+    if (cons?.kind === 'rectangle' || cons?.kind === 'rhombus' || cons?.kind === 'parallelogram') {
+      const A: any = ctx.resolveRef(cons.p1);
+      const B: any = ctx.resolveRef(cons.p2);
+      const C: any = ctx.resolveRef(cons.p3);
+      const D = board.create(
+        'point',
+        [() => A.X() + C.X() - B.X(), () => A.Y() + C.Y() - B.Y()],
+        { visible: false, withLabel: false, fixed: true, name: '' },
+      );
+      const poly: any = board.create('polygon', [A, B, C, D], commonAttrs);
+      poly._helpers = [D];
+      return poly;
+    }
+
+    // isoTrapezoid: D = phản chiếu C qua trung trực AB.
+    // Công thức: D = C − 2 * proj(C-M, u_AB) * u_AB
+    if (cons?.kind === 'isoTrapezoid') {
+      const A: any = ctx.resolveRef(cons.p1);
+      const B: any = ctx.resolveRef(cons.p2);
+      const C: any = ctx.resolveRef(cons.p3);
+      const Dx = () => {
+        const Mx = (A.X() + B.X()) / 2;
+        const My = (A.Y() + B.Y()) / 2;
+        const ux = B.X() - A.X();
+        const uy = B.Y() - A.Y();
+        const len2 = ux * ux + uy * uy || 1;
+        const proj = ((C.X() - Mx) * ux + (C.Y() - My) * uy) / len2;
+        return C.X() - 2 * proj * ux;
+      };
+      const Dy = () => {
+        const Mx = (A.X() + B.X()) / 2;
+        const My = (A.Y() + B.Y()) / 2;
+        const ux = B.X() - A.X();
+        const uy = B.Y() - A.Y();
+        const len2 = ux * ux + uy * uy || 1;
+        const proj = ((C.X() - Mx) * ux + (C.Y() - My) * uy) / len2;
+        return C.Y() - 2 * proj * uy;
+      };
+      const D = board.create('point', [Dx, Dy], {
+        visible: false,
+        withLabel: false,
+        fixed: true,
+        name: '',
       });
+      const poly: any = board.create('polygon', [A, B, C, D], commonAttrs);
+      poly._helpers = [D];
+      return poly;
+    }
+
+    // isoTriangle: apex, base1, base2 (apex constrained onPerpBisector).
+    if (cons?.kind === 'isoTriangle') {
+      const Apex = ctx.resolveRef(cons.apex);
+      const B1 = ctx.resolveRef(cons.base1);
+      const B2 = ctx.resolveRef(cons.base2);
+      return board.create('polygon', [Apex, B1, B2], commonAttrs);
+    }
+
+    // rightTriangle: R, leg1End, leg2End (leg2End constrained onPerpendicular).
+    if (cons?.kind === 'rightTriangle') {
+      const R = ctx.resolveRef(cons.rightAngle);
+      const P = ctx.resolveRef(cons.leg1End);
+      const Q = ctx.resolveRef(cons.leg2End);
+      return board.create('polygon', [R, P, Q], commonAttrs);
     }
     const verts = (obj.attrs.vertices ?? []).map(id => ctx.resolveRef(id));
     // showValue=true: hiển thị label dạng "ABC: S = 8.50" với diện tích live.
