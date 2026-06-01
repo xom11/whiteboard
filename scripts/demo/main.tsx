@@ -1,23 +1,70 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Whiteboard, type AiFigureUiResult } from '@xom11/whiteboard';
+import {
+  Whiteboard,
+  type AiFigureUiResult,
+  type AiFigureProgress,
+} from '@xom11/whiteboard';
 import './tailwind.css';
 
+/**
+ * Streaming adapter: gọi SSE endpoint, parse `data:` events,
+ * forward `progress` events ra onProgress callback, return final result.
+ */
 async function generateGeometryFigure(
   problem: string,
-  { signal }: { signal: AbortSignal },
+  {
+    signal,
+    onProgress,
+  }: { signal: AbortSignal; onProgress?: (info: AiFigureProgress) => void },
 ): Promise<AiFigureUiResult> {
   try {
-    const res = await fetch('/api/generate-figure', {
+    const res = await fetch('/api/generate-figure/stream', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ problem }),
       signal,
     });
-    if (!res.ok) {
+    if (!res.ok || !res.body) {
       return { ok: false, message: `HTTP ${res.status} ${res.statusText}` };
     }
-    return (await res.json()) as AiFigureUiResult;
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let finalResult: AiFigureUiResult | null = null;
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      // SSE: events tách bằng "\n\n", mỗi event có "data: <json>" line
+      let evIdx;
+      while ((evIdx = buffer.indexOf('\n\n')) !== -1) {
+        const eventBlock = buffer.slice(0, evIdx).trim();
+        buffer = buffer.slice(evIdx + 2);
+        if (!eventBlock.startsWith('data:')) continue;
+        const payload = eventBlock.slice(5).trim();
+        try {
+          const data = JSON.parse(payload) as
+            | { type: 'progress'; tokens: number }
+            | { type: 'done'; result: AiFigureUiResult };
+          if (data.type === 'progress') {
+            onProgress?.({ tokens: data.tokens });
+          } else if (data.type === 'done') {
+            finalResult = data.result;
+          }
+        } catch {
+          // ignore malformed payload
+        }
+      }
+    }
+
+    if (!finalResult) {
+      return { ok: false, message: 'Stream kết thúc nhưng thiếu kết quả cuối' };
+    }
+    return finalResult;
   } catch (err) {
     if ((err as Error).name === 'AbortError') {
       return { ok: false, message: 'Đã huỷ' };

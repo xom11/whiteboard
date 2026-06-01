@@ -12,12 +12,18 @@ export interface UseAiFigureResult {
   submit: () => Promise<State | null>;
   /** Huỷ request đang chạy. No-op nếu không có request inflight. */
   cancel: () => void;
+  /**
+   * Token output đã sinh đến hiện tại (nếu generator hỗ trợ streaming).
+   * 0 khi không có streaming progress.
+   */
+  tokens: number;
 }
 
 export function useAiFigure(generator?: GenerateGeometryFigure): UseAiFigureResult {
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tokens, setTokens] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
   const requestIdRef = useRef(0);
 
@@ -40,9 +46,15 @@ export function useAiFigure(generator?: GenerateGeometryFigure): UseAiFigureResu
     abortRef.current = controller;
     setIsLoading(true);
     setError(null);
+    setTokens(0);
 
     try {
-      const generated = await generator(problem, { signal: controller.signal });
+      const generated = await generator(problem, {
+        signal: controller.signal,
+        onProgress: (info) => {
+          if (requestId === requestIdRef.current) setTokens(info.tokens);
+        },
+      });
       if (controller.signal.aborted || requestId !== requestIdRef.current) return null;
       if (!generated.ok) {
         setError(generated.message);
@@ -71,5 +83,5 @@ export function useAiFigure(generator?: GenerateGeometryFigure): UseAiFigureResu
     abortRef.current?.abort();
   }, []);
 
-  return { prompt, setPrompt, isLoading, error, submit, cancel };
+  return { prompt, setPrompt, isLoading, error, submit, cancel, tokens };
 }

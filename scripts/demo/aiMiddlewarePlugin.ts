@@ -1,7 +1,7 @@
-// Vite dev plugin: expose POST /api/generate-figure that proxies to the
-// whiteboard package's `handleGenerateFigure()` façade. Used by the demo
-// harness to wire teacher prompt → AI → geometry stamp end-to-end without a
-// real Next.js consumer.
+// Vite dev plugin: expose POST /api/generate-figure (JSON) +
+// /api/generate-figure/stream (SSE) that proxy to the whiteboard package's
+// `handleGenerateFigure()` façade. Used by the demo harness to wire teacher
+// prompt → AI → geometry stamp end-to-end without a real Next.js consumer.
 //
 // Design notes (re-usable for Next.js route / Cloudflare Worker / Bun):
 //   - Provider/model selection lives in `getOptions` callback (lazy) — caller
@@ -10,8 +10,11 @@
 //     (handleGenerateFigure). Transport layer stays I/O-only.
 //   - To swap to Anthropic Claude, OpenAI, Gemini, ...: pass an `AIProvider`
 //     instance through `getOptions().provider`. No middleware change needed.
+//   - Streaming endpoint chỉ pass-through token count cho Ollama (NDJSON →
+//     SSE). Final event là kết quả AiFigureUiResult đã transpile.
 
 import type { Plugin } from 'vite';
+import type { ServerResponse } from 'node:http';
 import type { HandleGenerateFigureOptions } from '../../src/stamps/geometry-2d/ai/handleGenerateFigure';
 
 export interface AiMiddlewareOptions {
@@ -24,19 +27,177 @@ export interface AiMiddlewareOptions {
    *   getOptions: () => ({ ollamaDefaultModel: 'gemma3:12b' })
    */
   getOptions?: () => HandleGenerateFigureOptions;
+  /** Endpoint Ollama (cho streaming). Default http://localhost:11434. */
+  ollamaBaseUrl?: string;
+  /** Default Ollama model cho streaming endpoint. Default gemma3:4b. */
+  ollamaDefaultModel?: string;
+}
+
+async function readJsonBody(req: import('node:http').IncomingMessage): Promise<unknown> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of req) chunks.push(chunk as Buffer);
+  return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+}
+
+function sse(res: ServerResponse, type: string, payload: unknown): void {
+  res.write(`data: ${JSON.stringify({ type, ...(payload as object) })}\n\n`);
 }
 
 export function aiMiddlewarePlugin(options: AiMiddlewareOptions = {}): Plugin {
   return {
     name: 'whiteboard-demo-ai-middleware',
     configureServer(server) {
+      // --- Non-streaming (JSON) endpoint --------------------------------
+      server.middlewares.use('/api/generate-figure/stream', async (req, res, next) => {
+        if (req.method !== 'POST') return next();
+
+        // SSE headers ASAP để client biết stream đã mở
+        res.statusCode = 200;
+        res.setHeader('content-type', 'text/event-stream');
+        res.setHeader('cache-control', 'no-cache');
+        res.setHeader('connection', 'keep-alive');
+
+        try {
+          const body = (await readJsonBody(req)) as { problem?: string };
+          const problem = String(body?.problem ?? '');
+
+          const ollamaBaseUrl = options.ollamaBaseUrl ?? 'http://localhost:11434';
+          const ollamaModel =
+            options.getOptions?.().ollamaDefaultModel ??
+            options.ollamaDefaultModel ??
+            'gemma3:4b';
+
+          // Build prompt + schema từ package (cùng module non-streaming dùng)
+          const { buildSystemPrompt } = await import(
+            '../../src/stamps/geometry-2d/ai/prompt'
+          );
+          const { envelopeJsonSchema, FigureEnvelopeZ, envelopeBuildDsl } = await import(
+            '../../src/stamps/geometry-2d/ai/envelope'
+          );
+          const { transpile } = await import('../../src/stamps/geometry-2d/dsl');
+
+          const systemPrompt = buildSystemPrompt();
+          const schema = envelopeJsonSchema();
+
+          const ollamaReq = await fetch(`${ollamaBaseUrl}/api/chat`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              model: ollamaModel,
+              messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: problem },
+              ],
+              format: schema,
+              stream: true,
+              options: { temperature: 0.2 },
+            }),
+            signal: AbortSignal.timeout(120_000),
+          });
+
+          if (!ollamaReq.ok || !ollamaReq.body) {
+            sse(res, 'done', { result: { ok: false, message: `Ollama HTTP ${ollamaReq.status}` } });
+            res.end();
+            return;
+          }
+
+          const reader = ollamaReq.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+          let content = '';
+          let tokens = 0;
+
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+
+            // NDJSON: parse từng line
+            let nl;
+            while ((nl = buffer.indexOf('\n')) !== -1) {
+              const line = buffer.slice(0, nl).trim();
+              buffer = buffer.slice(nl + 1);
+              if (!line) continue;
+              try {
+                const chunk = JSON.parse(line) as {
+                  message?: { content?: string };
+                  done?: boolean;
+                  eval_count?: number;
+                };
+                if (chunk.message?.content) {
+                  content += chunk.message.content;
+                  // Estimate token count by content length / 4 (rough), or use eval_count
+                  tokens = chunk.eval_count ?? Math.floor(content.length / 4);
+                  sse(res, 'progress', { tokens });
+                }
+                if (chunk.done) {
+                  tokens = chunk.eval_count ?? tokens;
+                  sse(res, 'progress', { tokens });
+                }
+              } catch {
+                // chunk JSON malformed → skip
+              }
+            }
+          }
+
+          // Parse final content
+          let envelope: unknown;
+          try {
+            envelope = JSON.parse(content);
+          } catch (e) {
+            sse(res, 'done', {
+              result: { ok: false, message: 'AI trả về JSON không hợp lệ' },
+            });
+            res.end();
+            return;
+          }
+
+          const parsed = FigureEnvelopeZ.safeParse(envelope);
+          if (!parsed.success) {
+            sse(res, 'done', {
+              result: { ok: false, message: 'AI trả về dữ liệu không hợp lệ.' },
+            });
+            res.end();
+            return;
+          }
+
+          if (parsed.data.decision === 'refuse') {
+            sse(res, 'done', { result: { ok: false, message: parsed.data.reason ?? 'AI từ chối' } });
+            res.end();
+            return;
+          }
+
+          const dsl = envelopeBuildDsl(parsed.data);
+          const trans = transpile(dsl);
+          if (!trans.ok) {
+            sse(res, 'done', {
+              result: {
+                ok: false,
+                message: 'AI tạo hình không hợp lệ. Vui lòng diễn đạt khác.',
+              },
+            });
+            res.end();
+            return;
+          }
+          sse(res, 'done', { result: { ok: true, state: trans.state } });
+          res.end();
+          // eslint-disable-next-line no-console
+          console.log(`[ai-stream] ollama ${ollamaModel} → ok (${tokens} tok)`);
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          // eslint-disable-next-line no-console
+          console.error('[ai-stream]', err);
+          sse(res, 'done', { result: { ok: false, message } });
+          res.end();
+        }
+      });
+
+      // --- Non-streaming endpoint (existing) ---------------------------
       server.middlewares.use('/api/generate-figure', async (req, res, next) => {
         if (req.method !== 'POST') return next();
 
         try {
-          const chunks: Buffer[] = [];
-          for await (const chunk of req) chunks.push(chunk as Buffer);
-          const body = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+          const body = (await readJsonBody(req)) as { problem?: string };
           const problem = String(body?.problem ?? '');
 
           const { handleGenerateFigure } = await import(
@@ -50,7 +211,6 @@ export function aiMiddlewarePlugin(options: AiMiddlewareOptions = {}): Plugin {
             {
               ...opts,
               onResult: (raw, attempt) => {
-                // Log mỗi attempt để dev quan sát retry behavior.
                 const tag = raw.ok ? 'ok' : raw.reason;
                 const provider = raw.ok ? raw.provider : raw.provider ?? '?';
                 // eslint-disable-next-line no-console

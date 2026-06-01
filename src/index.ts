@@ -59,5 +59,6 @@ export { parsePageRange } from './pdf/parseRange';
 // AI types (safe for browser)
 export type {
   AiFigureUiResult,
+  AiFigureProgress,
   GenerateGeometryFigure,
 } from './stamps/shared/types';

@@ -26,6 +26,7 @@ export function AiFigurePrompt({ generator, onGenerated }: Props) {
     error,
     submit,
     cancel,
+    tokens,
   } = useAiFigure(generator);
 
   // Đếm giây từ lúc bắt đầu, reset khi xong → UX tốt hơn vì AI chạy ~20s.
@@ -46,7 +47,11 @@ export function AiFigurePrompt({ generator, onGenerated }: Props) {
     if (generated) onGenerated(generated);
   }, [onGenerated, submit]);
 
-  const primaryLabel = isLoading ? `Đang dựng... ${elapsed}s — Huỷ` : 'Dựng bằng AI';
+  const primaryLabel = isLoading
+    ? tokens > 0
+      ? `Đang dựng ${tokens}tok / ${elapsed}s — Huỷ`
+      : `Đang dựng... ${elapsed}s — Huỷ`
+    : 'Dựng bằng AI';
 
   return (
     <form

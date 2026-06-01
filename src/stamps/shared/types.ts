@@ -8,12 +8,27 @@ export type AiFigureUiResult =
   | { ok: false; message: string };
 
 /**
+ * Progress event emitted bởi streaming generator. Số token output đã sinh.
+ * Editor dùng để hiển thị "Đang nhận N token..." realtime.
+ */
+export interface AiFigureProgress {
+  /** Số token output đã sinh tính đến lúc emit. */
+  tokens: number;
+}
+
+/**
  * Consumer-provided bridge to a server-side `generateFigure()` call.
  * Implementations must keep API credentials outside the browser bundle.
+ *
+ * `onProgress` là optional: nếu consumer dùng streaming endpoint (SSE),
+ * forward chunk events vào đây. Non-streaming impl bỏ qua.
  */
 export type GenerateGeometryFigure = (
   problem: string,
-  options: { signal: AbortSignal },
+  options: {
+    signal: AbortSignal;
+    onProgress?: (info: AiFigureProgress) => void;
+  },
 ) => Promise<AiFigureUiResult>;
 
 /**
