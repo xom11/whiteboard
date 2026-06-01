@@ -6,6 +6,14 @@ export type {
   TokenUsage,
 } from './buildFigure';
 
+// Façade cho HTTP transport (Vite middleware, Next.js route, ...): gọi
+// generateFigure() + map sang AiFigureUiResult sẵn sàng đẩy về client.
+export { handleGenerateFigure } from './handleGenerateFigure';
+export type {
+  HandleGenerateFigureInput,
+  HandleGenerateFigureOptions,
+} from './handleGenerateFigure';
+
 // Provider abstraction.
 export {
   AnthropicProvider,
