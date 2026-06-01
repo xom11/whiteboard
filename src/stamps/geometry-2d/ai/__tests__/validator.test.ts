@@ -245,3 +245,154 @@ describe('buildRetryHint', () => {
     expect(txt).toContain('2. Dùng centroid kind');
   });
 });
+
+// ---------------------------------------------------------------------------
+// extractRequirements + stub hint (Hướng A)
+// ---------------------------------------------------------------------------
+
+import { extractRequirements } from '../validator';
+
+describe('extractRequirements — midpoint', () => {
+  it('extracts midpoint stub for "M là trung điểm BC"', () => {
+    const ex = extractRequirements('Tam giác ABC, M là trung điểm BC, vẽ AM');
+    const m = ex.points.find((p) => p.kind === 'midpoint');
+    expect(m).toBeDefined();
+    expect(m).toMatchObject({
+      name: 'M',
+      kind: 'midpoint',
+      fields: { p1: 'B', p2: 'C' },
+    });
+  });
+
+  it('extracts midpoint with "trung điểm của BC"', () => {
+    const ex = extractRequirements('Tam giác ABC, N là trung điểm của AC');
+    const m = ex.points.find((p) => p.kind === 'midpoint');
+    expect(m).toMatchObject({ name: 'N', fields: { p1: 'A', p2: 'C' } });
+  });
+});
+
+describe('extractRequirements — perpFoot', () => {
+  it('extracts perpFoot + segment BC stub for "H là chân đường cao kẻ từ A xuống BC"', () => {
+    const ex = extractRequirements(
+      'Tam giác ABC, H là chân đường cao kẻ từ A xuống BC',
+    );
+    const h = ex.points.find((p) => p.kind === 'perpFoot');
+    expect(h).toMatchObject({
+      name: 'H',
+      kind: 'perpFoot',
+      fields: { from: 'A', onLine: 'BC' },
+    });
+    const bc = ex.shapes.find((s) => s.name === 'BC');
+    expect(bc).toMatchObject({
+      kind: 'segment',
+      fields: { p1: 'B', p2: 'C' },
+    });
+  });
+
+  it('also matches "hình chiếu vuông góc từ A đến BC" — wait, current regex requires "chân đường"', () => {
+    // Sanity: regex hiện chỉ match "chân đường cao/vuông góc". Đề "hình
+    // chiếu vuông góc" sẽ không match — đây là TODO future-iter.
+    const ex = extractRequirements('Tam giác ABC, H là hình chiếu vuông góc từ A đến BC');
+    expect(ex.points.find((p) => p.kind === 'perpFoot')).toBeUndefined();
+  });
+});
+
+describe('extractRequirements — centroid / orthocenter', () => {
+  it('extracts centroid stub for "G là trọng tâm"', () => {
+    const ex = extractRequirements('Tam giác ABC, G là trọng tâm');
+    const g = ex.points.find((p) => p.kind === 'centroid');
+    expect(g).toMatchObject({
+      name: 'G',
+      kind: 'centroid',
+      fields: { vertices: ['A', 'B', 'C'] },
+    });
+  });
+
+  it('defaults name to G if "dựng trọng tâm" without name', () => {
+    const ex = extractRequirements('Cho tam giác ABC. Dựng trọng tâm.');
+    expect(ex.points.find((p) => p.kind === 'centroid')?.name).toBe('G');
+  });
+
+  it('extracts orthocenter for "trực tâm"', () => {
+    const ex = extractRequirements('Tam giác XYZ, H là trực tâm');
+    const h = ex.points.find((p) => p.kind === 'orthocenter');
+    expect(h).toMatchObject({
+      name: 'H',
+      fields: { vertices: ['X', 'Y', 'Z'] },
+    });
+  });
+});
+
+describe('extractRequirements — circumcenter / incenter (disambiguation)', () => {
+  it('extracts circumcenter + circle3 stub for "tam giác ABC nội tiếp đường tròn tâm O"', () => {
+    const ex = extractRequirements('Tam giác ABC nội tiếp đường tròn tâm O');
+    const o = ex.points.find((p) => p.kind === 'circumcenter');
+    expect(o).toMatchObject({ name: 'O', fields: { vertices: ['A', 'B', 'C'] } });
+    const k = ex.shapes.find((s) => s.kind === 'circle3');
+    expect(k).toMatchObject({ fields: { p1: 'A', p2: 'B', p3: 'C' } });
+    // Quan trọng: KHÔNG được lẫn sang incenter dù có chữ "nội tiếp".
+    expect(ex.points.find((p) => p.kind === 'incenter')).toBeUndefined();
+  });
+
+  it('extracts incenter for "đường tròn nội tiếp tam giác ABC tâm I" (incircle)', () => {
+    const ex = extractRequirements('Đường tròn nội tiếp tam giác ABC tâm I');
+    const i = ex.points.find((p) => p.kind === 'incenter');
+    expect(i).toMatchObject({ name: 'I', fields: { vertices: ['A', 'B', 'C'] } });
+    expect(ex.points.find((p) => p.kind === 'circumcenter')).toBeUndefined();
+  });
+
+  it('extracts circumcenter for "đường tròn ngoại tiếp tam giác ABC tâm O"', () => {
+    const ex = extractRequirements('Đường tròn ngoại tiếp tam giác ABC tâm O');
+    expect(ex.points.find((p) => p.kind === 'circumcenter')).toMatchObject({
+      name: 'O',
+    });
+    expect(ex.points.find((p) => p.kind === 'incenter')).toBeUndefined();
+  });
+});
+
+describe('extractRequirements — circle3 standalone', () => {
+  it('extracts circle3 for "đường tròn qua 3 điểm A, B, C"', () => {
+    const ex = extractRequirements('Vẽ đường tròn đi qua 3 điểm A, B, C');
+    const k = ex.shapes.find((s) => s.kind === 'circle3');
+    expect(k).toMatchObject({ fields: { p1: 'A', p2: 'B', p3: 'C' } });
+  });
+});
+
+describe('buildRetryHint with extraction (DSL stub)', () => {
+  it('embeds JSON stub for missing midpoint', () => {
+    const ex = extractRequirements('Tam giác ABC, M là trung điểm BC');
+    const txt = buildRetryHint(
+      [{ ruleId: 'midpoint', expectedKind: 'midpoint', hint: 'fallback' }],
+      ex,
+    );
+    expect(txt).toContain('CÁC ELEMENT BẮT BUỘC');
+    expect(txt).toContain('"name":"M"');
+    expect(txt).toContain('"kind":"midpoint"');
+    expect(txt).toContain('"p1":"B"');
+    expect(txt).toContain('"p2":"C"');
+  });
+
+  it('embeds perpFoot point + BC segment as 2 stubs', () => {
+    const ex = extractRequirements(
+      'Tam giác ABC, H là chân đường cao kẻ từ A xuống BC',
+    );
+    const txt = buildRetryHint(
+      [{ ruleId: 'perp-foot', expectedKind: 'perpFoot', hint: 'fallback' }],
+      ex,
+    );
+    expect(txt).toContain('"name":"H"');
+    expect(txt).toContain('"kind":"perpFoot"');
+    expect(txt).toContain('"onLine":"BC"');
+    expect(txt).toContain('"name":"BC"');
+    expect(txt).toContain('"kind":"segment"');
+  });
+
+  it('falls back to generic hint when extraction has no stub for missing kind', () => {
+    const txt = buildRetryHint(
+      [{ ruleId: 'tangent', expectedKind: 'tangent', hint: 'Dùng tangent kind' }],
+      { points: [], shapes: [] },
+    );
+    expect(txt).toContain('Ngoài ra');
+    expect(txt).toContain('Dùng tangent kind');
+  });
+});

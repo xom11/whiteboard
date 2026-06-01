@@ -143,6 +143,184 @@ export interface ValidatorResult {
   readonly satisfied: readonly string[];
 }
 
+// -----------------------------------------------------------------------------
+// Concrete DSL stub extraction (Hướng A).
+//
+// Detect pattern "X là <keyword>" trong đề bài → trả về JSON stub (point +
+// dependency shapes) để inject vào retry hint. 4B chỉ cần copy stub thay vì
+// tự suy ra format. Cùng infrastructure dùng cho deterministic completion
+// (Hướng B) sau này.
+// -----------------------------------------------------------------------------
+
+export interface PointStub {
+  readonly name: string;
+  readonly kind: string;
+  /** Fields ngoài name, kind (vd p1, p2, vertices, from, onLine, …). */
+  readonly fields: Readonly<Record<string, unknown>>;
+}
+
+export interface ShapeStub {
+  readonly name: string;
+  readonly kind: string;
+  readonly fields: Readonly<Record<string, unknown>>;
+}
+
+export interface RequirementExtraction {
+  /** Points BẮT BUỘC suy ra từ đề bài. */
+  readonly points: readonly PointStub[];
+  /** Shapes BẮT BUỘC (vd segment BC cho perpFoot onLine='BC'). */
+  readonly shapes: readonly ShapeStub[];
+}
+
+/**
+ * Quét đề bài tiếng Việt → trả về stub point/shape cụ thể.
+ *
+ * Best-effort regex extraction. Không match được → returns empty arrays
+ * (caller fallback về hint generic).
+ */
+export function extractRequirements(userPrompt: string): RequirementExtraction {
+  const points: PointStub[] = [];
+  const shapes: ShapeStub[] = [];
+
+  const triVertices = detectTriangleVertices(userPrompt);
+
+  // M là trung điểm BC  /  trung điểm M của BC  /  M trung điểm cạnh BC
+  const mid = userPrompt.match(
+    /([A-Z])\s+(?:là\s+|=\s+|,\s+)?trung\s*điểm\s+(?:của\s+(?:cạnh\s+|đoạn\s+)?)?(?:cạnh\s+|đoạn\s+)?([A-Z])([A-Z])/i,
+  );
+  if (mid) {
+    points.push({
+      name: up(mid[1]),
+      kind: 'midpoint',
+      fields: { p1: up(mid[2]), p2: up(mid[3]) },
+    });
+  }
+
+  // H là chân đường cao kẻ từ A xuống BC  /  chân đường vuông góc từ A đến BC
+  const foot = userPrompt.match(
+    /([A-Z])\s+(?:là\s+)?chân\s+(?:của\s+)?đường\s+(?:cao|vuông\s*góc)[^A-Za-z]*?(?:kẻ\s+)?(?:từ\s+)?([A-Z])[^A-Za-z]*?(?:xuống|đến|tới)\s+(?:cạnh\s+|đoạn\s+)?([A-Z])([A-Z])/i,
+  );
+  if (foot) {
+    const lineId = up(foot[3]) + up(foot[4]);
+    points.push({
+      name: up(foot[1]),
+      kind: 'perpFoot',
+      fields: { from: up(foot[2]), onLine: lineId },
+    });
+    shapes.push({
+      name: lineId,
+      kind: 'segment',
+      fields: { p1: up(foot[3]), p2: up(foot[4]) },
+    });
+  }
+
+  if (triVertices) {
+    // G là trọng tâm  /  trọng tâm G của tam giác
+    const centroid = userPrompt.match(/([A-Z])\s+(?:là\s+)?trọng\s*tâm/i);
+    if (centroid) {
+      points.push({
+        name: up(centroid[1]),
+        kind: 'centroid',
+        fields: { vertices: triVertices },
+      });
+    } else if (/trọng\s*tâm/i.test(userPrompt)) {
+      // Đề chỉ nói "dựng trọng tâm" không gán tên → default G.
+      points.push({
+        name: 'G',
+        kind: 'centroid',
+        fields: { vertices: triVertices },
+      });
+    }
+
+    // H là trực tâm — KHÔNG match nếu đề có "trung trực" (đã đặt rule mid trước).
+    const ortho = userPrompt.match(/([A-Z])\s+(?:là\s+)?trực\s*tâm/i);
+    if (ortho) {
+      points.push({
+        name: up(ortho[1]),
+        kind: 'orthocenter',
+        fields: { vertices: triVertices },
+      });
+    } else if (/trực\s*tâm/i.test(userPrompt)) {
+      points.push({
+        name: 'H',
+        kind: 'orthocenter',
+        fields: { vertices: triVertices },
+      });
+    }
+
+    // Disambiguate circumcircle vs incircle ("nội tiếp" có 2 nghĩa ngược nhau
+    // tuỳ ngữ cảnh):
+    //   - "tam giác X nội tiếp đường tròn" / "đường tròn ngoại tiếp tam giác"
+    //     → circumcircle, O = circumcenter
+    //   - "đường tròn nội tiếp tam giác" / "tâm nội tiếp"
+    //     → incircle, I = incenter
+
+    const circumPattern =
+      /tam\s*giác\s+[A-Z]+\s+nội\s*tiếp\s+đường\s*tròn/i.test(userPrompt) ||
+      /đường\s*tròn\s+ngoại\s*tiếp\s+tam\s*giác/i.test(userPrompt) ||
+      /ngoại\s*tiếp/i.test(userPrompt);
+
+    const incirclePattern =
+      /đường\s*tròn\s+nội\s*tiếp\s+tam\s*giác/i.test(userPrompt) ||
+      /tâm\s+nội\s*tiếp/i.test(userPrompt);
+
+    if (circumPattern) {
+      // "tâm O" sau "đường tròn" → tên tâm; default O.
+      const oMatch =
+        userPrompt.match(/đường\s*tròn[^A-Z]*?tâm\s+([A-Z])/i) ||
+        userPrompt.match(/tâm\s+([A-Z])/);
+      const oName = oMatch ? up(oMatch[1]) : 'O';
+      points.push({
+        name: oName,
+        kind: 'circumcenter',
+        fields: { vertices: triVertices },
+      });
+      shapes.push({
+        name: 'omega',
+        kind: 'circle3',
+        fields: { p1: triVertices[0], p2: triVertices[1], p3: triVertices[2] },
+      });
+    }
+
+    if (incirclePattern) {
+      // "tâm I" theo nhiều order: "tâm I" sau "nội tiếp", hoặc trước.
+      const iMatch =
+        userPrompt.match(/nội\s*tiếp[^A-Z]*?tâm\s+([A-Z])/i) ||
+        userPrompt.match(/tâm\s+([A-Z]).*nội\s*tiếp/i);
+      const iName = iMatch ? up(iMatch[1]) : 'I';
+      points.push({
+        name: iName,
+        kind: 'incenter',
+        fields: { vertices: triVertices },
+      });
+    }
+  }
+
+  // Đường tròn qua 3 điểm A, B, C
+  const c3 = userPrompt.match(
+    /đường\s*tròn\s+(?:đi\s+)?qua\s+(?:3|ba)\s+điểm\s+([A-Z])[,\s]+([A-Z])[,\s]+([A-Z])/i,
+  );
+  if (c3) {
+    shapes.push({
+      name: 'k',
+      kind: 'circle3',
+      fields: { p1: up(c3[1]), p2: up(c3[2]), p3: up(c3[3]) },
+    });
+  }
+
+  return { points, shapes };
+}
+
+function up(s: string): string {
+  return s.toUpperCase();
+}
+
+function detectTriangleVertices(prompt: string): readonly string[] | null {
+  const m = prompt.match(/tam\s*giác\s+([A-Z])([A-Z])([A-Z])/i);
+  if (!m) return null;
+  return [up(m[1]), up(m[2]), up(m[3])];
+}
+
 /**
  * Quét đề bài + DSL output. Trả về missing kinds nếu LLM bỏ qua từ khoá
  * MANDATORY. Không throw — caller quyết định retry hay chỉ warning.
@@ -178,14 +356,59 @@ export function validateKindCoverage(
 
 /**
  * Build hint string để inject vào retry user prompt khi validator phát hiện
- * missing kinds. Format: numbered list các hint cụ thể.
+ * missing kinds. Nếu pass `extraction`, hint sẽ kèm JSON stub copy-paste-ready
+ * cho từng point/shape thiếu — 4B chỉ cần paste vào output.
  */
-export function buildRetryHint(missing: readonly ValidatorIssue[]): string {
+export function buildRetryHint(
+  missing: readonly ValidatorIssue[],
+  extraction?: RequirementExtraction,
+): string {
   if (missing.length === 0) return '';
-  const items = missing.map((m, i) => `${i + 1}. ${m.hint}`).join('\n');
-  return [
-    'SỬA LẠI: output trước thiếu kind BẮT BUỘC theo đề bài.',
-    items,
-    'Emit lại JSON envelope đầy đủ với các kind đúng.',
-  ].join('\n');
+
+  // Stub block (nếu có extraction): JSON cụ thể.
+  const missingKinds = new Set(missing.map((m) => m.expectedKind));
+  const stubPoints =
+    extraction?.points.filter((p) => missingKinds.has(p.kind)) ?? [];
+  // Include shapes if: (a) kind is missing, OR (b) some included point
+  // references them via `onLine` / `toLine` / `toCircle` (forward dep).
+  const refNames = new Set<string>();
+  for (const p of stubPoints) {
+    for (const v of Object.values(p.fields)) {
+      if (typeof v === 'string') refNames.add(v);
+    }
+  }
+  const stubShapes =
+    extraction?.shapes.filter(
+      (s) => missingKinds.has(s.kind) || refNames.has(s.name),
+    ) ?? [];
+
+  const blocks: string[] = ['SỬA LẠI: output trước thiếu kind BẮT BUỘC theo đề bài.'];
+
+  if (stubPoints.length > 0 || stubShapes.length > 0) {
+    blocks.push('CÁC ELEMENT BẮT BUỘC PHẢI CÓ TRONG OUTPUT (copy-paste vào DSL):');
+    for (const p of stubPoints) {
+      blocks.push(
+        `POINT: ${JSON.stringify({ name: p.name, kind: p.kind, ...p.fields })}`,
+      );
+    }
+    for (const s of stubShapes) {
+      blocks.push(
+        `SHAPE: ${JSON.stringify({ name: s.name, kind: s.kind, ...s.fields })}`,
+      );
+    }
+  }
+
+  // Generic text hint cho các missing không có stub cụ thể.
+  const hintedKinds = new Set([
+    ...stubPoints.map((p) => p.kind),
+    ...stubShapes.map((s) => s.kind),
+  ]);
+  const remaining = missing.filter((m) => !hintedKinds.has(m.expectedKind));
+  if (remaining.length > 0) {
+    blocks.push('Ngoài ra:');
+    remaining.forEach((m, i) => blocks.push(`${i + 1}. ${m.hint}`));
+  }
+
+  blocks.push('Emit lại JSON envelope đầy đủ. Giữ nguyên các point/shape khác đã đúng.');
+  return blocks.join('\n');
 }

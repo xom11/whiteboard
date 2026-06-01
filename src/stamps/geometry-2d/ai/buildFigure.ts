@@ -21,6 +21,7 @@ import {
 import {
   validateKindCoverage,
   buildRetryHint,
+  extractRequirements,
   type ValidatorIssue,
 } from './validator';
 
@@ -120,8 +121,10 @@ export async function generateFigure(
     };
   }
 
-  // Validator miss + retry enabled → round 2 với hint.
-  const hint = buildRetryHint(validation.missing);
+  // Validator miss + retry enabled → round 2 với hint (kèm DSL stub nếu
+  // detect được pattern "X là <keyword>" trong đề).
+  const extraction = extractRequirements(problem);
+  const hint = buildRetryHint(validation.missing, extraction);
   const round2 = await runOneRound(provider, {
     systemPrompt,
     userPrompt: `${problem}\n\n${hint}`,

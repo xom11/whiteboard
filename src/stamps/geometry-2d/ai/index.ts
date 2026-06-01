@@ -58,6 +58,10 @@ export {
 export {
   validateKindCoverage,
   buildRetryHint,
+  extractRequirements,
   type ValidatorIssue,
   type ValidatorResult,
+  type PointStub,
+  type ShapeStub,
+  type RequirementExtraction,
 } from './validator';
