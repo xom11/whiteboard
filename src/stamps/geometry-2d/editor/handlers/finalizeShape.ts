@@ -19,6 +19,40 @@ function findPickIdByKind(ctx: HandlerCtx, kind: 'point' | 'line' | 'circle'): s
   return null;
 }
 
+// ─── Helpers cho special-shape constraint promotion ─────────────────────────
+
+type Vec = { x: number; y: number };
+
+function readJxgPos(ctx: HandlerCtx, id: string): Vec {
+
+  const j = ctx.jxgFromSceneId(id) as any;
+  if (!j || typeof j.X !== 'function') return { x: 0, y: 0 };
+  return { x: j.X(), y: j.Y() };
+}
+
+/** Signed scalar offset của P từ T dọc theo perp(A→B) chuẩn hoá. */
+function computePerpendicularT(P: Vec, T: Vec, A: Vec, B: Vec): number {
+  const dx = B.x - A.x, dy = B.y - A.y;
+  const len = Math.hypot(dx, dy);
+  if (len < 1e-12) return 0;
+  const ux = -dy / len, uy = dx / len;
+  return (P.x - T.x) * ux + (P.y - T.y) * uy;
+}
+
+/** Signed scalar offset của P từ midpoint(A,B) dọc theo perp(A→B) chuẩn hoá. */
+function computePerpBisectorT(P: Vec, A: Vec, B: Vec): number {
+  const Mx = (A.x + B.x) / 2, My = (A.y + B.y) / 2;
+  const dx = B.x - A.x, dy = B.y - A.y;
+  const len = Math.hypot(dx, dy);
+  if (len < 1e-12) return 0;
+  const ux = -dy / len, uy = dx / len;
+  return (P.x - Mx) * ux + (P.y - My) * uy;
+}
+
+function computeCircleTheta(P: Vec, C: Vec): number {
+  return Math.atan2(P.y - C.y, P.x - C.x);
+}
+
 export function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
   const ids = ctx.pendingIdsRef.current;
   const key = toolDef.key;
@@ -380,6 +414,117 @@ export function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
           branch,
         });
       }
+      return;
+    }
+    // ===== Hình đặc biệt (parametric) =====
+    case 'square': {
+      const id = freshId(ctx, 'sq');
+      const label = ctx.nextLabel('polygon');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'polygon', label, {
+          construction: { kind: 'square', p1: ids[0], p2: ids[1] },
+        }) },
+      });
+      return;
+    }
+    case 'rectangle': {
+      const [aId, bId, cId] = ids;
+      const P = readJxgPos(ctx, cId);
+      const Aj = readJxgPos(ctx, aId);
+      const Bj = readJxgPos(ctx, bId);
+      const t = computePerpendicularT(P, Bj, Aj, Bj);
+      const polyId = freshId(ctx, 'rect');
+      const label = ctx.nextLabel('polygon');
+      ctx.store.dispatch({
+        type: 'TRANSACTION',
+        payload: { actions: [
+          { type: 'UPDATE_ATTRS', payload: { id: cId, patch: {
+              constraint: { kind: 'onPerpendicular', through: bId, perpToA: aId, perpToB: bId, t },
+          } } },
+          { type: 'ADD', payload: { obj: mkSceneObj(polyId, 'polygon', label, {
+              construction: { kind: 'rectangle', p1: aId, p2: bId, p3: cId },
+          }) } },
+        ] },
+      });
+      return;
+    }
+    case 'rhombus': {
+      const [aId, bId, cId] = ids;
+      const P = readJxgPos(ctx, cId);
+      const Bj = readJxgPos(ctx, bId);
+      const theta = computeCircleTheta(P, Bj);
+      const polyId = freshId(ctx, 'rho');
+      const label = ctx.nextLabel('polygon');
+      ctx.store.dispatch({
+        type: 'TRANSACTION',
+        payload: { actions: [
+          { type: 'UPDATE_ATTRS', payload: { id: cId, patch: {
+              constraint: { kind: 'onCircleAroundPoint', center: bId, radiusPoint: aId, theta },
+          } } },
+          { type: 'ADD', payload: { obj: mkSceneObj(polyId, 'polygon', label, {
+              construction: { kind: 'rhombus', p1: aId, p2: bId, p3: cId },
+          }) } },
+        ] },
+      });
+      return;
+    }
+    case 'parallelogram':
+    case 'isoTrapezoid': {
+      const [aId, bId, cId] = ids;
+      const prefix = key === 'parallelogram' ? 'pgm' : 'trap';
+      const polyId = freshId(ctx, prefix);
+      const label = ctx.nextLabel('polygon');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(polyId, 'polygon', label, {
+          construction: { kind: key, p1: aId, p2: bId, p3: cId },
+        }) },
+      });
+      return;
+    }
+    case 'isoTriangle': {
+      // ids = [base1, base2, apex] (theo thứ tự click — hint UI nói rõ).
+      const [b1Id, b2Id, apexId] = ids;
+      const P = readJxgPos(ctx, apexId);
+      const B1 = readJxgPos(ctx, b1Id);
+      const B2 = readJxgPos(ctx, b2Id);
+      const t = computePerpBisectorT(P, B1, B2);
+      const polyId = freshId(ctx, 'iso');
+      const label = ctx.nextLabel('polygon');
+      ctx.store.dispatch({
+        type: 'TRANSACTION',
+        payload: { actions: [
+          { type: 'UPDATE_ATTRS', payload: { id: apexId, patch: {
+              constraint: { kind: 'onPerpBisector', p1: b1Id, p2: b2Id, t },
+          } } },
+          { type: 'ADD', payload: { obj: mkSceneObj(polyId, 'polygon', label, {
+              construction: { kind: 'isoTriangle', base1: b1Id, base2: b2Id, apex: apexId },
+          }) } },
+        ] },
+      });
+      return;
+    }
+    case 'rightTriangle': {
+      // ids = [rightAngle, leg1End, leg2End].
+      const [rId, p1Id, p2Id] = ids;
+      const P = readJxgPos(ctx, p2Id);
+      const R = readJxgPos(ctx, rId);
+      const P1 = readJxgPos(ctx, p1Id);
+      const t = computePerpendicularT(P, R, R, P1);
+      const polyId = freshId(ctx, 'rtri');
+      const label = ctx.nextLabel('polygon');
+      ctx.store.dispatch({
+        type: 'TRANSACTION',
+        payload: { actions: [
+          { type: 'UPDATE_ATTRS', payload: { id: p2Id, patch: {
+              constraint: { kind: 'onPerpendicular', through: rId, perpToA: rId, perpToB: p1Id, t },
+          } } },
+          { type: 'ADD', payload: { obj: mkSceneObj(polyId, 'polygon', label, {
+              construction: { kind: 'rightTriangle', rightAngle: rId, leg1End: p1Id, leg2End: p2Id },
+          }) } },
+        ] },
+      });
       return;
     }
     default:

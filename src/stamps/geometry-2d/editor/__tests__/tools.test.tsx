@@ -33,15 +33,16 @@ describe('TOOLS — circle Tier 2 additions', () => {
 });
 
 describe('TOOLS — Tier E.1 group expansion', () => {
-  test('GROUP_ORDER có 10 entries với triangle tại index 6', () => {
-    expect(GROUP_ORDER).toHaveLength(10);
+  test('GROUP_ORDER có 11 entries với triangle tại index 6 + special cuối', () => {
+    expect(GROUP_ORDER).toHaveLength(11);
     expect(GROUP_ORDER[6]).toBe('triangle');
+    expect(GROUP_ORDER[10]).toBe('special');
   });
 
-  test('GROUP_ORDER giữ thứ tự cũ + chèn triangle sau circle', () => {
+  test('GROUP_ORDER giữ thứ tự cũ + chèn triangle sau circle + special cuối', () => {
     expect(GROUP_ORDER).toEqual([
       'move', 'point', 'line', 'construct', 'polygon', 'circle',
-      'triangle', 'measure', 'edit', 'transform',
+      'triangle', 'measure', 'edit', 'transform', 'special',
     ]);
   });
 
