@@ -16,13 +16,20 @@ async function generateGeometryFigure(
   {
     signal,
     onProgress,
-  }: { signal: AbortSignal; onProgress?: (info: AiFigureProgress) => void },
+    currentDsl,
+  }: { signal: AbortSignal; onProgress?: (info: AiFigureProgress) => void; currentDsl?: string },
 ): Promise<AiFigureUiResult> {
   try {
-    const res = await fetch('/api/generate-figure/stream', {
+    const url = currentDsl
+      ? '/api/generate-figure-refine/stream'
+      : '/api/generate-figure/stream';
+    const body = currentDsl
+      ? JSON.stringify({ problem, currentDsl })
+      : JSON.stringify({ problem });
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ problem }),
+      body,
       signal,
     });
     if (!res.ok || !res.body) {
