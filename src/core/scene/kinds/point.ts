@@ -253,11 +253,11 @@ const def: KindDef<PointAttrs> = {
       ], opts);
     }
     if (c.kind === 'orthocenter') {
-       
+
       const a: any = ctx.resolveRef(c.vertices[0]);
-       
+
       const b: any = ctx.resolveRef(c.vertices[1]);
-       
+
       const c3: any = ctx.resolveRef(c.vertices[2]);
       const hide = { visible: false, withLabel: false, fixed: true, name: '' };
       // Altitude A→BC: line BC + perpendicular từ A xuống BC.
@@ -267,10 +267,78 @@ const def: KindDef<PointAttrs> = {
       const lineAC = board.create('line', [a, c3], hide);
       const altB = board.create('perpendicular', [lineAC, b], hide);
       // Trực tâm = giao 2 altitude (branch 0 — chỉ có 1 giao điểm).
-       
+
       const ortho: any = board.create('intersection', [altA, altB, 0], opts);
       ortho._helpers = [lineBC, altA, lineAC, altB];
       return ortho;
+    }
+    if (c.kind === 'onPerpendicular') {
+      // Glider trên đường vuông góc qua `through`, vuông góc với line(perpToA, perpToB).
+      // Aux line + perp line hidden; glider parent = perp line.
+
+      const T: any = ctx.resolveRef(c.through);
+
+      const A: any = ctx.resolveRef(c.perpToA);
+
+      const B: any = ctx.resolveRef(c.perpToB);
+      const hide = { visible: false, withLabel: false, fixed: true, name: '' };
+      const refLine = board.create('line', [A, B], hide);
+      const perpLine = board.create('perpendicular', [refLine, T], hide);
+      // Initial coords: T + t * unit(perp(A→B))
+      const dx = B.X() - A.X();
+      const dy = B.Y() - A.Y();
+      const len = Math.hypot(dx, dy) || 1;
+      const ux = -dy / len;
+      const uy = dx / len;
+      const x0 = T.X() + c.t * ux;
+      const y0 = T.Y() + c.t * uy;
+
+      const gl: any = board.create('glider', [x0, y0, perpLine], opts);
+      gl._helpers = [refLine, perpLine];
+      return gl;
+    }
+    if (c.kind === 'onPerpBisector') {
+      // Glider trên trung trực của (p1, p2). Build từ midpoint + perpendicular
+      // (cùng pattern với line.ts perpBisector — JSXGraph 'perpendicular' trả
+      // về line infinite, dùng làm parent cho glider an toàn hơn so với
+      // 'perpendicularsegment').
+
+      const A: any = ctx.resolveRef(c.p1);
+
+      const B: any = ctx.resolveRef(c.p2);
+      const hide = { visible: false, withLabel: false, fixed: true, name: '' };
+      const refLine = board.create('line', [A, B], hide);
+      const mid = board.create('midpoint', [A, B], hide);
+      const bisLine = board.create('perpendicular', [refLine, mid], hide);
+      const Mx = (A.X() + B.X()) / 2;
+      const My = (A.Y() + B.Y()) / 2;
+      const dx = B.X() - A.X();
+      const dy = B.Y() - A.Y();
+      const len = Math.hypot(dx, dy) || 1;
+      const ux = -dy / len;
+      const uy = dx / len;
+      const x0 = Mx + c.t * ux;
+      const y0 = My + c.t * uy;
+
+      const gl: any = board.create('glider', [x0, y0, bisLine], opts);
+      gl._helpers = [refLine, mid, bisLine];
+      return gl;
+    }
+    if (c.kind === 'onCircleAroundPoint') {
+      // Glider trên vòng tròn tâm `center`, qua `radiusPoint`.
+
+      const C: any = ctx.resolveRef(c.center);
+
+      const R: any = ctx.resolveRef(c.radiusPoint);
+      const hide = { visible: false, withLabel: false, fixed: true, name: '' };
+      const auxCircle = board.create('circle', [C, R], hide);
+      const r = Math.hypot(R.X() - C.X(), R.Y() - C.Y());
+      const x0 = C.X() + r * Math.cos(c.theta);
+      const y0 = C.Y() + r * Math.sin(c.theta);
+
+      const gl: any = board.create('glider', [x0, y0, auxCircle], opts);
+      gl._helpers = [auxCircle];
+      return gl;
     }
     return board.create('point', [0, 0], opts);
   },
