@@ -43,7 +43,10 @@ export type Constraint2D =
   | { kind: 'circumcenter'; vertices: [string, string, string] }
   | { kind: 'incenter'; vertices: [string, string, string] }
   | { kind: 'centroid'; vertices: [string, string, string] }
-  | { kind: 'orthocenter'; vertices: [string, string, string] };
+  | { kind: 'orthocenter'; vertices: [string, string, string] }
+  | { kind: 'onPerpendicular'; through: string; perpToA: string; perpToB: string; t: number }
+  | { kind: 'onPerpBisector'; p1: string; p2: string; t: number }
+  | { kind: 'onCircleAroundPoint'; center: string; radiusPoint: string; theta: number };
 
 export function constraintRefs2D(c: Constraint2D): string[] {
   switch (c.kind) {
@@ -58,6 +61,9 @@ export function constraintRefs2D(c: Constraint2D): string[] {
     case 'incenter': return [c.vertices[0], c.vertices[1], c.vertices[2]];
     case 'centroid': return [c.vertices[0], c.vertices[1], c.vertices[2]];
     case 'orthocenter': return [c.vertices[0], c.vertices[1], c.vertices[2]];
+    case 'onPerpendicular': return [c.through, c.perpToA, c.perpToB];
+    case 'onPerpBisector': return [c.p1, c.p2];
+    case 'onCircleAroundPoint': return [c.center, c.radiusPoint];
     default: return [];
   }
 }
