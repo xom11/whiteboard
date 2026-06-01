@@ -382,6 +382,67 @@ export const Icon = {
       <text x="10.5" y="10.5" fontSize="8" fontFamily="serif" fontStyle="italic" fontWeight="700" fill="currentColor">k</text>
     </svg>
   ),
+
+  // ===== Special shapes =====
+  square: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <rect x="5" y="5" width="14" height="14" fill={C_FILL} fillOpacity="0.18" stroke="currentColor" strokeWidth="1.6"/>
+      <circle cx="5" cy="5" r="1.7" fill={C_POINT}/>
+      <circle cx="19" cy="5" r="1.7" fill={C_POINT}/>
+    </svg>
+  ),
+  rectangle: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="7" width="18" height="10" fill={C_FILL} fillOpacity="0.18" stroke="currentColor" strokeWidth="1.6"/>
+      <circle cx="3" cy="17" r="1.7" fill={C_POINT}/>
+      <circle cx="21" cy="17" r="1.7" fill={C_POINT}/>
+      <circle cx="21" cy="7" r="1.7" fill={C_POINT}/>
+    </svg>
+  ),
+  rhombus: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <path d="M 12 3 L 21 12 L 12 21 L 3 12 Z" fill={C_FILL} fillOpacity="0.18" stroke="currentColor" strokeWidth="1.6"/>
+      <circle cx="3" cy="12" r="1.7" fill={C_POINT}/>
+      <circle cx="12" cy="21" r="1.7" fill={C_POINT}/>
+      <circle cx="21" cy="12" r="1.7" fill={C_POINT}/>
+    </svg>
+  ),
+  parallelogram: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <path d="M 5 19 L 21 19 L 19 5 L 3 5 Z" fill={C_FILL} fillOpacity="0.18" stroke="currentColor" strokeWidth="1.6"/>
+      <circle cx="3" cy="5" r="1.7" fill={C_POINT}/>
+      <circle cx="19" cy="5" r="1.7" fill={C_POINT}/>
+      <circle cx="21" cy="19" r="1.7" fill={C_POINT}/>
+    </svg>
+  ),
+  isoTrapezoid: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <path d="M 3 19 L 21 19 L 17 5 L 7 5 Z" fill={C_FILL} fillOpacity="0.18" stroke="currentColor" strokeWidth="1.6"/>
+      <circle cx="3" cy="19" r="1.7" fill={C_POINT}/>
+      <circle cx="21" cy="19" r="1.7" fill={C_POINT}/>
+      <circle cx="7" cy="5" r="1.7" fill={C_POINT}/>
+    </svg>
+  ),
+  isoTriangle: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <path d="M 12 4 L 21 20 L 3 20 Z" fill={C_FILL} fillOpacity="0.18" stroke="currentColor" strokeWidth="1.6"/>
+      <circle cx="3" cy="20" r="1.7" fill={C_POINT}/>
+      <circle cx="21" cy="20" r="1.7" fill={C_POINT}/>
+      <circle cx="12" cy="4" r="1.7" fill={C_POINT}/>
+      {/* dashed perpendicular bisector hint */}
+      <line x1="12" y1="4" x2="12" y2="20" stroke={C_CONSTRUCT} strokeWidth="0.8" strokeDasharray="1.5 1.5" opacity="0.7"/>
+    </svg>
+  ),
+  rightTriangle: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <path d="M 4 20 L 20 20 L 4 4 Z" fill={C_FILL} fillOpacity="0.18" stroke="currentColor" strokeWidth="1.6"/>
+      {/* right-angle marker */}
+      <path d="M 4 17 L 7 17 L 7 20" fill="none" stroke="currentColor" strokeWidth="1.2"/>
+      <circle cx="4" cy="20" r="1.7" fill={C_POINT}/>
+      <circle cx="20" cy="20" r="1.7" fill={C_POINT}/>
+      <circle cx="4" cy="4" r="1.7" fill={C_POINT}/>
+    </svg>
+  ),
 };
 
 export const GeometryIconHeader = (

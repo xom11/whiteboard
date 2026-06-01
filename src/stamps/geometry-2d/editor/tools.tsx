@@ -47,7 +47,14 @@ export type GeomTool =
   | 'rotate'
   | 'reflectLine'
   | 'reflectPoint'
-  | 'dilate';
+  | 'dilate'
+  | 'square'
+  | 'rectangle'
+  | 'rhombus'
+  | 'parallelogram'
+  | 'isoTrapezoid'
+  | 'isoTriangle'
+  | 'rightTriangle';
 
 export interface ToolDef {
   key: GeomTool;
@@ -64,7 +71,8 @@ export interface ToolDef {
     | 'triangle'
     | 'measure'
     | 'edit'
-    | 'transform';
+    | 'transform'
+    | 'special';
   /** Số click cần trước khi action fire. -1 = mở (polygon đóng bằng click lại điểm đầu). */
   needs: number;
   /** Loại object accept ở mỗi slot. 'any' = point hoặc non-point. 'lineOrCircle' = line hoặc circle (loại trừ point). 'pointOrLine' = point hoặc line/đoạn (loại trừ circle). */
@@ -114,6 +122,21 @@ export const TOOLS: ToolDef[] = [
   { key: 'reflectLine', label: 'Đối xứng qua đường thẳng', hint: 'Click object → đường thẳng', icon: Icon.reflectLine, group: 'transform', needs: 2, accepts: ['any', 'line'] },
   { key: 'reflectPoint', label: 'Đối xứng qua điểm', hint: 'Click object → tâm đối xứng', icon: Icon.reflectPoint, group: 'transform', needs: 2, accepts: ['any', 'point'] },
   { key: 'dilate', label: 'Phép vị tự', hint: 'Click object → tâm → nhập tỷ số k', icon: Icon.dilate, group: 'transform', needs: 2, accepts: ['any', 'point'] },
+  // ===== Hình đặc biệt (parametric construction) =====
+  { key: 'square',         label: 'Hình vuông',         hint: 'Click 2 điểm — cạnh đầu (3 đỉnh còn lại tự suy, vuông góc + bằng cạnh)',
+    icon: Icon.square,         group: 'special', needs: 2, accepts: ['point', 'point'] },
+  { key: 'rectangle',      label: 'Hình chữ nhật',      hint: 'Click 2 điểm đáy + 1 điểm chiều cao (auto vuông góc tại đỉnh 2)',
+    icon: Icon.rectangle,      group: 'special', needs: 3, accepts: ['point', 'point', 'point'] },
+  { key: 'rhombus',        label: 'Hình thoi',          hint: 'Click 2 điểm cạnh + 1 điểm hướng (auto bằng độ dài cạnh)',
+    icon: Icon.rhombus,        group: 'special', needs: 3, accepts: ['point', 'point', 'point'] },
+  { key: 'parallelogram',  label: 'Hình bình hành',     hint: 'Click 3 điểm liên tiếp (đỉnh 4 tự suy)',
+    icon: Icon.parallelogram,  group: 'special', needs: 3, accepts: ['point', 'point', 'point'] },
+  { key: 'isoTrapezoid',   label: 'Hình thang cân',     hint: 'Click 2 điểm đáy lớn + 1 đỉnh trên (đỉnh 4 phản chiếu qua trung trực)',
+    icon: Icon.isoTrapezoid,   group: 'special', needs: 3, accepts: ['point', 'point', 'point'] },
+  { key: 'isoTriangle',    label: 'Tam giác cân',       hint: 'Click 2 điểm đáy + 1 đỉnh (auto trên trung trực)',
+    icon: Icon.isoTriangle,    group: 'special', needs: 3, accepts: ['point', 'point', 'point'] },
+  { key: 'rightTriangle',  label: 'Tam giác vuông',     hint: 'Click đỉnh vuông + 2 đầu cạnh (cạnh 2 auto vuông góc)',
+    icon: Icon.rightTriangle,  group: 'special', needs: 3, accepts: ['point', 'point', 'point'] },
 ];
 
 export const GROUP_LABELS: Record<ToolDef['group'], string> = {
@@ -127,6 +150,7 @@ export const GROUP_LABELS: Record<ToolDef['group'], string> = {
   measure: 'Đo lường',
   edit: 'Chỉnh sửa',
   transform: 'Phép biến hình',
+  special: 'Hình đặc biệt',
 };
 
 export type GeomGroup = ToolDef['group'];
@@ -144,6 +168,7 @@ export const GROUP_ORDER: GeomGroup[] = [
   'measure',
   'edit',
   'transform',
+  'special',
 ];
 
 const A_CODE = 'A'.charCodeAt(0);
