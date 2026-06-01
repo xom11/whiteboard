@@ -35,3 +35,21 @@ export {
   envelopeBuildDsl,
 } from './envelope';
 export type { FigureEnvelopeT } from './envelope';
+
+// Refine (multi-step) API
+export {
+  handleGenerateFigureDelta,
+  type HandleGenerateFigureDeltaInput,
+  type HandleGenerateFigureDeltaOptions,
+} from './handleGenerateFigureDelta';
+export {
+  generateFigureDelta,
+  type GenerateDeltaOptions,
+  type GenerateDeltaResult,
+  type GenerateFigureDeltaInput,
+} from './buildFigureDelta';
+export {
+  FigureRefineEnvelopeZ,
+  refineEnvelopeJsonSchema,
+  type FigureRefineEnvelopeT,
+} from './refineEnvelope';
