@@ -152,7 +152,7 @@ export async function generateFigureDelta(
   }
 
   if (env.decision === 'replace') {
-    const figure = env.figure!;
+    const figure = env.figure! as unknown as DslInputT;
     const tResult = transpile(figure);
     if (!tResult.ok) {
       return liftTranspileError(tResult.errors, figure, usage, provider.name);
@@ -168,7 +168,7 @@ export async function generateFigureDelta(
   }
 
   // decision === 'add'
-  const delta = env.figure!;
+  const delta = env.figure! as unknown as DslInputT;
   const merged: DslInputT = {
     version: 1,
     points: [...currentDsl.points, ...delta.points],
