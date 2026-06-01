@@ -22,12 +22,17 @@ export interface AiFigureProgress {
  *
  * `onProgress` là optional: nếu consumer dùng streaming endpoint (SSE),
  * forward chunk events vào đây. Non-streaming impl bỏ qua.
+ *
+ * `currentDsl` (MỚI cho multi-step refine): khi caller có hình hiện tại
+ * (state.order.length > 0) và muốn AI sửa/thêm → pass currentDsl. Consumer
+ * branch sang refine endpoint. Không pass → build endpoint cũ.
  */
 export type GenerateGeometryFigure = (
   problem: string,
   options: {
     signal: AbortSignal;
     onProgress?: (info: AiFigureProgress) => void;
+    currentDsl?: import('../geometry-2d/dsl').DslInputT;
   },
 ) => Promise<AiFigureUiResult>;
 
