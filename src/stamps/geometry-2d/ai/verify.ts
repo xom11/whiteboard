@@ -22,6 +22,7 @@ export interface VerifyReport {
   readonly missing: readonly VerifyIssue[];
   readonly wrong: readonly VerifyIssue[];
   readonly extra: readonly VerifyIssue[];
+  readonly geometric?: readonly VerifyIssue[];
 }
 
 // ---------------------------------------------------------------------------
@@ -119,6 +120,94 @@ function samePrefix(a: string, b: string, depth: number): boolean {
   const aP = a.split('/').slice(0, depth).join('/');
   const bP = b.split('/').slice(0, depth).join('/');
   return aP === bP;
+}
+
+// ---------------------------------------------------------------------------
+// Intent metric: recall / precision / F1 (for eval)
+// ---------------------------------------------------------------------------
+
+export interface IntentMetrics {
+  recall: number;
+  precision: number;
+  f1: number;
+  matched: number;
+  expected: number;
+  actual: number;
+}
+
+export function computeIntentMetrics(
+  expected: readonly IntentT[],
+  actual: readonly IntentT[],
+): IntentMetrics {
+  const expectedKeys = expected.map(intentKey);
+  const actualKeys = actual.map(intentKey);
+  const matched = new Set<number>();
+  let hit = 0;
+  for (const ek of expectedKeys) {
+    const idx = actualKeys.findIndex((ak, i) => !matched.has(i) && ak === ek);
+    if (idx >= 0) { matched.add(idx); hit++; }
+  }
+  const recall = expectedKeys.length === 0 ? 1 : hit / expectedKeys.length;
+  const precision = actualKeys.length === 0 ? 1 : hit / actualKeys.length;
+  const f1 = (recall + precision) === 0 ? 0 : (2 * recall * precision) / (recall + precision);
+  return {
+    recall, precision, f1,
+    matched: hit,
+    expected: expectedKeys.length,
+    actual: actualKeys.length,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Geometric verification on DSL with resolved coords (scope: on-circle only;
+// tangent-touch / concyclic / collinear deferred until JSXGraph runtime hook).
+// ---------------------------------------------------------------------------
+
+const GEOM_TOL = 1e-3;
+
+function resolveCoord(dsl: DslInputT, name: string): [number, number] | null {
+  const p = dsl.points.find((x) => x.name === name);
+  if (!p) return null;
+  if (p.kind === 'free') return [p.x, p.y];
+  if (p.kind === 'midpoint') {
+    const a = resolveCoord(dsl, p.p1);
+    const b = resolveCoord(dsl, p.p2);
+    if (!a || !b) return null;
+    return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  }
+  // Other kinds: computed by JSXGraph at runtime — skip static check.
+  return null;
+}
+
+export function verifyGeometric(dsl: DslInputT): VerifyReport {
+  const geometric: VerifyIssue[] = [];
+
+  for (const shape of dsl.shapes) {
+    if (shape.kind !== 'circleCR') continue;
+    // on-circle check: any point with onCircle constraint referencing this circle
+    for (const p of dsl.points) {
+      if (p.kind !== 'onCircle') continue;
+      if (p.circleId !== shape.name) continue;
+      const c = resolveCoord(dsl, shape.center);
+      const pp = resolveCoord(dsl, p.name);
+      if (!c || !pp) continue;
+      const d = Math.hypot(pp[0] - c[0], pp[1] - c[1]);
+      if (Math.abs(d - shape.radius) > GEOM_TOL) {
+        geometric.push({
+          axis: 'wrong',
+          detail: `on-circle: |${p.name}-${shape.name}|=${d.toFixed(3)} ≠ R=${shape.radius}`,
+        });
+      }
+    }
+  }
+
+  return {
+    ok: geometric.length === 0,
+    missing: [],
+    wrong: [],
+    extra: [],
+    geometric,
+  } as VerifyReport;
 }
 
 // ---------------------------------------------------------------------------
