@@ -117,6 +117,12 @@ export const AddPointIntentZ = z.object({
     z.object({ kind: z.literal('intersection'), of: z.tuple([z.string(), z.string()]) }),
     z.object({ kind: z.literal('onSegment'), of: z.string(), t: z.number().min(0).max(1).optional() }),
     z.object({ kind: z.literal('free'), at: z.tuple([z.number(), z.number()]).optional() }),
+    // NEW Tier 4+5
+    z.object({ kind: z.literal('secondIntersection'), line: z.string(), circle: LabelZ, other: LabelZ }),
+    z.object({ kind: z.literal('circleIntersection'), c1: LabelZ, c2: LabelZ, which: z.union([z.literal(0), z.literal(1)]) }),
+    z.object({ kind: z.literal('tangencyPoint'), circle: LabelZ, onLine: z.string() }),
+    z.object({ kind: z.literal('tangentPoint'), from: LabelZ, circle: LabelZ, which: z.union([z.literal(0), z.literal(1)]) }),
+    z.object({ kind: z.literal('angleBisectorFoot'), from: LabelZ, onLine: z.string() }),
   ]),
 });
 
@@ -138,18 +144,42 @@ export const ConnectIntentZ = z.object({
 export const DrawCircleIntentZ = z.object({
   op: z.literal('draw-circle'),
   name: LabelZ,
-  spec: z.enum(['centerThrough', 'through3']),
+  spec: z.enum(['centerThrough', 'through3', 'centerRadius', 'inscribedIn']),
   center: LabelZ.optional(),
   through: LabelZ.optional(),
   points: z.tuple([LabelZ, LabelZ, LabelZ]).optional(),
+  // NEW Tier 4+5
+  radius: z.number().positive().optional(),
+  triangle: z.tuple([LabelZ, LabelZ, LabelZ]).optional(),
 });
 
-// Master discriminated union — chỉ 4 variants theo op
+// op: draw-line
+export const DrawLineIntentZ = z.object({
+  op: z.literal('draw-line'),
+  name: LabelZ,
+  kind: z.enum(['perpThrough', 'parallelThrough', 'tangentAt', 'tangentFromExt']),
+  through: LabelZ.optional(),
+  to: LabelZ.optional(),
+  from: LabelZ.optional(),
+  circle: LabelZ.optional(),
+  which: z.enum(['first', 'second', 'both']).optional(),
+});
+
+// op: mark-shape (sub-shape từ điểm đã có, không tạo coord mới)
+export const MarkShapeIntentZ = z.object({
+  op: z.literal('mark-shape'),
+  shape: z.enum(['triangle', 'quadrilateral']),
+  labels: z.array(LabelZ).min(3).max(4),
+});
+
+// Master discriminated union — 6 variants theo op
 export const IntentZ = z.discriminatedUnion('op', [
   DrawShapeIntentZ,
   AddPointIntentZ,
   ConnectIntentZ,
   DrawCircleIntentZ,
+  DrawLineIntentZ,   // NEW
+  MarkShapeIntentZ,  // NEW
 ]);
 
 // Re-export variant enums cho consumer (vd UI dropdown)
@@ -168,6 +198,8 @@ export type DrawShapeIntentT = z.infer<typeof DrawShapeIntentZ>;
 export type AddPointIntentT = z.infer<typeof AddPointIntentZ>;
 export type ConnectIntentT = z.infer<typeof ConnectIntentZ>;
 export type DrawCircleIntentT = z.infer<typeof DrawCircleIntentZ>;
+export type DrawLineIntentT = z.infer<typeof DrawLineIntentZ>;
+export type MarkShapeIntentT = z.infer<typeof MarkShapeIntentZ>;
 
 // ---------------------------------------------------------------------------
 // Envelope — wraps intents[] + decision
