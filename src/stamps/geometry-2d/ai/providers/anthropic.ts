@@ -10,12 +10,15 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type {
   AIProvider,
+  ImagePart,
   ProviderOutput,
   ProviderRequest,
   ProviderTokenUsage,
+  VisionRequest,
 } from './types';
 
 const TOOL_NAME = 'emit_figure_envelope';
+const VISION_TOOL_NAME = 'extract_problem_envelope';
 
 export interface AnthropicProviderOptions {
   apiKey: string;
@@ -81,6 +84,67 @@ export class AnthropicProvider implements AIProvider {
         kind: 'error',
         message: `Tool không xác định: "${toolUse.name}"`,
       };
+    }
+    return { kind: 'json', data: toolUse.input, usage };
+  }
+
+  async extractText(req: VisionRequest): Promise<ProviderOutput> {
+    const model = req.model ?? this.defaultModel;
+    const enableCaching = this.opts.enableCaching !== false;
+    const systemBlock = enableCaching
+      ? { type: 'text' as const, text: req.systemPrompt, cache_control: { type: 'ephemeral' as const } }
+      : { type: 'text' as const, text: req.systemPrompt };
+
+    const tool = {
+      name: VISION_TOOL_NAME,
+      description: 'Trích đề bài hình học từ ảnh, hoặc từ chối nếu không phải đề toán.',
+      input_schema: req.schema,
+    };
+
+    const imageBlocks = req.images.map((img: ImagePart) => ({
+      type: 'image' as const,
+      source: {
+        type: 'base64' as const,
+        media_type: img.mediaType,
+        data: img.base64,
+      },
+    }));
+
+    const client = new Anthropic({ apiKey: this.opts.apiKey });
+    let resp: Anthropic.Messages.Message;
+    try {
+      resp = await client.messages.create(
+        {
+          model,
+          max_tokens: req.maxTokens,
+          system: [systemBlock],
+          tools: [tool as never],
+          tool_choice: { type: 'tool', name: VISION_TOOL_NAME },
+          messages: [
+            {
+              role: 'user',
+              content: [...imageBlocks, { type: 'text', text: req.userPrompt }],
+            },
+          ],
+        },
+        req.signal ? { signal: req.signal } : undefined,
+      );
+    } catch (e) {
+      const err = e as { message?: string; status?: number };
+      return {
+        kind: 'error',
+        message: err.message ?? 'Lỗi gọi Anthropic Vision API',
+        ...(err.status !== undefined ? { status: err.status } : {}),
+      };
+    }
+
+    const usage = toUsage(resp.usage);
+    const toolUse = resp.content.find((c) => c.type === 'tool_use');
+    if (!toolUse || toolUse.type !== 'tool_use') {
+      return { kind: 'error', message: 'Claude không gọi vision tool. stop_reason=' + resp.stop_reason };
+    }
+    if (toolUse.name !== VISION_TOOL_NAME) {
+      return { kind: 'error', message: `Claude gọi sai tool: ${toolUse.name}` };
     }
     return { kind: 'json', data: toolUse.input, usage };
   }
