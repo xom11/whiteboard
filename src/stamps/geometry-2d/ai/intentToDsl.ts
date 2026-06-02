@@ -13,6 +13,8 @@ import type {
   AddPointIntentT,
   ConnectIntentT,
   DrawCircleIntentT,
+  DrawLineIntentT,
+  MarkShapeIntentT,
 } from './intent';
 
 // ---------------------------------------------------------------------------
@@ -292,6 +294,39 @@ function handleAddPoint(s: BuildState, intent: AddPointIntentT) {
       addPoint(s, { name, kind: 'free', x, y });
       break;
     }
+    case 'secondIntersection':
+      addPoint(s, {
+        name, kind: 'secondIntersection',
+        line: c.line, circle: c.circle, other: c.other,
+      });
+      break;
+    case 'circleIntersection':
+      addPoint(s, {
+        name, kind: 'circleIntersection',
+        c1: c.c1, c2: c.c2, which: c.which,
+      });
+      break;
+    case 'tangencyPoint':
+      addPoint(s, {
+        name, kind: 'tangencyPoint',
+        circle: c.circle, onLine: c.onLine,
+      });
+      break;
+    case 'tangentPoint':
+      addPoint(s, {
+        name, kind: 'tangentPointExt',
+        from: c.from, circle: c.circle, which: c.which,
+      });
+      break;
+    case 'angleBisectorFoot': {
+      const ends = parseEnds(c.onLine);
+      if (!ends) throw new IntentBuilderError(`angleBisectorFoot.onLine không parse: ${c.onLine}`, intent);
+      const bisName = uniqueShapeName(s, `ab_${c.from}${c.onLine}`);
+      addShape(s, { name: bisName, kind: 'angleBisector', p1: ends[0], vertex: c.from, p2: ends[1] });
+      ensureSegment(s, ends[0], ends[1]);
+      addPoint(s, { name, kind: 'intersection', ref1: bisName, ref2: resolveSegmentRef(s, c.onLine) });
+      break;
+    }
   }
 }
 
@@ -339,7 +374,7 @@ function handleDrawCircle(s: BuildState, intent: DrawCircleIntentT) {
       center: intent.center,
       surfacePoint: intent.through,
     });
-  } else {
+  } else if (intent.spec === 'through3') {
     if (!intent.points) {
       throw new IntentBuilderError('through3 cần points', intent);
     }
@@ -350,7 +385,72 @@ function handleDrawCircle(s: BuildState, intent: DrawCircleIntentT) {
       p2: intent.points[1],
       p3: intent.points[2],
     });
+  } else if (intent.spec === 'centerRadius') {
+    if (!intent.center || intent.radius === undefined) {
+      throw new IntentBuilderError('centerRadius cần center + radius', intent);
+    }
+    if (!s.points.find((p) => p.name === intent.center)) {
+      addPoint(s, { name: intent.center!, kind: 'free', x: 4, y: 2 });
+    }
+    addShape(s, { name: intent.name, kind: 'circleCR', center: intent.center, radius: intent.radius });
+  } else if (intent.spec === 'inscribedIn') {
+    if (!intent.triangle) throw new IntentBuilderError('inscribedIn cần triangle', intent);
+    for (const v of intent.triangle) {
+      if (!s.points.find((p) => p.name === v)) {
+        throw new IntentBuilderError(`inscribedIn: vertex ${v} chưa định nghĩa`, intent);
+      }
+    }
+    addShape(s, { name: intent.name, kind: 'incircle', vertices: intent.triangle });
   }
+}
+
+// ---------------------------------------------------------------------------
+// draw-line
+// ---------------------------------------------------------------------------
+
+function handleDrawLine(s: BuildState, intent: DrawLineIntentT) {
+  switch (intent.kind) {
+    case 'perpThrough': {
+      if (!intent.through || !intent.to) throw new IntentBuilderError('perpThrough cần through + to', intent);
+      addShape(s, { name: intent.name, kind: 'perpendicular', throughPoint: intent.through, toLine: intent.to });
+      break;
+    }
+    case 'parallelThrough': {
+      if (!intent.through || !intent.to) throw new IntentBuilderError('parallelThrough cần through + to', intent);
+      addShape(s, { name: intent.name, kind: 'parallel', throughPoint: intent.through, toLine: intent.to });
+      break;
+    }
+    case 'tangentAt': {
+      if (!intent.through || !intent.circle) throw new IntentBuilderError('tangentAt cần through + circle', intent);
+      addShape(s, { name: intent.name, kind: 'tangent', throughPoint: intent.through, toCircle: intent.circle, branch: 'on' });
+      break;
+    }
+    case 'tangentFromExt': {
+      if (!intent.from || !intent.circle) throw new IntentBuilderError('tangentFromExt cần from + circle', intent);
+      if (intent.which === 'both') {
+        addShape(s, { name: `${intent.name}_0`, kind: 'tangent', throughPoint: intent.from, toCircle: intent.circle, branch: 0 });
+        addShape(s, { name: `${intent.name}_1`, kind: 'tangent', throughPoint: intent.from, toCircle: intent.circle, branch: 1 });
+      } else {
+        const branch = intent.which === 'second' ? 1 : 0;
+        addShape(s, { name: intent.name, kind: 'tangent', throughPoint: intent.from, toCircle: intent.circle, branch });
+      }
+      break;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// mark-shape
+// ---------------------------------------------------------------------------
+
+function handleMarkShape(s: BuildState, intent: MarkShapeIntentT) {
+  for (const label of intent.labels) {
+    if (!s.points.find((p) => p.name === label)) {
+      throw new IntentBuilderError(`mark-shape: label ${label} chưa định nghĩa`, intent);
+    }
+  }
+  const polyName = uniqueShapeName(s, intent.labels.join(''));
+  addShape(s, { name: polyName, kind: 'polygon', vertices: [...intent.labels] });
 }
 
 // ---------------------------------------------------------------------------
@@ -365,6 +465,8 @@ export function intentsToDsl(intents: readonly IntentT[]): DslInputT {
       case 'add-point': handleAddPoint(s, intent); break;
       case 'connect': handleConnect(s, intent); break;
       case 'draw-circle': handleDrawCircle(s, intent); break;
+      case 'draw-line': handleDrawLine(s, intent); break;
+      case 'mark-shape': handleMarkShape(s, intent); break;
     }
   }
   return {

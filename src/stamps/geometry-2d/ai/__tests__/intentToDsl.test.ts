@@ -165,6 +165,128 @@ describe('intentsToDsl — draw-circle', () => {
   });
 });
 
+// === Tier 4+5 additions ===
+describe('intentsToDsl — Tier 4+5', () => {
+  it('handles draw-circle centerRadius (numeric R)', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-circle', name: 'O', spec: 'centerRadius', center: 'O', radius: 3 },
+    ] as never);
+    expect(dsl.points.find((p) => p.name === 'O' && p.kind === 'free')).toBeDefined();
+    const c = dsl.shapes.find((s) => s.kind === 'circleCR');
+    expect(c).toMatchObject({ name: 'O', kind: 'circleCR', center: 'O', radius: 3 });
+  });
+
+  it('handles draw-circle inscribedIn', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A','B','C'], variant: 'any' },
+      { op: 'draw-circle', name: 'I', spec: 'inscribedIn', triangle: ['A','B','C'] },
+    ] as never);
+    const c = dsl.shapes.find((s) => s.kind === 'incircle');
+    expect(c).toMatchObject({ name: 'I', kind: 'incircle', vertices: ['A','B','C'] });
+  });
+
+  it('handles add-point secondIntersection', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A','B','C'], variant: 'any' },
+      { op: 'draw-circle', name: 'O', spec: 'through3', points: ['A','B','C'] },
+      { op: 'add-point', name: 'D', constraint: { kind: 'angleBisectorFoot', from: 'A', onLine: 'BC' } },
+      { op: 'add-point', name: 'E', constraint: { kind: 'secondIntersection', line: 'AD', circle: 'O', other: 'A' } },
+    ] as never);
+    expect(dsl.points.find((p) => p.kind === 'secondIntersection' && p.name === 'E'))
+      .toMatchObject({ line: 'AD', circle: 'O', other: 'A' });
+  });
+
+  it('handles add-point circleIntersection', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-circle', name: 'O', spec: 'centerRadius', center: 'O', radius: 2 },
+      { op: 'draw-circle', name: 'Op', spec: 'centerRadius', center: 'Op', radius: 2 },
+      { op: 'add-point', name: 'A', constraint: { kind: 'circleIntersection', c1: 'O', c2: 'Op', which: 0 } },
+      { op: 'add-point', name: 'B', constraint: { kind: 'circleIntersection', c1: 'O', c2: 'Op', which: 1 } },
+    ] as never);
+    expect(dsl.points.filter((p) => p.kind === 'circleIntersection')).toHaveLength(2);
+  });
+
+  it('handles add-point tangencyPoint', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A','B','C'], variant: 'any' },
+      { op: 'draw-circle', name: 'I', spec: 'inscribedIn', triangle: ['A','B','C'] },
+      { op: 'add-point', name: 'D', constraint: { kind: 'tangencyPoint', circle: 'I', onLine: 'BC' } },
+    ] as never);
+    expect(dsl.points.find((p) => p.kind === 'tangencyPoint' && p.name === 'D'))
+      .toMatchObject({ circle: 'I', onLine: 'BC' });
+  });
+
+  it('handles add-point tangentPoint (which=0 + which=1)', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-circle', name: 'O', spec: 'centerRadius', center: 'O', radius: 2 },
+      { op: 'add-point', name: 'A', constraint: { kind: 'free', at: [5, 0] } },
+      { op: 'add-point', name: 'B', constraint: { kind: 'tangentPoint', from: 'A', circle: 'O', which: 0 } },
+      { op: 'add-point', name: 'C', constraint: { kind: 'tangentPoint', from: 'A', circle: 'O', which: 1 } },
+    ] as never);
+    const tangentPts = dsl.points.filter((p) => p.kind === 'tangentPointExt');
+    expect(tangentPts).toHaveLength(2);
+  });
+
+  it('handles add-point angleBisectorFoot', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A','B','C'], variant: 'any' },
+      { op: 'add-point', name: 'D', constraint: { kind: 'angleBisectorFoot', from: 'A', onLine: 'BC' } },
+    ] as never);
+    expect(dsl.shapes.find((s) => s.kind === 'angleBisector')).toBeDefined();
+    expect(dsl.points.find((p) => p.name === 'D' && p.kind === 'intersection')).toBeDefined();
+  });
+
+  it('handles draw-line perpThrough', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A','B','C'], variant: 'any' },
+      { op: 'add-point', name: 'M', constraint: { kind: 'midpoint', of: 'BC' } },
+      { op: 'draw-line', name: 'd', kind: 'perpThrough', through: 'M', to: 'BC' },
+    ] as never);
+    expect(dsl.shapes.find((s) => s.kind === 'perpendicular' && s.name === 'd'))
+      .toBeDefined();
+  });
+
+  it('handles draw-line tangentAt', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-circle', name: 'O', spec: 'centerRadius', center: 'O', radius: 2 },
+      { op: 'add-point', name: 'A', constraint: { kind: 'free', at: [2, 0] } },
+      { op: 'draw-line', name: 't', kind: 'tangentAt', through: 'A', circle: 'O' },
+    ] as never);
+    const t = dsl.shapes.find((s) => s.kind === 'tangent' && s.name === 't');
+    expect(t).toBeDefined();
+  });
+
+  it('handles draw-line tangentFromExt which=both', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-circle', name: 'O', spec: 'centerRadius', center: 'O', radius: 2 },
+      { op: 'add-point', name: 'P', constraint: { kind: 'free', at: [5, 0] } },
+      { op: 'draw-line', name: 't', kind: 'tangentFromExt', from: 'P', circle: 'O', which: 'both' },
+    ] as never);
+    const tangents = dsl.shapes.filter((s) => s.kind === 'tangent');
+    expect(tangents).toHaveLength(2);
+  });
+
+  it('handles mark-shape on existing labels', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A','B','C'], variant: 'right-at-A' },
+      { op: 'add-point', name: 'H', constraint: { kind: 'perpFoot', from: 'A', onLine: 'BC' } },
+      { op: 'mark-shape', shape: 'triangle', labels: ['A','B','H'] },
+    ] as never);
+    const polys = dsl.shapes.filter((s) => s.kind === 'polygon');
+    const abh = polys.find((s) => {
+      const vs = (s as any).vertices;
+      return Array.isArray(vs) && vs.join('') === 'ABH';
+    });
+    expect(abh).toBeDefined();
+  });
+
+  it('throws on mark-shape referencing unknown label', () => {
+    expect(() => intentsToDsl([
+      { op: 'mark-shape', shape: 'triangle', labels: ['X','Y','Z'] },
+    ] as never)).toThrow(/mark-shape/);
+  });
+});
+
 describe('intentsToDsl — transpile compatibility', () => {
   it('produced DSL transpile thành công cho 1 hình tam giác', () => {
     const dsl = intentsToDsl([
