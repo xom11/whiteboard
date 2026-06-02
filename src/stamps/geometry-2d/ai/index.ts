@@ -104,3 +104,30 @@ export {
   type HandleGenerateFigureIntentOptions,
   type AiFigureIntentUiResult,
 } from './handleGenerateFigureIntent';
+
+// Vision / OCR API (image → text).
+export {
+  handleExtractProblem,
+  type HandleExtractProblemOptions,
+  type ExtractUiResult,
+} from './handleExtractProblem';
+export {
+  extractProblemFromImage,
+  pickVisionModel,
+  buildVisionSystemPrompt,
+  VISION_USER_PROMPT,
+  VisionEnvelopeZ,
+  visionEnvelopeJsonSchema,
+  fileToImagePart,
+  inferMediaType,
+  validateFile,
+  MAX_EDGE_PX,
+  MAX_RAW_BYTES,
+  MAX_ENCODED_BYTES,
+  type ExtractProblemOptions,
+  type ExtractProblemSuccess,
+  type ExtractProblemFailure,
+  type ExtractProblemOutcome,
+  type VisionEnvelopeT,
+  type ValidationResult,
+} from './vision';
