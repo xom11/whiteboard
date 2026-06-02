@@ -76,10 +76,19 @@ export type GenerateResult =
   | { ok: false; reason: 'transpile_error'; message: string; errors: TranspileError[]; dsl: unknown; usage?: TokenUsage; provider?: string }
   | { ok: false; reason: 'api_error'; message: string; status?: number; provider?: string };
 
+/**
+ * @deprecated DSL free-form pipeline. Use `generateFigureIntent` instead.
+ * Intent pipeline (4-stage) cải thiện đủ ý / không thừa / không vẽ sai.
+ * Path này sẽ remove ở 0.26.0.
+ */
 export async function generateFigure(
   problem: string,
   opts: GenerateOptions = {},
 ): Promise<GenerateResult> {
+  console.warn(
+    '[whiteboard/ai] generateFigure (DSL free-form) is deprecated. ' +
+    'Migrate to generateFigureIntent. Path will be removed in 0.26.0.',
+  );
   if (!problem || !problem.trim()) {
     return { ok: false, reason: 'api_error', message: 'Đề bài rỗng' };
   }

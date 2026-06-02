@@ -96,3 +96,11 @@ export {
   type VerifyIssue,
   type VerifyReport,
 } from './verify';
+
+// Intent Façade — HTTP transport wrapper cho generateFigureIntent.
+export {
+  handleGenerateFigureIntent,
+  type HandleGenerateFigureIntentInput,
+  type HandleGenerateFigureIntentOptions,
+  type AiFigureIntentUiResult,
+} from './handleGenerateFigureIntent';

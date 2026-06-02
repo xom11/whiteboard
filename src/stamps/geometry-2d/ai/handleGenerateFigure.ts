@@ -48,11 +48,18 @@ const DEFAULT_MAX_ATTEMPTS = 2;
  *
  * Server-side caller giữ `GenerateResult` đầy đủ qua `onResult` callback cho
  * mục đích telemetry/logging.
+ *
+ * @deprecated Use `handleGenerateFigureIntent` instead.
+ * DSL free-form pipeline sẽ remove ở 0.26.0.
  */
 export async function handleGenerateFigure(
   input: HandleGenerateFigureInput,
   opts: HandleGenerateFigureOptions = {},
 ): Promise<AiFigureUiResult> {
+  console.warn(
+    '[whiteboard/ai] handleGenerateFigure (DSL free-form) is deprecated. ' +
+    'Migrate to handleGenerateFigureIntent. Path will be removed in 0.26.0.',
+  );
   const { onResult, maxAttempts: rawMax, ...generateOpts } = opts;
   const maxAttempts = clampAttempts(rawMax ?? DEFAULT_MAX_ATTEMPTS);
 

@@ -166,6 +166,14 @@ git push --follow-tags
   3. `validator.ts` `applyDeterministicCompletion()` — inject/replace stub vào DSL **TRƯỚC** transpile (LLM-independent fallback).
 - Khi thêm primitive kind mới: cập nhật cả 3 nơi + thêm fixture vào `dsl/fixtures/` để embed vào system prompt.
 - Eval suite: `npx tsx scripts/eval-ollama.ts gemma3:4b` (cần Ollama local). Đạt 8/8 kind accuracy với commit `9e10a5e` (2026-06-01).
+- **Tier 4+5 (đề thi vào 10 thường + chuyên)** — Intent pipeline mở rộng 2026-06-02 (v0.25.0):
+  - +2 op intent: `draw-line` (perpThrough/parallelThrough/tangentAt/tangentFromExt), `mark-shape` (sub-shape từ điểm có sẵn).
+  - +3 circle spec: centerRadius, inscribedIn (+ centerThrough, through3 cũ).
+  - +5 add-point constraint: secondIntersection, circleIntersection, tangencyPoint, tangentPoint, angleBisectorFoot.
+  - +6 DSL kind: secondIntersection/circleIntersection/tangencyPoint/tangentPointExt (points) + circleCR/incircle (circles).
+  - Stage 4 verify thêm `computeIntentMetrics(expected, actual)` → recall/precision/F1 + `verifyGeometric(dsl)` cho on-circle check (3 check khác defer).
+  - Eval: `npx tsx scripts/eval-intent.ts gemma3:12b` — 30 cũ + 15 Tier 4/5 mới.
+  - `buildFigure` (DSL free-form) **@deprecated** — sẽ remove ở 0.26.0. UI nên switch sang `handleGenerateFigureIntent`.
 
 ## Conventions
 
