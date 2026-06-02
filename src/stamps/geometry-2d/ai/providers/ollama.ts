@@ -15,6 +15,7 @@ import type {
   ProviderOutput,
   ProviderRequest,
   ProviderTokenUsage,
+  VisionRequest,
 } from './types';
 
 const DEFAULT_BASE_URL = 'http://localhost:11434';
@@ -139,6 +140,83 @@ export class OllamaProvider implements AIProvider {
         kind: 'error',
         message: 'Ollama content không parse được JSON: ' + (err.message ?? '?'),
       };
+    }
+
+    const usage: ProviderTokenUsage = {
+      inputTokens: json.prompt_eval_count ?? 0,
+      outputTokens: json.eval_count ?? 0,
+      cacheReadTokens: 0,
+      cacheCreationTokens: 0,
+    };
+    return { kind: 'json', data, usage };
+  }
+
+  // Vision: gửi ảnh qua images[] field trong message (Ollama multimodal API).
+  // Model cần hỗ trợ vision (gemma3, llava, ...). Output vẫn là JSON envelope.
+  async extractText(req: VisionRequest): Promise<ProviderOutput> {
+    const model = req.model ?? this.defaultModel;
+    const body = {
+      model,
+      messages: [
+        { role: 'system', content: req.systemPrompt },
+        {
+          role: 'user',
+          content: req.userPrompt,
+          images: req.images.map((i) => i.base64),
+        },
+      ],
+      format: req.schema,
+      stream: false,
+      options: { num_predict: req.maxTokens, temperature: 0.2 },
+    };
+
+    let doFetch: typeof fetch;
+    try {
+      doFetch = this.resolveFetch();
+    } catch (e) {
+      return { kind: 'error', message: (e as { message?: string }).message ?? 'fetch không khả dụng' };
+    }
+
+    let resp: Response;
+    try {
+      resp = await doFetch(`${this.baseUrl}/api/chat`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: req.signal,
+      });
+    } catch (e) {
+      return {
+        kind: 'error',
+        message: (e as { message?: string }).message ?? `Không kết nối được Ollama ở ${this.baseUrl}`,
+      };
+    }
+
+    if (!resp.ok) {
+      let detail = '';
+      try { detail = await resp.text(); } catch { /* ignore */ }
+      return {
+        kind: 'error',
+        message: `Ollama Vision HTTP ${resp.status}: ${detail || resp.statusText}`,
+        status: resp.status,
+      };
+    }
+
+    let json: OllamaChatResponse;
+    try {
+      json = (await resp.json()) as OllamaChatResponse;
+    } catch (e) {
+      return { kind: 'error', message: 'Ollama vision response không phải JSON: ' + ((e as { message?: string }).message ?? '?') };
+    }
+
+    const content = json.message?.content?.trim();
+    if (!content) return { kind: 'error', message: 'Ollama vision trả content rỗng' };
+
+    let data: unknown;
+    try {
+      data = JSON.parse(content);
+    } catch (e) {
+      return { kind: 'error', message: 'Ollama vision content không parse JSON: ' + ((e as { message?: string }).message ?? '?') };
     }
 
     const usage: ProviderTokenUsage = {
