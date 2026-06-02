@@ -1,0 +1,30 @@
+
+=== Eval Ollama: gemma3:4b ===
+
+[tri-basic] Tam giác ABC.... ✓ 21363ms 3P+3S
+[tri-eq] Tam giác đều ABC cạnh 4.... ✓ 18136ms 3P+3S
+[tri-right] Tam giác ABC vuông tại A.... ✓ 17708ms 3P+3S
+[mid] Tam giác ABC, M là trung điểm BC, vẽ đoạn AM.... ✓ 17744ms 4P+2S
+[altitude] Tam giác ABC, H là chân đường cao kẻ từ A xuống BC.... ✓ 17982ms 4P+2S
+[bisector] Tam giác ABC, AD là phân giác góc A (D thuộc BC).... ✗ 20451ms [transpile_error] DSL từ AI không hợp lệ
+[alt-named] Cho tam giác ABC, hạ đường cao AH.... ✓ 20135ms 4P+4S
+[med-named] Cho tam giác ABC, AM là trung tuyến.... ✓ 18878ms 4P+4S
+[bis-named] Cho tam giác ABC, vẽ phân giác AD.... ✗ 20070ms [transpile_error] DSL từ AI không hợp lệ
+[centroid] Tam giác ABC, G là trọng tâm.... ✓ 18784ms 4P+3S
+[circum] Tam giác ABC nội tiếp đường tròn tâm O.... ✗ 23821ms [transpile_error] DSL từ AI không hợp lệ
+[incircle] Đường tròn nội tiếp tam giác ABC, tâm I.... ✗ 20345ms [transpile_error] DSL từ AI không hợp lệ
+[paragram] Hình bình hành ABCD, hai đường chéo AC, BD cắt nhau tại O.... ✓ 23692ms 5P+6S
+[circle3] Đường tròn đi qua 3 điểm A, B, C.... ✓ 15580ms 3P+2S
+[t4-circle-cr] Cho đường tròn (O; R=3) và dây AB. Gọi M là trung điểm AB.... ✓ 17609ms 4P+2S
+[t4-tangent-ext] Cho (O; R=3) và điểm A ngoài (O). Vẽ 2 tiếp tuyến AB, AC tới... ✓ 21072ms 4P+4S
+[t4-incircle-tangency] Cho tam giác ABC. Đường tròn (I) nội tiếp tiếp xúc BC, CA, A... ✓ 22686ms 6P+4S
+[t4-two-circles] Cho (O; R=2) và (O'; R=2) cắt nhau tại A và B (OO' = 3).... ✓ 37305ms 4P+2S
+[t4-bisector-circ] Cho tam giác ABC nội tiếp (O). Phân giác AD của góc A cắt (O... ✓ 21985ms 5P+5S
+[refuse-trig] Tính giá trị sin(30°) + cos(60°), không vẽ hình.... ✗ built (đáng lẽ refuse) 17593ms 3P+1S
+
+--- Summary (gemma3:4b) ---
+Transpile OK : 16/20 (80%)
+Correct refuse: 0/1
+Wrong build  : 1/1
+Kind accuracy: 12/16 (đề có expectKinds)
+Avg latency  : 20647ms
