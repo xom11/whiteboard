@@ -41,4 +41,31 @@ export interface AIProvider {
   /** Default model id khi caller không truyền. */
   readonly defaultModel: string;
   call(req: ProviderRequest): Promise<ProviderOutput>;
+  /**
+   * Optional vision capability. Provider không impl → caller check undefined
+   * trước khi gọi (façade trả error code='unsupported').
+   */
+  extractText?(req: VisionRequest): Promise<ProviderOutput>;
+}
+
+// Vision capability (optional) — image OCR + structured output.
+
+export interface ImagePart {
+  /** Whitelist 3 format browser decode native được. */
+  mediaType: 'image/png' | 'image/jpeg' | 'image/webp';
+  /** Base64 không bao gồm "data:image/...;base64," prefix. */
+  base64: string;
+}
+
+export interface VisionRequest {
+  systemPrompt: string;
+  userPrompt: string;
+  /** JSON Schema constraint output. */
+  schema: Record<string, unknown>;
+  /** v1 luôn length 1; array để forward-compat multi-image. */
+  images: ImagePart[];
+  /** Optional override; nếu omit, provider tự chọn vision-capable default. */
+  model?: string;
+  maxTokens: number;
+  signal?: AbortSignal;
 }
