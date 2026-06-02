@@ -4,6 +4,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import type { State } from '../../../core/scene';
 import type { GenerateGeometryFigure } from '../../shared/types';
 import { useAiFigure } from './useAiFigure';
+import { ImageDropZone, type ImageDropZoneError } from './ImageDropZone';
+import { handleExtractProblem } from '../ai/handleExtractProblem';
+import type { ImagePart } from '../ai/providers/types';
 
 interface Props {
   generator: GenerateGeometryFigure;
@@ -54,6 +57,43 @@ export function AiFigurePrompt({ generator, onGenerated, currentState }: Props) 
     const id = setInterval(() => setElapsed((s) => s + 1), 1000);
     return () => clearInterval(id);
   }, [isLoading]);
+
+  // Vision/OCR state.
+  const [showImageZone, setShowImageZone] = useState(false);
+  const [image, setImage] = useState<ImagePart | null>(null);
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const [ocrError, setOcrError] = useState<string | null>(null);
+  const [ocrWarning, setOcrWarning] = useState<string | null>(null);
+
+  const handleImageError = useCallback((err: ImageDropZoneError) => {
+    setOcrError(err.message);
+  }, []);
+
+  const handleRunOcr = useCallback(async () => {
+    if (!image) return;
+    setOcrLoading(true);
+    setOcrError(null);
+    setOcrWarning(null);
+    try {
+      const r = await handleExtractProblem(image);
+      if (r.kind === 'success') {
+        setPrompt(r.text);
+      } else if (r.kind === 'low-confidence') {
+        setPrompt(r.text);
+        setOcrWarning(r.warning);
+      } else if (r.kind === 'refused') {
+        setOcrError(r.message);
+      } else {
+        setOcrError(r.message);
+      }
+    } finally {
+      setOcrLoading(false);
+    }
+  }, [image, setPrompt]);
+
+  const toggleImageZone = useCallback(() => {
+    setShowImageZone((s) => !s);
+  }, []);
 
   const handleSubmit = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
@@ -145,6 +185,47 @@ export function AiFigurePrompt({ generator, onGenerated, currentState }: Props) 
           )}
         </div>
       )}
+
+      <div className="mb-2 flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={toggleImageZone}
+          className="self-start rounded border border-slate-300 bg-white px-2 py-1 text-[11px] text-slate-700 hover:border-emerald-400 hover:bg-emerald-50"
+        >
+          📷 {showImageZone ? 'Đóng ảnh' : 'Đọc đề từ ảnh'}
+        </button>
+
+        {showImageZone && (
+          <>
+            <ImageDropZone
+              value={image}
+              onChange={setImage}
+              onError={handleImageError}
+              disabled={ocrLoading || isLoading}
+            />
+            {image && (
+              <button
+                type="button"
+                onClick={() => void handleRunOcr()}
+                disabled={ocrLoading}
+                className="self-start rounded bg-sky-600 px-3 py-1 text-xs font-medium text-white hover:bg-sky-700 disabled:opacity-50"
+              >
+                {ocrLoading ? 'Đang đọc…' : 'Đọc đề bài'}
+              </button>
+            )}
+            {ocrError && (
+              <p role="alert" className="text-xs text-red-600">
+                {ocrError}
+              </p>
+            )}
+            {ocrWarning && (
+              <p className="rounded bg-amber-50 px-2 py-1 text-xs text-amber-700">
+                {ocrWarning}
+              </p>
+            )}
+          </>
+        )}
+      </div>
 
       <div className="flex items-start gap-2">
         <textarea
