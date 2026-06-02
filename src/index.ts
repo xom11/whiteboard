@@ -62,3 +62,14 @@ export type {
   AiFigureProgress,
   GenerateGeometryFigure,
 } from './stamps/shared/types';
+
+// Vision / OCR public API.
+export {
+  handleExtractProblem,
+  type HandleExtractProblemOptions,
+  type ExtractUiResult,
+} from './stamps/geometry-2d/ai/handleExtractProblem';
+export {
+  type ImagePart,
+  type VisionRequest,
+} from './stamps/geometry-2d/ai/providers/types';
