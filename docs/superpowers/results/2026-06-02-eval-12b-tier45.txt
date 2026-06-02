@@ -1,0 +1,64 @@
+
+=== Eval Intent Pipeline: gemma3:12b ===
+
+[t0-tri-any] (T0) Tam giác ABC.... ✓ 55605ms
+[t0-tri-eq] (T0) Tam giác đều ABC.... ✓ 36710ms
+[t0-tri-right-A] (T0) Tam giác ABC vuông tại A.... ✓ 38059ms
+[t0-tri-right-B] (T0) Tam giác ABC vuông tại B.... ✓ 38974ms
+[t0-tri-iso] (T0) Tam giác ABC cân tại A.... ✗ 38547ms (mismatch; -0/!1/+0)
+[t0-square] (T0) Hình vuông MNPQ.... ✗ 37899ms (mismatch; -0/!1/+0)
+[t0-rect] (T0) Hình chữ nhật ABCD.... ✗ 38184ms (mismatch; -0/!1/+0)
+[t0-rhom] (T0) Hình thoi ABCD.... ✗ 37773ms (mismatch; -0/!1/+0)
+[t0-para] (T0) Hình bình hành ABCD.... ✗ 37639ms (mismatch; -0/!1/+0)
+[t0-trap] (T0) Hình thang cân ABCD.... ✓ 38996ms
+[t1-mid] (T1) Tam giác ABC, M là trung điểm BC.... ✓ 42420ms
+[t1-mid-AM] (T1) Tam giác ABC, M là trung điểm BC, vẽ đoạn AM.... ✓ 47066ms
+[t1-altitude] (T1) Tam giác ABC, H là chân đường cao từ A xuống BC.... ✗ 47250ms (mismatch; -0/!0/+1)
+[t1-centroid] (T1) Tam giác ABC, G là trọng tâm.... ✓ 44847ms
+[t1-circum] (T1) Tam giác ABC, O là tâm đường tròn ngoại tiếp.... ✗ 43705ms (transpile_error; -0/!0/+0)
+[t1-incenter] (T1) Tam giác ABC, I là tâm đường tròn nội tiếp.... ✗ 44887ms (mismatch; -1/!0/+1)
+[t1-ortho] (T1) Tam giác ABC, trực tâm H.... ✓ 45684ms
+[t1-circle3] (T1) Đường tròn (O) đi qua 3 điểm A, B, C.... ✗ 39457ms (transpile_error; -0/!0/+0)
+[t1-rect-diag] (T1) Hình chữ nhật ABCD, vẽ đường chéo AC.... ✗ 42420ms (mismatch; -0/!1/+0)
+[t1-para-diags] (T1) Hình bình hành ABCD, hai đường chéo AC và BD cắt nhau tại O.... ✗ 50114ms (mismatch; -0/!1/+0)
+[t3-tri-any-en] (T3) Triangle ABC.... ✓ 37645ms
+[t3-tri-eq-en] (T3) Equilateral triangle ABC.... ✓ 37804ms
+[t3-tri-right-en] (T3) Right triangle ABC with the right angle at A.... ✓ 38091ms
+[t3-mid-en] (T3) Triangle ABC, M is the midpoint of BC.... ✓ 41916ms
+[t3-square-en] (T3) Square MNPQ.... ✗ 37430ms (mismatch; -0/!1/+0)
+[t3-altitude-en] (T3) In triangle ABC, H is the foot of the altitude from A to BC.... ✗ 45853ms (mismatch; -0/!0/+1)
+[t3-centroid-en] (T3) Let G be the centroid of triangle ABC.... ✓ 43046ms
+[t3-circum-en] (T3) Triangle ABC inscribed in circle O.... ✓ 43756ms
+[t4-ortho-mark] (T4) Cho tam giác ABC nhọn. Đường cao AD, BE, CF cắt tại H. Vẽ ta... ✗ 68570ms (transpile_error; -0/!0/+0)
+[t4-tangent-ext] (T4) Cho (O; R=3) và điểm A ngoài (O), OA=5. Từ A vẽ 2 tiếp tuyến... ✗ 67326ms (transpile_error; -0/!0/+0)
+[t4-2circles-secant] (T4) Cho (O) và (O') cắt nhau tại A, B. Qua A vẽ cát tuyến cắt (O... ✗ 70689ms (transpile_error; -0/!0/+0)
+[t4-incircle-gergonne] (T4) Cho tam giác ABC. (I) nội tiếp tiếp xúc BC, CA, AB tại D, E,... ✓ 70049ms
+[t4-cyclic-bcef] (T4) Cho tam giác ABC, đường cao BE (E∈AC) và CF (F∈AB). Đường tr... ✗ 53460ms (mismatch; -2/!0/+1)
+[t4-median-extend] (T4) Cho tam giác ABC, AM là trung tuyến (M∈BC). Trọng tâm G. N l... ✗ 66853ms (mismatch; -1/!0/+1)
+[t4-bisector-circumcircle] (T4) Cho tam giác ABC nội tiếp (O). Phân giác AD của góc A (D∈BC)... ✓ 65885ms
+[t4-medial-feet] (T4) Cho tam giác ABC nhọn, trực tâm H. M, N, P là trung điểm BC,... ✗ 75920ms (parse_error; -0/!0/+0)
+[t4-tangent-at-chain] (T4) Cho (O) và A trên (O). Vẽ tiếp tuyến At tại A. Lấy B trên At... ✗ 66349ms (transpile_error; -0/!0/+0)
+[t4-perpbis-circumcenter] (T4) Cho tam giác ABC. Đường trung trực AB và AC cắt nhau tại O.... ✗ 52125ms (transpile_error; -0/!0/+0)
+[t5-altitude-circle] (T5) Cho tam giác ABC vuông tại A, đường cao AH (H∈BC). Đường trò... ✗ 68198ms (parse_error; -0/!0/+0)
+[t5-incircle-circumcircle-arc] (T5) Cho tam giác ABC nội tiếp (O), (I) là đường tròn nội tiếp ti... ✗ EXCEPTION: emit: id not assigned for "AI"
+[t5-cyclic-quad-mids] (T5) Cho tứ giác ABCD nội tiếp (O). AC và BD cắt tại P. M, N là t... ✗ 98343ms (transpile_error; -0/!0/+0)
+[t5-nine-point-full] (T5) Cho tam giác ABC nhọn, trực tâm H. M, N, P là trung điểm BC,... ✗ 92031ms (parse_error; -0/!0/+0)
+[t5-2-incircles-tangent] (T5) Cho tam giác ABC vuông tại A, đường cao AH. Gọi (I1) và (I2)... ✗ 71714ms (mismatch; -2/!0/+0)
+[r-trig] (TR) Tính sin(30°) + cos(60°).... ✓ 34512ms (refused; -0/!0/+0)
+[r-cat] (TR) Vẽ con mèo.... ✓ 34888ms (refused; -0/!0/+0)
+
+--- Summary per tier ---
+Tier 0: ok=5/10 exact=5/10  total: missing=0 wrong=5 extra=0
+Tier 1: ok=4/10 exact=4/10  total: missing=1 wrong=2 extra=2
+Tier 3: ok=6/8 exact=6/8  total: missing=0 wrong=1 extra=1
+Tier 4: ok=2/10 exact=2/10  total: missing=3 wrong=0 extra=2
+Tier 5: ok=0/5 exact=0/5  total: missing=2 wrong=0 extra=0
+Tier R: ok=2/2 exact=2/2  total: missing=0 wrong=0 extra=0
+
+Total: ok=19/45 (42%) exact=19/45 (42%) avg=49526ms
+
+--- 3-axis (buildable only) ---
+Đủ        : 153/159 (96%)
+Đúng     : 151/159 (95%)
+Không thừa: missing-extras=5 (lower = better; ideal = 0)
+Avg Recall=74.2% Precision=73.2% F1=73.7%

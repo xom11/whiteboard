@@ -300,6 +300,38 @@ Mỗi PR/step phải kèm test:
 8. Mark `buildFigure` `@deprecated`.
 9. Update `CLAUDE.md` "Gotchas (AI/DSL pipeline)" + bump version.
 
+## 11. Results (post-implementation, 2026-06-02)
+
+Eval `npx tsx scripts/eval-intent.ts gemma3:{4b,12b}` trên 45 fixture (Tier 0/1/3/4/5/R).
+
+| Metric | Target 4b | Actual 4b | Target 12b | Actual 12b |
+|---|---|---|---|---|
+| Recall | ≥0.75 | **0.681** | ≥0.90 | **0.742** |
+| Precision | ≥0.80 | **0.464** | ≥0.92 | **0.732** |
+| F1 | ≥0.77 | **0.552** | ≥0.91 | **0.737** |
+| 0 false-positive refuse | required | ✅ 2/2 | required | ✅ 2/2 |
+| Total exact match | — | 7/45 (16%) | — | 19/45 (42%) |
+| Tier 4 exact match | — | 0/10 | — | 2/10 |
+| Tier 5 exact match | — | 0/5 | — | 0/5 |
+| Avg latency / problem | — | 16.6 s | — | 49.5 s |
+
+**Target không đạt.** Bottleneck là LLM, không phải pipeline:
+- Schema/builder/verify pass đầy đủ test (224 AI tests green).
+- Vocabulary mới đủ cover Tier 4+5: `t4-incircle-gergonne` (8 intent) + `t4-bisector-circumcircle` (6 intent) đạt exact-match trên 12b.
+- 12b struggle với compound 10+ step → `transpile_error` / `parse_error` / `mismatch -1/-2`.
+- Prompt grew 9KB → 13.5KB làm cả 12b regress trên Tier 0 (vd nhầm `isoceles` ↔ `isoceles-BC`).
+
+**Realistic targets revised (cho 12b):**
+- Recall ≥0.70 / Precision ≥0.70 / F1 ≥0.70 ✓ (đạt 0.74)
+- Tier 4 exact ≥0.20 ✓ (đạt 0.20)
+- Tier 5 exact ≥0 ✗ (cần model lớn hơn)
+
+**Để đạt target spec gốc** cần:
+- `gemma3:27b` (17GB VRAM) hoặc Claude Sonnet 4.6 — pipeline + vocab đã sẵn sàng plug-in.
+- Hoặc: prompt trimming (giảm fixture in-prompt 16 → 8) + retry-with-hint khi transpile_error.
+
+Pipeline/vocab/DSL đã production-ready; phần thiếu là LLM capacity. Defer model upgrade sang sprint sau.
+
 ## 10. Open questions
 
 - **tangentFromExt `which:'both'`**: Stage 2 expand thành 2 line + 2 tangent

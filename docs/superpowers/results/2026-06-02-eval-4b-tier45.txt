@@ -1,0 +1,64 @@
+
+=== Eval Intent Pipeline: gemma3:4b ===
+
+[t0-tri-any] (T0) Tam giác ABC.... ✗ 15069ms (refused; -0/!0/+0)
+[t0-tri-eq] (T0) Tam giác đều ABC.... ✓ 13995ms
+[t0-tri-right-A] (T0) Tam giác ABC vuông tại A.... ✓ 13820ms
+[t0-tri-right-B] (T0) Tam giác ABC vuông tại B.... ✗ 11978ms (refused; -0/!0/+0)
+[t0-tri-iso] (T0) Tam giác ABC cân tại A.... ✗ 12015ms (refused; -0/!0/+0)
+[t0-square] (T0) Hình vuông MNPQ.... ✗ 13570ms (mismatch; -0/!1/+0)
+[t0-rect] (T0) Hình chữ nhật ABCD.... ✗ 13920ms (mismatch; -0/!1/+0)
+[t0-rhom] (T0) Hình thoi ABCD.... ✗ 13747ms (mismatch; -0/!1/+0)
+[t0-para] (T0) Hình bình hành ABCD.... ✗ 19416ms (mismatch; -0/!1/+4)
+[t0-trap] (T0) Hình thang cân ABCD.... ✓ 14085ms
+[t1-mid] (T1) Tam giác ABC, M là trung điểm BC.... ✗ 20847ms (mismatch; -0/!0/+4)
+[t1-mid-AM] (T1) Tam giác ABC, M là trung điểm BC, vẽ đoạn AM.... ✗ 18403ms (mismatch; -0/!0/+1)
+[t1-altitude] (T1) Tam giác ABC, H là chân đường cao từ A xuống BC.... ✗ 19105ms (mismatch; -0/!0/+2)
+[t1-centroid] (T1) Tam giác ABC, G là trọng tâm.... ✗ 12314ms (refused; -0/!0/+0)
+[t1-circum] (T1) Tam giác ABC, O là tâm đường tròn ngoại tiếp.... ✗ 12192ms (refused; -0/!0/+0)
+[t1-incenter] (T1) Tam giác ABC, I là tâm đường tròn nội tiếp.... ✗ 19402ms (transpile_error; -0/!0/+0)
+[t1-ortho] (T1) Tam giác ABC, trực tâm H.... ✗ 21589ms (mismatch; -0/!1/+4)
+[t1-circle3] (T1) Đường tròn (O) đi qua 3 điểm A, B, C.... ✗ 20246ms (transpile_error; -0/!0/+0)
+[t1-rect-diag] (T1) Hình chữ nhật ABCD, vẽ đường chéo AC.... ✗ 18150ms (builder_error; -0/!0/+0)
+[t1-para-diags] (T1) Hình bình hành ABCD, hai đường chéo AC và BD cắt nhau tại O.... ✗ 22873ms (mismatch; -0/!1/+4)
+[t3-tri-any-en] (T3) Triangle ABC.... ✗ 11991ms (refused; -0/!0/+0)
+[t3-tri-eq-en] (T3) Equilateral triangle ABC.... ✓ 13966ms
+[t3-tri-right-en] (T3) Right triangle ABC with the right angle at A.... ✓ 13698ms
+[t3-mid-en] (T3) Triangle ABC, M is the midpoint of BC.... ✗ 20957ms (mismatch; -0/!0/+4)
+[t3-square-en] (T3) Square MNPQ.... ✗ 13074ms (mismatch; -0/!1/+0)
+[t3-altitude-en] (T3) In triangle ABC, H is the foot of the altitude from A to BC.... ✗ 17815ms (mismatch; -0/!0/+2)
+[t3-centroid-en] (T3) Let G be the centroid of triangle ABC.... ✗ 19247ms (mismatch; -0/!0/+3)
+[t3-circum-en] (T3) Triangle ABC inscribed in circle O.... ✗ 11941ms (refused; -0/!0/+0)
+[t4-ortho-mark] (T4) Cho tam giác ABC nhọn. Đường cao AD, BE, CF cắt tại H. Vẽ ta... ✗ 11606ms (refused; -0/!0/+0)
+[t4-tangent-ext] (T4) Cho (O; R=3) và điểm A ngoài (O), OA=5. Từ A vẽ 2 tiếp tuyến... ✗ 26802ms (transpile_error; -0/!0/+0)
+[t4-2circles-secant] (T4) Cho (O) và (O') cắt nhau tại A, B. Qua A vẽ cát tuyến cắt (O... ✗ 25426ms (transpile_error; -0/!0/+0)
+[t4-incircle-gergonne] (T4) Cho tam giác ABC. (I) nội tiếp tiếp xúc BC, CA, AB tại D, E,... ✗ EXCEPTION: emit: id not assigned for "BC"
+[t4-cyclic-bcef] (T4) Cho tam giác ABC, đường cao BE (E∈AC) và CF (F∈AB). Đường tr... ✗ 23114ms (builder_error; -0/!0/+0)
+[t4-median-extend] (T4) Cho tam giác ABC, AM là trung tuyến (M∈BC). Trọng tâm G. N l... ✗ 25291ms (builder_error; -0/!0/+0)
+[t4-bisector-circumcircle] (T4) Cho tam giác ABC nội tiếp (O). Phân giác AD của góc A (D∈BC)... ✗ 24277ms (builder_error; -0/!0/+0)
+[t4-medial-feet] (T4) Cho tam giác ABC nhọn, trực tâm H. M, N, P là trung điểm BC,... ✗ 26069ms (parse_error; -0/!0/+0)
+[t4-tangent-at-chain] (T4) Cho (O) và A trên (O). Vẽ tiếp tuyến At tại A. Lấy B trên At... ✗ 26496ms (transpile_error; -0/!0/+0)
+[t4-perpbis-circumcenter] (T4) Cho tam giác ABC. Đường trung trực AB và AC cắt nhau tại O.... ✗ 20638ms (builder_error; -0/!0/+0)
+[t5-altitude-circle] (T5) Cho tam giác ABC vuông tại A, đường cao AH (H∈BC). Đường trò... ✗ EXCEPTION: emit: id not assigned for "AB"
+[t5-incircle-circumcircle-arc] (T5) Cho tam giác ABC nội tiếp (O), (I) là đường tròn nội tiếp ti... ✗ 24226ms (transpile_error; -0/!0/+0)
+[t5-cyclic-quad-mids] (T5) Cho tứ giác ABCD nội tiếp (O). AC và BD cắt tại P. M, N là t... ✗ 26765ms (builder_error; -0/!0/+0)
+[t5-nine-point-full] (T5) Cho tam giác ABC nhọn, trực tâm H. M, N, P là trung điểm BC,... ✗ 14127ms (refused; -0/!0/+0)
+[t5-2-incircles-tangent] (T5) Cho tam giác ABC vuông tại A, đường cao AH. Gọi (I1) và (I2)... ✗ EXCEPTION: emit: id not assigned for "BH"
+[r-trig] (TR) Tính sin(30°) + cos(60°).... ✓ 12297ms (refused; -0/!0/+0)
+[r-cat] (TR) Vẽ con mèo.... ✓ 11873ms (refused; -0/!0/+0)
+
+--- Summary per tier ---
+Tier 0: ok=3/10 exact=3/10  total: missing=0 wrong=4 extra=4
+Tier 1: ok=0/10 exact=0/10  total: missing=0 wrong=2 extra=15
+Tier 3: ok=2/8 exact=2/8  total: missing=0 wrong=1 extra=9
+Tier 4: ok=0/10 exact=0/10  total: missing=0 wrong=0 extra=0
+Tier 5: ok=0/5 exact=0/5  total: missing=0 wrong=0 extra=0
+Tier R: ok=2/2 exact=2/2  total: missing=0 wrong=0 extra=0
+
+Total: ok=7/45 (16%) exact=7/45 (16%) avg=16632ms
+
+--- 3-axis (buildable only) ---
+Đủ        : 159/159 (100%)
+Đúng     : 152/159 (96%)
+Không thừa: missing-extras=28 (lower = better; ideal = 0)
+Avg Recall=68.1% Precision=46.4% F1=55.2%

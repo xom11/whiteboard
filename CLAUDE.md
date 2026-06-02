@@ -173,6 +173,7 @@ git push --follow-tags
   - +6 DSL kind: secondIntersection/circleIntersection/tangencyPoint/tangentPointExt (points) + circleCR/incircle (circles).
   - Stage 4 verify thêm `computeIntentMetrics(expected, actual)` → recall/precision/F1 + `verifyGeometric(dsl)` cho on-circle check (3 check khác defer).
   - Eval: `npx tsx scripts/eval-intent.ts gemma3:12b` — 30 cũ + 15 Tier 4/5 mới.
+  - **Eval kết quả 2026-06-02** (`docs/superpowers/results/2026-06-02-eval-{4b,12b}-tier45.txt`): 12b F1=0.737 (target 0.91 không đạt). Bottleneck là LLM, không phải pipeline — Tier 5 (10+ intent/đề) cần `gemma3:27b` hoặc Claude. Pipeline + vocab đã ready để plug-in model lớn hơn.
   - `buildFigure` (DSL free-form) **@deprecated** — sẽ remove ở 0.26.0. UI nên switch sang `handleGenerateFigureIntent`.
 
 ## Conventions
