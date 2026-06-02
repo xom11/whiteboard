@@ -65,13 +65,13 @@ describe('registry', () => {
     }
   });
 
-  test('registry has 22 kinds (regression guard)', () => {
-    expect(KIND_REGISTRY.size).toBe(22);
+  test('registry has 28 kinds (regression guard)', () => {
+    expect(KIND_REGISTRY.size).toBe(28);
   });
 });
 
 describe('emit context mintAuxId', () => {
-  test('transpile pipeline produces no auxiliary ids for the 22 atomic kinds', () => {
+  test('transpile pipeline produces no auxiliary ids for the 28 atomic kinds', () => {
     const dsl = {
       version: 1 as const,
       points: [{ name: 'A', kind: 'free' as const, x: 0, y: 0 }],

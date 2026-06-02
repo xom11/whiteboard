@@ -40,6 +40,13 @@ function describeEntity(e: DslPointT | DslShapeT): string {
     }
     case 'circleCP':      return `${e.name} = (${e.center}; ${e.center}${e.surfacePoint})`;
     case 'circle3':       return `${e.name} = đường tròn qua ${e.p1}${e.p2}${e.p3}`;
+    // NEW Tier 4+5
+    case 'secondIntersection':  return `${e.name} = giao thứ hai của ${e.line} và ${e.circle} (khác ${e.other})`;
+    case 'circleIntersection':  return `${e.name} = giao ${e.c1} ∩ ${e.c2} (nhánh ${e.which})`;
+    case 'tangencyPoint':       return `${e.name} = tiếp điểm của ${e.circle} trên ${e.onLine}`;
+    case 'tangentPointExt':     return `${e.name} = tiếp điểm từ ${e.from} lên ${e.circle} (nhánh ${e.which})`;
+    case 'circleCR':            return `${e.name} = đường tròn (${e.center}; r=${e.radius})`;
+    case 'incircle':            return `${e.name} = đường tròn nội tiếp ${e.vertices.join('')}`;
     default: {
       const _exhaust: never = e;
       void _exhaust;

@@ -59,7 +59,12 @@ export type DslPointT =
   | { name: Name; kind: 'incenter'; vertices: [Name, Name, Name] }
   | { name: Name; kind: 'centroid'; vertices: [Name, Name, Name] }
   | { name: Name; kind: 'orthocenter'; vertices: [Name, Name, Name] }
-  | { name: Name; kind: 'intersection'; ref1: Name; ref2: Name; branch?: 0 | 1 };
+  | { name: Name; kind: 'intersection'; ref1: Name; ref2: Name; branch?: 0 | 1 }
+  // NEW Tier 4+5
+  | { name: Name; kind: 'secondIntersection'; line: Name; circle: Name; other: Name }
+  | { name: Name; kind: 'circleIntersection'; c1: Name; c2: Name; which: 0 | 1 }
+  | { name: Name; kind: 'tangencyPoint'; circle: Name; onLine: Name }
+  | { name: Name; kind: 'tangentPointExt'; from: Name; circle: Name; which: 0 | 1 };
 
 export type DslShapeT =
   | { name: Name; kind: 'segment'; p1: Name; p2: Name }
@@ -72,7 +77,10 @@ export type DslShapeT =
   | { name: Name; kind: 'angleBisector'; p1: Name; vertex: Name; p2: Name }
   | { name: Name; kind: 'tangent'; throughPoint: Name; toCircle: Name; branch?: 0 | 1 | 'on' }
   | { name: Name; kind: 'circleCP'; center: Name; surfacePoint: Name }
-  | { name: Name; kind: 'circle3'; p1: Name; p2: Name; p3: Name };
+  | { name: Name; kind: 'circle3'; p1: Name; p2: Name; p3: Name }
+  // NEW Tier 4+5
+  | { name: Name; kind: 'circleCR'; center: Name; radius: number }
+  | { name: Name; kind: 'incircle'; vertices: [Name, Name, Name] };
 
 export type DslInputT = {
   version: 1;
