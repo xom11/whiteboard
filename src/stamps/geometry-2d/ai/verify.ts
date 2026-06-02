@@ -10,7 +10,7 @@
 //   2. runtime mode: tự verify pipeline (intent→DSL, không có golden)
 
 import type { DslInputT } from '../dsl/schema';
-import type { IntentT, DrawShapeIntentT } from './intent';
+import type { IntentT, DrawShapeIntentT, AddPointIntentT } from './intent';
 
 export interface VerifyIssue {
   readonly axis: 'missing' | 'wrong' | 'extra';
@@ -94,14 +94,24 @@ function intentKey(intent: IntentT): string {
       return ['add-point', intent.name, intent.constraint.kind, constraintKey(intent.constraint)].join('/');
     case 'connect':
       return ['connect', intent.style, intent.from, intent.to].join('/');
-    case 'draw-circle':
-      return intent.spec === 'centerThrough'
-        ? `draw-circle/${intent.name}/centerThrough/${intent.center}/${intent.through}`
-        : `draw-circle/${intent.name}/through3/${intent.points.join(',')}`;
+    case 'draw-circle': {
+      if (intent.spec === 'centerThrough') return `draw-circle/${intent.name}/centerThrough/${intent.center}/${intent.through}`;
+      if (intent.spec === 'through3')      return `draw-circle/${intent.name}/through3/${intent.points?.join(',') ?? ''}`;
+      if (intent.spec === 'centerRadius')  return `draw-circle/${intent.name}/centerRadius/${intent.center}/${intent.radius}`;
+      if (intent.spec === 'inscribedIn')   return `draw-circle/${intent.name}/inscribedIn/${intent.triangle?.join(',') ?? ''}`;
+      return `draw-circle/${intent.name}/${(intent as any).spec}`;
+    }
+    case 'draw-line':
+      return [
+        'draw-line', intent.name, intent.kind,
+        intent.through ?? '', intent.to ?? '', intent.from ?? '', intent.circle ?? '', intent.which ?? '',
+      ].join('/');
+    case 'mark-shape':
+      return ['mark-shape', intent.shape, intent.labels.join(',')].join('/');
   }
 }
 
-function constraintKey(c: IntentT extends { op: 'add-point'; constraint: infer C } ? C : never): string {
+function constraintKey(c: AddPointIntentT['constraint']): string {
   switch (c.kind) {
     case 'midpoint': return c.of;
     case 'perpFoot': return `${c.from}->${c.onLine}`;
@@ -113,6 +123,11 @@ function constraintKey(c: IntentT extends { op: 'add-point'; constraint: infer C
     case 'intersection': return c.of.join('×');
     case 'onSegment': return `${c.of}@${c.t ?? 'mid'}`;
     case 'free': return c.at ? c.at.join(',') : '*';
+    case 'secondIntersection':  return `secondIntersection:${c.line}:${c.circle}:${c.other}`;
+    case 'circleIntersection':  return `circleIntersection:${c.c1}:${c.c2}:${c.which}`;
+    case 'tangencyPoint':       return `tangencyPoint:${c.circle}:${c.onLine}`;
+    case 'tangentPoint':        return `tangentPoint:${c.from}:${c.circle}:${c.which}`;
+    case 'angleBisectorFoot':   return `angleBisectorFoot:${c.from}:${c.onLine}`;
   }
 }
 
