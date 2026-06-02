@@ -287,6 +287,42 @@ describe('intentsToDsl — Tier 4+5', () => {
   });
 });
 
+// === Bug fix: segment ref auto-creation ===
+describe('intentsToDsl — auto-ensure segments for new constraints', () => {
+  it('secondIntersection auto-creates segment for line ref', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A','B','C'], variant: 'any' },
+      { op: 'draw-circle', name: 'cA', spec: 'centerThrough', center: 'A', through: 'B' },
+      { op: 'add-point', name: 'P', constraint: { kind: 'secondIntersection', line: 'AB', circle: 'cA', other: 'A' } },
+    ] as never);
+    // Segment AB must exist as a shape (auto-created by builder)
+    const seg = dsl.shapes.find((s) => s.kind === 'segment' && ((s as any).p1 === 'A' && (s as any).p2 === 'B'));
+    expect(seg).toBeDefined();
+  });
+
+  it('tangencyPoint auto-creates segment for onLine ref', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A','B','C'], variant: 'any' },
+      { op: 'draw-circle', name: 'I', spec: 'inscribedIn', triangle: ['A','B','C'] },
+      { op: 'add-point', name: 'D', constraint: { kind: 'tangencyPoint', circle: 'I', onLine: 'BC' } },
+    ] as never);
+    const seg = dsl.shapes.find((s) => s.kind === 'segment' && ((s as any).p1 === 'B' && (s as any).p2 === 'C'));
+    expect(seg).toBeDefined();
+  });
+
+  it('tangencyPoint on BH (sub-triangle side) auto-creates segment', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A','B','C'], variant: 'right-at-A' },
+      { op: 'add-point', name: 'H', constraint: { kind: 'perpFoot', from: 'A', onLine: 'BC' } },
+      { op: 'mark-shape', shape: 'triangle', labels: ['A','B','H'] },
+      { op: 'draw-circle', name: 'I1', spec: 'inscribedIn', triangle: ['A','B','H'] },
+      { op: 'add-point', name: 'D', constraint: { kind: 'tangencyPoint', circle: 'I1', onLine: 'BH' } },
+    ] as never);
+    const seg = dsl.shapes.find((s) => s.kind === 'segment' && ((s as any).p1 === 'B' && (s as any).p2 === 'H'));
+    expect(seg).toBeDefined();
+  });
+});
+
 describe('intentsToDsl — transpile compatibility', () => {
   it('produced DSL transpile thành công cho 1 hình tam giác', () => {
     const dsl = intentsToDsl([

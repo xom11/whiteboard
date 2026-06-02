@@ -294,24 +294,28 @@ function handleAddPoint(s: BuildState, intent: AddPointIntentT) {
       addPoint(s, { name, kind: 'free', x, y });
       break;
     }
-    case 'secondIntersection':
+    case 'secondIntersection': {
+      const lineRef = resolveSegmentRef(s, c.line);
       addPoint(s, {
         name, kind: 'secondIntersection',
-        line: c.line, circle: c.circle, other: c.other,
+        line: lineRef, circle: c.circle, other: c.other,
       });
       break;
+    }
     case 'circleIntersection':
       addPoint(s, {
         name, kind: 'circleIntersection',
         c1: c.c1, c2: c.c2, which: c.which,
       });
       break;
-    case 'tangencyPoint':
+    case 'tangencyPoint': {
+      const lineRef = resolveSegmentRef(s, c.onLine);
       addPoint(s, {
         name, kind: 'tangencyPoint',
-        circle: c.circle, onLine: c.onLine,
+        circle: c.circle, onLine: lineRef,
       });
       break;
+    }
     case 'tangentPoint':
       addPoint(s, {
         name, kind: 'tangentPointExt',
