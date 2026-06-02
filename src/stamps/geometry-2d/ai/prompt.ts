@@ -21,10 +21,17 @@ import { fixture as rho } from '../dsl/fixtures/rhombus';
 import { fixture as rta } from '../dsl/fixtures/right-triangle-altitude';
 import { fixture as tan } from '../dsl/fixtures/tangent-from-point';
 import { fixture as ieBis } from '../dsl/fixtures/internal-external-bisector';
+import { fixture as tanExt } from '../dsl/fixtures/tangent-from-external-named';
+import { fixture as incTan } from '../dsl/fixtures/triangle-incircle-tangency';
+import { fixture as twoCR } from '../dsl/fixtures/two-circles-cr-intersect';
+import { fixture as bisCirc } from '../dsl/fixtures/bisector-meets-circumcircle';
+import { fixture as crChord } from '../dsl/fixtures/circle-cr-chord-midpoint';
 
 const FIXTURES = [
   eq, md, alt, ce, oc, cc, ic, bis, mdAlt,
   rta, ieBis, tan, par, rho, trap, two,
+  // === Tier 4+5: kinds mới (circleCR, incircle, tangencyPoint, tangentPointExt, circleIntersection, secondIntersection) ===
+  tanExt, incTan, twoCR, bisCirc, crChord,
 ];
 
 export function buildSystemPrompt(): string {
