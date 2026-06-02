@@ -204,6 +204,10 @@ git push --follow-tags
 - **CSS-in-JS từ Excalidraw**: `import '@excalidraw/excalidraw/index.css'` trong `ExcalidrawWhiteboardView.tsx`. Consumer Next.js handle CSS imports từ JS thông qua webpack/turbopack loader.
 - **Tailwind v4 không scan node_modules**: consumer phải thêm `@source "../../../node_modules/@xom11/whiteboard/dist/**/*.{js,mjs}";` vào globals.css.
 - **pdfjs-dist worker**: mặc định trỏ CDN `cdn.jsdelivr.net` theo version đã cài. Consumer offline-first phải gọi `configurePdfWorker(url)` trước lần dùng đầu tiên (vd self-host `pdf.worker.min.mjs`). pdfjs lazy-load chỉ khi user trigger PDF import.
+- **Vision OCR (0.26.0+)**: `handleExtractProblem(image)` đọc đề từ ảnh qua AI multimodal. Browser cần `createImageBitmap` + `<canvas>.toBlob` (jsdom test environment không support — preprocess là smoke test only).
+- **Vision model**: `WHITEBOARD_AI_VISION_MODEL` env override; mặc định cùng model với DSL gen (Ollama `gemma3:4b` multimodal native, Anthropic `claude-opus-4-7` vision native).
+- **Image cap**: client downscale max edge 2048px + cap encoded 4MB (Anthropic limit 5MB, buffer 1MB). HEIC iPhone không decode được browser → reject với hint convert JPEG.
+- **Anthropic vision cost**: ~70đ/ảnh (1500 input tokens) — không rate-limit v1, doc qua env nếu cần cap.
 
 ## Extracted from
 
