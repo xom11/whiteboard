@@ -52,6 +52,18 @@ const PROBLEMS: Problem[] = [
   // Đường tròn qua 3 điểm
   { id: 'circle3',   text: 'Đường tròn đi qua 3 điểm A, B, C.', expectKinds: ['circle3'] },
 
+  // === Tier 4 — đề thi vào 10 thường, dùng kinds mới ===
+  { id: 't4-circle-cr', text: 'Cho đường tròn (O; R=3) và dây AB. Gọi M là trung điểm AB.',
+    expectKinds: ['circleCR', 'midpoint'] },
+  { id: 't4-tangent-ext', text: 'Cho (O; R=3) và điểm A ngoài (O). Vẽ 2 tiếp tuyến AB, AC tới (O) (B, C là tiếp điểm).',
+    expectKinds: ['circleCR', 'tangentPointExt', 'tangent'] },
+  { id: 't4-incircle-tangency', text: 'Cho tam giác ABC. Đường tròn (I) nội tiếp tiếp xúc BC, CA, AB lần lượt tại D, E, F.',
+    expectKinds: ['incircle', 'tangencyPoint'] },
+  { id: 't4-two-circles', text: "Cho (O; R=2) và (O'; R=2) cắt nhau tại A và B (OO' = 3).",
+    expectKinds: ['circleCR', 'circleIntersection'] },
+  { id: 't4-bisector-circ', text: 'Cho tam giác ABC nội tiếp (O). Phân giác AD của góc A cắt (O) tại điểm thứ hai E.',
+    expectKinds: ['circle3', 'angleBisector', 'secondIntersection'] },
+
   // Ngoài phạm vi
   { id: 'refuse-trig', text: 'Tính giá trị sin(30°) + cos(60°), không vẽ hình.', expectRefuse: true },
 ];
