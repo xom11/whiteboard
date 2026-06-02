@@ -137,6 +137,62 @@ const FIXTURES: IntentFixture[] = [
       { op: 'add-point', name: 'O', constraint: { kind: 'intersection', of: ['AC', 'BD'] } },
     ],
   },
+  // === Tier 4+5 examples ===
+  // Tiếp tuyến từ điểm ngoài
+  {
+    problem: 'Cho (O; R=3) và điểm A ngoài (O). Vẽ 2 tiếp tuyến AB, AC tới (O) (B, C là tiếp điểm).',
+    intents: [
+      { op: 'draw-circle', name: 'O', spec: 'centerRadius', center: 'O', radius: 3 },
+      { op: 'add-point', name: 'A', constraint: { kind: 'free', at: [5, 0] } },
+      { op: 'draw-line', name: 'tBC', kind: 'tangentFromExt', from: 'A', circle: 'O', which: 'both' },
+      { op: 'add-point', name: 'B', constraint: { kind: 'tangentPoint', from: 'A', circle: 'O', which: 0 } },
+      { op: 'add-point', name: 'C', constraint: { kind: 'tangentPoint', from: 'A', circle: 'O', which: 1 } },
+      { op: 'connect', from: 'B', to: 'C', style: 'segment' },
+    ],
+  },
+  // 2 đường tròn cắt nhau + cát tuyến
+  {
+    problem: "Cho (O) và (O') cắt nhau tại A, B. Qua A vẽ cát tuyến cắt (O) tại C, cắt (O') tại D.",
+    intents: [
+      { op: 'draw-circle', name: 'O', spec: 'centerRadius', center: 'O', radius: 2 },
+      { op: 'draw-circle', name: 'Op', spec: 'centerRadius', center: 'Op', radius: 2 },
+      { op: 'add-point', name: 'A', constraint: { kind: 'circleIntersection', c1: 'O', c2: 'Op', which: 0 } },
+      { op: 'add-point', name: 'B', constraint: { kind: 'circleIntersection', c1: 'O', c2: 'Op', which: 1 } },
+      { op: 'add-point', name: 'C', constraint: { kind: 'secondIntersection', line: 'AC', circle: 'O', other: 'A' } },
+      { op: 'add-point', name: 'D', constraint: { kind: 'secondIntersection', line: 'AC', circle: 'Op', other: 'A' } },
+    ],
+  },
+  // Đường tròn nội tiếp + tiếp điểm 3 cạnh
+  {
+    problem: 'Cho ΔABC. (I) là đường tròn nội tiếp tiếp xúc BC, CA, AB tại D, E, F.',
+    intents: [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'draw-circle', name: 'I', spec: 'inscribedIn', triangle: ['A', 'B', 'C'] },
+      { op: 'add-point', name: 'D', constraint: { kind: 'tangencyPoint', circle: 'I', onLine: 'BC' } },
+      { op: 'add-point', name: 'E', constraint: { kind: 'tangencyPoint', circle: 'I', onLine: 'CA' } },
+      { op: 'add-point', name: 'F', constraint: { kind: 'tangencyPoint', circle: 'I', onLine: 'AB' } },
+    ],
+  },
+  // mark-shape (sub-triangle ABH từ điểm có sẵn)
+  {
+    problem: 'Cho ΔABC vuông tại A, AH là đường cao (H∈BC). Xét ΔABH.',
+    intents: [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'right-at-A' },
+      { op: 'add-point', name: 'H', constraint: { kind: 'perpFoot', from: 'A', onLine: 'BC' } },
+      { op: 'connect', from: 'A', to: 'H', style: 'segment' },
+      { op: 'mark-shape', shape: 'triangle', labels: ['A', 'B', 'H'] },
+    ],
+  },
+  // Phân giác cắt đường tròn ngoại tiếp
+  {
+    problem: 'Cho ΔABC nội tiếp (O). Phân giác AD của góc A cắt (O) tại E (E≠A).',
+    intents: [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'draw-circle', name: 'O', spec: 'through3', points: ['A', 'B', 'C'] },
+      { op: 'add-point', name: 'D', constraint: { kind: 'angleBisectorFoot', from: 'A', onLine: 'BC' } },
+      { op: 'add-point', name: 'E', constraint: { kind: 'secondIntersection', line: 'AD', circle: 'O', other: 'A' } },
+    ],
+  },
   // Refuse examples — đa dạng
   {
     problem: 'Tính sin(30°) + cos(60°).',
@@ -196,6 +252,19 @@ hoặc
    - Trọng tâm/tâm ngoại/nội/trực tâm → add-point constraint=centroid/circumcenter/incenter/orthocenter
 
 5. **KHÔNG bịa.** Nếu đề mơ hồ hoặc không thuộc hình học 2D phổ thông → decision=refuse.
+
+6. **mark-shape vs draw-shape:** Nếu label đã tồn tại từ intent trước (vd A, B, H đã có) → dùng **mark-shape**
+   để đặt tên sub-shape, KHÔNG dùng draw-shape (sẽ tạo coord mới sai).
+
+7. **draw-circle spec=centerRadius:** Khi đề có "(O; R=3)" hoặc "(O; bán kính 3)" → dùng draw-circle spec=centerRadius.
+
+8. **Đường tròn nội tiếp:** Khi đề có "đường tròn nội tiếp ΔABC" → draw-circle spec=inscribedIn.
+
+9. **Tiếp tuyến từ ngoài:** "Tiếp tuyến từ A ngoài (O)" → draw-line kind=tangentFromExt + 2 add-point tangentPoint với which=0/1.
+
+10. **Phân giác:** "Phân giác AD của góc A" → add-point D constraint=angleBisectorFoot.
+
+11. **Giao điểm thứ 2:** "Giao điểm thứ 2" của line với circle → constraint=secondIntersection, pass \`other\` là điểm giao thứ nhất đã biết.
 
 ## Variant enum (chỉ dùng giá trị này)
 - triangle: any | equilateral | isoceles-AB | isoceles-BC | isoceles-CA | right-at-A | right-at-B | right-at-C
