@@ -5,6 +5,8 @@
 
 import type { AiFigureUiResult } from '../../shared/types';
 import { generateFigure, type GenerateOptions, type GenerateResult } from './buildFigure';
+import { transpile } from '../dsl';
+import { parseDeterministic } from './deterministic';
 
 export interface HandleGenerateFigureInput {
   /** Đề bài tiếng Việt từ teacher. */
@@ -26,6 +28,13 @@ export interface HandleGenerateFigureOptions extends GenerateOptions {
    * AI stochastic → lần 2 thường khá hơn. Min 1, max 5.
    */
   maxAttempts?: number;
+  /**
+   * Bật deterministic fast path. Default true. Set false để bypass cho A/B test
+   * hoặc khi muốn force LLM (vd debug accuracy LLM).
+   */
+  useDeterministic?: boolean;
+  /** Confidence threshold cho fast path. Default 0.85. */
+  deterministicThreshold?: number;
 }
 
 const DEFAULT_MAX_ATTEMPTS = 2;
@@ -53,38 +62,51 @@ export async function handleGenerateFigure(
   input: HandleGenerateFigureInput,
   opts: HandleGenerateFigureOptions = {},
 ): Promise<AiFigureUiResult> {
-  const { onResult, maxAttempts: rawMax, ...generateOpts } = opts;
+  const { onResult, maxAttempts: rawMax, useDeterministic, deterministicThreshold, ...generateOpts } = opts;
+
+  // === Track A: deterministic fast path ===
+  if (useDeterministic !== false) {
+    const det = parseDeterministic(input.problem, {
+      threshold: deterministicThreshold,
+    });
+    if (det.ok) {
+      const trans = transpile(det.dsl);
+      if (trans.ok) {
+        // Emit synthetic GenerateResult cho telemetry consistency
+        if (onResult) {
+          try {
+            onResult(
+              {
+                ok: true,
+                state: trans.state,
+                dsl: det.dsl,
+                usage: { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheCreationTokens: 0 },
+                provider: 'deterministic',
+                retries: 0,
+              },
+              0,
+            );
+          } catch { /* swallow telemetry errors */ }
+        }
+        return { ok: true, state: trans.state };
+      }
+      // Transpile fail → silent fall-through to LLM
+    }
+  }
+
+  // === Track B: LLM path (existing logic) ===
   const maxAttempts = clampAttempts(rawMax ?? DEFAULT_MAX_ATTEMPTS);
-
   let lastResult: GenerateResult | null = null;
-
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const result = await generateFigure(input.problem, generateOpts);
     lastResult = result;
-
     if (onResult) {
-      try {
-        onResult(result, attempt);
-      } catch {
-        // Không cho lỗi telemetry vỡ HTTP response.
-      }
+      try { onResult(result, attempt); } catch { /* swallow */ }
     }
-
-    // Thành công → return ngay
-    if (result.ok) {
-      return { ok: true, state: result.state };
-    }
-
-    // Retry chỉ với transpile_error
-    if (result.reason === 'transpile_error' && attempt < maxAttempts) {
-      continue;
-    }
-
-    // Không retry-able hoặc đã hết attempt
+    if (result.ok) return { ok: true, state: result.state };
+    if (result.reason === 'transpile_error' && attempt < maxAttempts) continue;
     break;
   }
-
-  // lastResult chắc chắn không null sau loop
   return mapErrorToUi(lastResult!);
 }
 

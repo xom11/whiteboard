@@ -4,6 +4,7 @@
 import { handleGenerateFigure } from '../handleGenerateFigure';
 import type { AIProvider, ProviderOutput, ProviderRequest } from '../providers';
 import { fixture as equilateral } from '../../dsl/fixtures/triangle-equilateral';
+import { parseDeterministic } from '../deterministic';
 
 function mockProvider(out: ProviderOutput): AIProvider {
   return {
@@ -47,7 +48,11 @@ describe('handleGenerateFigure — Façade', () => {
       usage: { inputTokens: 100, outputTokens: 20 },
     });
 
-    const r = await handleGenerateFigure({ problem: 'Tam giác đều ABC' }, { provider });
+    // Bypass deterministic fast path để test mock provider envelope mapping.
+    const r = await handleGenerateFigure(
+      { problem: 'Tam giác đều ABC' },
+      { provider, useDeterministic: false },
+    );
     expect(r.ok).toBe(true);
     if (!r.ok) throw new Error();
     expect(r.state.order).toEqual(['p1', 'p2', 'p3', 'poly1']);
@@ -223,5 +228,45 @@ describe('handleGenerateFigure — Façade', () => {
 
       expect(provider.calls).toHaveLength(5); // clamp tối đa 5
     });
+  });
+});
+
+describe('handleGenerateFigure — deterministic fast path', () => {
+  test('high-confidence problem skips LLM provider entirely', async () => {
+    const providerCallSpy = jest.fn();
+    const mockProvider = {
+      name: 'mock', defaultModel: 'mock', call: providerCallSpy,
+    };
+    const r = await handleGenerateFigure(
+      { problem: 'Cho tam giác ABC, đường cao AH' },
+      { provider: mockProvider },
+    );
+    expect(r.ok).toBe(true);
+    expect(providerCallSpy).not.toHaveBeenCalled();
+  });
+
+  test('low-confidence problem falls back to LLM', async () => {
+    const providerCallSpy = jest.fn().mockResolvedValue({
+      kind: 'error', message: 'mock-not-real-call',
+    });
+    const mockProvider = {
+      name: 'mock', defaultModel: 'mock', call: providerCallSpy,
+    };
+    await handleGenerateFigure(
+      { problem: 'vẽ đường tròn Euler của tam giác ABC' },
+      { provider: mockProvider },
+    );
+    expect(providerCallSpy).toHaveBeenCalled();
+  });
+
+  test('useDeterministic=false always uses LLM', async () => {
+    const providerCallSpy = jest.fn().mockResolvedValue({
+      kind: 'error', message: 'mock',
+    });
+    await handleGenerateFigure(
+      { problem: 'Cho tam giác ABC, đường cao AH' },
+      { provider: { name: 'mock', defaultModel: 'mock', call: providerCallSpy }, useDeterministic: false },
+    );
+    expect(providerCallSpy).toHaveBeenCalled();
   });
 });
