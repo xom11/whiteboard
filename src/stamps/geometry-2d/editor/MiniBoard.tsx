@@ -286,10 +286,7 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
 
   useEditorShortcuts({
     store,
-    pendingIdsRef: toolSM.pendingIdsRef,
     selectedSetRef,
-    clearPending,
-    clearSelection,
     deleteSelection,
   });
   useAxisGridSync({ boardRef, axisObjsRef, isDarkRef, showAxis, showGrid });

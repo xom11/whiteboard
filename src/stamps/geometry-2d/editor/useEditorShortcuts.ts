@@ -3,12 +3,8 @@ import type { Store } from '../../../core/scene/store';
 
 interface Params {
   store: Store;
-  /** Pending picks (chưa commit) — Esc xoá khi length > 0. */
-  pendingIdsRef: { readonly current: string[] };
-  /** Current selection ids — Esc/Delete/Backspace act on. */
+  /** Current selection ids — Delete/Backspace act on. */
   selectedSetRef: { readonly current: Set<string> };
-  clearPending: () => void;
-  clearSelection: () => void;
   deleteSelection: () => void;
 }
 
@@ -17,18 +13,18 @@ interface Params {
  *
  * - Ctrl/Cmd+Z → undo
  * - Ctrl/Cmd+Shift+Z / Ctrl/Cmd+Y → redo
- * - Esc → clear pending picks + clear selection
  * - Delete/Backspace → delete selection
+ *
+ * Esc cố ý KHÔNG xử lý ở đây — user nhấn Esc khi đang vẽ dở (mid-tool action)
+ * không nên mất pending picks. Popovers (Properties/Transform) tự handle Esc
+ * qua onKeyDown / document listener ở bubble phase.
  *
  * Capture phase + stopPropagation để win với Excalidraw's bubble handlers
  * (vốn nắm các phím tương tự). Ignore khi focus đang ở input/textarea/contentEditable.
  */
 export function useEditorShortcuts({
   store,
-  pendingIdsRef,
   selectedSetRef,
-  clearPending,
-  clearSelection,
   deleteSelection,
 }: Params): void {
   useEffect(() => {
@@ -44,19 +40,11 @@ export function useEditorShortcuts({
         if (inField) return;
         e.preventDefault(); e.stopPropagation(); store.redo(); return;
       }
-      if (e.key === 'Escape' && !inField) {
-        if (pendingIdsRef.current.length > 0) {
-          e.preventDefault(); e.stopPropagation(); clearPending();
-        }
-        if (selectedSetRef.current.size > 0) {
-          e.preventDefault(); e.stopPropagation(); clearSelection();
-        }
-      }
       if ((e.key === 'Delete' || e.key === 'Backspace') && !inField && selectedSetRef.current.size > 0) {
         e.preventDefault(); e.stopPropagation(); deleteSelection();
       }
     };
     window.addEventListener('keydown', onKey, { capture: true });
     return () => window.removeEventListener('keydown', onKey, { capture: true });
-  }, [store, pendingIdsRef, selectedSetRef, clearPending, clearSelection, deleteSelection]);
+  }, [store, selectedSetRef, deleteSelection]);
 }
