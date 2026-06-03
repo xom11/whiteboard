@@ -60,7 +60,7 @@ const hitRate = results.filter((r) => r.hit).length / results.length;
 console.log(`\n=== bench-fast-path ===`);
 console.log(`Samples: ${SAMPLES.length} × ${ITER} = ${allDurations.length} runs`);
 console.log(`p50: ${p50.toFixed(3)}ms | p95: ${p95.toFixed(3)}ms`);
-console.log(`Hit rate (confidence ≥ 0.85): ${(hitRate * 100).toFixed(1)}%`);
+console.log(`Hit rate (confidence ≥ 0.75 default): ${(hitRate * 100).toFixed(1)}%`);
 console.log();
 for (const r of results) {
   const avg = r.durationsMs.reduce((a, b) => a + b, 0) / r.durationsMs.length;
