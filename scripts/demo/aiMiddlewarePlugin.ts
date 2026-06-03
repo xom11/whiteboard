@@ -65,7 +65,7 @@ export function aiMiddlewarePlugin(options: AiMiddlewareOptions = {}): Plugin {
           // Provider != ollama → bypass Ollama streaming, fall back to
           // non-streaming handleGenerateFigure (Anthropic/ClaudeCli không
           // expose token-level streaming dễ qua subprocess/tool_use).
-          const wantedProvider = (process.env.WHITEBOARD_AI_PROVIDER ?? 'ollama').toLowerCase();
+          const wantedProvider = (process.env.WHITEBOARD_AI_PROVIDER ?? 'claude-agent-sdk').toLowerCase();
           if (wantedProvider !== 'ollama') {
             const { handleGenerateFigure } = await import(
               '../../src/stamps/geometry-2d/ai/handleGenerateFigure'
@@ -276,7 +276,7 @@ export function aiMiddlewarePlugin(options: AiMiddlewareOptions = {}): Plugin {
           }
 
           // Non-Ollama provider → fall back to non-streaming refine.
-          const wantedProvider = (process.env.WHITEBOARD_AI_PROVIDER ?? 'ollama').toLowerCase();
+          const wantedProvider = (process.env.WHITEBOARD_AI_PROVIDER ?? 'claude-agent-sdk').toLowerCase();
           if (wantedProvider !== 'ollama') {
             const { handleGenerateFigureDelta } = await import(
               '../../src/stamps/geometry-2d/ai/handleGenerateFigureDelta'
