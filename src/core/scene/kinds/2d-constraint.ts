@@ -46,7 +46,10 @@ export type Constraint2D =
   | { kind: 'orthocenter'; vertices: [string, string, string] }
   | { kind: 'onPerpendicular'; through: string; perpToA: string; perpToB: string; t: number }
   | { kind: 'onPerpBisector'; p1: string; p2: string; t: number }
-  | { kind: 'onCircleAroundPoint'; center: string; radiusPoint: string; theta: number };
+  | { kind: 'onCircleAroundPoint'; center: string; radiusPoint: string; theta: number }
+  // Tiếp điểm khi vẽ 2 tiếp tuyến từ điểm ngoài đường tròn.
+  // `which` chọn 1 trong 2 nhánh (0 = nhánh dương theo Thales, 1 = nhánh âm).
+  | { kind: 'tangentPointExt'; from: string; circle: string; which: 0 | 1 };
 
 export function constraintRefs2D(c: Constraint2D): string[] {
   switch (c.kind) {
@@ -64,6 +67,7 @@ export function constraintRefs2D(c: Constraint2D): string[] {
     case 'onPerpendicular': return [c.through, c.perpToA, c.perpToB];
     case 'onPerpBisector': return [c.p1, c.p2];
     case 'onCircleAroundPoint': return [c.center, c.radiusPoint];
+    case 'tangentPointExt': return [c.from, c.circle];
     default: return [];
   }
 }

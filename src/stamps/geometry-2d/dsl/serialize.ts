@@ -129,6 +129,21 @@ function serializePoint(obj: SceneObject<PointAttrs>, state: State): SerializedE
       };
     }
 
+    case 'tangentPointExt': {
+      const refs = resolveRefs([c.from, c.circle], state);
+      if (!refs) return fail('unresolved-ref', `${c.from},${c.circle}`);
+      return {
+        ok: true,
+        entity: {
+          name: obj.label,
+          kind: 'tangentPointExt',
+          from: refs[0],
+          circle: refs[1],
+          which: c.which,
+        },
+      };
+    }
+
     // Out of DSL v1:
     case 'onAxis':
     case 'onPolygon':

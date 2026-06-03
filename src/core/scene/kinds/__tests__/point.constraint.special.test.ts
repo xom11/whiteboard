@@ -16,4 +16,16 @@ describe('Constraint2D — special shape constraints', () => {
       constraintRefs2D({ kind: 'onCircleAroundPoint', center: 'c', radiusPoint: 'r', theta: 0 }),
     ).toEqual(['c', 'r']);
   });
+
+  it('tangentPointExt returns from + circle', () => {
+    expect(
+      constraintRefs2D({ kind: 'tangentPointExt', from: 'A', circle: 'k', which: 0 }),
+    ).toEqual(['A', 'k']);
+  });
+
+  it('tangentPointExt with which=1 returns same refs', () => {
+    expect(
+      constraintRefs2D({ kind: 'tangentPointExt', from: 'A', circle: 'k', which: 1 }),
+    ).toEqual(['A', 'k']);
+  });
 });

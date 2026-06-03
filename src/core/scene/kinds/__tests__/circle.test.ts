@@ -46,4 +46,32 @@ describe('kinds/circle (2D)', () => {
       expect(def.describe(obj)).toMatch(/qua ABC/);
     });
   });
+
+  // Radius mode — { center, radius:number }. Emitted by DSL circleCR.
+  describe('center + radius mode', () => {
+    const def = getKind('circle');
+
+    test('validate cho phép omit surfacePoint khi có radius:number > 0', () => {
+      expect(() => def.validate?.({ center: 'O', radius: 3 } as never)).not.toThrow();
+    });
+
+    test('validate throw khi radius <= 0', () => {
+      expect(() => def.validate?.({ center: 'O', radius: 0 } as never)).toThrow();
+      expect(() => def.validate?.({ center: 'O', radius: -2 } as never)).toThrow();
+    });
+
+    test('validate throw khi có radius nhưng thiếu center', () => {
+      expect(() => def.validate?.({ radius: 3 } as never)).toThrow();
+    });
+
+    test('dependsOn = [center] khi mode radius', () => {
+      expect(def.dependsOn({ center: 'O', radius: 3 } as never)).toEqual(['O']);
+    });
+
+    test('describe có "bán kính" + radius', () => {
+      const obj = mkObj('circle', 'k', { center: 'O', radius: 3 });
+      expect(def.describe(obj)).toMatch(/bán\s*kính/);
+      expect(def.describe(obj)).toMatch(/3/);
+    });
+  });
 });
