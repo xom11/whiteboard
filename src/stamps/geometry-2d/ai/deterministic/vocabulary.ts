@@ -21,8 +21,6 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   'nội tiếp', 'ngoại tiếp',
   // Relations
   'song song', 'vuông góc', 'giao điểm', 'cắt',
-  // Verbs
-  'qua', 'kẻ', 'vẽ', 'dựng', 'nối',
 ];
 
 export function countGeometryKeywords(text: string): number {
