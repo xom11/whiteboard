@@ -14,6 +14,7 @@ import { intentsToDsl, IntentBuilderError } from './intentToDsl';
 import { buildIntentSystemPrompt } from './intentPrompt';
 import { IntentEnvelopeZ, type IntentEnvelopeT, type IntentT } from './intent';
 import { intentEnvelopeJsonSchema } from './intentEnvelope';
+import { resolveCircleNameCollisions } from './resolveCircleNames';
 import { verifyGeometry, type VerifyReport } from './verify';
 import {
   selectProvider,
@@ -113,12 +114,20 @@ export async function generateFigureIntent(
     };
   }
 
+  // Intents giữ nguyên raw từ AI cho API contract (caller dùng để compare với
+  // expected fixtures). Pipeline internal dùng processedIntents (đã resolve
+  // collision) để build DSL.
   const intents = envelope.intents!;
+
+  // Stage 1.5: preprocess naming collisions (circle name dùng làm point ref).
+  // Notation Việt "(O)" thường ám chỉ TÂM (point) chứ không phải tên circle —
+  // preprocessor inject add-point center + rename circle để tránh KIND_MISMATCH.
+  const processedIntents = resolveCircleNameCollisions(intents);
 
   // Stage 2: deterministic build
   let dsl: ReturnType<typeof intentsToDsl>;
   try {
-    dsl = intentsToDsl(intents);
+    dsl = intentsToDsl(processedIntents);
   } catch (e) {
     const err = e as IntentBuilderError;
     return {

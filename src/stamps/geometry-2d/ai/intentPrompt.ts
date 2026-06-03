@@ -197,6 +197,8 @@ hoặc
 
 5. **KHÔNG bịa.** Nếu đề mơ hồ hoặc không thuộc hình học 2D phổ thông → decision=refuse.
 
+6. **Đặt tên draw-circle**: nếu đề có ký hiệu rõ ràng "(X)" (vd "(O)", "(I)", "(I1)") → dùng đúng ký hiệu đó làm name. KHÔNG thêm hậu tố như "Ic", "In", "Oc". Nếu đề không có ký hiệu thì name tự do (preprocessor xử lý mọi collision).
+
 ## Variant enum (chỉ dùng giá trị này)
 - triangle: any | equilateral | isoceles-AB | isoceles-BC | isoceles-CA | right-at-A | right-at-B | right-at-C
 - square: standard

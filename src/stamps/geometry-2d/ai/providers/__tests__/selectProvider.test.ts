@@ -1,5 +1,5 @@
 // src/stamps/geometry-2d/ai/providers/__tests__/selectProvider.test.ts
-import { selectProvider, AnthropicProvider, OllamaProvider } from '..';
+import { selectProvider, AnthropicProvider, ClaudeCliProvider, OllamaProvider } from '..';
 import type { AIProvider } from '../types';
 
 // Mock Anthropic SDK constructor to avoid real network calls during ctor.
@@ -81,5 +81,36 @@ describe('selectProvider', () => {
   it('case-insensitive cho WHITEBOARD_AI_PROVIDER', () => {
     const p = selectProvider({ env: { WHITEBOARD_AI_PROVIDER: 'OLLAMA' } });
     expect(p).toBeInstanceOf(OllamaProvider);
+  });
+
+  it('env WHITEBOARD_AI_PROVIDER=claude-cli → ClaudeCliProvider', () => {
+    const p = selectProvider({ env: { WHITEBOARD_AI_PROVIDER: 'claude-cli' } });
+    expect(p).toBeInstanceOf(ClaudeCliProvider);
+    expect(p.name).toBe('claude-cli');
+  });
+
+  it('env CLAUDE_CLI_MODEL áp dụng cho ClaudeCliProvider', () => {
+    const p = selectProvider({
+      env: {
+        WHITEBOARD_AI_PROVIDER: 'claude-cli',
+        CLAUDE_CLI_MODEL: 'claude-opus-4-7',
+      },
+    });
+    expect(p).toBeInstanceOf(ClaudeCliProvider);
+    expect((p as ClaudeCliProvider).defaultModel).toBe('claude-opus-4-7');
+  });
+
+  it('opts.claudeCliDefaultModel override env', () => {
+    const p = selectProvider({
+      claudeCliDefaultModel: 'opt-model',
+      env: { WHITEBOARD_AI_PROVIDER: 'claude-cli', CLAUDE_CLI_MODEL: 'env-model' },
+    });
+    expect((p as ClaudeCliProvider).defaultModel).toBe('opt-model');
+  });
+
+  it('error message liệt kê đủ provider hợp lệ', () => {
+    expect(() => selectProvider({ env: { WHITEBOARD_AI_PROVIDER: 'gpt' } })).toThrow(
+      /anthropic\|claude-cli\|ollama/,
+    );
   });
 });

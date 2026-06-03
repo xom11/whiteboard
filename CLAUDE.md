@@ -208,6 +208,10 @@ git push --follow-tags
 - **Vision model**: `WHITEBOARD_AI_VISION_MODEL` env override; mặc định cùng model với DSL gen (Ollama `gemma3:4b` multimodal native, Anthropic `claude-opus-4-7` vision native).
 - **Image cap**: client downscale max edge 2048px + cap encoded 4MB (Anthropic limit 5MB, buffer 1MB). HEIC iPhone không decode được browser → reject với hint convert JPEG.
 - **Anthropic vision cost**: ~70đ/ảnh (1500 input tokens) — không rate-limit v1, doc qua env nếu cần cap.
+- **AI providers (DSL/Intent gen)**: 3 options qua `WHITEBOARD_AI_PROVIDER` env:
+  - `ollama` (default) — local Gemma 3 4B/12B, free, cần `ollama serve`
+  - `anthropic` — production, cần `ANTHROPIC_API_KEY` từ console.anthropic.com (pay-per-token)
+  - `claude-cli` — **dev/eval only**, spawn `claude` CLI subprocess, charge vào quota Pro/Max/Team subscription. Cần `claude setup-token` cài sẵn ở máy. KHÔNG dùng cho production third-party app (vi phạm ToS Anthropic 02/2026). Smoke: `npx tsx scripts/smoke-claude-cli.ts [model]`.
 
 ## Extracted from
 
