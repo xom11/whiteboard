@@ -829,4 +829,46 @@ describe('applyDeterministicCompletion + tangent-from-external (integration)', (
     expect(b?.kind).toBe('tangentPointExt');
     expect(c?.kind).toBe('tangentPointExt');
   });
+
+  it('removes orphan helper point P (LLM legacy circleCP-style)', () => {
+    // LLM hay emit helper free point P kèm circleCP để định nghĩa đường tròn,
+    // nhưng completion thay bằng circleCR (center + radius) → P trở thành
+    // orphan (không có shape nào reference). Nó hiển thị trên canvas như
+    // chấm thừa → cần xoá khi đề không nhắc P.
+    const out = applyDeterministicCompletion(
+      userPrompt,
+      dsl(
+        [
+          { name: 'O', kind: 'free', x: 0, y: 0 },
+          { name: 'P', kind: 'free', x: 2, y: 0 },
+          { name: 'A', kind: 'free', x: 5, y: 0 },
+        ],
+        [],
+      ),
+    );
+    expect(out.dsl.points.find((p) => p.name === 'P')).toBeUndefined();
+    expect(out.dsl.points.find((p) => p.name === 'O')).toBeDefined();
+    expect(out.dsl.points.find((p) => p.name === 'A')).toBeDefined();
+    expect(out.dsl.points.find((p) => p.name === 'B')).toBeDefined();
+    expect(out.dsl.points.find((p) => p.name === 'C')).toBeDefined();
+  });
+
+  it('keeps free points mentioned in prompt even if orphan', () => {
+    // Edge: nếu đề thật sự đề cập tới điểm phụ (vd "Lấy P trên (O)"), không
+    // xoá. Hiện tại đề mẫu KHÔNG có chữ P → orphan removal an toàn.
+    // Test này verify nguyên tắc: chỉ xoá free point không trong prompt.
+    const out = applyDeterministicCompletion(
+      'Từ điểm A nằm bên ngoài đường tròn (O), kẻ hai tiếp tuyến AB, AC với đường tròn (O) (B,C là hai tiếp điểm). Lấy P trên đoạn OA.',
+      dsl(
+        [
+          { name: 'O', kind: 'free', x: 0, y: 0 },
+          { name: 'P', kind: 'free', x: 2, y: 0 },
+          { name: 'A', kind: 'free', x: 5, y: 0 },
+        ],
+        [],
+      ),
+    );
+    // P xuất hiện trong prompt → giữ lại dù orphan
+    expect(out.dsl.points.find((p) => p.name === 'P')).toBeDefined();
+  });
 });

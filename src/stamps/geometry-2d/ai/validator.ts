@@ -178,6 +178,12 @@ export interface RequirementExtraction {
   readonly points: readonly PointStub[];
   /** Shapes BẮT BUỘC (vd segment BC cho perpFoot onLine='BC'). */
   readonly shapes: readonly ShapeStub[];
+  /**
+   * Scope marker: nếu regex của ta đã thay đổi cách dựng circle (vd circleCP
+   * → circleCR), enable orphan-free-point cleanup để LLM-emitted helper
+   * (vd surfacePoint cũ) không lưu lại trên canvas.
+   */
+  readonly scope?: 'tangent-from-external';
 }
 
 /**
@@ -189,6 +195,7 @@ export interface RequirementExtraction {
 export function extractRequirements(userPrompt: string): RequirementExtraction {
   const points: PointStub[] = [];
   const shapes: ShapeStub[] = [];
+  let scope: RequirementExtraction['scope'] = undefined;
 
   const triVertices = detectTriangleVertices(userPrompt);
 
@@ -466,6 +473,7 @@ export function extractRequirements(userPrompt: string): RequirementExtraction {
     /\(\s*([A-Z])(?:\s*;\s*R\s*=\s*(\d+(?:[.,]\d+)?))?\s*\)/,
   );
   if (hasExternalCtx && tpMatch && extMatch && centerMatch) {
+    scope = 'tangent-from-external';
     const extName = up(extMatch[1]);
     const centerName = up(centerMatch[1]);
     const radius = centerMatch[2]
@@ -510,7 +518,39 @@ export function extractRequirements(userPrompt: string): RequirementExtraction {
     });
   }
 
-  return { points, shapes };
+  return { points, shapes, scope };
+}
+
+/**
+ * Trả về set các nhãn 1-ký-tự viết HOA xuất hiện trong đề (kể cả khi nằm
+ * trong cụm "AB" → cả A và B). Dùng để bảo vệ free point khỏi orphan removal
+ * khi user thật sự nhắc tên nó.
+ */
+function findMentionedLabels(userPrompt: string): Set<string> {
+  const labels = new Set<string>();
+  for (const m of userPrompt.matchAll(/[A-Z]/g)) labels.add(m[0]);
+  return labels;
+}
+
+/**
+ * Kiểm tra free point `name` có được ANY shape hoặc constraint khác tham
+ * chiếu hay không. Pure scan: walk all string/array fields, so sánh value.
+ */
+function isPointReferenced(name: string, dsl: DslInputT): boolean {
+  for (const p of dsl.points) {
+    if (p.name === name) continue;
+    for (const v of Object.values(p)) {
+      if (v === name) return true;
+      if (Array.isArray(v) && (v as unknown[]).includes(name)) return true;
+    }
+  }
+  for (const s of dsl.shapes) {
+    for (const v of Object.values(s)) {
+      if (v === name) return true;
+      if (Array.isArray(v) && (v as unknown[]).includes(name)) return true;
+    }
+  }
+  return false;
 }
 
 function up(s: string): string {
@@ -543,7 +583,7 @@ export interface CompletionAction {
   readonly target: 'point' | 'shape';
   readonly name: string;
   readonly kind: string;
-  readonly action: 'added' | 'replaced' | 'kept';
+  readonly action: 'added' | 'replaced' | 'kept' | 'removed';
 }
 
 export interface CompletionResult {
@@ -643,8 +683,32 @@ export function applyDeterministicCompletion(
     }
   }
 
+  let finalPoints = points;
+  if (extraction.scope === 'tangent-from-external') {
+    const mentioned = findMentionedLabels(userPrompt);
+    const draftDsl: DslInputT = { ...dsl, points, shapes };
+    const kept: AnyPoint[] = [];
+    for (const p of points) {
+      if (
+        p.kind === 'free' &&
+        !mentioned.has(p.name) &&
+        !isPointReferenced(p.name, draftDsl)
+      ) {
+        actions.push({
+          target: 'point',
+          name: p.name,
+          kind: p.kind,
+          action: 'removed',
+        });
+        continue;
+      }
+      kept.push(p);
+    }
+    finalPoints = kept;
+  }
+
   return {
-    dsl: { ...dsl, points, shapes },
+    dsl: { ...dsl, points: finalPoints, shapes },
     actions,
   };
 }
