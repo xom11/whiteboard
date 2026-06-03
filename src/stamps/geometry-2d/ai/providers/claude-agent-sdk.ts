@@ -19,6 +19,16 @@ import type { AIProvider, ProviderOutput, ProviderRequest } from './types';
 
 const DEFAULT_MODEL = 'claude-sonnet-4-6';
 
+const SCHEMA_CACHE = new WeakMap<object, string>();
+
+function memoSchemaJson(schema: object): string {
+  let s = SCHEMA_CACHE.get(schema);
+  if (s) return s;
+  s = JSON.stringify(schema, null, 2);
+  SCHEMA_CACHE.set(schema, s);
+  return s;
+}
+
 export interface ClaudeAgentSdkProviderOptions {
   /** OAuth token. Fallback: env CLAUDE_CODE_OAUTH_TOKEN. */
   oauthToken?: string;
@@ -98,7 +108,7 @@ export class ClaudeAgentSdkProvider implements AIProvider {
 
     // Constraint output qua system prompt — Agent SDK không có --json-schema flag,
     // dùng prompt-instruct + parse JSON post-hoc. Sonnet 4.6 follow format tốt.
-    const schemaText = JSON.stringify(req.schema, null, 2);
+    const schemaText = memoSchemaJson(req.schema as object);
     const constrainedSystem = `${req.systemPrompt}
 
 QUAN TRỌNG: Output PHẢI là valid JSON đúng schema sau. KHÔNG markdown wrapper, KHÔNG prose giải thích, CHỈ raw JSON:
@@ -127,6 +137,9 @@ ${schemaText}`;
             const b = block as { type?: string; text?: string };
             if (b.type === 'text' && typeof b.text === 'string') {
               assistantText += b.text;
+              if (req.onToken) {
+                try { req.onToken(b.text); } catch { /* swallow */ }
+              }
             }
           }
         } else if (msg.type === 'result') {

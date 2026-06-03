@@ -166,3 +166,34 @@ describe('ClaudeAgentSdkProvider', () => {
     expect(capturedModel).toBe('claude-sonnet-4-6');
   });
 });
+
+describe('ClaudeAgentSdkProvider — onToken', () => {
+  test('emits onToken for each assistant text block', async () => {
+    const chunks: string[] = [];
+    const queryImpl = async function* () {
+      yield {
+        type: 'assistant' as const,
+        message: { content: [{ type: 'text' as const, text: 'hello ' }] },
+      };
+      yield {
+        type: 'assistant' as const,
+        message: { content: [{ type: 'text' as const, text: 'world' }] },
+      };
+      yield { type: 'result' as const, subtype: 'success' as const };
+    };
+    const p = new ClaudeAgentSdkProvider({ queryImpl: queryImpl as never });
+
+    // Final text "hello world" is not valid JSON → parse_error expected.
+    // We only care that onToken fired for each block during streaming.
+    await p.call({
+      systemPrompt: 'sys',
+      userPrompt: 'usr',
+      schema: { type: 'object' } as never,
+      model: 'm',
+      maxTokens: 100,
+      onToken: (c) => chunks.push(c),
+    });
+
+    expect(chunks).toEqual(['hello ', 'world']);
+  });
+});
