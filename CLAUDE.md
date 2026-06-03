@@ -209,10 +209,13 @@ git push --follow-tags
 - **Vision model (LLM path)**: chỉ áp dụng khi `engine: 'llm'`. `WHITEBOARD_AI_VISION_MODEL` env override; mặc định cùng model với DSL gen (Ollama `gemma3:4b` multimodal native, Anthropic `claude-opus-4-7` vision native).
 - **Image cap**: client downscale max edge 2048px + cap encoded 4MB (Anthropic limit 5MB, buffer 1MB). HEIC iPhone không decode được browser → reject với hint convert JPEG.
 - **Anthropic vision cost**: ~70đ/ảnh (1500 input tokens) — không rate-limit v1, doc qua env nếu cần cap.
-- **AI providers (DSL/Intent gen)**: 3 options qua `WHITEBOARD_AI_PROVIDER` env:
-  - `ollama` (default) — local Gemma 3 4B/12B, free, cần `ollama serve`
+- **AI providers (DSL/Intent gen)**: 4 options qua `WHITEBOARD_AI_PROVIDER` env:
+  - `ollama` — local Gemma 3 4B/12B, free, cần `ollama serve` (default lib, demo override sang claude-agent-sdk)
   - `anthropic` — production, cần `ANTHROPIC_API_KEY` từ console.anthropic.com (pay-per-token)
-  - `claude-cli` — **dev/eval only**, spawn `claude` CLI subprocess, charge vào quota Pro/Max/Team subscription. Cần `claude setup-token` cài sẵn ở máy. KHÔNG dùng cho production third-party app (vi phạm ToS Anthropic 02/2026). Smoke: `npx tsx scripts/smoke-claude-cli.ts [model]`.
+  - `claude-agent-sdk` (0.26.1+) — official `@anthropic-ai/claude-agent-sdk`, OAuth subscription Pro/Max/Team. Cần `claude setup-token` + `CLAUDE_CODE_OAUTH_TOKEN` env. ~10-30s/call đề đơn giản, ~75s đề phức tạp. KHÔNG set `ANTHROPIC_API_KEY` chung (silent shadow OAuth). Smoke: `node scripts/smoke-agent-sdk.mjs`.
+  - `claude-cli` — legacy, spawn `claude -p` subprocess + `--json-schema`. Chậm hơn agent-sdk ~5x (Claude Code context boot overhead). Smoke: `npx tsx scripts/smoke-claude-cli.ts [model]`.
+- **Agent SDK zod peer override**: `@anthropic-ai/claude-agent-sdk` declare peer `zod@^4` nhưng project xài zod 3. `package.json` overrides force SDK xài zod 3 — verified runtime OK 1547 test xanh. Khi upgrade zod 3→4 thì remove override.
+- **Anthropic billing 2026-06-15**: programmatic call (Agent SDK + `claude -p` + third-party) chuyển "Agent SDK Credit Pool" tách subscription Interactive. Pro $20/Max $100/Max 20x $200 credit/tháng. Memory `reference-anthropic-agent-sdk-subscription` lưu chi tiết.
 
 ## Extracted from
 
