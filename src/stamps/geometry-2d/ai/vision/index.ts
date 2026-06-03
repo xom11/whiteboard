@@ -2,6 +2,7 @@
 export {
   extractProblemFromImage,
   pickVisionModel,
+  type VisionEngine,
   type ExtractProblemOptions,
   type ExtractProblemSuccess,
   type ExtractProblemFailure,
@@ -22,3 +23,8 @@ export {
   MAX_ENCODED_BYTES,
   type ValidationResult,
 } from './preprocess';
+export {
+  runTesseractOcr,
+  type TesseractOcrOptions,
+  type TesseractOcrResult,
+} from './tesseract';
