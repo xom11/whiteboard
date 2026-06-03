@@ -149,3 +149,33 @@ describe('generateFigure — envelope orchestrator', () => {
     expect(provider.calls[0].model).toBe('mock-default');
   });
 });
+
+describe('generateFigure — promptVariant', () => {
+  test('default uses slim prompt', async () => {
+    let captured = '';
+    const provider: AIProvider = {
+      name: 'mock',
+      defaultModel: 'm',
+      call: async (req: ProviderRequest) => {
+        captured = req.systemPrompt;
+        return { kind: 'error', message: 'mock' };
+      },
+    };
+    await generateFigure('Cho tam giác ABC', { provider });
+    expect(captured.length).toBeLessThan(8000);
+  });
+
+  test('promptVariant=full uses full prompt (21 fixtures)', async () => {
+    let captured = '';
+    const provider: AIProvider = {
+      name: 'mock',
+      defaultModel: 'm',
+      call: async (req: ProviderRequest) => {
+        captured = req.systemPrompt;
+        return { kind: 'error', message: 'mock' };
+      },
+    };
+    await generateFigure('Cho tam giác ABC', { provider, promptVariant: 'full' });
+    expect(captured.length).toBeGreaterThan(20000);
+  });
+});

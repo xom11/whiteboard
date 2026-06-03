@@ -12,6 +12,7 @@ import {
   envelopeJsonSchema,
 } from './envelope';
 import { buildSystemPrompt } from './prompt';
+import { buildSystemPromptSlim } from './promptSlim';
 import {
   selectProvider,
   type AIProvider,
@@ -48,6 +49,12 @@ export interface GenerateOptions extends SelectProviderOptions {
    * (vd centroid với ref tới shape không tồn tại). Default: true.
    */
   applyCompletion?: boolean;
+  /**
+   * Prompt variant. 'slim' (~1.8k tok, 5 fixtures, default) hoặc 'full'
+   * (~6.5k tok, 21 fixtures). 'full' giữ lại cho debug / khi eval cho thấy
+   * accuracy drop > 5%.
+   */
+  promptVariant?: 'full' | 'slim';
 }
 
 export interface TokenUsage {
@@ -92,7 +99,9 @@ export async function generateFigure(
     return { ok: false, reason: 'api_error', message: err.message ?? 'Không chọn được provider' };
   }
 
-  const systemPrompt = buildSystemPrompt();
+  const systemPrompt = (opts.promptVariant === 'full')
+    ? buildSystemPrompt()
+    : buildSystemPromptSlim();
   const schema = envelopeJsonSchema();
   const applyCompletion = opts.applyCompletion ?? true;
 
