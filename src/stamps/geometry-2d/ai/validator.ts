@@ -91,6 +91,14 @@ const KEYWORD_RULES: readonly KeywordRule[] = [
     hint: 'Đề có "tiếp tuyến" → dùng kind:"tangent" với throughPoint + toCircle.',
   },
   {
+    // "B, C là tiếp điểm" pattern — 2 điểm có tên đặt cạnh nhau + "tiếp điểm".
+    // Disambig: KHÔNG match "tiếp xúc BC tại D" (incircle, dùng tangencyPoint).
+    id: 'tangent-point-ext',
+    patterns: [/[A-Z]\s*(?:,|và)\s*[A-Z]\s+(?:là\s+)?(?:hai\s+)?tiếp\s*điểm/i],
+    expectedKind: 'tangentPointExt',
+    hint: 'Đề có "B, C là tiếp điểm" (từ điểm ngoài đường tròn) → dùng kind:"tangentPointExt" với from + circle + which:0/1.',
+  },
+  {
     id: 'circle3',
     patterns: [
       /đường\s*tròn\s+(đi\s+)?qua\s+(3|ba)\s+điểm/i,
@@ -431,6 +439,74 @@ export function extractRequirements(userPrompt: string): RequirementExtraction {
       name: 'k',
       kind: 'circle3',
       fields: { p1: up(c3[1]), p2: up(c3[2]), p3: up(c3[3]) },
+    });
+  }
+
+  // -----------------------------------------------------------------------
+  // Tangent from external point — "B, C là (hai) tiếp điểm".
+  //
+  // Pattern phổ biến: "Từ điểm A nằm bên ngoài đường tròn (O), kẻ hai tiếp
+  // tuyến AB, AC với (O) (B, C là hai tiếp điểm)". LLM (cả Claude lẫn Gemma)
+  // hay bỏ qua kind tangentPointExt vì primitives list cũ không liệt kê →
+  // deterministic completion fallback.
+  //
+  // Disambig:
+  //   - "tiếp điểm" + "ngoài" / "từ ... vẽ tiếp tuyến" → tangentPointExt
+  //   - "tiếp điểm" + "nội tiếp"/"inscribed" → tangencyPoint (incircle)
+  //     Bỏ qua ở extraction này; xử lý sau nếu cần.
+  // -----------------------------------------------------------------------
+  const hasExternalCtx = /\bngoài\b/i.test(userPrompt);
+  const tpMatch = userPrompt.match(
+    /\(?\s*([A-Z])\s*(?:,|và)\s*([A-Z])\s+(?:là\s+)?(?:hai\s+)?tiếp\s*điểm/i,
+  );
+  const extMatch = userPrompt.match(
+    /(?:Từ\s+điểm\s+|điểm\s+)([A-Z])\b[^.]{0,80}?\bngoài/i,
+  );
+  const centerMatch = userPrompt.match(
+    /\(\s*([A-Z])(?:\s*;\s*R\s*=\s*(\d+(?:[.,]\d+)?))?\s*\)/,
+  );
+  if (hasExternalCtx && tpMatch && extMatch && centerMatch) {
+    const extName = up(extMatch[1]);
+    const centerName = up(centerMatch[1]);
+    const radius = centerMatch[2]
+      ? parseFloat(centerMatch[2].replace(',', '.'))
+      : 3;
+    const tp0 = up(tpMatch[1]);
+    const tp1 = up(tpMatch[2]);
+    const circleName = 'k';
+
+    if (!shapes.some((s) => s.name === circleName)) {
+      shapes.push({
+        name: circleName,
+        kind: 'circleCR',
+        fields: { center: centerName, radius },
+      });
+    }
+    const tangentName0 = `t${extName}${tp0}`;
+    const tangentName1 = `t${extName}${tp1}`;
+    if (!shapes.some((s) => s.name === tangentName0)) {
+      shapes.push({
+        name: tangentName0,
+        kind: 'tangent',
+        fields: { throughPoint: extName, toCircle: circleName, branch: 0 },
+      });
+    }
+    if (!shapes.some((s) => s.name === tangentName1)) {
+      shapes.push({
+        name: tangentName1,
+        kind: 'tangent',
+        fields: { throughPoint: extName, toCircle: circleName, branch: 1 },
+      });
+    }
+    points.push({
+      name: tp0,
+      kind: 'tangentPointExt',
+      fields: { from: extName, circle: circleName, which: 0 },
+    });
+    points.push({
+      name: tp1,
+      kind: 'tangentPointExt',
+      fields: { from: extName, circle: circleName, which: 1 },
     });
   }
 

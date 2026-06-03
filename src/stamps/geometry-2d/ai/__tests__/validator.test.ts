@@ -202,6 +202,42 @@ describe('validateKindCoverage — intersection / tangent', () => {
     );
     expect(out.missing.some((m) => m.expectedKind === 'tangent')).toBe(true);
   });
+
+  it('"B, C là tiếp điểm" expects tangentPointExt', () => {
+    const out = validateKindCoverage(
+      'Từ điểm A nằm ngoài (O), vẽ tiếp tuyến AB, AC (B, C là tiếp điểm).',
+      dsl(
+        [
+          { name: 'O', kind: 'free', x: 0, y: 0 },
+          { name: 'A', kind: 'free', x: 5, y: 0 },
+          { name: 'B', kind: 'free', x: 1, y: 1 },
+          { name: 'C', kind: 'free', x: 1, y: -1 },
+        ],
+        [{ name: 'k', kind: 'circleCR', center: 'O', radius: 3 }],
+      ),
+    );
+    expect(out.missing.some((m) => m.expectedKind === 'tangentPointExt')).toBe(true);
+  });
+
+  it('"đường tròn nội tiếp tiếp xúc BC tại D" KHÔNG expect tangentPointExt (incircle, not external)', () => {
+    const out = validateKindCoverage(
+      'Cho ΔABC. Đường tròn (I) nội tiếp tiếp xúc BC tại D, CA tại E, AB tại F.',
+      dsl(
+        [
+          { name: 'A', kind: 'free', x: 0, y: 3 },
+          { name: 'B', kind: 'free', x: -2, y: 0 },
+          { name: 'C', kind: 'free', x: 3, y: 0 },
+          { name: 'I', kind: 'incenter', vertices: ['A', 'B', 'C'] },
+          { name: 'D', kind: 'tangencyPoint', circle: 'inc', onLine: 'BC' },
+        ],
+        [
+          { name: 'inc', kind: 'incircle', vertices: ['A', 'B', 'C'] },
+          { name: 'BC', kind: 'segment', p1: 'B', p2: 'C' },
+        ],
+      ),
+    );
+    expect(out.missing.some((m) => m.expectedKind === 'tangentPointExt')).toBe(false);
+  });
 });
 
 describe('validateKindCoverage — no false positives', () => {
@@ -659,5 +695,138 @@ describe('applyDeterministicCompletion + cevian (integration)', () => {
     expect(out.dsl.points.find((p) => p.name === 'H')?.kind).toBe('perpFoot');
     expect(out.dsl.shapes.find((s) => s.name === 'AH')?.kind).toBe('segment');
     expect(out.dsl.shapes.find((s) => s.name === 'BC')?.kind).toBe('segment');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tangent-from-external pattern ("B, C là tiếp điểm")
+//
+// Real-world phrasing user nhắc: "Từ điểm A nằm bên ngoài đường tròn (O),
+// kẻ hai tiếp tuyến AB, AC với (O) (B, C là hai tiếp điểm)". LLM (cả Claude
+// lẫn Gemma) không tự suy ra B, C phải là tangentPointExt → deterministic
+// completion phải kick in.
+// ---------------------------------------------------------------------------
+
+describe('extractRequirements — tangent from external point', () => {
+  const userPrompt =
+    'Từ điểm A nằm bên ngoài đường tròn (O), kẻ hai tiếp tuyến AB, AC với đường tròn (O) (B, C là hai tiếp điểm).';
+
+  it('extracts B + C as tangentPointExt with which=0/1, same circle ref', () => {
+    const ex = extractRequirements(userPrompt);
+    const b = ex.points.find((p) => p.name === 'B');
+    const c = ex.points.find((p) => p.name === 'C');
+    expect(b).toMatchObject({
+      kind: 'tangentPointExt',
+      fields: { from: 'A', which: 0 },
+    });
+    expect(c).toMatchObject({
+      kind: 'tangentPointExt',
+      fields: { from: 'A', which: 1 },
+    });
+    expect(b!.fields.circle).toBe(c!.fields.circle);
+  });
+
+  it('emits circleCR (center=O) + 2 tangent line shapes for end-to-end render', () => {
+    const ex = extractRequirements(userPrompt);
+    const circle = ex.shapes.find((s) => s.kind === 'circleCR');
+    expect(circle).toBeDefined();
+    expect(circle!.fields).toMatchObject({ center: 'O' });
+    expect(typeof circle!.fields.radius).toBe('number');
+
+    const tangents = ex.shapes.filter((s) => s.kind === 'tangent');
+    expect(tangents).toHaveLength(2);
+    for (const t of tangents) {
+      expect(t.fields).toMatchObject({ throughPoint: 'A' });
+    }
+    const branches = tangents.map((t) => t.fields.branch).sort();
+    expect(branches).toEqual([0, 1]);
+  });
+
+  it('respects explicit radius "(O; R=5)" instead of default', () => {
+    const ex = extractRequirements(
+      'Cho (O; R=5) và điểm A ngoài (O). Vẽ 2 tiếp tuyến AB, AC tới (O) (B, C là tiếp điểm).',
+    );
+    const circle = ex.shapes.find((s) => s.kind === 'circleCR');
+    expect(circle!.fields.radius).toBe(5);
+  });
+
+  it('no false positive when prompt has no "tiếp điểm" phrase', () => {
+    const ex = extractRequirements(
+      'Cho (O) và điểm A nằm trên đường tròn. Vẽ tiếp tuyến tại A.',
+    );
+    expect(ex.points.find((p) => p.kind === 'tangentPointExt')).toBeUndefined();
+  });
+});
+
+describe('applyDeterministicCompletion + tangent-from-external (integration)', () => {
+  const userPrompt =
+    'Từ điểm A nằm bên ngoài đường tròn (O), kẻ hai tiếp tuyến AB, AC với đường tròn (O) (B, C là hai tiếp điểm).';
+
+  it('rescues case where LLM emit only O+A: adds B, C, circle, 2 tangent lines', () => {
+    const out = applyDeterministicCompletion(
+      userPrompt,
+      dsl(
+        [
+          { name: 'O', kind: 'free', x: 0, y: 0 },
+          { name: 'A', kind: 'free', x: 5, y: 0 },
+        ],
+        [],
+      ),
+    );
+    const b = out.dsl.points.find((p) => p.name === 'B');
+    const c = out.dsl.points.find((p) => p.name === 'C');
+    expect(b?.kind).toBe('tangentPointExt');
+    expect(c?.kind).toBe('tangentPointExt');
+    expect((b as { from: string }).from).toBe('A');
+    expect((c as { from: string }).from).toBe('A');
+    expect((b as { which: 0 | 1 }).which).toBe(0);
+    expect((c as { which: 0 | 1 }).which).toBe(1);
+
+    const circle = out.dsl.shapes.find((s) => s.kind === 'circleCR');
+    expect(circle).toBeDefined();
+    expect((circle as { center: string }).center).toBe('O');
+
+    const tangents = out.dsl.shapes.filter((s) => s.kind === 'tangent');
+    expect(tangents).toHaveLength(2);
+  });
+
+  it('does not duplicate when LLM already emit correct circle + tangents (canonical names)', () => {
+    const out = applyDeterministicCompletion(
+      userPrompt,
+      dsl(
+        [
+          { name: 'O', kind: 'free', x: 0, y: 0 },
+          { name: 'A', kind: 'free', x: 5, y: 0 },
+        ],
+        [
+          { name: 'k', kind: 'circleCR', center: 'O', radius: 3 },
+          { name: 'tAB', kind: 'tangent', throughPoint: 'A', toCircle: 'k', branch: 0 },
+          { name: 'tAC', kind: 'tangent', throughPoint: 'A', toCircle: 'k', branch: 1 },
+        ],
+      ),
+    );
+    expect(out.dsl.shapes.filter((s) => s.kind === 'circleCR')).toHaveLength(1);
+    expect(out.dsl.shapes.filter((s) => s.kind === 'tangent')).toHaveLength(2);
+    expect(out.dsl.points.find((p) => p.name === 'B')?.kind).toBe('tangentPointExt');
+    expect(out.dsl.points.find((p) => p.name === 'C')?.kind).toBe('tangentPointExt');
+  });
+
+  it('replaces wrong-kind B (LLM emit free) with tangentPointExt', () => {
+    const out = applyDeterministicCompletion(
+      userPrompt,
+      dsl(
+        [
+          { name: 'O', kind: 'free', x: 0, y: 0 },
+          { name: 'A', kind: 'free', x: 5, y: 0 },
+          { name: 'B', kind: 'free', x: 1.8, y: 2.4 },
+          { name: 'C', kind: 'free', x: 1.8, y: -2.4 },
+        ],
+        [],
+      ),
+    );
+    const b = out.dsl.points.find((p) => p.name === 'B');
+    const c = out.dsl.points.find((p) => p.name === 'C');
+    expect(b?.kind).toBe('tangentPointExt');
+    expect(c?.kind).toBe('tangentPointExt');
   });
 });

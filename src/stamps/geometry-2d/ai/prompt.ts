@@ -72,6 +72,12 @@ Khi đề bài chứa từ khoá ở cột trái, point hoặc shape tương ứ
 | "qua ... song song ..."                     | shape kind:"parallel" {throughPoint,toLine}|
 | "qua ... vuông góc ..."                     | shape kind:"perpendicular"                 |
 | "tiếp tuyến tại ..." / "tiếp tuyến từ ..."  | shape kind:"tangent" {throughPoint,toCircle}|
+| "B, C là tiếp điểm" (từ điểm ngoài đường tròn)| point kind:"tangentPointExt" {from,circle,which:0|1} (2 điểm) |
+| "tiếp xúc BC tại D" (đường tròn nội tiếp/tiếp xúc cạnh) | point kind:"tangencyPoint" {circle,onLine} |
+| "(O; R=3)" / "đường tròn (O) bán kính 3"     | shape kind:"circleCR" {center,radius}      |
+| "đường tròn nội tiếp tam giác ABC"           | shape kind:"incircle" {vertices:[A,B,C]}   |
+| "cắt (O) tại X (X≠A)" / "giao điểm thứ 2"    | point kind:"secondIntersection" {line,circle,other} |
+| "(O) và (O') cắt nhau tại A, B"              | point kind:"circleIntersection" {c1,c2,which:0|1}   |
 
 TUYỆT ĐỐI KHÔNG được dùng kind:"free" với coord tự compute cho các trường hợp trên (vd "M trung điểm BC" với M=(Bx+Cx)/2, (By+Cy)/2 → SAI). Dù bạn biết toạ độ trung bình, vẫn phải emit kind:"midpoint" — hệ thống sẽ tự dựng.
 
@@ -125,8 +131,8 @@ Mọi point có ràng buộc hình học → PHẢI dùng derived kind. Kind:"fr
 - **Đa giác polygon KHÔNG thay thế đường tròn**: nếu đề nói "đường tròn qua 3 điểm" mà emit polygon thì SAI.
 
 ## Primitives sẵn có
-**Points:** free, midpoint, onSegment, onLine, onCircle, perpFoot, circumcenter, incenter, centroid, orthocenter, intersection
-**Shapes:** segment, line, ray, polygon, perpendicular, parallel, perpBisector, angleBisector, tangent, circleCP, circle3
+**Points:** free, midpoint, onSegment, onLine, onCircle, perpFoot, circumcenter, incenter, centroid, orthocenter, intersection, secondIntersection, circleIntersection, tangencyPoint, tangentPointExt
+**Shapes:** segment, line, ray, polygon, perpendicular, parallel, perpBisector, angleBisector, tangent, circleCP, circleCR, circle3, incircle
 
 ## ${FIXTURES.length} ví dụ
 ${examples}
