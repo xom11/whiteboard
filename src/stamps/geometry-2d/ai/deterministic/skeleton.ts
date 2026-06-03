@@ -15,12 +15,17 @@ const TRI_RIGHT_RE = /tam\s*giác(?:\s+([A-Z])([A-Z])([A-Z]))?\s+vuông\s+tại\
 const TRI_ISOSCELES_RE = /tam\s*giác(?:\s+([A-Z])([A-Z])([A-Z]))?\s+cân\s+tại\s+([A-Z])/i;
 const TRI_EQUILATERAL_RE = /tam\s*giác\s+đều\s+([A-Z])([A-Z])([A-Z])/i;
 
+const CIRCLE_CR_RE = /\(\s*([A-Z])\s*;\s*R\s*=\s*(\d+(?:[.,]\d+)?)\s*\)/;
+const CIRCLE_R_AFTER_RE = /\(\s*([A-Z])\s*\)\s*bán\s*kính\s*(\d+(?:[.,]\d+)?)/i;
+const CIRCLE_NAMED_R_RE = /đường\s*tròn\s*tâm\s*([A-Z])\s*bán\s*kính\s*(\d+(?:[.,]\d+)?)/i;
+
 export function parseSkeleton(prompt: string): SkeletonResult {
   const points: DslPointT[] = [];
   const shapes: DslShapeT[] = [];
   const matched: string[] = [];
 
   parseTriangle(prompt, points, shapes, matched);
+  parseCircle(prompt, points, shapes, matched);
 
   return { points, shapes, matched };
 }
@@ -111,4 +116,31 @@ function extractAnyTriple(prompt: string): string[] | null {
   const m = prompt.match(/([A-Z])([A-Z])([A-Z])/);
   if (!m) return null;
   return [m[1], m[2], m[3]];
+}
+
+function parseCircle(
+  prompt: string,
+  points: DslPointT[],
+  shapes: DslShapeT[],
+  matched: string[],
+): void {
+  let centerName: string | null = null;
+  let radius: number | null = null;
+
+  for (const re of [CIRCLE_CR_RE, CIRCLE_R_AFTER_RE, CIRCLE_NAMED_R_RE]) {
+    const m = prompt.match(re);
+    if (m) {
+      centerName = m[1].toUpperCase();
+      radius = parseFloat(m[2].replace(',', '.'));
+      break;
+    }
+  }
+
+  if (centerName === null || radius === null) return;
+
+  if (!points.some((p) => p.name === centerName)) {
+    points.push({ name: centerName, kind: 'free', x: 0, y: 0 });
+  }
+  shapes.push({ name: 'omega', kind: 'circleCR', center: centerName, radius });
+  matched.push('circle-cr');
 }

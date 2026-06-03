@@ -48,3 +48,29 @@ describe('parseSkeleton — triangle', () => {
     expect(r.shapes).toEqual([]);
   });
 });
+
+describe('parseSkeleton — circle', () => {
+  test('"(O; R=3)" → free O + circleCR radius 3', () => {
+    const r = parseSkeleton('Cho đường tròn (O; R=3)');
+    expect(r.points).toContainEqual({ name: 'O', kind: 'free', x: 0, y: 0 });
+    expect(r.shapes).toContainEqual({ name: 'omega', kind: 'circleCR', center: 'O', radius: 3 });
+    expect(r.matched).toContain('circle-cr');
+  });
+
+  test('"(O) bán kính 5" → radius 5', () => {
+    const r = parseSkeleton('đường tròn (O) bán kính 5');
+    expect(r.shapes[0]).toEqual({ name: 'omega', kind: 'circleCR', center: 'O', radius: 5 });
+  });
+
+  test('"đường tròn tâm I bán kính 2.5"', () => {
+    const r = parseSkeleton('đường tròn tâm I bán kính 2.5');
+    expect(r.points).toContainEqual({ name: 'I', kind: 'free', x: 0, y: 0 });
+    expect(r.shapes[0]).toEqual({ name: 'omega', kind: 'circleCR', center: 'I', radius: 2.5 });
+  });
+
+  test('triangle + circle co-exist', () => {
+    const r = parseSkeleton('Cho tam giác ABC và đường tròn (O; R=2)');
+    expect(r.points.map((p) => p.name).sort()).toEqual(['A', 'B', 'C', 'O']);
+    expect(r.shapes.some((s) => s.kind === 'circleCR')).toBe(true);
+  });
+});
