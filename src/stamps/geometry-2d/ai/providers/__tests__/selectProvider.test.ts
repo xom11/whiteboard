@@ -41,9 +41,9 @@ describe('selectProvider', () => {
     );
   });
 
-  it('env empty → default Ollama', () => {
+  it('env empty → default ClaudeAgentSdk', () => {
     const p = selectProvider({ env: {} });
-    expect(p).toBeInstanceOf(OllamaProvider);
+    expect(p.name).toBe('claude-agent-sdk');
   });
 
   it('env WHITEBOARD_AI_PROVIDER=ollama → Ollama', () => {

@@ -6,10 +6,10 @@
 //   1. opts.provider — instance đã build sẵn (test/custom)
 //   2. opts.apiKey   — auto-route Anthropic (backward-compat caller cũ)
 //   3. env WHITEBOARD_AI_PROVIDER
-//      - "anthropic": cần env ANTHROPIC_API_KEY (production pay-per-token)
-//      - "claude-agent-sdk": @anthropic-ai/claude-agent-sdk + OAuth subscription
+//      - "claude-agent-sdk" (default): @anthropic-ai/claude-agent-sdk + OAuth subscription Pro/Max/Team
+//      - "anthropic": cần env ANTHROPIC_API_KEY (pay-per-token console)
 //      - "claude-cli": spawn `claude -p` subprocess (legacy, chậm hơn)
-//      - "ollama" (default): không cần key, đọc OLLAMA_BASE_URL tùy chọn
+//      - "ollama": local, không cần key, đọc OLLAMA_BASE_URL tùy chọn
 
 import { AnthropicProvider } from './anthropic';
 import { ClaudeAgentSdkProvider } from './claude-agent-sdk';
@@ -58,7 +58,7 @@ export function selectProvider(opts: SelectProviderOptions = {}): AIProvider {
   }
 
   const env = opts.env ?? readEnv();
-  const wanted = (env.WHITEBOARD_AI_PROVIDER ?? 'ollama').toLowerCase();
+  const wanted = (env.WHITEBOARD_AI_PROVIDER ?? 'claude-agent-sdk').toLowerCase();
 
   if (wanted === 'anthropic') {
     const key = env.ANTHROPIC_API_KEY;
