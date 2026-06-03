@@ -4,14 +4,34 @@
 
 import { OllamaProvider } from '../ollama';
 
-function makeFetchOk(body: unknown): typeof fetch {
+/**
+ * Streaming-aware mock: serialize a single Ollama chat response as 1-line NDJSON
+ * (done=true) so the new streaming reader path returns the same content.
+ */
+function makeFetchStream(
+  body: {
+    message?: { role?: string; content: string };
+    prompt_eval_count?: number;
+    eval_count?: number;
+  },
+): typeof fetch {
+  const line = JSON.stringify({
+    message: { content: body.message?.content ?? '' },
+    done: true,
+    prompt_eval_count: body.prompt_eval_count,
+    eval_count: body.eval_count,
+  }) + '\n';
   return (async () => {
     return {
       ok: true,
       status: 200,
       statusText: 'OK',
-      async json() { return body; },
-      async text() { return JSON.stringify(body); },
+      body: new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(line));
+          controller.close();
+        },
+      }),
     } as unknown as Response;
   }) as unknown as typeof fetch;
 }
@@ -43,10 +63,8 @@ describe('OllamaProvider', () => {
 
   it('happy path: response.message.content JSON → kind:json + usage', async () => {
     const envelope = { decision: 'refuse', reason: 'demo' };
-    const fetchImpl = makeFetchOk({
-      model: 'gemma3:4b',
+    const fetchImpl = makeFetchStream({
       message: { role: 'assistant', content: JSON.stringify(envelope) },
-      done: true,
       prompt_eval_count: 350,
       eval_count: 42,
     });
@@ -66,11 +84,20 @@ describe('OllamaProvider', () => {
     const fetchImpl = (async (url: string, init: RequestInit) => {
       captured.url = url;
       captured.body = JSON.parse(init.body as string);
+      const line = JSON.stringify({
+        message: { content: '{"decision":"refuse","reason":"x"}' },
+        done: true,
+        prompt_eval_count: 10,
+        eval_count: 5,
+      }) + '\n';
       return {
         ok: true, status: 200, statusText: 'OK',
-        async json() {
-          return { message: { role: 'assistant', content: '{"decision":"refuse","reason":"x"}' }, prompt_eval_count: 10, eval_count: 5 };
-        },
+        body: new ReadableStream({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode(line));
+            controller.close();
+          },
+        }),
       } as unknown as Response;
     }) as unknown as typeof fetch;
 
@@ -82,7 +109,7 @@ describe('OllamaProvider', () => {
     expect(captured.url).toBe('http://127.0.0.1:9999/api/chat');
     expect(captured.body.model).toBe('gemma3:4b');
     expect(captured.body.format).toEqual({ type: 'object', x: 1 });
-    expect(captured.body.stream).toBe(false);
+    expect(captured.body.stream).toBe(true);
     expect(captured.body.messages).toEqual([
       { role: 'system', content: 'SYS' },
       { role: 'user', content: 'USR' },
@@ -95,9 +122,18 @@ describe('OllamaProvider', () => {
     const captured: { url?: string } = {};
     const fetchImpl = (async (url: string) => {
       captured.url = url;
+      const line = JSON.stringify({
+        message: { content: '{"decision":"refuse","reason":"x"}' },
+        done: true,
+      }) + '\n';
       return {
         ok: true, status: 200, statusText: 'OK',
-        async json() { return { message: { content: '{"decision":"refuse","reason":"x"}' } }; },
+        body: new ReadableStream({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode(line));
+            controller.close();
+          },
+        }),
       } as unknown as Response;
     }) as unknown as typeof fetch;
     const provider = new OllamaProvider({ baseUrl: 'http://localhost:11434/', fetchImpl });
@@ -129,7 +165,7 @@ describe('OllamaProvider', () => {
   });
 
   it('content rỗng → kind:error', async () => {
-    const fetchImpl = makeFetchOk({
+    const fetchImpl = makeFetchStream({
       message: { role: 'assistant', content: '' },
       prompt_eval_count: 0, eval_count: 0,
     });
@@ -143,7 +179,7 @@ describe('OllamaProvider', () => {
   });
 
   it('content không phải JSON → kind:error', async () => {
-    const fetchImpl = makeFetchOk({
+    const fetchImpl = makeFetchStream({
       message: { role: 'assistant', content: 'not json {{{' },
       prompt_eval_count: 1, eval_count: 1,
     });
@@ -159,5 +195,36 @@ describe('OllamaProvider', () => {
   it('custom defaultModel override', () => {
     const p = new OllamaProvider({ defaultModel: 'gemma3:1b' });
     expect(p.defaultModel).toBe('gemma3:1b');
+  });
+});
+
+describe('OllamaProvider — onToken streaming', () => {
+  test('emits onToken per NDJSON chunk', async () => {
+    const chunks: string[] = [];
+    const ndjson = [
+      JSON.stringify({ message: { content: 'hel' }, done: false }),
+      JSON.stringify({ message: { content: 'lo' }, done: false }),
+      JSON.stringify({ message: { content: '' }, done: true, prompt_eval_count: 10, eval_count: 5 }),
+    ].join('\n') + '\n';
+
+    const fakeFetch = jest.fn().mockResolvedValue({
+      ok: true,
+      body: new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(ndjson));
+          controller.close();
+        },
+      }),
+    });
+
+    const provider = new OllamaProvider({ fetchImpl: fakeFetch as never });
+    await provider.call({
+      systemPrompt: 's', userPrompt: 'u',
+      schema: { type: 'object' } as never,
+      model: 'gemma3:4b', maxTokens: 100,
+      onToken: (c) => chunks.push(c),
+    });
+
+    expect(chunks).toEqual(['hel', 'lo']);
   });
 });

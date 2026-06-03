@@ -70,18 +70,11 @@ export class OllamaProvider implements AIProvider {
         { role: 'system', content: req.systemPrompt },
         { role: 'user', content: req.userPrompt },
       ],
-      // Ollama v0.5+ structured outputs: model bị constrain emit JSON đúng schema.
       format: req.schema,
-      stream: false,
-      options: {
-        // num_predict ≈ max_tokens
-        num_predict: req.maxTokens,
-        // temperature thấp cho output deterministic hơn (DSL cần consistent).
-        temperature: 0.2,
-      },
+      stream: true,
+      options: { num_predict: req.maxTokens, temperature: 0.2 },
     };
 
-    let resp: Response;
     let doFetch: typeof fetch;
     try {
       doFetch = this.resolveFetch();
@@ -89,6 +82,8 @@ export class OllamaProvider implements AIProvider {
       const err = e as { message?: string };
       return { kind: 'error', message: err.message ?? 'fetch không khả dụng' };
     }
+
+    let resp: Response;
     try {
       resp = await doFetch(`${this.baseUrl}/api/chat`, {
         method: 'POST',
@@ -104,13 +99,9 @@ export class OllamaProvider implements AIProvider {
       };
     }
 
-    if (!resp.ok) {
+    if (!resp.ok || !resp.body) {
       let detail = '';
-      try {
-        detail = await resp.text();
-      } catch {
-        /* ignore */
-      }
+      try { detail = await resp.text(); } catch { /* ignore */ }
       return {
         kind: 'error',
         message: `Ollama HTTP ${resp.status}: ${detail || resp.statusText}`,
@@ -118,22 +109,49 @@ export class OllamaProvider implements AIProvider {
       };
     }
 
-    let json: OllamaChatResponse;
-    try {
-      json = (await resp.json()) as OllamaChatResponse;
-    } catch (e) {
-      const err = e as { message?: string };
-      return { kind: 'error', message: 'Ollama response không phải JSON: ' + (err.message ?? '?') };
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let content = '';
+    let promptEvalCount = 0;
+    let evalCount = 0;
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let nl;
+      while ((nl = buffer.indexOf('\n')) !== -1) {
+        const line = buffer.slice(0, nl).trim();
+        buffer = buffer.slice(nl + 1);
+        if (!line) continue;
+        try {
+          const chunk = JSON.parse(line) as {
+            message?: { content?: string };
+            done?: boolean;
+            prompt_eval_count?: number;
+            eval_count?: number;
+          };
+          if (chunk.message?.content) {
+            content += chunk.message.content;
+            if (req.onToken) {
+              try { req.onToken(chunk.message.content); } catch { /* swallow */ }
+            }
+          }
+          if (chunk.done) {
+            promptEvalCount = chunk.prompt_eval_count ?? promptEvalCount;
+            evalCount = chunk.eval_count ?? evalCount;
+          }
+        } catch { /* skip malformed line */ }
+      }
     }
 
-    const content = json.message?.content?.trim();
-    if (!content) {
-      return { kind: 'error', message: 'Ollama trả message.content rỗng' };
-    }
+    const trimmed = content.trim();
+    if (!trimmed) return { kind: 'error', message: 'Ollama trả message.content rỗng' };
 
     let data: unknown;
     try {
-      data = JSON.parse(content);
+      data = JSON.parse(trimmed);
     } catch (e) {
       const err = e as { message?: string };
       return {
@@ -142,13 +160,16 @@ export class OllamaProvider implements AIProvider {
       };
     }
 
-    const usage: ProviderTokenUsage = {
-      inputTokens: json.prompt_eval_count ?? 0,
-      outputTokens: json.eval_count ?? 0,
-      cacheReadTokens: 0,
-      cacheCreationTokens: 0,
+    return {
+      kind: 'json',
+      data,
+      usage: {
+        inputTokens: promptEvalCount,
+        outputTokens: evalCount,
+        cacheReadTokens: 0,
+        cacheCreationTokens: 0,
+      },
     };
-    return { kind: 'json', data, usage };
   }
 
   // Vision: gửi ảnh qua images[] field trong message (Ollama multimodal API).
