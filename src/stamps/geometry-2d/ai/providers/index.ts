@@ -6,17 +6,20 @@
 //   1. opts.provider — instance đã build sẵn (test/custom)
 //   2. opts.apiKey   — auto-route Anthropic (backward-compat caller cũ)
 //   3. env WHITEBOARD_AI_PROVIDER
-//      - "anthropic": cần env ANTHROPIC_API_KEY
-//      - "claude-cli": dùng `claude` CLI subprocess (Claude Code OAuth) — dev/eval only
+//      - "anthropic": cần env ANTHROPIC_API_KEY (production pay-per-token)
+//      - "claude-agent-sdk": @anthropic-ai/claude-agent-sdk + OAuth subscription
+//      - "claude-cli": spawn `claude -p` subprocess (legacy, chậm hơn)
 //      - "ollama" (default): không cần key, đọc OLLAMA_BASE_URL tùy chọn
 
 import { AnthropicProvider } from './anthropic';
+import { ClaudeAgentSdkProvider } from './claude-agent-sdk';
 import { ClaudeCliProvider } from './claude-cli';
 import { OllamaProvider } from './ollama';
 import type { AIProvider } from './types';
 
 export type { AIProvider, ProviderOutput, ProviderRequest, ProviderTokenUsage } from './types';
 export { AnthropicProvider } from './anthropic';
+export { ClaudeAgentSdkProvider } from './claude-agent-sdk';
 export { ClaudeCliProvider } from './claude-cli';
 export { OllamaProvider } from './ollama';
 
@@ -37,6 +40,10 @@ export interface SelectProviderOptions {
   claudeCliDefaultModel?: string;
   /** Claude CLI max budget USD per call override. */
   claudeCliMaxBudgetUsd?: number;
+  /** Claude Agent SDK OAuth token (subscription path). Fallback env CLAUDE_CODE_OAUTH_TOKEN. */
+  claudeAgentSdkOauthToken?: string;
+  /** Claude Agent SDK default model. */
+  claudeAgentSdkDefaultModel?: string;
   /** Test env: env vars getter (default process.env). */
   env?: Record<string, string | undefined>;
 }
@@ -75,6 +82,14 @@ export function selectProvider(opts: SelectProviderOptions = {}): AIProvider {
     });
   }
 
+  if (wanted === 'claude-agent-sdk') {
+    return new ClaudeAgentSdkProvider({
+      oauthToken: opts.claudeAgentSdkOauthToken ?? env.CLAUDE_CODE_OAUTH_TOKEN,
+      defaultModel:
+        opts.claudeAgentSdkDefaultModel ?? env.CLAUDE_AGENT_SDK_MODEL,
+    });
+  }
+
   if (wanted === 'ollama') {
     return new OllamaProvider({
       baseUrl: opts.ollamaBaseUrl ?? env.OLLAMA_BASE_URL,
@@ -83,7 +98,7 @@ export function selectProvider(opts: SelectProviderOptions = {}): AIProvider {
   }
 
   throw new Error(
-    `selectProvider: WHITEBOARD_AI_PROVIDER="${wanted}" không hợp lệ (anthropic|claude-cli|ollama)`,
+    `selectProvider: WHITEBOARD_AI_PROVIDER="${wanted}" không hợp lệ (anthropic|claude-cli|claude-agent-sdk|ollama)`,
   );
 }
 

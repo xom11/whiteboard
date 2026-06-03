@@ -110,7 +110,7 @@ describe('selectProvider', () => {
 
   it('error message liệt kê đủ provider hợp lệ', () => {
     expect(() => selectProvider({ env: { WHITEBOARD_AI_PROVIDER: 'gpt' } })).toThrow(
-      /anthropic\|claude-cli\|ollama/,
+      /anthropic\|claude-cli\|claude-agent-sdk\|ollama/,
     );
   });
 });
