@@ -294,7 +294,7 @@ export function AiFigurePrompt({
               <img
                 src={imagePreview}
                 alt="Ảnh đề bài"
-                className="h-14 w-14 rounded-lg border border-slate-200 object-cover shadow-sm"
+                className="max-h-48 max-w-full h-auto w-auto rounded-lg border border-slate-200 shadow-sm"
               />
               <button
                 type="button"
