@@ -223,8 +223,8 @@ describe('GeometryEditorPanel', () => {
       target: { value: 'Vẽ hình ngoài phạm vi' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Dựng bằng AI' }));
-    // Loading state: button đổi sang cancel mode "Đang dựng... <giây> — Huỷ"
-    expect(screen.getByRole('button', { name: /Đang dựng/i })).toBeInTheDocument();
+    // Loading state: send button đổi thành cancel button (testid riêng để khỏi đụng "Huỷ" của editor footer)
+    expect(screen.getByTestId('geometry-ai-cancel')).toBeInTheDocument();
     expect(screen.getByLabelText('Đề bài cho AI')).toBeDisabled();
 
     await act(async () => {

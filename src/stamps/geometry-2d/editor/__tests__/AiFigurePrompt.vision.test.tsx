@@ -27,11 +27,24 @@ jest.mock('../useAiFigure', () => ({
 
 const noopGenerator: GenerateGeometryFigure = jest.fn();
 
+/** Helper: attach file qua hidden input "Chọn ảnh đề bài". */
+function attachImage(filename = 'a.png', type = 'image/png') {
+  const file = new File([new Uint8Array([0x89, 0x50])], filename, { type });
+  const input = screen.getByLabelText(/chọn ảnh/i) as HTMLInputElement;
+  fireEvent.change(input, { target: { files: [file] } });
+}
+
+/** Helper: click nút gửi (OCR hoặc Dựng) — sau khi attach ảnh + prompt rỗng, nó là OCR. */
+async function clickOcr() {
+  // Chờ send button chuyển sang chế độ OCR (testid khác nhau giữa 2 mode).
+  const btn = await screen.findByTestId('geometry-ai-ocr');
+  fireEvent.click(btn);
+}
+
 describe('AiFigurePrompt — vision/image upload', () => {
   beforeEach(() => {
     extractMock.mockReset();
     mockSetPrompt = jest.fn();
-    // Cập nhật implementation mỗi test để dùng mockSetPrompt mới
     const { useAiFigure } = jest.requireMock('../useAiFigure') as {
       useAiFigure: jest.Mock;
     };
@@ -42,7 +55,7 @@ describe('AiFigurePrompt — vision/image upload', () => {
       error: null,
       submit: jest.fn(),
       cancel: jest.fn(),
-      tokens: null,
+      tokens: 0,
       mode: 'build',
       setMode: jest.fn(),
       entityCount: { points: 0, shapes: 0 },
@@ -50,15 +63,22 @@ describe('AiFigurePrompt — vision/image upload', () => {
     }));
   });
 
-  it('shows toggle button "Đọc đề từ ảnh" when no image', () => {
+  it('luôn render paperclip button + hidden file input (không cần toggle)', () => {
     render(<AiFigurePrompt generator={noopGenerator} onGenerated={jest.fn()} />);
-    expect(screen.getByRole('button', { name: /đọc đề từ ảnh|ảnh đề/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /đính ảnh/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/chọn ảnh/i)).toBeInTheDocument();
   });
 
-  it('shows ImageDropZone after clicking toggle', () => {
+  it('composer cũng là drag-drop region', () => {
     render(<AiFigurePrompt generator={noopGenerator} onGenerated={jest.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: /đọc đề từ ảnh|ảnh đề/i }));
     expect(screen.getByRole('region', { name: /khu vực kéo thả/i })).toBeInTheDocument();
+  });
+
+  it('attach ảnh → hiển thị thumbnail + nút Xoá', async () => {
+    render(<AiFigurePrompt generator={noopGenerator} onGenerated={jest.fn()} />);
+    attachImage();
+    await waitFor(() => screen.getByRole('img', { name: /ảnh đề bài/i }));
+    expect(screen.getByRole('button', { name: /xoá/i })).toBeInTheDocument();
   });
 
   it('OCR success → fills textarea với extracted text', async () => {
@@ -69,33 +89,23 @@ describe('AiFigurePrompt — vision/image upload', () => {
     });
 
     render(<AiFigurePrompt generator={noopGenerator} onGenerated={jest.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: /đọc đề từ ảnh|ảnh đề/i }));
+    attachImage();
+    await clickOcr();
 
-    // Inject image via file input.
-    const file = new File([new Uint8Array([0x89, 0x50])], 'a.png', { type: 'image/png' });
-    const input = screen.getByLabelText(/chọn ảnh/i) as HTMLInputElement;
-    fireEvent.change(input, { target: { files: [file] } });
-    await waitFor(() => screen.getByRole('button', { name: /đọc đề bài|^đọc đề$/i }));
-
-    // Trigger OCR.
-    fireEvent.click(screen.getByRole('button', { name: /đọc đề bài|^đọc đề$/i }));
-
-    await waitFor(() => expect(mockSetPrompt).toHaveBeenCalledWith('Cho tam giác ABC vuông tại A'));
+    await waitFor(() =>
+      expect(mockSetPrompt).toHaveBeenCalledWith('Cho tam giác ABC vuông tại A'),
+    );
   });
 
-  it('OCR refused → shows toast/error message', async () => {
+  it('OCR refused → shows error message', async () => {
     extractMock.mockResolvedValueOnce({
       kind: 'refused',
       reason: 'not-math',
       message: 'Ảnh không phải đề toán',
     });
     render(<AiFigurePrompt generator={noopGenerator} onGenerated={jest.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: /đọc đề từ ảnh|ảnh đề/i }));
-    const file = new File([new Uint8Array([0x89])], 'a.png', { type: 'image/png' });
-    const input = screen.getByLabelText(/chọn ảnh/i) as HTMLInputElement;
-    fireEvent.change(input, { target: { files: [file] } });
-    await waitFor(() => screen.getByRole('button', { name: /đọc đề bài|^đọc đề$/i }));
-    fireEvent.click(screen.getByRole('button', { name: /đọc đề bài|^đọc đề$/i }));
+    attachImage();
+    await clickOcr();
 
     await waitFor(() =>
       expect(screen.getByText(/không phải đề toán/i)).toBeInTheDocument(),
@@ -110,12 +120,8 @@ describe('AiFigurePrompt — vision/image upload', () => {
       usage: { inputTokens: 0, outputTokens: 0 },
     });
     render(<AiFigurePrompt generator={noopGenerator} onGenerated={jest.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: /đọc đề từ ảnh|ảnh đề/i }));
-    const file = new File([new Uint8Array([0x89])], 'a.png', { type: 'image/png' });
-    const input = screen.getByLabelText(/chọn ảnh/i) as HTMLInputElement;
-    fireEvent.change(input, { target: { files: [file] } });
-    await waitFor(() => screen.getByRole('button', { name: /đọc đề bài|^đọc đề$/i }));
-    fireEvent.click(screen.getByRole('button', { name: /đọc đề bài|^đọc đề$/i }));
+    attachImage();
+    await clickOcr();
 
     await waitFor(() =>
       expect(screen.getByText(/không chính xác|kiểm tra/i)).toBeInTheDocument(),
@@ -128,7 +134,6 @@ describe('AiFigurePrompt — vision/image upload', () => {
       text: 'custom override text',
       usage: { inputTokens: 0, outputTokens: 0 },
     });
-    // Reset useAiFigure mock with new setPromptSpy.
     const setPromptSpy = jest.fn();
     jest.requireMock('../useAiFigure').useAiFigure.mockImplementation(() => ({
       prompt: '',
@@ -137,44 +142,62 @@ describe('AiFigurePrompt — vision/image upload', () => {
       error: null,
       submit: jest.fn(),
       cancel: jest.fn(),
-      tokens: null,
+      tokens: 0,
       mode: 'build',
       setMode: jest.fn(),
       entityCount: { points: 0, shapes: 0 },
       hasUnsupported: false,
     }));
 
-    render(<AiFigurePrompt generator={noopGenerator} onGenerated={jest.fn()} extractProblem={customExtract} />);
-    fireEvent.click(screen.getByRole('button', { name: /đọc đề từ ảnh|ảnh đề/i }));
-    const file = new File([new Uint8Array([0x89])], 'a.png', { type: 'image/png' });
-    const input = screen.getByLabelText(/chọn ảnh/i) as HTMLInputElement;
-    fireEvent.change(input, { target: { files: [file] } });
-    await waitFor(() => screen.getByRole('button', { name: /đọc đề bài|^đọc đề$/i }));
-    fireEvent.click(screen.getByRole('button', { name: /đọc đề bài|^đọc đề$/i }));
+    render(
+      <AiFigurePrompt
+        generator={noopGenerator}
+        onGenerated={jest.fn()}
+        extractProblem={customExtract}
+      />,
+    );
+    attachImage();
+    await clickOcr();
 
     await waitFor(() => expect(customExtract).toHaveBeenCalled());
-    expect(extractMock).not.toHaveBeenCalled(); // default not called
+    expect(extractMock).not.toHaveBeenCalled();
   });
 
-  it('clears ocrError when user changes image', async () => {
+  it('clears ocrError when user xoá ảnh', async () => {
     extractMock.mockResolvedValueOnce({
       kind: 'refused',
       reason: 'not-math',
       message: 'Ảnh không phải đề toán',
     });
     render(<AiFigurePrompt generator={noopGenerator} onGenerated={jest.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: /đọc đề từ ảnh|ảnh đề/i }));
-    const fileA = new File([new Uint8Array([0x89])], 'a.png', { type: 'image/png' });
-    const input = screen.getByLabelText(/chọn ảnh/i) as HTMLInputElement;
-    fireEvent.change(input, { target: { files: [fileA] } });
-    await waitFor(() => screen.getByRole('button', { name: /đọc đề bài|^đọc đề$/i }));
-    fireEvent.click(screen.getByRole('button', { name: /đọc đề bài|^đọc đề$/i }));
-    await waitFor(() => expect(screen.getByText(/không phải đề toán/i)).toBeInTheDocument());
+    attachImage();
+    await clickOcr();
+    await waitFor(() =>
+      expect(screen.getByText(/không phải đề toán/i)).toBeInTheDocument(),
+    );
 
-    // Now remove the image (simulates user clicking × button or new upload).
-    fireEvent.click(screen.getByRole('button', { name: /xoá|remove/i }));
+    fireEvent.click(screen.getByRole('button', { name: /xoá/i }));
 
-    // Error message should be cleared after image is set to null.
-    await waitFor(() => expect(screen.queryByText(/không phải đề toán/i)).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.queryByText(/không phải đề toán/i)).not.toBeInTheDocument(),
+    );
+  });
+
+  it('paste handler: paste ảnh từ clipboard → attach', async () => {
+    render(<AiFigurePrompt generator={noopGenerator} onGenerated={jest.fn()} />);
+    const region = screen.getByRole('region', { name: /khu vực kéo thả/i });
+    const file = new File([new Uint8Array([0x89])], 'pasted.png', { type: 'image/png' });
+    fireEvent.paste(region, {
+      clipboardData: {
+        items: [
+          {
+            kind: 'file',
+            type: 'image/png',
+            getAsFile: () => file,
+          },
+        ],
+      },
+    });
+    await waitFor(() => screen.getByRole('img', { name: /ảnh đề bài/i }));
   });
 });

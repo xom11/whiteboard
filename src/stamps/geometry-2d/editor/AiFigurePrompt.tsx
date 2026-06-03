@@ -1,44 +1,64 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { State } from '../../../core/scene';
 import type { GenerateGeometryFigure } from '../../shared/types';
 import { useAiFigure } from './useAiFigure';
-import { ImageDropZone, type ImageDropZoneError } from './ImageDropZone';
 import { handleExtractProblem } from '../ai/handleExtractProblem';
+import { fileToImagePart, validateFile } from '../ai/vision/preprocess';
 import type { ImagePart } from '../ai/providers/types';
 
 interface Props {
   generator: GenerateGeometryFigure;
   onGenerated: (state: State) => void;
-  /**
-   * Current editor state. Khi non-empty + no unsupported entity → mode='refine'
-   * mặc định. User toggle "Dựng mới" sẽ confirm trước khi thay state.
-   */
   currentState?: State | null;
-  /**
-   * Optional OCR vision callback. Consumer thường wire qua server-side route
-   * để control provider config. Default = handleExtractProblem (đọc env trực tiếp,
-   * chỉ work khi env vars accessible — server-side context).
-   */
   extractProblem?: typeof handleExtractProblem;
 }
 
-const BUILD_EXAMPLES = [
-  'Tam giác ABC, dựng trung điểm M của BC',
-  'Tam giác ABC vuông tại A, AH là đường cao xuống BC',
-  'Hình thoi ABCD, hai đường chéo cắt nhau tại O',
-  'Từ điểm M ngoài đường tròn (O), kẻ hai tiếp tuyến',
-];
+// SVG icons giữ inline để khỏi tăng bundle deps; theo tone "math-instrument refined".
+const PaperclipIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.75}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+    {...props}
+  >
+    <path d="M21.44 11.05 12.25 20.24a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.41 17.41a2 2 0 1 1-2.83-2.83l8.49-8.49" />
+  </svg>
+);
 
-const REFINE_EXAMPLES = [
-  'Thêm trung điểm M của BC',
-  'Dựng đường cao AH xuống BC',
-  'Vẽ đường tròn ngoại tiếp',
-  'Thêm tiếp tuyến tại A',
-];
+const ArrowUpIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2.25}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+    {...props}
+  >
+    <path d="M12 19V5" />
+    <path d="m5 12 7-7 7 7" />
+  </svg>
+);
 
-export function AiFigurePrompt({ generator, onGenerated, currentState, extractProblem = handleExtractProblem }: Props) {
+const StopIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden {...props}>
+    <rect x="6" y="6" width="12" height="12" rx="2" />
+  </svg>
+);
+
+export function AiFigurePrompt({
+  generator,
+  onGenerated,
+  currentState,
+  extractProblem = handleExtractProblem,
+}: Props) {
   const {
     prompt,
     setPrompt,
@@ -53,48 +73,101 @@ export function AiFigurePrompt({ generator, onGenerated, currentState, extractPr
     hasUnsupported,
   } = useAiFigure(generator, { currentState });
 
+  // ── timer ──────────────────────────────────────────────
   const [elapsed, setElapsed] = useState(0);
   useEffect(() => {
     if (!isLoading) {
       setElapsed(0);
       return;
     }
-    setElapsed(0);
     const id = setInterval(() => setElapsed((s) => s + 1), 1000);
     return () => clearInterval(id);
   }, [isLoading]);
 
-  // Vision/OCR state.
-  const [showImageZone, setShowImageZone] = useState(false);
+  // ── image / vision state ───────────────────────────────
   const [image, setImage] = useState<ImagePart | null>(null);
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrError, setOcrError] = useState<string | null>(null);
   const [ocrWarning, setOcrWarning] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
-  // Clear OCR error/warning khi user đổi ảnh.
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const imagePreview = image
+    ? `data:${image.mediaType};base64,${image.base64}`
+    : null;
+
   useEffect(() => {
     setOcrError(null);
     setOcrWarning(null);
   }, [image]);
 
-  const handleImageError = useCallback((err: ImageDropZoneError) => {
-    setOcrError(err.message);
-  }, []);
+  const handleFile = useCallback(
+    async (file: File) => {
+      if (isLoading || ocrLoading) return;
+      const v = validateFile(file);
+      if (!v.ok) {
+        setOcrError(v.message);
+        return;
+      }
+      try {
+        const part = await fileToImagePart(file);
+        setImage(part);
+      } catch (e) {
+        setOcrError(e instanceof Error ? e.message : 'Không decode được ảnh');
+      }
+    },
+    [isLoading, ocrLoading],
+  );
 
-  const handleRunOcr = useCallback(async () => {
+  const handleFileInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) void handleFile(file);
+      e.target.value = '';
+    },
+    [handleFile],
+  );
+
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent<HTMLElement>) => {
+      const item = Array.from(e.clipboardData.items).find(
+        (it) => it.kind === 'file' && it.type.startsWith('image/'),
+      );
+      if (!item) return;
+      const file = item.getAsFile();
+      if (!file) return;
+      e.preventDefault();
+      void handleFile(file);
+    },
+    [handleFile],
+  );
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      setIsDragOver(false);
+      const file = Array.from(e.dataTransfer.files).find((f) =>
+        f.type.startsWith('image/'),
+      );
+      if (file) void handleFile(file);
+    },
+    [handleFile],
+  );
+
+  const runOcr = useCallback(async () => {
     if (!image) return;
     setOcrLoading(true);
     setOcrError(null);
     setOcrWarning(null);
     try {
       const r = await extractProblem(image);
-      if (r.kind === 'success') {
+      if (r.kind === 'success' || r.kind === 'low-confidence') {
         setPrompt(r.text);
-      } else if (r.kind === 'low-confidence') {
-        setPrompt(r.text);
-        setOcrWarning(r.warning);
-      } else if (r.kind === 'refused') {
-        setOcrError(r.message);
+        if (r.kind === 'low-confidence') setOcrWarning(r.warning);
+        // Focus textarea sau OCR để user review/edit ngay.
+        requestAnimationFrame(() => textareaRef.current?.focus());
       } else {
         setOcrError(r.message);
       }
@@ -103,18 +176,15 @@ export function AiFigurePrompt({ generator, onGenerated, currentState, extractPr
     }
   }, [image, setPrompt, extractProblem]);
 
-  const toggleImageZone = useCallback(() => {
-    setShowImageZone((s) => !s);
-  }, []);
-
-  const handleSubmit = useCallback(
-    async (event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      const generated = await submit();
-      if (generated) onGenerated(generated);
-    },
-    [onGenerated, submit],
-  );
+  const handleSendClick = useCallback(async () => {
+    // Khi có ảnh + textarea rỗng → ưu tiên OCR trước (single-click flow).
+    if (image && !prompt.trim() && !ocrLoading) {
+      await runOcr();
+      return;
+    }
+    const generated = await submit();
+    if (generated) onGenerated(generated);
+  }, [image, prompt, ocrLoading, runOcr, submit, onGenerated]);
 
   const handleSwitchToBuild = useCallback(() => {
     if (currentState && currentState.order.length > 0) {
@@ -126,174 +196,231 @@ export function AiFigurePrompt({ generator, onGenerated, currentState, extractPr
     setMode('build');
   }, [currentState, setMode]);
 
-  const primaryLabel = isLoading
-    ? tokens > 0
-      ? `Đang dựng ${tokens}tok / ${elapsed}s — Huỷ`
-      : `Đang dựng... ${elapsed}s — Huỷ`
-    : 'Dựng bằng AI';
-
+  // ── derived ────────────────────────────────────────────
   const hasContent = currentState != null && currentState.order.length > 0;
-  const examples = mode === 'refine' ? REFINE_EXAMPLES : BUILD_EXAMPLES;
+  const promptEmpty = !prompt.trim();
+  const willOcr = image != null && promptEmpty;
+  const sendDisabled =
+    (!image && promptEmpty) || ocrLoading || (isLoading && !willOcr);
   const refineChipLabel =
     entityCount.points + entityCount.shapes > 0
       ? `Thêm vào · ${entityCount.points}đ, ${entityCount.shapes}đoạn`
       : 'Thêm vào';
 
+  const placeholder = willOcr
+    ? 'Bấm gửi để đọc đề từ ảnh — hoặc tự gõ ở đây…'
+    : mode === 'refine'
+      ? 'Mô tả phần cần thêm (vd: trung điểm M của BC). Có thể dán ảnh đề (Ctrl+V).'
+      : 'Mô tả đề bài cần dựng — hoặc dán/đính ảnh đề (Ctrl+V).';
+
   return (
-    <form
-      data-testid="geometry-ai-form"
-      onSubmit={(event) => {
-        void handleSubmit(event);
-      }}
-      className="border-b border-slate-200 bg-slate-50 px-3 py-2"
-    >
-      <label
-        htmlFor="geometry-ai-prompt"
-        className="mb-1 block text-xs font-medium text-slate-600"
-      >
-        Dựng hình bằng AI
-      </label>
-
-      {hasContent && (
-        <div className="mb-2 flex items-center gap-2">
-          <button
-            type="button"
-            data-testid="geometry-ai-mode-refine"
-            onClick={() => setMode('refine')}
-            disabled={isLoading || hasUnsupported}
-            className={`rounded-full border px-2 py-0.5 text-[11px] transition ${
-              mode === 'refine'
-                ? 'border-emerald-600 bg-emerald-100 text-emerald-800'
-                : 'border-slate-300 bg-white text-slate-600 hover:border-emerald-400'
-            } ${hasUnsupported ? 'cursor-not-allowed opacity-50' : ''}`}
-            title={
-              hasUnsupported
-                ? 'Hình hiện tại có đối tượng ngoài DSL — chỉ dựng mới được'
-                : refineChipLabel
-            }
-          >
-            {refineChipLabel}
-          </button>
-          <button
-            type="button"
-            data-testid="geometry-ai-mode-build"
-            onClick={handleSwitchToBuild}
-            disabled={isLoading}
-            className={`rounded-full border px-2 py-0.5 text-[11px] transition ${
-              mode === 'build'
-                ? 'border-emerald-600 bg-emerald-100 text-emerald-800'
-                : 'border-slate-300 bg-white text-slate-600 hover:border-emerald-400'
-            }`}
-          >
-            Dựng mới
-          </button>
-          {hasUnsupported && (
-            <span
-              className="text-[10px] text-amber-700"
-              data-testid="geometry-ai-unsupported-warning"
+    <div className="border-b border-slate-200 bg-slate-50 px-3 py-3">
+      {/* Header label + mode pills */}
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <span className="text-xs font-medium tracking-wide text-slate-600">
+          Dựng hình bằng AI
+        </span>
+        {hasContent && (
+          <div className="flex items-center gap-1" role="tablist" aria-label="Chế độ AI">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'refine'}
+              data-testid="geometry-ai-mode-refine"
+              onClick={() => setMode('refine')}
+              disabled={isLoading || hasUnsupported}
+              title={
+                hasUnsupported
+                  ? 'Hình có đối tượng ngoài DSL — chỉ dựng mới được'
+                  : refineChipLabel
+              }
+              className={`rounded-full px-2.5 py-0.5 text-[11px] transition ${
+                mode === 'refine'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'text-slate-500 hover:text-emerald-700'
+              } ${hasUnsupported ? 'cursor-not-allowed opacity-40' : ''}`}
             >
-              Hình có đối tượng ngoài DSL
-            </span>
-          )}
-        </div>
-      )}
+              {refineChipLabel}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'build'}
+              data-testid="geometry-ai-mode-build"
+              onClick={handleSwitchToBuild}
+              disabled={isLoading}
+              className={`rounded-full px-2.5 py-0.5 text-[11px] transition ${
+                mode === 'build'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'text-slate-500 hover:text-emerald-700'
+              }`}
+            >
+              Dựng mới
+            </button>
+          </div>
+        )}
+      </div>
 
-      <div className="mb-2 flex flex-col gap-2">
-        <button
-          type="button"
-          onClick={toggleImageZone}
-          className="self-start rounded border border-slate-300 bg-white px-2 py-1 text-[11px] text-slate-700 hover:border-emerald-400 hover:bg-emerald-50"
+      {hasUnsupported && (
+        <p
+          className="mb-1.5 text-[10px] text-amber-700"
+          data-testid="geometry-ai-unsupported-warning"
         >
-          📷 {showImageZone ? 'Đóng ảnh' : 'Đọc đề từ ảnh'}
-        </button>
-
-        {showImageZone && (
-          <>
-            <ImageDropZone
-              value={image}
-              onChange={setImage}
-              onError={handleImageError}
-              disabled={ocrLoading || isLoading}
-            />
-            {image && (
-              <button
-                type="button"
-                onClick={() => void handleRunOcr()}
-                disabled={ocrLoading}
-                className="self-start rounded bg-sky-600 px-3 py-1 text-xs font-medium text-white hover:bg-sky-700 disabled:opacity-50"
-              >
-                {ocrLoading ? 'Đang đọc…' : 'Đọc đề bài'}
-              </button>
-            )}
-            {ocrError && (
-              <p role="alert" className="text-xs text-red-600">
-                {ocrError}
-              </p>
-            )}
-            {ocrWarning && (
-              <p className="rounded bg-amber-50 px-2 py-1 text-xs text-amber-700">
-                {ocrWarning}
-              </p>
-            )}
-          </>
-        )}
-      </div>
-
-      <div className="flex items-start gap-2">
-        <textarea
-          id="geometry-ai-prompt"
-          aria-label="Đề bài cho AI"
-          value={prompt}
-          onChange={(event) => setPrompt(event.target.value)}
-          disabled={isLoading}
-          rows={2}
-          placeholder={
-            mode === 'refine'
-              ? 'Ví dụ: thêm trung điểm M của BC'
-              : 'Ví dụ: Cho tam giác ABC, dựng đường cao AH.'
-          }
-          className="min-h-12 flex-1 resize-none rounded border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-800 outline-none focus:border-emerald-500 disabled:opacity-60"
-        />
-        {isLoading ? (
-          <button
-            type="button"
-            onClick={cancel}
-            className="rounded bg-amber-600 px-3 py-2 text-xs font-medium text-white transition hover:bg-amber-700"
-          >
-            {primaryLabel}
-          </button>
-        ) : (
-          <button
-            type="submit"
-            disabled={!prompt.trim()}
-            className="rounded bg-emerald-600 px-3 py-2 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50"
-          >
-            {primaryLabel}
-          </button>
-        )}
-      </div>
-
-      {error && (
-        <p role="alert" className="mt-1 text-xs text-red-600">
-          {error}
+          Hình có đối tượng ngoài DSL — chỉ dựng mới được
         </p>
       )}
 
-      {!isLoading && !prompt.trim() && !error && (
-        <div className="mt-1.5 flex flex-wrap items-center gap-1">
-          <span className="text-[10px] text-slate-500">Gợi ý:</span>
-          {examples.map((ex) => (
+      {/* Composer */}
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragOver(true);
+        }}
+        onDragLeave={() => setIsDragOver(false)}
+        onDrop={handleDrop}
+        onPaste={handlePaste}
+        aria-label="Khu vực kéo thả ảnh"
+        role="region"
+        className={
+          'group relative flex flex-col rounded-2xl bg-white shadow-sm transition-all duration-150 ' +
+          'ring-1 ring-slate-200 focus-within:ring-2 focus-within:ring-emerald-400/70 focus-within:shadow-md ' +
+          (isDragOver ? 'ring-2 ring-emerald-500 bg-emerald-50/40' : '')
+        }
+      >
+        {/* Image chip */}
+        {image && imagePreview && (
+          <div className="flex flex-wrap gap-2 px-3 pt-2.5">
+            <div className="group/chip relative">
+              <img
+                src={imagePreview}
+                alt="Ảnh đề bài"
+                className="h-14 w-14 rounded-lg border border-slate-200 object-cover shadow-sm"
+              />
+              <button
+                type="button"
+                onClick={() => setImage(null)}
+                disabled={ocrLoading || isLoading}
+                aria-label="Xoá ảnh"
+                className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-900/85 text-[11px] font-medium text-white shadow ring-2 ring-white transition hover:bg-slate-900 disabled:opacity-50"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Textarea */}
+        <textarea
+          ref={textareaRef}
+          id="geometry-ai-prompt"
+          aria-label="Đề bài cho AI"
+          data-testid="geometry-ai-textarea"
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !sendDisabled) {
+              e.preventDefault();
+              void handleSendClick();
+            }
+          }}
+          disabled={isLoading}
+          rows={2}
+          placeholder={placeholder}
+          className="block w-full resize-none rounded-2xl bg-transparent px-3.5 pt-2.5 pb-1 text-sm leading-relaxed text-slate-800 placeholder:text-slate-400 outline-none disabled:opacity-60 field-sizing-content max-h-44"
+        />
+
+        {/* Bottom action bar */}
+        <div className="flex items-center justify-between gap-2 px-2 pb-2 pt-1">
+          <div className="flex items-center gap-1">
             <button
-              key={ex}
               type="button"
-              onClick={() => setPrompt(ex)}
-              className="rounded-full border border-slate-300 bg-white px-2 py-0.5 text-[10px] text-slate-600 transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isLoading || ocrLoading}
+              aria-label="Đính ảnh đề bài"
+              title="Đính ảnh (cũng có thể dán bằng Ctrl+V hoặc kéo thả)"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-emerald-700 disabled:opacity-40"
             >
-              {ex}
+              <PaperclipIcon className="h-[18px] w-[18px]" />
             </button>
-          ))}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className="sr-only"
+              onChange={handleFileInput}
+              disabled={isLoading || ocrLoading}
+              aria-label="Chọn ảnh đề bài"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Status text */}
+            {(isLoading || ocrLoading) && (
+              <span className="font-mono text-[10px] tabular-nums text-slate-500">
+                {ocrLoading
+                  ? 'đọc ảnh…'
+                  : tokens > 0
+                    ? `${tokens}tok · ${elapsed}s`
+                    : `${elapsed}s`}
+              </span>
+            )}
+
+            {/* Send / Stop button */}
+            {isLoading ? (
+              <button
+                type="button"
+                onClick={cancel}
+                aria-label="Huỷ dựng hình AI"
+                data-testid="geometry-ai-cancel"
+                title={`Đang dựng… ${elapsed}s — bấm để huỷ`}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500 text-white shadow-sm transition hover:scale-105 hover:bg-amber-600 active:scale-95"
+              >
+                <StopIcon className="h-3.5 w-3.5" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => void handleSendClick()}
+                disabled={sendDisabled}
+                aria-label={willOcr ? 'Đọc đề từ ảnh' : 'Dựng bằng AI'}
+                title={willOcr ? 'Đọc đề từ ảnh (sẽ điền vào ô chat)' : 'Dựng bằng AI (Ctrl/⌘+Enter)'}
+                data-testid={willOcr ? 'geometry-ai-ocr' : 'geometry-ai-submit'}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-white shadow-sm transition hover:scale-105 hover:bg-emerald-700 active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:hover:scale-100"
+              >
+                <ArrowUpIcon className="h-[18px] w-[18px]" />
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Drag overlay hint */}
+        {isDragOver && (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-2xl bg-emerald-50/60 text-xs font-medium text-emerald-700">
+            Thả ảnh vào đây
+          </div>
+        )}
+      </div>
+
+      {/* Footer hint + alerts */}
+      <p className="mt-1.5 px-1 text-[10px] text-slate-500">
+        Dán ảnh (Ctrl+V), kéo thả, hoặc bấm <span aria-hidden>📎</span> để đính ảnh đề.
+      </p>
+
+      {error && (
+        <p role="alert" className="mt-1 px-1 text-xs text-red-600">
+          {error}
+        </p>
       )}
-    </form>
+      {ocrError && (
+        <p role="alert" className="mt-1 px-1 text-xs text-red-600">
+          {ocrError}
+        </p>
+      )}
+      {ocrWarning && (
+        <p className="mt-1 rounded bg-amber-50 px-2 py-1 text-[11px] text-amber-700">
+          {ocrWarning}
+        </p>
+      )}
+    </div>
   );
 }
