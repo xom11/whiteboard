@@ -105,6 +105,14 @@ export {
   type AiFigureIntentUiResult,
 } from './handleGenerateFigureIntent';
 
+// Deterministic fast-path API.
+export {
+  parseDeterministic,
+  type ParseOptions,
+  type ParseResult,
+  type SkeletonResult,
+} from './deterministic';
+
 // Vision / OCR API (image → text).
 export {
   handleExtractProblem,
