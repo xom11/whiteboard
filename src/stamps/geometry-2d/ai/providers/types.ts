@@ -29,6 +29,12 @@ export interface ProviderRequest {
   /** Token cap cho response. */
   maxTokens: number;
   signal?: AbortSignal;
+  /**
+   * Optional callback nhận text chunk khi provider stream incremental output.
+   * Provider không stream được (Anthropic tool_use, Claude CLI) → không gọi.
+   * Caller dùng để cập nhật UI progress (token count).
+   */
+  onToken?: (chunk: string) => void;
 }
 
 export type ProviderOutput =
