@@ -1,3 +1,6 @@
+// Load .env từ repo root TRƯỚC khi đọc process.env trong getOptions().
+// dotenv chỉ inject vào process.env, không động đến import.meta.env.
+import 'dotenv/config';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
@@ -25,6 +28,11 @@ export default defineConfig({
       // Để swap provider: trả về { provider: new MyProvider(...) }.
       getOptions: () => ({
         apiKey: process.env.ANTHROPIC_API_KEY,
+        // Model override: Anthropic default trong lib là 'claude-opus-4-7'
+        // (vision-best). Demo dùng Sonnet — rẻ hơn nhiều, đủ cho DSL gen.
+        // Override qua env WHITEBOARD_AI_ANTHROPIC_MODEL.
+        model:
+          process.env.WHITEBOARD_AI_ANTHROPIC_MODEL ?? 'claude-sonnet-4-6',
         ollamaBaseUrl: process.env.OLLAMA_BASE_URL,
         ollamaDefaultModel: process.env.OLLAMA_DEFAULT_MODEL,
       }),
