@@ -5,6 +5,7 @@ import { DslInput, type DslInputT, type DslPointT, type DslShapeT } from './sche
 import { buildSymbols } from './transpile/symbols';
 import { validateRefs } from './transpile/refs';
 import { detectCycles } from './transpile/cycles';
+import { topoSort } from './transpile/topology';
 import { assignIds } from './transpile/ids';
 import { mkError, type TranspileError, type TranspileResult } from './transpile/errors';
 import { KIND_REGISTRY } from './registry';
@@ -91,8 +92,13 @@ export function transpile(dslRaw: unknown): TranspileResult {
     }
   };
 
-  for (const p of dsl.points) emitEntity(p);
-  for (const s of dsl.shapes) emitEntity(s);
+  // Emit theo thứ tự topological — đảm bảo entity dependent emit SAU mọi
+  // reference của nó (vd perpFoot point sau segment dùng làm onLine).
+  const sortedNames = topoSort(symbols);
+  for (const name of sortedNames) {
+    const sym = symbols.get(name);
+    if (sym) emitEntity(sym.entity);
+  }
 
   const empty = createEmptyState('2d');
   const state: State = {

@@ -62,6 +62,24 @@ export function aiMiddlewarePlugin(options: AiMiddlewareOptions = {}): Plugin {
           const body = (await readJsonBody(req)) as { problem?: string };
           const problem = String(body?.problem ?? '');
 
+          // Provider != ollama → bypass Ollama streaming, fall back to
+          // non-streaming handleGenerateFigure (Anthropic/ClaudeCli không
+          // expose token-level streaming dễ qua subprocess/tool_use).
+          const wantedProvider = (process.env.WHITEBOARD_AI_PROVIDER ?? 'ollama').toLowerCase();
+          if (wantedProvider !== 'ollama') {
+            const { handleGenerateFigure } = await import(
+              '../../src/stamps/geometry-2d/ai/handleGenerateFigure'
+            );
+            const opts = options.getOptions ? options.getOptions() : {};
+            sse(res, 'progress', { tokens: 0 });
+            const result = await handleGenerateFigure({ problem }, opts);
+            sse(res, 'done', { result });
+            res.end();
+            // eslint-disable-next-line no-console
+            console.log(`[ai-stream] ${wantedProvider} (non-stream) → ${result.ok ? 'ok' : 'fail'}`);
+            return;
+          }
+
           const ollamaBaseUrl = options.ollamaBaseUrl ?? 'http://localhost:11434';
           const ollamaModel =
             options.getOptions?.().ollamaDefaultModel ??
@@ -254,6 +272,25 @@ export function aiMiddlewarePlugin(options: AiMiddlewareOptions = {}): Plugin {
               result: { ok: false, message: 'Thiếu problem hoặc currentDsl' },
             });
             res.end();
+            return;
+          }
+
+          // Non-Ollama provider → fall back to non-streaming refine.
+          const wantedProvider = (process.env.WHITEBOARD_AI_PROVIDER ?? 'ollama').toLowerCase();
+          if (wantedProvider !== 'ollama') {
+            const { handleGenerateFigureDelta } = await import(
+              '../../src/stamps/geometry-2d/ai/handleGenerateFigureDelta'
+            );
+            const opts = options.getOptions ? options.getOptions() : {};
+            sse(res, 'progress', { tokens: 0 });
+            const result = await handleGenerateFigureDelta(
+              { problem, currentDsl: currentDsl as never },
+              opts,
+            );
+            sse(res, 'done', { result });
+            res.end();
+            // eslint-disable-next-line no-console
+            console.log(`[ai-refine-stream] ${wantedProvider} (non-stream) → ${result.ok ? 'ok' : 'fail'}`);
             return;
           }
 

@@ -286,10 +286,10 @@ describe('representative snapshot', () => {
     "p2",
     "p3",
     "p4",
-    "i1",
     "poly1",
     "s1",
     "s2",
+    "i1",
   ],
 }
 `);
