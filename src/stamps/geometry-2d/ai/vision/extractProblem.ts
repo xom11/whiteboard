@@ -1,22 +1,32 @@
 // src/stamps/geometry-2d/ai/vision/extractProblem.ts
 //
-// Orchestrator vision → text. Gọi provider.extractText() với prompt + envelope
-// schema, parse + post-process. Provider-agnostic (Anthropic / Ollama / mock).
+// Orchestrator vision → text. Hỗ trợ 2 engine:
+//   - 'tesseract' (default): client-side OCR, offline, không cần Ollama/API key.
+//   - 'llm': Vision LLM qua AIProvider.extractText() (Ollama/Anthropic) — fallback
+//            cho handwriting / math symbols.
 
 import { selectProvider, type SelectProviderOptions } from '../providers';
 import type { AIProvider, ImagePart, VisionRequest } from '../providers/types';
 import { VisionEnvelopeZ, visionEnvelopeJsonSchema } from './envelope';
 import { buildVisionSystemPrompt, VISION_USER_PROMPT } from './prompt';
+import { runTesseractOcr } from './tesseract';
 
-// Ngưỡng: text ngắn hơn thì force confidence=low bất kể model report gì.
-// 'Cho tam giác ABC' = 16 chars → còn đủ, 'ngắn' = 4 chars → quá ngắn.
+// Ngưỡng: text ngắn hơn thì force confidence=low bất kể engine report gì.
 const MIN_HIGH_CONFIDENCE_CHARS = 10;
 const MAX_TEXT_CHARS = 2000;
+// Tesseract confidence (0-100): ≥ ngưỡng này coi như high.
+const TESSERACT_HIGH_CONFIDENCE_THRESHOLD = 70;
+
+export type VisionEngine = 'tesseract' | 'llm';
 
 export interface ExtractProblemOptions extends SelectProviderOptions {
-  /** Override model OCR. Priority cao hơn env. */
+  /** OCR engine. Default 'tesseract' (client-side, không cần network). */
+  engine?: VisionEngine;
+  /** Tesseract language (chỉ áp dụng khi engine='tesseract'). Default 'vie+eng'. */
+  tesseractLang?: string;
+  /** Override model OCR cho LLM path. Priority cao hơn env. */
   visionModel?: string;
-  /** Max tokens cho response. Default 1024 (đề bài ngắn). */
+  /** Max tokens cho LLM response. Default 1024. */
   maxTokens?: number;
   /** Env getter override (cho test). */
   env?: Record<string, string | undefined>;
@@ -50,6 +60,53 @@ export function pickVisionModel(
 export async function extractProblemFromImage(
   image: ImagePart,
   opts: ExtractProblemOptions = {},
+): Promise<ExtractProblemOutcome> {
+  const engine: VisionEngine = opts.engine ?? 'tesseract';
+  if (engine === 'tesseract') {
+    return extractViaTesseract(image, opts);
+  }
+  return extractViaLlm(image, opts);
+}
+
+async function extractViaTesseract(
+  image: ImagePart,
+  opts: ExtractProblemOptions,
+): Promise<ExtractProblemOutcome> {
+  let raw: { text: string; confidence: number };
+  try {
+    raw = await runTesseractOcr(image, {
+      ...(opts.tesseractLang ? { lang: opts.tesseractLang } : {}),
+      ...(opts.signal ? { signal: opts.signal } : {}),
+    });
+  } catch (e) {
+    const err = e as { message?: string };
+    return {
+      ok: false,
+      reason: 'unreadable',
+      message: 'Tesseract OCR fail: ' + (err.message ?? '?'),
+    };
+  }
+
+  const text = postProcess(raw.text);
+  if (text.length === 0) {
+    return { ok: false, reason: 'empty', message: 'Tesseract không trích được text.' };
+  }
+
+  const tooShort = text.length < MIN_HIGH_CONFIDENCE_CHARS;
+  const lowConf = raw.confidence < TESSERACT_HIGH_CONFIDENCE_THRESHOLD;
+  const confidence: 'high' | 'low' = tooShort || lowConf ? 'low' : 'high';
+
+  return {
+    ok: true,
+    text,
+    confidence,
+    usage: { inputTokens: 0, outputTokens: 0 },
+  };
+}
+
+async function extractViaLlm(
+  image: ImagePart,
+  opts: ExtractProblemOptions,
 ): Promise<ExtractProblemOutcome> {
   const provider: AIProvider = opts.provider ?? selectProvider(opts);
   if (!provider.extractText) {
@@ -95,7 +152,6 @@ export async function extractProblemFromImage(
     };
   }
 
-  // decision === 'extract'
   const rawText = env_.text ?? '';
   const text = postProcess(rawText);
   if (text.length === 0) {
@@ -117,16 +173,12 @@ export async function extractProblemFromImage(
 
 function postProcess(raw: string): string {
   let t = raw.trim();
-  // Strip markdown wrapper.
   t = t.replace(/\*\*(.+?)\*\*/g, '$1');
   t = t.replace(/\*(.+?)\*/g, '$1');
   t = t.replace(/_(.+?)_/g, '$1');
   t = t.replace(/```[\s\S]*?```/g, '').replace(/`([^`]+)`/g, '$1');
-  // Collapse whitespace.
   t = t.replace(/\s+/g, ' ').trim();
-  // Normalize Unicode NFC.
   t = t.normalize('NFC');
-  // Truncate.
   if (t.length > MAX_TEXT_CHARS) t = t.slice(0, MAX_TEXT_CHARS);
   return t;
 }

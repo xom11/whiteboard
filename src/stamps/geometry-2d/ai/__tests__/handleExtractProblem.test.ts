@@ -16,7 +16,7 @@ describe('handleExtractProblem', () => {
         usage: { inputTokens: 50, outputTokens: 10 },
       }),
     );
-    const r = await handleExtractProblem(sampleImage, { provider });
+    const r = await handleExtractProblem(sampleImage, { engine: 'llm', provider });
     expect(r.kind).toBe('success');
     if (r.kind === 'success') {
       expect(r.text).toBe('Cho tam giác ABC vuông tại A');
@@ -32,7 +32,7 @@ describe('handleExtractProblem', () => {
         usage: { inputTokens: 0, outputTokens: 0 },
       }),
     );
-    const r = await handleExtractProblem(sampleImage, { provider });
+    const r = await handleExtractProblem(sampleImage, { engine: 'llm', provider });
     expect(r.kind).toBe('low-confidence');
     if (r.kind === 'low-confidence') expect(r.warning).toMatch(/kiểm tra|không chính xác/i);
   });
@@ -45,28 +45,28 @@ describe('handleExtractProblem', () => {
         usage: { inputTokens: 0, outputTokens: 0 },
       }),
     );
-    const r = await handleExtractProblem(sampleImage, { provider });
+    const r = await handleExtractProblem(sampleImage, { engine: 'llm', provider });
     expect(r.kind).toBe('refused');
     if (r.kind === 'refused') expect(r.reason).toBe('not-math');
   });
 
   it('extractText undefined → kind=error code=unsupported', async () => {
     const provider: AIProvider = { name: 'mock', defaultModel: 'm', call: jest.fn() };
-    const r = await handleExtractProblem(sampleImage, { provider });
+    const r = await handleExtractProblem(sampleImage, { engine: 'llm', provider });
     expect(r.kind).toBe('error');
     if (r.kind === 'error') expect(r.code).toBe('unsupported');
   });
 
   it('provider returns kind=error → kind=error code=network', async () => {
     const provider = makeProvider(jest.fn().mockResolvedValue({ kind: 'error', message: 'down' }));
-    const r = await handleExtractProblem(sampleImage, { provider });
+    const r = await handleExtractProblem(sampleImage, { engine: 'llm', provider });
     expect(r.kind).toBe('error');
     if (r.kind === 'error') expect(r.code).toBe('network');
   });
 
   it('provider throws → kind=error code=unexpected', async () => {
     const provider = makeProvider(jest.fn().mockRejectedValue(new Error('boom')));
-    const r = await handleExtractProblem(sampleImage, { provider });
+    const r = await handleExtractProblem(sampleImage, { engine: 'llm', provider });
     expect(r.kind).toBe('error');
     if (r.kind === 'error') {
       expect(r.code).toBe('unexpected');
