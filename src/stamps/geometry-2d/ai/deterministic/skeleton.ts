@@ -19,12 +19,19 @@ const CIRCLE_CR_RE = /\(\s*([A-Z])\s*;\s*R\s*=\s*(\d+(?:[.,]\d+)?)\s*\)/;
 const CIRCLE_R_AFTER_RE = /\(\s*([A-Z])\s*\)\s*bán\s*kính\s*(\d+(?:[.,]\d+)?)/i;
 const CIRCLE_NAMED_R_RE = /đường\s*tròn\s*tâm\s*([A-Z])\s*bán\s*kính\s*(\d+(?:[.,]\d+)?)/i;
 
+const RECT_RE = /hình\s+chữ\s+nhật\s+([A-Z])([A-Z])([A-Z])([A-Z])/i;
+const SQUARE_RE = /hình\s+vuông\s+([A-Z])([A-Z])([A-Z])([A-Z])/i;
+const PARALLELOGRAM_RE = /hình\s+bình\s+hành\s+([A-Z])([A-Z])([A-Z])([A-Z])/i;
+
 export function parseSkeleton(prompt: string): SkeletonResult {
   const points: DslPointT[] = [];
   const shapes: DslShapeT[] = [];
   const matched: string[] = [];
 
-  parseTriangle(prompt, points, shapes, matched);
+  parseQuadrilateral(prompt, points, shapes, matched);
+  if (matched.length === 0) {
+    parseTriangle(prompt, points, shapes, matched);
+  }
   parseCircle(prompt, points, shapes, matched);
 
   return { points, shapes, matched };
@@ -116,6 +123,60 @@ function extractAnyTriple(prompt: string): string[] | null {
   const m = prompt.match(/([A-Z])([A-Z])([A-Z])/);
   if (!m) return null;
   return [m[1], m[2], m[3]];
+}
+
+function parseQuadrilateral(
+  prompt: string,
+  points: DslPointT[],
+  shapes: DslShapeT[],
+  matched: string[],
+): void {
+  let m = prompt.match(SQUARE_RE);
+  if (m) {
+    pushQuadFreePoints(points, m, [[0,0],[3,0],[3,3],[0,3]]);
+    pushQuadSegments(shapes, m);
+    matched.push('square');
+    return;
+  }
+  m = prompt.match(RECT_RE);
+  if (m) {
+    pushQuadFreePoints(points, m, [[0,0],[4,0],[4,2.5],[0,2.5]]);
+    pushQuadSegments(shapes, m);
+    matched.push('rectangle');
+    return;
+  }
+  m = prompt.match(PARALLELOGRAM_RE);
+  if (m) {
+    pushQuadFreePoints(points, m, [[0,0],[4,0],[5,2.5],[1,2.5]]);
+    pushQuadSegments(shapes, m);
+    matched.push('parallelogram');
+    return;
+  }
+}
+
+function pushQuadFreePoints(
+  points: DslPointT[],
+  m: RegExpMatchArray,
+  coords: [number, number][],
+): void {
+  for (let i = 0; i < 4; i++) {
+    points.push({
+      name: m[i + 1].toUpperCase(),
+      kind: 'free',
+      x: coords[i][0],
+      y: coords[i][1],
+    });
+  }
+}
+
+function pushQuadSegments(shapes: DslShapeT[], m: RegExpMatchArray): void {
+  const [a, b, c, d] = [m[1], m[2], m[3], m[4]].map((s) => s.toUpperCase());
+  shapes.push(
+    { name: a + b, kind: 'segment', p1: a, p2: b },
+    { name: b + c, kind: 'segment', p1: b, p2: c },
+    { name: c + d, kind: 'segment', p1: c, p2: d },
+    { name: d + a, kind: 'segment', p1: d, p2: a },
+  );
 }
 
 function parseCircle(

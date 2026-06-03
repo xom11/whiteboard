@@ -74,3 +74,40 @@ describe('parseSkeleton — circle', () => {
     expect(r.shapes.some((s) => s.kind === 'circleCR')).toBe(true);
   });
 });
+
+describe('parseSkeleton — quadrilateral', () => {
+  test('"hình chữ nhật ABCD" → 4 free + 4 segments', () => {
+    const r = parseSkeleton('Cho hình chữ nhật ABCD');
+    expect(r.points).toEqual([
+      { name: 'A', kind: 'free', x: 0, y: 0 },
+      { name: 'B', kind: 'free', x: 4, y: 0 },
+      { name: 'C', kind: 'free', x: 4, y: 2.5 },
+      { name: 'D', kind: 'free', x: 0, y: 2.5 },
+    ]);
+    expect(r.shapes).toEqual([
+      { name: 'AB', kind: 'segment', p1: 'A', p2: 'B' },
+      { name: 'BC', kind: 'segment', p1: 'B', p2: 'C' },
+      { name: 'CD', kind: 'segment', p1: 'C', p2: 'D' },
+      { name: 'DA', kind: 'segment', p1: 'D', p2: 'A' },
+    ]);
+    expect(r.matched).toContain('rectangle');
+  });
+
+  test('"hình vuông ABCD" → square 3x3', () => {
+    const r = parseSkeleton('hình vuông ABCD');
+    expect(r.points[0]).toEqual({ name: 'A', kind: 'free', x: 0, y: 0 });
+    expect(r.points[2]).toEqual({ name: 'C', kind: 'free', x: 3, y: 3 });
+    expect(r.matched).toContain('square');
+  });
+
+  test('"hình bình hành ABCD" → parallelogram with slant', () => {
+    const r = parseSkeleton('Cho hình bình hành ABCD');
+    expect(r.points).toEqual([
+      { name: 'A', kind: 'free', x: 0, y: 0 },
+      { name: 'B', kind: 'free', x: 4, y: 0 },
+      { name: 'C', kind: 'free', x: 5, y: 2.5 },
+      { name: 'D', kind: 'free', x: 1, y: 2.5 },
+    ]);
+    expect(r.matched).toContain('parallelogram');
+  });
+});
