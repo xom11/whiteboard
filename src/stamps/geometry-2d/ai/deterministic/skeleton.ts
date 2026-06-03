@@ -52,7 +52,7 @@ function parseTriangle(
       { name: B, kind: 'free', x: -1.5, y: 0 },
       { name: C, kind: 'free', x: 1.5, y: 0 },
     );
-    pushTriangleSegments(shapes, A, B, C);
+    pushTrianglePolygon(shapes, A, B, C);
     matched.push('triangle', 'triangle-equilateral');
     return;
   }
@@ -71,7 +71,7 @@ function parseTriangle(
         { name: others[0], kind: 'free', x: 4, y: 0 },
         { name: others[1], kind: 'free', x: 0, y: 3 },
       );
-      pushTriangleSegments(shapes, labels[0], labels[1], labels[2]);
+      pushTrianglePolygon(shapes, labels[0], labels[1], labels[2]);
       matched.push('triangle', 'triangle-right');
       return;
     }
@@ -91,7 +91,7 @@ function parseTriangle(
         { name: others[0], kind: 'free', x: -2, y: 0 },
         { name: others[1], kind: 'free', x: 2, y: 0 },
       );
-      pushTriangleSegments(shapes, labels[0], labels[1], labels[2]);
+      pushTrianglePolygon(shapes, labels[0], labels[1], labels[2]);
       matched.push('triangle', 'triangle-isoceles');
       return;
     }
@@ -106,17 +106,18 @@ function parseTriangle(
       { name: B, kind: 'free', x: -2, y: 0 },
       { name: C, kind: 'free', x: 3, y: 0 },
     );
-    pushTriangleSegments(shapes, A, B, C);
+    pushTrianglePolygon(shapes, A, B, C);
     matched.push('triangle');
   }
 }
 
-function pushTriangleSegments(shapes: DslShapeT[], a: string, b: string, c: string): void {
-  shapes.push(
-    { name: a + b, kind: 'segment', p1: a, p2: b },
-    { name: b + c, kind: 'segment', p1: b, p2: c },
-    { name: c + a, kind: 'segment', p1: c, p2: a },
-  );
+// Emit 1 polygon shape thay vì 3 segments. Convention codebase (xem
+// fixtures/parallelogram.ts, refineFixtures.ts) — polygon là semantic closed
+// shape, single name (vd "ABC") khớp với cách AI prompt emit. Derived patterns
+// (perpFoot, midpoint) tự emit segment cạnh khi cần (vd "đường cao AH" tự thêm
+// segment BC + AH) — không có duplicate vì check by name.
+function pushTrianglePolygon(shapes: DslShapeT[], a: string, b: string, c: string): void {
+  shapes.push({ name: a + b + c, kind: 'polygon', vertices: [a, b, c] });
 }
 
 function extractAnyTriple(prompt: string): string[] | null {
@@ -134,21 +135,21 @@ function parseQuadrilateral(
   let m = prompt.match(SQUARE_RE);
   if (m) {
     pushQuadFreePoints(points, m, [[0,0],[3,0],[3,3],[0,3]]);
-    pushQuadSegments(shapes, m);
+    pushQuadPolygon(shapes, m);
     matched.push('square');
     return;
   }
   m = prompt.match(RECT_RE);
   if (m) {
     pushQuadFreePoints(points, m, [[0,0],[4,0],[4,2.5],[0,2.5]]);
-    pushQuadSegments(shapes, m);
+    pushQuadPolygon(shapes, m);
     matched.push('rectangle');
     return;
   }
   m = prompt.match(PARALLELOGRAM_RE);
   if (m) {
     pushQuadFreePoints(points, m, [[0,0],[4,0],[5,2.5],[1,2.5]]);
-    pushQuadSegments(shapes, m);
+    pushQuadPolygon(shapes, m);
     matched.push('parallelogram');
     return;
   }
@@ -169,14 +170,13 @@ function pushQuadFreePoints(
   }
 }
 
-function pushQuadSegments(shapes: DslShapeT[], m: RegExpMatchArray): void {
+function pushQuadPolygon(shapes: DslShapeT[], m: RegExpMatchArray): void {
   const [a, b, c, d] = [m[1], m[2], m[3], m[4]].map((s) => s.toUpperCase());
-  shapes.push(
-    { name: a + b, kind: 'segment', p1: a, p2: b },
-    { name: b + c, kind: 'segment', p1: b, p2: c },
-    { name: c + d, kind: 'segment', p1: c, p2: d },
-    { name: d + a, kind: 'segment', p1: d, p2: a },
-  );
+  shapes.push({
+    name: a + b + c + d,
+    kind: 'polygon',
+    vertices: [a, b, c, d],
+  });
 }
 
 function parseCircle(

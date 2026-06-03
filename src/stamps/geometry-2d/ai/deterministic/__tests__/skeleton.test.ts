@@ -1,7 +1,7 @@
 import { parseSkeleton } from '../skeleton';
 
 describe('parseSkeleton — triangle', () => {
-  test('plain "tam giác ABC" → 3 free points scalene + 3 segments', () => {
+  test('plain "tam giác ABC" → 3 free points scalene + 1 polygon', () => {
     const r = parseSkeleton('Cho tam giác ABC');
     expect(r.points).toEqual([
       { name: 'A', kind: 'free', x: 0, y: 3 },
@@ -9,9 +9,7 @@ describe('parseSkeleton — triangle', () => {
       { name: 'C', kind: 'free', x: 3, y: 0 },
     ]);
     expect(r.shapes).toEqual([
-      { name: 'AB', kind: 'segment', p1: 'A', p2: 'B' },
-      { name: 'BC', kind: 'segment', p1: 'B', p2: 'C' },
-      { name: 'CA', kind: 'segment', p1: 'C', p2: 'A' },
+      { name: 'ABC', kind: 'polygon', vertices: ['A', 'B', 'C'] },
     ]);
     expect(r.matched).toContain('triangle');
   });
@@ -76,7 +74,7 @@ describe('parseSkeleton — circle', () => {
 });
 
 describe('parseSkeleton — quadrilateral', () => {
-  test('"hình chữ nhật ABCD" → 4 free + 4 segments', () => {
+  test('"hình chữ nhật ABCD" → 4 free + 1 polygon', () => {
     const r = parseSkeleton('Cho hình chữ nhật ABCD');
     expect(r.points).toEqual([
       { name: 'A', kind: 'free', x: 0, y: 0 },
@@ -85,10 +83,7 @@ describe('parseSkeleton — quadrilateral', () => {
       { name: 'D', kind: 'free', x: 0, y: 2.5 },
     ]);
     expect(r.shapes).toEqual([
-      { name: 'AB', kind: 'segment', p1: 'A', p2: 'B' },
-      { name: 'BC', kind: 'segment', p1: 'B', p2: 'C' },
-      { name: 'CD', kind: 'segment', p1: 'C', p2: 'D' },
-      { name: 'DA', kind: 'segment', p1: 'D', p2: 'A' },
+      { name: 'ABCD', kind: 'polygon', vertices: ['A', 'B', 'C', 'D'] },
     ]);
     expect(r.matched).toContain('rectangle');
   });
