@@ -518,6 +518,132 @@ export function extractRequirements(userPrompt: string): RequirementExtraction {
     });
   }
 
+  // -----------------------------------------------------------------------
+  // Point on segment — "Trên đoạn XY lấy P" / "P thuộc đoạn XY".
+  //
+  // Emit segment XY (if not present) + P = onSegment(segmentId: XY, t: 0.5).
+  // -----------------------------------------------------------------------
+  {
+    // "Trên đoạn XY lấy (điểm) P"
+    const m = userPrompt.match(
+      /(?:trên|lấy\s+trên)\s+(?:đoạn|đường\s*thẳng)\s+([A-Z])([A-Z])\s+(?:lấy|chọn|đặt)\s+(?:điểm\s+)?([A-Z])(?![A-Z])/i,
+    );
+    if (m) {
+      const segName = up(m[1]) + up(m[2]);
+      if (!shapes.some((s) => s.name === segName)) {
+        shapes.push({
+          name: segName,
+          kind: 'segment',
+          fields: { p1: up(m[1]), p2: up(m[2]) },
+        });
+      }
+      const pointName = up(m[3]);
+      if (!points.some((p) => p.name === pointName)) {
+        points.push({
+          name: pointName,
+          kind: 'onSegment',
+          fields: { segmentId: segName, t: 0.5 },
+        });
+      }
+    }
+  }
+
+  {
+    // "P thuộc đoạn XY" / "P nằm trên đoạn XY"
+    const m = userPrompt.match(
+      /([A-Z])\s+(?:thuộc|nằm\s+trên)\s+(?:đoạn|đường\s*thẳng)\s+([A-Z])([A-Z])/i,
+    );
+    if (m) {
+      const segName = up(m[2]) + up(m[3]);
+      if (!shapes.some((s) => s.name === segName)) {
+        shapes.push({
+          name: segName,
+          kind: 'segment',
+          fields: { p1: up(m[2]), p2: up(m[3]) },
+        });
+      }
+      const pointName = up(m[1]);
+      if (!points.some((p) => p.name === pointName)) {
+        points.push({
+          name: pointName,
+          kind: 'onSegment',
+          fields: { segmentId: segName, t: 0.5 },
+        });
+      }
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // Projection — "P là hình chiếu (vuông góc) của X lên YZ" (single +
+  // pair "P, Q lần lượt là ... lên YZ, YW"). Try pair first (more specific).
+  //
+  // Emit segment YZ (if not present) + P = perpFoot(from: X, onLine: YZ).
+  // -----------------------------------------------------------------------
+  {
+    const pair = userPrompt.match(
+      /([A-Z])\s*(?:,|và)\s*([A-Z])\s+(?:lần\s+lượt\s+)?(?:là\s+)?hình\s*chiếu\s+(?:vuông\s*góc\s+)?(?:của\s+)?([A-Z])\s+(?:lên|xuống|đến|tới)\s+(?:các\s+)?(?:cạnh\s+|đoạn\s+|đường\s+thẳng\s+)?([A-Z])([A-Z])\s*(?:,|và)\s*([A-Z])([A-Z])/i,
+    );
+    if (pair) {
+      const [, p1Name, p2Name, src, x1, y1, x2, y2] = pair;
+      const seg1 = up(x1) + up(y1);
+      const seg2 = up(x2) + up(y2);
+      if (!shapes.some((s) => s.name === seg1)) {
+        shapes.push({
+          name: seg1,
+          kind: 'segment',
+          fields: { p1: up(x1), p2: up(y1) },
+        });
+      }
+      if (!shapes.some((s) => s.name === seg2)) {
+        shapes.push({
+          name: seg2,
+          kind: 'segment',
+          fields: { p1: up(x2), p2: up(y2) },
+        });
+      }
+      const p1Up = up(p1Name);
+      const p2Up = up(p2Name);
+      if (!points.some((p) => p.name === p1Up)) {
+        points.push({
+          name: p1Up,
+          kind: 'perpFoot',
+          fields: { from: up(src), onLine: seg1 },
+        });
+      }
+      if (!points.some((p) => p.name === p2Up)) {
+        points.push({
+          name: p2Up,
+          kind: 'perpFoot',
+          fields: { from: up(src), onLine: seg2 },
+        });
+      }
+    } else {
+      // Single projection
+      const single = userPrompt.match(
+        /([A-Z])\s+(?:là\s+)?hình\s*chiếu\s+(?:vuông\s*góc\s+)?(?:của\s+)?([A-Z])\s+(?:lên|xuống|đến|tới)\s+(?:cạnh\s+|đoạn\s+|đường\s+thẳng\s+)?([A-Z])([A-Z])/i,
+      );
+      if (single) {
+        const [, pName, src, x, y] = single;
+        const segName = up(x) + up(y);
+        if (!shapes.some((s) => s.name === segName)) {
+          shapes.push({
+            name: segName,
+            kind: 'segment',
+            fields: { p1: up(x), p2: up(y) },
+          });
+        }
+        const pUp = up(pName);
+        if (!points.some((p) => p.name === pUp)) {
+          points.push({
+            name: pUp,
+            kind: 'perpFoot',
+            fields: { from: up(src), onLine: segName },
+          });
+        }
+      }
+    }
+  }
+
   return { points, shapes, scope };
 }
 

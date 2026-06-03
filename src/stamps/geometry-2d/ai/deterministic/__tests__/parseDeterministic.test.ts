@@ -42,19 +42,60 @@ describe('parseDeterministic', () => {
     expect(r.dsl.shapes.some((s) => s.kind === 'tangent')).toBe(true);
   });
 
-  // Regression: false-positive "hình chiếu vuông góc" trên hình vuông —
-  // validator.ts không parse phrasing "E, F lần lượt là hình chiếu của M lên
-  // AB, AD" → ZERO point/shape derived emitted. Label 'altitude' KHÔNG được
-  // push (không có perpFoot kind nào được add) → confidence thấp → miss.
-  test('"hình vuông + hình chiếu vuông góc của M" — derived không recognize → miss', () => {
+});
+
+describe('parseDeterministic — projection + onSegment patterns', () => {
+  test('"Trên đoạn BC lấy M" emits segment BC + M onSegment', () => {
+    const r = parseDeterministic('Cho tam giác ABC. Trên đoạn BC lấy M.');
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    // Triangle skeleton already has BC segment
+    expect(r.dsl.shapes.some((s) => s.name === 'BC' && s.kind === 'segment')).toBe(true);
+    expect(r.dsl.points.some((p) => p.name === 'M' && p.kind === 'onSegment')).toBe(true);
+  });
+
+  test('"P thuộc đoạn AB" emits onSegment', () => {
+    const r = parseDeterministic('Cho tam giác ABC. P thuộc đoạn AB.');
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.dsl.points.some((p) => p.name === 'P' && p.kind === 'onSegment')).toBe(true);
+  });
+
+  test('"E là hình chiếu vuông góc của M lên AB" emits perpFoot', () => {
+    // Set up: triangle + M on BC + E projection
+    const r = parseDeterministic(
+      'Cho tam giác ABC. Trên đoạn BC lấy M. E là hình chiếu vuông góc của M lên AB.',
+    );
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.dsl.points.some((p) => p.name === 'E' && p.kind === 'perpFoot')).toBe(true);
+  });
+
+  test('"E, F lần lượt là hình chiếu vuông góc của M lên AB, AD" — pair', () => {
+    const r = parseDeterministic(
+      'Cho hình vuông ABCD. Trên đoạn BD lấy M. Gọi E, F lần lượt là hình chiếu vuông góc của M lên các cạnh AB, AD.',
+    );
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const E = r.dsl.points.find((p) => p.name === 'E');
+    const F = r.dsl.points.find((p) => p.name === 'F');
+    const M = r.dsl.points.find((p) => p.name === 'M');
+    expect(E?.kind).toBe('perpFoot');
+    expect(F?.kind).toBe('perpFoot');
+    expect(M?.kind).toBe('onSegment');
+  });
+
+  // Regression: user's full problem (the one that previously emitted only square)
+  test('full user square problem now hits fast-path', () => {
     const r = parseDeterministic(
       'Cho hình vuông ABCD. Trên đoạn BD lấy M không trùng với B,D. ' +
         'Gọi E,F lần lượt là hình chiếu vuông góc của M lên các cạnh AB, AD. ' +
         'Chứng minh rằng: 1. CM vuông góc EF 2. CM,BF,DE đồng quy',
     );
-    expect(r.ok).toBe(false);
-    if (r.ok) return;
-    expect(r.confidence).toBeLessThan(0.85);
-    expect(r.reason).toBe('low-confidence');
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    // 7 points expected: A B C D + M E F
+    const names = r.dsl.points.map((p) => p.name).sort();
+    expect(names).toEqual(['A', 'B', 'C', 'D', 'E', 'F', 'M']);
   });
 });
