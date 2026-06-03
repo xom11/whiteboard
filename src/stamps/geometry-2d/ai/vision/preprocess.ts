@@ -7,7 +7,7 @@ import type { ImagePart } from '../providers/types';
 
 export const MAX_EDGE_PX = 2048;
 export const MAX_RAW_BYTES = 10 * 1024 * 1024; // 10 MB
-export const MAX_ENCODED_BYTES = 4 * 1024 * 1024; // 4 MB sau base64 — cap budget cho Anthropic
+export const MAX_ENCODED_BYTES = 3 * 1024 * 1024; // 3 MB blob threshold; base64 inflate ~33% → ~4 MB string, safely under Anthropic 5 MB image limit
 
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/webp'] as const;
 type AllowedType = (typeof ALLOWED_TYPES)[number];
@@ -69,14 +69,15 @@ export async function fileToImagePart(file: File): Promise<ImagePart> {
   ctx.drawImage(bitmap, 0, 0, targetW, targetH);
   bitmap.close();
 
-  // Encode: PNG nếu input PNG, JPEG cho jpeg/webp (downscale → re-encode JPEG nhỏ hơn).
-  const outputType: AllowedType =
+  // Encode: PNG nếu input PNG, JPEG cho jpeg/webp.
+  let outputType: AllowedType =
     v.mediaType === 'image/png' ? 'image/png' : 'image/jpeg';
-  const blob = await canvasToBlob(canvas, outputType, 0.92);
+  let finalBlob = await canvasToBlob(canvas, outputType, 0.92);
 
-  // Nếu vẫn quá cap encoded → re-encode JPEG quality thấp hơn 1 lần.
-  let finalBlob = blob;
-  if (blob.size > MAX_ENCODED_BYTES && outputType === 'image/jpeg') {
+  // Nếu vẫn quá cap encoded → fallback JPEG quality 0.7 (kể cả PNG → JPEG,
+  // vì OCR không cần alpha và JPEG nén tốt hơn nhiều).
+  if (finalBlob.size > MAX_ENCODED_BYTES) {
+    outputType = 'image/jpeg';
     finalBlob = await canvasToBlob(canvas, 'image/jpeg', 0.7);
   }
 

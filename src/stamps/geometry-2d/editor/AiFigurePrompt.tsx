@@ -16,6 +16,12 @@ interface Props {
    * mặc định. User toggle "Dựng mới" sẽ confirm trước khi thay state.
    */
   currentState?: State | null;
+  /**
+   * Optional OCR vision callback. Consumer thường wire qua server-side route
+   * để control provider config. Default = handleExtractProblem (đọc env trực tiếp,
+   * chỉ work khi env vars accessible — server-side context).
+   */
+  extractProblem?: typeof handleExtractProblem;
 }
 
 const BUILD_EXAMPLES = [
@@ -32,7 +38,7 @@ const REFINE_EXAMPLES = [
   'Thêm tiếp tuyến tại A',
 ];
 
-export function AiFigurePrompt({ generator, onGenerated, currentState }: Props) {
+export function AiFigurePrompt({ generator, onGenerated, currentState, extractProblem = handleExtractProblem }: Props) {
   const {
     prompt,
     setPrompt,
@@ -65,6 +71,12 @@ export function AiFigurePrompt({ generator, onGenerated, currentState }: Props) 
   const [ocrError, setOcrError] = useState<string | null>(null);
   const [ocrWarning, setOcrWarning] = useState<string | null>(null);
 
+  // Clear OCR error/warning khi user đổi ảnh.
+  useEffect(() => {
+    setOcrError(null);
+    setOcrWarning(null);
+  }, [image]);
+
   const handleImageError = useCallback((err: ImageDropZoneError) => {
     setOcrError(err.message);
   }, []);
@@ -75,7 +87,7 @@ export function AiFigurePrompt({ generator, onGenerated, currentState }: Props) 
     setOcrError(null);
     setOcrWarning(null);
     try {
-      const r = await handleExtractProblem(image);
+      const r = await extractProblem(image);
       if (r.kind === 'success') {
         setPrompt(r.text);
       } else if (r.kind === 'low-confidence') {
@@ -89,7 +101,7 @@ export function AiFigurePrompt({ generator, onGenerated, currentState }: Props) 
     } finally {
       setOcrLoading(false);
     }
-  }, [image, setPrompt]);
+  }, [image, setPrompt, extractProblem]);
 
   const toggleImageZone = useCallback(() => {
     setShowImageZone((s) => !s);

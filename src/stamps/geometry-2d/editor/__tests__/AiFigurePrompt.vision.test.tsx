@@ -121,4 +121,60 @@ describe('AiFigurePrompt — vision/image upload', () => {
       expect(screen.getByText(/không chính xác|kiểm tra/i)).toBeInTheDocument(),
     );
   });
+
+  it('passes custom extractProblem prop instead of default', async () => {
+    const customExtract = jest.fn().mockResolvedValue({
+      kind: 'success',
+      text: 'custom override text',
+      usage: { inputTokens: 0, outputTokens: 0 },
+    });
+    // Reset useAiFigure mock with new setPromptSpy.
+    const setPromptSpy = jest.fn();
+    jest.requireMock('../useAiFigure').useAiFigure.mockImplementation(() => ({
+      prompt: '',
+      setPrompt: setPromptSpy,
+      isLoading: false,
+      error: null,
+      submit: jest.fn(),
+      cancel: jest.fn(),
+      tokens: null,
+      mode: 'build',
+      setMode: jest.fn(),
+      entityCount: { points: 0, shapes: 0 },
+      hasUnsupported: false,
+    }));
+
+    render(<AiFigurePrompt generator={noopGenerator} onGenerated={jest.fn()} extractProblem={customExtract} />);
+    fireEvent.click(screen.getByRole('button', { name: /đọc đề từ ảnh|ảnh đề/i }));
+    const file = new File([new Uint8Array([0x89])], 'a.png', { type: 'image/png' });
+    const input = screen.getByLabelText(/chọn ảnh/i) as HTMLInputElement;
+    fireEvent.change(input, { target: { files: [file] } });
+    await waitFor(() => screen.getByRole('button', { name: /đọc đề bài|^đọc đề$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /đọc đề bài|^đọc đề$/i }));
+
+    await waitFor(() => expect(customExtract).toHaveBeenCalled());
+    expect(extractMock).not.toHaveBeenCalled(); // default not called
+  });
+
+  it('clears ocrError when user changes image', async () => {
+    extractMock.mockResolvedValueOnce({
+      kind: 'refused',
+      reason: 'not-math',
+      message: 'Ảnh không phải đề toán',
+    });
+    render(<AiFigurePrompt generator={noopGenerator} onGenerated={jest.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: /đọc đề từ ảnh|ảnh đề/i }));
+    const fileA = new File([new Uint8Array([0x89])], 'a.png', { type: 'image/png' });
+    const input = screen.getByLabelText(/chọn ảnh/i) as HTMLInputElement;
+    fireEvent.change(input, { target: { files: [fileA] } });
+    await waitFor(() => screen.getByRole('button', { name: /đọc đề bài|^đọc đề$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /đọc đề bài|^đọc đề$/i }));
+    await waitFor(() => expect(screen.getByText(/không phải đề toán/i)).toBeInTheDocument());
+
+    // Now remove the image (simulates user clicking × button or new upload).
+    fireEvent.click(screen.getByRole('button', { name: /xoá|remove/i }));
+
+    // Error message should be cleared after image is set to null.
+    await waitFor(() => expect(screen.queryByText(/không phải đề toán/i)).not.toBeInTheDocument());
+  });
 });
