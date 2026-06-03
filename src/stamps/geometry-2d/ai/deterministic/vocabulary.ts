@@ -11,6 +11,8 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   'vuông tại', 'cân tại', 'đều',
   // Circle parts
   'bán kính', 'tâm', 'đường kính',
+  // Segments / on-segment
+  'đoạn',
   // Derived points
   'trung điểm', 'chân đường cao', 'hình chiếu',
   'trọng tâm', 'trực tâm', 'tâm nội tiếp', 'tâm ngoại tiếp',

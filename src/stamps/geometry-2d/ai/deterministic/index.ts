@@ -9,7 +9,7 @@ import { parseSkeleton } from './skeleton';
 import { scoreConfidence } from './confidence';
 
 export interface ParseOptions {
-  /** Confidence threshold để decide hit/miss. Default 0.85. */
+  /** Confidence threshold để decide hit/miss. Default 0.75. */
   threshold?: number;
 }
 
@@ -27,7 +27,7 @@ export type ParseResult =
       matched: readonly string[];
     };
 
-const DEFAULT_THRESHOLD = 0.85;
+const DEFAULT_THRESHOLD = 0.75;
 
 export function parseDeterministic(
   problem: string,

@@ -9,6 +9,7 @@ const LABEL_WEIGHT: Record<string, number> = {
   rectangle: 1,
   square: 1,
   parallelogram: 1,
+  'on-segment': 1,
   'circle-cr': 2,
   midpoint: 1,
   altitude: 2,
