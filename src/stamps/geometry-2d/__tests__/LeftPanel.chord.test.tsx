@@ -1,5 +1,9 @@
-// Integration test: verify 2D's TOOLS/GROUP_ORDER wire vào StampLeftPanel chord viz đúng.
+// Integration test: verify 2D's TOOLS/GROUP_ORDER wire vào StampLeftPanel đúng.
 // (Trước Phase 2 từng test trực tiếp GeometryLeftPanel — đã extract sang StampLeftPanel.)
+//
+// Note v0.27: visual phím tắt A/B/C + 1/2/3 + chord-hint đã bị bỏ. Test chord
+// state machine giữ ở `useChordShortcut.test.tsx`; ở đây chỉ giữ assertion
+// data-chord-active để confirm group highlight vẫn render đúng.
 import { render, screen, fireEvent } from '@testing-library/react';
 import { StampLeftPanel } from '../../shared/StampLeftPanel';
 import { TOOLS, GROUP_ORDER, GROUP_LABELS, letterForGroup, type GeomGroup } from '../editor/tools';
@@ -23,46 +27,28 @@ function mount(activeGroup: GeomGroup | null) {
   );
 }
 
-describe('geometry-2d × StampLeftPanel — chord UI', () => {
-  test('Group header có badge letter (A, B, C...)', () => {
+describe('geometry-2d × StampLeftPanel — chord visuals bị bỏ ở v0.27', () => {
+  test('Group header KHÔNG còn badge letter (A, B, C...)', () => {
     const { container } = mount(null);
-    expect(container.querySelector('[data-testid="chord-letter-move"]'))
-      .toHaveTextContent('A');
-    expect(container.querySelector('[data-testid="chord-letter-point"]'))
-      .toHaveTextContent('B');
-    expect(container.querySelector('[data-testid="chord-letter-line"]'))
-      .toHaveTextContent('C');
+    expect(container.querySelector('[data-testid="chord-letter-move"]')).toBeNull();
+    expect(container.querySelector('[data-testid="chord-letter-point"]')).toBeNull();
+    expect(container.querySelector('[data-testid="chord-letter-line"]')).toBeNull();
   });
 
-  test('Tool button có badge số (1..N theo thứ tự trong group)', () => {
+  test('Tool button KHÔNG còn badge số 1..N', () => {
     const { container } = mount(null);
-    // group "Đường" có 4 tool: segment(1) line(2) ray(3) vector(4)
-    expect(container.querySelector('[data-testid="chord-num-segment"]'))
-      .toHaveTextContent('1');
-    expect(container.querySelector('[data-testid="chord-num-line"]'))
-      .toHaveTextContent('2');
-    expect(container.querySelector('[data-testid="chord-num-ray"]'))
-      .toHaveTextContent('3');
-    expect(container.querySelector('[data-testid="chord-num-vector"]'))
-      .toHaveTextContent('4');
+    expect(container.querySelector('[data-testid="chord-num-segment"]')).toBeNull();
+    expect(container.querySelector('[data-testid="chord-num-line"]')).toBeNull();
+    expect(container.querySelector('[data-testid="chord-num-ray"]')).toBeNull();
+    expect(container.querySelector('[data-testid="chord-num-vector"]')).toBeNull();
   });
 
-  test('chordGroup=null → không hiện hint line', () => {
-    const { container } = mount(null);
+  test('chord-hint footer cũng bị bỏ', () => {
+    const { container } = mount('point');
     expect(container.querySelector('[data-testid="chord-hint"]')).toBeNull();
   });
 
-  test('chordGroup="point" → hiện hint line liệt kê tool trong group', () => {
-    const { container } = mount('point');
-    const hint = container.querySelector('[data-testid="chord-hint"]');
-    expect(hint).not.toBeNull();
-    expect(hint).toHaveTextContent(/B/);
-    expect(hint).toHaveTextContent(/Điểm mới/);
-    expect(hint).toHaveTextContent(/Trung điểm/);
-    expect(hint).toHaveTextContent(/Esc/i);
-  });
-
-  test('chordGroup="point" → section "Điểm" có data-chord-active="true"', () => {
+  test('chordGroup="point" → section "Điểm" vẫn có data-chord-active="true" (group highlight giữ lại)', () => {
     const { container } = mount('point');
     const activeSection = container.querySelector('[data-chord-group="point"]');
     expect(activeSection?.getAttribute('data-chord-active')).toBe('true');

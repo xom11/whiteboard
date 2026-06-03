@@ -58,6 +58,8 @@ export function StampLeftPanelDesktop<TKey extends string, TGroup extends string
       tabs={tabSpecs}
       activeTab={hasObjects ? tab : undefined}
       onTabChange={hasObjects ? setTab : undefined}
+      resizable
+      widthStorageKey="xom11.stamp-left-panel.width"
     >
       {(!hasObjects || tab === 'tools') ? (
         <>

@@ -1,15 +1,14 @@
 'use client';
 // src/stamps/shared/StampLeftPanel/ToolGrid.tsx
 //
-// Tool button grid chord-aware. Render từng group thành section, mỗi section
-// có 4-col grid icon button. Khi chord.activeGroup set:
-//   - section đó được highlight (ring emerald + bg)
-//   - các section khác dimmed (opacity-55)
-//   - mỗi button trong active group có number badge 1-9
-//
-// Port từ geometry-2d/editor/LeftPanel/Desktop.tsx:104-176 (baseline rich nhất).
+// Tool button grid với:
+//   - Search input ở đầu (filter theo label/hint, ignore diacritics + case).
+//   - Group section render 4-col icon button.
+//   - Khi chord.activeGroup set: section đó highlight (ring emerald + bg),
+//     section khác dimmed. KHÔNG render letter / number badge / hint footer
+//     nữa (đã bỏ phím tắt visual ở v0.27).
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import type {
   StampLeftPanelChordProps,
   StampToolDef,
@@ -26,29 +25,103 @@ export interface ToolGridProps<TKey extends string, TGroup extends string> {
   chord?: StampLeftPanelChordProps<TGroup>;
 }
 
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'd');
+}
+
+function SearchIcon(): React.ReactElement {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" />
+      <line x1="20" y1="20" x2="16.5" y2="16.5" />
+    </svg>
+  );
+}
+
+function ClearIcon(): React.ReactElement {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="6" y1="6" x2="18" y2="18" />
+      <line x1="18" y1="6" x2="6" y2="18" />
+    </svg>
+  );
+}
+
 export function ToolGrid<TKey extends string, TGroup extends string>(
   props: ToolGridProps<TKey, TGroup>,
 ): React.ReactElement {
   const { tools, groupOrder, groupLabels, activeTool, onToolChange, chord } = props;
   const { hover, portalReady, showHover, hideHover } = useToolHoverTooltip();
 
+  const [query, setQuery] = useState('');
+  const normalizedQuery = useMemo(() => normalize(query.trim()), [query]);
+
+  const filteredTools = useMemo(() => {
+    if (!normalizedQuery) return tools;
+    return tools.filter((t) => {
+      if (normalize(t.label).includes(normalizedQuery)) return true;
+      if (t.hint && normalize(t.hint).includes(normalizedQuery)) return true;
+      return false;
+    });
+  }, [tools, normalizedQuery]);
+
   const grouped = useMemo(() => {
     const acc: Partial<Record<TGroup, StampToolDef<TKey, TGroup>[]>> = {};
-    for (const t of tools) {
+    for (const t of filteredTools) {
       (acc[t.group] ??= []).push(t);
     }
     return acc;
-  }, [tools]);
+  }, [filteredTools]);
 
   const groupKeys = useMemo(
-    () => groupOrder.filter((g) => grouped[g]),
+    () => groupOrder.filter((g) => grouped[g] && grouped[g]!.length > 0),
     [grouped, groupOrder],
   );
 
-  const activeGroupTools = chord?.activeGroup ? grouped[chord.activeGroup] ?? null : null;
+  const noMatch = normalizedQuery !== '' && groupKeys.length === 0;
 
   return (
     <>
+      <div className="relative">
+        <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-slate-400">
+          <SearchIcon />
+        </span>
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Tìm công cụ…"
+          aria-label="Tìm công cụ"
+          data-testid="tool-search-input"
+          className="w-full rounded-md border border-slate-200 bg-slate-50 py-1.5 pl-7 pr-7 text-[12px] text-slate-800 placeholder:text-slate-400 focus:border-emerald-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-300"
+        />
+        {query && (
+          <button
+            type="button"
+            onClick={() => setQuery('')}
+            aria-label="Xoá tìm kiếm"
+            data-testid="tool-search-clear"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
+          >
+            <ClearIcon />
+          </button>
+        )}
+      </div>
+
+      {noMatch && (
+        <div
+          data-testid="tool-search-empty"
+          className="rounded-md border border-dashed border-slate-200 bg-slate-50 px-3 py-4 text-center text-[11px] text-slate-500"
+        >
+          Không có công cụ nào khớp “{query.trim()}”.
+        </div>
+      )}
+
       {groupKeys.map((group) => {
         const isChordActive = chord?.activeGroup === group;
         const dimmed = chord?.activeGroup != null && !isChordActive;
@@ -63,22 +136,11 @@ export function ToolGrid<TKey extends string, TGroup extends string>(
               dimmed ? 'opacity-55' : 'opacity-100',
             ].join(' ')}
           >
-            <h4 className="mb-1.5 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-              <span>{groupLabels[group]}</span>
-              {chord && (
-                <span
-                  data-testid={`chord-letter-${group}`}
-                  className={[
-                    'font-mono text-[10px] leading-none transition',
-                    isChordActive ? 'text-emerald-700 font-bold' : 'text-slate-400',
-                  ].join(' ')}
-                >
-                  {chord.letterForGroup(group)}
-                </span>
-              )}
+            <h4 className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              {groupLabels[group]}
             </h4>
             <div className="grid grid-cols-4 gap-1">
-              {grouped[group]!.map((t, i) => {
+              {grouped[group]!.map((t) => {
                 const active = activeTool === t.key;
                 return (
                   <button
@@ -101,21 +163,6 @@ export function ToolGrid<TKey extends string, TGroup extends string>(
                     ].join(' ')}
                   >
                     {t.icon}
-                    {chord && (
-                      <span
-                        data-testid={`chord-num-${t.key}`}
-                        className={[
-                          'pointer-events-none absolute bottom-0 right-0.5 font-mono text-[9px] leading-none transition',
-                          active
-                            ? 'text-white/70'
-                            : isChordActive
-                              ? 'text-emerald-700 font-bold'
-                              : 'text-slate-400',
-                        ].join(' ')}
-                      >
-                        {i + 1}
-                      </span>
-                    )}
                   </button>
                 );
               })}
@@ -123,25 +170,6 @@ export function ToolGrid<TKey extends string, TGroup extends string>(
           </section>
         );
       })}
-
-      {chord?.activeGroup && activeGroupTools && (
-        <div
-          data-testid="chord-hint"
-          className="mt-1 rounded border border-emerald-200 bg-emerald-50/60 px-2 py-1 text-[11px] leading-snug text-slate-600"
-        >
-          <span className="font-mono font-semibold text-emerald-700">
-            {chord.letterForGroup(chord.activeGroup)}
-          </span>
-          <span className="mx-1 text-slate-400">→</span>
-          {activeGroupTools.map((t, i) => (
-            <span key={t.key} className="mr-2 inline-block">
-              <span className="font-mono font-semibold text-emerald-700">{i + 1}</span>
-              <span className="ml-1">{t.label}</span>
-            </span>
-          ))}
-          <span className="text-slate-400">Esc huỷ</span>
-        </div>
-      )}
 
       {portalReady && hover && typeof document !== 'undefined'
         ? createPortal(

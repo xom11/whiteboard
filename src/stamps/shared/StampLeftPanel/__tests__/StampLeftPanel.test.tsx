@@ -150,7 +150,7 @@ describe('StampLeftPanel — axis/grid section', () => {
   });
 });
 
-describe('StampLeftPanel — chord visualization', () => {
+describe('StampLeftPanel — chord highlight (visual badges đã bị bỏ v0.27)', () => {
   test('group has data-chord-active="true" when chord.activeGroup matches', () => {
     render(<StampLeftPanel {...baseProps({
       chord: { activeGroup: 'basic', letterForGroup: () => 'B' },
@@ -162,19 +162,126 @@ describe('StampLeftPanel — chord visualization', () => {
     expect(draw?.getAttribute('data-chord-active')).toBe('false');
   });
 
-  test('chord-hint rendered when chord.activeGroup set', () => {
+  test('letter/number badge + chord-hint footer KHÔNG còn render dù chord active', () => {
     render(<StampLeftPanel {...baseProps({
       chord: { activeGroup: 'draw', letterForGroup: (g) => g === 'draw' ? 'D' : 'B' },
     })} />);
-    expect(screen.getByTestId('chord-hint')).toBeInTheDocument();
-    // active group "draw" has 1 tool → number badge "1"
-    expect(screen.getByTestId('chord-num-line')).toHaveTextContent('1');
+    expect(screen.queryByTestId('chord-hint')).toBeNull();
+    expect(screen.queryByTestId('chord-letter-draw')).toBeNull();
+    expect(screen.queryByTestId('chord-num-line')).toBeNull();
   });
 
   test('no chord-letter badges when chord prop omitted', () => {
     render(<StampLeftPanel {...baseProps()} />);
     expect(screen.queryByTestId('chord-letter-basic')).toBeNull();
     expect(screen.queryByTestId('chord-num-move')).toBeNull();
+  });
+});
+
+describe('StampLeftPanel — search input', () => {
+  test('search box hiện ở desktop, filter theo label', () => {
+    render(<StampLeftPanel {...baseProps()} />);
+    const input = screen.getByTestId('tool-search-input') as HTMLInputElement;
+    expect(input).toBeInTheDocument();
+
+    // Trước filter: cả 3 tool đều render.
+    expect(screen.getByLabelText('Di chuyển')).toBeInTheDocument();
+    expect(screen.getByLabelText('Điểm')).toBeInTheDocument();
+    expect(screen.getByLabelText('Đường')).toBeInTheDocument();
+
+    fireEvent.change(input, { target: { value: 'điểm' } });
+    expect(screen.getByLabelText('Điểm')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Di chuyển')).toBeNull();
+    expect(screen.queryByLabelText('Đường')).toBeNull();
+  });
+
+  test('search ignore diacritics + case ("diem" khớp "Điểm")', () => {
+    render(<StampLeftPanel {...baseProps()} />);
+    const input = screen.getByTestId('tool-search-input') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: 'diem' } });
+    expect(screen.getByLabelText('Điểm')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Đường')).toBeNull();
+  });
+
+  test('không khớp → hiện empty hint', () => {
+    render(<StampLeftPanel {...baseProps()} />);
+    const input = screen.getByTestId('tool-search-input') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: 'zzz-nothing' } });
+    expect(screen.getByTestId('tool-search-empty')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Di chuyển')).toBeNull();
+  });
+
+  test('nút clear reset query', () => {
+    render(<StampLeftPanel {...baseProps()} />);
+    const input = screen.getByTestId('tool-search-input') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: 'điểm' } });
+    expect(screen.queryByLabelText('Di chuyển')).toBeNull();
+    fireEvent.click(screen.getByTestId('tool-search-clear'));
+    expect(input.value).toBe('');
+    expect(screen.getByLabelText('Di chuyển')).toBeInTheDocument();
+  });
+});
+
+describe('StampLeftPanel — resizable handle', () => {
+  beforeEach(() => {
+    try { window.localStorage.clear(); } catch { /* ignore */ }
+  });
+
+  test('resize handle render với role separator', () => {
+    render(<StampLeftPanel {...baseProps()} />);
+    const handle = screen.getByTestId('left-panel-resizer');
+    expect(handle).toBeInTheDocument();
+    expect(handle).toHaveAttribute('role', 'separator');
+    expect(handle).toHaveAttribute('aria-orientation', 'vertical');
+  });
+
+  test('mousedown → mousemove cập nhật width inline style', () => {
+    render(<StampLeftPanel {...baseProps()} />);
+    const aside = screen.getByTestId('stamp-left-panel') as HTMLElement;
+    const handle = screen.getByTestId('left-panel-resizer');
+
+    const initial = aside.style.width;
+    expect(initial).toMatch(/^\d+px$/);
+
+    fireEvent.mouseDown(handle, { clientX: 240 });
+    fireEvent.mouseMove(window, { clientX: 340 });
+
+    expect(parseInt(aside.style.width, 10)).toBeGreaterThan(parseInt(initial, 10));
+
+    fireEvent.mouseUp(window);
+  });
+
+  test('width clamp ở max 480px', () => {
+    render(<StampLeftPanel {...baseProps()} />);
+    const aside = screen.getByTestId('stamp-left-panel') as HTMLElement;
+    const handle = screen.getByTestId('left-panel-resizer');
+    fireEvent.mouseDown(handle, { clientX: 0 });
+    fireEvent.mouseMove(window, { clientX: 10000 });
+    expect(parseInt(aside.style.width, 10)).toBeLessThanOrEqual(480);
+    fireEvent.mouseUp(window);
+  });
+
+  test('width clamp ở min 220px', () => {
+    render(<StampLeftPanel {...baseProps()} />);
+    const aside = screen.getByTestId('stamp-left-panel') as HTMLElement;
+    const handle = screen.getByTestId('left-panel-resizer');
+    fireEvent.mouseDown(handle, { clientX: 1000 });
+    fireEvent.mouseMove(window, { clientX: -1000 });
+    expect(parseInt(aside.style.width, 10)).toBeGreaterThanOrEqual(220);
+    fireEvent.mouseUp(window);
+  });
+
+  test('double-click handle reset về default 240px', () => {
+    render(<StampLeftPanel {...baseProps()} />);
+    const aside = screen.getByTestId('stamp-left-panel') as HTMLElement;
+    const handle = screen.getByTestId('left-panel-resizer');
+    fireEvent.mouseDown(handle, { clientX: 240 });
+    fireEvent.mouseMove(window, { clientX: 400 });
+    fireEvent.mouseUp(window);
+    expect(parseInt(aside.style.width, 10)).not.toBe(240);
+
+    fireEvent.doubleClick(handle);
+    expect(aside.style.width).toBe('240px');
   });
 });
 

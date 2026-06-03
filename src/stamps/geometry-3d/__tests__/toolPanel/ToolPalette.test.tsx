@@ -46,10 +46,10 @@ test('active tool có aria-pressed=true', () => {
   expect(screen.getByLabelText('Điểm').getAttribute('aria-pressed')).toBe('true');
 });
 
-test('chord letter A..F render đúng cho 6 group 3D', () => {
+test('chord letter A..F KHÔNG còn render ở v0.27 (visual phím tắt bị bỏ)', () => {
   mount('move');
-  expect(screen.getByTestId('chord-letter-basic').textContent).toBe('A');
-  expect(screen.getByTestId('chord-letter-point').textContent).toBe('B');
-  expect(screen.getByTestId('chord-letter-line').textContent).toBe('C');
-  expect(screen.getByTestId('chord-letter-curve').textContent).toBe('F');
+  expect(screen.queryByTestId('chord-letter-basic')).toBeNull();
+  expect(screen.queryByTestId('chord-letter-point')).toBeNull();
+  expect(screen.queryByTestId('chord-letter-line')).toBeNull();
+  expect(screen.queryByTestId('chord-letter-curve')).toBeNull();
 });

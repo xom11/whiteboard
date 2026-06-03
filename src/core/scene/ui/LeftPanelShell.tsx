@@ -17,7 +17,41 @@ export interface LeftPanelShellProps<K extends string = string> {
   onTabChange?: (k: K) => void;
   /** data-testid trên <aside> root. Mặc định "left-panel". */
   testId?: string;
+  /** Opt-in: cho phép kéo viền phải để đổi width. */
+  resizable?: boolean;
+  /** Key localStorage để persist width khi resizable=true. */
+  widthStorageKey?: string;
+  /** Width mặc định khi resizable. Default 240 (≈ w-60). */
+  defaultWidth?: number;
+  minWidth?: number;
+  maxWidth?: number;
   children: React.ReactNode;
+}
+
+const FALLBACK_DEFAULT_WIDTH = 240;
+const FALLBACK_MIN_WIDTH = 220;
+const FALLBACK_MAX_WIDTH = 480;
+
+function clamp(n: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, n));
+}
+
+function readStoredWidth(
+  key: string | undefined,
+  fallback: number,
+  min: number,
+  max: number,
+): number {
+  if (!key || typeof window === 'undefined') return fallback;
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return fallback;
+    const n = parseInt(raw, 10);
+    if (Number.isFinite(n)) return clamp(n, min, max);
+  } catch {
+    /* SSR or storage disabled */
+  }
+  return fallback;
 }
 
 function CloseIcon() {
@@ -30,8 +64,70 @@ function CloseIcon() {
 }
 
 export function LeftPanelShell<K extends string>(props: LeftPanelShellProps<K>): React.ReactElement {
-  const { title, icon, onClose, isDark, tabs, activeTab, onTabChange, testId, children } = props;
+  const {
+    title,
+    icon,
+    onClose,
+    isDark,
+    tabs,
+    activeTab,
+    onTabChange,
+    testId,
+    resizable,
+    widthStorageKey,
+    defaultWidth,
+    minWidth,
+    maxWidth,
+    children,
+  } = props;
   const showTabs = !!tabs && tabs.length >= 2;
+
+  const min = minWidth ?? FALLBACK_MIN_WIDTH;
+  const max = maxWidth ?? FALLBACK_MAX_WIDTH;
+  const initial = clamp(defaultWidth ?? FALLBACK_DEFAULT_WIDTH, min, max);
+
+  const [width, setWidth] = React.useState<number>(() =>
+    resizable ? readStoredWidth(widthStorageKey, initial, min, max) : initial,
+  );
+  const widthRef = React.useRef(width);
+  widthRef.current = width;
+
+  React.useEffect(() => {
+    if (!resizable || !widthStorageKey || typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(widthStorageKey, String(width));
+    } catch {
+      /* storage disabled */
+    }
+  }, [resizable, widthStorageKey, width]);
+
+  const onResizeStart = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!resizable) return;
+      e.preventDefault();
+      const startX = e.clientX;
+      const startW = widthRef.current;
+      const onMove = (ev: MouseEvent) => {
+        setWidth(clamp(startW + (ev.clientX - startX), min, max));
+      };
+      const onUp = () => {
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      };
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+      document.body.style.cursor = 'ew-resize';
+      document.body.style.userSelect = 'none';
+    },
+    [resizable, min, max],
+  );
+
+  const onResizeDoubleClick = React.useCallback(() => {
+    if (!resizable) return;
+    setWidth(initial);
+  }, [resizable, initial]);
 
   return (
     <aside
@@ -39,10 +135,12 @@ export function LeftPanelShell<K extends string>(props: LeftPanelShellProps<K>):
       aria-label={title}
       data-testid={testId ?? 'left-panel'}
       data-stamp-area="true"
+      style={resizable ? { width: `${width}px` } : undefined}
       className={[
         isDark ? 'theme--dark ' : '',
-        'absolute left-0 top-0 z-30 flex h-full w-60 flex-col border-r border-slate-200 bg-white shadow-md animate-in slide-in-from-left duration-200',
-      ].join('')}
+        'absolute left-0 top-0 z-30 flex h-full flex-col border-r border-slate-200 bg-white shadow-md animate-in slide-in-from-left duration-200',
+        resizable ? '' : 'w-60',
+      ].join(' ')}
     >
       <header className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-3 py-2">
         <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-800">
@@ -80,6 +178,21 @@ export function LeftPanelShell<K extends string>(props: LeftPanelShellProps<K>):
       >
         {children}
       </div>
+
+      {resizable && (
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Kéo để đổi rộng panel"
+          data-testid="left-panel-resizer"
+          onMouseDown={onResizeStart}
+          onDoubleClick={onResizeDoubleClick}
+          className="group absolute right-0 top-0 z-40 h-full w-1.5 -mr-0.5 cursor-ew-resize select-none"
+          title="Kéo để đổi rộng (double-click để reset)"
+        >
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-px bg-slate-200 transition group-hover:bg-emerald-400 group-hover:w-0.5 group-active:bg-emerald-500 group-active:w-0.5" />
+        </div>
+      )}
     </aside>
   );
 }
