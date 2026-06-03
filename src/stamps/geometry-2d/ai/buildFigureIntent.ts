@@ -167,11 +167,11 @@ export async function generateFigureIntent(
   };
 }
 
-function toUsage(u: ProviderTokenUsage): IntentTokenUsage {
+function toUsage(u: ProviderTokenUsage | undefined): IntentTokenUsage {
   return {
-    inputTokens: u.inputTokens,
-    outputTokens: u.outputTokens,
-    ...(u.cacheReadTokens != null ? { cacheReadTokens: u.cacheReadTokens } : {}),
-    ...(u.cacheCreationTokens != null ? { cacheCreationTokens: u.cacheCreationTokens } : {}),
+    inputTokens: u?.inputTokens ?? 0,
+    outputTokens: u?.outputTokens ?? 0,
+    ...(u?.cacheReadTokens != null ? { cacheReadTokens: u.cacheReadTokens } : {}),
+    ...(u?.cacheCreationTokens != null ? { cacheCreationTokens: u.cacheCreationTokens } : {}),
   };
 }

@@ -211,7 +211,7 @@ function handleDrawShape(s: BuildState, intent: DrawShapeIntentT) {
   const allowed = SHAPE_VARIANTS[intent.shape];
   if (!allowed || !allowed.includes(intent.variant)) {
     // Fallback to default variant cho shape thay vì throw
-    intent = { ...intent, variant: allowed?.[0] ?? 'any' };
+    intent = { ...intent, variant: (allowed?.[0] ?? 'any') as typeof intent.variant };
   }
 
   let coords: readonly Pt[];
