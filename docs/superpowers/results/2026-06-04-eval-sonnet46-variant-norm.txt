@@ -1,0 +1,64 @@
+
+=== Eval Intent Pipeline: claude-sonnet-4-6 ===
+
+[t0-tri-any] (T0) Tam giác ABC.... ✓ 6786ms
+[t0-tri-eq] (T0) Tam giác đều ABC.... ✓ 5579ms
+[t0-tri-right-A] (T0) Tam giác ABC vuông tại A.... ✓ 6097ms
+[t0-tri-right-B] (T0) Tam giác ABC vuông tại B.... ✓ 5593ms
+[t0-tri-iso] (T0) Tam giác ABC cân tại A.... ✓ 7410ms
+[t0-square] (T0) Hình vuông MNPQ.... ✓ 5084ms
+[t0-rect] (T0) Hình chữ nhật ABCD.... ✓ 6256ms
+[t0-rhom] (T0) Hình thoi ABCD.... ✓ 5639ms
+[t0-para] (T0) Hình bình hành ABCD.... ✓ 5690ms
+[t0-trap] (T0) Hình thang cân ABCD.... ✓ 11243ms
+[t1-mid] (T1) Tam giác ABC, M là trung điểm BC.... ✓ 7037ms
+[t1-mid-AM] (T1) Tam giác ABC, M là trung điểm BC, vẽ đoạn AM.... ✓ 7320ms
+[t1-altitude] (T1) Tam giác ABC, H là chân đường cao từ A xuống BC.... ✓ 7667ms
+[t1-centroid] (T1) Tam giác ABC, G là trọng tâm.... ✓ 6345ms
+[t1-circum] (T1) Tam giác ABC, O là tâm đường tròn ngoại tiếp.... ✗ 22954ms (transpile_error; -0/!0/+0)
+[t1-incenter] (T1) Tam giác ABC, I là tâm đường tròn nội tiếp.... ✗ 16400ms (transpile_error; -0/!0/+0)
+[t1-ortho] (T1) Tam giác ABC, trực tâm H.... ✓ 7141ms
+[t1-circle3] (T1) Đường tròn (O) đi qua 3 điểm A, B, C.... ✓ 11899ms
+[t1-rect-diag] (T1) Hình chữ nhật ABCD, vẽ đường chéo AC.... ✓ 6369ms
+[t1-para-diags] (T1) Hình bình hành ABCD, hai đường chéo AC và BD cắt nhau tại O.... ✓ 7778ms
+[t3-tri-any-en] (T3) Triangle ABC.... ✓ 11406ms
+[t3-tri-eq-en] (T3) Equilateral triangle ABC.... ✓ 4980ms
+[t3-tri-right-en] (T3) Right triangle ABC with the right angle at A.... ✓ 6639ms
+[t3-mid-en] (T3) Triangle ABC, M is the midpoint of BC.... ✓ 8740ms
+[t3-square-en] (T3) Square MNPQ.... ✓ 7906ms
+[t3-altitude-en] (T3) In triangle ABC, H is the foot of the altitude from A to BC.... ✓ 11443ms
+[t3-centroid-en] (T3) Let G be the centroid of triangle ABC.... ✓ 7109ms
+[t3-circum-en] (T3) Triangle ABC inscribed in circle O.... ✓ 8047ms
+[t4-ortho-mark] (T4) Cho tam giác ABC nhọn. Đường cao AD, BE, CF cắt tại H. Vẽ ta... ✗ 28261ms (mismatch; -0/!1/+0)
+[t4-tangent-ext] (T4) Cho (O; R=3) và điểm A ngoài (O), OA=5. Từ A vẽ 2 tiếp tuyến... ✗ 48792ms (mismatch; -1/!1/+3)
+[t4-2circles-secant] (T4) Cho (O) và (O') cắt nhau tại A, B. Qua A vẽ cát tuyến cắt (O... ✗ 210741ms (builder_error; -0/!0/+0)
+[t4-incircle-gergonne] (T4) Cho tam giác ABC. (I) nội tiếp tiếp xúc BC, CA, AB tại D, E,... ✓ 18197ms
+[t4-cyclic-bcef] (T4) Cho tam giác ABC, đường cao BE (E∈AC) và CF (F∈AB). Đường tr... ✗ 73708ms (mismatch; -1/!1/+1)
+[t4-median-extend] (T4) Cho tam giác ABC, AM là trung tuyến (M∈BC). Trọng tâm G. N l... ✓ 35714ms
+[t4-bisector-circumcircle] (T4) Cho tam giác ABC nội tiếp (O). Phân giác AD của góc A (D∈BC)... ✗ 30816ms (mismatch; -0/!0/+2)
+[t4-medial-feet] (T4) Cho tam giác ABC nhọn, trực tâm H. M, N, P là trung điểm BC,... ✗ 42185ms (mismatch; -1/!0/+1)
+[t4-tangent-at-chain] (T4) Cho (O) và A trên (O). Vẽ tiếp tuyến At tại A. Lấy B trên At... ✗ 59744ms (transpile_error; -0/!0/+0)
+[t4-perpbis-circumcenter] (T4) Cho tam giác ABC. Đường trung trực AB và AC cắt nhau tại O.... ✓ 16502ms
+[t5-altitude-circle] (T5) Cho tam giác ABC vuông tại A, đường cao AH (H∈BC). Đường trò... ✗ 93202ms (mismatch; -2/!2/+4)
+[t5-incircle-circumcircle-arc] (T5) Cho tam giác ABC nội tiếp (O), (I) là đường tròn nội tiếp ti... ✗ 40705ms (transpile_error; -0/!0/+0)
+[t5-cyclic-quad-mids] (T5) Cho tứ giác ABCD nội tiếp (O). AC và BD cắt tại P. M, N là t... ✗ 16482ms (mismatch; -1/!0/+1)
+[t5-nine-point-full] (T5) Cho tam giác ABC nhọn, trực tâm H. M, N, P là trung điểm BC,... ✗ 44447ms (mismatch; -1/!0/+1)
+[t5-2-incircles-tangent] (T5) Cho tam giác ABC vuông tại A, đường cao AH. Gọi (I1) và (I2)... ✗ 41350ms (mismatch; -2/!0/+0)
+[r-trig] (TR) Tính sin(30°) + cos(60°).... ✓ 4646ms (refused; -0/!0/+0)
+[r-cat] (TR) Vẽ con mèo.... ✓ 4131ms (refused; -0/!0/+0)
+
+--- Summary per tier ---
+Tier 0: ok=10/10 exact=10/10  total: missing=0 wrong=0 extra=0
+Tier 1: ok=8/10 exact=8/10  total: missing=0 wrong=0 extra=0
+Tier 3: ok=8/8 exact=8/8  total: missing=0 wrong=0 extra=0
+Tier 4: ok=3/10 exact=3/10  total: missing=3 wrong=3 extra=7
+Tier 5: ok=0/5 exact=0/5  total: missing=6 wrong=2 extra=6
+Tier R: ok=2/2 exact=2/2  total: missing=0 wrong=0 extra=0
+
+Total: ok=31/45 (69%) exact=31/45 (69%) avg=23160ms
+
+--- 3-axis (buildable only) ---
+Đủ        : 163/172 (95%)
+Đúng     : 167/172 (97%)
+Không thừa: missing-extras=13 (lower = better; ideal = 0)
+Avg Recall=95.9% Precision=95.0% F1=95.4%
