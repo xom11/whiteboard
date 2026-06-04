@@ -11,6 +11,7 @@ coverage/
 .playwright-mcp/
 .worktrees/
 examples/playground/dist/
+tmp/
 
 # Screenshots ở root — phải để vào docs/screenshots/
 /*.png

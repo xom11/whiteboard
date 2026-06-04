@@ -1,0 +1,36 @@
+{
+  "source": "Một số bài tập chọn lọc hình học phẳng ôn thi vào lớp 10",
+  "note": "Đề bài giữ nguyên (đã skip lời giải + figure ASCII). Câu hỏi a/b/c giữ để pipeline thấy đầy đủ entities, nhưng pipeline chỉ cần vẽ figure tổng (không vẽ từng câu hỏi).",
+  "problems": [
+    {
+      "id": "cau-01",
+      "tier": 5,
+      "text": "Cho tam giác ABC, trên BC, CA, AB thứ tự lấy các điểm M, N, E sao cho AN = NE, BM = ME. Gọi D là điểm đối xứng của E qua MN. Chứng minh rằng đường thẳng nối tâm hai đường tròn ngoại tiếp tam giác ABC và tam giác CMN vuông góc với CD."
+    },
+    {
+      "id": "cau-02",
+      "tier": 5,
+      "text": "Gọi I là tâm đường tròn nội tiếp tam giác ABC. Từ A kẻ tới đường tròn ngoại tiếp tam giác BIC các tiếp tuyến AP, AQ (P, Q là các tiếp điểm). a) Chứng minh góc BAP = góc CAQ. b) Gọi P1, P2 là hình chiếu vuông góc của P lên các đường thẳng AB, AC. Q1, Q2 là các hình chiếu vuông góc của Q trên AB, AC. Chứng minh P1, P2, Q1, Q2 nằm trên một đường tròn."
+    },
+    {
+      "id": "cau-03",
+      "tier": 5,
+      "text": "Cho hình bình hành ABCD có góc BAD khác 90 độ. Giả sử O là điểm nằm trong tam giác ABD sao cho OC không vuông góc với BD. Dựng đường tròn tâm O bán kính OC. BD cắt (O) tại hai điểm M, N sao cho B nằm giữa M và D. Tiếp tuyến của (O) tại C cắt AD, AB lần lượt tại P, Q. a) Chứng minh tứ giác MNPQ nội tiếp. b) CM cắt QN tại K, CN cắt PM tại L. Chứng minh KL vuông góc với OC."
+    },
+    {
+      "id": "cau-04",
+      "tier": 5,
+      "text": "Cho tam giác ABC nội tiếp đường tròn (O). Đường tròn (K) tiếp xúc với CA, AB lần lượt tại E, F và tiếp xúc trong với (O) tại S. SE, SF lần lượt cắt (O) tại M, N khác S. Đường tròn ngoại tiếp tam giác AEM, AFN cắt nhau tại P khác A. a) Chứng minh tứ giác AMPN là hình bình hành. b) Gọi EN, FM lần lượt cắt (K) tại G, H khác E, F. Gọi GH cắt MN tại T. Chứng minh tam giác AST cân."
+    },
+    {
+      "id": "cau-05",
+      "tier": 5,
+      "text": "Cho tam giác ABC nội tiếp đường tròn (O). Đường tròn (I) luôn đi qua B và C cắt AB, AC lần lượt tại M, N. Đường tròn (J) ngoại tiếp tam giác AMN cắt đường tròn (O) tại điểm thứ hai là K. Chứng minh rằng KI song song OJ."
+    },
+    {
+      "id": "cau-06",
+      "tier": 5,
+      "text": "Cho tam giác ABC vuông tại A, đường cao AH. Trên nửa mặt phẳng bờ BC chứa A vẽ đường tròn (O) đường kính HC. Trên nửa mặt phẳng bờ BC chứa A vẽ đường tròn (O') đường kính HB. (Đề bài câu 6 - cần đọc thêm để hoàn chỉnh, để đó vẽ phần đầu)."
+    }
+  ]
+}

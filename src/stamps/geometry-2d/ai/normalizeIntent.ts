@@ -10,7 +10,7 @@
 //
 // Pure function, không mutate input.
 
-import type { IntentT, DrawShapeIntentT } from './intent';
+import type { IntentT, DrawShapeIntentT, DrawLineIntentT } from './intent';
 
 const CAN_TAI_RE = /c[aâ]n\s+t[aạ]i\s+([A-Z])/i;
 const ISOCELES_AT_RE = /isoceles\s+(?:at|with\s+apex)\s+([A-Z])/i;
@@ -29,9 +29,28 @@ export function normalizeIntents(
   problem: string,
 ): IntentT[] {
   return intents.map((intent) => {
-    if (intent.op !== 'draw-shape') return intent;
-    return normalizeShape(intent, problem);
+    if (intent.op === 'draw-shape') return normalizeShape(intent, problem);
+    if (intent.op === 'draw-line') return normalizeLine(intent);
+    return intent;
   });
+}
+
+// tangentAt cần `through` (điểm trên đường tròn). LLM hay nhầm dùng `from`
+// (field của tangentFromExt, dành cho điểm NGOÀI đường tròn). Builder enforce
+// strict → throw. Fix: swap field khi pattern match rõ ràng.
+//
+// Ngược lại: tangentFromExt cần `from` nhưng nếu LLM dùng `through` → defensive
+// swap.
+function normalizeLine(intent: DrawLineIntentT): DrawLineIntentT {
+  if (intent.kind === 'tangentAt' && intent.from && !intent.through) {
+    const { from, ...rest } = intent;
+    return { ...rest, through: from };
+  }
+  if (intent.kind === 'tangentFromExt' && intent.through && !intent.from) {
+    const { through, ...rest } = intent;
+    return { ...rest, from: through };
+  }
+  return intent;
 }
 
 function normalizeShape(intent: DrawShapeIntentT, problem: string): IntentT {

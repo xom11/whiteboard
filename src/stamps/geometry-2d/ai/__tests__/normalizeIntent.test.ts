@@ -81,3 +81,65 @@ describe('normalizeIntents — quad shapes default to standard', () => {
     expect((out[0] as { variant: string }).variant).toBe('standard');
   });
 });
+
+describe('normalizeIntents — tangent line field confusion', () => {
+  it('tangentAt với `from` (nhầm field) → remap thành `through`', () => {
+    const intent: IntentT = {
+      op: 'draw-line',
+      name: 'tC',
+      kind: 'tangentAt',
+      from: 'C',
+      circle: 'O',
+    };
+    const out = normalizeIntents([intent], 'Tiếp tuyến tại C của (O).');
+    expect(out[0]).toEqual({
+      op: 'draw-line',
+      name: 'tC',
+      kind: 'tangentAt',
+      through: 'C',
+      circle: 'O',
+    });
+  });
+
+  it('tangentAt với `through` đúng → giữ nguyên', () => {
+    const intent: IntentT = {
+      op: 'draw-line',
+      name: 'tC',
+      kind: 'tangentAt',
+      through: 'C',
+      circle: 'O',
+    };
+    const out = normalizeIntents([intent], 'x');
+    expect(out[0]).toEqual(intent);
+  });
+
+  it('tangentFromExt với `through` (nhầm field) → remap thành `from`', () => {
+    const intent: IntentT = {
+      op: 'draw-line',
+      name: 'AP',
+      kind: 'tangentFromExt',
+      through: 'A',
+      circle: 'O',
+    };
+    const out = normalizeIntents([intent], 'Từ A kẻ tiếp tuyến tới (O).');
+    expect(out[0]).toEqual({
+      op: 'draw-line',
+      name: 'AP',
+      kind: 'tangentFromExt',
+      from: 'A',
+      circle: 'O',
+    });
+  });
+
+  it('perpThrough/parallelThrough không bị đụng', () => {
+    const intent: IntentT = {
+      op: 'draw-line',
+      name: 'd',
+      kind: 'perpThrough',
+      through: 'A',
+      to: 'BC',
+    };
+    const out = normalizeIntents([intent], 'x');
+    expect(out[0]).toEqual(intent);
+  });
+});
