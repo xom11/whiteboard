@@ -54,6 +54,7 @@ export interface IntentFailureResult {
   reason: 'refused' | 'parse_error' | 'builder_error' | 'transpile_error' | 'verify_error' | 'provider_error';
   message: string;
   intents?: readonly IntentT[];
+  dsl?: ReturnType<typeof intentsToDsl>;
   usage?: IntentTokenUsage;
   provider?: string;
 }
@@ -142,14 +143,31 @@ export async function generateFigureIntent(
     };
   }
 
-  // Stage 3: transpile
-  const tResult = transpile(dsl);
+  // Stage 3: transpile. `transpile()` thường trả {ok:false} cho known error,
+  // nhưng vẫn có throw uncaught (vd "emit: id not assigned for X") khi DSL có
+  // shape ref chưa-assigned. Catch để giữ intents + dsl cho debug downstream.
+  let tResult: TranspileResult;
+  try {
+    tResult = transpile(dsl);
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    return {
+      ok: false,
+      reason: 'transpile_error',
+      message: `transpile throw: ${message}`,
+      intents,
+      dsl,
+      usage,
+      provider: provider.name,
+    };
+  }
   if (!tResult.ok) {
     return {
       ok: false,
       reason: 'transpile_error',
       message: tResult.errors.map((e) => `${e.code}: ${e.message}`).join('; '),
       intents,
+      dsl,
       usage,
       provider: provider.name,
     };

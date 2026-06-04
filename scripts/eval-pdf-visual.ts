@@ -99,12 +99,29 @@ async function main() {
   async function runOne(p: Problem): Promise<void> {
     console.log(`\n=== ${p.id} (tier ${p.tier}) ===`);
     console.log(p.text.slice(0, 120) + (p.text.length > 120 ? '…' : ''));
+    const baseFile = resolve(OUT_DIR, p.id);
     const t0 = Date.now();
-    const r = await generateFigureIntent(p.text, { provider });
+    let r: Awaited<ReturnType<typeof generateFigureIntent>>;
+    try {
+      r = await generateFigureIntent(p.text, { provider });
+    } catch (e) {
+      // Pipeline throw uncaught (vd transpile crash "emit: id not assigned").
+      // Save raw error + problem text để debug Item 4. Không có intents/dsl
+      // vì throw có thể xảy ra trước hoặc trong stage 3 — không expose ra ngoài.
+      const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
+      const message = e instanceof Error ? `${e.message}\n${e.stack}` : String(e);
+      console.log(`  💥 pipeline throw (${elapsed}s): ${e instanceof Error ? e.message : e}`);
+      writeFileSync(`${baseFile}.json`, JSON.stringify({
+        ok: false,
+        reason: 'pipeline_throw',
+        message,
+        elapsedSec: parseFloat(elapsed),
+        problem: p.text,
+      }, null, 2));
+      return;
+    }
     const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
     console.log(`  → ${elapsed}s, provider=${r.provider ?? 'unknown'}`);
-
-    const baseFile = resolve(OUT_DIR, p.id);
 
     if (!r.ok) {
       console.log(`  ❌ FAIL: ${r.reason} — ${r.message}`);
