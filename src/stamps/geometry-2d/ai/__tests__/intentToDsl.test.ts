@@ -246,6 +246,50 @@ describe('intentsToDsl — Tier 4+5', () => {
       .toBeDefined();
   });
 
+  it('perpThrough fallback: `to` là 1-letter POINT → auto build segment qua (through, to)', () => {
+    // Cau-12-style: AI nhầm "Đường vuông góc với AB tại B" → to:"A" thay vì to:"AB".
+    // Builder phải auto detect 2 single-letter POINTS và ensureSegment giữa chúng.
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'draw-line', name: 'd', kind: 'perpThrough', through: 'B', to: 'A' },
+    ] as never);
+    // Segment AB phải tồn tại
+    const segAB = dsl.shapes.find(
+      (s) => s.kind === 'segment' && ((s.p1 === 'A' && s.p2 === 'B') || (s.p1 === 'B' && s.p2 === 'A')),
+    );
+    expect(segAB).toBeDefined();
+    // perpendicular shape phải reference segment vừa tạo (không phải point 'A')
+    const perp = dsl.shapes.find((s) => s.kind === 'perpendicular' && s.name === 'd');
+    expect(perp).toBeDefined();
+    expect(perp!.toLine).toBe(segAB!.name);
+  });
+
+  it('parallelThrough fallback: `to` là 1-letter POINT → auto build segment', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'add-point', name: 'M', constraint: { kind: 'midpoint', of: 'AB' } },
+      { op: 'draw-line', name: 'd', kind: 'parallelThrough', through: 'M', to: 'B' },
+    ] as never);
+    const par = dsl.shapes.find((s) => s.kind === 'parallel' && s.name === 'd');
+    expect(par).toBeDefined();
+    // toLine phải resolve thành segment MB (hoặc BM) chứ không phải point 'B'
+    const seg = dsl.shapes.find((s) => s.name === par!.toLine && s.kind === 'segment');
+    expect(seg).toBeDefined();
+  });
+
+  it('perpThrough 2-letter `to` vẫn auto-ensure segment khi cần', () => {
+    // AB chưa được tạo bởi intent nào → cần ensureSegment khi resolve "AB".
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'draw-line', name: 'd', kind: 'perpThrough', through: 'C', to: 'AB' },
+    ] as never);
+    const perp = dsl.shapes.find((s) => s.kind === 'perpendicular' && s.name === 'd');
+    expect(perp).toBeDefined();
+    // Segment AB hoặc BA phải tồn tại để toLine ref hợp lệ
+    const seg = dsl.shapes.find((s) => s.name === perp!.toLine && s.kind === 'segment');
+    expect(seg).toBeDefined();
+  });
+
   it('handles draw-line tangentAt', () => {
     const dsl = intentsToDsl([
       { op: 'draw-circle', name: 'O', spec: 'centerRadius', center: 'O', radius: 2 },

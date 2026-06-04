@@ -187,6 +187,24 @@ function ensureSegment(s: BuildState, a: string, b: string): string {
   return name;
 }
 
+// Resolve line ref cho draw-line (perpThrough/parallelThrough) với fallback:
+// LLM nhiều khi nhầm "Đường vuông góc với AB tại B" → to:"A" (1 chữ — POINT)
+// thay vì to:"AB" (2 chữ — LINE). Khi `ref` là 1 chữ POINT và `anchor` cũng
+// 1 chữ POINT khác, auto build segment qua 2 điểm (alphabetize canonical).
+function resolveLineRefWithFallback(s: BuildState, ref: string, anchor: string): string {
+  // Single-letter point swap fallback — chỉ áp dụng khi cả 2 đều là POINT
+  // đã định nghĩa và khác nhau.
+  if (
+    /^[A-Za-z]$/.test(ref) && /^[A-Za-z]$/.test(anchor) && ref !== anchor &&
+    s.pointNames.has(ref) && s.pointNames.has(anchor)
+  ) {
+    const [a, b] = ref < anchor ? [ref, anchor] : [anchor, ref];
+    return ensureSegment(s, a, b);
+  }
+  // Path bình thường: 2-char shorthand hoặc tên shape đã có.
+  return resolveSegmentRef(s, ref);
+}
+
 function resolveSegmentRef(s: BuildState, ref: string): string {
   // ref có thể là tên segment ('AB') hoặc shape name đã có.
   // Nếu là 2 ký tự label đều đã tồn tại → ensure segment 2 đỉnh đó.
@@ -440,12 +458,14 @@ function handleDrawLine(s: BuildState, intent: DrawLineIntentT) {
   switch (intent.kind) {
     case 'perpThrough': {
       if (!intent.through || !intent.to) throw new IntentBuilderError('perpThrough cần through + to', intent);
-      addShape(s, { name: intent.name, kind: 'perpendicular', throughPoint: intent.through, toLine: intent.to });
+      const toLine = resolveLineRefWithFallback(s, intent.to, intent.through);
+      addShape(s, { name: intent.name, kind: 'perpendicular', throughPoint: intent.through, toLine });
       break;
     }
     case 'parallelThrough': {
       if (!intent.through || !intent.to) throw new IntentBuilderError('parallelThrough cần through + to', intent);
-      addShape(s, { name: intent.name, kind: 'parallel', throughPoint: intent.through, toLine: intent.to });
+      const toLine = resolveLineRefWithFallback(s, intent.to, intent.through);
+      addShape(s, { name: intent.name, kind: 'parallel', throughPoint: intent.through, toLine });
       break;
     }
     case 'tangentAt': {
