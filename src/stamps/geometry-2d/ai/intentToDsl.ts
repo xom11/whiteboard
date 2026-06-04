@@ -140,6 +140,29 @@ function addPoint(s: BuildState, p: DslPointT) {
   s.pointNames.add(p.name);
 }
 
+// Default coord cho free point khi LLM không truyền `at`. Spread theo thứ tự
+// thêm để tránh nhiều free point collide tại (3, 3) → segment degenerate,
+// circle radius=0, intersection NaN cascade (bug eval cau-14: A=B=D=(3,3)).
+// Pattern: 8 vị trí phân bố xung quanh gốc, vòng lại khi >8.
+const FREE_DEFAULT_SPREAD: readonly [number, number][] = [
+  [3, 3],
+  [-3, 3],
+  [3, -3],
+  [-3, -3],
+  [4, 0],
+  [-4, 0],
+  [0, 4],
+  [0, -4],
+];
+
+function defaultFreeCoord(s: BuildState): [number, number] {
+  // Đếm số free point đã add (cả từ polygon vertices + add-point free).
+  // Position trong array trùng index modulo SPREAD.
+  let count = 0;
+  for (const p of s.points) if (p.kind === 'free') count++;
+  return [...FREE_DEFAULT_SPREAD[count % FREE_DEFAULT_SPREAD.length]];
+}
+
 function addShape(s: BuildState, sh: DslShapeT) {
   if (s.shapeNames.has(sh.name)) return;
   s.shapes.push(sh);
@@ -290,7 +313,7 @@ function handleAddPoint(s: BuildState, intent: AddPointIntentT) {
       break;
     }
     case 'free': {
-      const [x, y] = c.at ?? [3, 3];
+      const [x, y] = c.at ?? defaultFreeCoord(s);
       addPoint(s, { name, kind: 'free', x, y });
       break;
     }
@@ -394,7 +417,8 @@ function handleDrawCircle(s: BuildState, intent: DrawCircleIntentT) {
       throw new IntentBuilderError('centerRadius cần center + radius', intent);
     }
     if (!s.points.find((p) => p.name === intent.center)) {
-      addPoint(s, { name: intent.center!, kind: 'free', x: 4, y: 2 });
+      const [x, y] = defaultFreeCoord(s);
+      addPoint(s, { name: intent.center!, kind: 'free', x, y });
     }
     addShape(s, { name: intent.name, kind: 'circleCR', center: intent.center, radius: intent.radius });
   } else if (intent.spec === 'inscribedIn') {
