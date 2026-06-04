@@ -14,6 +14,7 @@ import { intentsToDsl, IntentBuilderError } from './intentToDsl';
 import { buildIntentSystemPrompt } from './intentPrompt';
 import { IntentEnvelopeZ, type IntentEnvelopeT, type IntentT } from './intent';
 import { intentEnvelopeJsonSchema } from './intentEnvelope';
+import { normalizeIntents } from './normalizeIntent';
 import { resolveCircleNameCollisions } from './resolveCircleNames';
 import { verifyGeometry, type VerifyReport } from './verify';
 import {
@@ -114,12 +115,13 @@ export async function generateFigureIntent(
     };
   }
 
-  // Intents giữ nguyên raw từ AI cho API contract (caller dùng để compare với
-  // expected fixtures). Pipeline internal dùng processedIntents (đã resolve
-  // collision) để build DSL.
-  const intents = envelope.intents!;
+  // Stage 1.5a: variant normalization (rule-based — fix common LLM biases về
+  // variant naming, vd "cân tại A" → isoceles-BC theo canonical, rectangle
+  // "wide" → "standard" mặc định). API contract: caller nhận variant đã chuẩn
+  // hoá vì đây là known-canonical correction, không phải semantic change.
+  const intents = normalizeIntents(envelope.intents!, problem);
 
-  // Stage 1.5: preprocess naming collisions (circle name dùng làm point ref).
+  // Stage 1.5b: preprocess naming collisions (circle name dùng làm point ref).
   // Notation Việt "(O)" thường ám chỉ TÂM (point) chứ không phải tên circle —
   // preprocessor inject add-point center + rename circle để tránh KIND_MISMATCH.
   const processedIntents = resolveCircleNameCollisions(intents);
