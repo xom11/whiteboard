@@ -131,7 +131,7 @@ describe('normalizeIntents — tangent line field confusion', () => {
     });
   });
 
-  it('perpThrough/parallelThrough không bị đụng', () => {
+  it('perpThrough với `through` đúng → giữ nguyên', () => {
     const intent: IntentT = {
       op: 'draw-line',
       name: 'd',
@@ -141,5 +141,41 @@ describe('normalizeIntents — tangent line field confusion', () => {
     };
     const out = normalizeIntents([intent], 'x');
     expect(out[0]).toEqual(intent);
+  });
+
+  it('perpThrough với `from` (nhầm field) → remap thành `through`', () => {
+    const intent: IntentT = {
+      op: 'draw-line',
+      name: 'lB',
+      kind: 'perpThrough',
+      from: 'B',
+      to: 'AB',
+    };
+    const out = normalizeIntents([intent], 'Đường vuông góc với AB tại B.');
+    expect(out[0]).toEqual({
+      op: 'draw-line',
+      name: 'lB',
+      kind: 'perpThrough',
+      through: 'B',
+      to: 'AB',
+    });
+  });
+
+  it('parallelThrough với `from` (nhầm field) → remap thành `through`', () => {
+    const intent: IntentT = {
+      op: 'draw-line',
+      name: 'd',
+      kind: 'parallelThrough',
+      from: 'M',
+      to: 'BC',
+    };
+    const out = normalizeIntents([intent], 'Qua M kẻ đường thẳng song song BC.');
+    expect(out[0]).toEqual({
+      op: 'draw-line',
+      name: 'd',
+      kind: 'parallelThrough',
+      through: 'M',
+      to: 'BC',
+    });
   });
 });

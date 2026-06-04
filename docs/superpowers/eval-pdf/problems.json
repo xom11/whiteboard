@@ -30,7 +30,47 @@
     {
       "id": "cau-06",
       "tier": 5,
-      "text": "Cho tam giác ABC vuông tại A, đường cao AH. Trên nửa mặt phẳng bờ BC chứa A vẽ đường tròn (O) đường kính HC. Trên nửa mặt phẳng bờ BC chứa A vẽ đường tròn (O') đường kính HB. (Đề bài câu 6 - cần đọc thêm để hoàn chỉnh, để đó vẽ phần đầu)."
+      "text": "Cho tam giác ABC vuông tại A, đường cao AH. Trên nửa mặt phẳng bờ BC chứa A vẽ đường tròn (O) đường kính HC. Trên nửa mặt phẳng bờ BC không chứa A vẽ nửa đường tròn (O') đường kính BC. Qua điểm E thuộc nửa đường tròn (O) kẻ EI vuông góc với BC cắt nửa đường tròn (O') ở F. Gọi K là giao điểm của EH và BF. Chứng minh rằng CA = CK."
+    },
+    {
+      "id": "cau-07",
+      "tier": 5,
+      "text": "Cho tứ giác ABCD nội tiếp đường tròn (O). Đường vuông góc với AB tại B cắt CD ở I. Gọi K là giao điểm của IO và AD. Chứng minh rằng: a) góc IBK = góc IDK; b) góc CBK = 90 độ."
+    },
+    {
+      "id": "cau-08",
+      "tier": 5,
+      "text": "Cho đường tròn (O) và (O') cắt nhau tại A và B. Dây AC của đường tròn (O') tiếp xúc với đường tròn (O) tại A. Tia CB cắt đường tròn (O) ở điểm thứ hai D. Gọi K là điểm thuộc dây AD. Vẽ dây BE của đường tròn (O) sao cho BE đi qua K. Tia CK cắt đường tròn (O') ở điểm thứ hai I và cắt AE ở F. Chứng minh rằng: a) AIDF là tứ giác nội tiếp; b) DF là tiếp tuyến của đường tròn (O)."
+    },
+    {
+      "id": "cau-09",
+      "tier": 5,
+      "text": "Cho tam giác nhọn ABC nội tiếp đường tròn (O), BE, CF là hai đường cao (E thuộc CA, F thuộc AB). Tiếp tuyến tại B, C của đường tròn (O) cắt nhau tại T. TC, TB lần lượt cắt EF tại P, Q. M là trung điểm của BC. a) Chứng minh M là tâm đường tròn nội tiếp tam giác TPQ. b) Gọi AD là đường kính của (O). DM cắt (O) tại R khác D. Chứng minh các tứ giác RQBM, RPCM, RQTP là tứ giác nội tiếp. c) Chứng minh rằng đường tròn ngoại tiếp tam giác TPQ tiếp xúc với đường tròn (O) tại R."
+    },
+    {
+      "id": "cau-10",
+      "tier": 5,
+      "text": "Cho tam giác ABC nội tiếp đường tròn tâm O và AB khác AC. Đường phân giác trong góc BAC cắt đường tròn (O) tại D khác A. Gọi M là trung điểm của AD và E là điểm đối xứng với D qua tâm O. Giả sử đường tròn ngoại tiếp tam giác ABM cắt đoạn thẳng AC tại điểm F khác A. Chứng minh các tam giác BMD và BFC đồng dạng và EF vuông góc AC."
+    },
+    {
+      "id": "cau-11",
+      "tier": 5,
+      "text": "Cho tam giác nhọn ABC nội tiếp đường tròn (O) có trực tâm H. Gọi P là điểm nằm trên đường tròn ngoại tiếp tam giác HBC (P khác B, C, H) và nằm trong tam giác ABC. PB cắt đường tròn (O) tại M khác B. PC cắt (O) tại N khác C. BM cắt AC tại E, CN cắt AB tại F. Đường tròn ngoại tiếp tam giác AME và đường tròn ngoại tiếp tam giác ANF cắt nhau tại Q khác A. a) Chứng minh M, N, Q thẳng hàng. b) Giả sử AP là phân giác góc MAN. Chứng minh PQ đi qua trung điểm của BC."
+    },
+    {
+      "id": "cau-12",
+      "tier": 5,
+      "text": "Cho đường tròn (O; R) và dây cung BC cố định, BC khác 2R. Điểm A di động trên đường tròn (O; R) sao cho tam giác ABC là tam giác nhọn. AD là đường cao và H là trực tâm của tam giác ABC. a) Đường thẳng chứa phân giác ngoài của góc BHC cắt AB, AC lần lượt tại các điểm M, N. Chứng minh tam giác AMN là tam giác cân. b) Gọi E, F lần lượt là hình chiếu của D trên các đường thẳng BH, CH. Chứng minh OA vuông góc EF. c) Đường tròn ngoại tiếp tam giác AMN cắt đường phân giác trong của góc BAC tại K. Chứng minh đường thẳng HK luôn đi qua điểm cố định."
+    },
+    {
+      "id": "cau-13",
+      "tier": 5,
+      "text": "Cho tứ giác ABCD nội tiếp đường tròn đường kính AB. Biết rằng các cặp đường thẳng AB, CD cắt nhau tại E và AD, BC cắt nhau tại F. Hai đường chéo AC và BD cắt nhau tại M. Gọi H là hình chiếu vuông góc của M lên đường thẳng AB. Hai đường thẳng CH và BD cắt nhau tại N. a) Chứng minh rằng (DB/DM) · (NM/NB) = 1. b) Hai đường tròn ngoại tiếp các tam giác BCE và CDF cắt nhau tại điểm thứ hai là L. Chứng minh rằng ba điểm E, F, L thẳng hàng."
+    },
+    {
+      "id": "cau-14",
+      "tier": 5,
+      "text": "Cho đường tròn (O) đường kính AB. Trên đường tròn lấy điểm D khác A và góc DAB = 60 độ. Trên đường kính AB lấy điểm C (C khác A, B) và kẻ CH vuông góc với AD tại H. Phân giác trong của góc DAB cắt đường tròn tại E và cắt CH tại F. Đường thẳng DF cắt đường tròn tại điểm thứ hai N. a) Chứng minh rằng tứ giác AFCN nội tiếp đường tròn và ba điểm N, C, E thẳng hàng. b) Cho AD = BC, chứng minh rằng DN đi qua trung điểm của AC."
     }
   ]
 }

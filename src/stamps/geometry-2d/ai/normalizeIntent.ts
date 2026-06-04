@@ -35,12 +35,15 @@ export function normalizeIntents(
   });
 }
 
-// tangentAt cần `through` (điểm trên đường tròn). LLM hay nhầm dùng `from`
-// (field của tangentFromExt, dành cho điểm NGOÀI đường tròn). Builder enforce
-// strict → throw. Fix: swap field khi pattern match rõ ràng.
+// Builder enforce strict field per kind. LLM nhầm field giữa các kind cùng
+// schema (through/from/to/circle/which đều optional). Fix: swap field khi
+// pattern rõ ràng (no ambiguity).
 //
-// Ngược lại: tangentFromExt cần `from` nhưng nếu LLM dùng `through` → defensive
-// swap.
+// Rules:
+//   - tangentAt cần `through` (điểm trên đường tròn). Nếu LLM dùng `from` → swap.
+//   - tangentFromExt cần `from` (điểm ngoài). Nếu LLM dùng `through` → swap.
+//   - perpThrough / parallelThrough cần `through` (điểm) + `to` (line).
+//     Nếu LLM dùng `from` thay `through` → swap.
 function normalizeLine(intent: DrawLineIntentT): DrawLineIntentT {
   if (intent.kind === 'tangentAt' && intent.from && !intent.through) {
     const { from, ...rest } = intent;
@@ -49,6 +52,14 @@ function normalizeLine(intent: DrawLineIntentT): DrawLineIntentT {
   if (intent.kind === 'tangentFromExt' && intent.through && !intent.from) {
     const { through, ...rest } = intent;
     return { ...rest, from: through };
+  }
+  if (
+    (intent.kind === 'perpThrough' || intent.kind === 'parallelThrough') &&
+    intent.from &&
+    !intent.through
+  ) {
+    const { from, ...rest } = intent;
+    return { ...rest, through: from };
   }
   return intent;
 }
