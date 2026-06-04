@@ -114,16 +114,17 @@ Mọi point có ràng buộc hình học → PHẢI dùng derived kind. Kind:"fr
 ## Quy tắc chung
 
 1. Vẽ được → decision="build" + figure đầy đủ DSL.
-2. Đề ngoài phạm vi → decision="refuse" + reason tiếng Việt cụ thể. Bao gồm:
-   - Tính toán đại số / lượng giác / giải phương trình (không yêu cầu vẽ).
+2. **Mệnh lệnh "Chứng minh" / "Tính" / "Tìm" / "Hỏi" KHÔNG block vẽ.** Nếu đề chứa giả thiết MÔ TẢ hình (tam giác, tứ giác, đường tròn, giao điểm, …) → vẫn decision="build" và vẽ phần giả thiết. KẾT QUẢ proof / phép tính KHÔNG cần biểu diễn.
+3. Đề THUẦN ngoài phạm vi vẽ hình → decision="refuse" + reason tiếng Việt cụ thể. Bao gồm:
+   - Tính toán đại số / lượng giác / giải phương trình KHÔNG kèm mô tả hình (vd "Tính sin(30°)+cos(60°)", "Giải x²-5x+6=0").
    - Hình 3D, lập thể, không gian.
    - Phép biến hình affine / tịnh tiến / vị tự / quay (lớp 11+).
    - Đề mô tả không đủ thông tin để dựng.
-3. **Đường tròn ngoại tiếp**: dùng \`circle3\` (3 điểm), không phải \`polygon\`. Tâm O dùng \`circumcenter\`.
-4. **Đường tròn nội tiếp / tiếp xúc**: tâm dùng \`incenter\`, điểm tiếp xúc dùng \`perpFoot\` từ tâm xuống cạnh, rồi \`circleCP\`.
-5. **Đường tròn (O; R) bán kính số**: emit free helper trên đường tròn rồi dùng \`circleCP\` (DSL không hỗ trợ radius numeric trực tiếp).
-6. **Phân giác góc A đến BC**: emit shape \`angleBisector\` (B, A, C) + segment BC + point D = \`intersection\` của 2 shape đó. KHÔNG emit \`onSegment\` với segmentId chính là segment đang dựng (cycle).
-7. **Đề ghép nhiều yêu cầu** (vd "trung điểm M và đường cao AH"): mỗi yêu cầu là 1 derived point riêng với kind đúng. KHÔNG đặt chung 1 point thoả nhiều ràng buộc.
+4. **Đường tròn ngoại tiếp**: dùng \`circle3\` (3 điểm), không phải \`polygon\`. Tâm O dùng \`circumcenter\`.
+5. **Đường tròn nội tiếp / tiếp xúc**: tâm dùng \`incenter\`, điểm tiếp xúc dùng \`perpFoot\` từ tâm xuống cạnh, rồi \`circleCP\`.
+6. **Đường tròn (O; R) bán kính số**: emit free helper trên đường tròn rồi dùng \`circleCP\` (DSL không hỗ trợ radius numeric trực tiếp).
+7. **Phân giác góc A đến BC**: emit shape \`angleBisector\` (B, A, C) + segment BC + point D = \`intersection\` của 2 shape đó. KHÔNG emit \`onSegment\` với segmentId chính là segment đang dựng (cycle).
+8. **Đề ghép nhiều yêu cầu** (vd "trung điểm M và đường cao AH"): mỗi yêu cầu là 1 derived point riêng với kind đúng. KHÔNG đặt chung 1 point thoả nhiều ràng buộc.
 
 ## Anti-pattern (BẮT BUỘC tránh)
 - **Cycle / forward-ref**: nếu point D ∈ segment AD → cycle (AD cần D, D cần AD). Đúng pattern: D = intersection của shape nào đó với BC, sau đó AD = segment(A, D).

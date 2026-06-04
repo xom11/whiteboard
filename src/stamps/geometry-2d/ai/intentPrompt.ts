@@ -137,7 +137,23 @@ const FIXTURES: IntentFixture[] = [
       { op: 'add-point', name: 'O', constraint: { kind: 'intersection', of: ['AC', 'BD'] } },
     ],
   },
-  // Refuse examples — đa dạng
+  // Build examples — đề có MỆNH LỆNH proof/tính NHƯNG mô tả hình → vẫn build
+  {
+    problem: 'Cho tam giác ABC vuông tại A. Chứng minh rằng AB² + AC² = BC².',
+    intents: [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'right-at-A' },
+    ],
+  },
+  {
+    problem: 'Cho tứ giác ABCD nội tiếp (O). Chứng minh rằng AC.BD = AB.CD + AD.BC.',
+    intents: [
+      { op: 'draw-shape', shape: 'quadrilateral', labels: ['A', 'B', 'C', 'D'], variant: 'any' },
+      { op: 'draw-circle', name: 'O', spec: 'through3', points: ['A', 'B', 'C'] },
+      { op: 'connect', from: 'A', to: 'C', style: 'segment' },
+      { op: 'connect', from: 'B', to: 'D', style: 'segment' },
+    ],
+  },
+  // Refuse examples — đề THUẦN tính / KHÔNG mô tả hình hình học
   {
     problem: 'Tính sin(30°) + cos(60°).',
     intents: [],
@@ -198,6 +214,8 @@ hoặc
 5. **KHÔNG bịa.** Nếu đề mơ hồ hoặc không thuộc hình học 2D phổ thông → decision=refuse.
 
 6. **Đặt tên draw-circle**: nếu đề có ký hiệu rõ ràng "(X)" (vd "(O)", "(I)", "(I1)") → dùng đúng ký hiệu đó làm name. KHÔNG thêm hậu tố như "Ic", "In", "Oc". Nếu đề không có ký hiệu thì name tự do (preprocessor xử lý mọi collision).
+
+7. **Mệnh lệnh "Chứng minh" / "Tính" / "Tìm" / "Hỏi" KHÔNG ảnh hưởng quyết định build/refuse.** Quyết định CHỈ dựa vào việc đề có MÔ TẢ hình vẽ được hay không. Nếu đề bắt đầu / kết thúc bằng "Chứng minh rằng …" hoặc "Tính …" nhưng phần MÔ TẢ (giả thiết) có hình (tam giác, tứ giác, đường tròn, giao điểm …) → vẫn decision=build, vẽ phần giả thiết. KẾT QUẢ proof / phép tính KHÔNG cần biểu diễn. Chỉ refuse khi đề THUẦN tính / đại số không kèm mô tả hình (vd "Tính sin(30°)+cos(60°)", "Giải x²-5x+6=0").
 
 ## Variant enum (chỉ dùng giá trị này)
 - triangle: any | equilateral | isoceles-AB | isoceles-BC | isoceles-CA | right-at-A | right-at-B | right-at-C

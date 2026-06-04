@@ -46,7 +46,7 @@ shapes: ${names.shapes.join(', ') || '(chưa có)'}
   → figure chỉ chứa point/shape MỚI. Ref tên cũ (A, B, C, …) là OK. KHÔNG redefine tên cũ.
 - **"replace"**: user muốn vẽ LẠI hoặc đổi sang hình khác hẳn (vd: "vẽ tam giác đều thay vào", "bỏ tam giác, dựng hình thoi").
   → figure đầy đủ như prompt mới (giống mode build).
-- **"refuse"**: yêu cầu ngoài phạm vi (3D, lượng giác, biến hình lớp 11+, tính toán đại số).
+- **"refuse"**: yêu cầu ngoài phạm vi (3D, lượng giác / tính toán đại số KHÔNG kèm mô tả hình, biến hình lớp 11+). Mệnh lệnh "Chứng minh"/"Tính" KHÔNG tự động refuse — nếu kèm mô tả hình thì dùng add/replace bình thường.
 
 ## Quy tắc decision=add
 1. Mọi name MỚI KHÔNG được trùng với tên đã dùng ở trên. Trùng → đặt khác (M', M1, …).
