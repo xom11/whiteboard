@@ -171,6 +171,48 @@ describe('resolveCircleNameCollisions', () => {
     expect(result).toEqual(intents);
   });
 
+  it('cau-09 case: line ref "AO" → detect O collision dù không có connect tới O', () => {
+    // Bug: cau-09 saved intents có
+    //   add-point D secondIntersection line:"AO" circle:"O"
+    // nhưng KHÔNG có connect from:A to:O. Trước fix, collectPointRefs bỏ qua
+    // 2-letter line refs → không detect O collision → circle giữ tên "O" →
+    // transpile throw "id not assigned for AO".
+    const intents: IntentT[] = [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'draw-circle', name: 'O', spec: 'through3', points: ['A', 'B', 'C'] },
+      {
+        op: 'add-point',
+        name: 'D',
+        constraint: { kind: 'secondIntersection', line: 'AO', circle: 'O', other: 'A' },
+      },
+    ];
+    const result = resolveCircleNameCollisions(intents);
+    // Phải inject add-point O circumcenter + rename circle
+    const oPoint = result.find((i) => i.op === 'add-point' && i.name === 'O');
+    expect(oPoint).toBeDefined();
+    const circle = result.find((i) => i.op === 'draw-circle');
+    expect(circle?.name).toBe('O_c');
+    // Circle ref trong secondIntersection rewrite sang O_c
+    const dIntent = result.find((i) => i.op === 'add-point' && i.name === 'D');
+    expect(dIntent?.constraint).toMatchObject({ circle: 'O_c' });
+  });
+
+  it('intersection.of edge refs cũng trigger collision', () => {
+    // Cau hypothetical: intersection of:["AO","BC"] với circle "O" và "B" —
+    // edge ref tách thành single chars để detect.
+    const intents: IntentT[] = [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'draw-circle', name: 'O', spec: 'through3', points: ['A', 'B', 'C'] },
+      {
+        op: 'add-point',
+        name: 'X',
+        constraint: { kind: 'intersection', of: ['AO', 'BC'] },
+      },
+    ];
+    const result = resolveCircleNameCollisions(intents);
+    expect(result.find((i) => i.op === 'add-point' && i.name === 'O')).toBeDefined();
+  });
+
   it('point name created bởi draw-shape labels → treated as existing point', () => {
     // Nếu Claude emit draw-shape MNPQ rồi draw-circle M (trùng tên), connect X→M
     const intents: IntentT[] = [

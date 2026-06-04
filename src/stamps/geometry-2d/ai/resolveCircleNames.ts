@@ -84,6 +84,15 @@ function makeCenterIntent(circle: Extract<IntentT, { op: 'draw-circle' }>): Inte
 
 function collectPointRefs(intents: readonly IntentT[]): Set<string> {
   const refs = new Set<string>();
+  // 2-letter line/edge ref (vd "BC", "AO") → tách thành single-letter chars.
+  // Cần thiết để detect collision khi line ref CHỨA tên circle (vd `line:"AO"`
+  // + circle name "O" → O dùng như point ở "AO", phải inject center O).
+  const addEdgeRef = (ref: string) => {
+    if (/^[A-Za-z]{2}$/.test(ref)) {
+      refs.add(ref[0]);
+      refs.add(ref[1]);
+    }
+  };
   for (const i of intents) {
     if (i.op === 'connect') {
       refs.add(i.from);
@@ -94,13 +103,19 @@ function collectPointRefs(intents: readonly IntentT[]): Set<string> {
         for (const v of c.of) refs.add(v);
       } else if (c.kind === 'perpFoot' || c.kind === 'angleBisectorFoot') {
         refs.add(c.from);
+        addEdgeRef(c.onLine);
       } else if (c.kind === 'tangentPoint') {
         refs.add(c.from);
       } else if (c.kind === 'secondIntersection') {
         refs.add(c.other);
+        addEdgeRef(c.line);
+      } else if (c.kind === 'tangencyPoint') {
+        addEdgeRef(c.onLine);
+      } else if (c.kind === 'midpoint' || c.kind === 'onSegment') {
+        addEdgeRef(c.of);
+      } else if (c.kind === 'intersection') {
+        for (const r of c.of) addEdgeRef(r);
       }
-      // Note: intersection.of và midpoint.of / onSegment.of là edge/line name (multi-char) —
-      // không phải single point ref, bỏ qua.
     } else if (i.op === 'draw-circle') {
       if (i.center) refs.add(i.center);
       if (i.through) refs.add(i.through);
@@ -109,7 +124,8 @@ function collectPointRefs(intents: readonly IntentT[]): Set<string> {
     } else if (i.op === 'draw-line') {
       if (i.through) refs.add(i.through);
       if (i.from) refs.add(i.from);
-      // i.to là line ref, i.circle là circle ref — skip.
+      if (i.to) addEdgeRef(i.to);
+      // i.circle là circle ref — skip.
     } else if (i.op === 'mark-shape') {
       for (const l of i.labels) refs.add(l);
     }
