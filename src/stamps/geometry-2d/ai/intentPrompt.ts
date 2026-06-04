@@ -153,6 +153,33 @@ const FIXTURES: IntentFixture[] = [
       { op: 'connect', from: 'B', to: 'D', style: 'segment' },
     ],
   },
+  // draw-line: perpThrough — đường vuông góc với LINE, đi qua POINT
+  {
+    problem: 'Tam giác ABC. Vẽ đường thẳng d vuông góc với AB tại B.',
+    intents: [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'draw-line', name: 'd', kind: 'perpThrough', through: 'B', to: 'AB' },
+    ],
+  },
+  // draw-line: tangentAt — tiếp tuyến TẠI POINT trên CIRCLE
+  {
+    problem: 'Tam giác ABC nội tiếp đường tròn (O). Vẽ tiếp tuyến tại A của (O).',
+    intents: [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'draw-circle', name: 'O', spec: 'through3', points: ['A', 'B', 'C'] },
+      { op: 'draw-line', name: 'tA', kind: 'tangentAt', through: 'A', circle: 'O' },
+    ],
+  },
+  // draw-line: tangentFromExt — tiếp tuyến TỪ POINT ngoài CIRCLE (chọn nhánh)
+  {
+    problem: 'Cho đường tròn (O) và điểm P ngoài đường tròn. Vẽ hai tiếp tuyến PT₁ và PT₂ từ P tới (O).',
+    intents: [
+      { op: 'draw-circle', name: 'O', spec: 'centerRadius', center: 'O', radius: 3 },
+      { op: 'add-point', name: 'P', constraint: { kind: 'free' } },
+      { op: 'draw-line', name: 'PT1', kind: 'tangentFromExt', from: 'P', circle: 'O', which: 'first' },
+      { op: 'draw-line', name: 'PT2', kind: 'tangentFromExt', from: 'P', circle: 'O', which: 'second' },
+    ],
+  },
   // Refuse examples — đề THUẦN tính / KHÔNG mô tả hình hình học
   {
     problem: 'Tính sin(30°) + cos(60°).',
@@ -235,6 +262,37 @@ midpoint, perpFoot, centroid, circumcenter, incenter, orthocenter, intersection,
 
 ## Style enum (cho connect)
 segment, line, ray, perpBisector
+
+## draw-line — phân biệt field theo kind (RẤT QUAN TRỌNG, dễ sai)
+
+draw-line dùng cho 4 loại đường thẳng đặc biệt. Mỗi kind có schema field khác
+nhau — đặt đúng field, KHÔNG bỏ field bắt buộc, KHÔNG nhầm POINT với LINE:
+
+- **perpThrough** — đường vuông góc với một đường thẳng, đi qua một điểm.
+  Fields: \`through\` (POINT), \`to\` (LINE — ≥2 chữ, vd "AB", "BC").
+  - Ví dụ: "Đường vuông góc với AB tại B" → \`{kind:"perpThrough", through:"B", to:"AB"}\`.
+  - **SAI**: \`{through:"B", to:"A"}\` (A là 1 chữ → POINT, không phải LINE).
+  - Nếu đề chỉ nói "vuông góc với AB" thì \`to:"AB"\` (2 chữ); KHÔNG đặt \`to:"A"\` hay \`to:"B"\`.
+
+- **parallelThrough** — đường song song với LINE, đi qua POINT. Field giống
+  perpThrough: \`through\` (POINT), \`to\` (LINE 2+ chữ).
+  - Ví dụ: "qua M kẻ đường song song với BC" → \`{kind:"parallelThrough", through:"M", to:"BC"}\`.
+
+- **tangentAt** — tiếp tuyến TẠI điểm trên đường tròn.
+  Fields: \`through\` (POINT, phải nằm TRÊN circle), \`circle\` (CIRCLE name).
+  - Ví dụ: "Tiếp tuyến tại A của (O)" → \`{kind:"tangentAt", through:"A", circle:"O"}\`.
+  - KHÔNG dùng \`from\` ở đây — chỉ tangentFromExt mới dùng \`from\`.
+
+- **tangentFromExt** — tiếp tuyến TỪ điểm NGOÀI đường tròn (có 2 nhánh).
+  Fields: \`from\` (POINT, ngoài circle), \`circle\` (CIRCLE), \`which\` ('first'|'second'|'both').
+  - Ví dụ: "Vẽ tiếp tuyến PA và PB từ P" → 2 intent với \`which:"first"\` và \`which:"second"\`.
+
+## Quy ước LINE name
+- 2 ký tự viết liền = SEGMENT/LINE qua 2 điểm: "AB", "BC", "MN" → \`to: "AB"\`.
+- 1 ký tự = POINT, KHÔNG dùng cho field \`to\` của perpThrough/parallelThrough.
+- Nếu đề chỉ nêu 2 điểm và bạn cần đường thẳng qua chúng, gọi nó là "AB"
+  (alphabet order canonical), KHÔNG cần emit connect intent riêng — builder
+  tự suy ra đoạn.
 
 ---
 
