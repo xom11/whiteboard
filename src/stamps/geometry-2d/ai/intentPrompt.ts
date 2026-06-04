@@ -199,8 +199,12 @@ hoặc
 
 2. **Shape variant phải khớp đề:**
    - "đều" → variant: "equilateral"
-   - "vuông tại A" → variant: "right-at-A" (đổi B/C nếu đề nói khác)
-   - "cân tại A" → variant: "isoceles-BC" (BC là đáy)
+   - "vuông tại X" → variant: "right-at-X" (X là label đầu tiên trong labels[] khớp đề)
+   - "cân tại X" — X là ĐỈNH CÂN, base là cạnh đối diện:
+       * "tam giác ABC cân tại A" → variant: "isoceles-BC" (BC là đáy, A là apex)
+       * "tam giác MNP cân tại N" → variant: "isoceles-CA" (CA là đáy theo canonical position)
+       * Rule: variant đặt tên theo position trong labels[], KHÔNG phải tên literal.
+         apex ở position 0 → "isoceles-BC"; position 1 → "isoceles-CA"; position 2 → "isoceles-AB".
    - không có từ khoá đặc biệt → variant: "any"
 
 3. **Labels phải đúng đề:** "tam giác MNP" → labels: ["M","N","P"], không tự đổi sang ABC.
@@ -220,7 +224,7 @@ hoặc
 ## Variant enum (chỉ dùng giá trị này)
 - triangle: any | equilateral | isoceles-AB | isoceles-BC | isoceles-CA | right-at-A | right-at-B | right-at-C
 - square: standard
-- rectangle: wide | tall
+- rectangle: standard (default) | wide | tall
 - rhombus: standard
 - trapezoid: right | isoceles | general
 - parallelogram: standard
