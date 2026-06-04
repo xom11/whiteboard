@@ -171,6 +171,61 @@ describe('resolveCircleNameCollisions', () => {
     expect(result).toEqual(intents);
   });
 
+  it('cau-03 regression: centerThrough với center===name → inject free point + rename', () => {
+    // AI gen: draw-circle name=O spec=centerThrough center=O through=C — đặt
+    // cùng letter cho circle name và center point ("(O)" notation Việt).
+    // add-point K secondIntersection line:"OC" — Item 4 edge-extract trigger
+    // collision detection. Phải inject add-point O free + rename circle.
+    const intents: IntentT[] = [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'draw-circle', name: 'O', spec: 'centerThrough', center: 'O', through: 'C' },
+      {
+        op: 'add-point',
+        name: 'K',
+        constraint: { kind: 'secondIntersection', line: 'OC', circle: 'O', other: 'C' },
+      },
+    ];
+    const result = resolveCircleNameCollisions(intents);
+    const oPoint = result.find((i) => i.op === 'add-point' && i.name === 'O');
+    expect(oPoint).toBeDefined();
+    expect(oPoint!.constraint).toMatchObject({ kind: 'free' });
+    expect(result.find((i) => i.op === 'draw-circle')?.name).toBe('O_c');
+  });
+
+  it('centerRadius với center===name → cùng cách', () => {
+    const intents: IntentT[] = [
+      { op: 'draw-circle', name: 'O', spec: 'centerRadius', center: 'O', radius: 3 },
+      {
+        op: 'add-point',
+        name: 'P',
+        constraint: { kind: 'secondIntersection', line: 'OP', circle: 'O', other: 'O' },
+      },
+    ];
+    const result = resolveCircleNameCollisions(intents);
+    const oPoint = result.find((i) => i.op === 'add-point' && i.name === 'O');
+    expect(oPoint).toBeDefined();
+    expect(oPoint!.constraint).toMatchObject({ kind: 'free' });
+  });
+
+  it('centerThrough với center !== name → KHÔNG inject (caller tự lo)', () => {
+    // Vd circle name="W" center="P" (P phải được define ở chỗ khác). Edge ref
+    // "WP" có thể trigger rename W→W_c nhưng P là explicit ref, KHÔNG cần inject.
+    const intents: IntentT[] = [
+      { op: 'add-point', name: 'P', constraint: { kind: 'free' } },
+      { op: 'draw-circle', name: 'W', spec: 'centerThrough', center: 'P', through: 'A' },
+      {
+        op: 'add-point',
+        name: 'X',
+        constraint: { kind: 'secondIntersection', line: 'WA', circle: 'W', other: 'A' },
+      },
+    ];
+    const result = resolveCircleNameCollisions(intents);
+    // Chỉ inject point khi center===name. Ở đây center=P khác name=W.
+    const wPoint = result.find((i) => i.op === 'add-point' && i.name === 'W');
+    expect(wPoint).toBeUndefined();
+    expect(result.find((i) => i.op === 'draw-circle')?.name).toBe('W_c');
+  });
+
   it('cau-09 case: line ref "AO" → detect O collision dù không có connect tới O', () => {
     // Bug: cau-09 saved intents có
     //   add-point D secondIntersection line:"AO" circle:"O"

@@ -77,8 +77,20 @@ function makeCenterIntent(circle: Extract<IntentT, { op: 'draw-circle' }>): Inte
       constraint: { kind: 'incenter', of: circle.triangle },
     };
   }
-  // centerRadius / centerThrough: center là explicit reference → caller phải đảm bảo
-  // point tồn tại; preprocessor không tự derive.
+  // centerThrough/centerRadius: AI nhiều khi đặt `center === name` (vd `(O)` =
+  // circle "O" có center "O") — cần inject `add-point name=center kind=free`
+  // để point tồn tại sau khi circle được rename. Trường hợp center khác name
+  // thì caller phải đảm bảo point center đã tồn tại (preprocessor không derive).
+  if (
+    (circle.spec === 'centerThrough' || circle.spec === 'centerRadius') &&
+    circle.center === circle.name
+  ) {
+    return {
+      op: 'add-point',
+      name: circle.name,
+      constraint: { kind: 'free' },
+    };
+  }
   return null;
 }
 
