@@ -60,10 +60,63 @@ export function containerDimsForBbox(bbox: [number, number, number, number]): { 
   return { width: Math.round(width), height: Math.round(height) };
 }
 
+/**
+ * Auto-fit board bbox sau khi entities đã render. Iterate point/circle elements
+ * trên board để tính min/max x,y, thêm padding 15%, gọi setBoundingBox.
+ *
+ * Áp dụng khi state.meta.view.bbox còn là DEFAULT_VIEW_2D — i.e. AI-generated
+ * figure chưa được editor zoom/pan. Stamp đã edit có bbox riêng của user, giữ
+ * nguyên (consumer expectation: re-render khớp với view editor lúc save).
+ *
+ * Aspect ratio container đã được set theo bbox ban đầu; setBoundingBox với aspect
+ * khác sẽ được JSXGraph adjust tự động (keepAspectRatio:true) → letterbox.
+ */
+function autoFitBboxFromBoard(board: any, padPct = 0.15): void {
+  const objs = board?.objectsList;
+  if (!Array.isArray(objs)) return;
+  let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
+  let count = 0;
+  for (const o of objs) {
+    // OBJECT_CLASS_POINT = 1
+    if (o?.elementClass === 1 && typeof o.X === 'function' && typeof o.Y === 'function') {
+      const x = o.X(), y = o.Y();
+      if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+      xmin = Math.min(xmin, x); xmax = Math.max(xmax, x);
+      ymin = Math.min(ymin, y); ymax = Math.max(ymax, y);
+      count++;
+    } else if (o?.elementClass === 3 && o.center?.X && typeof o.Radius === 'function') {
+      // OBJECT_CLASS_CIRCLE — include bounds [cx ± r, cy ± r]
+      const cx = o.center.X(), cy = o.center.Y(), r = o.Radius();
+      if (!Number.isFinite(cx) || !Number.isFinite(cy) || !Number.isFinite(r)) continue;
+      xmin = Math.min(xmin, cx - r); xmax = Math.max(xmax, cx + r);
+      ymin = Math.min(ymin, cy - r); ymax = Math.max(ymax, cy + r);
+      count++;
+    }
+  }
+  if (count < 2 || !Number.isFinite(xmin)) return;
+  let w = xmax - xmin, h = ymax - ymin;
+  // Tránh degenerate (mọi điểm trùng / collinear hoàn toàn): floor 1 unit.
+  if (w < 0.5) { const cx = (xmin + xmax) / 2; xmin = cx - 0.5; xmax = cx + 0.5; w = 1; }
+  if (h < 0.5) { const cy = (ymin + ymax) / 2; ymin = cy - 0.5; ymax = cy + 0.5; h = 1; }
+  const padX = w * padPct, padY = h * padPct;
+  // JSXGraph bbox: [xmin, ymax, xmax, ymin] (y reversed)
+  try {
+    board.setBoundingBox([xmin - padX, ymax + padY, xmax + padX, ymin - padY]);
+    if (typeof board.update === 'function') board.update();
+    if (typeof board.fullUpdate === 'function') board.fullUpdate();
+  } catch { /* ignore */ }
+}
+
+function isDefaultBbox(bbox: readonly number[]): boolean {
+  const d = DEFAULT_VIEW_2D.bbox;
+  return bbox.length === 4 && bbox[0] === d[0] && bbox[1] === d[1] && bbox[2] === d[2] && bbox[3] === d[3];
+}
+
 export async function renderGeometrySvgFromState(jsonState: string): Promise<string> {
   const state = deserializeBoard(jsonState);
   const view = state.meta.domain === '2d' ? state.meta.view : DEFAULT_VIEW_2D;
   const bbox = view.bbox as [number, number, number, number];
+  const shouldAutoFit = isDefaultBbox(bbox);
   // Stamps inserted vào Excalidraw canvas → luôn dùng light palette.
   // Excalidraw's THEME_FILTER tự đảo nét trong dark mode.
   const palette = paletteFor(false);
@@ -94,7 +147,9 @@ export async function renderGeometrySvgFromState(jsonState: string): Promise<str
     },
     setup: (board) => {
       const store = createStore(state);
-      return new JxgRenderer(store, board);
+      const renderer = new JxgRenderer(store, board);
+      if (shouldAutoFit) autoFitBboxFromBoard(board);
+      return renderer;
     },
   });
   return svgString;
