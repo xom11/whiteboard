@@ -14,12 +14,15 @@ import type { IntentT, DrawShapeIntentT } from './intent';
 
 const CAN_TAI_RE = /c[aâ]n\s+t[aạ]i\s+([A-Z])/i;
 const ISOCELES_AT_RE = /isoceles\s+(?:at|with\s+apex)\s+([A-Z])/i;
+const TALL_RECT_RE = /(cao|hẹp|thin|tall|portrait)/i;
 
 /**
  * Apply variant normalization. Returns new array; input unmodified.
  *
  * Rules áp dụng (chỉ override khi MATCH chắc; otherwise pass-through):
  *   - triangle + "cân tại X" → variant theo position của X trong labels
+ *   - rectangle: default 'standard' (giữ 'tall' khi đề có "cao"/"hẹp")
+ *   - square|rhombus|parallelogram: ép 'standard' (chỉ 1 variant hợp lệ)
  */
 export function normalizeIntents(
   intents: readonly IntentT[],
@@ -35,9 +38,29 @@ function normalizeShape(intent: DrawShapeIntentT, problem: string): IntentT {
   switch (intent.shape) {
     case 'triangle':
       return normalizeTriangle(intent, problem);
+    case 'rectangle':
+      return normalizeRectangle(intent, problem);
+    case 'square':
+    case 'rhombus':
+    case 'parallelogram':
+      return forceStandard(intent);
     default:
       return intent;
   }
+}
+
+function normalizeRectangle(
+  intent: DrawShapeIntentT,
+  problem: string,
+): DrawShapeIntentT {
+  if (intent.variant === 'tall' && TALL_RECT_RE.test(problem)) return intent;
+  if (intent.variant === 'standard') return intent;
+  return { ...intent, variant: 'standard' };
+}
+
+function forceStandard(intent: DrawShapeIntentT): DrawShapeIntentT {
+  if (intent.variant === 'standard') return intent;
+  return { ...intent, variant: 'standard' };
 }
 
 function normalizeTriangle(

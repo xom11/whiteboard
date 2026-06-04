@@ -41,3 +41,43 @@ describe('normalizeIntents — triangle isoceles label position', () => {
     expect((out[0] as { variant: string }).variant).toBe('equilateral');
   });
 });
+
+describe('normalizeIntents — quad shapes default to standard', () => {
+  const quad = (
+    shape: 'rectangle' | 'square' | 'rhombus' | 'parallelogram',
+    variant: string,
+  ): IntentT => ({
+    op: 'draw-shape',
+    shape,
+    labels: ['A', 'B', 'C', 'D'],
+    variant: variant as never,
+  });
+
+  it('rectangle "wide"/"tall" → "standard" khi đề không nói "cao"/"hẹp"', () => {
+    const out = normalizeIntents([quad('rectangle', 'wide')], 'Hình chữ nhật ABCD.');
+    expect((out[0] as { variant: string }).variant).toBe('standard');
+
+    const out2 = normalizeIntents([quad('rectangle', 'tall')], 'Hình chữ nhật ABCD.');
+    expect((out2[0] as { variant: string }).variant).toBe('standard');
+  });
+
+  it('rectangle giữ "tall" khi đề có "cao"', () => {
+    const out = normalizeIntents([quad('rectangle', 'tall')], 'Hình chữ nhật cao ABCD.');
+    expect((out[0] as { variant: string }).variant).toBe('tall');
+  });
+
+  it('square emit "any" → ép "standard"', () => {
+    const out = normalizeIntents([quad('square', 'any')], 'Hình vuông ABCD.');
+    expect((out[0] as { variant: string }).variant).toBe('standard');
+  });
+
+  it('rhombus emit lung tung → ép "standard"', () => {
+    const out = normalizeIntents([quad('rhombus', 'isoceles')], 'Hình thoi ABCD.');
+    expect((out[0] as { variant: string }).variant).toBe('standard');
+  });
+
+  it('parallelogram emit lung tung → ép "standard"', () => {
+    const out = normalizeIntents([quad('parallelogram', 'any')], 'Hình bình hành ABCD.');
+    expect((out[0] as { variant: string }).variant).toBe('standard');
+  });
+});
