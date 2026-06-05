@@ -99,6 +99,30 @@ qlmanage -t -s 800 -o /tmp tmp/eval-pdf/cau-08.png
 npx jest --no-coverage
 ```
 
+## Kết quả thực hiện 2026-06-05
+
+**Reframe quan trọng**: investigation phát hiện root cause thật KHÁC plan. 3 DSL point kind
+(`circleIntersection`, `secondIntersection`, `tangencyPoint`) thêm ở v0.25 **chưa bao giờ được
+wire vào scene renderer** (`point.ts`) → fallback `board.create('point',[0,0])` → mọi điểm các
+kind này sụp về gốc. Blast radius: secondIntersection 9/14 bài, circleIntersection 5/14. Đây là
+nguyên nhân thật của cau-08 NaN cascade VÀ phần lớn "visual mixed" (Item 3 plan đoán "disjoint
+circles" chỉ đúng 1 phần).
+
+**Shipped (TDD, +30 unit test, 1678 green, typecheck clean):**
+- **Item 0 (mới, ưu tiên cao nhất)** — wire 3 renderer (`point.ts`+`2d-constraint.ts`+`constraintRefs2D`
+  +`dsl/serialize.ts`): circleIntersection→`intersection`, secondIntersection→`otherintersection`,
+  tangencyPoint→`perpendicularpoint`. Fix (0,0) collapse 9+ bài.
+- **Item 3** — `repairCircleIntersections.ts`: dời circleCR center free khi tiếp xúc/disjoint
+  → cắt 2 điểm (cau-08).
+- **Item 1A** — `autoFitBbox.ts` `computeAutoFitBbox(points,circles,aspect)`: Tukey IQR trim
+  outlier point + circle-gate (loại giant `r>1.0×clusterDiag`, giữ circle thường) + expand
+  aspect → **circle tròn** (fix bug ellipse: `setBoundingBox` thiếu keepaspectratio).
+- **Item 2A** — `labelLayout.ts` `radialLabelOffsets`: đẩy label ra xa centroid. Giảm chồng moderate.
+- **Item 4** — KHÔNG cần fix riêng: "A missing/ô vuông" là artifact của (0,0) collapse, Item 0 fix luôn.
+
+**Còn lại (ngoài scope, cần force-directed candidate B):** tight-cluster label (cau-12 N/K/M/A
+trong 0.35 unit = points distinct, cau-14/02/11 severe). cau-04 incircle AI model sai → lỗi content.
+
 ## Liên quan
 
 - Memory: `project_ai_pdf_eval_session.md` (cập nhật session 2026-06-04)
