@@ -7,6 +7,7 @@
 // (vd connect to point chưa tồn tại) thay vì silent skip.
 
 import type { DslInputT, DslPointT, DslShapeT } from '../dsl/schema';
+import { repairCircleIntersections } from './repairCircleIntersections';
 import type {
   IntentT,
   DrawShapeIntentT,
@@ -517,6 +518,9 @@ export function intentsToDsl(intents: readonly IntentT[]): DslInputT {
       case 'mark-shape': handleMarkShape(s, intent); break;
     }
   }
+  // Geometric repair: đảm bảo circle dùng cho circleIntersection thực sự cắt
+  // nhau 2 điểm (dời center auto-inject nếu tiếp xúc/rời nhau).
+  repairCircleIntersections(s.points, s.shapes);
   return {
     version: 1,
     points: s.points,

@@ -362,6 +362,34 @@ const def: KindDef<PointAttrs> = {
       inter._helpers = [mid, thales];
       return inter;
     }
+    if (c.kind === 'circleIntersection') {
+      // Giao 2 đường tròn — JSXGraph 'intersection' nhận branch 0/1.
+
+      const k1: any = ctx.resolveRef(c.c1);
+
+      const k2: any = ctx.resolveRef(c.c2);
+      return board.create('intersection', [k1, k2, c.which], opts);
+    }
+    if (c.kind === 'secondIntersection') {
+      // Giao điểm thứ hai của line ∩ circle, biết giao điểm thứ nhất `other`.
+      // JSXGraph 'otherintersection' nhận [curve, line, knownPoint].
+
+      const line: any = ctx.resolveRef(c.line);
+
+      const circle: any = ctx.resolveRef(c.circle);
+
+      const other: any = ctx.resolveRef(c.other);
+      return board.create('otherintersection', [circle, line, other], opts);
+    }
+    if (c.kind === 'tangencyPoint') {
+      // Tiếp điểm = chân vuông góc hạ từ tâm đường tròn xuống đường tiếp tuyến.
+
+      const circle: any = ctx.resolveRef(c.circle);
+
+      const line: any = ctx.resolveRef(c.onLine);
+      const O = circle?.center ?? circle?.midpoint ?? circle;
+      return board.create('perpendicularpoint', [line, O], opts);
+    }
     return board.create('point', [0, 0], opts);
   },
   /**

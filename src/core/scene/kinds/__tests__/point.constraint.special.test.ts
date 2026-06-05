@@ -28,4 +28,22 @@ describe('Constraint2D — special shape constraints', () => {
       constraintRefs2D({ kind: 'tangentPointExt', from: 'A', circle: 'k', which: 1 }),
     ).toEqual(['A', 'k']);
   });
+
+  it('circleIntersection returns c1 + c2', () => {
+    expect(
+      constraintRefs2D({ kind: 'circleIntersection', c1: 'k1', c2: 'k2', which: 0 }),
+    ).toEqual(['k1', 'k2']);
+  });
+
+  it('secondIntersection returns line + circle + other', () => {
+    expect(
+      constraintRefs2D({ kind: 'secondIntersection', line: 'l1', circle: 'k1', other: 'A' }),
+    ).toEqual(['l1', 'k1', 'A']);
+  });
+
+  it('tangencyPoint returns circle + onLine', () => {
+    expect(
+      constraintRefs2D({ kind: 'tangencyPoint', circle: 'k1', onLine: 'l1' }),
+    ).toEqual(['k1', 'l1']);
+  });
 });

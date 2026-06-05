@@ -49,7 +49,15 @@ export type Constraint2D =
   | { kind: 'onCircleAroundPoint'; center: string; radiusPoint: string; theta: number }
   // Tiếp điểm khi vẽ 2 tiếp tuyến từ điểm ngoài đường tròn.
   // `which` chọn 1 trong 2 nhánh (0 = nhánh dương theo Thales, 1 = nhánh âm).
-  | { kind: 'tangentPointExt'; from: string; circle: string; which: 0 | 1 };
+  | { kind: 'tangentPointExt'; from: string; circle: string; which: 0 | 1 }
+  // Giao điểm của 2 đường tròn (c1, c2). `which` chọn 1 trong 2 nghiệm.
+  | { kind: 'circleIntersection'; c1: string; c2: string; which: 0 | 1 }
+  // Giao điểm THỨ HAI của đường thẳng `line` với đường tròn `circle`, biết
+  // giao điểm thứ nhất là `other`.
+  | { kind: 'secondIntersection'; line: string; circle: string; other: string }
+  // Tiếp điểm của đường thẳng `onLine` (đã tiếp xúc) với đường tròn `circle`
+  // = chân vuông góc hạ từ tâm xuống đường thẳng.
+  | { kind: 'tangencyPoint'; circle: string; onLine: string };
 
 export function constraintRefs2D(c: Constraint2D): string[] {
   switch (c.kind) {
@@ -68,6 +76,9 @@ export function constraintRefs2D(c: Constraint2D): string[] {
     case 'onPerpBisector': return [c.p1, c.p2];
     case 'onCircleAroundPoint': return [c.center, c.radiusPoint];
     case 'tangentPointExt': return [c.from, c.circle];
+    case 'circleIntersection': return [c.c1, c.c2];
+    case 'secondIntersection': return [c.line, c.circle, c.other];
+    case 'tangencyPoint': return [c.circle, c.onLine];
     default: return [];
   }
 }

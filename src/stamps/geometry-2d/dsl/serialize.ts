@@ -144,6 +144,33 @@ function serializePoint(obj: SceneObject<PointAttrs>, state: State): SerializedE
       };
     }
 
+    case 'circleIntersection': {
+      const refs = resolveRefs([c.c1, c.c2], state);
+      if (!refs) return fail('unresolved-ref', `${c.c1},${c.c2}`);
+      return {
+        ok: true,
+        entity: { name: obj.label, kind: 'circleIntersection', c1: refs[0], c2: refs[1], which: c.which },
+      };
+    }
+
+    case 'secondIntersection': {
+      const refs = resolveRefs([c.line, c.circle, c.other], state);
+      if (!refs) return fail('unresolved-ref', `${c.line},${c.circle},${c.other}`);
+      return {
+        ok: true,
+        entity: { name: obj.label, kind: 'secondIntersection', line: refs[0], circle: refs[1], other: refs[2] },
+      };
+    }
+
+    case 'tangencyPoint': {
+      const refs = resolveRefs([c.circle, c.onLine], state);
+      if (!refs) return fail('unresolved-ref', `${c.circle},${c.onLine}`);
+      return {
+        ok: true,
+        entity: { name: obj.label, kind: 'tangencyPoint', circle: refs[0], onLine: refs[1] },
+      };
+    }
+
     // Out of DSL v1:
     case 'onAxis':
     case 'onPolygon':

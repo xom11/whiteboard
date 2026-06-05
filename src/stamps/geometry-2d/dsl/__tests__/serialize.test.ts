@@ -114,6 +114,44 @@ describe('serializeObject — per-kind', () => {
     });
   });
 
+  test('point.circleIntersection serializes c1/c2/which', () => {
+    const O1 = pt('p1', 'O1', { kind: 'free', x: 0, y: 0 });
+    const O2 = pt('p2', 'O2', { kind: 'free', x: 3, y: 0 });
+    const k1 = shape('c1', 'circle', 'k1', { center: 'p1', radius: 3 });
+    const k2 = shape('c2', 'circle', 'k2', { center: 'p2', radius: 3 });
+    const A = pt('p3', 'A', { kind: 'circleIntersection', c1: 'c1', c2: 'c2', which: 1 });
+    const r = serializeObject(A, makeState([O1, O2, k1, k2, A]));
+    expect(r).toEqual({
+      ok: true, entity: { name: 'A', kind: 'circleIntersection', c1: 'k1', c2: 'k2', which: 1 },
+    });
+  });
+
+  test('point.secondIntersection serializes line/circle/other', () => {
+    const A = pt('p1', 'A', { kind: 'free', x: 0, y: 0 });
+    const P = pt('p2', 'P', { kind: 'free', x: 5, y: 0 });
+    const O = pt('p3', 'O', { kind: 'free', x: 2, y: 2 });
+    const ln = shape('s1', 'segment', 'AP', { p1: 'p1', p2: 'p2' });
+    const k = shape('c1', 'circle', 'k', { center: 'p3', radius: 3 });
+    const C = pt('p4', 'C', { kind: 'secondIntersection', line: 's1', circle: 'c1', other: 'p1' });
+    const r = serializeObject(C, makeState([A, P, O, ln, k, C]));
+    expect(r).toEqual({
+      ok: true, entity: { name: 'C', kind: 'secondIntersection', line: 'AP', circle: 'k', other: 'A' },
+    });
+  });
+
+  test('point.tangencyPoint serializes circle/onLine', () => {
+    const O = pt('p1', 'O', { kind: 'free', x: 0, y: 0 });
+    const T1 = pt('p2', 'T1', { kind: 'free', x: 3, y: 0 });
+    const T2 = pt('p3', 'T2', { kind: 'free', x: 3, y: 3 });
+    const k = shape('c1', 'circle', 'k', { center: 'p1', radius: 3 });
+    const tan = shape('s1', 'segment', 'tan', { p1: 'p2', p2: 'p3' });
+    const H = pt('p4', 'H', { kind: 'tangencyPoint', circle: 'c1', onLine: 's1' });
+    const r = serializeObject(H, makeState([O, T1, T2, k, tan, H]));
+    expect(r).toEqual({
+      ok: true, entity: { name: 'H', kind: 'tangencyPoint', circle: 'k', onLine: 'tan' },
+    });
+  });
+
   test.each(['circumcenter', 'incenter', 'centroid', 'orthocenter'] as const)(
     'point.%s carries 3 vertex labels',
     (kind) => {
