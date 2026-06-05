@@ -4,6 +4,8 @@ import { createStore } from '../../core/scene';
 import { DEFAULT_VIEW_2D } from '../../core/scene/types';
 import { JxgRenderer } from '../../core/scene/render/JxgRenderer';
 import { renderJsxgOffscreen } from '../shared/jxgOffscreenRender';
+import { computeAutoFitBbox } from './autoFitBbox';
+import { radialLabelOffsets } from './labelLayout';
 
 /**
  * Re-render geometry SVG từ jsonState đã serialize. Dùng cho:
@@ -61,49 +63,68 @@ export function containerDimsForBbox(bbox: [number, number, number, number]): { 
 }
 
 /**
- * Auto-fit board bbox sau khi entities đã render. Iterate point/circle elements
- * trên board để tính min/max x,y, thêm padding 15%, gọi setBoundingBox.
+ * Auto-fit board bbox sau khi entities đã render. Thu thập toạ độ point + 4
+ * điểm biên của mỗi circle, đưa qua `computeAutoFitBbox` (Tukey IQR trim
+ * outlier + expand theo aspect container) rồi gọi setBoundingBox.
  *
  * Áp dụng khi state.meta.view.bbox còn là DEFAULT_VIEW_2D — i.e. AI-generated
  * figure chưa được editor zoom/pan. Stamp đã edit có bbox riêng của user, giữ
  * nguyên (consumer expectation: re-render khớp với view editor lúc save).
  *
- * Aspect ratio container đã được set theo bbox ban đầu; setBoundingBox với aspect
- * khác sẽ được JSXGraph adjust tự động (keepAspectRatio:true) → letterbox.
+ * `aspect` = container width/height. computeAutoFitBbox expand bbox về đúng
+ * aspect này nên setBoundingBox (keepAspectRatio mặc định) cho units vuông →
+ * circle tròn (không méo thành ellipse).
  */
-function autoFitBboxFromBoard(board: any, padPct = 0.15): void {
+function autoFitBboxFromBoard(board: any, aspect: number): void {
   const objs = board?.objectsList;
   if (!Array.isArray(objs)) return;
-  let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
-  let count = 0;
+  const points: [number, number][] = [];
+  const circles: { cx: number; cy: number; r: number }[] = [];
   for (const o of objs) {
     // OBJECT_CLASS_POINT = 1
     if (o?.elementClass === 1 && typeof o.X === 'function' && typeof o.Y === 'function') {
       const x = o.X(), y = o.Y();
-      if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
-      xmin = Math.min(xmin, x); xmax = Math.max(xmax, x);
-      ymin = Math.min(ymin, y); ymax = Math.max(ymax, y);
-      count++;
+      if (Number.isFinite(x) && Number.isFinite(y)) points.push([x, y]);
     } else if (o?.elementClass === 3 && o.center?.X && typeof o.Radius === 'function') {
-      // OBJECT_CLASS_CIRCLE — include bounds [cx ± r, cy ± r]
+      // OBJECT_CLASS_CIRCLE
       const cx = o.center.X(), cy = o.center.Y(), r = o.Radius();
-      if (!Number.isFinite(cx) || !Number.isFinite(cy) || !Number.isFinite(r)) continue;
-      xmin = Math.min(xmin, cx - r); xmax = Math.max(xmax, cx + r);
-      ymin = Math.min(ymin, cy - r); ymax = Math.max(ymax, cy + r);
-      count++;
+      if (Number.isFinite(cx) && Number.isFinite(cy) && Number.isFinite(r)) {
+        circles.push({ cx, cy, r });
+      }
     }
   }
-  if (count < 2 || !Number.isFinite(xmin)) return;
-  let w = xmax - xmin, h = ymax - ymin;
-  // Tránh degenerate (mọi điểm trùng / collinear hoàn toàn): floor 1 unit.
-  if (w < 0.5) { const cx = (xmin + xmax) / 2; xmin = cx - 0.5; xmax = cx + 0.5; w = 1; }
-  if (h < 0.5) { const cy = (ymin + ymax) / 2; ymin = cy - 0.5; ymax = cy + 0.5; h = 1; }
-  const padX = w * padPct, padY = h * padPct;
-  // JSXGraph bbox: [xmin, ymax, xmax, ymin] (y reversed)
+  const bbox = computeAutoFitBbox(points, circles, aspect);
+  if (!bbox) return;
   try {
-    board.setBoundingBox([xmin - padX, ymax + padY, xmax + padX, ymin - padY]);
+    board.setBoundingBox(bbox);
     if (typeof board.update === 'function') board.update();
     if (typeof board.fullUpdate === 'function') board.fullUpdate();
+  } catch { /* ignore */ }
+}
+
+/**
+ * Đẩy label điểm ra xa centroid (radial) để giảm chồng nhãn. Chỉ chạy cho
+ * AI-generated figure (shouldAutoFit) — stamp user-edit giữ layout nhãn mặc định.
+ */
+function applyRadialLabelOffsets(board: any): void {
+  const objs = board?.objectsList;
+  if (!Array.isArray(objs)) return;
+  const pts: { id: string; x: number; y: number; el: any }[] = [];
+  for (const o of objs) {
+    if (o?.elementClass === 1 && typeof o.X === 'function' && o.label) {
+      const x = o.X(), y = o.Y();
+      if (Number.isFinite(x) && Number.isFinite(y)) pts.push({ id: o.id, x, y, el: o });
+    }
+  }
+  const offsets = radialLabelOffsets(pts.map((p) => ({ id: p.id, x: p.x, y: p.y })));
+  if (offsets.size === 0) return;
+  for (const p of pts) {
+    const off = offsets.get(p.id);
+    if (!off) continue;
+    try { p.el.setAttribute({ label: { offset: off } }); } catch { /* ignore */ }
+  }
+  try {
+    if (typeof board.update === 'function') board.update();
   } catch { /* ignore */ }
 }
 
@@ -148,7 +169,10 @@ export async function renderGeometrySvgFromState(jsonState: string): Promise<str
     setup: (board) => {
       const store = createStore(state);
       const renderer = new JxgRenderer(store, board);
-      if (shouldAutoFit) autoFitBboxFromBoard(board);
+      if (shouldAutoFit) {
+        autoFitBboxFromBoard(board, dims.width / dims.height);
+        applyRadialLabelOffsets(board);
+      }
       return renderer;
     },
   });
