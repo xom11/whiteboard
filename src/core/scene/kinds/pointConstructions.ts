@@ -42,7 +42,7 @@ export function arcMidpoint(
 
   const sN = sideOf(a, b, notContaining);
   if (Math.abs(sN) < 1e-9) {
-    // notContaining nằm trên đường AB → side-test suy biến: chọn ứng viên XA notContaining hơn.
+    // notContaining nằm trên đường AB → side-test suy biến: chọn ứng viên xa notContaining hơn.
     return dist(cand1, notContaining) >= dist(cand2, notContaining) ? cand1 : cand2;
   }
   const s1 = sideOf(a, b, cand1);

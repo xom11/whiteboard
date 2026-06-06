@@ -61,6 +61,7 @@ export type Constraint2D =
   // Trung điểm cung AB của đường tròn `circle`, ở cung KHÔNG chứa `notContaining`.
   | { kind: 'arcMidpoint'; circle: string; a: string; b: string; notContaining: string }
   // Tâm bàng tiếp tam giác `vertices` đối diện đỉnh `opposite`.
+  // `opposite` LUÔN là một phần tử của `vertices` (vì vậy constraintRefs2D không cần thêm nó).
   | { kind: 'excenter'; vertices: [string, string, string]; opposite: string };
 
 export function constraintRefs2D(c: Constraint2D): string[] {

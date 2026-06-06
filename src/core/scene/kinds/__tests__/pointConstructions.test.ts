@@ -43,4 +43,17 @@ describe('excenter', () => {
     expect(p[0]).toBeCloseTo(-2, 6);
     expect(p[1]).toBeCloseTo(2, 6);
   });
+
+  it('tâm bàng tiếp đối diện C', () => {
+    // I_C = (5A + 3B - 4C)/(5+3-4) = ((0+12+0)/4, (0+0-12)/4) = (3, -3).
+    const p = excenter([[0, 0], [4, 0], [0, 3]], 2);
+    expect(p[0]).toBeCloseTo(3, 6);
+    expect(p[1]).toBeCloseTo(-3, 6);
+  });
+
+  it('3 đỉnh thẳng hàng → fallback trả về điểm hữu hạn, không crash', () => {
+    const p = excenter([[0, 0], [1, 0], [2, 0]], 0);
+    expect(Number.isFinite(p[0])).toBe(true);
+    expect(Number.isFinite(p[1])).toBe(true);
+  });
 });
