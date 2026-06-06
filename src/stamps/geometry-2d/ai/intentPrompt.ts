@@ -216,6 +216,23 @@ const FIXTURES: IntentFixture[] = [
       { op: 'add-point', name: 'J', constraint: { kind: 'excenter', of: ['A', 'B', 'C'], opposite: 'A' } },
     ],
   },
+  {
+    problem: 'Cho tam giác nhọn ABC, đường cao CK, H là trực tâm. Gọi M là một điểm trên CK sao cho góc AMB = 90°.',
+    intents: [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'add-point', name: 'K', constraint: { kind: 'perpFoot', from: 'C', onLine: 'AB' } },
+      { op: 'add-point', name: 'H', constraint: { kind: 'orthocenter', of: ['A', 'B', 'C'] } },
+      { op: 'connect', from: 'C', to: 'K', style: 'segment' },
+      { op: 'add-point', name: 'M', constraint: { kind: 'rightAngleViewing', a: 'A', b: 'B', onLine: 'CK' } },
+    ],
+  },
+  {
+    problem: 'Cho đoạn AB và đường thẳng d. Điểm M trên d sao cho góc AMB = 90°.',
+    intents: [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'D'], variant: 'any' },
+      { op: 'add-point', name: 'M', constraint: { kind: 'rightAngleViewing', a: 'A', b: 'B', onLine: 'd' } },
+    ],
+  },
 ];
 
 export function buildIntentSystemPrompt(): string {
@@ -281,7 +298,7 @@ hoặc
 - quadrilateral: any
 
 ## Constraint kinds (cho add-point)
-midpoint, perpFoot, centroid, circumcenter, incenter, orthocenter, intersection, onSegment, free, secondIntersection, circleIntersection, tangencyPoint, tangentPoint, angleBisectorFoot, arcMidpoint, reflectPoint, reflectLine, excenter
+midpoint, perpFoot, centroid, circumcenter, incenter, orthocenter, intersection, onSegment, free, secondIntersection, circleIntersection, tangencyPoint, tangentPoint, angleBisectorFoot, arcMidpoint, reflectPoint, reflectLine, excenter, rightAngleViewing
 
 ## Style enum (cho connect)
 segment, line, ray, perpBisector
@@ -325,6 +342,12 @@ nhau — đặt đúng field, KHÔNG bỏ field bắt buộc, KHÔNG nhầm POIN
 - **excenter** — tâm BÀNG tiếp tam giác. Fields: \`of\` ([A,B,C]), \`opposite\` (đỉnh đối diện).
   - Ví dụ: "J là tâm bàng tiếp góc A của tam giác ABC" → \`{kind:"excenter", of:["A","B","C"], opposite:"A"}\`.
   - KHÁC incenter (tâm NỘI tiếp): bàng tiếp nằm NGOÀI tam giác.
+
+- **rightAngleViewing** — điểm GÓC VUÔNG nhìn đoạn. Fields: \`a\`, \`b\` (2 mút đoạn), \`onLine\` (đường điểm nằm trên), \`which\` (0|1, optional — chọn giao điểm).
+  - Dùng khi: "M trên <đường> sao cho góc AMB = 90°" / "∠AMB = 90°" / "góc AMB vuông" / "MA ⊥ MB" / "M nhìn AB dưới góc vuông".
+  - Chữ GIỮA của góc = tên điểm (name); 2 chữ ngoài = \`a\`, \`b\`.
+  - Ví dụ: "M trên CK sao cho góc AMB = 90°" → \`{op:"add-point", name:"M", constraint:{kind:"rightAngleViewing", a:"A", b:"B", onLine:"CK"}}\`.
+  - KHÔNG tự tạo đường tròn phụ — chỉ phát ra constraint này, hệ thống tự dựng đường tròn đường kính AB (Thales).
 
 ## Quy ước LINE name
 - 2 ký tự viết liền = SEGMENT/LINE qua 2 điểm: "AB", "BC", "MN" → \`to: "AB"\`.
