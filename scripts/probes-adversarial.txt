@@ -40,3 +40,21 @@ Cho tam giác ABC. Kéo dài AB về phía A lấy điểm D sao cho BD = 3.
 Cho tam giác ABC nội tiếp đường tròn (O). Gọi M là điểm chính giữa cung BC không chứa B
 Cho đường tròn tâm I bán kính 2 và đường tròn tâm O bán kính 5
 Vẽ đoạn thẳng song song với BC
+
+# === Mức 2: PHẢI render (vá coverage gap — verify end-to-end) ===
+Cho tam giác ABC vuông tại A. Gọi M là trung điểm cạnh huyền BC
+Cho tam giác ABC. Gọi I là trung điểm đoạn thẳng AC
+Cho tam giác ABC. Vẽ phân giác trong AD
+Cho tam giác ABC. Dựng đường phân giác trong AD
+Cho tam giác ABC. Kẻ AH vuông góc BC tại H
+Cho tam giác ABC. Kẻ AH ⊥ BC tại H
+Đường tròn (O; R) ngoại tiếp tam giác ABC
+Cho tam giác ABC ngoại tiếp đường tròn (I)
+Cho tam giác MNP ngoại tiếp đường tròn tâm O
+Cho tam giác ABC. Trên tia đối của tia BA lấy điểm D′ sao cho BD′ = AB
+
+# === Mức 2: PHẢI escalate (fail-safe — construct chưa hỗ trợ / xung đột) ===
+Cho tam giác ABC. Vẽ phân giác ngoài AD
+Cho tam giác ABC. Kẻ phân giác ngoài AD
+Cho tam giác ABC. Kẻ AH vuông góc BC tại K
+Cho tam giác ABC. M là trung điểm cạnh thẳng BC

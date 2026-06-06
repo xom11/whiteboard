@@ -56,6 +56,32 @@ const TRI_INSCRIBED_IN_CIRCLE = new RegExp(
   'giu',
 );
 
+// "tam giác XYZ ngoại tiếp đường tròn [ (I)/tâm I ]" → incircle (inscribedIn).
+// Tam giác NGOẠI tiếp (circumscribes) đường tròn = đường tròn NỘI tiếp tam giác.
+// "đường tròn" BẮT BUỘC NGAY sau "ngoại tiếp" (KHÔNG optional) để phân biệt với
+// "đường tròn ngoại tiếp tam giác" (circumcircle — đường tròn đứng TRƯỚC, "ngoại
+// tiếp" theo sau bởi "tam giác"). [^.]{0,40}? không vượt dấu '.' (không nhảy câu).
+const TRI_CIRCUMSCRIBES_CIRCLE = new RegExp(
+  'tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?ngoại\\s*tiếp\\s+đường\\s*tròn\\s*' +
+    CENTER,
+  'giu',
+);
+
+// --- Ký hiệu ngoặc "(O; R)" quét TOÀN ĐỀ (segmenter cắt ';') ------------------
+// "(đường tròn)? (O; R) ngoại/nội tiếp tam giác XYZ" — circle ĐỨNG TRƯỚC. R là
+// CHỮ (bán kính ký hiệu) nên circleRadius bỏ qua (cần \d). Guard
+// (?![^)]*[A-Z]\s*[;,]) chặn paren méo nhiều dấu chấm phẩy "(A; B; C)".
+const PAREN_CENTER =
+  '(?:đường\\s*tròn\\s*)?\\(\\s*([A-Z])\\s*[;,]\\s*(?![^)]*[A-Z]\\s*[;,])[^()]*?\\)\\s*';
+const CIRCUM_TRI_PAREN = new RegExp(
+  PAREN_CENTER + 'ngoại\\s*tiếp\\s+tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])',
+  'giu',
+);
+const INCIRCLE_TRI_PAREN = new RegExp(
+  PAREN_CENTER + 'nội\\s*tiếp\\s+tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])',
+  'giu',
+);
+
 interface CircHit {
   index: number;
   spec: 'through3' | 'inscribedIn';
@@ -104,6 +130,16 @@ function scanClause(text: string): CircHit[] {
       center: m[4] ?? m[5] ?? '',
     });
   }
+  // TRI_CIRCUMSCRIBES_CIRCLE: tam giác ngoại tiếp đường tròn → incircle (inscribedIn).
+  TRI_CIRCUMSCRIBES_CIRCLE.lastIndex = 0;
+  for (const m of text.matchAll(TRI_CIRCUMSCRIBES_CIRCLE)) {
+    hits.push({
+      index: m.index ?? 0,
+      spec: 'inscribedIn',
+      tri: [m[1], m[2], m[3]],
+      center: m[4] ?? m[5] ?? '',
+    });
+  }
   // Khử trùng: 2 hit cùng 3 đỉnh + cùng spec → giữ 1 (vd câu vừa khớp
   // CIRCUM_TRI lẫn TRI_INSCRIBED_IN_CIRCLE hiếm khi xảy ra, nhưng an toàn).
   const seen = new Set<string>();
@@ -118,11 +154,50 @@ function scanClause(text: string): CircHit[] {
   return dedup;
 }
 
+interface ParenHit {
+  spec: 'through3' | 'inscribedIn';
+  tri: [string, string, string];
+  center: string;
+  /** text khớp trên TOÀN đề (để gán clauseId qua substring-inclusion). */
+  matchedText: string;
+}
+
+/**
+ * Quét TOÀN đề cho ký hiệu ngoặc "(O; R) ngoại/nội tiếp tam giác XYZ" — dạng bị
+ * segmenter cắt ngang ';' nên per-clause không bắt được. circle ĐỨNG TRƯỚC.
+ */
+function scanProblemParen(problem: string): ParenHit[] {
+  const out: ParenHit[] = [];
+  const push = (re: RegExp, spec: 'through3' | 'inscribedIn') => {
+    re.lastIndex = 0;
+    for (const m of problem.matchAll(re)) {
+      out.push({
+        spec,
+        tri: [m[2], m[3], m[4]],
+        center: m[1] ?? '',
+        matchedText: m[0],
+      });
+    }
+  };
+  push(CIRCUM_TRI_PAREN, 'through3');
+  push(INCIRCLE_TRI_PAREN, 'inscribedIn');
+  return out;
+}
+
+function intentFor(spec: 'through3' | 'inscribedIn', tri: string[], center: string) {
+  const name = center || 'O';
+  return spec === 'inscribedIn'
+    ? drawCircle(name, 'inscribedIn', { triangle: tri })
+    : drawCircle(name, 'through3', { points: tri });
+}
+
 /**
  * Mỗi clause: quét emit-all các "(đường tròn) nội/ngoại tiếp tam giác XYZ".
  *   - circumcircle (through3): "đường tròn ngoại tiếp tam giác ABC",
  *     "tam giác ABC nội tiếp đường tròn (O)".
- *   - incircle (inscribedIn): "đường tròn nội tiếp tam giác ABC".
+ *   - incircle (inscribedIn): "đường tròn nội tiếp tam giác ABC",
+ *     "tam giác ABC ngoại tiếp đường tròn (I)".
+ * Cộng nhánh TOÀN đề cho ký hiệu "(O; R) ngoại/nội tiếp tam giác" (bị cắt ';').
  * "ngoại/nội tiếp" mà KHÔNG có "tam giác XYZ" ngay sau (vd "tứ giác", "hình
  * ...", hoặc "nội tiếp" trần) → KHÔNG claim → escalate AI.
  */
@@ -133,18 +208,36 @@ export const circleTriangleRule: LanguageRule = {
   patterns: [HAS_INSCRIBE],
   match(ctx) {
     const out: RuleMatch[] = [];
+    const emitted = new Set<string>(); // "spec:tri" — dedup cross per-clause/paren.
+
+    // 1) Per-clause (giữ nguyên hành vi cũ).
     for (const c of ctx.clauses) {
       if (!HAS_INSCRIBE.test(c.text)) continue;
       const hits = scanClause(c.text);
       if (hits.length === 0) continue; // có "ngoại/nội tiếp" nhưng không tam giác
-
-      const intents = hits.map((h) => {
-        const name = h.center || 'O';
-        return h.spec === 'inscribedIn'
-          ? drawCircle(name, 'inscribedIn', { triangle: h.tri })
-          : drawCircle(name, 'through3', { points: h.tri });
+      for (const h of hits) emitted.add(`${h.spec}:${h.tri.join('')}`);
+      out.push({
+        ruleId: 'circleTriangle',
+        clauseIds: [c.id],
+        intents: hits.map((h) => intentFor(h.spec, h.tri, h.center)),
       });
-      out.push({ ruleId: 'circleTriangle', clauseIds: [c.id], intents });
+    }
+
+    // 2) Toàn đề: ký hiệu "(O; R)" (segmenter cắt ';'). Bỏ qua nếu (spec:tri) đã
+    //    emit ở per-clause. clauseId = mọi clause là substring của đoạn khớp
+    //    (đoạn này trải qua nhiều clause do bị cắt) → coverage tính phủ cả 2.
+    for (const h of scanProblemParen(ctx.problem)) {
+      const key = `${h.spec}:${h.tri.join('')}`;
+      if (emitted.has(key)) continue;
+      emitted.add(key);
+      const clauseIds = ctx.clauses
+        .filter((c) => h.matchedText.includes(c.text))
+        .map((c) => c.id);
+      out.push({
+        ruleId: 'circleTriangle',
+        clauseIds,
+        intents: [intentFor(h.spec, h.tri, h.center)],
+      });
     }
     return out;
   },

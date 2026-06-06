@@ -139,4 +139,47 @@ describe('cevianRule', () => {
     const m = run('Cho tam giác ABC. Kẻ đường cao PQ.');
     expect(m).toEqual([]);
   });
+
+  // ── Mức 2: "phân giác trong AD" (từ "trong" chen) + fail-safe "ngoài" ──
+
+  it('"Vẽ phân giác trong AD" → angleBisectorFoot from A + connect A-D', () => {
+    const m = run('Cho tam giác ABC. Vẽ phân giác trong AD.');
+    const match = findByKind(m, 'angleBisectorFoot');
+    expect(match).toBeTruthy();
+    const [pt, con] = match!.intents as any[];
+    expect(pt.name).toBe('D');
+    expect(pt.constraint).toEqual({ kind: 'angleBisectorFoot', from: 'A', onLine: 'BC' });
+    expect(con.from).toBe('A');
+    expect(con.to).toBe('D');
+  });
+
+  it('"Dựng đường phân giác trong AD" → D from A', () => {
+    const m = run('Cho tam giác ABC. Dựng đường phân giác trong AD.');
+    const pt = findByKind(m, 'angleBisectorFoot')!.intents[0] as any;
+    expect(pt.name).toBe('D');
+    expect(pt.constraint).toEqual({ kind: 'angleBisectorFoot', from: 'A', onLine: 'BC' });
+  });
+
+  it('"Kẻ tia phân giác trong BD" → D from B onLine AC', () => {
+    const m = run('Cho tam giác ABC. Kẻ tia phân giác trong BD.');
+    const pt = findByKind(m, 'angleBisectorFoot')!.intents[0] as any;
+    expect(pt.name).toBe('D');
+    expect(pt.constraint).toEqual({ kind: 'angleBisectorFoot', from: 'B', onLine: 'AC' });
+  });
+
+  it('"AD là phân giác trong" (suffix) → D from A', () => {
+    const m = run('Cho tam giác ABC, AD là phân giác trong.');
+    const pt = findByKind(m, 'angleBisectorFoot')!.intents[0] as any;
+    expect(pt.name).toBe('D');
+    expect(pt.constraint).toEqual({ kind: 'angleBisectorFoot', from: 'A', onLine: 'BC' });
+  });
+
+  it('FAIL-SAFE: "phân giác ngoài AD" (external, forward) → escalate', () => {
+    expect(run('Cho tam giác ABC. Vẽ phân giác ngoài AD.')).toEqual([]);
+  });
+
+  it('FAIL-SAFE: "AD là phân giác ngoài" (external, suffix) → escalate', () => {
+    // Bug cũ: suffix bắt "AD ... phân giác", bỏ qua "ngoài" → nhận nhầm internal.
+    expect(run('Cho tam giác ABC, AD là phân giác ngoài.')).toEqual([]);
+  });
 });

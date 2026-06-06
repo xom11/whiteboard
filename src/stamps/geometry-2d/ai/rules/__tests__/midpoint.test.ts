@@ -108,4 +108,50 @@ describe('midpointRule', () => {
     // "trung điểm của đoạn thẳng" — không có cặp đỉnh HOA → không claim.
     expect(run('Lấy điểm D, tìm trung điểm của đoạn thẳng')).toHaveLength(0);
   });
+
+  // ── Mức 2: "cạnh huyền" / "đoạn thẳng" chen giữa side-keyword và cặp đỉnh ──
+
+  it('"trung điểm cạnh huyền BC" (dạng trước) → of BC', () => {
+    const intent = only('Gọi M là trung điểm cạnh huyền BC').intents[0] as any;
+    expect(intent.name).toBe('M');
+    expect(intent.constraint).toEqual({ kind: 'midpoint', of: 'BC' });
+  });
+
+  it('"M là trung điểm cạnh huyền BC" (không "Gọi") → of BC', () => {
+    const intent = only('M là trung điểm cạnh huyền BC').intents[0] as any;
+    expect(intent.name).toBe('M');
+    expect(intent.constraint.of).toBe('BC');
+  });
+
+  it('"trung điểm đoạn thẳng AC" (dạng trước) → of AC', () => {
+    const intent = only('N là trung điểm đoạn thẳng AC').intents[0] as any;
+    expect(intent.name).toBe('N');
+    expect(intent.constraint).toEqual({ kind: 'midpoint', of: 'AC' });
+  });
+
+  it('"Dựng điểm H là trung điểm đoạn thẳng EF" → of EF', () => {
+    const intent = only('Dựng điểm H là trung điểm đoạn thẳng EF').intents[0] as any;
+    expect(intent.name).toBe('H');
+    expect(intent.constraint).toEqual({ kind: 'midpoint', of: 'EF' });
+  });
+
+  it('"trung điểm I của cạnh huyền AB" (dạng SAU) → I, of AB', () => {
+    const intent = only('Lấy trung điểm I của cạnh huyền AB').intents[0] as any;
+    expect(intent.name).toBe('I');
+    expect(intent.constraint).toEqual({ kind: 'midpoint', of: 'AB' });
+  });
+
+  it('"trung điểm I của đoạn thẳng BC" (dạng SAU) → I, of BC', () => {
+    const intent = only('Gọi trung điểm I của đoạn thẳng BC').intents[0] as any;
+    expect(intent.name).toBe('I');
+    expect(intent.constraint.of).toBe('BC');
+  });
+
+  it('FAIL-SAFE: "cạnh thẳng" (sai cặp huyền/thẳng) → không claim', () => {
+    expect(run('M là trung điểm cạnh thẳng BC')).toHaveLength(0);
+  });
+
+  it('FAIL-SAFE: "đoạn huyền" (sai cặp) → không claim', () => {
+    expect(run('M là trung điểm đoạn huyền AC')).toHaveLength(0);
+  });
 });

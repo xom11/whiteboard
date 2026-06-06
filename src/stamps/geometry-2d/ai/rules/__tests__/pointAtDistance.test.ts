@@ -95,4 +95,40 @@ describe('pointAtDistanceRule', () => {
   it('không có từ khoá kéo dài / tia đối → bỏ qua', () => {
     expect(run('Cho tam giác ABC.')).toEqual([]);
   });
+
+  // ── Mức 2: điểm mới có dấu phẩy/prime (C', C′) trong DIST_CLAUSE ──
+
+  it("điểm C' (ASCII apostrophe) trong cụm BC' = R → render", () => {
+    const m = run("Trên tia đối của tia BA lấy điểm C' sao cho BC' = R.");
+    expect(m.length).toBe(1);
+    const i = constraint(m);
+    expect(i.name).toBe('C');
+    expect(i.constraint.from).toBe('A');
+    expect(i.constraint.through).toBe('B');
+    expect(i.constraint.distance.kind).toBe('circleRadius');
+  });
+
+  it('điểm C′ (unicode prime ′) + dấu phẩy → render', () => {
+    const m = run('Trên tia đối của tia BA, lấy điểm C′ sao cho BC′ = R.');
+    expect(m.length).toBe(1);
+    const i = constraint(m);
+    expect(i.name).toBe('C');
+    expect(i.constraint.through).toBe('B');
+  });
+
+  it("Kéo dài + điểm C', distance literal → render", () => {
+    const m = run("Kéo dài AB, lấy C' sao cho BC' = 2.");
+    const i = constraint(m);
+    expect(i.name).toBe('C');
+    expect(i.constraint.from).toBe('A');
+    expect(i.constraint.through).toBe('B');
+    expect(i.constraint.distance).toEqual({ kind: 'literal', value: 2 });
+  });
+
+  it('Kéo dài đoạn + prime + phẩy thập phân → literal 2.5', () => {
+    const m = run('Kéo dài đoạn AB về phía B, lấy điểm C′ sao cho BC′ = 2,5.');
+    const i = constraint(m);
+    expect(i.name).toBe('C');
+    expect(i.constraint.distance).toEqual({ kind: 'literal', value: 2.5 });
+  });
 });

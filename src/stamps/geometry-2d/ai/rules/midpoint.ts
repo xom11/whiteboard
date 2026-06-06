@@ -1,6 +1,6 @@
 // src/stamps/geometry-2d/ai/rules/midpoint.ts
 import type { LanguageRule, RuleMatch } from './_types';
-import { addPoint, pairFromToken } from './_shared';
+import { addPoint, pairFromToken, SIDE_PREFIX } from './_shared';
 
 // LƯU Ý: \b của JS dựa trên ASCII word-char nên KHÔNG khớp quanh ký tự Việt
 // ("đ","ề"…). Mọi regex chứa ký tự Việt dùng cờ 'u' + lookaround \p{L}.
@@ -10,14 +10,19 @@ const MIDPOINT = /trung\s*điểm/u;
 
 // Dạng A (GLOBAL): tên điểm ĐỨNG TRƯỚC "(là) trung điểm (của (cạnh|đoạn)) <PAIR>".
 //   "Gọi M là trung điểm BC" | "M là trung điểm của BC" | "M trung điểm cạnh BC"
+//   | "M là trung điểm cạnh huyền BC" | "trung điểm đoạn thẳng AC"
 // Tên = ký tự HOA NGAY TRƯỚC cụm trung điểm (cục bộ quanh match, KHÔNG quét intro).
-const NAME_BEFORE_G =
-  /([A-Z])(?:['′]?)\s+(?:là\s+|=\s+)?trung\s*điểm\s+(?:của\s+)?(?:cạnh\s+|đoạn\s+)?([A-Z])([A-Z])(?!\p{L})/gu;
+const NAME_BEFORE_G = new RegExp(
+  `([A-Z])(?:['′]?)\\s+(?:là\\s+|=\\s+)?trung\\s*điểm\\s+(?:của\\s+)?${SIDE_PREFIX}([A-Z])([A-Z])(?!\\p{L})`,
+  'gu',
+);
 
 // Dạng B (GLOBAL): tên điểm ĐỨNG SAU "trung điểm <NAME> của (cạnh|đoạn) <PAIR>".
-//   "trung điểm I của (cạnh) AB"
-const NAME_AFTER_G =
-  /trung\s*điểm\s+([A-Z])(?:['′]?)\s+của\s+(?:cạnh\s+|đoạn\s+)?([A-Z])([A-Z])(?!\p{L})/gu;
+//   "trung điểm I của (cạnh huyền) AB" | "trung điểm I của đoạn thẳng BC"
+const NAME_AFTER_G = new RegExp(
+  `trung\\s*điểm\\s+([A-Z])(?:['′]?)\\s+của\\s+${SIDE_PREFIX}([A-Z])([A-Z])(?!\\p{L})`,
+  'gu',
+);
 
 /**
  * "Gọi M là trung điểm BC" → add-point M {kind:'midpoint', of:'BC'}.

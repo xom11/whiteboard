@@ -111,4 +111,44 @@ describe('perpFootRule', () => {
     const m = run('Gọi M là trung điểm hình chiếu A trên BC');
     expect(m.length).toBe(0);
   });
+
+  // ── Mức 2: "Kẻ AH vuông góc BC tại H" / "Kẻ AH ⊥ BC" (không dùng "hình chiếu") ──
+
+  it('"Kẻ AH vuông góc BC tại H" → perpFoot H from A onLine BC', () => {
+    const intent = firstPoint('Kẻ AH vuông góc BC tại H');
+    expect(intent.op).toBe('add-point');
+    expect(intent.name).toBe('H');
+    expect(intent.constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+  });
+
+  it('"Kẻ AH ⊥ BC tại H" (ký hiệu ⊥) → perpFoot H from A', () => {
+    const intent = firstPoint('Kẻ AH ⊥ BC tại H');
+    expect(intent.name).toBe('H');
+    expect(intent.constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+  });
+
+  it('"Vẽ AH vuông góc với BC" (không "tại") → foot H từ cặp AH', () => {
+    const intent = firstPoint('Vẽ AH vuông góc với BC');
+    expect(intent.name).toBe('H');
+    expect(intent.constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+  });
+
+  it('"Dựng AH vuông góc với cạnh BC tại H"', () => {
+    const intent = firstPoint('Dựng AH vuông góc với cạnh BC tại H');
+    expect(intent.constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+  });
+
+  it('CHỈ emit add-point (KHÔNG connect — connect.ts lo đoạn AH)', () => {
+    const m = run('Kẻ AH ⊥ BC tại H');
+    const intents = m.flatMap((x) => x.intents) as any[];
+    expect(intents.every((i) => i.op === 'add-point')).toBe(true);
+  });
+
+  it('FAIL-SAFE: "tại K" ≠ chân H → xung đột → escalate', () => {
+    expect(run('Kẻ AH vuông góc BC tại K')).toHaveLength(0);
+  });
+
+  it('FAIL-SAFE: chân trùng đỉnh onLine ("Kẻ AB ⊥ BC tại B") → escalate', () => {
+    expect(run('Kẻ AB ⊥ BC tại B')).toHaveLength(0);
+  });
 });

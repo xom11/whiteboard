@@ -47,11 +47,16 @@ const CEVIAN_PATTERNS: ReadonlyArray<{ type: CevianType; patterns: readonly RegE
     ],
   },
   {
+    // "phân giác (trong) AD": từ "trong" (phân giác TRONG = internal bisector,
+    // loại thường) tuỳ chọn chen giữa "phân giác" và cặp đỉnh. "phân giác NGOÀI"
+    // (external bisector) CHƯA hỗ trợ: forward tự reject (sau "phân giác" là chữ
+    // thường "ngoài", không HOA pair); suffix cần (?!\s+ngoài) để KHÔNG nhận nhầm
+    // "AD là phân giác ngoài" thành internal → escalate (fail-safe).
     type: 'bisector',
     patterns: [
-      /(?:kẻ|vẽ|dựng)\s+(?:đường\s*|tia\s+)?phân\s*giác\s+([A-Z])([A-Z])(?![A-Z])/gu,
-      /(?:đường\s*phân\s*giác|tia\s+phân\s*giác|phân\s*giác)\s+([A-Z])([A-Z])(?![A-Z])/gu,
-      /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?(?:đường\s*|tia\s+)?phân\s*giác/gu,
+      /(?:kẻ|vẽ|dựng)\s+(?:đường\s*|tia\s+)?phân\s*giác(?:\s+trong)?\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      /(?:đường\s*phân\s*giác|tia\s+phân\s*giác|phân\s*giác)(?:\s+trong)?\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?(?:đường\s*|tia\s+)?phân\s*giác(?:\s+trong)?(?!\s+ngoài)/gu,
     ],
   },
 ];

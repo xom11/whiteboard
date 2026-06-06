@@ -51,11 +51,14 @@ const VE_PHIA = /về\s+phía\s+([A-Z])(?![A-Za-z])/u;
 
 // Cụm chốt mốc + khoảng cách: "BC = R" / "BC = AB" / "BC = 3" / "BC = 2,5 cm".
 // Đỉnh đầu (m[1]) = mốc đo (through); đỉnh sau (m[2]) = điểm mới (Z).
+// (?:['′]?) sau cặp đỉnh: điểm mới có thể mang dấu phẩy/prime ("BC′ = R") —
+// đồng bộ với TAKE_POINT; nếu thiếu, regex khớp "BC" rồi gặp ′ ở vị trí "\s*="
+// → fail (không render được "lấy C′ sao cho BC′ = R").
 // Phần sau dấu "=" gom thô để parse riêng (radius / segment / số). KHÔNG kết
 // thúc trên ',' — dấu phẩy có thể là phân tách thập phân ("2,5"); clause đã
 // được segmentClauses tách trên dấu chấm/'; nên gom tới hết clause là an toàn.
 const DIST_CLAUSE =
-  /(?:sao\s+cho\s+)?([A-Z])([A-Z])(?![A-Z])\s*=\s*(.+?)\s*(?:[.;]|$)/u;
+  /(?:sao\s+cho\s+)?([A-Z])([A-Z])(?:['′]?)(?![A-Z])\s*=\s*(.+?)\s*(?:[.;]|$)/u;
 
 // --- Distance parsing ---------------------------------------------------------
 const RADIUS_WORD = /(?<!\p{L})(?:R|bán\s*kính)(?!\p{L})/u;

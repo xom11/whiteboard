@@ -132,4 +132,84 @@ describe('circleTriangleRule', () => {
     expect(circ).toBeDefined();
     expect((circ!.intents[0] as any).points).toEqual(['D', 'E', 'F']);
   });
+
+  // ── Mức 2 Gap 3: ký hiệu "(O; R)" (segmenter cắt ';' → quét toàn đề) ──
+
+  it('"Đường tròn (O; R) ngoại tiếp tam giác ABC" → through3, name O', () => {
+    const m = run('Đường tròn (O; R) ngoại tiếp tam giác ABC');
+    const all = m.flatMap((x) => x.intents) as any[];
+    expect(all.length).toBe(1);
+    expect(all[0].spec).toBe('through3');
+    expect(all[0].points).toEqual(['A', 'B', 'C']);
+    expect(all[0].name).toBe('O');
+  });
+
+  it('"(O; R) ngoại tiếp tam giác ABC" (không chữ "đường tròn") → through3', () => {
+    const m = run('(O; R) ngoại tiếp tam giác ABC');
+    const all = m.flatMap((x) => x.intents) as any[];
+    expect(all.length).toBe(1);
+    expect(all[0].spec).toBe('through3');
+    expect(all[0].points).toEqual(['A', 'B', 'C']);
+    expect(all[0].name).toBe('O');
+  });
+
+  it('coverage: ký hiệu "(O; R)" claim CẢ HAI clause bị segmenter cắt', () => {
+    const problem = 'Đường tròn (O; R) ngoại tiếp tam giác ABC';
+    const m = run(problem);
+    expect(m.length).toBe(1);
+    // clause "...(O" + clause "R) ngoại tiếp tam giác ABC" — cả 2 hasGeometry.
+    expect(m[0].clauseIds.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('"Đường tròn (I; r) nội tiếp tam giác DEF" → inscribedIn, name I', () => {
+    const m = run('Đường tròn (I; r) nội tiếp tam giác DEF');
+    const all = m.flatMap((x) => x.intents) as any[];
+    expect(all.length).toBe(1);
+    expect(all[0].spec).toBe('inscribedIn');
+    expect(all[0].triangle).toEqual(['D', 'E', 'F']);
+    expect(all[0].name).toBe('I');
+  });
+
+  it('FAIL-SAFE Gap 3: paren méo "(A; B; C)" → không claim', () => {
+    const m = run('(A; B; C) ngoại tiếp tam giác XYZ');
+    expect(m.flatMap((x) => x.intents).length).toBe(0);
+  });
+
+  // ── Mức 2 Gap 4: "tam giác ABC ngoại tiếp đường tròn (I)" = incircle ──
+
+  it('"Tam giác ABC ngoại tiếp đường tròn (I)" → inscribedIn ABC, name I', () => {
+    const m = run('Tam giác ABC ngoại tiếp đường tròn (I)');
+    const all = m.flatMap((x) => x.intents) as any[];
+    expect(all.length).toBe(1);
+    expect(all[0].spec).toBe('inscribedIn');
+    expect(all[0].triangle).toEqual(['A', 'B', 'C']);
+    expect(all[0].name).toBe('I');
+  });
+
+  it('"Tam giác MNP ngoại tiếp đường tròn tâm O" → inscribedIn MNP, name O', () => {
+    const m = run('Tam giác MNP ngoại tiếp đường tròn tâm O');
+    const all = m.flatMap((x) => x.intents) as any[];
+    expect(all.length).toBe(1);
+    expect(all[0].spec).toBe('inscribedIn');
+    expect(all[0].triangle).toEqual(['M', 'N', 'P']);
+    expect(all[0].name).toBe('O');
+  });
+
+  it('"Tam giác ABC ngoại tiếp đường tròn" (không tên tâm) → inscribedIn, default O', () => {
+    const m = run('Tam giác ABC ngoại tiếp đường tròn');
+    const all = m.flatMap((x) => x.intents) as any[];
+    expect(all.length).toBe(1);
+    expect(all[0].spec).toBe('inscribedIn');
+    expect(all[0].name).toBe('O');
+  });
+
+  it('DISAMBIG: "đường tròn ngoại tiếp tam giác ABC" VẪN là through3 (KHÔNG inscribedIn)', () => {
+    // Gap 4 không được lật ngữ nghĩa circumcircle: "đường tròn ngoại tiếp tam giác"
+    // (đường tròn TRƯỚC) ≠ "tam giác ngoại tiếp đường tròn" (tam giác TRƯỚC).
+    const m = run('Cho tam giác ABC. Vẽ đường tròn ngoại tiếp tam giác ABC');
+    const all = m.flatMap((x) => x.intents) as any[];
+    expect(all.length).toBe(1);
+    expect(all[0].spec).toBe('through3');
+    expect(all[0].points).toEqual(['A', 'B', 'C']);
+  });
 });

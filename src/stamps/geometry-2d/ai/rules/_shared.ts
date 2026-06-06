@@ -62,3 +62,11 @@ export function pairFromToken(token: string): string[] {
   const m = /^([A-Z])([A-Z])$/u.exec(token.trim());
   return m ? [m[1], m[2]] : [];
 }
+
+// --- Side / segment prefix ----------------------------------------------------
+// Tiền tố "cạnh"/"đoạn" tuỳ chọn TRƯỚC cặp đỉnh, cho phép bổ ngữ "huyền"/"thẳng"
+// chen giữa: "cạnh BC", "cạnh huyền BC", "đoạn AC", "đoạn thẳng AC". Fail-safe:
+// "cạnh thẳng"/"đoạn huyền" (sai cặp) KHÔNG khớp vì bổ ngữ bị buộc đúng loại.
+// Là FRAGMENT regex (string, không cờ) để nhúng vào pattern lớn hơn — bổ ngữ là
+// optional nên prefix vẫn khớp dạng trần "cạnh BC".
+export const SIDE_PREFIX = '(?:cạnh(?:\\s+huyền)?\\s+|đoạn(?:\\s+thẳng)?\\s+)?';
