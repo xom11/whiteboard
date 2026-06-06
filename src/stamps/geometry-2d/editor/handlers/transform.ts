@@ -22,6 +22,18 @@ export function finalizeTransform(
     return;
   }
 
+  if (tool === 'circleCR') {
+    const r = Math.abs(value);
+    if (!(r > 0)) { ctx.flashWarn('Bán kính phải > 0'); return; }
+    const id = freshId(ctx, 'c');
+    const label = ctx.nextLabel('circle');
+    ctx.store.dispatch({
+      type: 'ADD',
+      payload: { obj: mkSceneObj(id, 'circle', label, { center: pendingIds[0], radius: r }) },
+    });
+    return;
+  }
+
   // 5 transform tools: pendingIds[0] = source object.
   const sourceId = pendingIds[0];
   const state = ctx.store.getState();

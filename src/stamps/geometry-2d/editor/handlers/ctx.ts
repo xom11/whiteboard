@@ -11,7 +11,8 @@ export type TransformToolKey =
   | 'reflectLine'
   | 'reflectPoint'
   | 'dilate'
-  | 'regularPolygon';
+  | 'regularPolygon'
+  | 'circleCR';
 
 export interface HandlerCtx {
   // Refs (read .current at call time)

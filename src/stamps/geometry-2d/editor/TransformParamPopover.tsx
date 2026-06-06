@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-export type ParamKind = 'rotate' | 'dilate' | 'regularPolygon';
+export type ParamKind = 'rotate' | 'dilate' | 'regularPolygon' | 'circleCR';
 
 interface Props {
   kind: ParamKind;
@@ -17,6 +17,7 @@ const LABELS: Record<ParamKind, { aria: string; label: string; step: number; min
   rotate: { aria: 'Góc quay', label: 'Góc (°)', step: 15 },
   dilate: { aria: 'Tỷ số k', label: 'Tỷ số k', step: 0.5 },
   regularPolygon: { aria: 'Số cạnh đa giác đều', label: 'Số cạnh (n ≥ 3)', step: 1, min: 3 },
+  circleCR: { aria: 'Bán kính đường tròn', label: 'Bán kính', step: 0.5, min: 0 },
 };
 
 export const TransformParamPopover: React.FC<Props> = ({ kind, anchor, defaultValue, onConfirm, onCancel, isDark }) => {

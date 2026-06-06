@@ -136,7 +136,7 @@ export function handleMultiClickTool(
     const tk = toolDef.key;
     // 3 popover transform tools cần numeric input (góc / tỷ số / số cạnh) trước
     // khi finalize → emit info để MiniBoard show TransformParamPopover.
-    if (tk === 'rotate' || tk === 'dilate' || tk === 'regularPolygon') {
+    if (tk === 'rotate' || tk === 'dilate' || tk === 'regularPolygon' || tk === 'circleCR') {
       const cx = ((e.clientX ?? 0) as number) + 8;
       const cy = ((e.clientY ?? 0) as number) + 8;
       ctx.pendingTransformRef.current = {

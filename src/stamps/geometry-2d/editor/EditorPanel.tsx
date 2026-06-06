@@ -393,13 +393,14 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
           />
         )}
 
-        {transformPopover && (transformPopover.tool === 'rotate' || transformPopover.tool === 'dilate' || transformPopover.tool === 'regularPolygon') && (
+        {transformPopover && (transformPopover.tool === 'rotate' || transformPopover.tool === 'dilate' || transformPopover.tool === 'regularPolygon' || transformPopover.tool === 'circleCR') && (
           <TransformParamPopover
             kind={transformPopover.tool}
             anchor={transformPopover.anchor}
             defaultValue={
               transformPopover.tool === 'rotate' ? 90
                 : transformPopover.tool === 'dilate' ? 2
+                : transformPopover.tool === 'circleCR' ? 3
                 : 6
             }
             isDark={isDark}

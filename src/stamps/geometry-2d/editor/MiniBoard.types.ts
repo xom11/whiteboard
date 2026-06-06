@@ -24,7 +24,7 @@ export interface ObjectSnapshot {
  * factor, ...). Null = không có transform popover active.
  */
 export type TransformPopoverInfo = {
-  tool: 'rotate' | 'dilate' | 'regularPolygon' | 'translate' | 'reflectLine' | 'reflectPoint';
+  tool: 'rotate' | 'dilate' | 'regularPolygon' | 'translate' | 'reflectLine' | 'reflectPoint' | 'circleCR';
   anchor: { x: number; y: number };
 } | null;
 
