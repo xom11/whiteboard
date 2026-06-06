@@ -132,6 +132,13 @@ function constraintKey(c: AddPointIntentT['constraint']): string {
     case 'reflectPoint':        return `reflectPoint:${c.of}:${c.through}`;
     case 'reflectLine':         return `reflectLine:${c.of}:${c.through}`;
     case 'excenter':            return `excenter:${c.of.join(',')}:${c.opposite}`;
+    case 'pointAtDistance': {
+      const d = c.distance;
+      const dKey = d.kind === 'circleRadius' ? `r:${d.circle}`
+        : d.kind === 'segmentLength' ? `seg:${d.p1}:${d.p2}`
+        : `lit:${d.value}`;
+      return `pointAtDistance:${c.from}:${c.through}:${dKey}`;
+    }
   }
 }
 
