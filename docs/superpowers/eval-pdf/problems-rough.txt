@@ -1,0 +1,1166 @@
+===Câu 1) Cho tam giác ABC trên BC ,CA, AB thứ tự lấy các điểm M , N , E===
+sao cho AN     NE , BM         ME . Gọi D là điểm đối xứng của E qua MN .
+Chứng minh rằng đường thẳng nối tâm hai đường tròn ngoại tiếp tam giác
+ABC và tam giác CMN vuông góc với CD .
+
+                           A
+
+
+
+
+                                             N
+
+                                        I
+                      E
+
+                  B                                         C
+                                M                K
+
+
+
+                                     D
+
+
+
+Ta biết : Hai đường tròn cắt nhau theo dây cung l thì đường nối tâm luôn
+vuông góc với dây cung l . Thực nghiệm hình vẽ ta thấy D nằm trên đường
+tròn ngoại tiếp tam giác CMN . Vì vậy ta sẽ chứng minh: 2 đường tròn
+ngoại tiếp tam giác ABC và tam giác CMN cắt nhau theo dây cung CD
+hay các tứ giác ABCD,CDMN là tứ giác nội tiếp
+Từ định hướng trên ta có lời giải cho bài toán như sau:
+
+Theo giả thiết ta có: BM       ME, AN       NE nên tam giác ANE cân tại N ,
+
+tam giác BME cân tại M . Hay BEM              B, AEN A . Vì D, E đối xứng
+với nhau qua MN nên NE ND, ME                 MD suy ra
+
+MDN      MEN      1800     AEN       BEM         1800   B   A   C hay
+THCS.TOANMATH.com
+MDN MCN             DMNC là tứ giác nội tiếp tức là điểm D thuộc đường
+tròn ngoại tiếp tam giác CMN
+
++ Ta có ME     MB      MD nên M là tâm đường tròn ngoại tiếp tam giác
+BED
+
++ Ta có: NA    NE      ND nên N là tâm đường tròn ngoại tiếp tam giác
+ADE
+
+Từ đó suy ra
+                         1                    1
+BDA     BDE      EDA       BME       ANE        1800    2B    1800   2A
+                         2                    2
+  180 B A C . Như vậy tứ giác ABCD nội tiếp, suy ra đường tròn
+ngoại tiếp tam giác ABC và tam giác CMN cắt nhau theo dây cung CD
+Hay IK CD .
+
+---END---
+===Câu 2) Gọi I là tâm đường tròn nội tiếp tam giác ABC . Từ A kẻ tới===
+đường tròn ngoại tiếp tam giác BIC các tiếp tuyến AP, AQ ( P,Q là các
+tiếp điểm)
+
+   a) Chứng minh BAP        CAQ
+
+   b) Gọi P1, P2 là hình chiếu vuông góc của P lên các đường thẳng
+       AB, AC . Q1,Q2 là các hình chiếu vuông góc của Q trên AB, AC .
+       Chứng minh P1, P2,Q1,Q2 nằm trên một đường tròn.
+
+Phân tích:
+
+Giả thiết liên quan đến tâm đường tròn ngoại tiếp tam giác IBC giúp ta liên
+tưởng đến tính chất: ‘’Đường phân giác trong góc A cắt đường tròn ngoại
+tiếp tam giác ABC tại E thì E là tâm đường tròn ngoại tiếp tam giác
+ABC ’’. Ngoài ra các giả thiết liên quan đến tam giác vuông nên ta nghỉ
+đến cách dùng các góc phụ nhau hoặc các tứ giác nội tiếp để tìm mối liên hệ
+của góc.
+
+THCS.TOANMATH.com
+Từ những cơ sở đó ta có lời giải cho bài toán như sau:
+
+---END---
+===Câu 4).Cho tam giác ABC nội tiếp đường tròn (O ) . Đường tròn K tiếp===
+xúc với CA, AB lần lượt tại E, F và tiếp xúc trong với (O ) tại S . SE, SF
+lần lượt cắt (O ) tại M , N khác S . Đường tròn ngoại tiếp tam giác
+AEM , AFN cắt nhau tại P khác A
+
+   a) Chứng minh tứ giác AMPN là hình bình hành
+
+   b) Gọi EN , FM lần lượt cắt (K ) tại G , H khác E, F . Gọi GH cắt
+       MN tại T . Chứng minh tam giác AST cân.
+
+Phân tích:
+
++ Để chứng minh AMPN là hình bình hành ta chứng minh các cặp cạnh
+đối song song dựa vào các góc nội tiếp, góc tạo bởi tiếp tuyến và một dây
+
++ Để chứng minh TA      TS ta nghỉ đến việc chứng minh TA,TS là các
+tiếp tuyến của đường tròn (O )
+
+Từ những định hướng trên ta có lời giải như sau:
+
+
+THCS.TOANMATH.com
+                                                   A
+
+                                                                           M
+
+
+                                N              G
+                                                            H
+                                                                       E
+                                                               O   P
+    T                                    F
+
+                                                           K
+                                                                                C
+                                    B
+
+
+
+                                                   S
+
+
+
+
+Ta thấy APF     180    ANS     AMS           180       APE suy ra F , P, E thẳng
+hàng. Ta có APM       AEM góc nội tiếp chắn cung AM , AEM                      SEC
+(đối đỉnh) . Vì AC là tiếp tuyến của đường tròn K nên SEC                  EFS
+(Tính chất góc tạo bởi tia tiếp tuyến và một dây). Mà EFS              PAN do tứ
+giác ANFP nội tiếp. Vậy APM             PAN            AN / /PM . Chứng minh
+tương tự ta cũng có: AM / /PN           AMEN là hình bình hành.
+
++ Các tam giác SKF , SON cân có chung đỉnh S nên đồng dạng suy ra
+                                              SF         SK        SE
+KF / /ON , tương tự KE / /OM suy ra                                   suy ra
+                                              SN         SO        SM
+MN / /EF . Từ đó HGE         HFE         HMN suy ra tứ giác MNGH nội
+tiếp. Giả sử TS cắt O và K lần lượt tại S1, S2 thì
+
+
+THCS.TOANMATH.com
+TS.TS1      TM .TN    TH .TG    TS .TS2 suy ra TS1           TS2 suy ra
+S1     S2    S . Vậy TS là tiếp tuyến của O . Tứ giác AMEN là hình bình
+hành nên AP và MN cắt nhau tại trung điểm I mỗi đường. Ta có theo
+tính chất góc tạo bởi tiếp tuyến và dây cung IAM     PES          FST         NAS .
+Ta lại có AMI AMN ASN . Vậy               AIM        ANS suy ra
+AM.SN AI .AS . Tương tự AN .SM            AI .SN     AM.SN . Từ đó theo
+                                                   TM           SM 2      AM 2
+tính chất tiếp tuyến do TS tiếp xúc với O suy ra                               .
+                                                   TN           SN 2      AN 2
+Vậy TA tiếp xúc với O . Suy ra TA      TS .
+
+---END---
+===Câu 5) Cho tam giác ABC nội tiếp đường tròn O . Đường tròn I luôn===
+
+đi qua B và C cắt AB, AC lần lượt tại M , N . Đường tròn J ngoại tiếp
+
+tam giác AMN cắt đường tròn O tại điểm thứ hai là K . Chứng minh
+rằng KI / /OJ .
+
+Phân tích Ta thấy OJ là đường nối tâm của hai đường tròn (O),(J ) như
+vậy OJ       AK . Do đó để chứng minh KI / /OJ ta quy về chứng minh
+IK      AK
+                                              A
+
+---END---
+===Câu 6) Cho tam giác ABC vuông tại A đường cao AH . Trên nửa mặt===
+phẳng bờ BC chứa A vẽ đường tròn O đường kính HC . Trên nửa mặt
+
+phẳng bờ BC không chứa A vẽ nửa đường tròn O ' đường kính BC . Qua
+
+điểm E thuộc nửa đường tròn O kẻ EI vuông góc với BC cắt nửa
+
+đường tròn O ' ở F . Gọi K là giao điểm của EH và BF . Chứng minh
+rằng CA      CK .
+
+---END---
+===Câu 7) Cho tứ giác ABCD nội tiếp đường tròn O . Đường vuông góc với===
+AB tại B cắt CD ở I . Gọi K là giao điểm của IO và AD . Chứng minh
+rằng:
+
+    a) IBK      IDK .
+
+    b) CBK         900 .
+
+Phân tích:
+
+IBK và IDK là hai góc của IBK và IDK , nhưng hai tam giác này
+không bằng nhau. Các đỉnh B và D của hai góc đó nằm khác phía đối với
+OI , mà OI là trục đối xứng của O . Có thể đổi phía của góc IBK bằng
+
+cách lấy F đối xứng với B qua OI , ta có IBK          IFK . Chỉ cần chứng
+THCS.TOANMATH.com
+minh IDK          IFK bằng cách chứng minh tứ giác IKDF nội tiếp (hình vẽ
+ứng với F        CD ). Ta sẽ chứng minh KIF                KDF       1800 . Chú ý đến sự
+bằng nhau của các góc KIF , I 1.ABF (đừng quên AB                      BI ). Xét
+
+CBK         IBK        B2 . Chú ý đến IBK           IDK (câu a),
+
+---END---
+===Câu 9) Cho tam giác nhọn ABC nội tiếp đường tròn (O ) , BE ,CF là hai===
+đường cao ( E     CA, F    AB ). Tiếp tuyến tại B,C của đường tròn (O ) cắt
+nhau tại T , TC ,TB lần lượt cắt EF tại P,Q . M là trung điểm của BC
+
+   a) Chứng minh M là tâm đường tròn nội tiếp tam giác TPQ
+
+   b) Gọi AD là đường kính của (O ) . DM cắt (O ) tại R khác D .
+         Chứng minh các tứ giác RQBM , RPCM , RQTP là tứ giác nội tiếp
+
+   c) Chứng minh rằng đường tròn ngoại tiếp tam giác TPQ tiếp xúc với
+         đường tròn (O ) tại R .
+
+Phân tích:
++ Ta luôn có MT là phân giác của góc QTP tính chất quen thuộc của hai
+tiếp tuyến xuất phát từ một điểm ngoài đường tròn. Như vậy ta cần chứng
+minh PM là phân giác của góc QPT
+THCS.TOANMATH.com
+a). Tứ giác BFEC nội tiếp
+                                                                                P
+và CP là tiếp tuyến nên                              A
+
+
+                                                             E
+PEC      ABC     PCE                         R
+                                                 F
+                                                             O
+                                         Q
+     PEC cân tại P
+                                             B                        C
+                                                         M
+PC     PE, dễ thấy                                               D
+                                    x
+
+ME     MC      PM
+
+là trung trực của EC hay                                 T
+
+
+
+PM là phân giác của góc QPT . Tương tự QM là phân giác góc
+PQT    M là tâm đường tròn nội tiếp tam giác TPQ
+
+b). Do AD là đường kính của đường tròn (O ) nên MR                   RA , từ câu a) ta
+cũng dễ dàng suy ra MP      AC suy ra
+RMP 1800 RAC RBC RCP do CP tiếp xúc với (O ) vậy tứ
+giác BPCM nội tiếp. Tương tự QRBM nội tiếp. Từ hai tứ giác này ta có:
+
+RQT      RMC      1800     RPT     RQTP nội tiếp
+
+c) Kẻ Rx là tiếp tuyến của đường tròn (O ) tại R . Gọi RB cắt đường tròn
+ngoại tiếp   TPQ tại N khác R. Chú ý QRMB nội tiếp nên ta có:
+
+QPN     QRB      QMB       QMT     900       QPM . Do M là tâm đường tròn
+nội tiếp tam giác TPQ      PM đi qua A . Từ đó ta có:
+
+xRN xRB RBC RPM RPN nên Rx tiếp xúc với đường tròn
+ngoại tiếp tam giác TPQ . Vậy đường tròn ngoại tiếp tam giác TPQ tiếp
+xúc với (O ) tại R
+
+---END---
+===Câu 10) (Trích đề tuyển sinh vào lớp 10 chuyên ĐHQG Hà Nội năm===
+2013) Cho tam giác ABC nội tiếp đường tròn tâm O và AB AC .
+
+THCS.TOANMATH.com
+Đường phân giác trong góc BAC cắt đường tròn (O ) tại D khác A . Gọi
+M là trung điểm của AD và E là điểm đối xứng với D qua tâm O . Giả
+sử đường tròn ngoại tiếp tam giác ABM cắt đoạn thẳng AC tại điểm F
+khác A . Chứng minh các tam giác BMD và BFC đồng dạng và
+EF AC
+
+---END---
+===Câu 12. (Đề thi vào lớp 10 chuyên Amsterdam – Chu Văn An- Năm===
+2013)
+
+Cho đường tròn O; R và dây cung BC cố định BC                                              2R . Điểm A di
+
+động trên đường tròn O; R sao cho tam giác ABC là tam giác nhọn. AD
+là đường cao và H là trực tâm của tam giác ABC .
+
+   a) Đường thẳng chứa phân giác ngoài của góc BHC cắt AB, AC lần
+           lượt tại các điểm M , N . Chứng minh AMN là tam giác cân.
+
+   b) Gọi E, F lần lượt là hình chiếu của D trên các đường thẳng
+           BH ,CH . Chứng minh OA                          EF .
+
+   c) Đường tròn ngoại tiếp tam giác AMN cắt đường phân giác trong
+      của góc BAC tại K . Chứng minh đường thẳng HK luôn đi qua
+      điểm cố định.
+
+---END---
+===Câu 13. . (Đề thi vào lớp 10 chuyên Lê Quý Đôn – Đà Nẵng– năm 2013)===
+
+Cho tứ giác ABCD nội tiếp đường tròn đường kính AB . Biết rằng các cặp
+đường thẳng AB,CD cắt nhau tại E và AD, BC cắt nhau tại F . Hai
+đường chéo AC và BD cắt nhau tại M . Gọi H là hình chiếu vuông góc
+của M lên đường thẳng AB . Hai đường thẳng CH và BD cắt nhau tại
+N.
+
+                        DB NM
+   a) Chứng minh rằng     .          1.
+                        DM NB
+
+   b) Hai đường tròn ngoại tiếp các tam giác BCE và CDF cắt nhau tại
+      điểm thứ hai là L . Chứng minh rằng ba điểm E , F , L thẳng hàng.
+
+Phân tích định hướng giải toán:
+
+
+
+
+THCS.TOANMATH.com
+a). Tứ giác BCMH nội tiếp
+
+đường tròn đường kính                      F
+
+                                                   L
+
+
+
+MB       ACN     ABD                 D
+
+                                                   C
+
+                                          M
+
+(cùng chắn cung MH ).                          N
+                              A
+                                           H           B                    E
+
+
+Lại có ACD      ABD
+
+ACN      ACD      CM
+
+là phân giác của DCN .
+
+Mà CM      CB        CDN có hai đường phân giác trong và ngoài của góc
+                   MD CD   BD
+C là CM và CB .                (tính chất đường phân giác). Vậy
+                   MN CN   BN
+DB NM          BD MN BD MD
+  .              .     .     1.
+DM NB          BN MD BN MN
+
+b) DLC     AFB (cùng chắn cung DC của đường tròn CDF ) (1) tứ
+
+giác BCLE nội tiếp nên CLE        CBE    1800 mà ABF       CBE     1800
+nên ABF      CLE (2), FAB         DCF (cùng bù góc BCD ). Mặt khác
+DCF      FLD (cùng chắn cung DF của đường tròn
+CDF )      FLD      FAB (3). Từ (1),(2),(3) suy ra
+
+FLE FLD DLC FAB AFB ABF 1800 .
+Nhận xét: Câu c của bài toán thực chất là một kết quả của định lý Miquel.
+
+
+THCS.TOANMATH.com
+Câu 14. (Đề thi vào lớp 10 chuyên Phan Bội Châu- Nghệ An – năm
+2013)         Cho đường tròn O đường kính AB . Trên đường tròn lấy
+
+điểm D khác A và DAB 600 . Trên đường kính AB lấy điểm C (C
+khác A, B ) và kẻ CH vuông góc với AD tại H . Phân giác trong của góc
+DAB cắt đường tròn tại E và cắt CH tại F . Đường thẳng DF cắt đường
+tròn tại điểm thứ hai N .
+
+   a) Chứng minh rằng tứ giác AFCN nội tiếp đường tròn và ba điểm
+      N ,C , E thẳng hàng.
+
+   b) Cho AD       BC , chứng minh rằng DN đi qua trung điểm của AC .
+
+
+Phân tích định hướng giải:
+                                                        E
+a). Ta có ACH      AND                   D
+                                     H
+(cùng bằng ABD ),
+                                             F
+
+hay ANF      ACF ,              A                           C       B
+                                                   O
+
+do đó tứ giác AFCN nội tiếp
+                                                   M
+suy ra CND      BAE .
+                                                        N
+Lại có BAE      DAE      DNE
+
+nên CND      END . Do đó ba điểm N ,C , E thẳng hàng.
+b) Qua C kẻ CM / /AD M         DN rồi chứng minh tứ giác BCMN nội
+
+tiếp. Suy ra CBM     END;CMB        ENB . Mặt khác
+
+END     ENB        CBM    CMB       CB       CM . Lại có CB     AD (gt)
+
+THCS.TOANMATH.com
+nên AD CM . Do đó tứ giác ADCM là hình bình hành, suy ra DN đi
+qua trung điểm của AC .
+
+---END---
+===Câu 15. (Đề thi vào lớp 10 chuyên ĐHSP Hà Nội – năm 2013)===
+
+Cho tam giác ABC . Đường tròn           có tâm O và tiếp xúc với các đoạn thẳng
+
+AB, AC tương ứng tại K , L . Tiếp tuyến d của đường tròn                tại điểm E
+thuộc cung nhỏ KL cắt các đường thẳng AL, AK tương ứng tại M , N . Đường
+thẳng KL cắt các đường thẳng AL, AK tương ứng tại M , N . Đường thẳng KL
+cắt OM tại P và cắt ON tại Q .
+
+                                       1
+   a) Chứng minh MON         900         BAC .
+                                       2
+
+   b) Chứng minh rằng các đường thẳng MQ, NP và OE cùng đi qua một
+       điểm.
+
+   c) Chứng minh KQ.PL        EM .EN .
+
+---END---
+===Câu 16. (Đề thi vào lớp 10 chuyên ĐHSP Hà Nội – năm 2013)===
+
+Cho hình vuông ABCD nội tiếp đường tròn O . Điểm M thuộc cung nhỏ
+
+CD của O , M khác C và D . MA cắt DB, DC theo thứ tự tại X , Z ;
+MB cắt DC , AC theo thứ tự tại Y ,T ; CX và DY cắt nhau tại K .
+
+   a) Chứng minh rằng MXT       TXC , MYZ          ZYD và CKD    1350 .
+
+                          KX   KY      ZT
+   b) Chứng minh rằng                         1.
+                          MX   MY      CD
+
+   c) Gọi I là giao điểm của MK và CD . Chứng ming rằng XT ,YZ ,OI
+      cùng đi qua tâm đường tròn ngoại tiếp tam giác KZT .
+
+Phân tích định hướng giải:
+
+Trước tiên ta hãy quan sát xem góc MXT có thể bằng góc nào:
+
+THCS.TOANMATH.com
+Dễ thấy XDT       450        XMT                          E
+                                                    A L                         B
+nên tứ giác XDMT nội tiếp từ                              H
+
+
+đó suy ra MXT      TDM (1)
+                                                                        O
+Góc TXC làm ta nghỉ đến tứ giác                     V
+                                                U         X                 Y
+                                                                K
+                                                                    J
+                             1
+TXBC : Ta có BTC               sđ BC   DM           D
+                                                              Z I               C
+                             2                                          T
+
+                                                               M
+  1
+    sđADM , BXC           VXD . Để tận dụng góc nội tiếp ta nghỉ đến việc
+  2
+kéo dài CX cắt đường tròn (O ) tại V . Ta có UXD        VXD             DXM
+1                       1
+  sđ AB      DM           sđADM . Từ đó suy ra tứ giác TXBC nội tiếp. Như
+2                       2
+vậy ta có: TXC     TBC           CAM   CDM (2). Từ (1), (2) ta suy ra
+MXT     TXC . Tương tự cho trường hợp MYZ               ZYD .
+
+             XDT        450      XMT
+Cách 2: Vì                             nên các tứ giác XDMT ,YCMZ nội
+                             0
+             YCZ        45       YMZ
+
+tiếp (1). Từ (1), chú ý rằng DMT        900   CMZ , suy ra
+BXT 900 AYZ . Tam giác AXC có XO là phân giác trong góc X .
+Mặt khác , XT vuông góc với XO nên XT là phân giác ngoài góc X của
+tam giác AXC . Vậy XMT             TXC . Tương tự MYZ          ZYD . Đường
+thẳng qua M vuông góc với CD cắt đường tròn O tại điểm thứ hai E .
+CX cắt AD tại V ; DE cắt AB tại L . Do X thuộc trục đối xứng BD
+của hình vuông nên DZ DV . Do ADME là hình thang cân nên
+DZ AL . Vậy DV AL . Do đó CV vuông góc với DL . Tương tự
+DY vuông góc với CE . Do đó EM ,CX , DY là ba đường cao trong tam
+
+THCS.TOANMATH.com
+giác ECD và do đó chúng cùng đi qua K . Do vậy
+CKD      XKY     1800   CED      1350 .
+
+b) Ta có KMX      DAM      DBM      YMO (2). Tứ giác MXOC nôi tiếp
+nên MXK       MOY . Kết hợp với (2) ta có: MXK             MOY . Do đó:
+ KX     YO YO
+                       (3). Do YZ / /OD (cùng vuông góc với OC ) nên
+MX      MO CO
+YO      ZD                           KX      ZD             KY    TC
+            . Kết hợp với (3) ta có:             . Tương tự           . Do
+CO CD                                MX CD                  MY CD
+    KX     KY      ZT CD TC ZT
+đó                                              1.
+    MX MY CD                      CD
+c) Gọi J là giao điểm của XT và YZ . Theo định lý Ta-lét ta có:
+IT     MT      ZT      ZT      TJ
+                                    (để ý rằng JTZ và OCD là hai tam giác
+IC     MB      AB CD CO
+vuông cân). Mặt khác, TJ / /CO . Do đó I , J ,O thẳng hàng. Vậy
+XT ,YZ ,OI đồng quy. Gọi H là giao điểm của EM và AB . Ta có:
+ IJ   IT  MT      MI     IK
+                             (để ý rằng K là trực tâm tam giác ECD
+IO IC      MB     MH      IE
+nên K và M đối xứng với nhau qua CD ). Vậy IK / /OE . Suy ra
+ JK     IJ    JT
+                  . Mặt khác OE OC , nên JK         JT    JZ . Do đó J
+OE      IO OC
+là tâm đường tròn ngoại tiếp tam giác KZT .
+
+Chú ý:
+
+- Có thể chứng minh câu b bằng việc dùng tính chất đường phân giác và
+định lý Ta-lét.
+
+- Có thể chứng minh XT ,YZ ,OI đồng quy bằng cách dùng định lý Sê-va.
+
+- Tam giác ZKT là ảnh của tam giác DEC qua một phép vị tự tâm I .
+
+
+
+
+THCS.TOANMATH.com
+Câu 17. (Đề thi vào lớp 10 chuyên ĐHQG Hà Nội – năm 2013)
+
+Cho tam giác nhọn ABC nội tiếp đường tròn tâm O . Gọi M là một điểm
+trên cung nhỏ BC ( M khác B,C và AM không đi qua O ). Giả sử P là
+một điểm thuộc đoạn thẳng AM sao cho đường tròn đường kính MP cắt
+cung nhỏ BC tại điểm N khác M .
+
+   a) Gọi D là điểm đối xứng với điểm M qua O . Chứng minh rằng ba
+      điểm N , P, D thẳng hàng.
+
+   b) Đường tròn đường kính MP cắt MD tại điểm Q khác M . Chứng
+       minh rằng P là tâm đường tròn nội tiếp tam giác AQN .
+
+
+---END---
+===Câu 18. (Đề thi vào lớp 10 chuyên ĐHQG Hà Nội – năm 2013)===
+Cho tam giác nhọn ABC AB          AC , nội tiếp đường tròn O . Giả sử
+
+M , N là hai điểm thuộc cung nhỏ BC sao cho MN song song với BC và
+tia AN nằm giữa hai tia AM , AB . Gọi P là hình chiếu vuông góc của
+điểm C trên AN và Q là hình chiếu vuông góc của điểm M trên AB .
+
+   a) Giả sử CP cắt QM tại điểm T . Chứng minh rằng T nằm trên
+       đường tròn O .
+
+
+   b) Gọi giao điểm của NQ và O là R khác N . Giả sử AM cắt PQ
+       tại S . Chứng minh rằng bốn điểm A, R,Q, S cùng thuộc một đường
+       tròn.
+
+
+---END---
+===Câu 19. (Đề thi vào lớp 10 chuyên ĐHSP TP Hồ Chí Minh– năm 2013)===
+Cho tam giác ABC vuông tại A AB          AC , có đường cao AH và O là
+trung điểm của BC . Đường tròn tâm I đường kính AH cắt AB, AC lần lượt
+tại M và N .
+
+     1) Chứng minh rằng:
+
+     a)   AM.AB     AN.AC
+
+     b) Tứ giác BMNC nội tiếp.
+
+2) Gọi D là giao điểm của OA và MN . Chứng minh rằng:
+
+a) Tứ giác ODIH nội tiếp.
+
+      1     1      1
+b)                   .
+     AD    HB     HC
+
+3) Gọi P là giao điểm của đường thẳng MN và đường thẳng BC . Đường
+thẳng AP cắt đường tròn đường kính AH tại điểm K (khác A ). Tính số đo
+BKC .
+
+4) Cho AB       6, AC    8 . Hãy tính bán kính của đường tròn ngoại tiếp tam giác
+BMN .
+                                                              A
+Phân tích định hướng giải:
+                                                        K                     N
+                                                              I       D
+THCS.TOANMATH.com
+                                                        M
+                                         P          B             H       O       C
+Lời giải:
+
+1). a) Ta có AMH         ANH             900 ,
+
+suy ra AH 2       AM .AB và
+
+AH 2      AN .AC . Do đó AM.AB                    AN.AC .
+
+b)     ANM         ABC
+(c.g.c) ANM           ABC            MBC          MNC            1800 . Vậy tứ giác BMNC
+nội tiếp.                                                                            2) a) Ta
+có AIN        2AMI , AOH            2ACO , mà AMI                   ACO (do tứ giác BMNC
+nội tiếp) nên AIN        AOH , dẫn đến DIH                    DOH       1800 . Vậy tứ giác
+ODIH nội tiếp.
+                                   AI              AO                   1             1
+b)     AID        AOH (g.g)                           . Mà AI             AH ; AO       BC
+                                   AD              AH                   2             2
+          1       BC          HB HC                 1    1
+suy ra                                                      .
+         AD       AH 2         HB.HC               HB HC
+3) Ta có: PKM         ANM            MBC nên tứ giác PKMB nội tiếp. Suy ra
+PKB       PMB       ACB . Do đó tứ giác AKBC nội tiếp. Suy ra
+BKC         ABC      900 .
+4) Ta có BC 2       AB2           AC 2      BC         8;
+  1       1       1
+    2       2
+                           AH 4, 8 . Gọi J là tâm đường tròn ngoại tiếp
+ AH      AB      AC 2
+tam giác BMN thì tứ giác AIJO là hình bình hành.
+              AH
+Suy ra OJ           2, 4 . Tam giác vuông OBJ có
+               2
+                                                 769                 769
+JB 2     OB 2     OJ 2       52     2, 42                   JB           . Vậy bán kính
+                                                  2                  5
+                                                            769
+đường tròn ngoại tiếp tam giác BMN là                           .
+                                                            5
+THCS.TOANMATH.com
+Câu 20. (Đề thi vào lớp 10 chuyên ĐHSP TP Hồ Chí Minh– năm 2013)
+
+1. Cho tam giác ABC có B,C cố định và A di động sao cho AB                  2AC
+
+       a) Gọi I là điểm trên cạnh BC sao cho IB                 2IC . Chứng minh rằng
+            AI là tia phân giác của BAC .
+
+       b) Chứng minh rằng điểm A luôn di động trên một đường tròn cố định.
+
+2. Cho tam giác ABC . Đường tròn nội tiếp tam giác ABC có tâm I tiếp xúc
+với BC tại D . Đường tròn bang tiếp góc A của tam giác ABC có tâm J , tiếp
+xúc với BC tại E .
+
+   a) Gọi F là giao điểm của AE và DI . Chứng minh rằng F thuộc đường
+       tròn I .
+
+   b) Gọi M là trung điểm của BC . chứng minh rằng đường thẳng MI luôn
+      đi qua trung điểm của AD .
+
+
+
+Phân tích định hướng giải:
+                                                                    L
+---END---
+===Câu 21). Cho tam giác ABC vuông tại A . Gọi CT là đường phân giác trong===
+của tam giác T       AB .
+
+
+   a) Chứng minh rằng đường tròn K đi qua C , T tiếp xúc với AB có tâm
+       K thuộc BC .
+
+   b) Gọi giao điểm của AC và K là D khác C , giao điểm của DB và
+
+         K là E khác D . Chứng minh rằng ABD                    BCE .
+
+   c) Gọi giao điểm của CE và AB là M . Chứng minh rằng M là trung
+      điểm của đoạn thẳng BT .
+                                                            A
+---END---
+===Câu 22) Cho tam giác ABC , đường tròn (I ) nội tiếp tam giác tiếp xúc với các===
+cạnh BC ,CA, AB tương ứng tại D, E, F . Gọi K , L lần lượt là hình chiếu
+vuông góc của A lên DE , DF . Giả sử AI cắt EF tại M
+
+   a) Chứng minh M là trực tâm của tam giác DKL
+
+   b) Gọi P đối xứng với E qua K ,Q đối xứng với F qua L . Chứng minh
+       giao điểm của QE , PF nằm trên đường tròn (I )
+
+Phân tích định hướng giải:                                                      P
+                                                            A
+
+a). Để chứng minh M là trực               Q
+
+                                                                            K
+tâm của tam giác DKL ta sẽ                     L
+                                                                T       E
+
+chứng minh KM      LD, ML         KD .                          M
+                                                        F
+                                                                    I
+Để ý rằng giả thiết cho biết AK     DK
+                                                    B                               C
+vuông góc với DK như vậy để chứng                                   D
+
+
+
+minh ML      DK ta cần chứng minh
+
+ML / /AK tức là LMA        MAK . Nhưng ta có LMA            MFA (do tứ giác
+ALFM nội tiếp), LFA       BFD       FED do AB là tiếp tuyến của (I ) . Mặt
+khác FED     KAM do tứ giác MAKE nội tiếp. Từ đó suy ra
+LMA     MAK . Hoàn toàn tương tự ta cũng chứng minh được KM                 LD .
+
+b). Gọi giao điểm của QE , PF với đường tròn là T và T ' . Để chứng minh
+Chứng minh giao điểm của QE , PF nằm trên đường tròn (I ) bản chất là
+
+THCS.TOANMATH.com
+chứng minh T T ' . Để ý rằng: MK là đường trung bình của tam giác
+PEF nên PF / /MK            PF FD (kết quả câu a). Suy ra DT là đường
+kính của (I ) . Hoàn toàn tương tự ta cũng chứng minh được DT ' là đường
+kính của (I ) suy ra T   T '.
+
+---END---
+===Câu 23) Cho tam giác ABC nội tiếp (O ) . P là một điểm nằm trong tam===
+giác ABC . Trung trực của CA, AB cắt PA tại E, F . Đường thẳng qua E
+song song với AC cắt tiếp tuyến tại C của (O ) tại M . Đường thẳng qua F
+song song với AB cắt tiếp tuyến tại B của (O ) tại N .
+
+   a) Chứng minh MN là tiếp tuyến của (O )
+
+   b) Giả sử MN cắt đường tròn ngoại tiếp các tam giác ACM , ABN lần
+       lượt tại S ,Q khác MN . Chứng minh      ABC       ASQ và SB cắt
+       CQ tại một điểm nằmtrên (O ) .
+
+Phân tích định hướng giải:
+
+
+
+
+THCS.TOANMATH.com
+                          A
+                                              R
+
+
+
+
+      y         K                         H
+                              F O
+                                                      x
+                              P
+                          E
+
+            B                                     C
+
+
+
+ S
+                N                 D
+                                              M
+                                                  Q
+
+
+
+
+                                      L
+
+a). Bằng thực nghiệm hình vẽ ta dự đoán MN tiếp xúc với đường tròn (O )
+tại giao điểm D của AP với đường tròn (O ) . Như vậy ta cần chứng minh
+
+ODM 900 và ODN 900 . Nếu điều này xảy ra thì tứ giác OEDM và
+OFND nội tiếp. Trong bài toán có các giả thiết liên quan đến tiếp tuyến
+CM , BN nên ta cần chú ý đến các tính chất về góc tạo bởi tiếp tuyến và
+một dây cung để tìm liên hệ về góc. Ngoài ra các giả thiết liên quan đến
+đường trung trực giúp ta nghỉ đến các tam giác cân hoặc tính chất đối xứn
+qua trung trực của một cạnh tam giác.
++ Muốn chứng minh OEDM nội tiếp ta cần chỉ ra góc OME              ODE
+nhưng OME OCE (do OEMC nội tiếp) mà OCE OAE (OE là
+trung trực của AC ) . Mặt khác tam giác OAD cân tại O suy ra
+
+OAE       ODE . Từ đó suy ra OME              ODE hay OEDM nội tiếp suy ra
+OEM       ODM       900
+
+
+
+THCS.TOANMATH.com
++ Hoàn toàn tương tự ta cũng có ODN         900 hay MN là tiếp tuyến của
+(O ) .
+
+b). + Ta thấy rằng ASQ     ASM       1800    ACM       ACx do tứ giác
+ASMC nội tiếp. Mặt khác MC là tiếp tuyến của (O ) nên
+ACx     ABC        ASQ    ABC . Tương tự ta có:
+
+AQS      AQN       1800   ABN       ABy     ACB suy ra         ABC                 ASQ .
+
++ Giả sử SB cắt QC tại điểm R . Muốn chứng minh R thuộc đường tròn
+(O ) ta quy về chứng minh ABCR là tứ giác nội tiếp. Tức là ta quy về
+
+chứng minh RCA       RBA . Để ý rằng trong tam giác ARQ và trong tam
+giác ASR nếu RCA      RBA thì sẽ xảy ra ACQ ABS . Nhưng điều này
+là hiến nhiên do   ABC   ASQ .(Bài toán kết thúc)
+
+---END---
+===Câu 24). Cho tam giác ABC nội tiếp (O ) cố định với B,C cố định. Điểm===
+A di chuyển trên đường tròn (O ) sao cho AB       AC . Lấy điểm D thuộc
+đoạn BC sao cho AD là phân giác góc BAC . Đường tròn (K ) qua A và
+tiếp xúc với BC tại D lần lượt cắt AC , AB tại E, F khác điểm A .
+BE ,CF lần lượt cắt (K ) tại G , H khác E, F . AG, AH cắt BC tại M , N
+
+   a) Chứng minh (K ) tiếp xúc với (O )
+
+   b) Tìm vị trí điểm A trên đường tròn (O ) để diện tích tam giác AMN
+       lớn nhất.
+
+Phân tích định hướng giải:                                             x
+
+
+
+Giả thiết liên quan đến                                A
+
+
+đường phân giác trong
+                                                                   K
+                                                                       O
+AD ta nghỉ đến việc kéo                                                        E
+                                                   F                       H
+                                                           G
+                                                                                   C
+                                T                  B       M   D           N
+THCS.TOANMATH.com
+                                                                   D'
+dài AD cắt đường tròn (O ) tại D ' thì ta có tính chất quen thuộc
+OD ' BC . Mặt khác KD BC và D cũng chính là giao điểm của
+đường phân giác trong góc A với (K ) suy ra KD EF           EF / /BC . Để
+chứng minh hai đường tròn tiếp xúc trong với nhau ta kẻ tiếp tuyến
+Ax BC T của đường tròn (K ) . Ta sẽ chứng minh Ax là tiếp tuyến
+chung của hai đường tròn.                    Ta có: TAF    AEF mà
+AEF ACB đồng vị . Từ đó suy raTAF             TAB     ACB . Điều này
+chứng tỏ AT cũng là tiếp tuyến của (O ) .
+
+Cách 2: Kẻ tiếp tuyến Ax          BC     T    của đường tròn (O ) Ta có
+
+TDA DAC ACD DAB TAB TAD suy ra tam giác TAD cân
+tại T , mà TD tiếp xúc với (K ) TA tiếp xúc với (K ). Vậy TA là tiếp
+tuyến chung tại A của hai đường tròn .
+
+b). Ta có
+GBM GEF GAB                   BGM         ABM       MB2    MG.MA . Mặt
+khác theo tính chất tiếp tuyến và cát tuyến ta cũng có:
+MD 2    MG.MA        MB     MD . Tương tự ta chứng minh được N là trung
+                           1                             1
+điểm của CD . Suy ra MN      BC không đổi. Ta có S AMN     AL.MN .
+                           2                             2
+Trong đó AL là đường cao kẻ từ A đến BC . Như vậy S AMN lớn nhất khi
+và chỉ khi AL lớn nhất. Suy ra AL phải đi qua tâm O. Suy ra A là trung
+điểm của cung BC .
+
+---END---
+===Câu 25). Cho đường tròn (O ) và dây cung AB (không phải là đường kính).===
+Điểm M thuộc cung lớn AB , I là tâm vòng tròn nội tiếp MAB , P là
+điểm chính giữa của cung AM không chứa điểm B, K là trung điểm của
+MI
+
+     a) Chứng minh PK       MI
+
+
+
+
+THCS.TOANMATH.com
+   b) Gọi Q là giao điểm của PK và AI . Chứng minh ABQP nội tiếp.
+
+   c) Khi M thay đổi trên cung lớn AB . Chứng minh PQ luôn tiếp xúc
+       với một đường tròn cố định
+
+Phân tích định hướng giải:
+                                             M
++ Để chứng minh PK         MI                                           Q
+
+ta phải chứng minh       PMI                             T
+                                                  K
+cân tại P đây là tính              P
+
+chất hình học quen thuộc.                                    O
+                                                     I
++ Để chứng minh ABPQ
+
+nội tiếp ta chứng minh                 A                                     B
+
+
+PQA     PBA để tận dụng
+
+các giả thiết liên quan đến phân
+
+giác và tính chất điểm P .
+
++ Ta thấy rằng PQ        MI , như vậy PQ sẽ tiếp xúc với đường tròn có bán
+kính cố định và song song với MI , điều này giúp ta liên tưởng đến tâm O
+và đường thẳng qua O vuông góc với PQ
+
+Từ những định hướng trên ta có lời giải như sau:
+
+a). Trước hết ta chứng minh                PMI cân tại P . Thật vậy ta có:
+PMI PMA AMI PBA IMB                           PBM        BMI     PIM   suy   ra
+tam giác PMI cân tại P do đó PK               MI .
+
+
+
+
+THCS.TOANMATH.com
+b) Tacó
+                                                          1
+PQA       900     KIQ     900     IMA     IAM       900     AMB     MAB
+                                                          2
+  1
+    MAB          PBA . Như vậy tứ giác ABPQ nội tiếp.
+  2
+
+c) Kẻ OT vuông góc với PQ thì T là trung điểm của dây PQ . Ta cũng có
+                                                   1
+PQ là phân giác của góc MPB nên POQ                  sđAMB không đổi. Từ đó
+                                                   2
+                        POQ
+ta có OT        R.cos       không đổi. Vậy PQ luôn tiếp xúc với đường
+                         2
+
+                                             POQ
+tròn tâm O bán kính r        OT      R.cos
+                                              2
+
+---END---
+===Câu 26) Cho AB là dây cung (không là đường kính) của (O ),(O ') là trung===
+điểm của OB , O1 , O2 là các đường tròn đường kính OA,O ' B . MN là
+
+tiếp tuyến chung ngoài của hai đường tròn O1 , O2 với M           O1 , N   O2 .
+
+Gọi C là giao điểm của AM với đường tròn (O ) C            A .
+
+   a) Chứng minh CO             MN
+
+   b) Chứng minh: AMNB là tứ giác nội tiếp
+
+                                   6
+   c) Chứng minh MN                  AB
+                                  4
+
+Phân tích định hướng giải:
+
+
+
+
+THCS.TOANMATH.com
+a). Ta thấy MO1 / /NO2       MN                                      C
+
+
+vậy để chứng minh CO         MN
+                                          D
+ta sẽ chứng minh CO / /MO1 hoặc                            M
+
+
+                                                                                     N
+CO / /NO2 . Tức là ta chứng minh                                O
+
+                                                       O1                O'
+                                                                                O2
+AMO1        ACO nhưng điều này                A                                          B
+
+
+là hiển nhiên do các tam giác
+
+O1AM,OAC cân tại O1 và O
+
+b). Kéo dài MN cắt (O ) tại D .Dễ thấy B, N ,C thẳng hàng , thật vậy nếu
+ta gọi C ' là giao điểm của BN và (O ) thì C 'O            MN       C         C ' . Để
+chứng minh AMNB nội tiếp thì ta cần chứng minh ABN                       CMN nhưng
+                        1       1                     1
+ta có: CMN       DMA      AO1C     AOC và ABC           AOC từ đó suy
+                        2       2                     2
+ra điều phải chứng minh:
+Chú ý: Việc kéo dài MN cắt đường tròn (O ) tại D là chìa khóa để tính các
+góc dựa trên tính chất của tiếp tuyến MN
+
+c). Ta có
+                        MN      CM    CN              MN        CM CN                    CM CN
+  CMN         CBA                                                 .                        .
+                        BA      CB    CA              BA        CB CA                    CA CB
+            CM    OO1     1 CN       OO2          3                  6
+mặt khác                   ;                           MN              AB
+            CA    OA      2 CB       OB           4                 4
+
+
+
+
+THCS.TOANMATH.com
+Câu 27). Cho tam giác ABC . Một đường tròn (K ) qua B,C cắt các đoạn
+CA, AB tại E, F khác C và B . Đường thẳng BE cắt CF tại H . Gọi M
+là trung điểm của EF. Gọi P,Q lần lượt đối xứng với A qua BE ,CF .
+
+   a) Chứng minh đường tròn (I ) ngoại tiếp tam giác HEP và đường
+       tròn (J ) ngoại tiếp tam giác HFQ cắt nhau trên AM
+
+   b) Chứng minh (I ) và (J ) có bán kính bằng nhau.
+
+Phân tích định hướng giải:
+                                                        A
+a). Nếu D là giao điểm thứ
+
+hai của hai đường tròn
+                                                                     E             P
+(I ),(J ) . Thực nghiệm hình
+                                                                M
+                                                    F
+vẽ giúp ta dự đoán tứ giác                                  H
+                                                                               I
+                                 Q
+AEDF là hình bình hành.
+                                                                          K
+                                            J
+Nếu chứng minh được                                                  D
+                                                                                          C
+                                                B
+điều này thì ta sẽ kết luận
+
+được AM qua D . Tuy
+
+nhiên việc chứng minh
+
+trực tiếp AEDF là hình bình là tương đối khó.
+
++ Để khắc phục điều này ta sẽ gọi D là đỉnh thứ 4 của hình bình hành
+AEDF sau đó ta chứng minh các tứ giác QFHD, PEHD nội tiếp. Khi đó
+các đường tròn (I ),(J ) cùng đi qua D . Ta có: HPE                 EAH       CAH (1) .
+Ta cần chỉ ra CAH        EDH để ý đến hai tam giác          CAH và             EDH ta
+thấy
+THCS.TOANMATH.com
+HED      FED      FEH      AFE     FCBECB FCB ECF ECH .
+                                       HE  EF
+Mặt khác ta cũng có     FEH   BCH             và
+                                       HC CB
+                        AF  EF        HE  AF    DE
+  AEF          ABC             suy ra              (do
+                        AC  BC        HC  AC    AC
+AF     DE ) như vậy     CAH            EDH do đó CAH    EDH kết hợp với
+(1) ta suy ra HPE EDH hay tứ giác PEHD nội tiếp, hoàn toàn tương tự
+ta cũng có QFHD nội tiếp suy ra đường tròn (I ) ngoại tiếp tam giác HEP
+và đường tròn (J ) ngoại tiếp tam giác HFQ cắt nhau tại điểm D nằm trên
+AM .
+
+b). Ta có HID 2HED 2HCA 2HFD HJD hai tam giác
+  HJD, HID có chung cạnh đáy, góc ở đỉnh bằng nhau nên
+  HJD          HID    JD    ID
+
+---END---
+===Câu 28) Cho tam giác ABC nội tiếp (O ) . Các điểm E, F thuộc cung BC===
+không chứa điểm A sao cho EF / /BC và tia AE nằm giữa tia AB, AF .
+Gọi H là trực tâm của tam giác ABC . FH cắt (O ) tại điểm G khác F .
+Gọi (L) là đường tròn ngoại tiếp tam giác AGH . Giả sử K     AE sao cho
+
+AHK      900
+
+   a) Chứng minh L nằm trên AE
+
+   b) Giả sử (L) cắt CA, AB lần lượt tại M , N khác A . Chứng minh
+        AF      MN tại điểm P
+
+   c) GK       MN     Q, AQ      (O)    R   A. Chứng minh đường thẳng qua
+        R vuông góc với AF cắt GP tại một điểm nằm trên (O ) .
+
+Phân tích định hướng giải:
+
+a). Nếu L nằm trên AE thì 4 điểm A,G, H , K nằm trên cùng 1 đường
+
+
+THCS.TOANMATH.com
+tròn (L) . Như vậy bản chất câu hỏi là chứng minh AGHK nội tiếp.
+
+Thật vậy : Ta có:
+
+Do K     AE sao cho AHK      900               A
+
+suy ra HK     AH                   G
+                                                    L           M
+HK / /BC / /EF
+                                               Q
+                                                        P
+                                       N
+Do đó KHF       HFE                                         O
+                                               H K
+                                                                          I
+mà HFE       EAG                                                          C
+                                   B
+(cùng chắn cung FG )
+                                           R
+suy ra KHF     KAG hay AGHK                          E          F
+
+
+nội tiếp. Mặt khác AHK    900 nên L là trung điểm của AK .
+
+b). Ta có: AMN      MAF    AKN     BAE             900 ( Do AMN     AKN
+cùng chắn cung AN , MAF      BAE do hai cung BE ,CF bằng nhau.)
+
+Suy ra AF     MN tại điểm P .
+
+c). Giả sử đường thẳng qua R vuông góc với AF cắt GP tại I . Ta cần
+chứng minh AGRI là tứ giác nội tiếp. Thật vậy từ việc xác định điểm I ta
+suy ra RI / /MN suy ra RIG      QPG ( đồng vị). Mặt khác ta cũng dễ
+
+thấy QPG     QAG ( Do tứ giác APQG nội tiếp) suy ra RIG        RAG
+   AGRI là tứ giác nội tiếp. Tức là điểm I nằm trên đường tròn (O ) .
+
+
+
+
+THCS.TOANMATH.com
+Câu 29) Cho tam giác ABC nội tiếp đường tròn (O ) . Điểm P nằm trong
+
+tam giác sao cho AP là phân giác trong của góc BAC . Gọi E, F lần lượt
+là hình chiếu vuông góc của của P lên CA, AB . Đường thẳng qua A
+vuông góc với AP cắt đường tròn (O ) tại D khác A , PD cắt EF tại Q ,
+M là trung điểm của BC .
+
+      a) Chứng minh MQ / /AP
+
+      b) Gọi K , L lần lượt là đường tròn ngoại tiếp các tam giác
+         BQF ,CQE . Chứng minh K , L có một điểm chung với (O ) .
+
+
+      c) Giả sử QM cắt K , L lần lượt tại S ,T khác Q . Chứng minh
+
+         rằng đường trung trực của ST và AO cắt nhau trên O .
+
+Phân tích định hướng giải:
+                                                            D
+a). Kéo dài AP cắt (O ) tại G dễ thấy           A
+
+
+GD là đường kính của (O ) .
+                                                                E
+Ta thấy các tam giác                                N Q
+                                            F
+  APE        DGC có các                                 P       O
+
+đường cao tương ứng là EN ,CM                       K               L
+                                                            M                   C
+                                        B
+      MG      NP
+nên              . Mặt khác ta cũng                                 S
+      MD      NA
+                                                                            H
+                                                R
+                                                                G
+   NP       QP                                                          T
+có             do NQ / /AD
+   NA       QD
+
+
+
+THCS.TOANMATH.com
+               MG    QP
+từ đó suy ra                QM / /GN      AP .
+               MD    QD
+
+b). Gọi R là giao điểm của (O ) với DP . Ta sẽ chứng minh các tứ giác
+BFQR,CEQR khi đó các đường tròn (K ),(L),(O) sẽ có một điểm chung
+
+là R . Thật vậy vì AD / /EF nên BAD       BFQ mà BAD         180   BRD
+   BFQ         BRD   1800 hay tứ giác BFQR nội tiếp. Tương tự ta cũng có:
+
+CEQR nội tiếp nên K , L có một điểm chung với (O ) là R .
+
+c).Dựng đường kính AH của (O ) . Ta sẽ chứng minh đường trung trực của
+ST đi qua H . Điều này có nghĩa là tam giác SHT cân tại H .
+
+Tứ giác FQSB nội tiếp mà SQF        900    BS    BF     BH     B, S, H
+thẳng hàng. Tương tự C ,T , H thẳng hàng nên
+
+SHT     QSB      AFE      AEF    QRC      STH         SHT cân ( đpcm).
+
+
+
+
+THCS.TOANMATH.com
+
+---END---
