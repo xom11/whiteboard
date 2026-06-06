@@ -52,6 +52,45 @@ function ClearIcon(): React.ReactElement {
   );
 }
 
+function ToolResultList<TKey extends string, TGroup extends string>(props: {
+  tools: ReadonlyArray<StampToolDef<TKey, TGroup>>;
+  activeTool: TKey;
+  onToolChange: (k: TKey) => void;
+}): React.ReactElement {
+  const { tools, activeTool, onToolChange } = props;
+  return (
+    <div className="flex flex-col gap-0.5" data-testid="tool-result-list">
+      {tools.map((t) => {
+        const active = activeTool === t.key;
+        return (
+          <button
+            key={t.key}
+            type="button"
+            data-tool={t.key}
+            aria-label={t.label}
+            aria-pressed={active}
+            onClick={() => onToolChange(t.key)}
+            className={[
+              'flex items-center gap-2 rounded-md px-2 py-1.5 text-left transition',
+              active ? 'bg-emerald-600 text-white' : 'text-slate-700 hover:bg-slate-100',
+            ].join(' ')}
+          >
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center">{t.icon}</span>
+            <span className="min-w-0">
+              <span className="block truncate text-[12px] font-medium leading-tight">{t.label}</span>
+              {t.hint && (
+                <span className={['block truncate text-[10px] leading-tight', active ? 'text-emerald-50' : 'text-slate-400'].join(' ')}>
+                  {t.hint}
+                </span>
+              )}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function ToolGrid<TKey extends string, TGroup extends string>(
   props: ToolGridProps<TKey, TGroup>,
 ): React.ReactElement {
@@ -122,7 +161,10 @@ export function ToolGrid<TKey extends string, TGroup extends string>(
         </div>
       )}
 
-      {groupKeys.map((group) => {
+      {normalizedQuery !== '' && !noMatch ? (
+        <ToolResultList tools={filteredTools} activeTool={activeTool} onToolChange={onToolChange} />
+      ) : (
+        groupKeys.map((group) => {
         const isChordActive = chord?.activeGroup === group;
         const dimmed = chord?.activeGroup != null && !isChordActive;
         return (
@@ -169,7 +211,8 @@ export function ToolGrid<TKey extends string, TGroup extends string>(
             </div>
           </section>
         );
-      })}
+        })
+      )}
 
       {portalReady && hover && typeof document !== 'undefined'
         ? createPortal(
