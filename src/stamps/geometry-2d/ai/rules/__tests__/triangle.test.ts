@@ -27,6 +27,16 @@ describe('triangleRule', () => {
     expect((m[0].intents[0] as any).variant).toBe('isoceles-BC');
   });
 
+  it('"cân tại B" → isoceles-CA (cyclic, không phải AC)', () => {
+    const m = run('Cho tam giác ABC cân tại B');
+    expect((m[0].intents[0] as any).variant).toBe('isoceles-CA');
+  });
+
+  it('"cân tại C" → isoceles-AB', () => {
+    const m = run('Cho tam giác ABC cân tại C');
+    expect((m[0].intents[0] as any).variant).toBe('isoceles-AB');
+  });
+
   it('"đều" → equilateral', () => {
     const m = run('Cho tam giác ABC đều');
     expect((m[0].intents[0] as any).variant).toBe('equilateral');

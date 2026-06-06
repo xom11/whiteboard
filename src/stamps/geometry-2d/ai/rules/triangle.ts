@@ -33,7 +33,10 @@ export const triangleRule: LanguageRule = {
       } else if (ra && labels.includes(ra[1])) {
         variant = `right-at-${ra[1]}`;
       } else if (iso && labels.includes(iso[1])) {
-        variant = `isoceles-${labels.filter((v) => v !== iso[1]).join('')}`;
+        // Enum dùng cặp đáy theo THỨ TỰ CYCLIC (AB|BC|CA), KHÔNG phải label-sorted:
+        // apex A→BC, apex B→CA, apex C→AB. Lấy 2 đỉnh kế tiếp apex theo vòng.
+        const i = labels.indexOf(iso[1]);
+        variant = `isoceles-${labels[(i + 1) % 3]}${labels[(i + 2) % 3]}`;
       }
       out.push({
         ruleId: 'triangle',
