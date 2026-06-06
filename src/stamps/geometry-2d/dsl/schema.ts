@@ -64,7 +64,12 @@ export type DslPointT =
   | { name: Name; kind: 'secondIntersection'; line: Name; circle: Name; other: Name }
   | { name: Name; kind: 'circleIntersection'; c1: Name; c2: Name; which: 0 | 1 }
   | { name: Name; kind: 'tangencyPoint'; circle: Name; onLine: Name }
-  | { name: Name; kind: 'tangentPointExt'; from: Name; circle: Name; which: 0 | 1 };
+  | { name: Name; kind: 'tangentPointExt'; from: Name; circle: Name; which: 0 | 1 }
+  // Cụm A
+  | { name: Name; kind: 'arcMidpoint'; circle: Name; a: Name; b: Name; notContaining: Name }
+  | { name: Name; kind: 'excenter'; vertices: [Name, Name, Name]; opposite: Name }
+  | { name: Name; kind: 'reflectPoint'; of: Name; through: Name }
+  | { name: Name; kind: 'reflectLine'; of: Name; through: Name };
 
 export type DslShapeT =
   | { name: Name; kind: 'segment'; p1: Name; p2: Name }
