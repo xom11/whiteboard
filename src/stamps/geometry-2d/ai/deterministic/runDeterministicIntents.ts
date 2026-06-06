@@ -22,6 +22,16 @@ export function runDeterministicIntents(problem: string): DetIntentResult {
   if (matches.length === 0) return { ok: false, reason: 'no-match', coverage };
   if (!coverage.complete) return { ok: false, reason: 'incomplete-coverage', coverage };
 
-  const intents = matches.flatMap((m) => m.intents);
+  // Dedupe intent y hệt nhau: nhiều rule cùng tham chiếu 1 hình (vd "tam giác ABC"
+  // xuất hiện ở nhiều clause → triangle rule emit lặp; centers/cevian cũng cần nó).
+  const seen = new Set<string>();
+  const intents = matches
+    .flatMap((m) => m.intents)
+    .filter((i) => {
+      const key = JSON.stringify(i);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   return { ok: true, intents, coverage };
 }
