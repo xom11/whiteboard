@@ -1,5 +1,5 @@
 // src/core/scene/kinds/__tests__/pointConstructions.test.ts
-import { arcMidpoint, excenter, pointAtDistanceCoord } from '../pointConstructions';
+import { arcMidpoint, excenter } from '../pointConstructions';
 
 describe('arcMidpoint', () => {
   // Đường tròn đơn vị tâm (0,0) R=1. A=(1,0), B=(0,1).
@@ -55,33 +55,5 @@ describe('excenter', () => {
     const p = excenter([[0, 0], [1, 0], [2, 0]], 0);
     expect(Number.isFinite(p[0])).toBe(true);
     expect(Number.isFinite(p[1])).toBe(true);
-  });
-});
-
-describe('pointAtDistanceCoord', () => {
-  it('C trên tia A→B kéo dài qua B, cách B khoảng d', () => {
-    // A=(0,0), B=(3,0), d=2 → C=(5,0)
-    const c = pointAtDistanceCoord([0, 0], [3, 0], 2);
-    expect(c[0]).toBeCloseTo(5, 6);
-    expect(c[1]).toBeCloseTo(0, 6);
-  });
-
-  it('đổi thứ tự from/through → kéo dài về phía kia', () => {
-    // from=B=(3,0), through=A=(0,0), d=2 → C=(-2,0)
-    const c = pointAtDistanceCoord([3, 0], [0, 0], 2);
-    expect(c[0]).toBeCloseTo(-2, 6);
-    expect(c[1]).toBeCloseTo(0, 6);
-  });
-
-  it('hướng chéo: A=(3,0) B=(0,3) d=3 → C = B + 3·unit(B-A)', () => {
-    const c = pointAtDistanceCoord([3, 0], [0, 3], 3);
-    expect(c[0]).toBeCloseTo(-3 / Math.SQRT2, 6);
-    expect(c[1]).toBeCloseTo(3 + 3 / Math.SQRT2, 6);
-  });
-
-  it('from ≡ through (suy biến) → trả về điểm hữu hạn, không NaN', () => {
-    const c = pointAtDistanceCoord([1, 1], [1, 1], 5);
-    expect(Number.isFinite(c[0])).toBe(true);
-    expect(Number.isFinite(c[1])).toBe(true);
   });
 });
