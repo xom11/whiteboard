@@ -71,7 +71,7 @@ describe('registry', () => {
 });
 
 describe('emit context mintAuxId', () => {
-  test('transpile pipeline produces no auxiliary ids for the 28 atomic kinds', () => {
+  test('transpile pipeline produces no auxiliary ids for the 32 atomic kinds', () => {
     const dsl = {
       version: 1 as const,
       points: [{ name: 'A', kind: 'free' as const, x: 0, y: 0 }],

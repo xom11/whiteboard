@@ -20,6 +20,14 @@ describe('excenter kind', () => {
       name: 'J', kind: 'excenter', vertices: ['A', 'B', 'C'], opposite: 'A',
     } as never)).toEqual(['A', 'B', 'C']);
   });
+  // opposite ∈ vertices không được enforce ở DSL schema (ZodEffects phá discriminatedUnion).
+  // Invariant được guard ở scene renderer (validateRefs kiểm tra opposite resolves as point,
+  // và renderer validate "opposite phải là một trong vertices").
+  it('schema allows opposite not in vertices (invariant enforced downstream)', () => {
+    expect(excenterModule.schema.safeParse({
+      name: 'J', kind: 'excenter', vertices: ['A', 'B', 'C'], opposite: 'X',
+    }).success).toBe(true);
+  });
   it('emit primary point', () => {
     const out = excenterModule.emit({
       name: 'J', kind: 'excenter', vertices: ['A', 'B', 'C'], opposite: 'A',

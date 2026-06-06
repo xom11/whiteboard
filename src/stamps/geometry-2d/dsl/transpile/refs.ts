@@ -84,6 +84,26 @@ export function validateRefs(dsl: DslInputT, symbols: Map<string, Symbol>): Refs
         check(p.name, 'ref2', p.ref2, refPredicate, 'line-like hoặc circle');
         break;
       }
+      case 'arcMidpoint':
+        check(p.name, 'circle', p.circle, isCircleLike, 'circle');
+        check(p.name, 'a', p.a, isPointLike, 'point');
+        check(p.name, 'b', p.b, isPointLike, 'point');
+        check(p.name, 'notContaining', p.notContaining, isPointLike, 'point');
+        break;
+      case 'excenter':
+        for (let i = 0; i < 3; i++) {
+          check(p.name, `vertices[${i}]`, p.vertices[i], isPointLike, 'point');
+        }
+        check(p.name, 'opposite', p.opposite, isPointLike, 'point');
+        break;
+      case 'reflectPoint':
+        check(p.name, 'of', p.of, isPointLike, 'point');
+        check(p.name, 'through', p.through, isPointLike, 'point');
+        break;
+      case 'reflectLine':
+        check(p.name, 'of', p.of, isPointLike, 'point');
+        check(p.name, 'through', p.through, isLineLike, 'line-like');
+        break;
     }
   }
 

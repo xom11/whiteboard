@@ -19,6 +19,10 @@ describe('reflectPoint kind', () => {
 });
 
 describe('reflectLine kind', () => {
+  it('parse + collectRefs', () => {
+    expect(reflectLineModule.schema.safeParse({ name: 'D', kind: 'reflectLine', of: 'H', through: 'BC' }).success).toBe(true);
+    expect(reflectLineModule.collectRefs({ name: 'D', kind: 'reflectLine', of: 'H', through: 'BC' } as never)).toEqual(['H', 'BC']);
+  });
   it('emit transformed/reflectLine', () => {
     const out = reflectLineModule.emit({ name: 'D', kind: 'reflectLine', of: 'H', through: 'BC' } as never, ctx);
     expect(out[0].object.attrs).toMatchObject({
