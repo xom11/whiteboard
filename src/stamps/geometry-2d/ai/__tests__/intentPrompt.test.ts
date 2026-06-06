@@ -47,3 +47,17 @@ describe('buildIntentSystemPrompt', () => {
     }
   });
 });
+
+describe('intentPrompt Cụm A', () => {
+  const p = buildIntentSystemPrompt();
+  it('liệt kê constraint kinds mới', () => {
+    expect(p).toContain('arcMidpoint');
+    expect(p).toContain('reflectPoint');
+    expect(p).toContain('reflectLine');
+    expect(p).toContain('excenter');
+  });
+  it('có hướng dẫn cung không chứa + bàng tiếp', () => {
+    expect(p).toMatch(/trung điểm cung/i);
+    expect(p).toMatch(/bàng tiếp/i);
+  });
+});

@@ -193,6 +193,29 @@ const FIXTURES: IntentFixture[] = [
     problem: 'Giải phương trình x² - 5x + 6 = 0.',
     intents: [],
   },
+  {
+    problem: 'Tam giác ABC nội tiếp (O). M là trung điểm cung BC không chứa A.',
+    intents: [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'draw-circle', name: 'O', spec: 'through3', points: ['A', 'B', 'C'] },
+      { op: 'add-point', name: 'M', constraint: { kind: 'arcMidpoint', circle: 'O', a: 'B', b: 'C', notContaining: 'A' } },
+    ],
+  },
+  {
+    problem: 'Tam giác ABC trực tâm H. D là điểm đối xứng của H qua BC.',
+    intents: [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'add-point', name: 'H', constraint: { kind: 'orthocenter', of: ['A', 'B', 'C'] } },
+      { op: 'add-point', name: 'D', constraint: { kind: 'reflectLine', of: 'H', through: 'BC' } },
+    ],
+  },
+  {
+    problem: 'Tam giác ABC, J là tâm bàng tiếp góc A.',
+    intents: [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'add-point', name: 'J', constraint: { kind: 'excenter', of: ['A', 'B', 'C'], opposite: 'A' } },
+    ],
+  },
 ];
 
 export function buildIntentSystemPrompt(): string {
@@ -258,7 +281,7 @@ hoặc
 - quadrilateral: any
 
 ## Constraint kinds (cho add-point)
-midpoint, perpFoot, centroid, circumcenter, incenter, orthocenter, intersection, onSegment, free
+midpoint, perpFoot, centroid, circumcenter, incenter, orthocenter, intersection, onSegment, free, secondIntersection, circleIntersection, tangencyPoint, tangentPoint, angleBisectorFoot, arcMidpoint, reflectPoint, reflectLine, excenter
 
 ## Style enum (cho connect)
 segment, line, ray, perpBisector
@@ -286,6 +309,22 @@ nhau — đặt đúng field, KHÔNG bỏ field bắt buộc, KHÔNG nhầm POIN
 - **tangentFromExt** — tiếp tuyến TỪ điểm NGOÀI đường tròn (có 2 nhánh).
   Fields: \`from\` (POINT, ngoài circle), \`circle\` (CIRCLE), \`which\` ('first'|'second'|'both').
   - Ví dụ: "Vẽ tiếp tuyến PA và PB từ P" → 2 intent với \`which:"first"\` và \`which:"second"\`.
+
+## Cụm A — constraint hình học nâng cao (đặt ĐÚNG field)
+
+- **arcMidpoint** — trung điểm CUNG. Fields: \`circle\` (tên đường tròn), \`a\`, \`b\` (2 đầu cung), \`notContaining\` (đỉnh KHÔNG nằm trên cung đó).
+  - Ví dụ: "M là trung điểm cung BC không chứa A của (O)" → \`{kind:"arcMidpoint", circle:"O", a:"B", b:"C", notContaining:"A"}\`.
+  - LƯU Ý: phải có draw-circle tạo \`circle\` trước (vd đường tròn ngoại tiếp → spec:"through3", points:[A,B,C]).
+
+- **reflectPoint** — đối xứng qua một ĐIỂM. Fields: \`of\` (điểm gốc), \`through\` (tâm đối xứng, 1 chữ = POINT).
+  - Ví dụ: "Q đối xứng P qua trung điểm M" → \`{kind:"reflectPoint", of:"P", through:"M"}\`.
+
+- **reflectLine** — đối xứng qua một ĐƯỜNG. Fields: \`of\` (điểm gốc), \`through\` (đường, 2 chữ = LINE vd "BC").
+  - Ví dụ: "D đối xứng H qua BC" → \`{kind:"reflectLine", of:"H", through:"BC"}\`.
+
+- **excenter** — tâm BÀNG tiếp tam giác. Fields: \`of\` ([A,B,C]), \`opposite\` (đỉnh đối diện).
+  - Ví dụ: "J là tâm bàng tiếp góc A của tam giác ABC" → \`{kind:"excenter", of:["A","B","C"], opposite:"A"}\`.
+  - KHÁC incenter (tâm NỘI tiếp): bàng tiếp nằm NGOÀI tam giác.
 
 ## Quy ước LINE name
 - 2 ký tự viết liền = SEGMENT/LINE qua 2 điểm: "AB", "BC", "MN" → \`to: "AB"\`.
