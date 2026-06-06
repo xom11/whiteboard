@@ -57,7 +57,11 @@ export type Constraint2D =
   | { kind: 'secondIntersection'; line: string; circle: string; other: string }
   // Tiếp điểm của đường thẳng `onLine` (đã tiếp xúc) với đường tròn `circle`
   // = chân vuông góc hạ từ tâm xuống đường thẳng.
-  | { kind: 'tangencyPoint'; circle: string; onLine: string };
+  | { kind: 'tangencyPoint'; circle: string; onLine: string }
+  // Trung điểm cung AB của đường tròn `circle`, ở cung KHÔNG chứa `notContaining`.
+  | { kind: 'arcMidpoint'; circle: string; a: string; b: string; notContaining: string }
+  // Tâm bàng tiếp tam giác `vertices` đối diện đỉnh `opposite`.
+  | { kind: 'excenter'; vertices: [string, string, string]; opposite: string };
 
 export function constraintRefs2D(c: Constraint2D): string[] {
   switch (c.kind) {
@@ -79,6 +83,8 @@ export function constraintRefs2D(c: Constraint2D): string[] {
     case 'circleIntersection': return [c.c1, c.c2];
     case 'secondIntersection': return [c.line, c.circle, c.other];
     case 'tangencyPoint': return [c.circle, c.onLine];
+    case 'arcMidpoint': return [c.circle, c.a, c.b, c.notContaining];
+    case 'excenter': return [c.vertices[0], c.vertices[1], c.vertices[2]];
     default: return [];
   }
 }
