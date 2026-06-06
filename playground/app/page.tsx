@@ -1,11 +1,18 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import {
-  Whiteboard,
-  type ExcalidrawSceneSnapshot,
-  type BinaryFiles,
+import nextDynamic from 'next/dynamic';
+import type {
+  ExcalidrawSceneSnapshot,
+  BinaryFiles,
 } from '../../src';
+
+// Excalidraw chạm `window` lúc load → không SSR/prerender được. ssr:false để
+// chỉ render client. (Type imports ở trên bị erase nên an toàn cho server.)
+const Whiteboard = nextDynamic(
+  () => import('../../src').then((m) => m.Whiteboard),
+  { ssr: false },
+);
 
 export default function PlaygroundPage() {
   const [, setScene] = useState<ExcalidrawSceneSnapshot | null>(null);
