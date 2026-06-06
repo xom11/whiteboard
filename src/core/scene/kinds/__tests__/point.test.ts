@@ -249,3 +249,22 @@ describe('point arcMidpoint', () => {
   });
 });
 
+describe('point excenter', () => {
+  it('validate chấp nhận excenter đủ field', () => {
+    expect(() => pointDef.validate!(mkArcObj({
+      kind: 'excenter', vertices: ['A', 'B', 'C'], opposite: 'A',
+    }).attrs)).not.toThrow();
+  });
+  it('validate ném khi vertices không phải tuple 3', () => {
+    expect(() => pointDef.validate!(mkArcObj({
+      kind: 'excenter', vertices: ['A', 'B'], opposite: 'A',
+    }).attrs)).toThrow();
+  });
+  it('describe ra mô tả tiếng Việt', () => {
+    const s = { objects: { A: { label: 'A' }, B: { label: 'B' }, C: { label: 'C' } } } as never;
+    expect(pointDef.describe!(mkArcObj({
+      kind: 'excenter', vertices: ['A', 'B', 'C'], opposite: 'A',
+    }), s)).toBe('M = tâm bàng tiếp ΔABC đối diện A');
+  });
+});
+

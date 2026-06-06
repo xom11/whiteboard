@@ -2,7 +2,7 @@
 import { registerKind } from '../registry';
 import type { KindDef, RenderCtx } from '../types';
 import { type Constraint2D, type TransformDef, constraintRefs2D } from './2d-constraint';
-import { arcMidpoint } from './pointConstructions';
+import { arcMidpoint, excenter } from './pointConstructions';
 
 /**
  * Build mảng JSXGraph 'transform' elements cho TransformDef. Dilate → chain
@@ -105,6 +105,12 @@ const def: KindDef<PointAttrs> = {
         throw new Error('point.arcMidpoint: circle, a, b, notContaining bắt buộc');
       }
     }
+    if (c.kind === 'excenter') {
+      if (!Array.isArray(c.vertices) || c.vertices.length !== 3) {
+        throw new Error('point.excenter: vertices phải là tuple 3 id');
+      }
+      if (!c.opposite) throw new Error('point.excenter: opposite bắt buộc');
+    }
   },
   dependsOn: (a) => constraintRefs2D(a.constraint),
   measure: (obj) => {
@@ -173,6 +179,11 @@ const def: KindDef<PointAttrs> = {
       const bl = state?.objects[c.b]?.label ?? c.b;
       const nl = state?.objects[c.notContaining]?.label ?? c.notContaining;
       return `${obj.label} = trung điểm cung ${al}${bl} (không chứa ${nl})`;
+    }
+    if (c.kind === 'excenter') {
+      const labels = c.vertices.map((id) => state?.objects[id]?.label ?? id).join('');
+      const opp = state?.objects[c.opposite]?.label ?? c.opposite;
+      return `${obj.label} = tâm bàng tiếp Δ${labels} đối diện ${opp}`;
     }
     return `Điểm ${obj.label}`;
   },
@@ -413,6 +424,17 @@ const def: KindDef<PointAttrs> = {
         [A.X(), A.Y()], [B.X(), B.Y()], [N.X(), N.Y()],
       );
       return board.create('point', [() => am()[0], () => am()[1]], opts);
+    }
+    if (c.kind === 'excenter') {
+      const a: any = ctx.resolveRef(c.vertices[0]);
+      const b: any = ctx.resolveRef(c.vertices[1]);
+      const c3: any = ctx.resolveRef(c.vertices[2]);
+      const oppIdx = c.vertices.indexOf(c.opposite) as 0 | 1 | 2;
+      const idx = (oppIdx < 0 ? 0 : oppIdx) as 0 | 1 | 2;
+      const ex = () => excenter(
+        [[a.X(), a.Y()], [b.X(), b.Y()], [c3.X(), c3.Y()]], idx,
+      );
+      return board.create('point', [() => ex()[0], () => ex()[1]], opts);
     }
     return board.create('point', [0, 0], opts);
   },
