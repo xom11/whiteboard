@@ -31,6 +31,8 @@ import { circleCRModule } from './kinds/circles/circleCR';
 import { incircleModule } from './kinds/circles/incircle';
 import { arcMidpointModule } from './kinds/points/arcMidpoint';
 import { excenterModule } from './kinds/points/excenter';
+import { reflectPointModule } from './kinds/points/reflectPoint';
+import { reflectLineModule } from './kinds/points/reflectLine';
 
 const ALL_MODULES: ReadonlyArray<DslKindModule> = [
   freeModule, midpointModule, onSegmentModule, onLineModule, onCircleModule,
@@ -46,7 +48,7 @@ const ALL_MODULES: ReadonlyArray<DslKindModule> = [
   // NEW Tier 4+5 circles
   circleCRModule, incircleModule,
   // Cụm A points
-  arcMidpointModule, excenterModule,
+  arcMidpointModule, excenterModule, reflectPointModule, reflectLineModule,
 ];
 
 export const KIND_REGISTRY: ReadonlyMap<string, DslKindModule> =
