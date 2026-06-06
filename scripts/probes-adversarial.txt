@@ -1,0 +1,42 @@
+# === PHẢI render đúng (13 ca tốt — không được regress) ===
+Cho tam giác ABC. Gọi M là trung điểm BC
+Cho tam giác ABC. Gọi G là trọng tâm tam giác ABC
+Cho tam giác ABC. Kẻ đường cao AH
+Cho tam giác ABC. Gọi H là hình chiếu của A trên BC
+Cho hình vuông ABCD
+Cho hình chữ nhật ABCD
+Cho tam giác ABC vuông tại A. Gọi M là trung điểm BC
+Cho tam giác ABC cân tại A. Kẻ trung tuyến AM
+Cho đường tròn tâm O bán kính 3
+Cho đường tròn (O; 3)
+Cho tam giác ABC. Vẽ đường tròn ngoại tiếp tam giác ABC
+Cho tam giác ABC. Vẽ đường tròn nội tiếp tam giác ABC
+Cho tam giác ABC. Gọi H là trực tâm của tam giác ABC
+
+# === PHẢI escalate (HIGH: hình sai im lặng nếu render) ===
+Cho tam giác ABC và tam giác ABD vuông tại A
+Cho tam giác ABC và tam giác ACD cân tại A
+Cho tam giác đều DEF nội tiếp tam giác ABC
+Cho tam giác ABC nội tiếp tam giác đều MNP
+Cho hình bình hành ABCD và hình chữ nhật EFGH
+Cho hình thoi ABCD và hình vuông EFGH
+Cho tam giác ABC và tam giác DEF. Gọi G là trọng tâm tam giác DEF
+Cho tam giác ABC. Lấy tam giác MBC. Gọi H là trực tâm tam giác MBC
+Cho tam giác ABC. Dựng tam giác DEF. Gọi I là tâm đường tròn nội tiếp tam giác DEF
+Cho tam giác ABC. Kẻ đường cao AB
+Cho tam giác ABC. Vẽ trung tuyến AC
+Cho tam giác ABC. B đối xứng C qua M
+Cho tam giác MNP. M đối xứng N qua P
+Cho tam giác ABC. A đối xứng B qua AC
+Cho tam giác ABC. Gọi M là trung điểm BC và N là trung điểm AC
+Cho tam giác ABC. Vẽ đường trung trực BC và trung trực CA
+Cho tam giác ABC. Gọi N là điểm bất kỳ, H là hình chiếu của A trên BC
+Cho tam giác ABC. Gọi H, K lần lượt là hình chiếu của B trên AC và của C trên AB
+Cho tam giác ABC. Vẽ đường tròn ngoại tiếp tứ giác BCEF
+Cho đường tròn (O; 3). Độ dài tiếp tuyến từ A đến (O) bằng 5
+Cho tam giác ABC. Kéo dài AB về phía B lấy điểm D sao cho BD = 2 AB.
+Cho tam giác ABC nội tiếp đường tròn (O; R). Kéo dài AB về phía B lấy điểm D sao cho BD = 2R.
+Cho tam giác ABC. Kéo dài AB về phía A lấy điểm D sao cho BD = 3.
+Cho tam giác ABC nội tiếp đường tròn (O). Gọi M là điểm chính giữa cung BC không chứa B
+Cho đường tròn tâm I bán kính 2 và đường tròn tâm O bán kính 5
+Vẽ đoạn thẳng song song với BC

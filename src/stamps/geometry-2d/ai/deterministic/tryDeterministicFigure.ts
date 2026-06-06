@@ -11,7 +11,7 @@ import type { TranspileResult } from '../../dsl/transpile/errors';
 import type { VerifyReport } from '../verify';
 import type { CoverageReport } from './coverage';
 import { runDeterministicIntents } from './runDeterministicIntents';
-import { allNamedEntitiesPresent } from './guards';
+import { allNamedEntitiesPresent, verifyIntentFidelity } from './guards';
 import { normalizeIntents } from '../normalizeIntent';
 import { resolveCircleNameCollisions } from '../resolveCircleNames';
 import { intentsToDsl } from '../intentToDsl';
@@ -25,7 +25,8 @@ export type DeterministicReason =
   | 'transpile-throw'
   | 'transpile-fail'
   | 'verify-fail'
-  | 'named-missing';
+  | 'named-missing'
+  | 'intent-dropped';
 
 export interface DeterministicFigure {
   intents: IntentT[];
@@ -73,10 +74,17 @@ export function tryDeterministicFigure(problem: string): TryDeterministicResult 
     return { ok: false, reason: 'verify-fail', coverage: det.coverage };
   }
 
-  // Guard chống im lặng thiếu điểm: tên xuất hiện trong đề phải có trong DSL.
+  // Guard 1: tên xuất hiện/khai báo trong đề phải có trong DSL (chống drop construct).
   const named = allNamedEntitiesPresent(problem, dsl);
   if (!named.ok) {
     return { ok: false, reason: 'named-missing', detail: named.missing.join(','), coverage: det.coverage };
+  }
+
+  // Guard 2: add-point phái sinh phải dựng trung thành (không bị builder drop vì
+  // trùng tên đỉnh sẵn có → điểm thực tế là 'free' thay vì construct).
+  const fidelity = verifyIntentFidelity(intents, dsl);
+  if (!fidelity.ok) {
+    return { ok: false, reason: 'intent-dropped', detail: fidelity.dropped.join(','), coverage: det.coverage };
   }
 
   return {

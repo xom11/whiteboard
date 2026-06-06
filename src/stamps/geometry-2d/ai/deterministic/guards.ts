@@ -1,34 +1,89 @@
 // src/stamps/geometry-2d/ai/deterministic/guards.ts
 //
-// Guard chống "im lặng thiếu điểm": mọi điểm/đối tượng được ĐẶT TÊN trong đề
-// ("Gọi M…", "lấy điểm D", "cắt … tại D") PHẢI tồn tại trong DSL dựng được.
-// Nếu thiếu → rule đã claim clause nhưng không dựng đủ → router escalate AI thay
-// vì dùng hình thiếu. Đây là lớp gate bổ sung cho coverage clause-level (coarse).
+// Hai guard fail-safe cho deterministic-first: nếu DSL dựng được KHÔNG trung thành
+// với đề, router escalate AI thay vì render hình sai/thiếu. Bổ sung cho coverage
+// clause-level (vốn coarse, dễ bỏ lọt khi 1 clause chứa nhiều construct).
 import type { DslInputT } from '../../dsl/schema';
+import type { IntentT } from '../intent';
 
-// Tên điểm được giới thiệu/tham chiếu rõ ràng. KHÔNG dùng \b (ASCII) quanh ký tự
-// Việt; bắt 1 ký tự HOA đơn (không phải cặp đỉnh hay từ dài hơn).
-const NAMED = /(?:Gọi|gọi|Lấy|lấy|Dựng|dựng|Đặt|đặt|tại|điểm)\s+(?:điểm\s+)?([A-Z])(?![A-Za-z])/gu;
+// ── Guard 1: named-entity present ────────────────────────────────────────────
+// Mọi đỉnh/điểm được ĐẶT TÊN hay KHAI BÁO trong đề phải tồn tại trong DSL.
+// KHÔNG dùng \b (ASCII) quanh ký tự Việt.
+
+// Tên điểm dẫn nhập 1 ký tự HOA: "Gọi M", "lấy điểm D", "cắt … tại D", "N là …",
+// "H, K lần lượt", "và P là".
+const NAMED_INTRO = /(?:Gọi|gọi|Lấy|lấy|Dựng|dựng|Đặt|đặt|tại|điểm|và)\s+(?:điểm\s+)?([A-Z])(?![A-Za-z])/gu;
+const NAMED_LA = /([A-Z])(?![A-Za-z])\s+là\b/gu;
+const NAMED_LANLUOT = /([A-Z])(?![A-Za-z])\s*,\s*([A-Z])(?![A-Za-z])\s+lần lượt/gu;
+
+// Đỉnh của hình khai báo: "tam giác ABC", "tứ giác ABCD", "hình vuông/… ABCD".
+// Bắt cụm 3-4 ký tự HOA LIỀN ngay sau tên hình (mỗi đỉnh phải có trong DSL).
+const SHAPE_TRI = /tam giác\s+([A-Z]{3})(?![A-Z])/gu;
+const SHAPE_QUAD = /(?:tứ giác|hình\s+(?:vuông|chữ nhật|bình hành|thoi|thang))\s+([A-Z]{4})(?![A-Z])/gu;
 
 export interface NamedEntityReport {
   ok: boolean;
   missing: string[];
 }
 
-export function allNamedEntitiesPresent(
-  problem: string,
-  dsl: DslInputT,
-): NamedEntityReport {
+function collectExpectedNames(problem: string): Set<string> {
+  const names = new Set<string>();
+  const add = (re: RegExp, groups: number[]) => {
+    re.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(problem)) !== null) {
+      for (const g of groups) if (m[g]) names.add(m[g]);
+    }
+  };
+  add(NAMED_INTRO, [1]);
+  add(NAMED_LA, [1]);
+  add(NAMED_LANLUOT, [1, 2]);
+  // Đỉnh hình: tách cụm 3/4 ký tự thành từng đỉnh.
+  for (const re of [SHAPE_TRI, SHAPE_QUAD]) {
+    re.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(problem)) !== null) {
+      for (const ch of m[1]) names.add(ch);
+    }
+  }
+  return names;
+}
+
+export function allNamedEntitiesPresent(problem: string, dsl: DslInputT): NamedEntityReport {
   const present = new Set<string>();
   for (const p of dsl.points) present.add(p.name);
   for (const s of dsl.shapes) present.add(s.name);
 
-  const missing = new Set<string>();
-  NAMED.lastIndex = 0;
-  let m: RegExpExecArray | null;
-  while ((m = NAMED.exec(problem)) !== null) {
-    const name = m[1];
-    if (!present.has(name)) missing.add(name);
+  const missing: string[] = [];
+  for (const name of collectExpectedNames(problem)) {
+    if (!present.has(name)) missing.push(name);
   }
-  return { ok: missing.size === 0, missing: [...missing] };
+  return { ok: missing.length === 0, missing };
+}
+
+// ── Guard 2: intent → DSL fidelity ───────────────────────────────────────────
+// Mỗi add-point intent dựng điểm phái sinh (không phải 'free') PHẢI hiện diện
+// trong DSL đúng dạng. Builder idempotent DROP add-point khi tên trùng đỉnh sẵn
+// có (vd "đường cao AB" → foot B trùng vertex B) → điểm để 'free' → guard bắt.
+
+export interface FidelityReport {
+  ok: boolean;
+  dropped: string[];
+}
+
+export function verifyIntentFidelity(intents: readonly IntentT[], dsl: DslInputT): FidelityReport {
+  const byName = new Map<string, { kind: string }>();
+  for (const p of dsl.points) byName.set(p.name, p as unknown as { kind: string });
+
+  const dropped: string[] = [];
+  for (const intent of intents) {
+    if (intent.op !== 'add-point') continue;
+    const kind = (intent as { constraint?: { kind?: string } }).constraint?.kind;
+    if (!kind || kind === 'free') continue; // free point không phải construct
+    const name = (intent as { name: string }).name;
+    const pt = byName.get(name);
+    // Thiếu hẳn, hoặc bị builder hạ về 'free' (đã bị drop bởi vertex trùng tên).
+    if (!pt || pt.kind === 'free') dropped.push(name);
+  }
+  return { ok: dropped.length === 0, dropped };
 }
