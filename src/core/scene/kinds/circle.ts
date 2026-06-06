@@ -2,6 +2,7 @@
 import { registerKind } from '../registry';
 import type { KindDef } from '../types';
 import { labelOf } from './labelOf';
+import { excenter } from './pointConstructions';
 
 /**
  * Cách dựng đường tròn phái sinh. Khi `construction` có mặt, `center`/
@@ -9,7 +10,9 @@ import { labelOf } from './labelOf';
  * đường tròn ngoại tiếp 3 điểm.
  */
 export type CircleConstruction =
-  | { kind: 'circumscribed'; p1: string; p2: string; p3: string };
+  | { kind: 'circumscribed'; p1: string; p2: string; p3: string }
+  | { kind: 'incircle'; p1: string; p2: string; p3: string }
+  | { kind: 'excircle'; p1: string; p2: string; p3: string; opposite: string };
 
 export type CircleAttrs = {
   /** Hai-điểm fallback — bắt buộc khi không có `construction` / `radius`. */
@@ -28,6 +31,8 @@ export type CircleAttrs = {
 function constructionRefs(c: CircleConstruction): string[] {
   switch (c.kind) {
     case 'circumscribed': return [c.p1, c.p2, c.p3];
+    case 'incircle': return [c.p1, c.p2, c.p3];
+    case 'excircle': return [c.p1, c.p2, c.p3];
   }
 }
 
@@ -73,6 +78,12 @@ const def: KindDef<CircleAttrs> = {
     if (c?.kind === 'circumscribed') {
       return `Đường tròn đi qua ${L(c.p1)}${L(c.p2)}${L(c.p3)}`;
     }
+    if (c?.kind === 'incircle') {
+      return `Đường tròn nội tiếp Δ${L(c.p1)}${L(c.p2)}${L(c.p3)}`;
+    }
+    if (c?.kind === 'excircle') {
+      return `Đường tròn bàng tiếp Δ${L(c.p1)}${L(c.p2)}${L(c.p3)} đối diện ${L(c.opposite)}`;
+    }
     if (typeof obj.attrs.radius === 'number') {
       return `Đường tròn tâm ${L(obj.attrs.center!)} bán kính ${obj.attrs.radius}`;
     }
@@ -97,6 +108,36 @@ const def: KindDef<CircleAttrs> = {
       const p2 = ctx.resolveRef(c.p2);
       const p3 = ctx.resolveRef(c.p3);
       return board.create('circumcircle', [p1, p2, p3], baseOpts);
+    }
+    if (c?.kind === 'incircle') {
+      const p1 = ctx.resolveRef(c.p1);
+      const p2 = ctx.resolveRef(c.p2);
+      const p3 = ctx.resolveRef(c.p3);
+      return board.create('incircle', [p1, p2, p3], baseOpts);
+    }
+    if (c?.kind === 'excircle') {
+
+      const P = [ctx.resolveRef(c.p1), ctx.resolveRef(c.p2), ctx.resolveRef(c.p3)] as any[];
+      const ids = [c.p1, c.p2, c.p3];
+      const oppIdx = Math.max(0, ids.indexOf(c.opposite)) as 0 | 1 | 2;
+      const verts = (): [[number, number], [number, number], [number, number]] => [
+        [P[0].X(), P[0].Y()], [P[1].X(), P[1].Y()], [P[2].X(), P[2].Y()],
+      ];
+      const ctr = () => excenter(verts(), oppIdx);
+      const radius = () => {
+        const I = ctr();
+        const others = [0, 1, 2].filter((i) => i !== oppIdx);
+        const v = verts();
+        const a = v[others[0]]; const b = v[others[1]];
+        const dx = b[0] - a[0]; const dy = b[1] - a[1];
+        const len = Math.hypot(dx, dy) || 1;
+        return Math.abs((I[0] - a[0]) * dy - (I[1] - a[1]) * dx) / len;
+      };
+      const center = board.create('point', [() => ctr()[0], () => ctr()[1]], { visible: false, withLabel: false, fixed: true, name: '' });
+
+      const circ: any = board.create('circle', [center, () => radius()], baseOpts);
+      circ._helpers = [center];
+      return circ;
     }
     if (typeof obj.attrs.radius === 'number') {
       const center = ctx.resolveRef(obj.attrs.center!);
