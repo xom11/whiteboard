@@ -29,20 +29,23 @@ const TRI = /tam\s*giác(?:\s+(?:vuông|cân|đều|nhọn|tù))?\s+([A-Z])([A-Z
 // TẤT CẢ pattern dùng cờ /g để matchAll bắt MỌI cevian trong 1 clause.
 type CevianType = 'altitude' | 'median' | 'bisector';
 
+// LƯU Ý case: KHÔNG dùng cờ 'i' (làm [A-Z] khớp chữ thường → bắt rác). Nhưng
+// keyword có thể HOA ở đầu câu ("Đường cao AH", "Trung tuyến AM", "Phân giác AD")
+// → ký tự đầu keyword + verb dùng [Xx]; vertices LUÔN strict [A-Z].
 const CEVIAN_PATTERNS: ReadonlyArray<{ type: CevianType; patterns: readonly RegExp[] }> = [
   {
     type: 'altitude',
     patterns: [
-      /(?:kẻ|vẽ|hạ|dựng)\s+đường\s*cao\s+([A-Z])([A-Z])(?![A-Z])/gu,
-      /đường\s*cao\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      /(?:[Kk]ẻ|[Vv]ẽ|[Hh]ạ|[Dd]ựng)\s+[Đđ]ường\s*cao\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      /[Đđ]ường\s*cao\s+([A-Z])([A-Z])(?![A-Z])/gu,
       /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?đường\s*cao/gu,
     ],
   },
   {
     type: 'median',
     patterns: [
-      /(?:kẻ|vẽ|dựng)\s+trung\s*tuyến\s+([A-Z])([A-Z])(?![A-Z])/gu,
-      /trung\s*tuyến\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      /(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\s+[Tt]rung\s*tuyến\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      /[Tt]rung\s*tuyến\s+([A-Z])([A-Z])(?![A-Z])/gu,
       /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?trung\s*tuyến/gu,
     ],
   },
@@ -54,15 +57,15 @@ const CEVIAN_PATTERNS: ReadonlyArray<{ type: CevianType; patterns: readonly RegE
     // "AD là phân giác ngoài" thành internal → escalate (fail-safe).
     type: 'bisector',
     patterns: [
-      /(?:kẻ|vẽ|dựng)\s+(?:đường\s*|tia\s+)?phân\s*giác(?:\s+trong)?\s+([A-Z])([A-Z])(?![A-Z])/gu,
-      /(?:đường\s*phân\s*giác|tia\s+phân\s*giác|phân\s*giác)(?:\s+trong)?\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      /(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\s+(?:[Đđ]ường\s*|[Tt]ia\s+)?phân\s*giác(?:\s+trong)?\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      /(?:[Đđ]ường\s*phân\s*giác|[Tt]ia\s+phân\s*giác|[Pp]hân\s*giác)(?:\s+trong)?\s+([A-Z])([A-Z])(?![A-Z])/gu,
       /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?(?:đường\s*|tia\s+)?phân\s*giác(?:\s+trong)?(?!\s+ngoài)/gu,
     ],
   },
 ];
 
-// Prefilter: bất kỳ từ khoá cevian nào trên toàn đề.
-const PREFILTER = [/đường\s*cao/u, /trung\s*tuyến/u, /phân\s*giác/u];
+// Prefilter: bất kỳ từ khoá cevian nào trên toàn đề (hoa đầu câu → [Đđ]/[Tt]/[Pp]).
+const PREFILTER = [/[Đđ]ường\s*cao/u, /[Tt]rung\s*tuyến/u, /[Pp]hân\s*giác/u];
 
 /** Cạnh đối diện đỉnh V trong tam giác = 2 đỉnh còn lại, join token (vd "BC"). */
 function opposite(tri: readonly string[], vertex: string): string | undefined {

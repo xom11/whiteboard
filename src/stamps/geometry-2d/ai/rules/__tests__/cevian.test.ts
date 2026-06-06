@@ -182,4 +182,34 @@ describe('cevianRule', () => {
     // Bug cũ: suffix bắt "AD ... phân giác", bỏ qua "ngoài" → nhận nhầm internal.
     expect(run('Cho tam giác ABC, AD là phân giác ngoài.')).toEqual([]);
   });
+
+  // ── Mức 2: keyword HOA đầu câu ("Đường cao"/"Trung tuyến"/"Phân giác") ──
+
+  it('"Đường cao AH" (hoa đầu câu) → perpFoot H', () => {
+    const m = run('Cho tam giác ABC. Đường cao AH từ A.');
+    const pt = findByKind(m, 'perpFoot')!.intents[0] as any;
+    expect(pt.name).toBe('H');
+    expect(pt.constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+  });
+
+  it('"Trung tuyến AM" (hoa đầu câu) → midpoint M', () => {
+    const m = run('Cho tam giác ABC. Trung tuyến AM.');
+    const pt = findByKind(m, 'midpoint')!.intents[0] as any;
+    expect(pt.name).toBe('M');
+    expect(pt.constraint).toEqual({ kind: 'midpoint', of: 'BC' });
+  });
+
+  it('"Phân giác trong AD" (hoa đầu câu) → angleBisectorFoot D', () => {
+    const m = run('Cho tam giác ABC. Phân giác trong AD.');
+    const pt = findByKind(m, 'angleBisectorFoot')!.intents[0] as any;
+    expect(pt.name).toBe('D');
+    expect(pt.constraint).toEqual({ kind: 'angleBisectorFoot', from: 'A', onLine: 'BC' });
+  });
+
+  it('SILENT-WRONG FIX: "Đường cao AH ... trung tuyến BH" (xung đột chân H) → escalate', () => {
+    // Trước fix hoa-đầu-câu: "Đường cao AH" không khớp → chỉ median BH khớp →
+    // xung đột KHÔNG phát hiện → render midpoint(H) SAI. Sau fix: cả 2 khớp →
+    // footCount[H]=2 → bỏ cả 2 → escalate (đúng fail-safe).
+    expect(run('Cho tam giác ABC. Đường cao AH từ A và trung tuyến BH từ B.')).toEqual([]);
+  });
 });
