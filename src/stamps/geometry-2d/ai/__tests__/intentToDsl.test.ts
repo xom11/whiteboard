@@ -428,4 +428,16 @@ describe('intentsToDsl Cụm A', () => {
       kind: 'excenter', vertices: ['A', 'B', 'C'], opposite: 'A',
     });
   });
+
+  it('reflectPoint pass-through of + through', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'add-point', name: 'P', constraint: { kind: 'onSegment', of: 'AB', t: 0.4 } },
+      { op: 'add-point', name: 'M', constraint: { kind: 'midpoint', of: 'AC' } },
+      { op: 'add-point', name: 'Q', constraint: { kind: 'reflectPoint', of: 'P', through: 'M' } },
+    ] as IntentT[]);
+    expect(dsl.points.find((p) => p.name === 'Q')).toMatchObject({
+      kind: 'reflectPoint', of: 'P', through: 'M',
+    });
+  });
 });
