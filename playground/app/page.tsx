@@ -5,6 +5,7 @@ import nextDynamic from 'next/dynamic';
 import type {
   ExcalidrawSceneSnapshot,
   BinaryFiles,
+  GenerateGeometryFigure,
 } from '../../src';
 
 // Excalidraw chạm `window` lúc load → không SSR/prerender được. ssr:false để
@@ -26,12 +27,27 @@ export default function PlaygroundPage() {
     setFiles(next);
   }, []);
 
+  // Bridge AI: gọi API route server-side (token ở server local, không ra browser).
+  const generateGeometryFigure = useCallback<GenerateGeometryFigure>(
+    async (problem, options) => {
+      const res = await fetch('/api/generate-figure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ problem }),
+        signal: options.signal,
+      });
+      return res.json();
+    },
+    [],
+  );
+
   return (
     <div className="h-screen w-screen">
       <Whiteboard
         storageKey="playground"
         onSceneChange={handleSceneChange}
         onFilesChange={handleFilesChange}
+        generateGeometryFigure={generateGeometryFigure}
       />
     </div>
   );

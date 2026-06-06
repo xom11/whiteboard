@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
   // Playground là harness test trực quan, không phải cổng type-safety. Typecheck thật
   // của thư viện nằm ở `npm run typecheck` repo gốc.
   typescript: { ignoreBuildErrors: true },
+  // AI SDK server-only: giữ external (require runtime từ node_modules) thay vì bundle
+  // → API route server dùng SDK thật ổn định, không lỗi bundle node SDK.
+  serverExternalPackages: ['@anthropic-ai/claude-agent-sdk', '@anthropic-ai/sdk'],
   turbopack: {
     root: path.resolve(__dirname, '..'),
   },
@@ -13,7 +16,9 @@ const nextConfig: NextConfig = {
   // @anthropic-ai/sdk) dùng node built-ins → không bundle được cho client. Playground
   // không có backend nên bỏ nguyên 2 SDK + stub node built-ins về false. Build bằng
   // webpack (next build --webpack) vì turbopack không stub được các module này.
-  webpack: (config, { webpack }) => {
+  webpack: (config, { webpack, isServer }) => {
+    // API route (server bundle) CẦN AI SDK thật → chỉ stub cho CLIENT bundle.
+    if (isServer) return config;
     config.plugins.push(
       new webpack.NormalModuleReplacementPlugin(/^node:/, (resource: { request: string }) => {
         resource.request = resource.request.replace(/^node:/, '');
