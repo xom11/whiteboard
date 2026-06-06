@@ -6,10 +6,15 @@
 // circle lấy từ toàn đề ("(O)" / "đường tròn (tâm) O"); KHÔNG có circle → bỏ qua
 // (escalate AI — không thể dựng cung mà không biết đường tròn).
 //
-// notContaining:
-//   - "không chứa X"               → X
+// notContaining (PHẢI là đỉnh thứ 3, ∉ {a,b}):
+//   - "không chứa X"               → X (chỉ nhận nếu X ∉ {a,b}; X∈{a,b} vô nghĩa → bỏ qua)
 //   - không nêu nhưng có tam giác  → đỉnh thứ 3 (đỉnh tam giác không thuộc cặp cung)
 //   - cả hai đều không suy được    → bỏ qua (escalate)
+//
+// CHỈ xử lý cú pháp "cung (nhỏ)? <PAIR> không chứa <Z>" (containment ÂM, cung nhỏ).
+// Vượt scope → bỏ qua (escalate, an toàn — đừng mis-render):
+//   - "cung lớn <PAIR>"            → cung lớn, ngữ nghĩa cung đối → defer
+//   - "chứa X" (containment DƯƠNG, không có "không" đứng trước) → defer
 //
 // Tên điểm qua extractPointName / ký tự HOA trước "(là) điểm chính giữa"; không
 // trích được tên → bỏ qua (đừng bịa tên).
@@ -75,6 +80,12 @@ export const arcMidpointRule: LanguageRule = {
     for (const c of ctx.clauses) {
       if (!ARC_MID.test(c.text)) continue;
 
+      // Vượt scope (chỉ xử lý "cung (nhỏ) PAIR không chứa Z"):
+      //   - "cung lớn"  → cung đối, defer → escalate
+      //   - "chứa X" containment DƯƠNG (không có "không" trước) → defer → escalate
+      if (/cung\s+lớn/u.test(c.text)) continue;
+      if (/chứa/u.test(c.text) && !/không\s+chứa/u.test(c.text)) continue;
+
       const pairM = ARC_PAIR.exec(c.text);
       if (!pairM) continue;
       const pair = pairFromToken(pairM[1] + pairM[2]);
@@ -91,6 +102,8 @@ export const arcMidpointRule: LanguageRule = {
       const nc = NOT_CONTAINING.exec(c.text);
       if (nc) {
         notContaining = nc[1];
+        // notContaining = endpoint của cung (a/b) → vô nghĩa hình học → escalate.
+        if (notContaining === a || notContaining === b) continue;
       } else if (tri) {
         const verts = [tri[1], tri[2], tri[3]];
         notContaining = verts.find((v) => v !== a && v !== b);

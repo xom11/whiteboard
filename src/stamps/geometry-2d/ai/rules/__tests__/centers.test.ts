@@ -66,10 +66,51 @@ describe('centersRule', () => {
     expect(h.constraint.of).toEqual(['A', 'B', 'C']);
   });
 
+  // --- bind tam giác theo CLAUSE, không lấy tam giác đầu đề ------------------
+
+  it('"trọng tâm tam giác DEF" (đề có cả ABC) → centroid of [D,E,F] không phải [A,B,C]', () => {
+    const i = find('Cho tam giác ABC và tam giác DEF. Gọi G là trọng tâm tam giác DEF', 'centroid');
+    expect(i).toBeDefined();
+    expect(i.name).toBe('G');
+    expect(i.constraint).toEqual({ kind: 'centroid', of: ['D', 'E', 'F'] });
+  });
+
+  it('"trực tâm tam giác MBC" (đề có cả ABC) → orthocenter of [M,B,C]', () => {
+    const i = find('Cho tam giác ABC, lấy M trên BC. H là trực tâm tam giác MBC', 'orthocenter');
+    expect(i).toBeDefined();
+    expect(i.name).toBe('H');
+    expect(i.constraint).toEqual({ kind: 'orthocenter', of: ['M', 'B', 'C'] });
+  });
+
+  it('"nội tiếp tam giác DEF" (đề có cả ABC) → incenter of [D,E,F]', () => {
+    const i = find('Cho tam giác ABC và tam giác DEF. I là tâm đường tròn nội tiếp tam giác DEF', 'incenter');
+    expect(i).toBeDefined();
+    expect(i.name).toBe('I');
+    expect(i.constraint).toEqual({ kind: 'incenter', of: ['D', 'E', 'F'] });
+  });
+
+  it('"ngoại tiếp tam giác DEF" (đề có cả ABC) → circumcenter of [D,E,F]', () => {
+    const i = find('Cho tam giác ABC và tam giác DEF. Gọi O là tâm đường tròn ngoại tiếp tam giác DEF', 'circumcenter');
+    expect(i).toBeDefined();
+    expect(i.name).toBe('O');
+    expect(i.constraint).toEqual({ kind: 'circumcenter', of: ['D', 'E', 'F'] });
+  });
+
+  it('clause không nêu tam giác + đề CÓ DUY NHẤT 1 tam giác → fallback', () => {
+    const i = find('Cho tam giác ABC. Gọi G là trọng tâm', 'centroid');
+    expect(i).toBeDefined();
+    expect(i.constraint.of).toEqual(['A', 'B', 'C']);
+  });
+
   // --- ràng buộc an toàn (escalate thay vì đoán sai) -------------------------
 
   it('không có tam giác trong đề → bỏ qua (không match)', () => {
     expect(run('Gọi G là trọng tâm')).toEqual([]);
+  });
+
+  it('clause không nêu tam giác + đề có >1 tam giác → nhập nhằng, bỏ qua', () => {
+    // "trọng tâm" không nói tam giác nào; đề có ABC và DEF → không đoán → []
+    expect(find('Cho tam giác ABC và tam giác DEF. Gọi G là trọng tâm', 'centroid')).toBeUndefined();
   });
 
   it('"trung trực BC" KHÔNG nhầm thành trực tâm', () => {

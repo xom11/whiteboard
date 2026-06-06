@@ -44,6 +44,11 @@ const KEO_DAI =
 const TAKE_POINT =
   /lấy\s+(?:điểm\s+)?([A-Z])(?:['′]?)(?![A-Z])/u;
 
+// "về phía X": hướng kéo dài. Mặc định through = đỉnh cuối cụm. Nếu "về phía X"
+// mà X KHÁC through (vd "kéo dài AB về phía A") → hướng đảo, rule không xử lý
+// đúng (defer) → skip để escalate.
+const VE_PHIA = /về\s+phía\s+([A-Z])(?![A-Za-z])/u;
+
 // Cụm chốt mốc + khoảng cách: "BC = R" / "BC = AB" / "BC = 3" / "BC = 2,5 cm".
 // Đỉnh đầu (m[1]) = mốc đo (through); đỉnh sau (m[2]) = điểm mới (Z).
 // Phần sau dấu "=" gom thô để parse riêng (radius / segment / số). KHÔNG kết
@@ -83,6 +88,13 @@ type Distance =
 /** Parse phần sau dấu "=" → DistanceSpec hoặc undefined (không nhận dạng được). */
 function parseDistance(raw: string, problem: string): Distance | undefined {
   const text = raw.trim();
+  // 0. TỪ CHỐI biểu thức có hệ số / toán tử / bội: k·AB, 2R, R+1, AB/2, 1/2 AB,
+  //    "2 lần bán kính". Spec liệt kê các nguồn này là DEFER → escalate AI thay
+  //    vì lấy nhầm số/đỉnh đơn lẻ (rất dễ sai độ lớn).
+  if (/[×·*/+]/u.test(text)) return undefined; // toán tử nhân/chia/cộng
+  if (/-\s*\d/u.test(text)) return undefined; // trừ số (R - 1); '-' trong tên hiếm
+  if (/\d\s*[A-Z]/u.test(text)) return undefined; // hệ số trước đỉnh/ R: "2 AB", "2R"
+  if (/\blần\b/u.test(text)) return undefined; // "2 lần bán kính"
   // 1. Bán kính: "R" / "bán kính" / "bán kính (O)".
   if (RADIUS_WORD.test(text)) {
     const co = CIRCLE_OF_RADIUS.exec(text);
@@ -132,6 +144,10 @@ export const pointAtDistanceRule: LanguageRule = {
         }
       }
       if (!from || !through) continue;
+
+      // Hướng "về phía X" phải khớp through (đỉnh cuối). Lệch → defer/escalate.
+      const vp = VE_PHIA.exec(c.text);
+      if (vp && vp[1] !== through) continue;
 
       // --- Tên điểm mới ----------------------------------------------------
       const take = TAKE_POINT.exec(c.text);

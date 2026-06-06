@@ -86,4 +86,73 @@ describe('quadRule', () => {
     const shapes = m.map((x) => (x.intents[0] as any).shape).sort();
     expect(shapes).toEqual(['quadrilateral', 'square']);
   });
+
+  // --- BUG 1: 2 hình trong CÙNG clause → emit-all theo thứ tự TEXT -----------
+  it('"hình bình hành ABCD và hình chữ nhật EFGH" → 2 shape, theo thứ tự text', () => {
+    const m = run('Cho hình bình hành ABCD và hình chữ nhật EFGH');
+    expect(m.length).toBe(2);
+    const a = m[0].intents[0] as any;
+    const b = m[1].intents[0] as any;
+    expect(a.shape).toBe('parallelogram');
+    expect(a.labels).toEqual(['A', 'B', 'C', 'D']);
+    expect(b.shape).toBe('rectangle');
+    expect(b.labels).toEqual(['E', 'F', 'G', 'H']);
+  });
+
+  it('"hình thoi ABCD và hình vuông EFGH" → rhombus + square (thứ tự text)', () => {
+    const m = run('Cho hình thoi ABCD và hình vuông EFGH');
+    expect(m.length).toBe(2);
+    expect((m[0].intents[0] as any).shape).toBe('rhombus');
+    expect((m[0].intents[0] as any).labels).toEqual(['A', 'B', 'C', 'D']);
+    expect((m[1].intents[0] as any).shape).toBe('square');
+    expect((m[1].intents[0] as any).labels).toEqual(['E', 'F', 'G', 'H']);
+  });
+
+  // --- BUG 2: modifier 'vuông'/'cân' đứng SAU đỉnh ---------------------------
+  it('"hình thang ABCD vuông tại A" → trapezoid right (modifier hậu vị)', () => {
+    const m = run('Cho hình thang ABCD vuông tại A');
+    expect(m.length).toBe(1);
+    const intent = m[0].intents[0] as any;
+    expect(intent.shape).toBe('trapezoid');
+    expect(intent.variant).toBe('right');
+    expect(intent.labels).toEqual(['A', 'B', 'C', 'D']);
+  });
+
+  it('"hình thang ABCD cân" → trapezoid isoceles (modifier hậu vị)', () => {
+    const m = run('Cho hình thang ABCD cân');
+    expect(m.length).toBe(1);
+    const intent = m[0].intents[0] as any;
+    expect(intent.shape).toBe('trapezoid');
+    expect(intent.variant).toBe('isoceles');
+  });
+
+  it('modifier hậu vị KHÔNG nuốt "vuông" của hình kế tiếp', () => {
+    // "hình thang ABCD và hình vuông EFGH": thang phải là general, KHÔNG right.
+    const m = run('Cho hình thang ABCD và hình vuông EFGH');
+    expect(m.length).toBe(2);
+    const trap = m.find((x) => (x.intents[0] as any).shape === 'trapezoid');
+    const sq = m.find((x) => (x.intents[0] as any).shape === 'square');
+    expect(trap).toBeDefined();
+    expect((trap!.intents[0] as any).variant).toBe('general');
+    expect(sq).toBeDefined();
+    expect((sq!.intents[0] as any).labels).toEqual(['E', 'F', 'G', 'H']);
+  });
+
+  it('"hình thang vuông ABCD" (modifier TIỀN vị) vẫn → right', () => {
+    const m = run('Cho hình thang vuông ABCD');
+    expect(m.length).toBe(1);
+    expect((m[0].intents[0] as any).variant).toBe('right');
+    expect((m[0].intents[0] as any).labels).toEqual(['A', 'B', 'C', 'D']);
+  });
+
+  // --- BUG 3: 5+ đỉnh KHÔNG match (escalate, không cắt im lặng) --------------
+  it('"tứ giác ABCDE" (5 đỉnh) → không match (escalate)', () => {
+    const m = run('Cho tứ giác ABCDE');
+    expect(m.length).toBe(0);
+  });
+
+  it('"hình vuông ABCDE" (5 đỉnh) → không match (escalate)', () => {
+    const m = run('Cho hình vuông ABCDE');
+    expect(m.length).toBe(0);
+  });
 });

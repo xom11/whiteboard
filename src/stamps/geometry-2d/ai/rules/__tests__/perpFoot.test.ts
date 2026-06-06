@@ -68,8 +68,47 @@ describe('perpFootRule', () => {
   });
 
   it('không trích được tên điểm → bỏ qua (escalate AI)', () => {
-    // không có "Gọi/Lấy/... X là" và không có "X là" → extractPointName fail
+    // không có "X là" ngay trước cụm → bind tên cục bộ fail
     const m = run('hình chiếu vuông góc của A trên BC');
+    expect(m.length).toBe(0);
+  });
+
+  // ── Bug fixes (adversarial) ────────────────────────────────────────────────
+
+  it('bind tên foot CỤC BỘ, không lấy lời dẫn đầu clause', () => {
+    // "Gọi N là điểm bất kỳ, H là hình chiếu của A trên BC": foot phải là H, KHÔNG phải N.
+    const intent = firstPoint('Gọi N là điểm bất kỳ, H là hình chiếu của A trên BC');
+    expect(intent.name).toBe('H');
+    expect(intent.constraint.kind).toBe('perpFoot');
+    expect(intent.constraint.from).toBe('A');
+    expect(intent.constraint.onLine).toBe('BC');
+  });
+
+  it('"H, K lần lượt là hình chiếu của B trên AC và của C trên AB" → 2 foot', () => {
+    const m = run('H, K lần lượt là hình chiếu của B trên AC và của C trên AB');
+    const intents = m.flatMap((x) => x.intents) as any[];
+    expect(intents.length).toBe(2);
+    const byName = Object.fromEntries(intents.map((i) => [i.name, i]));
+    expect(byName.H.constraint).toMatchObject({ kind: 'perpFoot', from: 'B', onLine: 'AC' });
+    expect(byName.K.constraint).toMatchObject({ kind: 'perpFoot', from: 'C', onLine: 'AB' });
+  });
+
+  it('"H, K lần lượt là chân đường cao kẻ từ B đến AC và từ C đến AB" → 2 foot', () => {
+    const m = run('H, K lần lượt là chân đường cao kẻ từ B đến AC và từ C đến AB');
+    const intents = m.flatMap((x) => x.intents) as any[];
+    expect(intents.length).toBe(2);
+    const byName = Object.fromEntries(intents.map((i) => [i.name, i]));
+    expect(byName.H.constraint).toMatchObject({ kind: 'perpFoot', from: 'B', onLine: 'AC' });
+    expect(byName.K.constraint).toMatchObject({ kind: 'perpFoot', from: 'C', onLine: 'AB' });
+  });
+
+  it('"trung điểm của hình chiếu A trên BC" → không claim (đổi nghĩa, escalate)', () => {
+    const m = run('Gọi M là trung điểm của hình chiếu A trên BC');
+    expect(m.length).toBe(0);
+  });
+
+  it('"trung điểm hình chiếu …" (không "của") cũng skip', () => {
+    const m = run('Gọi M là trung điểm hình chiếu A trên BC');
     expect(m.length).toBe(0);
   });
 });

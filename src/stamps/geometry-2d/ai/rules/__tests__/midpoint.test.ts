@@ -69,4 +69,43 @@ describe('midpointRule', () => {
     expect((m[1].intents[0] as any).name).toBe('N');
     expect((m[1].intents[0] as any).constraint.of).toBe('AC');
   });
+
+  it('2 trung điểm trong CÙNG 1 clause ("... và ...") → 2 add-point', () => {
+    // Bug cũ: chỉ bắt M, drop N. GLOBAL match phải emit cả hai.
+    const m = run('Gọi M là trung điểm BC và N là trung điểm AC');
+    expect(m.length).toBe(2);
+    const byName: Record<string, any> = {};
+    for (const match of m) {
+      const it = match.intents[0] as any;
+      byName[it.name] = it;
+    }
+    expect(byName.M.constraint).toEqual({ kind: 'midpoint', of: 'BC' });
+    expect(byName.N.constraint).toEqual({ kind: 'midpoint', of: 'AC' });
+  });
+
+  it('tên bind CỤC BỘ, không lấy intro "Lấy điểm D" làm tên', () => {
+    // Bug cũ: extractPointName quét cả clause → gán nhầm 'D'. Phải là 'M'.
+    const m = run('Lấy điểm D, gọi M là trung điểm BC');
+    expect(m.length).toBe(1);
+    const it = m[0].intents[0] as any;
+    expect(it.name).toBe('M');
+    expect(it.constraint).toEqual({ kind: 'midpoint', of: 'BC' });
+  });
+
+  it('2 trung điểm dạng-sau trong CÙNG clause → 2 add-point', () => {
+    const m = run('Lấy trung điểm I của AB và trung điểm J của BC');
+    expect(m.length).toBe(2);
+    const byName: Record<string, any> = {};
+    for (const match of m) {
+      const it = match.intents[0] as any;
+      byName[it.name] = it;
+    }
+    expect(byName.I.constraint.of).toBe('AB');
+    expect(byName.J.constraint.of).toBe('BC');
+  });
+
+  it('match thiếu tên cục bộ → bỏ qua match đó (không bịa)', () => {
+    // "trung điểm của đoạn thẳng" — không có cặp đỉnh HOA → không claim.
+    expect(run('Lấy điểm D, tìm trung điểm của đoạn thẳng')).toHaveLength(0);
+  });
 });

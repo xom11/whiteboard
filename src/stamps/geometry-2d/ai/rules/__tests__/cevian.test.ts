@@ -84,6 +84,51 @@ describe('cevianRule', () => {
     expect(pt.constraint).toEqual({ kind: 'midpoint', of: 'AC' });
   });
 
+  it('2 cevian KHÁC loại cùng 1 clause, tên chân KHÁC → emit ĐỦ 2', () => {
+    // "đường cao AH và trung tuyến BK" — foot H≠K, không xung đột → cả 2 emit.
+    const m = run('Cho tam giác ABC. Kẻ đường cao AH và trung tuyến BK.');
+    const alt = findByKind(m, 'perpFoot');
+    const med = findByKind(m, 'midpoint');
+    expect(alt).toBeTruthy();
+    expect(med).toBeTruthy();
+    expect((alt!.intents[0] as any).name).toBe('H');
+    expect((alt!.intents[0] as any).constraint).toEqual({
+      kind: 'perpFoot',
+      from: 'A',
+      onLine: 'BC',
+    });
+    expect((med!.intents[0] as any).name).toBe('K');
+    expect((med!.intents[0] as any).constraint).toEqual({ kind: 'midpoint', of: 'AC' });
+  });
+
+  it('2 cevian CÙNG loại cùng 1 clause → emit ĐỦ 2 (matchAll, không drop)', () => {
+    // "đường cao AH và đường cao BK" — 2 perpFoot khác chân → cả 2 phải emit.
+    const m = run('Cho tam giác ABC. Kẻ đường cao AH và đường cao BK.');
+    const perpFeet = m
+      .map((rm) => rm.intents[0] as any)
+      .filter((p) => p.op === 'add-point' && p.constraint.kind === 'perpFoot')
+      .map((p) => p.name)
+      .sort();
+    expect(perpFeet).toEqual(['H', 'K']);
+  });
+
+  it('2 cevian KHÁC nhau ĐẶT CÙNG tên chân → XUNG ĐỘT → escalate (rỗng)', () => {
+    // "đường cao AH" (foot=H) + "trung tuyến BH" (foot=H, ràng buộc midpoint AC)
+    // mâu thuẫn cùng tên H → KHÔNG claim cả 2 (escalate), tránh mis-render.
+    const m = run('Cho tam giác ABC. Kẻ đường cao AH và trung tuyến BH.');
+    expect(m).toEqual([]);
+  });
+
+  it('foot trùng đỉnh tam giác ("đường cao AB") → SKIP (escalate)', () => {
+    const m = run('Cho tam giác ABC. Kẻ đường cao AB.');
+    expect(m).toEqual([]);
+  });
+
+  it('trung tuyến AC (foot=C trùng đỉnh) → SKIP (escalate)', () => {
+    const m = run('Cho tam giác ABC. Vẽ trung tuyến AC.');
+    expect(m).toEqual([]);
+  });
+
   it('không có tam giác → escalate (rỗng)', () => {
     const m = run('Vẽ đường cao AH của hình.');
     expect(m).toEqual([]);

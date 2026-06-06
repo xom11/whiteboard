@@ -3,15 +3,18 @@
 // Tâm tam giác: trọng tâm (centroid), trực tâm (orthocenter), tâm đường tròn
 // ngoại tiếp (circumcenter), tâm đường tròn nội tiếp (incenter).
 //
-// Mọi kind này cần bộ 3 đỉnh of=[A,B,C] lấy từ tam giác trong toàn đề
-// (ctx.problem). Không có tam giác → không thể dựng → bỏ qua (escalate AI).
+// Mọi kind này cần bộ 3 đỉnh of=[A,B,C]. Bind theo tam giác NÊU TRONG CÙNG
+// CLAUSE với cụm từ khoá (vd "trọng tâm tam giác DEF" → of=[D,E,F]) — KHÔNG lấy
+// tam giác đầu đề. Chỉ fallback tam giác toàn đề khi clause không nêu tam giác
+// nào VÀ đề có ĐÚNG 1 tam giác. Nhập nhằng (clause không nêu, đề >1 tam giác)
+// → bỏ qua (escalate). Không có tam giác nào → bỏ qua (escalate).
 // Tên điểm phải trích được (HOA ngay sau cụm từ khoá, hoặc "X là <từ khoá>");
 // nếu không → bỏ qua, KHÔNG bịa tên.
 import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint } from './_shared';
 
-// Tam giác trong toàn đề → 3 đỉnh.
-const TRI = /tam giác\s+([A-Z])([A-Z])([A-Z])/u;
+// Tam giác (global): quét mọi tam giác nêu trong một đoạn text.
+const TRI_G = /tam giác\s+([A-Z])([A-Z])([A-Z])/gu;
 
 // Từ khoá tâm. \b không khớp quanh ký tự Việt nên dùng lookaround \p{L}.
 // "trọng tâm" — chặn nhầm với "trung tâm" bằng cách yêu cầu đúng "trọng".
@@ -58,6 +61,46 @@ function resolveCenterName(text: string, kw: RegExp): string | undefined {
 }
 
 /**
+ * Tập tam giác (mỗi tam giác = bộ 3 đỉnh) nêu trong một đoạn text. Trùng (cùng
+ * 3 chữ liền) được giữ theo lượt xuất hiện; caller dedup nếu cần.
+ */
+function trianglesIn(text: string): string[][] {
+  const out: string[][] = [];
+  for (const m of text.matchAll(TRI_G)) out.push([m[1], m[2], m[3]]);
+  return out;
+}
+
+/**
+ * Tam giác để bind 'of' cho 1 clause:
+ *  1. Ưu tiên tam giác nêu NGAY TRONG clause (gần cụm từ khoá nhất theo index).
+ *  2. Nếu clause không nêu tam giác nào → fallback tam giác toàn đề CHỈ KHI đề
+ *     có duy nhất 1 tam giác (theo bộ đỉnh, dedup). Nhiều tam giác → undefined
+ *     (nhập nhằng, escalate). Không có tam giác → undefined.
+ */
+function resolveTriangle(
+  clauseText: string,
+  kwIndex: number,
+  uniqueProblemTri: string[] | undefined,
+): string[] | undefined {
+  const inClause = trianglesIn(clauseText);
+  if (inClause.length > 0) {
+    // chọn tam giác gần cụm từ khoá nhất (ưu tiên đứng SAU; nếu không có thì lấy
+    // tam giác gần nhất bất kể phía).
+    let best: { tri: string[]; dist: number } | undefined;
+    for (const m of clauseText.matchAll(TRI_G)) {
+      const tri = [m[1], m[2], m[3]];
+      const idx = m.index ?? 0;
+      // khoảng cách: ưu tiên tam giác đứng sau từ khoá (idx >= kwIndex).
+      const after = idx >= kwIndex;
+      const dist = Math.abs(idx - kwIndex) + (after ? 0 : 1_000);
+      if (!best || dist < best.dist) best = { tri, dist };
+    }
+    return best?.tri;
+  }
+  return uniqueProblemTri;
+}
+
+/**
  * Tâm tam giác → add-point với of=[A,B,C]. Một clause có thể nêu nhiều tâm
  * (vd "trọng tâm G và trực tâm H"); emit từng intent, cùng claim clause.
  */
@@ -67,9 +110,19 @@ export const centersRule: LanguageRule = {
   languages: ['vi'],
   patterns: [CENTROID_KW, ORTHO_KW, CIRCUM_KW, INSCRIBE_KW],
   match(ctx) {
-    const tri = TRI.exec(ctx.problem);
-    if (!tri) return []; // không có tam giác → không dựng được → escalate
-    const of = [tri[1], tri[2], tri[3]];
+    // Tam giác duy nhất toàn đề (dedup theo bộ đỉnh) — dùng làm fallback khi
+    // clause KHÔNG tự nêu tam giác. Nhiều tam giác khác nhau → undefined (nhập
+    // nhằng → escalate). Không có → undefined (không dựng được → escalate).
+    const allTri = trianglesIn(ctx.problem);
+    const distinct = new Set(allTri.map((t) => t.join('')));
+    const uniqueProblemTri = distinct.size === 1 ? allTri[0] : undefined;
+
+    // helper: bind 'of' cho 1 cụm từ khoá tại vị trí kwIndex trong clause.
+    const ofFor = (text: string, kw: RegExp): string[] | undefined => {
+      const m = kw.exec(text);
+      const kwIndex = m ? m.index : 0;
+      return resolveTriangle(text, kwIndex, uniqueProblemTri);
+    };
 
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
@@ -77,20 +130,24 @@ export const centersRule: LanguageRule = {
 
       if (CENTROID_KW.test(c.text)) {
         const name = resolveName(c.text, CENTROID_KW);
-        if (name) intents.push(addPoint(name, { kind: 'centroid', of }));
+        const of = ofFor(c.text, CENTROID_KW);
+        if (name && of) intents.push(addPoint(name, { kind: 'centroid', of }));
       }
       if (ORTHO_KW.test(c.text)) {
         const name = resolveName(c.text, ORTHO_KW);
-        if (name) intents.push(addPoint(name, { kind: 'orthocenter', of }));
+        const of = ofFor(c.text, ORTHO_KW);
+        if (name && of) intents.push(addPoint(name, { kind: 'orthocenter', of }));
       }
       // circumcenter: "ngoại tiếp". incenter: "nội tiếp" nhưng KHÔNG khi clause
       // cũng có "ngoại tiếp" (cùng cụm gây nhập nhằng) — ưu tiên ngoại tiếp.
       if (CIRCUM_KW.test(c.text)) {
         const name = resolveCenterName(c.text, CIRCUM_KW);
-        if (name) intents.push(addPoint(name, { kind: 'circumcenter', of }));
+        const of = ofFor(c.text, CIRCUM_KW);
+        if (name && of) intents.push(addPoint(name, { kind: 'circumcenter', of }));
       } else if (INSCRIBE_KW.test(c.text)) {
         const name = resolveCenterName(c.text, INSCRIBE_KW);
-        if (name) intents.push(addPoint(name, { kind: 'incenter', of }));
+        const of = ofFor(c.text, INSCRIBE_KW);
+        if (name && of) intents.push(addPoint(name, { kind: 'incenter', of }));
       }
 
       if (intents.length > 0) {

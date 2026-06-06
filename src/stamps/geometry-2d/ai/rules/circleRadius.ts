@@ -22,12 +22,27 @@ import { drawCircle } from './_shared';
 
 // "đường tròn tâm O bán kính 3" / "(O) bán kính 3" / "O bán kính 3".
 // Tâm 1 ký tự HOA; "tâm" optional; có thể bọc trong ngoặc "(O)".
-const CENTER_RADIUS_WORDS =
-  /đường\s*tròn\s*(?:\(\s*)?(?:tâm\s+)?([A-Z])(?:\s*\))?[^A-Z]*?bán\s*kính\s+(\d+(?:[.,]\d+)?)/u;
+//
+// GLOBAL (/gu) vì 1 clause có thể nêu NHIỀU đường tròn ("tâm I bán kính 2 và
+// tâm O bán kính 5" không có dấu câu tách → cùng clause). matchAll quét hết.
+//
+// Gap tâm→"bán kính" dùng tempered quantifier `(?:(?!đường|và\s)[^A-Z])*?` để
+// KHÔNG nhảy qua một "đường tròn" khác hay liên từ "và " (ranh giới giữa 2 hình).
+// Nếu nhảy qua được, "tâm O và … tâm I bán kính 5" sẽ bind nhầm 5 vào O. Chặn ở
+// đây ⇒ match bắt đầu từ O thất bại, regex tự dời tới "tâm I bán kính 5" (đúng),
+// còn "tâm O" trơ (không số) không bị nuốt → không claim → escalate phần đó.
+const CENTER_RADIUS_WORDS_G =
+  /đường\s*tròn\s*(?:\(\s*)?(?:tâm\s+)?([A-Z])(?:\s*\))?(?:(?!đường|và\s)[^A-Z])*?bán\s*kính\s+(\d+(?:[.,]\d+)?)/gu;
 
 // "đường tròn tâm O đi qua A" / "(O) đi qua A" / "O đi qua A".
-const CENTER_THROUGH =
-  /đường\s*tròn\s*(?:\(\s*)?(?:tâm\s+)?([A-Z])(?:\s*\))?\s+đi\s+qua\s+([A-Z])/u;
+// GLOBAL: nhiều "đường tròn … đi qua …" trong 1 clause.
+const CENTER_THROUGH_G =
+  /đường\s*tròn\s*(?:\(\s*)?(?:tâm\s+)?([A-Z])(?:\s*\))?\s+đi\s+qua\s+([A-Z])/gu;
+
+// Phần "đi qua B và C" (≥2 điểm surface): chưa hỗ trợ (DSL centerThrough 1 điểm).
+// Phát hiện để SKIP match đó → điểm thứ 2 (C) thiếu trong DSL → named-entity
+// guard escalate AI (an toàn) thay vì render thiếu C.
+const THROUGH_MULTI = /đi\s+qua\s+[A-Z]\s*(?:và|,)\s*[A-Z]/u;
 
 // Ký hiệu gọn "(O; 3)" / "(O, 3)" — quét toàn đề (global) vì có thể nhiều.
 const CENTER_RADIUS_PAREN_G = /\(\s*([A-Z])\s*[;,]\s*(\d+(?:[.,]\d+)?)\s*\)/gu;
@@ -51,37 +66,44 @@ export const circleRadiusRule: LanguageRule = {
   id: 'circleRadius',
   priority: 75,
   languages: ['vi'],
-  patterns: [CENTER_RADIUS_WORDS, CENTER_THROUGH, /\(\s*[A-Z]\s*[;,]\s*\d/u],
+  patterns: [CENTER_RADIUS_WORDS_G, CENTER_THROUGH_G, /\(\s*[A-Z]\s*[;,]\s*\d/u],
   match(ctx) {
     const out: RuleMatch[] = [];
 
     // --- Per-clause: dạng "bán kính <số>" + "đi qua <điểm>" (segment nguyên) ---
     for (const c of ctx.clauses) {
-      // Ưu tiên "đi qua <điểm>" (centerThrough) — loại trừ với "bán kính số".
-      const ct = CENTER_THROUGH.exec(c.text);
-      if (ct) {
-        const center = ct[1];
-        const through = ct[2];
-        out.push({
-          ruleId: 'circleRadius',
-          clauseIds: [c.id],
-          intents: [drawCircle(center, 'centerThrough', { center, through })],
-        });
-        continue;
-      }
-
-      const crw = CENTER_RADIUS_WORDS.exec(c.text);
-      if (crw) {
-        const center = crw[1];
-        const radius = parseNum(crw[2]);
-        if (Number.isFinite(radius) && radius > 0) {
+      // 1) "đi qua <điểm>" (centerThrough). GLOBAL: nhiều đường tròn / clause.
+      //    "đi qua B và C" (≥2 điểm) → SKIP toàn bộ centerThrough clause này:
+      //    chưa hỗ trợ multi-surface-point, để guard escalate (không render thiếu).
+      const throughMulti = THROUGH_MULTI.test(c.text);
+      if (!throughMulti) {
+        CENTER_THROUGH_G.lastIndex = 0;
+        let ct: RegExpExecArray | null;
+        while ((ct = CENTER_THROUGH_G.exec(c.text)) !== null) {
+          const center = ct[1];
+          const through = ct[2];
           out.push({
             ruleId: 'circleRadius',
             clauseIds: [c.id],
-            intents: [drawCircle(center, 'centerRadius', { center, radius })],
+            intents: [drawCircle(center, 'centerThrough', { center, through })],
           });
         }
-        // radius CHỮ ("R") → crw không match (\d bắt buộc) → bỏ qua escalate.
+      }
+
+      // 2) "bán kính <số>". GLOBAL: "tâm I bán kính 2 và tâm O bán kính 5" emit
+      //    2 intent. Gap tempered (xem CENTER_RADIUS_WORDS_G) ⇒ không bind nhầm.
+      //    radius CHỮ ("R") → \d không match → bỏ qua → escalate.
+      CENTER_RADIUS_WORDS_G.lastIndex = 0;
+      let crw: RegExpExecArray | null;
+      while ((crw = CENTER_RADIUS_WORDS_G.exec(c.text)) !== null) {
+        const center = crw[1];
+        const radius = parseNum(crw[2]);
+        if (!Number.isFinite(radius) || radius <= 0) continue;
+        out.push({
+          ruleId: 'circleRadius',
+          clauseIds: [c.id],
+          intents: [drawCircle(center, 'centerRadius', { center, radius })],
+        });
       }
     }
 

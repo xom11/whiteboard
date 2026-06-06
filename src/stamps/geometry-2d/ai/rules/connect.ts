@@ -12,17 +12,19 @@ import type { IntentT } from '../intent';
 // ("đ","ề"…). Dùng lookaround \p{L}; cờ 'u' bắt buộc cho mọi regex Việt.
 // Cặp đỉnh = 2 ký tự HOA liền; (?![A-Z]) chặn "ABC" (tam giác) khỏi bị bắt.
 
+// LƯU Ý case: KHÔNG dùng cờ 'i' (nó khiến [A-Z] khớp chữ thường → "đoạn THẳng"
+// bắt "th" làm cặp T,H rác, vỡ pipeline). Nhưng vẫn cần khớp keyword HOA đầu câu
+// ("Kẻ", "Nối", "Đoạn") → case-insensitive CHỈ ở ký tự đầu keyword bằng [Xx].
+// Vertices LUÔN strict [A-Z].
 // "đường thẳng AB" → line. "đường thẳng" phải đứng trước cặp.
-const LINE_KW = /đường\s*thẳng\s+([A-Z])([A-Z])(?![A-Z])/gu;
+const LINE_KW = /[Đđ]ường\s*thẳng\s+([A-Z])([A-Z])(?![A-Za-z])/gu;
 // "tia AB" → ray. Không bắt "tia phân giác", "tia đối" (theo sau là chữ thường).
-const RAY_KW = /(?<!\p{L})tia\s+([A-Z])([A-Z])(?![A-Z])/gu;
+const RAY_KW = /(?<!\p{L})[Tt]ia\s+([A-Z])([A-Z])(?![A-Za-z])/gu;
 // "nối A với/và B" → segment. Tên 1 ký tự, không phải cặp.
-const NOI_KW = /(?<!\p{L})nối\s+([A-Z])\s+(?:với|và)\s+([A-Z])(?![A-Z])/giu;
+const NOI_KW = /(?<!\p{L})[Nn]ối\s+([A-Z])\s+(?:với|và)\s+([A-Z])(?![A-Za-z])/gu;
 // "đoạn (thẳng) AB" | "cạnh AB" | "kẻ AB" → segment.
-// "đoạn thẳng" cũng cho segment (khác "đường thẳng" → line). "kẻ AB" segment;
-// "kẻ đường thẳng AB" đã được LINE_KW bắt trước (cùng clause, khác cặp thường).
 const SEG_KW =
-  /(?<!\p{L})(?:đoạn(?:\s*thẳng)?|cạnh|kẻ)\s+([A-Z])([A-Z])(?![A-Z])/giu;
+  /(?<!\p{L})(?:[Đđ]oạn(?:\s*thẳng)?|[Cc]ạnh|[Kk]ẻ)\s+([A-Z])([A-Z])(?![A-Za-z])/gu;
 
 function collect(
   re: RegExp,

@@ -28,8 +28,14 @@ export function normalizeIntents(
   intents: readonly IntentT[],
   problem: string,
 ): IntentT[] {
+  // Đếm tam giác: chỉ normalize "cân tại X" khi đề có ĐÚNG 1 tam giác — đa tam
+  // giác thì không thể bind "cân tại X" toàn-problem cho đúng tam giác, mà rule
+  // deterministic (window) / LLM đã set variant per-intent → tin theo đó.
+  const triangleCount = intents.filter(
+    (i) => i.op === 'draw-shape' && i.shape === 'triangle',
+  ).length;
   return intents.map((intent) => {
-    if (intent.op === 'draw-shape') return normalizeShape(intent, problem);
+    if (intent.op === 'draw-shape') return normalizeShape(intent, problem, triangleCount);
     if (intent.op === 'draw-line') return normalizeLine(intent);
     return intent;
   });
@@ -64,10 +70,14 @@ function normalizeLine(intent: DrawLineIntentT): DrawLineIntentT {
   return intent;
 }
 
-function normalizeShape(intent: DrawShapeIntentT, problem: string): IntentT {
+function normalizeShape(
+  intent: DrawShapeIntentT,
+  problem: string,
+  triangleCount: number,
+): IntentT {
   switch (intent.shape) {
     case 'triangle':
-      return normalizeTriangle(intent, problem);
+      return normalizeTriangle(intent, problem, triangleCount);
     case 'rectangle':
       return normalizeRectangle(intent, problem);
     case 'square':
@@ -96,12 +106,17 @@ function forceStandard(intent: DrawShapeIntentT): DrawShapeIntentT {
 function normalizeTriangle(
   intent: DrawShapeIntentT,
   problem: string,
+  triangleCount: number,
 ): DrawShapeIntentT {
+  // Đa tam giác: không clobber — variant đã được set đúng per-intent ở nguồn.
+  if (triangleCount !== 1) return intent;
   const m = problem.match(CAN_TAI_RE) ?? problem.match(ISOCELES_AT_RE);
   if (!m) return intent;
   const apex = m[1].toUpperCase();
   const i = intent.labels.indexOf(apex);
   if (i < 0) return intent;
+  // Variant POSITIONAL theo INDEX apex (builder: isoceles-BC ⇒ apex=vertex[0]).
+  // KHÔNG dùng chữ-cái-nhãn để đúng cho nhãn ≠ ABC.
   const variantByPos: Record<number, DrawShapeIntentT['variant']> = {
     0: 'isoceles-BC',
     1: 'isoceles-CA',

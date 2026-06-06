@@ -5,9 +5,18 @@
 // "AM là trung tuyến", "vẽ phân giác AD"). Cần triangle context (ctx.problem)
 // để suy ra cạnh đối diện đỉnh = 2 đỉnh còn lại.
 //
-// Mỗi clause khớp → RuleMatch với 2 intent cùng clauseId:
+// Mỗi cevian khớp → RuleMatch với 2 intent cùng clauseId:
 //   - add-point (chân: perpFoot / midpoint / angleBisectorFoot)
 //   - connect (đoạn cevian visible VF, style segment)
+//
+// Nguyên tắc fail-safe:
+//   - 1 clause có thể chứa NHIỀU cevian (cùng/khác loại): dùng matchAll (cờ /g)
+//     để emit ĐỦ, không chỉ match đầu tiên.
+//   - foot trùng đỉnh tam giác ("đường cao AB" → foot=B) → SKIP (đừng tạo
+//     add-point sẽ bị builder hạ về 'free' → fidelity guard escalate).
+//   - 2 cevian KHÁC nhau cùng đặt 1 tên chân (vd "đường cao AH" + "trung tuyến
+//     BH" — cùng tên H nhưng ràng buộc mâu thuẫn) → SKIP tất cả cevian mang tên
+//     chân đó (không claim → coverage escalate). Thà escalate còn hơn dựng SAI.
 import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint, connect } from './_shared';
 
@@ -17,31 +26,32 @@ const TRI = /tam\s*giác(?:\s+(?:vuông|cân|đều|nhọn|tù))?\s+([A-Z])([A-Z
 
 // Cevian type → patterns. Mỗi pattern capture đỉnh (g1) + chân (g2): 2 ký tự
 // HOA liền (vd "AH"). (?![A-Z]) chặn match nhầm vào cụm 3 ký tự (vd "ABC").
+// TẤT CẢ pattern dùng cờ /g để matchAll bắt MỌI cevian trong 1 clause.
 type CevianType = 'altitude' | 'median' | 'bisector';
 
 const CEVIAN_PATTERNS: ReadonlyArray<{ type: CevianType; patterns: readonly RegExp[] }> = [
   {
     type: 'altitude',
     patterns: [
-      /(?:kẻ|vẽ|hạ|dựng)\s+đường\s*cao\s+([A-Z])([A-Z])(?![A-Z])/u,
-      /đường\s*cao\s+([A-Z])([A-Z])(?![A-Z])/u,
-      /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?đường\s*cao/u,
+      /(?:kẻ|vẽ|hạ|dựng)\s+đường\s*cao\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      /đường\s*cao\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?đường\s*cao/gu,
     ],
   },
   {
     type: 'median',
     patterns: [
-      /(?:kẻ|vẽ|dựng)\s+trung\s*tuyến\s+([A-Z])([A-Z])(?![A-Z])/u,
-      /trung\s*tuyến\s+([A-Z])([A-Z])(?![A-Z])/u,
-      /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?trung\s*tuyến/u,
+      /(?:kẻ|vẽ|dựng)\s+trung\s*tuyến\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      /trung\s*tuyến\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?trung\s*tuyến/gu,
     ],
   },
   {
     type: 'bisector',
     patterns: [
-      /(?:kẻ|vẽ|dựng)\s+(?:đường\s*|tia\s+)?phân\s*giác\s+([A-Z])([A-Z])(?![A-Z])/u,
-      /(?:đường\s*phân\s*giác|tia\s+phân\s*giác|phân\s*giác)\s+([A-Z])([A-Z])(?![A-Z])/u,
-      /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?(?:đường\s*|tia\s+)?phân\s*giác/u,
+      /(?:kẻ|vẽ|dựng)\s+(?:đường\s*|tia\s+)?phân\s*giác\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      /(?:đường\s*phân\s*giác|tia\s+phân\s*giác|phân\s*giác)\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?(?:đường\s*|tia\s+)?phân\s*giác/gu,
     ],
   },
 ];
@@ -53,6 +63,14 @@ const PREFILTER = [/đường\s*cao/u, /trung\s*tuyến/u, /phân\s*giác/u];
 function opposite(tri: readonly string[], vertex: string): string | undefined {
   const rest = tri.filter((v) => v !== vertex);
   return rest.length === 2 ? rest[0] + rest[1] : undefined;
+}
+
+interface Cevian {
+  clauseId: number;
+  type: CevianType;
+  apex: string;
+  foot: string;
+  opp: string;
 }
 
 /**
@@ -70,51 +88,66 @@ export const cevianRule: LanguageRule = {
     if (!triMatch) return []; // không có tam giác → escalate
     const tri = [triMatch[1], triMatch[2], triMatch[3]];
 
-    const out: RuleMatch[] = [];
-    const claimedFeet = new Set<string>();
+    // ── Pass 1: gom MỌI cevian hợp lệ (apex là đỉnh, foot không trùng đỉnh) ──
+    // Dedup theo (apex,foot,type) — KHÔNG dedup chỉ theo tên chân: 2 cevian
+    // khác nhau cùng tên chân là XUNG ĐỘT (xử ở pass 2), không phải trùng lặp.
+    const candidates: Cevian[] = [];
+    const seen = new Set<string>(); // "apex|foot|type"
 
     for (const c of ctx.clauses) {
-      // 1 clause có thể chứa nhiều cevian khác loại ("đường cao AH và trung
-      // tuyến BM") → duyệt MỌI type, mỗi cevian 1 RuleMatch riêng.
       for (const cp of CEVIAN_PATTERNS) {
-        let matched: { apex: string; foot: string } | undefined;
         for (const re of cp.patterns) {
-          const m = re.exec(c.text);
-          if (!m) continue;
-          const apex = m[1];
-          const foot = m[2];
-          // apex phải là đỉnh tam giác; else có thể là cặp cạnh ngẫu nhiên.
-          if (!tri.includes(apex)) continue;
-          matched = { apex, foot };
-          break;
+          re.lastIndex = 0;
+          for (const m of c.text.matchAll(re)) {
+            const apex = m[1];
+            const foot = m[2];
+            // apex phải là đỉnh tam giác; else có thể là cặp cạnh ngẫu nhiên.
+            if (!tri.includes(apex)) continue;
+            // foot trùng đỉnh tam giác ("đường cao AB" → foot=B) → SKIP sớm:
+            // builder sẽ hạ điểm về 'free' → fidelity guard escalate; bỏ ở đây
+            // cho sạch (không claim → coverage escalate trực tiếp).
+            if (tri.includes(foot)) continue;
+            const opp = opposite(tri, apex);
+            if (!opp) continue; // apex không suy ra được cạnh đối diện → bỏ qua
+
+            const key = `${apex}|${foot}|${cp.type}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            candidates.push({ clauseId: c.id, type: cp.type, apex, foot, opp });
+          }
         }
-        if (!matched) continue;
-        if (claimedFeet.has(matched.foot)) continue;
+      }
+    }
 
-        const opp = opposite(tri, matched.apex);
-        if (!opp) continue; // apex không suy ra được cạnh đối diện → bỏ qua
+    // ── Pass 2: phát hiện XUNG ĐỘT tên chân ──
+    // Nếu 1 tên chân được ≥2 cevian khác nhau đặt (vd "đường cao AH" +
+    // "trung tuyến BH" cùng tên H, ràng buộc mâu thuẫn) → bỏ TẤT cevian mang
+    // tên đó. Không claim → escalate (thà escalate còn hơn dựng SAI ngữ nghĩa).
+    const footCount = new Map<string, number>();
+    for (const cv of candidates) footCount.set(cv.foot, (footCount.get(cv.foot) ?? 0) + 1);
 
-        const { apex, foot } = matched;
-        let pointIntent;
-        if (cp.type === 'altitude') {
-          pointIntent = addPoint(foot, { kind: 'perpFoot', from: apex, onLine: opp });
-        } else if (cp.type === 'median') {
-          pointIntent = addPoint(foot, { kind: 'midpoint', of: opp });
-        } else {
-          pointIntent = addPoint(foot, {
-            kind: 'angleBisectorFoot',
-            from: apex,
-            onLine: opp,
-          });
-        }
+    const out: RuleMatch[] = [];
+    for (const cv of candidates) {
+      if ((footCount.get(cv.foot) ?? 0) > 1) continue; // tên chân xung đột → skip
 
-        claimedFeet.add(foot);
-        out.push({
-          ruleId: 'cevian',
-          clauseIds: [c.id],
-          intents: [pointIntent, connect(apex, foot, 'segment')],
+      let pointIntent;
+      if (cv.type === 'altitude') {
+        pointIntent = addPoint(cv.foot, { kind: 'perpFoot', from: cv.apex, onLine: cv.opp });
+      } else if (cv.type === 'median') {
+        pointIntent = addPoint(cv.foot, { kind: 'midpoint', of: cv.opp });
+      } else {
+        pointIntent = addPoint(cv.foot, {
+          kind: 'angleBisectorFoot',
+          from: cv.apex,
+          onLine: cv.opp,
         });
       }
+
+      out.push({
+        ruleId: 'cevian',
+        clauseIds: [cv.clauseId],
+        intents: [pointIntent, connect(cv.apex, cv.foot, 'segment')],
+      });
     }
     return out;
   },

@@ -56,6 +56,38 @@ describe('perpBisectorRule', () => {
     expect(intent.to).toBe('D');
   });
 
+  it('"trung trực BC và trung trực CA" (1 clause) → emit cả 2', () => {
+    const m = run('Vẽ đường trung trực BC và trung trực CA');
+    expect(m.length).toBe(2);
+    const intents = m.flatMap((x) => x.intents) as any[];
+    expect(intents).toHaveLength(2);
+    expect(intents.every((i) => i.op === 'connect')).toBe(true);
+    expect(intents.every((i) => i.style === 'perpBisector')).toBe(true);
+    expect(intents).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ from: 'B', to: 'C', style: 'perpBisector' }),
+        expect.objectContaining({ from: 'C', to: 'A', style: 'perpBisector' }),
+      ]),
+    );
+    // cả 2 match đều claim đúng clause chứa "trung trực"
+    for (const match of m) {
+      expect(match.clauseIds.length).toBe(1);
+    }
+  });
+
+  it('3 trung trực trong 1 clause → emit cả 3 (emit-all)', () => {
+    const m = run('Dựng trung trực AB, trung trực BC, trung trực CA');
+    const intents = m.flatMap((x) => x.intents) as any[];
+    expect(intents).toHaveLength(3);
+    expect(intents).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ from: 'A', to: 'B' }),
+        expect.objectContaining({ from: 'B', to: 'C' }),
+        expect.objectContaining({ from: 'C', to: 'A' }),
+      ]),
+    );
+  });
+
   it('không có cặp đỉnh → bỏ qua (escalate), không emit intent', () => {
     const m = run('Vẽ đường trung trực của tam giác');
     expect(m.length).toBe(0);

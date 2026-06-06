@@ -52,14 +52,11 @@ describe('arcMidpointRule', () => {
     expect(c.notContaining).toBe('A');
   });
 
-  it('"cung lớn" cũng khớp (nhỏ|lớn optional)', () => {
+  it('"cung lớn" → KHÔNG claim (cung đối, defer → escalate)', () => {
     const m = run(
       'Cho tam giác ABC nội tiếp đường tròn (O). Gọi P là điểm chính giữa cung lớn BC',
     );
-    const c = (m[0].intents[0] as any).constraint;
-    expect(c.a).toBe('B');
-    expect(c.b).toBe('C');
-    expect(c.notContaining).toBe('A');
+    expect(m.flatMap((x) => x.intents)).toHaveLength(0);
   });
 
   it('"đường tròn tâm O" (không ngoặc) cũng resolve circle', () => {
