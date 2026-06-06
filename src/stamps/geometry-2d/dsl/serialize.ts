@@ -201,6 +201,26 @@ function serializePoint(obj: SceneObject<PointAttrs>, state: State): SerializedE
       };
     }
 
+    case 'pointAtDistance': {
+      const d = c.distance;
+      const distRefIds = d.kind === 'circleRadius' ? [d.circle]
+        : d.kind === 'segmentLength' ? [d.p1, d.p2] : [];
+      const refs = resolveRefs([c.from, c.through, ...distRefIds], state);
+      if (!refs) return fail('unresolved-ref', `${c.from},${c.through}`);
+      let distance: import('./schema').DslDistanceSpec;
+      if (d.kind === 'circleRadius') {
+        distance = { kind: 'circleRadius', circle: refs[2] };
+      } else if (d.kind === 'segmentLength') {
+        distance = { kind: 'segmentLength', p1: refs[2], p2: refs[3] };
+      } else {
+        distance = { kind: 'literal', value: d.value };
+      }
+      return {
+        ok: true,
+        entity: { name: obj.label, kind: 'pointAtDistance', from: refs[0], through: refs[1], distance },
+      };
+    }
+
     // Out of DSL v1:
     case 'onAxis':
     case 'onPolygon':

@@ -52,6 +52,14 @@ function describeEntity(e: DslPointT | DslShapeT): string {
     case 'excenter':      return `${e.name} = tâm bàng tiếp ${e.vertices.join('')} đối diện ${e.opposite}`;
     case 'reflectPoint':  return `${e.name} = đối xứng ${e.of} qua điểm ${e.through}`;
     case 'reflectLine':   return `${e.name} = đối xứng ${e.of} qua đường ${e.through}`;
+    // Cụm B
+    case 'pointAtDistance': {
+      const d = e.distance;
+      const distStr = d.kind === 'circleRadius' ? `r(${d.circle})`
+        : d.kind === 'segmentLength' ? `|${d.p1}${d.p2}|`
+        : `${d.value}`;
+      return `${e.name} = điểm trên tia ${e.from}${e.through} cách ${e.through} một khoảng ${distStr}`;
+    }
     default: {
       const _exhaust: never = e;
       void _exhaust;
