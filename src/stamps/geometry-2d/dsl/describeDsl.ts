@@ -47,6 +47,7 @@ function describeEntity(e: DslPointT | DslShapeT): string {
     case 'tangentPointExt':     return `${e.name} = tiếp điểm từ ${e.from} lên ${e.circle} (nhánh ${e.which})`;
     case 'circleCR':            return `${e.name} = đường tròn (${e.center}; r=${e.radius})`;
     case 'incircle':            return `${e.name} = đường tròn nội tiếp ${e.vertices.join('')}`;
+    case 'excircle':            return `${e.name} = đường tròn bàng tiếp ${e.vertices.join('')} đối diện ${e.opposite}`;
     // Cụm A
     case 'arcMidpoint':   return `${e.name} = trung điểm cung ${e.a}${e.b} (không chứa ${e.notContaining}) trên ${e.circle}`;
     case 'excenter':      return `${e.name} = tâm bàng tiếp ${e.vertices.join('')} đối diện ${e.opposite}`;

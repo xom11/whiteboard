@@ -29,6 +29,7 @@ import { tangencyPointModule } from './kinds/points/tangencyPoint';
 import { tangentPointExtModule } from './kinds/points/tangentPointExt';
 import { circleCRModule } from './kinds/circles/circleCR';
 import { incircleModule } from './kinds/circles/incircle';
+import { excircleModule } from './kinds/circles/excircle';
 import { arcMidpointModule } from './kinds/points/arcMidpoint';
 import { excenterModule } from './kinds/points/excenter';
 import { reflectPointModule } from './kinds/points/reflectPoint';
@@ -46,7 +47,7 @@ const ALL_MODULES: ReadonlyArray<DslKindModule> = [
   polygonModule,
   circleCPModule, circle3Module,
   // NEW Tier 4+5 circles
-  circleCRModule, incircleModule,
+  circleCRModule, incircleModule, excircleModule,
   // Cụm A points
   arcMidpointModule, excenterModule, reflectPointModule, reflectLineModule,
 ];

@@ -85,7 +85,8 @@ export type DslShapeT =
   | { name: Name; kind: 'circle3'; p1: Name; p2: Name; p3: Name }
   // NEW Tier 4+5
   | { name: Name; kind: 'circleCR'; center: Name; radius: number }
-  | { name: Name; kind: 'incircle'; vertices: [Name, Name, Name] };
+  | { name: Name; kind: 'incircle'; vertices: [Name, Name, Name] }
+  | { name: Name; kind: 'excircle'; vertices: [Name, Name, Name]; opposite: Name };
 
 export type DslInputT = {
   version: 1;
