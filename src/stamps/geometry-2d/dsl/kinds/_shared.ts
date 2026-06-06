@@ -14,12 +14,14 @@ export function emitPointObject(
   id: string,
   name: string,
   constraint: Record<string, unknown>,
+  visible = true,
 ): SceneObject {
   return {
     id,
     kind: 'point',
     label: name,
     ...POINT_BASE_FIELDS,
+    visible,
     attrs: { constraint },
   };
 }

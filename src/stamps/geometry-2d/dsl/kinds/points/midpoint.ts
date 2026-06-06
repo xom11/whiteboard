@@ -17,6 +17,7 @@ export const midpointModule = defineModule<'midpoint', Input>({
     kind: z.literal('midpoint'),
     p1: NameZ,
     p2: NameZ,
+    visible: z.boolean().optional(),
   }),
   collectRefs: (e) => [e.p1, e.p2],
   emit: (e, ctx) => [{
@@ -25,6 +26,7 @@ export const midpointModule = defineModule<'midpoint', Input>({
       ctx.resolveId(e.name),
       e.name,
       { kind: 'midpoint', p1: ctx.resolveId(e.p1), p2: ctx.resolveId(e.p2) },
+      e.visible ?? true,
     ),
   }],
 });
