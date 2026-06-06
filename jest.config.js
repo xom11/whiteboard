@@ -4,6 +4,7 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   testMatch: ['**/__tests__/**/*.test.{ts,tsx}', '**/*.test.{ts,tsx}'],
   testPathIgnorePatterns: ['/node_modules/', '/dist/', '/tests/e2e/', '/.claude/worktrees/'],
+  modulePathIgnorePatterns: ['/.claude/worktrees/'],
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', { diagnostics: false, isolatedModules: true }],
   },
