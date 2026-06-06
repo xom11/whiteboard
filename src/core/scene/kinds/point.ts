@@ -110,6 +110,12 @@ const def: KindDef<PointAttrs> = {
         throw new Error('point.excenter: vertices phải là tuple 3 id');
       }
       if (!c.opposite) throw new Error('point.excenter: opposite bắt buộc');
+      if (!c.vertices[0] || !c.vertices[1] || !c.vertices[2]) {
+        throw new Error('point.excenter: 3 vertex id phải non-empty');
+      }
+      if (!c.vertices.includes(c.opposite)) {
+        throw new Error('point.excenter: opposite phải là một trong vertices');
+      }
     }
   },
   dependsOn: (a) => constraintRefs2D(a.constraint),
@@ -418,7 +424,7 @@ const def: KindDef<PointAttrs> = {
       const A: any = ctx.resolveRef(c.a);
       const B: any = ctx.resolveRef(c.b);
       const N: any = ctx.resolveRef(c.notContaining);
-      const O = circle.center ?? circle.midpoint ?? circle;
+      const O = circle?.center ?? circle?.midpoint ?? circle;
       const am = () => arcMidpoint(
         [O.X(), O.Y()], circle.Radius(),
         [A.X(), A.Y()], [B.X(), B.Y()], [N.X(), N.Y()],

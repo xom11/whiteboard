@@ -247,6 +247,11 @@ describe('point arcMidpoint', () => {
       kind: 'arcMidpoint', circle: 'k', a: 'B', b: 'C', notContaining: 'A',
     }), s)).toBe('M = trung điểm cung BC (không chứa A)');
   });
+  it('dependsOn trả về circle + a + b + notContaining', () => {
+    expect(pointDef.dependsOn!(mkArcObj({
+      kind: 'arcMidpoint', circle: 'k', a: 'B', b: 'C', notContaining: 'A',
+    }).attrs)).toEqual(['k', 'B', 'C', 'A']);
+  });
 });
 
 describe('point excenter', () => {
@@ -265,6 +270,16 @@ describe('point excenter', () => {
     expect(pointDef.describe!(mkArcObj({
       kind: 'excenter', vertices: ['A', 'B', 'C'], opposite: 'A',
     }), s)).toBe('M = tâm bàng tiếp ΔABC đối diện A');
+  });
+  it('validate ném khi opposite không thuộc vertices', () => {
+    expect(() => pointDef.validate!(mkArcObj({
+      kind: 'excenter', vertices: ['A', 'B', 'C'], opposite: 'D',
+    }).attrs)).toThrow();
+  });
+  it('dependsOn trả về 3 vertices', () => {
+    expect(pointDef.dependsOn!(mkArcObj({
+      kind: 'excenter', vertices: ['A', 'B', 'C'], opposite: 'A',
+    }).attrs)).toEqual(['A', 'B', 'C']);
   });
 });
 
