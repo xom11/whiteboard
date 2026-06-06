@@ -206,7 +206,7 @@ function serializePoint(obj: SceneObject<PointAttrs>, state: State): SerializedE
       const distRefIds = d.kind === 'circleRadius' ? [d.circle]
         : d.kind === 'segmentLength' ? [d.p1, d.p2] : [];
       const refs = resolveRefs([c.from, c.through, ...distRefIds], state);
-      if (!refs) return fail('unresolved-ref', `${c.from},${c.through}`);
+      if (!refs) return fail('unresolved-ref', [c.from, c.through, ...distRefIds].join(','));
       let distance: import('./schema').DslDistanceSpec;
       if (d.kind === 'circleRadius') {
         distance = { kind: 'circleRadius', circle: refs[2] };
