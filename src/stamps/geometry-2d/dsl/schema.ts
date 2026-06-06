@@ -50,7 +50,7 @@ type Name = z.infer<typeof NameZ>;
 
 export type DslPointT =
   | { name: Name; kind: 'free'; x: number; y: number }
-  | { name: Name; kind: 'midpoint'; p1: Name; p2: Name }
+  | { name: Name; kind: 'midpoint'; p1: Name; p2: Name; visible?: boolean }
   | { name: Name; kind: 'onSegment'; segmentId: Name; t: number }
   | { name: Name; kind: 'onLine'; lineId: Name; t: number }
   | { name: Name; kind: 'onCircle'; circleId: Name; theta: number }
@@ -81,7 +81,7 @@ export type DslShapeT =
   | { name: Name; kind: 'perpBisector'; p1: Name; p2: Name }
   | { name: Name; kind: 'angleBisector'; p1: Name; vertex: Name; p2: Name }
   | { name: Name; kind: 'tangent'; throughPoint: Name; toCircle: Name; branch?: 0 | 1 | 'on' }
-  | { name: Name; kind: 'circleCP'; center: Name; surfacePoint: Name }
+  | { name: Name; kind: 'circleCP'; center: Name; surfacePoint: Name; visible?: boolean }
   | { name: Name; kind: 'circle3'; p1: Name; p2: Name; p3: Name }
   // NEW Tier 4+5
   | { name: Name; kind: 'circleCR'; center: Name; radius: number }

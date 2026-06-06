@@ -16,6 +16,7 @@ import { IntentEnvelopeZ, type IntentEnvelopeT, type IntentT } from './intent';
 import { intentEnvelopeJsonSchema } from './intentEnvelope';
 import { normalizeIntents } from './normalizeIntent';
 import { resolveCircleNameCollisions } from './resolveCircleNames';
+import { completeRightAngle } from './completeRightAngle';
 import { verifyGeometry, type VerifyReport } from './verify';
 import {
   selectProvider,
@@ -125,7 +126,11 @@ export async function generateFigureIntent(
   // Stage 1.5b: preprocess naming collisions (circle name dùng làm point ref).
   // Notation Việt "(O)" thường ám chỉ TÂM (point) chứ không phải tên circle —
   // preprocessor inject add-point center + rename circle để tránh KIND_MISMATCH.
-  const processedIntents = resolveCircleNameCollisions(intents);
+  const collisionFixed = resolveCircleNameCollisions(intents);
+
+  // Stage 1.5c: deterministic inject "góc vuông nhìn đoạn" (∠a-M-b = 90°).
+  // LLM hay miss insight dựng đường tròn đường kính — inject từ regex đề.
+  const processedIntents = completeRightAngle(collisionFixed, problem);
 
   // Stage 2: deterministic build
   let dsl: ReturnType<typeof intentsToDsl>;

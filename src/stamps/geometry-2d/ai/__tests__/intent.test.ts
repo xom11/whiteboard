@@ -125,3 +125,32 @@ describe('add-point constraint Cụm A', () => {
     }).success).toBe(true);
   });
 });
+
+describe('rightAngleViewing constraint', () => {
+  it('parse intent hợp lệ', () => {
+    const r = AddPointIntentZ.safeParse({
+      op: 'add-point',
+      name: 'M',
+      constraint: { kind: 'rightAngleViewing', a: 'A', b: 'B', onLine: 'CK', which: 0 },
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it('which optional', () => {
+    const r = AddPointIntentZ.safeParse({
+      op: 'add-point',
+      name: 'M',
+      constraint: { kind: 'rightAngleViewing', a: 'A', b: 'B', onLine: 'CK' },
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it('reject thiếu onLine', () => {
+    const r = AddPointIntentZ.safeParse({
+      op: 'add-point',
+      name: 'M',
+      constraint: { kind: 'rightAngleViewing', a: 'A', b: 'B' },
+    });
+    expect(r.success).toBe(false);
+  });
+});

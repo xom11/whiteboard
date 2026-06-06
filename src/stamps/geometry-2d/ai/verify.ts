@@ -132,6 +132,7 @@ function constraintKey(c: AddPointIntentT['constraint']): string {
     case 'reflectPoint':        return `reflectPoint:${c.of}:${c.through}`;
     case 'reflectLine':         return `reflectLine:${c.of}:${c.through}`;
     case 'excenter':            return `excenter:${c.of.join(',')}:${c.opposite}`;
+    case 'rightAngleViewing':   return `rightAngleViewing:${c.a}:${c.b}:${c.onLine}:${c.which ?? 0}`;
   }
 }
 

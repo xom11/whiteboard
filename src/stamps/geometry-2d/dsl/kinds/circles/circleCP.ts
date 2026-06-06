@@ -17,6 +17,7 @@ export const circleCPModule = defineModule<'circleCP', Input>({
     kind: z.literal('circleCP'),
     center: NameZ,
     surfacePoint: NameZ,
+    visible: z.boolean().optional(),
   }),
   collectRefs: (e) => [e.center, e.surfacePoint],
   emit: (e, ctx) => [{
@@ -26,6 +27,7 @@ export const circleCPModule = defineModule<'circleCP', Input>({
       kind: 'circle',
       label: e.name,
       ...SHAPE_BASE_FIELDS,
+      visible: e.visible ?? true,
       attrs: { center: ctx.resolveId(e.center), surfacePoint: ctx.resolveId(e.surfacePoint) },
     },
   }],

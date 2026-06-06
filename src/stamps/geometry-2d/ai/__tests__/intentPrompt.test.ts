@@ -61,3 +61,13 @@ describe('intentPrompt Cụm A', () => {
     expect(p).toMatch(/bàng tiếp/i);
   });
 });
+
+describe('prompt — rightAngleViewing', () => {
+  const p = buildIntentSystemPrompt();
+  it('liệt kê constraint rightAngleViewing', () => {
+    expect(p).toContain('rightAngleViewing');
+  });
+  it('có keyword góc vuông', () => {
+    expect(p).toMatch(/90°|90 độ|góc vuông/);
+  });
+});
