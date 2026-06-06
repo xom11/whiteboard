@@ -18,6 +18,10 @@ export const excircleModule = defineModule<'excircle', Input>({
     opposite: NameZ,
   }),
   collectRefs: (e) => [...e.vertices],
+  refSpecs: [
+    { field: 'vertices', role: 'point', many: true },
+    { field: 'opposite', role: 'point' },
+  ],
   emit: (e, ctx) => [{
     role: 'primary',
     object: {

@@ -20,6 +20,10 @@ export const circleIntersectionModule = defineModule<'circleIntersection', Input
     which: z.union([z.literal(0), z.literal(1)]),
   }),
   collectRefs: (e) => [e.c1, e.c2],
+  refSpecs: [
+    { field: 'c1', role: 'circle' },
+    { field: 'c2', role: 'circle' },
+  ],
   emit: (e, ctx) => [{
     role: 'primary',
     object: emitPointObject(

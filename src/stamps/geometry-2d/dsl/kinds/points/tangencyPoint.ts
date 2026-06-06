@@ -18,6 +18,10 @@ export const tangencyPointModule = defineModule<'tangencyPoint', Input>({
     onLine: NameZ,
   }),
   collectRefs: (e) => [e.circle, e.onLine],
+  refSpecs: [
+    { field: 'circle', role: 'circle' },
+    { field: 'onLine', role: 'line-like' },
+  ],
   emit: (e, ctx) => [{
     role: 'primary',
     object: emitPointObject(

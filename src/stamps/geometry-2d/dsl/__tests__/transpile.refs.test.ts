@@ -124,3 +124,105 @@ describe('validateRefs', () => {
     expect(check(dsl).errors.some((e) => e.code === 'KIND_MISMATCH')).toBe(true);
   });
 });
+
+// ===== issue #43: registry-driven refSpecs cho kind mới =====
+import { transpile } from '../index';
+
+describe('validateRefs registry-driven — kind mới (issue #43)', () => {
+  it('tangentPointExt.circle trỏ point → KIND_MISMATCH', () => {
+    const dsl: DslInputT = {
+      version: 1,
+      points: [
+        { name: 'A', kind: 'free', x: 0, y: 0 },
+        { name: 'B', kind: 'free', x: 1, y: 0 },
+        { name: 'T', kind: 'tangentPointExt', from: 'A', circle: 'B', which: 0 },
+      ],
+      shapes: [],
+    };
+    expect(check(dsl).errors.some((e) => e.code === 'KIND_MISMATCH')).toBe(true);
+  });
+
+  it('tangentPointExt.circle unknown → UNKNOWN_REF, transpile không throw', () => {
+    const dsl = {
+      version: 1,
+      points: [
+        { name: 'A', kind: 'free', x: 0, y: 0 },
+        { name: 'T', kind: 'tangentPointExt', from: 'A', circle: 'Z', which: 0 },
+      ],
+      shapes: [],
+    };
+    let r: ReturnType<typeof transpile> | undefined;
+    expect(() => { r = transpile(dsl); }).not.toThrow();
+    expect(r!.ok).toBe(false);
+    if (!r!.ok) expect(r!.errors.some((e) => e.code === 'UNKNOWN_REF')).toBe(true);
+  });
+
+  it('circleIntersection.c1 trỏ point → KIND_MISMATCH', () => {
+    const dsl: DslInputT = {
+      version: 1,
+      points: [
+        { name: 'A', kind: 'free', x: 0, y: 0 },
+        { name: 'P', kind: 'circleIntersection', c1: 'A', c2: 'A', which: 0 },
+      ],
+      shapes: [],
+    };
+    expect(check(dsl).errors.some((e) => e.code === 'KIND_MISMATCH')).toBe(true);
+  });
+
+  it('secondIntersection.line trỏ point → KIND_MISMATCH', () => {
+    const dsl: DslInputT = {
+      version: 1,
+      points: [
+        { name: 'A', kind: 'free', x: 0, y: 0 },
+        { name: 'B', kind: 'free', x: 1, y: 0 },
+        { name: 'C', kind: 'free', x: 0, y: 1 },
+        { name: 'P', kind: 'secondIntersection', line: 'A', circle: 'A', other: 'B', which: 0 },
+      ],
+      shapes: [],
+    };
+    expect(check(dsl).errors.some((e) => e.code === 'KIND_MISMATCH')).toBe(true);
+  });
+
+  it('tangencyPoint.circle trỏ point → KIND_MISMATCH', () => {
+    const dsl: DslInputT = {
+      version: 1,
+      points: [
+        { name: 'A', kind: 'free', x: 0, y: 0 },
+        { name: 'B', kind: 'free', x: 1, y: 0 },
+        { name: 'P', kind: 'tangencyPoint', circle: 'A', onLine: 'B' },
+      ],
+      shapes: [],
+    };
+    expect(check(dsl).errors.some((e) => e.code === 'KIND_MISMATCH')).toBe(true);
+  });
+
+  it('circleCR.center trỏ shape → KIND_MISMATCH', () => {
+    const dsl: DslInputT = {
+      version: 1,
+      points: [
+        { name: 'A', kind: 'free', x: 0, y: 0 },
+        { name: 'B', kind: 'free', x: 1, y: 0 },
+      ],
+      shapes: [
+        { name: 's1', kind: 'segment', p1: 'A', p2: 'B' },
+        { name: 'c1', kind: 'circleCR', center: 's1', radius: 2 },
+      ],
+    };
+    expect(check(dsl).errors.some((e) => e.code === 'KIND_MISMATCH')).toBe(true);
+  });
+
+  it('incircle.vertices trỏ shape → KIND_MISMATCH', () => {
+    const dsl: DslInputT = {
+      version: 1,
+      points: [
+        { name: 'A', kind: 'free', x: 0, y: 0 },
+        { name: 'B', kind: 'free', x: 1, y: 0 },
+      ],
+      shapes: [
+        { name: 's1', kind: 'segment', p1: 'A', p2: 'B' },
+        { name: 'ic', kind: 'incircle', vertices: ['A', 'B', 's1'] },
+      ],
+    };
+    expect(check(dsl).errors.some((e) => e.code === 'KIND_MISMATCH')).toBe(true);
+  });
+});

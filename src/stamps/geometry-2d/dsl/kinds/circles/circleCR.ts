@@ -18,6 +18,7 @@ export const circleCRModule = defineModule<'circleCR', Input>({
     radius: z.number().positive(),
   }),
   collectRefs: (e) => [e.center],
+  refSpecs: [{ field: 'center', role: 'point' }],
   emit: (e, ctx) => [{
     role: 'primary',
     object: {

@@ -31,6 +31,12 @@ export const pointAtDistanceModule = defineModule<'pointAtDistance', Input>({
       : d.kind === 'segmentLength' ? [d.p1, d.p2] : [];
     return [e.from, e.through, ...extra];
   },
+  // TODO(Mức 1 defer): distance.{circle,p1,p2} là nested trong `distance` — refSpec
+  // phẳng đọc top-level không với tới, validate riêng nếu cần. Hiện validate from/through.
+  refSpecs: [
+    { field: 'from', role: 'point' },
+    { field: 'through', role: 'point' },
+  ],
   emit: (e, ctx) => {
     const d = e.distance;
     const distance = d.kind === 'circleRadius'

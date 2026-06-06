@@ -19,6 +19,10 @@ export const tangentPointExtModule = defineModule<'tangentPointExt', Input>({
     which: z.union([z.literal(0), z.literal(1)]),
   }),
   collectRefs: (e) => [e.from, e.circle],
+  refSpecs: [
+    { field: 'from', role: 'point' },
+    { field: 'circle', role: 'circle' },
+  ],
   emit: (e, ctx) => [{
     role: 'primary',
     object: emitPointObject(

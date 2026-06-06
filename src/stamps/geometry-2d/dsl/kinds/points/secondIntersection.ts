@@ -19,6 +19,11 @@ export const secondIntersectionModule = defineModule<'secondIntersection', Input
     other: NameZ,
   }),
   collectRefs: (e) => [e.line, e.circle, e.other],
+  refSpecs: [
+    { field: 'line', role: 'line-like' },
+    { field: 'circle', role: 'circle' },
+    { field: 'other', role: 'point' },
+  ],
   emit: (e, ctx) => [{
     role: 'primary',
     object: emitPointObject(

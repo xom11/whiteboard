@@ -1,6 +1,7 @@
 // src/stamps/geometry-2d/dsl/transpile/refs.ts
 import type { DslInputT, DslPointT, DslShapeT } from '../schema';
 import { KIND_REGISTRY, LINE_LIKE_SHAPE_KINDS, CIRCLE_KINDS } from '../registry';
+import type { RefRole, RefSpec } from '../kinds/_types';
 import type { Symbol } from './symbols';
 import { mkError, type TranspileError } from './errors';
 
@@ -21,6 +22,23 @@ function isCircleLike(sym: Symbol | undefined): boolean {
 function isSegmentExact(sym: Symbol | undefined): boolean {
   return !!sym && sym.role === 'shape' && (sym.entity as DslShapeT).kind === 'segment';
 }
+
+const ROLE_PREDICATE: Record<RefRole, (s: Symbol | undefined) => boolean> = {
+  point: isPointLike,
+  'line-like': isLineLike,
+  circle: isCircleLike,
+  segment: isSegmentExact,
+  shape: (s) => !!s && s.role === 'shape',
+  'any-existing': (s) => !!s,
+};
+const ROLE_EXPECTED: Record<RefRole, string> = {
+  point: 'point',
+  'line-like': 'line-like',
+  circle: 'circle',
+  segment: 'segment',
+  shape: 'shape',
+  'any-existing': 'tồn tại',
+};
 
 export interface RefsResult {
   errors: TranspileError[];
@@ -50,7 +68,34 @@ export function validateRefs(dsl: DslInputT, symbols: Map<string, Symbol>): Refs
     }
   };
 
+  // Registry-driven pass: kind nào khai refSpecs thì validate ở đây, switch bỏ qua.
+  const handledByRegistry = new Set<string>();
+  const runSpecs = (owner: string, entity: DslPointT | DslShapeT): boolean => {
+    const mod = KIND_REGISTRY.get(entity.kind);
+    const raw = mod?.refSpecs;
+    if (!raw) return false;
+    const specs: readonly RefSpec[] =
+      typeof raw === 'function' ? raw(entity as never) : raw;
+    for (const spec of specs) {
+      const val = (entity as Record<string, unknown>)[spec.field];
+      const names: string[] = spec.many
+        ? ((val as string[]) ?? [])
+        : val == null
+          ? []
+          : [val as string];
+      names.forEach((refName, i) => {
+        const field = spec.many ? `${spec.field}[${i}]` : spec.field;
+        check(owner, field, refName, ROLE_PREDICATE[spec.role], ROLE_EXPECTED[spec.role]);
+      });
+    }
+    handledByRegistry.add(owner);
+    return true;
+  };
+  for (const p of dsl.points) runSpecs(p.name, p);
+  for (const s of dsl.shapes) runSpecs(s.name, s);
+
   for (const p of dsl.points) {
+    if (handledByRegistry.has(p.name)) continue;
     switch (p.kind) {
       case 'free': break;
       case 'midpoint':
@@ -108,6 +153,7 @@ export function validateRefs(dsl: DslInputT, symbols: Map<string, Symbol>): Refs
   }
 
   for (const s of dsl.shapes) {
+    if (handledByRegistry.has(s.name)) continue;
     switch (s.kind) {
       case 'segment':
       case 'line':
