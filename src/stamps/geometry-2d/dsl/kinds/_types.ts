@@ -13,6 +13,23 @@ export type KindRole =
 
 export type KindCategory = 'points' | 'lines' | 'polygons' | 'circles' | 'compound';
 
+/** Vai trò ref mà một field của kind yêu cầu — dùng cho validateRefs registry-driven. */
+export type RefRole =
+  | 'point'
+  | 'line-like'
+  | 'circle'
+  | 'segment'
+  | 'shape'
+  | 'any-existing';
+
+export interface RefSpec {
+  /** Tên field trên entity chứa ref (vd 'from', 'circle', 'vertices'). */
+  field: string;
+  role: RefRole;
+  /** field là mảng tên (vd vertices[]). */
+  many?: boolean;
+}
+
 export interface EmitContext {
   /** Look up the scene-object id assigned to a DSL symbol name. */
   resolveId(name: string): string;
@@ -35,6 +52,12 @@ export interface DslKindModule<TKind extends string = string, TInput = unknown> 
   prefix: string;
   schema: z.ZodObject<any>;
   collectRefs: (entity: TInput) => string[];
+  /**
+   * Khai báo ref requirements để validateRefs kiểm tra unknown/mismatch mà không
+   * cần switch theo kind. Dạng hàm cho kind có ref phụ thuộc discriminated union
+   * (vd pointAtDistance.distance). Kind chưa khai → validateRefs dùng legacy switch.
+   */
+  refSpecs?: readonly RefSpec[] | ((entity: TInput) => readonly RefSpec[]);
   emit: (entity: TInput, ctx: EmitContext) => EmittedEntity[];
 }
 
