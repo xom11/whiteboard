@@ -1,5 +1,27 @@
 import { intentsToDsl } from '../intentToDsl';
-import type { IntentT } from '../intent';
+import { AddPointIntentZ, type IntentT } from '../intent';
+
+describe('intent schema — pointAtDistance vocab (production path: LLM JSON → Zod)', () => {
+  it.each([
+    { kind: 'circleRadius', circle: 'O' },
+    { kind: 'segmentLength', p1: 'O', p2: 'A' },
+    { kind: 'literal', value: 3 },
+  ])('AddPointIntentZ accepts distance %o', (distance) => {
+    const parsed = AddPointIntentZ.safeParse({
+      op: 'add-point', name: 'C',
+      constraint: { kind: 'pointAtDistance', from: 'A', through: 'B', distance },
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it('AddPointIntentZ rejects literal distance ≤ 0', () => {
+    const parsed = AddPointIntentZ.safeParse({
+      op: 'add-point', name: 'C',
+      constraint: { kind: 'pointAtDistance', from: 'A', through: 'B', distance: { kind: 'literal', value: -1 } },
+    });
+    expect(parsed.success).toBe(false);
+  });
+});
 
 describe('intentsToDsl — add-point pointAtDistance', () => {
   it('pointAtDistance circleRadius: point C on ray AB at distance = radius of circle O', () => {
