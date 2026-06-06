@@ -394,3 +394,38 @@ describe('intentsToDsl — transpile compatibility', () => {
     expect(t.ok).toBe(true);
   });
 });
+
+describe('intentsToDsl Cụm A', () => {
+  it('arcMidpoint giữ nguyên field', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-circle', name: 'O', spec: 'through3', points: ['A', 'B', 'C'] },
+      { op: 'add-point', name: 'M', constraint: { kind: 'arcMidpoint', circle: 'O', a: 'B', b: 'C', notContaining: 'A' } },
+    ] as IntentT[]);
+    expect(dsl.points.find((p) => p.name === 'M')).toMatchObject({
+      kind: 'arcMidpoint', circle: 'O', a: 'B', b: 'C', notContaining: 'A',
+    });
+  });
+
+  it('reflectLine resolve through thành segment ref', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'add-point', name: 'H', constraint: { kind: 'orthocenter', of: ['A', 'B', 'C'] } },
+      { op: 'add-point', name: 'D', constraint: { kind: 'reflectLine', of: 'H', through: 'BC' } },
+    ] as IntentT[]);
+    const d = dsl.points.find((p) => p.name === 'D')!;
+    expect(d).toMatchObject({ kind: 'reflectLine', of: 'H' });
+    // through đã resolve sang tên segment (ensureSegment tạo 'BC')
+    expect((d as { through: string }).through).toBe('BC');
+    expect(dsl.shapes.some((s) => s.kind === 'segment' && s.name === 'BC')).toBe(true);
+  });
+
+  it('excenter giữ vertices + opposite', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'add-point', name: 'J', constraint: { kind: 'excenter', of: ['A', 'B', 'C'], opposite: 'A' } },
+    ] as IntentT[]);
+    expect(dsl.points.find((p) => p.name === 'J')).toMatchObject({
+      kind: 'excenter', vertices: ['A', 'B', 'C'], opposite: 'A',
+    });
+  });
+});

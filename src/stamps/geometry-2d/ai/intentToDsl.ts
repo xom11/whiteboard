@@ -373,6 +373,21 @@ function handleAddPoint(s: BuildState, intent: AddPointIntentT) {
       addPoint(s, { name, kind: 'intersection', ref1: bisName, ref2: resolveSegmentRef(s, c.onLine) });
       break;
     }
+    // Cụm A
+    case 'arcMidpoint':
+      addPoint(s, { name, kind: 'arcMidpoint', circle: c.circle, a: c.a, b: c.b, notContaining: c.notContaining });
+      break;
+    case 'reflectPoint':
+      addPoint(s, { name, kind: 'reflectPoint', of: c.of, through: c.through });
+      break;
+    case 'reflectLine': {
+      const lineRef = resolveSegmentRef(s, c.through);
+      addPoint(s, { name, kind: 'reflectLine', of: c.of, through: lineRef });
+      break;
+    }
+    case 'excenter':
+      addPoint(s, { name, kind: 'excenter', vertices: c.of, opposite: c.opposite });
+      break;
   }
 }
 
