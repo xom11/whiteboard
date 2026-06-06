@@ -4,9 +4,35 @@
 // + thêm vào ALL_RULES (không sửa engine).
 import type { LanguageRule, RuleContext, RuleMatch } from './_types';
 import { triangleRule } from './triangle';
+import { quadRule } from './quad';
+import { connectRule } from './connect';
+import { midpointRule } from './midpoint';
+import { perpBisectorRule } from './perpBisector';
+import { cevianRule } from './cevian';
+import { centersRule } from './centers';
+import { perpFootRule } from './perpFoot';
+import { circleRadiusRule } from './circleRadius';
+import { circleTriangleRule } from './circleTriangle';
+import { tangentFromExtRule } from './tangentFromExt';
+import { arcMidpointRule } from './arcMidpoint';
+import { reflectionRule } from './reflection';
+import { pointAtDistanceRule } from './pointAtDistance';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
+  quadRule,
+  connectRule,
+  midpointRule,
+  perpBisectorRule,
+  cevianRule,
+  centersRule,
+  perpFootRule,
+  circleRadiusRule,
+  circleTriangleRule,
+  tangentFromExtRule,
+  arcMidpointRule,
+  reflectionRule,
+  pointAtDistanceRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */
