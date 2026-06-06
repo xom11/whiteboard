@@ -388,6 +388,10 @@ function handleAddPoint(s: BuildState, intent: AddPointIntentT) {
     case 'excenter':
       addPoint(s, { name, kind: 'excenter', vertices: c.of, opposite: c.opposite });
       break;
+    case 'pointAtDistance':
+      ensureSegment(s, c.from, c.through);
+      addPoint(s, { name, kind: 'pointAtDistance', from: c.from, through: c.through, distance: c.distance });
+      break;
   }
 }
 
