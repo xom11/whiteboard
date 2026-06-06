@@ -409,7 +409,7 @@ export function extractRequirements(userPrompt: string): RequirementExtraction {
     //     → incircle, I = incenter
 
     const circumPattern =
-      /tam\s*giác\s+[A-Z]+\s+nội\s*tiếp\s+đường\s*tròn/i.test(userPrompt) ||
+      /tam\s*giác\s+[A-Z]+[^.]{0,120}?\s+nội\s*tiếp\s+đường\s*tròn/i.test(userPrompt) ||
       /đường\s*tròn\s+ngoại\s*tiếp\s+tam\s*giác/i.test(userPrompt) ||
       /ngoại\s*tiếp/i.test(userPrompt);
 
@@ -580,6 +580,194 @@ export function extractRequirements(userPrompt: string): RequirementExtraction {
           name: pointName,
           kind: 'onSegment',
           fields: { segmentId: segName, t: 0.5 },
+        });
+      }
+    }
+  }
+
+  // "M thuộc cung nhỏ BC" — arbitrary point on the circumcircle arc.
+  {
+    const m = userPrompt.match(
+      /(?:điểm\s+)?([A-Z])\s+(?:thuộc|nằm\s+trên)\s+cung\s+(?:nhỏ|lớn)?\s*([A-Z])([A-Z])/i,
+    );
+    if (m) {
+      const circleName = 'omega';
+      if (triVertices && !shapes.some((s) => s.name === circleName)) {
+        shapes.push({
+          name: circleName,
+          kind: 'circle3',
+          fields: { p1: triVertices[0], p2: triVertices[1], p3: triVertices[2] },
+        });
+      }
+      const pointName = up(m[1]);
+      if (!points.some((p) => p.name === pointName)) {
+        points.push({
+          name: pointName,
+          kind: 'onCircle',
+          fields: { circleId: circleName, theta: -Math.PI / 2 },
+        });
+      }
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // Perpendicular secant with named intersections.
+  //
+  // "Kẻ đường thẳng qua H vuông góc với HM và cắt AB, AC lần lượt tại P và Q"
+  // → emit HM, AB, AC helper segments, line PQ perpendicular to HM through H,
+  // and intersection points P/Q.
+  // -----------------------------------------------------------------------
+  {
+    const m = userPrompt.match(
+      /(?:kẻ|vẽ|dựng)\s+(?:đường\s*thẳng|đường)\s+qua\s+([A-Z])\s+vuông\s*góc\s+(?:với\s+)?([A-Z])([A-Z])\s+và\s+cắt\s+(?:các\s+)?(?:cạnh\s+|đoạn\s+|đường\s*thẳng\s+)?([A-Z])([A-Z])\s*(?:,|và)\s*(?:cạnh\s+|đoạn\s+|đường\s*thẳng\s+)?([A-Z])([A-Z])\s+lần\s+lượt\s+(?:tại|ở)\s+([A-Z])\s*(?:,|và)\s*([A-Z])/i,
+    );
+    if (m) {
+      const through = up(m[1]);
+      const base = up(m[2]) + up(m[3]);
+      const refA = up(m[4]) + up(m[5]);
+      const refB = up(m[6]) + up(m[7]);
+      const hitA = up(m[8]);
+      const hitB = up(m[9]);
+      const lineName = hitA + hitB;
+
+      const ensureSegment = (name: string, p1: string, p2: string) => {
+        if (!shapes.some((s) => s.name === name)) {
+          shapes.push({ name, kind: 'segment', fields: { p1, p2 } });
+        }
+      };
+
+      ensureSegment(base, up(m[2]), up(m[3]));
+      ensureSegment(refA, up(m[4]), up(m[5]));
+      ensureSegment(refB, up(m[6]), up(m[7]));
+
+      if (!shapes.some((s) => s.name === lineName)) {
+        shapes.push({
+          name: lineName,
+          kind: 'perpendicular',
+          fields: { throughPoint: through, toLine: base },
+        });
+      }
+      if (!points.some((p) => p.name === hitA)) {
+        points.push({
+          name: hitA,
+          kind: 'intersection',
+          fields: { ref1: lineName, ref2: refA },
+        });
+      }
+      if (!points.some((p) => p.name === hitB)) {
+        points.push({
+          name: hitB,
+          kind: 'intersection',
+          fields: { ref1: lineName, ref2: refB },
+        });
+      }
+    }
+  }
+
+  // "Kẻ đường thẳng qua D và vuông góc với OD, cắt AB ở K"
+  {
+    const m = userPrompt.match(
+      /(?:(?:kẻ|vẽ|dựng)\s+(?:đường\s*thẳng|đường)\s+qua|(?:một\s+)?(?:đường\s*thẳng|đường)\s+(?:đi\s+)?qua)\s+(?:điểm\s+)?([A-Z])\s*,?\s*(?:và\s+)?vuông\s*góc\s+(?:với\s+)?([A-Z])([A-Z])\s*(?:,|và)\s*cắt\s+(?:cạnh\s+|đoạn\s+|đường\s*thẳng\s+)?([A-Z])([A-Z])\s+(?:tại|ở)\s+([A-Z])/i,
+    );
+    if (m) {
+      const through = up(m[1]);
+      const base = up(m[2]) + up(m[3]);
+      const ref = up(m[4]) + up(m[5]);
+      const hit = up(m[6]);
+      const lineName = through + hit;
+
+      const ensureSegment = (name: string, p1: string, p2: string) => {
+        if (!shapes.some((s) => s.name === name)) {
+          shapes.push({ name, kind: 'segment', fields: { p1, p2 } });
+        }
+      };
+
+      ensureSegment(base, up(m[2]), up(m[3]));
+      ensureSegment(ref, up(m[4]), up(m[5]));
+
+      if (!shapes.some((s) => s.name === lineName)) {
+        shapes.push({
+          name: lineName,
+          kind: 'perpendicular',
+          fields: { throughPoint: through, toLine: base },
+        });
+      }
+      if (!points.some((p) => p.name === hit)) {
+        points.push({
+          name: hit,
+          kind: 'intersection',
+          fields: { ref1: lineName, ref2: ref },
+        });
+      }
+    }
+  }
+
+  // "Vẽ ME, MF lần lượt vuông góc AC, AB tại E, F"
+  {
+    const m = userPrompt.match(
+      /(?:kẻ|vẽ|dựng)\s+([A-Z])\s*([A-Z])\s*,\s*([A-Z])\s*([A-Z])\s+lần\s+lượt\s+vuông\s*góc\s+(?:với\s+)?([A-Z])([A-Z])\s*,\s*([A-Z])([A-Z])\s+tại\s+([A-Z])\s*,\s*([A-Z])/i,
+    );
+    if (m) {
+      const src1 = up(m[1]);
+      const src2 = up(m[3]);
+      const foot1 = up(m[9]);
+      const foot2 = up(m[10]);
+      const line1 = up(m[5]) + up(m[6]);
+      const line2 = up(m[7]) + up(m[8]);
+
+      const ensureSegment = (name: string, p1: string, p2: string) => {
+        if (!shapes.some((s) => s.name === name)) {
+          shapes.push({ name, kind: 'segment', fields: { p1, p2 } });
+        }
+      };
+
+      ensureSegment(line1, up(m[5]), up(m[6]));
+      ensureSegment(line2, up(m[7]), up(m[8]));
+
+      if (!points.some((p) => p.name === foot1)) {
+        points.push({
+          name: foot1,
+          kind: 'perpFoot',
+          fields: { from: src1, onLine: line1 },
+        });
+      }
+      if (!points.some((p) => p.name === foot2)) {
+        points.push({
+          name: foot2,
+          kind: 'perpFoot',
+          fields: { from: src2, onLine: line2 },
+        });
+      }
+
+      ensureSegment(src1 + foot1, src1, foot1);
+      ensureSegment(src2 + foot2, src2, foot2);
+    }
+  }
+
+  // "đường thẳng EF cắt HM tại I"
+  {
+    const m = userPrompt.match(
+      /(?:đường\s*thẳng|đường|đoạn)\s+([A-Z])([A-Z])\s+cắt\s+(?:đường\s*thẳng\s+|đường\s+|đoạn\s+)?([A-Z])([A-Z])\s+(?:tại|ở)\s+([A-Z])/i,
+    );
+    if (m) {
+      const ref1 = up(m[1]) + up(m[2]);
+      const ref2 = up(m[3]) + up(m[4]);
+      const hit = up(m[5]);
+
+      const ensureSegment = (name: string, p1: string, p2: string) => {
+        if (!shapes.some((s) => s.name === name)) {
+          shapes.push({ name, kind: 'segment', fields: { p1, p2 } });
+        }
+      };
+
+      ensureSegment(ref1, up(m[1]), up(m[2]));
+      ensureSegment(ref2, up(m[3]), up(m[4]));
+
+      if (!points.some((p) => p.name === hit)) {
+        points.push({
+          name: hit,
+          kind: 'intersection',
+          fields: { ref1, ref2 },
         });
       }
     }
@@ -768,7 +956,7 @@ function up(s: string): string {
 }
 
 function detectTriangleVertices(prompt: string): readonly string[] | null {
-  const m = prompt.match(/tam\s*giác\s+([A-Z])([A-Z])([A-Z])/i);
+  const m = prompt.match(/tam\s*giác(?:\s+(?:vuông|cân|đều|nhọn|tù))?\s+([A-Z])([A-Z])([A-Z])/i);
   if (!m) return null;
   return [up(m[1]), up(m[2]), up(m[3])];
 }

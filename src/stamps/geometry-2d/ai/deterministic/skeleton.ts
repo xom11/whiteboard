@@ -10,7 +10,7 @@ export interface SkeletonResult {
   readonly matched: string[];
 }
 
-const TRI_RE = /tam\s*giác(?:\s+(?:vuông|cân|đều))?\s+([A-Z])([A-Z])([A-Z])/i;
+const TRI_RE = /tam\s*giác(?:\s+(?:vuông|cân|đều|nhọn|tù))?\s+([A-Z])([A-Z])([A-Z])/i;
 const TRI_RIGHT_RE = /tam\s*giác(?:\s+([A-Z])([A-Z])([A-Z]))?\s+vuông\s+tại\s+([A-Z])/i;
 const TRI_ISOSCELES_RE = /tam\s*giác(?:\s+([A-Z])([A-Z])([A-Z]))?\s+cân\s+tại\s+([A-Z])/i;
 const TRI_EQUILATERAL_RE = /tam\s*giác\s+đều\s+([A-Z])([A-Z])([A-Z])/i;

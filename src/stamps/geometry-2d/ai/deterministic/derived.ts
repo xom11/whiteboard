@@ -42,9 +42,11 @@ export function applyDerived(prompt: string, state: DerivedState): void {
   // Map kind → label, chỉ push khi entity tương ứng thực sự đã được thêm.
   if (addedPointKinds.has('midpoint')) state.matched.push('midpoint');
   if (addedPointKinds.has('onSegment')) state.matched.push('on-segment');
+  if (addedPointKinds.has('onCircle')) state.matched.push('on-circle');
   if (addedPointKinds.has('perpFoot')) state.matched.push('altitude');
   if (addedPointKinds.has('centroid')) state.matched.push('centroid');
   if (addedPointKinds.has('orthocenter')) state.matched.push('orthocenter');
+  if (addedPointKinds.has('intersection')) state.matched.push('intersection');
   if (addedPointKinds.has('circumcenter')) state.matched.push('circumscribed');
   if (addedPointKinds.has('incenter')) state.matched.push('inscribed');
   if (addedPointKinds.has('tangencyPoint')) state.matched.push('inscribed');

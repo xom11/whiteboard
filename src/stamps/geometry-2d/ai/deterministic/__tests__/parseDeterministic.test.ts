@@ -98,4 +98,141 @@ describe('parseDeterministic — projection + onSegment patterns', () => {
     const names = r.dsl.points.map((p) => p.name).sort();
     expect(names).toEqual(['A', 'B', 'C', 'D', 'E', 'F', 'M']);
   });
+
+  test('acute triangle orthocenter midpoint perpendicular secant prompt hits fast-path', () => {
+    const r = parseDeterministic(
+      'Cho tam giác nhọn ABC có H là trực tâm và M là trung điểm BC. ' +
+        'Kẻ đường thẳng qua H vuông góc với HM và cắt AB, AC lần lượt tại P và Q.',
+    );
+
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.dsl.points.map((p) => p.name).sort()).toEqual(['A', 'B', 'C', 'H', 'M', 'P', 'Q']);
+    expect(r.dsl.points.find((p) => p.name === 'H')).toMatchObject({
+      kind: 'orthocenter',
+      vertices: ['A', 'B', 'C'],
+    });
+    expect(r.dsl.points.find((p) => p.name === 'M')).toMatchObject({
+      kind: 'midpoint',
+      p1: 'B',
+      p2: 'C',
+    });
+    expect(r.dsl.shapes.find((s) => s.name === 'PQ')).toMatchObject({
+      kind: 'perpendicular',
+      throughPoint: 'H',
+      toLine: 'HM',
+    });
+    expect(r.dsl.points.find((p) => p.name === 'P')).toMatchObject({
+      kind: 'intersection',
+      ref1: 'PQ',
+      ref2: 'AB',
+    });
+    expect(r.dsl.points.find((p) => p.name === 'Q')).toMatchObject({
+      kind: 'intersection',
+      ref1: 'PQ',
+      ref2: 'AC',
+    });
+    const trans = transpile(r.dsl);
+    expect(trans.ok).toBe(true);
+  });
+
+  test('altitude circumcenter orthocenter single perpendicular intersection prompt hits fast-path', () => {
+    const r = parseDeterministic(
+      'Cho tam giác nhọn ABC có AD là đường cao, O và H lần lượt là tâm đường tròn ngoại tiếp và ' +
+        'trực tâm của tam giác ABC. Kẻ đường thẳng qua D và vuông góc với OD, cắt AB ở K.',
+    );
+
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.dsl.points.map((p) => p.name).sort()).toEqual(['A', 'B', 'C', 'D', 'H', 'K', 'O']);
+    expect(r.dsl.points.find((p) => p.name === 'D')).toMatchObject({
+      kind: 'perpFoot',
+      from: 'A',
+      onLine: 'BC',
+    });
+    expect(r.dsl.points.find((p) => p.name === 'O')).toMatchObject({
+      kind: 'circumcenter',
+      vertices: ['A', 'B', 'C'],
+    });
+    expect(r.dsl.points.find((p) => p.name === 'H')).toMatchObject({
+      kind: 'orthocenter',
+      vertices: ['A', 'B', 'C'],
+    });
+    expect(r.dsl.shapes.find((s) => s.name === 'DK')).toMatchObject({
+      kind: 'perpendicular',
+      throughPoint: 'D',
+      toLine: 'OD',
+    });
+    expect(r.dsl.points.find((p) => p.name === 'K')).toMatchObject({
+      kind: 'intersection',
+      ref1: 'DK',
+      ref2: 'AB',
+    });
+    const trans = transpile(r.dsl);
+    expect(trans.ok).toBe(true);
+  });
+
+  test('declarative line through point perpendicular intersection prompt hits fast-path', () => {
+    const r = parseDeterministic(
+      'Cho tam giác nhọn ABC có CD là đường cao, H là trực tâm và O là tâm ' +
+        'đường tròn ngoại tiếp tam giác ABC. Một đường thẳng đi qua điểm D, vuông góc với OD và cắt BC tại E',
+    );
+
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.dsl.points.map((p) => p.name).sort()).toEqual(['A', 'B', 'C', 'D', 'E', 'H', 'O']);
+    expect(r.dsl.points.find((p) => p.name === 'D')).toMatchObject({
+      kind: 'perpFoot',
+      from: 'C',
+      onLine: 'AB',
+    });
+    expect(r.dsl.shapes.find((s) => s.name === 'DE')).toMatchObject({
+      kind: 'perpendicular',
+      throughPoint: 'D',
+      toLine: 'OD',
+    });
+    expect(r.dsl.points.find((p) => p.name === 'E')).toMatchObject({
+      kind: 'intersection',
+      ref1: 'DE',
+      ref2: 'BC',
+    });
+    const trans = transpile(r.dsl);
+    expect(trans.ok).toBe(true);
+  });
+
+  test('arc point paired perpendicular feet and line intersection prompt hits fast-path', () => {
+    const r = parseDeterministic(
+      'Cho tam giác ABC nhọn (AB < AC) nội tiếp đường tròn tâm O. Điểm M thuộc cung nhỏ BC. ' +
+        'Vẽ M E, M F lần lượt vuông góc AC, AB tại E, F .Gọi H là trực tâm của tam giác ABC, đường thẳng EF cắt HM tại I.',
+    );
+
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.dsl.points.map((p) => p.name).sort()).toEqual(['A', 'B', 'C', 'E', 'F', 'H', 'I', 'M', 'O']);
+    expect(r.dsl.points.find((p) => p.name === 'O')).toMatchObject({
+      kind: 'circumcenter',
+      vertices: ['A', 'B', 'C'],
+    });
+    expect(r.dsl.points.find((p) => p.name === 'M')).toMatchObject({
+      kind: 'onCircle',
+      circleId: 'omega',
+    });
+    expect(r.dsl.points.find((p) => p.name === 'E')).toMatchObject({
+      kind: 'perpFoot',
+      from: 'M',
+      onLine: 'AC',
+    });
+    expect(r.dsl.points.find((p) => p.name === 'F')).toMatchObject({
+      kind: 'perpFoot',
+      from: 'M',
+      onLine: 'AB',
+    });
+    expect(r.dsl.points.find((p) => p.name === 'I')).toMatchObject({
+      kind: 'intersection',
+      ref1: 'EF',
+      ref2: 'HM',
+    });
+    const trans = transpile(r.dsl);
+    expect(trans.ok).toBe(true);
+  });
 });

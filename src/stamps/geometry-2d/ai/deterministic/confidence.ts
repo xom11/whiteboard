@@ -10,6 +10,7 @@ const LABEL_WEIGHT: Record<string, number> = {
   square: 1,
   parallelogram: 1,
   'on-segment': 1,
+  'on-circle': 1,
   'circle-cr': 2,
   midpoint: 1,
   altitude: 2,
@@ -22,6 +23,7 @@ const LABEL_WEIGHT: Record<string, number> = {
   tangent: 1,
   parallel: 1,
   perpendicular: 1,
+  intersection: 1,
 };
 
 export function scoreConfidence(prompt: string, matched: readonly string[]): number {
