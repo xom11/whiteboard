@@ -1,0 +1,408 @@
+# Hình học phẳng — Huy Cao's Blog (julielltv.wordpress.com)
+
+> Nguồn: Huy Cao's Blog — julielltv.wordpress.com · Chuyên mục: Hình học phẳng (plane geometry) · Thu thập: 2026-06-06 · 29 bài (đề Olympic/đội tuyển).
+>
+> LaTeX viết inline trong `$...$`. Dùng làm dữ liệu cho pipeline sinh hình (intent → DSL).
+
+## 1. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ nhọn, $M$ là trung điểm của $AB$ . $AD,BE$ là hai đường cao của tam giác. $CM$ theo thứ tự cắt $(CDE),(ABC)$ tại điểm thứ hai là $P,Q$ . Chứng minh $MP=MQ$ .
+
+<details><summary>Lời giải</summary>
+
+Gọi $H$ là trực tâm tam giác $ABC$ và $F$ là chân vuông góc từ $C$ xuống $AB$ . Ta có $\angle HPM=\angle HFM=90^0$ nên $HPMF$ nội tiếp. Tứ giác $EFMD$ nội tiếp đường tròn Euler của tam giác $ABC$ và tứ giác $EHPD$ nội tiếp đường tròn đường kính $CH$ . Như vậy ta có $HD,ED,FM$ đồng quy tại tâm đẳng phương $J$ của ba đường tròn $(HPMF),(EFMD),(EHPD)$ . Từ đó mà : $JA.JB=JE.JD=JH.JP$ (Chú ý tứ giác $EDBA,EHPD$ nội tiếp) Suy ra tứ giác $HPBA$ nội tiếp. Lúc này : $\angle PAB=\angle PHB=\angle ACQ=\angle ABQ$ Kéo theo $AP$ song song $QB$ . Và : $\angle PBA=\angle DHP=\angle DCP=\angle BAQ$ Suy ra $PB$ song song $QA$ . Như vậy $PBQA$ là hình bình hành, dễ thấy được $M$ là trung điểm của $PQ$ hay $MP=MQ$ .
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2015/08/10/geometry-94/
+
+---
+
+## 2. (không rõ nguồn thi)
+
+**Đề:** Cho tứ giác $ABCD$ nội tiếp $(O)$ . $P$ di chuyển trên cung $CD$ không chứa $A,B$ . $PA$ cắt $DB,DC$ tại $E,F$ . $PB$ cắt $CA,CD$ tại $G,H$ . $GF$ giao $EH$ tại $Q$ . Chứng minh $PQ$ luôn đi qua một điểm cố định.
+
+<details><summary>Lời giải</summary>
+
+Gọi $U,V$ theo thứ tự là giao của tiếp tuyến tại $B$ với $AC$ và tiếp tuyến tại $A$ với $BD$ . Gọi $T$ là giao của $BU$ và $AV$ . Áp dụng định lí Pascal cho bộ sáu điểm $(D,B,B,P,A,C)$ thì ta được $U,E,H$ thẳng hàng. Tương tự thì $V,G,F$ thẳng hàng. Tiếp tục gọi $W$ là giao của $AB$ và $CD$ . Áp dụng định lí Pascal cho bộ sáu điểm $(A,A,C,D,B,B)$ thì ta có $U,V,W$ thẳng hàng. Xét hai tam giác $BUH$ và $AVF$ có $AB,UV,HF$ đồng quy. Và : $P=AF\cap BH,Q=VF\cap UH,T=AV\cap BU$ Theo định lí Desargues ta có $P,Q,T$ thẳng hàng. Dễ thấy $T$ cố định nên $PQ$ luôn đi qua một điểm cố định.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2015/08/03/geometry-93/
+
+---
+
+## 3. (không rõ nguồn thi)
+
+**Đề:** Cho tứ giác $ABCD$ nội tiếp trong đường tròn. Một điểm $P$ trong tứ giác thỏa mãn $\widehat{PDC}+\widehat{PCB}=\widehat{PBC}+\widehat{PAB}=90^{\circ}$ Gọi $S$ là giao điểm của $AB,CD$ . Chứng minh $SP$ vuông góc $BC$
+
+<details><summary>Lời giải</summary>
+
+Gọi $H$ là chân vuông góc của $P$ xuống $BC$ . Ta có : $\angle PAB+\angle PBC=90^0$ $\angle BPH+\angle PBC=90^0$ Suy ra $\angle PAB=\angle BPH$ , điều này chứng tỏ rằng $PH$ là tiếp tuyến tại $P$ của $(PAB)$ . Tương tự $PH$ là tiếp tuyến tại $P$ của $(PCD)$ . Như vậy $(PAB),(PCD)$ tiếp xúc ngoài nhau và có trục đẳng phương là $PH$ . Hơn nữa do $ABCD$ nội tiếp nên $SA.SB=SC.SD$ , suy ra $S$ thuộc trục đẳng phương của $(PAB),(PCD)$ , tức $S$ thuộc $PH$ . Ta có điều phải chứng minh.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2015/05/20/geometry-92/
+
+---
+
+## 4. Iran Second Round 2015
+
+**Đề:** Cho tam giác $ABC$ và $D,E$ lần lượt là các điểm trên cạnh $AB,AC$ sao cho tứ giác $BDEC$ nội tiếp. Gọi $P$ là giao của $BE,CD$ . Gọi $H$ là điểm trên $AC$ thoả $\angle AHP=90^0$ và $M,N$ lần lượt là trung điểm của $AP,BC$ . Chứng minh rằng hai tam giác $MHN,ADC$ đồng dạng.
+
+<details><summary>Lời giải</summary>
+
+Ta sẽ chứng minh đường tròn $(MHN)$ chính là đường tròn Euler của tam giác $APC$ . Thật vậy, gọi $K,L$ là trung điểm của $AC,PC$ thế thì chú ý $KL\parallel AP,NL\parallel BP$ . Ta có : $\angle KNL=\angle BNL-\angle BNK=(180^0-\angle EBC)-(180^0-\angle ABC)=\angle ABC-\angle EBC=\angle ACD=\angle MLP=\angle KML$ Suy ra tứ giác $MNLK$ nội tiếp hay $N$ thuộc đường tròn Euler của tam giác $APC$ . Từ đó có ngay $M,N,H,K,L$ cùng thuộc một đường tròn. Từ đó có : $\angle HMN=\angle CKN=\angle CAD,\angle HNM=\angle HKM=\angle ACD$ Điều này chứng tỏ hai tam giác $AHM,ADC$ đồng dạng.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2015/05/08/geometry-iran-second-round-2015-2/
+
+---
+
+## 5. Iran Second Round 2015
+
+**Đề:** In the quadrilateral $ABCD$ , $AC$ is the bisector of $\angle A$ and $\angle ADC=\angle ACB$ . $X,Y$ are feet of perpendicular from $A$ to $BC,CD$ respectively. Prove that the orthocenter of triangle $AXY$ is on $BD$ .
+
+<details><summary>Lời giải</summary>
+
+Easy to see that the circle $(AXY)$ through $C$ . Let $E,F$ be the intersection of $(AXY)$ and $AB,AC$ respectively. Let $H$ be the intersection of $EY$ and $FX$ . We apply Pascal theorem for six points $H,A,G,X,C,Y$ , we get that $B,H,D$ are conlinear. On the other hand, $\angle AFX=\angle ACX=\angle ADC$ . So we have $XF$ is parrallel to $C$ , implies $XF \perp AY$ . Similary, $YE \perp AX$ . Consequenlty, $H$ be the orthocenter of triangle $AXY$ . We are done.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2015/05/08/geometry-iran-second-round-2015/
+
+---
+
+## 6. Đề thi Olympic Duyên hải và Đồng bằng Bắc Bộ lớp 11 năm 2015
+
+**Đề:** Cho hai đường tròn $(O_1)$ và $(O_2)$ cắt nhau tại hai điểm $A,B$ . $AX,XY$ theo thứ tự là hai đường kính của $(O_1),(O_2)$ . $I$ là một điểm thuộc phân giác góc $XAY$ sao cho $I$ không thuộc hai đường tròn và $OI$ không vuông góc $XY$ . Đường thẳng qua $A$ vuông góc $AI$ cắt $(O_1),(O_2)$ tại $E,F$ lần lượt. $IX$ cắt $(O_1)$ tại $K$ , $IY$ cắt $(O_2)$ tại $L$ . 1) Gọi $C$ là giao của $EF$ với $IX$ và $O$ là trung điểm của $XY$ . Chứng minh $OE$ tiếp xúc với $(CEK)$ . 2) Chứng minh $EK,FL,OI$ đồng quy.
+
+<details><summary>Lời giải</summary>
+
+1) Dễ thấy rằng $EO_1$ song song với $AY$ nên $EO_1$ đi qua trung điểm $O$ của $XY$ . Tương tự $FO_2$ cũng đi qua $O$ . Ta có : $\angle OEK=\angle O_1EK=\angle O_1EA-\angle AEK=\angle EAO_1-\angle AXK=\angle ACX=\angle ECK$ Điều này chứng tỏ $OE$ là tiếp tuyến của $(CEK)$ . 2) Gọi $D$ là giao của $YL$ với $EF$ , tương tự thì $OF$ là tiếp tuyến của $(DFL)$ . Mà dễ chứng minh $OE=OF$ nên $O$ nằm trên trục đẳng phương của $(CEK),(DFL)$ . Tiếp theo ta sẽ chứng minh hai tứ giác $DLKC$ và $ELKF$ nội tiếp. Chứng minh $DLKC$ nội tiếp : Gọi $U$ là giao của $AI$ và $(O_1)$ thì có $\angle O_1UA=\angle O_1AU=\angle UAY$ , suy ra $O_1U$ song song $AY$ , dẫn đến $O_1U$ đi qua $O$ . Vì $OE$ tiếp xúc $(CEK)$ nên $\angle KCE=\angle KEU=\angle KAU=\angle KAI=\angle KLI$ (chú ý là tứ giác $ALIK$ nội tiếp do có hai góc đối là góc vuông). Từ đó mà có $DLKC$ nội tiếp. Chứng minh $ELKF$ nội tiếp : Ta có : $\angle FLK=\angle FLI-\angle KLI=\angle FLY-\angle KEU$ $\angle FEK=\angle FEO-\angle KEU$ Mặt khác dễ thấy rằng $\angle FEO=\angle FLI$ nên kéo theo $\angle FLK=\angle FEK$ . Điều này chứng tỏ $ELKF$ nội tiếp. Tiếp theo ta gọi $J$ là giao của $EK,FL$ thì do $ELKF$ nội tiếp nên : $JE.JK=JL.JF\Rightarrow P_{J/(CEK)}=P_{J/DFL}$ Vậy $J$ nằm trên trục đẳng phương của $(CEK),(DFL)$ Tương tự do $DLKC$ nội tiếp nên suy ra được $I$ nằm trên trục đẳng phương của $(CEK),(DFL)$ . Ta có ba điểm $O,I,J$ cùng nằm trên trục đẳng phương của $(CEK),(DFL)$ nên chúng thẳng hàng. Hay nói cách khác $EK,FL,OI$ đồng quy, đây là điều cần chứng minh.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2015/05/01/geometry-olympic-duyen-hai-va-dong-bang-bac-bo2015/
+
+---
+
+## 7. APMO 2015
+
+**Đề:** Cho tam giác $ABC$ nội tiếp $(O)$ , gọi $D$ là một điểm trên cạnh $BC$ . Một đường thẳng qua $D$ cắt cạnh $AB$ tại $X$ và cắt tia $AC$ tại $Y$ . Đường tròn $(BXD)$ cắt $(O)$ tại $Z$ . Đường thẳng $ZD,ZY$ theo thứ tự cắt $(O)$ tại $V,W$ . Chứng minh $AB=VW$ .
+
+<details><summary>Lời giải</summary>
+
+Dễ dàng nhận thấy điểm $Z$ chính là điểm Miquel của tứ giác toàn phần $ABCXDY$ . Cho nên tứ giác $CDZY$ nội tiếp. Suy ra : $\angle ZYD=\angle ZCD$ Mà lại có $\angle ZCD=\angle ZCB=\angle ZWB$ do tứ giác $ZWCB$ nội tiếp. Như vậy thì $\angle ZWB=\angle ZYD$ . Điều này cho ta $WB,YD$ song song nhau. Tương tự thì $AV,YD$ cũng song song nhau. Kéo theo $AV,WB$ song song. Dễ suy ra đuợc $AB=VW$ .
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2015/04/10/geometry-apmo-2015/
+
+---
+
+## 8. (không rõ nguồn thi)
+
+**Đề:** Cho tứ giác $ABCD$ nội tiếp $(O)$ , gọi $E,F$ theo thứ tự là giao của $AB,CD$ và $AD,BC$ . Gọi $M,N$ theo thứ tự là trung điểm của $AC,BD$ . Gọi $H,K$ theo thứ tự là trực tâm các tam giác $MEF,NEF$ . Chứng minh tứ giác $HNKM$ là hình bình hành.
+
+<details><summary>Lời giải</summary>
+
+Bổ đề : Cho tam giác $ABC$ có $M$ là trung điểm của $BC$ và $H$ là trực tâm. Gọi $K$ là giao của $AM$ với cung $BC$ chứa $H$ của $(HBC)$ . Chứng minh $HK$ vuông góc $AM$ . Chứng minh bổ đề : Gọi $AD,BE,CF$ là ba đường cao của tam giác $ABC$ . Gọi $G$ là giao $EF,BC$ và $GH$ giao $AM$ tại $K'$ . Ta chứng minh $K$ trùng $K'$ . Thật vậy, theo định lí Brocard thì $M$ là trực tâm tam giác $GHA$ nên $GK'$ vuông góc $AM$ . Từ đó $K'$ thuộc $(AEHF)$ . Từ đó $GH.GK'=GF.GE=GB.GC$ . Suy ra $K'$ thuộc $(HBC)$ . Từ đó $K$ trùng $K'$ . Hơn nữa ta cũng đã chứng minh $GK' \perp AM$ . Bổ đề được chứng minh. Trở lại với bài toán : Gọi $X,Y$ theo thứ tự là giao của $AC,BD$ với $EF$ và $P$ là trung điểm của $EF$ . Theo định lí về đường thẳng Gauss-Newtion thì $P,M,N$ thẳng hàng. Gọi $G$ là giao của $AC,BD$ . Dễ thấy $(XG,CA)=-1$ (hàng điều hoà tứ giác toàn phần) và do $M$ là trung điểm $CA$ nên theo hệ thức Maclaurin thì $GM.GX=GC.GA$ . Hoàn toàn tương tự ta có $GN.GY=GB.GD$ . Lại dễ thấy $GA.GC=GB.GD$ nên có $GN.GY=GM.GX$ . Từ đây suy ra tứ giác $XYMN$ nội tiếp. Ta suy ra : $PX.PY=PM.PN\;\;\;\;(1)$ Lại cũng có $(EF,XY)=-1$ và $P$ là trung điểm $EF$ nên theo hệ thức Newton thì $PX.PY=PE^2=PF^2 \;\;(2)$ Từ $(1)(2)$ ta suy ra : $\Delta PFN\sim \Delta PMF,\Delta PEN\sim \Delta PME$ Từ đây thì : $\angle PMF=\angle PFN,\angle PME=\angle PEN$ Kéo theo : $\angle EMF=\angle PME+\angle PMF=\angle PEN+\angle PFM=180^0-\angle ENF\Rightarrow \angle ENF=\angle EHF$ Điều này cho ta $FHNE$ nội tiếp. Khi đó áp dụng bổ đề ta có $HN$ vuông góc $MP$ . Hoàn toàn tương tự thì $FMKE$ nội tiếp và $KM$ vuông góc $MP$ . Suy ra $HN$ song song $KM$ . Lại có $HM$ song song $NK$ do cùng vuông góc $EF$ . Từ đó có $HNKM$ là hình bình hành.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2015/01/05/geometry-90/
+
+---
+
+## 9. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ với $AB < AC$ có ba đường cao $AD,BE,CF$ tại $H$ . Biết $EF$ cắt $AH,BC$ tại $L,G$ . Trung trực $LD$ cắt $GH$ tại $P$ . Gọi $M,N,J$ theo thứ tự là trung điểm của $BC,EF,AH$ và $K$ là hình chiếu của $H$ lên $AG$ . a) Chứng minh $AM$ vuông góc với $GH$ . b) Chứng minh $IJ$ là tiếp tuyến chung của $(GKN)$ và $(DPL)$
+
+*(Lời giải bản gốc dạng ảnh — không trích được text.)*
+
+Nguồn: https://julielltv.wordpress.com/2014/12/26/geometry-mathscope/
+
+---
+
+## 10. China Team Selection Test 2008
+
+**Đề:** Cho tam giác $ABC$ nhọn có $I$ là tâm nội tiếp. $M,N$ là hai trung điểm cung nhỏ $AC,AB$ của đường tròn $(O)$ ngoại tiếp tam giác $ABC$ và $D$ là trung điểm $MN$ . Lấy $G$ là điểm tuỳ ý trên cung nhỏ $BC$ của $(O)$ . Gọi $I_1,I_2$ theo thứ tự là tâm nội tiếp các tam giác $ABG,ACG$ . $P$ là giao điểm thứ hai của $(O)$ và $(GI_1I_2)$ . Chứng minh $P,I,D$ thẳng hàng.
+
+<details><summary>Lời giải</summary>
+
+Có thể thấy đây chính là một tính chất quen thuộc của đường tròn Mixtilinear và dễ nhìn ra được $P$ chính là điểm tiếp xúc của $(O)$ và đường tròn Mixtilinear góc $A$ của tam giác $ABC$ . Ta sẽ chứng minh điều này. Dễ dàng nhận ra được : $NA=NB=NI=NI_1,MA=MC=MI=MI_2$ Cũng dễ dàng nhìn ra đuơc hai tam giác $PI_1N,PI_2M$ đồng dạng. Kéo theo : $\dfrac{PN}{PM}=\dfrac{NI_1}{MI_2}=\dfrac{NA}{MA}$ Đẳng thức này chứng tỏ $NAMP$ là tứ giác điều hoà. Mặt khác nếu gọi $P'$ là tiếp điểm của $(O)$ và đường tròn Mixtilinear góc $A$ của tam giác $ABC$ thì theo tính chất 6 này ta được $NAMP'$ là tứ giác điều hoà. Điều này chứng tỏ $P,P'$ trùng nhau. Từ đó dễ dàng nhận thấy $PI$ đi qua trung điểm $R$ của cung $BAC$ . Bằng cộng góc đưa về các góc trong tam giác $ABC$ , ta có $RM$ song song $NI$ . Tương tự $RN$ song song $MI$ . Suy ra $RMIN$ là hình bình hành. Mà $D$ là trung điểm của $MN$ nên $D$ cũng là trung điểm của $RI$ . Kéo theo $I,D,R$ thẳng hàng. Vậy ta có $P,I,D$ thẳng hàng.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/12/18/geometry-china-tst-2008-mixtilinear-circle/
+
+---
+
+## 11. Đề thi thử VMO 2015 Viện Toán Học
+
+**Đề:** Cho tam giác $ABC$ nhọn nội tiếp đường tròn $(O)$ . Gọi $I$ là trung điểm của $BC$ và $H$ là trực tâm tam giác $ABC$ . Cho $BH,CH$ cắt $CA,AB$ tương ứng tại $E,F$ . Tia $IH$ cắt $(O)$ tại $T$ . Trên đường thẳng $EF$ lấy điểm $D$ sao cho $HD$ song song $BC$ . a) Chứng minh $DT$ tiếp xúc với $(HEF)$ . b) Gọi $M,N$ là giao theo thứ tự của $EF$ với $(IBT),(ICT)$ thoả $M$ khác phía $E$ đối với $F$ và $N$ khác phía $F$ đối với $E$ . Gọi $P$ là giao của $AH$ với $(O)$ . Chứng minh $BN,CM,TP$ đồng quy.
+
+<details><summary>Lời giải</summary>
+
+a) Theo định lí Brocard thì $TI$ vuông góc $JA$ , điều này cho ta $T$ thuộc $(AFHE)$ . Gọi $J$ là giao $BC$ với $EF$ . Vì $JE.JF=JB.JC$ hay $J$ có cùng phương tích với $(HEF)$ và $(O)$ . Suy ra $J$ thuộc trục đẳng phương của chúng, tức $J$ thuộc $TA$ . Ta thấy : $\angle FDH=\angle FCB=\angle HEF$ Điều này chứng tỏ là $DH$ là tiếp tuyến của $(HEF)$ . Mặt khác, $DH$ song song $BC$ và $I$ là trung điểm của $BC$ nên suy ra $H(BC,DI)=-1$ . Hay là $H(EF,HT)=-1$ . Suy ra tứ giác $TFHE$ điều hoà, lại có $EF$ cắt tiếp tuyến tại $H$ của $(HEF)$ tại $D$ nên $DT$ là tiếp tuyến của $(HEF)$ . b) Ta có $T(BE,JH)=-1$ và $TI$ vuông góc $JA$ nên theo định lí chùm điều hoà ta có $TI$ là phân giác góc $BTE$ hay $\angle BTE=2 \angle ITE =2 \angle HTE =2 \angle HAC$ . Hơn nữa $\angle HAC=\angle EBI$ và $\angle EIC=2\angle EBI$ vì $I$ là trung điểm cạnh huyền $BC$ của tam giác vuông $BEC$ . Kéo theo $\angle BTE=\angle EIC$ . Điều này cho ta $TBIE$ nội tiếp hay $E \in (TBI)$ . Từ đó : $\angle MBT=\angle \angle TEM=\angle TAB=\angle TCB$ Suy ra $MB$ là tiếp tuyến tại $B$ của $(O)$ . Tương tự $NC$ là tiếp tuyến tại $C$ của $(O)$ . Hơn nữa có $A(TP,BC)=A(JH,BC)=-1$ nên tứ giác $TBPC$ điều hoà. Suy ra $TP$ và hai tiếp tuyến tại $B,C$ của $(O)$ đồng quy. Tức là $TP,BM,NC$ đồng quy. Hoàn tất bài toán.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/12/11/geometry-89/
+
+---
+
+## 12. Đề thi thử VMO 2015 Viện Toán Học
+
+**Đề:** Cho tam giác nhọn $ABC$ có $D,E,F$ là trung điểm $BC,CA,AB$ . Gọi $(I)$ là đường tròn đường kính $AD$ . $(I)$ cắt $AB,AC$ tại $M,N$ . $MN,EF$ cắt nhau tại $P$ . a) Chứng minh $(DIP)$ đi qua trung điểm $Q$ của $MN$ . b) Gọi $G$ là một điểm cố định trên đoạn $EF$ . Một đường thẳng thay đổi qua $G$ cắt $(I)$ tại $H,K$ . Cho $KF,HE$ cắt $(I)$ tại $R,S$ . Chứng minh trung điểm $T$ của $RS$ thuộc một đường tròn cố định.
+
+<details><summary>Lời giải</summary>
+
+a) Dễ thấy $\angle IQP=90^0$ nên chỉ cần chỉ ra $\angle IDP=90^0$ hay $DP$ là tiếp tuyến của $(I)$ tại $D$ thì bài toán xong. Gọi $L$ là giao của $(I)$ với trung trực của $BC$ và $J$ là trung điểm của $LD$ . Ta dễ dàng thấy : $\angle MJN=\angle MFD+\angle NED=2\angle BAC=2(\angle MAD+\angle DAN)=\angle MID+\angle NID=\angle MIN$ Suy ra rằng $IJNM$ nội tiếp. Khi đó gọi $d'$ là tiếp tuyến tại $D$ của $(I)$ thì $d',IJ,MN$ đồng quy tại $P$ vì tương ứng là trục đẳng phương của hai trong ba đường tròn $(I),(IJNM)$ và đường tròn đường kính $ID$ . Suy ra $DP$ trùng $d'$ tức $DP$ là tiếp tuyến của $(I)$ b) Ta phát biểu và chứng minh một bổ đề là mở rộng của định lí con bướm (Butterfly Theorem) : Bổ đề (Mở rộng định lí con bướm) Cho dây cung $PQ$ của $(O)$ và $M$ là trung điểm của $PQ$ . $Z,W$ là các điểm trên $AB$ sao cho $MZ=MW$ . Gọi $AB,CD$ theo thứ tự qua $W,Z$ là các dây cung của $(O)$ . $PQ$ theo thứ tự cắt $AD,BC$ tại $X,Y$ . Khi đó ta có $MX=MY$ . Chứng minh bổ đề : Gọi $S$ là giao của $AD,BC$ . Xét tam giác $SXY$ và hai cát tuyến $CZD,AWB$ . Sử dụng định lí Menelaus : $\dfrac{CS}{CY}.\dfrac{ZY}{ZX}.\dfrac{DX}{DS}=1,\dfrac{AS}{AX}.\frac{WX}{WY}.\dfrac{BY}{BS}=1$ Kéo theo : $\dfrac{CS.ZY.DX.AX.WY.BS}{CY.ZX.DS.AS.WX.BY}=1$ Dễ thấy $CS.BS=AS.DS$ và $DX.AX=PX.QX,CY.BY=PY.QY$ ta được : $\dfrac{PX.QX.WY.ZY}{PY.YQ.ZX.WX}=1$ Đặt $PM=QM=a,MZ=MW=b,MX=x,MY=y$ ta được : $\dfrac{(a-x)(a+x)(y-b)(y+b)}{(a+y)(a-y)(x-b)(x+b)}=1\Leftrightarrow (a^2-x^2)(y^2-b^2)=(a^2-y^2)(x^2-b^2)\Leftrightarrow (a^2-b^2)(x^2-y^2)=0$ Rõ ràng nếu $a=b$ thì bài toán trở thành định lí con bướm. Còn nếu $a \neq b$ thì $x=y$ tức $MX=MY$ . Suy ra điều phải chứng minh. Quay trở lại bài toán : Gọi $V$ là giao của $EF$ với $RS$ . Ta thấy $I$ là trung điểm của đường kính $EF$ , từ đó theo bổ đề trên thì ta được $I$ là trung điểm của $GV$ . Do $G,I$ cố định nên $V$ cũng cố định. Từ đó không khó để thấy $T$ thuộc đường tròn đường kính $IV$ , đây là một đường tròn cố định.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/12/11/3913/
+
+---
+
+## 13. (không rõ nguồn thi)
+
+**Đề:** Cho nửa đường tròn tâm $O$ đường kính $AB$ . $M$ là một điểm trên tia đối tia $BA$ . Một cát tuyến qua $M$ cắt nửa đường tròn tại $C,D$ sao cho $MD<MC$ . Gọi $K$ là giao của $(AOC),(BOD)$ . Chứng minh $MK$ vuông góc $OK$ .
+
+<details><summary>Lời giải</summary>
+
+Gọi $X$ là giao điểm của $AC,BD$ và $Y$ là giao điểm của $AD,BC$ . Dễ thấy $X$ chính là tâm đẳng phương của ba đường tròn $(O),(AOC),(BOD)$ nên $X,O,K$ thẳng hàng. Ta sẽ chứng minh $K,Y,M$ thẳng hàng. Ta có : $\angle AKB=\angle AKO+\angle OKB=\angle ACO+\angle ODB=\angle CAO+\angle ODB=\left ( \angle CAD+\angle DAO \right )+\left ( \angle ADB-\angle ADO \right )=\angle CAD+\angle CAY=\angle AYB$ Vậy ta có tứ giác $AKYB$ nội tiếp. Từ đó cũng dễ thấy luôn tứ giác $CKYD$ nội tiếp. Từ đó vì $M$ cùng phương tích với hai đường tròn $(AKYB),(CKYD)$ nên $M$ thuộc trục đẳng phương của hai đường tròn này tức $M$ thuộc $KY$ . Ta được $M,K,Y$ thẳng hàng. Theo định lý Brocard thì $O$ là trực tâm tam giác $XYM$ nên $MY$ vuông góc $OX$ hay $MK$ vuông góc $OK$ .
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/09/04/geometry-87/
+
+---
+
+## 14. (không rõ nguồn thi)
+
+**Đề:** Cho tứ giác $ABCD$ nội tiếp $(O)$ . $E,F,I$ lần lượt là giao điểm của các cặp đường $(AD,BC),(AB,CD),(AC,BD)$ . Gọi $G$ là giao điểm thứ hai của $(O)$ và $(AEF)$ và $H$ là giao điểm thứ hai của $(O)$ và $(CEF)$ . a) (ELMO Shortlist 2014) Chứng minh rằng $GH,AC,BD$ đồng quy. b) Gọi $Q$ là điểm Miquel của tứ giác toàn phần $ABCDEF$ . Chứng minh $OQ,AC,BD$ đồng quy. c) Chứng minh bốn điểm $G,O,G,H$ đồng viên.
+
+<details><summary>Lời giải</summary>
+
+a) Dễ thấy $EF,AG,CH$ đồng quy tại tâm đẳng phương của $(AEF),(CEF),(O)$ . Áp dụng định lý Desargues cho hai tam giác $ABG,CDH$ nên để chứng minh $AC,BD,GH$ đồng quy ta đi chứng minh : $\overline{(AB\cap CD),(BG\cap DH),\left ( AG\cap CH \right )}$ Nhưng dễ thấy $AB\cap CD$ và $AG\cap CH$ đều thuộc đường thẳng $EF$ nên ta phải chứng minh $BG\cap DH$ cũng thuộc $EF$ . Áp dụng định lý Pascal cho sáu điểm $(D,A,G,B,C,H)$ ta được $BG\cap DH$ nằm trên đường thẳng nối $AD\cap BC$ và $AG\cap CH$ . Dễ thấy đó chính là $EF$ , tức là $BG\cap DH$ nằm trên $EF$ . Ta hoàn thành câu a. b) Ta sẽ chứng minh $QI$ là phân giác góc $BQD$ . Tức là đi chứng minh : $\dfrac{ID}{IB}=\dfrac{QD}{QB}$ Dễ thấy hai tam giác $AIB,DIC$ đồng dạng : $\dfrac{AI}{DI}=\dfrac{BI}{CI}=\dfrac{AB}{CD}$ $IA.IC=IB.ID\Rightarrow \dfrac{IB}{ID}=\dfrac{IA}{ID}.\dfrac{IC}{ID}=\dfrac{AB}{CD}.\dfrac{IC}{ID}$ Cũng dễ thấy hai tam giác $QAB,QDC$ đồng dạng : $\dfrac{QA}{QD}=\dfrac{QB}{QC}=\dfrac{AB}{CD}$ $QA.QC=QB.QD\Rightarrow \dfrac{QB}{QD}=\dfrac{QA}{QD}.\dfrac{QC}{QD}=\dfrac{AB}{CD}.\dfrac{QC}{QD}$ Như vậy ta cần chứng minh : $\dfrac{IC}{ID}=\dfrac{QC}{QD}$ Thực như vậy, bởi các tam giác $AID,BIC$ đồng dạng nên $\dfrac{IC}{ID}=\dfrac{BC}{AD}$ và vì các tam giác $QAD,QBC$ đồng dạng nên $\dfrac{QC}{QD}=\dfrac{BC}{AD}$ . Từ đó $\dfrac{IC}{ID}=\dfrac{QC}{QD}$ . Như vậy $QI$ là phân giác góc $BQD$ Gọi $S$ là giao của $BD,EF$ . Dễ thấy $Q(DB,IS)=-1$ mà $QI$ là phân giác góc $BQD$ nên theo định lý về chùm điều hòa ta có $QI$ vuông góc $QS$ hay $QI$ vuông góc $EF$ . Hơn nữa theo định lý Brocard thì $O$ là trực tâm tam giác $EFI$ . Suy ra $OI$ vuông góc $EF$ . Ta được $O,I,Q$ thẳng hàng. Hay nói cách khác $OQ,AC,BD$ đồng quy. c) Để ý rằng : $\angle BQD=2\angle IQD=2\left ( 90^0-\angle FQD \right )=180^0-2\angle BCD=180^0-\angle BOD$ Vậy ta được tứ giác $BODQ$ nội tiếp, kéo theo $IB.ID=IO.IQ$ . Mà theo câu a thì $G,H,I$ thẳng hàng nên $IG.IH=IB.ID$ Kéo theo $IO.IQ=IG.IH$ . Điều này chứng tỏ bốn điểm $G,H,O,Q$ đồng viên.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/09/03/geometry-85/
+
+---
+
+## 15. Trại hè Hùng Vương 2014
+
+**Đề:** Cho tam giác $ABC$ nội tiếp đường tròn tâm $O$ . Đường tròn tâm $I$ tiếp xúc với hai cạnh $AC, BC$ lần lượt tại $E, F$ và tiếp xúc trong với đường tròn $(O)$ tại $P$ . Một đường thẳng song song với $AB$ và tiếp xúc với $(I)$ tại $Q$ nằm trong tam giác $ABC$ a) Gọi $K,L$ lần lượt là giao điểm thứ hai của $PE$ và $PF$ với $(O)$ . Chứng minh $KL$ song song với $EF$ b) Chứng minh $\angle{ACP} = \angle{QCB}$
+
+<details><summary>Lời giải</summary>
+
+a) Kẻ tiếp tuyến tại $P$ chung của hai đường tròn. Khi đó ta có : $\angle KLP=\angle KPx=\angle EPx=\angle EFP$ Vậy $KL$ song song $EF$ . b) Theo định lý Lyness thì $E,J,F$ thẳng hàng với $J$ là tâm nội tiếp tam giác $ABC$ . Gọi $X$ là giao điểm thứ hai của $CP$ và $(I)$ . Trong tam giác $PEF$ có $PI$ là trung tuyến và $PX$ là đối trung nên $PI,PX$ đẳng giác. Suy ra : $\angle XPE=\angle QPF\Rightarrow XE=QF$ Ta được $XQFE$ là một hình thang cân, do $CI$ là trung trực của $EF$ nên $CI$ là trung trực của $XQ$ Kéo theo tam giác $XCQ$ cân và $CI$ đồng thời là phân giác góc $XCQ$ . Mà $CI$ là phân giác góc $ECF$ . Như vậy ta có điều phải chứng minh : $\angle XCE=\angle QCF\Rightarrow \angle PCA=\angle QCB$
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/09/02/geometry-84/
+
+---
+
+## 16. Kiểm tra Trường hè Lê Qúy Đôn 2014
+
+**Đề:** Cho tứ giác $ABCD$ nội tiếp $(O)$ . Các cặp đường thẳng $(AB,CD),(AD,BC),(AC,BD)$ có giao điểm là $E,F,G$ . Gọi $H$ là giao của hai đường tròn $(ADE),(DCF)$ . Gọi $I$ là giao của phân giác góc $AHB$ và $AB$ . Gọi $J$ là giao của phân giác góc $CHD$ và $CD$ . Chứng minh $I,G,J$ thẳng hàng.
+
+<details><summary>Lời giải</summary>
+
+Chú ý điểm $H$ là điểm Miquel của tứ giác toàn phần $ABCDEF$ . Ta có : $\angle HDA=\angle HCB,\angle HAD=180^0-\angle HAF=180^0-\angle HBF=\angle HBC$ Từ đây ta suy ra hai tam giác $AHD,BHC$ đồng dạng. Như vậy : $\dfrac{HA}{HB}=\dfrac{AC}{BC}=\dfrac{AG}{BG}$ Mà theo tính chất phân giác $\dfrac{HA}{HB}=\dfrac{IA}{IB}$ , kéo theo $\dfrac{AG}{GB}=\dfrac{IA}{IB}$ Tức là $GI$ là phân giác góc $GAB$ . Tương tự $GJ$ là phân giác góc $GCD$ Mà $GAB,GCD$ là hai góc đối đỉnh. Ta được $G,I,J$ thẳng hàng.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/09/02/geometry-83/
+
+---
+
+## 17. Đề thi thử sức – Đồng hành cùng gặp gỡ toán học 2014
+
+**Đề:** Gọi $B,C$ là hai điểm nằm trên hai cạnh $AP,PD$ của tam giác nhọn $APD$ . $Q$ là giao của $AC,BD$ . $M,N$ là trung điểm của $AC,BD$ . Gọi $X$ là giao điểm thứ hai của hai đường tròn ngoại tiếp tam giác $ABQ,CDQ$ và $Y$ là giao điểm thứ hai của hai đường tròn $BCQ,ADQ$ . a) Chứng minh năm điểm $X,Y,M,N,Q$ đồng viên. b) Gọi $H_1,H_2$ lần lượt là trực tâm các tam giác $APD,BPC$ . Chứng minh nếu $H_1H_2$ đi qua $X$ thì $H_1H_2$ cũng đi qua $Y$ .
+
+<details><summary>Lời giải</summary>
+
+a) Dễ thấy hai tam giác $ACX,BDX$ đồng dạng. Suy ra : $\dfrac{AX}{AC}=\dfrac{BX}{BD}\Rightarrow \dfrac{AX}{AM}=\dfrac{BX}{BN}\;\;(AC=2AM,BD=2BN)$ Từ đó lại suy ra hai tam giác $AMX,BNX$ đồng dạng. Suy ra : $\angle AMX=\angle BNX\Rightarrow \angle XMC=\angle XMD$ Như vậy bốn điểm $X,M,N,Q$ đồng viên. Tương tự hai tam giác $BYN,CYM$ đồng dạng. Cũng suy ra được $Y,M,N,Q$ đồng viên. Như vậy năm điểm $X,Y,M,N,Q$ đồng viên. b) Dễ thấy $H_1H_2$ chính là trục đẳng phương của đường tròn đường kính $AC,BD$ . Vì $H_1H_2$ đi qua $X$ hay $X$ thuộc trục đẳng phương của hai đường tròn nói trên. Kéo theo : $P_{X/(AC)}=P_{X/(BD)}\Rightarrow XM^2-\dfrac{AC^2}{4}=XN^2-\dfrac{BD^2}{4}\Rightarrow XM^2-XN^2=\dfrac{AC^2-BD^2}{4}$ Do hai tam giác $AXM,BXN$ đồng dạng nên : $\dfrac{XM}{XN}=\dfrac{AM}{BN}=\dfrac{AC}{BD}\Rightarrow XM=\dfrac{AC}{BD}.XN$ Do vậy : $XN^2\left ( \dfrac{AC^2}{BD^2}-1 \right )=\dfrac{AC^2-BD^2}{4}\Rightarrow \left ( AC^2-BD^2 \right )\left ( XN^2-\dfrac{BD^2}{4} \right )=0$ Nếu $XN^2=BD^2/4\Rightarrow XN=BD/2$ thì do $N$ là trung điểm của $BD$ nên tam giác $BNX$ vuông tại $X$ . Tức là : $\angle BXD=90^0\Rightarrow \angle BXQ+\angle QXD=90^0\Rightarrow \angle PAC+ \angle ACP=90^0\Rightarrow \angle APD=90^0$ Nhưng điều này mâu thuẫn vì tam giác $APD$ nhọn. Như vậy phải có $AC=BD$ . Lại có $\dfrac{YM}{YN}=\dfrac{AC}{BD}=1$ nên $YM=YN$ . Kéo theo : $P_{Y/(AC)}=YM^2-AC^2/4=YN^2-BD^2/4=P_{Y/(BD)}$ Suy ra $Y$ thuộc trục đẳng phương của $(AC),(BD)$ . Hay $H_1H_2$ đi qua $Y$ .
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/09/02/geometry-82/
+
+---
+
+## 18. Đề thi Olympic toán học Nghệ – Tĩnh 2014
+
+**Đề:** Tam giác $ABC$ có $B,C$ cố định và $A$ di chuyển trên cung lớn $BC$ của đường tròn $(O)$ ngoại tiếp tam giác. Gọi $I$ là tâm nội tiếp tam giác. Đường tròn $(M_a)$ tiếp xúc trong với $(O)$ tại $K$ và tiếp xúc $AB,AC$ ở $E,F$ . Các đường thẳng qua $E,F$ lần lượt vuông góc với $CI,BI$ cắt nhau tại $Q$ . a) Chứng minh $E,I,F$ thẳng hàng. b) Chứng minh $IQ$ luôn đi qua một điểm cố định.
+
+<details><summary>Lời giải</summary>
+
+Đây chính là nội dung của định lý Lyness. Ta sẽ chứng minh lại định lý này. Bổ đề : Cho $(O)$ và dây cung $AB$ , $(I)$ tiếp xúc trong với $(O)$ tại $T$ . Dây cung $AB$ của $(O)$ tiếp xúc $(I)$ tại $E$ . Khi đó $TE$ là phân giác góc $ATB$ . Chứng minh bổ đề : Gọi $M,N$ theo thứ tự là giao của $AT,BT$ với $(I)$ . Ta có : $\dfrac{AE^2}{BE^2}=\dfrac{AM.AT}{BN.BT}$ Cũng dễ thấy $MN$ song song $AB$ nên theo Thales $\dfrac{AM}{BN}=\dfrac{AT}{BT}$ nên có ngay $\dfrac{AT}{BT}=\dfrac{AE}{BE}$ . Bổ đề được chứng minh. Quay trở lại bài toán : Gọi $Y,Z$ theo thứ tự là trung điểm cung $AC,AB$ không chứa $B,C$ . Theo bổ đề thì $K,E,Z$ và $K,F,Y$ là bộ điểm thẳng hàng. Áp dụng định lý Pascal cho sáu điểm $(A,Z,B,K,C,Y)$ ta được $E,I,F$ thẳng hàng. Đường tròn $(M_a)$ gọi là đường tròn Mixtilinear ứng với góc $A$ của tam giác $ABC$ . b) Gọi $T,R$ lần lượt là điểm chính giữa các cung lớn, nhỏ $BC$ của $(O)$ . Ta chứng minh lần lượt các kết quả : i) $K,T,I$ thẳng hàng Không khó để thấy rằng $KE$ là phân giác góc $AKB$ và $KF$ là phân giác góc $AKC$ . Xét trong tam giác $KEF$ có $KI$ là trung tuyến và $KA$ là đối trung, như vậy hai đường này đẳng giác. Suy ra : $\angle AKE=\angle IKF$ Hơn nữa $\angle AKE=\dfrac{1}{2}\angle AKB=\dfrac{1}{2}ACB=\angle FCI$ , ta được $\angle IKF = \angle FCI$ . Suy ra tứ giác $FIKC$ nội tiếp. Tương tự tứ giác $EIKB$ nội tiếp. Từ đây suy ra : $\angle BKI=\angle AEI=\angle AFI=\angle CKI$ Như vậy $KI$ là phân giác góc $BKC$ , hay $K,I,T$ thẳng hàng. ii) $Q$ thuộc đường tròn $(M_a)$ . Ta có : $\angle EKF=\angle AKE+\angle AKF=\frac{\angle B+\angle C}{2}=\angle BIC=180^0-\angle EQF$ Suy ra $E,K,F,Q$ đồng viên. Tức $Q$ thuộc $(M_a)$ . iii) $K,Q,R$ thẳng hàng. Ta có : $\angle EKB=\angle IKF\left ( =\angle C/2 \right )\Rightarrow \angle BKI=\angle EKB+\angle EKI=\angle IKF+\angle EKI=\angle EKF$ Do tứ giác $EIKB$ nội tiếp nên $\angle KBI=\angle KEI$ . Từ đó suy ra $\Delta BKI\sim \Delta EKF\Rightarrow \angle BIK=\angle EFK$ Mà $\angle EFK = \angle EQK$ (do $E,F,Q,K$ đồng viên) Như vậy ta được : $\angle BIK=\angle EQK$ Điều này dẫn tới tứ giác $SIQK$ nội tiếp với $S$ là giao của $EQ,BI$ . Do $\angle ISQ=90^0$ nên $\angle IKQ=90^0$ . Tức là $KQ$ vuông góc $KI$ mà $KR$ vuông góc $KI$ nên $K,Q,R$ thẳng hàng. iv) Chứng minh $M_aQ$ vuông góc $BC$ . Gọi $U,V$ là giao của $BC$ với $(M_a)$ sao cho $U$ nằm giữa $B,V$ . Ta có : $BE^2=BU.BV,CF^2=CV.CU$ Suy ra : $\dfrac{BU.BV}{CV.CU}=\dfrac{BE^2}{CF^2}=\dfrac{BK^2}{CK^2}$ Theo định lý Steiner về tiêu chuẩn đẳng giác, ta được $BU,BV$ đẳng giác trong $\angle BKC$ . Mà $KI$ là phân giác $\angle BKC$ nên cũng là phân giác $\angle UKV$ . Suy ra $KI$ đi qua trung điểm cung $UV$ không chứa $K$ của $(M_a)$ . Mà $KI$ vuông góc $KQ$ nên $Q$ chính là điểm chính giữa cung $UV$ chứa $K$ của $(M_a)$ Điều này chứng tỏ $M_aQ$ vuông góc $BC$ . v) Chứng minh $IQ$ luôn đi qua điểm $X$ đối xứng với $T$ qua $R$ . Gọi $X$ là giao của $IQ$ và $TR$ . Ta chứng minh $X$ đối xứng với $T$ qua $R$ . Theo iv) ta có $M_aQ$ vuông góc $BC$ , suy ra được $M_aQ$ song song $OR$ . Từ đó theo Thales : $\dfrac{M_aK}{M_aO}=\dfrac{KQ}{QR}$ Áp dụng định lý Menelaus cho tam giác $TKO$ và cát tuyến $IM_aR$ : $\dfrac{IT}{IK}.\dfrac{M_aK}{M_aO}.\dfrac{RO}{RT}=1\Rightarrow \dfrac{IT}{IK}.\dfrac{M_aK}{M_aO}=2$ Áp dụng định lý Menelaus cho tam giác $KTR$ và cát tuyến $IQR$ : $\dfrac{IT}{IK}.\dfrac{KQ}{QR}.\dfrac{XR}{XT}=1\Leftrightarrow \dfrac{IT}{IK}.\dfrac{M_aK}{M_aO}.\dfrac{XR}{XT}=1\Leftrightarrow \dfrac{XR}{XT}=\dfrac{1}{2}\Leftrightarrow XT=2XR$ Như vậy điểm $X$ đối xứng với $T$ qua $R$ . $T,R$ đều cố định suy ra $X$ cố định. Như vậy $IQ$ luôn đi qua một điểm cố định.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/08/30/geometry-81/
+
+---
+
+## 19. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ nội tiếp $(O)$ , trực tâm $H$ và $D$ là chân đường cao từ $B$ . $P$ tùy ý trên $(O)$ và $Q,R,S$ tương ứng đối xứng với $P$ qua trung điểm của $AB,AC,BC$ . $AQ$ giao $HR$ tại $F$ . a) Chứng minh các tam giác $BQS,CSR,ARQ$ có chung trực tâm. b) Chứng minh $DF$ vuông góc $HS$ .
+
+<details><summary>Lời giải</summary>
+
+a) Ta có : $(HB,HC)\equiv (AB,AC)\equiv (PB,PC)\equiv (SB,SC)\pmod{\pi}$ Như vậy bốn điểm $H,S,B,C$ đồng viên. Tương tự các bộ bốn điểm sau $(A,H,B,Q),(A,H,C,R)$ cũng đồng viên. Ta có : $\angle QBA=\angle BAP=\angle BCP=\angle SBC\Rightarrow \angle QBS=\angle QBA+\angle ABS=\angle SBC+\angle ABS=\angle ABC\;\;(*)$ $\angle AHQ=\angle QBA=\angle SBC=\angle SHC\Rightarrow QHS=\angle AHQ+\angle AHS=\angle SHC+\angle AHS=\angle AHC\;\;(**)$ Lại dễ thấy : $\angle ABC+\angle AHC=180^0$ nên từ $(*)(**)$ ta suy ra $\angle QBA+\angle AHQ=180^0\;\;(1)$ . Không khó để thấy $QACS$ là hình bình hành, từ đó $AC$ song song $QS$ nhưng $BH$ vuông góc $AC$ nên $BH$ vuông góc $QS$ $(2)$ Từ $(1)(2)$ suy ra $H$ là trực tâm tam giác $QBS$ . Tương tự các tam giác $CSR,ARQ$ cũng nhận $H$ làm trực tâm. b) Ta có $AF$ song song $SC$ mà $SC$ vuông góc $HR$ do $H$ là trực tâm tam giác $CSR$ nên $AF$ vuông góc $HR$ . Từ đó dễ thấy tứ giác $DFHA$ nội tiếp, suy ra $\angle DFR=\angle DAH=\angle FRC$ , kéo theo $DF$ song song $CR$ mà $CR$ vuông góc $HS$ , vậy $DF$ vuông góc $HS$ .
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/07/27/geometry-79/
+
+---
+
+## 20. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ nhọn có các đường cao $BL,CK$ cắt nhau tại $H$ . Một đường thẳng qua $H$ cắt $AB,AC$ tại $P,Q$ . Chứng minh rằng $HP=HQ\Leftrightarrow MP=MQ$ với $M$ là trung điểm của $BC$ .
+
+<details><summary>Lời giải</summary>
+
+Gọi $U,V$ lần lượt là hình chiếu của $B,C$ lên $PQ$ . Chú ý các tứ giác $BLKC,LPCV,KQBU$ nội tiếp nên ta có : $HQ.HU=HK.HB=HL.HC=HP.HV$ Vậy ta có : $HP=HQ\Leftrightarrow HU=HV\Leftrightarrow MH\perp PQ\Leftrightarrow MP=MQ$
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/07/27/geometry-78/
+
+---
+
+## 21. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ nội tiếp $(O)$ , đường cao $AH$ . Đường tròn nội tiếp $(I)$ tiếp xúc $BC$ tại $D$ . Đường tròn đường kính $AI$ cắt $(O)$ tại $M$ , $AH$ tại $N$ . Chứng minh $M,N,D$ thẳng hàng.
+
+<details><summary>Lời giải</summary>
+
+Gọi $T$ là trung điểm cung cung $BC$ không chứa $A$ của $(O)$ . Ta lần lượt chứng minh $M,D,T$ và $N,D,T$ thẳng hàng. Ta có : $\angle MFB=180^0-\angle MFA=180^0-\angle MEA=\angle MEC$ $\angle FBM=\angle ECM$ Từ đó có hai tam giác $MFB,MEC$ đồng dạng, suy ra : $\dfrac{BF}{EC}=\dfrac{MB}{MC}\Rightarrow \dfrac{BD}{DC}=\dfrac{MB}{MC}$ Vậy $MD$ là phân giác góc nội tiếp $BMC$ nên đi qua trung điểm $T$ của cung $BC$ . Tức $M,D,T$ thẳng hàng. Tiếp theo ta chứng minh $N,D,T$ thẳng hàng. Điều này đồng nghĩa ta phải chứng minh hai tam giác $DIT,NAT$ đồng dạng, tức : $\dfrac{AT}{TI}=\dfrac{AN}{ID}\Leftrightarrow \dfrac{AT}{TB}=\dfrac{AI.sin\angle NIA}{r}\Leftrightarrow \dfrac{sin\angle ABT}{sin\dfrac{A}{2}}=\dfrac{sin\angle BGA}{sin\dfrac{A}{2}}\Leftrightarrow sin\angle ABT=sin\angle BGA$ Điều này đúng vì $\angle ABT=180^0-\angle BAT-\angle BTA=180^0-\frac{\angle A+\angle C}{2}=180^0-\angle BGA$ Bài toán hoàn tất.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/07/27/geometry-77/
+
+---
+
+## 22. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ , phân giác $AD$ , $P$ là điểm di chuyển trên $AD$ . $E,F$ là hình chiếu của $P$ lên $CA,AB$ . $M$ là trung điểm của $BC$ , $H$ là hình chiếu của $M$ lên $EF$ . Chứng minh $PH$ luôn đi qua một điểm cố định.
+
+<details><summary>Lời giải</summary>
+
+Gọi $N$ là trung điểm của cung $BAC$ của đường tròn $(ABC)$ tâm $O$ . Ta chứng minh $PH$ luôn đi qua $N$ bằng cách gọi $PN$ giao $EF$ tại $H'$ và chứng minh $H$ trùng $H'$ . Gọi $K$ là giao của $AP,EF$ . Dễ thấy hai tam giác vuông $AEP,NCQ$ đồng dạng và có hai đường cao tương ứng là $EK,CM$ . Từ đó dễ có : $\dfrac{MN}{MQ}=\dfrac{KA}{KP}$ Mà do $AN$ song song $EF$ nên $\dfrac{KA}{KP}=\dfrac{H'N}{H'P}$ . Kéo theo $\dfrac{H'N}{H'P}=\dfrac{MN}{MQ}$ . Theo Thales đảo thì $MH'$ song song $AD$ , suy ra $H$ trùng $H'$ . Vậy $PH$ luôn đi qua điểm $N$ cố định.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/07/27/geometry-76/
+
+---
+
+## 23. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ và điểm $P$ trên cạnh $BC$ . Các đường tròn $(APB),(APC)$ cắt $AC,AB$ tại $E,F$ . $PE,PF$ cắt $AB,AC$ tại $M,N$ . $Q$ là giao của $BN,CM$ . Chứng minh khi $P$ thay đổi thì $PQ$ luôn đi qua một điểm cố định.
+
+<details><summary>Lời giải</summary>
+
+Ta có : $\angle AEB=\angle APB=180^0-\angle APC=180^0-\angle AFC$ Do vậy bốn điểm $A,F,R,E$ đồng viên với $R$ là giao của $BE,CF$ . Từ đó không khó để suy ra $\angle APB=\angle RPC$ . Dễ dàng thấy theo định lí Pappus thì $P,Q,R$ thẳng hàng. Gọi giao của $RPQ$ với đường cao hạ từ $A$ của tam giác $ABC$ là $A'$ . Ta có $\angle RPC=\angle BPA'$ vì đối đỉnh mà $\angle APB=\angle RPC$ nên $\angle BPA'=\angle APB$ . Tam giác $APA'$ có $PB$ là phân giác và đường cao nên cũng là trung trực, tức $A'$ đối xứng với $A$ qua $BC$ . Điểm $A'$ là điểm cố định mà $PQ$ luôn đi qua.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/07/27/geometry-75/
+
+---
+
+## 24. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ nội tiếp $(O)$ , $AB<AC$ . Tiếp tuyến tại $A$ của $(O)$ cắt $BC$ tại $T$ . $S$ đối xứng với $T$ qua $AB$ . Trên $AS$ lấy điểm $E$ khác $A$ sao cho $TA=TE$ . $BE$ giao $(O)$ tại $F$ . $AS$ cắt $BC$ tại $D$ . Chứng minh rằng $DA=DE$ .
+
+<details><summary>Lời giải</summary>
+
+Ta có : $\angle EDB=180^0-\angle TAD-\angle ATD=180^0-2\angle TAB-(\angle ABC-\angle TAB)=(180^0-\angle ABC)-\angle TAB=\angle AFC-\angle AFB=\angle EFC$ Như vậy tứ giác $FEDC$ nội tiếp. Đồng thời $TE^2=TA^2=TB.TC$ . Suy ra $\Delta TBE\sim \Delta TEC$ . Ta có các biểu diễn : $\angle AFD=\angle AFB+\angle BFD=\angle AFB+\angle ECD=\angle AFB+\left ( \angle EDB-\angle DEC \right )=\angle AFB+\angle EFC-\angle DEC=\angle AFC-\angle DEC=\angle TAC-\angle DEC$ $\angle FAD=\angle TAF-\angle TAD=\angle TAC+\angle FAC-\angle TAD$ Do đó để chứng minh $DA=DF$ ta chứng minh tam giác $DAF$ cân tại $D$ , tức : $\angle AFD=\angle FAD\Leftrightarrow \angle TAC-\angle DEC=\angle TAC+\angle FAC-\angle TAD\Leftrightarrow \angle FAC+\angle DEC=\angle TAD$ Điều này là đúng vì : $\angle TAD=\angle TEA=\angle ETC+\angle EDB=\angle ETC+\left ( \angle DEC+\angle ECT \right )=\angle DEC+(180^0-\angle TEC)=\angle DEC+(180^0-\angle TBE)=\angle DEC+\angle EBC=\angle DEC+\angle FAC$ Bài toán được chứng minh.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/07/26/geometry-74/
+
+---
+
+## 25. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ , phân giác $AD$ . $P,Q$ là hai điểm trên $AD$ sao cho $\angle PAB=\angle QBC$ . $E,F$ là hình chiếu của $P$ lên $CA,AB$ . $H$ là hình chiếu của $Q$ lên $BC$ , $K$ là hình chiếu của $H$ lên $EF$ . Chứng minh $KH$ là phân giác góc $BKC$ .
+
+<details><summary>Lời giải</summary>
+
+Vì $BP,BQ$ đẳng giác trong góc $ABC$ nên theo định lí Steiner về tiêu chuẩn đẳng giác, ta được : $\dfrac{\overline{QD}}{\overline{QA}}.\dfrac{\overline{PD}}{\overline{PA}}=\dfrac{BD^2}{BA^2}$ Theo tính chất phân giác thì $\dfrac{BD}{BA}=\dfrac{DC}{CA}$ từ đó : $\dfrac{\overline{QD}}{\overline{QA}}.\dfrac{\overline{PD}}{\overline{PA}}=\dfrac{DC^2}{CA^2}$ Lại theo định lí Steiner ta được $CP,CQ$ đẳng giác trong $ACB$ . Ta có : $\dfrac{HB}{HC}.\dfrac{EC}{EA}.\dfrac{FA}{FB}=\dfrac{cotB_1}{cotC_1}.\dfrac{cotC_2}{cotA_2}.\dfrac{cotA_1}{cotB_2}=1\;\;\;(\angle A_1=\angle A_2,\angle B_1=\angle B_2,\angle C_1=\angle C_2)$ Vậy theo Ceva thì $AH,BE,CF$ đồng quy. Từ đó áp dụng định lí về chùm điều hòa ta được $KH$ là phân giác góc $BKC$ .
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/07/26/geometry-73/
+
+---
+
+## 26. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ nội tiếp $(O)$ . Phân giác $BAC$ cắt $(O)$ tại $D$ khác $A$ . $M,N$ là trung điểm của $AB,AC$ . Trung trực của $CA,AB$ cắt các đường tròn $(AMD),(AND)$ theo thứ tự tại $E,F$ sao cho $E,B$ cùng phía với $AC$ và $F,C$ cùng phía với $AB$ . Gọi giao của $EF$ và $MN$ là $P$ . Chứng minh $PA=PD$ .
+
+<details><summary>Lời giải</summary>
+
+Trước hết ta chứng minh $AMED$ là hình thang cân. Gọi $E'$ là giao điểm của $(AMD)$ với đường thẳng qua $M$ song song $AD$ . Ta chứng minh $E$ trùng $E'$ . Gọi $X$ là giao của $AC$ và $(AMD)$ . Dễ thấy $DM=DX$ ( $AD$ là phân giác góc $MAX$ ) và $BD=CD$ . Hơn nữa vì $\angle MDX=\angle BDC\;(=180^0-\angle A)$ nên $\angle BDM=\angle BDC-\angle MDC=\angle MDX-\angle MDC=\angle CDX$ . Từ đó có ngay hai tam giác $CDX$ và $BDM$ bằng nhau. Kéo theo $CX=BM=AM$ mà $AM=E'D$ ( $AME'D$ là hình thang cân) nên $E'D=CX$ . Lại có $\angle E'DA=\angle MAD=\angle DAC\Rightarrow E'D\parallel AX$ . Từ đó $DX=E'C$ , mà $DX=AE'$ vì $AE'DX$ là hình thang cân. Từ đó được $AE'=E'C$ , suy ra $E$ trùng $E'$ . Ta chứng minh xong $AMED$ là hình thang cân. Tương tự $ANFD$ cũng là hình thang cân. Suy ra $ME,NF,AD$ có chung đường trung trực đó là $KOL$ . Cũng dễ thấy $KOL$ phải đi qua $P$ . Vậy $PA=PD$ .
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/07/26/geometry-72/
+
+---
+
+## 27. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác nhọn $ABC$ nội tiếp $(O)$ trực tâm $H$ , $D$ đối xứng với $H$ qua $BC$ . $BE,CF$ là các đường cao. $DE$ cắt $(O)$ tại $G$ khác $D$ . Chứng minh rằng $BG$ chia đôi $EF$ .
+
+<details><summary>Lời giải</summary>
+
+Gọi $J$ là giao của $BG$ và $EF$ , $K$ là chân đường cao từ $A$ xuống $BC$ . Dễ thấy : $\Delta BFE\sim \Delta KHE\Rightarrow \dfrac{BF}{HK}=\dfrac{EF}{HE}$ Cũng dễ thấy : $\Delta BFJ\sim \Delta DHE\Rightarrow \dfrac{BF}{HD}=\dfrac{FJ}{HE}$ Chú ý vì $HD=2HK$ nên có ngay $EF=2FJ$ suy ra $J$ là trung điểm của $EF$ . Ta phát triển bài toán trên thành bài toán sau : Bài toán : Từ một điểm $Z$ bên ngoài $(O)$ , ta kẻ hai tiếp tuyến $ZA,ZA'$ đến $(O)$ với hai tiếp điểm $A,A'$ . Kẻ cát tuyến $ZBC$ . Các đường cao $BE,CF$ của tam giác $ABC$ gặp nhau tại $H$, $AH$ cắt $(O)$ tại $D$ . $DF$ và $DE$ lần lượt lần nữa gặp $(O)$ tại $L,G$ . Chứng minh rằng $BG,CL$ gặp nhau tại một điểm trên $AA'$ . Lời giải : Từ bài toán trên ta được $BG,CL$ gặp nhau tại trung điểm của $EF$ . Như vậy bài toán hoàn tất nếu ta chỉ ra được $AA'$ cũng đi qua trung điểm của $EF$ . Gọi $J$ là giao của $EF$ và $AA'$ . Ta gọi $X$ là giao của $AA'$ và $BC$ thì $(ZX,BC)=-1$ (hàng điều hòa về đường tròn) Suy ra : $A(ZJ,FE)=-1$ Cũng dễ dàng chứng minh được $EF$ song song $AZ$ do cùng vuông góc với $OA$ . Từ đó theo định lí về chùm điều hòa ta có $J$ là trung điểm của $EF$ . Bài toán được chứng minh.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/07/25/geometry-71/
+
+---
+
+## 28. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ nội tiếp $(O)$ ngoại tiếp $(I)$ với $D,E,F$ là tiếp điểm với $(I)$ trên $BC,CA,AB$ . $M$ là trung điểm của $BC$ . $H$ là hình chiếu của $M$ lên $EF$ . Chứng minh rằng $IH$ và trung trực của $BC$ gặp nhau trên $(O)$ .
+
+<details><summary>Lời giải</summary>
+
+Gọi $I_b,I_c$ theo thứ tự là tâm bàng tiếp góc $B,C$ của tam giác $ABC$ . $K,L$ theo thứ tự là giao của $CI,BI$ với $EF$ . Gọi $N$ là giao của $OM$ và $(O)$ , tức $N$ là điểm chính giữa cung $BAC$ . Ta chứng minh $N,H,I$ thẳng hàng. Ta có : $\angle NCI_b=\angle BCI_b-\angle NCB=\left ( \angle C+\angle ACI_b \right )-\left ( 90^0-\angle MNC \right )=\left ( \angle C+90^0-\dfrac{\angle C}{2} \right )-(90^0-\dfrac{\angle A}{2})=\dfrac{\angle A+\angle C}{2}=\angle BI_bC$ Như vậy tam giác $NCI_b$ cân mà $\angle I_cCI_b=90^0$ nên $N$ là tâm ngoại tiếp tam giác $I_cCI_b$ . Suy ra $N$ là trung điểm của $I_bI_c$ . Ta dễ dàng có được : $\angle BKC=\angle BLC=90^0$ và $B,K,C,L$ đồng viên. Từ đó : $\angle KLM=\angle KLB+\angle BLM=\angle KCB+\angle LBM=\dfrac{\angle +\angle C}{2}=\angle LKM$ Tức tam giác $KLM$ cân, có đường cao $MH$ nên cũng là trung tuyến, tức $H$ là trung điểm của $KL$ . Dễ thấy $KL$ song song $I_bI_c$ do cùng vuông góc với $AI$ . Trong tam giác $II_cI_b$ có $K,L$ theo thứ tự thuộc hai cạnh bên mà $KL$ song song với đáy. $H,N$ theo thứ tự là trung điểm của $KL,I_bI_c$ nên $H,I,N$ thẳng hàng.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/07/25/geometry-70/
+
+---
+
+## 29. International Mathematical Olympiad 2014
+
+**Đề:** Cho tam giác $ABC$ . $P,Q$ là các điểm thuộc cạnh $BC$ sao cho $\angle PAB=\angle C$ và $\angle CAQ = \angle B$ . $M,N$ thuộc tia đối của tia $PA,QA$ sao cho $P$ là trung điểm của $AM$ và $Q$ là trung điểm của $AN$ . Chứng minh rằng $BM,CN$ gặp nhau trên đường tròn ngoại tiếp tam giác $ABC$ .
+
+<details><summary>Lời giải</summary>
+
+Dễ dàng thấy rằng hai tam giác $PAB,QCA$ đồng dạng, kéo theo : $\dfrac{PB}{QA}=\dfrac{PA}{QC}\Rightarrow \dfrac{PB}{QN}=\dfrac{PM}{QC}\;\;\;\;(QA=QN,PA=PM)$ Hơn nữa cũng dễ thấy $\angle BPN=\angle NQC$ , suy ra hai tam giác $BPM,NQC$ đồng dạng. Suy ra : $\angle PMB=\angle QCN\Rightarrow \angle PMI=\angle PCI$ Do đó bốn điểm $P,I,M,C$ đồng viên. Kéo theo : $\angle CMI=\angle CPM=\angle APB=\angle BAC$ Điều này đồng nghĩa $ABIC$ nội tiếp, suy ra $I$ thuộc đường tròn $(ABC)$ .
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/07/25/geometry-69/
+
+---
+
