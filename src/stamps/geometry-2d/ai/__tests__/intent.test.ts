@@ -1,4 +1,4 @@
-import { IntentZ } from '../intent';
+import { IntentZ, AddPointIntentZ } from '../intent';
 
 describe('Intent schema — Tier 4+5 additions', () => {
   describe('draw-line op', () => {
@@ -99,5 +99,29 @@ describe('Intent schema — Tier 4+5 additions', () => {
       });
       expect(r.success).toBe(true);
     });
+  });
+});
+
+describe('add-point constraint Cụm A', () => {
+  it('arcMidpoint', () => {
+    expect(AddPointIntentZ.safeParse({
+      op: 'add-point', name: 'M',
+      constraint: { kind: 'arcMidpoint', circle: 'O', a: 'B', b: 'C', notContaining: 'A' },
+    }).success).toBe(true);
+  });
+  it('reflectPoint', () => {
+    expect(AddPointIntentZ.safeParse({
+      op: 'add-point', name: 'Q', constraint: { kind: 'reflectPoint', of: 'P', through: 'M' },
+    }).success).toBe(true);
+  });
+  it('reflectLine (through cho phép tên line nhiều ký tự)', () => {
+    expect(AddPointIntentZ.safeParse({
+      op: 'add-point', name: 'D', constraint: { kind: 'reflectLine', of: 'H', through: 'BC' },
+    }).success).toBe(true);
+  });
+  it('excenter', () => {
+    expect(AddPointIntentZ.safeParse({
+      op: 'add-point', name: 'J', constraint: { kind: 'excenter', of: ['A', 'B', 'C'], opposite: 'A' },
+    }).success).toBe(true);
   });
 });

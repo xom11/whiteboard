@@ -123,6 +123,11 @@ export const AddPointIntentZ = z.object({
     z.object({ kind: z.literal('tangencyPoint'), circle: LabelZ, onLine: z.string() }),
     z.object({ kind: z.literal('tangentPoint'), from: LabelZ, circle: LabelZ, which: z.union([z.literal(0), z.literal(1)]) }),
     z.object({ kind: z.literal('angleBisectorFoot'), from: LabelZ, onLine: z.string() }),
+    // Cụm A
+    z.object({ kind: z.literal('arcMidpoint'), circle: LabelZ, a: LabelZ, b: LabelZ, notContaining: LabelZ }),
+    z.object({ kind: z.literal('reflectPoint'), of: LabelZ, through: LabelZ }),
+    z.object({ kind: z.literal('reflectLine'), of: LabelZ, through: z.string() }),
+    z.object({ kind: z.literal('excenter'), of: z.tuple([LabelZ, LabelZ, LabelZ]), opposite: LabelZ }),
   ]),
 });
 
