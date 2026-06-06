@@ -46,4 +46,31 @@ describe('Constraint2D — special shape constraints', () => {
       constraintRefs2D({ kind: 'tangencyPoint', circle: 'k1', onLine: 'l1' }),
     ).toEqual(['k1', 'l1']);
   });
+
+  it('pointAtDistance circleRadius → from + through + circle', () => {
+    expect(
+      constraintRefs2D({
+        kind: 'pointAtDistance', from: 'A', through: 'B',
+        distance: { kind: 'circleRadius', circle: 'k' },
+      }),
+    ).toEqual(['A', 'B', 'k']);
+  });
+
+  it('pointAtDistance segmentLength → from + through + p1 + p2', () => {
+    expect(
+      constraintRefs2D({
+        kind: 'pointAtDistance', from: 'A', through: 'B',
+        distance: { kind: 'segmentLength', p1: 'O', p2: 'A' },
+      }),
+    ).toEqual(['A', 'B', 'O', 'A']);
+  });
+
+  it('pointAtDistance literal → chỉ from + through', () => {
+    expect(
+      constraintRefs2D({
+        kind: 'pointAtDistance', from: 'A', through: 'B',
+        distance: { kind: 'literal', value: 2 },
+      }),
+    ).toEqual(['A', 'B']);
+  });
 });
