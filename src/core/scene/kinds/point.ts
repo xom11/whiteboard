@@ -213,15 +213,23 @@ const def: KindDef<PointAttrs> = {
     }
     if (c.kind === 'onLine') {
       const line = ctx.resolveRef(c.lineId) as any;
-      return board.create('glider', [c.t, c.t, line], opts);
+      const p1 = line.point1; const p2 = line.point2;
+      const sx = (p1 && p2) ? p1.X() + c.t * (p2.X() - p1.X()) : c.t;
+      const sy = (p1 && p2) ? p1.Y() + c.t * (p2.Y() - p1.Y()) : c.t;
+      return board.create('glider', [sx, sy, line], opts);
     }
     if (c.kind === 'onSegment') {
       const seg = ctx.resolveRef(c.segmentId) as any;
-      return board.create('glider', [c.t, c.t, seg], opts);
+      const p1 = seg.point1; const p2 = seg.point2;
+      const sx = (p1 && p2) ? p1.X() + c.t * (p2.X() - p1.X()) : c.t;
+      const sy = (p1 && p2) ? p1.Y() + c.t * (p2.Y() - p1.Y()) : c.t;
+      return board.create('glider', [sx, sy, seg], opts);
     }
     if (c.kind === 'onCircle') {
       const circle = ctx.resolveRef(c.circleId) as any;
-      return board.create('glider', [Math.cos(c.theta), Math.sin(c.theta), circle], opts);
+      const O = circle.center ?? circle.midpoint;
+      const ox = O ? O.X() : 0; const oy = O ? O.Y() : 0;
+      return board.create('glider', [ox + Math.cos(c.theta), oy + Math.sin(c.theta), circle], opts);
     }
     if (c.kind === 'onPolygon') {
       const poly = ctx.resolveRef(c.polygonId) as any;
