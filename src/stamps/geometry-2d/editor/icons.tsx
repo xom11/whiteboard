@@ -443,6 +443,81 @@ export const Icon = {
       <circle cx="4" cy="4" r="1.7" fill={C_POINT}/>
     </svg>
   ),
+
+  // ===== Nâng cao / kind chưa có icon =====
+  excenter: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <path d="M5 16 L12 5 L19 16 Z" stroke="currentColor" strokeWidth="1.3"/>
+      <circle cx="12" cy="20" r="3" fill="none" stroke={C_CONSTRUCT} strokeWidth="1.3"/>
+      <circle cx="12" cy="20" r="1.4" fill={C_CONSTRUCT}/>
+    </svg>
+  ),
+  tangencyPoint: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <circle cx="10" cy="12" r="6.5" stroke="currentColor" strokeWidth="1.3"/>
+      <line x1="16.5" y1="3" x2="16.5" y2="21" stroke="currentColor" strokeWidth="1.3"/>
+      <circle cx="16.5" cy="12" r="2.2" fill={C_CONSTRUCT}/>
+    </svg>
+  ),
+  secondIntersection: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <circle cx="11" cy="12" r="6.5" stroke="currentColor" strokeWidth="1.3"/>
+      <line x1="2" y1="8" x2="22" y2="16" stroke="currentColor" strokeWidth="1.3"/>
+      <circle cx="6.2" cy="9.6" r="1.6" fill="currentColor"/>
+      <circle cx="15.8" cy="14.4" r="2.4" fill={C_CONSTRUCT}/>
+    </svg>
+  ),
+  arcMidpoint: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
+      <path d="M4 17 A 9 9 0 0 1 20 17" stroke="currentColor" strokeWidth="1.4"/>
+      <circle cx="4" cy="17" r="1.6" fill="currentColor"/>
+      <circle cx="20" cy="17" r="1.6" fill="currentColor"/>
+      <circle cx="12" cy="8.2" r="2.4" fill={C_CONSTRUCT}/>
+    </svg>
+  ),
+  circleIntersection: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <circle cx="9" cy="12" r="6" stroke="currentColor" strokeWidth="1.3"/>
+      <circle cx="15" cy="12" r="6" stroke="currentColor" strokeWidth="1.3"/>
+      <circle cx="12" cy="7.6" r="2" fill={C_CONSTRUCT}/>
+      <circle cx="12" cy="16.4" r="2" fill={C_CONSTRUCT}/>
+    </svg>
+  ),
+  tangentPointExt: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
+      <circle cx="14" cy="12" r="6" stroke="currentColor" strokeWidth="1.3"/>
+      <circle cx="3.5" cy="12" r="1.8" fill={C_POINT}/>
+      <line x1="3.5" y1="12" x2="17.5" y2="7.5" stroke="currentColor" strokeWidth="1.2"/>
+      <line x1="3.5" y1="12" x2="17.5" y2="16.5" stroke="currentColor" strokeWidth="1.2"/>
+      <circle cx="17.5" cy="7.5" r="1.8" fill={C_CONSTRUCT}/>
+      <circle cx="17.5" cy="16.5" r="1.8" fill={C_CONSTRUCT}/>
+    </svg>
+  ),
+  circleCR: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="7.5" stroke="currentColor" strokeWidth="1.3"/>
+      <circle cx="12" cy="12" r="1.8" fill={C_POINT}/>
+      <line x1="12" y1="12" x2="19.5" y2="12" stroke={C_CONSTRUCT} strokeWidth="1.3"/>
+    </svg>
+  ),
+  incircle: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <path d="M3 19 L12 4 L21 19 Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
+      <circle cx="12" cy="14" r="4.2" fill="none" stroke={C_CONSTRUCT} strokeWidth="1.3"/>
+    </svg>
+  ),
+  excircle: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <path d="M6 9 L14 4 L18 13 Z" stroke="currentColor" strokeWidth="1.2"/>
+      <circle cx="9" cy="17" r="4.6" fill="none" stroke={C_CONSTRUCT} strokeWidth="1.3"/>
+    </svg>
+  ),
+  pointOn: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="7.5" stroke="currentColor" strokeWidth="1.3"/>
+      <circle cx="17.3" cy="6.7" r="2.4" fill={C_POINT}/>
+    </svg>
+  ),
 };
 
 export const GeometryIconHeader = (

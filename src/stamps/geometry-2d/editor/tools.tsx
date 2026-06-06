@@ -54,7 +54,17 @@ export type GeomTool =
   | 'parallelogram'
   | 'isoTrapezoid'
   | 'isoTriangle'
-  | 'rightTriangle';
+  | 'rightTriangle'
+  | 'excenter'
+  | 'tangencyPoint'
+  | 'secondIntersection'
+  | 'arcMidpoint'
+  | 'circleIntersection'
+  | 'tangentPointExt'
+  | 'circleCR'
+  | 'incircle'
+  | 'excircle'
+  | 'pointOn';
 
 export interface ToolDef {
   key: GeomTool;
@@ -138,6 +148,18 @@ export const TOOLS: ToolDef[] = [
     icon: Icon.isoTriangle,    group: 'special', needs: 3, accepts: ['point', 'point', 'point'] },
   { key: 'rightTriangle',  label: 'Tam giác vuông',     hint: 'Click đỉnh vuông + 2 đầu cạnh (cạnh 2 auto vuông góc)',
     icon: Icon.rightTriangle,  group: 'special', needs: 3, accepts: ['point', 'point', 'point'] },
+  // ===== Điểm / đường tròn thông dụng (kind chưa có icon trước v0.27) =====
+  { key: 'pointOn', label: 'Điểm trên đối tượng', hint: 'Click 1 đường/đoạn/đường tròn có sẵn', icon: Icon.pointOn, group: 'point', needs: 1, accepts: ['lineOrCircle'] },
+  { key: 'circleCR', label: 'Đường tròn (tâm + bán kính)', hint: 'Click tâm rồi nhập bán kính', icon: Icon.circleCR, group: 'circle', needs: 1, accepts: ['point'] },
+  { key: 'incircle', label: 'Đường tròn nội tiếp', hint: 'Click 3 đỉnh tam giác', icon: Icon.incircle, group: 'triangle', needs: 3, accepts: ['point', 'point', 'point'] },
+  // ===== Nâng cao =====
+  { key: 'excenter', label: 'Tâm đường tròn bàng tiếp', hint: 'Click 3 đỉnh tam giác (đỉnh đầu = đỉnh đối diện)', icon: Icon.excenter, group: 'advanced', needs: 3, accepts: ['point', 'point', 'point'] },
+  { key: 'excircle', label: 'Đường tròn bàng tiếp', hint: 'Click 3 đỉnh tam giác (đỉnh đầu = đỉnh đối diện)', icon: Icon.excircle, group: 'advanced', needs: 3, accepts: ['point', 'point', 'point'] },
+  { key: 'tangencyPoint', label: 'Tiếp điểm (đường tiếp xúc)', hint: 'Click 1 đường tròn + 1 tiếp tuyến có sẵn', icon: Icon.tangencyPoint, group: 'advanced', needs: 2, accepts: ['circle', 'line'] },
+  { key: 'secondIntersection', label: 'Giao điểm thứ hai', hint: 'Click 1 đường + 1 đường tròn + giao điểm đã biết', icon: Icon.secondIntersection, group: 'advanced', needs: 3, accepts: ['line', 'circle', 'point'] },
+  { key: 'arcMidpoint', label: 'Điểm giữa cung', hint: 'Click đường tròn → 2 đầu cung A,B → 1 điểm phía cung KHÔNG chứa', icon: Icon.arcMidpoint, group: 'advanced', needs: 4, accepts: ['circle', 'point', 'point', 'point'] },
+  { key: 'circleIntersection', label: 'Giao 2 đường tròn', hint: 'Click 2 đường tròn (tạo cả 2 giao điểm)', icon: Icon.circleIntersection, group: 'advanced', needs: 2, accepts: ['circle', 'circle'] },
+  { key: 'tangentPointExt', label: 'Tiếp điểm từ điểm ngoài', hint: 'Click 1 điểm ngoài + 1 đường tròn (tạo cả 2 tiếp điểm)', icon: Icon.tangentPointExt, group: 'advanced', needs: 2, accepts: ['point', 'circle'] },
 ];
 
 export const GROUP_LABELS: Record<ToolDef['group'], string> = {

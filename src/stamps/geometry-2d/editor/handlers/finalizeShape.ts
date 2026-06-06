@@ -527,6 +527,116 @@ export function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
       });
       return;
     }
+    case 'excenter': {
+      const id = freshId(ctx, 'ex');
+      const label = ctx.nextLabel('point');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'point', label, {
+          constraint: { kind: 'excenter', vertices: [ids[0], ids[1], ids[2]], opposite: ids[0] },
+        }) },
+      });
+      return;
+    }
+    case 'tangencyPoint': {
+      const circleId = findPickIdByKind(ctx, 'circle');
+      const lineId = findPickIdByKind(ctx, 'line');
+      if (!circleId || !lineId) return;
+      const id = freshId(ctx, 'tp');
+      const label = ctx.nextLabel('point');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'point', label, {
+          constraint: { kind: 'tangencyPoint', circle: circleId, onLine: lineId },
+        }) },
+      });
+      return;
+    }
+    case 'secondIntersection': {
+      const lineId = findPickIdByKind(ctx, 'line');
+      const circleId = findPickIdByKind(ctx, 'circle');
+      const otherId = findPickIdByKind(ctx, 'point');
+      if (!lineId || !circleId || !otherId) return;
+      const id = freshId(ctx, 'X');
+      const label = ctx.nextLabel('point');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'point', label, {
+          constraint: { kind: 'secondIntersection', line: lineId, circle: circleId, other: otherId },
+        }) },
+      });
+      return;
+    }
+    case 'arcMidpoint': {
+      const circleId = findPickIdByKind(ctx, 'circle');
+      const picks = ctx.pendingRef.current;
+      const allIds = ctx.pendingIdsRef.current;
+      const ptIds: string[] = [];
+      for (let i = 0; i < picks.length; i += 1) {
+        if (objKind(picks[i]) === 'point' && allIds[i]) ptIds.push(allIds[i]);
+      }
+      if (!circleId || ptIds.length < 3) return;
+      const id = freshId(ctx, 'M');
+      const label = ctx.nextLabel('point');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'point', label, {
+          constraint: { kind: 'arcMidpoint', circle: circleId, a: ptIds[0], b: ptIds[1], notContaining: ptIds[2] },
+        }) },
+      });
+      return;
+    }
+    case 'circleIntersection': {
+      for (const which of [0, 1] as const) {
+        const id = freshId(ctx, 'X');
+        const label = ctx.nextLabel('point');
+        ctx.store.dispatch({
+          type: 'ADD',
+          payload: { obj: mkSceneObj(id, 'point', label, {
+            constraint: { kind: 'circleIntersection', c1: ids[0], c2: ids[1], which },
+          }) },
+        });
+      }
+      return;
+    }
+    case 'tangentPointExt': {
+      const fromId = findPickIdByKind(ctx, 'point');
+      const circleId = findPickIdByKind(ctx, 'circle');
+      if (!fromId || !circleId) return;
+      for (const which of [0, 1] as const) {
+        const id = freshId(ctx, 'T');
+        const label = ctx.nextLabel('point');
+        ctx.store.dispatch({
+          type: 'ADD',
+          payload: { obj: mkSceneObj(id, 'point', label, {
+            constraint: { kind: 'tangentPointExt', from: fromId, circle: circleId, which },
+          }) },
+        });
+      }
+      return;
+    }
+    case 'incircle': {
+      const id = freshId(ctx, 'ic');
+      const label = ctx.nextLabel('circle');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'circle', label, {
+          construction: { kind: 'incircle', p1: ids[0], p2: ids[1], p3: ids[2] },
+        }) },
+      });
+      return;
+    }
+    case 'excircle': {
+      const id = freshId(ctx, 'exc');
+      const label = ctx.nextLabel('circle');
+      ctx.store.dispatch({
+        type: 'ADD',
+        payload: { obj: mkSceneObj(id, 'circle', label, {
+          construction: { kind: 'excircle', p1: ids[0], p2: ids[1], p3: ids[2], opposite: ids[0] },
+        }) },
+      });
+      return;
+    }
     default:
       return;
   }
