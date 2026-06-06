@@ -1,5 +1,7 @@
 // scripts/diag-deterministic.ts — chẩn đoán deterministic-first path end-to-end.
-// npx tsx scripts/diag-deterministic.ts
+//   npx tsx scripts/diag-deterministic.ts                 (đề mặc định)
+//   npx tsx scripts/diag-deterministic.ts probes.txt      (1 đề / dòng, # = comment)
+import { readFileSync } from 'node:fs';
 import { runDeterministicIntents } from '../src/stamps/geometry-2d/ai/deterministic/runDeterministicIntents';
 import { allNamedEntitiesPresent } from '../src/stamps/geometry-2d/ai/deterministic/guards';
 import { normalizeIntents } from '../src/stamps/geometry-2d/ai/normalizeIntent';
@@ -28,9 +30,17 @@ const PROBLEMS: string[] = [
   'Cho tam giác ABC. Tính diện tích tam giác ABC',
 ];
 
+const fileArg = process.argv[2];
+const problems: string[] = fileArg
+  ? readFileSync(fileArg, 'utf8')
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0 && !l.startsWith('#'))
+  : PROBLEMS;
+
 let det = 0;
 let escalate = 0;
-for (const p of PROBLEMS) {
+for (const p of problems) {
   const r = runDeterministicIntents(p);
   if (!r.ok) {
     escalate++;
@@ -67,4 +77,4 @@ for (const p of PROBLEMS) {
   const intentKinds = norm.map((i: any) => i.op + (i.constraint ? `/${i.constraint.kind}` : i.shape ? `/${i.shape}` : i.spec ? `/${i.spec}` : i.kind ? `/${i.kind}` : '')).join(', ');
   console.log(`DET ${v.ok ? 'OK ' : 'VERIFY-FAIL'}  ${p}\n   intents: ${intentKinds}`);
 }
-console.log(`\n=== ${det} deterministic-render, ${escalate} escalate, ${PROBLEMS.length - det - escalate} broken ===`);
+console.log(`\n=== ${det} deterministic-render, ${escalate} escalate, ${problems.length - det - escalate} broken ===`);
