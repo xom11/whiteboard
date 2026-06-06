@@ -29,6 +29,7 @@ import { tangencyPointModule } from './kinds/points/tangencyPoint';
 import { tangentPointExtModule } from './kinds/points/tangentPointExt';
 import { circleCRModule } from './kinds/circles/circleCR';
 import { incircleModule } from './kinds/circles/incircle';
+import { arcMidpointModule } from './kinds/points/arcMidpoint';
 
 const ALL_MODULES: ReadonlyArray<DslKindModule> = [
   freeModule, midpointModule, onSegmentModule, onLineModule, onCircleModule,
@@ -43,6 +44,8 @@ const ALL_MODULES: ReadonlyArray<DslKindModule> = [
   circleCPModule, circle3Module,
   // NEW Tier 4+5 circles
   circleCRModule, incircleModule,
+  // Cụm A points
+  arcMidpointModule,
 ];
 
 export const KIND_REGISTRY: ReadonlyMap<string, DslKindModule> =
