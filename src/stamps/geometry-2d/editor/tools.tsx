@@ -151,7 +151,7 @@ export const TOOLS: ToolDef[] = [
   // ===== Điểm / đường tròn thông dụng (kind chưa có icon trước v0.27) =====
   { key: 'pointOn', label: 'Điểm trên đối tượng', hint: 'Click 1 đường/đoạn/đường tròn có sẵn', icon: Icon.pointOn, group: 'point', needs: 1, accepts: ['lineOrCircle'] },
   { key: 'circleCR', label: 'Đường tròn (tâm + bán kính)', hint: 'Click tâm rồi nhập bán kính', icon: Icon.circleCR, group: 'circle', needs: 1, accepts: ['point'] },
-  { key: 'incircle', label: 'Đường tròn nội tiếp', hint: 'Click 3 đỉnh tam giác', icon: Icon.incircle, group: 'triangle', needs: 3, accepts: ['point', 'point', 'point'] },
+  { key: 'incircle', label: 'Đường tròn nội tiếp', hint: 'Click 3 đỉnh tam giác', icon: Icon.incircle, group: 'circle', needs: 3, accepts: ['point', 'point', 'point'] },
   // ===== Nâng cao =====
   { key: 'excenter', label: 'Tâm đường tròn bàng tiếp', hint: 'Click 3 đỉnh tam giác (đỉnh đầu = đỉnh đối diện)', icon: Icon.excenter, group: 'advanced', needs: 3, accepts: ['point', 'point', 'point'] },
   { key: 'excircle', label: 'Đường tròn bàng tiếp', hint: 'Click 3 đỉnh tam giác (đỉnh đầu = đỉnh đối diện)', icon: Icon.excircle, group: 'advanced', needs: 3, accepts: ['point', 'point', 'point'] },

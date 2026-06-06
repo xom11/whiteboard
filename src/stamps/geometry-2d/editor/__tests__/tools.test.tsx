@@ -24,25 +24,27 @@ describe('TOOLS — circle Tier 2 additions', () => {
     }
   });
 
-  test('thứ tự circle group: circleCenter → semicircle → arcCenter → arc3 → sectorCenter → circle3 → tangent', () => {
+  test('thứ tự circle group: circleCenter → … → tangent → circleCR → incircle (v0.27)', () => {
     const circleTools = TOOLS.filter((t) => t.group === 'circle').map((t) => t.key);
     expect(circleTools).toEqual([
       'circleCenter', 'semicircle', 'arcCenter', 'arc3', 'sectorCenter', 'circle3', 'tangent',
+      'circleCR', 'incircle',
     ]);
   });
 });
 
 describe('TOOLS — Tier E.1 group expansion', () => {
-  test('GROUP_ORDER có 11 entries với triangle tại index 6 + special cuối', () => {
-    expect(GROUP_ORDER).toHaveLength(11);
+  test('GROUP_ORDER có 12 entries với triangle tại index 6 + advanced cuối (v0.27)', () => {
+    expect(GROUP_ORDER).toHaveLength(12);
     expect(GROUP_ORDER[6]).toBe('triangle');
     expect(GROUP_ORDER[10]).toBe('special');
+    expect(GROUP_ORDER[11]).toBe('advanced');
   });
 
-  test('GROUP_ORDER giữ thứ tự cũ + chèn triangle sau circle + special cuối', () => {
+  test('GROUP_ORDER giữ thứ tự cũ + chèn triangle sau circle + advanced cuối', () => {
     expect(GROUP_ORDER).toEqual([
       'move', 'point', 'line', 'construct', 'polygon', 'circle',
-      'triangle', 'measure', 'edit', 'transform', 'special',
+      'triangle', 'measure', 'edit', 'transform', 'special', 'advanced',
     ]);
   });
 
@@ -88,9 +90,9 @@ describe('TOOLS — Tier E.1 catalog entries', () => {
     }
   });
 
-  test('thứ tự group point: point → midpoint → perpFoot → intersect', () => {
+  test('thứ tự group point: point → midpoint → perpFoot → intersect → pointOn (v0.27)', () => {
     const pointTools = TOOLS.filter((t) => t.group === 'point').map((t) => t.key);
-    expect(pointTools).toEqual(['point', 'midpoint', 'perpFoot', 'intersect']);
+    expect(pointTools).toEqual(['point', 'midpoint', 'perpFoot', 'intersect', 'pointOn']);
   });
 
   test('thứ tự group triangle: centroid → circumcenter → incenter → orthocenter', () => {
