@@ -872,3 +872,41 @@ describe('applyDeterministicCompletion + tangent-from-external (integration)', (
     expect(out.dsl.points.find((p) => p.name === 'P')).toBeDefined();
   });
 });
+
+// ---------------------------------------------------------------------------
+// extractRequirements Cụm A — arcMidpoint / excenter / reflect
+// ---------------------------------------------------------------------------
+
+describe('extractRequirements Cụm A', () => {
+  it('trung điểm cung BC không chứa A → arcMidpoint + circumcircle omega', () => {
+    const r = extractRequirements('Cho tam giác ABC. M là trung điểm cung BC không chứa A.');
+    const m = r.points.find((p) => p.name === 'M');
+    expect(m).toMatchObject({
+      kind: 'arcMidpoint',
+      fields: { circle: 'omega', a: 'B', b: 'C', notContaining: 'A' },
+    });
+    expect(r.shapes.some((s) => s.name === 'omega' && s.kind === 'circle3')).toBe(true);
+  });
+
+  it('tâm bàng tiếp góc A → excenter', () => {
+    const r = extractRequirements('Cho tam giác ABC, J là tâm bàng tiếp góc A.');
+    expect(r.points.find((p) => p.name === 'J')).toMatchObject({
+      kind: 'excenter', fields: { vertices: ['A', 'B', 'C'], opposite: 'A' },
+    });
+  });
+
+  it('D đối xứng H qua BC → reflectLine + segment BC', () => {
+    const r = extractRequirements('Cho tam giác ABC trực tâm H. D đối xứng với H qua BC.');
+    expect(r.points.find((p) => p.name === 'D')).toMatchObject({
+      kind: 'reflectLine', fields: { of: 'H', through: 'BC' },
+    });
+    expect(r.shapes.some((s) => s.name === 'BC' && s.kind === 'segment')).toBe(true);
+  });
+
+  it('Q đối xứng P qua điểm M → reflectPoint', () => {
+    const r = extractRequirements('Q là điểm đối xứng của P qua M.');
+    expect(r.points.find((p) => p.name === 'Q')).toMatchObject({
+      kind: 'reflectPoint', fields: { of: 'P', through: 'M' },
+    });
+  });
+});

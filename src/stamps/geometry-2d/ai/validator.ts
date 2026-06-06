@@ -135,6 +135,18 @@ const KEYWORD_RULES: readonly KeywordRule[] = [
     expectedKind: 'intersection',
     hint: 'Đề có "giao điểm" / "cắt nhau tại" → dùng kind:"intersection" với ref1, ref2.',
   },
+  {
+    id: 'arc-midpoint',
+    patterns: [/(?:trung\s*điểm|chính\s+giữa)\s+(?:của\s+)?cung/i],
+    expectedKind: 'arcMidpoint',
+    hint: 'Đề có "trung điểm cung XY (không chứa Z)" → kind:"arcMidpoint" với circle, a, b, notContaining.',
+  },
+  {
+    id: 'excenter',
+    patterns: [/(?:tâm\s+)?bàng\s*tiếp/i],
+    expectedKind: 'excenter',
+    hint: 'Đề có "tâm bàng tiếp góc X" → kind:"excenter" với of:[A,B,C], opposite:X.',
+  },
 ];
 
 export interface ValidatorIssue {
@@ -641,6 +653,78 @@ export function extractRequirements(userPrompt: string): RequirementExtraction {
           });
         }
       }
+    }
+  }
+
+  // ----- Cụm A: trung điểm cung -----
+  // "M là trung điểm cung BC không chứa A" / "M là điểm chính giữa cung BC không chứa A"
+  {
+    const m = userPrompt.match(
+      /([A-Z])\s+(?:là\s+)?(?:điểm\s+)?(?:trung\s*điểm|chính\s+giữa)\s+(?:của\s+)?cung\s+([A-Z])([A-Z])[^.]*?không\s+chứa\s+([A-Z])/i,
+    );
+    if (m) {
+      const circleName = 'omega';
+      if (triVertices && !shapes.some((s) => s.name === circleName)) {
+        shapes.push({
+          name: circleName, kind: 'circle3',
+          fields: { p1: triVertices[0], p2: triVertices[1], p3: triVertices[2] },
+        });
+      }
+      // Remove any midpoint stub for same name pushed earlier (midpoint regex
+      // mis-fires on "trung điểm cung BC" before this block runs).
+      const ptName = up(m[1]);
+      const idx = points.findIndex((p) => p.name === ptName && p.kind === 'midpoint');
+      if (idx !== -1) points.splice(idx, 1);
+      points.push({
+        name: ptName, kind: 'arcMidpoint',
+        fields: { circle: circleName, a: up(m[2]), b: up(m[3]), notContaining: up(m[4]) },
+      });
+    }
+  }
+
+  // ----- Cụm A: tâm bàng tiếp -----
+  // "J là tâm bàng tiếp góc A" / "... ứng với đỉnh A" / "... đối diện A"
+  if (triVertices) {
+    const m = userPrompt.match(
+      /([A-Z])\s+(?:là\s+)?tâm\s+bàng\s*tiếp\s+(?:góc\s+|ứng\s+với\s+(?:đỉnh\s+)?|đối\s+diện\s+(?:đỉnh\s+)?)?([A-Z])/i,
+    );
+    if (m && triVertices.includes(up(m[2]))) {
+      points.push({
+        name: up(m[1]), kind: 'excenter',
+        fields: { vertices: triVertices, opposite: up(m[2]) },
+      });
+    }
+  }
+
+  // ----- Cụm A: đối xứng qua ĐƯỜNG (2 chữ) -----
+  // "D đối xứng (với) H qua BC" / "D là điểm đối xứng của H qua đường thẳng BC"
+  {
+    const m = userPrompt.match(
+      /([A-Z])\s+(?:là\s+)?(?:điểm\s+)?đối\s*xứng\s+(?:của\s+|với\s+)?([A-Z])\s+qua\s+(?:đường\s*thẳng\s+|cạnh\s+|trục\s+)?([A-Z])([A-Z])(?![A-Z])/i,
+    );
+    if (m) {
+      const seg = up(m[3]) + up(m[4]);
+      if (!shapes.some((s) => s.name === seg)) {
+        shapes.push({ name: seg, kind: 'segment', fields: { p1: up(m[3]), p2: up(m[4]) } });
+      }
+      points.push({
+        name: up(m[1]), kind: 'reflectLine',
+        fields: { of: up(m[2]), through: seg },
+      });
+    }
+  }
+
+  // ----- Cụm A: đối xứng qua ĐIỂM (1 chữ) -----
+  // "Q đối xứng (của) P qua (điểm) M" — chỉ match khi mục tiêu là 1 chữ (POINT).
+  {
+    const m = userPrompt.match(
+      /([A-Z])\s+(?:là\s+)?(?:điểm\s+)?đối\s*xứng\s+(?:của\s+|với\s+)?([A-Z])\s+qua\s+(?:điểm\s+|trung\s*điểm\s+)?([A-Z])(?![A-Za-z])/i,
+    );
+    if (m && !points.some((p) => p.name === up(m[1]))) {
+      points.push({
+        name: up(m[1]), kind: 'reflectPoint',
+        fields: { of: up(m[2]), through: up(m[3]) },
+      });
     }
   }
 
