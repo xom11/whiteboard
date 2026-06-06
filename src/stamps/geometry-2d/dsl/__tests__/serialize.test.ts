@@ -514,3 +514,46 @@ describe('roundtrip fixtures: transpile → serialize ≡ original', () => {
     expect(ser.dsl).toEqual(fix.dsl);
   });
 });
+
+// ---------------------------------------------------------------------------
+// 5. pointAtDistance round-trip (3 distance kinds)
+// ---------------------------------------------------------------------------
+
+describe('serialize pointAtDistance round-trip', () => {
+  function roundTripPoint(distance: unknown, extraPoints: unknown[] = [], shapes: unknown[] = []) {
+    const dsl = {
+      version: 1,
+      points: [
+        { name: 'O', kind: 'free', x: 0, y: 0 },
+        { name: 'A', kind: 'free', x: 3, y: 0 },
+        { name: 'B', kind: 'free', x: 0, y: 3 },
+        ...extraPoints,
+        { name: 'C', kind: 'pointAtDistance', from: 'A', through: 'B', distance },
+      ],
+      shapes,
+    };
+    const t = transpile(dsl);
+    if (!t.ok) throw new Error('transpile failed: ' + JSON.stringify(t.errors));
+    const result = serializeState(t.state);
+    return result.dsl.points.find((p) => p.name === 'C');
+  }
+
+  it('circleRadius round-trips (labels, not ids)', () => {
+    const c = roundTripPoint(
+      { kind: 'circleRadius', circle: 'k' },
+      [],
+      [{ name: 'k', kind: 'circleCR', center: 'O', radius: 3 }],
+    );
+    expect(c).toMatchObject({ kind: 'pointAtDistance', from: 'A', through: 'B', distance: { kind: 'circleRadius', circle: 'k' } });
+  });
+
+  it('segmentLength round-trips', () => {
+    const c = roundTripPoint({ kind: 'segmentLength', p1: 'O', p2: 'A' });
+    expect(c).toMatchObject({ kind: 'pointAtDistance', from: 'A', through: 'B', distance: { kind: 'segmentLength', p1: 'O', p2: 'A' } });
+  });
+
+  it('literal round-trips', () => {
+    const c = roundTripPoint({ kind: 'literal', value: 2 });
+    expect(c).toMatchObject({ kind: 'pointAtDistance', from: 'A', through: 'B', distance: { kind: 'literal', value: 2 } });
+  });
+});

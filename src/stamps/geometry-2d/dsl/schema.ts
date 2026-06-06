@@ -48,6 +48,11 @@ export const DslInput = z.object({
 
 type Name = z.infer<typeof NameZ>;
 
+export type DslDistanceSpec =
+  | { kind: 'circleRadius'; circle: Name }
+  | { kind: 'segmentLength'; p1: Name; p2: Name }
+  | { kind: 'literal'; value: number };
+
 export type DslPointT =
   | { name: Name; kind: 'free'; x: number; y: number }
   | { name: Name; kind: 'midpoint'; p1: Name; p2: Name; visible?: boolean }
@@ -69,7 +74,9 @@ export type DslPointT =
   | { name: Name; kind: 'arcMidpoint'; circle: Name; a: Name; b: Name; notContaining: Name }
   | { name: Name; kind: 'excenter'; vertices: [Name, Name, Name]; opposite: Name }
   | { name: Name; kind: 'reflectPoint'; of: Name; through: Name }
-  | { name: Name; kind: 'reflectLine'; of: Name; through: Name };
+  | { name: Name; kind: 'reflectLine'; of: Name; through: Name }
+  // Cụm B points
+  | { name: Name; kind: 'pointAtDistance'; from: Name; through: Name; distance: DslDistanceSpec };
 
 export type DslShapeT =
   | { name: Name; kind: 'segment'; p1: Name; p2: Name }

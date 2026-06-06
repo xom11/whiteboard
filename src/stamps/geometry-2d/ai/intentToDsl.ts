@@ -406,6 +406,10 @@ function handleAddPoint(s: BuildState, intent: AddPointIntentT) {
       addPoint(s, { name, kind: 'intersection', ref1: lineRef, ref2: circName, branch: c.which ?? 0 });
       break;
     }
+    case 'pointAtDistance':
+      ensureSegment(s, c.from, c.through);
+      addPoint(s, { name, kind: 'pointAtDistance', from: c.from, through: c.through, distance: c.distance });
+      break;
   }
 }
 

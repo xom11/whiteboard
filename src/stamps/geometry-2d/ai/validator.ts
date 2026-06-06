@@ -147,6 +147,16 @@ const KEYWORD_RULES: readonly KeywordRule[] = [
     expectedKind: 'excenter',
     hint: 'Đề có "tâm bàng tiếp góc X" → kind:"excenter" với of:[A,B,C], opposite:X.',
   },
+  {
+    id: 'point-at-distance',
+    patterns: [
+      /kéo\s+dài/i,
+      /tia\s+đối/i,
+      /trên\s+tia\s+.{1,20}\s+lấy/i,
+    ],
+    expectedKind: 'pointAtDistance',
+    hint: 'Đề có "kéo dài XY ... lấy Z sao cho YZ = R/đoạn/số" hoặc "trên tia đối" → dùng kind:"pointAtDistance" (from, through = điểm mới nằm ngoài through; distance: circleRadius|segmentLength|literal). KHÔNG dùng reflectPoint (cho 2·through−from) hay onSegment t>1.',
+  },
 ];
 
 export interface ValidatorIssue {

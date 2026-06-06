@@ -71,3 +71,15 @@ export function excenter(
     (w[0] * A[1] + w[1] * B[1] + w[2] * C[1]) / sum,
   ];
 }
+
+/**
+ * Điểm trên tia `from → through` kéo dài QUA `through`, cách `through` khoảng `d`.
+ * C = through + d · (through − from)/|through − from|.
+ * `from ≡ through` (hướng suy biến) → trả về chính `through` (d bị nuốt vì len=1 guard).
+ */
+export function pointAtDistanceCoord(from: XY, through: XY, d: number): XY {
+  const dx = through[0] - from[0];
+  const dy = through[1] - from[1];
+  const len = Math.hypot(dx, dy) || 1;
+  return [through[0] + (d * dx) / len, through[1] + (d * dy) / len];
+}

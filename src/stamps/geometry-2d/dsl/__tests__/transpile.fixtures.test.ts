@@ -11,6 +11,7 @@ import { fixture as incircle } from '../fixtures/triangle-incircle';
 import { fixture as parallelogram } from '../fixtures/parallelogram';
 import { fixture as twoCirclesIntersect } from '../fixtures/two-circles-intersect';
 import { fixture as angleBisector } from '../fixtures/triangle-angle-bisector';
+import { fixture as extendChordBcRadius } from '../fixtures/extend-chord-bc-radius';
 
 const ALL = [
   ['triangle-equilateral', equilateral, 4],
@@ -23,6 +24,7 @@ const ALL = [
   ['triangle-angle-bisector', angleBisector, 8],
   ['parallelogram', parallelogram, 8],
   ['two-circles-intersect', twoCirclesIntersect, 8],
+  ['extend-chord-bc-radius', extendChordBcRadius, 6],
 ] as const;
 
 describe('fixture transpile happy paths', () => {
@@ -293,5 +295,17 @@ describe('representative snapshot', () => {
   ],
 }
 `);
+  });
+});
+
+describe('extend-chord-bc-radius semantics', () => {
+  it('C có constraint pointAtDistance với refs đã resolve sang id', () => {
+    const r = transpile(extendChordBcRadius.dsl);
+    if (!r.ok) throw new Error(JSON.stringify(r.errors));
+    const cObj = Object.values(r.state.objects).find((o: any) => o.label === 'C') as any;
+    expect(cObj.attrs.constraint.kind).toBe('pointAtDistance');
+    expect(cObj.attrs.constraint.distance.kind).toBe('circleRadius');
+    expect(cObj.attrs.constraint.from).toMatch(/^p\d+$/);
+    expect(cObj.attrs.constraint.distance.circle).toMatch(/^c\d+$/);
   });
 });

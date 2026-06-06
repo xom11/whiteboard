@@ -130,6 +130,16 @@ export const AddPointIntentZ = z.object({
     z.object({ kind: z.literal('excenter'), of: z.tuple([LabelZ, LabelZ, LabelZ]), opposite: LabelZ }),
     // Góc vuông nhìn đoạn: M trên onLine sao cho ∠ a-name-b = 90°
     z.object({ kind: z.literal('rightAngleViewing'), a: LabelZ, b: LabelZ, onLine: z.string(), which: z.union([z.literal(0), z.literal(1)]).optional() }),
+    z.object({
+      kind: z.literal('pointAtDistance'),
+      from: LabelZ,
+      through: LabelZ,
+      distance: z.discriminatedUnion('kind', [
+        z.object({ kind: z.literal('circleRadius'), circle: LabelZ }),
+        z.object({ kind: z.literal('segmentLength'), p1: LabelZ, p2: LabelZ }),
+        z.object({ kind: z.literal('literal'), value: z.number().positive() }),
+      ]),
+    }),
   ]),
 });
 

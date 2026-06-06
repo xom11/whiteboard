@@ -30,6 +30,12 @@ export function transformRefs(t: TransformDef): string[] {
   }
 }
 
+/** Nguồn khoảng cách cho pointAtDistance. ids là scene-object id (string). */
+export type ConstraintDistanceSpec =
+  | { kind: 'circleRadius'; circle: string }
+  | { kind: 'segmentLength'; p1: string; p2: string }
+  | { kind: 'literal'; value: number };
+
 export type Constraint2D =
   | { kind: 'free'; x: number; y: number }
   | { kind: 'onAxis'; axis: 'x' | 'y'; t: number }
@@ -60,6 +66,8 @@ export type Constraint2D =
   | { kind: 'tangencyPoint'; circle: string; onLine: string }
   // Trung điểm cung AB của đường tròn `circle`, ở cung KHÔNG chứa `notContaining`.
   | { kind: 'arcMidpoint'; circle: string; a: string; b: string; notContaining: string }
+  // Điểm trên tia from→through kéo dài qua through, cách through khoảng `distance`.
+  | { kind: 'pointAtDistance'; from: string; through: string; distance: ConstraintDistanceSpec }
   // Tâm bàng tiếp tam giác `vertices` đối diện đỉnh `opposite`.
   // `opposite` LUÔN là một phần tử của `vertices` (vì vậy constraintRefs2D không cần thêm nó).
   | { kind: 'excenter'; vertices: [string, string, string]; opposite: string };
@@ -85,6 +93,12 @@ export function constraintRefs2D(c: Constraint2D): string[] {
     case 'secondIntersection': return [c.line, c.circle, c.other];
     case 'tangencyPoint': return [c.circle, c.onLine];
     case 'arcMidpoint': return [c.circle, c.a, c.b, c.notContaining];
+    case 'pointAtDistance': {
+      const d = c.distance;
+      const extra = d.kind === 'circleRadius' ? [d.circle]
+        : d.kind === 'segmentLength' ? [d.p1, d.p2] : [];
+      return [c.from, c.through, ...extra];
+    }
     case 'excenter': return [c.vertices[0], c.vertices[1], c.vertices[2]];
     default: return [];
   }

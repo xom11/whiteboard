@@ -1,8 +1,8 @@
 // src/core/scene/kinds/point.ts
 import { registerKind } from '../registry';
 import type { KindDef, RenderCtx } from '../types';
-import { type Constraint2D, type TransformDef, constraintRefs2D } from './2d-constraint';
-import { arcMidpoint, excenter } from './pointConstructions';
+import { type Constraint2D, type ConstraintDistanceSpec, type TransformDef, constraintRefs2D } from './2d-constraint';
+import { arcMidpoint, excenter, pointAtDistanceCoord } from './pointConstructions';
 
 /**
  * Build mảng JSXGraph 'transform' elements cho TransformDef. Dilate → chain
@@ -43,6 +43,18 @@ function buildJxgTransforms(board: any, ctx: RenderCtx, t: TransformDef): any[] 
       ];
     }
   }
+}
+
+/** Trả hàm tính khoảng cách `d` reactive cho pointAtDistance. */
+function makeDistanceFn(ctx: RenderCtx, d: ConstraintDistanceSpec): () => number {
+  if (d.kind === 'literal') return () => d.value;
+  if (d.kind === 'segmentLength') {
+    const p = ctx.resolveRef(d.p1) as any;
+    const q = ctx.resolveRef(d.p2) as any;
+    return () => Math.hypot(p.X() - q.X(), p.Y() - q.Y());
+  }
+  const circle = ctx.resolveRef(d.circle) as any;
+  return () => circle.Radius();
 }
 
 export type PointAttrs = {
@@ -190,6 +202,16 @@ const def: KindDef<PointAttrs> = {
       const labels = c.vertices.map((id) => state?.objects[id]?.label ?? id).join('');
       const opp = state?.objects[c.opposite]?.label ?? c.opposite;
       return `${obj.label} = tâm bàng tiếp Δ${labels} đối diện ${opp}`;
+    }
+    if (c.kind === 'pointAtDistance') {
+      const fromL = state?.objects[c.from]?.label ?? c.from;
+      const thrL = state?.objects[c.through]?.label ?? c.through;
+      const d = c.distance;
+      const dLabel = d.kind === 'literal' ? `${d.value}`
+        : d.kind === 'segmentLength'
+          ? `${state?.objects[d.p1]?.label ?? d.p1}${state?.objects[d.p2]?.label ?? d.p2}`
+          : `bán kính (${state?.objects[d.circle]?.label ?? d.circle})`;
+      return `${obj.label} = trên tia ${fromL}${thrL} kéo dài, cách ${thrL} khoảng ${dLabel}`;
     }
     return `Điểm ${obj.label}`;
   },
@@ -449,6 +471,13 @@ const def: KindDef<PointAttrs> = {
         [[a.X(), a.Y()], [b.X(), b.Y()], [c3.X(), c3.Y()]], idx,
       );
       return board.create('point', [() => ex()[0], () => ex()[1]], opts);
+    }
+    if (c.kind === 'pointAtDistance') {
+      const A: any = ctx.resolveRef(c.from);
+      const B: any = ctx.resolveRef(c.through);
+      const dFn = makeDistanceFn(ctx, c.distance);
+      const pc = () => pointAtDistanceCoord([A.X(), A.Y()], [B.X(), B.Y()], dFn());
+      return board.create('point', [() => pc()[0], () => pc()[1]], opts);
     }
     return board.create('point', [0, 0], opts);
   },
