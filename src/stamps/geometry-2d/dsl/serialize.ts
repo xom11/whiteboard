@@ -357,6 +357,16 @@ function serializeCircle(obj: SceneObject<CircleAttrs>, state: State): Serialize
   const a = obj.attrs;
   const c = a.construction;
   if (!c) {
+    // center + radius (DSL circleCR) — ưu tiên trước center/surfacePoint.
+    if (typeof a.radius === 'number') {
+      if (!a.center) return fail('unsupported-construction', 'missing center');
+      const refs = resolveRefs([a.center], state);
+      if (!refs) return fail('unresolved-ref', `${a.center}`);
+      return {
+        ok: true,
+        entity: { name: obj.label, kind: 'circleCR', center: refs[0], radius: a.radius },
+      };
+    }
     if (!a.center || !a.surfacePoint) {
       return fail('unsupported-construction', 'missing center/surfacePoint');
     }
@@ -373,6 +383,22 @@ function serializeCircle(obj: SceneObject<CircleAttrs>, state: State): Serialize
     return {
       ok: true,
       entity: { name: obj.label, kind: 'circle3', p1: refs[0], p2: refs[1], p3: refs[2] },
+    };
+  }
+  if (c.kind === 'incircle') {
+    const refs = resolveRefs([c.p1, c.p2, c.p3], state);
+    if (!refs) return fail('unresolved-ref', `${c.p1},${c.p2},${c.p3}`);
+    return {
+      ok: true,
+      entity: { name: obj.label, kind: 'incircle', vertices: [refs[0], refs[1], refs[2]] },
+    };
+  }
+  if (c.kind === 'excircle') {
+    const refs = resolveRefs([c.p1, c.p2, c.p3, c.opposite], state);
+    if (!refs) return fail('unresolved-ref', `${c.p1},${c.p2},${c.p3},${c.opposite}`);
+    return {
+      ok: true,
+      entity: { name: obj.label, kind: 'excircle', vertices: [refs[0], refs[1], refs[2]], opposite: refs[3] },
     };
   }
   return fail('unsupported-construction');

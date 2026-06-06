@@ -336,6 +336,38 @@ describe('serializeObject — per-kind', () => {
       ok: true, entity: { name: 'k', kind: 'circle3', p1: 'A', p2: 'B', p3: 'C' },
     });
   });
+
+  test('circle: radius → circleCR (re-edit roundtrip cho tool circleCR)', () => {
+    const O = pt('p1', 'O', { kind: 'free', x: 0, y: 0 });
+    const k = shape('c1', 'circle', 'k', { center: 'p1', radius: 3.5 });
+    expect(serializeObject(k, makeState([O, k]))).toEqual({
+      ok: true, entity: { name: 'k', kind: 'circleCR', center: 'O', radius: 3.5 },
+    });
+  });
+
+  test('circle: construction incircle → incircle (re-edit roundtrip)', () => {
+    const A = pt('p1', 'A', { kind: 'free', x: 0, y: 0 });
+    const B = pt('p2', 'B', { kind: 'free', x: 4, y: 0 });
+    const C = pt('p3', 'C', { kind: 'free', x: 0, y: 3 });
+    const k = shape('c1', 'circle', 'k', {
+      construction: { kind: 'incircle', p1: 'p1', p2: 'p2', p3: 'p3' },
+    });
+    expect(serializeObject(k, makeState([A, B, C, k]))).toEqual({
+      ok: true, entity: { name: 'k', kind: 'incircle', vertices: ['A', 'B', 'C'] },
+    });
+  });
+
+  test('circle: construction excircle → excircle (re-edit roundtrip)', () => {
+    const A = pt('p1', 'A', { kind: 'free', x: 0, y: 0 });
+    const B = pt('p2', 'B', { kind: 'free', x: 4, y: 0 });
+    const C = pt('p3', 'C', { kind: 'free', x: 0, y: 3 });
+    const k = shape('c1', 'circle', 'k', {
+      construction: { kind: 'excircle', p1: 'p1', p2: 'p2', p3: 'p3', opposite: 'p1' },
+    });
+    expect(serializeObject(k, makeState([A, B, C, k]))).toEqual({
+      ok: true, entity: { name: 'k', kind: 'excircle', vertices: ['A', 'B', 'C'], opposite: 'A' },
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------
