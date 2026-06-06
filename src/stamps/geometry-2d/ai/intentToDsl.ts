@@ -398,9 +398,9 @@ function handleAddPoint(s: BuildState, intent: AddPointIntentT) {
     case 'rightAngleViewing': {
       // ∠ a-name-b = 90° ⇔ name trên đường tròn đường kính ab (Thales).
       // Dựng: midpoint(ab) ẩn → circleCP đường kính ab ẩn → giao line∩circle.
-      const midName = uniquePointName(s, `_mid_${c.a}${c.b}`);
+      const midName = uniquePointName(s, `mid_${c.a}${c.b}`);
       addPoint(s, { name: midName, kind: 'midpoint', p1: c.a, p2: c.b, visible: false });
-      const circName = uniqueShapeName(s, `_thales_${c.a}${c.b}`);
+      const circName = uniqueShapeName(s, `dia_${c.a}${c.b}`);
       addShape(s, { name: circName, kind: 'circleCP', center: midName, surfacePoint: c.a, visible: false });
       const lineRef = resolveSegmentRef(s, c.onLine);
       addPoint(s, { name, kind: 'intersection', ref1: lineRef, ref2: circName, branch: c.which ?? 0 });
