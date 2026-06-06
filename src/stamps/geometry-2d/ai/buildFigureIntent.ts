@@ -18,6 +18,7 @@ import { normalizeIntents } from './normalizeIntent';
 import { resolveCircleNameCollisions } from './resolveCircleNames';
 import { completeRightAngle } from './completeRightAngle';
 import { verifyGeometry, type VerifyReport } from './verify';
+import { tryDeterministicFigure } from './deterministic/tryDeterministicFigure';
 import {
   selectProvider,
   type AIProvider,
@@ -26,11 +27,23 @@ import {
 } from './providers';
 
 const DEFAULT_MAX_TOKENS = 4096;
+const ZERO_USAGE: IntentTokenUsage = {
+  inputTokens: 0,
+  outputTokens: 0,
+  cacheReadTokens: 0,
+  cacheCreationTokens: 0,
+};
 
 export interface GenerateIntentOptions extends SelectProviderOptions {
   model?: string;
   maxTokens?: number;
   signal?: AbortSignal;
+  /**
+   * Track A deterministic-first (mặc định bật). Thử rule engine trước; chỉ gọi
+   * LLM (Track B) khi deterministic không phủ đủ / không dựng được. Đặt false để
+   * ép luôn dùng LLM (vd so sánh eval, debug).
+   */
+  useDeterministic?: boolean;
 }
 
 export interface IntentTokenUsage {
@@ -66,6 +79,26 @@ export async function generateFigureIntent(
   problem: string,
   opts: GenerateIntentOptions = {},
 ): Promise<IntentGenerateResult> {
+  // === Track A: deterministic-first ===
+  // Rule engine + 4 lớp gate (coverage/transpile/verify/named-entity). Đề dễ→trung
+  // bình dựng tại đây, KHÔNG gọi LLM. Đề khó / phủ thiếu → fall through Track B.
+  if (opts.useDeterministic !== false) {
+    const det = tryDeterministicFigure(problem);
+    if (det.ok) {
+      return {
+        ok: true,
+        intents: det.figure.intents,
+        dsl: det.figure.dsl,
+        transpile: det.figure.transpile,
+        verify: det.figure.verify,
+        usage: ZERO_USAGE,
+        provider: 'deterministic',
+      };
+    }
+    // không hit → tiếp tục Track B (LLM)
+  }
+
+  // === Track B: LLM ===
   const provider: AIProvider = selectProvider(opts);
   const model = opts.model ?? provider.defaultModel;
   const maxTokens = opts.maxTokens ?? DEFAULT_MAX_TOKENS;
