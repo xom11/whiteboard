@@ -281,7 +281,7 @@ hoặc
 - quadrilateral: any
 
 ## Constraint kinds (cho add-point)
-midpoint, perpFoot, centroid, circumcenter, incenter, orthocenter, intersection, onSegment, free, secondIntersection, circleIntersection, tangencyPoint, tangentPoint, angleBisectorFoot, arcMidpoint, reflectPoint, reflectLine, excenter
+midpoint, perpFoot, centroid, circumcenter, incenter, orthocenter, intersection, onSegment, free, secondIntersection, circleIntersection, tangencyPoint, tangentPoint, angleBisectorFoot, arcMidpoint, reflectPoint, reflectLine, excenter, pointAtDistance
 
 ## Style enum (cho connect)
 segment, line, ray, perpBisector
@@ -325,6 +325,14 @@ nhau — đặt đúng field, KHÔNG bỏ field bắt buộc, KHÔNG nhầm POIN
 - **excenter** — tâm BÀNG tiếp tam giác. Fields: \`of\` ([A,B,C]), \`opposite\` (đỉnh đối diện).
   - Ví dụ: "J là tâm bàng tiếp góc A của tam giác ABC" → \`{kind:"excenter", of:["A","B","C"], opposite:"A"}\`.
   - KHÁC incenter (tâm NỘI tiếp): bàng tiếp nằm NGOÀI tam giác.
+
+- **pointAtDistance** — điểm trên TIA kéo dài, cách mốc một khoảng cho trước. Fields: \`from\` (điểm gốc của tia), \`through\` (điểm mốc — điểm mới nằm BÊN NGOÀI \`through\` trên tia from→through), \`distance\` — một trong:
+  - \`{kind:"circleRadius", circle:"O"}\` = bán kính R của đường tròn (O)
+  - \`{kind:"segmentLength", p1:"O", p2:"A"}\` = độ dài đoạn OA
+  - \`{kind:"literal", value:2}\` = số đo cho sẵn
+  - Ví dụ: "Kéo dài AB về phía B, lấy C sao cho BC = R của (O)" → \`{op:"add-point", name:"C", constraint:{kind:"pointAtDistance", from:"A", through:"B", distance:{kind:"circleRadius", circle:"O"}}}\`.
+  - Ví dụ: "Trên tia đối của tia BA lấy D sao cho BD = AB" (hướng từ B ra xa A) → \`{op:"add-point", name:"D", constraint:{kind:"pointAtDistance", from:"A", through:"B", distance:{kind:"segmentLength", p1:"A", p2:"B"}}}\`.
+  - KHÁC reflectPoint (cho 2·through−from, không cần distance) và onSegment (nằm GIỮA hai điểm, t∈[0,1]).
 
 ## Quy ước LINE name
 - 2 ký tự viết liền = SEGMENT/LINE qua 2 điểm: "AB", "BC", "MN" → \`to: "AB"\`.
