@@ -369,7 +369,7 @@ export function extractRequirements(userPrompt: string): RequirementExtraction {
 
   if (triVertices) {
     // G là trọng tâm  /  trọng tâm G của tam giác
-    const centroid = userPrompt.match(/([A-Z])\s+(?:là\s+)?trọng\s*tâm/i);
+    const centroid = userPrompt.match(/(?<![A-Z])([A-Z])\s+(?:là\s+)?trọng\s*tâm/i);
     if (centroid) {
       points.push({
         name: up(centroid[1]),
@@ -386,7 +386,7 @@ export function extractRequirements(userPrompt: string): RequirementExtraction {
     }
 
     // H là trực tâm — KHÔNG match nếu đề có "trung trực" (đã đặt rule mid trước).
-    const ortho = userPrompt.match(/([A-Z])\s+(?:là\s+)?trực\s*tâm/i);
+    const ortho = userPrompt.match(/(?<![A-Z])([A-Z])\s+(?:là\s+)?trực\s*tâm/i);
     if (ortho) {
       points.push({
         name: up(ortho[1]),
