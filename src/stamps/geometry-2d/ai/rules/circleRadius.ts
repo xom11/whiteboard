@@ -52,6 +52,20 @@ function parseNum(raw: string): number {
   return Number(raw.replace(',', '.'));
 }
 
+/**
+ * Circle này là đường tròn NGOẠI/NỘI TIẾP tam giác? ("tam giác ABC nội tiếp
+ * đường tròn (O; 3)") → circleTriangle sở hữu (through3/inscribedIn theo 3 đỉnh);
+ * circleRadius KHÔNG emit thêm 1 đường tròn rời (sẽ chồng + không nhất quán).
+ * Bán kính chỉ là chú thích — circumcircle xác định bởi 3 đỉnh, bỏ radius là OK.
+ */
+function isInscribedCircumscribed(problem: string, center: string): boolean {
+  const re = new RegExp(
+    `(?:nội|ngoại)\\s*tiếp[^.]{0,30}?(?:đường\\s*tròn\\s*)?\\(?\\s*${center}(?![A-Z])`,
+    'u',
+  );
+  return re.test(problem);
+}
+
 /** Clause chứa fragment "(<center>" (ký hiệu gọn bị segmentation cắt vào đây). */
 function findParenClauseId(
   clauses: readonly Clause[],
@@ -99,6 +113,7 @@ export const circleRadiusRule: LanguageRule = {
         const center = crw[1];
         const radius = parseNum(crw[2]);
         if (!Number.isFinite(radius) || radius <= 0) continue;
+        if (isInscribedCircumscribed(ctx.problem, center)) continue; // circleTriangle sở hữu
         out.push({
           ruleId: 'circleRadius',
           clauseIds: [c.id],
@@ -114,6 +129,7 @@ export const circleRadiusRule: LanguageRule = {
       const center = pm[1];
       const radius = parseNum(pm[2]);
       if (!Number.isFinite(radius) || radius <= 0) continue;
+      if (isInscribedCircumscribed(ctx.problem, center)) continue; // circleTriangle sở hữu
       const clauseId = findParenClauseId(ctx.clauses, center);
       out.push({
         ruleId: 'circleRadius',
