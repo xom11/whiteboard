@@ -225,3 +225,27 @@ describe('kinds/point (2D)', () => {
     });
   });
 });
+
+const pointDef = getKind('point')!;
+const mkArcObj = (constraint: unknown) =>
+  mkObj('point', 'M', { constraint } as { constraint: unknown });
+
+describe('point arcMidpoint', () => {
+  it('validate chấp nhận arcMidpoint đủ field', () => {
+    expect(() => pointDef.validate!(mkArcObj({
+      kind: 'arcMidpoint', circle: 'k', a: 'B', b: 'C', notContaining: 'A',
+    }).attrs)).not.toThrow();
+  });
+  it('validate ném khi thiếu field', () => {
+    expect(() => pointDef.validate!(mkArcObj({
+      kind: 'arcMidpoint', circle: 'k', a: 'B',
+    }).attrs)).toThrow();
+  });
+  it('describe ra mô tả tiếng Việt', () => {
+    const s = { objects: { B: { label: 'B' }, C: { label: 'C' }, A: { label: 'A' } } } as never;
+    expect(pointDef.describe!(mkArcObj({
+      kind: 'arcMidpoint', circle: 'k', a: 'B', b: 'C', notContaining: 'A',
+    }), s)).toBe('M = trung điểm cung BC (không chứa A)');
+  });
+});
+

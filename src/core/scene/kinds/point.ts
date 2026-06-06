@@ -2,6 +2,7 @@
 import { registerKind } from '../registry';
 import type { KindDef, RenderCtx } from '../types';
 import { type Constraint2D, type TransformDef, constraintRefs2D } from './2d-constraint';
+import { arcMidpoint } from './pointConstructions';
 
 /**
  * Build mảng JSXGraph 'transform' elements cho TransformDef. Dilate → chain
@@ -99,6 +100,11 @@ const def: KindDef<PointAttrs> = {
         throw new Error('point.orthocenter: 3 vertex id phải non-empty');
       }
     }
+    if (c.kind === 'arcMidpoint') {
+      if (!c.circle || !c.a || !c.b || !c.notContaining) {
+        throw new Error('point.arcMidpoint: circle, a, b, notContaining bắt buộc');
+      }
+    }
   },
   dependsOn: (a) => constraintRefs2D(a.constraint),
   measure: (obj) => {
@@ -161,6 +167,12 @@ const def: KindDef<PointAttrs> = {
       const fromLabel = state?.objects[c.from]?.label ?? c.from;
       const circleLabel = state?.objects[c.circle]?.label ?? c.circle;
       return `${obj.label} = tiếp điểm của (${circleLabel}) với tiếp tuyến từ ${fromLabel}`;
+    }
+    if (c.kind === 'arcMidpoint') {
+      const al = state?.objects[c.a]?.label ?? c.a;
+      const bl = state?.objects[c.b]?.label ?? c.b;
+      const nl = state?.objects[c.notContaining]?.label ?? c.notContaining;
+      return `${obj.label} = trung điểm cung ${al}${bl} (không chứa ${nl})`;
     }
     return `Điểm ${obj.label}`;
   },
@@ -389,6 +401,18 @@ const def: KindDef<PointAttrs> = {
       const line: any = ctx.resolveRef(c.onLine);
       const O = circle?.center ?? circle?.midpoint ?? circle;
       return board.create('perpendicularpoint', [line, O], opts);
+    }
+    if (c.kind === 'arcMidpoint') {
+      const circle: any = ctx.resolveRef(c.circle);
+      const A: any = ctx.resolveRef(c.a);
+      const B: any = ctx.resolveRef(c.b);
+      const N: any = ctx.resolveRef(c.notContaining);
+      const O = circle.center ?? circle.midpoint ?? circle;
+      const am = () => arcMidpoint(
+        [O.X(), O.Y()], circle.Radius(),
+        [A.X(), A.Y()], [B.X(), B.Y()], [N.X(), N.Y()],
+      );
+      return board.create('point', [() => am()[0], () => am()[1]], opts);
     }
     return board.create('point', [0, 0], opts);
   },
