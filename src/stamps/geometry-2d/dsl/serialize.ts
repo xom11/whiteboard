@@ -171,6 +171,36 @@ function serializePoint(obj: SceneObject<PointAttrs>, state: State): SerializedE
       };
     }
 
+    case 'arcMidpoint': {
+      const refs = resolveRefs([c.circle, c.a, c.b, c.notContaining], state);
+      if (!refs) return fail('unresolved-ref', `${c.circle},${c.a},${c.b},${c.notContaining}`);
+      return {
+        ok: true,
+        entity: {
+          name: obj.label,
+          kind: 'arcMidpoint',
+          circle: refs[0],
+          a: refs[1],
+          b: refs[2],
+          notContaining: refs[3],
+        },
+      };
+    }
+
+    case 'excenter': {
+      const refs = resolveRefs([c.vertices[0], c.vertices[1], c.vertices[2], c.opposite], state);
+      if (!refs) return fail('unresolved-ref', `${c.vertices.join(',')},${c.opposite}`);
+      return {
+        ok: true,
+        entity: {
+          name: obj.label,
+          kind: 'excenter',
+          vertices: [refs[0], refs[1], refs[2]],
+          opposite: refs[3],
+        },
+      };
+    }
+
     // Out of DSL v1:
     case 'onAxis':
     case 'onPolygon':
@@ -178,8 +208,6 @@ function serializePoint(obj: SceneObject<PointAttrs>, state: State): SerializedE
     case 'onPerpendicular':
     case 'onPerpBisector':
     case 'onCircleAroundPoint':
-    case 'arcMidpoint':
-    case 'excenter':
       return fail('unsupported-constraint', c.kind);
 
     default: {

@@ -33,7 +33,7 @@ const KEYWORD_RULES: readonly KeywordRule[] = [
   },
   {
     id: 'midpoint',
-    patterns: [/trung\s*điểm/i, /điểm\s+giữa/i],
+    patterns: [/trung\s*điểm(?!\s+(?:của\s+)?cung)/i, /điểm\s+giữa/i],
     expectedKind: 'midpoint',
     hint: 'Đề có "trung điểm" → dùng kind:"midpoint" với p1, p2 là 2 điểm đầu mút. TUYỆT ĐỐI KHÔNG dùng free với coord trung bình.',
   },

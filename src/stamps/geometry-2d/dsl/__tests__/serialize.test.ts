@@ -152,6 +152,32 @@ describe('serializeObject — per-kind', () => {
     });
   });
 
+  test('point.arcMidpoint serializes circle/a/b/notContaining', () => {
+    const A = pt('p1', 'A', { kind: 'free', x: -2, y: 0 });
+    const B = pt('p2', 'B', { kind: 'free', x: 2, y: 0 });
+    const C = pt('p3', 'C', { kind: 'free', x: 0, y: 3 });
+    const O = pt('p4', 'O', { kind: 'free', x: 0, y: 0 });
+    const k = shape('c1', 'circle', 'k', { center: 'p4', surfacePoint: 'p1' });
+    const M = pt('p5', 'M', { kind: 'arcMidpoint', circle: 'c1', a: 'p1', b: 'p2', notContaining: 'p3' });
+    const r = serializeObject(M, makeState([A, B, C, O, k, M]));
+    expect(r).toEqual({
+      ok: true,
+      entity: { name: 'M', kind: 'arcMidpoint', circle: 'k', a: 'A', b: 'B', notContaining: 'C' },
+    });
+  });
+
+  test('point.excenter serializes vertices/opposite', () => {
+    const A = pt('p1', 'A', { kind: 'free', x: 0, y: 3 });
+    const B = pt('p2', 'B', { kind: 'free', x: -2, y: 0 });
+    const C = pt('p3', 'C', { kind: 'free', x: 3, y: 0 });
+    const Ia = pt('p4', 'Ia', { kind: 'excenter', vertices: ['p1', 'p2', 'p3'], opposite: 'p1' });
+    const r = serializeObject(Ia, makeState([A, B, C, Ia]));
+    expect(r).toEqual({
+      ok: true,
+      entity: { name: 'Ia', kind: 'excenter', vertices: ['A', 'B', 'C'], opposite: 'A' },
+    });
+  });
+
   test.each(['circumcenter', 'incenter', 'centroid', 'orthocenter'] as const)(
     'point.%s carries 3 vertex labels',
     (kind) => {

@@ -240,6 +240,35 @@ describe('validateKindCoverage — intersection / tangent', () => {
   });
 });
 
+describe('validateKindCoverage — arc-midpoint no false-positive for midpoint rule', () => {
+  it('"trung điểm cung BC" with arcMidpoint DSL does NOT flag midpoint as missing', () => {
+    const out = validateKindCoverage(
+      'M là trung điểm cung BC không chứa A',
+      dsl([
+        { name: 'A', kind: 'free', x: 0, y: 3 },
+        { name: 'B', kind: 'free', x: -2, y: 0 },
+        { name: 'C', kind: 'free', x: 3, y: 0 },
+        { name: 'O', kind: 'free', x: 0, y: 0 },
+        { name: 'M', kind: 'arcMidpoint', circle: 'k', a: 'B', b: 'C', notContaining: 'A' },
+      ]),
+    );
+    expect(out.missing.find((m) => m.expectedKind === 'midpoint')).toBeUndefined();
+  });
+
+  it('"trung điểm BC" (plain, no cung) still triggers midpoint rule', () => {
+    const out = validateKindCoverage(
+      'M là trung điểm BC',
+      dsl([
+        { name: 'A', kind: 'free', x: 0, y: 3 },
+        { name: 'B', kind: 'free', x: -2, y: 0 },
+        { name: 'C', kind: 'free', x: 3, y: 0 },
+        { name: 'M', kind: 'free', x: 0.5, y: 1.5 },
+      ]),
+    );
+    expect(out.missing.find((m) => m.expectedKind === 'midpoint')).toBeDefined();
+  });
+});
+
 describe('validateKindCoverage — no false positives', () => {
   it('passes when no relational keyword in prompt', () => {
     const out = validateKindCoverage(
