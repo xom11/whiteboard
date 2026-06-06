@@ -72,7 +72,8 @@ export interface ToolDef {
     | 'measure'
     | 'edit'
     | 'transform'
-    | 'special';
+    | 'special'
+    | 'advanced';
   /** Số click cần trước khi action fire. -1 = mở (polygon đóng bằng click lại điểm đầu). */
   needs: number;
   /** Loại object accept ở mỗi slot. 'any' = point hoặc non-point. 'lineOrCircle' = line hoặc circle (loại trừ point). 'pointOrLine' = point hoặc line/đoạn (loại trừ circle). */
@@ -151,6 +152,7 @@ export const GROUP_LABELS: Record<ToolDef['group'], string> = {
   edit: 'Chỉnh sửa',
   transform: 'Phép biến hình',
   special: 'Hình đặc biệt',
+  advanced: 'Nâng cao',
 };
 
 export type GeomGroup = ToolDef['group'];
@@ -169,6 +171,7 @@ export const GROUP_ORDER: GeomGroup[] = [
   'edit',
   'transform',
   'special',
+  'advanced',
 ];
 
 const A_CODE = 'A'.charCodeAt(0);
