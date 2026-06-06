@@ -400,6 +400,27 @@ const PROBLEMS: Problem[] = [
     id: 'r-cat', tier: 'R', text: 'Vẽ con mèo.',
     expectedIntents: [],
   },
+  {
+    id: 't4-right-angle-altitude',
+    tier: 4,
+    text: 'Cho tam giác nhọn ABC, đường cao CK, H là trực tâm. Gọi M là một điểm trên CK sao cho góc AMB = 90°.',
+    expectedIntents: [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'add-point', name: 'K', constraint: { kind: 'perpFoot', from: 'C', onLine: 'AB' } },
+      { op: 'add-point', name: 'H', constraint: { kind: 'orthocenter', of: ['A', 'B', 'C'] } },
+      { op: 'connect', from: 'C', to: 'K', style: 'segment' },
+      { op: 'add-point', name: 'M', constraint: { kind: 'rightAngleViewing', a: 'A', b: 'B', onLine: 'CK' } },
+    ],
+  },
+  {
+    id: 't4-right-angle-line',
+    tier: 4,
+    text: 'Cho đoạn AB và đường thẳng d. Điểm M trên d sao cho góc AMB = 90°.',
+    expectedIntents: [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'D'], variant: 'any' },
+      { op: 'add-point', name: 'M', constraint: { kind: 'rightAngleViewing', a: 'A', b: 'B', onLine: 'd' } },
+    ],
+  },
 ];
 
 interface RunResult {
