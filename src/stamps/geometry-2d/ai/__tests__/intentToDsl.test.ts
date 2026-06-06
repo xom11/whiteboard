@@ -441,3 +441,39 @@ describe('intentsToDsl Cụm A', () => {
     });
   });
 });
+
+describe('rightAngleViewing → DSL', () => {
+  it('sinh midpoint ẩn + circleCP ẩn + intersection lineCircle hiện', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'add-point', name: 'K', constraint: { kind: 'perpFoot', from: 'C', onLine: 'AB' } },
+      { op: 'add-point', name: 'M', constraint: { kind: 'rightAngleViewing', a: 'A', b: 'B', onLine: 'CK' } },
+    ]);
+
+    const mid = dsl.points.find((p) => p.kind === 'midpoint' && p.visible === false);
+    expect(mid).toBeDefined();
+    expect((mid as any).p1).toBe('A');
+    expect((mid as any).p2).toBe('B');
+
+    const circ = dsl.shapes.find((s) => s.kind === 'circleCP' && s.visible === false);
+    expect(circ).toBeDefined();
+    expect((circ as any).center).toBe(mid!.name);
+    expect((circ as any).surfacePoint).toBe('A');
+
+    const m = dsl.points.find((p) => p.name === 'M');
+    expect(m).toBeDefined();
+    expect(m!.kind).toBe('intersection');
+    expect((m as any).ref2).toBe(circ!.name);
+    expect((m as any).branch).toBe(0);
+  });
+
+  it('which:1 → branch 1', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'add-point', name: 'K', constraint: { kind: 'perpFoot', from: 'C', onLine: 'AB' } },
+      { op: 'add-point', name: 'M', constraint: { kind: 'rightAngleViewing', a: 'A', b: 'B', onLine: 'CK', which: 1 } },
+    ]);
+    const m = dsl.points.find((p) => p.name === 'M');
+    expect((m as any).branch).toBe(1);
+  });
+});
