@@ -157,7 +157,8 @@ export function handleMultiClickTool(
     }
 
     // Non-transform multi-click tools: dispatch ADD for the shape directly.
-    finalizeShape(ctx, toolDef);
+    // Truyền toạ độ click (board coords) để pointOn tính theta/t bám vị trí.
+    finalizeShape(ctx, toolDef, { x, y });
     ctx.clearPending();
   } else {
     ctx.refreshPreview();

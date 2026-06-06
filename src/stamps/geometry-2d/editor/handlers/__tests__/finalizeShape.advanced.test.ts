@@ -83,3 +83,37 @@ test('excircle dispatch circle với construction excircle, opposite = đỉnh �
   expect(dispatched[0].payload.obj!.kind).toBe('circle');
   expect(dispatched[0].payload.obj!.attrs.construction).toEqual({ kind: 'excircle', p1: 'A', p2: 'B', p3: 'C', opposite: 'A' });
 });
+
+test('pointOn trên circle → constraint onCircle theta từ click (atan2 từ tâm)', () => {
+  const dispatched: Disp[] = [];
+  let n = 0;
+  const circleObj = { elementClass: 3, center: { X: () => 0, Y: () => 0 } };
+  const ctx = {
+    pendingRef: { current: [circleObj] },
+    pendingIdsRef: { current: ['c1'] },
+    store: { getState: () => ({ counter: n, objects: {} }), dispatch: (a: Disp) => { n += 1; dispatched.push(a); } },
+    nextLabel: () => 'P',
+  } as never;
+  finalizeShape(ctx, tool('pointOn'), { x: 0, y: 5 });
+  const con = dispatched[0].payload.obj!.attrs.constraint as { kind: string; circleId: string; theta: number };
+  expect(con.kind).toBe('onCircle');
+  expect(con.circleId).toBe('c1');
+  expect(con.theta).toBeCloseTo(Math.PI / 2, 5);
+});
+
+test('pointOn trên line → constraint onLine với t nội suy từ click', () => {
+  const dispatched: Disp[] = [];
+  let n = 0;
+  const lineObj = { elementClass: 2, elType: 'line', point1: { X: () => 0, Y: () => 0 }, point2: { X: () => 10, Y: () => 0 } };
+  const ctx = {
+    pendingRef: { current: [lineObj] },
+    pendingIdsRef: { current: ['l1'] },
+    store: { getState: () => ({ counter: n, objects: {} }), dispatch: (a: Disp) => { n += 1; dispatched.push(a); } },
+    nextLabel: () => 'P',
+  } as never;
+  finalizeShape(ctx, tool('pointOn'), { x: 3, y: 2 });
+  const con = dispatched[0].payload.obj!.attrs.constraint as { kind: string; lineId: string; t: number };
+  expect(con.kind).toBe('onLine');
+  expect(con.lineId).toBe('l1');
+  expect(con.t).toBeCloseTo(0.3, 5);
+});

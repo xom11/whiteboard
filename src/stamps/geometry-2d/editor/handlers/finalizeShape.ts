@@ -53,7 +53,7 @@ function computeCircleTheta(P: Vec, C: Vec): number {
   return Math.atan2(P.y - C.y, P.x - C.x);
 }
 
-export function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
+export function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef, clickXY?: { x: number; y: number }): void {
   const ids = ctx.pendingIdsRef.current;
   const key = toolDef.key;
   switch (key) {
@@ -635,6 +635,40 @@ export function finalizeShape(ctx: HandlerCtx, toolDef: ToolDef): void {
           construction: { kind: 'excircle', p1: ids[0], p2: ids[1], p3: ids[2], opposite: ids[0] },
         }) },
       });
+      return;
+    }
+    case 'pointOn': {
+      const obj = ctx.pendingRef.current[0];
+      const objId = ctx.pendingIdsRef.current[0];
+      if (!obj || !objId) return;
+      const kind = objKind(obj);
+      const id = freshId(ctx, 'p');
+      const label = ctx.nextLabel('point');
+      const px = clickXY?.x ?? 0;
+      const py = clickXY?.y ?? 0;
+      let constraint: Record<string, unknown> | null = null;
+      if (kind === 'circle') {
+
+        const o = (obj as any).center ?? (obj as any).midpoint;
+        const ox = o ? o.X() : 0; const oy = o ? o.Y() : 0;
+        constraint = { kind: 'onCircle', circleId: objId, theta: Math.atan2(py - oy, px - ox) };
+      } else if (kind === 'line') {
+
+        const elType = ((obj as any).elType || '').toString().toLowerCase();
+
+        const p1 = (obj as any).point1; const p2 = (obj as any).point2;
+        let t = 0;
+        if (p1 && p2) {
+          const dx = p2.X() - p1.X(); const dy = p2.Y() - p1.Y();
+          const len2 = dx * dx + dy * dy || 1;
+          t = ((px - p1.X()) * dx + (py - p1.Y()) * dy) / len2;
+        }
+        constraint = elType === 'segment'
+          ? { kind: 'onSegment', segmentId: objId, t }
+          : { kind: 'onLine', lineId: objId, t };
+      }
+      if (!constraint) return;
+      ctx.store.dispatch({ type: 'ADD', payload: { obj: mkSceneObj(id, 'point', label, { constraint }) } });
       return;
     }
     default:
