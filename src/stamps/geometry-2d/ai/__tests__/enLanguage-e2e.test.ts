@@ -93,6 +93,28 @@ describe('EN language e2e (issue #46 group B)', () => {
       expect(intentSig(re)).toContain('circle:centerRadius:O:3');
     });
 
+    it('external point + tangents from external point (EN) → ok + A free outside + 2 tangents', () => {
+      const r = tryDeterministicFigure(
+        'Circle (O; 3). Take a point A outside (O). Draw two tangents from A to (O).',
+      );
+      expect(r.ok).toBe(true);
+      if (!r.ok) return;
+      const dsl = r.figure.dsl;
+      const a = dsl.points.find((p) => p.name === 'A');
+      const o = dsl.points.find((p) => p.name === 'O');
+      expect(a?.kind).toBe('free');
+      expect(o?.kind).toBe('free');
+      if (a && a.kind === 'free' && o && o.kind === 'free') {
+        expect(Math.hypot(a.x - o.x, a.y - o.y)).toBeGreaterThan(3);
+      }
+      const tangents = dsl.shapes.filter((sh) => sh.kind === 'tangent');
+      expect(tangents.length).toBe(2);
+      const branches = tangents
+        .map((t) => (t.kind === 'tangent' ? t.branch : undefined))
+        .sort();
+      expect(branches).toEqual([0, 1]);
+    });
+
     it('triangle ABC with comma sub-clause splits + renders', () => {
       // "Triangle ABC, let M be the midpoint of BC" — comma-split lead word "let".
       const r = tryDeterministicFigure('Triangle ABC, let M be the midpoint of BC');

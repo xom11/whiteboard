@@ -148,7 +148,12 @@ function collectPointRefs(intents: readonly IntentT[]): Set<string> {
 function rewriteCircleRefs(intent: IntentT, rename: Map<string, string>): IntentT {
   if (intent.op === 'add-point') {
     const c = intent.constraint;
-    if (c.kind === 'tangencyPoint' || c.kind === 'tangentPoint' || c.kind === 'secondIntersection') {
+    if (
+      c.kind === 'tangencyPoint' ||
+      c.kind === 'tangentPoint' ||
+      c.kind === 'secondIntersection' ||
+      c.kind === 'externalToCircle'
+    ) {
       const newCircle = rename.get(c.circle);
       if (newCircle) {
         return { ...intent, constraint: { ...c, circle: newCircle } };

@@ -189,3 +189,18 @@ Circle (O; 3). Draw two tangent lines from A to circle O.
 # Escalate-safe: KHÔNG có draw/construct ("The length ... is 5") → no-match →
 # escalate, KHÔNG render sai.
 The length of the tangent from A to (O) is 5.
+
+# === Điểm NGOÀI đường tròn + tiếp tuyến từ điểm ngoài (issue #46 nhóm C) ===
+# Render-win: rule externalPoint (prio 68) dựng A free NGOÀI (O) (đọc tâm+bán kính
+# từ build state, đặt A = center + [r*2,0]) → unblock tangentFromExt render END-TO-END.
+# Khác L186/L188 (chỉ có mệnh đề tiếp tuyến, A không khai báo → escalate): các đề
+# dưới có ĐỦ mệnh đề "Lấy điểm A ngoài (O)" → A dựng được → tiếp tuyến render.
+# DET render: VN "nằm ngoài (O)" + "vẽ hai tiếp tuyến từ A đến (O)".
+Cho đường tròn (O; 3). Lấy điểm A nằm ngoài (O). Vẽ hai tiếp tuyến từ A đến (O).
+# DET render: VN "ở ngoài đường tròn (O)" + biến thể "Từ A kẻ ... đến (O)".
+Cho đường tròn (O; 3). Lấy điểm A ở ngoài đường tròn (O). Từ A kẻ hai tiếp tuyến đến (O).
+# DET render: EN "Take a point A outside (O)" + "Draw two tangents from A to (O)".
+Circle (O; 3). Take a point A outside (O). Draw two tangents from A to (O).
+# Escalate-safe: đặt TÊN tiếp điểm "AB, AC" → cần dựng tangentPointExt B,C (DEFER) →
+# escalate (named-missing B,C), KHÔNG render thiếu điểm.
+Cho đường tròn (O; 3). Lấy điểm A nằm ngoài (O). Vẽ hai tiếp tuyến AB, AC từ A đến (O).

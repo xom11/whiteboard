@@ -93,7 +93,13 @@ export function verifyIntentFidelity(intents: readonly IntentT[], dsl: DslInputT
   for (const intent of intents) {
     if (intent.op !== 'add-point') continue;
     const kind = (intent as { constraint?: { kind?: string } }).constraint?.kind;
-    if (!kind || kind === 'free') continue; // free point không phải construct
+    // free point không phải construct phái sinh → skip fidelity.
+    // externalToCircle CỐ TÌNH dựng FREE point ngoài circle (như fixture canonical
+    // tangent-from-external-named.ts): builder đặt A kind 'free' tại coord ngoài
+    // circle, KHÔNG phải điểm phái sinh đặc thù bị drop. Nếu builder fail-safe skip
+    // (circle thiếu / tâm không free) → A missing → guard allNamedEntitiesPresent
+    // bắt (named-missing). Vì vậy bỏ externalToCircle khỏi fidelity check.
+    if (!kind || kind === 'free' || kind === 'externalToCircle') continue;
     const name = (intent as { name: string }).name;
     const pt = byName.get(name);
     // Thiếu hẳn, hoặc bị builder hạ về 'free' (đã bị drop bởi vertex trùng tên).

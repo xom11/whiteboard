@@ -117,6 +117,10 @@ export const AddPointIntentZ = z.object({
     z.object({ kind: z.literal('intersection'), of: z.tuple([z.string(), z.string()]) }),
     z.object({ kind: z.literal('onSegment'), of: z.string(), t: z.number().min(0).max(1).optional() }),
     z.object({ kind: z.literal('free'), at: z.tuple([z.number(), z.number()]).optional() }),
+    // Điểm A nằm NGOÀI đường tròn `circle` (free external point) — builder đọc
+    // tâm+bán kính của circle từ build state rồi đặt A free tại coord ngoài
+    // circle. Unblock tangentFromExt render (đề "Lấy A ngoài (O), kẻ 2 tiếp tuyến").
+    z.object({ kind: z.literal('externalToCircle'), circle: LabelZ }),
     // NEW Tier 4+5
     z.object({ kind: z.literal('secondIntersection'), line: z.string(), circle: LabelZ, other: LabelZ }),
     z.object({ kind: z.literal('circleIntersection'), c1: LabelZ, c2: LabelZ, which: z.union([z.literal(0), z.literal(1)]) }),

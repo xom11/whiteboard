@@ -17,6 +17,7 @@ import { buildRightAngleViewing } from './rightAngleViewing';
 import { buildArcMidpoint } from './arcMidpoint';
 import { buildReflectPoint, buildReflectLine } from './reflect';
 import { buildPointAtDistance } from './pointAtDistance';
+import { buildExternalToCircle } from './externalToCircle';
 
 export const ADD_POINT_BUILDERS: Record<string, (s: BuildState, intent: AddPointIntentT) => void> = {
   midpoint: buildMidpoint, perpFoot: buildPerpFoot,
@@ -29,6 +30,7 @@ export const ADD_POINT_BUILDERS: Record<string, (s: BuildState, intent: AddPoint
   rightAngleViewing: buildRightAngleViewing,
   arcMidpoint: buildArcMidpoint, reflectPoint: buildReflectPoint, reflectLine: buildReflectLine,
   pointAtDistance: buildPointAtDistance,
+  externalToCircle: buildExternalToCircle,
 };
 
 export const buildAddPoint = (s: BuildState, intent: AddPointIntentT): void => {

@@ -15,6 +15,7 @@ import { perpFootRule } from './perpFoot';
 import { circleRadiusRule } from './circleRadius';
 import { circleTriangleRule } from './circleTriangle';
 import { tangentFromExtRule } from './tangentFromExt';
+import { externalPointRule } from './externalPoint';
 import { arcMidpointRule } from './arcMidpoint';
 import { reflectionRule } from './reflection';
 import { pointAtDistanceRule } from './pointAtDistance';
@@ -32,6 +33,7 @@ const RULES: readonly LanguageRule[] = [
   circleRadiusRule,
   circleTriangleRule,
   tangentFromExtRule,
+  externalPointRule,
   arcMidpointRule,
   reflectionRule,
   pointAtDistanceRule,
