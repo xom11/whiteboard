@@ -3,6 +3,11 @@ import { definePointConstraint } from './_types';
 
 export const perpFootConstraint = definePointConstraint({
   kind: 'perpFoot',
+  validate: (c) => {
+    if (!c.from || !c.onLine) {
+      throw new Error('point.perpFoot: from và onLine bắt buộc');
+    }
+  },
   describe: (obj, state, c) => {
     const fromLabel = state?.objects[c.from]?.label ?? c.from;
     const lineLabel = state?.objects[c.onLine]?.label ?? c.onLine;

@@ -19,6 +19,13 @@ import { pointAtDistanceConstraint } from './pointAtDistance';
 import { circleIntersectionConstraint } from './circleIntersection';
 import { secondIntersectionConstraint } from './secondIntersection';
 import { tangencyPointConstraint } from './tangencyPoint';
+// Batch 3 — aux/_helpers/drag-sync kinds
+import { transformedConstraint } from './transformed';
+import { orthocenterConstraint } from './orthocenter';
+import { onPerpendicularConstraint } from './onPerpendicular';
+import { onPerpBisectorConstraint } from './onPerpBisector';
+import { onCircleAroundPointConstraint } from './onCircleAroundPoint';
+import { tangentPointExtConstraint } from './tangentPointExt';
 
 const ALL: PointConstraintModule[] = [
   freeConstraint,
@@ -38,6 +45,12 @@ const ALL: PointConstraintModule[] = [
   circleIntersectionConstraint,
   secondIntersectionConstraint,
   tangencyPointConstraint,
+  transformedConstraint,
+  orthocenterConstraint,
+  onPerpendicularConstraint,
+  onPerpBisectorConstraint,
+  onCircleAroundPointConstraint,
+  tangentPointExtConstraint,
 ];
 export const POINT_CONSTRAINTS: ReadonlyMap<string, PointConstraintModule> =
   new Map(ALL.map((m) => [m.kind, m]));
