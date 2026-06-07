@@ -556,4 +556,32 @@ describe('serialize pointAtDistance round-trip', () => {
     const c = roundTripPoint({ kind: 'literal', value: 2 });
     expect(c).toMatchObject({ kind: 'pointAtDistance', from: 'A', through: 'B', distance: { kind: 'literal', value: 2 } });
   });
+
+  // ── Issue #46 nhóm C: scale/offset round-trip (additive) ──────────────────
+
+  it('circleRadius scale 2 offset 1 round-trips', () => {
+    const c = roundTripPoint(
+      { kind: 'circleRadius', circle: 'k', scale: 2, offset: 1 },
+      [],
+      [{ name: 'k', kind: 'circleCR', center: 'O', radius: 3 }],
+    );
+    expect(c).toMatchObject({ kind: 'pointAtDistance', distance: { kind: 'circleRadius', circle: 'k', scale: 2, offset: 1 } });
+  });
+
+  it('segmentLength scale 3 round-trips', () => {
+    const c = roundTripPoint({ kind: 'segmentLength', p1: 'O', p2: 'A', scale: 3 });
+    expect(c).toMatchObject({ kind: 'pointAtDistance', distance: { kind: 'segmentLength', p1: 'O', p2: 'A', scale: 3 } });
+  });
+
+  it('literal offset round-trips', () => {
+    const c = roundTripPoint({ kind: 'literal', value: 2, offset: 1 });
+    expect(c).toMatchObject({ kind: 'pointAtDistance', distance: { kind: 'literal', value: 2, offset: 1 } });
+  });
+
+  it('distance cũ (không scale/offset) KHÔNG sinh scale/offset (additive)', () => {
+    const c = roundTripPoint({ kind: 'literal', value: 2 }) as any;
+    expect(c.distance).toEqual({ kind: 'literal', value: 2 });
+    expect('scale' in c.distance).toBe(false);
+    expect('offset' in c.distance).toBe(false);
+  });
 });

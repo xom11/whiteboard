@@ -137,10 +137,12 @@ export const AddPointIntentZ = z.object({
       kind: z.literal('pointAtDistance'),
       from: LabelZ,
       through: LabelZ,
+      // scale/offset OPTIONAL (Issue #46 nhóm C): d = scale·base + offset.
+      // scale > 0; absent → giữ d = base như cũ (additive).
       distance: z.discriminatedUnion('kind', [
-        z.object({ kind: z.literal('circleRadius'), circle: LabelZ }),
-        z.object({ kind: z.literal('segmentLength'), p1: LabelZ, p2: LabelZ }),
-        z.object({ kind: z.literal('literal'), value: z.number().positive() }),
+        z.object({ kind: z.literal('circleRadius'), circle: LabelZ, scale: z.number().positive().optional(), offset: z.number().optional() }),
+        z.object({ kind: z.literal('segmentLength'), p1: LabelZ, p2: LabelZ, scale: z.number().positive().optional(), offset: z.number().optional() }),
+        z.object({ kind: z.literal('literal'), value: z.number().positive(), scale: z.number().positive().optional(), offset: z.number().optional() }),
       ]),
     }),
   ]),

@@ -215,6 +215,10 @@ function serializePoint(obj: SceneObject<PointAttrs>, state: State): SerializedE
       } else {
         distance = { kind: 'literal', value: d.value };
       }
+      // scale/offset OPTIONAL (Issue #46 nhóm C): chỉ ghi khi có → distance cũ
+      // KHÔNG mọc key (additive, golden không đổi).
+      if (d.scale !== undefined) distance.scale = d.scale;
+      if (d.offset !== undefined) distance.offset = d.offset;
       return {
         ok: true,
         entity: { name: obj.label, kind: 'pointAtDistance', from: refs[0], through: refs[1], distance },

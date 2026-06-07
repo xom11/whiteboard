@@ -36,6 +36,8 @@ Cho tam giác ABC. Vẽ đường tròn ngoại tiếp tứ giác BCEF
 Cho đường tròn (O; 3). Độ dài tiếp tuyến từ A đến (O) bằng 5
 Cho tam giác ABC. Kéo dài AB về phía B lấy điểm D sao cho BD = 2 AB.
 Cho tam giác ABC nội tiếp đường tròn (O; R). Kéo dài AB về phía B lấy điểm D sao cho BD = 2R.
+Cho tam giác ABC nội tiếp đường tròn (O; R). Kéo dài AB về phía B lấy điểm D sao cho BD = 2·R.
+Cho tam giác ABC nội tiếp đường tròn (O; R). Trên tia đối của tia BA lấy D sao cho BD = R + 1.
 Cho tam giác ABC. Kéo dài AB về phía A lấy điểm D sao cho BD = 3.
 Cho tam giác ABC nội tiếp đường tròn (O). Gọi M là điểm chính giữa cung BC không chứa B
 Cho đường tròn tâm I bán kính 2 và đường tròn tâm O bán kính 5

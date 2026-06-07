@@ -48,10 +48,12 @@ export const DslInput = z.object({
 
 type Name = z.infer<typeof NameZ>;
 
+// scale/offset OPTIONAL (Issue #46 nhóm C): d = scale·base + offset. Absent →
+// d = base như cũ (additive, serialize/golden không đổi).
 export type DslDistanceSpec =
-  | { kind: 'circleRadius'; circle: Name }
-  | { kind: 'segmentLength'; p1: Name; p2: Name }
-  | { kind: 'literal'; value: number };
+  | { kind: 'circleRadius'; circle: Name; scale?: number; offset?: number }
+  | { kind: 'segmentLength'; p1: Name; p2: Name; scale?: number; offset?: number }
+  | { kind: 'literal'; value: number; scale?: number; offset?: number };
 
 export type DslPointT =
   | { name: Name; kind: 'free'; x: number; y: number }

@@ -44,16 +44,25 @@ export function buildJxgTransforms(board: any, ctx: RenderCtx, t: TransformDef):
   }
 }
 
-/** Trả hàm tính khoảng cách `d` reactive cho pointAtDistance. */
+/**
+ * Trả hàm tính khoảng cách `d` reactive cho pointAtDistance.
+ * d = scale·base + offset (scale mặc định 1, offset mặc định 0). Spec cũ không
+ * có scale/offset → d = base Y HỆT trước (additive).
+ */
 export function makeDistanceFn(ctx: RenderCtx, d: ConstraintDistanceSpec): () => number {
-  if (d.kind === 'literal') return () => d.value;
+  const scale = d.scale ?? 1;
+  const offset = d.offset ?? 0;
+  if (d.kind === 'literal') {
+    const v = d.value;
+    return () => scale * v + offset;
+  }
   if (d.kind === 'segmentLength') {
     const p = ctx.resolveRef(d.p1) as any;
     const q = ctx.resolveRef(d.p2) as any;
-    return () => Math.hypot(p.X() - q.X(), p.Y() - q.Y());
+    return () => scale * Math.hypot(p.X() - q.X(), p.Y() - q.Y()) + offset;
   }
   const circle = ctx.resolveRef(d.circle) as any;
-  return () => circle.Radius();
+  return () => scale * circle.Radius() + offset;
 }
 
 /** opts y hệt point.ts render hiện tại (defaults #1e40af / 'o' / 4). */

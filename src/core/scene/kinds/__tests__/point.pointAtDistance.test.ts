@@ -94,4 +94,57 @@ describe('render pointAtDistance', () => {
     expect(c.X()).toBeCloseTo(0, 5);
     expect(c.Y()).toBeCloseTo(7, 5);
   });
+
+  // ── Issue #46 nhóm C: scale·base + offset ────────────────────────────────
+
+  it('literal scale 2: A=(0,0) B=(3,0) base=2 scale=2 d=4 → C=(7,0)', () => {
+    const store = createStore(createEmptyState('2d'));
+    const { board, created } = mockBoard();
+    new JxgRenderer(store, board as never);
+    store.dispatch({ type: 'ADD', payload: { obj: mkFree('p1', 0, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkFree('p2', 3, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPointC('C', { kind: 'pointAtDistance', from: 'p1', through: 'p2', distance: { kind: 'literal', value: 2, scale: 2 } }) } });
+    const c = findByName(created, 'C');
+    expect(c.X()).toBeCloseTo(7, 5); // 3 + 2·2 = 7
+    expect(c.Y()).toBeCloseTo(0, 5);
+  });
+
+  it('circleRadius scale 2: R=3 scale=2 d=6, A=(0,0) B=(1,0) → C=(7,0)', () => {
+    const store = createStore(createEmptyState('2d'));
+    const { board, created } = mockBoard();
+    new JxgRenderer(store, board as never);
+    store.dispatch({ type: 'ADD', payload: { obj: mkFree('p1', 0, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkFree('p2', 1, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkCircleCR('c1', 'p1', 3) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPointC('C', { kind: 'pointAtDistance', from: 'p1', through: 'p2', distance: { kind: 'circleRadius', circle: 'c1', scale: 2 } }) } });
+    const c = findByName(created, 'C');
+    expect(c.X()).toBeCloseTo(7, 5); // 1 + 2·3 = 7
+    expect(c.Y()).toBeCloseTo(0, 5);
+  });
+
+  it('circleRadius offset +1: R=3 offset=1 d=4, A=(0,0) B=(1,0) → C=(5,0)', () => {
+    const store = createStore(createEmptyState('2d'));
+    const { board, created } = mockBoard();
+    new JxgRenderer(store, board as never);
+    store.dispatch({ type: 'ADD', payload: { obj: mkFree('p1', 0, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkFree('p2', 1, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkCircleCR('c1', 'p1', 3) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPointC('C', { kind: 'pointAtDistance', from: 'p1', through: 'p2', distance: { kind: 'circleRadius', circle: 'c1', offset: 1 } }) } });
+    const c = findByName(created, 'C');
+    expect(c.X()).toBeCloseTo(5, 5); // 1 + (3+1) = 5
+    expect(c.Y()).toBeCloseTo(0, 5);
+  });
+
+  it('circleRadius scale 2 + offset 1: R=3 → d=7, A=(0,0) B=(1,0) → C=(8,0)', () => {
+    const store = createStore(createEmptyState('2d'));
+    const { board, created } = mockBoard();
+    new JxgRenderer(store, board as never);
+    store.dispatch({ type: 'ADD', payload: { obj: mkFree('p1', 0, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkFree('p2', 1, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkCircleCR('c1', 'p1', 3) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPointC('C', { kind: 'pointAtDistance', from: 'p1', through: 'p2', distance: { kind: 'circleRadius', circle: 'c1', scale: 2, offset: 1 } }) } });
+    const c = findByName(created, 'C');
+    expect(c.X()).toBeCloseTo(8, 5); // 1 + (2·3+1) = 8
+    expect(c.Y()).toBeCloseTo(0, 5);
+  });
 });

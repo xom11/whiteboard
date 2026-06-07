@@ -83,35 +83,90 @@ function resolveCircleName(problem: string): string {
   return 'O';
 }
 
-type Distance =
+type DistanceBase =
   | { kind: 'circleRadius'; circle: string }
   | { kind: 'segmentLength'; p1: string; p2: string }
   | { kind: 'literal'; value: number };
 
+type Distance = DistanceBase & { scale?: number; offset?: number };
+
+// --- Hệ số/bội/offset (Issue #46 nhóm C) -------------------------------------
+// Tách "<scale>·base ± offset". scale = số đứng TRƯỚC base (qua dấu nhân ·/./×/*
+// hoặc dán liền "2AB"/"2R" hoặc cách "2 AB"). offset = "± số" đứng SAU base.
+//   "2R"      → scale 2, base R
+//   "2·AB"    → scale 2, base AB
+//   "R + 1"   → base R, offset +1
+//   "2R + 1"  → scale 2, base R, offset +1
+// base có thể là R/bán kính, cặp đỉnh (AB), hoặc số literal.
+//
+// Hệ số đứng trước base: "2", "2·", "2.", "2×", "2*", "2 " (số rồi base).
+const COEF_PREFIX = /^(\d+(?:[.,]\d+)?)\s*[·.×*]?\s*(?=[A-Z]|bán)/u;
+// Offset đứng cuối: "± số" (chỉ số literal, không nhân thêm đại lượng).
+const OFFSET_SUFFIX = /([+-])\s*(\d+(?:[.,]\d+)?)\s*$/u;
+// Dấu nhân CHỈ giữa 2 đại lượng (vd "R·AB", "AB·MN"): tích 2 đại lượng → mơ hồ.
+// Phát hiện: có dấu nhân mà 2 BÊN đều KHÔNG phải số → reject.
+const MUL_TWO_QUANTITIES = /[A-Z](?:\s*['′])?\s*[·×*]\s*[A-Z]/u;
+
 /** Parse phần sau dấu "=" → DistanceSpec hoặc undefined (không nhận dạng được). */
 function parseDistance(raw: string, problem: string): Distance | undefined {
-  const text = raw.trim();
-  // 0. TỪ CHỐI biểu thức có hệ số / toán tử / bội: k·AB, 2R, R+1, AB/2, 1/2 AB,
-  //    "2 lần bán kính". Spec liệt kê các nguồn này là DEFER → escalate AI thay
-  //    vì lấy nhầm số/đỉnh đơn lẻ (rất dễ sai độ lớn).
-  if (/[×·*/+]/u.test(text)) return undefined; // toán tử nhân/chia/cộng
-  if (/-\s*\d/u.test(text)) return undefined; // trừ số (R - 1); '-' trong tên hiếm
-  if (/\d\s*[A-Z]/u.test(text)) return undefined; // hệ số trước đỉnh/ R: "2 AB", "2R"
-  if (/\blần\b/u.test(text)) return undefined; // "2 lần bán kính"
-  // 1. Bán kính: "R" / "bán kính" / "bán kính (O)".
+  let text = raw.trim();
+
+  // 0. TỪ CHỐI ngay các biểu thức KHÔNG xử lý được:
+  if (/\//u.test(text)) return undefined; // chia: "AB/2", "1/2 AB" → defer
+  if (/\blần\b/u.test(text)) return undefined; // "2 lần bán kính" → defer
+  if (MUL_TWO_QUANTITIES.test(text)) return undefined; // tích 2 đại lượng "R·AB"
+  // '-' đứng đầu (giá trị âm trực tiếp "-3") → defer. ('-' offset xử lý ở dưới.)
+  if (/^-/u.test(text)) return undefined;
+
+  // 1. Tách offset "± số" ở cuối (literal). Không nhân thêm đại lượng.
+  let offset: number | undefined;
+  const off = OFFSET_SUFFIX.exec(text);
+  if (off) {
+    const sign = off[1] === '-' ? -1 : 1;
+    offset = sign * parseNum(off[2]);
+    text = text.slice(0, off.index).trim();
+  }
+  // Sau khi bóc offset, KHÔNG còn được phép có toán tử +/- (vd "1 + 2 + R" lạ).
+  if (/[+]/u.test(text)) return undefined;
+  if (/-\s*\d/u.test(text)) return undefined;
+
+  // 2. Tách hệ số (scale) đứng trước base. Chỉ nhận khi PHÍA SAU là base
+  //    (đỉnh HOA / "bán"). "3" đơn lẻ KHÔNG khớp (→ literal value).
+  let scale: number | undefined;
+  const coef = COEF_PREFIX.exec(text);
+  if (coef) {
+    scale = parseNum(coef[1]);
+    if (!(Number.isFinite(scale) && scale > 0)) return undefined;
+    text = text.slice(coef[0].length).trim();
+  }
+
+  // Còn sót dấu nhân lẻ (vd "·R" do tách lỗi) → mơ hồ.
+  if (/[·×*]/u.test(text)) return undefined;
+
+  const withCoef = (base: DistanceBase): Distance => {
+    const d: Distance = { ...base };
+    if (scale !== undefined) d.scale = scale;
+    if (offset !== undefined) d.offset = offset;
+    return d;
+  };
+
+  // 3. base = bán kính: "R" / "bán kính" / "bán kính (O)".
   if (RADIUS_WORD.test(text)) {
     const co = CIRCLE_OF_RADIUS.exec(text);
     const circle = co ? co[1] : resolveCircleName(problem);
-    return { kind: 'circleRadius', circle };
+    return withCoef({ kind: 'circleRadius', circle });
   }
-  // 2. Đoạn = 2 ký tự HOA liền ("AB", "MN").
+  // 4. base = đoạn = 2 ký tự HOA liền ("AB", "MN").
   const seg = SEGMENT_PAIR.exec(text);
-  if (seg) return { kind: 'segmentLength', p1: seg[1], p2: seg[2] };
-  // 3. Số literal (board units). "2 cm" → 2 (cm-mapping defer).
-  const num = NUMBER.exec(text);
-  if (num) {
-    const value = parseNum(num[1]);
-    if (Number.isFinite(value) && value > 0) return { kind: 'literal', value };
+  if (seg) return withCoef({ kind: 'segmentLength', p1: seg[1], p2: seg[2] });
+  // 5. base = số literal (board units). "2 cm" → 2 (cm-mapping defer).
+  //    Lưu ý: nếu đã tách scale thì KHÔNG còn base số (scale·số vô nghĩa) → defer.
+  if (scale === undefined) {
+    const num = NUMBER.exec(text);
+    if (num) {
+      const value = parseNum(num[1]);
+      if (Number.isFinite(value) && value > 0) return withCoef({ kind: 'literal', value });
+    }
   }
   return undefined;
 }

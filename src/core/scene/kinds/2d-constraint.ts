@@ -30,11 +30,18 @@ export function transformRefs(t: TransformDef): string[] {
   }
 }
 
-/** Nguồn khoảng cách cho pointAtDistance. ids là scene-object id (string). */
+/**
+ * Nguồn khoảng cách cho pointAtDistance. ids là scene-object id (string).
+ *
+ * Khoảng cách hiệu dụng: d = scale·base + offset (scale mặc định 1, offset mặc
+ * định 0). base ∈ {circleRadius=Radius, segmentLength=|p1p2|, literal=value}.
+ * scale/offset OPTIONAL → spec cũ (absent) tính d = base Y HỆT trước (additive).
+ * Issue #46 nhóm C (hệ số/bội: "BD = 2R", "BD = 2·AB", "BD = R+1").
+ */
 export type ConstraintDistanceSpec =
-  | { kind: 'circleRadius'; circle: string }
-  | { kind: 'segmentLength'; p1: string; p2: string }
-  | { kind: 'literal'; value: number };
+  | { kind: 'circleRadius'; circle: string; scale?: number; offset?: number }
+  | { kind: 'segmentLength'; p1: string; p2: string; scale?: number; offset?: number }
+  | { kind: 'literal'; value: number; scale?: number; offset?: number };
 
 export type Constraint2D =
   | { kind: 'free'; x: number; y: number }

@@ -131,4 +131,106 @@ describe('pointAtDistanceRule', () => {
     expect(i.name).toBe('C');
     expect(i.constraint.distance).toEqual({ kind: 'literal', value: 2.5 });
   });
+
+  // ── Issue #46 nhóm C: hệ số/bội/offset (scale·base + offset) ──────────────
+
+  it('"BD = 2R" → circleRadius scale 2', () => {
+    const m = run('Cho tam giác ABC nội tiếp đường tròn (O; R). Kéo dài AB về phía B lấy điểm D sao cho BD = 2R.');
+    expect(m.length).toBe(1);
+    const i = constraint(m);
+    expect(i.name).toBe('D');
+    expect(i.constraint.from).toBe('A');
+    expect(i.constraint.through).toBe('B');
+    expect(i.constraint.distance).toEqual({ kind: 'circleRadius', circle: 'O', scale: 2 });
+  });
+
+  it('"BD = 2·R" (dấu nhân ·) → circleRadius scale 2', () => {
+    const m = run('Cho đường tròn (O; R). Kéo dài AB về phía B lấy điểm D sao cho BD = 2·R.');
+    const i = constraint(m);
+    expect(i.constraint.distance).toEqual({ kind: 'circleRadius', circle: 'O', scale: 2 });
+  });
+
+  // DEFER (pre-existing, không hỗ trợ): "2.R" dùng dấu CHẤM làm dấu nhân — bị
+  // segmentClauses cắt clause tại '.' (ranh giới câu) → "BD = 2" tách khỏi "R".
+  // Không sửa shared infra cho edge-case này. Dùng "2·R" / "2R" (không nhập
+  // nhằng) thay thế — cả hai sống sót segmentation, parse scale 2 đúng.
+
+  it('"BD = 2 AB" → segmentLength scale 2 {p1:A, p2:B}', () => {
+    const m = run('Cho tam giác ABC. Kéo dài AB về phía B lấy điểm D sao cho BD = 2 AB.');
+    expect(m.length).toBe(1);
+    const i = constraint(m);
+    expect(i.name).toBe('D');
+    expect(i.constraint.distance).toEqual({ kind: 'segmentLength', p1: 'A', p2: 'B', scale: 2 });
+  });
+
+  it('"BD = 2·AB" / "BD = 2AB" → segmentLength scale 2', () => {
+    const dot = constraint(run('Cho tam giác ABC. Kéo dài AB về phía B lấy điểm D sao cho BD = 2·AB.'));
+    expect(dot.constraint.distance).toEqual({ kind: 'segmentLength', p1: 'A', p2: 'B', scale: 2 });
+    const glued = constraint(run('Cho tam giác ABC. Kéo dài AB về phía B lấy điểm D sao cho BD = 2AB.'));
+    expect(glued.constraint.distance).toEqual({ kind: 'segmentLength', p1: 'A', p2: 'B', scale: 2 });
+  });
+
+  it('"BC = R + 1" → circleRadius offset 1', () => {
+    const m = run('Cho đường tròn (O; R). Trên tia đối của tia BA lấy C sao cho BC = R + 1.');
+    const i = constraint(m);
+    expect(i.constraint.distance).toEqual({ kind: 'circleRadius', circle: 'O', offset: 1 });
+  });
+
+  it('"BC = R - 1" → circleRadius offset -1', () => {
+    const m = run('Cho đường tròn (O; R). Trên tia đối của tia BA lấy C sao cho BC = R - 1.');
+    const i = constraint(m);
+    expect(i.constraint.distance).toEqual({ kind: 'circleRadius', circle: 'O', offset: -1 });
+  });
+
+  it('"BD = 2R + 1" → circleRadius scale 2 offset 1', () => {
+    const m = run('Cho đường tròn (O; R). Kéo dài AB về phía B lấy điểm D sao cho BD = 2R + 1.');
+    const i = constraint(m);
+    expect(i.constraint.distance).toEqual({ kind: 'circleRadius', circle: 'O', scale: 2, offset: 1 });
+  });
+
+  it('"BD = 3 AB" (hệ số đoạn lớn) → segmentLength scale 3', () => {
+    const m = run('Cho tam giác ABC. Kéo dài AB về phía B lấy điểm D sao cho BD = 3 AB.');
+    const i = constraint(m);
+    expect(i.constraint.distance).toEqual({ kind: 'segmentLength', p1: 'A', p2: 'B', scale: 3 });
+  });
+
+  // GIỮ NGUYÊN hành vi cũ (scale/offset absent) — additive guard.
+  it('"BC = R" KHÔNG có scale/offset (giữ form cũ)', () => {
+    const m = run('Cho đường tròn (O; R) và dây AB. Kéo dài AB về phía B, lấy điểm C sao cho BC = R.');
+    const i = constraint(m);
+    expect(i.constraint.distance).toEqual({ kind: 'circleRadius', circle: 'O' });
+  });
+
+  it('"BC = AB" KHÔNG có scale/offset (giữ form cũ)', () => {
+    const m = run('Kéo dài AB lấy C sao cho BC = AB.');
+    const i = constraint(m);
+    expect(i.constraint.distance).toEqual({ kind: 'segmentLength', p1: 'A', p2: 'B' });
+  });
+
+  it('"BC = 3" literal KHÔNG có scale/offset (giữ form cũ)', () => {
+    const m = run('Trên tia đối của tia BA lấy điểm C sao cho BC = 3.');
+    const i = constraint(m);
+    expect(i.constraint.distance).toEqual({ kind: 'literal', value: 3 });
+  });
+
+  // Escalate-safe: mơ hồ / tích 2 đại lượng / âm.
+  it('"BC = R·AB" (tích 2 đại lượng) → bỏ qua escalate', () => {
+    expect(run('Cho đường tròn (O; R). Trên tia đối của tia BA lấy C sao cho BC = R·AB.')).toEqual([]);
+  });
+
+  it('"BC = -3" (âm) → bỏ qua escalate', () => {
+    expect(run('Trên tia đối của tia BA lấy C sao cho BC = -3.')).toEqual([]);
+  });
+
+  it('"BC = AB/2" (chia) → bỏ qua escalate', () => {
+    expect(run('Trên tia đối của tia BA lấy C sao cho BC = AB/2.')).toEqual([]);
+  });
+
+  it('"BC = R - 5" làm d ≤ 0 với base nhỏ vẫn parse offset (render guard riêng)', () => {
+    // Offset âm hợp lệ về cú pháp (R-5); d hiệu dụng phụ thuộc R runtime.
+    // Rule chỉ chốt offset; guard d>0 ở render. Ở đây chỉ verify parse offset -5.
+    const m = run('Cho đường tròn (O; R). Trên tia đối của tia BA lấy C sao cho BC = R - 5.');
+    const i = constraint(m);
+    expect(i.constraint.distance).toEqual({ kind: 'circleRadius', circle: 'O', offset: -5 });
+  });
 });
