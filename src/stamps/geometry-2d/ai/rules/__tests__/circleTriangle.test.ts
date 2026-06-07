@@ -212,4 +212,147 @@ describe('circleTriangleRule', () => {
     expect(all[0].spec).toBe('through3');
     expect(all[0].points).toEqual(['A', 'B', 'C']);
   });
+
+  // === EN (issue #46 group B) ================================================
+  // Semantics đối xứng VN. through3 (circumcircle) / inscribedIn (incircle) phân
+  // biệt theo SUBJECT (triangle vs circle) + verb (inscribed in / circumscribes
+  // / circumscribed about). Center "(O)" hoặc bare "circle O".
+  describe('circleTriangle EN (issue #46 group B)', () => {
+    it('"Triangle ABC inscribed in circle (O)" → through3, tri ABC, center O', () => {
+      const m = run('Triangle ABC inscribed in circle (O)');
+      const all = m.flatMap((x) => x.intents) as any[];
+      expect(all.length).toBe(1);
+      expect(all[0].spec).toBe('through3');
+      expect(all[0].points).toEqual(['A', 'B', 'C']);
+      expect(all[0].name).toBe('O');
+    });
+
+    it('"Triangle ABC is inscribed in the circle (O)" (is/be + the) → through3', () => {
+      const m = run('Triangle ABC is inscribed in the circle (O)');
+      const all = m.flatMap((x) => x.intents) as any[];
+      expect(all.length).toBe(1);
+      expect(all[0].spec).toBe('through3');
+      expect(all[0].points).toEqual(['A', 'B', 'C']);
+      expect(all[0].name).toBe('O');
+    });
+
+    it('"Circle (O) circumscribes triangle ABC" → through3, center O', () => {
+      const m = run('Circle (O) circumscribes triangle ABC');
+      const all = m.flatMap((x) => x.intents) as any[];
+      expect(all.length).toBe(1);
+      expect(all[0].spec).toBe('through3');
+      expect(all[0].points).toEqual(['A', 'B', 'C']);
+      expect(all[0].name).toBe('O');
+    });
+
+    it('"Circle (O) circumscribed about triangle ABC" → through3', () => {
+      const m = run('Circle (O) circumscribed about triangle ABC');
+      const all = m.flatMap((x) => x.intents) as any[];
+      expect(all.length).toBe(1);
+      expect(all[0].spec).toBe('through3');
+      expect(all[0].points).toEqual(['A', 'B', 'C']);
+      expect(all[0].name).toBe('O');
+    });
+
+    it('"Circle (O) circumscribed around triangle ABC" → through3', () => {
+      const m = run('Circle (O) circumscribed around triangle ABC');
+      const all = m.flatMap((x) => x.intents) as any[];
+      expect(all.length).toBe(1);
+      expect(all[0].spec).toBe('through3');
+      expect(all[0].points).toEqual(['A', 'B', 'C']);
+    });
+
+    it('"Circle (I) inscribed in triangle ABC" → inscribedIn, center I', () => {
+      const m = run('Circle (I) inscribed in triangle ABC');
+      const all = m.flatMap((x) => x.intents) as any[];
+      expect(all.length).toBe(1);
+      expect(all[0].spec).toBe('inscribedIn');
+      expect(all[0].triangle).toEqual(['A', 'B', 'C']);
+      expect(all[0].name).toBe('I');
+    });
+
+    it('"Triangle ABC circumscribes circle (I)" → inscribedIn, center I', () => {
+      const m = run('Triangle ABC circumscribes circle (I)');
+      const all = m.flatMap((x) => x.intents) as any[];
+      expect(all.length).toBe(1);
+      expect(all[0].spec).toBe('inscribedIn');
+      expect(all[0].triangle).toEqual(['A', 'B', 'C']);
+      expect(all[0].name).toBe('I');
+    });
+
+    it('"Triangle ABC circumscribed about circle (I)" → inscribedIn', () => {
+      const m = run('Triangle ABC circumscribed about circle (I)');
+      const all = m.flatMap((x) => x.intents) as any[];
+      expect(all.length).toBe(1);
+      expect(all[0].spec).toBe('inscribedIn');
+      expect(all[0].triangle).toEqual(['A', 'B', 'C']);
+      expect(all[0].name).toBe('I');
+    });
+
+    it('bare center "circle O circumscribes triangle ABC" → through3, center O', () => {
+      const m = run('Circle O circumscribes triangle ABC');
+      const all = m.flatMap((x) => x.intents) as any[];
+      expect(all.length).toBe(1);
+      expect(all[0].spec).toBe('through3');
+      expect(all[0].points).toEqual(['A', 'B', 'C']);
+      expect(all[0].name).toBe('O');
+    });
+
+    // --- paren whole-problem (segmenter cắt ';') ---
+    it('"Triangle ABC inscribed in circle (O; 3)" → through3, center O', () => {
+      const m = run('Triangle ABC inscribed in circle (O; 3)');
+      const all = m.flatMap((x) => x.intents) as any[];
+      expect(all.length).toBe(1);
+      expect(all[0].spec).toBe('through3');
+      expect(all[0].points).toEqual(['A', 'B', 'C']);
+      expect(all[0].name).toBe('O');
+    });
+
+    it('"Circle (O; R) circumscribes triangle ABC" → through3, center O', () => {
+      const m = run('Circle (O; R) circumscribes triangle ABC');
+      const all = m.flatMap((x) => x.intents) as any[];
+      expect(all.length).toBe(1);
+      expect(all[0].spec).toBe('through3');
+      expect(all[0].points).toEqual(['A', 'B', 'C']);
+      expect(all[0].name).toBe('O');
+    });
+
+    it('"Circle (I; r) inscribed in triangle DEF" → inscribedIn, center I', () => {
+      const m = run('Circle (I; r) inscribed in triangle DEF');
+      const all = m.flatMap((x) => x.intents) as any[];
+      expect(all.length).toBe(1);
+      expect(all[0].spec).toBe('inscribedIn');
+      expect(all[0].triangle).toEqual(['D', 'E', 'F']);
+      expect(all[0].name).toBe('I');
+    });
+
+    // --- FAIL-SAFE ---
+    it('FAIL-SAFE: "Circle (O) is tangent to triangle ABC" (no inscribe/circumscribe) → 0 match', () => {
+      const m = run('Circle (O) is tangent to triangle ABC');
+      expect(m.flatMap((x) => x.intents).length).toBe(0);
+    });
+
+    it('FAIL-SAFE: "Quadrilateral ABCD inscribed in circle (O)" (no triangle) → 0 match', () => {
+      const m = run('Quadrilateral ABCD inscribed in circle (O)');
+      expect(m.flatMap((x) => x.intents).length).toBe(0);
+    });
+
+    // --- VN regression (hành vi tiếng Việt giữ nguyên) ---
+    it('VN regression: "đường tròn (O) ngoại tiếp tam giác ABC" vẫn through3', () => {
+      const m = run('Cho đường tròn (O) ngoại tiếp tam giác ABC');
+      expect(m.length).toBe(1);
+      const intent = m[0].intents[0] as any;
+      expect(intent.spec).toBe('through3');
+      expect(intent.points).toEqual(['A', 'B', 'C']);
+      expect(intent.name).toBe('O');
+    });
+
+    it('VN regression: "tam giác ABC nội tiếp đường tròn (O)" vẫn through3', () => {
+      const m = run('Cho tam giác ABC nội tiếp đường tròn (O)');
+      expect(m.length).toBe(1);
+      const intent = m[0].intents[0] as any;
+      expect(intent.spec).toBe('through3');
+      expect(intent.points).toEqual(['A', 'B', 'C']);
+    });
+  });
 });

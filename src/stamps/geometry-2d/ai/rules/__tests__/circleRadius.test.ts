@@ -291,5 +291,27 @@ describe('circleRadiusRule', () => {
       const m = run('Triangle ABC inscribed in circle (O)');
       expect(m.length).toBe(0);
     });
+
+    // --- silent-wrong fix (issue #46 group B): EN inscribed + paren radius ---
+    // "(O; 3)" PAREN branch (line 271) phải bỏ qua khi đường tròn ngoại/nội tiếp
+    // tam giác (circleTriangle EN sở hữu through3). Trước fix: isInscribedCircumscribed
+    // VN-only → không nhận "inscribed" EN → emit centerRadius RỜI tại O (silent-wrong).
+    it('silent-wrong fix: "Triangle ABC inscribed in circle (O; 3)" → KHÔNG emit centerRadius cho O', () => {
+      const m = run('Triangle ABC inscribed in circle (O; 3)');
+      const centers = m.flatMap((x) => x.intents).map((i: any) => i.center);
+      expect(centers).not.toContain('O');
+      // (Không có đường tròn rời nào khác — chỉ circleTriangle through3 lo phần này.)
+      expect(m.length).toBe(0);
+    });
+
+    it('silent-wrong fix: "Circle (O; R) circumscribes triangle ABC" (circle TRƯỚC, EN) → KHÔNG emit', () => {
+      const m = run('Circle (O; R) circumscribes triangle ABC');
+      expect(m.length).toBe(0);
+    });
+
+    it('VN regression: "tam giác ABC nội tiếp đường tròn (O; 3)" vẫn KHÔNG emit centerRadius (cũ)', () => {
+      const m = run('Cho tam giác ABC nội tiếp đường tròn (O; 3)');
+      expect(m.length).toBe(0);
+    });
   });
 });

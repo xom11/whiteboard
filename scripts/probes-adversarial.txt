@@ -219,3 +219,21 @@ Triangle ABC. Draw AH perpendicular to BC at H.
 # Escalate-safe: KHÔNG có "X be/is the" để bind tên chân → perpFoot không claim →
 # clause geo ("perpendicular") không phủ → escalate (KHÔNG silent-incomplete).
 Triangle ABC. The foot of the perpendicular from A meets BC.
+
+# === EN circleTriangle (issue #46 nhóm B Tier 2) ===
+# Render-win EN: rule circleTriangle +EN (inscribe/circumscribe). VN render OK.
+# TÁC ĐỘNG: fix silent-incomplete (trước render triangle-only, rớt đường tròn) +
+# fix silent-WRONG (case (O;3): trước vẽ circle radius-3 RỜI không qua A,B,C; nay
+# circleRadius PAREN branch nhận "inscribed" EN qua isInscribedCircumscribed mirror
+# → bỏ centerRadius rời → chỉ còn circle3 qua 3 đỉnh). Win lộ ở dòng OPS, KHÔNG count.
+# DET render: "triangle inscribed in circle (O)" → through3 circumcircle.
+Triangle ABC inscribed in circle (O).
+# DET render: "circle (O) circumscribes triangle ABC" → through3.
+Circle (O) circumscribes triangle ABC.
+# DET render: "circle (I) inscribed in triangle ABC" → inscribedIn incircle.
+Circle (I) inscribed in triangle ABC.
+# DET render (silent-WRONG fix): "(O; 3)" inscribe → chỉ 1 circle3, KHÔNG circleCR rời.
+Triangle ABC inscribed in circle (O; 3).
+# Escalate-safe: "circumscribes the figure" KHÔNG có tam giác 3-đỉnh → circleTriangle
+# không claim → clause geo ("circle") không phủ → escalate (KHÔNG render sai).
+Circle (O) circumscribes the figure.

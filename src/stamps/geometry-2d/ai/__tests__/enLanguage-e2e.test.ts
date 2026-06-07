@@ -88,6 +88,21 @@ describe('EN language e2e (issue #46 group B)', () => {
         en: 'Triangle ABC. Draw AH perpendicular to BC at H.',
         vi: 'Cho tam giác ABC. Kẻ AH vuông góc với BC tại H',
       },
+      {
+        name: 'triangle inscribed in circle',
+        en: 'Triangle ABC inscribed in circle (O).',
+        vi: 'Cho tam giác ABC nội tiếp đường tròn (O)',
+      },
+      {
+        name: 'circle circumscribes triangle',
+        en: 'Circle (O) circumscribes triangle ABC.',
+        vi: 'Đường tròn (O) ngoại tiếp tam giác ABC',
+      },
+      {
+        name: 'circle inscribed in triangle (incircle)',
+        en: 'Circle (I) inscribed in triangle ABC.',
+        vi: 'Đường tròn (I) nội tiếp tam giác ABC',
+      },
     ];
 
     for (const { name, en, vi } of matrix) {
@@ -130,6 +145,24 @@ describe('EN language e2e (issue #46 group B)', () => {
         .map((t) => (t.kind === 'tangent' ? t.branch : undefined))
         .sort();
       expect(branches).toEqual([0, 1]);
+    });
+
+    it('silent-wrong fix: "Triangle ABC inscribed in circle (O; 3)" → exactly 1 circle3 (no lone circleCR)', () => {
+      // Trước fix: triangle + circle3 (through3) + circleCR RỜI tại O (radius 3,
+      // KHÔNG qua A,B,C) = silent-WRONG. circleRadius PAREN branch nhận "inscribed"
+      // EN → bỏ centerRadius → chỉ còn 1 circle (circle3 qua A,B,C).
+      const r = tryDeterministicFigure('Triangle ABC inscribed in circle (O; 3).');
+      expect(r.ok).toBe(true);
+      if (!r.ok) return;
+      const circles = r.figure.dsl.shapes.filter((sh: any) =>
+        String(sh.kind).startsWith('circle') || sh.kind === 'incircle',
+      );
+      expect(circles.length).toBe(1);
+      expect(circles[0].kind).toBe('circle3');
+      // KHÔNG có circleCR rời tại O.
+      expect(
+        r.figure.dsl.shapes.some((sh: any) => sh.kind === 'circleCR'),
+      ).toBe(false);
     });
 
     it('triangle ABC with comma sub-clause splits + renders', () => {

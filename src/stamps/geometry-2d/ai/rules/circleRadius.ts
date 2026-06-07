@@ -121,9 +121,15 @@ function parseNum(raw: string): number {
  * Bán kính chỉ là chú thích — circumcircle xác định bởi 3 đỉnh, bỏ radius là OK.
  */
 function isInscribedCircumscribed(problem: string, center: string): boolean {
+  // Quan hệ "nội/ngoại tiếp" (VN) + "inscribed/circumscribes/circumscribed" (EN,
+  // issue #46 group B). EN mirror chống silent-WRONG: "Triangle ABC inscribed in
+  // circle (O; 3)" — circleTriangle EN sở hữu through3 (qua 3 đỉnh) → circleRadius
+  // KHÔNG emit centerRadius rời quanh O.
+  const REL = '(?:(?:nội|ngoại)\\s*tiếp|[Ii]nscribed|[Cc]ircumscrib(?:es|ed))';
   // Chiều 1 — quan hệ ĐỨNG TRƯỚC circle: "(tam giác) nội/ngoại tiếp … (O".
+  // Gap [^.]{0,30}? đủ nuốt "in circle " trước "(O" (EN).
   const after = new RegExp(
-    `(?:nội|ngoại)\\s*tiếp[^.]{0,30}?(?:đường\\s*tròn\\s*)?\\(?\\s*${center}(?![A-Z])`,
+    `${REL}[^.]{0,30}?(?:đường\\s*tròn\\s*|[Cc]ircle\\s*)?\\(?\\s*${center}(?![A-Z])`,
     'u',
   );
   // Chiều 2 — circle ĐỨNG TRƯỚC quan hệ: ký hiệu "(O; R) … ngoại/nội tiếp".
@@ -131,7 +137,7 @@ function isInscribedCircumscribed(problem: string, center: string): boolean {
   // để tránh DOUBLE-circle quanh O. [^()]* không vượt ngoặc khác; [^.]{0,30}?
   // không nhảy câu (giữ proximity, tránh false-positive với circle rời khác).
   const before = new RegExp(
-    `\\(\\s*${center}\\s*[;,][^()]*\\)[^.]{0,30}?(?:nội|ngoại)\\s*tiếp`,
+    `\\(\\s*${center}\\s*[;,][^()]*\\)[^.]{0,30}?${REL}`,
     'u',
   );
   return after.test(problem) || before.test(problem);

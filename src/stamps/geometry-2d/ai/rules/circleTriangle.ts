@@ -82,6 +82,97 @@ const INCIRCLE_TRI_PAREN = new RegExp(
   'giu',
 );
 
+// === EN patterns (issue #46 group B) ========================================
+// Semantics đối xứng VN. Phân biệt through3 (circumcircle) vs inscribedIn
+// (incircle) bằng SUBJECT (triangle/circle) + verb:
+//   - triangle inscribed in circle      → through3 (circle ngoại tiếp tam giác)
+//   - triangle circumscribes/circumscribed about circle → inscribedIn (incircle)
+//   - circle inscribed in triangle       → inscribedIn (incircle)
+//   - circle circumscribes/circumscribed about triangle → through3 (circumcircle)
+//
+// KHÔNG cờ 'i' (sẽ nuốt chữ thường vào group nhãn/center [A-Z]). First-letter
+// flex bằng [Tt]riangle / [Cc]ircle / [Ii]nscribed / [Cc]ircumscrib. Group
+// nhãn/center [A-Z] STRICT. Gap token = [^.]{0,N}? (non-greedy, không vượt '.').
+//
+// Center EN sau "circle": "(O)" (paren) hoặc bare "O" (neo (?![A-Za-z])).
+const EN_CIRCLE_CENTER = '[Cc]ircle\\s+(?:\\(\\s*([A-Z])\\s*\\)|([A-Z])(?![A-Za-z]))';
+const EN_TRI = '[Tt]riangle\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])';
+
+// SUBJECT=triangle + "inscribed in" circle → through3 (circumcircle).
+// "triangle ABC (is)? inscribed in (the)? circle (O)".
+const EN_TRI_INSCRIBED_IN_CIRCLE = new RegExp(
+  EN_TRI +
+    '[^.]{0,12}?[Ii]nscribed\\s+in\\s+(?:the\\s+)?' +
+    EN_CIRCLE_CENTER,
+  'gu',
+);
+
+// SUBJECT=triangle + "circumscribes / circumscribed about|around" circle → inscribedIn.
+const EN_TRI_CIRCUMSCRIBES_CIRCLE = new RegExp(
+  EN_TRI +
+    '[^.]{0,12}?[Cc]ircumscrib(?:es|ed)\\s+(?:about\\s+|around\\s+)?' +
+    EN_CIRCLE_CENTER,
+  'gu',
+);
+
+// SUBJECT=circle + "inscribed in" triangle → inscribedIn (incircle).
+const EN_CIRCLE_INSCRIBED_IN_TRI = new RegExp(
+  EN_CIRCLE_CENTER +
+    '[^.]{0,12}?[Ii]nscribed\\s+in\\s+(?:the\\s+)?' +
+    EN_TRI,
+  'gu',
+);
+
+// SUBJECT=circle + "circumscribes / circumscribed about|around" triangle → through3.
+const EN_CIRCLE_CIRCUMSCRIBES_TRI = new RegExp(
+  EN_CIRCLE_CENTER +
+    '[^.]{0,12}?[Cc]ircumscrib(?:es|ed)\\s+(?:about\\s+|around\\s+)?' +
+    EN_TRI,
+  'gu',
+);
+
+// --- EN paren whole-problem (segmenter cắt ';' trong "(O; R)") ----------------
+// Mirror VN PAREN: center "(O" bị cắt khỏi "R)". circle ĐỨNG TRƯỚC hoặc SAU.
+// Center = "(" + 1 ký tự HOA + ";"/"," (KHÔNG đóng ngoặc cùng clause vì bị cắt).
+// Guard (?![^)]*[A-Z]\s*[;,]) chặn paren méo nhiều dấu chấm phẩy.
+const EN_PAREN_CIRCLE =
+  '[Cc]ircle\\s+\\(\\s*([A-Z])\\s*[;,]\\s*(?![^)]*[A-Z]\\s*[;,])[^()]*?\\)\\s*';
+
+// "triangle XYZ inscribed in circle (O; R)" → through3.
+const EN_TRI_INSCRIBED_PAREN = new RegExp(
+  EN_TRI +
+    '[^.]{0,12}?[Ii]nscribed\\s+in\\s+(?:the\\s+)?' +
+    '[Cc]ircle\\s+\\(\\s*([A-Z])\\s*[;,]\\s*(?![^)]*[A-Z]\\s*[;,])[^()]*?\\)',
+  'gu',
+);
+
+// "circle (O; R) circumscribes triangle XYZ" → through3.
+const EN_PAREN_CIRCLE_CIRCUMSCRIBES_TRI = new RegExp(
+  EN_PAREN_CIRCLE +
+    '[Cc]ircumscrib(?:es|ed)\\s+(?:about\\s+|around\\s+)?' +
+    EN_TRI,
+  'gu',
+);
+
+// "circle (I; r) inscribed in triangle XYZ" → inscribedIn.
+const EN_PAREN_CIRCLE_INSCRIBED_TRI = new RegExp(
+  EN_PAREN_CIRCLE +
+    '[Ii]nscribed\\s+in\\s+(?:the\\s+)?' +
+    EN_TRI,
+  'gu',
+);
+
+// "triangle XYZ circumscribes circle (I; r)" → inscribedIn.
+const EN_TRI_CIRCUMSCRIBES_PAREN = new RegExp(
+  EN_TRI +
+    '[^.]{0,12}?[Cc]ircumscrib(?:es|ed)\\s+(?:about\\s+|around\\s+)?' +
+    '[Cc]ircle\\s+\\(\\s*([A-Z])\\s*[;,]\\s*(?![^)]*[A-Z]\\s*[;,])[^()]*?\\)',
+  'gu',
+);
+
+// Prefilter EN (NON-global cho .test). Chỉ "inscribed"/"circumscrib" mới quan tâm.
+const HAS_INSCRIBE_EN = /[Ii]nscribed|[Cc]ircumscrib/u;
+
 interface CircHit {
   index: number;
   spec: 'through3' | 'inscribedIn';
@@ -140,6 +231,47 @@ function scanClause(text: string): CircHit[] {
       center: m[4] ?? m[5] ?? '',
     });
   }
+
+  // --- EN (issue #46 group B) ---------------------------------------------
+  // SUBJECT=triangle (group 1,2,3) → center group 4|5.
+  EN_TRI_INSCRIBED_IN_CIRCLE.lastIndex = 0;
+  for (const m of text.matchAll(EN_TRI_INSCRIBED_IN_CIRCLE)) {
+    hits.push({
+      index: m.index ?? 0,
+      spec: 'through3',
+      tri: [m[1], m[2], m[3]],
+      center: m[4] ?? m[5] ?? '',
+    });
+  }
+  EN_TRI_CIRCUMSCRIBES_CIRCLE.lastIndex = 0;
+  for (const m of text.matchAll(EN_TRI_CIRCUMSCRIBES_CIRCLE)) {
+    hits.push({
+      index: m.index ?? 0,
+      spec: 'inscribedIn',
+      tri: [m[1], m[2], m[3]],
+      center: m[4] ?? m[5] ?? '',
+    });
+  }
+  // SUBJECT=circle (center group 1|2) → triangle group 3,4,5.
+  EN_CIRCLE_INSCRIBED_IN_TRI.lastIndex = 0;
+  for (const m of text.matchAll(EN_CIRCLE_INSCRIBED_IN_TRI)) {
+    hits.push({
+      index: m.index ?? 0,
+      spec: 'inscribedIn',
+      tri: [m[3], m[4], m[5]],
+      center: m[1] ?? m[2] ?? '',
+    });
+  }
+  EN_CIRCLE_CIRCUMSCRIBES_TRI.lastIndex = 0;
+  for (const m of text.matchAll(EN_CIRCLE_CIRCUMSCRIBES_TRI)) {
+    hits.push({
+      index: m.index ?? 0,
+      spec: 'through3',
+      tri: [m[3], m[4], m[5]],
+      center: m[1] ?? m[2] ?? '',
+    });
+  }
+
   // Khử trùng: 2 hit cùng 3 đỉnh + cùng spec → giữ 1 (vd câu vừa khớp
   // CIRCUM_TRI lẫn TRI_INSCRIBED_IN_CIRCLE hiếm khi xảy ra, nhưng an toàn).
   const seen = new Set<string>();
@@ -181,6 +313,20 @@ function scanProblemParen(problem: string): ParenHit[] {
   };
   push(CIRCUM_TRI_PAREN, 'through3');
   push(INCIRCLE_TRI_PAREN, 'inscribedIn');
+
+  // --- EN (issue #46 group B): center group khác vị trí tuỳ SUBJECT ----------
+  // SUBJECT=triangle (group 1,2,3) → center group 4.
+  const pushTriFirst = (re: RegExp, spec: 'through3' | 'inscribedIn') => {
+    re.lastIndex = 0;
+    for (const m of problem.matchAll(re)) {
+      out.push({ spec, tri: [m[1], m[2], m[3]], center: m[4] ?? '', matchedText: m[0] });
+    }
+  };
+  pushTriFirst(EN_TRI_INSCRIBED_PAREN, 'through3');
+  pushTriFirst(EN_TRI_CIRCUMSCRIBES_PAREN, 'inscribedIn');
+  // SUBJECT=circle (center group 1) → triangle group 2,3,4.
+  push(EN_PAREN_CIRCLE_CIRCUMSCRIBES_TRI, 'through3');
+  push(EN_PAREN_CIRCLE_INSCRIBED_TRI, 'inscribedIn');
   return out;
 }
 
@@ -204,15 +350,15 @@ function intentFor(spec: 'through3' | 'inscribedIn', tri: string[], center: stri
 export const circleTriangleRule: LanguageRule = {
   id: 'circleTriangle',
   priority: 72,
-  languages: ['vi'],
-  patterns: [HAS_INSCRIBE],
+  languages: ['vi', 'en'],
+  patterns: [HAS_INSCRIBE, HAS_INSCRIBE_EN],
   match(ctx) {
     const out: RuleMatch[] = [];
     const emitted = new Set<string>(); // "spec:tri" — dedup cross per-clause/paren.
 
-    // 1) Per-clause (giữ nguyên hành vi cũ).
+    // 1) Per-clause (VN giữ nguyên hành vi cũ; EN thêm qua HAS_INSCRIBE_EN).
     for (const c of ctx.clauses) {
-      if (!HAS_INSCRIBE.test(c.text)) continue;
+      if (!HAS_INSCRIBE.test(c.text) && !HAS_INSCRIBE_EN.test(c.text)) continue;
       const hits = scanClause(c.text);
       if (hits.length === 0) continue; // có "ngoại/nội tiếp" nhưng không tam giác
       for (const h of hits) emitted.add(`${h.spec}:${h.tri.join('')}`);
