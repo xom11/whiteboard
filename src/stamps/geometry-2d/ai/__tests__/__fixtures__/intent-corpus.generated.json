@@ -1,0 +1,1012 @@
+[
+  {
+    "problem": "Cho tam giác ABC. Gọi M là trung điểm BC",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "add-point",
+        "name": "M",
+        "constraint": {
+          "kind": "midpoint",
+          "of": "BC"
+        }
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC. Gọi G là trọng tâm tam giác ABC",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "add-point",
+        "name": "G",
+        "constraint": {
+          "kind": "centroid",
+          "of": [
+            "A",
+            "B",
+            "C"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC. Kẻ đường cao AH",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "add-point",
+        "name": "H",
+        "constraint": {
+          "kind": "perpFoot",
+          "from": "A",
+          "onLine": "BC"
+        }
+      },
+      {
+        "op": "connect",
+        "from": "A",
+        "to": "H",
+        "style": "segment"
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC. Gọi H là hình chiếu của A trên BC",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "add-point",
+        "name": "H",
+        "constraint": {
+          "kind": "perpFoot",
+          "from": "A",
+          "onLine": "BC"
+        }
+      }
+    ]
+  },
+  {
+    "problem": "Cho hình vuông ABCD",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "square",
+        "labels": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "variant": "standard"
+      }
+    ]
+  },
+  {
+    "problem": "Cho hình chữ nhật ABCD",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "rectangle",
+        "labels": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "variant": "standard"
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC vuông tại A. Gọi M là trung điểm BC",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "right-at-A"
+      },
+      {
+        "op": "add-point",
+        "name": "M",
+        "constraint": {
+          "kind": "midpoint",
+          "of": "BC"
+        }
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC cân tại A. Kẻ trung tuyến AM",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "isoceles-BC"
+      },
+      {
+        "op": "add-point",
+        "name": "M",
+        "constraint": {
+          "kind": "midpoint",
+          "of": "BC"
+        }
+      },
+      {
+        "op": "connect",
+        "from": "A",
+        "to": "M",
+        "style": "segment"
+      }
+    ]
+  },
+  {
+    "problem": "Cho đường tròn tâm O bán kính 3",
+    "intents": [
+      {
+        "op": "add-point",
+        "name": "O",
+        "constraint": {
+          "kind": "free"
+        }
+      },
+      {
+        "op": "draw-circle",
+        "name": "O_c",
+        "spec": "centerRadius",
+        "center": "O",
+        "radius": 3
+      }
+    ]
+  },
+  {
+    "problem": "Cho đường tròn (O; 3)",
+    "intents": [
+      {
+        "op": "add-point",
+        "name": "O",
+        "constraint": {
+          "kind": "free"
+        }
+      },
+      {
+        "op": "draw-circle",
+        "name": "O_c",
+        "spec": "centerRadius",
+        "center": "O",
+        "radius": 3
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC. Vẽ đường tròn ngoại tiếp tam giác ABC",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "draw-circle",
+        "name": "O",
+        "spec": "through3",
+        "points": [
+          "A",
+          "B",
+          "C"
+        ]
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC. Vẽ đường tròn nội tiếp tam giác ABC",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "draw-circle",
+        "name": "O",
+        "spec": "inscribedIn",
+        "triangle": [
+          "A",
+          "B",
+          "C"
+        ]
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC. Gọi H là trực tâm của tam giác ABC",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "add-point",
+        "name": "H",
+        "constraint": {
+          "kind": "orthocenter",
+          "of": [
+            "A",
+            "B",
+            "C"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC và tam giác ABD vuông tại A",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "D"
+        ],
+        "variant": "right-at-A"
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC và tam giác ACD cân tại A",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "C",
+          "D"
+        ],
+        "variant": "isoceles-BC"
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác đều DEF nội tiếp tam giác ABC",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "D",
+          "E",
+          "F"
+        ],
+        "variant": "equilateral"
+      },
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC nội tiếp tam giác đều MNP",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "M",
+          "N",
+          "P"
+        ],
+        "variant": "equilateral"
+      }
+    ]
+  },
+  {
+    "problem": "Cho hình bình hành ABCD và hình chữ nhật EFGH",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "parallelogram",
+        "labels": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "variant": "standard"
+      },
+      {
+        "op": "draw-shape",
+        "shape": "rectangle",
+        "labels": [
+          "E",
+          "F",
+          "G",
+          "H"
+        ],
+        "variant": "standard"
+      }
+    ]
+  },
+  {
+    "problem": "Cho hình thoi ABCD và hình vuông EFGH",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "rhombus",
+        "labels": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "variant": "standard"
+      },
+      {
+        "op": "draw-shape",
+        "shape": "square",
+        "labels": [
+          "E",
+          "F",
+          "G",
+          "H"
+        ],
+        "variant": "standard"
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC và tam giác DEF. Gọi G là trọng tâm tam giác DEF",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "D",
+          "E",
+          "F"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "add-point",
+        "name": "G",
+        "constraint": {
+          "kind": "centroid",
+          "of": [
+            "D",
+            "E",
+            "F"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC. Lấy tam giác MBC. Gọi H là trực tâm tam giác MBC",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "M",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "add-point",
+        "name": "H",
+        "constraint": {
+          "kind": "orthocenter",
+          "of": [
+            "M",
+            "B",
+            "C"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC. Dựng tam giác DEF. Gọi I là tâm đường tròn nội tiếp tam giác DEF",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "D",
+          "E",
+          "F"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "draw-circle",
+        "name": "O",
+        "spec": "inscribedIn",
+        "triangle": [
+          "D",
+          "E",
+          "F"
+        ]
+      },
+      {
+        "op": "add-point",
+        "name": "I",
+        "constraint": {
+          "kind": "incenter",
+          "of": [
+            "D",
+            "E",
+            "F"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC. Gọi M là trung điểm BC và N là trung điểm AC",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "add-point",
+        "name": "M",
+        "constraint": {
+          "kind": "midpoint",
+          "of": "BC"
+        }
+      },
+      {
+        "op": "add-point",
+        "name": "N",
+        "constraint": {
+          "kind": "midpoint",
+          "of": "AC"
+        }
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC. Vẽ đường trung trực BC và trung trực CA",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "connect",
+        "from": "B",
+        "to": "C",
+        "style": "perpBisector"
+      },
+      {
+        "op": "connect",
+        "from": "C",
+        "to": "A",
+        "style": "perpBisector"
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC. Gọi H, K lần lượt là hình chiếu của B trên AC và của C trên AB",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "add-point",
+        "name": "H",
+        "constraint": {
+          "kind": "perpFoot",
+          "from": "B",
+          "onLine": "AC"
+        }
+      },
+      {
+        "op": "add-point",
+        "name": "K",
+        "constraint": {
+          "kind": "perpFoot",
+          "from": "C",
+          "onLine": "AB"
+        }
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC. Vẽ đường tròn ngoại tiếp tứ giác BCEF",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "draw-shape",
+        "shape": "quadrilateral",
+        "labels": [
+          "B",
+          "C",
+          "E",
+          "F"
+        ],
+        "variant": "any"
+      }
+    ]
+  },
+  {
+    "problem": "Cho đường tròn tâm I bán kính 2 và đường tròn tâm O bán kính 5",
+    "intents": [
+      {
+        "op": "add-point",
+        "name": "I",
+        "constraint": {
+          "kind": "free"
+        }
+      },
+      {
+        "op": "draw-circle",
+        "name": "I_c",
+        "spec": "centerRadius",
+        "center": "I",
+        "radius": 2
+      },
+      {
+        "op": "add-point",
+        "name": "O",
+        "constraint": {
+          "kind": "free"
+        }
+      },
+      {
+        "op": "draw-circle",
+        "name": "O_c",
+        "spec": "centerRadius",
+        "center": "O",
+        "radius": 5
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC vuông tại A. Gọi M là trung điểm cạnh huyền BC",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "right-at-A"
+      },
+      {
+        "op": "add-point",
+        "name": "M",
+        "constraint": {
+          "kind": "midpoint",
+          "of": "BC"
+        }
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC. Gọi I là trung điểm đoạn thẳng AC",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "add-point",
+        "name": "I",
+        "constraint": {
+          "kind": "midpoint",
+          "of": "AC"
+        }
+      },
+      {
+        "op": "connect",
+        "from": "A",
+        "to": "C",
+        "style": "segment"
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC. Vẽ phân giác trong AD",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "add-point",
+        "name": "D",
+        "constraint": {
+          "kind": "angleBisectorFoot",
+          "from": "A",
+          "onLine": "BC"
+        }
+      },
+      {
+        "op": "connect",
+        "from": "A",
+        "to": "D",
+        "style": "segment"
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC. Dựng đường phân giác trong AD",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "add-point",
+        "name": "D",
+        "constraint": {
+          "kind": "angleBisectorFoot",
+          "from": "A",
+          "onLine": "BC"
+        }
+      },
+      {
+        "op": "connect",
+        "from": "A",
+        "to": "D",
+        "style": "segment"
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC. Kẻ AH vuông góc BC tại H",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "add-point",
+        "name": "H",
+        "constraint": {
+          "kind": "perpFoot",
+          "from": "A",
+          "onLine": "BC"
+        }
+      },
+      {
+        "op": "connect",
+        "from": "A",
+        "to": "H",
+        "style": "segment"
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC. Kẻ AH ⊥ BC tại H",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "add-point",
+        "name": "H",
+        "constraint": {
+          "kind": "perpFoot",
+          "from": "A",
+          "onLine": "BC"
+        }
+      },
+      {
+        "op": "connect",
+        "from": "A",
+        "to": "H",
+        "style": "segment"
+      }
+    ]
+  },
+  {
+    "problem": "Đường tròn (O; R) ngoại tiếp tam giác ABC",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "draw-circle",
+        "name": "O",
+        "spec": "through3",
+        "points": [
+          "A",
+          "B",
+          "C"
+        ]
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC ngoại tiếp đường tròn (I)",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "draw-circle",
+        "name": "I",
+        "spec": "inscribedIn",
+        "triangle": [
+          "A",
+          "B",
+          "C"
+        ]
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác MNP ngoại tiếp đường tròn tâm O",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "M",
+          "N",
+          "P"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "draw-circle",
+        "name": "O",
+        "spec": "inscribedIn",
+        "triangle": [
+          "M",
+          "N",
+          "P"
+        ]
+      }
+    ]
+  },
+  {
+    "problem": "Cho tam giác ABC. Trên tia đối của tia BA lấy điểm D′ sao cho BD′ = AB",
+    "intents": [
+      {
+        "op": "draw-shape",
+        "shape": "triangle",
+        "labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "variant": "any"
+      },
+      {
+        "op": "add-point",
+        "name": "D",
+        "constraint": {
+          "kind": "pointAtDistance",
+          "from": "A",
+          "through": "B",
+          "distance": {
+            "kind": "segmentLength",
+            "p1": "A",
+            "p2": "B"
+          }
+        }
+      },
+      {
+        "op": "connect",
+        "from": "B",
+        "to": "A",
+        "style": "ray"
+      }
+    ]
+  }
+]

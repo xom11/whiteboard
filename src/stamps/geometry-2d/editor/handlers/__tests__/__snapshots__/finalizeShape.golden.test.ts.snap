@@ -1,0 +1,1375 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) angle 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "p1": "A",
+          "p2": "B",
+          "vertex": "V",
+        },
+        "id": "ang_1",
+        "kind": "angle",
+        "label": "angle_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) angleBisector-2line 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "construction": {
+            "branch": 0,
+            "kind": "angleBisectorLines",
+            "line1": "L1",
+            "line2": "L2",
+          },
+        },
+        "id": "ab_1",
+        "kind": "line",
+        "label": "line_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "construction": {
+            "branch": 1,
+            "kind": "angleBisectorLines",
+            "line1": "L1",
+            "line2": "L2",
+          },
+        },
+        "id": "ab_1",
+        "kind": "line",
+        "label": "line_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) angleBisector-3pt 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "construction": {
+            "kind": "angleBisector",
+            "p1": "A",
+            "p2": "B",
+            "vertex": "V",
+          },
+        },
+        "id": "ab_1",
+        "kind": "line",
+        "label": "line_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) arc3 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "construction": {
+            "kind": "by3Points",
+            "p1": "A",
+            "p2": "B",
+            "p3": "C",
+          },
+        },
+        "id": "arc_1",
+        "kind": "arc",
+        "label": "arc_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) arcCenter 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "construction": {
+            "center": "O",
+            "kind": "byCenter",
+            "p1": "A",
+            "p2": "B",
+          },
+        },
+        "id": "arc_1",
+        "kind": "arc",
+        "label": "arc_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) arcMidpoint 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "constraint": {
+            "a": "A",
+            "b": "B",
+            "circle": "O",
+            "kind": "arcMidpoint",
+            "notContaining": "C",
+          },
+        },
+        "id": "M_1",
+        "kind": "point",
+        "label": "point_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) centroid 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "constraint": {
+            "kind": "centroid",
+            "vertices": [
+              "A",
+              "B",
+              "C",
+            ],
+          },
+        },
+        "id": "g_1",
+        "kind": "point",
+        "label": "point_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) circle3 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "construction": {
+            "kind": "circumscribed",
+            "p1": "A",
+            "p2": "B",
+            "p3": "C",
+          },
+        },
+        "id": "cc_1",
+        "kind": "circle",
+        "label": "circle_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) circleCenter 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "center": "O",
+          "surfacePoint": "A",
+        },
+        "id": "c_1",
+        "kind": "circle",
+        "label": "circle_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) circleIntersection 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "constraint": {
+            "c1": "O1",
+            "c2": "O2",
+            "kind": "circleIntersection",
+            "which": 0,
+          },
+        },
+        "id": "X_1",
+        "kind": "point",
+        "label": "point_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "constraint": {
+            "c1": "O1",
+            "c2": "O2",
+            "kind": "circleIntersection",
+            "which": 1,
+          },
+        },
+        "id": "X_1",
+        "kind": "point",
+        "label": "point_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) circumcenter 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "constraint": {
+            "kind": "circumcenter",
+            "vertices": [
+              "A",
+              "B",
+              "C",
+            ],
+          },
+        },
+        "id": "o_1",
+        "kind": "point",
+        "label": "point_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) distance 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "p1": "A",
+          "p2": "B",
+        },
+        "id": "d_1",
+        "kind": "distance",
+        "label": "distance_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) excenter 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "constraint": {
+            "kind": "excenter",
+            "opposite": "A",
+            "vertices": [
+              "A",
+              "B",
+              "C",
+            ],
+          },
+        },
+        "id": "ex_1",
+        "kind": "point",
+        "label": "point_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) excircle 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "construction": {
+            "kind": "excircle",
+            "opposite": "A",
+            "p1": "A",
+            "p2": "B",
+            "p3": "C",
+          },
+        },
+        "id": "exc_1",
+        "kind": "circle",
+        "label": "circle_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) incenter 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "constraint": {
+            "kind": "incenter",
+            "vertices": [
+              "A",
+              "B",
+              "C",
+            ],
+          },
+        },
+        "id": "i_1",
+        "kind": "point",
+        "label": "point_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) incircle 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "construction": {
+            "kind": "incircle",
+            "p1": "A",
+            "p2": "B",
+            "p3": "C",
+          },
+        },
+        "id": "ic_1",
+        "kind": "circle",
+        "label": "circle_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) intersect-circleCircle 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "branch": 0,
+          "kind": "circleCircle",
+          "ref1": "O1",
+          "ref2": "O2",
+        },
+        "id": "X_1",
+        "kind": "intersection",
+        "label": "intersection_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "branch": 1,
+          "kind": "circleCircle",
+          "ref1": "O1",
+          "ref2": "O2",
+        },
+        "id": "X_1",
+        "kind": "intersection",
+        "label": "intersection_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) intersect-lineCircle 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "branch": 0,
+          "kind": "lineCircle",
+          "ref1": "l1",
+          "ref2": "O",
+        },
+        "id": "X_1",
+        "kind": "intersection",
+        "label": "intersection_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "branch": 1,
+          "kind": "lineCircle",
+          "ref1": "l1",
+          "ref2": "O",
+        },
+        "id": "X_1",
+        "kind": "intersection",
+        "label": "intersection_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) intersect-lineLine 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "kind": "lineLine",
+          "ref1": "l1",
+          "ref2": "l2",
+        },
+        "id": "X_1",
+        "kind": "intersection",
+        "label": "intersection_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) isoTrapezoid 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "construction": {
+            "kind": "isoTrapezoid",
+            "p1": "A",
+            "p2": "B",
+            "p3": "C",
+          },
+        },
+        "id": "trap_1",
+        "kind": "polygon",
+        "label": "polygon_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) isoTriangle 1`] = `
+[
+  {
+    "payload": {
+      "actions": [
+        {
+          "payload": {
+            "id": "C",
+            "patch": {
+              "constraint": {
+                "kind": "onPerpBisector",
+                "p1": "A",
+                "p2": "B",
+                "t": 3,
+              },
+            },
+          },
+          "type": "UPDATE_ATTRS",
+        },
+        {
+          "payload": {
+            "obj": {
+              "attrs": {
+                "construction": {
+                  "apex": "C",
+                  "base1": "A",
+                  "base2": "B",
+                  "kind": "isoTriangle",
+                },
+              },
+              "id": "iso_1",
+              "kind": "polygon",
+              "label": "polygon_label",
+              "layer": "default",
+              "locked": false,
+              "schemaVersion": 1,
+              "visible": true,
+            },
+          },
+          "type": "ADD",
+        },
+      ],
+    },
+    "type": "TRANSACTION",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) line 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "p1": "A",
+          "p2": "B",
+        },
+        "id": "l_1",
+        "kind": "line",
+        "label": "line_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) midpoint 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "constraint": {
+            "kind": "midpoint",
+            "p1": "A",
+            "p2": "B",
+          },
+        },
+        "id": "mp_1",
+        "kind": "point",
+        "label": "point_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) orthocenter 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "constraint": {
+            "kind": "orthocenter",
+            "vertices": [
+              "A",
+              "B",
+              "C",
+            ],
+          },
+        },
+        "id": "h_1",
+        "kind": "point",
+        "label": "point_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) parallel 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "construction": {
+            "kind": "parallel",
+            "throughPoint": "A",
+            "toLine": "l1",
+          },
+        },
+        "id": "par_1",
+        "kind": "line",
+        "label": "line_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) parallelogram 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "construction": {
+            "kind": "parallelogram",
+            "p1": "A",
+            "p2": "B",
+            "p3": "C",
+          },
+        },
+        "id": "pgm_1",
+        "kind": "polygon",
+        "label": "polygon_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) perpBisector 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "construction": {
+            "kind": "perpBisector",
+            "p1": "A",
+            "p2": "B",
+          },
+        },
+        "id": "pb_1",
+        "kind": "line",
+        "label": "line_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) perpFoot 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "constraint": {
+            "from": "A",
+            "kind": "perpFoot",
+            "onLine": "l1",
+          },
+        },
+        "id": "pf_1",
+        "kind": "point",
+        "label": "point_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) perpendicular 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "construction": {
+            "kind": "perpendicular",
+            "throughPoint": "A",
+            "toLine": "l1",
+          },
+        },
+        "id": "perp_1",
+        "kind": "line",
+        "label": "line_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) pointOn-circle 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "constraint": {
+            "circleId": "O",
+            "kind": "onCircle",
+            "theta": 0,
+          },
+        },
+        "id": "p_1",
+        "kind": "point",
+        "label": "point_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) ray 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "origin": "A",
+          "through": "B",
+        },
+        "id": "r_1",
+        "kind": "ray",
+        "label": "ray_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) rectangle 1`] = `
+[
+  {
+    "payload": {
+      "actions": [
+        {
+          "payload": {
+            "id": "C",
+            "patch": {
+              "constraint": {
+                "kind": "onPerpendicular",
+                "perpToA": "A",
+                "perpToB": "B",
+                "t": 3,
+                "through": "B",
+              },
+            },
+          },
+          "type": "UPDATE_ATTRS",
+        },
+        {
+          "payload": {
+            "obj": {
+              "attrs": {
+                "construction": {
+                  "kind": "rectangle",
+                  "p1": "A",
+                  "p2": "B",
+                  "p3": "C",
+                },
+              },
+              "id": "rect_1",
+              "kind": "polygon",
+              "label": "polygon_label",
+              "layer": "default",
+              "locked": false,
+              "schemaVersion": 1,
+              "visible": true,
+            },
+          },
+          "type": "ADD",
+        },
+      ],
+    },
+    "type": "TRANSACTION",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) rhombus 1`] = `
+[
+  {
+    "payload": {
+      "actions": [
+        {
+          "payload": {
+            "id": "C",
+            "patch": {
+              "constraint": {
+                "center": "B",
+                "kind": "onCircleAroundPoint",
+                "radiusPoint": "A",
+                "theta": 0.7853981633974483,
+              },
+            },
+          },
+          "type": "UPDATE_ATTRS",
+        },
+        {
+          "payload": {
+            "obj": {
+              "attrs": {
+                "construction": {
+                  "kind": "rhombus",
+                  "p1": "A",
+                  "p2": "B",
+                  "p3": "C",
+                },
+              },
+              "id": "rho_1",
+              "kind": "polygon",
+              "label": "polygon_label",
+              "layer": "default",
+              "locked": false,
+              "schemaVersion": 1,
+              "visible": true,
+            },
+          },
+          "type": "ADD",
+        },
+      ],
+    },
+    "type": "TRANSACTION",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) rightTriangle 1`] = `
+[
+  {
+    "payload": {
+      "actions": [
+        {
+          "payload": {
+            "id": "P2",
+            "patch": {
+              "constraint": {
+                "kind": "onPerpendicular",
+                "perpToA": "R",
+                "perpToB": "P1",
+                "t": 3,
+                "through": "R",
+              },
+            },
+          },
+          "type": "UPDATE_ATTRS",
+        },
+        {
+          "payload": {
+            "obj": {
+              "attrs": {
+                "construction": {
+                  "kind": "rightTriangle",
+                  "leg1End": "P1",
+                  "leg2End": "P2",
+                  "rightAngle": "R",
+                },
+              },
+              "id": "rtri_1",
+              "kind": "polygon",
+              "label": "polygon_label",
+              "layer": "default",
+              "locked": false,
+              "schemaVersion": 1,
+              "visible": true,
+            },
+          },
+          "type": "ADD",
+        },
+      ],
+    },
+    "type": "TRANSACTION",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) secondIntersection 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "constraint": {
+            "circle": "O",
+            "kind": "secondIntersection",
+            "line": "l1",
+            "other": "P",
+          },
+        },
+        "id": "X_1",
+        "kind": "point",
+        "label": "point_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) sectorCenter 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "construction": {
+            "center": "O",
+            "kind": "byCenter",
+            "p1": "A",
+            "p2": "B",
+          },
+        },
+        "id": "sec_1",
+        "kind": "sector",
+        "label": "sector_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) segment 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "p1": "A",
+          "p2": "B",
+        },
+        "id": "s_1",
+        "kind": "segment",
+        "label": "segment_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) semicircle 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "construction": {
+            "kind": "semicircle",
+            "p1": "A",
+            "p2": "B",
+          },
+        },
+        "id": "arc_1",
+        "kind": "arc",
+        "label": "arc_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) square 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "construction": {
+            "kind": "square",
+            "p1": "A",
+            "p2": "B",
+          },
+        },
+        "id": "sq_1",
+        "kind": "polygon",
+        "label": "polygon_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) tangencyPoint 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "constraint": {
+            "circle": "O",
+            "kind": "tangencyPoint",
+            "onLine": "l1",
+          },
+        },
+        "id": "tp_1",
+        "kind": "point",
+        "label": "point_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) tangent-inside 1`] = `[]`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) tangent-on 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "construction": {
+            "branch": "on",
+            "kind": "tangent",
+            "throughPoint": "P",
+            "toCircle": "O",
+          },
+        },
+        "id": "t_1",
+        "kind": "line",
+        "label": "line_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) tangent-outside 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "construction": {
+            "branch": 0,
+            "kind": "tangent",
+            "throughPoint": "P",
+            "toCircle": "O",
+          },
+        },
+        "id": "t_1",
+        "kind": "line",
+        "label": "line_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "construction": {
+            "branch": 1,
+            "kind": "tangent",
+            "throughPoint": "P",
+            "toCircle": "O",
+          },
+        },
+        "id": "t_1",
+        "kind": "line",
+        "label": "line_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) tangentPointExt 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "constraint": {
+            "circle": "O",
+            "from": "P",
+            "kind": "tangentPointExt",
+            "which": 0,
+          },
+        },
+        "id": "T_1",
+        "kind": "point",
+        "label": "point_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "constraint": {
+            "circle": "O",
+            "from": "P",
+            "kind": "tangentPointExt",
+            "which": 1,
+          },
+        },
+        "id": "T_1",
+        "kind": "point",
+        "label": "point_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) vector 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "from": "A",
+          "to": "B",
+        },
+        "id": "v_1",
+        "kind": "vector",
+        "label": "vector_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;

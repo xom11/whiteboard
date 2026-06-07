@@ -1,0 +1,4691 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: angleBisectorFoot 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "intersection",
+      "name": "D",
+      "ref1": "ab_ABC",
+      "ref2": "BC",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "angleBisector",
+      "name": "ab_ABC",
+      "p1": "B",
+      "p2": "C",
+      "vertex": "A",
+    },
+    {
+      "kind": "segment",
+      "name": "BC",
+      "p1": "B",
+      "p2": "C",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: arcMidpoint 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "a": "A",
+      "b": "B",
+      "circle": "O",
+      "kind": "arcMidpoint",
+      "name": "M",
+      "notContaining": "C",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "circle3",
+      "name": "O",
+      "p1": "A",
+      "p2": "B",
+      "p3": "C",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: centroid 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "centroid",
+      "name": "G",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: circle-centerRadius 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "K",
+      "x": -3,
+      "y": -3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "center": "K",
+      "kind": "circleCR",
+      "name": "O",
+      "radius": 3,
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: circle-centerThrough 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "center": "A",
+      "kind": "circleCP",
+      "name": "O",
+      "surfacePoint": "B",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: circle-inscribedIn 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "incircle",
+      "name": "O",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: circle-through3 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "circle3",
+      "name": "O",
+      "p1": "A",
+      "p2": "B",
+      "p3": "C",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: circleIntersection 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "E",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "F",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "c1": "O1",
+      "c2": "O2",
+      "kind": "circleIntersection",
+      "name": "X",
+      "which": 0,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "polygon",
+      "name": "DEF",
+      "vertices": [
+        "D",
+        "E",
+        "F",
+      ],
+    },
+    {
+      "center": "A",
+      "kind": "circleCP",
+      "name": "O1",
+      "surfacePoint": "B",
+    },
+    {
+      "center": "D",
+      "kind": "circleCP",
+      "name": "O2",
+      "surfacePoint": "E",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: circumcenter 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "circumcenter",
+      "name": "O",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: connect-line 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "line",
+      "name": "l_AB",
+      "p1": "A",
+      "p2": "B",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: connect-perpBisector 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "perpBisector",
+      "name": "pb_AB",
+      "p1": "A",
+      "p2": "B",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: connect-ray 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "ray",
+      "name": "r_AB",
+      "origin": "A",
+      "through": "B",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: connect-segment 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "AB",
+      "p1": "A",
+      "p2": "B",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: excenter 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "excenter",
+      "name": "J",
+      "opposite": "A",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: free-no-at 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "P",
+      "x": 3,
+      "y": 3,
+    },
+  ],
+  "shapes": [],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: free-with-at 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "P",
+      "x": 2,
+      "y": 2,
+    },
+  ],
+  "shapes": [],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: incenter 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "incenter",
+      "name": "I",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: intersection 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "E",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "F",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "intersection",
+      "name": "K",
+      "ref1": "AB",
+      "ref2": "DE",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "polygon",
+      "name": "DEF",
+      "vertices": [
+        "D",
+        "E",
+        "F",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "AB",
+      "p1": "A",
+      "p2": "B",
+    },
+    {
+      "kind": "segment",
+      "name": "DE",
+      "p1": "D",
+      "p2": "E",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: line-parallelThrough 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "BC",
+      "p1": "B",
+      "p2": "C",
+    },
+    {
+      "kind": "parallel",
+      "name": "d",
+      "throughPoint": "A",
+      "toLine": "BC",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: line-perpThrough 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "BC",
+      "p1": "B",
+      "p2": "C",
+    },
+    {
+      "kind": "perpendicular",
+      "name": "d",
+      "throughPoint": "A",
+      "toLine": "BC",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: line-tangentAt 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "center": "B",
+      "kind": "circleCP",
+      "name": "O",
+      "surfacePoint": "A",
+    },
+    {
+      "branch": "on",
+      "kind": "tangent",
+      "name": "t",
+      "throughPoint": "A",
+      "toCircle": "O",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: line-tangentFromExt-both 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "P",
+      "x": 8,
+      "y": 0,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "center": "A",
+      "kind": "circleCP",
+      "name": "O",
+      "surfacePoint": "B",
+    },
+    {
+      "branch": 0,
+      "kind": "tangent",
+      "name": "t_0",
+      "throughPoint": "P",
+      "toCircle": "O",
+    },
+    {
+      "branch": 1,
+      "kind": "tangent",
+      "name": "t_1",
+      "throughPoint": "P",
+      "toCircle": "O",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: line-tangentFromExt-first 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "P",
+      "x": 8,
+      "y": 0,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "center": "A",
+      "kind": "circleCP",
+      "name": "O",
+      "surfacePoint": "B",
+    },
+    {
+      "branch": 0,
+      "kind": "tangent",
+      "name": "t",
+      "throughPoint": "P",
+      "toCircle": "O",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: mark-shape 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "polygon",
+      "name": "ABC2",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: midpoint-AB 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "midpoint",
+      "name": "M",
+      "p1": "A",
+      "p2": "B",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "AB",
+      "p1": "A",
+      "p2": "B",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: onSegment-no-t 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "onSegment",
+      "name": "P",
+      "segmentId": "AB",
+      "t": 0.5,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "AB",
+      "p1": "A",
+      "p2": "B",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: onSegment-with-t 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "onSegment",
+      "name": "P",
+      "segmentId": "AB",
+      "t": 0.3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "AB",
+      "p1": "A",
+      "p2": "B",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: orthocenter 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "orthocenter",
+      "name": "H",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: parallelogram-standard 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 4,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 5,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 1,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABCD",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+        "D",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: perpFoot 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "from": "A",
+      "kind": "perpFoot",
+      "name": "H",
+      "onLine": "BC",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "BC",
+      "p1": "B",
+      "p2": "C",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: pointAtDistance-circleRadius 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "distance": {
+        "circle": "O",
+        "kind": "circleRadius",
+      },
+      "from": "A",
+      "kind": "pointAtDistance",
+      "name": "C2",
+      "through": "B",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "center": "A",
+      "kind": "circleCP",
+      "name": "O",
+      "surfacePoint": "B",
+    },
+    {
+      "kind": "segment",
+      "name": "AB",
+      "p1": "A",
+      "p2": "B",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: pointAtDistance-literal 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "distance": {
+        "kind": "literal",
+        "value": 3,
+      },
+      "from": "A",
+      "kind": "pointAtDistance",
+      "name": "C2",
+      "through": "B",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "AB",
+      "p1": "A",
+      "p2": "B",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: pointAtDistance-segmentLength 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "distance": {
+        "kind": "segmentLength",
+        "p1": "A",
+        "p2": "B",
+      },
+      "from": "A",
+      "kind": "pointAtDistance",
+      "name": "C2",
+      "through": "B",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "AB",
+      "p1": "A",
+      "p2": "B",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: quadrilateral-any 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 4.5,
+      "y": 3.5,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 0.5,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABCD",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+        "D",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: rectangle-standard 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 4,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 4,
+      "y": 2.5,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 0,
+      "y": 2.5,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABCD",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+        "D",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: rectangle-tall 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 2.5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2.5,
+      "y": 4,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 0,
+      "y": 4,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABCD",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+        "D",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: rectangle-wide 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 4,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 4,
+      "y": 2.5,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 0,
+      "y": 2.5,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABCD",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+        "D",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: reflectLine 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "reflectLine",
+      "name": "P",
+      "of": "A",
+      "through": "BC",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "BC",
+      "p1": "B",
+      "p2": "C",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: reflectPoint 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "O",
+      "x": 1,
+      "y": 1,
+    },
+    {
+      "kind": "reflectPoint",
+      "name": "P",
+      "of": "A",
+      "through": "O",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: rhombus-standard 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": -2,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 0,
+      "y": -1.5,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 0,
+      "y": 1.5,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABCD",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+        "D",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: rightAngleViewing-no-which 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "midpoint",
+      "name": "mid_AB",
+      "p1": "A",
+      "p2": "B",
+      "visible": false,
+    },
+    {
+      "branch": 0,
+      "kind": "intersection",
+      "name": "M",
+      "ref1": "d",
+      "ref2": "dia_AB",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "center": "mid_AB",
+      "kind": "circleCP",
+      "name": "dia_AB",
+      "surfacePoint": "A",
+      "visible": false,
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: rightAngleViewing-which 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "midpoint",
+      "name": "mid_AB",
+      "p1": "A",
+      "p2": "B",
+      "visible": false,
+    },
+    {
+      "branch": 0,
+      "kind": "intersection",
+      "name": "M",
+      "ref1": "d",
+      "ref2": "dia_AB",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "center": "mid_AB",
+      "kind": "circleCP",
+      "name": "dia_AB",
+      "surfacePoint": "A",
+      "visible": false,
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: secondIntersection 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "P",
+      "x": 2,
+      "y": 2,
+    },
+    {
+      "circle": "O",
+      "kind": "secondIntersection",
+      "line": "AB",
+      "name": "Q",
+      "other": "P",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "center": "A",
+      "kind": "circleCP",
+      "name": "O",
+      "surfacePoint": "B",
+    },
+    {
+      "kind": "segment",
+      "name": "AB",
+      "p1": "A",
+      "p2": "B",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: square-standard 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 4,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 4,
+      "y": 4,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 0,
+      "y": 4,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABCD",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+        "D",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: tangencyPoint 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "circle": "O",
+      "kind": "tangencyPoint",
+      "name": "T",
+      "onLine": "AB",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "center": "A",
+      "kind": "circleCP",
+      "name": "O",
+      "surfacePoint": "B",
+    },
+    {
+      "kind": "segment",
+      "name": "AB",
+      "p1": "A",
+      "p2": "B",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: tangentPoint 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "P",
+      "x": 8,
+      "y": 0,
+    },
+    {
+      "circle": "O",
+      "from": "P",
+      "kind": "tangentPointExt",
+      "name": "T",
+      "which": 0,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "center": "A",
+      "kind": "circleCP",
+      "name": "O",
+      "surfacePoint": "B",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: trapezoid-general 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 3.5,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 1,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABCD",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+        "D",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: trapezoid-isoceles 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 4,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 1,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABCD",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+        "D",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: trapezoid-right 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 3,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 0,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABCD",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+        "D",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: triangle-any 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: triangle-equilateral 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 4,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3.4641016151377544,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: triangle-explicitCoords 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 1,
+      "y": 1,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: triangle-isoceles-AB 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 4,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: triangle-isoceles-BC 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": -2,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 0,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: triangle-isoceles-CA 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 4,
+      "y": 0,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: triangle-right-at-A 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 4,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 0,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: triangle-right-at-B 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 4,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 4,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: triangle-right-at-C 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 6,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 3,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[0]: Cho tam giác ABC. Gọi M là trung điểm BC 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "midpoint",
+      "name": "M",
+      "p1": "B",
+      "p2": "C",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "BC",
+      "p1": "B",
+      "p2": "C",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[1]: Cho tam giác ABC. Gọi G là trọng tâm tam giác ABC 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "centroid",
+      "name": "G",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[2]: Cho tam giác ABC. Kẻ đường cao AH 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "from": "A",
+      "kind": "perpFoot",
+      "name": "H",
+      "onLine": "BC",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "BC",
+      "p1": "B",
+      "p2": "C",
+    },
+    {
+      "kind": "segment",
+      "name": "AH",
+      "p1": "A",
+      "p2": "H",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[3]: Cho tam giác ABC. Gọi H là hình chiếu của A trên B 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "from": "A",
+      "kind": "perpFoot",
+      "name": "H",
+      "onLine": "BC",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "BC",
+      "p1": "B",
+      "p2": "C",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[4]: Cho hình vuông ABCD 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 4,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 4,
+      "y": 4,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 0,
+      "y": 4,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABCD",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+        "D",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[5]: Cho hình chữ nhật ABCD 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 4,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 4,
+      "y": 2.5,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 0,
+      "y": 2.5,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABCD",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+        "D",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[6]: Cho tam giác ABC vuông tại A. Gọi M là trung điểm  1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 4,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 0,
+      "y": 3,
+    },
+    {
+      "kind": "midpoint",
+      "name": "M",
+      "p1": "B",
+      "p2": "C",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "BC",
+      "p1": "B",
+      "p2": "C",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[7]: Cho tam giác ABC cân tại A. Kẻ trung tuyến AM 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": -2,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 0,
+    },
+    {
+      "kind": "midpoint",
+      "name": "M",
+      "p1": "B",
+      "p2": "C",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "BC",
+      "p1": "B",
+      "p2": "C",
+    },
+    {
+      "kind": "segment",
+      "name": "AM",
+      "p1": "A",
+      "p2": "M",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[8]: Cho đường tròn tâm O bán kính 3 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "O",
+      "x": 3,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "center": "O",
+      "kind": "circleCR",
+      "name": "O_c",
+      "radius": 3,
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[9]: Cho đường tròn (O; 3) 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "O",
+      "x": 3,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "center": "O",
+      "kind": "circleCR",
+      "name": "O_c",
+      "radius": 3,
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[10]: Cho tam giác ABC. Vẽ đường tròn ngoại tiếp tam giá 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "circle3",
+      "name": "O",
+      "p1": "A",
+      "p2": "B",
+      "p3": "C",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[11]: Cho tam giác ABC. Vẽ đường tròn nội tiếp tam giác  1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "incircle",
+      "name": "O",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[12]: Cho tam giác ABC. Gọi H là trực tâm của tam giác A 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "orthocenter",
+      "name": "H",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[13]: Cho tam giác ABC và tam giác ABD vuông tại A 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 0,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "polygon",
+      "name": "ABD",
+      "vertices": [
+        "A",
+        "B",
+        "D",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[14]: Cho tam giác ABC và tam giác ACD cân tại A 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 2,
+      "y": 0,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "polygon",
+      "name": "ACD",
+      "vertices": [
+        "A",
+        "C",
+        "D",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[15]: Cho tam giác đều DEF nội tiếp tam giác ABC 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "E",
+      "x": 4,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "F",
+      "x": 2,
+      "y": 3.4641016151377544,
+    },
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "DEF",
+      "vertices": [
+        "D",
+        "E",
+        "F",
+      ],
+    },
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[16]: Cho tam giác ABC nội tiếp tam giác đều MNP 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "M",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "N",
+      "x": 4,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "P",
+      "x": 2,
+      "y": 3.4641016151377544,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "polygon",
+      "name": "MNP",
+      "vertices": [
+        "M",
+        "N",
+        "P",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[17]: Cho hình bình hành ABCD và hình chữ nhật EFGH 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 4,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 5,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 1,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "E",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "F",
+      "x": 4,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "G",
+      "x": 4,
+      "y": 2.5,
+    },
+    {
+      "kind": "free",
+      "name": "H",
+      "x": 0,
+      "y": 2.5,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABCD",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+        "D",
+      ],
+    },
+    {
+      "kind": "polygon",
+      "name": "EFGH",
+      "vertices": [
+        "E",
+        "F",
+        "G",
+        "H",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[18]: Cho hình thoi ABCD và hình vuông EFGH 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": -2,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 0,
+      "y": -1.5,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 0,
+      "y": 1.5,
+    },
+    {
+      "kind": "free",
+      "name": "E",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "F",
+      "x": 4,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "G",
+      "x": 4,
+      "y": 4,
+    },
+    {
+      "kind": "free",
+      "name": "H",
+      "x": 0,
+      "y": 4,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABCD",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+        "D",
+      ],
+    },
+    {
+      "kind": "polygon",
+      "name": "EFGH",
+      "vertices": [
+        "E",
+        "F",
+        "G",
+        "H",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[19]: Cho tam giác ABC và tam giác DEF. Gọi G là trọng t 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "E",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "F",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "centroid",
+      "name": "G",
+      "vertices": [
+        "D",
+        "E",
+        "F",
+      ],
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "polygon",
+      "name": "DEF",
+      "vertices": [
+        "D",
+        "E",
+        "F",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[20]: Cho tam giác ABC. Lấy tam giác MBC. Gọi H là trực  1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "M",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "orthocenter",
+      "name": "H",
+      "vertices": [
+        "M",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "polygon",
+      "name": "MBC",
+      "vertices": [
+        "M",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[21]: Cho tam giác ABC. Dựng tam giác DEF. Gọi I là tâm  1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "D",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "E",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "F",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "incenter",
+      "name": "I",
+      "vertices": [
+        "D",
+        "E",
+        "F",
+      ],
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "polygon",
+      "name": "DEF",
+      "vertices": [
+        "D",
+        "E",
+        "F",
+      ],
+    },
+    {
+      "kind": "incircle",
+      "name": "O",
+      "vertices": [
+        "D",
+        "E",
+        "F",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[22]: Cho tam giác ABC. Gọi M là trung điểm BC và N là t 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "midpoint",
+      "name": "M",
+      "p1": "B",
+      "p2": "C",
+    },
+    {
+      "kind": "midpoint",
+      "name": "N",
+      "p1": "A",
+      "p2": "C",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "BC",
+      "p1": "B",
+      "p2": "C",
+    },
+    {
+      "kind": "segment",
+      "name": "AC",
+      "p1": "A",
+      "p2": "C",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[23]: Cho tam giác ABC. Vẽ đường trung trực BC và trung  1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "perpBisector",
+      "name": "pb_BC",
+      "p1": "B",
+      "p2": "C",
+    },
+    {
+      "kind": "perpBisector",
+      "name": "pb_CA",
+      "p1": "C",
+      "p2": "A",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[24]: Cho tam giác ABC. Gọi H, K lần lượt là hình chiếu  1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "from": "B",
+      "kind": "perpFoot",
+      "name": "H",
+      "onLine": "AC",
+    },
+    {
+      "from": "C",
+      "kind": "perpFoot",
+      "name": "K",
+      "onLine": "AB",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "AC",
+      "p1": "A",
+      "p2": "C",
+    },
+    {
+      "kind": "segment",
+      "name": "AB",
+      "p1": "A",
+      "p2": "B",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[25]: Cho tam giác ABC. Vẽ đường tròn ngoại tiếp tứ giác 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "E",
+      "x": 4.5,
+      "y": 3.5,
+    },
+    {
+      "kind": "free",
+      "name": "F",
+      "x": 0.5,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "polygon",
+      "name": "BCEF",
+      "vertices": [
+        "B",
+        "C",
+        "E",
+        "F",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[26]: Cho đường tròn tâm I bán kính 2 và đường tròn tâm  1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "I",
+      "x": 3,
+      "y": 3,
+    },
+    {
+      "kind": "free",
+      "name": "O",
+      "x": -3,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "center": "I",
+      "kind": "circleCR",
+      "name": "I_c",
+      "radius": 2,
+    },
+    {
+      "center": "O",
+      "kind": "circleCR",
+      "name": "O_c",
+      "radius": 5,
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[27]: Cho tam giác ABC vuông tại A. Gọi M là trung điểm  1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 4,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 0,
+      "y": 3,
+    },
+    {
+      "kind": "midpoint",
+      "name": "M",
+      "p1": "B",
+      "p2": "C",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "BC",
+      "p1": "B",
+      "p2": "C",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[28]: Cho tam giác ABC. Gọi I là trung điểm đoạn thẳng A 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "midpoint",
+      "name": "I",
+      "p1": "A",
+      "p2": "C",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "AC",
+      "p1": "A",
+      "p2": "C",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[29]: Cho tam giác ABC. Vẽ phân giác trong AD 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "intersection",
+      "name": "D",
+      "ref1": "ab_ABC",
+      "ref2": "BC",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "angleBisector",
+      "name": "ab_ABC",
+      "p1": "B",
+      "p2": "C",
+      "vertex": "A",
+    },
+    {
+      "kind": "segment",
+      "name": "BC",
+      "p1": "B",
+      "p2": "C",
+    },
+    {
+      "kind": "segment",
+      "name": "AD",
+      "p1": "A",
+      "p2": "D",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[30]: Cho tam giác ABC. Dựng đường phân giác trong AD 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "intersection",
+      "name": "D",
+      "ref1": "ab_ABC",
+      "ref2": "BC",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "angleBisector",
+      "name": "ab_ABC",
+      "p1": "B",
+      "p2": "C",
+      "vertex": "A",
+    },
+    {
+      "kind": "segment",
+      "name": "BC",
+      "p1": "B",
+      "p2": "C",
+    },
+    {
+      "kind": "segment",
+      "name": "AD",
+      "p1": "A",
+      "p2": "D",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[31]: Cho tam giác ABC. Kẻ AH vuông góc BC tại H 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "from": "A",
+      "kind": "perpFoot",
+      "name": "H",
+      "onLine": "BC",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "BC",
+      "p1": "B",
+      "p2": "C",
+    },
+    {
+      "kind": "segment",
+      "name": "AH",
+      "p1": "A",
+      "p2": "H",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[32]: Cho tam giác ABC. Kẻ AH ⊥ BC tại H 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "from": "A",
+      "kind": "perpFoot",
+      "name": "H",
+      "onLine": "BC",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "BC",
+      "p1": "B",
+      "p2": "C",
+    },
+    {
+      "kind": "segment",
+      "name": "AH",
+      "p1": "A",
+      "p2": "H",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[33]: Đường tròn (O; R) ngoại tiếp tam giác ABC 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "circle3",
+      "name": "O",
+      "p1": "A",
+      "p2": "B",
+      "p3": "C",
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[34]: Cho tam giác ABC ngoại tiếp đường tròn (I) 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "incircle",
+      "name": "I",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[35]: Cho tam giác MNP ngoại tiếp đường tròn tâm O 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "M",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "N",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "P",
+      "x": 2,
+      "y": 3,
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "MNP",
+      "vertices": [
+        "M",
+        "N",
+        "P",
+      ],
+    },
+    {
+      "kind": "incircle",
+      "name": "O",
+      "vertices": [
+        "M",
+        "N",
+        "P",
+      ],
+    },
+  ],
+  "version": 1,
+}
+`;
+
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[36]: Cho tam giác ABC. Trên tia đối của tia BA lấy điểm 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "distance": {
+        "kind": "segmentLength",
+        "p1": "A",
+        "p2": "B",
+      },
+      "from": "A",
+      "kind": "pointAtDistance",
+      "name": "D",
+      "through": "B",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "segment",
+      "name": "AB",
+      "p1": "A",
+      "p2": "B",
+    },
+    {
+      "kind": "ray",
+      "name": "r_BA",
+      "origin": "B",
+      "through": "A",
+    },
+  ],
+  "version": 1,
+}
+`;
