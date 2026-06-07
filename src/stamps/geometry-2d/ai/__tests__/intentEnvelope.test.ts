@@ -27,5 +27,6 @@ describe('intentEnvelopeJsonSchema — Tier 4+5 coverage', () => {
     expect(json).toContain('tangencyPoint');
     expect(json).toContain('tangentPoint');
     expect(json).toContain('angleBisectorFoot');
+    expect(json).toContain('externalAngleBisectorFoot');
   });
 });

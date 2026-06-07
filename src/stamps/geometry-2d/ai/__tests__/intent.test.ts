@@ -99,6 +99,14 @@ describe('Intent schema — Tier 4+5 additions', () => {
       });
       expect(r.success).toBe(true);
     });
+    it('parses externalAngleBisectorFoot', () => {
+      const r = IntentZ.safeParse({
+        op: 'add-point', name: 'D', constraint: {
+          kind: 'externalAngleBisectorFoot', from: 'A', onLine: 'BC',
+        },
+      });
+      expect(r.success).toBe(true);
+    });
   });
 });
 

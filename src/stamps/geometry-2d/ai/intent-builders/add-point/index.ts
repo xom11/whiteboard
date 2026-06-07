@@ -12,6 +12,7 @@ import { buildIntersection, buildSecondIntersection, buildCircleIntersection } f
 import { buildTangencyPoint, buildTangentPoint } from './tangency';
 import { buildOnSegment, buildFree } from './onSegment-free';
 import { buildAngleBisectorFoot } from './angleBisectorFoot';
+import { buildExternalAngleBisectorFoot } from './externalAngleBisectorFoot';
 import { buildRightAngleViewing } from './rightAngleViewing';
 import { buildArcMidpoint } from './arcMidpoint';
 import { buildReflectPoint, buildReflectLine } from './reflect';
@@ -24,7 +25,8 @@ export const ADD_POINT_BUILDERS: Record<string, (s: BuildState, intent: AddPoint
   intersection: buildIntersection, secondIntersection: buildSecondIntersection, circleIntersection: buildCircleIntersection,
   tangencyPoint: buildTangencyPoint, tangentPoint: buildTangentPoint,
   onSegment: buildOnSegment, free: buildFree,
-  angleBisectorFoot: buildAngleBisectorFoot, rightAngleViewing: buildRightAngleViewing,
+  angleBisectorFoot: buildAngleBisectorFoot, externalAngleBisectorFoot: buildExternalAngleBisectorFoot,
+  rightAngleViewing: buildRightAngleViewing,
   arcMidpoint: buildArcMidpoint, reflectPoint: buildReflectPoint, reflectLine: buildReflectLine,
   pointAtDistance: buildPointAtDistance,
 };

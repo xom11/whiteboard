@@ -236,6 +236,20 @@ describe('intentsToDsl — Tier 4+5', () => {
     expect(dsl.points.find((p) => p.name === 'D' && p.kind === 'intersection')).toBeDefined();
   });
 
+  it('handles add-point externalAngleBisectorFoot (angleBisector + perpendicular + intersection)', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A','B','C'], variant: 'any' },
+      { op: 'add-point', name: 'D', constraint: { kind: 'externalAngleBisectorFoot', from: 'A', onLine: 'BC' } },
+    ] as never);
+    // Phân giác trong (helper) + phân giác ngoài = perpendicular qua A.
+    expect(dsl.shapes.find((s) => s.kind === 'angleBisector')).toBeDefined();
+    const perp = dsl.shapes.find((s) => s.kind === 'perpendicular') as any;
+    expect(perp).toBeDefined();
+    expect(perp.throughPoint).toBe('A');
+    // Chân D = giao phân giác ngoài ∩ BC.
+    expect(dsl.points.find((p) => p.name === 'D' && p.kind === 'intersection')).toBeDefined();
+  });
+
   it('handles draw-line perpThrough', () => {
     const dsl = intentsToDsl([
       { op: 'draw-shape', shape: 'triangle', labels: ['A','B','C'], variant: 'any' },

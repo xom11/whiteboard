@@ -174,13 +174,64 @@ describe('cevianRule', () => {
     expect(pt.constraint).toEqual({ kind: 'angleBisectorFoot', from: 'A', onLine: 'BC' });
   });
 
-  it('FAIL-SAFE: "phân giác ngoài AD" (external, forward) → escalate', () => {
-    expect(run('Cho tam giác ABC. Vẽ phân giác ngoài AD.')).toEqual([]);
+  it('"phân giác trong" KHÔNG bị nhánh external nuốt (không nhận nhầm)', () => {
+    // Đảm bảo internal vẫn chỉ emit angleBisectorFoot, không kèm external.
+    const m = run('Cho tam giác ABC. Vẽ phân giác trong AD.');
+    expect(findByKind(m, 'angleBisectorFoot')).toBeTruthy();
+    expect(findByKind(m, 'externalAngleBisectorFoot')).toBeUndefined();
   });
 
-  it('FAIL-SAFE: "AD là phân giác ngoài" (external, suffix) → escalate', () => {
-    // Bug cũ: suffix bắt "AD ... phân giác", bỏ qua "ngoài" → nhận nhầm internal.
-    expect(run('Cho tam giác ABC, AD là phân giác ngoài.')).toEqual([]);
+  // ── Issue #46 nhóm A: "phân giác ngoài AD" (external bisector) → DET ──
+
+  it('"Vẽ phân giác ngoài AD" → externalAngleBisectorFoot(from A, onLine BC) + connect A-D', () => {
+    const m = run('Cho tam giác ABC. Vẽ phân giác ngoài AD.');
+    const match = findByKind(m, 'externalAngleBisectorFoot');
+    expect(match).toBeTruthy();
+    const [pt, con] = match!.intents as any[];
+    expect(pt.op).toBe('add-point');
+    expect(pt.name).toBe('D');
+    expect(pt.constraint).toEqual({ kind: 'externalAngleBisectorFoot', from: 'A', onLine: 'BC' });
+    expect(con.op).toBe('connect');
+    expect(con.from).toBe('A');
+    expect(con.to).toBe('D');
+    expect(con.style).toBe('segment');
+    // Không kèm phân giác trong.
+    expect(findByKind(m, 'angleBisectorFoot')).toBeUndefined();
+  });
+
+  it('"Kẻ phân giác ngoài AD" → externalAngleBisectorFoot from A', () => {
+    const m = run('Cho tam giác ABC. Kẻ phân giác ngoài AD.');
+    const pt = findByKind(m, 'externalAngleBisectorFoot')!.intents[0] as any;
+    expect(pt.name).toBe('D');
+    expect(pt.constraint).toEqual({ kind: 'externalAngleBisectorFoot', from: 'A', onLine: 'BC' });
+  });
+
+  it('"Dựng đường phân giác ngoài BD" → from B onLine AC (cạnh đối B)', () => {
+    const m = run('Cho tam giác ABC. Dựng đường phân giác ngoài BD.');
+    const pt = findByKind(m, 'externalAngleBisectorFoot')!.intents[0] as any;
+    expect(pt.name).toBe('D');
+    expect(pt.constraint).toEqual({ kind: 'externalAngleBisectorFoot', from: 'B', onLine: 'AC' });
+  });
+
+  it('"AD là phân giác ngoài" (suffix) → externalAngleBisectorFoot from A', () => {
+    const m = run('Cho tam giác ABC, AD là phân giác ngoài.');
+    const pt = findByKind(m, 'externalAngleBisectorFoot')!.intents[0] as any;
+    expect(pt.name).toBe('D');
+    expect(pt.constraint).toEqual({ kind: 'externalAngleBisectorFoot', from: 'A', onLine: 'BC' });
+    // KHÔNG nhận nhầm thành internal.
+    expect(findByKind(m, 'angleBisectorFoot')).toBeUndefined();
+  });
+
+  it('FAIL-SAFE: "phân giác ngoài AD" KHÔNG có tam giác → escalate (rỗng)', () => {
+    expect(run('Vẽ phân giác ngoài AD của hình.')).toEqual([]);
+  });
+
+  it('FAIL-SAFE: "phân giác ngoài AB" (foot=B trùng đỉnh) → SKIP (escalate)', () => {
+    expect(run('Cho tam giác ABC. Vẽ phân giác ngoài AB.')).toEqual([]);
+  });
+
+  it('FAIL-SAFE: "phân giác ngoài PD" (apex P ngoài tam giác) → bỏ qua', () => {
+    expect(run('Cho tam giác ABC. Vẽ phân giác ngoài PD.')).toEqual([]);
   });
 
   // ── Mức 2: keyword HOA đầu câu ("Đường cao"/"Trung tuyến"/"Phân giác") ──

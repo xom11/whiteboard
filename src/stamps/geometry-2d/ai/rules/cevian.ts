@@ -27,7 +27,7 @@ const TRI = /tam\s*giác(?:\s+(?:vuông|cân|đều|nhọn|tù))?\s+([A-Z])([A-Z
 // Cevian type → patterns. Mỗi pattern capture đỉnh (g1) + chân (g2): 2 ký tự
 // HOA liền (vd "AH"). (?![A-Z]) chặn match nhầm vào cụm 3 ký tự (vd "ABC").
 // TẤT CẢ pattern dùng cờ /g để matchAll bắt MỌI cevian trong 1 clause.
-type CevianType = 'altitude' | 'median' | 'bisector';
+type CevianType = 'altitude' | 'median' | 'bisector' | 'externalBisector';
 
 // LƯU Ý case: KHÔNG dùng cờ 'i' (làm [A-Z] khớp chữ thường → bắt rác). Nhưng
 // keyword có thể HOA ở đầu câu ("Đường cao AH", "Trung tuyến AM", "Phân giác AD")
@@ -60,6 +60,19 @@ const CEVIAN_PATTERNS: ReadonlyArray<{ type: CevianType; patterns: readonly RegE
       /(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\s+(?:[Đđ]ường\s*|[Tt]ia\s+)?phân\s*giác(?:\s+trong)?\s+([A-Z])([A-Z])(?![A-Z])/gu,
       /(?:[Đđ]ường\s*phân\s*giác|[Tt]ia\s+phân\s*giác|[Pp]hân\s*giác)(?:\s+trong)?\s+([A-Z])([A-Z])(?![A-Z])/gu,
       /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?(?:đường\s*|tia\s+)?phân\s*giác(?:\s+trong)?(?!\s+ngoài)/gu,
+    ],
+  },
+  {
+    // "phân giác NGOÀI AD" (external bisector, Issue #46 nhóm A). Nhánh RIÊNG,
+    // BẮT BUỘC có từ "ngoài" sau "phân giác" (forward) hoặc trước/sau cặp đỉnh
+    // (suffix). Phân giác ngoài ⊥ phân giác trong tại đỉnh → builder dựng qua
+    // angleBisector(trong) + perpendicular. KHÔNG đụng pattern 'bisector' nội bộ
+    // (vốn đã reject "ngoài" qua chữ thường forward + (?!\s+ngoài) suffix).
+    type: 'externalBisector',
+    patterns: [
+      /(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\s+(?:[Đđ]ường\s*|[Tt]ia\s+)?phân\s*giác\s+ngoài\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      /(?:[Đđ]ường\s*phân\s*giác|[Tt]ia\s+phân\s*giác|[Pp]hân\s*giác)\s+ngoài\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?(?:đường\s*|tia\s+)?phân\s*giác\s+ngoài/gu,
     ],
   },
 ];
@@ -143,6 +156,12 @@ export const cevianRule: LanguageRule = {
         pointIntent = addPoint(cv.foot, { kind: 'perpFoot', from: cv.apex, onLine: cv.opp });
       } else if (cv.type === 'median') {
         pointIntent = addPoint(cv.foot, { kind: 'midpoint', of: cv.opp });
+      } else if (cv.type === 'externalBisector') {
+        pointIntent = addPoint(cv.foot, {
+          kind: 'externalAngleBisectorFoot',
+          from: cv.apex,
+          onLine: cv.opp,
+        });
       } else {
         pointIntent = addPoint(cv.foot, {
           kind: 'angleBisectorFoot',

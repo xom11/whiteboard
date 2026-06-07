@@ -46,6 +46,8 @@ Cho tam giác ABC vuông tại A. Gọi M là trung điểm cạnh huyền BC
 Cho tam giác ABC. Gọi I là trung điểm đoạn thẳng AC
 Cho tam giác ABC. Vẽ phân giác trong AD
 Cho tam giác ABC. Dựng đường phân giác trong AD
+Cho tam giác ABC. Vẽ phân giác ngoài AD
+Cho tam giác ABC. Kẻ phân giác ngoài AD
 Cho tam giác ABC. Kẻ AH vuông góc BC tại H
 Cho tam giác ABC. Kẻ AH ⊥ BC tại H
 Đường tròn (O; R) ngoại tiếp tam giác ABC
@@ -54,10 +56,9 @@ Cho tam giác MNP ngoại tiếp đường tròn tâm O
 Cho tam giác ABC. Trên tia đối của tia BA lấy điểm D′ sao cho BD′ = AB
 
 # === Mức 2: PHẢI escalate (fail-safe — construct chưa hỗ trợ / xung đột) ===
-Cho tam giác ABC. Vẽ phân giác ngoài AD
-Cho tam giác ABC. Kẻ phân giác ngoài AD
 Cho tam giác ABC. Kẻ AH vuông góc BC tại K
 Cho tam giác ABC. M là trung điểm cạnh thẳng BC
+Cho tam giác ABC. Vẽ phân giác ngoài AB
 
 # === Issue #46 nhóm A: "(O; R)" bán kính ký hiệu CHỮ — PHẢI render (minh hoạ) ===
 Cho đường tròn (O; R)

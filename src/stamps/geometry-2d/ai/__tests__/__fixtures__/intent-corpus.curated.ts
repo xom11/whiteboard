@@ -97,6 +97,9 @@ export const CURATED_CORPUS: { name: string; intents: IntentT[] }[] = [
   // ── 13. angleBisectorFoot ──────────────────────────────────────────────────
   { name: 'angleBisectorFoot', intents: [TRI, { op: 'add-point', name: 'D', constraint: { kind: 'angleBisectorFoot', from: 'A', onLine: 'BC' } }] as IntentT[] },
 
+  // ── 13b. externalAngleBisectorFoot (phân giác ngoài, Issue #46 nhóm A) ───────
+  { name: 'externalAngleBisectorFoot', intents: [TRI, { op: 'add-point', name: 'D', constraint: { kind: 'externalAngleBisectorFoot', from: 'A', onLine: 'BC' } }] as IntentT[] },
+
   // ── 14. arcMidpoint ────────────────────────────────────────────────────────
   { name: 'arcMidpoint', intents: [
       TRI,

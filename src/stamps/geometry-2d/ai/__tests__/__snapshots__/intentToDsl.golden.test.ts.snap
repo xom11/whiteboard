@@ -684,6 +684,68 @@ exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: excenter
 }
 `;
 
+exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: externalAngleBisectorFoot 1`] = `
+{
+  "points": [
+    {
+      "kind": "free",
+      "name": "A",
+      "x": 0,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "B",
+      "x": 5,
+      "y": 0,
+    },
+    {
+      "kind": "free",
+      "name": "C",
+      "x": 2,
+      "y": 3,
+    },
+    {
+      "kind": "intersection",
+      "name": "D",
+      "ref1": "abx_ABC",
+      "ref2": "BC",
+    },
+  ],
+  "shapes": [
+    {
+      "kind": "polygon",
+      "name": "ABC",
+      "vertices": [
+        "A",
+        "B",
+        "C",
+      ],
+    },
+    {
+      "kind": "angleBisector",
+      "name": "ab_ABC",
+      "p1": "B",
+      "p2": "C",
+      "vertex": "A",
+    },
+    {
+      "kind": "perpendicular",
+      "name": "abx_ABC",
+      "throughPoint": "A",
+      "toLine": "ab_ABC",
+    },
+    {
+      "kind": "segment",
+      "name": "BC",
+      "p1": "B",
+      "p2": "C",
+    },
+  ],
+  "version": 1,
+}
+`;
+
 exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: free-no-at 1`] = `
 {
   "points": [
