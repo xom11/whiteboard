@@ -19,4 +19,12 @@ describe('intentsToDsl — golden (behavior-preserving Mức 3)', () => {
       expect(intentsToDsl(c.intents)).toMatchSnapshot();
     });
   });
+
+  // Đóng băng reject-path: connect.style=angleBisector phải throw (không snapshot).
+  // Task 2 refactor builders KHÔNG được âm thầm bỏ qua nhánh này.
+  test('reject: connect style=angleBisector throws', () => {
+    expect(() =>
+      intentsToDsl([{ op: 'connect', from: 'A', to: 'B', style: 'angleBisector' } as IntentT]),
+    ).toThrow();
+  });
 });

@@ -8,13 +8,26 @@ import { finalizeShape } from '../finalizeShape';
 import type { HandlerCtx } from '../ctx';
 import type { ToolDef } from '../../tools';
 
-type Pick = { id: string; cls: 1 | 2 | 3; x?: number; y?: number; center?: { x: number; y: number; r: number } };
+type Pick = {
+  id: string;
+  cls: 1 | 2 | 3;
+  x?: number;
+  y?: number;
+  center?: { x: number; y: number; r: number };
+  // Cho pointOn line/segment: finalizeShape đọc elType + point1/point2 (parametric t).
+  elType?: string;
+  point1?: { x: number; y: number };
+  point2?: { x: number; y: number };
+};
 
 function mkCtx(picks: Pick[]): { ctx: HandlerCtx; dispatched: any[] } {
   const dispatched: any[] = [];
   const jxgByPick = picks.map((p) => {
     const o: any = { elementClass: p.cls, X: () => p.x ?? 0, Y: () => p.y ?? 0 };
     if (p.center) (o.center = { X: () => p.center!.x, Y: () => p.center!.y }), (o.Radius = () => p.center!.r);
+    if (p.elType) o.elType = p.elType;
+    if (p.point1) o.point1 = { X: () => p.point1!.x, Y: () => p.point1!.y };
+    if (p.point2) o.point2 = { X: () => p.point2!.x, Y: () => p.point2!.y };
     return o;
   });
   const posById: Record<string, { x: number; y: number }> = {};
@@ -98,6 +111,9 @@ const SCENARIOS: { name: string; picks: Pick[]; tool: ToolDef; clickXY?: { x: nu
   { name: 'incircle', picks: [{ id: 'A', cls: 1 }, { id: 'B', cls: 1 }, { id: 'C', cls: 1 }], tool: td('incircle', { needs: 3 }) },
   { name: 'excircle', picks: [{ id: 'A', cls: 1 }, { id: 'B', cls: 1 }, { id: 'C', cls: 1 }], tool: td('excircle', { needs: 3 }) },
   { name: 'pointOn-circle', picks: [{ id: 'O', cls: 3, center: { x: 0, y: 0, r: 5 } }], tool: td('pointOn', { needs: 1 }), clickXY: { x: 5, y: 0 } },
+  // line/segment: point1=(0,0) point2=(4,0) clickXY=(1,0) → t = ((1)*4)/16 = 0.25 (xác định).
+  { name: 'pointOn-line', picks: [{ id: 'l1', cls: 2, elType: 'line', point1: { x: 0, y: 0 }, point2: { x: 4, y: 0 } }], tool: td('pointOn', { needs: 1 }), clickXY: { x: 1, y: 0 } },
+  { name: 'pointOn-segment', picks: [{ id: 's1', cls: 2, elType: 'segment', point1: { x: 0, y: 0 }, point2: { x: 4, y: 0 } }], tool: td('pointOn', { needs: 1 }), clickXY: { x: 1, y: 0 } },
 ];
 
 describe('finalizeShape — golden (behavior-preserving Mức 3)', () => {

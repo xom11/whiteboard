@@ -900,6 +900,58 @@ exports[`finalizeShape — golden (behavior-preserving Mức 3) pointOn-circle 1
 ]
 `;
 
+exports[`finalizeShape — golden (behavior-preserving Mức 3) pointOn-line 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "constraint": {
+            "kind": "onLine",
+            "lineId": "l1",
+            "t": 0.25,
+          },
+        },
+        "id": "p_1",
+        "kind": "point",
+        "label": "point_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
+exports[`finalizeShape — golden (behavior-preserving Mức 3) pointOn-segment 1`] = `
+[
+  {
+    "payload": {
+      "obj": {
+        "attrs": {
+          "constraint": {
+            "kind": "onSegment",
+            "segmentId": "s1",
+            "t": 0.25,
+          },
+        },
+        "id": "p_1",
+        "kind": "point",
+        "label": "point_label",
+        "layer": "default",
+        "locked": false,
+        "schemaVersion": 1,
+        "visible": true,
+      },
+    },
+    "type": "ADD",
+  },
+]
+`;
+
 exports[`finalizeShape — golden (behavior-preserving Mức 3) ray 1`] = `
 [
   {
