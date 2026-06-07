@@ -1,0 +1,61 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`point describe — golden (Phase 4) arcMidpoint 1`] = `"M = trung điểm cung AB (không chứa C)"`;
+
+exports[`point describe — golden (Phase 4) centroid 1`] = `"G = trọng tâm ΔABC"`;
+
+exports[`point describe — golden (Phase 4) circleIntersection-fallback 1`] = `"Điểm X"`;
+
+exports[`point describe — golden (Phase 4) circumcenter 1`] = `"O = tâm ngoại tiếp ΔABC"`;
+
+exports[`point describe — golden (Phase 4) excenter 1`] = `"J = tâm bàng tiếp ΔABC đối diện A"`;
+
+exports[`point describe — golden (Phase 4) free 1`] = `"Điểm P"`;
+
+exports[`point describe — golden (Phase 4) incenter 1`] = `"I = tâm nội tiếp ΔABC"`;
+
+exports[`point describe — golden (Phase 4) midpoint 1`] = `"M = trung điểm AB"`;
+
+exports[`point describe — golden (Phase 4) onAxis-x 1`] = `"P trên trục x"`;
+
+exports[`point describe — golden (Phase 4) onAxis-y 1`] = `"P trên trục y"`;
+
+exports[`point describe — golden (Phase 4) onCircle 1`] = `"G trên đường tròn O"`;
+
+exports[`point describe — golden (Phase 4) onCircleAroundPoint-fallback 1`] = `"Điểm G"`;
+
+exports[`point describe — golden (Phase 4) onLine 1`] = `"G trên đường d"`;
+
+exports[`point describe — golden (Phase 4) onPerpBisector-fallback 1`] = `"Điểm G"`;
+
+exports[`point describe — golden (Phase 4) onPerpendicular-fallback 1`] = `"Điểm G"`;
+
+exports[`point describe — golden (Phase 4) onPolygon 1`] = `"G trên đa giác ABC"`;
+
+exports[`point describe — golden (Phase 4) onSegment 1`] = `"G trên đoạn AB"`;
+
+exports[`point describe — golden (Phase 4) orthocenter 1`] = `"H = trực tâm ΔABC"`;
+
+exports[`point describe — golden (Phase 4) perpFoot 1`] = `"H = chân ⟂ từ P xuống d"`;
+
+exports[`point describe — golden (Phase 4) pointAtDistance-circleRadius 1`] = `"C = trên tia AB kéo dài, cách B khoảng bán kính (O)"`;
+
+exports[`point describe — golden (Phase 4) pointAtDistance-literal 1`] = `"C = trên tia AB kéo dài, cách B khoảng 3"`;
+
+exports[`point describe — golden (Phase 4) pointAtDistance-segmentLength 1`] = `"C = trên tia AB kéo dài, cách B khoảng PQ"`;
+
+exports[`point describe — golden (Phase 4) secondIntersection-fallback 1`] = `"Điểm C"`;
+
+exports[`point describe — golden (Phase 4) tangencyPoint-fallback 1`] = `"Điểm H"`;
+
+exports[`point describe — golden (Phase 4) tangentPointExt 1`] = `"T = tiếp điểm của (O) với tiếp tuyến từ P"`;
+
+exports[`point describe — golden (Phase 4) transformed-dilate 1`] = `"S' = ảnh của S (vị tự k=2 quanh O)"`;
+
+exports[`point describe — golden (Phase 4) transformed-reflectLine 1`] = `"S' = ảnh của S (đối xứng qua d)"`;
+
+exports[`point describe — golden (Phase 4) transformed-reflectPoint 1`] = `"S' = ảnh của S (đối xứng qua điểm O)"`;
+
+exports[`point describe — golden (Phase 4) transformed-rotate 1`] = `"S' = ảnh của S (quay 90° quanh O)"`;
+
+exports[`point describe — golden (Phase 4) transformed-translate 1`] = `"S' = ảnh của S (tịnh tiến (1.50, 2.50))"`;

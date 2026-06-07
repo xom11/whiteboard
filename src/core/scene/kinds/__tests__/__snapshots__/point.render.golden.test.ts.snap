@@ -1,0 +1,1642 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`point render — golden (Phase 4 behavior-preserving) arcMidpoint 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "O",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "k",
+    "parents": [
+      "point_0",
+      5,
+    ],
+    "type": "circle",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "A",
+    "parents": [
+      5,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "B",
+    "parents": [
+      0,
+      5,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "N",
+    "parents": [
+      -5,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "Mid",
+    "parents": [
+      3.535534,
+      3.535534,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) centroid 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "A",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "B",
+    "parents": [
+      6,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "C",
+    "parents": [
+      2,
+      5,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "G",
+    "parents": [
+      2.666667,
+      1.666667,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) circleIntersection-0 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "O1",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "O2",
+    "parents": [
+      6,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "k1",
+    "parents": [
+      "point_0",
+      5,
+    ],
+    "type": "circle",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "k2",
+    "parents": [
+      "point_1",
+      5,
+    ],
+    "type": "circle",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "X",
+    "parents": [
+      "circle_2",
+      "circle_3",
+      0,
+    ],
+    "type": "intersection",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) circleIntersection-1 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "O1",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "O2",
+    "parents": [
+      6,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "k1",
+    "parents": [
+      "point_0",
+      5,
+    ],
+    "type": "circle",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "k2",
+    "parents": [
+      "point_1",
+      5,
+    ],
+    "type": "circle",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "X",
+    "parents": [
+      "circle_2",
+      "circle_3",
+      1,
+    ],
+    "type": "intersection",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) circumcenter 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "A",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "B",
+    "parents": [
+      6,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "C",
+    "parents": [
+      2,
+      5,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "O",
+    "parents": [
+      "point_0",
+      "point_1",
+      "point_2",
+    ],
+    "type": "circumcenter",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) excenter 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "A",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "B",
+    "parents": [
+      6,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "C",
+    "parents": [
+      2,
+      5,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "J",
+    "parents": [
+      8.894145,
+      6.021629,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) free 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "P",
+    "parents": [
+      2,
+      3,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) incenter 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "A",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "B",
+    "parents": [
+      6,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "C",
+    "parents": [
+      2,
+      5,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "I",
+    "parents": [
+      "point_0",
+      "point_1",
+      "point_2",
+    ],
+    "type": "incenter",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) midpoint 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "A",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "B",
+    "parents": [
+      4,
+      6,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "M",
+    "parents": [
+      "point_0",
+      "point_1",
+    ],
+    "type": "midpoint",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) onAxis-x 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "P",
+    "parents": [
+      4,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) onAxis-y 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "P",
+    "parents": [
+      0,
+      4,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) onCircle 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "O",
+    "parents": [
+      1,
+      1,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "k",
+    "parents": [
+      "point_0",
+      5,
+    ],
+    "type": "circle",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "G",
+    "parents": [
+      1.877583,
+      1.479426,
+      "circle_1",
+    ],
+    "type": "glider",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) onCircleAroundPoint 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "C",
+    "parents": [
+      1,
+      1,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "R",
+    "parents": [
+      4,
+      1,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "",
+    "parents": [
+      "point_0",
+      "point_1",
+    ],
+    "type": "circle",
+    "visible": false,
+  },
+  {
+    "helpers": [
+      "circle_2",
+    ],
+    "name": "G",
+    "parents": [
+      3.294527,
+      2.932653,
+      "circle_2",
+    ],
+    "type": "glider",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) onLine 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "p1",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "p2",
+    "parents": [
+      4,
+      2,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "ln",
+    "parents": [
+      "point_0",
+      "point_1",
+    ],
+    "type": "line",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "G",
+    "parents": [
+      1.2,
+      0.6,
+      "line_2",
+    ],
+    "type": "glider",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) onPerpBisector 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "A",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "B",
+    "parents": [
+      4,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "",
+    "parents": [
+      "point_0",
+      "point_1",
+    ],
+    "type": "line",
+    "visible": false,
+  },
+  {
+    "helpers": undefined,
+    "name": "",
+    "parents": [
+      "point_0",
+      "point_1",
+    ],
+    "type": "midpoint",
+    "visible": false,
+  },
+  {
+    "helpers": undefined,
+    "name": "",
+    "parents": [
+      "line_2",
+      "midpoint_3",
+    ],
+    "type": "perpendicular",
+    "visible": false,
+  },
+  {
+    "helpers": [
+      "line_2",
+      "midpoint_3",
+      "perpendicular_4",
+    ],
+    "name": "G",
+    "parents": [
+      2,
+      1,
+      "perpendicular_4",
+    ],
+    "type": "glider",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) onPerpendicular 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "T",
+    "parents": [
+      1,
+      1,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "A",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "B",
+    "parents": [
+      4,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "",
+    "parents": [
+      "point_1",
+      "point_2",
+    ],
+    "type": "line",
+    "visible": false,
+  },
+  {
+    "helpers": undefined,
+    "name": "",
+    "parents": [
+      "line_3",
+      "point_0",
+    ],
+    "type": "perpendicular",
+    "visible": false,
+  },
+  {
+    "helpers": [
+      "line_3",
+      "perpendicular_4",
+    ],
+    "name": "G",
+    "parents": [
+      1,
+      2,
+      "perpendicular_4",
+    ],
+    "type": "glider",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) onPolygon 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "V1",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "V2",
+    "parents": [
+      4,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "V3",
+    "parents": [
+      2,
+      3,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "pg",
+    "parents": [
+      "point_0",
+      "point_1",
+      "point_2",
+    ],
+    "type": "polygon",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "G",
+    "parents": [
+      0.2,
+      0.3,
+      "polygon_3",
+    ],
+    "type": "glider",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) onSegment 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "p1",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "p2",
+    "parents": [
+      4,
+      2,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "sg",
+    "parents": [
+      "point_0",
+      "point_1",
+    ],
+    "type": "segment",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "G",
+    "parents": [
+      1.6,
+      0.8,
+      "segment_2",
+    ],
+    "type": "glider",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) orthocenter 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "A",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "B",
+    "parents": [
+      6,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "C",
+    "parents": [
+      2,
+      5,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "",
+    "parents": [
+      "point_1",
+      "point_2",
+    ],
+    "type": "line",
+    "visible": false,
+  },
+  {
+    "helpers": undefined,
+    "name": "",
+    "parents": [
+      "line_3",
+      "point_0",
+    ],
+    "type": "perpendicular",
+    "visible": false,
+  },
+  {
+    "helpers": undefined,
+    "name": "",
+    "parents": [
+      "point_0",
+      "point_2",
+    ],
+    "type": "line",
+    "visible": false,
+  },
+  {
+    "helpers": undefined,
+    "name": "",
+    "parents": [
+      "line_5",
+      "point_1",
+    ],
+    "type": "perpendicular",
+    "visible": false,
+  },
+  {
+    "helpers": [
+      "line_3",
+      "perpendicular_4",
+      "line_5",
+      "perpendicular_6",
+    ],
+    "name": "H",
+    "parents": [
+      "perpendicular_4",
+      "perpendicular_6",
+      0,
+    ],
+    "type": "intersection",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) perpFoot 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "p1",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "p2",
+    "parents": [
+      6,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "ln",
+    "parents": [
+      "point_0",
+      "point_1",
+    ],
+    "type": "line",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "P",
+    "parents": [
+      3,
+      4,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "H",
+    "parents": [
+      "line_2",
+      "point_3",
+    ],
+    "type": "perpendicularpoint",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) pointAtDistance-circleRadius 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "A",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "B",
+    "parents": [
+      3,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "O",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "k",
+    "parents": [
+      "point_2",
+      4,
+    ],
+    "type": "circle",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "C",
+    "parents": [
+      7,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) pointAtDistance-literal 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "A",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "B",
+    "parents": [
+      3,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "C",
+    "parents": [
+      6,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) pointAtDistance-segmentLength 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "A",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "B",
+    "parents": [
+      3,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "P",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "Q",
+    "parents": [
+      0,
+      5,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "C",
+    "parents": [
+      8,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) secondIntersection 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "O",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "A",
+    "parents": [
+      5,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "P",
+    "parents": [
+      10,
+      3,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "k",
+    "parents": [
+      "point_0",
+      5,
+    ],
+    "type": "circle",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "ln",
+    "parents": [
+      "point_1",
+      "point_2",
+    ],
+    "type": "segment",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "C",
+    "parents": [
+      "circle_3",
+      "segment_4",
+      "point_1",
+    ],
+    "type": "otherintersection",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) tangencyPoint 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "O",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "T1",
+    "parents": [
+      5,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "T2",
+    "parents": [
+      5,
+      3,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "k",
+    "parents": [
+      "point_0",
+      5,
+    ],
+    "type": "circle",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "tan",
+    "parents": [
+      "point_1",
+      "point_2",
+    ],
+    "type": "segment",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "H",
+    "parents": [
+      "segment_4",
+      "point_0",
+    ],
+    "type": "perpendicularpoint",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) tangentPointExt-0 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "O",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "k",
+    "parents": [
+      "point_0",
+      3,
+    ],
+    "type": "circle",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "P",
+    "parents": [
+      10,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "",
+    "parents": [
+      "point_2",
+      "point_0",
+    ],
+    "type": "midpoint",
+    "visible": false,
+  },
+  {
+    "helpers": undefined,
+    "name": "",
+    "parents": [
+      "midpoint_3",
+      "point_2",
+    ],
+    "type": "circle",
+    "visible": false,
+  },
+  {
+    "helpers": [
+      "midpoint_3",
+      "circle_4",
+    ],
+    "name": "T",
+    "parents": [
+      "circle_4",
+      "circle_1",
+      0,
+    ],
+    "type": "intersection",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) tangentPointExt-1 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "O",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "k",
+    "parents": [
+      "point_0",
+      3,
+    ],
+    "type": "circle",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "P",
+    "parents": [
+      10,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "",
+    "parents": [
+      "point_2",
+      "point_0",
+    ],
+    "type": "midpoint",
+    "visible": false,
+  },
+  {
+    "helpers": undefined,
+    "name": "",
+    "parents": [
+      "midpoint_3",
+      "point_2",
+    ],
+    "type": "circle",
+    "visible": false,
+  },
+  {
+    "helpers": [
+      "midpoint_3",
+      "circle_4",
+    ],
+    "name": "T",
+    "parents": [
+      "circle_4",
+      "circle_1",
+      1,
+    ],
+    "type": "intersection",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) transformed-dilate 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "S",
+    "parents": [
+      3,
+      4,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "O",
+    "parents": [
+      1,
+      1,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": null,
+    "parents": [
+      -1,
+      -1,
+    ],
+    "type": "transform",
+    "visible": null,
+  },
+  {
+    "helpers": undefined,
+    "name": null,
+    "parents": [
+      2,
+      2,
+    ],
+    "type": "transform",
+    "visible": null,
+  },
+  {
+    "helpers": undefined,
+    "name": null,
+    "parents": [
+      1,
+      1,
+    ],
+    "type": "transform",
+    "visible": null,
+  },
+  {
+    "helpers": [
+      "transform_2",
+      "transform_3",
+      "transform_4",
+    ],
+    "name": "S2",
+    "parents": [
+      "point_0",
+      [
+        "transform_2",
+        "transform_3",
+        "transform_4",
+      ],
+    ],
+    "type": "point",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) transformed-reflectLine 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "p1",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "p2",
+    "parents": [
+      1,
+      1,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "L",
+    "parents": [
+      "point_0",
+      "point_1",
+    ],
+    "type": "line",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "S",
+    "parents": [
+      2,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": null,
+    "parents": [
+      "line_2",
+    ],
+    "type": "transform",
+    "visible": null,
+  },
+  {
+    "helpers": [
+      "transform_4",
+    ],
+    "name": "S2",
+    "parents": [
+      "point_3",
+      "transform_4",
+    ],
+    "type": "point",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) transformed-reflectPoint 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "S",
+    "parents": [
+      1,
+      1,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "O",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": null,
+    "parents": [
+      3.141593,
+      "point_1",
+    ],
+    "type": "transform",
+    "visible": null,
+  },
+  {
+    "helpers": [
+      "transform_2",
+    ],
+    "name": "S2",
+    "parents": [
+      "point_0",
+      "transform_2",
+    ],
+    "type": "point",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) transformed-rotate 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "S",
+    "parents": [
+      1,
+      1,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": "O",
+    "parents": [
+      0,
+      0,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": null,
+    "parents": [
+      1.5708,
+      "point_1",
+    ],
+    "type": "transform",
+    "visible": null,
+  },
+  {
+    "helpers": [
+      "transform_2",
+    ],
+    "name": "S2",
+    "parents": [
+      "point_0",
+      "transform_2",
+    ],
+    "type": "point",
+    "visible": true,
+  },
+]
+`;
+
+exports[`point render — golden (Phase 4 behavior-preserving) transformed-translate 1`] = `
+[
+  {
+    "helpers": undefined,
+    "name": "S",
+    "parents": [
+      1,
+      1,
+    ],
+    "type": "point",
+    "visible": true,
+  },
+  {
+    "helpers": undefined,
+    "name": null,
+    "parents": [
+      1,
+      2,
+    ],
+    "type": "transform",
+    "visible": null,
+  },
+  {
+    "helpers": [
+      "transform_1",
+    ],
+    "name": "S2",
+    "parents": [
+      "point_0",
+      "transform_1",
+    ],
+    "type": "point",
+    "visible": true,
+  },
+]
+`;
