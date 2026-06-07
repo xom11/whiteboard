@@ -40,9 +40,18 @@ const TIA_DOI =
 const KEO_DAI =
   /[Kk]éo\s*dài\s+(?:(?:đoạn|cạnh|tia)\s+)?([A-Z])([A-Z])(?![A-Z])/u;
 
-// "lấy (điểm)? C sao cho" / "lấy C" → tên điểm mới C.
+// "lấy (điểm)? C sao cho" / "lấy C" / "lấy C′" → tên điểm mới (CAPTURE prime).
+// Issue #46 nhóm A: prime (' U+0027 / ′ U+2032) là PHẦN của tên — giữ lại để
+// "C′" ≠ đỉnh "C" (tránh addPoint dedup drop → escalate). Group 2 = prime char.
 const TAKE_POINT =
-  /lấy\s+(?:điểm\s+)?([A-Z])(?:['′]?)(?![A-Z])/u;
+  /lấy\s+(?:điểm\s+)?([A-Z])(['′]?)(?![A-Z])/u;
+
+// Normalize prime về 1 dạng: ′ (U+2032) → ' (U+0027). NameZ/serialize NAME_REGEX
+// cho phép ' nhưng KHÔNG cho phép ′ → chuẩn hoá để name "C'" chảy qua DSL/render
+// (label) không cần đổi schema. Trả về tên đầy đủ (chữ + prime đã normalize).
+function normalizePointName(letter: string, prime: string): string {
+  return prime ? `${letter}'` : letter;
+}
 
 // "về phía X": hướng kéo dài. Mặc định through = đỉnh cuối cụm. Nếu "về phía X"
 // mà X KHÁC through (vd "kéo dài AB về phía A") → hướng đảo, rule không xử lý
@@ -50,15 +59,14 @@ const TAKE_POINT =
 const VE_PHIA = /về\s+phía\s+([A-Z])(?![A-Za-z])/u;
 
 // Cụm chốt mốc + khoảng cách: "BC = R" / "BC = AB" / "BC = 3" / "BC = 2,5 cm".
-// Đỉnh đầu (m[1]) = mốc đo (through); đỉnh sau (m[2]) = điểm mới (Z).
-// (?:['′]?) sau cặp đỉnh: điểm mới có thể mang dấu phẩy/prime ("BC′ = R") —
-// đồng bộ với TAKE_POINT; nếu thiếu, regex khớp "BC" rồi gặp ′ ở vị trí "\s*="
-// → fail (không render được "lấy C′ sao cho BC′ = R").
-// Phần sau dấu "=" gom thô để parse riêng (radius / segment / số). KHÔNG kết
-// thúc trên ',' — dấu phẩy có thể là phân tách thập phân ("2,5"); clause đã
+// Đỉnh đầu (m[1]) = mốc đo (through); đỉnh sau (m[2]) = điểm mới (Z); m[3] = prime
+// của điểm mới (CAPTURE — phải khớp tên điểm mới ở TAKE_POINT). Issue #46 nhóm A:
+// điểm mới có thể mang dấu phẩy/prime ("BC′ = R"); giữ prime để chốt mốc đúng.
+// Phần sau dấu "=" (m[4]) gom thô để parse riêng (radius / segment / số). KHÔNG
+// kết thúc trên ',' — dấu phẩy có thể là phân tách thập phân ("2,5"); clause đã
 // được segmentClauses tách trên dấu chấm/'; nên gom tới hết clause là an toàn.
 const DIST_CLAUSE =
-  /(?:sao\s+cho\s+)?([A-Z])([A-Z])(?:['′]?)(?![A-Z])\s*=\s*(.+?)\s*(?:[.;]|$)/u;
+  /(?:sao\s+cho\s+)?([A-Z])([A-Z])(['′]?)(?![A-Z])\s*=\s*(.+?)\s*(?:[.;]|$)/u;
 
 // --- Distance parsing ---------------------------------------------------------
 const RADIUS_WORD = /(?<!\p{L})(?:R|bán\s*kính)(?!\p{L})/u;
@@ -207,20 +215,21 @@ export const pointAtDistanceRule: LanguageRule = {
       const vp = VE_PHIA.exec(c.text);
       if (vp && vp[1] !== through) continue;
 
-      // --- Tên điểm mới ----------------------------------------------------
+      // --- Tên điểm mới (GIỮ prime, normalize ′→') -------------------------
       const take = TAKE_POINT.exec(c.text);
-      const name = take ? take[1] : undefined;
+      const name = take ? normalizePointName(take[1], take[2]) : undefined;
       if (!name) continue;
 
       // --- Mốc đo + khoảng cách ("YZ = …") ---------------------------------
       const dc = DIST_CLAUSE.exec(c.text);
       if (!dc) continue;
-      const anchor = dc[1]; // Y = mốc đo (phải trùng through)
-      const newPt = dc[2]; // Z = điểm mới (phải trùng name)
-      // Mốc đo phải là through; đỉnh sau là điểm mới ta vừa lấy.
+      const anchor = dc[1]; // Y = mốc đo (phải trùng through; đỉnh đơn)
+      const newPt = normalizePointName(dc[2], dc[3]); // Z = điểm mới (phải trùng name)
+      // Mốc đo phải là through; đỉnh sau là điểm mới ta vừa lấy (so theo tên đã
+      // normalize ⇒ "BC′" khớp điểm "C'", "BD′" KHÔNG khớp điểm "C'").
       if (anchor !== through || newPt !== name) continue;
 
-      const distance = parseDistance(dc[3], ctx.problem);
+      const distance = parseDistance(dc[4], ctx.problem);
       if (!distance) continue;
 
       out.push({

@@ -105,3 +105,19 @@ Cho tam giác ABC. Vẽ tia AB
 # sai hướng (không render thừa), không rule nào claim cụm → escalate (fail-safe,
 # không vẽ ray sai hướng cũng không bịa điểm).
 Cho tam giác ABC. Trên tia đối của tia BA lấy điểm D
+
+# === Issue #46 nhóm A: prime "C′" trùng đỉnh — PHẢI render ===
+# Tam giác ABC rồi "lấy điểm C′" (trùng CHỮ đỉnh C). Trước fix naming layer STRIP
+# prime → "C" → trùng đỉnh C → addPoint dedup drop → guard intent-dropped → escalate.
+# Sau fix: prime được GIỮ + normalize ′(U+2032)→'(U+0027) ⇒ "C'" là tên RIÊNG,
+# khác đỉnh "C". DSL có CẢ điểm C (free vertex) LẪN C' (pointAtDistance). Verify:
+# add-point/pointAtDistance name="C'", KHÔNG escalate, KHÔNG drop.
+Cho tam giác ABC. Trên tia đối của tia BA lấy điểm C′ sao cho BC′ = AB
+# Apostrophe ASCII (') cũng giữ nguyên (cùng đường normalize) — name "C'".
+# Dùng "= AB" (segmentLength, không cần circle) để cô lập đúng fix prime-naming.
+Cho tam giác ABC. Trên tia đối của tia BA lấy điểm C' sao cho BC' = AB
+
+# === Issue #46 nhóm A: prime ở construct CHƯA hỗ trợ — PHẢI escalate (fail-safe) ===
+# Prime "C′" trên construct KHÔNG phải pointAtDistance (đặt điểm tự do không mốc/
+# khoảng cách hợp lệ) → không rule nào claim cụm prime → escalate, không bịa điểm.
+Cho tam giác ABC. Lấy điểm C′ bất kỳ

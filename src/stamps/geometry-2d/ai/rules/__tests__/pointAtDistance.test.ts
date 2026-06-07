@@ -96,40 +96,54 @@ describe('pointAtDistanceRule', () => {
     expect(run('Cho tam giác ABC.')).toEqual([]);
   });
 
-  // ── Mức 2: điểm mới có dấu phẩy/prime (C', C′) trong DIST_CLAUSE ──
+  // ── Issue #46 nhóm A: prime "C′" GIỮ NGUYÊN (tên riêng đa-ký-tự) ──────────
+  // Trước fix: prime bị STRIP → "C" → trùng đỉnh C → addPoint dedup drop →
+  // escalate. Sau fix: prime được giữ + normalize ′(U+2032)→'(U+0027) ⇒ "C'"
+  // là tên RIÊNG, khác đỉnh "C". Mốc đo cũng so khớp theo tên đã normalize.
 
-  it("điểm C' (ASCII apostrophe) trong cụm BC' = R → render", () => {
+  it("điểm C' (ASCII apostrophe) trong cụm BC' = R → name GIỮ prime \"C'\"", () => {
     const m = run("Trên tia đối của tia BA lấy điểm C' sao cho BC' = R.");
     expect(m.length).toBe(1);
     const i = constraint(m);
-    expect(i.name).toBe('C');
+    expect(i.name).toBe("C'");
     expect(i.constraint.from).toBe('A');
     expect(i.constraint.through).toBe('B');
     expect(i.constraint.distance.kind).toBe('circleRadius');
   });
 
-  it('điểm C′ (unicode prime ′) + dấu phẩy → render', () => {
+  it("điểm C′ (unicode prime ′) + dấu phẩy → name normalize về \"C'\"", () => {
     const m = run('Trên tia đối của tia BA, lấy điểm C′ sao cho BC′ = R.');
     expect(m.length).toBe(1);
     const i = constraint(m);
-    expect(i.name).toBe('C');
+    expect(i.name).toBe("C'");
     expect(i.constraint.through).toBe('B');
   });
 
-  it("Kéo dài + điểm C', distance literal → render", () => {
+  it("Kéo dài + điểm C', distance literal → name \"C'\"", () => {
     const m = run("Kéo dài AB, lấy C' sao cho BC' = 2.");
     const i = constraint(m);
-    expect(i.name).toBe('C');
+    expect(i.name).toBe("C'");
     expect(i.constraint.from).toBe('A');
     expect(i.constraint.through).toBe('B');
     expect(i.constraint.distance).toEqual({ kind: 'literal', value: 2 });
   });
 
-  it('Kéo dài đoạn + prime + phẩy thập phân → literal 2.5', () => {
+  it('Kéo dài đoạn + prime + phẩy thập phân → name "C\'" + literal 2.5', () => {
     const m = run('Kéo dài đoạn AB về phía B, lấy điểm C′ sao cho BC′ = 2,5.');
     const i = constraint(m);
-    expect(i.name).toBe('C');
+    expect(i.name).toBe("C'");
     expect(i.constraint.distance).toEqual({ kind: 'literal', value: 2.5 });
+  });
+
+  it("mốc đo prime PHẢI khớp tên điểm mới: \"lấy C′ … BD′\" (lệch) → bỏ qua", () => {
+    // through = B (single), nhưng cụm "BD′" có newPt "D'" ≠ name "C'" → skip.
+    expect(run("Trên tia đối của tia BA lấy điểm C′ sao cho BD′ = R.")).toEqual([]);
+  });
+
+  it("điểm mới prime KHÔNG đổi hành vi điểm thường (D không prime vẫn 'D')", () => {
+    const m = run('Trên tia đối của tia BA lấy điểm D sao cho BD = R.');
+    const i = constraint(m);
+    expect(i.name).toBe('D');
   });
 
   // ── Issue #46 nhóm C: hệ số/bội/offset (scale·base + offset) ──────────────

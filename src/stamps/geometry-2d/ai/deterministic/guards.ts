@@ -12,9 +12,19 @@ import type { IntentT } from '../intent';
 
 // Tên điểm dẫn nhập 1 ký tự HOA: "Gọi M", "lấy điểm D", "cắt … tại D", "N là …",
 // "H, K lần lượt", "và P là".
-const NAMED_INTRO = /(?:Gọi|gọi|Lấy|lấy|Dựng|dựng|Đặt|đặt|tại|điểm|và)\s+(?:điểm\s+)?([A-Z])(?![A-Za-z])/gu;
-const NAMED_LA = /([A-Z])(?![A-Za-z])\s+là\b/gu;
-const NAMED_LANLUOT = /([A-Z])(?![A-Za-z])\s*,\s*([A-Z])(?![A-Za-z])\s+lần lượt/gu;
+// Issue #46 nhóm A: prime (' U+0027 / ′ U+2032) là PHẦN của tên ("D′" ≠ "D").
+// Group prime đứng ngay sau chữ cái — collect bằng letter + normalize(prime) để
+// expected-name khớp DSL (rule pointAtDistance giữ prime → DSL có "D'").
+const NAMED_INTRO = /(?:Gọi|gọi|Lấy|lấy|Dựng|dựng|Đặt|đặt|tại|điểm|và)\s+(?:điểm\s+)?([A-Z])(['′]?)(?![A-Za-z])/gu;
+const NAMED_LA = /([A-Z])(['′]?)(?![A-Za-z])\s+là\b/gu;
+const NAMED_LANLUOT = /([A-Z])(['′]?)(?![A-Za-z])\s*,\s*([A-Z])(['′]?)(?![A-Za-z])\s+lần lượt/gu;
+
+// Ghép chữ cái + prime đã normalize (′→') thành tên đầy đủ. Đồng bộ với
+// rules/pointAtDistance.ts normalizePointName — giữ naming layer nhất quán.
+function joinPrime(letter: string | undefined, prime: string | undefined): string | undefined {
+  if (!letter) return undefined;
+  return prime ? `${letter}'` : letter;
+}
 
 // Đỉnh của hình khai báo: "tam giác ABC", "tứ giác ABCD", "hình vuông/… ABCD".
 // Bắt cụm 3-4 ký tự HOA LIỀN ngay sau tên hình (mỗi đỉnh phải có trong DSL).
@@ -28,16 +38,20 @@ export interface NamedEntityReport {
 
 function collectExpectedNames(problem: string): Set<string> {
   const names = new Set<string>();
-  const add = (re: RegExp, groups: number[]) => {
+  // Mỗi entry [letterGroup, primeGroup]: tên = letter + normalize(prime).
+  const add = (re: RegExp, groups: [number, number][]) => {
     re.lastIndex = 0;
     let m: RegExpExecArray | null;
     while ((m = re.exec(problem)) !== null) {
-      for (const g of groups) if (m[g]) names.add(m[g]);
+      for (const [lg, pg] of groups) {
+        const name = joinPrime(m[lg], m[pg]);
+        if (name) names.add(name);
+      }
     }
   };
-  add(NAMED_INTRO, [1]);
-  add(NAMED_LA, [1]);
-  add(NAMED_LANLUOT, [1, 2]);
+  add(NAMED_INTRO, [[1, 2]]);
+  add(NAMED_LA, [[1, 2]]);
+  add(NAMED_LANLUOT, [[1, 2], [3, 4]]);
   // Đỉnh hình: tách cụm 3/4 ký tự thành từng đỉnh.
   for (const re of [SHAPE_TRI, SHAPE_QUAD]) {
     re.lastIndex = 0;
