@@ -70,3 +70,20 @@ Cho đường tròn tâm O bán kính R
 
 # === Issue #46: PHẢI escalate (hệ số bán kính defer Cụm C) ===
 Cho đường tròn (O; 2R)
+
+# === Issue #46 nhóm A: "⊥" standalone — PHẢI render (≡ "vuông góc") ===
+# Clause perpendicular dùng "Vẽ/Dựng" (KHÔNG phải connect-keyword "Kẻ") nên
+# perpFoot là rule DUY NHẤT claim. Sau fix, "⊥" là tín hiệu hình học
+# (hasGeometry) ⇒ clause vào denominator coverage VÀ được perpFoot claim ⇒
+# complete (covered=[base, ⊥-clause]). Render perpFoot, ĐÚNG như phrasing
+# "vuông góc". Verify clause "⊥" nằm trong coverage denominator (không bị coi
+# là văn xuôi rồi bỏ qua im lặng).
+Cho tam giác ABC. Vẽ AH ⊥ BC tại H
+Cho tam giác ABC. Dựng BK ⊥ AC tại K
+
+# === Issue #46 nhóm A: "⊥" standalone — PHẢI escalate (fail-safe) ===
+# "⊥" là tín hiệu hình học nhưng KHÔNG rule nào claim cụm "AH ⊥ BC" (thiếu
+# verb Kẻ/Vẽ/Dựng). Sau fix hasGeometry=true ⇒ clause vào denominator ⇒
+# uncovered ⇒ escalate ở tầng coverage (trước fix escalate muộn hơn ở
+# named-entity guard). Hai phía đều escalate-safe, không render thiếu quan hệ.
+Cho tam giác ABC. Biết AH ⊥ BC tại H

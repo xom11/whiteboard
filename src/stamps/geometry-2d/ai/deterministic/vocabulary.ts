@@ -23,6 +23,12 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   'nội tiếp', 'ngoại tiếp',
   // Relations
   'song song', 'vuông góc', 'giao điểm', 'cắt',
+  // Ký hiệu (symbol-only phrasing tương đương từ chữ): "⊥" ≡ "vuông góc".
+  // perpFoot rule đã nhận "⊥" ở tầng construct (PERP_DRAW), nhưng gate
+  // hasGeometry trước đây CHỈ nhận chữ "vuông góc" → clause mà "⊥" là tín hiệu
+  // hình học DUY NHẤT bị coi là văn xuôi (hasGeometry=false). Thêm "⊥" để 2
+  // phrasing hành xử như nhau ở gate coverage (issue #46 nhóm A).
+  '⊥',
 ];
 
 export function countGeometryKeywords(text: string): number {

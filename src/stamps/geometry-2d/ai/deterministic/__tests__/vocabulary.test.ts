@@ -19,4 +19,14 @@ describe('vocabulary', () => {
   test('overlapping keyword counted once per occurrence', () => {
     expect(countGeometryKeywords('đường tròn nội tiếp tam giác ABC')).toBe(3);
   });
+
+  // Issue #46 nhóm A: "⊥" ≡ "vuông góc" ở gate hasGeometry.
+  test('ký hiệu ⊥ là tín hiệu hình học (tương đương "vuông góc")', () => {
+    expect(GEOMETRY_KEYWORDS).toEqual(expect.arrayContaining(['⊥']));
+    // Clause CHỈ có "⊥" làm tín hiệu hình học → phải đếm > 0 (như "vuông góc").
+    expect(countGeometryKeywords('AH ⊥ BC tại H')).toBe(1);
+    expect(countGeometryKeywords('AH vuông góc BC tại H')).toBe(1);
+    // Nhiều ký hiệu trong 1 clause → đếm từng lần.
+    expect(countGeometryKeywords('AH ⊥ BC và BK ⊥ AC')).toBe(2);
+  });
 });
