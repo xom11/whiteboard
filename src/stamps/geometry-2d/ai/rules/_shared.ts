@@ -8,8 +8,19 @@ import type { IntentT } from '../intent';
 // variant/shape/kind là string runtime; zod validate lại ở builder/transpile,
 // nên cast qua unknown an toàn trong phạm vi NLU.
 
-export function drawShape(shape: string, labels: string[], variant = 'any'): IntentT {
-  return { op: 'draw-shape', shape, labels, variant } as unknown as IntentT;
+export function drawShape(
+  shape: string,
+  labels: string[],
+  variant = 'any',
+  explicitCoords?: Record<string, readonly [number, number]>,
+): IntentT {
+  return {
+    op: 'draw-shape',
+    shape,
+    labels,
+    variant,
+    ...(explicitCoords ? { explicitCoords } : {}),
+  } as unknown as IntentT;
 }
 
 export function addPoint(name: string, constraint: Record<string, unknown>): IntentT {

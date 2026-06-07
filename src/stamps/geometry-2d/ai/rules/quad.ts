@@ -3,8 +3,8 @@
 // Tứ giác / đa giác 4 đỉnh: hình vuông, chữ nhật, bình hành, thoi, thang
 // (cân/vuông/thường), tứ giác chung. Mỗi loại trích 4 ký tự HOA liền sau tên
 // hình → draw-shape với shape + variant tương ứng.
-import type { LanguageRule, RuleMatch } from './_types';
-import { drawShape } from './_shared';
+import type { LanguageRule, RuleContext, RuleMatch } from './_types';
+import { drawShape, drawCircle } from './_shared';
 
 // LƯU Ý: \b của JS dựa trên ASCII word-char nên KHÔNG khớp quanh ký tự Việt
 // ("đ","ề","ạ"…). Dùng lookaround \p{L} (cờ 'u') ở prefilter để chặn biên từ.
@@ -135,10 +135,100 @@ function scanClause(text: string): Hit[] {
   return claimed;
 }
 
+// --- Tứ giác nội tiếp đường tròn (cyclic quadrilateral) — issue #46 nhóm C ----
+//
+// "Cho tứ giác ABCD nội tiếp đường tròn (O)" hiện chỉ vẽ tứ giác, BỎ đường tròn
+// (render coverage-complete nhưng thiếu hình). Bổ sung đường tròn ngoại tiếp đi
+// qua đúng 4 đỉnh — đặt 4 đỉnh ĐỒNG VIÊN để circle3 thực sự đi qua cả 4.
+//
+// KIẾN TRÚC single-emitter: quadRule LÀ emitter DUY NHẤT của draw-shape cho tứ
+// giác. Khi phát hiện ngữ cảnh nội tiếp, CHÍNH rule này emit draw-shape (với
+// explicitCoords đồng viên) + draw-circle from MỘT rule — tránh rule thứ hai
+// emit draw-shape trùng "ABCD" → buildDrawShape sinh polygon trùng "ABCD2".
+//
+// 4 đỉnh trên đường tròn bán kính 5 tâm gốc (đồng viên CHÍNH XÁC) → circle3 qua
+// 3 đỉnh bất kỳ đi qua đỉnh thứ 4 đúng tuyệt đối (không float drift). Thứ tự
+// A→B→C→D lồi, theo chiều kim đồng hồ.
+const CYCLIC_QUAD_COORDS: readonly [number, number][] = [
+  [-3, 4],
+  [4, 3],
+  [3, -4],
+  [-4, -3],
+];
+
+// Tên tâm tuỳ chọn: "(O)" hoặc "tâm O" (mượn idiom của circleTriangle).
+const CENTER = '(?:\\(\\s*([A-Z])\\s*\\)|tâm\\s+([A-Z]))?';
+
+// Pattern A — tứ giác nội tiếp đường tròn: "ABCD nội tiếp (trong) đường tròn
+// (O)/tâm O". Neo ^ vào phần text NGAY SAU 4 đỉnh (hit.afterEnd). Center group 1|2.
+const QUAD_INSCRIBED_IN_CIRCLE = new RegExp(
+  '^[\\s,]*nội\\s*tiếp\\s+(?:trong\\s+)?(?:một\\s+)?đường\\s*tròn\\s*' + CENTER,
+  'iu',
+);
+
+// Pattern B — đường tròn ngoại tiếp tứ giác: "đường tròn (O)/tâm O ngoại tiếp"
+// đứng NGAY TRƯỚC "tứ giác ABCD". Neo $ vào phần text TRƯỚC hit.index. Center 1|2.
+const CIRCLE_CIRCUMSCRIBES_QUAD = new RegExp(
+  'đường\\s*tròn\\s*' + CENTER + '\\s*ngoại\\s*tiếp\\s+$',
+  'iu',
+);
+
+// Khai báo tam giác bất kỳ trong đề — 3 đỉnh HOA của nó "thuộc" tam giác (không
+// được dời sang toạ độ đồng viên của tứ giác). Cờ 'g' để quét mọi khai báo.
+const TRIANGLE_DECL = /tam\s*giác\s+([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
+
+/**
+ * Tập ký tự đỉnh "thuộc về hình khác" trong TOÀN đề: mọi đỉnh tam giác + đỉnh
+ * của mọi tứ giác hit KHÁC (chuỗi nhãn khác hit hiện tại). Nếu 4 đỉnh của tứ
+ * giác này giao tập đó → KHÔNG áp dụng đồng viên (đặt chúng theo CYCLIC_QUAD
+ * sẽ phá toạ độ đã có của hình kia → silent-wrong).
+ */
+function ownedByOthers(ctx: RuleContext, selfLabels: string[]): Set<string> {
+  const owned = new Set<string>();
+  TRIANGLE_DECL.lastIndex = 0;
+  for (const m of ctx.problem.matchAll(TRIANGLE_DECL)) {
+    owned.add(m[1]);
+    owned.add(m[2]);
+    owned.add(m[3]);
+  }
+  const selfKey = selfLabels.join('');
+  for (const c of ctx.clauses) {
+    for (const h of scanClause(c.text)) {
+      if (h.labels.join('') === selfKey) continue; // chính tứ giác này
+      for (const lbl of h.labels) owned.add(lbl);
+    }
+  }
+  return owned;
+}
+
+/**
+ * Phát hiện ngữ cảnh nội tiếp cho 1 hit tứ giác chung trong clause `text`.
+ * Trả tên tâm (hoặc '') nếu khớp Pattern A/B; undefined nếu không nội tiếp.
+ */
+function detectCyclic(text: string, hit: Hit): string | undefined {
+  // Pattern A: phần text NGAY SAU 4 đỉnh.
+  const a = QUAD_INSCRIBED_IN_CIRCLE.exec(text.slice(hit.afterEnd));
+  if (a) return a[1] ?? a[2] ?? '';
+  // Pattern B: phần text TRƯỚC "tứ giác" (hit.index = đầu "tứ giác").
+  const b = CIRCLE_CIRCUMSCRIBES_QUAD.exec(text.slice(0, hit.index));
+  if (b) return b[1] ?? b[2] ?? '';
+  return undefined;
+}
+
 /**
  * Tứ giác / đa giác 4 đỉnh → draw-shape. Duyệt từng clause, quét EMIT-ALL mọi
  * khai báo hình (theo thứ tự text). KHÔNG trích được ĐÚNG 4 đỉnh HOA liền (vd
  * "ABCDE" 5 đỉnh) → bỏ qua khai báo đó (escalate AI qua guard).
+ *
+ * Tứ giác CHUNG (shape 'quadrilateral') có ngữ cảnh nội tiếp đường tròn → emit
+ * THÊM draw-circle (through3) + đặt 4 đỉnh đồng viên qua explicitCoords. Hình
+ * có tên (vuông/chữ nhật/...) NGOÀI phạm vi increment này (giữ hành vi cũ).
+ *
+ * GIỚI HẠN ĐÃ BIẾT (defer, không sửa): nếu CÙNG nhãn tứ giác được khai báo ở
+ * HAI clause (vd "Cho tứ giác ABCD. Đường tròn ngoại tiếp tứ giác ABCD") — một
+ * plain + một cyclic — cả hai draw-shape sống sót qua JSON dedup (explicitCoords
+ * khác nhau) → polygon trùng "ABCD2" chồng lên nhau. Hiếm gặp + lành tính
+ * (polygon trùng khít, không sai hình học). Test/probe để 1-clause để né.
  */
 export const quadRule: LanguageRule = {
   id: 'quad',
@@ -149,10 +239,33 @@ export const quadRule: LanguageRule = {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
       for (const hit of scanClause(c.text)) {
+        let intents = [drawShape(hit.shape, hit.labels, hit.variant)];
+        // Chỉ tứ giác CHUNG: thử phát hiện đường tròn ngoại tiếp.
+        if (hit.shape === 'quadrilateral') {
+          const center = detectCyclic(c.text, hit);
+          if (center !== undefined) {
+            // Fail-safe: đỉnh dùng chung với hình khác → giữ quad-only.
+            const owned = ownedByOthers(ctx, hit.labels);
+            const shared = hit.labels.some((lbl) => owned.has(lbl));
+            if (!shared) {
+              const coordMap: Record<string, readonly [number, number]> = {};
+              hit.labels.forEach((lbl, i) => {
+                coordMap[lbl] = CYCLIC_QUAD_COORDS[i];
+              });
+              const centerName = center || 'O';
+              intents = [
+                drawShape(hit.shape, hit.labels, hit.variant, coordMap),
+                drawCircle(centerName, 'through3', {
+                  points: [hit.labels[0], hit.labels[1], hit.labels[2]],
+                }),
+              ];
+            }
+          }
+        }
         out.push({
           ruleId: 'quad',
           clauseIds: [c.id],
-          intents: [drawShape(hit.shape, hit.labels, hit.variant)],
+          intents,
         });
       }
     }

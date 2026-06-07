@@ -121,3 +121,8 @@ Cho tam giác ABC. Trên tia đối của tia BA lấy điểm C' sao cho BC' = 
 # Prime "C′" trên construct KHÔNG phải pointAtDistance (đặt điểm tự do không mốc/
 # khoảng cách hợp lệ) → không rule nào claim cụm prime → escalate, không bịa điểm.
 Cho tam giác ABC. Lấy điểm C′ bất kỳ
+
+# === Issue #46 nhóm C: tứ giác nội tiếp đường tròn (cyclic quadrilateral) ===
+# Render-correct: 4 đỉnh đồng viên + đường tròn ngoại tiếp circle3 qua cả 4.
+Cho tứ giác ABCD nội tiếp đường tròn (O)
+Đường tròn (O) ngoại tiếp tứ giác MNPQ

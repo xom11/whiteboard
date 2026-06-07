@@ -155,4 +155,83 @@ describe('quadRule', () => {
     const m = run('Cho hình vuông ABCDE');
     expect(m.length).toBe(0);
   });
+
+  // --- Tứ giác nội tiếp (cyclic quadrilateral) — issue #46 nhóm C -----------
+  it('"tứ giác ABCD nội tiếp đường tròn (O)" → draw-shape (concyclic) + draw-circle through3', () => {
+    const m = run('Cho tứ giác ABCD nội tiếp đường tròn (O)');
+    expect(m.length).toBe(1);
+    expect(m[0].intents.length).toBe(2);
+    const shape = m[0].intents[0] as any;
+    const circ = m[0].intents[1] as any;
+    expect(shape.op).toBe('draw-shape');
+    expect(shape.shape).toBe('quadrilateral');
+    expect(shape.labels).toEqual(['A', 'B', 'C', 'D']);
+    expect(shape.explicitCoords).toBeDefined();
+    expect(shape.explicitCoords.A).toEqual([-3, 4]);
+    expect(shape.explicitCoords.B).toEqual([4, 3]);
+    expect(shape.explicitCoords.C).toEqual([3, -4]);
+    expect(shape.explicitCoords.D).toEqual([-4, -3]);
+    expect(circ.op).toBe('draw-circle');
+    expect(circ.spec).toBe('through3');
+    expect(circ.name).toBe('O');
+    expect(circ.points).toEqual(['A', 'B', 'C']);
+  });
+
+  it('Pattern B: "Đường tròn (O) ngoại tiếp tứ giác MNPQ" → 2 intents', () => {
+    const m = run('Đường tròn (O) ngoại tiếp tứ giác MNPQ');
+    expect(m.length).toBe(1);
+    expect(m[0].intents.length).toBe(2);
+    const shape = m[0].intents[0] as any;
+    const circ = m[0].intents[1] as any;
+    expect(shape.shape).toBe('quadrilateral');
+    expect(shape.labels).toEqual(['M', 'N', 'P', 'Q']);
+    expect(shape.explicitCoords.M).toEqual([-3, 4]);
+    expect(shape.explicitCoords.Q).toEqual([-4, -3]);
+    expect(circ.name).toBe('O');
+    expect(circ.spec).toBe('through3');
+    expect(circ.points).toEqual(['M', 'N', 'P']);
+  });
+
+  it('default center "đường tròn" (không tên) → circle name "O"', () => {
+    const m = run('Cho tứ giác ABCD nội tiếp đường tròn');
+    expect(m.length).toBe(1);
+    expect(m[0].intents.length).toBe(2);
+    expect((m[0].intents[1] as any).name).toBe('O');
+  });
+
+  it('named center "tâm I" → circle name "I"', () => {
+    const m = run('Cho tứ giác ABCD nội tiếp đường tròn tâm I');
+    expect(m.length).toBe(1);
+    expect(m[0].intents.length).toBe(2);
+    expect((m[0].intents[1] as any).name).toBe('I');
+  });
+
+  it('Pattern B named center "tâm K" → circle name "K"', () => {
+    const m = run('Đường tròn tâm K ngoại tiếp tứ giác MNPQ');
+    expect(m.length).toBe(1);
+    expect(m[0].intents.length).toBe(2);
+    expect((m[0].intents[1] as any).name).toBe('K');
+  });
+
+  // --- Fail-safe: đỉnh dùng chung với tam giác → quad-only (no circle) -------
+  it('ESCALATE-SAFE: "tam giác ABC ... tứ giác BCEF nội tiếp" → BCEF chỉ 1 intent (no circle)', () => {
+    const m = run('Cho tam giác ABC. Vẽ đường tròn ngoại tiếp tứ giác BCEF');
+    const bcef = m.find((x) => (x.intents[0] as any).labels?.join('') === 'BCEF');
+    expect(bcef).toBeDefined();
+    expect(bcef!.intents.length).toBe(1);
+    const shape = bcef!.intents[0] as any;
+    expect(shape.op).toBe('draw-shape');
+    expect(shape.shape).toBe('quadrilateral');
+    expect(shape.explicitCoords).toBeUndefined();
+  });
+
+  // --- Regression: plain quad không sinh circle / explicitCoords -------------
+  it('plain quad "tứ giác ABCD" → 1 intent, không circle, không explicitCoords', () => {
+    const m = run('Cho tứ giác ABCD');
+    expect(m.length).toBe(1);
+    expect(m[0].intents.length).toBe(1);
+    const shape = m[0].intents[0] as any;
+    expect(shape.op).toBe('draw-shape');
+    expect(shape.explicitCoords).toBeUndefined();
+  });
 });
