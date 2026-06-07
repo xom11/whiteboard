@@ -177,12 +177,17 @@ export const DrawCircleIntentZ = z.object({
 export const DrawLineIntentZ = z.object({
   op: z.literal('draw-line'),
   name: LabelZ,
-  kind: z.enum(['perpThrough', 'parallelThrough', 'tangentAt', 'tangentFromExt']),
+  kind: z.enum(['perpThrough', 'parallelThrough', 'tangentAt', 'tangentFromExt', 'angleBisector']),
   through: LabelZ.optional(),
   to: LabelZ.optional(),
   from: LabelZ.optional(),
   circle: LabelZ.optional(),
   which: z.enum(['first', 'second', 'both']).optional(),
+  // angleBisector (phân giác TRONG của góc ∠p1·vertex·p2, VISIBLE, không foot —
+  // Issue #46 nhóm A). vertex = đỉnh góc.
+  p1: LabelZ.optional(),
+  vertex: LabelZ.optional(),
+  p2: LabelZ.optional(),
 });
 
 // op: mark-shape (sub-shape từ điểm đã có, không tạo coord mới)

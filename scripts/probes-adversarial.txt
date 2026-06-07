@@ -54,6 +54,8 @@ Cho tam giác ABC. Kẻ AH ⊥ BC tại H
 Cho tam giác ABC ngoại tiếp đường tròn (I)
 Cho tam giác MNP ngoại tiếp đường tròn tâm O
 Cho tam giác ABC. Trên tia đối của tia BA lấy điểm D′ sao cho BD′ = AB
+Cho tam giác ABC. Vẽ tia phân giác của góc BAC
+Cho tam giác ABC. Vẽ phân giác góc A
 
 # === Mức 2: PHẢI escalate (fail-safe — construct chưa hỗ trợ / xung đột) ===
 Cho tam giác ABC. Kẻ AH vuông góc BC tại K

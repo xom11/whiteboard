@@ -37,5 +37,20 @@ export const buildDrawLine: IntentBuilder<DrawLineIntentT> = (s, intent) => {
       }
       break;
     }
+    case 'angleBisector': {
+      // Phân giác TRONG của góc ∠(p1·vertex·p2), VISIBLE, KHÔNG sinh chân
+      // (khác cevian "phân giác AD" → foot). vertex = đỉnh góc. Issue #46 nhóm A.
+      if (!intent.p1 || !intent.vertex || !intent.p2) {
+        throw new IntentBuilderError('angleBisector cần p1 + vertex + p2', intent);
+      }
+      addShape(s, {
+        name: intent.name,
+        kind: 'angleBisector',
+        p1: intent.p1,
+        vertex: intent.vertex,
+        p2: intent.p2,
+      });
+      break;
+    }
   }
 };

@@ -63,6 +63,10 @@ export const CONSTRUCT_MANIFEST: ConstructEntry[] = [
   { dslKind: 'perpendicular',      sceneKind: 'line',    intentKey: 'draw-line',          toolKey: 'perpendicular',  ruleId: null,             serialize: true,  evalFixture: null },
   { dslKind: 'parallel',           sceneKind: 'line',    intentKey: 'draw-line',          toolKey: 'parallel',       ruleId: null,             serialize: true,  evalFixture: null },
   { dslKind: 'perpBisector',       sceneKind: 'line',    intentKey: 'connect',            toolKey: 'perpBisector',   ruleId: 'perpBisector',   serialize: true,  evalFixture: null },
+  // 2 path Intent emit angleBisector: (a) add-point/angleBisectorFoot (cevian
+  // "phân giác AD" foot-named) + (b) draw-line kind=angleBisector VISIBLE
+  // (angleBisectorAngle rule "phân giác góc BAC", không foot). intentKey/ruleId
+  // ghi path foot (đại diện); path góc resolve qua 'draw-line'/'angleBisectorAngle'.
   { dslKind: 'angleBisector',      sceneKind: 'line',    intentKey: 'angleBisectorFoot',  toolKey: 'angleBisector',  ruleId: 'cevian',         serialize: true,  evalFixture: null },
   { dslKind: 'tangent',            sceneKind: 'tangent', intentKey: 'draw-line',          toolKey: 'tangent',        ruleId: 'tangentFromExt', serialize: true,  evalFixture: null },
 

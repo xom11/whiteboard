@@ -324,6 +324,30 @@ describe('intentsToDsl — Tier 4+5', () => {
     expect(tangents).toHaveLength(2);
   });
 
+  it('handles draw-line angleBisector (visible, không foot) → angleBisector shape', () => {
+    // "phân giác góc BAC": vertex giữa A, p1=B, p2=C. KHÔNG add-point, KHÔNG connect.
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'draw-line', name: 'bisBAC', kind: 'angleBisector', p1: 'B', vertex: 'A', p2: 'C' },
+    ] as never);
+    const bis = dsl.shapes.find((s) => s.kind === 'angleBisector' && s.name === 'bisBAC');
+    expect(bis).toBeDefined();
+    expect(bis!.p1).toBe('B');
+    expect(bis!.vertex).toBe('A');
+    expect(bis!.p2).toBe('C');
+    // Không sinh điểm chân / không có intersection.
+    expect(dsl.points.some((p) => p.kind === 'intersection')).toBe(false);
+  });
+
+  it('draw-line angleBisector thiếu vertex → throw', () => {
+    expect(() =>
+      intentsToDsl([
+        { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+        { op: 'draw-line', name: 'b', kind: 'angleBisector', p1: 'B', p2: 'C' },
+      ] as never),
+    ).toThrow(IntentBuilderError);
+  });
+
   it('handles mark-shape on existing labels', () => {
     const dsl = intentsToDsl([
       { op: 'draw-shape', shape: 'triangle', labels: ['A','B','C'], variant: 'right-at-A' },

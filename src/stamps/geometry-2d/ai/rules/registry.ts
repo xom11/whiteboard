@@ -9,6 +9,7 @@ import { connectRule } from './connect';
 import { midpointRule } from './midpoint';
 import { perpBisectorRule } from './perpBisector';
 import { cevianRule } from './cevian';
+import { angleBisectorAngleRule } from './angleBisectorAngle';
 import { centersRule } from './centers';
 import { perpFootRule } from './perpFoot';
 import { circleRadiusRule } from './circleRadius';
@@ -25,6 +26,7 @@ const RULES: readonly LanguageRule[] = [
   midpointRule,
   perpBisectorRule,
   cevianRule,
+  angleBisectorAngleRule,
   centersRule,
   perpFootRule,
   circleRadiusRule,
