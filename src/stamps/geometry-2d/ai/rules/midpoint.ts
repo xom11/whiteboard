@@ -24,6 +24,26 @@ const NAME_AFTER_G = new RegExp(
   'gu',
 );
 
+// === EN patterns (issue #46 group B) ========================================
+// Prefilter EN: "midpoint" (first-letter case flex [Mm], KHÔNG cờ 'i' — phá [A-Z]).
+const MIDPOINT_EN = /[Mm]idpoint/u;
+// EN side/segment prefix tuỳ chọn TRƯỚC cặp đỉnh: "segment BC", "side BC".
+const SIDE_PREFIX_EN = '(?:segment\\s+|side\\s+)?';
+
+// EN dạng A (GLOBAL): tên ĐỨNG TRƯỚC. "M is the midpoint of BC" | "let M be the
+// midpoint of segment BC". Tên = HOA NGAY TRƯỚC "is/be the midpoint" (cục bộ).
+// (?![A-Za-z]) neo cuối cặp đỉnh (chặn "BCD" 3 chữ → escalate-safe).
+const NAME_BEFORE_EN_G = new RegExp(
+  `([A-Z])(?:['′]?)\\s+(?:is|be)\\s+the\\s+midpoint\\s+of\\s+${SIDE_PREFIX_EN}([A-Z])([A-Z])(?![A-Za-z])`,
+  'gu',
+);
+
+// EN dạng B (GLOBAL): tên ĐỨNG SAU. "midpoint M of BC" | "midpoint I of segment AB".
+const NAME_AFTER_EN_G = new RegExp(
+  `[Mm]idpoint\\s+([A-Z])(?:['′]?)\\s+of\\s+${SIDE_PREFIX_EN}([A-Z])([A-Z])(?![A-Za-z])`,
+  'gu',
+);
+
 /**
  * "Gọi M là trung điểm BC" → add-point M {kind:'midpoint', of:'BC'}.
  *
@@ -38,16 +58,14 @@ const NAME_AFTER_G = new RegExp(
 export const midpointRule: LanguageRule = {
   id: 'midpoint',
   priority: 50,
-  languages: ['vi'],
-  patterns: [MIDPOINT],
+  languages: ['vi', 'en'],
+  patterns: [MIDPOINT, MIDPOINT_EN],
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
-      if (!MIDPOINT.test(c.text)) continue;
-
-      // Theo dõi vị trí cụm "trung điểm" đã được dạng A claim, để dạng B không
-      // nhân đôi cùng một occurrence.
-      const consumed = new Set<number>();
+      const hasVi = MIDPOINT.test(c.text);
+      const hasEn = MIDPOINT_EN.test(c.text);
+      if (!hasVi && !hasEn) continue;
 
       const emit = (name: string, pairToken: string, clauseId: number) => {
         const pair = pairFromToken(pairToken);
@@ -59,21 +77,42 @@ export const midpointRule: LanguageRule = {
         });
       };
 
-      // Dạng A — tên đứng trước. Vị trí cụm "trung điểm" = chỉ số bắt đầu match
-      // (gần đúng: match bắt đầu ở ký tự tên, "trung điểm" theo ngay sau).
-      NAME_BEFORE_G.lastIndex = 0;
-      for (const m of c.text.matchAll(NAME_BEFORE_G)) {
-        const tdIdx = c.text.indexOf('trung', m.index ?? 0);
-        if (tdIdx >= 0) consumed.add(tdIdx);
-        emit(m[1], m[2] + m[3], c.id);
+      if (hasVi) {
+        // Theo dõi vị trí cụm "trung điểm" đã được dạng A claim, để dạng B không
+        // nhân đôi cùng một occurrence.
+        const consumed = new Set<number>();
+
+        // Dạng A — tên đứng trước. Vị trí cụm "trung điểm" = chỉ số bắt đầu match
+        // (gần đúng: match bắt đầu ở ký tự tên, "trung điểm" theo ngay sau).
+        NAME_BEFORE_G.lastIndex = 0;
+        for (const m of c.text.matchAll(NAME_BEFORE_G)) {
+          const tdIdx = c.text.indexOf('trung', m.index ?? 0);
+          if (tdIdx >= 0) consumed.add(tdIdx);
+          emit(m[1], m[2] + m[3], c.id);
+        }
+
+        // Dạng B — tên đứng sau "trung điểm". Bỏ qua occurrence đã được dạng A claim.
+        NAME_AFTER_G.lastIndex = 0;
+        for (const m of c.text.matchAll(NAME_AFTER_G)) {
+          const tdIdx = m.index ?? 0;
+          if (consumed.has(tdIdx)) continue;
+          emit(m[1], m[2] + m[3], c.id);
+        }
       }
 
-      // Dạng B — tên đứng sau "trung điểm". Bỏ qua occurrence đã được dạng A claim.
-      NAME_AFTER_G.lastIndex = 0;
-      for (const m of c.text.matchAll(NAME_AFTER_G)) {
-        const tdIdx = m.index ?? 0;
-        if (consumed.has(tdIdx)) continue;
-        emit(m[1], m[2] + m[3], c.id);
+      // --- EN (issue #46 group B) — dạng A (name before) + B (name after) -----
+      // EN dạng A khớp "X is/be the midpoint of …"; dạng B khớp "midpoint X of …".
+      // 2 dạng không chồng (A cần "is/be the", B cần HOA ngay sau "midpoint") nên
+      // KHÔNG cần consumed-set như VN.
+      if (hasEn) {
+        NAME_BEFORE_EN_G.lastIndex = 0;
+        for (const m of c.text.matchAll(NAME_BEFORE_EN_G)) {
+          emit(m[1], m[2] + m[3], c.id);
+        }
+        NAME_AFTER_EN_G.lastIndex = 0;
+        for (const m of c.text.matchAll(NAME_AFTER_EN_G)) {
+          emit(m[1], m[2] + m[3], c.id);
+        }
       }
     }
     return out;

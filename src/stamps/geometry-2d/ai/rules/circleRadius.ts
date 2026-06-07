@@ -71,6 +71,44 @@ const CENTER_RADIUS_LETTER_PAREN_G = /\(\s*([A-Z])\s*[;,]\s*[Rr]\s*\)/gu;
 const CENTER_RADIUS_LETTER_WORDS_G =
   /đường\s*tròn\s*(?:\(\s*)?(?:tâm\s+)?([A-Z])(?:\s*\))?(?:(?!đường|và\s)[^A-Z])*?bán\s*kính\s+[Rr](?![A-Za-z])/gu;
 
+// === EN words patterns (issue #46 group B) ==================================
+// Tiền tố tâm EN dùng chung cho cả 3 dạng (radius số / radius CHỮ / passing
+// through). Chấp nhận: "circle with center O", "circle centered at O", "circle
+// of center O" + chính tả Anh-Anh "centre". cent(?:er|re) + (?:ed)? + (?:at|of)?
+// First-letter case flex [Cc] — KHÔNG cờ 'i' (sẽ phá [A-Z] tâm/điểm).
+//
+// Gap tâm→keyword: tempered `(?:(?![Cc]ircle)[^A-Z])*?` — KHÔNG nhảy qua "circle"
+// khác (ranh giới giữa 2 đường tròn) và KHÔNG nuốt chữ HOA (tâm/điểm kế). Lazy →
+// dừng ở "radius"/"passing" gần nhất. GLOBAL: nhiều đường tròn / clause.
+const CIRCLE_CENTER_EN =
+  '[Cc]ircle\\s+(?:with\\s+|of\\s+)?cent(?:er|re)(?:ed)?\\s+(?:at\\s+|of\\s+)?([A-Z])(?![A-Za-z])';
+const EN_GAP = '(?:(?![Cc]ircle)[^A-Z])*?';
+
+// "circle with center O and radius 3" / "circle centered at O with radius 3" /
+// "circle of center O radius 3" → centerRadius số.
+const CIRCLE_CR_EN_G = new RegExp(
+  CIRCLE_CENTER_EN + EN_GAP + 'radius\\s+(\\d+(?:[.,]\\d+)?)',
+  'gu',
+);
+
+// "circle with center O and radius R" (bán kính CHỮ ký hiệu) → canonical.
+// (?![A-Za-z]) chặn "Ra"/hệ số "2R" (nhánh số lo phần "2", nhưng "radius 2R"
+// hiếm; vẫn fail-safe vì \d không có sau "radius" khi viết "radius R").
+const CIRCLE_CR_LETTER_EN_G = new RegExp(
+  CIRCLE_CENTER_EN + EN_GAP + 'radius\\s+[Rr](?![A-Za-z])',
+  'gu',
+);
+
+// "circle with center O passing through A" / "circle centered at O passing
+// through A" → centerThrough. Điểm = 1 ký tự HOA neo (?![A-Za-z]).
+const CIRCLE_THROUGH_EN_G = new RegExp(
+  CIRCLE_CENTER_EN + EN_GAP + 'passing\\s+through\\s+([A-Z])(?![A-Za-z])',
+  'gu',
+);
+
+// Prefilter EN (NON-global để không vướng lastIndex ở .some(test)).
+const EN_PREFILTER = new RegExp(CIRCLE_CENTER_EN, 'u');
+
 /** "3" / "3.5" / "3,5" → number. NaN nếu không parse được. */
 function parseNum(raw: string): number {
   return Number(raw.replace(',', '.'));
@@ -112,13 +150,14 @@ function findParenClauseId(
 export const circleRadiusRule: LanguageRule = {
   id: 'circleRadius',
   priority: 75,
-  languages: ['vi'],
+  languages: ['vi', 'en'],
   patterns: [
     CENTER_RADIUS_WORDS_G,
     CENTER_THROUGH_G,
     /\(\s*[A-Z]\s*[;,]\s*\d/u,
     /\(\s*[A-Z]\s*[;,]\s*[Rr]\s*\)/u, // ký hiệu bán kính CHỮ "(O; R)"
     /bán\s*kính\s+[Rr](?![A-Za-z])/u, // words bán kính CHỮ "bán kính R"
+    EN_PREFILTER, // EN "circle with center O …" (issue #46 group B)
   ],
   match(ctx) {
     const out: RuleMatch[] = [];
@@ -169,6 +208,50 @@ export const circleRadiusRule: LanguageRule = {
         while ((clw = CENTER_RADIUS_LETTER_WORDS_G.exec(c.text)) !== null) {
           const center = clw[1];
           if (isInscribedCircumscribed(ctx.problem, center)) continue;
+          out.push({
+            ruleId: 'circleRadius',
+            clauseIds: [c.id],
+            intents: [drawCircle(center, 'centerRadius', { center, radius: SYMBOLIC_RADIUS })],
+          });
+        }
+      }
+
+      // --- EN words (issue #46 group B) ---------------------------------------
+      // Fail-safe: clause có "inscribed"/"circumscribed" → circle phụ thuộc
+      // tam giác/hình (circleTriangle EN OUT OF SCOPE) → KHÔNG emit lone circle.
+      if (!/[Ii]nscribed|[Cc]ircumscribed/u.test(c.text)) {
+        // 1) passing through → centerThrough.
+        CIRCLE_THROUGH_EN_G.lastIndex = 0;
+        let ent: RegExpExecArray | null;
+        while ((ent = CIRCLE_THROUGH_EN_G.exec(c.text)) !== null) {
+          const center = ent[1];
+          const through = ent[2];
+          out.push({
+            ruleId: 'circleRadius',
+            clauseIds: [c.id],
+            intents: [drawCircle(center, 'centerThrough', { center, through })],
+          });
+        }
+
+        // 2) radius <số> → centerRadius.
+        CIRCLE_CR_EN_G.lastIndex = 0;
+        let ecr: RegExpExecArray | null;
+        while ((ecr = CIRCLE_CR_EN_G.exec(c.text)) !== null) {
+          const center = ecr[1];
+          const radius = parseNum(ecr[2]);
+          if (!Number.isFinite(radius) || radius <= 0) continue;
+          out.push({
+            ruleId: 'circleRadius',
+            clauseIds: [c.id],
+            intents: [drawCircle(center, 'centerRadius', { center, radius })],
+          });
+        }
+
+        // 3) radius R/r (ký hiệu CHỮ) → centerRadius canonical.
+        CIRCLE_CR_LETTER_EN_G.lastIndex = 0;
+        let ecl: RegExpExecArray | null;
+        while ((ecl = CIRCLE_CR_LETTER_EN_G.exec(c.text)) !== null) {
+          const center = ecl[1];
           out.push({
             ruleId: 'circleRadius',
             clauseIds: [c.id],

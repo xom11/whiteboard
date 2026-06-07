@@ -29,6 +29,35 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   // hình học DUY NHẤT bị coi là văn xuôi (hasGeometry=false). Thêm "⊥" để 2
   // phrasing hành xử như nhau ở gate coverage (issue #46 nhóm A).
   '⊥',
+
+  // === EN keywords (issue #46 group B) =======================================
+  // Bộ từ khoá tiếng Anh để 1 clause TOÀN tiếng Anh được tính là geo-clause
+  // (countGeometryKeywords > 0) → coverage gate không escalate sai dù rule EN đã
+  // match. countGeometryKeywords lowercase input nên lưu lowercase ở đây.
+  //
+  // CHỈ thêm danh từ construct ĐA-KÝ-TỰ phân biệt, KHÔNG va chạm có hại như
+  // substring của text tiếng Việt hay của nhau. KHÔNG thêm từ ngắn mơ hồ ("on",
+  // "at", "line", "point", "right") vì dễ false-positive ("point" ⊂ "appoint",
+  // "at" ⊂ "tại"…). Một danh từ construct / clause là đủ để đánh dấu geo.
+  //
+  // GOTCHA substring: "centre" ⊃ "center" KHÔNG xảy ra (khác chính tả); "circle"
+  // KHÔNG ⊂ từ VN. "radius"/"diameter"/"center" là danh từ riêng cho circle.
+  'triangle',
+  'circle',
+  'square',
+  'rectangle',
+  'parallelogram',
+  'rhombus',
+  'trapezoid',
+  'trapezium',
+  'quadrilateral',
+  'midpoint',
+  'radius',
+  'diameter',
+  'center',
+  'centre',
+  'equilateral',
+  'isosceles',
 ];
 
 export function countGeometryKeywords(text: string): number {

@@ -154,4 +154,65 @@ describe('midpointRule', () => {
   it('FAIL-SAFE: "đoạn huyền" (sai cặp) → không claim', () => {
     expect(run('M là trung điểm đoạn huyền AC')).toHaveLength(0);
   });
+
+  // === EN phrasing (issue #46 group B) ===
+  describe('EN', () => {
+    it('"M is the midpoint of BC" → M, of BC', () => {
+      const intent = only('M is the midpoint of BC').intents[0] as any;
+      expect(intent.op).toBe('add-point');
+      expect(intent.name).toBe('M');
+      expect(intent.constraint).toEqual({ kind: 'midpoint', of: 'BC' });
+    });
+
+    it('"M is the midpoint of segment BC" → M, of BC', () => {
+      const intent = only('M is the midpoint of segment BC').intents[0] as any;
+      expect(intent.name).toBe('M');
+      expect(intent.constraint).toEqual({ kind: 'midpoint', of: 'BC' });
+    });
+
+    it('"M is the midpoint of side BC" → M, of BC', () => {
+      const intent = only('M is the midpoint of side BC').intents[0] as any;
+      expect(intent.name).toBe('M');
+      expect(intent.constraint).toEqual({ kind: 'midpoint', of: 'BC' });
+    });
+
+    it('"Let M be the midpoint of BC" → M, of BC', () => {
+      const intent = only('Let M be the midpoint of BC').intents[0] as any;
+      expect(intent.name).toBe('M');
+      expect(intent.constraint).toEqual({ kind: 'midpoint', of: 'BC' });
+    });
+
+    it('"midpoint M of BC" (name after) → M, of BC', () => {
+      const intent = only('Let the midpoint M of BC be drawn').intents[0] as any;
+      expect(intent.name).toBe('M');
+      expect(intent.constraint).toEqual({ kind: 'midpoint', of: 'BC' });
+    });
+
+    it('"midpoint I of segment AB" (name after, with segment) → I, of AB', () => {
+      const intent = only('Mark the midpoint I of segment AB').intents[0] as any;
+      expect(intent.name).toBe('I');
+      expect(intent.constraint).toEqual({ kind: 'midpoint', of: 'AB' });
+    });
+
+    it('two EN midpoints same clause → 2 add-point', () => {
+      const m = run('M is the midpoint of BC and N is the midpoint of AC');
+      expect(m.length).toBe(2);
+      const byName: Record<string, any> = {};
+      for (const match of m) {
+        const it = match.intents[0] as any;
+        byName[it.name] = it;
+      }
+      expect(byName.M.constraint).toEqual({ kind: 'midpoint', of: 'BC' });
+      expect(byName.N.constraint).toEqual({ kind: 'midpoint', of: 'AC' });
+    });
+
+    it('no point name ("the midpoint of BC") → skip (escalate-safe)', () => {
+      expect(run('Draw the midpoint of BC')).toHaveLength(0);
+    });
+
+    it('end-anchored: "midpoint of BCD" (3 letters) → no clean pair → skip', () => {
+      // "BCD" is not a valid 2-vertex pair end-anchored by (?![A-Za-z]).
+      expect(run('M is the midpoint of BCD')).toHaveLength(0);
+    });
+  });
 });

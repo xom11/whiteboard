@@ -194,4 +194,102 @@ describe('circleRadiusRule', () => {
     expect(pairs).toContainEqual(['O', 'A']);
     expect(pairs).toContainEqual(['I', 'B']);
   });
+
+  // === EN phrasing (issue #46 group B) ===
+  describe('EN', () => {
+    it('"(O; 3)" paren → centerRadius radius:3 (language-agnostic, already works)', () => {
+      const m = run('Circle (O; 3)');
+      expect(m.length).toBe(1);
+      const intent = m[0].intents[0] as any;
+      expect(intent.spec).toBe('centerRadius');
+      expect(intent.center).toBe('O');
+      expect(intent.radius).toBe(3);
+    });
+
+    it('"(O, 3)" paren comma → centerRadius radius:3', () => {
+      const m = run('Circle (O, 3)');
+      const intent = m[0].intents[0] as any;
+      expect(intent.spec).toBe('centerRadius');
+      expect(intent.center).toBe('O');
+      expect(intent.radius).toBe(3);
+    });
+
+    it('"(O; R)" symbolic paren → centerRadius canonical', () => {
+      const m = run('Circle (O; R)');
+      const intent = m[0].intents[0] as any;
+      expect(intent.spec).toBe('centerRadius');
+      expect(intent.center).toBe('O');
+      expect(intent.radius).toBeGreaterThan(0);
+    });
+
+    it('"circle with center O and radius 3" → centerRadius radius:3', () => {
+      const m = run('Circle with center O and radius 3');
+      expect(m.length).toBe(1);
+      const intent = m[0].intents[0] as any;
+      expect(intent.op).toBe('draw-circle');
+      expect(intent.spec).toBe('centerRadius');
+      expect(intent.center).toBe('O');
+      expect(intent.radius).toBe(3);
+    });
+
+    it('"circle centered at O with radius 3" → centerRadius radius:3', () => {
+      const m = run('Circle centered at O with radius 3');
+      const intent = m[0].intents[0] as any;
+      expect(intent.spec).toBe('centerRadius');
+      expect(intent.center).toBe('O');
+      expect(intent.radius).toBe(3);
+    });
+
+    it('"circle of center O radius 3" → centerRadius radius:3', () => {
+      const m = run('Circle of center O radius 3');
+      const intent = m[0].intents[0] as any;
+      expect(intent.spec).toBe('centerRadius');
+      expect(intent.center).toBe('O');
+      expect(intent.radius).toBe(3);
+    });
+
+    it('British spelling "centre" → centerRadius', () => {
+      const m = run('Circle with centre O and radius 5');
+      const intent = m[0].intents[0] as any;
+      expect(intent.spec).toBe('centerRadius');
+      expect(intent.center).toBe('O');
+      expect(intent.radius).toBe(5);
+    });
+
+    it('"circle with center O and radius R" (symbolic) → centerRadius canonical', () => {
+      const m = run('Circle with center O and radius R');
+      const intent = m[0].intents[0] as any;
+      expect(intent.spec).toBe('centerRadius');
+      expect(intent.center).toBe('O');
+      expect(intent.radius).toBeGreaterThan(0);
+    });
+
+    it('"circle with center O passing through A" → centerThrough', () => {
+      const m = run('Circle with center O passing through A');
+      expect(m.length).toBe(1);
+      const intent = m[0].intents[0] as any;
+      expect(intent.spec).toBe('centerThrough');
+      expect(intent.center).toBe('O');
+      expect(intent.through).toBe('A');
+    });
+
+    it('"circle centered at O passing through A" → centerThrough', () => {
+      const m = run('Circle centered at O passing through A');
+      const intent = m[0].intents[0] as any;
+      expect(intent.spec).toBe('centerThrough');
+      expect(intent.center).toBe('O');
+      expect(intent.through).toBe('A');
+    });
+
+    it('escalate-safe: "(O; 2R)" coefficient (defer) → 0 match', () => {
+      expect(run('Circle (O; 2R)').length).toBe(0);
+    });
+
+    it('escalate-safe: EN inscribed phrasing does NOT emit a lone circle', () => {
+      // "triangle ABC inscribed in circle (O)" — circleRadius must NOT emit a
+      // lone (O) circle (circleTriangle EN is out of scope; (O) has no radius).
+      const m = run('Triangle ABC inscribed in circle (O)');
+      expect(m.length).toBe(0);
+    });
+  });
 });

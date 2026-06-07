@@ -101,4 +101,112 @@ describe('triangleRule', () => {
     expect(i).toHaveLength(1);
     expect(i[0].variant).toBe('any');
   });
+
+  // === EN phrasing (issue #46 group B) — mirror VN variant semantics exactly ===
+  describe('EN', () => {
+    it('"triangle ABC" → draw-shape triangle any', () => {
+      const m = run('Triangle ABC');
+      expect(m.length).toBe(1);
+      const intent = m[0].intents[0] as any;
+      expect(intent.op).toBe('draw-shape');
+      expect(intent.shape).toBe('triangle');
+      expect(intent.labels).toEqual(['A', 'B', 'C']);
+      expect(intent.variant).toBe('any');
+    });
+
+    it('lowercase mid-sentence "a triangle ABC" → triangle any', () => {
+      const m = run('Consider a triangle ABC');
+      const i = m.flatMap((x) => x.intents) as any[];
+      expect(i).toHaveLength(1);
+      expect(i[0].labels).toEqual(['A', 'B', 'C']);
+      expect(i[0].variant).toBe('any');
+    });
+
+    it('"equilateral triangle ABC" (lead) → equilateral', () => {
+      const m = run('Equilateral triangle ABC');
+      const i = m.flatMap((x) => x.intents) as any[];
+      expect(i).toHaveLength(1);
+      expect(i[0].variant).toBe('equilateral');
+    });
+
+    it('"triangle ABC is equilateral" (window) → equilateral', () => {
+      const m = run('Triangle ABC is equilateral');
+      expect((m[0].intents[0] as any).variant).toBe('equilateral');
+    });
+
+    it('"right triangle ABC" WITHOUT named vertex → any', () => {
+      const m = run('Right triangle ABC');
+      expect((m[0].intents[0] as any).variant).toBe('any');
+    });
+
+    it('"right-angled triangle ABC" WITHOUT named vertex → any', () => {
+      const m = run('Right-angled triangle ABC');
+      expect((m[0].intents[0] as any).variant).toBe('any');
+    });
+
+    it('"right triangle ABC, right angle at A" → right-at-A', () => {
+      const m = run('Right triangle ABC, right angle at A');
+      const i = m.flatMap((x) => x.intents) as any[];
+      expect(i).toHaveLength(1);
+      expect(i[0].labels).toEqual(['A', 'B', 'C']);
+      expect(i[0].variant).toBe('right-at-A');
+    });
+
+    it('"triangle ABC, right-angled at B" → right-at-B (positional)', () => {
+      const m = run('Triangle ABC, right-angled at B');
+      expect((m.flatMap((x) => x.intents)[0] as any).variant).toBe('right-at-B');
+    });
+
+    it('"right angle at C" → right-at-C', () => {
+      const m = run('Triangle ABC with a right angle at C');
+      expect((m.flatMap((x) => x.intents)[0] as any).variant).toBe('right-at-C');
+    });
+
+    it('"right angle at D" (vertex NOT in triangle) → any (fail-safe)', () => {
+      const m = run('Triangle ABC, right angle at D');
+      expect((m.flatMap((x) => x.intents)[0] as any).variant).toBe('any');
+    });
+
+    it('"isosceles triangle ABC" WITHOUT apex → any', () => {
+      const m = run('Isosceles triangle ABC');
+      expect((m[0].intents[0] as any).variant).toBe('any');
+    });
+
+    it('"isosceles triangle ABC with apex A" → isoceles-BC (positional)', () => {
+      const m = run('Isosceles triangle ABC with apex A');
+      expect((m.flatMap((x) => x.intents)[0] as any).variant).toBe('isoceles-BC');
+    });
+
+    it('"isosceles triangle ACD with apex A" → isoceles-BC (apex idx 0, POSITIONAL)', () => {
+      const m = run('Isosceles triangle ACD with apex A');
+      const i = m.flatMap((x) => x.intents) as any[];
+      expect(i[0].labels).toEqual(['A', 'C', 'D']);
+      expect(i[0].variant).toBe('isoceles-BC');
+    });
+
+    it('apex NOT in triangle → any (fail-safe)', () => {
+      const m = run('Isosceles triangle ABC with apex D');
+      expect((m.flatMap((x) => x.intents)[0] as any).variant).toBe('any');
+    });
+
+    it('multi-triangle window does not leak modifier: "triangle ABC and right triangle ABD, right angle at A"', () => {
+      const m = run('Triangle ABC and triangle ABD, right angle at A');
+      const i = m.flatMap((x) => x.intents) as any[];
+      expect(i).toHaveLength(2);
+      expect(i[0].labels).toEqual(['A', 'B', 'C']);
+      expect(i[0].variant).toBe('any'); // does not grab "right angle at A" of ABD
+      expect(i[1].labels).toEqual(['A', 'B', 'D']);
+      expect(i[1].variant).toBe('right-at-A');
+    });
+
+    it('"equilateral triangle DEF inscribed in triangle ABC" → DEF equilateral + ABC any', () => {
+      const m = run('Equilateral triangle DEF inscribed in triangle ABC');
+      const i = m.flatMap((x) => x.intents) as any[];
+      expect(i).toHaveLength(2);
+      expect(i[0].labels).toEqual(['D', 'E', 'F']);
+      expect(i[0].variant).toBe('equilateral');
+      expect(i[1].labels).toEqual(['A', 'B', 'C']);
+      expect(i[1].variant).toBe('any');
+    });
+  });
 });

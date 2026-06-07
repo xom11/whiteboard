@@ -68,11 +68,57 @@ const KINDS: QuadKind[] = [
     shape: 'quadrilateral',
     variant: 'any',
   },
+
+  // === EN names (issue #46 group B) — same shape/variant mapping as VN ========
+  // First-letter case flex ([Ss]quare…) — KHÔNG cờ 'i' (sẽ phá [A-Z] nhãn QUAD).
+  // Modifier EN đứng TRƯỚC tên ("isosceles trapezoid ABCD") → entry riêng cho
+  // isosceles/right trapezoid, đặt TRƯỚC trapezoid chung để giành quyền (overlaps).
+  // KHÔNG có post-positional modifier EN trong slice này (chỉ pre-positional).
+  {
+    name: new RegExp('[Ii]sosceles\\s+(?:[Tt]rapezoid|[Tt]rapezium)\\s+' + QUAD, 'gu'),
+    shape: 'trapezoid',
+    variant: 'isoceles',
+  },
+  {
+    name: new RegExp('[Rr]ight\\s+(?:[Tt]rapezoid|[Tt]rapezium)\\s+' + QUAD, 'gu'),
+    shape: 'trapezoid',
+    variant: 'right',
+  },
+  {
+    name: new RegExp('(?:[Tt]rapezoid|[Tt]rapezium)\\s+' + QUAD, 'gu'),
+    shape: 'trapezoid',
+    variant: 'general',
+  },
+  {
+    name: new RegExp('[Ss]quare\\s+' + QUAD, 'gu'),
+    shape: 'square',
+    variant: 'standard',
+  },
+  {
+    name: new RegExp('[Rr]ectangle\\s+' + QUAD, 'gu'),
+    shape: 'rectangle',
+    variant: 'wide',
+  },
+  {
+    name: new RegExp('[Pp]arallelogram\\s+' + QUAD, 'gu'),
+    shape: 'parallelogram',
+    variant: 'standard',
+  },
+  {
+    name: new RegExp('[Rr]hombus\\s+' + QUAD, 'gu'),
+    shape: 'rhombus',
+    variant: 'standard',
+  },
+  {
+    name: new RegExp('[Qq]uadrilateral\\s+' + QUAD, 'gu'),
+    shape: 'quadrilateral',
+    variant: 'any',
+  },
 ];
 
-// Prefilter toàn đề: bất kỳ tên hình 4 đỉnh nào.
+// Prefilter toàn đề: bất kỳ tên hình 4 đỉnh nào (VN + EN).
 const PREFILTER =
-  /hình\s+(?:vuông|chữ\s+nhật|bình\s+hành|thoi|thang)|tứ\s+giác/u;
+  /hình\s+(?:vuông|chữ\s+nhật|bình\s+hành|thoi|thang)|tứ\s+giác|[Ss]quare|[Rr]ectangle|[Pp]arallelogram|[Rr]hombus|[Tt]rapezoid|[Tt]rapezium|[Qq]uadrilateral/u;
 
 // "hình thang ABCD vuông tại A" / "...cân ..." — modifier đứng SAU đỉnh, ngay
 // sau cụm 4 đỉnh (cho phép xen khoảng trắng). Cờ 'u' bắt buộc cho ký tự Việt.
@@ -233,7 +279,7 @@ function detectCyclic(text: string, hit: Hit): string | undefined {
 export const quadRule: LanguageRule = {
   id: 'quad',
   priority: 100,
-  languages: ['vi'],
+  languages: ['vi', 'en'],
   patterns: [PREFILTER],
   match(ctx) {
     const out: RuleMatch[] = [];

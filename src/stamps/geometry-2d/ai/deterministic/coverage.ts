@@ -29,8 +29,15 @@ interface MatchLike {
  * vẫn được giữ nhưng `hasGeometry=false` để không ép escalate.
  */
 export function segmentClauses(problem: string): Clause[] {
+  // Comma-split lookahead: tách clause ở dấu phẩy đứng TRƯỚC từ dẫn. VN dùng
+  // (Gọi|Vẽ|Kẻ|Cho|Lấy|Dựng|trên|với). EN ADDITIVE (issue #46 group B): các từ
+  // dẫn sub-clause viết HOA đầu câu (Let|Draw|Mark|Take|Construct|Join) — "Triangle
+  // ABC, let M be the midpoint of BC" tách thành 2 clause. Thuần additive: không
+  // đổi segmentation VN (alternation rời nhau, không trùng từ).
   return problem
-    .split(/[.;\n]+|,\s*(?=(?:Gọi|Vẽ|Kẻ|Cho|Lấy|Dựng|trên|với)\b)/u)
+    .split(
+      /[.;\n]+|,\s*(?=(?:Gọi|Vẽ|Kẻ|Cho|Lấy|Dựng|trên|với|Let|Draw|Mark|Take|Construct|Join)\b)/u,
+    )
     .map((s) => s.trim())
     .filter((s) => s.length > 0)
     .map((text, id) => ({ id, text, hasGeometry: countGeometryKeywords(text) > 0 }));

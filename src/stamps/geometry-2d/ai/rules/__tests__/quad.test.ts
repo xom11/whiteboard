@@ -234,4 +234,119 @@ describe('quadRule', () => {
     expect(shape.op).toBe('draw-shape');
     expect(shape.explicitCoords).toBeUndefined();
   });
+
+  // === EN phrasing (issue #46 group B) — same shape/variant mapping as VN ===
+  describe('EN', () => {
+    it('"square ABCD" → square standard', () => {
+      const m = run('Square ABCD');
+      const intent = m[0].intents[0] as any;
+      expect(intent.shape).toBe('square');
+      expect(intent.labels).toEqual(['A', 'B', 'C', 'D']);
+      expect(intent.variant).toBe('standard');
+    });
+
+    it('lowercase mid-sentence "a square ABCD" → square standard', () => {
+      const m = run('Consider a square ABCD');
+      const intent = m[0].intents[0] as any;
+      expect(intent.shape).toBe('square');
+      expect(intent.labels).toEqual(['A', 'B', 'C', 'D']);
+    });
+
+    it('"rectangle ABCD" → rectangle wide', () => {
+      const m = run('Rectangle ABCD');
+      const intent = m[0].intents[0] as any;
+      expect(intent.shape).toBe('rectangle');
+      expect(intent.labels).toEqual(['A', 'B', 'C', 'D']);
+      expect(intent.variant).toBe('wide');
+    });
+
+    it('"parallelogram ABCD" → parallelogram standard', () => {
+      const m = run('Parallelogram ABCD');
+      const intent = m[0].intents[0] as any;
+      expect(intent.shape).toBe('parallelogram');
+      expect(intent.variant).toBe('standard');
+    });
+
+    it('"rhombus ABCD" → rhombus standard', () => {
+      const m = run('Rhombus ABCD');
+      const intent = m[0].intents[0] as any;
+      expect(intent.shape).toBe('rhombus');
+      expect(intent.variant).toBe('standard');
+    });
+
+    it('"trapezoid ABCD" → trapezoid general', () => {
+      const m = run('Trapezoid ABCD');
+      const intent = m[0].intents[0] as any;
+      expect(intent.shape).toBe('trapezoid');
+      expect(intent.variant).toBe('general');
+    });
+
+    it('"trapezium ABCD" → trapezoid general', () => {
+      const m = run('Trapezium ABCD');
+      const intent = m[0].intents[0] as any;
+      expect(intent.shape).toBe('trapezoid');
+      expect(intent.variant).toBe('general');
+    });
+
+    it('"isosceles trapezoid ABCD" → trapezoid isoceles', () => {
+      const m = run('Isosceles trapezoid ABCD');
+      expect(m.length).toBe(1);
+      const intent = m[0].intents[0] as any;
+      expect(intent.shape).toBe('trapezoid');
+      expect(intent.variant).toBe('isoceles');
+      expect(intent.labels).toEqual(['A', 'B', 'C', 'D']);
+    });
+
+    it('"isosceles trapezium MNPQ" → trapezoid isoceles', () => {
+      const m = run('Isosceles trapezium MNPQ');
+      const intent = m[0].intents[0] as any;
+      expect(intent.shape).toBe('trapezoid');
+      expect(intent.variant).toBe('isoceles');
+      expect(intent.labels).toEqual(['M', 'N', 'P', 'Q']);
+    });
+
+    it('"right trapezoid ABCD" → trapezoid right', () => {
+      const m = run('Right trapezoid ABCD');
+      const intent = m[0].intents[0] as any;
+      expect(intent.shape).toBe('trapezoid');
+      expect(intent.variant).toBe('right');
+    });
+
+    it('"right trapezium MNPQ" → trapezoid right', () => {
+      const m = run('Right trapezium MNPQ');
+      const intent = m[0].intents[0] as any;
+      expect(intent.shape).toBe('trapezoid');
+      expect(intent.variant).toBe('right');
+      expect(intent.labels).toEqual(['M', 'N', 'P', 'Q']);
+    });
+
+    it('"quadrilateral ABCD" → quadrilateral any', () => {
+      const m = run('Quadrilateral ABCD');
+      const intent = m[0].intents[0] as any;
+      expect(intent.shape).toBe('quadrilateral');
+      expect(intent.variant).toBe('any');
+    });
+
+    it('5 vertices "square ABCDE" → no match (escalate)', () => {
+      expect(run('Square ABCDE').length).toBe(0);
+    });
+
+    it('EN quadrilateral does NOT trigger cyclic circumscription (VN-only slice)', () => {
+      // "quadrilateral ABCD inscribed in circle (O)" should just draw the quad.
+      const m = run('Quadrilateral ABCD inscribed in circle (O)');
+      const quad = m.find((x) => (x.intents[0] as any).shape === 'quadrilateral');
+      expect(quad).toBeDefined();
+      expect(quad!.intents.length).toBe(1);
+      expect((quad!.intents[0] as any).explicitCoords).toBeUndefined();
+    });
+
+    it('two EN shapes same clause "square ABCD and rectangle EFGH" → 2 shapes in text order', () => {
+      const m = run('Square ABCD and rectangle EFGH');
+      expect(m.length).toBe(2);
+      expect((m[0].intents[0] as any).shape).toBe('square');
+      expect((m[0].intents[0] as any).labels).toEqual(['A', 'B', 'C', 'D']);
+      expect((m[1].intents[0] as any).shape).toBe('rectangle');
+      expect((m[1].intents[0] as any).labels).toEqual(['E', 'F', 'G', 'H']);
+    });
+  });
 });

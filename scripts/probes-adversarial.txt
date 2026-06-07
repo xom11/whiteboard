@@ -126,3 +126,20 @@ Cho tam giác ABC. Lấy điểm C′ bất kỳ
 # Render-correct: 4 đỉnh đồng viên + đường tròn ngoại tiếp circle3 qua cả 4.
 Cho tứ giác ABCD nội tiếp đường tròn (O)
 Đường tròn (O) ngoại tiếp tứ giác MNPQ
+
+# === EN render (issue #46 group B) ===
+# Tier 0→1 tiếng Anh: triangle/quad/circle/midpoint + variant. Tất cả PHẢI DET OK
+# và tương đương bản tiếng Việt (cùng ops/shapes/variants/constraints).
+Triangle ABC
+Right triangle ABC, right angle at A
+Square ABCD
+Circle (O; 3)
+Circle with center O and radius 3
+Triangle ABC. M is the midpoint of BC.
+
+# === EN escalate-safe (issue #46 group B) ===
+# (a) construct CHƯA hỗ trợ (radical axis) → escalate (no-match), không vẽ sai.
+Draw the radical axis of two circles.
+# (b) geo-clause không rule nào claim ("diameter"/"circle" → geo nhưng vô chủ) →
+# escalate (incomplete-coverage), không render thiếu hình.
+Triangle ABC. The diameter of the circle is AB.
