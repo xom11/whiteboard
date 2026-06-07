@@ -2,9 +2,8 @@
 import { registerKind } from '../registry';
 import type { KindDef } from '../types';
 import { constraintRefs2D } from './2d-constraint';
-import { arcMidpoint, excenter, pointAtDistanceCoord } from './pointConstructions';
 import { POINT_CONSTRAINTS } from './point-constraints/registry';
-import { buildJxgTransforms, makeDistanceFn, buildPointOpts } from './point-constraints/shared';
+import { buildJxgTransforms, buildPointOpts } from './point-constraints/shared';
 
 export type { PointAttrs } from './point-constraints/_types';
 import type { PointAttrs } from './point-constraints/_types';
@@ -24,37 +23,12 @@ const def: KindDef<PointAttrs> = {
         throw new Error('point.perpFoot: from và onLine bắt buộc');
       }
     }
-    if (c.kind === 'centroid') {
-      if (!Array.isArray(c.vertices) || c.vertices.length !== 3) {
-        throw new Error('point.centroid: vertices phải là tuple 3 id');
-      }
-      if (!c.vertices[0] || !c.vertices[1] || !c.vertices[2]) {
-        throw new Error('point.centroid: 3 vertex id phải non-empty');
-      }
-    }
     if (c.kind === 'orthocenter') {
       if (!Array.isArray(c.vertices) || c.vertices.length !== 3) {
         throw new Error('point.orthocenter: vertices phải là tuple 3 id');
       }
       if (!c.vertices[0] || !c.vertices[1] || !c.vertices[2]) {
         throw new Error('point.orthocenter: 3 vertex id phải non-empty');
-      }
-    }
-    if (c.kind === 'arcMidpoint') {
-      if (!c.circle || !c.a || !c.b || !c.notContaining) {
-        throw new Error('point.arcMidpoint: circle, a, b, notContaining bắt buộc');
-      }
-    }
-    if (c.kind === 'excenter') {
-      if (!Array.isArray(c.vertices) || c.vertices.length !== 3) {
-        throw new Error('point.excenter: vertices phải là tuple 3 id');
-      }
-      if (!c.opposite) throw new Error('point.excenter: opposite bắt buộc');
-      if (!c.vertices[0] || !c.vertices[1] || !c.vertices[2]) {
-        throw new Error('point.excenter: 3 vertex id phải non-empty');
-      }
-      if (!c.vertices.includes(c.opposite)) {
-        throw new Error('point.excenter: opposite phải là một trong vertices');
       }
     }
   },
@@ -85,10 +59,6 @@ const def: KindDef<PointAttrs> = {
         : '';
       return `${obj.label} = ảnh của ${labelRef(c.source)} (${op})`;
     }
-    if (c.kind === 'centroid') {
-      const labels = c.vertices.map((id) => state?.objects[id]?.label ?? id).join('');
-      return `${obj.label} = trọng tâm Δ${labels}`;
-    }
     if (c.kind === 'orthocenter') {
       const labels = c.vertices.map((id) => state?.objects[id]?.label ?? id).join('');
       return `${obj.label} = trực tâm Δ${labels}`;
@@ -97,27 +67,6 @@ const def: KindDef<PointAttrs> = {
       const fromLabel = state?.objects[c.from]?.label ?? c.from;
       const circleLabel = state?.objects[c.circle]?.label ?? c.circle;
       return `${obj.label} = tiếp điểm của (${circleLabel}) với tiếp tuyến từ ${fromLabel}`;
-    }
-    if (c.kind === 'arcMidpoint') {
-      const al = state?.objects[c.a]?.label ?? c.a;
-      const bl = state?.objects[c.b]?.label ?? c.b;
-      const nl = state?.objects[c.notContaining]?.label ?? c.notContaining;
-      return `${obj.label} = trung điểm cung ${al}${bl} (không chứa ${nl})`;
-    }
-    if (c.kind === 'excenter') {
-      const labels = c.vertices.map((id) => state?.objects[id]?.label ?? id).join('');
-      const opp = state?.objects[c.opposite]?.label ?? c.opposite;
-      return `${obj.label} = tâm bàng tiếp Δ${labels} đối diện ${opp}`;
-    }
-    if (c.kind === 'pointAtDistance') {
-      const fromL = state?.objects[c.from]?.label ?? c.from;
-      const thrL = state?.objects[c.through]?.label ?? c.through;
-      const d = c.distance;
-      const dLabel = d.kind === 'literal' ? `${d.value}`
-        : d.kind === 'segmentLength'
-          ? `${state?.objects[d.p1]?.label ?? d.p1}${state?.objects[d.p2]?.label ?? d.p2}`
-          : `bán kính (${state?.objects[d.circle]?.label ?? d.circle})`;
-      return `${obj.label} = trên tia ${fromL}${thrL} kéo dài, cách ${thrL} khoảng ${dLabel}`;
     }
     return `Điểm ${obj.label}`;
   },
@@ -138,20 +87,6 @@ const def: KindDef<PointAttrs> = {
       // Renderer dọn _helpers khi remove element (xem JxgRenderer.remove).
       pt._helpers = transforms;
       return pt;
-    }
-    if (c.kind === 'centroid') {
-       
-      const a: any = ctx.resolveRef(c.vertices[0]);
-       
-      const b: any = ctx.resolveRef(c.vertices[1]);
-       
-      const c3: any = ctx.resolveRef(c.vertices[2]);
-      // JSXGraph function-based point: parents = [() => x, () => y]
-      // Function được gọi lại mỗi frame → live update khi user kéo vertex.
-      return board.create('point', [
-        () => (a.X() + b.X() + c3.X()) / 3,
-        () => (a.Y() + b.Y() + c3.Y()) / 3,
-      ], opts);
     }
     if (c.kind === 'orthocenter') {
 
@@ -257,64 +192,6 @@ const def: KindDef<PointAttrs> = {
       const inter: any = board.create('intersection', [thales, K, c.which], opts);
       inter._helpers = [mid, thales];
       return inter;
-    }
-    if (c.kind === 'circleIntersection') {
-      // Giao 2 đường tròn — JSXGraph 'intersection' nhận branch 0/1.
-
-      const k1: any = ctx.resolveRef(c.c1);
-
-      const k2: any = ctx.resolveRef(c.c2);
-      return board.create('intersection', [k1, k2, c.which], opts);
-    }
-    if (c.kind === 'secondIntersection') {
-      // Giao điểm thứ hai của line ∩ circle, biết giao điểm thứ nhất `other`.
-      // JSXGraph 'otherintersection' nhận [curve, line, knownPoint].
-
-      const line: any = ctx.resolveRef(c.line);
-
-      const circle: any = ctx.resolveRef(c.circle);
-
-      const other: any = ctx.resolveRef(c.other);
-      return board.create('otherintersection', [circle, line, other], opts);
-    }
-    if (c.kind === 'tangencyPoint') {
-      // Tiếp điểm = chân vuông góc hạ từ tâm đường tròn xuống đường tiếp tuyến.
-
-      const circle: any = ctx.resolveRef(c.circle);
-
-      const line: any = ctx.resolveRef(c.onLine);
-      const O = circle?.center ?? circle?.midpoint ?? circle;
-      return board.create('perpendicularpoint', [line, O], opts);
-    }
-    if (c.kind === 'arcMidpoint') {
-      const circle: any = ctx.resolveRef(c.circle);
-      const A: any = ctx.resolveRef(c.a);
-      const B: any = ctx.resolveRef(c.b);
-      const N: any = ctx.resolveRef(c.notContaining);
-      const O = circle?.center ?? circle?.midpoint ?? circle;
-      const am = () => arcMidpoint(
-        [O.X(), O.Y()], circle.Radius(),
-        [A.X(), A.Y()], [B.X(), B.Y()], [N.X(), N.Y()],
-      );
-      return board.create('point', [() => am()[0], () => am()[1]], opts);
-    }
-    if (c.kind === 'excenter') {
-      const a: any = ctx.resolveRef(c.vertices[0]);
-      const b: any = ctx.resolveRef(c.vertices[1]);
-      const c3: any = ctx.resolveRef(c.vertices[2]);
-      const oppIdx = c.vertices.indexOf(c.opposite) as 0 | 1 | 2;
-      const idx = (oppIdx < 0 ? 0 : oppIdx) as 0 | 1 | 2;
-      const ex = () => excenter(
-        [[a.X(), a.Y()], [b.X(), b.Y()], [c3.X(), c3.Y()]], idx,
-      );
-      return board.create('point', [() => ex()[0], () => ex()[1]], opts);
-    }
-    if (c.kind === 'pointAtDistance') {
-      const A: any = ctx.resolveRef(c.from);
-      const B: any = ctx.resolveRef(c.through);
-      const dFn = makeDistanceFn(ctx, c.distance);
-      const pc = () => pointAtDistanceCoord([A.X(), A.Y()], [B.X(), B.Y()], dFn());
-      return board.create('point', [() => pc()[0], () => pc()[1]], opts);
     }
     return board.create('point', [0, 0], opts);
   },

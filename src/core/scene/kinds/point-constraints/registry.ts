@@ -11,6 +11,14 @@ import { onLineConstraint } from './onLine';
 import { onSegmentConstraint } from './onSegment';
 import { onCircleConstraint } from './onCircle';
 import { onPolygonConstraint } from './onPolygon';
+// Batch 2 — function-coords / native intersection kinds
+import { centroidConstraint } from './centroid';
+import { arcMidpointConstraint } from './arcMidpoint';
+import { excenterConstraint } from './excenter';
+import { pointAtDistanceConstraint } from './pointAtDistance';
+import { circleIntersectionConstraint } from './circleIntersection';
+import { secondIntersectionConstraint } from './secondIntersection';
+import { tangencyPointConstraint } from './tangencyPoint';
 
 const ALL: PointConstraintModule[] = [
   freeConstraint,
@@ -23,6 +31,13 @@ const ALL: PointConstraintModule[] = [
   onSegmentConstraint,
   onCircleConstraint,
   onPolygonConstraint,
+  centroidConstraint,
+  arcMidpointConstraint,
+  excenterConstraint,
+  pointAtDistanceConstraint,
+  circleIntersectionConstraint,
+  secondIntersectionConstraint,
+  tangencyPointConstraint,
 ];
 export const POINT_CONSTRAINTS: ReadonlyMap<string, PointConstraintModule> =
   new Map(ALL.map((m) => [m.kind, m]));
