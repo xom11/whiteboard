@@ -204,3 +204,18 @@ Circle (O; 3). Take a point A outside (O). Draw two tangents from A to (O).
 # Escalate-safe: đặt TÊN tiếp điểm "AB, AC" → cần dựng tangentPointExt B,C (DEFER) →
 # escalate (named-missing B,C), KHÔNG render thiếu điểm.
 Cho đường tròn (O; 3). Lấy điểm A nằm ngoài (O). Vẽ hai tiếp tuyến AB, AC từ A đến (O).
+
+# === EN perpFoot (issue #46 nhóm B Tier 2) ===
+# Render-win EN: rule perpFoot +EN (projection / foot-of-perpendicular / draw-form).
+# VN tương ứng đã render OK (hình chiếu / chân đường vuông góc / Kẻ AH ⊥ BC). EN
+# parity: cùng add-point perpFoot H; draw-form tự emit connect(A,H) vì connect.ts
+# VN-only. Vocab +perpendicular/projection → clause EN thành geo-clause (fail-safe).
+# DET render: "projection of A onto BC" → perpFoot H (no segment).
+Triangle ABC. Let H be the projection of A onto BC.
+# DET render: "foot of the perpendicular from A to BC" → perpFoot H.
+Triangle ABC. Let H be the foot of the perpendicular from A to BC.
+# DET render: draw form "Draw AH perpendicular to BC at H" → perpFoot H + đoạn AH.
+Triangle ABC. Draw AH perpendicular to BC at H.
+# Escalate-safe: KHÔNG có "X be/is the" để bind tên chân → perpFoot không claim →
+# clause geo ("perpendicular") không phủ → escalate (KHÔNG silent-incomplete).
+Triangle ABC. The foot of the perpendicular from A meets BC.

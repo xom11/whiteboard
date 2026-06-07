@@ -16,7 +16,7 @@
 //   - không trích được tên foot cục bộ;
 //   - modifier "trung điểm (của)? hình chiếu …" — đổi nghĩa, foot không còn là điểm cần dựng.
 import type { LanguageRule, RuleMatch } from './_types';
-import { addPoint } from './_shared';
+import { addPoint, connect } from './_shared';
 
 // LƯU Ý: \b của JS dựa ASCII word-char nên KHÔNG khớp quanh ký tự Việt. Mọi
 // regex chứa ký tự Việt dùng cờ 'u' + tránh \b.
@@ -25,6 +25,10 @@ import { addPoint } from './_shared';
 // "vuông góc" (cho dạng "Kẻ AH ⊥ BC tại H"). "vuông góc" rộng nhưng match() chỉ
 // emit khi pattern khớp thật → an toàn.
 const PREFILTER = /hình\s*chiếu|chân\s+(?:của\s+)?đường\s+(?:cao|vuông\s*góc)|⊥|vuông\s*góc/u;
+// EN prefilter (issue #46 group B). runRules prefilter theo `patterns` (BỎ QUA
+// field `languages`) → BẮT BUỘC có 1 EN regex thì match() mới chạy cho đề EN
+// thuần. Rộng nhưng match() chỉ emit khi core khớp thật → an toàn.
+const PREFILTER_EN = /projection|perpendicular|foot\s+of/i;
 
 // onLine token: tên đường 1 ký tự HOA HOẶC cặp đỉnh 2 ký tự HOA (vd 'BC'). Chấp
 // nhận tiền tố "đường thẳng" / "cạnh" / "đoạn" trước token.
@@ -63,10 +67,47 @@ const MID_BEFORE = /trung\s+điểm(?:\s+của)?\s*$/u;
 // Tên foot cục bộ: ký tự HOA + "là" NGAY TRƯỚC cụm (vd "Gọi H là ", "… , H là ").
 const NAME_BEFORE = /([A-Z])(?:[′'])?\s+là\s+$/u;
 
+// === EN (issue #46 group B) ==================================================
+// Additive — KHÔNG đụng building block VN ở trên. Nhãn STRICT [A-Z] (KHÔNG cờ
+// 'i' — sẽ nuốt chữ thường); first-letter flex của verb bằng [Dd]/[Cc].
+//
+// onLine token EN: tiền tố "line "/"side "/"segment " optional + 1-2 ký tự HOA,
+// neo (?![A-Z]) để chặn cụm 3+ ký tự.
+const LINE_EN = '(?:line\\s+|side\\s+|segment\\s+)?([A-Z]{1,2})(?![A-Z])';
+
+// Form A — "(orthogonal)? projection of X (onto|on|to) LINE"
+//   groups: 1=from 2=line
+const PROJ_CORE_EN = `(?:orthogonal\\s+)?projection\\s+of\\s+([A-Z])\\s+(?:onto|on|to)\\s+${LINE_EN}`;
+// Form B — "foot of (the)? (perpendicular|altitude) from X (to|onto|on) LINE"
+//   groups: 1=from 2=line
+const FOOT_CORE_EN = `foot\\s+of\\s+(?:the\\s+)?(?:perpendicular|altitude)\\s+from\\s+([A-Z])\\s+(?:to|onto|on)\\s+${LINE_EN}`;
+
+// Single EN core (projection HOẶC foot-of). Ghép 2 group block → group dịch:
+//   PROJ: 1=from 2=line | FOOT: 3=from 4=line  → đọc bằng m[1]??m[3], m[2]??m[4].
+const SINGLE_EN = new RegExp(`(?:${PROJ_CORE_EN})|(?:${FOOT_CORE_EN})`, 'gu');
+
+// Form C draw — "Draw|Construct|Drop XY perpendicular to (line|side|segment)? LINE (at Z)?"
+//   "Draw AH perpendicular to BC at H" | "Construct AH perpendicular to BC"
+// foot = chữ thứ 2 cặp XY (g2); from = g1; onLine = g3; at = g4 (optional).
+// "Draw the perpendicular bisector …" KHÔNG khớp: sau "Draw" là "the" (chữ
+// thường) chứ không phải cặp HOA → perpBisector territory, không double-emit.
+//   groups: 1=from 2=foot 3=onLine 4=at(optional)
+const PERP_DRAW_EN = new RegExp(
+  `(?:[Dd]raw|[Cc]onstruct|[Dd]rop)\\s+([A-Z])([A-Z])(?![A-Z])\\s+perpendicular\\s+to\\s+(?:line\\s+|side\\s+|segment\\s+)?([A-Z]{1,2})(?![A-Z])(?:\\s+at\\s+([A-Z]))?`,
+  'gu',
+);
+
+// Tên foot ĐỨNG TRƯỚC core qua "Let X be the …" / "X is the …".
+//   "Let H be the projection …" | "K is the orthogonal projection …"
+const NAME_BEFORE_EN = /([A-Z])(?:[′'])?\s+(?:be|is)\s+(?:the\s+)?$/u;
+
 interface Foot {
   name: string;
   from: string;
   onLine: string;
+  /** Form C (EN draw) chỉ: cần emit connect(from, foot) vì connect.ts VN-only.
+   *  VN feet KHÔNG set → behavior VN byte-identical. */
+  withSegment?: boolean;
 }
 
 /** Parse mọi foot trong 1 clause. Trả [] nếu không bind được tên / bị skip. */
@@ -111,6 +152,34 @@ function parseFeet(text: string): Foot[] {
     if (onLine.includes(foot)) continue; // chân trùng đỉnh của đường → degenerate
     out.push({ name: foot, from, onLine });
   }
+
+  // 4) EN projection / foot-of — tên bind ĐỨNG TRƯỚC qua "Let X be the …"/"X is
+  //    the …". Không có tên-trước → escalate (fail-safe). "trung điểm" KHÔNG
+  //    áp dụng EN; MID_BEFORE giữ nguyên VN, ở đây không cần.
+  SINGLE_EN.lastIndex = 0;
+  let em: RegExpExecArray | null;
+  while ((em = SINGLE_EN.exec(text)) !== null) {
+    const before = text.slice(0, em.index);
+    const nm = NAME_BEFORE_EN.exec(before);
+    if (!nm) continue; // không có "X be/is the" → escalate AI
+    const from = em[1] ?? em[3];
+    const onLine = em[2] ?? em[4];
+    out.push({ name: nm[1], from, onLine });
+  }
+
+  // 5) EN draw form "Draw XY perpendicular to LINE (at Z)" — foot = chữ 2 cặp XY.
+  //    connect.ts VN-only → tự emit connect(from, foot) để vẽ đoạn (parity VN).
+  PERP_DRAW_EN.lastIndex = 0;
+  let dm: RegExpExecArray | null;
+  while ((dm = PERP_DRAW_EN.exec(text)) !== null) {
+    const from = dm[1];
+    const foot = dm[2];
+    const onLine = dm[3];
+    const at = dm[4]; // "at Z" (optional)
+    if (at && at !== foot) continue; // "at K" ≠ chân H → xung đột → escalate
+    if (onLine.includes(foot)) continue; // chân trùng đỉnh đường → degenerate
+    out.push({ name: foot, from, onLine, withSegment: true });
+  }
   return out;
 }
 
@@ -121,20 +190,21 @@ function parseFeet(text: string): Foot[] {
 export const perpFootRule: LanguageRule = {
   id: 'perpFoot',
   priority: 65,
-  languages: ['vi'],
-  patterns: [PREFILTER],
+  languages: ['vi', 'en'],
+  patterns: [PREFILTER, PREFILTER_EN],
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
       const feet = parseFeet(c.text);
       if (feet.length === 0) continue;
-      out.push({
-        ruleId: 'perpFoot',
-        clauseIds: [c.id],
-        intents: feet.map((f) =>
-          addPoint(f.name, { kind: 'perpFoot', from: f.from, onLine: f.onLine }),
-        ),
+      // Foot add-point TRƯỚC; với EN draw form (withSegment) push THÊM connect
+      // NGAY SAU add-point của foot đó (H phải tồn tại trước khi connect tham
+      // chiếu). VN feet không set withSegment → byte-identical.
+      const intents = feet.flatMap((f) => {
+        const add = addPoint(f.name, { kind: 'perpFoot', from: f.from, onLine: f.onLine });
+        return f.withSegment ? [add, connect(f.from, f.name, 'segment')] : [add];
       });
+      out.push({ ruleId: 'perpFoot', clauseIds: [c.id], intents });
     }
     return out;
   },

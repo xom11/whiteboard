@@ -82,6 +82,15 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   // từ VN/EN nào hiện có) đánh dấu clause là geo-clause. indexOf nên "tangent" tự
   // khớp trong "tangents"/"tangent lines" — KHÔNG cần thêm "tangents" riêng.
   'tangent',
+  // perpFoot EN (issue #46 group B). Clause "Let H be the projection of A onto
+  // BC" / "foot of the perpendicular from A to BC" / "Draw AH perpendicular to
+  // BC" → đánh dấu geo-clause để coverage gate fail-safe: nếu rule EN miss thì
+  // geo-clause không phủ → escalate, KHÔNG silent-incomplete (triangle-only bỏ
+  // điểm H). Cả hai ≥10 ký tự, phân biệt, không substring của từ VN/EN nào hiện
+  // có. "perpendicular bisector of BC" đã có 'bisector' → 'perpendicular' chỉ
+  // tăng count, không đổi hành vi.
+  'perpendicular',
+  'projection',
 ];
 
 export function countGeometryKeywords(text: string): number {

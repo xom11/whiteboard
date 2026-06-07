@@ -71,6 +71,23 @@ describe('EN language e2e (issue #46 group B)', () => {
         en: 'Triangle ABC. D is the reflection of A over BC.',
         vi: 'Cho tam giác ABC. D đối xứng A qua BC',
       },
+      {
+        name: 'triangle + perpFoot projection',
+        en: 'Triangle ABC. Let H be the projection of A onto BC.',
+        vi: 'Cho tam giác ABC. Gọi H là hình chiếu của A trên BC',
+      },
+      {
+        name: 'triangle + perpFoot foot-of-perpendicular',
+        en: 'Triangle ABC. Let H be the foot of the perpendicular from A to BC.',
+        vi: 'Cho tam giác ABC. Gọi H là chân đường vuông góc hạ từ A xuống BC',
+      },
+      {
+        name: 'triangle + perpFoot draw form',
+        // EN draw form tự emit connect(A,H); VN connect.ts (SEG_KW "Kẻ AH") lo đoạn
+        // → cả hai ra [shape, point:H:perpFoot:, connect:A-H:segment].
+        en: 'Triangle ABC. Draw AH perpendicular to BC at H.',
+        vi: 'Cho tam giác ABC. Kẻ AH vuông góc với BC tại H',
+      },
     ];
 
     for (const { name, en, vi } of matrix) {
@@ -154,6 +171,16 @@ describe('EN language e2e (issue #46 group B)', () => {
       // "bisector" makes the clause geo, but "of the triangle" yields no vertex
       // pair → no claim → escalate (never invent a segment).
       const r = tryDeterministicFigure('Draw the perpendicular bisector of the triangle.');
+      expect(r.ok).toBe(false);
+    });
+
+    it('EN perpFoot with no name binding → {ok:false} (fail-safe)', () => {
+      // "perpendicular" makes clause 2 geo, but there is no "X be/is the" to bind
+      // the foot name → perpFoot rule cannot claim → incomplete coverage →
+      // escalate (never invent / drop the foot silently).
+      const r = tryDeterministicFigure(
+        'Triangle ABC. The foot of the perpendicular from A meets BC.',
+      );
       expect(r.ok).toBe(false);
     });
   });

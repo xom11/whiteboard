@@ -152,3 +152,124 @@ describe('perpFootRule', () => {
     expect(run('Kẻ AB ⊥ BC tại B')).toHaveLength(0);
   });
 });
+
+// ── EN (issue #46 group B) ────────────────────────────────────────────────────
+// Additive EN support: projection / foot-of-perpendicular(altitude) / draw form.
+// VN behaviour must stay byte-identical (mirror style of angleBisectorAngle EN).
+describe('perpFoot EN (issue #46 group B)', () => {
+  it('projection: "Let H be the projection of A onto BC" → perpFoot H, no connect', () => {
+    const m = run('Let H be the projection of A onto BC');
+    const intents = m.flatMap((x) => x.intents) as any[];
+    expect(intents).toHaveLength(1);
+    const i = intents[0];
+    expect(i.op).toBe('add-point');
+    expect(i.name).toBe('H');
+    expect(i.constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+    expect(intents.every((x) => x.op === 'add-point')).toBe(true); // no connect
+  });
+
+  it('orthogonal projection + "K is the …" name-before via "is" + "side" prefix', () => {
+    const m = run('K is the orthogonal projection of A on side BC');
+    const intents = m.flatMap((x) => x.intents) as any[];
+    expect(intents).toHaveLength(1);
+    expect(intents[0].name).toBe('K');
+    expect(intents[0].constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+  });
+
+  it('projection with "to": "Let H be the projection of A to BC"', () => {
+    const i = run('Let H be the projection of A to BC')[0].intents[0] as any;
+    expect(i.name).toBe('H');
+    expect(i.constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+  });
+
+  it('foot of the perpendicular: "Let H be the foot of the perpendicular from A to BC"', () => {
+    const m = run('Let H be the foot of the perpendicular from A to BC');
+    const intents = m.flatMap((x) => x.intents) as any[];
+    expect(intents).toHaveLength(1);
+    expect(intents[0].name).toBe('H');
+    expect(intents[0].constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+    expect(intents.every((x) => x.op === 'add-point')).toBe(true);
+  });
+
+  it('foot of the altitude: "Let H be the foot of the altitude from A to BC"', () => {
+    const i = run('Let H be the foot of the altitude from A to BC')[0].intents[0] as any;
+    expect(i.name).toBe('H');
+    expect(i.constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+  });
+
+  it('foot of altitude with "onto": "H is the foot of the altitude from A onto BC"', () => {
+    const i = run('H is the foot of the altitude from A onto BC')[0].intents[0] as any;
+    expect(i.name).toBe('H');
+    expect(i.constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+  });
+
+  it('draw form "Draw AH perpendicular to BC at H" → perpFoot H + connect A-H', () => {
+    const m = run('Draw AH perpendicular to BC at H');
+    const intents = m.flatMap((x) => x.intents) as any[];
+    const pt = intents.find((i) => i.op === 'add-point');
+    const conn = intents.find((i) => i.op === 'connect');
+    expect(pt).toBeDefined();
+    expect(pt.name).toBe('H');
+    expect(pt.constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+    expect(conn).toBeDefined();
+    expect(conn).toEqual({ op: 'connect', from: 'A', to: 'H', style: 'segment' });
+    // ordering: add-point BEFORE connect (H must exist before connect references it)
+    expect(intents.indexOf(pt)).toBeLessThan(intents.indexOf(conn));
+  });
+
+  it('draw form without "at": "Construct AH perpendicular to BC" → H + connect', () => {
+    const m = run('Construct AH perpendicular to BC');
+    const intents = m.flatMap((x) => x.intents) as any[];
+    const pt = intents.find((i) => i.op === 'add-point');
+    const conn = intents.find((i) => i.op === 'connect');
+    expect(pt.name).toBe('H');
+    expect(pt.constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+    expect(conn).toEqual({ op: 'connect', from: 'A', to: 'H', style: 'segment' });
+  });
+
+  it('draw form "Drop AH perpendicular to side BC" (verb Drop + side prefix)', () => {
+    const m = run('Drop AH perpendicular to side BC');
+    const intents = m.flatMap((x) => x.intents) as any[];
+    const pt = intents.find((i) => i.op === 'add-point');
+    const conn = intents.find((i) => i.op === 'connect');
+    expect(pt.constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+    expect(conn).toEqual({ op: 'connect', from: 'A', to: 'H', style: 'segment' });
+  });
+
+  // ── FAIL-SAFE (escalate, never silent-wrong) ────────────────────────────────
+  it('FAIL-SAFE: no "X be/is the" name binding → 0 match', () => {
+    expect(run('The foot of the perpendicular from A to BC')).toHaveLength(0);
+  });
+
+  it('FAIL-SAFE: projection with no name-before → 0 match', () => {
+    expect(run('the projection of A onto BC')).toHaveLength(0);
+  });
+
+  it('FAIL-SAFE draw conflict: "Draw AH perpendicular to BC at K" (K≠H) → 0 match', () => {
+    expect(run('Draw AH perpendicular to BC at K')).toHaveLength(0);
+  });
+
+  it('FAIL-SAFE draw degenerate: foot in onLine "Draw AB perpendicular to BC" → 0 match', () => {
+    expect(run('Draw AB perpendicular to BC')).toHaveLength(0);
+  });
+
+  // ── CROSS-RULE guard ────────────────────────────────────────────────────────
+  it('CROSS-RULE: "Draw the perpendicular bisector of BC" → 0 match (perpBisector territory)', () => {
+    expect(run('Draw the perpendicular bisector of BC')).toHaveLength(0);
+  });
+
+  // ── VN regression (unchanged) ───────────────────────────────────────────────
+  it('VN regression: "Gọi H là hình chiếu của A trên BC" still perpFoot, no connect', () => {
+    const m = run('Gọi H là hình chiếu của A trên BC');
+    const intents = m.flatMap((x) => x.intents) as any[];
+    expect(intents).toHaveLength(1);
+    expect(intents[0].constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+    expect(intents.every((x) => x.op === 'add-point')).toBe(true);
+  });
+
+  it('VN regression: draw form "Kẻ AH ⊥ BC tại H" stays add-point only (no self-connect)', () => {
+    const m = run('Kẻ AH ⊥ BC tại H');
+    const intents = m.flatMap((x) => x.intents) as any[];
+    expect(intents.every((i) => i.op === 'add-point')).toBe(true);
+  });
+});
