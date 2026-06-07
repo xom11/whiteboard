@@ -68,6 +68,14 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   'circumcentre',
   'incenter',
   'incentre',
+  // perpBisector + reflection EN (issue #46 group B). Hai danh từ này biến clause
+  // "perpendicular bisector …" / "reflection …" tiếng Anh thành geo-clause để
+  // coverage gate hoạt động: nếu rule EN match đủ thì clause được phủ; nếu clause
+  // malformed (thiếu cặp đỉnh / thiếu trục) thì geo-clause không được phủ →
+  // escalate (fail-safe), KHÔNG silent-incomplete. Đều ≥8 ký tự, phân biệt, không
+  // substring của từ VN/EN nào hiện có (không va chạm).
+  'bisector',
+  'reflection',
 ];
 
 export function countGeometryKeywords(text: string): number {

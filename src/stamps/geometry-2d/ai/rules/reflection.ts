@@ -21,6 +21,14 @@ const NAME_BEFORE =
 const NAME_AFTER =
   /(?:điểm\s+)?đối\s*xứng\s+(?:của\s+|với\s+)?([A-Z])(?:['′]?)\s+qua\s+(?:đường\s*thẳng\s+|cạnh\s+|đoạn\s+|trục\s+|trung\s*điểm\s+|điểm\s+)?([A-Za-z][A-Za-z′']?)/u;
 
+// === EN (issue #46 group B) ===
+// "<Name> is/be the reflection of <Of> (over|across|in|about|through) (the)? (line|point|segment)? <Z>"
+// Name đứng TRƯỚC (qua "is"/"be the" — gồm "Let D be the reflection..."). KHÔNG cờ 'i'.
+// (?<![A-Za-z]) đảm bảo Name là nhãn đơn. Z phân loại bằng classifyThrough (reuse).
+const REFLECT_EN =
+  /(?<![A-Za-z])([A-Z])(?:['′]?)\s+(?:is|be)\s+the\s+reflection\s+of\s+([A-Z])(?:['′]?)\s+(?:over|across|in|about|through)\s+(?:the\s+)?(?:line\s+|point\s+|segment\s+)?([A-Za-z][A-Za-z′']?)/u;
+const REFLECT_EN_PRE = /[Rr]eflection/u;
+
 // Phân loại token Z (đã strip dấu phẩy/′):
 //   "M"  → điểm (1 ký tự HOA)              → reflectPoint
 //   "BC" → đường (cặp 2 ký tự HOA)         → reflectLine
@@ -48,12 +56,12 @@ function classifyThrough(raw: string): { kind: 'point' | 'line'; value: string }
 export const reflectionRule: LanguageRule = {
   id: 'reflection',
   priority: 55,
-  languages: ['vi'],
-  patterns: [REFLECT],
+  languages: ['vi', 'en'],
+  patterns: [REFLECT, REFLECT_EN_PRE],
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
-      if (!REFLECT.test(c.text)) continue;
+      if (!REFLECT.test(c.text) && !REFLECT_EN_PRE.test(c.text)) continue;
 
       let name: string | undefined;
       let of: string | undefined;
@@ -71,6 +79,14 @@ export const reflectionRule: LanguageRule = {
           name = extractPointName(c.text);
           of = after[1];
           throughRaw = after[2];
+        } else {
+          // --- EN (issue #46 group B) — chỉ chạy khi cả 2 dạng VN fail. ---
+          const en = REFLECT_EN.exec(c.text);
+          if (en) {
+            name = en[1];
+            of = en[2];
+            throughRaw = en[3];
+          }
         }
       }
 

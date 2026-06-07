@@ -108,3 +108,48 @@ describe('perpBisectorRule', () => {
     expect(claimedText).toMatch(/trung\s*trực/u);
   });
 });
+
+describe('perpBisector EN (issue #46 group B)', () => {
+  it('"Draw the perpendicular bisector of BC" → connect B C perpBisector', () => {
+    const m = run('Draw the perpendicular bisector of BC');
+    expect(m.length).toBe(1);
+    const intent = m[0].intents[0] as any;
+    expect(intent.op).toBe('connect');
+    expect(intent.from).toBe('B');
+    expect(intent.to).toBe('C');
+    expect(intent.style).toBe('perpBisector');
+  });
+
+  it('"perpendicular bisector of segment AB" → connect A B', () => {
+    const intent = first('Draw the perpendicular bisector of segment AB');
+    expect(intent.from).toBe('A');
+    expect(intent.to).toBe('B');
+    expect(intent.style).toBe('perpBisector');
+  });
+
+  it('"perpendicular bisector of side AC" → connect A C', () => {
+    const intent = first('Draw the perpendicular bisector of side AC');
+    expect(intent.from).toBe('A');
+    expect(intent.to).toBe('C');
+    expect(intent.style).toBe('perpBisector');
+  });
+
+  it('"perpendicular bisector BC and perpendicular bisector CA" (1 clause) → emit cả 2', () => {
+    const m = run('Draw the perpendicular bisector BC and perpendicular bisector CA');
+    const intents = m.flatMap((x) => x.intents) as any[];
+    expect(intents).toHaveLength(2);
+    expect(intents.every((i) => i.op === 'connect')).toBe(true);
+    expect(intents.every((i) => i.style === 'perpBisector')).toBe(true);
+    expect(intents).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ from: 'B', to: 'C', style: 'perpBisector' }),
+        expect.objectContaining({ from: 'C', to: 'A', style: 'perpBisector' }),
+      ]),
+    );
+  });
+
+  it('escalate-safe: "perpendicular bisector of the triangle" → không cặp đỉnh, m.length 0', () => {
+    const m = run('Draw the perpendicular bisector of the triangle');
+    expect(m.length).toBe(0);
+  });
+});

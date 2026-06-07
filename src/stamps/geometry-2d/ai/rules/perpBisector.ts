@@ -21,6 +21,13 @@ const PERP_BISECTOR =
 /** prefilter nhanh trên toàn đề. */
 const PREFILTER = /trung\s*trực/u;
 
+// === EN (issue #46 group B) ===
+// "(the)? perpendicular bisector (of|the|segment|line|side)* PAIR" → connect(P1,P2,'perpBisector').
+// First-letter flex [Pp] (KHÔNG cờ 'i'). Global để bắt nhiều cụm/clause như VN.
+const PERP_BISECTOR_EN =
+  /[Pp]erpendicular\s+bisector\s+(?:(?:of|the|segment|line|side)\s+)*([A-Z][A-Z])(?!\p{L})/gu;
+const PERP_BISECTOR_EN_PRE = /[Pp]erpendicular\s+bisector/u;
+
 /**
  * "(đường) trung trực của <PAIR>" → connect(P1, P2, 'perpBisector').
  *
@@ -33,8 +40,8 @@ const PREFILTER = /trung\s*trực/u;
 export const perpBisectorRule: LanguageRule = {
   id: 'perpBisector',
   priority: 70,
-  languages: ['vi'],
-  patterns: [PREFILTER],
+  languages: ['vi', 'en'],
+  patterns: [PREFILTER, PERP_BISECTOR_EN_PRE],
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
@@ -42,6 +49,18 @@ export const perpBisectorRule: LanguageRule = {
       for (const m of c.text.matchAll(PERP_BISECTOR)) {
         const pair = pairFromToken(m[1]);
         if (pair.length !== 2) continue; // không trích được cặp đỉnh → bỏ cụm
+        out.push({
+          ruleId: 'perpBisector',
+          clauseIds: [c.id],
+          intents: [connect(pair[0], pair[1], 'perpBisector')],
+        });
+      }
+
+      // --- EN (issue #46 group B) — mirror VN: global, emit-all, escalate-safe ---
+      PERP_BISECTOR_EN.lastIndex = 0;
+      for (const m of c.text.matchAll(PERP_BISECTOR_EN)) {
+        const pair = pairFromToken(m[1]);
+        if (pair.length !== 2) continue;
         out.push({
           ruleId: 'perpBisector',
           clauseIds: [c.id],

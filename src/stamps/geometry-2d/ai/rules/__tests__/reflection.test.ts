@@ -76,3 +76,51 @@ describe('reflectionRule', () => {
     expect(m.length).toBe(0);
   });
 });
+
+describe('reflection EN (issue #46 group B)', () => {
+  it('"D is the reflection of H over BC" → reflectLine of H through BC', () => {
+    const m = run('D is the reflection of H over BC');
+    expect(m.length).toBe(1);
+    const intent = m[0].intents[0] as any;
+    expect(intent.op).toBe('add-point');
+    expect(intent.name).toBe('D');
+    expect(intent.constraint.kind).toBe('reflectLine');
+    expect(intent.constraint.of).toBe('H');
+    expect(intent.constraint.through).toBe('BC');
+  });
+
+  it('"Let D be the reflection of H across line BC" → reflectLine of H through BC', () => {
+    const m = run('Let D be the reflection of H across line BC');
+    expect(m.length).toBe(1);
+    const intent = m[0].intents[0] as any;
+    expect(intent.name).toBe('D');
+    expect(intent.constraint.kind).toBe('reflectLine');
+    expect(intent.constraint.of).toBe('H');
+    expect(intent.constraint.through).toBe('BC');
+  });
+
+  it('"Q is the reflection of P over M" → reflectPoint of P through M', () => {
+    const m = run('Q is the reflection of P over M');
+    expect(m.length).toBe(1);
+    const intent = m[0].intents[0] as any;
+    expect(intent.name).toBe('Q');
+    expect(intent.constraint.kind).toBe('reflectPoint');
+    expect(intent.constraint.of).toBe('P');
+    expect(intent.constraint.through).toBe('M');
+  });
+
+  it('"D is the reflection of H in the line d" → reflectLine through tên đường d', () => {
+    const m = run('D is the reflection of H in the line d');
+    expect(m.length).toBe(1);
+    const intent = m[0].intents[0] as any;
+    expect(intent.name).toBe('D');
+    expect(intent.constraint.kind).toBe('reflectLine');
+    expect(intent.constraint.of).toBe('H');
+    expect(intent.constraint.through).toBe('d');
+  });
+
+  it('escalate-safe: "D is the reflection of H." (thiếu trục/điểm) → m.length 0', () => {
+    const m = run('D is the reflection of H.');
+    expect(m.length).toBe(0);
+  });
+});

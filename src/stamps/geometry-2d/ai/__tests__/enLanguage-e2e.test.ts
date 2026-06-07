@@ -61,6 +61,16 @@ describe('EN language e2e (issue #46 group B)', () => {
         // intent đường tròn tên O ⇒ không cùng intent-sig với EN).
         vi: 'Cho tam giác ABC. Gọi O là tâm ngoại tiếp tam giác ABC',
       },
+      {
+        name: 'triangle + perpendicular bisector',
+        en: 'Triangle ABC. Draw the perpendicular bisector of BC.',
+        vi: 'Cho tam giác ABC. Vẽ đường trung trực của BC',
+      },
+      {
+        name: 'triangle + reflection over side',
+        en: 'Triangle ABC. D is the reflection of A over BC.',
+        vi: 'Cho tam giác ABC. D đối xứng A qua BC',
+      },
     ];
 
     for (const { name, en, vi } of matrix) {
@@ -115,6 +125,13 @@ describe('EN language e2e (issue #46 group B)', () => {
       // "centroid" makes the clause geo, but with no triangle to bind 'of' the
       // rule cannot resolve → no claim → escalate (never invent a triangle).
       const r = tryDeterministicFigure('G is the centroid.');
+      expect(r.ok).toBe(false);
+    });
+
+    it('EN perpendicular bisector with no segment → {ok:false}', () => {
+      // "bisector" makes the clause geo, but "of the triangle" yields no vertex
+      // pair → no claim → escalate (never invent a segment).
+      const r = tryDeterministicFigure('Draw the perpendicular bisector of the triangle.');
       expect(r.ok).toBe(false);
     });
   });

@@ -152,3 +152,10 @@ Triangle ABC. Let H be the orthocenter of triangle ABC.
 # Escalate-safe: "centroid" là geo nhưng KHÔNG có tam giác nào để bind of →
 # không claim → escalate (KHÔNG bịa tam giác).
 G is the centroid.
+
+# === EN perpBisector + reflection (issue #46 group B) ===
+# Render-correct: triangle nền + construct EN.
+Triangle ABC. Draw the perpendicular bisector of BC.
+Triangle ABC. D is the reflection of A over BC.
+# Escalate-safe: "bisector" là geo nhưng không có cặp đỉnh → escalate (không render sai).
+Draw the perpendicular bisector of the triangle.
