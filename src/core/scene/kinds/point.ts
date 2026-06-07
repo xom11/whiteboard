@@ -1,70 +1,13 @@
 // src/core/scene/kinds/point.ts
 import { registerKind } from '../registry';
-import type { KindDef, RenderCtx } from '../types';
-import { type Constraint2D, type ConstraintDistanceSpec, type TransformDef, constraintRefs2D } from './2d-constraint';
+import type { KindDef } from '../types';
+import { constraintRefs2D } from './2d-constraint';
 import { arcMidpoint, excenter, pointAtDistanceCoord } from './pointConstructions';
+import { POINT_CONSTRAINTS } from './point-constraints/registry';
+import { buildJxgTransforms, makeDistanceFn, buildPointOpts } from './point-constraints/shared';
 
-/**
- * Build mảng JSXGraph 'transform' elements cho TransformDef. Dilate → chain
- * 3 transform (T(-c) → S(k) → T(+c)) vì JSXGraph 'scale' không nhận center.
- *
- * Center là pointId; resolve qua ctx + dùng function-based để dilate cập nhật
- * live khi user kéo center.
- */
- 
-function buildJxgTransforms(board: any, ctx: RenderCtx, t: TransformDef): any[] {
-  switch (t.kind) {
-    case 'translate':
-      return [board.create('transform', [t.dx, t.dy], { type: 'translate' })];
-    case 'rotate': {
-       
-      const c: any = ctx.resolveRef(t.center);
-      return [board.create('transform', [t.angleRad, c], { type: 'rotate' })];
-    }
-    case 'reflectPoint': {
-      // Đối xứng qua điểm = quay π quanh điểm đó.
-       
-      const c: any = ctx.resolveRef(t.center);
-      return [board.create('transform', [Math.PI, c], { type: 'rotate' })];
-    }
-    case 'reflectLine': {
-       
-      const l: any = ctx.resolveRef(t.line);
-      return [board.create('transform', [l], { type: 'reflect' })];
-    }
-    case 'dilate': {
-       
-      const c: any = ctx.resolveRef(t.center);
-      // Function-based để chain cập nhật khi user kéo center.
-      return [
-        board.create('transform', [() => -c.X(), () => -c.Y()], { type: 'translate' }),
-        board.create('transform', [t.k, t.k], { type: 'scale' }),
-        board.create('transform', [() => c.X(), () => c.Y()], { type: 'translate' }),
-      ];
-    }
-  }
-}
-
-/** Trả hàm tính khoảng cách `d` reactive cho pointAtDistance. */
-function makeDistanceFn(ctx: RenderCtx, d: ConstraintDistanceSpec): () => number {
-  if (d.kind === 'literal') return () => d.value;
-  if (d.kind === 'segmentLength') {
-    const p = ctx.resolveRef(d.p1) as any;
-    const q = ctx.resolveRef(d.p2) as any;
-    return () => Math.hypot(p.X() - q.X(), p.Y() - q.Y());
-  }
-  const circle = ctx.resolveRef(d.circle) as any;
-  return () => circle.Radius();
-}
-
-export type PointAttrs = {
-  constraint: Constraint2D;
-  color?: string;
-  showLabel?: boolean;
-  showValue?: boolean;
-  face?: 'o' | 'circle' | 'cross' | 'plus';
-  size?: number;
-};
+export type { PointAttrs } from './point-constraints/_types';
+import type { PointAttrs } from './point-constraints/_types';
 
 const def: KindDef<PointAttrs> = {
   type: 'point',
@@ -75,6 +18,7 @@ const def: KindDef<PointAttrs> = {
       throw new Error('point: constraint required');
     }
     const c = a.constraint;
+    POINT_CONSTRAINTS.get(c.kind)?.validate?.(c as never);
     if (c.kind === 'perpFoot') {
       if (!c.from || !c.onLine) {
         throw new Error('point.perpFoot: from và onLine bắt buộc');
@@ -143,6 +87,8 @@ const def: KindDef<PointAttrs> = {
   },
   describe: (obj, state) => {
     const c = obj.attrs.constraint;
+    const mod = POINT_CONSTRAINTS.get(c.kind);
+    if (mod) return mod.describe(obj, state, c as never);
     if (c.kind === 'free') return `Điểm ${obj.label}`;
     if (c.kind === 'onAxis') return `${obj.label} trên trục ${c.axis}`;
     if (c.kind === 'onLine') return `${obj.label} trên đường ${state?.objects[c.lineId]?.label ?? c.lineId}`;
@@ -218,16 +164,9 @@ const def: KindDef<PointAttrs> = {
   render: (obj, ctx) => {
     const board = ctx.jxg as any;
     const c = obj.attrs.constraint;
-    const opts: Record<string, unknown> = {
-      name: obj.label,
-      withLabel: obj.attrs.showLabel ?? true,
-      visible: obj.visible,
-      fixed: obj.locked,
-      strokeColor: obj.attrs.color ?? '#1e40af',
-      fillColor: obj.attrs.color ?? '#1e40af',
-      face: obj.attrs.face ?? 'o',
-      size: obj.attrs.size ?? 4,
-    };
+    const opts = buildPointOpts(obj);
+    const mod = POINT_CONSTRAINTS.get(c.kind);
+    if (mod) return mod.render(obj, ctx, c as never, opts);
     if (c.kind === 'free') return board.create('point', [c.x, c.y], opts);
     if (c.kind === 'onAxis') {
       const coords: [number, number] = c.axis === 'x' ? [c.t, 0] : [0, c.t];
