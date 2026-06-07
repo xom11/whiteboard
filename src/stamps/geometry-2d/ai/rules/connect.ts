@@ -20,6 +20,12 @@ import type { IntentT } from '../intent';
 const LINE_KW = /[Đđ]ường\s*thẳng\s+([A-Z])([A-Z])(?![A-Za-z])/gu;
 // "tia AB" → ray. Không bắt "tia phân giác", "tia đối" (theo sau là chữ thường).
 const RAY_KW = /(?<!\p{L})[Tt]ia\s+([A-Z])([A-Z])(?![A-Za-z])/gu;
+// "tia đối của tia XY": cụm tia ĐỐI — match "tia XY" bên trong KHÔNG được emit ray
+// naive X→Y vì điểm mới nằm trên tia NGƯỢC hướng (gốc X, đi xa Y). Vẽ ray X→Y
+// sẽ minh hoạ SAI hướng (tia gốc thay vì tia đối). pointAtDistance đã dựng điểm
+// mới đúng trên tia đối; connect suppress để tránh ray double/sai hướng.
+// Kiểm tra text NGAY TRƯỚC vị trí match "tia": kết thúc bằng "đối của " (≥0 space).
+const TIA_DOI_BEFORE = /tia\s*đối\s+của\s+$/u;
 // "nối A với/và B" → segment. Tên 1 ký tự, không phải cặp.
 const NOI_KW = /(?<!\p{L})[Nn]ối\s+([A-Z])\s+(?:với|và)\s+([A-Z])(?![A-Za-z])/gu;
 // "đoạn (thẳng) AB" | "cạnh AB" | "kẻ AB" → segment.
@@ -32,10 +38,16 @@ function collect(
   style: string,
   used: Set<string>,
   out: IntentT[],
+  // Guard tuỳ chọn: bỏ qua match nếu text NGAY TRƯỚC vị trí match khớp regex này
+  // (vd "tia đối của " trước "tia XY" → không emit ray naive sai hướng).
+  skipIfPrecededBy?: RegExp,
 ): void {
   re.lastIndex = 0;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text)) !== null) {
+    if (skipIfPrecededBy && skipIfPrecededBy.test(text.slice(0, m.index))) {
+      continue;
+    }
     const a = m[1].toUpperCase();
     const b = m[2].toUpperCase();
     // Dedup theo cặp đỉnh trong cùng clause: vẽ trùng AB nhiều lần vô nghĩa,
@@ -67,7 +79,9 @@ export const connectRule: LanguageRule = {
       // Thứ tự quan trọng: "đường thẳng AB" phải claim trước SEG (chứa "thẳng"
       // KHÔNG match SEG vì SEG yêu cầu "đoạn thẳng"/"cạnh"/"kẻ", không "đường").
       collect(LINE_KW, c.text, 'line', used, intents);
-      collect(RAY_KW, c.text, 'ray', used, intents);
+      // RAY: suppress ray naive khi nằm trong cụm "tia đối của tia XY" (hướng tia
+      // gốc X→Y sai so với điểm mới trên tia đối). pointAtDistance lo điểm mới.
+      collect(RAY_KW, c.text, 'ray', used, intents, TIA_DOI_BEFORE);
       collect(NOI_KW, c.text, 'segment', used, intents);
       collect(SEG_KW, c.text, 'segment', used, intents);
       if (intents.length > 0) {

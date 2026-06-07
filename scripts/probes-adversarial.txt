@@ -87,3 +87,21 @@ Cho tam giác ABC. Dựng BK ⊥ AC tại K
 # uncovered ⇒ escalate ở tầng coverage (trước fix escalate muộn hơn ở
 # named-entity guard). Hai phía đều escalate-safe, không render thiếu quan hệ.
 Cho tam giác ABC. Biết AH ⊥ BC tại H
+
+# === Issue #46 nhóm A: "tia đối" connect — PHẢI render ===
+# "tia đối của tia BA" = tia gốc B đi NGƯỢC hướng A; điểm mới (D) nằm trên tia
+# ĐỐI (xa A). Trước fix connect.ts khớp "tia BA" bên trong cụm → emit ray B→A
+# (hướng tia GỐC, SAI hướng so với D) = silent-wrong bug. Sau fix connect.ts
+# suppress ray naive này; pointAtDistance dựng D đúng (from=A, through=B ⇒ D
+# nằm ngoài B, xa A). Render với add-point/pointAtDistance, KHÔNG còn connect/ray
+# sai hướng. (Verify hướng: kiểm intents không chứa connect ray B→A.)
+Cho tam giác ABC. Trên tia đối của tia BA lấy điểm D sao cho BD = AB
+# "tia AB" trần (KHÔNG "đối") vẫn render ray A→B đúng hướng — không phá case thường.
+Cho tam giác ABC. Vẽ tia AB
+
+# === Issue #46 nhóm A: "tia đối" connect — escalate-safe ===
+# "tia đối của tia BA" nhưng KHÔNG có cụm "lấy điểm … sao cho … = …" hợp lệ để
+# pointAtDistance dựng điểm mới (thiếu mốc khoảng cách). connect.ts suppress ray
+# sai hướng (không render thừa), không rule nào claim cụm → escalate (fail-safe,
+# không vẽ ray sai hướng cũng không bịa điểm).
+Cho tam giác ABC. Trên tia đối của tia BA lấy điểm D

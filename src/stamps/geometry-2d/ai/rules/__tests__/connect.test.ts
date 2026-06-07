@@ -80,13 +80,27 @@ describe('connectRule', () => {
     expect(run('Vẽ tia phân giác của góc A')).toEqual([]);
   });
 
-  it('KHÔNG khớp "tia đối" (theo sau là chữ thường)', () => {
-    expect(run('Trên tia đối của tia AB lấy điểm C')).not.toEqual([]);
-    // "tia AB" trong "tia đối của tia AB" VẪN là ray hợp lệ
-    const i = intent('Trên tia đối của tia AB lấy điểm C');
+  it('SUPPRESS ray cho cụm "tia đối của tia XY" (Issue #46 nhóm A: tránh ray sai hướng)', () => {
+    // "tia đối của tia BA" = tia gốc B đi NGƯỢC hướng A. Điểm mới trên tia đối
+    // (xa A). Ray naive B→A minh hoạ SAI hướng (tia gốc). connect PHẢI suppress;
+    // pointAtDistance lo dựng điểm mới đúng trên tia đối.
+    expect(run('Trên tia đối của tia BA lấy điểm D sao cho BD = AB')).toEqual([]);
+  });
+
+  it('SUPPRESS chỉ ray trong cụm "tia đối", ray trần khác trong cùng clause vẫn emit', () => {
+    // "tia đối của tia BA" bị suppress; "tia CE" trần (không "đối") vẫn ray C→E.
+    const m = run('Trên tia đối của tia BA lấy D. Vẽ tia CE');
+    const styles = m.flatMap((x) => x.intents.map((i: any) => `${i.from}${i.to}:${i.style}`));
+    expect(styles).toContain('CE:ray');
+    expect(styles).not.toContain('BA:ray');
+    expect(styles).not.toContain('AB:ray');
+  });
+
+  it('"tia BA" trần (KHÔNG "đối") vẫn emit ray B→A (không phá case thường)', () => {
+    const i = intent('Vẽ tia BA');
     expect(i.style).toBe('ray');
-    expect(i.from).toBe('A');
-    expect(i.to).toBe('B');
+    expect(i.from).toBe('B');
+    expect(i.to).toBe('A');
   });
 
   it('nhiều cặp (mỗi cặp có từ khoá riêng) trong 1 clause → nhiều intent cùng clauseId', () => {
