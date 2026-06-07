@@ -1,13 +1,19 @@
 // src/stamps/geometry-2d/ai/rules/circleRadius.ts
 //
-// Đường tròn theo TÂM: bán kính số hoặc "đi qua <điểm>".
+// Đường tròn theo TÂM: bán kính số / bán kính ký hiệu CHỮ / "đi qua <điểm>".
 //   - "đường tròn (tâm) O bán kính 3"        → centerRadius {center:'O', radius:3}
 //   - "(O; 3)" / "(O, 3)"                     → centerRadius {center:'O', radius:3}
+//   - "(O; R)" / "(I; r)" / "bán kính R"      → centerRadius bán kính CANONICAL
+//                                               (issue #46 nhóm A — xem dưới)
 //   - "đường tròn tâm O đi qua A"             → centerThrough {center:'O', through:'A'}
 //
-// CHỈ emit khi có bán kính SỐ hoặc có "đi qua <điểm>". "(O)" trơ (không số, không
-// "đi qua") → bỏ qua (chỉ tham chiếu; rule khác/AI xử lý). Bán kính là CHỮ ("R")
-// không phải số → bỏ qua để escalate.
+// CHỈ emit khi có bán kính SỐ, bán kính ký hiệu CHỮ (R/r), hoặc "đi qua <điểm>".
+// "(O)" trơ (không số/chữ/"đi qua") → bỏ qua (chỉ tham chiếu; rule khác/AI xử lý).
+//
+// BÁN KÍNH KÝ HIỆU CHỮ (issue #46): "Cho đường tròn (O; R)" cực phổ biến ở đề thi.
+// R là KÝ HIỆU (giá trị thực không cho) → vẽ với bán kính CANONICAL dương để minh
+// hoạ (fail-safe: không sai ngữ nghĩa — đường tròn tâm O bán kính tuỳ ý). CHỈ nhận
+// đúng [Rr] đứng riêng: hệ số "2R" (defer Cụm C) và chữ khác "(A; B)" → bỏ qua.
 //
 // GOTCHA segmentation: segmentClauses() tách trên '.' ';' ',' nên ký hiệu gọn
 // "(O; 3)" / "(O, 2.5)" BỊ cắt ngang clause ("(O" và "3)" thành 2 clause). Vì
@@ -47,6 +53,24 @@ const THROUGH_MULTI = /đi\s+qua\s+[A-Z]\s*(?:và|,)\s*[A-Z]/u;
 // Ký hiệu gọn "(O; 3)" / "(O, 3)" — quét toàn đề (global) vì có thể nhiều.
 const CENTER_RADIUS_PAREN_G = /\(\s*([A-Z])\s*[;,]\s*(\d+(?:[.,]\d+)?)\s*\)/gu;
 
+/**
+ * Bán kính CANONICAL (board units) khi đề cho bán kính KÝ HIỆU CHỮ ("(O; R)",
+ * "bán kính R"). Giá trị thực là ký hiệu → vẽ minh hoạ; khớp scale với bán kính
+ * số mặc định nhỏ (vd "(O; 3)"). circleCR yêu cầu radius > 0.
+ */
+export const SYMBOLIC_RADIUS = 3;
+
+// Ký hiệu gọn bán kính CHỮ "(O; R)" / "(I; r)" — quét toàn đề. Bán kính CHỈ [Rr]
+// đứng RIÊNG (theo sau là ')'): "2R" (hệ số, defer) và chữ khác "(A; B)" KHÔNG
+// khớp → escalate (fail-safe). Center 1 ký tự HOA như nhánh số.
+const CENTER_RADIUS_LETTER_PAREN_G = /\(\s*([A-Z])\s*[;,]\s*[Rr]\s*\)/gu;
+
+// "đường tròn tâm O bán kính R" — words, bán kính CHỮ. Mirror tempered của
+// CENTER_RADIUS_WORDS_G; (?![A-Za-z]) chặn "Ra"/"Rồi"… và phần số ("2R") để
+// nhánh số lo. GLOBAL: nhiều đường tròn / clause.
+const CENTER_RADIUS_LETTER_WORDS_G =
+  /đường\s*tròn\s*(?:\(\s*)?(?:tâm\s+)?([A-Z])(?:\s*\))?(?:(?!đường|và\s)[^A-Z])*?bán\s*kính\s+[Rr](?![A-Za-z])/gu;
+
 /** "3" / "3.5" / "3,5" → number. NaN nếu không parse được. */
 function parseNum(raw: string): number {
   return Number(raw.replace(',', '.'));
@@ -59,11 +83,20 @@ function parseNum(raw: string): number {
  * Bán kính chỉ là chú thích — circumcircle xác định bởi 3 đỉnh, bỏ radius là OK.
  */
 function isInscribedCircumscribed(problem: string, center: string): boolean {
-  const re = new RegExp(
+  // Chiều 1 — quan hệ ĐỨNG TRƯỚC circle: "(tam giác) nội/ngoại tiếp … (O".
+  const after = new RegExp(
     `(?:nội|ngoại)\\s*tiếp[^.]{0,30}?(?:đường\\s*tròn\\s*)?\\(?\\s*${center}(?![A-Z])`,
     'u',
   );
-  return re.test(problem);
+  // Chiều 2 — circle ĐỨNG TRƯỚC quan hệ: ký hiệu "(O; R) … ngoại/nội tiếp".
+  // circleTriangle sở hữu circumcircle/incircle (qua 3 đỉnh) → circleRadius bỏ
+  // để tránh DOUBLE-circle quanh O. [^()]* không vượt ngoặc khác; [^.]{0,30}?
+  // không nhảy câu (giữ proximity, tránh false-positive với circle rời khác).
+  const before = new RegExp(
+    `\\(\\s*${center}\\s*[;,][^()]*\\)[^.]{0,30}?(?:nội|ngoại)\\s*tiếp`,
+    'u',
+  );
+  return after.test(problem) || before.test(problem);
 }
 
 /** Clause chứa fragment "(<center>" (ký hiệu gọn bị segmentation cắt vào đây). */
@@ -80,7 +113,13 @@ export const circleRadiusRule: LanguageRule = {
   id: 'circleRadius',
   priority: 75,
   languages: ['vi'],
-  patterns: [CENTER_RADIUS_WORDS_G, CENTER_THROUGH_G, /\(\s*[A-Z]\s*[;,]\s*\d/u],
+  patterns: [
+    CENTER_RADIUS_WORDS_G,
+    CENTER_THROUGH_G,
+    /\(\s*[A-Z]\s*[;,]\s*\d/u,
+    /\(\s*[A-Z]\s*[;,]\s*[Rr]\s*\)/u, // ký hiệu bán kính CHỮ "(O; R)"
+    /bán\s*kính\s+[Rr](?![A-Za-z])/u, // words bán kính CHỮ "bán kính R"
+  ],
   match(ctx) {
     const out: RuleMatch[] = [];
 
@@ -120,6 +159,23 @@ export const circleRadiusRule: LanguageRule = {
           intents: [drawCircle(center, 'centerRadius', { center, radius })],
         });
       }
+
+      // 3) "bán kính R/r" (bán kính CHỮ ký hiệu) → centerRadius bán kính canonical.
+      //    Clause có "nội/ngoại tiếp" → mơ hồ (circleTriangle/escalate sở hữu) → bỏ
+      //    (clause-local, không ảnh hưởng nhánh số ở clause khác).
+      if (!/(?:nội|ngoại)\s*tiếp/u.test(c.text)) {
+        CENTER_RADIUS_LETTER_WORDS_G.lastIndex = 0;
+        let clw: RegExpExecArray | null;
+        while ((clw = CENTER_RADIUS_LETTER_WORDS_G.exec(c.text)) !== null) {
+          const center = clw[1];
+          if (isInscribedCircumscribed(ctx.problem, center)) continue;
+          out.push({
+            ruleId: 'circleRadius',
+            clauseIds: [c.id],
+            intents: [drawCircle(center, 'centerRadius', { center, radius: SYMBOLIC_RADIUS })],
+          });
+        }
+      }
     }
 
     // --- Toàn đề: ký hiệu gọn "(O; 3)" / "(O, 3)" (bị segmentation cắt) -------
@@ -135,6 +191,22 @@ export const circleRadiusRule: LanguageRule = {
         ruleId: 'circleRadius',
         clauseIds: clauseId === undefined ? [] : [clauseId],
         intents: [drawCircle(center, 'centerRadius', { center, radius })],
+      });
+    }
+
+    // --- Toàn đề: ký hiệu bán kính CHỮ "(O; R)" / "(I; r)" (segmenter cắt ';') ---
+    // Bán kính ký hiệu → bán kính canonical. Guard 2 chiều bỏ qua khi đường tròn
+    // nội/ngoại tiếp tam giác (circleTriangle sở hữu).
+    CENTER_RADIUS_LETTER_PAREN_G.lastIndex = 0;
+    let lpm: RegExpExecArray | null;
+    while ((lpm = CENTER_RADIUS_LETTER_PAREN_G.exec(ctx.problem)) !== null) {
+      const center = lpm[1];
+      if (isInscribedCircumscribed(ctx.problem, center)) continue; // circleTriangle sở hữu
+      const clauseId = findParenClauseId(ctx.clauses, center);
+      out.push({
+        ruleId: 'circleRadius',
+        clauseIds: clauseId === undefined ? [] : [clauseId],
+        intents: [drawCircle(center, 'centerRadius', { center, radius: SYMBOLIC_RADIUS })],
       });
     }
 

@@ -58,3 +58,10 @@ Cho tam giác ABC. Vẽ phân giác ngoài AD
 Cho tam giác ABC. Kẻ phân giác ngoài AD
 Cho tam giác ABC. Kẻ AH vuông góc BC tại K
 Cho tam giác ABC. M là trung điểm cạnh thẳng BC
+
+# === Issue #46 nhóm A: "(O; R)" bán kính ký hiệu CHỮ — PHẢI render (minh hoạ) ===
+Cho đường tròn (O; R)
+Cho đường tròn tâm O bán kính R
+
+# === Issue #46: PHẢI escalate (hệ số bán kính defer Cụm C) ===
+Cho đường tròn (O; 2R)

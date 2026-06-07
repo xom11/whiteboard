@@ -72,8 +72,63 @@ describe('circleRadiusRule', () => {
     expect(m.length).toBe(0);
   });
 
-  it('bán kính CHỮ "R" (không số) → BỎ QUA để escalate AI', () => {
+  // --- Issue #46 nhóm A: "(O; R)" bán kính ký hiệu CHỮ → render minh hoạ ---------
+  // Bán kính là CHỮ (R/r) = ký hiệu, không phải số. Vẽ đường tròn với bán kính
+  // canonical dương (minh hoạ đúng ngữ nghĩa — giá trị thực ký hiệu, tuỳ ý).
+  it('"(O; R)" bán kính ký hiệu CHỮ → centerRadius bán kính canonical (render minh hoạ)', () => {
+    const m = run('Cho đường tròn (O; R)');
+    expect(m.length).toBe(1);
+    const intent = m[0].intents[0] as any;
+    expect(intent.op).toBe('draw-circle');
+    expect(intent.spec).toBe('centerRadius');
+    expect(intent.center).toBe('O');
+    expect(typeof intent.radius).toBe('number');
+    expect(intent.radius).toBeGreaterThan(0);
+    // segmentation cắt "(O" và "R)" → clause 0 chứa fragment "(O".
+    expect(m[0].clauseIds).toContain(0);
+  });
+
+  it('"(I; r)" bán kính chữ thường r (ký hiệu nội tiếp) → centerRadius center I', () => {
+    const m = run('Cho đường tròn (I; r)');
+    expect(m.length).toBe(1);
+    const intent = m[0].intents[0] as any;
+    expect(intent.spec).toBe('centerRadius');
+    expect(intent.center).toBe('I');
+    expect(intent.radius).toBeGreaterThan(0);
+  });
+
+  it('"đường tròn tâm O bán kính R" (words, bán kính CHỮ) → centerRadius center O', () => {
     const m = run('Cho đường tròn tâm O bán kính R');
+    expect(m.length).toBe(1);
+    const intent = m[0].intents[0] as any;
+    expect(intent.spec).toBe('centerRadius');
+    expect(intent.center).toBe('O');
+    expect(intent.radius).toBeGreaterThan(0);
+  });
+
+  // escalate-safe: hệ số bán kính "2R" (defer Cụm C) → KHÔNG match.
+  it('"(O; 2R)" hệ số bán kính (defer) → BỎ QUA (0 match) để escalate', () => {
+    const m = run('Cho đường tròn (O; 2R)');
+    expect(m.length).toBe(0);
+  });
+
+  // escalate-safe: chữ thứ 2 không phải R/r (vd "(A; B)") → KHÔNG nhận nhầm thành
+  // bán kính ký hiệu (tránh vơ paren 2 chữ tuỳ ý thành đường tròn).
+  it('"(A; B)" chữ thứ 2 không phải R/r → BỎ QUA (0 match) để escalate', () => {
+    const m = run('Cho đường tròn (A; B)');
+    expect(m.length).toBe(0);
+  });
+
+  // guard 2 chiều: "(O; R)" ĐỨNG TRƯỚC "ngoại tiếp tam giác" → circleTriangle sở
+  // hữu circumcircle; circleRadius KHÔNG emit (tránh double-circle quanh O).
+  it('"(O; R) ngoại tiếp tam giác ABC" (circle TRƯỚC) → circleRadius BỎ QUA', () => {
+    const m = run('Đường tròn (O; R) ngoại tiếp tam giác ABC');
+    expect(m.length).toBe(0);
+  });
+
+  // guard chiều cũ: tam giác nội tiếp đường tròn (O; R) (circle SAU) → bỏ qua.
+  it('"tam giác ABC nội tiếp đường tròn (O; R)" (circle SAU) → circleRadius BỎ QUA', () => {
+    const m = run('Cho tam giác ABC nội tiếp đường tròn (O; R)');
     expect(m.length).toBe(0);
   });
 
