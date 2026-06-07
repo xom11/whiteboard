@@ -24,22 +24,6 @@ const def: KindDef<PointAttrs> = {
         throw new Error('point.perpFoot: from và onLine bắt buộc');
       }
     }
-    if (c.kind === 'circumcenter') {
-      if (!Array.isArray(c.vertices) || c.vertices.length !== 3) {
-        throw new Error('point.circumcenter: vertices phải là tuple 3 id');
-      }
-      if (!c.vertices[0] || !c.vertices[1] || !c.vertices[2]) {
-        throw new Error('point.circumcenter: 3 vertex id phải non-empty');
-      }
-    }
-    if (c.kind === 'incenter') {
-      if (!Array.isArray(c.vertices) || c.vertices.length !== 3) {
-        throw new Error('point.incenter: vertices phải là tuple 3 id');
-      }
-      if (!c.vertices[0] || !c.vertices[1] || !c.vertices[2]) {
-        throw new Error('point.incenter: 3 vertex id phải non-empty');
-      }
-    }
     if (c.kind === 'centroid') {
       if (!Array.isArray(c.vertices) || c.vertices.length !== 3) {
         throw new Error('point.centroid: vertices phải là tuple 3 id');
@@ -89,17 +73,6 @@ const def: KindDef<PointAttrs> = {
     const c = obj.attrs.constraint;
     const mod = POINT_CONSTRAINTS.get(c.kind);
     if (mod) return mod.describe(obj, state, c as never);
-    if (c.kind === 'free') return `Điểm ${obj.label}`;
-    if (c.kind === 'onAxis') return `${obj.label} trên trục ${c.axis}`;
-    if (c.kind === 'onLine') return `${obj.label} trên đường ${state?.objects[c.lineId]?.label ?? c.lineId}`;
-    if (c.kind === 'onSegment') return `${obj.label} trên đoạn ${state?.objects[c.segmentId]?.label ?? c.segmentId}`;
-    if (c.kind === 'onCircle') return `${obj.label} trên đường tròn ${state?.objects[c.circleId]?.label ?? c.circleId}`;
-    if (c.kind === 'onPolygon') return `${obj.label} trên đa giác ${state?.objects[c.polygonId]?.label ?? c.polygonId}`;
-    if (c.kind === 'midpoint') {
-      const l1 = state?.objects[c.p1]?.label ?? c.p1;
-      const l2 = state?.objects[c.p2]?.label ?? c.p2;
-      return `${obj.label} = trung điểm ${l1}${l2}`;
-    }
     if (c.kind === 'transformed') {
       const t = c.transform;
       const labelRef = (id: string) => state?.objects[id]?.label ?? id;
@@ -111,19 +84,6 @@ const def: KindDef<PointAttrs> = {
         : t.kind === 'dilate' ? `vị tự k=${t.k} quanh ${labelRef(t.center)}`
         : '';
       return `${obj.label} = ảnh của ${labelRef(c.source)} (${op})`;
-    }
-    if (c.kind === 'perpFoot') {
-      const fromLabel = state?.objects[c.from]?.label ?? c.from;
-      const lineLabel = state?.objects[c.onLine]?.label ?? c.onLine;
-      return `${obj.label} = chân ⟂ từ ${fromLabel} xuống ${lineLabel}`;
-    }
-    if (c.kind === 'circumcenter') {
-      const labels = c.vertices.map((id) => state?.objects[id]?.label ?? id).join('');
-      return `${obj.label} = tâm ngoại tiếp Δ${labels}`;
-    }
-    if (c.kind === 'incenter') {
-      const labels = c.vertices.map((id) => state?.objects[id]?.label ?? id).join('');
-      return `${obj.label} = tâm nội tiếp Δ${labels}`;
     }
     if (c.kind === 'centroid') {
       const labels = c.vertices.map((id) => state?.objects[id]?.label ?? id).join('');
@@ -167,40 +127,6 @@ const def: KindDef<PointAttrs> = {
     const opts = buildPointOpts(obj);
     const mod = POINT_CONSTRAINTS.get(c.kind);
     if (mod) return mod.render(obj, ctx, c as never, opts);
-    if (c.kind === 'free') return board.create('point', [c.x, c.y], opts);
-    if (c.kind === 'onAxis') {
-      const coords: [number, number] = c.axis === 'x' ? [c.t, 0] : [0, c.t];
-      return board.create('point', coords, opts);
-    }
-    if (c.kind === 'onLine') {
-      const line = ctx.resolveRef(c.lineId) as any;
-      const p1 = line.point1; const p2 = line.point2;
-      const sx = (p1 && p2) ? p1.X() + c.t * (p2.X() - p1.X()) : c.t;
-      const sy = (p1 && p2) ? p1.Y() + c.t * (p2.Y() - p1.Y()) : c.t;
-      return board.create('glider', [sx, sy, line], opts);
-    }
-    if (c.kind === 'onSegment') {
-      const seg = ctx.resolveRef(c.segmentId) as any;
-      const p1 = seg.point1; const p2 = seg.point2;
-      const sx = (p1 && p2) ? p1.X() + c.t * (p2.X() - p1.X()) : c.t;
-      const sy = (p1 && p2) ? p1.Y() + c.t * (p2.Y() - p1.Y()) : c.t;
-      return board.create('glider', [sx, sy, seg], opts);
-    }
-    if (c.kind === 'onCircle') {
-      const circle = ctx.resolveRef(c.circleId) as any;
-      const O = circle.center ?? circle.midpoint;
-      const ox = O ? O.X() : 0; const oy = O ? O.Y() : 0;
-      return board.create('glider', [ox + Math.cos(c.theta), oy + Math.sin(c.theta), circle], opts);
-    }
-    if (c.kind === 'onPolygon') {
-      const poly = ctx.resolveRef(c.polygonId) as any;
-      return board.create('glider', [c.u, c.v, poly], opts);
-    }
-    if (c.kind === 'midpoint') {
-      const p1 = ctx.resolveRef(c.p1) as any;
-      const p2 = ctx.resolveRef(c.p2) as any;
-      return board.create('midpoint', [p1, p2], opts);
-    }
     if (c.kind === 'transformed') {
        
       const src: any = ctx.resolveRef(c.source);
@@ -212,34 +138,6 @@ const def: KindDef<PointAttrs> = {
       // Renderer dọn _helpers khi remove element (xem JxgRenderer.remove).
       pt._helpers = transforms;
       return pt;
-    }
-    if (c.kind === 'perpFoot') {
-       
-      const from: any = ctx.resolveRef(c.from);
-       
-      const onLine: any = ctx.resolveRef(c.onLine);
-      // JSXGraph 'perpendicularpoint': create('perpendicularpoint', [line, point])
-      //   → trả về chân vuông góc của point xuống line.
-      return board.create('perpendicularpoint', [onLine, from], opts);
-    }
-    if (c.kind === 'circumcenter') {
-       
-      const a: any = ctx.resolveRef(c.vertices[0]);
-       
-      const b: any = ctx.resolveRef(c.vertices[1]);
-       
-      const c3: any = ctx.resolveRef(c.vertices[2]);
-      // JSXGraph 'circumcenter': create('circumcenter', [A, B, C])
-      return board.create('circumcenter', [a, b, c3], opts);
-    }
-    if (c.kind === 'incenter') {
-       
-      const a: any = ctx.resolveRef(c.vertices[0]);
-       
-      const b: any = ctx.resolveRef(c.vertices[1]);
-       
-      const c3: any = ctx.resolveRef(c.vertices[2]);
-      return board.create('incenter', [a, b, c3], opts);
     }
     if (c.kind === 'centroid') {
        
