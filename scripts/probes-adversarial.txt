@@ -172,3 +172,20 @@ Triangle MNP. Draw the angle bisector of MNP.
 # Escalate-safe: "angle A" 1-letter KHÔNG có tam giác → không suy được 2 tia →
 # escalate (no-match), KHÔNG render sai.
 Draw the bisector of angle A.
+
+# === EN tangentFromExt (issue #46 group B) ===
+# Rule EN match đúng (emit drawLine tangentFromExt {from:A, circle:O, both}) — chứng
+# minh qua transpile-fail "throughPoint A không tồn tại" (intent ĐÃ phát, chỉ thiếu
+# điểm ngoài A). tangentFromExt KHÔNG đạt DET render dù VN hay EN: hiện KHÔNG rule
+# nào dựng điểm NGOÀI A deterministic (gap có sẵn, language-agnostic). Escalate ở
+# đây là FAIL-SAFE (không render thiếu A), KHÔNG phải lỗi mới của nhánh EN.
+# Match-correct → escalate (transpile-fail A): "(O)" ký hiệu. TRƯỚC fix: clause
+# này hasGeometry=false ("(O)" không text-keyword, chưa có vocab "tangent") →
+# coi là văn xuôi → render circle+free-A BỎ tiếp tuyến (SILENT-INCOMPLETE). Vocab
+# "tangent" + rule EN → clause thành geo + claim → escalate fail-safe đúng.
+Circle (O; 3). Draw two tangents from A to (O).
+# Match-correct → escalate (transpile-fail A): "circle O" dạng chữ.
+Circle (O; 3). Draw two tangent lines from A to circle O.
+# Escalate-safe: KHÔNG có draw/construct ("The length ... is 5") → no-match →
+# escalate, KHÔNG render sai.
+The length of the tangent from A to (O) is 5.

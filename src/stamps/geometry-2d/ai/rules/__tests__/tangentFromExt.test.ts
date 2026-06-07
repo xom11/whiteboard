@@ -67,3 +67,56 @@ describe('tangentFromExtRule', () => {
     expect(run('Cho tam giác ABC nội tiếp đường tròn (O)')).toEqual([]);
   });
 });
+
+describe('tangentFromExt EN (issue #46 group B)', () => {
+  it('"Draw the two tangents from A to (O)." → tangentFromExt both', () => {
+    const intent = only('Draw the two tangents from A to (O).').intents[0] as any;
+    expect(intent.op).toBe('draw-line');
+    expect(intent.kind).toBe('tangentFromExt');
+    expect(intent.from).toBe('A');
+    expect(intent.circle).toBe('O');
+    expect(intent.which).toBe('both');
+  });
+
+  it('"Draw two tangent lines from A to circle O." (circle words) → from A circle O', () => {
+    const intent = only('Draw two tangent lines from A to circle O.').intents[0] as any;
+    expect(intent.kind).toBe('tangentFromExt');
+    expect(intent.from).toBe('A');
+    expect(intent.circle).toBe('O');
+    expect(intent.which).toBe('both');
+  });
+
+  it('"Construct the tangents from A to the circle (O)." → from A circle O', () => {
+    const intent = only('Construct the tangents from A to the circle (O).').intents[0] as any;
+    expect(intent.kind).toBe('tangentFromExt');
+    expect(intent.from).toBe('A');
+    expect(intent.circle).toBe('O');
+    expect(intent.which).toBe('both');
+  });
+
+  it('biến thể đảo "From A, draw the tangents to (O)." → from A circle O', () => {
+    const intent = only('From A, draw the tangents to (O).').intents[0] as any;
+    expect(intent.kind).toBe('tangentFromExt');
+    expect(intent.from).toBe('A');
+    expect(intent.circle).toBe('O');
+    expect(intent.which).toBe('both');
+  });
+
+  it('điểm + tâm chữ khác "Draw the tangents from P to (I)." → from P circle I', () => {
+    const intent = only('Draw the tangents from P to (I).').intents[0] as any;
+    expect(intent.from).toBe('P');
+    expect(intent.circle).toBe('I');
+  });
+
+  it('FAIL-SAFE: "Draw the tangent to (O) at A." (at = tangentAt, không phải từ điểm ngoài) → []', () => {
+    expect(run('Draw the tangent to (O) at A.')).toEqual([]);
+  });
+
+  it('FAIL-SAFE: "The length of the tangent from A to (O) is 5." (không draw/construct) → []', () => {
+    expect(run('The length of the tangent from A to (O) is 5.')).toEqual([]);
+  });
+
+  it('FAIL-SAFE: "Draw the tangents from A to BC." (BC không phải đường tròn) → []', () => {
+    expect(run('Draw the tangents from A to BC.')).toEqual([]);
+  });
+});

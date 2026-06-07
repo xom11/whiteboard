@@ -76,6 +76,12 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   // substring của từ VN/EN nào hiện có (không va chạm).
   'bisector',
   'reflection',
+  // tangentFromExt EN (issue #46 group B). Clause "Draw the tangents from A to
+  // (O)" dùng ký hiệu "(O)" — KHÔNG có text keyword nào khác → coverage gate = 0
+  // → escalate dù rule match. "tangent" (≥7 ký tự, phân biệt, KHÔNG substring của
+  // từ VN/EN nào hiện có) đánh dấu clause là geo-clause. indexOf nên "tangent" tự
+  // khớp trong "tangents"/"tangent lines" — KHÔNG cần thêm "tangents" riêng.
+  'tangent',
 ];
 
 export function countGeometryKeywords(text: string): number {

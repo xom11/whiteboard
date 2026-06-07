@@ -43,18 +43,65 @@ const TU_FORM = new RegExp(
   'u',
 );
 
+// === EN patterns (issue #46 group B) ========================================
+// Target đường tròn EN: "(X)" (language-agnostic, giống VN) HOẶC "circle X" /
+// "circle (X)". KHÔNG nhận chữ HOA TRẦN ("from A to BC": BC là đoạn → không
+// claim → escalate). Hai alternative → 2 capture nhóm (caller lấy nhóm nào khớp).
+//   - nhóm 1: ([A-Z]) sau "circle" (có thể bọc "(...)").
+//   - nhóm 2: ([A-Z]) trong "(...)" trần (không từ "circle").
+// First-letter flex [Cc]; KHÔNG cờ 'i' (giữ [A-Z] strict cho nhãn).
+const CIRCLE_TARGET_EN = String.raw`(?:[Cc]ircle\s*\(?\s*([A-Z])(?:['′]?)\s*\)?|\(\s*([A-Z])(?:['′]?)\s*\))`;
+
+// "(Draw|Construct) (the|two)? tangent(s)? (lines)? from (the)? A to (the)? <circle>"
+//   - động từ Draw/Construct BẮT BUỘC: chặn ngữ cảnh TÍNH ("The length of the
+//     tangent from A to (O) is 5" → không có Draw/Construct → không match,
+//     escalate). Mirror ràng buộc verb của FROM_FORM (VN).
+//   - giới từ "from <A> to <circle>" BẮT BUỘC: phân biệt với tangentAt
+//     ("tangent ... at A" → không có "from ... to" → không match ở đây).
+//   - from = 1 ký tự HOA sau "from (the)?".
+//   - circle bắt buộc có dấu hiệu (CIRCLE_TARGET_EN — "(X)" hoặc "circle X").
+// GROUP INDEX: from = nhóm 1; circle = nhóm 2 ("circle X") HOẶC nhóm 3 ("(X)").
+const FROM_FORM_EN = new RegExp(
+  String.raw`(?:[Dd]raw|[Cc]onstruct)\s+(?:the\s+|two\s+|the\s+two\s+)?tangents?(?:\s+lines?)?\s+from\s+(?:the\s+)?([A-Z])(?:['′]?)\s+to\s+(?:the\s+)?` +
+    CIRCLE_TARGET_EN,
+  'u',
+);
+
+// Biến thể đảo EN: "From (the)? A, ... (draw|construct) (the|two)? tangent(s)?
+// (lines)? to (the)? <circle>".
+//   - verb draw/construct vẫn bắt buộc (nằm sau "From A").
+//   - "from A ... to <circle>" vẫn đầy đủ (from ở đầu, to trước circle).
+// GROUP INDEX: from = nhóm 1; circle = nhóm 2 ("circle X") HOẶC nhóm 3 ("(X)").
+const FROM_INV_EN = new RegExp(
+  String.raw`(?<![A-Za-z])[Ff]rom\s+(?:the\s+)?([A-Z])(?:['′]?)(?![A-Za-z])[^.]{0,40}?(?:[Dd]raw|[Cc]onstruct)\s+(?:the\s+|two\s+|the\s+two\s+)?tangents?(?:\s+lines?)?\s+to\s+(?:the\s+)?` +
+    CIRCLE_TARGET_EN,
+  'u',
+);
+
 export const tangentFromExtRule: LanguageRule = {
   id: 'tangentFromExt',
   priority: 65,
-  languages: ['vi'],
-  patterns: [HAS_TANGENT],
+  languages: ['vi', 'en'],
+  // EN prefilter "tangent" để runRules (prefilter qua patterns[], bỏ qua
+  // languages) chạy match() cho đề EN thuần (không có "tiếp tuyến").
+  patterns: [HAS_TANGENT, /[Tt]angent/u],
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
-      const m = FROM_FORM.exec(c.text) ?? TU_FORM.exec(c.text);
+      // VN trước (FROM_FORM / TU_FORM), giữ nguyên hành vi cũ; EN sau (FROM_FORM_EN
+      // / FROM_INV_EN). circle bắt qua 1 trong các alternative capture group.
+      const m =
+        FROM_FORM.exec(c.text) ??
+        TU_FORM.exec(c.text) ??
+        FROM_FORM_EN.exec(c.text) ??
+        FROM_INV_EN.exec(c.text);
       if (!m) continue;
       const from = m[1];
-      // circle bắt qua 1 trong 2 alternative ("đường tròn X" = m[2], "(X)" = m[3]).
+      // circle bắt qua 1 trong 2 alternative:
+      //   VN: "đường tròn X" = m[2], "(X)" = m[3].
+      //   EN: "circle X" = m[2], "(X)" = m[3] (cùng index — cả 2 dạng đều có
+      //       circle ở nhóm 2/3 vì from luôn là nhóm 1, CIRCLE_TARGET(_EN) có 2
+      //       alternative nhóm 2 & 3).
       const circle = m[2] ?? m[3];
       // Không xác định được from hoặc circle → bỏ qua (escalate AI).
       if (!from || !circle) continue;
