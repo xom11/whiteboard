@@ -24,8 +24,21 @@ import { drawLine } from './_shared';
 // tự Việt → dùng class trực tiếp, cờ 'u'.
 const TRI = /tam\s*giác(?:\s+(?:vuông|cân|đều|nhọn|tù))?\s+([A-Z])([A-Z])([A-Z])/u;
 
-// Prefilter: cần "phân giác" + "góc" cùng xuất hiện (rẻ, chạy trước match()).
-const PREFILTER = [/[Pp]hân\s*giác/u, /góc/u];
+// === EN (issue #46 group B) =================================================
+// Tam giác tiếng Anh: "triangle ABC" (first-letter case flex [Tt], KHÔNG cờ 'i'
+// — sẽ phá [A-Z] nhãn). Nhãn = ĐÚNG 3 ký tự HOA liền, neo (?![A-Z]). Không cần
+// 'g' (chỉ cần tam giác đầu tiên để fallback suy 2 cạnh, như TRI VN).
+const TRI_EN = /[Tt]riangle\s+([A-Z])([A-Z])([A-Z])(?![A-Z])/u;
+
+// Prefilter: VN cần "phân giác" + "góc"; EN cần "angle bisector" (Form B) hoặc
+// "bisector of (the)? angle/∠" (Form A). `.some` → ANY khớp là trigger match().
+// "languages" là metadata thuần (runRules prefilter theo `patterns`, BỎ QUA nó).
+const PREFILTER = [
+  /[Pp]hân\s*giác/u,
+  /góc/u,
+  /[Aa]ngle\s+bisector/u, // Form B EN
+  /[Bb]isector\s+of\s+(?:the\s+)?(?:[Aa]ngle|∠)/u, // Form A EN
+];
 
 // "phân giác … góc XYZ" (3 ký tự HOA liền). (?![A-Z]) chặn cụm 4+ ký tự.
 // Cho phép cụm dẫn "(đường|tia) phân giác (của)? góc" — bổ ngữ optional.
@@ -34,6 +47,24 @@ const ANGLE3 =
 // "phân giác … góc A" (1 ký tự HOA, không theo sau bởi HOA khác → không phải 3-point).
 const ANGLE1 =
   /phân\s*giác\s+(?:(?:của|cho)\s+)?góc\s+([A-Z])(?![A-Z])/giu;
+
+// === EN regex (issue #46 group B) ===========================================
+// First-letter flex [Bb]/[Aa] (KHÔNG cờ 'i' — sẽ phá [A-Z] nhãn). Nhãn HOA
+// strict, neo (?![A-Z]). Cờ 'g' để emit-all + matchAll. Yêu cầu chữ
+// "angle"/∠ → KHÔNG khớp "perpendicular bisector of BC" (không có "angle").
+//
+// Form A: "(the)? bisector of (the)? (angle|∠) XYZ" — bổ ngữ "the" optional.
+//   "Draw the bisector of angle BAC." → {p1:B, vertex:A, p2:C}
+// Form B: "(the)? angle bisector of XYZ" — "of" sau "bisector", KHÔNG "angle/∠".
+//   "The angle bisector of MNP." → {M,N,P}
+const ANGLE3_EN_A =
+  /[Bb]isector\s+of\s+(?:the\s+)?(?:[Aa]ngle|∠)\s*([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
+const ANGLE3_EN_B =
+  /[Aa]ngle\s+bisector\s+of\s+([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
+// 1-letter "angle A" (Form A only — Form B "angle bisector of A" hiếm/mơ hồ,
+// defer). Cần tam giác EN để suy 2 cạnh.
+const ANGLE1_EN_A =
+  /[Bb]isector\s+of\s+(?:the\s+)?(?:[Aa]ngle|∠)\s*([A-Z])(?![A-Z])/gu;
 
 /** 2 đỉnh còn lại của tam giác (≠ vertex), giữ thứ tự xuất hiện trong tri. */
 function others(tri: readonly string[], vertex: string): string[] {
@@ -57,11 +88,19 @@ export const angleBisectorAngleRule: LanguageRule = {
   // Cao hơn cevian (60) — chạy trước; tuy nhiên 2 rule không tranh chấp vì
   // discriminator "góc" loại cevian khỏi cụm này.
   priority: 62,
-  languages: ['vi'],
+  languages: ['vi', 'en'],
   patterns: PREFILTER,
   match(ctx) {
+    // Tam giác fallback (suy 2 cạnh cho "góc A"/"angle A"): VN trước, EN sau.
+    // Đề VN không chứa "triangle" và đề EN không chứa "tam giác" → KHÔNG đụng
+    // nhau (VN byte-identical).
     const triMatch = TRI.exec(ctx.problem);
-    const tri = triMatch ? [triMatch[1], triMatch[2], triMatch[3]] : null;
+    const triMatchEN = TRI_EN.exec(ctx.problem);
+    const tri = triMatch
+      ? [triMatch[1], triMatch[2], triMatch[3]]
+      : triMatchEN
+        ? [triMatchEN[1], triMatchEN[2], triMatchEN[3]]
+        : null;
 
     const hits: Hit[] = [];
     const seen = new Set<string>(); // "p1|vertex|p2" dedup
@@ -84,6 +123,34 @@ export const angleBisectorAngleRule: LanguageRule = {
       for (const m of c.text.matchAll(ANGLE1)) {
         const vertex = m[1];
         if (!tri) continue;                 // không tam giác → escalate
+        if (!tri.includes(vertex)) continue; // đỉnh ngoài tam giác → bỏ qua
+        const rest = others(tri, vertex);
+        if (rest.length !== 2) continue;     // không suy được 2 tia → bỏ qua
+        const [p1, p2] = rest;
+        const key = `${p1}|${vertex}|${p2}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        hits.push({ clauseId: c.id, p1, vertex, p2 });
+      }
+
+      // ── EN 3-point: Form A "(bisector of) angle XYZ" + Form B "angle bisector
+      //    of XYZ". vertex = chữ giữa, không cần tam giác. seen dedup chung VN.
+      for (const re of [ANGLE3_EN_A, ANGLE3_EN_B]) {
+        re.lastIndex = 0;
+        for (const m of c.text.matchAll(re)) {
+          const [p1, vertex, p2] = [m[1], m[2], m[3]];
+          const key = `${p1}|${vertex}|${p2}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          hits.push({ clauseId: c.id, p1, vertex, p2 });
+        }
+      }
+
+      // ── EN 1-letter "angle A" (Form A): cần tam giác EN/VN để suy 2 cạnh.
+      ANGLE1_EN_A.lastIndex = 0;
+      for (const m of c.text.matchAll(ANGLE1_EN_A)) {
+        const vertex = m[1];
+        if (!tri) continue;                  // không tam giác → escalate
         if (!tri.includes(vertex)) continue; // đỉnh ngoài tam giác → bỏ qua
         const rest = others(tri, vertex);
         if (rest.length !== 2) continue;     // không suy được 2 tia → bỏ qua

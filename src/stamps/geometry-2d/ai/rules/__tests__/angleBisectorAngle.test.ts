@@ -1,5 +1,6 @@
 import { angleBisectorAngleRule } from '../angleBisectorAngle';
 import { cevianRule } from '../cevian';
+import { perpBisectorRule } from '../perpBisector';
 import { segmentClauses } from '../../deterministic/coverage';
 
 function run(problem: string) {
@@ -116,5 +117,80 @@ describe('angleBisectorAngle KHÔNG đụng cevian foot-named', () => {
 
   it('"phân giác ngoài AD" (foot-named external): angleBisectorAngle KHÔNG khớp', () => {
     expect(run('Cho tam giác ABC. Vẽ phân giác ngoài AD.')).toEqual([]);
+  });
+});
+
+// ── EN (issue #46 group B) ────────────────────────────────────────────────
+describe('angleBisectorAngle EN (issue #46 group B)', () => {
+  // ── 3-point angle: vertex = chữ GIỮA ──
+
+  it('"Triangle ABC. Draw the bisector of angle BAC." → angleBisector {B,A,C}, KHÔNG add-point/connect', () => {
+    const m = run('Triangle ABC. Draw the bisector of angle BAC.');
+    expect(m.length).toBe(1);
+    expect(m[0].intents.length).toBe(1);
+    const i = m[0].intents[0] as any;
+    expect(i.op).toBe('draw-line');
+    expect(i.kind).toBe('angleBisector');
+    expect(i.p1).toBe('B');
+    expect(i.vertex).toBe('A');
+    expect(i.p2).toBe('C');
+    expect(m[0].intents.some((x) => (x as any).op === 'add-point')).toBe(false);
+    expect(m[0].intents.some((x) => (x as any).op === 'connect')).toBe(false);
+  });
+
+  it('"Bisector of angle BAC." (standalone, không triangle) → vẫn match {B,A,C}', () => {
+    const i = findBisector(run('Bisector of angle BAC.'));
+    expect(i).toBeTruthy();
+    expect([i!.p1, i!.vertex, i!.p2]).toEqual(['B', 'A', 'C']);
+  });
+
+  it('Form B "The angle bisector of MNP." → vertex giữa N', () => {
+    const i = findBisector(run('The angle bisector of MNP.'));
+    expect(i).toBeTruthy();
+    expect([i!.p1, i!.vertex, i!.p2]).toEqual(['M', 'N', 'P']);
+  });
+
+  it('∠ symbol "Triangle ABC. Draw the bisector of ∠BAC." → {B,A,C}', () => {
+    const i = findBisector(run('Triangle ABC. Draw the bisector of ∠BAC.'));
+    expect(i).toBeTruthy();
+    expect([i!.p1, i!.vertex, i!.p2]).toEqual(['B', 'A', 'C']);
+  });
+
+  // ── 1-letter "angle A" trong tam giác EN → suy 2 cạnh ──
+
+  it('"Triangle ABC. Draw the bisector of angle A." → vertex A + (B,C)', () => {
+    const i = findBisector(run('Triangle ABC. Draw the bisector of angle A.'));
+    expect(i).toBeTruthy();
+    expect(i!.vertex).toBe('A');
+    expect([i!.p1, i!.p2].sort()).toEqual(['B', 'C']);
+  });
+
+  // ── escalate-safe ──
+
+  it('FAIL-SAFE: "Bisector of angle A." KHÔNG triangle → 0 match', () => {
+    expect(run('Bisector of angle A.')).toEqual([]);
+  });
+
+  it('FAIL-SAFE: "Triangle ABC. Bisector of angle P." (P ngoài tam giác) → 0 match', () => {
+    expect(run('Triangle ABC. Bisector of angle P.')).toEqual([]);
+  });
+});
+
+// ── EN KHÔNG đụng perpBisector (cross-rule regression guard) ──────────────
+describe('angleBisectorAngle EN KHÔNG đụng perpBisector', () => {
+  function perp(problem: string) {
+    return perpBisectorRule.match({ problem, clauses: segmentClauses(problem) });
+  }
+
+  it('"perpendicular bisector of BC": angleBisectorAngle KHÔNG khớp, perpBisector VẪN khớp', () => {
+    expect(run('Triangle ABC. Draw the perpendicular bisector of BC.')).toEqual([]);
+    const p = perp('Triangle ABC. Draw the perpendicular bisector of BC.');
+    expect(
+      p.some((m) =>
+        m.intents.some(
+          (i) => (i as any).op === 'connect' && (i as any).style === 'perpBisector',
+        ),
+      ),
+    ).toBe(true);
   });
 });

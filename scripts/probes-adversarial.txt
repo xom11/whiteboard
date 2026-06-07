@@ -159,3 +159,16 @@ Triangle ABC. Draw the perpendicular bisector of BC.
 Triangle ABC. D is the reflection of A over BC.
 # Escalate-safe: "bisector" là geo nhưng không có cặp đỉnh → escalate (không render sai).
 Draw the perpendicular bisector of the triangle.
+
+# === EN angleBisectorAngle (issue #46 group B) ===
+# Render-correct: phân giác theo GÓC tiếng Anh trên tam giác nền.
+# Form A 3-point (vertex = chữ giữa): "bisector of angle BAC" → bis BAC {B,A,C}.
+Triangle ABC. Draw the bisector of angle BAC.
+# Form A 1-letter ("angle A" → suy 2 cạnh B,C từ tam giác): bis BAC {B,A,C}.
+Triangle ABC. Draw the bisector of angle A.
+# Form B "angle bisector of XYZ" (vertex giữa). Cần tam giác cùng tên để anchor
+# 3 đỉnh (3-point standalone không có tam giác → transpile UNKNOWN_REF, escalate).
+Triangle MNP. Draw the angle bisector of MNP.
+# Escalate-safe: "angle A" 1-letter KHÔNG có tam giác → không suy được 2 tia →
+# escalate (no-match), KHÔNG render sai.
+Draw the bisector of angle A.
