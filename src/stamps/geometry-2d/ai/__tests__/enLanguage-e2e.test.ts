@@ -48,6 +48,19 @@ describe('EN language e2e (issue #46 group B)', () => {
         en: 'Triangle ABC. M is the midpoint of BC.',
         vi: 'Cho tam giác ABC. Gọi M là trung điểm BC',
       },
+      {
+        name: 'triangle + centroid',
+        en: 'Triangle ABC. G is the centroid of triangle ABC.',
+        vi: 'Cho tam giác ABC. G là trọng tâm tam giác ABC',
+      },
+      {
+        name: 'triangle + circumcenter',
+        en: 'Triangle ABC. O is the circumcenter of triangle ABC.',
+        // VN dùng "tâm ngoại tiếp" (điểm tâm) — tương đương circumcenter point
+        // không kèm đường tròn (phrasing "tâm đường tròn ngoại tiếp" sẽ thêm
+        // intent đường tròn tên O ⇒ không cùng intent-sig với EN).
+        vi: 'Cho tam giác ABC. Gọi O là tâm ngoại tiếp tam giác ABC',
+      },
     ];
 
     for (const { name, en, vi } of matrix) {
@@ -96,6 +109,13 @@ describe('EN language e2e (issue #46 group B)', () => {
       if (!r.ok) {
         expect(['incomplete-coverage', 'no-match']).toContain(r.reason);
       }
+    });
+
+    it('EN centroid with NO triangle anywhere → {ok:false} (fail-safe)', () => {
+      // "centroid" makes the clause geo, but with no triangle to bind 'of' the
+      // rule cannot resolve → no claim → escalate (never invent a triangle).
+      const r = tryDeterministicFigure('G is the centroid.');
+      expect(r.ok).toBe(false);
     });
   });
 });

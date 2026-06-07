@@ -16,6 +16,12 @@ import { addPoint } from './_shared';
 // Tam giác (global): quét mọi tam giác nêu trong một đoạn text.
 const TRI_G = /tam giác\s+([A-Z])([A-Z])([A-Z])/gu;
 
+// === EN (issue #46 group B) =================================================
+// Tam giác tiếng Anh: "triangle ABC" (first-letter case flex [Tt], KHÔNG cờ 'i'
+// — sẽ phá [A-Z] nhãn). Nhãn = ĐÚNG 3 ký tự HOA liền, neo (?![A-Z]). ADDITIVE:
+// quét THÊM cùng TRI_G; merge theo vị trí TEXT để VN behavior giữ nguyên.
+const TRI_EN_G = /[Tt]riangle\s+([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
+
 // Từ khoá tâm. \b không khớp quanh ký tự Việt nên dùng lookaround \p{L}.
 // "trọng tâm" — chặn nhầm với "trung tâm" bằng cách yêu cầu đúng "trọng".
 const CENTROID_KW = /(?<!\p{L})trọng\s*tâm(?!\p{L})/u;
@@ -27,6 +33,16 @@ const CIRCUM_KW = /(?<!\p{L})ngoại\s*tiếp(?!\p{L})/u;
 const INSCRIBE_KW = /(?<!\p{L})nội\s*tiếp(?!\p{L})/u;
 // Tên tâm đứng trước "tâm" qua "là": "O là tâm", "Gọi O là tâm (đường tròn)…".
 const NAME_BEFORE_TAM = /(?<!\p{L})([A-Z])\s+là\s+tâm(?!\p{L})/u;
+
+// === EN keyword (issue #46 group B) =========================================
+// Từ khoá tâm tiếng Anh. First-letter case flex ([Cc], [Oo]…) — KHÔNG cờ 'i'
+// (sẽ phá [A-Z] nhãn). British spelling -centre cũng nhận. Neo (?![A-Za-z]) để
+// không khớp giữa từ dài hơn. centroid → centroid; orthocenter/-centre →
+// orthocenter; circumcenter/-centre → circumcenter; incenter/-centre → incenter.
+const CENTROID_KW_EN = /(?<![A-Za-z])[Cc]entroid(?![A-Za-z])/u;
+const ORTHO_KW_EN = /(?<![A-Za-z])[Oo]rthocent(?:er|re)(?![A-Za-z])/u;
+const CIRCUM_KW_EN = /(?<![A-Za-z])[Cc]ircumcent(?:er|re)(?![A-Za-z])/u;
+const INCENTER_KW_EN = /(?<![A-Za-z])[Ii]ncent(?:er|re)(?![A-Za-z])/u;
 
 // Tên điểm đứng NGAY SAU cụm từ khoá: "trọng tâm G", "tâm (đường tròn) ngoại tiếp O".
 function nameAfter(text: string, kw: RegExp): string | undefined {
@@ -60,14 +76,67 @@ function resolveCenterName(text: string, kw: RegExp): string | undefined {
   return nameAfter(text, kw);
 }
 
+// --- EN name resolution (issue #46 group B) ---------------------------------
+// Tên điểm đứng TRƯỚC cụm từ khoá EN qua "is/be the": "G is the centroid",
+// "Let H be the orthocenter". Tên = ký tự HOA NGAY TRƯỚC "is/be the <kw>"
+// (cục bộ, KHÔNG quét lời dẫn toàn clause). KHÔNG cờ 'i' (giữ [A-Z]).
+function nameBeforeEn(text: string, kw: RegExp): string | undefined {
+  const m = kw.exec(text);
+  if (!m) return undefined;
+  const before = text.slice(0, m.index);
+  // "...<HOA> (is|be) the " ngay trước từ khoá.
+  const mm = /(?<![A-Za-z])([A-Z])\s+(?:is|be)\s+the\s+$/u.exec(before);
+  return mm ? mm[1] : undefined;
+}
+
+// Tên điểm đứng NGAY SAU cụm từ khoá EN: "centroid G", "orthocenter H".
+// Bỏ qua từ chêm "of"/"the" KHÔNG được phép ở đây — nếu sau từ khoá là "of …"
+// (vd "centroid of triangle ABC") thì KHÔNG có tên điểm → undefined (fail-safe,
+// KHÔNG bịa tên).
+function nameAfterEn(text: string, kw: RegExp): string | undefined {
+  const m = kw.exec(text);
+  if (!m) return undefined;
+  const rest = text.slice(m.index + m[0].length);
+  const after = /^\s+([A-Z])(?![A-Za-z])/u.exec(rest);
+  return after ? after[1] : undefined;
+}
+
+function resolveNameEn(text: string, kw: RegExp): string | undefined {
+  return nameBeforeEn(text, kw) ?? nameAfterEn(text, kw);
+}
+
+/** Một tam giác phát hiện trong text: bộ 3 đỉnh + offset bắt đầu match. */
+interface TriHit {
+  tri: string[];
+  index: number;
+}
+
+/**
+ * Tập tam giác (bộ 3 đỉnh + vị trí) nêu trong một đoạn text, gồm CẢ VN
+ * ("tam giác ABC") VÀ EN ("triangle ABC"), sắp theo vị trí TEXT. ADDITIVE:
+ * với đề thuần VN, chỉ TRI_G khớp ⇒ kết quả identical với hành vi cũ.
+ */
+function triangleHits(text: string): TriHit[] {
+  const hits: TriHit[] = [];
+  TRI_G.lastIndex = 0;
+  let m: RegExpExecArray | null;
+  while ((m = TRI_G.exec(text)) !== null) {
+    hits.push({ tri: [m[1], m[2], m[3]], index: m.index });
+  }
+  TRI_EN_G.lastIndex = 0;
+  while ((m = TRI_EN_G.exec(text)) !== null) {
+    hits.push({ tri: [m[1], m[2], m[3]], index: m.index });
+  }
+  hits.sort((a, b) => a.index - b.index);
+  return hits;
+}
+
 /**
  * Tập tam giác (mỗi tam giác = bộ 3 đỉnh) nêu trong một đoạn text. Trùng (cùng
  * 3 chữ liền) được giữ theo lượt xuất hiện; caller dedup nếu cần.
  */
 function trianglesIn(text: string): string[][] {
-  const out: string[][] = [];
-  for (const m of text.matchAll(TRI_G)) out.push([m[1], m[2], m[3]]);
-  return out;
+  return triangleHits(text).map((h) => h.tri);
 }
 
 /**
@@ -82,18 +151,17 @@ function resolveTriangle(
   kwIndex: number,
   uniqueProblemTri: string[] | undefined,
 ): string[] | undefined {
-  const inClause = trianglesIn(clauseText);
+  const inClause = triangleHits(clauseText);
   if (inClause.length > 0) {
     // chọn tam giác gần cụm từ khoá nhất (ưu tiên đứng SAU; nếu không có thì lấy
-    // tam giác gần nhất bất kể phía).
+    // tam giác gần nhất bất kể phía). Gồm cả tam giác VN lẫn EN trong clause.
     let best: { tri: string[]; dist: number } | undefined;
-    for (const m of clauseText.matchAll(TRI_G)) {
-      const tri = [m[1], m[2], m[3]];
-      const idx = m.index ?? 0;
+    for (const h of inClause) {
+      const idx = h.index;
       // khoảng cách: ưu tiên tam giác đứng sau từ khoá (idx >= kwIndex).
       const after = idx >= kwIndex;
       const dist = Math.abs(idx - kwIndex) + (after ? 0 : 1_000);
-      if (!best || dist < best.dist) best = { tri, dist };
+      if (!best || dist < best.dist) best = { tri: h.tri, dist };
     }
     return best?.tri;
   }
@@ -107,8 +175,17 @@ function resolveTriangle(
 export const centersRule: LanguageRule = {
   id: 'centers',
   priority: 70,
-  languages: ['vi'],
-  patterns: [CENTROID_KW, ORTHO_KW, CIRCUM_KW, INSCRIBE_KW],
+  languages: ['vi', 'en'],
+  patterns: [
+    CENTROID_KW,
+    ORTHO_KW,
+    CIRCUM_KW,
+    INSCRIBE_KW,
+    CENTROID_KW_EN,
+    ORTHO_KW_EN,
+    CIRCUM_KW_EN,
+    INCENTER_KW_EN,
+  ],
   match(ctx) {
     // Tam giác duy nhất toàn đề (dedup theo bộ đỉnh) — dùng làm fallback khi
     // clause KHÔNG tự nêu tam giác. Nhiều tam giác khác nhau → undefined (nhập
@@ -147,6 +224,32 @@ export const centersRule: LanguageRule = {
       } else if (INSCRIBE_KW.test(c.text)) {
         const name = resolveCenterName(c.text, INSCRIBE_KW);
         const of = ofFor(c.text, INSCRIBE_KW);
+        if (name && of) intents.push(addPoint(name, { kind: 'incenter', of }));
+      }
+
+      // --- EN (issue #46 group B) — mirror VN semantics, mỗi từ khoá độc lập --
+      // Các danh từ tâm EN là chính tả riêng biệt (centroid/orthocenter/
+      // circumcenter/incenter) nên KHÔNG nhập nhằng lẫn nhau như "ngoại/nội
+      // tiếp" VN — xử lý từng cái độc lập. Tên + of giải qua helper EN; thiếu
+      // tên HOẶC of không bind được → bỏ qua (escalate, KHÔNG bịa).
+      if (CENTROID_KW_EN.test(c.text)) {
+        const name = resolveNameEn(c.text, CENTROID_KW_EN);
+        const of = ofFor(c.text, CENTROID_KW_EN);
+        if (name && of) intents.push(addPoint(name, { kind: 'centroid', of }));
+      }
+      if (ORTHO_KW_EN.test(c.text)) {
+        const name = resolveNameEn(c.text, ORTHO_KW_EN);
+        const of = ofFor(c.text, ORTHO_KW_EN);
+        if (name && of) intents.push(addPoint(name, { kind: 'orthocenter', of }));
+      }
+      if (CIRCUM_KW_EN.test(c.text)) {
+        const name = resolveNameEn(c.text, CIRCUM_KW_EN);
+        const of = ofFor(c.text, CIRCUM_KW_EN);
+        if (name && of) intents.push(addPoint(name, { kind: 'circumcenter', of }));
+      }
+      if (INCENTER_KW_EN.test(c.text)) {
+        const name = resolveNameEn(c.text, INCENTER_KW_EN);
+        const of = ofFor(c.text, INCENTER_KW_EN);
         if (name && of) intents.push(addPoint(name, { kind: 'incenter', of }));
       }
 

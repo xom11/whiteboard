@@ -131,3 +131,112 @@ describe('centersRule', () => {
     expect(typeof m[0].clauseIds[0]).toBe('number');
   });
 });
+
+// === EN (issue #46 group B) =================================================
+// Mirror VN semantics for English center nouns. Vertex labels stay [A-Z]
+// (no 'i' flag). Triangle binding reuses resolveTriangle once trianglesIn
+// also recognizes the EN "triangle ABC" form.
+describe('centersRule — EN (issue #46 group B)', () => {
+  // --- name BEFORE the keyword ("G is the centroid of triangle ABC") --------
+  it('"G is the centroid of triangle ABC" → centroid of [A,B,C]', () => {
+    const i = find('Triangle ABC. G is the centroid of triangle ABC', 'centroid');
+    expect(i).toBeDefined();
+    expect(i.name).toBe('G');
+    expect(i.constraint).toEqual({ kind: 'centroid', of: ['A', 'B', 'C'] });
+  });
+
+  it('"H is the orthocenter of triangle ABC" → orthocenter', () => {
+    const i = find('Triangle ABC. H is the orthocenter of triangle ABC', 'orthocenter');
+    expect(i).toBeDefined();
+    expect(i.name).toBe('H');
+    expect(i.constraint).toEqual({ kind: 'orthocenter', of: ['A', 'B', 'C'] });
+  });
+
+  it('"O is the circumcenter of triangle ABC" → circumcenter', () => {
+    const i = find('Triangle ABC. O is the circumcenter of triangle ABC', 'circumcenter');
+    expect(i).toBeDefined();
+    expect(i.name).toBe('O');
+    expect(i.constraint).toEqual({ kind: 'circumcenter', of: ['A', 'B', 'C'] });
+  });
+
+  it('"I is the incenter of triangle ABC" → incenter', () => {
+    const i = find('Triangle ABC. I is the incenter of triangle ABC', 'incenter');
+    expect(i).toBeDefined();
+    expect(i.name).toBe('I');
+    expect(i.constraint).toEqual({ kind: 'incenter', of: ['A', 'B', 'C'] });
+  });
+
+  it('"Let G be the centroid of triangle ABC" → centroid', () => {
+    const i = find('Triangle ABC. Let G be the centroid of triangle ABC', 'centroid');
+    expect(i).toBeDefined();
+    expect(i.name).toBe('G');
+    expect(i.constraint).toEqual({ kind: 'centroid', of: ['A', 'B', 'C'] });
+  });
+
+  // --- name AFTER the keyword ("centroid G") --------------------------------
+  it('"centroid G" (name after keyword) → centroid', () => {
+    const i = find('Triangle ABC. Mark the centroid G of triangle ABC', 'centroid');
+    expect(i).toBeDefined();
+    expect(i.name).toBe('G');
+    expect(i.constraint.of).toEqual(['A', 'B', 'C']);
+  });
+
+  it('"orthocenter H" (name after keyword) → orthocenter', () => {
+    const i = find('Triangle ABC. Draw the orthocenter H of triangle ABC', 'orthocenter');
+    expect(i).toBeDefined();
+    expect(i.name).toBe('H');
+    expect(i.constraint.of).toEqual(['A', 'B', 'C']);
+  });
+
+  // --- in-clause triangle binding (not the head-of-problem triangle) --------
+  it('"centroid of triangle DEF" (problem also has ABC) → of [D,E,F]', () => {
+    const i = find('Triangle ABC and triangle DEF. G is the centroid of triangle DEF', 'centroid');
+    expect(i).toBeDefined();
+    expect(i.name).toBe('G');
+    expect(i.constraint).toEqual({ kind: 'centroid', of: ['D', 'E', 'F'] });
+  });
+
+  // --- unique-problem-triangle fallback -------------------------------------
+  it('clause without triangle + problem has exactly 1 triangle → fallback', () => {
+    const i = find('Triangle ABC. Let G be the centroid', 'centroid');
+    expect(i).toBeDefined();
+    expect(i.constraint.of).toEqual(['A', 'B', 'C']);
+  });
+
+  // --- multiple centers in one clause → emit both ---------------------------
+  it('"G is the centroid and H is the orthocenter" → emit both', () => {
+    const all = intents(
+      'Triangle ABC. G is the centroid and H is the orthocenter of triangle ABC',
+    );
+    const g = all.find((i) => i.constraint?.kind === 'centroid');
+    const h = all.find((i) => i.constraint?.kind === 'orthocenter');
+    expect(g?.name).toBe('G');
+    expect(h?.name).toBe('H');
+    expect(g.constraint.of).toEqual(['A', 'B', 'C']);
+    expect(h.constraint.of).toEqual(['A', 'B', 'C']);
+  });
+
+  // --- fail-safe (escalate instead of guessing) -----------------------------
+  it('no triangle anywhere → no match', () => {
+    expect(run('G is the centroid')).toEqual([]);
+  });
+
+  it('ambiguous: clause without triangle + problem has >1 triangle → no emit', () => {
+    expect(
+      find('Triangle ABC and triangle DEF. G is the centroid', 'centroid'),
+    ).toBeUndefined();
+  });
+
+  it('name missing ("the centroid of triangle ABC", no point name) → no emit', () => {
+    expect(
+      find('Triangle ABC. Draw the centroid of triangle ABC', 'centroid'),
+    ).toBeUndefined();
+  });
+
+  // --- VN regression: EN triangle detection must not corrupt VN -------------
+  it('VN still binds via "tam giác" (EN triangle regex additive)', () => {
+    const i = find('Gọi G là trọng tâm tam giác ABC', 'centroid');
+    expect(i).toBeDefined();
+    expect(i.constraint).toEqual({ kind: 'centroid', of: ['A', 'B', 'C'] });
+  });
+});

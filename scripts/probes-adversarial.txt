@@ -143,3 +143,12 @@ Draw the radical axis of two circles.
 # (b) geo-clause không rule nào claim ("diameter"/"circle" → geo nhưng vô chủ) →
 # escalate (incomplete-coverage), không render thiếu hình.
 Triangle ABC. The diameter of the circle is AB.
+
+# === EN centers (issue #46 group B) ===
+# Tâm tam giác tiếng Anh (centroid/orthocenter/circumcenter/incenter). PHẢI DET OK,
+# bind of=[A,B,C] qua tam giác trong clause hoặc fallback tam giác duy nhất.
+Triangle ABC. G is the centroid of triangle ABC.
+Triangle ABC. Let H be the orthocenter of triangle ABC.
+# Escalate-safe: "centroid" là geo nhưng KHÔNG có tam giác nào để bind of →
+# không claim → escalate (KHÔNG bịa tam giác).
+G is the centroid.

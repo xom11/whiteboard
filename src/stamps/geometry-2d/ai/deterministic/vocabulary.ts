@@ -58,6 +58,16 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   'centre',
   'equilateral',
   'isosceles',
+  // Triangle centers (issue #46 group B). "orthocenter"/"circumcenter"/
+  // "incenter" already contain "center" (already a keyword) — but list all four
+  // explicitly for clarity + robustness. British -centre spellings included.
+  'centroid',
+  'orthocenter',
+  'orthocentre',
+  'circumcenter',
+  'circumcentre',
+  'incenter',
+  'incentre',
 ];
 
 export function countGeometryKeywords(text: string): number {
