@@ -13,6 +13,7 @@
 import type { DslInputT } from '../dsl/schema';
 import type { IntentT } from './intent';
 import { repairCircleIntersections } from './repairCircleIntersections';
+import { layoutDisjointComponents } from './layout/disjointOffset';
 import { newState } from './intent-builders/_types';
 import { OP_BUILDERS } from './intent-builders/registry';
 
@@ -27,5 +28,7 @@ export function intentsToDsl(intents: readonly IntentT[]): DslInputT {
   // Geometric repair: đảm bảo circle dùng cho circleIntersection thực sự cắt
   // nhau 2 điểm (dời center auto-inject nếu tiếp xúc/rời nhau).
   repairCircleIntersections(s.points, s.shapes);
+  // Layout: tách các component RỜI NHAU theo trục ngang (không chồng origin).
+  layoutDisjointComponents(s.points, s.shapes);
   return { version: 1, points: s.points, shapes: s.shapes };
 }
