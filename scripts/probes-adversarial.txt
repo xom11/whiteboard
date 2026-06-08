@@ -421,3 +421,10 @@ Cho tam giác ABC. Vẽ đường tròn chín điểm của tam giác ABC.
 Cho tam giác ABC. Vẽ đường tròn Euler của tam giác ABC.
 # Escalate-safe: >1 tam giác (nhập nhằng tam giác nào) → ESCALATE.
 Cho tam giác ABC và tam giác DEF. Vẽ đường tròn chín điểm.
+
+# === ISSUE #46 nhóm D (D1): layout disjoint offset ===
+# RENDER (không chồng): ≥2 hình RỜI NHAU nhãn khác → tách theo trục ngang (gap=2),
+# bbox mỗi component disjoint. Offset chạy SAU gate → classification KHÔNG đổi (fix
+# THỊ GIÁC, không phải escalate→render flip); verify đúng = bbox-disjoint số học (e2e).
+Cho tam giác ABC. Vẽ hình vuông DEFG.
+Cho tam giác ABC và đường tròn tâm O bán kính 3.
