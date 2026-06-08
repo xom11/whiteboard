@@ -20,6 +20,7 @@ import { arcMidpointRule } from './arcMidpoint';
 import { reflectionRule } from './reflection';
 import { pointAtDistanceRule } from './pointAtDistance';
 import { eulerLineRule } from './eulerLine';
+import { radicalAxisRule } from './radicalAxis';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -39,6 +40,7 @@ const RULES: readonly LanguageRule[] = [
   reflectionRule,
   pointAtDistanceRule,
   eulerLineRule,
+  radicalAxisRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */

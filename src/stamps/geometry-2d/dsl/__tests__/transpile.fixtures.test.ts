@@ -13,6 +13,7 @@ import { fixture as twoCirclesIntersect } from '../fixtures/two-circles-intersec
 import { fixture as angleBisector } from '../fixtures/triangle-angle-bisector';
 import { fixture as extendChordBcRadius } from '../fixtures/extend-chord-bc-radius';
 import { fixture as eulerLine } from '../fixtures/euler-line';
+import { fixture as radicalAxis } from '../fixtures/radical-axis';
 
 const ALL = [
   ['triangle-equilateral', equilateral, 4],
@@ -27,6 +28,7 @@ const ALL = [
   ['two-circles-intersect', twoCirclesIntersect, 8],
   ['extend-chord-bc-radius', extendChordBcRadius, 6],
   ['euler-line', eulerLine, 8],
+  ['radical-axis', radicalAxis, 5],
 ] as const;
 
 describe('fixture transpile happy paths', () => {

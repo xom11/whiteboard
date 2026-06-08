@@ -183,7 +183,7 @@ export const DrawCircleIntentZ = z.object({
 export const DrawLineIntentZ = z.object({
   op: z.literal('draw-line'),
   name: LabelZ,
-  kind: z.enum(['perpThrough', 'parallelThrough', 'tangentAt', 'tangentFromExt', 'angleBisector', 'lineThrough']),
+  kind: z.enum(['perpThrough', 'parallelThrough', 'tangentAt', 'tangentFromExt', 'angleBisector', 'lineThrough', 'radicalAxis']),
   through: LabelZ.optional(),
   to: LabelZ.optional(),
   from: LabelZ.optional(),
@@ -191,6 +191,9 @@ export const DrawLineIntentZ = z.object({
   which: z.enum(['first', 'second', 'both']).optional(),
   // lineThrough (đường qua ≥2 điểm đồng tuyến — vd Euler line G/H/O, issue #47).
   points: z.array(LabelZ).optional(),
+  // radicalAxis (trục đẳng phương 2 đường tròn — issue #47, construct 2).
+  circle1: LabelZ.optional(),
+  circle2: LabelZ.optional(),
   // angleBisector (phân giác TRONG của góc ∠p1·vertex·p2, VISIBLE, không foot —
   // Issue #46 nhóm A). vertex = đỉnh góc.
   p1: LabelZ.optional(),

@@ -25,6 +25,11 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   // mention Euler chưa được claim (suy biến tam giác đều, hoặc đường tròn Euler
   // 9 điểm defer) → escalate fail-safe thay vì silent render-nothing.
   'euler',
+  // Trục đẳng phương (issue #47, construct 2). "đẳng phương" (≥10 ký tự, phân
+  // biệt) đánh dấu clause là geo-clause: nếu radicalAxis rule miss (đồng tâm /
+  // ≠2 đường tròn) → clause không phủ → escalate fail-safe (KHÔNG silent
+  // render-nothing). Lowercase vì countGeometryKeywords lowercase input.
+  'đẳng phương',
   // Relations
   'song song', 'vuông góc', 'giao điểm', 'cắt',
   // Ký hiệu (symbol-only phrasing tương đương từ chữ): "⊥" ≡ "vuông góc".

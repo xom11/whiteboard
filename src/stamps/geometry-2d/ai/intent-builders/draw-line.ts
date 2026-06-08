@@ -60,5 +60,13 @@ export const buildDrawLine: IntentBuilder<DrawLineIntentT> = (s, intent) => {
       addShape(s, { name: intent.name, kind: 'lineThrough', points: intent.points });
       break;
     }
+    case 'radicalAxis': {
+      // Trục đẳng phương 2 đường tròn (issue #47, construct 2).
+      if (!intent.circle1 || !intent.circle2) {
+        throw new IntentBuilderError('radicalAxis cần circle1 + circle2', intent);
+      }
+      addShape(s, { name: intent.name, kind: 'radicalAxis', circle1: intent.circle1, circle2: intent.circle2 });
+      break;
+    }
   }
 };

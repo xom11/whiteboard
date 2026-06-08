@@ -90,6 +90,7 @@ export type DslShapeT =
   | { name: Name; kind: 'perpBisector'; p1: Name; p2: Name }
   | { name: Name; kind: 'angleBisector'; p1: Name; vertex: Name; p2: Name }
   | { name: Name; kind: 'lineThrough'; points: Name[] }
+  | { name: Name; kind: 'radicalAxis'; circle1: Name; circle2: Name }
   | { name: Name; kind: 'tangent'; throughPoint: Name; toCircle: Name; branch?: 0 | 1 | 'on' }
   | { name: Name; kind: 'circleCP'; center: Name; surfacePoint: Name; visible?: boolean }
   | { name: Name; kind: 'circle3'; p1: Name; p2: Name; p3: Name }

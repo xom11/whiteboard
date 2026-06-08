@@ -2,6 +2,7 @@
 import { registerKind } from '../registry';
 import type { KindDef } from '../types';
 import { labelOf } from './labelOf';
+import { radicalAxisFoot } from './pointConstructions';
 
 /**
  * Cách dựng đường thẳng phái sinh. Khi `construction` có mặt, `p1`/`p2` ở
@@ -19,6 +20,7 @@ export type LineConstruction =
   | { kind: 'angleBisector'; p1: string; vertex: string; p2: string }
   | { kind: 'angleBisectorLines'; line1: string; line2: string; branch: 0 | 1 }
   | { kind: 'lineThrough'; points: string[] }
+  | { kind: 'radicalAxis'; circle1: string; circle2: string }
   | { kind: 'tangent'; throughPoint: string; toCircle: string; branch?: 0 | 1 | 'on' };
 
 export type LineAttrs = {
@@ -55,6 +57,8 @@ function constructionRefs(c: LineConstruction): string[] {
       return [stripBorderSuffix(c.line1), stripBorderSuffix(c.line2)];
     case 'lineThrough':
       return [...c.points];
+    case 'radicalAxis':
+      return [c.circle1, c.circle2];
     case 'tangent':
       return [c.throughPoint, c.toCircle];
   }
@@ -80,6 +84,7 @@ const def: KindDef<LineAttrs> = {
       case 'angleBisector': return `${obj.label}: phân giác góc ${L(c.p1)}${L(c.vertex)}${L(c.p2)}`;
       case 'angleBisectorLines': return `${obj.label}: phân giác ${L(c.line1)} & ${L(c.line2)} (${c.branch === 0 ? '1' : '2'})`;
       case 'lineThrough':   return `${obj.label}: đường qua ${c.points.map(L).join('')}`;
+      case 'radicalAxis':   return `${obj.label}: trục đẳng phương ${L(c.circle1)} & ${L(c.circle2)}`;
       case 'tangent':       return `${obj.label}: tiếp tuyến ${L(c.toCircle)} qua ${L(c.throughPoint)}`;
     }
   },
@@ -181,6 +186,27 @@ const def: KindDef<LineAttrs> = {
         return board.create('line', [pts[bi], pts[bj]], {
           ...baseOpts, straightFirst: true, straightLast: true,
         });
+      }
+      case 'radicalAxis': {
+
+        const k1 = ctx.resolveRef(c.circle1) as any;
+
+        const k2 = ctx.resolveRef(c.circle2) as any;
+        const o1 = (): [number, number] => [k1.center.X(), k1.center.Y()];
+        const o2 = (): [number, number] => [k2.center.X(), k2.center.Y()];
+        const foot = () => radicalAxisFoot(o1(), k1.Radius(), o2(), k2.Radius());
+        const hide = { visible: false, withLabel: false, fixed: true, name: '' };
+        const f1 = board.create('point', [() => foot()[0], () => foot()[1]], hide);
+        // điểm thứ 2 = foot + pháp tuyến của O₁O₂ → đường ⊥ đường nối tâm.
+        const f2 = board.create('point', [
+          () => foot()[0] - (o2()[1] - o1()[1]),
+          () => foot()[1] + (o2()[0] - o1()[0]),
+        ], hide);
+        const line = board.create('line', [f1, f2], {
+          ...baseOpts, straightFirst: true, straightLast: true,
+        });
+        (line as Record<string, unknown>)._helpers = [f1, f2];
+        return line;
       }
       case 'tangent': {
 

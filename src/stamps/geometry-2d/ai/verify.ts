@@ -106,7 +106,9 @@ function intentKey(intent: IntentT): string {
         'draw-line', intent.name, intent.kind,
         intent.through ?? '', intent.to ?? '', intent.from ?? '', intent.circle ?? '', intent.which ?? '',
       ].join('/');
-      return intent.kind === 'lineThrough' ? `${base}/${(intent.points ?? []).join('+')}` : base;
+      if (intent.kind === 'lineThrough') return `${base}/${(intent.points ?? []).join('+')}`;
+      if (intent.kind === 'radicalAxis') return `${base}/${intent.circle1 ?? ''}+${intent.circle2 ?? ''}`;
+      return base;
     }
     case 'mark-shape':
       return ['mark-shape', intent.shape, intent.labels.join(',')].join('/');

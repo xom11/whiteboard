@@ -20,6 +20,7 @@ import { parallelModule } from './kinds/lines/parallel';
 import { perpBisectorModule } from './kinds/lines/perpBisector';
 import { angleBisectorModule } from './kinds/lines/angleBisector';
 import { lineThroughModule } from './kinds/lines/lineThrough';
+import { radicalAxisModule } from './kinds/lines/radicalAxis';
 import { tangentModule } from './kinds/lines/tangent';
 import { polygonModule } from './kinds/polygons/polygon';
 import { circleCPModule } from './kinds/circles/circleCP';
@@ -45,7 +46,7 @@ const ALL_MODULES: ReadonlyArray<DslKindModule> = [
   secondIntersectionModule, circleIntersectionModule, tangencyPointModule, tangentPointExtModule,
   segmentModule, lineModule, rayModule,
   perpendicularModule, parallelModule, perpBisectorModule,
-  angleBisectorModule, lineThroughModule, tangentModule,
+  angleBisectorModule, lineThroughModule, radicalAxisModule, tangentModule,
   polygonModule,
   circleCPModule, circle3Module,
   // NEW Tier 4+5 circles

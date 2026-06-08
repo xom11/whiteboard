@@ -169,6 +169,13 @@ function rewriteCircleRefs(intent: IntentT, rename: Map<string, string>): Intent
     if (intent.circle && rename.has(intent.circle)) {
       return { ...intent, circle: rename.get(intent.circle)! };
     }
+    if (intent.kind === 'radicalAxis') {
+      const n1 = intent.circle1 ? rename.get(intent.circle1) : undefined;
+      const n2 = intent.circle2 ? rename.get(intent.circle2) : undefined;
+      if (n1 || n2) {
+        return { ...intent, circle1: n1 ?? intent.circle1, circle2: n2 ?? intent.circle2 };
+      }
+    }
   }
   return intent;
 }

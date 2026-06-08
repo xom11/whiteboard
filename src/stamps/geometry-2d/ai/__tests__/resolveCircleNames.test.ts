@@ -268,6 +268,29 @@ describe('resolveCircleNameCollisions', () => {
     expect(result.find((i) => i.op === 'add-point' && i.name === 'O')).toBeDefined();
   });
 
+  it('rewrite circle ref trong radicalAxis (circle1, circle2) — issue #47 construct 2', () => {
+    // circleRadius dựng circle theo center letter: draw-circle name=O center=O,
+    // name=I center=I (centerRadius). center ref O/I collide → inject free point
+    // + rename circle O→O_c, I→I_c. radicalAxis tham chiếu circle qua name → phải
+    // follow rename.
+    const intents: IntentT[] = [
+      { op: 'draw-circle', name: 'O', spec: 'centerRadius', center: 'O', radius: 3 },
+      { op: 'draw-circle', name: 'I', spec: 'centerRadius', center: 'I', radius: 2 },
+      { op: 'draw-line', name: 'radOI', kind: 'radicalAxis', circle1: 'O', circle2: 'I' },
+    ];
+    const result = resolveCircleNameCollisions(intents);
+
+    // Cả 2 circle rename.
+    const circles = result.filter((i) => i.op === 'draw-circle');
+    expect(circles.map((c) => c.name).sort()).toEqual(['I_c', 'O_c']);
+
+    // radicalAxis refs rewrite sang O_c / I_c.
+    const rad = result.find((i) => i.op === 'draw-line') as
+      | { circle1?: string; circle2?: string } | undefined;
+    expect(rad?.circle1).toBe('O_c');
+    expect(rad?.circle2).toBe('I_c');
+  });
+
   it('point name created bởi draw-shape labels → treated as existing point', () => {
     // Nếu Claude emit draw-shape MNPQ rồi draw-circle M (trùng tên), connect X→M
     const intents: IntentT[] = [

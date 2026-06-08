@@ -83,3 +83,16 @@ export function pointAtDistanceCoord(from: XY, through: XY, d: number): XY {
   const len = Math.hypot(dx, dy) || 1;
   return [through[0] + (d * dx) / len, through[1] + (d * dy) / len];
 }
+
+/**
+ * Chân trục đẳng phương 2 đường tròn (o1,r1),(o2,r2) trên đường nối tâm O₁O₂.
+ * F = O₁ + t·(O₂−O₁), t = (d²+r₁²−r₂²)/(2d²). Đồng tâm (d≈0) → trả o1 (suy biến,
+ * caller escalate trước khi tới đây).
+ */
+export function radicalAxisFoot(o1: XY, r1: number, o2: XY, r2: number): XY {
+  const dx = o2[0] - o1[0], dy = o2[1] - o1[1];
+  const d2 = dx * dx + dy * dy;
+  if (d2 < 1e-12) return o1;
+  const t = (d2 + r1 * r1 - r2 * r2) / (2 * d2);
+  return [o1[0] + t * dx, o1[1] + t * dy];
+}

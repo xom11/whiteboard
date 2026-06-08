@@ -35,6 +35,7 @@ function describeEntity(e: DslPointT | DslShapeT): string {
     case 'perpBisector':  return `${e.name} = trung trực ${e.p1}${e.p2}`;
     case 'angleBisector': return `${e.name} = phân giác ∠${e.p1}${e.vertex}${e.p2}`;
     case 'lineThrough':   return `${e.name} = đường qua ${e.points.join('')}`;
+    case 'radicalAxis':   return `${e.name} = trục đẳng phương ${e.circle1} & ${e.circle2}`;
     case 'tangent': {
       const branch = 'branch' in e && e.branch !== undefined ? ` (nhánh ${e.branch})` : '';
       return `${e.name} = tiếp tuyến ${e.toCircle} qua ${e.throughPoint}${branch}`;

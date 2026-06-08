@@ -387,3 +387,16 @@ Cho tam giác đều ABC. Vẽ đường thẳng Euler.
 # — KHÔNG bị Euler-LINE rule claim (regex yêu cầu "thẳng"/"đường Euler", loại "tròn");
 # vocab "euler" làm clause thành geo-clause → unclaimed → ESCALATE (fail-safe).
 Cho tam giác ABC. Vẽ đường tròn Euler.
+
+# === ISSUE #47 construct 2: trục đẳng phương (radical axis) ===
+# RENDER-WIN: 2 đường tròn (O;3),(I;2) → trục ⊥ O I, qua điểm power bằng nhau.
+# OPS: 2× draw-circle/centerRadius + draw-line/radicalAxis (circle-derived line).
+Cho hai đường tròn (O; 3) và (I; 2). Vẽ trục đẳng phương của chúng.
+Cho hai đường tròn (O; 4) và (I; 1). Vẽ trục đẳng phương của hai đường tròn.
+# Escalate-safe SUY BIẾN: 2 đường tròn ĐỒNG TÂM (cùng tâm O) → |O₁O₂|=0 → trục
+# không xác định. circleRadius addShape idempotent → 1 circle 'O'; rule thấy 1
+# tâm phân biệt ≠ 2 → KHÔNG emit → clause "đẳng phương" (geo) unclaimed → ESCALATE.
+Cho hai đường tròn đồng tâm (O; 3) và (O; 5). Vẽ trục đẳng phương.
+# Escalate-safe: chỉ 1 đường tròn → cần đúng 2 → rule không emit → ESCALATE
+# (clause "đẳng phương" có vocab → geo unclaimed → fail-safe, không render lung tung).
+Cho đường tròn (O; 3). Vẽ trục đẳng phương.
