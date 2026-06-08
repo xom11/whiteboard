@@ -201,9 +201,23 @@ Cho đường tròn (O; 3). Lấy điểm A nằm ngoài (O). Vẽ hai tiếp tu
 Cho đường tròn (O; 3). Lấy điểm A ở ngoài đường tròn (O). Từ A kẻ hai tiếp tuyến đến (O).
 # DET render: EN "Take a point A outside (O)" + "Draw two tangents from A to (O)".
 Circle (O; 3). Take a point A outside (O). Draw two tangents from A to (O).
-# Escalate-safe: đặt TÊN tiếp điểm "AB, AC" → cần dựng tangentPointExt B,C (DEFER) →
-# escalate (named-missing B,C), KHÔNG render thiếu điểm.
+# === Issue #46 named-tangent-point: đặt TÊN tiếp điểm "tiếp tuyến AB, AC" ===
+# RENDER-WIN cả VN+EN (trước escalate named-missing — DEFER batch9): tiếp điểm B,C
+# dựng qua tangentPointExt (from=A điểm ngoài, which 0/1) + 2 tiếp tuyến. Điểm
+# ngoài A = chữ cái đầu CHUNG của 2 đoạn; circle phải khai báo có bán kính.
+# DET render: VN "Vẽ hai tiếp tuyến AB, AC từ A đến (O)" → +B,C tangentPointExt.
 Cho đường tròn (O; 3). Lấy điểm A nằm ngoài (O). Vẽ hai tiếp tuyến AB, AC từ A đến (O).
+# DET render: VN implicit-from "và" + "(B, C là tiếp điểm)" → +B,C.
+Cho đường tròn (O; 3). Lấy điểm A nằm ngoài (O). Kẻ hai tiếp tuyến AB và AC tới (O) (B, C là các tiếp điểm).
+# DET render: VN inverted "Từ A kẻ hai tiếp tuyến AB, AC đến (O)" → +B,C.
+Cho đường tròn (O; 3). Lấy điểm A ở ngoài đường tròn (O). Từ A kẻ hai tiếp tuyến AB, AC đến (O).
+# DET render: EN explicit-from "Draw two tangents AB, AC from A to (O)" → +B,C.
+Circle (O; 3). Take a point A outside (O). Draw two tangents AB, AC from A to (O).
+# DET render: EN implicit-from "and" "Draw two tangents AB and AC to (O)" → +B,C.
+Circle (O; 3). Take a point A outside (O). Draw two tangents AB and AC to (O).
+# Escalate-safe: 2 đoạn KHÁC điểm ngoài ("AB, CD") → named không fire (A≠C),
+# unnamed cũng không match ("AB, CD" trước circle) → escalate, KHÔNG render sai.
+Cho đường tròn (O; 3). Lấy điểm A nằm ngoài (O). Vẽ hai tiếp tuyến AB, CD từ A đến (O).
 
 # === EN perpFoot (issue #46 nhóm B Tier 2) ===
 # Render-win EN: rule perpFoot +EN (projection / foot-of-perpendicular / draw-form).

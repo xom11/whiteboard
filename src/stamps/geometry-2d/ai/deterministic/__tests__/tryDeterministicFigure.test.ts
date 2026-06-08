@@ -81,11 +81,27 @@ describe('tryDeterministicFigure — điểm ngoài đường tròn + tiếp tuy
     );
   });
 
-  it('ESCALATE-SAFE: đặt TÊN tiếp điểm "Vẽ hai tiếp tuyến AB, AC từ A đến (O)" → ok:false (named-missing B,C — DEFER)', () => {
+  it('RENDER (issue #46 named-tangent-point): đặt TÊN tiếp điểm "Vẽ hai tiếp tuyến AB, AC từ A đến (O)" → B,C tangentPointExt', () => {
     const r = tryDeterministicFigure(
       'Cho đường tròn (O;3). Lấy điểm A nằm ngoài (O). Vẽ hai tiếp tuyến AB, AC từ A đến (O).',
     );
-    expect(r.ok).toBe(false);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const dsl = r.figure.dsl;
+    // B, C là tiếp điểm dựng qua tangentPointExt (from A, 2 nhánh which 0/1).
+    const b = dsl.points.find((p) => p.name === 'B');
+    const c = dsl.points.find((p) => p.name === 'C');
+    expect(b?.kind).toBe('tangentPointExt');
+    expect(c?.kind).toBe('tangentPointExt');
+    if (b?.kind === 'tangentPointExt') expect(b.from).toBe('A');
+    if (c?.kind === 'tangentPointExt') expect(c.from).toBe('A');
+    const whichValues = [b, c]
+      .map((p) => (p?.kind === 'tangentPointExt' ? p.which : undefined))
+      .sort();
+    expect(whichValues).toEqual([0, 1]);
+    // Vẫn giữ 2 tiếp tuyến từ A (branch 0 và 1).
+    const tangents = dsl.shapes.filter((sh) => sh.kind === 'tangent');
+    expect(tangents.length).toBe(2);
   });
 });
 

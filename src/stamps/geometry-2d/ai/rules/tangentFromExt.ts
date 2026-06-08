@@ -12,7 +12,7 @@
 // ("đ","ề","ạ"…). Mọi regex chứa ký tự Việt dùng cờ 'u' + lookaround \p{L}.
 // from / circle là 1 ký tự HOA; name của line default 't' (LabelZ cho phép).
 import type { LanguageRule, RuleMatch } from './_types';
-import { drawLine } from './_shared';
+import { drawLine, addPoint } from './_shared';
 
 // Prefilter toàn đề: phải có "tiếp tuyến".
 const HAS_TANGENT = /tiếp\s*tuyến/u;
@@ -78,6 +78,24 @@ const FROM_INV_EN = new RegExp(
   'u',
 );
 
+// === NAMED tangent points (issue #46) =======================================
+// "Vẽ hai tiếp tuyến AB, AC từ A đến (O)" — B, C LÀ tiếp điểm (named). Khác với
+// nhánh UNNAMED ở trên (regex unnamed FAIL vì "AB, AC" chen giữa "tiếp tuyến" và
+// "từ"). Hai regex dưới bắt 2 đoạn tiếp tuyến + đường tròn trong 1 match.
+//   GROUP INDEX (cả VN & EN): m[1]=chữ đầu đoạn 1 (điểm ngoài x1),
+//     m[2]=tiếp điểm 1 (B), m[3]=chữ đầu đoạn 2 (x2), m[4]=tiếp điểm 2 (C),
+//     m[5]/m[6] = circle (qua CIRCLE_TARGET / CIRCLE_TARGET_EN).
+const NAMED_FROM_VN = new RegExp(
+  String.raw`(?:[Kk]ẻ|[Vv]ẽ)\s+(?:một\s+|hai\s+)?tiếp\s*tuyến\s+([A-Z])([A-Z])\s*(?:,|và)\s*([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?(?:đến|tới|với)\s+` +
+    CIRCLE_TARGET,
+  'u',
+);
+const NAMED_FROM_EN = new RegExp(
+  String.raw`(?:[Dd]raw|[Cc]onstruct)\s+(?:the\s+|two\s+|the\s+two\s+)?tangents?(?:\s+lines?)?\s+([A-Z])([A-Z])\s*(?:,|and)\s*([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?to\s+(?:the\s+)?` +
+    CIRCLE_TARGET_EN,
+  'u',
+);
+
 export const tangentFromExtRule: LanguageRule = {
   id: 'tangentFromExt',
   priority: 65,
@@ -88,6 +106,34 @@ export const tangentFromExtRule: LanguageRule = {
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
+      // === NAMED tangent points (issue #46): "tiếp tuyến AB, AC ... (O)" → dựng
+      // tiếp điểm B,C (tangentPointExt) cộng với 2 tiếp tuyến. from = chữ cái đầu
+      // CHUNG của 2 đoạn (điểm ngoài); tiếp điểm = chữ cái thứ 2 mỗi đoạn.
+      const named = NAMED_FROM_VN.exec(c.text) ?? NAMED_FROM_EN.exec(c.text);
+      if (named) {
+        const from = named[1];
+        const tpB = named[2];
+        const x2 = named[3];
+        const tpC = named[4];
+        const circle = named[5] ?? named[6];
+        // Hợp lệ: cùng điểm ngoài (m1===m3), 2 tiếp điểm phân biệt & khác điểm ngoài.
+        if (
+          circle && from === x2 &&
+          tpB !== from && tpC !== from && tpB !== tpC
+        ) {
+          out.push({
+            ruleId: 'tangentFromExt',
+            clauseIds: [c.id],
+            intents: [
+              drawLine('t', 'tangentFromExt', { from, circle, which: 'both' }),
+              addPoint(tpB, { kind: 'tangentPoint', from, circle, which: 0 }),
+              addPoint(tpC, { kind: 'tangentPoint', from, circle, which: 1 }),
+            ],
+          });
+          continue; // clause handled — skip unnamed path
+        }
+        // not valid named form → fall through to unnamed logic (will likely escalate)
+      }
       // VN trước (FROM_FORM / TU_FORM), giữ nguyên hành vi cũ; EN sau (FROM_FORM_EN
       // / FROM_INV_EN). circle bắt qua 1 trong các alternative capture group.
       const m =
