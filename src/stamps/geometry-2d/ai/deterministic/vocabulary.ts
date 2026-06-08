@@ -36,6 +36,13 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   // fail-safe (KHÔNG silent render-nothing). Lowercase vì countGeometryKeywords
   // lowercase input.
   'simson',
+  // Đường tròn chín điểm / đường tròn Euler (issue #47, construct 4). "chín điểm"
+  // đánh dấu clause là geo-clause: "đường tròn Euler" đã geo qua "đường tròn"/
+  // "euler" sẵn, nhưng "chín điểm" (≥8 ký tự, phân biệt) phủ thêm cách diễn đạt
+  // trần "đường tròn chín điểm" + làm fail-safe tường minh (nếu ninePoint rule
+  // miss vì >1 tam giác → clause không phủ → escalate, KHÔNG silent render-nothing).
+  // Lowercase vì countGeometryKeywords lowercase input.
+  'chín điểm',
   // Relations
   'song song', 'vuông góc', 'giao điểm', 'cắt',
   // Ký hiệu (symbol-only phrasing tương đương từ chữ): "⊥" ≡ "vuông góc".

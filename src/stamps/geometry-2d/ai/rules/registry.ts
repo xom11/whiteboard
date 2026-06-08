@@ -22,6 +22,7 @@ import { pointAtDistanceRule } from './pointAtDistance';
 import { eulerLineRule } from './eulerLine';
 import { radicalAxisRule } from './radicalAxis';
 import { simsonRule } from './simson';
+import { ninePointRule } from './ninePoint';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -43,6 +44,7 @@ const RULES: readonly LanguageRule[] = [
   eulerLineRule,
   radicalAxisRule,
   simsonRule,
+  ninePointRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */

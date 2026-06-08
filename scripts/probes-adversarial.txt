@@ -383,9 +383,9 @@ Cho tam giác ABC. Vẽ đường Euler của tam giác ABC.
 # rule TỪ CHỐI emit → clause "đường thẳng Euler" (geo, có vocab "euler") không
 # được claim → coverage incomplete → ESCALATE (KHÔNG render đường rác qua điểm trùng).
 Cho tam giác đều ABC. Vẽ đường thẳng Euler.
-# Escalate-safe: "đường tròn Euler" = đường tròn chín điểm (nine-point, DEFER #47)
-# — KHÔNG bị Euler-LINE rule claim (regex yêu cầu "thẳng"/"đường Euler", loại "tròn");
-# vocab "euler" làm clause thành geo-clause → unclaimed → ESCALATE (fail-safe).
+# "đường tròn Euler" = đường tròn chín điểm — KHÔNG bị Euler-LINE rule claim (regex
+# yêu cầu "thẳng"/"đường Euler", loại "tròn"). SAU construct 4 (nine-point): render
+# bởi ninePoint rule (DET). Trước construct 4: ESCALATE (vocab "euler" → geo unclaimed).
 Cho tam giác ABC. Vẽ đường tròn Euler.
 
 # === ISSUE #47 construct 2: trục đẳng phương (radical axis) ===
@@ -412,3 +412,12 @@ Cho tam giác ABC nội tiếp đường tròn (O). Vẽ đường thẳng Simso
 Cho tam giác ABC. Vẽ đường thẳng Simson của P.
 # Escalate-safe: >1 tam giác (nhập nhằng dựng circumcircle nào) → ESCALATE.
 Cho tam giác ABC nội tiếp (O) và tam giác DEF. Vẽ đường thẳng Simson của P.
+
+# === ISSUE #47 construct 4: đường tròn chín điểm (nine-point / Euler circle) ===
+# RENDER-WIN: đường tròn qua 3 trung điểm cạnh (= nine-point, bán kính R/2, CŨNG
+# qua 3 chân đường cao). Compose midpoint×3 + circle3 — KHÔNG kind/intent mới,
+# TRÁNH radius-scaling (decision B). OPS: triangle + 3× add-point/midpoint + draw-circle/through3.
+Cho tam giác ABC. Vẽ đường tròn chín điểm của tam giác ABC.
+Cho tam giác ABC. Vẽ đường tròn Euler của tam giác ABC.
+# Escalate-safe: >1 tam giác (nhập nhằng tam giác nào) → ESCALATE.
+Cho tam giác ABC và tam giác DEF. Vẽ đường tròn chín điểm.

@@ -15,6 +15,7 @@ import { fixture as extendChordBcRadius } from '../fixtures/extend-chord-bc-radi
 import { fixture as eulerLine } from '../fixtures/euler-line';
 import { fixture as radicalAxis } from '../fixtures/radical-axis';
 import { fixture as simsonLine } from '../fixtures/simson-line';
+import { fixture as ninePointCircle } from '../fixtures/nine-point-circle';
 
 const ALL = [
   ['triangle-equilateral', equilateral, 4],
@@ -31,6 +32,7 @@ const ALL = [
   ['euler-line', eulerLine, 8],
   ['radical-axis', radicalAxis, 5],
   ['simson-line', simsonLine, 13],
+  ['nine-point-circle', ninePointCircle, 8],
 ] as const;
 
 describe('fixture transpile happy paths', () => {
