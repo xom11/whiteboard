@@ -347,6 +347,12 @@ function serializeLine(obj: SceneObject<LineAttrs>, state: State): SerializedEnt
       return { ok: true, entity };
     }
 
+    case 'lineThrough': {
+      const refs = resolveRefs(c.points, state);
+      if (!refs) return fail('unresolved-ref', c.points.join(','));
+      return { ok: true, entity: { name: obj.label, kind: 'lineThrough', points: refs } };
+    }
+
     case 'angleBisectorLines':
       return fail('unsupported-construction', 'angleBisectorLines');
 

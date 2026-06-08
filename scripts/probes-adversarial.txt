@@ -372,3 +372,18 @@ Triangle ABC. Draw the perpendicular bisector line BC.
 # (segment vocab) NHƯNG transpile-fail (A,B chưa tồn tại) → escalate (fail-safe,
 # KHÔNG render đoạn rác giữa 2 điểm vô định).
 Draw segment AB.
+
+# === ISSUE #47 construct 1: đường thẳng Euler ===
+# RENDER-WIN (flip ESCALATE→DET sau khi implement): tam giác scalene → G,H,O phân
+# biệt + thẳng hàng → lineThrough(G,H,O). OPS: draw-shape/triangle, add-point/
+# centroid, add-point/orthocenter, add-point/circumcenter, draw-line/lineThrough.
+Cho tam giác ABC. Vẽ đường thẳng Euler.
+Cho tam giác ABC. Vẽ đường Euler của tam giác ABC.
+# Escalate-safe SUY BIẾN: tam giác đều → G≡H≡O → đường Euler không xác định →
+# rule TỪ CHỐI emit → clause "đường thẳng Euler" (geo, có vocab "euler") không
+# được claim → coverage incomplete → ESCALATE (KHÔNG render đường rác qua điểm trùng).
+Cho tam giác đều ABC. Vẽ đường thẳng Euler.
+# Escalate-safe: "đường tròn Euler" = đường tròn chín điểm (nine-point, DEFER #47)
+# — KHÔNG bị Euler-LINE rule claim (regex yêu cầu "thẳng"/"đường Euler", loại "tròn");
+# vocab "euler" làm clause thành geo-clause → unclaimed → ESCALATE (fail-safe).
+Cho tam giác ABC. Vẽ đường tròn Euler.

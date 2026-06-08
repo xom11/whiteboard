@@ -69,6 +69,7 @@ export const CONSTRUCT_MANIFEST: ConstructEntry[] = [
   // ghi path foot (đại diện); path góc resolve qua 'draw-line'/'angleBisectorAngle'.
   { dslKind: 'angleBisector',      sceneKind: 'line',    intentKey: 'angleBisectorFoot',  toolKey: 'angleBisector',  ruleId: 'cevian',         serialize: true,  evalFixture: null },
   { dslKind: 'tangent',            sceneKind: 'tangent', intentKey: 'draw-line',          toolKey: 'tangent',        ruleId: 'tangentFromExt', serialize: true,  evalFixture: null },
+  { dslKind: 'lineThrough',        sceneKind: 'line',    intentKey: 'draw-line',          toolKey: null,             ruleId: 'eulerLine',      serialize: true,  evalFixture: 'src/stamps/geometry-2d/dsl/fixtures/euler-line.ts' },
 
   // ── polygons ────────────────────────────────────────────────────────────────
   { dslKind: 'polygon',            sceneKind: 'polygon', intentKey: 'draw-shape',         toolKey: 'square',         ruleId: 'triangle',       serialize: true,  evalFixture: null },

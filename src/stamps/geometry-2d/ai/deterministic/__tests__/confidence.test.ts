@@ -7,7 +7,8 @@ describe('scoreConfidence', () => {
   });
 
   test('partial coverage → fraction', () => {
-    const c = scoreConfidence('tam giác ABC, đường tròn Euler', ['triangle']);
+    // 2 keyword hình học (tam giác + đường tròn), chỉ 1 được matched → 0.5.
+    const c = scoreConfidence('tam giác ABC, đường tròn (O)', ['triangle']);
     expect(c).toBeCloseTo(0.5, 2);
   });
 

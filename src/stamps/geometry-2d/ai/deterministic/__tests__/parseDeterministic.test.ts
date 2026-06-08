@@ -21,7 +21,8 @@ describe('parseDeterministic', () => {
   });
 
   test('threshold override 0.5 lets through partial coverage', () => {
-    const r = parseDeterministic('vẽ đường tròn Euler của tam giác ABC', { threshold: 0.5 });
+    // 2 keyword (tam giác + đường tròn), chỉ triangle matched → conf 0.5.
+    const r = parseDeterministic('vẽ đường tròn của tam giác ABC', { threshold: 0.5 });
     expect(r.ok).toBe(true);
   });
 

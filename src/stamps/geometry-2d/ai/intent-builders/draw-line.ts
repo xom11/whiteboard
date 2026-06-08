@@ -52,5 +52,13 @@ export const buildDrawLine: IntentBuilder<DrawLineIntentT> = (s, intent) => {
       });
       break;
     }
+    case 'lineThrough': {
+      // Đường qua ≥2 điểm đồng tuyến (vd Euler line qua G/H/O — issue #47).
+      if (!intent.points || intent.points.length < 2) {
+        throw new IntentBuilderError('lineThrough cần ≥2 điểm', intent);
+      }
+      addShape(s, { name: intent.name, kind: 'lineThrough', points: intent.points });
+      break;
+    }
   }
 };

@@ -19,6 +19,7 @@ import { externalPointRule } from './externalPoint';
 import { arcMidpointRule } from './arcMidpoint';
 import { reflectionRule } from './reflection';
 import { pointAtDistanceRule } from './pointAtDistance';
+import { eulerLineRule } from './eulerLine';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -37,6 +38,7 @@ const RULES: readonly LanguageRule[] = [
   arcMidpointRule,
   reflectionRule,
   pointAtDistanceRule,
+  eulerLineRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */

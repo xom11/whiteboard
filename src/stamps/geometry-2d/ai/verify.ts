@@ -101,11 +101,13 @@ function intentKey(intent: IntentT): string {
       if (intent.spec === 'inscribedIn')   return `draw-circle/${intent.name}/inscribedIn/${intent.triangle?.join(',') ?? ''}`;
       return `draw-circle/${intent.name}/${(intent as any).spec}`;
     }
-    case 'draw-line':
-      return [
+    case 'draw-line': {
+      const base = [
         'draw-line', intent.name, intent.kind,
         intent.through ?? '', intent.to ?? '', intent.from ?? '', intent.circle ?? '', intent.which ?? '',
       ].join('/');
+      return intent.kind === 'lineThrough' ? `${base}/${(intent.points ?? []).join('+')}` : base;
+    }
     case 'mark-shape':
       return ['mark-shape', intent.shape, intent.labels.join(',')].join('/');
   }

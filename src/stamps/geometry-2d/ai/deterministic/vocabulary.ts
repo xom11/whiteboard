@@ -21,6 +21,10 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   // Special lines/circles
   'tiếp tuyến', 'tiếp điểm', 'tiếp xúc',
   'nội tiếp', 'ngoại tiếp',
+  // Euler line (issue #47). Đánh dấu mọi clause "Euler" là geo-clause để
+  // mention Euler chưa được claim (suy biến tam giác đều, hoặc đường tròn Euler
+  // 9 điểm defer) → escalate fail-safe thay vì silent render-nothing.
+  'euler',
   // Relations
   'song song', 'vuông góc', 'giao điểm', 'cắt',
   // Ký hiệu (symbol-only phrasing tương đương từ chữ): "⊥" ≡ "vuông góc".

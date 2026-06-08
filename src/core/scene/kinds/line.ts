@@ -18,6 +18,7 @@ export type LineConstruction =
   | { kind: 'perpBisector'; p1: string; p2: string }
   | { kind: 'angleBisector'; p1: string; vertex: string; p2: string }
   | { kind: 'angleBisectorLines'; line1: string; line2: string; branch: 0 | 1 }
+  | { kind: 'lineThrough'; points: string[] }
   | { kind: 'tangent'; throughPoint: string; toCircle: string; branch?: 0 | 1 | 'on' };
 
 export type LineAttrs = {
@@ -52,6 +53,8 @@ function constructionRefs(c: LineConstruction): string[] {
       return [c.p1, c.vertex, c.p2];
     case 'angleBisectorLines':
       return [stripBorderSuffix(c.line1), stripBorderSuffix(c.line2)];
+    case 'lineThrough':
+      return [...c.points];
     case 'tangent':
       return [c.throughPoint, c.toCircle];
   }
@@ -76,6 +79,7 @@ const def: KindDef<LineAttrs> = {
       case 'perpBisector':  return `${obj.label}: trung trực ${L(c.p1)}${L(c.p2)}`;
       case 'angleBisector': return `${obj.label}: phân giác góc ${L(c.p1)}${L(c.vertex)}${L(c.p2)}`;
       case 'angleBisectorLines': return `${obj.label}: phân giác ${L(c.line1)} & ${L(c.line2)} (${c.branch === 0 ? '1' : '2'})`;
+      case 'lineThrough':   return `${obj.label}: đường qua ${c.points.map(L).join('')}`;
       case 'tangent':       return `${obj.label}: tiếp tuyến ${L(c.toCircle)} qua ${L(c.throughPoint)}`;
     }
   },
@@ -161,8 +165,25 @@ const def: KindDef<LineAttrs> = {
         (selected as Record<string, unknown>)._helpers = [other];
         return selected;
       }
+      case 'lineThrough': {
+        const pts = c.points.map((id) => ctx.resolveRef(id) as any);
+        // Chọn 2 điểm xa nhau nhất (ổn định số học; mọi điểm đồng tuyến nên đường
+        // qua 2 điểm bất kỳ là như nhau, nhưng cặp xa nhất tránh suy biến gần-trùng).
+        let bi = 0, bj = 1, best = -1;
+        for (let i = 0; i < pts.length; i++) {
+          for (let j = i + 1; j < pts.length; j++) {
+            const dx = pts[i].X() - pts[j].X();
+            const dy = pts[i].Y() - pts[j].Y();
+            const d = dx * dx + dy * dy;
+            if (d > best) { best = d; bi = i; bj = j; }
+          }
+        }
+        return board.create('line', [pts[bi], pts[bj]], {
+          ...baseOpts, straightFirst: true, straightLast: true,
+        });
+      }
       case 'tangent': {
-         
+
         const through = ctx.resolveRef(c.throughPoint) as any;
          
         const toCircle = ctx.resolveRef(c.toCircle) as any;
