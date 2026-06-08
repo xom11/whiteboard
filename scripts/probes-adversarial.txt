@@ -287,3 +287,29 @@ Triangle ABC. Quadrilateral ABCD is inscribed in circle (O).
 # Escalate-safe: 5 đỉnh "ABCDE" → QUAD cần đúng 4 đỉnh → không quad hit → clause geo
 # ("circle"/"quadrilateral") không phủ → escalate (KHÔNG render sai).
 Circle (O) circumscribes quadrilateral ABCDE.
+
+# === EN pointAtDistance (điểm trên tia/đoạn kéo dài, cách mốc khoảng d) (issue #46 nhóm B Tier 2) ===
+# FIX SILENT-INCOMPLETE EN: rule pointAtDistance +EN (mirror VN tia đối/kéo dài).
+# VN render OK ("Trên tia đối của tia BA lấy D sao cho BD = …"). Trước fix đề EN
+# render TRIANGLE-ONLY — clause "On ray BA extended beyond A, take D such that
+# AD = AB" thiếu vocab EN ("extend"/"opposite ray") → coi văn xuôi → coverage
+# complete trên tam giác, âm thầm BỎ điểm D (silent-drop). Nay +vocab "extend"/
+# "opposite ray" + EN pattern → clause geo + claim → render đủ D (parity VN).
+# Win lộ ở DÒNG OPS (+add-point/pointAtDistance), KHÔNG render count.
+# DET render: "ray BA extended beyond A" → from=B, through=A; AD=AB segmentLength.
+Triangle ABC. On ray BA extended beyond A, take D such that AD = AB.
+# DET render: "ray AB extended beyond B" → from=A, through=B; BD=5 literal.
+Triangle ABC. On ray AB extended beyond B, take D such that BD = 5.
+# DET render: "Extend AB beyond B to D" (đoạn, không "ray") → from=A, through=B.
+Triangle ABC. Extend AB beyond B to D such that BD = AB.
+# DET render: "opposite ray of ray BA" → mirror VN tia đối: from=A, through=B.
+Triangle ABC. On the opposite ray of ray BA, take D such that BD = AB.
+# DET render: distance "= R" (circleRadius) resolve circle O từ "(O; 3)"; cần A,B
+# từ tam giác nội tiếp (circleTriangle EN) → triangle + through3 + D.
+Triangle ABC inscribed in circle (O; 3). On ray AB extended beyond B, take D such that BD = R.
+# Escalate-safe: thiếu cụm khoảng cách "= …" → pointAtDistance không dựng D được;
+# clause geo ("extend") không phủ → escalate (KHÔNG silent-drop D, KHÔNG render sai).
+Triangle ABC. On ray BA extended beyond A, take D.
+# Escalate-safe: "beyond C" ≠ chữ thứ 2 của "ray BA" (A) → RAY_EXTENDED validation
+# (Z===Y) fail → hướng không xác định → escalate (chống dựng sai hướng).
+Triangle ABC. On ray BA extended beyond C, take D such that CD = 5.

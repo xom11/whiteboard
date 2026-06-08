@@ -91,6 +91,15 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   // tăng count, không đổi hành vi.
   'perpendicular',
   'projection',
+  // pointAtDistance EN (issue #46 group B). Clause "On ray BA extended beyond A,
+  // take D such that AD = AB" / "Extend AB beyond B to D ..." / "On the opposite
+  // ray of ray BA, take D ..." → mark geo-clause. "extend" (indexOf also matches
+  // "extended"/"extending") + the phrase "opposite ray" (geometry-specific). If
+  // the rule misses a malformed clause → geo-clause unclaimed → escalate
+  // (fail-safe), NOT silent-drop of point D. No harmful substring collision with
+  // any existing VN/EN keyword.
+  'extend',
+  'opposite ray',
 ];
 
 export function countGeometryKeywords(text: string): number {

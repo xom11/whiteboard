@@ -248,3 +248,81 @@ describe('pointAtDistanceRule', () => {
     expect(i.constraint.distance).toEqual({ kind: 'circleRadius', circle: 'O', offset: -5 });
   });
 });
+
+describe('pointAtDistanceRule — EN (issue #46 group B)', () => {
+  it('"On ray BA extended beyond A, take D such that AD = AB." → from=B, through=A, segmentLength', () => {
+    const m = run('On ray BA extended beyond A, take D such that AD = AB.');
+    expect(m.length).toBe(1);
+    const i = constraint(m);
+    expect(i.name).toBe('D');
+    expect(i.constraint.kind).toBe('pointAtDistance');
+    // ray BA extended beyond A: from=B(1st), through=A(2nd) — extend past far end A.
+    expect(i.constraint.from).toBe('B');
+    expect(i.constraint.through).toBe('A');
+    expect(i.constraint.distance).toEqual({ kind: 'segmentLength', p1: 'A', p2: 'B' });
+    expect(m[0].clauseIds.length).toBe(1);
+  });
+
+  it('"On ray AB extended beyond B, take D such that BD = 5." → from=A, through=B, literal 5', () => {
+    const m = run('On ray AB extended beyond B, take D such that BD = 5.');
+    expect(m.length).toBe(1);
+    const i = constraint(m);
+    expect(i.name).toBe('D');
+    expect(i.constraint.from).toBe('A');
+    expect(i.constraint.through).toBe('B');
+    expect(i.constraint.distance).toEqual({ kind: 'literal', value: 5 });
+  });
+
+  it('"Extend AB beyond B to D such that BD = AB." → from=A, through=B, segmentLength, name=D', () => {
+    const m = run('Extend AB beyond B to D such that BD = AB.');
+    expect(m.length).toBe(1);
+    const i = constraint(m);
+    expect(i.name).toBe('D');
+    expect(i.constraint.from).toBe('A');
+    expect(i.constraint.through).toBe('B');
+    expect(i.constraint.distance).toEqual({ kind: 'segmentLength', p1: 'A', p2: 'B' });
+  });
+
+  it('"On the opposite ray of ray BA, take D such that BD = AB." → from=A, through=B (mirror tia đối)', () => {
+    const m = run('On the opposite ray of ray BA, take D such that BD = AB.');
+    expect(m.length).toBe(1);
+    const i = constraint(m);
+    expect(i.name).toBe('D');
+    // opposite ray of ray BA: from=A(2nd), through=B(1st).
+    expect(i.constraint.from).toBe('A');
+    expect(i.constraint.through).toBe('B');
+    expect(i.constraint.distance).toEqual({ kind: 'segmentLength', p1: 'A', p2: 'B' });
+  });
+
+  it('"Circle (O; 3). On ray AB extended beyond B, take D such that BD = R." → circleRadius {circle:O}', () => {
+    const m = run('Circle (O; 3). On ray AB extended beyond B, take D such that BD = R.');
+    expect(m.length).toBe(1);
+    const i = constraint(m);
+    expect(i.name).toBe('D');
+    expect(i.constraint.from).toBe('A');
+    expect(i.constraint.through).toBe('B');
+    expect(i.constraint.distance).toEqual({ kind: 'circleRadius', circle: 'O' });
+  });
+
+  // --- Escalate-safe (rule emits nothing → pipeline escalates) ---------------
+
+  it('thiếu khoảng cách "On ray BA extended beyond A, take D." → []', () => {
+    expect(run('On ray BA extended beyond A, take D.')).toEqual([]);
+  });
+
+  it('hướng lệch "beyond C" ≠ ray 2nd letter A → RAY_EXTENDED validation fails → []', () => {
+    expect(run('On ray BA extended beyond C, take D such that CD = 5.')).toEqual([]);
+  });
+
+  // --- VN regression guard (VN path unchanged) -------------------------------
+
+  it('VN regression: "Kéo dài AB lấy C sao cho BC = AB." vẫn from=A, through=B, segmentLength', () => {
+    const m = run('Kéo dài AB lấy C sao cho BC = AB.');
+    expect(m.length).toBe(1);
+    const i = constraint(m);
+    expect(i.name).toBe('C');
+    expect(i.constraint.from).toBe('A');
+    expect(i.constraint.through).toBe('B');
+    expect(i.constraint.distance).toEqual({ kind: 'segmentLength', p1: 'A', p2: 'B' });
+  });
+});

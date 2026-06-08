@@ -9,6 +9,10 @@
 //       ⇒ from = A, through = B, điểm mới C nằm NGOÀI B.
 //   - "kéo dài AB (về phía B) lấy C sao cho BC = R"
 //       ⇒ from = A, through = B.
+//   - EN (issue #46 group B):
+//       "On ray XY extended beyond Y, take D such that YD = …" ⇒ from=X, through=Y.
+//       "Extend XY beyond Y to D such that YD = …"            ⇒ from=X, through=Y.
+//       "On the opposite ray of ray XY, take D such that XD …" ⇒ from=Y, through=X.
 //
 // Hướng suy từ thứ tự token (from→through), KHÔNG cần field thừa. Điểm mốc đo
 // khoảng cách (through) trùng đỉnh đầu của cụm "YZ = ..." (Y = through, Z = tên
@@ -57,6 +61,34 @@ function normalizePointName(letter: string, prime: string): string {
 // mà X KHÁC through (vd "kéo dài AB về phía A") → hướng đảo, rule không xử lý
 // đúng (defer) → skip để escalate.
 const VE_PHIA = /về\s+phía\s+([A-Z])(?![A-Za-z])/u;
+
+// === EN (issue #46 group B) ==================================================
+// Additive — KHÔNG đụng building block VN ở trên. Nhãn STRICT [A-Z] (KHÔNG cờ
+// 'i' — sẽ nuốt chữ thường); first-letter flex của verb bằng [Ee]/[Tt]/[Mm]/…
+//
+// EN prefilter (runRules tests `patterns` against whole problem, IGNORING the
+// `languages` field — so an EN regex is REQUIRED here for EN-only problems to
+// reach match()). Broad but match() validates precisely → safe.
+const PREFILTER_EN = /beyond|opposite\s+ray/i;
+
+// "ray XY extended beyond Z" → ray X→Y extended past Z. from=X, through=Y;
+// require Z===Y (you extend past the FAR endpoint). Comma before "extended" ok.
+const RAY_EXTENDED_EN =
+  /ray\s+([A-Z])([A-Z])(?![A-Z])\s*,?\s*extended\s+beyond\s+([A-Z])(?![A-Z])/u;
+// "extend(ed)? (segment|line|side)? XY beyond Z" (no "ray"). from=X, through=Y;
+// require Z===Y.
+const EXTEND_SEG_EN =
+  /[Ee]xtend(?:ed)?\s+(?:segment\s+|line\s+|side\s+)?([A-Z])([A-Z])(?![A-Z])\s+beyond\s+([A-Z])(?![A-Z])/u;
+// "opposite ray of ray XY" → mirror VN tia đối: from=Y(2nd), through=X(1st).
+const OPPOSITE_RAY_EN =
+  /opposite\s+ray\s+of\s+ray\s+([A-Z])([A-Z])(?![A-Z])/u;
+
+// New-point name (EN). "take/mark/choose/pick D" or "to D" (phrasing "extend AB
+// beyond B TO D"). Lookbehind (?<![A-Za-z]) stops "to" matching inside words
+// (into, photo). NO `i` flag — capture is [A-Z]; first-letter flex per verb.
+// group 1 = letter, group 2 = prime (mirror VN TAKE_POINT).
+const TAKE_POINT_EN =
+  /(?<![A-Za-z])(?:[Tt]ake|[Mm]ark|[Cc]hoose|[Pp]ick|to)\s+(?:a\s+|the\s+)?(?:point\s+)?([A-Z])(['′]?)(?![A-Z])/u;
 
 // Cụm chốt mốc + khoảng cách: "BC = R" / "BC = AB" / "BC = 3" / "BC = 2,5 cm".
 // Đỉnh đầu (m[1]) = mốc đo (through); đỉnh sau (m[2]) = điểm mới (Z); m[3] = prime
@@ -184,18 +216,26 @@ function parseDistance(raw: string, problem: string): Distance | undefined {
  * BC = R" → add-point C kind:pointAtDistance. Hướng (from→through) suy từ token
  * cặp + mốc đo (đỉnh đầu cụm "YZ = …"). Không parse đủ (thiếu tên điểm mới /
  * distance không nhận dạng / mốc không khớp) → bỏ qua để escalate AI.
+ *
+ * EN (issue #46 group B) — mirror VN, chỉ chạy khi VN không xác định được hướng:
+ *   "ray XY extended beyond Y, take D such that YD = …"  → from=X, through=Y
+ *   "extend XY beyond Y to D such that YD = …"           → from=X, through=Y
+ *   "opposite ray of ray XY, take D such that XD = …"    → from=Y, through=X
  */
 export const pointAtDistanceRule: LanguageRule = {
   id: 'pointAtDistance',
   priority: 55,
-  languages: ['vi'],
-  patterns: [KEYWORD],
+  languages: ['vi', 'en'],
+  patterns: [KEYWORD, PREFILTER_EN],
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
-      // --- Hướng: from → through (qua token cặp) --------------------------
       let from: string | undefined;
       let through: string | undefined;
+      let name: string | undefined;
+      let isEn = false;
+
+      // --- Hướng VN (from → through) ---
       const doi = TIA_DOI.exec(c.text);
       if (doi) {
         // tia đối của tia BA: B = gốc, A = hướng cũ ⇒ kéo dài về B ⇒ from=A, through=B.
@@ -209,18 +249,45 @@ export const pointAtDistanceRule: LanguageRule = {
           through = kd[2];
         }
       }
-      if (!from || !through) continue;
 
-      // Hướng "về phía X" phải khớp through (đỉnh cuối). Lệch → defer/escalate.
-      const vp = VE_PHIA.exec(c.text);
-      if (vp && vp[1] !== through) continue;
+      if (from && through) {
+        // VN name (GIỮ prime, normalize ′→').
+        const take = TAKE_POINT.exec(c.text);
+        name = take ? normalizePointName(take[1], take[2]) : undefined;
+      } else {
+        // --- EN direction (additive; chỉ khi VN không xác định được hướng) ---
+        const opp = OPPOSITE_RAY_EN.exec(c.text);
+        const ray = RAY_EXTENDED_EN.exec(c.text);
+        const ext = EXTEND_SEG_EN.exec(c.text);
+        if (opp) {
+          // opposite ray of ray XY → mirror VN tia đối: from=Y, through=X.
+          from = opp[2];
+          through = opp[1];
+        } else if (ray && ray[3] === ray[2]) {
+          // ray XY extended beyond Z (Z must = Y): from=X, through=Y.
+          from = ray[1];
+          through = ray[2];
+        } else if (ext && ext[3] === ext[2]) {
+          // extend XY beyond Z (Z must = Y): from=X, through=Y.
+          from = ext[1];
+          through = ext[2];
+        }
+        if (from && through) {
+          isEn = true;
+          const takeEn = TAKE_POINT_EN.exec(c.text);
+          name = takeEn ? normalizePointName(takeEn[1], takeEn[2]) : undefined;
+        }
+      }
 
-      // --- Tên điểm mới (GIỮ prime, normalize ′→') -------------------------
-      const take = TAKE_POINT.exec(c.text);
-      const name = take ? normalizePointName(take[1], take[2]) : undefined;
-      if (!name) continue;
+      if (!from || !through || !name) continue;
 
-      // --- Mốc đo + khoảng cách ("YZ = …") ---------------------------------
+      // VE_PHIA: chỉ VN (EN không có "về phía"). Giữ outcome VN byte-identical.
+      if (!isEn) {
+        const vp = VE_PHIA.exec(c.text);
+        if (vp && vp[1] !== through) continue;
+      }
+
+      // --- Mốc đo + khoảng cách ("YZ = …") — language-agnostic (DIST_CLAUSE) ---
       const dc = DIST_CLAUSE.exec(c.text);
       if (!dc) continue;
       const anchor = dc[1]; // Y = mốc đo (phải trùng through; đỉnh đơn)
