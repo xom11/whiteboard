@@ -152,7 +152,8 @@ function rewriteCircleRefs(intent: IntentT, rename: Map<string, string>): Intent
       c.kind === 'tangencyPoint' ||
       c.kind === 'tangentPoint' ||
       c.kind === 'secondIntersection' ||
-      c.kind === 'externalToCircle'
+      c.kind === 'externalToCircle' ||
+      c.kind === 'onCircle'
     ) {
       const newCircle = rename.get(c.circle);
       if (newCircle) {

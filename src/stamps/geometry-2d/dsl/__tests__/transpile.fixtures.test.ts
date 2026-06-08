@@ -14,6 +14,7 @@ import { fixture as angleBisector } from '../fixtures/triangle-angle-bisector';
 import { fixture as extendChordBcRadius } from '../fixtures/extend-chord-bc-radius';
 import { fixture as eulerLine } from '../fixtures/euler-line';
 import { fixture as radicalAxis } from '../fixtures/radical-axis';
+import { fixture as simsonLine } from '../fixtures/simson-line';
 
 const ALL = [
   ['triangle-equilateral', equilateral, 4],
@@ -29,6 +30,7 @@ const ALL = [
   ['extend-chord-bc-radius', extendChordBcRadius, 6],
   ['euler-line', eulerLine, 8],
   ['radical-axis', radicalAxis, 5],
+  ['simson-line', simsonLine, 13],
 ] as const;
 
 describe('fixture transpile happy paths', () => {

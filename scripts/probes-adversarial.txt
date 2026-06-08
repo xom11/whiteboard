@@ -400,3 +400,15 @@ Cho hai đường tròn đồng tâm (O; 3) và (O; 5). Vẽ trục đẳng phư
 # Escalate-safe: chỉ 1 đường tròn → cần đúng 2 → rule không emit → ESCALATE
 # (clause "đẳng phương" có vocab → geo unclaimed → fail-safe, không render lung tung).
 Cho đường tròn (O; 3). Vẽ trục đẳng phương.
+
+# === ISSUE #47 construct 3: đường thẳng Simson ===
+# RENDER-WIN: P trên đường tròn ngoại tiếp ABC → 3 chân ⊥ xuống BC/CA/AB đồng
+# tuyến. Compose onCircle(P) + perpFoot×3 + lineThrough (tái dùng Euler). OPS:
+# triangle + through3 + add-point/onCircle + 3× add-point/perpFoot + draw-line/lineThrough.
+Cho tam giác ABC nội tiếp đường tròn (O). P là điểm trên (O). Vẽ đường thẳng Simson của P.
+Cho tam giác ABC nội tiếp đường tròn (O). Vẽ đường thẳng Simson của điểm P.
+# Escalate-safe: THIẾU đường tròn ngoại tiếp → không có (O) để đặt P → rule không
+# emit → clause "Simson" (geo, vocab "simson") unclaimed → ESCALATE (fail-safe).
+Cho tam giác ABC. Vẽ đường thẳng Simson của P.
+# Escalate-safe: >1 tam giác (nhập nhằng dựng circumcircle nào) → ESCALATE.
+Cho tam giác ABC nội tiếp (O) và tam giác DEF. Vẽ đường thẳng Simson của P.

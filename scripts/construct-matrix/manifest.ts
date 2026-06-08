@@ -39,7 +39,7 @@ export const CONSTRUCT_MANIFEST: ConstructEntry[] = [
   { dslKind: 'midpoint',           sceneKind: 'point',   intentKey: 'midpoint',           toolKey: 'midpoint',       ruleId: 'midpoint',       serialize: true,  evalFixture: null },
   { dslKind: 'onSegment',          sceneKind: 'point',   intentKey: 'onSegment',          toolKey: 'pointOn',        ruleId: null,             serialize: true,  evalFixture: null },
   { dslKind: 'onLine',             sceneKind: 'point',   intentKey: null,                 toolKey: 'pointOn',        ruleId: null,             serialize: true,  evalFixture: null },
-  { dslKind: 'onCircle',           sceneKind: 'point',   intentKey: null,                 toolKey: 'pointOn',        ruleId: null,             serialize: true,  evalFixture: null },
+  { dslKind: 'onCircle',           sceneKind: 'point',   intentKey: 'onCircle',           toolKey: 'pointOn',        ruleId: 'simson',         serialize: true,  evalFixture: null },
   { dslKind: 'perpFoot',           sceneKind: 'point',   intentKey: 'perpFoot',           toolKey: 'perpFoot',       ruleId: 'perpFoot',       serialize: true,  evalFixture: null },
   { dslKind: 'circumcenter',       sceneKind: 'point',   intentKey: 'circumcenter',       toolKey: 'circumcenter',   ruleId: 'centers',        serialize: true,  evalFixture: null },
   { dslKind: 'incenter',           sceneKind: 'point',   intentKey: 'incenter',           toolKey: 'incenter',       ruleId: 'centers',        serialize: true,  evalFixture: null },

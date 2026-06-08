@@ -30,6 +30,12 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   // ≠2 đường tròn) → clause không phủ → escalate fail-safe (KHÔNG silent
   // render-nothing). Lowercase vì countGeometryKeywords lowercase input.
   'đẳng phương',
+  // Đường thẳng Simson (issue #47, construct 3). "simson" (danh từ riêng phân
+  // biệt) đánh dấu clause là geo-clause: nếu simson rule miss (thiếu đường tròn
+  // ngoại tiếp / >1 tam giác / P trùng đỉnh) → clause không phủ → escalate
+  // fail-safe (KHÔNG silent render-nothing). Lowercase vì countGeometryKeywords
+  // lowercase input.
+  'simson',
   // Relations
   'song song', 'vuông góc', 'giao điểm', 'cắt',
   // Ký hiệu (symbol-only phrasing tương đương từ chữ): "⊥" ≡ "vuông góc".

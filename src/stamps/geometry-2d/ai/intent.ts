@@ -121,6 +121,9 @@ export const AddPointIntentZ = z.object({
     // tâm+bán kính của circle từ build state rồi đặt A free tại coord ngoài
     // circle. Unblock tangentFromExt render (đề "Lấy A ngoài (O), kẻ 2 tiếp tuyến").
     z.object({ kind: z.literal('externalToCircle'), circle: LabelZ }),
+    // Điểm trên đường tròn `circle` tại góc `theta` (mặc định 0) — glider.
+    // Dùng cho đường thẳng Simson (issue #47): P trên đường tròn ngoại tiếp.
+    z.object({ kind: z.literal('onCircle'), circle: LabelZ, theta: z.number().optional() }),
     // NEW Tier 4+5
     z.object({ kind: z.literal('secondIntersection'), line: z.string(), circle: LabelZ, other: LabelZ }),
     z.object({ kind: z.literal('circleIntersection'), c1: LabelZ, c2: LabelZ, which: z.union([z.literal(0), z.literal(1)]) }),
