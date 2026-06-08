@@ -237,3 +237,20 @@ Triangle ABC inscribed in circle (O; 3).
 # Escalate-safe: "circumscribes the figure" KHÔNG có tam giác 3-đỉnh → circleTriangle
 # không claim → clause geo ("circle") không phủ → escalate (KHÔNG render sai).
 Circle (O) circumscribes the figure.
+
+# === EN arcMidpoint (issue #46 nhóm B Tier 2) ===
+# Render-win EN: rule arcMidpoint +EN ("midpoint of arc BC not containing A"). VN
+# tương ứng render OK ("điểm chính giữa cung nhỏ BC không chứa A"). TÁC ĐỘNG: flip
+# ESCALATE→DET thật — trước fix clause "midpoint of arc BC" có keyword "midpoint"
+# (geo-clause) nhưng KHÔNG rule nào claim → incomplete-coverage escalate; nay
+# arcMidpoint EN claim → render đủ M trên cung (parity VN). KHÔNG đụng vocabulary
+# ("midpoint" đã có). Collision midpoint EN không xảy ra ("arc" chữ thường phá [A-Z][A-Z]).
+# DET render: "not containing A" tường minh → arcMidpoint M (a=B,b=C,notContaining=A).
+Triangle ABC is inscribed in circle (O). Let M be the midpoint of arc BC not containing A.
+# DET render: name-before "is" + "the arc" → arcMidpoint M.
+Triangle ABC is inscribed in circle (O). M is the midpoint of the arc BC not containing A.
+# DET render: "minor arc" KHÔNG nêu "not containing" → suy đỉnh thứ 3 tam giác (A).
+Triangle ABC is inscribed in circle (O). Let M be the midpoint of the minor arc BC.
+# Escalate-safe: "major arc" → cung đối, defer (mirror VN "cung lớn") → arcMidpoint
+# không claim → clause geo ("midpoint") không phủ → escalate (KHÔNG render sai).
+Triangle ABC is inscribed in circle (O). Let M be the midpoint of the major arc BC.

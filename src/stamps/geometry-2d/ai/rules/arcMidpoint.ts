@@ -19,6 +19,15 @@
 // Tên điểm qua extractPointName / ký tự HOA trước "(là) điểm chính giữa"; không
 // trích được tên → bỏ qua (đừng bịa tên).
 //
+// EN (issue #46 group B): hỗ trợ thêm các dạng tiếng Anh tương đương —
+//   "Let M be the midpoint of arc BC not containing A"
+//   "M is the midpoint of the (minor) arc BC" (suy notContaining từ "Triangle ABC")
+//   "major arc" → defer (mirror "cung lớn"); "containing X" dương → defer.
+// Tên điểm EN qua "X is/be the midpoint of … arc" (extractPointName là VN-only).
+// Collision midpoint EN (rule prio 50): KHÔNG xảy ra — midpoint EN cần
+// "midpoint of (segment|side)? [A-Z][A-Z]", nhưng sau "of" ở đây là "arc" (chữ
+// thường) → [A-Z] fail → midpoint không grab "BC".
+//
 // GOTCHA \b: \b của JS dựa ASCII word-char nên KHÔNG khớp quanh ký tự Việt
 // ("đ","ề","ạ"…). Mọi regex chứa ký tự Việt dùng cờ 'u' + lookaround \p{L}.
 import type { LanguageRule, RuleMatch } from './_types';
@@ -48,6 +57,24 @@ const TRI = /tam giác\s+([A-Z])([A-Z])([A-Z])/u;
 const CIRCLE_WORDS = /đường\s*tròn\s*(?:\(\s*)?(?:tâm\s+)?([A-Z])(?![A-Z])/u;
 const CIRCLE_PAREN = /\(\s*([A-Z])\s*\)/u;
 
+// === EN patterns (issue #46 group B) =========================================
+// First-letter case-flex [Mm]/[Tt]; KHÔNG cờ 'i' (phá nhãn [A-Z]). Nhãn STRICT
+// [A-Z] + neo (?![A-Za-z]) cuối cặp đỉnh (chặn "BCD" 3 chữ → escalate-safe).
+// Prefilter EN: "midpoint of (the)? (minor|major)? arc".
+const ARC_MID_EN = /[Mm]idpoint\s+of\s+(?:the\s+)?(?:minor\s+|major\s+)?arc/u;
+// Cụm cung + cặp đỉnh EN.
+const ARC_PAIR_EN =
+  /[Mm]idpoint\s+of\s+(?:the\s+)?(?:minor\s+|major\s+)?arc\s+([A-Z])([A-Z])(?![A-Za-z])/u;
+// Tên đứng TRƯỚC: "M is/be the midpoint of arc". (EN không có lời dẫn VN; extractPointName VN-only.)
+const NAME_BEFORE_EN =
+  /([A-Z])(?:['′]?)\s+(?:is|be)\s+the\s+midpoint\s+of\s+(?:the\s+)?(?:minor\s+|major\s+)?arc/u;
+// "not containing (the)? (point|vertex)? X".
+const NOT_CONTAINING_EN = /not\s+containing\s+(?:the\s+)?(?:point\s+|vertex\s+)?([A-Z])(?![A-Za-z])/u;
+// Tam giác EN (suy notContaining khi không nêu "not containing").
+const TRI_EN = /[Tt]riangle\s+([A-Z])([A-Z])([A-Z])(?![A-Za-z])/u;
+// Scope guard: "major arc" → defer (mirror VN "cung lớn").
+const MAJOR_ARC_EN = /major\s+arc/u;
+
 /** Tên đường tròn từ toàn đề; undefined nếu không tìm thấy. */
 function resolveCircle(problem: string): string | undefined {
   const w = CIRCLE_WORDS.exec(problem);
@@ -68,8 +95,8 @@ function resolveCircle(problem: string): string | undefined {
 export const arcMidpointRule: LanguageRule = {
   id: 'arcMidpoint',
   priority: 60,
-  languages: ['vi'],
-  patterns: [ARC_MID],
+  languages: ['vi', 'en'],
+  patterns: [ARC_MID, ARC_MID_EN],
   match(ctx) {
     const circle = resolveCircle(ctx.problem);
     if (!circle) return []; // không có đường tròn → escalate
@@ -109,6 +136,47 @@ export const arcMidpointRule: LanguageRule = {
         notContaining = verts.find((v) => v !== a && v !== b);
       }
       if (!notContaining) continue; // không suy được → bỏ qua
+
+      out.push({
+        ruleId: 'arcMidpoint',
+        clauseIds: [c.id],
+        intents: [addPoint(name, { kind: 'arcMidpoint', circle, a, b, notContaining })],
+      });
+    }
+
+    // --- EN (issue #46 group B) ---------------------------------------------------
+    // Tam giác EN để suy notContaining (đỉnh thứ 3) khi đề không nêu "not containing".
+    const triEnM = TRI_EN.exec(ctx.problem);
+    const triEnVerts = triEnM ? [triEnM[1], triEnM[2], triEnM[3]] : undefined;
+
+    for (const c of ctx.clauses) {
+      if (!ARC_MID_EN.test(c.text)) continue;
+      // Vượt scope (mirror VN): "major arc" → cung đối, defer → escalate.
+      if (MAJOR_ARC_EN.test(c.text)) continue;
+      // "containing X" DƯƠNG (không có "not" trước) → defer → escalate.
+      if (/containing/u.test(c.text) && !/not\s+containing/u.test(c.text)) continue;
+
+      const pairM = ARC_PAIR_EN.exec(c.text);
+      if (!pairM) continue;
+      const pair = pairFromToken(pairM[1] + pairM[2]);
+      if (pair.length !== 2) continue;
+      const [a, b] = pair;
+
+      // Tên điểm: "M is/be the midpoint of arc" (HOA trước). Không có → bỏ qua.
+      const before = NAME_BEFORE_EN.exec(c.text);
+      const name = before ? before[1] : undefined;
+      if (!name) continue;
+
+      // notContaining: "not containing X" tường minh, hoặc đỉnh thứ 3 của tam giác EN.
+      let notContaining: string | undefined;
+      const nc = NOT_CONTAINING_EN.exec(c.text);
+      if (nc) {
+        notContaining = nc[1];
+        if (notContaining === a || notContaining === b) continue; // endpoint cung → vô nghĩa
+      } else if (triEnVerts) {
+        notContaining = triEnVerts.find((v) => v !== a && v !== b);
+      }
+      if (!notContaining) continue;
 
       out.push({
         ruleId: 'arcMidpoint',
