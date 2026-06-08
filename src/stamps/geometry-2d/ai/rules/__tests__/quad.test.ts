@@ -331,13 +331,96 @@ describe('quadRule', () => {
       expect(run('Square ABCDE').length).toBe(0);
     });
 
-    it('EN quadrilateral does NOT trigger cyclic circumscription (VN-only slice)', () => {
-      // "quadrilateral ABCD inscribed in circle (O)" should just draw the quad.
+    it('EN quadrilateral inscribed in circle → concyclic + through3', () => {
+      // "Quadrilateral ABCD inscribed in circle (O)" NAY render đủ circumcircle.
       const m = run('Quadrilateral ABCD inscribed in circle (O)');
       const quad = m.find((x) => (x.intents[0] as any).shape === 'quadrilateral');
       expect(quad).toBeDefined();
-      expect(quad!.intents.length).toBe(1);
-      expect((quad!.intents[0] as any).explicitCoords).toBeUndefined();
+      expect(quad!.intents.length).toBe(2);
+      const shape = quad!.intents[0] as any;
+      const circ = quad!.intents[1] as any;
+      expect(shape.op).toBe('draw-shape');
+      expect(shape.shape).toBe('quadrilateral');
+      expect(shape.labels).toEqual(['A', 'B', 'C', 'D']);
+      expect(shape.explicitCoords).toBeDefined();
+      expect(shape.explicitCoords.A).toEqual([-3, 4]);
+      expect(shape.explicitCoords.B).toEqual([4, 3]);
+      expect(shape.explicitCoords.C).toEqual([3, -4]);
+      expect(shape.explicitCoords.D).toEqual([-4, -3]);
+      expect(circ.op).toBe('draw-circle');
+      expect(circ.spec).toBe('through3');
+      expect(circ.name).toBe('O');
+      expect(circ.points).toEqual(['A', 'B', 'C']);
+    });
+
+    // --- EN cyclic quadrilateral (issue #46 nhóm B Tier 2) ------------------
+    describe('EN cyclic', () => {
+      it('Pattern A "is inscribed in circle (O)" → 2 intents, through3', () => {
+        const m = run('Quadrilateral ABCD is inscribed in circle (O)');
+        const quad = m.find((x) => (x.intents[0] as any).shape === 'quadrilateral');
+        expect(quad).toBeDefined();
+        expect(quad!.intents.length).toBe(2);
+        const shape = quad!.intents[0] as any;
+        const circ = quad!.intents[1] as any;
+        expect(shape.explicitCoords.A).toEqual([-3, 4]);
+        expect(shape.explicitCoords.B).toEqual([4, 3]);
+        expect(shape.explicitCoords.C).toEqual([3, -4]);
+        expect(shape.explicitCoords.D).toEqual([-4, -3]);
+        expect(circ.spec).toBe('through3');
+        expect(circ.name).toBe('O');
+        expect(circ.points).toEqual(['A', 'B', 'C']);
+      });
+
+      it('Pattern A "is inscribed in the circle (O)" → 2 intents', () => {
+        const m = run('Quadrilateral ABCD is inscribed in the circle (O)');
+        const quad = m.find((x) => (x.intents[0] as any).shape === 'quadrilateral');
+        expect(quad).toBeDefined();
+        expect(quad!.intents.length).toBe(2);
+        expect((quad!.intents[1] as any).name).toBe('O');
+      });
+
+      it('Pattern B "Circle (O) circumscribes quadrilateral MNPQ" → 2 intents', () => {
+        const m = run('Circle (O) circumscribes quadrilateral MNPQ');
+        const quad = m.find((x) => (x.intents[0] as any).labels?.join('') === 'MNPQ');
+        expect(quad).toBeDefined();
+        expect(quad!.intents.length).toBe(2);
+        const shape = quad!.intents[0] as any;
+        const circ = quad!.intents[1] as any;
+        expect(shape.explicitCoords.M).toEqual([-3, 4]);
+        expect(shape.explicitCoords.Q).toEqual([-4, -3]);
+        expect(circ.spec).toBe('through3');
+        expect(circ.name).toBe('O');
+      });
+
+      it('Pattern B "circle (O) is circumscribed about quadrilateral MNPQ" → 2 intents through3', () => {
+        const m = run('A circle (O) is circumscribed about quadrilateral MNPQ');
+        const quad = m.find((x) => (x.intents[0] as any).labels?.join('') === 'MNPQ');
+        expect(quad).toBeDefined();
+        expect(quad!.intents.length).toBe(2);
+        expect((quad!.intents[1] as any).spec).toBe('through3');
+        expect((quad!.intents[1] as any).name).toBe('O');
+      });
+
+      it('fail-safe: vertices shared with EN triangle → quad-only (no circle)', () => {
+        // ABCD chia A,B,C với "Triangle ABC" → ownedByOthers chặn concyclic.
+        const m = run('Triangle ABC. Quadrilateral ABCD is inscribed in circle (O)');
+        const quad = m.find((x) => (x.intents[0] as any).labels?.join('') === 'ABCD');
+        expect(quad).toBeDefined();
+        expect(quad!.intents.length).toBe(1);
+        expect((quad!.intents[0] as any).explicitCoords).toBeUndefined();
+      });
+
+      it('escalate-safe: 5 vertices "Circle (O) circumscribes quadrilateral ABCDE" → no quad hit', () => {
+        const m = run('Circle (O) circumscribes quadrilateral ABCDE');
+        expect(m.length).toBe(0);
+      });
+
+      it('regression: plain EN quad "Quadrilateral ABCD" → 1 intent, no explicitCoords', () => {
+        const m = run('Quadrilateral ABCD');
+        expect(m.length).toBe(1);
+        expect(m[0].intents.length).toBe(1);
+        expect((m[0].intents[0] as any).explicitCoords).toBeUndefined();
+      });
     });
 
     it('two EN shapes same clause "square ABCD and rectangle EFGH" → 2 shapes in text order', () => {

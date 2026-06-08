@@ -181,11 +181,18 @@ function scanClause(text: string): Hit[] {
   return claimed;
 }
 
-// --- Tứ giác nội tiếp đường tròn (cyclic quadrilateral) — issue #46 nhóm C ----
+// --- Tứ giác nội tiếp đường tròn (cyclic quadrilateral) — issue #46 nhóm C/B --
 //
 // "Cho tứ giác ABCD nội tiếp đường tròn (O)" hiện chỉ vẽ tứ giác, BỎ đường tròn
 // (render coverage-complete nhưng thiếu hình). Bổ sung đường tròn ngoại tiếp đi
 // qua đúng 4 đỉnh — đặt 4 đỉnh ĐỒNG VIÊN để circle3 thực sự đi qua cả 4.
+//
+// EN (nhóm B Tier 2, fix silent-incomplete): detectCyclic nay nhận thêm các dạng
+// tiếng Anh — Pattern A "(is/are) inscribed in (a/the) circle (O)", Pattern B
+// "circle (O) circumscribes/(is) circumscribed (about/around) ...". Trước đây đề
+// EN render quad-ONLY (rớt circle âm thầm); nay parity VN (quad concyclic +
+// through3). TRIANGLE_DECL cũng nhận "Triangle ABC" để fail-safe ownedByOthers
+// chặn silent-wrong khi tứ giác EN chia đỉnh với tam giác EN.
 //
 // KIẾN TRÚC single-emitter: quadRule LÀ emitter DUY NHẤT của draw-shape cho tứ
 // giác. Khi phát hiện ngữ cảnh nội tiếp, CHÍNH rule này emit draw-shape (với
@@ -208,20 +215,23 @@ const CENTER = '(?:\\(\\s*([A-Z])\\s*\\)|tâm\\s+([A-Z]))?';
 // Pattern A — tứ giác nội tiếp đường tròn: "ABCD nội tiếp (trong) đường tròn
 // (O)/tâm O". Neo ^ vào phần text NGAY SAU 4 đỉnh (hit.afterEnd). Center group 1|2.
 const QUAD_INSCRIBED_IN_CIRCLE = new RegExp(
-  '^[\\s,]*nội\\s*tiếp\\s+(?:trong\\s+)?(?:một\\s+)?đường\\s*tròn\\s*' + CENTER,
+  '^[\\s,]*(?:nội\\s*tiếp\\s+(?:trong\\s+)?(?:một\\s+)?đường\\s*tròn|(?:is\\s+|are\\s+)?inscribed\\s+in\\s+(?:a\\s+|the\\s+)?circle)\\s*' +
+    CENTER,
   'iu',
 );
 
 // Pattern B — đường tròn ngoại tiếp tứ giác: "đường tròn (O)/tâm O ngoại tiếp"
 // đứng NGAY TRƯỚC "tứ giác ABCD". Neo $ vào phần text TRƯỚC hit.index. Center 1|2.
 const CIRCLE_CIRCUMSCRIBES_QUAD = new RegExp(
-  'đường\\s*tròn\\s*' + CENTER + '\\s*ngoại\\s*tiếp\\s+$',
+  '(?:đường\\s*tròn|circle)\\s*' +
+    CENTER +
+    '\\s*(?:ngoại\\s*tiếp|(?:is\\s+|are\\s+)?circumscrib(?:es|ed)(?:\\s+(?:about|around))?)\\s+$',
   'iu',
 );
 
 // Khai báo tam giác bất kỳ trong đề — 3 đỉnh HOA của nó "thuộc" tam giác (không
 // được dời sang toạ độ đồng viên của tứ giác). Cờ 'g' để quét mọi khai báo.
-const TRIANGLE_DECL = /tam\s*giác\s+([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
+const TRIANGLE_DECL = /(?:tam\s*giác|[Tt]riangle)\s+([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
 
 /**
  * Tập ký tự đỉnh "thuộc về hình khác" trong TOÀN đề: mọi đỉnh tam giác + đỉnh

@@ -254,3 +254,22 @@ Triangle ABC is inscribed in circle (O). Let M be the midpoint of the minor arc 
 # Escalate-safe: "major arc" → cung đối, defer (mirror VN "cung lớn") → arcMidpoint
 # không claim → clause geo ("midpoint") không phủ → escalate (KHÔNG render sai).
 Triangle ABC is inscribed in circle (O). Let M be the midpoint of the major arc BC.
+
+# === EN cyclic-quad (tứ giác nội tiếp đường tròn) (issue #46 nhóm B Tier 2) ===
+# FIX SILENT-INCOMPLETE EN: detectCyclic mở rộng sang EN (Pattern A "inscribed in
+# circle (O)", Pattern B "circle (O) circumscribes"). VN render OK (quad concyclic
+# + through3). Trước fix đề EN render quad-ONLY (rớt đường tròn âm thầm); nay parity
+# VN. Win lộ ở DÒNG OPS (+draw-circle/through3), KHÔNG render count (đã render
+# quad-only). KHÔNG đụng vocab ("quadrilateral"+"circle" đã có).
+# DET render: Pattern A "is inscribed in circle (O)" → quad + through3.
+Quadrilateral ABCD is inscribed in circle (O).
+# DET render: Pattern A không "is" → quad + through3.
+Quadrilateral ABCD inscribed in circle (O).
+# DET render: Pattern B "Circle (O) circumscribes quadrilateral MNPQ" → quad + through3.
+Circle (O) circumscribes quadrilateral MNPQ.
+# Fail-safe quad-only: đỉnh ABCD chia A,B,C với "Triangle ABC" → ownedByOthers chặn
+# concyclic (TRIANGLE_DECL nay nhận EN) → quad + triangle, KHÔNG circle (chống silent-wrong).
+Triangle ABC. Quadrilateral ABCD is inscribed in circle (O).
+# Escalate-safe: 5 đỉnh "ABCDE" → QUAD cần đúng 4 đỉnh → không quad hit → clause geo
+# ("circle"/"quadrilateral") không phủ → escalate (KHÔNG render sai).
+Circle (O) circumscribes quadrilateral ABCDE.
