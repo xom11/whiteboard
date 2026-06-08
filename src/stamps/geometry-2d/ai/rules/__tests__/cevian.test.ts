@@ -263,4 +263,215 @@ describe('cevianRule', () => {
     // footCount[H]=2 → bỏ cả 2 → escalate (đúng fail-safe).
     expect(run('Cho tam giác ABC. Đường cao AH từ A và trung tuyến BH từ B.')).toEqual([]);
   });
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Issue #46 nhóm B — EN support (median / altitude / internal bisector).
+  // External bisector EN DEFER (guard reject). Tam giác gate EN = TRI_EN.
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  describe('EN (issue #46 group B)', () => {
+    // ── median ──
+    it('"Triangle ABC. Draw the median AM." → midpoint(of BC) + connect A-M', () => {
+      const m = run('Triangle ABC. Draw the median AM.');
+      expect(m.length).toBe(1);
+      const [pt, con] = m[0].intents as any[];
+      expect(pt.op).toBe('add-point');
+      expect(pt.name).toBe('M');
+      expect(pt.constraint).toEqual({ kind: 'midpoint', of: 'BC' });
+      expect(con.op).toBe('connect');
+      expect(con.from).toBe('A');
+      expect(con.to).toBe('M');
+      expect(con.style).toBe('segment');
+    });
+
+    it('median bare "Triangle ABC. Median AM." (no leading verb) → midpoint M', () => {
+      const m = run('Triangle ABC. Median AM.');
+      const pt = findByKind(m, 'midpoint')!.intents[0] as any;
+      expect(pt.name).toBe('M');
+      expect(pt.constraint).toEqual({ kind: 'midpoint', of: 'BC' });
+    });
+
+    it('median apex B → onLine AC (cạnh đối B): "Draw the median BN."', () => {
+      const m = run('Triangle ABC. Draw the median BN.');
+      const pt = findByKind(m, 'midpoint')!.intents[0] as any;
+      expect(pt.name).toBe('N');
+      expect(pt.constraint).toEqual({ kind: 'midpoint', of: 'AC' });
+    });
+
+    // ── altitude ──
+    it('"Triangle ABC. Draw the altitude AH." → perpFoot(from A, onLine BC) + connect A-H', () => {
+      const m = run('Triangle ABC. Draw the altitude AH.');
+      expect(m.length).toBe(1);
+      const [pt, con] = m[0].intents as any[];
+      expect(pt.op).toBe('add-point');
+      expect(pt.name).toBe('H');
+      expect(pt.constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+      expect(con.op).toBe('connect');
+      expect(con.from).toBe('A');
+      expect(con.to).toBe('H');
+      expect(con.style).toBe('segment');
+    });
+
+    it('altitude bare "Triangle ABC. Altitude AH." → perpFoot H', () => {
+      const m = run('Triangle ABC. Altitude AH.');
+      const pt = findByKind(m, 'perpFoot')!.intents[0] as any;
+      expect(pt.name).toBe('H');
+      expect(pt.constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+    });
+
+    // ── internal bisector (forward) ──
+    it('"Triangle ABC. Draw the angle bisector AD." → angleBisectorFoot(from A, onLine BC) + connect A-D', () => {
+      const m = run('Triangle ABC. Draw the angle bisector AD.');
+      expect(m.length).toBe(1);
+      const [pt, con] = m[0].intents as any[];
+      expect(pt.name).toBe('D');
+      expect(pt.constraint).toEqual({ kind: 'angleBisectorFoot', from: 'A', onLine: 'BC' });
+      expect(con.from).toBe('A');
+      expect(con.to).toBe('D');
+      expect(con.style).toBe('segment');
+      // KHÔNG external.
+      expect(findByKind(m, 'externalAngleBisectorFoot')).toBeUndefined();
+    });
+
+    it('bisector sans "angle": "Triangle ABC. Draw the bisector AD." → angleBisectorFoot D', () => {
+      const m = run('Triangle ABC. Draw the bisector AD.');
+      const pt = findByKind(m, 'angleBisectorFoot')!.intents[0] as any;
+      expect(pt.name).toBe('D');
+      expect(pt.constraint).toEqual({ kind: 'angleBisectorFoot', from: 'A', onLine: 'BC' });
+    });
+
+    // ── reverse forms ("AM is the median" etc.) ──
+    it('reverse median "Triangle ABC. AM is the median." → midpoint M', () => {
+      const m = run('Triangle ABC. AM is the median.');
+      const pt = findByKind(m, 'midpoint')!.intents[0] as any;
+      expect(pt.name).toBe('M');
+      expect(pt.constraint).toEqual({ kind: 'midpoint', of: 'BC' });
+    });
+
+    it('reverse altitude "Triangle ABC. AH is the altitude." → perpFoot H', () => {
+      const m = run('Triangle ABC. AH is the altitude.');
+      const pt = findByKind(m, 'perpFoot')!.intents[0] as any;
+      expect(pt.name).toBe('H');
+      expect(pt.constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+    });
+
+    it('reverse bisector "Triangle ABC. AD is the angle bisector." → angleBisectorFoot D', () => {
+      const m = run('Triangle ABC. AD is the angle bisector.');
+      const pt = findByKind(m, 'angleBisectorFoot')!.intents[0] as any;
+      expect(pt.name).toBe('D');
+      expect(pt.constraint).toEqual({ kind: 'angleBisectorFoot', from: 'A', onLine: 'BC' });
+      expect(findByKind(m, 'externalAngleBisectorFoot')).toBeUndefined();
+    });
+
+    it('reverse bisector sans "angle" "AD is the bisector." → angleBisectorFoot D', () => {
+      const m = run('Triangle ABC. AD is the bisector.');
+      const pt = findByKind(m, 'angleBisectorFoot')!.intents[0] as any;
+      expect(pt.name).toBe('D');
+      expect(pt.constraint).toEqual({ kind: 'angleBisectorFoot', from: 'A', onLine: 'BC' });
+    });
+
+    // ── adjective trước "triangle" (TRI_EN khớp vì adjective chỉ đứng trước) ──
+    it('"Right triangle ABC. Draw the altitude AH." (adjective) → perpFoot H', () => {
+      const m = run('Right triangle ABC. Draw the altitude AH.');
+      const pt = findByKind(m, 'perpFoot')!.intents[0] as any;
+      expect(pt.name).toBe('H');
+      expect(pt.constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+    });
+
+    // ── collisions: cevian must emit NOTHING (owned by other rules) ──
+    it('COLLISION perpFoot: "foot of the altitude from A to BC" → cevian emits NOTHING', () => {
+      // perpFoot.ts owns "foot of the (perpendicular|altitude) from A to BC".
+      // Sau "altitude" là "from" (chữ thường), KHÔNG cặp HOA → cevian forward
+      // không khớp; "let H be" cũng không phải reverse-cevian.
+      const m = run('Triangle ABC. Let H be the foot of the altitude from A to BC.');
+      expect(m).toEqual([]);
+    });
+
+    it('COLLISION angleBisectorAngle: "Draw the bisector of angle BAC." → cevian emits NOTHING', () => {
+      // angleBisectorAngle.ts owns "bisector of angle BAC". Sau "bisector" là "of"
+      // (chữ thường) → cevian forward (cần cặp HOA NGAY sau "bisector") không khớp.
+      const m = run('Triangle ABC. Draw the bisector of angle BAC.');
+      expect(m).toEqual([]);
+    });
+
+    it('COLLISION perpBisector: "Draw the perpendicular bisector AD." → cevian emits NOTHING', () => {
+      // perpBisector.ts owns "perpendicular bisector AD". Lookbehind (?<!perpendicular\s)
+      // chặn cevian forward → KHÔNG double-emit, KHÔNG nhận nhầm là internal.
+      const m = run('Triangle ABC. Draw the perpendicular bisector AD.');
+      expect(m).toEqual([]);
+    });
+
+    it('COLLISION perpBisector HOA đầu clause: "Perpendicular bisector AD …" → cevian NOTHING', () => {
+      // Regression: lookbehind PHẢI first-letter flex [Pp]. Bản lowercase-only
+      // (?<!perpendicular\s) BỎ SÓT "Perpendicular" HOA đầu clause → cevian khớp
+      // "bisector AD" → double-emit với perpBisector (D vừa là chân trung trực vừa
+      // là chân phân giác) = silent-wrong. [Pp] chặn đúng → escalate fail-safe.
+      const m = run('Triangle ABC. Perpendicular bisector AD is the axis.');
+      expect(m).toEqual([]);
+    });
+
+    it('DEFER external HOA đầu clause: "External bisector AD …" → cevian NOTHING', () => {
+      // Cùng lý do: lookbehind first-letter flex [Ee] chặn "External" HOA đầu clause.
+      const m = run('Triangle ABC. External bisector AD is drawn.');
+      expect(m).toEqual([]);
+    });
+
+    // ── defer / fail-safe: external bisector EN unsupported → escalate ──
+    it('DEFER external: "Draw the external bisector AD." → cevian emits NOTHING', () => {
+      // External EN chưa hỗ trợ. Lookbehind (?<!external\s) chặn forward nhận nhầm
+      // thành internal (silent-wrong) → cevian rỗng → end-to-end escalate.
+      const m = run('Triangle ABC. Draw the external bisector AD.');
+      expect(m).toEqual([]);
+    });
+
+    it('DEFER exterior: "Draw the exterior bisector AD." → cevian emits NOTHING', () => {
+      const m = run('Triangle ABC. Draw the exterior bisector AD.');
+      expect(m).toEqual([]);
+    });
+
+    it('DEFER reverse external: "AD is the external bisector." → cevian emits NOTHING', () => {
+      // "external" nằm giữa "the" và "bisector" → phá (?:angle\s+)?bisector của
+      // reverse internal → không khớp → escalate (không nhận nhầm internal).
+      const m = run('Triangle ABC. AD is the external bisector.');
+      expect(m).toEqual([]);
+    });
+
+    // ── foot trùng đỉnh / apex ngoài tam giác (parity VN guards) ──
+    it('EN foot trùng đỉnh "Draw the altitude AB." → SKIP (escalate)', () => {
+      expect(run('Triangle ABC. Draw the altitude AB.')).toEqual([]);
+    });
+
+    it('EN apex ngoài tam giác "Draw the median PQ." → bỏ qua', () => {
+      expect(run('Triangle ABC. Draw the median PQ.')).toEqual([]);
+    });
+
+    // ── no-triangle fail-safe ──
+    it('EN cevian phrase KHÔNG có tam giác → escalate (rỗng)', () => {
+      expect(run('Draw the altitude AH of the shape.')).toEqual([]);
+    });
+
+    // ── reverse internal bisector "is the bisector of …" KHÔNG bị grab ──
+    it('"AD is the bisector of angle BAC" → cevian reverse KHÔNG grab (escalate qua angleBisectorAngle)', () => {
+      // (?!\s+of) ở reverse chặn nắm "is the bisector of …" (thuộc angleBisectorAngle).
+      const m = run('Triangle ABC. AD is the bisector of angle BAC.');
+      expect(m).toEqual([]);
+    });
+
+    // ── nhiều cevian EN trong 1 đề ──
+    it('nhiều cevian EN: "Draw the altitude AH and the median BM." → emit ĐỦ 2', () => {
+      const m = run('Triangle ABC. Draw the altitude AH and the median BM.');
+      const alt = findByKind(m, 'perpFoot');
+      const med = findByKind(m, 'midpoint');
+      expect(alt).toBeTruthy();
+      expect(med).toBeTruthy();
+      expect((alt!.intents[0] as any).name).toBe('H');
+      expect((alt!.intents[0] as any).constraint).toEqual({
+        kind: 'perpFoot',
+        from: 'A',
+        onLine: 'BC',
+      });
+      expect((med!.intents[0] as any).name).toBe('M');
+      expect((med!.intents[0] as any).constraint).toEqual({ kind: 'midpoint', of: 'AC' });
+    });
+  });
 });

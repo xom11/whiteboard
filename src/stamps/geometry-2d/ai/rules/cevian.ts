@@ -24,6 +24,14 @@ import { addPoint, connect } from './_shared';
 // ký tự Việt → dùng class trực tiếp, có cờ 'u'.
 const TRI = /tam\s*giác(?:\s+(?:vuông|cân|đều|nhọn|tù))?\s+([A-Z])([A-Z])([A-Z])/u;
 
+// === EN (issue #46 group B) =================================================
+// Tam giác tiếng Anh: "triangle ABC" (first-letter case flex [Tt], KHÔNG cờ 'i'
+// — sẽ phá [A-Z] nhãn). Nhãn = ĐÚNG 3 ký tự HOA liền, neo (?![A-Z]). Adjective
+// "right/isosceles/…" chỉ đứng TRƯỚC "triangle" nên vẫn khớp (vd "right triangle
+// ABC"). Đề VN không chứa "triangle" và đề EN không chứa "tam giác" → VN
+// byte-identical.
+const TRI_EN = /[Tt]riangle\s+([A-Z])([A-Z])([A-Z])(?![A-Z])/u;
+
 // Cevian type → patterns. Mỗi pattern capture đỉnh (g1) + chân (g2): 2 ký tự
 // HOA liền (vd "AH"). (?![A-Z]) chặn match nhầm vào cụm 3 ký tự (vd "ABC").
 // TẤT CẢ pattern dùng cờ /g để matchAll bắt MỌI cevian trong 1 clause.
@@ -39,6 +47,14 @@ const CEVIAN_PATTERNS: ReadonlyArray<{ type: CevianType; patterns: readonly RegE
       /(?:[Kk]ẻ|[Vv]ẽ|[Hh]ạ|[Dd]ựng)\s+[Đđ]ường\s*cao\s+([A-Z])([A-Z])(?![A-Z])/gu,
       /[Đđ]ường\s*cao\s+([A-Z])([A-Z])(?![A-Z])/gu,
       /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?đường\s*cao/gu,
+      // EN (issue #46 group B). g1=apex g2=foot, nhãn strict [A-Z], NO cờ 'i'.
+      // First-letter flex [Aa] (HOA đầu câu "Altitude AH"); KHÔNG cờ 'i' (phá nhãn).
+      // forward "altitude AH" (lời dẫn "Draw the " phía trước bỏ qua). "foot of
+      // the altitude from A to BC" KHÔNG khớp: sau "altitude" là "from" (chữ
+      // thường), không cặp HOA → perpFoot.ts sở hữu.
+      /[Aa]ltitude\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      // reverse "AH is/be the altitude". (?![A-Za-z]) chặn "altitudes"/nối chữ.
+      /(?<![A-Z])([A-Z])([A-Z])\s+(?:is|be)\s+(?:the\s+)?altitude(?![A-Za-z])/gu,
     ],
   },
   {
@@ -47,6 +63,9 @@ const CEVIAN_PATTERNS: ReadonlyArray<{ type: CevianType; patterns: readonly RegE
       /(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\s+[Tt]rung\s*tuyến\s+([A-Z])([A-Z])(?![A-Z])/gu,
       /[Tt]rung\s*tuyến\s+([A-Z])([A-Z])(?![A-Z])/gu,
       /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?trung\s*tuyến/gu,
+      // EN (issue #46 group B). g1=apex g2=foot. First-letter flex [Mm].
+      /[Mm]edian\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      /(?<![A-Z])([A-Z])([A-Z])\s+(?:is|be)\s+(?:the\s+)?median(?![A-Za-z])/gu,
     ],
   },
   {
@@ -60,6 +79,21 @@ const CEVIAN_PATTERNS: ReadonlyArray<{ type: CevianType; patterns: readonly RegE
       /(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\s+(?:[Đđ]ường\s*|[Tt]ia\s+)?phân\s*giác(?:\s+trong)?\s+([A-Z])([A-Z])(?![A-Z])/gu,
       /(?:[Đđ]ường\s*phân\s*giác|[Tt]ia\s+phân\s*giác|[Pp]hân\s*giác)(?:\s+trong)?\s+([A-Z])([A-Z])(?![A-Z])/gu,
       /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?(?:đường\s*|tia\s+)?phân\s*giác(?:\s+trong)?(?!\s+ngoài)/gu,
+      // EN (issue #46 group B) — internal bisector ONLY. g1=apex g2=foot.
+      // forward "(angle)? bisector AD". 3 negative lookbehind:
+      //   (?<![Pp]erpendicular\s) — "perpendicular bisector AD" thuộc perpBisector.ts
+      //     (EN regex của nó CŨNG khớp cặp HOA) → tránh double-emit.
+      //   (?<![Ee]xternal\s)/(?<![Ee]xterior\s) — external bisector EN DEFER → KHÔNG
+      //     nhận nhầm thành internal (silent-wrong).
+      // Dạng "of angle"/"angle bisector of" (angleBisectorAngle.ts) tự loại: cần
+      // cặp HOA NGAY sau "bisector", "of" chen vào sẽ phá khớp. First-letter flex
+      // [Bb] (HOA đầu câu) — lookbehind PHẢI first-letter flex [Pp]/[Ee] để chặn cả
+      // "Perpendicular"/"External" HOA đầu clause (else double-emit silent-wrong).
+      /(?<![Pp]erpendicular\s)(?<![Ee]xternal\s)(?<![Ee]xterior\s)(?:[Aa]ngle\s+)?[Bb]isector\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      // reverse "AD is/be the (angle)? bisector". (?!\s+of) chặn "is the bisector
+      // of …" (thuộc angleBisectorAngle). "the perpendicular/external bisector"
+      // tự loại: từ chen giữa "the" và "bisector" phá (?:angle\s+)?bisector.
+      /(?<![A-Z])([A-Z])([A-Z])\s+(?:is|be)\s+(?:the\s+)?(?:angle\s+)?bisector(?!\s+of)(?![A-Za-z])/gu,
     ],
   },
   {
@@ -78,7 +112,17 @@ const CEVIAN_PATTERNS: ReadonlyArray<{ type: CevianType; patterns: readonly RegE
 ];
 
 // Prefilter: bất kỳ từ khoá cevian nào trên toàn đề (hoa đầu câu → [Đđ]/[Tt]/[Pp]).
-const PREFILTER = [/[Đđ]ường\s*cao/u, /[Tt]rung\s*tuyến/u, /[Pp]hân\s*giác/u];
+// EN (issue #46 group B): runRules prefilter theo `patterns` (BỎ QUA field
+// `languages`) → đề EN thuần cần EN prefilter thì match() mới chạy. Đây là cờ
+// boolean .test() thuần (KHÔNG capture nhãn) nên cờ 'i' AN TOÀN.
+const PREFILTER = [
+  /[Đđ]ường\s*cao/u,
+  /[Tt]rung\s*tuyến/u,
+  /[Pp]hân\s*giác/u,
+  /median/i,
+  /altitude/i,
+  /bisector/i,
+];
 
 /** Cạnh đối diện đỉnh V trong tam giác = 2 đỉnh còn lại, join token (vd "BC"). */
 function opposite(tri: readonly string[], vertex: string): string | undefined {
@@ -102,12 +146,19 @@ interface Cevian {
 export const cevianRule: LanguageRule = {
   id: 'cevian',
   priority: 60,
-  languages: ['vi'],
+  languages: ['vi', 'en'],
   patterns: PREFILTER,
   match(ctx) {
+    // Tam giác gate: VN trước, EN fallback (mirror angleBisectorAngle). Đề VN
+    // không chứa "triangle", đề EN không chứa "tam giác" → VN byte-identical.
     const triMatch = TRI.exec(ctx.problem);
-    if (!triMatch) return []; // không có tam giác → escalate
-    const tri = [triMatch[1], triMatch[2], triMatch[3]];
+    const triMatchEN = TRI_EN.exec(ctx.problem);
+    const tri = triMatch
+      ? [triMatch[1], triMatch[2], triMatch[3]]
+      : triMatchEN
+        ? [triMatchEN[1], triMatchEN[2], triMatchEN[3]]
+        : null;
+    if (!tri) return []; // không có tam giác → escalate
 
     // ── Pass 1: gom MỌI cevian hợp lệ (apex là đỉnh, foot không trùng đỉnh) ──
     // Dedup theo (apex,foot,type) — KHÔNG dedup chỉ theo tên chân: 2 cevian

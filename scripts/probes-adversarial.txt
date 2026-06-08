@@ -313,3 +313,24 @@ Triangle ABC. On ray BA extended beyond A, take D.
 # Escalate-safe: "beyond C" ≠ chữ thứ 2 của "ray BA" (A) → RAY_EXTENDED validation
 # (Z===Y) fail → hướng không xác định → escalate (chống dựng sai hướng).
 Triangle ABC. On ray BA extended beyond C, take D such that CD = 5.
+
+# ── cevian EN (issue #46 nhóm B) ─────────────────────────────────────────────
+# median/altitude = FIX SILENT-INCOMPLETE (trước render TRIANGLE-ONLY bỏ chân âm
+# thầm vì "median"/"altitude" chưa vocab → văn xuôi; nay +vocab + EN pattern →
+# render đủ chân + đoạn, win lộ ở DÒNG OPS). bisector = RENDER-WIN (escalate→DET:
+# "bisector" đã vocab batch6 → clause geo unclaimed → escalate; nay cevian claim).
+# DET render: "median AM" → midpoint M của BC + connect(A,M).
+Triangle ABC. Draw the median AM.
+# DET render: "altitude AH" → perpFoot H trên BC + connect(A,H).
+Triangle ABC. Draw the altitude AH.
+# DET render (RENDER-WIN flip): "angle bisector AD" → angleBisectorFoot D + connect(A,D).
+Triangle ABC. Draw the angle bisector AD.
+# DET render: reverse "AM is the median" → midpoint M + connect.
+Triangle ABC. AM is the median.
+# Escalate-safe: external bisector EN DEFER → internal guard (?<![Ee]xternal\s)
+# reject → clause "bisector" geo unclaimed → escalate (KHÔNG nhận nhầm internal).
+Triangle ABC. Draw the external bisector AD.
+# Escalate-safe (regression guard double-emit): "Perpendicular bisector AD" HOA đầu
+# clause → lookbehind (?<![Pp]erpendicular\s) chặn cevian → chỉ perpBisector claim
+# (D chưa định nghĩa → transpile-fail) → KHÔNG double-emit silent-wrong.
+Triangle ABC. Perpendicular bisector AD is the axis.

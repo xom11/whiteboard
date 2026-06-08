@@ -100,6 +100,13 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   // any existing VN/EN keyword.
   'extend',
   'opposite ray',
+  // cevian EN (issue #46 group B). Clause "Draw the median AM" / "Draw the
+  // altitude AH" → mark geo-clause. Nếu rule không parse được clause median/
+  // altitude bị lỗi → geo-clause không phủ → escalate (fail-safe), KHÔNG
+  // silent-incomplete (triangle-only bỏ điểm chân). ('bisector' đã có ở trên.)
+  // Cả hai đều là danh từ hình học riêng, không substring va chạm có hại.
+  'median',
+  'altitude',
 ];
 
 export function countGeometryKeywords(text: string): number {
