@@ -32,6 +32,53 @@ const NOI_KW = /(?<!\p{L})[Nn]ối\s+([A-Z])\s+(?:với|và)\s+([A-Z])(?![A-Za-z
 const SEG_KW =
   /(?<!\p{L})(?:[Đđ]oạn(?:\s*thẳng)?|[Cc]ạnh|[Kk]ẻ)\s+([A-Z])([A-Z])(?![A-Za-z])/gu;
 
+// ============ EN connect forms (issue #46 nhóm B) ============================
+// connect.ts vốn VN-only. Mirror các form VN sang EN, GIỮ NGUYÊN parity ở gate
+// vocab: VN "đoạn" LÀ keyword → EN "segment" cũng vào vocab (standalone render).
+// VN "đường thẳng"/"tia"/"nối"/"kẻ" KHÔNG phải keyword → EN "line"/"ray"/"connect"/
+// "join"/"draw" cũng KHÔNG vào vocab → chỉ render IN-CONTEXT (vd có tam giác), đề
+// standalone → escalate (geoClauses=0). Đối xứng VN/EN tuyệt đối + tôn trọng
+// do-not-add list ("line" đã bị cấm trong vocabulary.ts).
+//
+// runDeterministicIntents dedup intent theo JSON.stringify CROSS-RULE → "Draw AH
+// perpendicular to BC" khớp CẢ perpFoot (emit connect(A,H,'segment')) lẫn DRAW_PAIR_EN
+// (cũng connect(A,H,'segment')) → IDENTICAL → deduped, vô hại.
+
+// "segment XY" → segment (đối VN "đoạn"). Group 1,2 = cặp HOA.
+const SEG_NOUN_EN = /(?<![A-Za-z])[Ss]egment\s+([A-Z])([A-Z])(?![A-Za-z])/gu;
+// "line XY" → line (đối VN "đường thẳng").
+const LINE_NOUN_EN = /(?<![A-Za-z])[Ll]ine\s+([A-Z])([A-Z])(?![A-Za-z])/gu;
+// Guard cho segment/line noun: BỎ match nếu cặp thuộc clause của rule prio cao
+// hơn đã SỞ HỮU cặp: perpBisector ("(perpendicular) bisector (segment|line) PAIR")
+// / perpFoot ("perpendicular to (line|segment) PAIR") / pointAtDistance ("Extend(ed)
+// segment|line XY beyond …"). 3 rule đó emit cặp đúng style HOẶC dựng điểm phái sinh;
+// connect KHÔNG được double-emit segment/line trần — đặc biệt với pointAtDistance:
+// clause malformed (thiếu distance / sai hướng) → pointAtDistance KHÔNG emit → clause
+// cần ESCALATE; connect claim sẽ MASK escalate đó (silent-incomplete, bỏ điểm mới).
+// Case flex [Bb]/[Pp]/[Ee] (BẮT BUỘC: HOA đầu clause không được slip — bài học batch16).
+const NOUN_OWNED_BEFORE_EN = /(?:[Bb]isector|[Pp]erpendicular\s+to|[Ee]xtend(?:ed)?)\s+$/u;
+// "ray XY" → ray (đối VN "tia"). 2 guard:
+//  (a) preceding "opposite ray of ray XY" (OPPOSITE_RAY_BEFORE_EN): điểm mới nằm trên
+//      tia ĐỐI → vẽ ray X→Y SAI hướng (EN mirror VN TIA_DOI_BEFORE, batch9 8ee33af).
+//  (b) trailing "(?!\s*,?\s*extended)": "ray XY extended beyond Z" là construct CỦA
+//      pointAtDistance (RAY_EXTENDED_EN). connect KHÔNG claim — nếu malformed (thiếu
+//      distance / Z≠Y sai hướng) pointAtDistance escalate fail-safe; connect claim sẽ
+//      MASK (silent-incomplete bỏ điểm D). Well-formed thì pointAtDistance đã lo điểm
+//      D — connect đứng ngoài để giữ EN-cũ (batch15) byte-identical.
+// "Draw ray AB" trần (không "extended"/không "opposite ray of") → vẫn vẽ ray A→B.
+const RAY_NOUN_EN = /(?<![A-Za-z])[Rr]ay\s+([A-Z])([A-Z])(?![A-Za-z])(?!\s*,?\s*extended)/gu;
+const OPPOSITE_RAY_BEFORE_EN = /opposite\s+ray\s+of\s+$/u;
+// "Connect/Join XY" → segment (đối VN "nối", form cặp HOA).
+const JOIN_PAIR_EN = /(?<![A-Za-z])(?:[Cc]onnect|[Jj]oin)\s+([A-Z])([A-Z])(?![A-Za-z])/gu;
+// "Connect/Join X and/to/with Y" → segment (tên 1 ký tự, mirror VN NOI_KW).
+const JOIN_AND_EN =
+  /(?<![A-Za-z])(?:[Cc]onnect|[Jj]oin)\s+([A-Z])\s+(?:and|to|with)\s+([A-Z])(?![A-Za-z])/gu;
+// "Draw XY" trần → segment (đối VN "kẻ"). perpFoot draw-form "Draw AH perpendicular
+// to BC" cũng khớp nhưng emit connect(A,H,'segment') IDENTICAL → deduped.
+// perpBisector/cevian/tangent draw-form có "the"/"two"/chữ thường sau "Draw" →
+// KHÔNG cặp HOA → KHÔNG match ở đây.
+const DRAW_PAIR_EN = /(?<![A-Za-z])[Dd]raw\s+([A-Z])([A-Z])(?![A-Za-z])/gu;
+
 function collect(
   re: RegExp,
   text: string,
@@ -67,8 +114,11 @@ function collect(
 export const connectRule: LanguageRule = {
   id: 'connect',
   priority: 40,
-  languages: ['vi'],
-  patterns: [LINE_KW, RAY_KW, NOI_KW, SEG_KW],
+  languages: ['vi', 'en'],
+  patterns: [
+    LINE_KW, RAY_KW, NOI_KW, SEG_KW,
+    SEG_NOUN_EN, LINE_NOUN_EN, RAY_NOUN_EN, JOIN_PAIR_EN, JOIN_AND_EN, DRAW_PAIR_EN,
+  ],
   match(ctx) {
     const result: RuleMatch[] = [];
     for (const c of ctx.clauses) {
@@ -84,6 +134,15 @@ export const connectRule: LanguageRule = {
       collect(RAY_KW, c.text, 'ray', used, intents, TIA_DOI_BEFORE);
       collect(NOI_KW, c.text, 'segment', used, intents);
       collect(SEG_KW, c.text, 'segment', used, intents);
+      // EN forms (issue #46 nhóm B). `used` dedup cặp đã claim bởi form VN trong
+      // cùng clause (clause trộn ngôn ngữ hiếm, nhưng an toàn). Thứ tự: noun trước,
+      // verb sau; DRAW cuối (trần nhất).
+      collect(SEG_NOUN_EN, c.text, 'segment', used, intents, NOUN_OWNED_BEFORE_EN);
+      collect(LINE_NOUN_EN, c.text, 'line', used, intents, NOUN_OWNED_BEFORE_EN);
+      collect(RAY_NOUN_EN, c.text, 'ray', used, intents, OPPOSITE_RAY_BEFORE_EN);
+      collect(JOIN_PAIR_EN, c.text, 'segment', used, intents);
+      collect(JOIN_AND_EN, c.text, 'segment', used, intents);
+      collect(DRAW_PAIR_EN, c.text, 'segment', used, intents);
       if (intents.length > 0) {
         result.push({ ruleId: 'connect', clauseIds: [c.id], intents });
       }

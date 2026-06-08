@@ -107,6 +107,13 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   // Cả hai đều là danh từ hình học riêng, không substring va chạm có hại.
   'median',
   'altitude',
+  // connect EN (issue #46 nhóm B). VN "đoạn" LÀ keyword → "segment" parity để
+  // "Draw segment XY" standalone là geo-clause: rule connect EN claim → render;
+  // clause malformed ("segment" không cặp HOA) → geo unclaimed → escalate
+  // (fail-safe). ≥7 ký tự, phân biệt, không substring va chạm. "line"/"ray"/"draw"/
+  // "join"/"connect" CỐ Ý KHÔNG thêm (đối VN "đường thẳng"/"tia"/… cũng không phải
+  // keyword → parity: render in-context, escalate standalone).
+  'segment',
 ];
 
 export function countGeometryKeywords(text: string): number {

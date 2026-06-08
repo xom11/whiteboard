@@ -135,4 +135,108 @@ describe('connectRule', () => {
     const target = clauses.find((c) => /đoạn AB/.test(c.text))!;
     expect(m[0].clauseIds).toEqual([target.id]);
   });
+
+  describe('EN forms (issue #46 nhóm B)', () => {
+    const styleOf = (problem: string) => {
+      const m = run(problem);
+      return m.flatMap((x) => x.intents.map((i: any) => `${i.from}${i.to}:${i.style}`));
+    };
+
+    it('"segment AB" → segment', () => {
+      const i = intent('Draw segment AB');
+      expect(i.op).toBe('connect');
+      expect(i.from).toBe('A');
+      expect(i.to).toBe('B');
+      expect(i.style).toBe('segment');
+    });
+
+    it('"line AB" → line', () => {
+      const i = intent('Draw line AB');
+      expect(i.style).toBe('line');
+      expect(i.from).toBe('A');
+      expect(i.to).toBe('B');
+    });
+
+    it('"ray AB" → ray', () => {
+      const i = intent('Draw ray AB');
+      expect(i.style).toBe('ray');
+      expect(i.from).toBe('A');
+      expect(i.to).toBe('B');
+    });
+
+    it('"Connect A and B" → segment (1-letter + connector)', () => {
+      const i = intent('Connect A and B');
+      expect(i.style).toBe('segment');
+      expect(i.from).toBe('A');
+      expect(i.to).toBe('B');
+    });
+
+    it('"Join MN" → segment (pair)', () => {
+      const i = intent('Join MN');
+      expect(i.style).toBe('segment');
+      expect(i.from).toBe('M');
+      expect(i.to).toBe('N');
+    });
+
+    it('"Join P to Q" → segment', () => {
+      const i = intent('Join P to Q');
+      expect(i.style).toBe('segment');
+      expect(i.from).toBe('P');
+      expect(i.to).toBe('Q');
+    });
+
+    it('"Draw AB" trần → segment', () => {
+      const i = intent('Draw AB');
+      expect(i.style).toBe('segment');
+      expect(i.from).toBe('A');
+      expect(i.to).toBe('B');
+    });
+
+    it('GUARD: "perpendicular bisector line AB" → connect KHÔNG emit line trần (perpBisector sở hữu cặp)', () => {
+      const styles = styleOf('Draw the perpendicular bisector line AB');
+      expect(styles).not.toContain('AB:line');
+    });
+
+    it('GUARD: "perpendicular to line BC" → connect KHÔNG emit line trần (perpFoot sở hữu)', () => {
+      const styles = styleOf('Draw AH perpendicular to line BC');
+      expect(styles).not.toContain('BC:line');
+    });
+
+    it('GUARD silent-wrong: "opposite ray of ray BA" → connect KHÔNG vẽ ray BA (sai hướng, EN mirror TIA_DOI)', () => {
+      const styles = styleOf('On the opposite ray of ray BA, take D such that BD = BA');
+      expect(styles).not.toContain('BA:ray');
+      expect(styles).not.toContain('AB:ray');
+    });
+
+    it('GUARD: "ray XY extended beyond …" thuộc pointAtDistance → connect KHÔNG emit ray (giữ EN-cũ byte-identical + fail-safe escalate khi malformed)', () => {
+      // "ray AB extended beyond B" là construct CỦA pointAtDistance (RAY_EXTENDED_EN).
+      // connect claim sẽ MASK escalate khi clause malformed (thiếu distance / sai
+      // hướng) → silent-incomplete. Trailing lookahead (?!\s*,?\s*extended) chặn.
+      expect(styleOf('On ray AB extended beyond B, take D such that BD = AB')).not.toContain('AB:ray');
+      expect(styleOf('On ray BA extended beyond A, take D')).not.toContain('BA:ray');
+    });
+
+    it('GUARD: "Extend segment XY beyond …" thuộc pointAtDistance → connect KHÔNG emit segment trần', () => {
+      // NOUN_OWNED_BEFORE_EN +[Ee]xtend(?:ed)?: "Extend segment AB beyond B" → cặp AB
+      // do pointAtDistance dựng điểm phái sinh; connect không double-emit segment.
+      expect(styleOf('Extend segment AB beyond B to D such that BD = AB')).not.toContain('AB:segment');
+    });
+
+    it('mixed EN style trong 1 clause: "segment AB and line CD"', () => {
+      const styles = styleOf('Draw segment AB and line CD');
+      expect(styles).toContain('AB:segment');
+      expect(styles).toContain('CD:line');
+    });
+
+    it('"Draw segment AB" → DRAW_PAIR KHÔNG double (sau Draw là "segment" thường)', () => {
+      const m = run('Draw segment AB');
+      const styles = m.flatMap((x) => x.intents.map((i: any) => `${i.from}${i.to}:${i.style}`));
+      expect(styles).toEqual(['AB:segment']);
+    });
+
+    it('VN regression: đề VN không đổi ("Vẽ đoạn AB" vẫn segment, không nhiễu EN)', () => {
+      const styles = styleOf('Vẽ đoạn AB');
+      expect(styles).toEqual(['AB:segment']);
+    });
+  });
 });

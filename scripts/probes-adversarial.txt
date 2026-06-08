@@ -334,3 +334,41 @@ Triangle ABC. Draw the external bisector AD.
 # clause → lookbehind (?<![Pp]erpendicular\s) chặn cevian → chỉ perpBisector claim
 # (D chưa định nghĩa → transpile-fail) → KHÔNG double-emit silent-wrong.
 Triangle ABC. Perpendicular bisector AD is the axis.
+
+# ── connect EN (issue #46 nhóm B — mục CUỐI nhóm B) ──────────────────────────
+# connect.ts vốn VN-only (tia/nối/đường thẳng/đoạn). Thêm EN segment/line/ray/
+# Connect/Join/Draw. TÁC ĐỘNG = FIX SILENT-INCOMPLETE: trước render TRIANGLE-ONLY
+# (clause connect EN là văn xuôi → âm thầm bỏ đoạn/đường/tia) → nay render đủ, win
+# lộ ở DÒNG OPS (+connect/...). Parity vocab VN/EN: "đoạn"↔"segment" (vào vocab);
+# "đường thẳng"/"tia"/"nối"/"kẻ"↔"line"/"ray"/"connect"/"join"/"draw" CỐ Ý KHÔNG vocab
+# (render in-context, escalate standalone). VN byte-identical (connect VN-only token).
+# DET (silent-incomplete fix): "Draw segment AB" → connect/segment AB.
+Triangle ABC. Draw segment AB.
+# DET: "Draw line AC" → connect/line AC (in-context, "line" không vocab).
+Triangle ABC. Draw line AC.
+# DET: "Draw ray AB" → connect/ray AB (hướng A→B đúng, không phải opposite ray).
+Triangle ABC. Draw ray AB.
+# DET: "Connect B and C" (1 ký tự + connector) → connect/segment BC.
+Triangle ABC. Connect B and C.
+# DET: "Join AB" (cặp HOA) → connect/segment AB.
+Triangle ABC. Join AB.
+# DET render-win THẬT (đoạn trung tuyến AM trước bị bỏ): midpoint M + connect/segment AM.
+Triangle ABC. Let M be the midpoint of BC. Draw segment AM.
+# DET render-win THẬT (đoạn trung bình MN): 2 midpoint + connect/segment MN.
+Triangle ABC. M is the midpoint of AB. N is the midpoint of AC. Draw segment MN.
+# GUARD silent-wrong (EN mirror TIA_DOI batch9): "opposite ray of ray BA" → điểm D
+# nằm trên tia ĐỐI (pointAtDistance lo) → connect KHÔNG vẽ ray BA sai hướng. OPS
+# PHẢI giống before/after (chỉ triangle + pointAtDistance, KHÔNG connect/ray).
+Triangle ABC. On the opposite ray of ray BA, take D such that BD = AB.
+# GUARD dedup: "Draw AH perpendicular to BC" khớp CẢ perpFoot (connect A,H,segment)
+# lẫn DRAW_PAIR_EN (cũng connect A,H,segment) → JSON-dedup → ĐÚNG 1 connect/segment AH
+# (KHÔNG double). OPS giống before/after (perpFoot đã emit connect từ batch10).
+Triangle ABC. Draw AH perpendicular to BC at H.
+# GUARD NOUN_OWNED: "perpendicular bisector line BC" → perpBisector sở hữu cặp →
+# connect KHÔNG emit line BC trần (NOUN_OWNED_BEFORE_EN suppress). OPS chỉ
+# connect/perpBisector BC, KHÔNG connect/line BC (giống before/after).
+Triangle ABC. Draw the perpendicular bisector line BC.
+# Escalate-safe: connect standalone không có điểm định nghĩa → coverage complete
+# (segment vocab) NHƯNG transpile-fail (A,B chưa tồn tại) → escalate (fail-safe,
+# KHÔNG render đoạn rác giữa 2 điểm vô định).
+Draw segment AB.
