@@ -48,6 +48,7 @@ import { pairSecondIntersectionRule } from './pairSecondIntersection';
 import { circleCenterRadiusSegmentRule } from './circleCenterRadiusSegment';
 import { perpDiametersRule } from './perpDiameters';
 import { perpLineCutsTangentRule } from './perpLineCutsTangent';
+import { perpChordThroughPointRule } from './perpChordThroughPoint';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -95,6 +96,7 @@ const RULES: readonly LanguageRule[] = [
   circleCenterRadiusSegmentRule,
   perpDiametersRule,
   perpLineCutsTangentRule,
+  perpChordThroughPointRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */

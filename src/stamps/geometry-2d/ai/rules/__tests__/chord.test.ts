@@ -66,6 +66,23 @@ describe('chordRule', () => {
     expect(onCircle.length).toBe(0);
   });
 
+  it('guard: dây cung vuông góc ("dây cung DE vuông góc với AB") → KHÔNG dựng circle/chord rời', () => {
+    // perpChordThroughPoint sở hữu dạng này (D,E là giao của đường ⊥ với (O) sẵn có).
+    // chord không được dựng đường tròn lạ + 2 glider onCircle.
+    const all = ints(
+      'Cho đường tròn (O) đường kính AC. Qua M kẻ dây cung DE vuông góc với AB.',
+    );
+    expect(all.filter((i) => i.op === 'add-point' && i.constraint.kind === 'onCircle')).toEqual([]);
+    // không emit circle "O" centerRadius rời (đã có (O) đường kính do circleDiameter dựng).
+    expect(all.filter((i) => i.op === 'draw-circle')).toEqual([]);
+  });
+
+  it('guard không ảnh hưởng dây thường ở clause khác', () => {
+    // Clause "dây MN" KHÔNG có "vuông góc" → vẫn dựng bình thường.
+    const { onCircle } = summary('Cho đường tròn (O). Dây MN. Qua P kẻ dây cung DE vuông góc với AB.');
+    expect(onCircle.map((i) => i.name).sort()).toEqual(['M', 'N']);
+  });
+
   it('không có "dây" → không match (prefilter)', () => {
     expect(
       chordRule.match({

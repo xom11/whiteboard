@@ -82,6 +82,10 @@ export const chordRule: LanguageRule = {
     const chords: Chord[] = [];
     const seen = new Set<string>(); // "a|b" (chuẩn hoá thứ tự) tránh trùng
     for (const c of ctx.clauses) {
+      // GUARD: dây cung VUÔNG GÓC (qua điểm, ⊥ đoạn) → perpChordThroughPoint sở hữu
+      // (D,E là giao của đường ⊥ với đường tròn SẴN CÓ). chord không được dựng đường
+      // tròn lạ + glider rời cho clause này (sẽ chồng + sai hình).
+      if (/vuông\s*góc|⊥/u.test(c.text)) continue;
       const collect = (re: RegExp) => {
         re.lastIndex = 0;
         for (const m of c.text.matchAll(re)) {

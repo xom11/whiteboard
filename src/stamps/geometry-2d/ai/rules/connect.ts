@@ -28,6 +28,8 @@ const RAY_KW = /(?<!\p{L})[Tt]ia\s+([A-Z])([A-Z])(?![A-Za-z])/gu;
 const TIA_DOI_BEFORE = /tia\s*đối\s+của\s+$/u;
 // "nối A với/và B" → segment. Tên 1 ký tự, không phải cặp.
 const NOI_KW = /(?<!\p{L})[Nn]ối\s+([A-Z])\s+(?:với|và)\s+([A-Z])(?![A-Za-z])/gu;
+// "Nối CD" → segment (cặp 2 ký tự HOA liền, KHÔNG "với/và"). (?![A-Z]) chặn "Nối ABC".
+const NOI_PAIR_KW = /(?<!\p{L})[Nn]ối\s+([A-Z])([A-Z])(?![A-Za-z])/gu;
 // "đoạn (thẳng) AB" | "cạnh AB" | "kẻ AB" → segment.
 const SEG_KW =
   /(?<!\p{L})(?:[Đđ]oạn(?:\s*thẳng)?|[Cc]ạnh|[Kk]ẻ)\s+([A-Z])([A-Z])(?![A-Za-z])/gu;
@@ -116,7 +118,7 @@ export const connectRule: LanguageRule = {
   priority: 40,
   languages: ['vi', 'en'],
   patterns: [
-    LINE_KW, RAY_KW, NOI_KW, SEG_KW,
+    LINE_KW, RAY_KW, NOI_KW, NOI_PAIR_KW, SEG_KW,
     SEG_NOUN_EN, LINE_NOUN_EN, RAY_NOUN_EN, JOIN_PAIR_EN, JOIN_AND_EN, DRAW_PAIR_EN,
   ],
   match(ctx) {
@@ -133,6 +135,7 @@ export const connectRule: LanguageRule = {
       // gốc X→Y sai so với điểm mới trên tia đối). pointAtDistance lo điểm mới.
       collect(RAY_KW, c.text, 'ray', used, intents, TIA_DOI_BEFORE);
       collect(NOI_KW, c.text, 'segment', used, intents);
+      collect(NOI_PAIR_KW, c.text, 'segment', used, intents);
       collect(SEG_KW, c.text, 'segment', used, intents);
       // EN forms (issue #46 nhóm B). `used` dedup cặp đã claim bởi form VN trong
       // cùng clause (clause trộn ngôn ngữ hiếm, nhưng an toàn). Thứ tự: noun trước,
