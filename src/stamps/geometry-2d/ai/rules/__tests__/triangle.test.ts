@@ -209,4 +209,66 @@ describe('triangleRule', () => {
       expect(i[1].variant).toBe('any');
     });
   });
+
+  // === Thales: tam giác vuông NỘI TIẾP đường tròn → BC đường kính + A glider ===
+  describe('Thales (vuông + nội tiếp)', () => {
+    function flat(problem: string) {
+      return run(problem).flatMap((m) => m.intents) as any[];
+    }
+
+    it('"vuông tại A (AB<AC) nội tiếp đường tròn (O)" → B,C đầu mút đường kính + O tâm + A glider', () => {
+      const ints = flat('Cho tam giác ABC vuông tại A (AB < AC) nội tiếp đường tròn (O)');
+      const A = ints.find((i) => i.op === 'add-point' && i.name === 'A');
+      const B = ints.find((i) => i.op === 'add-point' && i.name === 'B');
+      const C = ints.find((i) => i.op === 'add-point' && i.name === 'C');
+      const O = ints.find((i) => i.op === 'add-point' && i.name === 'O');
+      const circ = ints.find((i) => i.op === 'draw-circle');
+      const poly = ints.find((i) => i.op === 'mark-shape');
+      // A = glider trên đường tròn (vuông tại A ràng buộc qua Thales).
+      expect(A.constraint.kind).toBe('onCircle');
+      // B, C = free đầu mút đường kính. AB<AC → B (cạnh ngắn) đặt bên trái (x<0).
+      expect(B.constraint.kind).toBe('free');
+      expect(C.constraint.kind).toBe('free');
+      expect(B.constraint.at[0]).toBeLessThan(0);
+      expect(C.constraint.at[0]).toBeGreaterThan(0);
+      // O = trung điểm BC (tâm đường tròn).
+      expect(O.constraint.kind).toBe('midpoint');
+      // circle centerThrough (bán kính theo đầu mút → kéo vẫn đúng).
+      expect(circ.spec).toBe('centerThrough');
+      // polygon ABC (thứ tự nhãn gốc).
+      expect(poly.shape).toBe('triangle');
+      expect(poly.labels).toEqual(['A', 'B', 'C']);
+      // KHÔNG còn draw-shape (thay bằng mark-shape).
+      expect(ints.some((i) => i.op === 'draw-shape')).toBe(false);
+    });
+
+    it('"AC < AB" → C (cạnh ngắn AC) đặt bên trái', () => {
+      const ints = flat('Cho tam giác ABC vuông tại A (AC < AB) nội tiếp đường tròn (O)');
+      const B = ints.find((i) => i.op === 'add-point' && i.name === 'B');
+      const C = ints.find((i) => i.op === 'add-point' && i.name === 'C');
+      expect(C.constraint.at[0]).toBeLessThan(0);
+      expect(B.constraint.at[0]).toBeGreaterThan(0);
+    });
+
+    it('vuông tại A KHÔNG nội tiếp → vẫn draw-shape right-at-A (không Thales)', () => {
+      const ints = flat('Cho tam giác ABC vuông tại A');
+      expect(ints.length).toBe(1);
+      expect(ints[0].op).toBe('draw-shape');
+      expect(ints[0].variant).toBe('right-at-A');
+    });
+
+    it('nội tiếp nhưng KHÔNG vuông → draw-shape (Thales chỉ cho tam giác vuông)', () => {
+      const ints = flat('Cho tam giác ABC nội tiếp đường tròn (O)');
+      expect(ints.some((i) => i.op === 'draw-shape')).toBe(true);
+      expect(ints.some((i) => i.op === 'mark-shape')).toBe(false);
+    });
+
+    it('vuông tại B nội tiếp (O) → apex B là glider, A,C đầu mút', () => {
+      const ints = flat('Cho tam giác ABC vuông tại B nội tiếp đường tròn (O)');
+      const B = ints.find((i) => i.op === 'add-point' && i.name === 'B');
+      expect(B.constraint.kind).toBe('onCircle');
+      expect(ints.find((i) => i.name === 'A').constraint.kind).toBe('free');
+      expect(ints.find((i) => i.name === 'C').constraint.kind).toBe('free');
+    });
+  });
 });

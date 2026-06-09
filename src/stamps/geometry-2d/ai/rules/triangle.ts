@@ -1,6 +1,7 @@
 // src/stamps/geometry-2d/ai/rules/triangle.ts
 import type { LanguageRule, RuleMatch } from './_types';
-import { drawShape } from './_shared';
+import type { IntentT } from '../intent';
+import { drawShape, addPoint, drawCircle, markShape } from './_shared';
 
 // MULTI-MATCH: 1 clause có thể chứa NHIỀU tam giác ("tam giác ABC và tam giác
 // ABD vuông tại A", "tam giác đều DEF nội tiếp tam giác ABC"). Bắt MỌI tam giác
@@ -68,6 +69,71 @@ interface TriHit {
 // positional trùng label nên tương thích ngược.
 const RIGHT_BY_IDX = ['right-at-A', 'right-at-B', 'right-at-C'];
 const ISO_BY_IDX = ['isoceles-BC', 'isoceles-CA', 'isoceles-AB'];
+
+// === Thales: tam giác VUÔNG nội tiếp đường tròn → đường kính + glider ===========
+// Vuông tại A nội tiếp (O) ⟺ BC là ĐƯỜNG KÍNH (góc nội tiếp chắn nửa đường tròn).
+// Dựng RÀNG BUỘC (kéo vẫn vuông): 2 đầu mút đường kính free + tâm O = trung điểm +
+// đường tròn centerThrough (bán kính theo đầu mút) + apex là glider onCircle.
+// → góc vuông tại apex luôn đúng; AB<AC chọn bằng vị trí đầu mút cạnh ngắn (bên trái).
+//
+// CHỈ kích hoạt khi tam giác VUÔNG + có ngữ cảnh "nội tiếp đường tròn/(O)" SAU nhãn
+// (window). "đường tròn nội tiếp tam giác" (incircle) đứng TRƯỚC nhãn → KHÔNG ở
+// trong window → không kích hoạt (đúng: incircle không liên quan góc vuông).
+const THALES_R = 4;
+const THALES_THETA = 2.3; // ~131° (góc phần tư II) → apex gần đầu mút TRÁI = cạnh ngắn
+
+// "nội tiếp (trong)? (đường tròn (O)/tâm O)? | (O)" — circumcircle tam giác inscribed.
+const TRI_INSCRIBED =
+  /nội\s*tiếp\s+(?:trong\s+)?(?:đường\s*tròn\s*(?:\(\s*([A-Z])\s*\)|tâm\s+([A-Z]))?|\(\s*([A-Z])\s*\))/u;
+// Bất đẳng thức cạnh "AB < AC" / "AC > AB" (2 cạnh chia sẻ đỉnh vuông).
+const INEQ = /([A-Z])([A-Z])\s*([<>])\s*([A-Z])([A-Z])/u;
+
+/** Tên đường tròn ngoại tiếp từ window; undefined nếu không có "nội tiếp …". */
+function inscribedCircleName(window: string): string | undefined {
+  const m = TRI_INSCRIBED.exec(window);
+  if (!m) return undefined;
+  return m[1] ?? m[2] ?? m[3] ?? ''; // '' → caller default 'O'
+}
+
+/** Đầu mút (≠ apex) của cạnh NGẮN hơn theo "AB < AC"; default others[0]. */
+function shorterLegEnd(window: string, apex: string, others: string[]): string {
+  const m = INEQ.exec(window);
+  if (m) {
+    const op = m[3];
+    const o1 = m[1] === apex ? m[2] : m[2] === apex ? m[1] : undefined; // cạnh 1 (≠apex)
+    const o2 = m[4] === apex ? m[5] : m[5] === apex ? m[4] : undefined; // cạnh 2 (≠apex)
+    if (o1 && o2 && others.includes(o1) && others.includes(o2)) {
+      return op === '<' ? o1 : o2; // '<' → cạnh 1 ngắn; '>' → cạnh 2 ngắn
+    }
+  }
+  return others[0];
+}
+
+/**
+ * Dựng Thales cho tam giác vuông (apex tại index `apexIdx`) nội tiếp đường tròn
+ * `circleNameRaw`. Trả null nếu tên tâm đụng nhãn đỉnh (fail-safe → drawShape).
+ */
+function thalesIntents(
+  labels: string[],
+  apexIdx: number,
+  circleNameRaw: string,
+  window: string,
+): IntentT[] | null {
+  const apex = labels[apexIdx];
+  const others = labels.filter((_, i) => i !== apexIdx); // 2 đầu mút đường kính
+  const cn = circleNameRaw || 'O';
+  if (labels.includes(cn)) return null; // tên tâm trùng đỉnh → bỏ Thales (an toàn)
+  const shortEnd = shorterLegEnd(window, apex, others);
+  const longEnd = others[0] === shortEnd ? others[1] : others[0];
+  return [
+    addPoint(shortEnd, { kind: 'free', at: [-THALES_R, 0] }), // cạnh ngắn: đầu mút TRÁI
+    addPoint(longEnd, { kind: 'free', at: [THALES_R, 0] }),
+    addPoint(cn, { kind: 'midpoint', of: shortEnd + longEnd }), // tâm O = trung điểm đường kính
+    drawCircle(cn, 'centerThrough', { center: cn, through: shortEnd }),
+    addPoint(apex, { kind: 'onCircle', circle: cn, theta: THALES_THETA }), // apex glider (gần TRÁI)
+    markShape('triangle', labels),
+  ];
+}
 
 function variantFor(hit: TriHit, window: string): string {
   return hit.lang === 'en' ? variantForEn(hit, window) : variantForVi(hit, window);
@@ -175,11 +241,24 @@ export const triangleRule: LanguageRule = {
       // modifier tiền-vị của hit kế) → không leak modifier giữa các tam giác.
       hits.sort((a, b) => a.start - b.start);
 
-      const intents = hits.map((hit, idx) => {
+      const intents = hits.flatMap((hit, idx) => {
         const next = hits[idx + 1];
         const windowEnd = next ? next.start : c.text.length;
         const window = c.text.slice(hit.end, windowEnd);
-        return drawShape('triangle', hit.labels, variantFor(hit, window));
+        const variant = variantFor(hit, window);
+        // Thales: tam giác VUÔNG + nội tiếp đường tròn (window) → dựng ràng buộc
+        // (đường kính + apex glider) thay draw-shape free (free chỉ "may mắn" vuông,
+        // kéo là vỡ + không thoả AB<AC). circle3 của circleTriangle bị idempotent
+        // loại (cùng tên → centerThrough của triangle prio 100 thắng).
+        const rightIdx = RIGHT_BY_IDX.indexOf(variant);
+        if (rightIdx >= 0) {
+          const circleName = inscribedCircleName(window);
+          if (circleName !== undefined) {
+            const thales = thalesIntents(hit.labels, rightIdx, circleName, window);
+            if (thales) return thales;
+          }
+        }
+        return [drawShape('triangle', hit.labels, variant)];
       });
 
       out.push({ ruleId: 'triangle', clauseIds: [c.id], intents });
