@@ -51,6 +51,39 @@ const LANLUOT = new RegExp(
 //   groups: PROJ 1=from 2=line | FOOT 3=from 4=line
 const SINGLE = new RegExp(`(?:${PROJ_CORE})|(?:${FOOT_CORE})`, 'gu');
 
+// Distributive SHARED-FROM: "X, Y, Z lần lượt là hình chiếu (vuông góc)? của D
+// trên BC, CA, AB" → zip tên↔cạnh, MỘT `from` (D) chung. KHÁC LANLUOT (2 chân,
+// mỗi chân from riêng, nối "và"): ở đây 1 from + DANH SÁCH cạnh ngăn phẩy (≥2).
+// Số tên PHẢI bằng số cạnh (else bỏ → escalate, không đoán lệch).
+//   groups: 1=names blob (≥2, phẩy) | 2=from | 3=lines blob (≥2, phẩy)
+const NAMES_BLOB = "((?:[A-Z](?:['′]?)\\s*,\\s*)+[A-Z](?:['′]?))";
+const LINES_BLOB = '((?:[A-Z]{1,2}\\s*,\\s*)+[A-Z]{1,2})(?!\\p{L})';
+const DISTRIB_PROJ = new RegExp(
+  NAMES_BLOB +
+    '\\s+lần\\s*lượt\\s+(?:là\\s+)?hình\\s*chiếu\\s+(?:vuông\\s*góc\\s+)?(?:của\\s+)?([A-Z])(?!\\p{L})' +
+    '\\s+(?:trên|lên|xuống|đến)\\s+(?:các\\s+)?' +
+    LINES_BLOB,
+  'gu',
+);
+const DISTRIB_FOOT = new RegExp(
+  NAMES_BLOB +
+    '\\s+lần\\s*lượt\\s+(?:là\\s+)?chân\\s+(?:của\\s+)?đường\\s+(?:vuông\\s*góc|cao)\\s*(?:hạ\\s+|kẻ\\s+|vẽ\\s+|dựng\\s+)?(?:từ\\s+)?([A-Z])(?!\\p{L})' +
+    '\\s+(?:đến|xuống|trên|tới)\\s+(?:các\\s+)?' +
+    LINES_BLOB,
+  'gu',
+);
+
+/** Tách blob tên distributive "X, Y, Z" → ['X','Y','Z'] (chuẩn hoá prime ′→'). */
+function splitNames(blob: string): string[] {
+  return blob
+    .split(',')
+    .map((s) => {
+      const mm = /^([A-Z])(['′]?)/u.exec(s.trim());
+      return mm ? (mm[2] ? `${mm[1]}'` : mm[1]) : '';
+    })
+    .filter(Boolean);
+}
+
 // "Kẻ/Vẽ/Dựng XY (⊥|vuông góc với?) [cạnh|đường thẳng]? LINE (tại Z)?"
 //   "Kẻ AH ⊥ BC tại H" | "Vẽ AH vuông góc với BC" | "Dựng AH vuông góc cạnh BC"
 // Tên foot = chữ thứ 2 của cặp XY (g2); from = g1; onLine = g3. "tại Z" (g4) nếu
@@ -114,6 +147,21 @@ interface Foot {
 function parseFeet(text: string): Foot[] {
   const out: Foot[] = [];
   const consumed: Array<[number, number]> = [];
+
+  // 0) Distributive SHARED-FROM: "X, Y, Z lần lượt là hình chiếu/chân vuông góc
+  //    của D trên BC, CA, AB" → zip tên↔cạnh (from D chung). Span đã khớp →
+  //    consumed để SINGLE không xử lại. Zip lệch (số tên ≠ số cạnh) → bỏ.
+  for (const re of [DISTRIB_PROJ, DISTRIB_FOOT]) {
+    re.lastIndex = 0;
+    for (const dm of text.matchAll(re)) {
+      const names = splitNames(dm[1]);
+      const from = dm[2];
+      const lines = dm[3].split(',').map((s) => s.trim()).filter(Boolean);
+      if (names.length < 2 || names.length !== lines.length) continue; // zip lệch → escalate
+      names.forEach((name, i) => out.push({ name, from, onLine: lines[i] }));
+      consumed.push([dm.index ?? 0, (dm.index ?? 0) + dm[0].length]);
+    }
+  }
 
   // 1) "X, Y lần lượt là … và …" → 2 foot (name bind sẵn trong cú pháp).
   LANLUOT.lastIndex = 0;

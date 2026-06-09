@@ -273,3 +273,48 @@ describe('perpFoot EN (issue #46 group B)', () => {
     expect(intents.every((i) => i.op === 'add-point')).toBe(true);
   });
 });
+
+describe('perpFootRule — distributive shared-from "X,Y,Z lần lượt là hình chiếu của D trên BC,CA,AB"', () => {
+  /** map name → onLine cho mọi perpFoot từ `from` cho trước. */
+  function feet(problem: string) {
+    const intents = run(problem).flatMap((x) => x.intents) as any[];
+    return intents
+      .filter((i) => i.op === 'add-point' && i.constraint.kind === 'perpFoot')
+      .map((i) => ({ name: i.name, from: i.constraint.from, onLine: i.constraint.onLine }));
+  }
+
+  it('3 chân: X=foot(D,BC), Y=foot(D,CA), Z=foot(D,AB)', () => {
+    const f = feet('Gọi X, Y, Z lần lượt là hình chiếu của D trên BC, CA, AB');
+    expect(f).toEqual([
+      { name: 'X', from: 'D', onLine: 'BC' },
+      { name: 'Y', from: 'D', onLine: 'CA' },
+      { name: 'Z', from: 'D', onLine: 'AB' },
+    ]);
+  });
+
+  it('biến thể "hình chiếu" không "vuông góc"', () => {
+    const f = feet('X, Y lần lượt là hình chiếu của P trên AB, AC');
+    expect(f).toEqual([
+      { name: 'X', from: 'P', onLine: 'AB' },
+      { name: 'Y', from: 'P', onLine: 'AC' },
+    ]);
+  });
+
+  it('biến thể "chân đường vuông góc (hạ) từ D đến/xuống"', () => {
+    const f = feet('Gọi X, Y, Z lần lượt là chân đường vuông góc hạ từ D đến BC, CA, AB');
+    expect(f.map((x) => x.name + ':' + x.onLine)).toEqual(['X:BC', 'Y:CA', 'Z:AB']);
+    expect(f.every((x) => x.from === 'D')).toBe(true);
+  });
+
+  it('zip lệch (2 tên, 3 cạnh) → bỏ qua (escalate, không đoán)', () => {
+    expect(feet('X, Y lần lượt là hình chiếu của D trên BC, CA, AB')).toHaveLength(0);
+  });
+
+  it('regression: LANLUOT 2-chân "của B trên AC và của C trên AB" vẫn chạy', () => {
+    const f = feet('H, K lần lượt là hình chiếu của B trên AC và của C trên AB');
+    expect(f).toEqual([
+      { name: 'H', from: 'B', onLine: 'AC' },
+      { name: 'K', from: 'C', onLine: 'AB' },
+    ]);
+  });
+});
