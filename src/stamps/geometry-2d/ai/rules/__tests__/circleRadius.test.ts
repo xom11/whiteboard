@@ -132,6 +132,11 @@ describe('circleRadiusRule', () => {
     expect(m.length).toBe(0);
   });
 
+  it('"(O; R) đường kính AB" → circleDiameter sở hữu, circleRadius BỎ QUA', () => {
+    const m = run('Cho (O; R) đường kính AB cố định');
+    expect(m.length).toBe(0);
+  });
+
   it('hai đường tròn ký hiệu gọn → 2 match centerRadius riêng', () => {
     const m = run('Cho đường tròn (O; 3) và đường tròn (I; 5)');
     expect(m.length).toBe(2);

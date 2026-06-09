@@ -331,3 +331,41 @@ describe('perpFootRule — distributive shared-from "X,Y,Z lần lượt là hì
     ]);
   });
 });
+
+describe('perpFootRule — bundled altitudes from exam statements', () => {
+  function all(problem: string) {
+    return run(problem).flatMap((x) => x.intents) as any[];
+  }
+
+  it('"hai đường cao BE, CF cắt nhau tại H" → E/F feet + H orthocenter', () => {
+    const intents = all('Cho tam giác ABC, hai đường cao BE, CF cắt nhau tại H');
+    expect(intents).toEqual([
+      { op: 'add-point', name: 'E', constraint: { kind: 'perpFoot', from: 'B', onLine: 'AC' } },
+      { op: 'connect', from: 'B', to: 'E', style: 'segment' },
+      { op: 'add-point', name: 'F', constraint: { kind: 'perpFoot', from: 'C', onLine: 'AB' } },
+      { op: 'connect', from: 'C', to: 'F', style: 'segment' },
+      { op: 'add-point', name: 'H', constraint: { kind: 'orthocenter', of: ['A', 'B', 'C'] } },
+    ]);
+  });
+
+  it('"Các đường cao AD, BE, CF ... cắt nhau tại H" → 3 feet + orthocenter', () => {
+    const intents = all(
+      'Cho tam giác ABC. Các đường cao AD, BE, CF của tam giác ABC cắt nhau tại H',
+    );
+    const feet = intents.filter((i) => i.op === 'add-point' && i.constraint.kind === 'perpFoot');
+    expect(feet.map((i) => `${i.name}:${i.constraint.from}->${i.constraint.onLine}`)).toEqual([
+      'D:A->BC',
+      'E:B->AC',
+      'F:C->AB',
+    ]);
+    expect(intents).toContainEqual({
+      op: 'add-point',
+      name: 'H',
+      constraint: { kind: 'orthocenter', of: ['A', 'B', 'C'] },
+    });
+  });
+
+  it('không đoán nếu tên đường cao không thuộc tam giác đã nêu', () => {
+    expect(all('Cho tam giác ABC, đường cao PQ cắt nhau tại H')).toHaveLength(0);
+  });
+});

@@ -27,7 +27,9 @@ import { addPoint, connect, DUONG_KW } from './_shared';
 const PREFILTER = new RegExp(
   'hình\\s*chiếu|chân\\s+(?:của\\s+)?' +
     DUONG_KW +
-    '\\s+(?:cao|vuông\\s*góc)|⊥|vuông\\s*góc',
+    '\\s+(?:cao|vuông\\s*góc)|' +
+    DUONG_KW +
+    '\\s*cao|⊥|vuông\\s*góc',
   'u',
 );
 // EN prefilter (issue #46 group B). runRules prefilter theo `patterns` (BỎ QUA
@@ -135,6 +137,16 @@ const PERP_DRAW_EN = new RegExp(
   'gu',
 );
 
+// "hai đường cao BE, CF cắt nhau tại H" / "Các đường cao AD, BE, CF của tam
+// giác ABC cắt nhau tại H". Mỗi token XY: X là đỉnh, Y là chân đường cao; cạnh
+// đối diện X được suy từ tam giác bind được. Nếu có "cắt nhau tại H" thì H là
+// trực tâm. Chỉ nhận 2-3 đường cao để tránh vơ một đoạn rời.
+const ALTITUDE_BUNDLE = new RegExp(
+  `(?:hai\\s+|ba\\s+|các\\s+)?${DUONG_KW}\\s+cao\\s+((?:[A-Z]{2}\\s*,\\s*){0,2}[A-Z]{2})(?![A-Z])(?:\\s+của\\s+tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z]))?[^.]{0,60}?cắt\\s+nhau\\s+tại\\s+([A-Z])`,
+  'gu',
+);
+const TRI_G = /tam\s*giác\s+([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
+
 // Tên foot ĐỨNG TRƯỚC core qua "Let X be the …" / "X is the …".
 //   "Let H be the projection …" | "K is the orthogonal projection …"
 const NAME_BEFORE_EN = /([A-Z])(?:[′'])?\s+(?:be|is)\s+(?:the\s+)?$/u;
@@ -149,10 +161,63 @@ interface Foot {
   withSegment?: boolean;
 }
 
+function trianglesIn(text: string): string[][] {
+  const out: string[][] = [];
+  TRI_G.lastIndex = 0;
+  let m: RegExpExecArray | null;
+  while ((m = TRI_G.exec(text)) !== null) out.push([m[1], m[2], m[3]]);
+  return out;
+}
+
+function uniqueTriangle(problem: string): string[] | undefined {
+  const all = trianglesIn(problem);
+  const distinct = new Map(all.map((t) => [t.join(''), t]));
+  return distinct.size === 1 ? [...distinct.values()][0] : undefined;
+}
+
+function oppositeSide(vertex: string, tri: readonly string[]): string | undefined {
+  if (!tri.includes(vertex)) return undefined;
+  return tri.filter((p) => p !== vertex).join('');
+}
+
+function parseAltitudeBundle(text: string, fallbackTri: string[] | undefined): Foot[] {
+  const out: Foot[] = [];
+  ALTITUDE_BUNDLE.lastIndex = 0;
+  let m: RegExpExecArray | null;
+  while ((m = ALTITUDE_BUNDLE.exec(text)) !== null) {
+    const localTri = m[2] && m[3] && m[4] ? [m[2], m[3], m[4]] : fallbackTri;
+    if (!localTri) continue;
+    const tokens = m[1]
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (tokens.length < 2 || tokens.length > 3) continue;
+    let ok = true;
+    const local: Foot[] = [];
+    for (const token of tokens) {
+      const from = token[0];
+      const name = token[1];
+      const onLine = oppositeSide(from, localTri);
+      if (!onLine || localTri.includes(name)) {
+        ok = false;
+        break;
+      }
+      local.push({ name, from, onLine, withSegment: true });
+    }
+    if (ok) out.push(...local, { name: m[5], from: '', onLine: localTri.join('') });
+  }
+  return out;
+}
+
 /** Parse mọi foot trong 1 clause. Trả [] nếu không bind được tên / bị skip. */
-function parseFeet(text: string): Foot[] {
+function parseFeet(text: string, fallbackTri?: string[]): Foot[] {
   const out: Foot[] = [];
   const consumed: Array<[number, number]> = [];
+
+  // -1) Bundle đường cao đề thi. Orthocenter được encode tạm bằng Foot sentinel
+  // name=H/from='' để flatMap bên dưới emit addPoint orthocenter đúng thứ tự.
+  const bundled = parseAltitudeBundle(text, fallbackTri);
+  if (bundled.length > 0) return bundled;
 
   // 0) Distributive SHARED-FROM: "X, Y, Z lần lượt là hình chiếu/chân vuông góc
   //    của D trên BC, CA, AB" → zip tên↔cạnh (from D chung). Span đã khớp →
@@ -250,13 +315,15 @@ export const perpFootRule: LanguageRule = {
   patterns: [PREFILTER, PREFILTER_EN],
   match(ctx) {
     const out: RuleMatch[] = [];
+    const fallbackTri = uniqueTriangle(ctx.problem);
     for (const c of ctx.clauses) {
-      const feet = parseFeet(c.text);
+      const feet = parseFeet(c.text, fallbackTri);
       if (feet.length === 0) continue;
       // Foot add-point TRƯỚC; với EN draw form (withSegment) push THÊM connect
       // NGAY SAU add-point của foot đó (H phải tồn tại trước khi connect tham
       // chiếu). VN feet không set withSegment → byte-identical.
       const intents = feet.flatMap((f) => {
+        if (f.from === '') return [addPoint(f.name, { kind: 'orthocenter', of: f.onLine.split('') })];
         const add = addPoint(f.name, { kind: 'perpFoot', from: f.from, onLine: f.onLine });
         return f.withSegment ? [add, connect(f.from, f.name, 'segment')] : [add];
       });

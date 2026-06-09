@@ -24,7 +24,7 @@
 // ("đ","ề","ạ"…). Mọi regex chứa ký tự Việt dùng cờ 'u' + lookaround \p{L}.
 import type { LanguageRule, RuleMatch } from './_types';
 import type { Clause } from '../deterministic/coverage';
-import { drawCircle, CIRCLE_KW } from './_shared';
+import { drawCircle, CIRCLE_KW, DUONG_KW } from './_shared';
 
 // "đường tròn tâm O bán kính 3" / "(O) bán kính 3" / "O bán kính 3".
 // Tâm 1 ký tự HOA; "tâm" optional; có thể bọc trong ngoặc "(O)".
@@ -155,6 +155,18 @@ function isInscribedCircumscribed(problem: string, center: string): boolean {
   return after.test(problem) || before.test(problem);
 }
 
+function isDiameterCircle(problem: string, center: string): boolean {
+  const parenThenDiameter = new RegExp(
+    `\\(\\s*${center}\\s*[;,][^()]*\\)[^.]{0,40}?${DUONG_KW}\\s*kính\\s+[A-Z]{2}(?![A-Z])`,
+    'u',
+  );
+  const namedThenDiameter = new RegExp(
+    `${CIRCLE_KW}\\s*\\(\\s*${center}\\s*\\)[^.]{0,40}?${DUONG_KW}\\s*kính\\s+[A-Z]{2}(?![A-Z])`,
+    'u',
+  );
+  return parenThenDiameter.test(problem) || namedThenDiameter.test(problem);
+}
+
 /** Clause chứa fragment "(<center>" (ký hiệu gọn bị segmentation cắt vào đây). */
 function findParenClauseId(
   clauses: readonly Clause[],
@@ -209,7 +221,7 @@ export const circleRadiusRule: LanguageRule = {
         const center = crw[1];
         const radius = parseNum(crw[2]);
         if (!Number.isFinite(radius) || radius <= 0) continue;
-        if (isInscribedCircumscribed(ctx.problem, center)) continue; // circleTriangle sở hữu
+        if (isInscribedCircumscribed(ctx.problem, center) || isDiameterCircle(ctx.problem, center)) continue;
         out.push({
           ruleId: 'circleRadius',
           clauseIds: [c.id],
@@ -225,7 +237,7 @@ export const circleRadiusRule: LanguageRule = {
         let clw: RegExpExecArray | null;
         while ((clw = CENTER_RADIUS_LETTER_WORDS_G.exec(c.text)) !== null) {
           const center = clw[1];
-          if (isInscribedCircumscribed(ctx.problem, center)) continue;
+          if (isInscribedCircumscribed(ctx.problem, center) || isDiameterCircle(ctx.problem, center)) continue;
           out.push({
             ruleId: 'circleRadius',
             clauseIds: [c.id],
@@ -286,7 +298,7 @@ export const circleRadiusRule: LanguageRule = {
       const center = pm[1];
       const radius = parseNum(pm[2]);
       if (!Number.isFinite(radius) || radius <= 0) continue;
-      if (isInscribedCircumscribed(ctx.problem, center)) continue; // circleTriangle sở hữu
+      if (isInscribedCircumscribed(ctx.problem, center) || isDiameterCircle(ctx.problem, center)) continue;
       const clauseId = findParenClauseId(ctx.clauses, center);
       out.push({
         ruleId: 'circleRadius',
@@ -302,7 +314,7 @@ export const circleRadiusRule: LanguageRule = {
     let lpm: RegExpExecArray | null;
     while ((lpm = CENTER_RADIUS_LETTER_PAREN_G.exec(ctx.problem)) !== null) {
       const center = lpm[1];
-      if (isInscribedCircumscribed(ctx.problem, center)) continue; // circleTriangle sở hữu
+      if (isInscribedCircumscribed(ctx.problem, center) || isDiameterCircle(ctx.problem, center)) continue;
       const clauseId = findParenClauseId(ctx.clauses, center);
       out.push({
         ruleId: 'circleRadius',

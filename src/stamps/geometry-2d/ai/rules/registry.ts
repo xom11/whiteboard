@@ -32,6 +32,9 @@ import { chordRule } from './chord';
 import { incircleTangencyRule } from './incircleTangency';
 import { altitudeDiameterCirclesRule } from './altitudeDiameterCircles';
 import { diameterCircleCutsSidesRule } from './diameterCircleCutsSides';
+import { circleDiameterRule } from './circleDiameter';
+import { onCirclePointRule } from './onCirclePoint';
+import { tangentAtRule } from './tangentAt';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -63,6 +66,9 @@ const RULES: readonly LanguageRule[] = [
   incircleTangencyRule,
   altitudeDiameterCirclesRule,
   diameterCircleCutsSidesRule,
+  circleDiameterRule,
+  onCirclePointRule,
+  tangentAtRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */
