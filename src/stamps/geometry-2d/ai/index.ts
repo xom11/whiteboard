@@ -93,6 +93,13 @@ export {
   type DeterministicFigure,
   type TryDeterministicResult,
 } from './deterministic/tryDeterministicFigure';
+// Hybrid partial-coverage building blocks (Phase 1 — deterministic-only, chưa wire):
+// tryPartialDeterministic thu phần đã phủ + clause thiếu; mergeIntents gộp det+llm.
+export {
+  tryPartialDeterministic,
+  type PartialDeterministicResult,
+} from './deterministic/runDeterministicIntents';
+export { mergeIntents } from './mergeIntents';
 
 // Vision / OCR API (image → text).
 export {
