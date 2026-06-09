@@ -4,32 +4,12 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { State } from '../../../core/scene';
 import type { GenerateGeometryFigure } from '../../shared/types';
 import { useAiFigure } from './useAiFigure';
-import { handleExtractProblem } from '../ai/handleExtractProblem';
-import { fileToImagePart, validateFile } from '../ai/vision/preprocess';
-import type { ImagePart } from '../ai/providers/types';
 
 interface Props {
   generator: GenerateGeometryFigure;
   onGenerated: (state: State) => void;
   currentState?: State | null;
-  extractProblem?: typeof handleExtractProblem;
 }
-
-// SVG icons giữ inline để khỏi tăng bundle deps; theo tone "math-instrument refined".
-const PaperclipIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.75}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden
-    {...props}
-  >
-    <path d="M21.44 11.05 12.25 20.24a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.41 17.41a2 2 0 1 1-2.83-2.83l8.49-8.49" />
-  </svg>
-);
 
 const ArrowUpIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -57,7 +37,6 @@ export function AiFigurePrompt({
   generator,
   onGenerated,
   currentState,
-  extractProblem = handleExtractProblem,
 }: Props) {
   const {
     prompt,
@@ -84,107 +63,12 @@ export function AiFigurePrompt({
     return () => clearInterval(id);
   }, [isLoading]);
 
-  // ── image / vision state ───────────────────────────────
-  const [image, setImage] = useState<ImagePart | null>(null);
-  const [ocrLoading, setOcrLoading] = useState(false);
-  const [ocrError, setOcrError] = useState<string | null>(null);
-  const [ocrWarning, setOcrWarning] = useState<string | null>(null);
-  const [isDragOver, setIsDragOver] = useState(false);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const imagePreview = image
-    ? `data:${image.mediaType};base64,${image.base64}`
-    : null;
-
-  useEffect(() => {
-    setOcrError(null);
-    setOcrWarning(null);
-  }, [image]);
-
-  const handleFile = useCallback(
-    async (file: File) => {
-      if (isLoading || ocrLoading) return;
-      const v = validateFile(file);
-      if (!v.ok) {
-        setOcrError(v.message);
-        return;
-      }
-      try {
-        const part = await fileToImagePart(file);
-        setImage(part);
-      } catch (e) {
-        setOcrError(e instanceof Error ? e.message : 'Không decode được ảnh');
-      }
-    },
-    [isLoading, ocrLoading],
-  );
-
-  const handleFileInput = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) void handleFile(file);
-      e.target.value = '';
-    },
-    [handleFile],
-  );
-
-  const handlePaste = useCallback(
-    (e: React.ClipboardEvent<HTMLElement>) => {
-      const item = Array.from(e.clipboardData.items).find(
-        (it) => it.kind === 'file' && it.type.startsWith('image/'),
-      );
-      if (!item) return;
-      const file = item.getAsFile();
-      if (!file) return;
-      e.preventDefault();
-      void handleFile(file);
-    },
-    [handleFile],
-  );
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      setIsDragOver(false);
-      const file = Array.from(e.dataTransfer.files).find((f) =>
-        f.type.startsWith('image/'),
-      );
-      if (file) void handleFile(file);
-    },
-    [handleFile],
-  );
-
-  const runOcr = useCallback(async () => {
-    if (!image) return;
-    setOcrLoading(true);
-    setOcrError(null);
-    setOcrWarning(null);
-    try {
-      const r = await extractProblem(image);
-      if (r.kind === 'success' || r.kind === 'low-confidence') {
-        setPrompt(r.text);
-        if (r.kind === 'low-confidence') setOcrWarning(r.warning);
-        // Focus textarea sau OCR để user review/edit ngay.
-        requestAnimationFrame(() => textareaRef.current?.focus());
-      } else {
-        setOcrError(r.message);
-      }
-    } finally {
-      setOcrLoading(false);
-    }
-  }, [image, setPrompt, extractProblem]);
-
   const handleSendClick = useCallback(async () => {
-    // Khi có ảnh + textarea rỗng → ưu tiên OCR trước (single-click flow).
-    if (image && !prompt.trim() && !ocrLoading) {
-      await runOcr();
-      return;
-    }
     const generated = await submit();
     if (generated) onGenerated(generated);
-  }, [image, prompt, ocrLoading, runOcr, submit, onGenerated]);
+  }, [submit, onGenerated]);
 
   const handleSwitchToBuild = useCallback(() => {
     if (currentState && currentState.order.length > 0) {
@@ -199,19 +83,16 @@ export function AiFigurePrompt({
   // ── derived ────────────────────────────────────────────
   const hasContent = currentState != null && currentState.order.length > 0;
   const promptEmpty = !prompt.trim();
-  const willOcr = image != null && promptEmpty;
-  const sendDisabled =
-    (!image && promptEmpty) || ocrLoading || (isLoading && !willOcr);
+  const sendDisabled = promptEmpty || isLoading;
   const refineChipLabel =
     entityCount.points + entityCount.shapes > 0
       ? `Thêm vào · ${entityCount.points}đ, ${entityCount.shapes}đoạn`
       : 'Thêm vào';
 
-  const placeholder = willOcr
-    ? 'Bấm gửi để đọc đề từ ảnh — hoặc tự gõ ở đây…'
-    : mode === 'refine'
-      ? 'Mô tả phần cần thêm (vd: trung điểm M của BC). Có thể dán ảnh đề (Ctrl+V).'
-      : 'Mô tả đề bài cần dựng — hoặc dán/đính ảnh đề (Ctrl+V).';
+  const placeholder =
+    mode === 'refine'
+      ? 'Mô tả phần cần thêm (vd: trung điểm M của BC).'
+      : 'Mô tả đề bài cần dựng.';
 
   return (
     <div className="border-b border-slate-200 bg-slate-50 px-3 py-3">
@@ -272,43 +153,11 @@ export function AiFigurePrompt({
 
       {/* Composer */}
       <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setIsDragOver(true);
-        }}
-        onDragLeave={() => setIsDragOver(false)}
-        onDrop={handleDrop}
-        onPaste={handlePaste}
-        aria-label="Khu vực kéo thả ảnh"
-        role="region"
         className={
           'group relative flex flex-col rounded-2xl bg-white shadow-sm transition-all duration-150 ' +
-          'ring-1 ring-slate-200 focus-within:ring-2 focus-within:ring-emerald-400/70 focus-within:shadow-md ' +
-          (isDragOver ? 'ring-2 ring-emerald-500 bg-emerald-50/40' : '')
+          'ring-1 ring-slate-200 focus-within:ring-2 focus-within:ring-emerald-400/70 focus-within:shadow-md'
         }
       >
-        {/* Image chip */}
-        {image && imagePreview && (
-          <div className="flex flex-wrap gap-2 px-3 pt-2.5">
-            <div className="group/chip relative">
-              <img
-                src={imagePreview}
-                alt="Ảnh đề bài"
-                className="max-h-48 max-w-full h-auto w-auto rounded-lg border border-slate-200 shadow-sm"
-              />
-              <button
-                type="button"
-                onClick={() => setImage(null)}
-                disabled={ocrLoading || isLoading}
-                aria-label="Xoá ảnh"
-                className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-900/85 text-[11px] font-medium text-white shadow ring-2 ring-white transition hover:bg-slate-900 disabled:opacity-50"
-              >
-                ×
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Textarea */}
         <textarea
           ref={textareaRef}
@@ -330,38 +179,14 @@ export function AiFigurePrompt({
         />
 
         {/* Bottom action bar */}
-        <div className="flex items-center justify-between gap-2 px-2 pb-2 pt-1">
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isLoading || ocrLoading}
-              aria-label="Đính ảnh đề bài"
-              title="Đính ảnh (cũng có thể dán bằng Ctrl+V hoặc kéo thả)"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-emerald-700 disabled:opacity-40"
-            >
-              <PaperclipIcon className="h-[18px] w-[18px]" />
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              className="sr-only"
-              onChange={handleFileInput}
-              disabled={isLoading || ocrLoading}
-              aria-label="Chọn ảnh đề bài"
-            />
-          </div>
-
+        <div className="flex items-center justify-end gap-2 px-2 pb-2 pt-1">
           <div className="flex items-center gap-2">
             {/* Status text */}
-            {(isLoading || ocrLoading) && (
+            {isLoading && (
               <span className="font-mono text-[10px] tabular-nums text-slate-500">
-                {ocrLoading
-                  ? 'đọc ảnh…'
-                  : tokens > 0
-                    ? `${tokens}tok · ${elapsed}s`
-                    : `${elapsed}s`}
+                {tokens > 0
+                  ? `${tokens}tok · ${elapsed}s`
+                  : `${elapsed}s`}
               </span>
             )}
 
@@ -382,9 +207,9 @@ export function AiFigurePrompt({
                 type="button"
                 onClick={() => void handleSendClick()}
                 disabled={sendDisabled}
-                aria-label={willOcr ? 'Đọc đề từ ảnh' : 'Dựng bằng AI'}
-                title={willOcr ? 'Đọc đề từ ảnh (sẽ điền vào ô chat)' : 'Dựng bằng AI (Ctrl/⌘+Enter)'}
-                data-testid={willOcr ? 'geometry-ai-ocr' : 'geometry-ai-submit'}
+                aria-label="Dựng bằng AI"
+                title="Dựng bằng AI (Ctrl/⌘+Enter)"
+                data-testid="geometry-ai-submit"
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-white shadow-sm transition hover:scale-105 hover:bg-emerald-700 active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:hover:scale-100"
               >
                 <ArrowUpIcon className="h-[18px] w-[18px]" />
@@ -392,33 +217,11 @@ export function AiFigurePrompt({
             )}
           </div>
         </div>
-
-        {/* Drag overlay hint */}
-        {isDragOver && (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-2xl bg-emerald-50/60 text-xs font-medium text-emerald-700">
-            Thả ảnh vào đây
-          </div>
-        )}
       </div>
-
-      {/* Footer hint + alerts */}
-      <p className="mt-1.5 px-1 text-[10px] text-slate-500">
-        Dán ảnh (Ctrl+V), kéo thả, hoặc bấm <span aria-hidden>📎</span> để đính ảnh đề.
-      </p>
 
       {error && (
         <p role="alert" className="mt-1 px-1 text-xs text-red-600">
           {error}
-        </p>
-      )}
-      {ocrError && (
-        <p role="alert" className="mt-1 px-1 text-xs text-red-600">
-          {ocrError}
-        </p>
-      )}
-      {ocrWarning && (
-        <p className="mt-1 rounded bg-amber-50 px-2 py-1 text-[11px] text-amber-700">
-          {ocrWarning}
         </p>
       )}
     </div>

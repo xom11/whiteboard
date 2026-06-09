@@ -10,9 +10,8 @@ export type {
   HandleGenerateFigureOptions,
 } from './handleGenerateFigure';
 
-// Provider abstraction.
+// Provider abstraction (types + OllamaProvider — LLM-specific providers removed).
 export {
-  AnthropicProvider,
   OllamaProvider,
   selectProvider,
 } from './providers';
@@ -101,29 +100,3 @@ export {
 } from './deterministic/runDeterministicIntents';
 export { mergeIntents } from './mergeIntents';
 
-// Vision / OCR API (image → text).
-export {
-  handleExtractProblem,
-  type HandleExtractProblemOptions,
-  type ExtractUiResult,
-} from './handleExtractProblem';
-export {
-  extractProblemFromImage,
-  pickVisionModel,
-  buildVisionSystemPrompt,
-  VISION_USER_PROMPT,
-  VisionEnvelopeZ,
-  visionEnvelopeJsonSchema,
-  fileToImagePart,
-  inferMediaType,
-  validateFile,
-  MAX_EDGE_PX,
-  MAX_RAW_BYTES,
-  MAX_ENCODED_BYTES,
-  type ExtractProblemOptions,
-  type ExtractProblemSuccess,
-  type ExtractProblemFailure,
-  type ExtractProblemOutcome,
-  type VisionEnvelopeT,
-  type ValidationResult,
-} from './vision';

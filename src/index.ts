@@ -64,13 +64,3 @@ export type {
 } from './stamps/shared/types';
 export type { GeometryDraftPreview } from './stamps/shared/draftTypes';
 
-// Vision / OCR public API.
-export {
-  handleExtractProblem,
-  type HandleExtractProblemOptions,
-  type ExtractUiResult,
-} from './stamps/geometry-2d/ai/handleExtractProblem';
-export {
-  type ImagePart,
-  type VisionRequest,
-} from './stamps/geometry-2d/ai/providers/types';
