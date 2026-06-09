@@ -62,6 +62,28 @@ export function aiMiddlewarePlugin(options: AiMiddlewareOptions = {}): Plugin {
           const body = (await readJsonBody(req)) as { problem?: string };
           const problem = String(body?.problem ?? '');
 
+          // === Mặc định: CHỈ deterministic (rule base), KHÔNG fallback LLM ===
+          // Đang tối ưu rule base → muốn thấy đề nào rule chưa phủ ("không vẽ
+          // được") thay vì để LLM che lấp gap. Bật lại LLM: WHITEBOARD_AI_FALLBACK_LLM=1.
+          const llmFallback = ['1', 'true', 'yes'].includes(
+            (process.env.WHITEBOARD_AI_FALLBACK_LLM ?? '').toLowerCase(),
+          );
+          if (!llmFallback) {
+            const { handleGenerateFigure } = await import(
+              '../../src/stamps/geometry-2d/ai/handleGenerateFigure'
+            );
+            const opts = { ...(options.getOptions?.() ?? {}), deterministicOnly: true };
+            sse(res, 'progress', { tokens: 0 });
+            const result = await handleGenerateFigure({ problem }, opts);
+            sse(res, 'done', { result });
+            res.end();
+            // eslint-disable-next-line no-console
+            console.log(
+              `[ai-stream] deterministic-only → ${result.ok ? 'ok' : 'KHÔNG VẼ ĐƯỢC'} | ${problem.slice(0, 60)}`,
+            );
+            return;
+          }
+
           // Provider != ollama → bypass Ollama streaming, fall back to
           // non-streaming handleGenerateFigure (Anthropic/ClaudeCli không
           // expose token-level streaming dễ qua subprocess/tool_use).

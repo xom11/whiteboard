@@ -104,6 +104,13 @@ function mapErrorToUi(result: IntentGenerateResult): AiFigureUiResult {
         message:
           'AI tạo hình không hợp lệ (đã thử lại). Vui lòng tách thành 1 yêu cầu/lần hoặc diễn đạt khác.',
       };
+    case 'deterministic_miss':
+      // Chế độ chỉ-deterministic (đang tối ưu rule base, đã tắt LLM fallback):
+      // rule base chưa phủ đề này → báo "không vẽ được" + lý do để debug rule.
+      return {
+        ok: false,
+        message: `Không vẽ được (rule base chưa phủ đề này — LLM fallback đang tắt). ${result.message}`,
+      };
     case 'provider_error':
     default:
       return { ok: false, message: result.message };

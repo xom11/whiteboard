@@ -231,4 +231,25 @@ describe('handleGenerateFigure — deterministic fast path (rule engine)', () =>
     );
     expect(providerCallSpy).toHaveBeenCalled();
   });
+
+  test('deterministicOnly + đề miss → ok:false "không vẽ được", KHÔNG gọi LLM', async () => {
+    const providerCallSpy = jest.fn().mockResolvedValue({ kind: 'error', message: 'mock' });
+    const r = await handleGenerateFigure(
+      { problem: 'Cho tam giác ABC, P là điểm Fermat của tam giác.' },
+      { provider: { name: 'mock', defaultModel: 'mock', call: providerCallSpy }, deterministicOnly: true },
+    );
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.message).toMatch(/không vẽ được/i);
+    expect(providerCallSpy).not.toHaveBeenCalled();
+  });
+
+  test('deterministicOnly + đề hit → ok, KHÔNG gọi LLM', async () => {
+    const providerCallSpy = jest.fn().mockResolvedValue({ kind: 'error', message: 'mock' });
+    const r = await handleGenerateFigure(
+      { problem: 'Cho tam giác ABC. Gọi M là trung điểm BC' },
+      { provider: { name: 'mock', defaultModel: 'mock', call: providerCallSpy }, deterministicOnly: true },
+    );
+    expect(r.ok).toBe(true);
+    expect(providerCallSpy).not.toHaveBeenCalled();
+  });
 });

@@ -44,6 +44,13 @@ export interface GenerateIntentOptions extends SelectProviderOptions {
    * ép luôn dùng LLM (vd so sánh eval, debug).
    */
   useDeterministic?: boolean;
+  /**
+   * CHỈ deterministic — KHÔNG fallback LLM. Track A miss → trả failure
+   * `deterministic_miss` (kèm lý do) thay vì gọi Track B. Dùng khi tối ưu rule
+   * base: muốn THẤY đề nào rule chưa phủ (không tốn token, không che lấp gap).
+   * Ưu tiên hơn `useDeterministic` (true ⇒ luôn chạy Track A, không bao giờ LLM).
+   */
+  deterministicOnly?: boolean;
 }
 
 export interface IntentTokenUsage {
@@ -65,7 +72,14 @@ export interface IntentSuccessResult {
 
 export interface IntentFailureResult {
   ok: false;
-  reason: 'refused' | 'parse_error' | 'builder_error' | 'transpile_error' | 'verify_error' | 'provider_error';
+  reason:
+    | 'refused'
+    | 'parse_error'
+    | 'builder_error'
+    | 'transpile_error'
+    | 'verify_error'
+    | 'provider_error'
+    | 'deterministic_miss';
   message: string;
   intents?: readonly IntentT[];
   dsl?: ReturnType<typeof intentsToDsl>;
@@ -81,8 +95,10 @@ export async function generateFigureIntent(
 ): Promise<IntentGenerateResult> {
   // === Track A: deterministic-first ===
   // Rule engine + 4 lớp gate (coverage/transpile/verify/named-entity). Đề dễ→trung
-  // bình dựng tại đây, KHÔNG gọi LLM. Đề khó / phủ thiếu → fall through Track B.
-  if (opts.useDeterministic !== false) {
+  // bình dựng tại đây, KHÔNG gọi LLM. Đề khó / phủ thiếu → fall through Track B
+  // (trừ khi deterministicOnly → trả deterministic_miss).
+  // deterministicOnly ép chạy Track A kể cả khi useDeterministic=false.
+  if (opts.useDeterministic !== false || opts.deterministicOnly) {
     const det = tryDeterministicFigure(problem);
     if (det.ok) {
       return {
@@ -91,6 +107,18 @@ export async function generateFigureIntent(
         dsl: det.figure.dsl,
         transpile: det.figure.transpile,
         verify: det.figure.verify,
+        usage: ZERO_USAGE,
+        provider: 'deterministic',
+      };
+    }
+    // deterministicOnly: KHÔNG fallback LLM → trả failure kèm lý do (det.reason)
+    // để người tối ưu rule base thấy gap. (no-match / incomplete-coverage /
+    // transpile-fail / named-missing / verify-fail / …)
+    if (opts.deterministicOnly) {
+      return {
+        ok: false,
+        reason: 'deterministic_miss',
+        message: `Rule base chưa dựng được (lý do: ${det.reason}${det.detail ? ' — ' + det.detail : ''})`,
         usage: ZERO_USAGE,
         provider: 'deterministic',
       };

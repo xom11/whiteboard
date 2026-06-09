@@ -47,4 +47,31 @@ describe('generateFigureIntent — Track A deterministic-first', () => {
     });
     expect(call).toHaveBeenCalledTimes(1);
   });
+
+  // === deterministicOnly: KHÔNG fallback LLM (tối ưu rule base) ===
+  it('deterministicOnly + đề hit → ok deterministic, KHÔNG gọi LLM', async () => {
+    const { provider, call } = spyProvider(LLM_OUT);
+    const r = await generateFigureIntent('Cho tam giác ABC. Gọi M là trung điểm BC', {
+      provider,
+      deterministicOnly: true,
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.provider).toBe('deterministic');
+    expect(call).not.toHaveBeenCalled();
+  });
+
+  it('deterministicOnly + đề miss → ok:false reason deterministic_miss, KHÔNG gọi LLM', async () => {
+    const { provider, call } = spyProvider(LLM_OUT);
+    const r = await generateFigureIntent('Cho tam giác ABC, P là điểm Fermat của tam giác.', {
+      provider,
+      deterministicOnly: true,
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.reason).toBe('deterministic_miss');
+      // message nêu lý do deterministic (giúp tối ưu rule base).
+      expect(r.message).toMatch(/named-missing|rule base|không/i);
+    }
+    expect(call).not.toHaveBeenCalled();
+  });
 });
