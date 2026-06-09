@@ -74,6 +74,11 @@ export interface StampHostProps {
   isDark: boolean;
   /** Optional client-safe bridge for the geometry-2d AI prompt editor. */
   generateGeometryFigure?: GenerateGeometryFigure;
+  /**
+   * Chỉ geometry-2d dùng: phát snapshot hình đang dựng (debounced) để consumer
+   * broadcast cho học sinh xem live. `null` = clear ghost (đã chèn / huỷ / rỗng).
+   */
+  onGeometryDraft?: (draft: import('./draftTypes').GeometryDraftPreview | null) => void;
 }
 
 /**
