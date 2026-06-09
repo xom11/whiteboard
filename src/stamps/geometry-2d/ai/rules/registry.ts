@@ -18,6 +18,7 @@ import { tangentFromExtRule } from './tangentFromExt';
 import { externalPointRule } from './externalPoint';
 import { arcMidpointRule } from './arcMidpoint';
 import { excenterRule } from './excenter';
+import { parallelPerpRule } from './parallelPerp';
 import { reflectionRule } from './reflection';
 import { pointAtDistanceRule } from './pointAtDistance';
 import { eulerLineRule } from './eulerLine';
@@ -42,6 +43,7 @@ const RULES: readonly LanguageRule[] = [
   externalPointRule,
   arcMidpointRule,
   excenterRule,
+  parallelPerpRule,
   reflectionRule,
   pointAtDistanceRule,
   eulerLineRule,
