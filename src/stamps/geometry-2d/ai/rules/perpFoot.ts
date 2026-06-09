@@ -138,8 +138,9 @@ interface Foot {
   name: string;
   from: string;
   onLine: string;
-  /** Form C (EN draw) chỉ: cần emit connect(from, foot) vì connect.ts VN-only.
-   *  VN feet KHÔNG set → behavior VN byte-identical. */
+  /** Emit thêm connect(from, foot) — đoạn vuông góc từ điểm tới chân. Dùng cho:
+   *  Form C (EN draw "Draw AH ⊥ BC") + distributive VN "X,Y,Z hình chiếu của D…"
+   *  (thể hiện hình chiếu DX/DY/DZ). Foot đơn VN KHÔNG set → byte-identical. */
   withSegment?: boolean;
 }
 
@@ -158,7 +159,9 @@ function parseFeet(text: string): Foot[] {
       const from = dm[2];
       const lines = dm[3].split(',').map((s) => s.trim()).filter(Boolean);
       if (names.length < 2 || names.length !== lines.length) continue; // zip lệch → escalate
-      names.forEach((name, i) => out.push({ name, from, onLine: lines[i] }));
+      // withSegment: vẽ kèm đoạn vuông góc from→foot (DX/DY/DZ) để THỂ HIỆN hình
+      // chiếu (render perpFoot chỉ tạo điểm chân, không tự vẽ đường rớt vuông góc).
+      names.forEach((name, i) => out.push({ name, from, onLine: lines[i], withSegment: true }));
       consumed.push([dm.index ?? 0, (dm.index ?? 0) + dm[0].length]);
     }
   }

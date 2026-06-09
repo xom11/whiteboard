@@ -292,6 +292,19 @@ describe('perpFootRule — distributive shared-from "X,Y,Z lần lượt là hì
     ]);
   });
 
+  it('vẽ kèm đoạn vuông góc D→X, D→Y, D→Z (thể hiện hình chiếu)', () => {
+    const intents = run('Gọi X, Y, Z lần lượt là hình chiếu của D trên BC, CA, AB').flatMap(
+      (x) => x.intents,
+    ) as any[];
+    const segs = intents
+      .filter((i) => i.op === 'connect' && i.style === 'segment')
+      .map((i) => [i.from, i.to].join(''));
+    expect(segs).toEqual(['DX', 'DY', 'DZ']);
+    // mỗi đoạn nối phải đứng NGAY SAU add-point chân tương ứng (chân tồn tại trước).
+    const order = intents.map((i) => `${i.op}:${i.name ?? (i.from ?? '') + (i.to ?? '')}`);
+    expect(order.indexOf('add-point:X')).toBeLessThan(order.indexOf('connect:DX'));
+  });
+
   it('biến thể "hình chiếu" không "vuông góc"', () => {
     const f = feet('X, Y lần lượt là hình chiếu của P trên AB, AC');
     expect(f).toEqual([
