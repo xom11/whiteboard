@@ -45,6 +45,9 @@ import { intersectRayRule } from './intersectRay';
 import { tangentFromPointAtRule } from './tangentFromPointAt';
 import { perpLineTakePointRule } from './perpLineTakePoint';
 import { pairSecondIntersectionRule } from './pairSecondIntersection';
+import { circleCenterRadiusSegmentRule } from './circleCenterRadiusSegment';
+import { perpDiametersRule } from './perpDiameters';
+import { perpLineCutsTangentRule } from './perpLineCutsTangent';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -89,6 +92,9 @@ const RULES: readonly LanguageRule[] = [
   tangentFromPointAtRule,
   perpLineTakePointRule,
   pairSecondIntersectionRule,
+  circleCenterRadiusSegmentRule,
+  perpDiametersRule,
+  perpLineCutsTangentRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */

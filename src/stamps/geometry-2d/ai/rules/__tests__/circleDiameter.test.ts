@@ -57,4 +57,12 @@ describe('circleDiameterRule', () => {
   it('fail-safe: tâm trùng đầu mút → không claim', () => {
     expect(intents('Cho đường tròn (A) đường kính AB.')).toEqual([]);
   });
+
+  it('guard: "hai đường kính AB và CD vuông góc" → bỏ (perpDiameters sở hữu)', () => {
+    expect(
+      intents(
+        'Cho đường tròn (O) bán kính R có hai đường kính AB và CD vuông góc với nhau.',
+      ),
+    ).toEqual([]);
+  });
 });

@@ -11,6 +11,14 @@ import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint, connect, drawCircle, DUONG_KW, CIRCLE_KW } from './_shared';
 
 const DIAMETER_KW = new RegExp(DUONG_KW + '\\s*kính', 'u');
+
+// "hai đường kính AB và CD vuông góc với nhau" — HAI đường kính vuông góc của
+// CÙNG một đường tròn. perpDiameters rule sở hữu (4 điểm onCircle), KHÔNG dựng
+// đường tròn đường kính rời. Guard bỏ qua khi gặp dạng này.
+const TWO_PERP_DIAMETERS = new RegExp(
+  'hai\\s+' + DUONG_KW + '\\s*kính[^.]{0,40}?vuông\\s*góc',
+  'u',
+);
 const CIRCLE_NAME = String.raw`(?:${CIRCLE_KW}|nửa\s+${CIRCLE_KW})\s*(?:\(\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)|tâm\s+([A-Z]))?`;
 
 const WORDS = new RegExp(
@@ -74,6 +82,10 @@ export const circleDiameterRule: LanguageRule = {
   languages: ['vi'],
   patterns: [DIAMETER_KW],
   match(ctx) {
+    // "hai đường kính ... vuông góc" → perpDiameters sở hữu; KHÔNG dựng đường tròn
+    // đường kính rời (sẽ chồng + sai: đường tròn này có 2 đường kính, không phải
+    // đường tròn ĐƯỜNG KÍNH AB).
+    if (TWO_PERP_DIAMETERS.test(ctx.problem)) return [];
     const out: RuleMatch[] = [];
     const whole = parseAll(ctx.problem);
     const compact = whole.filter((p) => ctx.problem.includes(`(${p.center};`) || ctx.problem.includes(`(${p.center},`));
