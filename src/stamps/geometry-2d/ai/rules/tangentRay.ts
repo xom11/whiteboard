@@ -1,0 +1,75 @@
+// src/stamps/geometry-2d/ai/rules/tangentRay.ts
+//
+// Tiếp tuyến TẠI đầu mút đường kính, ĐẶT TÊN bằng token tia (Ax/Bx/By):
+//   "Kẻ tiếp tuyến Ax"            (Bài 7 — (O;R) đường kính AB)
+//   "Kẻ tiếp tuyến Bx"           (Bài 9 — nửa đường tròn đường kính AB)
+//   "Từ A và B kẻ hai tiếp tuyến Ax, By"
+//
+// Tiếp tuyến tại đầu mút A của đường kính AB = tiếp tuyến của đường tròn TẠI A.
+// → draw-line kind tangentAt {through:<endpoint>, circle:'O'} đặt tên theo token
+//   tia (Ax). Endpoint nằm TRÊN đường tròn nên tangentAt hợp lệ.
+//
+// Circle ref emit THÔ là chữ tâm "O" — resolveCircleNames map "O"→"O_c" (vì
+// circleDiameter đặt circle "O_c" + point "O"; base "O" không phải circle thật).
+//
+// GOTCHA \b: regex chứa ký tự Việt dùng cờ 'u' + lookaround (?!\p{L}).
+import type { LanguageRule, RuleMatch } from './_types';
+import type { IntentT } from '../intent';
+import { drawLine } from './_shared';
+
+// Prefilter: phải có "tiếp tuyến" + 1 token tia (chữ HOA + x/y/z/t thường).
+const PREFILTER = /tiếp\s*tuyến\s+[A-Z][xyzt](?![A-Za-z])/u;
+
+// Đường tròn đường kính: "(O; R) đường kính AB" hoặc "(O) đường kính AB".
+// Lấy tâm O + 2 đầu mút đường kính (A,B) để validate token tia neo đúng đầu mút.
+const CIRCLE_CENTER = /\(\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)/u;
+const DIAMETER_ENDS = /đường\s*kính\s+([A-Z])([A-Z])(?![A-Z])/u;
+
+// Token tia "Ax" = 1 chữ HOA (đầu mút) + 1 chữ thường x/y/z/t.
+// "tiếp tuyến <list>" — bắt CỤM ngay sau "tiếp tuyến(s)" rồi quét mọi token tia
+// trong cụm (xử lý cả dạng đơn "tiếp tuyến Ax" lẫn liệt kê "tiếp tuyến Ax, By").
+const AFTER_TANGENT = /tiếp\s*tuyến\s+((?:[A-Z][xyzt](?![A-Za-z])\s*[,và\s]*)+)/gu;
+const RAY_TOKEN = /([A-Z])([xyzt])(?![A-Za-z])/gu;
+
+export const tangentRayRule: LanguageRule = {
+  id: 'tangent-ray',
+  // Cao hơn point-on-ray (55) + intersect-ray (48): token tia phải được dựng
+  // TRƯỚC khi điểm-trên-tia / giao-với-tia tham chiếu nó (intentsToDsl xử lý
+  // theo priority DESC, không topo-sort).
+  priority: 63,
+  languages: ['vi'],
+  patterns: [PREFILTER],
+  match(ctx) {
+    const cm = CIRCLE_CENTER.exec(ctx.problem);
+    const dm = DIAMETER_ENDS.exec(ctx.problem);
+    // Cần đường tròn ĐƯỜNG KÍNH (có tâm + 2 đầu mút) — chỉ những đầu mút này
+    // mới hợp lệ làm điểm tiếp xúc của tiếp tuyến tại đầu mút.
+    if (!cm || !dm) return [];
+    const center = cm[1];
+    const ends = new Set([dm[1], dm[2]]);
+
+    const out: RuleMatch[] = [];
+    for (const c of ctx.clauses) {
+      const intents: IntentT[] = [];
+      const seen = new Set<string>();
+      AFTER_TANGENT.lastIndex = 0;
+      for (const grp of c.text.matchAll(AFTER_TANGENT)) {
+        RAY_TOKEN.lastIndex = 0;
+        for (const m of grp[1].matchAll(RAY_TOKEN)) {
+          const endpoint = m[1];
+          const token = `${m[1]}${m[2]}`;
+          if (!ends.has(endpoint)) continue; // tia không neo đầu mút đường kính → bỏ
+          if (seen.has(token)) continue;
+          seen.add(token);
+          intents.push(
+            drawLine(token, 'tangentAt', { through: endpoint, circle: center }),
+          );
+        }
+      }
+      if (intents.length > 0) {
+        out.push({ ruleId: 'tangent-ray', clauseIds: [c.id], intents });
+      }
+    }
+    return out;
+  },
+};

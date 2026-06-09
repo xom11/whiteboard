@@ -19,6 +19,10 @@ const TAKE_ON = /[Ll]ấy\s+điểm\s+([A-Z])[^.]{0,20}?(?:trên|thuộc)\s+(?:c
 // group2=point. Center emit THÔ (resolveCircleNames map X→X_c nếu cần).
 const TAKE_ON_REV =
   /[Tt]rên\s+(?:nửa\s+)?(?:đường\s*tròn|cung)\s*\(\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)[^.]{0,16}?lấy\s+điểm\s+([A-Z])(?![A-Z])/u;
+// Distributive 2 điểm (Bài 9): "(lấy)? hai điểm C và D thuộc (nửa)? đường tròn"
+// → 2 điểm onCircle với theta KHÁC nhau. group1=điểm 1 (C), group2=điểm 2 (D).
+const TWO_ON =
+  /(?:lấy\s+)?hai\s+điểm\s+([A-Z])(?![A-Za-z])\s+và\s+([A-Z])(?![A-Za-z])\s+thuộc\s+(?:nửa\s+)?(?:đường\s*tròn|cung)/u;
 
 function resolveCircle(problem: string): string | undefined {
   const m = NAMED_CIRCLE.exec(problem) ?? COMPACT_CIRCLE.exec(problem);
@@ -56,6 +60,21 @@ export const onCirclePointRule: LanguageRule = {
         continue;
       }
       if (!circle) continue; // forward patterns cần circle toàn-đề
+      // Distributive 2 điểm: "lấy hai điểm C và D thuộc nửa đường tròn" — 2 điểm
+      // onCircle theta khác nhau trên circle toàn-đề.
+      const two = TWO_ON.exec(c.text);
+      if (two && two[1].length === 1 && two[2].length === 1) {
+        out.push({
+          ruleId: 'on-circle-point',
+          clauseIds: [c.id],
+          intents: [
+            addPoint(two[1], { kind: 'onCircle', circle, theta }),
+            addPoint(two[2], { kind: 'onCircle', circle, theta: theta + 0.8 }),
+          ],
+        });
+        theta += 1.6;
+        continue;
+      }
       const m = POINT_ON.exec(c.text) ?? TAKE_ON.exec(c.text);
       if (!m) continue;
       const name = m[1];

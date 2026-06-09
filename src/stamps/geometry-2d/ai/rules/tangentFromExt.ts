@@ -106,6 +106,10 @@ export const tangentFromExtRule: LanguageRule = {
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
+      // NOTE: "từ P kẻ tiếp tuyến tiếp xúc với (O) tại M" (1 tiếp tuyến + tiếp
+      // điểm đặt tên, từ điểm ngoài P PHÁI SINH) tách sang rule riêng
+      // tangentFromPointAt (priority < point-on-tangent-ray) để P được dựng
+      // TRƯỚC khi tham chiếu — xem tangentFromPointAt.ts.
       // === NAMED tangent points (issue #46): "tiếp tuyến AB, AC ... (O)" → dựng
       // tiếp điểm B,C (tangentPointExt) cộng với 2 tiếp tuyến. from = chữ cái đầu
       // CHUNG của 2 đoạn (điểm ngoài); tiếp điểm = chữ cái thứ 2 mỗi đoạn.

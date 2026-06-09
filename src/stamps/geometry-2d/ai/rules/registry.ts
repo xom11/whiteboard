@@ -39,6 +39,10 @@ import { onSegmentPointRule } from './onSegmentPoint';
 import { lineCircleIntersectionRule } from './lineCircleIntersection';
 import { incenterNamedTriangleRule } from './incenterNamedTriangle';
 import { perpThroughCutsLinesRule } from './perpThroughCutsLines';
+import { tangentRayRule } from './tangentRay';
+import { pointOnTangentRayRule } from './pointOnTangentRay';
+import { intersectRayRule } from './intersectRay';
+import { tangentFromPointAtRule } from './tangentFromPointAt';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -77,6 +81,10 @@ const RULES: readonly LanguageRule[] = [
   lineCircleIntersectionRule,
   incenterNamedTriangleRule,
   perpThroughCutsLinesRule,
+  tangentRayRule,
+  pointOnTangentRayRule,
+  intersectRayRule,
+  tangentFromPointAtRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */

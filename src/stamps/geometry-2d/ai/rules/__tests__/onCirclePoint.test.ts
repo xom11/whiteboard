@@ -26,6 +26,21 @@ describe('onCirclePointRule', () => {
     });
   });
 
+  it('"lấy hai điểm C và D thuộc nửa đường tròn" → C, D on O_c với theta KHÁC nhau (Bài 9)', () => {
+    const all = intents(
+      'Cho nửa đường tròn (O; R) đường kính AB. Kẻ tiếp tuyến Bx và lấy hai điểm C và D thuộc nửa đường tròn.',
+    );
+    const c = all.find((i) => i.name === 'C');
+    const d = all.find((i) => i.name === 'D');
+    expect(c).toBeDefined();
+    expect(d).toBeDefined();
+    expect(c.constraint.kind).toBe('onCircle');
+    expect(c.constraint.circle).toBe('O_c');
+    expect(d.constraint.kind).toBe('onCircle');
+    expect(d.constraint.circle).toBe('O_c');
+    expect(c.constraint.theta).not.toBe(d.constraint.theta);
+  });
+
   it('không có circle rõ ràng → không claim', () => {
     expect(intents('Lấy điểm F thuộc cung AC nhỏ')).toEqual([]);
   });
