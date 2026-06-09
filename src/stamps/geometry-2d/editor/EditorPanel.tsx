@@ -43,6 +43,10 @@ interface Props {
   onSelectionChange?: (id: string | undefined) => void;
   /** Client-safe bridge to a server-side AI generation call. */
   generateGeometryFigure?: GenerateGeometryFigure;
+  /** Excalidraw imperative API — để đọc viewport khi build draft. */
+  api?: any;
+  /** Phát draft live (debounced) cho consumer. null = clear. */
+  onGeometryDraft?: (draft: import('../../shared/draftTypes').GeometryDraftPreview | null) => void;
 }
 
 export interface GeometryEditorPanelHandle {
@@ -74,6 +78,8 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
       canRedo,
       onSelectionChange,
       generateGeometryFigure,
+      api,
+      onGeometryDraft,
     },
     ref,
   ) {
