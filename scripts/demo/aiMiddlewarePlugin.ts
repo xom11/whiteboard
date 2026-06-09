@@ -79,7 +79,9 @@ export function aiMiddlewarePlugin(options: AiMiddlewareOptions = {}): Plugin {
             res.end();
             // eslint-disable-next-line no-console
             console.log(
-              `[ai-stream] deterministic-only → ${result.ok ? 'ok' : 'KHÔNG VẼ ĐƯỢC'} | ${problem.slice(0, 60)}`,
+              result.ok
+                ? `[ai-stream] deterministic-only → ok | ${problem.slice(0, 60)}`
+                : `[ai-stream] deterministic-only → KHÔNG VẼ ĐƯỢC | ${problem.slice(0, 60)}\n          ↳ ${result.message}`,
             );
             return;
           }

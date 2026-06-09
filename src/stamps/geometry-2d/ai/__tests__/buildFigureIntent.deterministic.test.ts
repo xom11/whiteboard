@@ -69,8 +69,10 @@ describe('generateFigureIntent — Track A deterministic-first', () => {
     expect(r.ok).toBe(false);
     if (!r.ok) {
       expect(r.reason).toBe('deterministic_miss');
-      // message nêu lý do deterministic (giúp tối ưu rule base).
-      expect(r.message).toMatch(/named-missing|rule base|không/i);
+      // message dễ hiểu: nêu hướng xử lý (thêm rule / sửa rule), không còn mã
+      // kỹ thuật thô "lý do: named-missing".
+      expect(r.message).toMatch(/bổ sung rule|lỗi rule/i);
+      expect(r.message).not.toContain('lý do:');
     }
     expect(call).not.toHaveBeenCalled();
   });

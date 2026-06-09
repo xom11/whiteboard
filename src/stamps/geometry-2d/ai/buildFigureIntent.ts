@@ -19,6 +19,7 @@ import { resolveCircleNameCollisions } from './resolveCircleNames';
 import { completeRightAngle } from './completeRightAngle';
 import { verifyGeometry, type VerifyReport } from './verify';
 import { tryDeterministicFigure } from './deterministic/tryDeterministicFigure';
+import { describeDeterministicMiss } from './deterministic/describeMiss';
 import {
   selectProvider,
   type AIProvider,
@@ -118,7 +119,7 @@ export async function generateFigureIntent(
       return {
         ok: false,
         reason: 'deterministic_miss',
-        message: `Rule base chưa dựng được (lý do: ${det.reason}${det.detail ? ' — ' + det.detail : ''})`,
+        message: describeDeterministicMiss(det),
         usage: ZERO_USAGE,
         provider: 'deterministic',
       };

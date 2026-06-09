@@ -239,7 +239,11 @@ describe('handleGenerateFigure — deterministic fast path (rule engine)', () =>
       { provider: { name: 'mock', defaultModel: 'mock', call: providerCallSpy }, deterministicOnly: true },
     );
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.message).toMatch(/không vẽ được/i);
+    if (!r.ok) {
+      // message dễ hiểu: nêu hướng xử lý (thêm/sửa rule), không leak jargon cũ.
+      expect(r.message).toMatch(/bổ sung rule|lỗi rule/i);
+      expect(r.message).not.toMatch(/LLM fallback/i);
+    }
     expect(providerCallSpy).not.toHaveBeenCalled();
   });
 
