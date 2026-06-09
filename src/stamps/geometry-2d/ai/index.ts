@@ -1,13 +1,9 @@
 // src/stamps/geometry-2d/ai/index.ts
-export { generateFigure } from './buildFigure';
-export type {
-  GenerateOptions,
-  GenerateResult,
-  TokenUsage,
-} from './buildFigure';
 
-// Façade cho HTTP transport (Vite middleware, Next.js route, ...): gọi
-// generateFigure() + map sang AiFigureUiResult sẵn sàng đẩy về client.
+// Façade HTTP transport (Vite middleware, Next.js route, ...): chạy rule-engine
+// intent pipeline (generateFigureIntent — deterministic rules-first → LLM
+// fallback) + map sang AiFigureUiResult ({ ok, state }) sẵn sàng đẩy về client.
+// Là entry chính cho UI sinh hình.
 export { handleGenerateFigure } from './handleGenerateFigure';
 export type {
   HandleGenerateFigureInput,
@@ -54,21 +50,6 @@ export {
   type FigureRefineEnvelopeT,
 } from './refineEnvelope';
 
-// Keyword→kind validator (model-agnostic safety net).
-export {
-  validateKindCoverage,
-  buildRetryHint,
-  extractRequirements,
-  applyDeterministicCompletion,
-  type ValidatorIssue,
-  type ValidatorResult,
-  type PointStub,
-  type ShapeStub,
-  type RequirementExtraction,
-  type CompletionAction,
-  type CompletionResult,
-} from './validator';
-
 // Intent pipeline (4-stage: extract→translate→render→verify).
 export {
   IntentZ,
@@ -105,13 +86,13 @@ export {
   type AiFigureIntentUiResult,
 } from './handleGenerateFigureIntent';
 
-// Deterministic fast-path API.
+// Deterministic rule engine (rules-first NLU → IntentT[] + 4 gate). Live API
+// dùng nội bộ qua generateFigureIntent; export trực tiếp cho eval/test.
 export {
-  parseDeterministic,
-  type ParseOptions,
-  type ParseResult,
-  type SkeletonResult,
-} from './deterministic';
+  tryDeterministicFigure,
+  type DeterministicFigure,
+  type TryDeterministicResult,
+} from './deterministic/tryDeterministicFigure';
 
 // Vision / OCR API (image → text).
 export {

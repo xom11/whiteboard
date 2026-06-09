@@ -16,7 +16,11 @@ import type { IntentT } from '../intent';
 // Group prime đứng ngay sau chữ cái — collect bằng letter + normalize(prime) để
 // expected-name khớp DSL (rule pointAtDistance giữ prime → DSL có "D'").
 const NAMED_INTRO = /(?:Gọi|gọi|Lấy|lấy|Dựng|dựng|Đặt|đặt|tại|điểm|và)\s+(?:điểm\s+)?([A-Z])(['′]?)(?![A-Za-z])/gu;
-const NAMED_LA = /([A-Z])(['′]?)(?![A-Za-z])\s+là\b/gu;
+// LƯU Ý: KHÔNG dùng `là\b` — `\b` của JS theo ASCII, mà 'à' (U+00E0) là
+// non-word-char ASCII → `\b` sau 'là' KHÔNG khớp khi theo sau là space/dấu câu
+// → pattern chết, bỏ sót mọi "X là <construct>" (bug silent-incomplete). Dùng
+// lookahead non-letter Unicode (?!\p{L}) để neo cuối "là".
+const NAMED_LA = /([A-Z])(['′]?)(?![A-Za-z])\s+là(?!\p{L})/gu;
 const NAMED_LANLUOT = /([A-Z])(['′]?)(?![A-Za-z])\s*,\s*([A-Z])(['′]?)(?![A-Za-z])\s+lần lượt/gu;
 
 // Ghép chữ cái + prime đã normalize (′→') thành tên đầy đủ. Đồng bộ với

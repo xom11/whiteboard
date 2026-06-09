@@ -23,6 +23,10 @@ const ESCALATE: { problem: string; reason: string }[] = [
   { problem: 'Cho tam giác ABC. Đường trung trực của BC cắt AB tại D', reason: 'named-missing' },
   { problem: 'Cho tam giác ABC. Trên cạnh AB lấy điểm D sao cho AD = 2DB', reason: 'named-missing' },
   { problem: 'Chứng minh định lý Pytago', reason: 'no-match' },
+  // Guard NAMED_LA: "X là <construct chưa có rule>" cùng clause với tam giác đã
+  // claim → coverage complete nhưng điểm J thiếu → PHẢI named-missing (escalate),
+  // KHÔNG silent-incomplete. (Trước fix `là\b`, guard chết → render tam giác thiếu J.)
+  { problem: 'Cho tam giác ABC, J là tâm bàng tiếp góc A.', reason: 'named-missing' },
 ];
 
 describe('tryDeterministicFigure — render deterministic (không cần AI)', () => {

@@ -160,12 +160,14 @@ git push --follow-tags
 
 ## Gotchas (AI/DSL pipeline)
 
-- **LLM nhỏ (Gemma 4B) hay bịa DSL** dù prompt có MANDATORY rule + ví dụ. Pipeline đã có 3 lớp chống bias trong `src/stamps/geometry-2d/ai/`:
-  1. `prompt.ts` — section "BẮT BUỘC" + bảng từ khoá→kind + anti-pattern tam-giác-vuông-tại-gốc.
-  2. `validator.ts` `extractRequirements()` — regex Vietnamese keyword → JSON stub cho mid/perpFoot/centroid/ortho/circum/incenter/circle3.
-  3. `validator.ts` `applyDeterministicCompletion()` — inject/replace stub vào DSL **TRƯỚC** transpile (LLM-independent fallback).
-- Khi thêm primitive kind mới: cập nhật cả 3 nơi + thêm fixture vào `dsl/fixtures/` để embed vào system prompt.
-- Eval suite: `npx tsx scripts/eval-ollama.ts gemma3:4b` (cần Ollama local). Đạt 8/8 kind accuracy với commit `9e10a5e` (2026-06-01).
+- **🎯 TRỌNG TÂM HIỆN TẠI (2026-06-09): tối ưu RULE BASE cho bài toán vẽ hình** — mở rộng phủ deterministic để LLM hiếm khi cần (LLM = chậm + tốn tiền). Mọi công việc AI/DSL ưu tiên hướng này.
+- **Kiến trúc pipeline (single pipeline, rules-first — đại tu 2026-06-09):**
+  - UI façade `handleGenerateFigure({problem}, opts) → AiFigureUiResult ({ok, state})` → gọi `generateFigureIntent` → **Track A deterministic** (`deterministic/tryDeterministicFigure`: chạy 21 rule `ai/rules/` → IntentT[] → 4 gate coverage/transpile/verify + 2 guard named-entity/fidelity) → **Track B LLM intent** CHỈ khi Track A miss. Đề dễ→trung bình dựng KHÔNG tốn token.
+  - **Thêm construct = thêm 1 module `ai/rules/<name>.ts` + 1 dòng `rules/registry.ts` + 1 test `rules/__tests__/`.** (KHÔNG còn cập nhật validator 3 chỗ như trước.) Mỗi rule: `{id, priority, languages, patterns (prefilter), match(ctx)→RuleMatch[]}`. Regex tiếng Việt PHẢI cờ `u` + lookaround `(?!\p{L})` thay `\b` (ASCII `\b` không khớp quanh ký tự Việt — xem bug NAMED_LA dưới).
+  - **ĐÃ XOÁ 2026-06-09** (path DSL free-form cũ — dead sau khi UI chuyển sang rule engine; đừng resurrect): `buildFigure.ts`, `validator.ts` (keyword→kind anti-bias 1170 dòng — rules engine thay thế), `deterministic/{index(parseDeterministic),skeleton,derived,confidence}.ts`. Spec: `docs/superpowers/specs/2026-06-09-rule-engine-wire-and-cleanup-design.md`.
+  - **Anti-bias giờ LÀ chính rule engine**: deterministic chạy TRƯỚC LLM; gate coverage (mọi clause geo phải được claim) + guard chặn render sai/thiếu. Guard `allNamedEntitiesPresent` (guards.ts): mọi tên "Gọi X"/"X là …"/đỉnh hình nêu trong đề PHẢI có trong DSL, else escalate. **Fix 2026-06-09**: `NAMED_LA` dùng `là\b` (ASCII `\b` sau 'à' chết) → `là(?!\p{L})` — trước fix "X là <construct chưa có rule>" silent-incomplete (render thiếu điểm) thay vì escalate.
+  - **Coverage gaps — TARGET PORT TIẾP** (hiện escalate LLM an toàn, chưa có rule deterministic): `excenter` ("tâm bàng tiếp góc A" — DSL/intent/render ĐÃ support, chỉ thiếu NLU rule, thêm vào `centers.ts` hoặc rule mới với `opposite` vertex); `arcMidpoint` cần circle context tường minh trong phrasing.
+- Eval rule engine: `npx tsx scripts/eval-intent.ts gemma3:12b` (cần Ollama local). (eval-ai/eval-ollama/sample-ollama/smoke-ai/inspect-failure/debug-dsl ĐÃ XOÁ 2026-06-09 — chỉ phục vụ path cũ.)
 - **Tier 4+5 (đề thi vào 10 thường + chuyên)** — Intent pipeline mở rộng 2026-06-02 (v0.25.0):
   - +2 op intent: `draw-line` (perpThrough/parallelThrough/tangentAt/tangentFromExt), `mark-shape` (sub-shape từ điểm có sẵn).
   - +3 circle spec: centerRadius, inscribedIn (+ centerThrough, through3 cũ).
@@ -174,7 +176,6 @@ git push --follow-tags
   - Stage 4 verify thêm `computeIntentMetrics(expected, actual)` → recall/precision/F1 + `verifyGeometric(dsl)` cho on-circle check (3 check khác defer).
   - Eval: `npx tsx scripts/eval-intent.ts gemma3:12b` — 30 cũ + 15 Tier 4/5 mới.
   - **Eval kết quả 2026-06-02** (`docs/superpowers/results/2026-06-02-eval-{4b,12b}-tier45.txt`): 12b F1=0.737 (target 0.91 không đạt). Bottleneck là LLM, không phải pipeline — Tier 5 (10+ intent/đề) cần `gemma3:27b` hoặc Claude. Pipeline + vocab đã ready để plug-in model lớn hơn.
-  - `buildFigure` (DSL free-form) **@deprecated** — sẽ remove ở 0.26.0. UI nên switch sang `handleGenerateFigureIntent`.
 - **`pointAtDistance` (Cụm B, 2026-06-06)** — constraint **metric đầu tiên** (theo độ dài): điểm trên tia `from→through` kéo dài qua `through`, cách `through` khoảng `d`. `C = through + d·unit(through−from)`. Giải bài "kéo dài AB về phía B, lấy C sao cho BC = R / = đoạn / = số". `distance` là discriminated union 3 nguồn: `circleRadius` (= bán kính), `segmentLength` (= |p1 p2|, 2 điểm), `literal` (số board-units). Full path intent→render (functional point, render ở `point.ts` TRƯỚC fallback `[0,0]`). **Defer**: tool editor vẽ tay, cm-mapping cho `literal`, nguồn distance khác (k·AB, 2R, tổng/hiệu). Spec/plan: `docs/superpowers/{specs,plans}/2026-06-06-point-at-distance*`.
 
 ## Conventions

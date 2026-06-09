@@ -1,113 +1,83 @@
-// Façade trên `generateFigure()` cho HTTP transport (Vite middleware,
-// Next.js route, Cloudflare Worker, ...). Gói luôn mapping
-// `GenerateResult` → `AiFigureUiResult` (shape client-safe) để mọi consumer
-// không phải lặp lại logic.
+// Façade HTTP transport cho rule-engine intent pipeline (generateFigureIntent).
+// Map IntentGenerateResult → AiFigureUiResult ({ ok, state }) — shape mà
+// <Whiteboard generateGeometryFigure> + playground route dùng trực tiếp.
+//
+// 2026-06-09: repurpose từ path buildFigure (free-form DSL, đã xoá) sang intent
+// pipeline. generateFigureIntent TỰ làm deterministic rules-first
+// (tryDeterministicFigure → 21 rule + 4 gate) rồi mới LLM fallback, nên façade
+// chỉ cần map kết quả. Contract AiFigureUiResult GIỮ NGUYÊN → consumer
+// (playground, hoctotbachkhoa) không phải đổi route, tự hưởng rule engine khi upgrade.
 
 import type { AiFigureUiResult } from '../../shared/types';
-import { generateFigure, type GenerateOptions, type GenerateResult } from './buildFigure';
-import { transpile } from '../dsl';
-import { parseDeterministic } from './deterministic';
+import {
+  generateFigureIntent,
+  type GenerateIntentOptions,
+  type IntentGenerateResult,
+} from './buildFigureIntent';
 
 export interface HandleGenerateFigureInput {
   /** Đề bài tiếng Việt từ teacher. */
   problem: string;
 }
 
-export interface HandleGenerateFigureOptions extends GenerateOptions {
+export interface HandleGenerateFigureOptions extends GenerateIntentOptions {
   /**
-   * Optional telemetry hook. Gọi cho MỖI attempt với envelope nội bộ trước
+   * Telemetry hook: gọi cho MỖI attempt với IntentGenerateResult nội bộ trước
    * khi map sang AiFigureUiResult — consumer dùng để log usage/cost/error.
-   * Không throw từ logger — sẽ swallow để không vỡ response.
+   * Không throw từ logger (swallow để không vỡ response).
    *
-   * @param result GenerateResult của attempt
+   * @param result IntentGenerateResult của attempt
    * @param attempt 1-indexed (1 = lần đầu, 2 = retry, ...)
    */
-  onResult?: (result: GenerateResult, attempt: number) => void;
+  onResult?: (result: IntentGenerateResult, attempt: number) => void;
   /**
-   * Số attempt tối đa khi nhận `transpile_error`. Default 2 (1 retry).
-   * AI stochastic → lần 2 thường khá hơn. Min 1, max 5.
+   * Số attempt tối đa khi build error (transpile/builder). Default 2 (1 retry).
+   * LLM stochastic → lần 2 thường khá hơn. Clamp [1,5].
    */
   maxAttempts?: number;
-  /**
-   * Bật deterministic fast path. Default true. Set false để bypass cho A/B test
-   * hoặc khi muốn force LLM (vd debug accuracy LLM).
-   */
-  useDeterministic?: boolean;
-  /** Confidence threshold cho fast path. Default 0.85. */
-  deterministicThreshold?: number;
 }
 
 const DEFAULT_MAX_ATTEMPTS = 2;
 
 /**
- * Gọi AI orchestrator và trả về kết quả ở dạng `AiFigureUiResult` mà
+ * Gọi rule-engine intent pipeline và trả về `AiFigureUiResult` mà
  * `<Whiteboard generateGeometryFigure>` chấp nhận trực tiếp.
  *
- * Auto-retry: chỉ retry khi `transpile_error` (DSL không hợp lệ — model
- * stochastic có cơ hội emit khá hơn lần 2). KHÔNG retry `refused` (AI cố ý
- * từ chối), `parse_error` (envelope sai schema — chắc chắn sai mọi lần),
- * hay `api_error` (network / config — không liên quan model).
+ * Track A (deterministic rules) chạy trong `generateFigureIntent` — đề dễ→trung
+ * bình dựng KHÔNG tốn token. Miss → Track B (LLM intent).
  *
- * Mapping:
- *   - ok=true             → { ok: true, state }
- *   - refused             → { ok: false, message: <message AI gửi> }
- *   - parse_error         → { ok: false, message: 'AI trả JSON không hợp lệ…' }
- *   - transpile_error     → { ok: false, message: 'AI tạo hình không hợp lệ…' }
- *   - api_error           → { ok: false, message: <message gốc> }
+ * Auto-retry: chỉ retry khi `transpile_error`/`builder_error` (AI emit hình
+ * structurally sai — model stochastic có cơ hội khá hơn lần 2). KHÔNG retry
+ * `refused` (cố ý), `parse_error` (sai schema), `provider_error` (network/config).
  *
- * Server-side caller giữ `GenerateResult` đầy đủ qua `onResult` callback cho
- * mục đích telemetry/logging.
+ * Server-side caller giữ `IntentGenerateResult` đầy đủ qua `onResult` cho
+ * telemetry/logging.
  */
 export async function handleGenerateFigure(
   input: HandleGenerateFigureInput,
   opts: HandleGenerateFigureOptions = {},
 ): Promise<AiFigureUiResult> {
-  const { onResult, maxAttempts: rawMax, useDeterministic, deterministicThreshold, ...generateOpts } = opts;
-
-  // === Track A: deterministic fast path ===
-  if (useDeterministic !== false) {
-    const det = parseDeterministic(input.problem, {
-      threshold: deterministicThreshold,
-    });
-    if (det.ok) {
-      const trans = transpile(det.dsl);
-      if (trans.ok) {
-        // Emit synthetic GenerateResult cho telemetry consistency
-        if (onResult) {
-          try {
-            onResult(
-              {
-                ok: true,
-                state: trans.state,
-                dsl: det.dsl,
-                usage: { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheCreationTokens: 0 },
-                provider: 'deterministic',
-                retries: 0,
-              },
-              0,
-            );
-          } catch { /* swallow telemetry errors */ }
-        }
-        return { ok: true, state: trans.state };
-      }
-      // Transpile fail → silent fall-through to LLM
-    }
+  if (!input.problem.trim()) {
+    return { ok: false, message: 'Đề bài rỗng' };
   }
 
-  // === Track B: LLM path (existing logic) ===
+  const { onResult, maxAttempts: rawMax, ...genOpts } = opts;
   const maxAttempts = clampAttempts(rawMax ?? DEFAULT_MAX_ATTEMPTS);
-  let lastResult: GenerateResult | null = null;
+
+  let last: IntentGenerateResult | null = null;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    const result = await generateFigure(input.problem, generateOpts);
-    lastResult = result;
+    const r = await generateFigureIntent(input.problem, genOpts);
+    last = r;
     if (onResult) {
-      try { onResult(result, attempt); } catch { /* swallow */ }
+      try { onResult(r, attempt); } catch { /* swallow telemetry errors */ }
     }
-    if (result.ok) return { ok: true, state: result.state };
-    if (result.reason === 'transpile_error' && attempt < maxAttempts) continue;
+    if (r.ok) return { ok: true, state: r.transpile.state };
+    if ((r.reason === 'transpile_error' || r.reason === 'builder_error') && attempt < maxAttempts) {
+      continue;
+    }
     break;
   }
-  return mapErrorToUi(lastResult!);
+  return mapErrorToUi(last!);
 }
 
 function clampAttempts(n: number): number {
@@ -115,8 +85,8 @@ function clampAttempts(n: number): number {
   return Math.max(1, Math.min(5, Math.floor(n)));
 }
 
-function mapErrorToUi(result: GenerateResult): AiFigureUiResult {
-  if (result.ok) return { ok: true, state: result.state };
+function mapErrorToUi(result: IntentGenerateResult): AiFigureUiResult {
+  if (result.ok) return { ok: true, state: result.transpile.state };
 
   switch (result.reason) {
     case 'refused':
@@ -126,13 +96,15 @@ function mapErrorToUi(result: GenerateResult): AiFigureUiResult {
         ok: false,
         message: 'AI trả về dữ liệu không hợp lệ. Vui lòng thử lại hoặc diễn đạt lại đề bài.',
       };
+    case 'builder_error':
     case 'transpile_error':
+    case 'verify_error':
       return {
         ok: false,
         message:
           'AI tạo hình không hợp lệ (đã thử lại). Vui lòng tách thành 1 yêu cầu/lần hoặc diễn đạt khác.',
       };
-    case 'api_error':
+    case 'provider_error':
     default:
       return { ok: false, message: result.message };
   }
