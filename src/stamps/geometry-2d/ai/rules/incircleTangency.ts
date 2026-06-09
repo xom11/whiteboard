@@ -5,7 +5,7 @@
 //    tại các điểm D, E, G"
 // → D/E/G = tangencyPoint(circle I, onLine BC/CA/AB).
 import type { LanguageRule, RuleMatch } from './_types';
-import { addPoint } from './_shared';
+import { addPoint, drawCircle } from './_shared';
 import type { IntentT } from '../intent';
 import type { Clause } from '../deterministic/coverage';
 
@@ -14,6 +14,11 @@ const PREFILTER = /tiếp\s*xúc/u;
 const INCIRCLE_IN_CLAUSE = /đường\s*tròn\s*(?:\(\s*([A-Z])\s*\)|tâm\s+([A-Z]))?\s*nội\s*tiếp\s+tam\s*giác\s+([A-Z])([A-Z])([A-Z])(?![A-Z])/iu;
 
 const SIDE_POINT_LIST = /tiếp\s*xúc\s+(?:với\s+)?(?:các\s+)?(?:cạnh|đoạn)\s+([A-Z]{2}(?:\s*,\s*[A-Z]{2})*)\s+(?:lần\s*lượt\s+)?tại\s+(?:các\s+)?(?:điểm\s+)?([A-Z](?:\s*,\s*[A-Z])*)(?![A-Za-z])/iu;
+
+// Dạng ĐẢO (Bài 11): "Cạnh AB, BC, CA tiếp xúc với đường tròn (O) tại D, E, F".
+// Cạnh đứng TRƯỚC "tiếp xúc"; đường tròn (O) là đường tròn NỘI TIẾP (tiếp xúc cả
+// 3 cạnh) — không rule nào khác dựng nên rule này tự emit circle inscribedIn.
+const REVERSED_SIDE_POINT = /(?:các\s+)?(?:cạnh|đoạn)\s+([A-Z]{2}(?:\s*,\s*[A-Z]{2})*)\s+tiếp\s*xúc\s+(?:với\s+)?đường\s*tròn\s*\(\s*([A-Z])\s*\)\s+(?:lần\s*lượt\s+)?tại\s+(?:các\s+)?(?:điểm\s+)?([A-Z](?:\s*,\s*[A-Z])*)(?![A-Za-z])/iu;
 
 function splitCsv(blob: string): string[] {
   return blob
@@ -66,6 +71,28 @@ export const incircleTangencyRule: LanguageRule = {
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const chunk of logicalChunks(ctx.problem, ctx.clauses)) {
+      // Dạng ĐẢO trước: "Cạnh ... tiếp xúc với đường tròn (O) tại ..." — circle là
+      // đường tròn nội tiếp, tự dựng inscribedIn + tiếp điểm.
+      const rev = REVERSED_SIDE_POINT.exec(chunk.text);
+      if (rev) {
+        const sides = splitCsv(rev[1]);
+        const circle = rev[2];
+        const names = splitCsv(rev[3]);
+        if (sides.length >= 1 && sides.length === names.length) {
+          const verts = [...new Set(sides.join('').split(''))];
+          const intents: IntentT[] = [];
+          // Tiếp xúc đủ 3 cạnh → là đường tròn nội tiếp tam giác (3 đỉnh).
+          if (verts.length === 3) {
+            intents.push(drawCircle(circle, 'inscribedIn', { triangle: verts }));
+          }
+          for (let i = 0; i < names.length; i++) {
+            intents.push(addPoint(names[i], { kind: 'tangencyPoint', circle, onLine: sides[i] }));
+          }
+          out.push({ ruleId: 'incircleTangency', clauseIds: chunk.clauseIds, intents });
+          continue;
+        }
+      }
+
       const circle = parseIncircleName(chunk.text);
       if (!circle) continue;
 
