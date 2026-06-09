@@ -5,6 +5,7 @@
 // clause-level (vốn coarse, dễ bỏ lọt khi 1 clause chứa nhiều construct).
 import type { DslInputT } from '../../dsl/schema';
 import type { IntentT } from '../intent';
+import { segmentClauses } from './coverage';
 
 // ── Guard 1: named-entity present ────────────────────────────────────────────
 // Mọi đỉnh/điểm được ĐẶT TÊN hay KHAI BÁO trong đề phải tồn tại trong DSL.
@@ -73,7 +74,11 @@ export function allNamedEntitiesPresent(problem: string, dsl: DslInputT): NamedE
   for (const s of dsl.shapes) present.add(s.name);
 
   const missing: string[] = [];
-  for (const name of collectExpectedNames(problem)) {
+  const constructionProblem = segmentClauses(problem)
+    .filter((c) => c.hasGeometry)
+    .map((c) => c.text)
+    .join('. ');
+  for (const name of collectExpectedNames(constructionProblem)) {
     if (!present.has(name)) missing.push(name);
   }
   return { ok: missing.length === 0, missing };

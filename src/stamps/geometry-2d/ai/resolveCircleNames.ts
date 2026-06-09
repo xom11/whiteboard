@@ -34,14 +34,27 @@ export function resolveCircleNameCollisions(intents: readonly IntentT[]): Intent
 
   const collisions = new Set<string>();
   for (const name of circleNames) {
-    if (pointRefs.has(name)) collisions.add(name);
+    if (pointRefs.has(name) || existingPoints.has(name)) collisions.add(name);
   }
-  if (collisions.size === 0) return [...intents];
 
   const rename = new Map<string, string>();
   for (const name of collisions) {
     rename.set(name, `${name}_c`);
   }
+
+  // circle-by-center: vài rule (circleDiameter) ĐÃ đặt tên circle "O_c" + center
+  // point "O", trong khi rule khác (lineCircleIntersection/onCircle) emit ref THÔ
+  // "O" cho circle. Map base "O" → "O_c" để rewrite các ref đó. Chỉ khi KHÔNG có
+  // circle thật tên "O" (nếu có thì ref "O" hợp lệ, không đụng).
+  for (const name of circleNames) {
+    if (!name.endsWith('_c')) continue;
+    const base = name.slice(0, -2);
+    if (circleNames.has(base)) continue; // circle "O" thật tồn tại → ref hợp lệ
+    if (rename.has(base)) continue; // đã rename do collision
+    rename.set(base, name);
+  }
+
+  if (rename.size === 0) return [...intents];
 
   const result: IntentT[] = [];
   for (const i of intents) {

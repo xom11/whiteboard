@@ -102,6 +102,18 @@ describe('perpFootRule', () => {
     expect(byName.K.constraint).toMatchObject({ kind: 'perpFoot', from: 'C', onLine: 'AB' });
   });
 
+  it('"từ M kẻ MP, MQ vuông góc với các cạnh AB, AC" → P,Q foot từ M', () => {
+    const m = run('từ M kẻ MP, MQ vuông góc với các cạnh AB, AC');
+    const intents = m.flatMap((x) => x.intents) as any[];
+    const byName = Object.fromEntries(
+      intents.filter((i) => i.op === 'add-point').map((i) => [i.name, i]),
+    );
+    expect(byName.P.constraint).toEqual({ kind: 'perpFoot', from: 'M', onLine: 'AB' });
+    expect(byName.Q.constraint).toEqual({ kind: 'perpFoot', from: 'M', onLine: 'AC' });
+    expect(intents).toContainEqual({ op: 'connect', from: 'M', to: 'P', style: 'segment' });
+    expect(intents).toContainEqual({ op: 'connect', from: 'M', to: 'Q', style: 'segment' });
+  });
+
   it('"trung điểm của hình chiếu A trên BC" → không claim (đổi nghĩa, escalate)', () => {
     const m = run('Gọi M là trung điểm của hình chiếu A trên BC');
     expect(m.length).toBe(0);
@@ -351,6 +363,23 @@ describe('perpFootRule — bundled altitudes from exam statements', () => {
   it('"Các đường cao AD, BE, CF ... cắt nhau tại H" → 3 feet + orthocenter', () => {
     const intents = all(
       'Cho tam giác ABC. Các đường cao AD, BE, CF của tam giác ABC cắt nhau tại H',
+    );
+    const feet = intents.filter((i) => i.op === 'add-point' && i.constraint.kind === 'perpFoot');
+    expect(feet.map((i) => `${i.name}:${i.constraint.from}->${i.constraint.onLine}`)).toEqual([
+      'D:A->BC',
+      'E:B->AC',
+      'F:C->AB',
+    ]);
+    expect(intents).toContainEqual({
+      op: 'add-point',
+      name: 'H',
+      constraint: { kind: 'orthocenter', of: ['A', 'B', 'C'] },
+    });
+  });
+
+  it('Bài 1: thêm vế "và cắt đường tròn..." vẫn dựng 3 feet + orthocenter', () => {
+    const intents = all(
+      'Cho tam giác ABC có ba góc nhọn nội tiếp đường tròn (O). Các đường cao AD, BE, CF cắt nhau tại H và cắt đường tròn (O) lần lượt tại M, N, P',
     );
     const feet = intents.filter((i) => i.op === 'add-point' && i.constraint.kind === 'perpFoot');
     expect(feet.map((i) => `${i.name}:${i.constraint.from}->${i.constraint.onLine}`)).toEqual([

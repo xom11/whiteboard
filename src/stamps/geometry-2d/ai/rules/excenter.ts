@@ -27,8 +27,8 @@ import { addPoint } from './_shared';
 const EXCENTER_KW = /bàng\s*tiếp/u;
 
 // Tam giác (1 lần) trong 1 đoạn text.
-const TRI = /tam\s*giác\s+([A-Z])([A-Z])([A-Z])/u;
-const TRI_G = /tam\s*giác\s+([A-Z])([A-Z])([A-Z])/gu;
+const TRI = /tam\s*giác\s+(?:(?:cân|vuông|đều|nhọn|tù)(?:\s+(?:tại|ở|đỉnh|có\s+ba\s+góc))?\s+)*(?:[^\s,.;:()]*\s+){0,2}?([A-Z])([A-Z])([A-Z])(?![A-Z])/u;
+const TRI_G = /tam\s*giác\s+(?:(?:cân|vuông|đều|nhọn|tù)(?:\s+(?:tại|ở|đỉnh|có\s+ba\s+góc))?\s+)*(?:[^\s,.;:()]*\s+){0,2}?([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
 
 // Đỉnh đối diện: "bàng tiếp (trong)? (góc|đỉnh|ứng với (đỉnh)?|đối diện (đỉnh)?) X".
 const OPPOSITE =

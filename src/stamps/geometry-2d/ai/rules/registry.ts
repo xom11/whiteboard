@@ -35,6 +35,8 @@ import { diameterCircleCutsSidesRule } from './diameterCircleCutsSides';
 import { circleDiameterRule } from './circleDiameter';
 import { onCirclePointRule } from './onCirclePoint';
 import { tangentAtRule } from './tangentAt';
+import { onSegmentPointRule } from './onSegmentPoint';
+import { lineCircleIntersectionRule } from './lineCircleIntersection';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -69,6 +71,8 @@ const RULES: readonly LanguageRule[] = [
   circleDiameterRule,
   onCirclePointRule,
   tangentAtRule,
+  onSegmentPointRule,
+  lineCircleIntersectionRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */

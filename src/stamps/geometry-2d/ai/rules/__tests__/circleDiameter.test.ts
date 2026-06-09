@@ -7,6 +7,10 @@ function intents(problem: string) {
     .flatMap((m) => m.intents as any[]);
 }
 
+function matches(problem: string) {
+  return circleDiameterRule.match({ problem, clauses: segmentClauses(problem) });
+}
+
 describe('circleDiameterRule', () => {
   it('"Cho đường tròn (O) đường kính AB" → endpoints + center midpoint + diameter circle', () => {
     const all = intents('Cho đường tròn (O) đường kính AB cố định.');
@@ -28,6 +32,12 @@ describe('circleDiameterRule', () => {
       endpoints: ['A', 'B'],
     });
     expect(all).toContainEqual({ op: 'add-point', name: 'O', constraint: { kind: 'midpoint', of: 'AB' } });
+  });
+
+  it('compact "(O; R)" claim cả clause chứa tâm và clause chứa đường kính', () => {
+    const m = matches('Cho đường tròn (O; R) đường kính AB.');
+    expect(m).toHaveLength(1);
+    expect(m[0].clauseIds).toEqual([0, 1]);
   });
 
   it('"Cho nửa đường tròn (O) đường kính AB" uses the support circle', () => {

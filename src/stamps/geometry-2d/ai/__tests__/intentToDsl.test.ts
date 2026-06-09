@@ -114,6 +114,30 @@ describe('intentsToDsl — add-point', () => {
     const G = dsl.points.find((p) => p.name === 'G')!;
     expect(G.kind).toBe('centroid');
   });
+
+  it('free point được UPGRADE khi sau đó có constraint cùng tên (giữ vị trí array)', () => {
+    // Bài 15: circleDiameter emit free M (endpoint đường kính), sau đó
+    // "Trên cạnh AC lấy M" → onSegment M. Constraint phải thắng free.
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'add-point', name: 'M', constraint: { kind: 'free' } },
+      { op: 'add-point', name: 'M', constraint: { kind: 'onSegment', of: 'AC' } },
+    ]);
+    const ms = dsl.points.filter((p) => p.name === 'M');
+    expect(ms).toHaveLength(1);
+    expect(ms[0].kind).toBe('onSegment');
+  });
+
+  it('free KHÔNG ghi đè constraint đã có (free đến sau bị bỏ)', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'add-point', name: 'M', constraint: { kind: 'midpoint', of: 'BC' } },
+      { op: 'add-point', name: 'M', constraint: { kind: 'free' } },
+    ]);
+    const ms = dsl.points.filter((p) => p.name === 'M');
+    expect(ms).toHaveLength(1);
+    expect(ms[0].kind).toBe('midpoint');
+  });
 });
 
 describe('intentsToDsl — connect', () => {

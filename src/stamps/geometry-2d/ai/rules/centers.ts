@@ -14,7 +14,7 @@ import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint } from './_shared';
 
 // Tam giác (global): quét mọi tam giác nêu trong một đoạn text.
-const TRI_G = /tam giác\s+([A-Z])([A-Z])([A-Z])/gu;
+const TRI_G = /tam giác\s+(?:(?:cân|vuông|đều|nhọn|tù)(?:\s+(?:tại|ở|đỉnh|có\s+ba\s+góc))?\s+)*(?:[^\s,.;:()]*\s+){0,2}?([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
 
 // === EN (issue #46 group B) =================================================
 // Tam giác tiếng Anh: "triangle ABC" (first-letter case flex [Tt], KHÔNG cờ 'i'

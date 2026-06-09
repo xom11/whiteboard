@@ -142,6 +142,18 @@ describe('resolveCircleNameCollisions', () => {
     expect(result.find((i) => i.op === 'draw-circle')?.name).toBe('O_c');
   });
 
+  it('pre-existing add-point cùng tên với circle vẫn rename dù chưa có point ref khác', () => {
+    const intents: IntentT[] = [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'H', 'E'], variant: 'any' },
+      { op: 'add-point', name: 'O', constraint: { kind: 'circumcenter', of: ['A', 'H', 'E'] } },
+      { op: 'draw-circle', name: 'O', spec: 'through3', points: ['A', 'H', 'E'] },
+    ];
+    const result = resolveCircleNameCollisions(intents);
+
+    expect(result.filter((i) => i.op === 'add-point' && i.name === 'O')).toHaveLength(1);
+    expect(result.find((i) => i.op === 'draw-circle')?.name).toBe('O_c');
+  });
+
   it('multiple collisions cùng intent set', () => {
     const intents: IntentT[] = [
       { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
@@ -303,5 +315,48 @@ describe('resolveCircleNameCollisions', () => {
     const mPoints = result.filter((i) => i.op === 'add-point' && i.name === 'M');
     expect(mPoints).toHaveLength(0); // không inject
     expect(result.find((i) => i.op === 'draw-circle')?.name).toBe('M_c');
+  });
+
+  // --- circle-by-center ref: circle đã pre-named "O_c" (circleDiameter) nhưng
+  // rule khác (lineCircleIntersection) emit ref thô "O". Phải rewrite O → O_c.
+  it('Bài 15: circleDiameter tạo O_c + center O, secondIntersection ref thô "O" → rewrite O_c', () => {
+    const intents: IntentT[] = [
+      { op: 'add-point', name: 'M', constraint: { kind: 'onSegment', of: 'AC' } },
+      { op: 'add-point', name: 'O', constraint: { kind: 'midpoint', of: 'MC' } },
+      { op: 'draw-circle', name: 'O_c', spec: 'diameter', endpoints: ['M', 'C'] } as unknown as IntentT,
+      { op: 'add-point', name: 'D', constraint: { kind: 'secondIntersection', line: 'BM', circle: 'O', other: 'B' } },
+      { op: 'add-point', name: 'S', constraint: { kind: 'secondIntersection', line: 'AD', circle: 'O', other: 'A' } },
+    ];
+    const result = resolveCircleNameCollisions(intents);
+    const d = result.find((i) => i.op === 'add-point' && i.name === 'D');
+    expect(d?.constraint).toMatchObject({ circle: 'O_c' });
+    const s = result.find((i) => i.op === 'add-point' && i.name === 'S');
+    expect(s?.constraint).toMatchObject({ circle: 'O_c' });
+    // KHÔNG đổi tên circle (đã là O_c), KHÔNG double-inject center O
+    expect(result.filter((i) => i.op === 'draw-circle')).toHaveLength(1);
+    expect(result.filter((i) => i.op === 'add-point' && i.name === 'O')).toHaveLength(1);
+  });
+
+  it('circle-by-center: onCircle + tangencyPoint ref thô "O" cũng rewrite khi chỉ có O_c', () => {
+    const intents: IntentT[] = [
+      { op: 'add-point', name: 'O', constraint: { kind: 'midpoint', of: 'AB' } },
+      { op: 'draw-circle', name: 'O_c', spec: 'diameter', endpoints: ['A', 'B'] } as unknown as IntentT,
+      { op: 'add-point', name: 'C', constraint: { kind: 'onCircle', circle: 'O', theta: 1 } },
+      { op: 'add-point', name: 'T', constraint: { kind: 'tangencyPoint', circle: 'O', onLine: 'AB' } },
+    ];
+    const result = resolveCircleNameCollisions(intents);
+    expect(result.find((i) => i.op === 'add-point' && i.name === 'C')?.constraint).toMatchObject({ circle: 'O_c' });
+    expect(result.find((i) => i.op === 'add-point' && i.name === 'T')?.constraint).toMatchObject({ circle: 'O_c' });
+  });
+
+  it('circle-by-center: KHÔNG rewrite khi circle "O" thật sự tồn tại', () => {
+    // Nếu đã có circle tên đúng "O" thì ref "O" hợp lệ, không đổi thành O_c.
+    const intents: IntentT[] = [
+      { op: 'draw-circle', name: 'O_c', spec: 'diameter', endpoints: ['A', 'B'] } as unknown as IntentT,
+      { op: 'draw-circle', name: 'O', spec: 'centerRadius', center: 'cen', radius: 2 },
+      { op: 'add-point', name: 'C', constraint: { kind: 'onCircle', circle: 'O', theta: 1 } },
+    ];
+    const result = resolveCircleNameCollisions(intents);
+    expect(result.find((i) => i.op === 'add-point' && i.name === 'C')?.constraint).toMatchObject({ circle: 'O' });
   });
 });

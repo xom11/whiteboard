@@ -50,6 +50,13 @@ describe('centersRule', () => {
     expect(i.constraint).toEqual({ kind: 'incenter', of: ['A', 'B', 'C'] });
   });
 
+  it('fallback qua "tam giác cân ABC" khi clause tâm không nêu lại tam giác', () => {
+    const i = find('Cho tam giác cân ABC. I là tâm đường tròn nội tiếp', 'incenter');
+    expect(i).toBeDefined();
+    expect(i.name).toBe('I');
+    expect(i.constraint).toEqual({ kind: 'incenter', of: ['A', 'B', 'C'] });
+  });
+
   it('"tâm nội tiếp" tên sau cụm từ khoá → incenter', () => {
     const i = find('Cho tam giác ABC. Vẽ tâm nội tiếp I', 'incenter');
     expect(i).toBeDefined();

@@ -26,6 +26,14 @@ describe('excenterRule', () => {
     expect(c.opposite).toBe('A');
   });
 
+  it('fallback qua "tam giác cân ABC" khi clause bàng tiếp không nêu lại tam giác', () => {
+    const m = run('Cho tam giác cân ABC. Gọi K là tâm đường tròn bàng tiếp góc A.');
+    expect(m.length).toBe(1);
+    const intent = m[0].intents[0] as any;
+    expect(intent.name).toBe('K');
+    expect(intent.constraint).toEqual({ kind: 'excenter', of: ['A', 'B', 'C'], opposite: 'A' });
+  });
+
   it('"tâm bàng tiếp trong góc B" → opposite=B', () => {
     const m = run('Cho tam giác ABC. Gọi K là tâm bàng tiếp trong góc B.');
     expect((m[0].intents[0] as any).constraint.opposite).toBe('B');

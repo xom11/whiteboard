@@ -78,8 +78,10 @@ export const circleDiameterRule: LanguageRule = {
     const whole = parseAll(ctx.problem);
     const compact = whole.filter((p) => ctx.problem.includes(`(${p.center};`) || ctx.problem.includes(`(${p.center},`));
     if (compact.length > 0) {
-      const claim = ctx.clauses.filter((c) => DIAMETER_KW.test(c.text)).map((c) => c.id);
       for (const p of compact) {
+        const claim = ctx.clauses
+          .filter((c) => DIAMETER_KW.test(c.text) || c.text.includes(`(${p.center}`))
+          .map((c) => c.id);
         out.push({
           ruleId: 'circle-diameter',
           clauseIds: claim.length > 0 ? claim : ctx.clauses.map((c) => c.id),

@@ -80,6 +80,14 @@ const DISTRIB_FOOT = new RegExp(
   'gu',
 );
 
+// "từ M kẻ MP, MQ vuông góc với các cạnh AB, AC" → P=foot(M,AB), Q=foot(M,AC).
+// Cặp MP/MQ phải cùng chữ đầu với điểm from. Số pair/line cố định 2 vì đây là
+// dạng đề lớp 9 phổ biến; zip nhiều hơn đã có DISTRIB_PROJ/FOOT theo tên điểm.
+const FROM_DRAW_DISTRIB = new RegExp(
+  'từ\\s+([A-Z])(?!\\p{L})\\s+kẻ\\s+([A-Z]{2})\\s*,\\s*([A-Z]{2})\\s+vuông\\s*góc\\s+với\\s+các\\s+cạnh\\s+([A-Z]{2})\\s*,\\s*([A-Z]{2})(?![A-Z])',
+  'gu',
+);
+
 /** Tách blob tên distributive "X, Y, Z" → ['X','Y','Z'] (chuẩn hoá prime ′→'). */
 function splitNames(blob: string): string[] {
   return blob
@@ -234,6 +242,22 @@ function parseFeet(text: string, fallbackTri?: string[]): Foot[] {
       names.forEach((name, i) => out.push({ name, from, onLine: lines[i], withSegment: true }));
       consumed.push([dm.index ?? 0, (dm.index ?? 0) + dm[0].length]);
     }
+  }
+
+  FROM_DRAW_DISTRIB.lastIndex = 0;
+  for (const fm of text.matchAll(FROM_DRAW_DISTRIB)) {
+    const from = fm[1];
+    const pair1 = fm[2];
+    const pair2 = fm[3];
+    if (pair1[0] !== from || pair2[0] !== from) continue;
+    const foot1 = pair1[1];
+    const foot2 = pair2[1];
+    const line1 = fm[4];
+    const line2 = fm[5];
+    if (line1.includes(foot1) || line2.includes(foot2) || foot1 === foot2) continue;
+    out.push({ name: foot1, from, onLine: line1, withSegment: true });
+    out.push({ name: foot2, from, onLine: line2, withSegment: true });
+    consumed.push([fm.index ?? 0, (fm.index ?? 0) + fm[0].length]);
   }
 
   // 1) "X, Y lần lượt là … và …" → 2 foot (name bind sẵn trong cú pháp).

@@ -34,13 +34,35 @@ export function segmentClauses(problem: string): Clause[] {
   // dẫn sub-clause viết HOA đầu câu (Let|Draw|Mark|Take|Construct|Join) — "Triangle
   // ABC, let M be the midpoint of BC" tách thành 2 clause. Thuần additive: không
   // đổi segmentation VN (alternation rời nhau, không trùng từ).
+  let proofMode = false;
+
   return problem
     .split(
       /[.;\n]+|,\s*(?=(?:Gọi|Vẽ|Kẻ|Cho|Lấy|Dựng|trên|với|Let|Draw|Mark|Take|Construct|Join)\b)/u,
     )
     .map((s) => s.trim())
     .filter((s) => s.length > 0)
-    .map((text, id) => ({ id, text, hasGeometry: countGeometryKeywords(text) > 0 }));
+    .map((text, id) => {
+      const hasGeometryKeyword = countGeometryKeywords(text) > 0;
+      const proofOnly = isProofOnlyClause(text, proofMode);
+      if (startsProofSection(text)) proofMode = true;
+      return { id, text, hasGeometry: hasGeometryKeyword && !proofOnly };
+    });
+}
+
+const PROOF_SECTION_START =
+  /^(?:\d+\s*)?(?:[Cc]hứng\s*minh|[Tt]ính|[Tt]ìm|[Xx]ác\s*định|[Hh]ãy\s+xác\s*định)(?!\p{L})/u;
+
+const CONSTRUCTION_LEAD =
+  /^(?:\d+\s*)?(?:[Cc]ho|[Gg]ọi|[Vv]ẽ|[Kk]ẻ|[Ll]ấy|[Dd]ựng|[Qq]ua|[Tt]ừ|[Tt]rên|[Nn]ối|Let|Draw|Mark|Take|Construct|Join)(?!\p{L})/u;
+
+function startsProofSection(text: string): boolean {
+  return PROOF_SECTION_START.test(text);
+}
+
+function isProofOnlyClause(text: string, proofMode: boolean): boolean {
+  if (PROOF_SECTION_START.test(text) && !CONSTRUCTION_LEAD.test(text)) return true;
+  return proofMode && !CONSTRUCTION_LEAD.test(text);
 }
 
 export function computeCoverage(

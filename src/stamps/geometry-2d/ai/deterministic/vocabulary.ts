@@ -12,10 +12,11 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   // Circle parts
   'bán kính', 'tâm', 'đường kính', 'đương kính',
   // Segments / on-segment
-  'đoạn',
+  'đoạn', 'cạnh', 'thuộc', 'nằm giữa', 'nằm ngoài',
   // Derived points
   'trung điểm', 'chân đường cao', 'chân đương cao', 'hình chiếu',
   'trọng tâm', 'trực tâm', 'tâm nội tiếp', 'tâm ngoại tiếp',
+  'đối xứng',
   // Cevian names
   'đường cao', 'đương cao', 'trung tuyến', 'phân giác', 'trung trực',
   // Special lines/circles
@@ -122,6 +123,7 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   // any existing VN/EN keyword.
   'extend',
   'opposite ray',
+  'outside',
   // cevian EN (issue #46 group B). Clause "Draw the median AM" / "Draw the
   // altitude AH" → mark geo-clause. Nếu rule không parse được clause median/
   // altitude bị lỗi → geo-clause không phủ → escalate (fail-safe), KHÔNG

@@ -27,7 +27,16 @@ interface Collected {
 // xuất hiện ở nhiều clause → triangle rule emit lặp; centers/cevian cũng cần nó).
 function collectDeterministic(problem: string): Collected {
   const clauses = segmentClauses(problem);
-  const matches = runRules({ problem, clauses });
+  const drawableClauses = clauses.filter((c) => c.hasGeometry);
+  let drawableProblem = problem;
+  for (const c of clauses) {
+    if (c.hasGeometry) continue;
+    // segmentClauses tách "(O; 3)" thành "(O" + "3)"; phần "3)" không tự có
+    // keyword hình học nhưng vẫn cần giữ để các rule quét toàn đề parse đủ paren.
+    if (/^\s*(?:\d+(?:[,.]\d+)?|[Rr])\s*\)/u.test(c.text)) continue;
+    drawableProblem = drawableProblem.replace(c.text, ' ');
+  }
+  const matches = runRules({ problem: drawableProblem, clauses: drawableClauses });
   const coverage = computeCoverage(clauses, matches);
 
   const seen = new Set<string>();

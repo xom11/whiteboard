@@ -89,7 +89,16 @@ export function quadrilateralCanonical(): readonly [Pt, Pt, Pt, Pt] {
 // ---------------------------------------------------------------------------
 
 export function addPoint(s: BuildState, p: DslPointT) {
-  if (s.pointNames.has(p.name)) return; // idempotent
+  if (s.pointNames.has(p.name)) {
+    // Upgrade: 1 điểm 'free' (placeholder, vd endpoint đường kính do circleDiameter
+    // emit) phải nhường cho constraint tường minh đến sau (onSegment/midpoint/…).
+    // Thay tại CHỖ để giữ thứ tự array (intent khác có thể đã tham chiếu tên này).
+    if (p.kind !== 'free') {
+      const idx = s.points.findIndex((q) => q.name === p.name);
+      if (idx >= 0 && s.points[idx].kind === 'free') s.points[idx] = p;
+    }
+    return; // idempotent (constraint đã có → free đến sau bị bỏ)
+  }
   s.points.push(p);
   s.pointNames.add(p.name);
 }
