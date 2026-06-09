@@ -64,7 +64,7 @@ const KINDS: QuadKind[] = [
     variant: 'standard',
   },
   {
-    name: new RegExp('tứ\\s+giác\\s+' + QUAD, 'gu'),
+    name: new RegExp('tứ\\s+giác(?:\\s+lồi)?\\s+' + QUAD, 'gu'),
     shape: 'quadrilateral',
     variant: 'any',
   },

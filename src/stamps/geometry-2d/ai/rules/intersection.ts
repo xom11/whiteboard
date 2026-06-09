@@ -43,6 +43,11 @@ const CAT_NHAU = new RegExp(
   `${REF}\\s*${CONN}\\s*${REF}\\s+(?:cắt|giao)\\s+nhau\\s+tại\\s+([A-Z])(?![A-Z])`,
   'gu',
 );
+// D: "E, F lần lượt là giao điểm của AB và CD, của AD và BC" → zip 2 tên với 2 cặp.
+const DISTRIB_TWO = new RegExp(
+  `([A-Z])\\s*,\\s*([A-Z])\\s+lần\\s*lượt\\s+là\\s+giao\\s*điểm\\s+của\\s+${REF}\\s*${CONN}\\s*${REF}\\s*,\\s*của\\s+${REF}\\s*${CONN}\\s*${REF}`,
+  'gu',
+);
 
 // Tên điểm đứng TRƯỚC (pattern A): "X là " NGAY TRƯỚC "giao điểm".
 const NAME_BEFORE = /([A-Z])(?:['′]?)\s+là\s+$/u;
@@ -81,6 +86,12 @@ export const intersectionRule: LanguageRule = {
         seen.add(name);
         out.push({ ruleId: 'intersection', clauseIds: [c.id], intents: [intent] });
       };
+
+      DISTRIB_TWO.lastIndex = 0;
+      for (const m of c.text.matchAll(DISTRIB_TWO)) {
+        emit(m[1], m[3], m[4]);
+        emit(m[2], m[5], m[6]);
+      }
 
       // A: tên TRƯỚC — "X là giao điểm của REF1 và REF2".
       GIAO_DIEM.lastIndex = 0;

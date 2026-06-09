@@ -114,7 +114,11 @@ export const AddPointIntentZ = z.object({
     z.object({ kind: z.literal('circumcenter'), of: z.tuple([LabelZ, LabelZ, LabelZ]) }),
     z.object({ kind: z.literal('incenter'), of: z.tuple([LabelZ, LabelZ, LabelZ]) }),
     z.object({ kind: z.literal('orthocenter'), of: z.tuple([LabelZ, LabelZ, LabelZ]) }),
-    z.object({ kind: z.literal('intersection'), of: z.tuple([z.string(), z.string()]) }),
+    z.object({
+      kind: z.literal('intersection'),
+      of: z.tuple([z.string(), z.string()]),
+      branch: z.union([z.literal(0), z.literal(1)]).optional(),
+    }),
     z.object({ kind: z.literal('onSegment'), of: z.string(), t: z.number().min(0).max(1).optional() }),
     z.object({ kind: z.literal('free'), at: z.tuple([z.number(), z.number()]).optional() }),
     // Điểm A nằm NGOÀI đường tròn `circle` (free external point) — builder đọc

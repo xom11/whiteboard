@@ -357,6 +357,19 @@ describe('serializeObject — per-kind', () => {
     });
   });
 
+  test('circle: transpiled incircle attrs → incircle', () => {
+    const A = pt('p1', 'A', { kind: 'free', x: 0, y: 0 });
+    const B = pt('p2', 'B', { kind: 'free', x: 4, y: 0 });
+    const C = pt('p3', 'C', { kind: 'free', x: 0, y: 3 });
+    const k = shape('c1', 'circle', 'I', {
+      kind: 'incircle',
+      vertices: ['p1', 'p2', 'p3'],
+    });
+    expect(serializeObject(k, makeState([A, B, C, k]))).toEqual({
+      ok: true, entity: { name: 'I', kind: 'incircle', vertices: ['A', 'B', 'C'] },
+    });
+  });
+
   test('circle: construction excircle → excircle (re-edit roundtrip)', () => {
     const A = pt('p1', 'A', { kind: 'free', x: 0, y: 0 });
     const B = pt('p2', 'B', { kind: 'free', x: 4, y: 0 });

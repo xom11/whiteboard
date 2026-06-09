@@ -29,7 +29,7 @@ const NAME_AFTER_G = new RegExp(
 // group2 = blob cặp đỉnh (≥2, phẩy). Số tên PHẢI bằng số cặp (else bỏ qua,
 // escalate — không đoán lệch). SIDE_PREFIX cho "(các) cạnh/đoạn" trước blob cặp.
 const DISTRIB = new RegExp(
-  `((?:[A-Z](?:['′]?)\\s*,\\s*)+[A-Z](?:['′]?))\\s+lần\\s*lượt\\s+(?:là\\s+)?(?:điểm\\s+)?trung\\s*điểm\\s+(?:của\\s+)?(?:các\\s+)?${SIDE_PREFIX}((?:[A-Z][A-Z]\\s*,\\s*)+[A-Z][A-Z])`,
+  `((?:[A-Z](?:['′]?)\\s*,\\s*)+[A-Z](?:['′]?))\\s+lần\\s*lượt\\s+(?:là\\s+)?(?:điểm\\s+)?trung\\s*điểm\\s+(?:của\\s+)?(?:các\\s+)?${SIDE_PREFIX}((?:[A-Z][A-Z]\\s*,\\s*)*(?:[A-Z][A-Z]\\s*,\\s*)?[A-Z][A-Z](?:\\s*và\\s*[A-Z][A-Z])?)`,
   'u',
 );
 
@@ -102,7 +102,10 @@ export const midpointRule: LanguageRule = {
             .split(',')
             .map((s) => nameToken(s))
             .filter((x): x is string => !!x);
-          const pairs = dm[2].split(',').map((s) => s.trim()).filter(Boolean);
+          const pairs = dm[2]
+            .split(/\s*,\s*|\s+và\s+/u)
+            .map((s) => s.trim())
+            .filter(Boolean);
           if (names.length >= 2 && names.length === pairs.length) {
             for (let i = 0; i < names.length; i++) emit(names[i], pairs[i], c.id);
             continue; // clause đã xử lý bằng distributive — skip dạng A/B + EN

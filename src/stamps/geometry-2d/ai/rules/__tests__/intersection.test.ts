@@ -38,6 +38,18 @@ describe('intersectionRule', () => {
     expect(i.constraint.of).toEqual(['AC', 'BD']);
   });
 
+  it('"E, F lần lượt là giao điểm của AB và CD, của AD và BC" → 2 intersection', () => {
+    const m = run('Cho tứ giác ABCD. Gọi E, F lần lượt là giao điểm của AB và CD, của AD và BC.');
+    expect(m.length).toBe(2);
+    const byName: Record<string, any> = {};
+    for (const match of m) {
+      const it = match.intents[0] as any;
+      byName[it.name] = it;
+    }
+    expect(byName.E.constraint.of).toEqual(['AB', 'CD']);
+    expect(byName.F.constraint.of).toEqual(['AD', 'BC']);
+  });
+
   it('tiền tố "đường thẳng": "đường thẳng AB cắt đường thẳng CD tại E"', () => {
     const i = only('Đường thẳng AB cắt đường thẳng CD tại E.');
     expect(i.constraint.of).toEqual(['AB', 'CD']);

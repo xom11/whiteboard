@@ -142,6 +142,15 @@ describe('describeDsl — supported kinds', () => {
     expect(describeDsl(cp, s)).toBe('k = (B; BC)');
     expect(describeDsl(c3, s)).toBe('w = đường tròn qua ABC');
   });
+
+  test('circle: transpiled incircle attrs', () => {
+    const A = pt('p1', 'A', { kind: 'free', x: 0, y: 0 });
+    const B = pt('p2', 'B', { kind: 'free', x: 4, y: 0 });
+    const C = pt('p3', 'C', { kind: 'free', x: 0, y: 3 });
+    const ic = shape('c1', 'circle', 'I', { kind: 'incircle', vertices: ['p1', 'p2', 'p3'] });
+    const s = makeState([A, B, C, ic]);
+    expect(describeDsl(ic, s)).toBe('I = đường tròn nội tiếp ABC');
+  });
 });
 
 describe('describeDsl — fallback', () => {

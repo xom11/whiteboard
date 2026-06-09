@@ -30,6 +30,20 @@ export type CircleAttrs = {
   showValue?: boolean;
 };
 
+function asConstruction(a: CircleAttrs): CircleConstruction | undefined {
+  if (a.construction) return a.construction;
+  const raw = a as CircleAttrs & { kind?: string; vertices?: [string, string, string] };
+  if (raw.kind === 'incircle' && raw.vertices) {
+    return {
+      kind: 'incircle',
+      p1: raw.vertices[0],
+      p2: raw.vertices[1],
+      p3: raw.vertices[2],
+    };
+  }
+  return undefined;
+}
+
 function constructionRefs(c: CircleConstruction): string[] {
   switch (c.kind) {
     case 'circumscribed': return [c.p1, c.p2, c.p3];
@@ -44,7 +58,7 @@ const def: KindDef<CircleAttrs> = {
   schemaVersion: 1,
   migrate: {},
   validate: (a) => {
-    if (a?.construction) return;
+    if (asConstruction(a)) return;
     if (typeof a?.radius === 'number') {
       if (!a.center) throw new Error('circle: center bắt buộc khi dùng radius');
       if (!(a.radius > 0)) throw new Error('circle: radius phải > 0');
@@ -55,13 +69,14 @@ const def: KindDef<CircleAttrs> = {
     }
   },
   dependsOn: (a) => {
-    if (a.construction) return constructionRefs(a.construction);
+    const c = asConstruction(a);
+    if (c) return constructionRefs(c);
     if (typeof a.radius === 'number') return [a.center!];
     return [a.center!, a.surfacePoint!];
   },
   measure: (obj, state) => {
     // Circumscribed circles need full geometric derivation — skip for now.
-    if (obj.attrs.construction) return null;
+    if (asConstruction(obj.attrs)) return null;
     if (typeof obj.attrs.radius === 'number') {
       return [{ label: 'r', value: obj.attrs.radius }];
     }
@@ -77,7 +92,7 @@ const def: KindDef<CircleAttrs> = {
   },
   describe: (obj, state) => {
     const L = (id: string) => labelOf(id, state);
-    const c = obj.attrs.construction;
+    const c = asConstruction(obj.attrs);
     if (c?.kind === 'circumscribed') {
       return `Đường tròn đi qua ${L(c.p1)}${L(c.p2)}${L(c.p3)}`;
     }
@@ -108,7 +123,7 @@ const def: KindDef<CircleAttrs> = {
       visible: obj.visible,
       fixed: obj.locked,
     };
-    const c = obj.attrs.construction;
+    const c = asConstruction(obj.attrs);
     if (c?.kind === 'circumscribed') {
       const p1 = ctx.resolveRef(c.p1);
       const p2 = ctx.resolveRef(c.p2);
@@ -119,7 +134,16 @@ const def: KindDef<CircleAttrs> = {
       const p1 = ctx.resolveRef(c.p1);
       const p2 = ctx.resolveRef(c.p2);
       const p3 = ctx.resolveRef(c.p3);
-      return board.create('incircle', [p1, p2, p3], baseOpts);
+      const center = board.create('incenter', [p1, p2, p3], {
+        visible: obj.visible,
+        withLabel: true,
+        fixed: true,
+        name: obj.label,
+      });
+      const circ: any = board.create('incircle', [p1, p2, p3], baseOpts);
+      circ.center = circ.center ?? center;
+      circ._helpers = [center];
+      return circ;
     }
     if (c?.kind === 'excircle') {
 

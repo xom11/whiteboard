@@ -12,7 +12,13 @@ export const buildIntersection = (s: BuildState, intent: AddPointIntentT): void 
   if (c.kind !== 'intersection') return;
   const r1 = resolveSegmentRef(s, c.of[0]);
   const r2 = resolveSegmentRef(s, c.of[1]);
-  addPoint(s, { name: intent.name, kind: 'intersection', ref1: r1, ref2: r2 });
+  addPoint(s, {
+    name: intent.name,
+    kind: 'intersection',
+    ref1: r1,
+    ref2: r2,
+    ...(c.branch !== undefined ? { branch: c.branch } : {}),
+  });
 };
 
 export const buildSecondIntersection = (s: BuildState, intent: AddPointIntentT): void => {

@@ -400,7 +400,41 @@ function serializePolygon(obj: SceneObject<PolygonAttrs>, state: State): Seriali
 
 function serializeCircle(obj: SceneObject<CircleAttrs>, state: State): SerializedEntity {
   const a = obj.attrs;
-  const c = a.construction;
+  const c = (() => {
+    if (a.construction) return a.construction;
+    const raw = a as CircleAttrs & {
+      kind?: string;
+      vertices?: [string, string, string];
+      opposite?: string;
+      p1?: string;
+      p2?: string;
+    };
+    if (raw.kind === 'incircle' && raw.vertices) {
+      return {
+        kind: 'incircle' as const,
+        p1: raw.vertices[0],
+        p2: raw.vertices[1],
+        p3: raw.vertices[2],
+      };
+    }
+    if (raw.kind === 'excircle' && raw.vertices && raw.opposite) {
+      return {
+        kind: 'excircle' as const,
+        p1: raw.vertices[0],
+        p2: raw.vertices[1],
+        p3: raw.vertices[2],
+        opposite: raw.opposite,
+      };
+    }
+    if (raw.kind === 'circleDiameter' && raw.p1 && raw.p2) {
+      return {
+        kind: 'diameter' as const,
+        p1: raw.p1,
+        p2: raw.p2,
+      };
+    }
+    return undefined;
+  })();
   if (!c) {
     // center + radius (DSL circleCR) — ưu tiên trước center/surfacePoint.
     if (typeof a.radius === 'number') {

@@ -245,4 +245,9 @@ describe('midpointRule — distributive "lần lượt"', () => {
   it('lệch số (2 tên, 1 cặp) → bỏ qua (escalate, không đoán)', () => {
     expect(run('Gọi M, N lần lượt là trung điểm AB')).toHaveLength(0);
   });
+
+  it('"M, N, L lần lượt là trung điểm của AC, EF và BD" → parse dấu "và" cuối', () => {
+    const out = intentsOf('Gọi M, N, L lần lượt là trung điểm của AC, EF và BD');
+    expect(out.map((x) => `${x.name}=${x.of}`)).toEqual(['M=AC', 'N=EF', 'L=BD']);
+  });
 });

@@ -14,12 +14,19 @@ const RENDERABLE: string[] = [
   'Cho đường tròn (O; 3)',
   'Cho tam giác ABC. Vẽ đường tròn ngoại tiếp tam giác ABC',
   'Cho tam giác ABC. Vẽ đường tròn nội tiếp tam giác ABC',
+  'Cho tam giác ABC. Đường tròn (I) nội tiếp tam giác ABC tiếp xúc với các cạnh BC, CA, AB tại các điểm D, E, G.',
+  'Cho tam giác nhọn, không cân ABC có các đường cao BE, CF (với E ∈ AC, F ∈ AB). Đường tròn đường kính BE và đường tròn đường kính CF cắt nhau tại các điểm X, Y.',
+  'Cho tam giác nhọn, không cân ABC có các đường cao BE, CF (với E ∈ AC, F ∈ AB). Đường tròn đường kính BE và đường tròn đường kính CF cắt nhau tại các điểm X, Y . Đoạn thẳng BE cắt đường tròn đường kính CF tại điểm N . Đoạn thẳng CF cắt đường tròn đường kính BE tại điểm P . Các đường thẳng XY và EF cắt nhau tại M .',
+  'Cho tứ giác lồi ABCD. Gọi E, F lần lượt là giao điểm của AB và CD, của AD và BC. Gọi M, N, L lần lượt là trung điểm của AC, EF và BD.',
   'Cho tam giác ABC. Gọi H là trực tâm của tam giác ABC',
   // excenter (port 2026-06-09): "tâm bàng tiếp góc A" → excenter J, dựng deterministic.
   'Cho tam giác ABC, J là tâm bàng tiếp góc A',
   // perpBisector ∩ line (port 2026-06-09): trung trực BC cắt AB tại D → D = giao
   // (perpBisector BC, AB), dựng deterministic.
   'Cho tam giác ABC. Đường trung trực của BC cắt AB tại D',
+  // diameter-circle-cuts-sides (2026-06-09): đường tròn đường kính BC cắt AB, AC
+  // tại M, N → secondIntersection loại đỉnh chung B/C (M,N = chân đường cao).
+  'Cho tam giác ABC nhọn, không cân (AB < AC), đường tròn đường kính BC cắt AB, AC tại M và N. Gọi O là trung điểm của BC.',
 ];
 
 // Các đề trung-bình-khó cần điểm phái sinh chưa có rule → PHẢI escalate (an toàn),
@@ -43,6 +50,178 @@ describe('tryDeterministicFigure — render deterministic (không cần AI)', ()
       expect(r.figure.verify.ok).toBe(true);
       expect(r.figure.intents.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('tryDeterministicFigure — đường tròn nội tiếp tiếp xúc ba cạnh', () => {
+  it('dựng incircle (I) và các tiếp điểm D, E, G trên BC, CA, AB', () => {
+    const r = tryDeterministicFigure(
+      'Cho tam giác ABC. Đường tròn (I) nội tiếp tam giác ABC tiếp xúc với các cạnh BC, CA, AB tại các điểm D, E, G.',
+    );
+
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+
+    expect(r.figure.dsl.shapes).toContainEqual({
+      name: 'I',
+      kind: 'incircle',
+      vertices: ['A', 'B', 'C'],
+    });
+    expect(r.figure.dsl.points).toContainEqual({
+      name: 'D',
+      kind: 'tangencyPoint',
+      circle: 'I',
+      onLine: 'BC',
+    });
+    expect(r.figure.dsl.points).toContainEqual({
+      name: 'E',
+      kind: 'tangencyPoint',
+      circle: 'I',
+      onLine: 'CA',
+    });
+    expect(r.figure.dsl.points).toContainEqual({
+      name: 'G',
+      kind: 'tangencyPoint',
+      circle: 'I',
+      onLine: 'AB',
+    });
+  });
+
+  it('dựng được khi đề xuống dòng giữa "các" và "cạnh"', () => {
+    const r = tryDeterministicFigure(
+      'Cho tam giác ABC. Đường tròn (I) nội tiếp tam giác ABC tiếp xúc với các\ncạnh BC, CA, AB tại các điểm D, E, G.',
+    );
+
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.figure.dsl.points).toContainEqual({
+      name: 'D',
+      kind: 'tangencyPoint',
+      circle: 'I',
+      onLine: 'BC',
+    });
+  });
+});
+
+describe('tryDeterministicFigure — hai đường tròn đường kính hai đường cao cắt nhau', () => {
+  it('dựng được BE, CF; hai đường tròn đường kính BE, CF; giao điểm X, Y', () => {
+    const r = tryDeterministicFigure(
+      'Cho tam giác nhọn, không cân ABC có các đường cao BE, CF (với E ∈ AC, F ∈ AB). Đường tròn đường kính BE và đường tròn đường kính CF cắt nhau tại các điểm X, Y.',
+    );
+
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+
+    expect(r.figure.dsl.points).toContainEqual({
+      name: 'E',
+      kind: 'perpFoot',
+      from: 'B',
+      onLine: 'AC',
+    });
+    expect(r.figure.dsl.points).toContainEqual({
+      name: 'F',
+      kind: 'perpFoot',
+      from: 'C',
+      onLine: 'AB',
+    });
+    expect(r.figure.dsl.shapes).toContainEqual({
+      name: 'kBE',
+      kind: 'circleDiameter',
+      p1: 'B',
+      p2: 'E',
+    });
+    expect(r.figure.dsl.shapes).toContainEqual({
+      name: 'kCF',
+      kind: 'circleDiameter',
+      p1: 'C',
+      p2: 'F',
+    });
+    expect(r.figure.dsl.points).toContainEqual({
+      name: 'X',
+      kind: 'circleIntersection',
+      c1: 'kBE',
+      c2: 'kCF',
+      which: 0,
+    });
+    expect(r.figure.dsl.points).toContainEqual({
+      name: 'Y',
+      kind: 'circleIntersection',
+      c1: 'kBE',
+      c2: 'kCF',
+      which: 1,
+    });
+  });
+
+  it('dựng thêm N, P, M cho đề mở rộng', () => {
+    const r = tryDeterministicFigure(
+      'Cho tam giác nhọn, không cân ABC có các đường cao BE, CF (với E ∈ AC, F ∈ AB). Đường tròn đường kính BE và đường tròn đường kính CF cắt nhau tại các điểm X, Y . Đoạn thẳng BE cắt đường tròn đường kính CF tại điểm N . Đoạn thẳng CF cắt đường tròn đường kính BE tại điểm P . Các đường thẳng XY và EF cắt nhau tại M .',
+    );
+
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+
+    expect(r.figure.dsl.points).toContainEqual({
+      name: 'N',
+      kind: 'intersection',
+      ref1: 'BE',
+      ref2: 'kCF',
+      branch: 0,
+    });
+    expect(r.figure.dsl.points).toContainEqual({
+      name: 'P',
+      kind: 'intersection',
+      ref1: 'CF',
+      ref2: 'kBE',
+      branch: 0,
+    });
+    expect(r.figure.dsl.points).toContainEqual({
+      name: 'M',
+      kind: 'intersection',
+      ref1: 'XY',
+      ref2: 'EF',
+    });
+  });
+});
+
+describe('tryDeterministicFigure — tứ giác với giao điểm và trung điểm phân phối', () => {
+  it('dựng được E, F là hai giao điểm; M, N, L là ba trung điểm', () => {
+    const r = tryDeterministicFigure(
+      'Cho tứ giác lồi ABCD. Gọi E, F lần lượt là giao điểm của AB và CD, của AD và BC. Gọi M, N, L lần lượt là trung điểm của AC, EF và BD.',
+    );
+
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+
+    expect(r.figure.dsl.points).toContainEqual({
+      name: 'E',
+      kind: 'intersection',
+      ref1: 'AB',
+      ref2: 'CD',
+    });
+    expect(r.figure.dsl.points).toContainEqual({
+      name: 'F',
+      kind: 'intersection',
+      ref1: 'AD',
+      ref2: 'BC',
+    });
+    expect(r.figure.dsl.points).toContainEqual({
+      name: 'M',
+      kind: 'midpoint',
+      p1: 'A',
+      p2: 'C',
+    });
+    expect(r.figure.dsl.points).toContainEqual({
+      name: 'N',
+      kind: 'midpoint',
+      p1: 'E',
+      p2: 'F',
+    });
+    expect(r.figure.dsl.points).toContainEqual({
+      name: 'L',
+      kind: 'midpoint',
+      p1: 'B',
+      p2: 'D',
+    });
   });
 });
 

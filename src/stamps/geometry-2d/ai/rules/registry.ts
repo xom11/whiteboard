@@ -29,6 +29,9 @@ import { diameterCirclePairwiseRule } from './diameterCirclePairwise';
 import { angleBisectorFootRule } from './angleBisectorFoot';
 import { intersectionRule } from './intersection';
 import { chordRule } from './chord';
+import { incircleTangencyRule } from './incircleTangency';
+import { altitudeDiameterCirclesRule } from './altitudeDiameterCircles';
+import { diameterCircleCutsSidesRule } from './diameterCircleCutsSides';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -57,6 +60,9 @@ const RULES: readonly LanguageRule[] = [
   angleBisectorFootRule,
   intersectionRule,
   chordRule,
+  incircleTangencyRule,
+  altitudeDiameterCirclesRule,
+  diameterCircleCutsSidesRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */

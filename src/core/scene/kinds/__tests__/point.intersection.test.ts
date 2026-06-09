@@ -41,6 +41,11 @@ const mkCircleCR = (id: string, center: string, radius: number): SceneObject => 
   schemaVersion: 1, attrs: { center, radius },
 });
 
+const mkIncircle = (id: string, p1: string, p2: string, p3: string): SceneObject => ({
+  id, kind: 'circle', label: id, visible: true, locked: false, layer: 'default',
+  schemaVersion: 1, attrs: { construction: { kind: 'incircle', p1, p2, p3 } },
+});
+
 const mkSegment = (id: string, p1: string, p2: string): SceneObject => ({
   id, kind: 'segment', label: id, visible: true, locked: false, layer: 'default',
   schemaVersion: 1, attrs: { p1, p2 },
@@ -130,5 +135,28 @@ describe('point render — circle-derived constraints', () => {
     // circle.center === resolved center point O1
     expect(H.parents[1]).toBe(k1.center);
     expect(k1.center).toBe(O1);
+  });
+
+  test('tangencyPoint on incircle uses derived incenter instead of raw circle object', () => {
+    const store = createStore(createEmptyState('2d'));
+    const { board, created } = mockBoard();
+    new JxgRenderer(store, board as never);
+    store.dispatch({ type: 'ADD', payload: { obj: mkFree('A', 0, 3) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkFree('B', -2, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkFree('C', 2, 0) } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkIncircle('I', 'A', 'B', 'C') } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkSegment('BC', 'B', 'C') } });
+    store.dispatch({ type: 'ADD', payload: { obj: mkPointC('D', { kind: 'tangencyPoint', circle: 'I', onLine: 'BC' }) } });
+
+    const incircle = created.find((e) => e.type === 'incircle' && e.attrs?.name === 'I');
+    const incenter = created.find((e) => e.type === 'incenter' && e.attrs?.name === 'I');
+    const line = findByName(created, 'BC');
+    const D = findByName(created, 'D');
+    expect(incircle?.type).toBe('incircle');
+    expect(incenter).toBeDefined();
+    expect(D.type).toBe('perpendicularpoint');
+    expect(D.parents[0]).toBe(line);
+    expect(D.parents[1]).toBe(incenter);
+    expect(incircle?.center).toBe(incenter);
   });
 });
