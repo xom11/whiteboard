@@ -34,15 +34,33 @@ describe('diameterCirclePairwiseRule', () => {
     expect(dia.map((d) => d.name).sort()).toEqual(['kAB', 'kAC', 'kAD']);
     expect(dia.find((d) => d.name === 'kAB').endpoints).toEqual(['A', 'B']);
 
-    // 3 giao điểm thứ hai, loại điểm chung A, ghép vòng.
+    // 3 giao điểm thứ hai = C(3,2) cặp theo thứ tự từ điển, loại điểm chung A.
     const sec = all.filter(
       (i) => i.op === 'add-point' && i.constraint.kind === 'circleSecondIntersection',
     );
     expect(sec.map((p) => p.name)).toEqual(['M', 'N', 'P']);
     for (const p of sec) expect(p.constraint.exclude).toBe('A');
-    expect(sec[0].constraint).toMatchObject({ c1: 'kAB', c2: 'kAC' });
-    expect(sec[1].constraint).toMatchObject({ c1: 'kAC', c2: 'kAD' });
-    expect(sec[2].constraint).toMatchObject({ c1: 'kAD', c2: 'kAB' });
+    expect(sec[0].constraint).toMatchObject({ c1: 'kAB', c2: 'kAC' }); // (B,C)
+    expect(sec[1].constraint).toMatchObject({ c1: 'kAB', c2: 'kAD' }); // (B,D)
+    expect(sec[2].constraint).toMatchObject({ c1: 'kAC', c2: 'kAD' }); // (C,D)
+  });
+
+  it('n=4: 4 đường kính chung apex → C(4,2)=6 giao điểm', () => {
+    const all = intents(
+      'Cho đường tròn (O). Các đường tròn đường kính AB, AC, AD, AE ' +
+      'đôi một cắt nhau lần thứ hai tại M, N, P, Q, R, S.',
+    );
+    const dia = all.filter((i) => i.op === 'draw-circle' && i.spec === 'diameter');
+    expect(dia.map((d) => d.name).sort()).toEqual(['kAB', 'kAC', 'kAD', 'kAE']);
+    const sec = all.filter(
+      (i) => i.op === 'add-point' && i.constraint.kind === 'circleSecondIntersection',
+    );
+    expect(sec.map((p) => p.name)).toEqual(['M', 'N', 'P', 'Q', 'R', 'S']);
+    // 6 cặp lexicographic của [B,C,D,E].
+    expect(sec.map((p) => [p.constraint.c1, p.constraint.c2])).toEqual([
+      ['kAB', 'kAC'], ['kAB', 'kAD'], ['kAB', 'kAE'],
+      ['kAC', 'kAD'], ['kAC', 'kAE'], ['kAD', 'kAE'],
+    ]);
   });
 
   it('claim trọn clause (whole-problem) cho coverage gate', () => {

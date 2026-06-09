@@ -60,12 +60,14 @@ function parse(problem: string): Parsed | undefined {
   if (new Set(others).size !== others.length) return undefined; // đầu mút trùng
   if (others.includes(apex)) return undefined;
 
-  // Tên kết quả sau "tại": các chữ HOA đơn lẻ (M, N, P).
+  // Tên kết quả sau "tại": các chữ HOA đơn lẻ (M, N, P, ...).
   const rm = /\btại\s+([A-Z][^.;\n]*)/u.exec(problem);
   if (!rm) return undefined;
   const results = rm[1].match(/\b[A-Z]\b/g) ?? [];
-  // "đôi một cắt nhau" của n đường kính chung apex (ghép vòng) → n giao điểm.
-  if (results.length !== pairs.length) return undefined;
+  // "đôi một cắt nhau" của n đường kính chung apex = TẤT CẢ C(n,2) cặp → C(n,2)
+  // giao điểm. Số tên kết quả phải khớp đúng (n=3 → 3; n=4 → 6; ...).
+  const numPairs = (others.length * (others.length - 1)) / 2;
+  if (results.length !== numPairs) return undefined;
   if (new Set(results).size !== results.length) return undefined;
 
   return { center, apex, others, results };
@@ -81,10 +83,14 @@ export const diameterCirclePairwiseRule: LanguageRule = {
     const p = parse(ctx.problem);
     if (!p) return [];
     const { center, apex, others, results } = p;
-    const n = others.length;
 
     const circOf = (other: string) => `k${apex}${other}`;
     const oCircle = `k${center}`; // tên entity đường tròn (O) (khác điểm tâm O)
+
+    // Tất cả cặp (i<j) theo thứ tự từ điển — "đôi một" = mọi cặp đường kính.
+    const allPairs: Array<[number, number]> = [];
+    for (let i = 0; i < others.length; i++)
+      for (let j = i + 1; j < others.length; j++) allPairs.push([i, j]);
 
     const intents = [
       // (O): tâm `center` (free) + bán kính cố định.
@@ -98,12 +104,12 @@ export const diameterCirclePairwiseRule: LanguageRule = {
       ...others.map((o) => connect(apex, o, 'segment')),
       // Đường tròn đường kính apex–đầu mút.
       ...others.map((o) => drawCircle(circOf(o), 'diameter', { endpoints: [apex, o] })),
-      // Giao điểm thứ hai (ghép vòng), loại điểm chung apex.
-      ...results.map((r, i) =>
+      // Giao điểm thứ hai của TỪNG cặp đường tròn đường kính, loại điểm chung apex.
+      ...results.map((r, k) =>
         addPoint(r, {
           kind: 'circleSecondIntersection',
-          c1: circOf(others[i]),
-          c2: circOf(others[(i + 1) % n]),
+          c1: circOf(others[allPairs[k][0]]),
+          c2: circOf(others[allPairs[k][1]]),
           exclude: apex,
         }),
       ),
