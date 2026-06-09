@@ -9,7 +9,7 @@
  *    phải đọc `stamps` mới nhất khi props thay đổi.
  */
 import React from 'react';
-import { act, render } from '@testing-library/react';
+import { act, render, waitFor } from '@testing-library/react';
 import { Whiteboard } from '../Whiteboard';
 import { readFiles, writeFiles, pruneFiles } from '../core/persistence/fileStore';
 
@@ -253,11 +253,9 @@ describe('Whiteboard — unmount safety (regression cho #5)', () => {
     const { findByTestId, unmount } = render(React.createElement(Whiteboard, {}));
     await findByTestId('excalidraw-mock');
 
-    // Chờ effect chạy — readFiles được gọi.
-    await act(async () => {
-      await Promise.resolve();
-    });
-    expect(readFiles).toHaveBeenCalled();
+    // Chờ effect chạy — readFiles được gọi. waitFor để tránh flake khi
+    // microtask của async effect chưa flush trong 1 tick (ordering-sensitive).
+    await waitFor(() => expect(readFiles).toHaveBeenCalled());
 
     const api = getExcApi();
     expect(api).not.toBeNull();
