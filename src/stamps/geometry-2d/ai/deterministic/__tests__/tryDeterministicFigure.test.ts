@@ -15,6 +15,8 @@ const RENDERABLE: string[] = [
   'Cho tam giác ABC. Vẽ đường tròn ngoại tiếp tam giác ABC',
   'Cho tam giác ABC. Vẽ đường tròn nội tiếp tam giác ABC',
   'Cho tam giác ABC. Gọi H là trực tâm của tam giác ABC',
+  // excenter (port 2026-06-09): "tâm bàng tiếp góc A" → excenter J, dựng deterministic.
+  'Cho tam giác ABC, J là tâm bàng tiếp góc A',
 ];
 
 // Các đề trung-bình-khó cần điểm phái sinh chưa có rule → PHẢI escalate (an toàn),
@@ -24,9 +26,10 @@ const ESCALATE: { problem: string; reason: string }[] = [
   { problem: 'Cho tam giác ABC. Trên cạnh AB lấy điểm D sao cho AD = 2DB', reason: 'named-missing' },
   { problem: 'Chứng minh định lý Pytago', reason: 'no-match' },
   // Guard NAMED_LA: "X là <construct chưa có rule>" cùng clause với tam giác đã
-  // claim → coverage complete nhưng điểm J thiếu → PHẢI named-missing (escalate),
-  // KHÔNG silent-incomplete. (Trước fix `là\b`, guard chết → render tam giác thiếu J.)
-  { problem: 'Cho tam giác ABC, J là tâm bàng tiếp góc A.', reason: 'named-missing' },
+  // claim → coverage complete nhưng điểm P thiếu → PHẢI named-missing (escalate),
+  // KHÔNG silent-incomplete. (Trước fix `là\b`, guard chết → render tam giác thiếu P.)
+  // Dùng "điểm Fermat" (chưa có rule) để test ổn định khi thêm rule khác.
+  { problem: 'Cho tam giác ABC, P là điểm Fermat của tam giác.', reason: 'named-missing' },
 ];
 
 describe('tryDeterministicFigure — render deterministic (không cần AI)', () => {

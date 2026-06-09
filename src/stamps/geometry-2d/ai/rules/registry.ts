@@ -17,6 +17,7 @@ import { circleTriangleRule } from './circleTriangle';
 import { tangentFromExtRule } from './tangentFromExt';
 import { externalPointRule } from './externalPoint';
 import { arcMidpointRule } from './arcMidpoint';
+import { excenterRule } from './excenter';
 import { reflectionRule } from './reflection';
 import { pointAtDistanceRule } from './pointAtDistance';
 import { eulerLineRule } from './eulerLine';
@@ -40,6 +41,7 @@ const RULES: readonly LanguageRule[] = [
   tangentFromExtRule,
   externalPointRule,
   arcMidpointRule,
+  excenterRule,
   reflectionRule,
   pointAtDistanceRule,
   eulerLineRule,
