@@ -37,6 +37,7 @@ import { onCirclePointRule } from './onCirclePoint';
 import { tangentAtRule } from './tangentAt';
 import { onSegmentPointRule } from './onSegmentPoint';
 import { lineCircleIntersectionRule } from './lineCircleIntersection';
+import { incenterNamedTriangleRule } from './incenterNamedTriangle';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -73,6 +74,7 @@ const RULES: readonly LanguageRule[] = [
   tangentAtRule,
   onSegmentPointRule,
   lineCircleIntersectionRule,
+  incenterNamedTriangleRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */
