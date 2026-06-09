@@ -22,17 +22,12 @@ export interface AiFigureProgress {
  *
  * `onProgress` là optional: nếu consumer dùng streaming endpoint (SSE),
  * forward chunk events vào đây. Non-streaming impl bỏ qua.
- *
- * `currentDsl` (MỚI cho multi-step refine): khi caller có hình hiện tại
- * (state.order.length > 0) và muốn AI sửa/thêm → pass currentDsl. Consumer
- * branch sang refine endpoint. Không pass → build endpoint cũ.
  */
 export type GenerateGeometryFigure = (
   problem: string,
   options: {
     signal: AbortSignal;
     onProgress?: (info: AiFigureProgress) => void;
-    currentDsl?: import('../geometry-2d/dsl').DslInputT;
   },
 ) => Promise<AiFigureUiResult>;
 
@@ -74,6 +69,11 @@ export interface StampHostProps {
   isDark: boolean;
   /** Optional client-safe bridge for the geometry-2d AI prompt editor. */
   generateGeometryFigure?: GenerateGeometryFigure;
+  /**
+   * Chỉ geometry-2d dùng: phát snapshot hình đang dựng (debounced) để consumer
+   * broadcast cho học sinh xem live. `null` = clear ghost (đã chèn / huỷ / rỗng).
+   */
+  onGeometryDraft?: (draft: import('./draftTypes').GeometryDraftPreview | null) => void;
 }
 
 /**

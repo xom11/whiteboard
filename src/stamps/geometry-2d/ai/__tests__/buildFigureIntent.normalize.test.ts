@@ -2,8 +2,7 @@ import { normalizeIntents } from '../normalizeIntent';
 import type { IntentT } from '../intent';
 
 // Smoke: verify normalizer giữ contract pure + idempotent.
-// Full E2E qua provider mock đã có ở buildFigureIntent.test.ts; ở đây chỉ
-// đảm bảo normalizeIntents không mutate / lặp lại an toàn.
+// Chỉ đảm bảo normalizeIntents không mutate / lặp lại an toàn.
 describe('normalizeIntents — pipeline integration', () => {
   it('không mutate input', () => {
     const intents: IntentT[] = [

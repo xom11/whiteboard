@@ -1,5 +1,5 @@
 'use client';
-import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, useSyncExternalStore } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { MiniBoard2D, type MiniBoardHandle, type GeomTool, type ObjectSnapshot, type SelectionStateSnapshot, type TransformPopoverInfo } from './MiniBoard';
 import { serializeBoard } from '../serialize';
 import { renderGeometrySvgFromState } from '../render';
@@ -13,6 +13,7 @@ import { STAMP_PANEL_DESKTOP } from '../../shared/StampLeftPanel/constants';
 import { ToastProvider, ToastHost, useToast } from '../../shared/Toast';
 import type { GenerateGeometryFigure } from '../../shared/types';
 import { AiFigurePrompt } from './AiFigurePrompt';
+import { useGeometryDraftEmit } from './useGeometryDraftEmit';
 
 interface Props {
   /** Scene store do Host tạo qua `useStampStore`. View info đã ở store.meta.view. */
@@ -43,6 +44,10 @@ interface Props {
   onSelectionChange?: (id: string | undefined) => void;
   /** Client-safe bridge to a server-side AI generation call. */
   generateGeometryFigure?: GenerateGeometryFigure;
+  /** Excalidraw imperative API — để đọc viewport khi build draft. */
+  api?: any;
+  /** Phát draft live (debounced) cho consumer. null = clear. */
+  onGeometryDraft?: (draft: import('../../shared/draftTypes').GeometryDraftPreview | null) => void;
 }
 
 export interface GeometryEditorPanelHandle {
@@ -74,6 +79,8 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
       canRedo,
       onSelectionChange,
       generateGeometryFigure,
+      api,
+      onGeometryDraft,
     },
     ref,
   ) {
@@ -90,16 +97,14 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
     const [transformPopover, setTransformPopover] = useState<TransformPopoverInfo>(null);
     const onSelectionChangeRef = useRef(onSelectionChange);
     useEffect(() => { onSelectionChangeRef.current = onSelectionChange; }, [onSelectionChange]);
+    const onGeometryDraftRef = useRef(onGeometryDraft);
+    useEffect(() => { onGeometryDraftRef.current = onGeometryDraft; }, [onGeometryDraft]);
 
     // Tier 2 F — propagate canUndo/canRedo + keyboard shortcuts qua shared hook.
     useEditorState({ store, onHistoryChange });
 
-    // Reactive scene state — for AiFigurePrompt currentState (multi-step refine).
-    const currentSceneState = useSyncExternalStore(
-      (cb) => store.subscribe(cb),
-      () => store.getState(),
-      () => store.getState(),
-    );
+    // Phát geometry draft (debounced) khi đang dựng hình.
+    useGeometryDraftEmit({ store, handleRef, api, showAxis, showGrid, onGeometryDraft });
 
     // hasContent: track store size để gate Insert button.
     useEffect(() => {
@@ -192,16 +197,13 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
         try {
           const svgString = await renderGeometrySvgFromState(jsonState);
           onInsert(jsonState, svgString);
+          onGeometryDraftRef.current?.(null);
         } catch (err) {
           console.error('Geometry insert failed:', err);
         }
       })();
       return true;
     }, [onInsert, showAxis, showGrid]);
-
-    const handleInsert = useCallback(() => {
-      performInsert();
-    }, [performInsert]);
 
     const loadAiFigure = useCallback((generated: State) => {
       handleRef.current?.clearSelection();
@@ -298,7 +300,7 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
               </button>
               <button
                 type="button"
-                onClick={handleInsert}
+                onClick={performInsert}
                 disabled={!ready || !hasContent}
                 title={!hasContent ? 'Vẽ ít nhất một đối tượng trước khi chèn' : undefined}
                 data-testid="geometry-insert-btn-mobile"
@@ -316,7 +318,7 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
           </button>
         </header>
         {generateGeometryFigure && (
-          <AiFigurePrompt generator={generateGeometryFigure} onGenerated={loadAiFigure} currentState={currentSceneState} />
+          <AiFigurePrompt generator={generateGeometryFigure} onGenerated={loadAiFigure} />
         )}
         <div className="flex min-h-0 flex-1">
           <div className="flex-1">
@@ -420,7 +422,7 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
                 Huỷ
               </button>
               <button
-                onClick={handleInsert}
+                onClick={performInsert}
                 disabled={!ready || !hasContent}
                 title={!hasContent ? 'Vẽ ít nhất một đối tượng trước khi chèn' : undefined}
                 data-testid="geometry-insert-btn"

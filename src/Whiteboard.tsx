@@ -19,6 +19,7 @@ import { useStampDoubleClick } from './stamps/shared/useStampDoubleClick';
 import { useStampShortcutBlocker } from './stamps/shared/useStampShortcutBlocker';
 import { useStampClickOutside } from './stamps/shared/useStampClickOutside';
 import type { GenerateGeometryFigure, StampHostHandle } from './stamps/shared/types';
+import type { GeometryDraftPreview } from './stamps/shared/draftTypes';
 import { useExcalidrawApi } from './hooks/useExcalidrawApi';
 import { useActiveStamp } from './hooks/useActiveStamp';
 import { usePdfImporter } from './hooks/usePdfImporter';
@@ -92,6 +93,11 @@ export interface WhiteboardProps {
    * `generateFigure()` on a server boundary so API credentials never reach the browser.
    */
   generateGeometryFigure?: GenerateGeometryFigure;
+  /**
+   * Geometry-2d live draft. GV: package gọi callback này (debounced) với SVG hình
+   * đang dựng + vị trí chèn; `null` khi clear. Consumer broadcast cho học sinh.
+   */
+  onGeometryDraft?: (draft: GeometryDraftPreview | null) => void;
 }
 
 export function Whiteboard({
@@ -105,6 +111,7 @@ export function Whiteboard({
   initialScene,
   initialFiles,
   generateGeometryFigure,
+  onGeometryDraft,
 }: WhiteboardProps) {
   const { api, apiRef, isDark, setApiFromExcalidraw, syncThemeFromAppState } =
     useExcalidrawApi({ onApi });
@@ -310,6 +317,7 @@ export function Whiteboard({
           onClose={closeStamp}
           isDark={isDark}
           generateGeometryFigure={generateGeometryFigure}
+          onGeometryDraft={onGeometryDraft}
         />
       )}
     </div>
