@@ -19,7 +19,7 @@ export default defineConfig({
     '@excalidraw/excalidraw',
     'jsxgraph',
     'katex',
-    '@anthropic-ai/sdk',
+    'tesseract.js',
     'zod-to-json-schema',
   ],
   treeshake: true,
