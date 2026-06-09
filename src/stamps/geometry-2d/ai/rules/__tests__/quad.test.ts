@@ -5,6 +5,22 @@ function run(problem: string) {
   return quadRule.match({ problem, clauses: segmentClauses(problem) });
 }
 
+/** Tách 3 thành phần của 1 match tứ giác nội tiếp: circle + glider[] + polygon. */
+function cyclicParts(intents: any[]) {
+  return {
+    circle: intents.find((i) => i.op === 'draw-circle'),
+    gliders: intents.filter((i) => i.op === 'add-point' && i.constraint.kind === 'onCircle'),
+    poly: intents.find((i) => i.op === 'mark-shape'),
+  };
+}
+
+/** Match chứa cấu trúc tứ giác nội tiếp (có mark-shape) với labels cho trước. */
+function cyclicMatch(matches: ReturnType<typeof run>, labels: string) {
+  return matches.find((x) =>
+    (x.intents as any[]).some((i) => i.op === 'mark-shape' && i.labels.join('') === labels),
+  );
+}
+
 describe('quadRule', () => {
   it('"hình vuông ABCD" → draw-shape square standard', () => {
     const m = run('Cho hình vuông ABCD');
@@ -157,60 +173,51 @@ describe('quadRule', () => {
   });
 
   // --- Tứ giác nội tiếp (cyclic quadrilateral) — issue #46 nhóm C -----------
-  it('"tứ giác ABCD nội tiếp đường tròn (O)" → draw-shape (concyclic) + draw-circle through3', () => {
+  // FIX 2026-06-09: 4 đỉnh là glider onCircle (CONSTRAINED), KHÔNG free; circle
+  // centerRadius (tâm hiện); polygon qua mark-shape. (Trước: free + circle3 → đỉnh
+  // thứ 4 rời đường tròn khi kéo.)
+  it('"tứ giác ABCD nội tiếp đường tròn (O)" → circle centerRadius + 4 glider onCircle + mark-shape', () => {
     const m = run('Cho tứ giác ABCD nội tiếp đường tròn (O)');
     expect(m.length).toBe(1);
-    expect(m[0].intents.length).toBe(2);
-    const shape = m[0].intents[0] as any;
-    const circ = m[0].intents[1] as any;
-    expect(shape.op).toBe('draw-shape');
-    expect(shape.shape).toBe('quadrilateral');
-    expect(shape.labels).toEqual(['A', 'B', 'C', 'D']);
-    expect(shape.explicitCoords).toBeDefined();
-    expect(shape.explicitCoords.A).toEqual([-3, 4]);
-    expect(shape.explicitCoords.B).toEqual([4, 3]);
-    expect(shape.explicitCoords.C).toEqual([3, -4]);
-    expect(shape.explicitCoords.D).toEqual([-4, -3]);
-    expect(circ.op).toBe('draw-circle');
-    expect(circ.spec).toBe('through3');
-    expect(circ.name).toBe('O');
-    expect(circ.points).toEqual(['A', 'B', 'C']);
+    const { circle, gliders, poly } = cyclicParts(m[0].intents as any[]);
+    expect(circle.op).toBe('draw-circle');
+    expect(circle.spec).toBe('centerRadius');
+    expect(circle.name).toBe('O');
+    expect(circle.radius).toBeGreaterThan(0);
+    expect(gliders.map((g) => g.name)).toEqual(['A', 'B', 'C', 'D']);
+    expect(gliders.every((g) => g.constraint.circle === 'O')).toBe(true);
+    expect(new Set(gliders.map((g) => g.constraint.theta)).size).toBe(4); // 4 góc phân biệt
+    expect(poly.op).toBe('mark-shape');
+    expect(poly.shape).toBe('quadrilateral');
+    expect(poly.labels).toEqual(['A', 'B', 'C', 'D']);
   });
 
-  it('Pattern B: "Đường tròn (O) ngoại tiếp tứ giác MNPQ" → 2 intents', () => {
+  it('Pattern B: "Đường tròn (O) ngoại tiếp tứ giác MNPQ" → circle + 4 glider + mark-shape', () => {
     const m = run('Đường tròn (O) ngoại tiếp tứ giác MNPQ');
     expect(m.length).toBe(1);
-    expect(m[0].intents.length).toBe(2);
-    const shape = m[0].intents[0] as any;
-    const circ = m[0].intents[1] as any;
-    expect(shape.shape).toBe('quadrilateral');
-    expect(shape.labels).toEqual(['M', 'N', 'P', 'Q']);
-    expect(shape.explicitCoords.M).toEqual([-3, 4]);
-    expect(shape.explicitCoords.Q).toEqual([-4, -3]);
-    expect(circ.name).toBe('O');
-    expect(circ.spec).toBe('through3');
-    expect(circ.points).toEqual(['M', 'N', 'P']);
+    const { circle, gliders, poly } = cyclicParts(m[0].intents as any[]);
+    expect(circle.name).toBe('O');
+    expect(circle.spec).toBe('centerRadius');
+    expect(gliders.map((g) => g.name)).toEqual(['M', 'N', 'P', 'Q']);
+    expect(poly.labels).toEqual(['M', 'N', 'P', 'Q']);
   });
 
   it('default center "đường tròn" (không tên) → circle name "O"', () => {
     const m = run('Cho tứ giác ABCD nội tiếp đường tròn');
     expect(m.length).toBe(1);
-    expect(m[0].intents.length).toBe(2);
-    expect((m[0].intents[1] as any).name).toBe('O');
+    expect(cyclicParts(m[0].intents as any[]).circle.name).toBe('O');
   });
 
   it('named center "tâm I" → circle name "I"', () => {
     const m = run('Cho tứ giác ABCD nội tiếp đường tròn tâm I');
     expect(m.length).toBe(1);
-    expect(m[0].intents.length).toBe(2);
-    expect((m[0].intents[1] as any).name).toBe('I');
+    expect(cyclicParts(m[0].intents as any[]).circle.name).toBe('I');
   });
 
   it('Pattern B named center "tâm K" → circle name "K"', () => {
     const m = run('Đường tròn tâm K ngoại tiếp tứ giác MNPQ');
     expect(m.length).toBe(1);
-    expect(m[0].intents.length).toBe(2);
-    expect((m[0].intents[1] as any).name).toBe('K');
+    expect(cyclicParts(m[0].intents as any[]).circle.name).toBe('K');
   });
 
   // --- Fail-safe: đỉnh dùng chung với tam giác → quad-only (no circle) -------
@@ -331,74 +338,52 @@ describe('quadRule', () => {
       expect(run('Square ABCDE').length).toBe(0);
     });
 
-    it('EN quadrilateral inscribed in circle → concyclic + through3', () => {
+    it('EN quadrilateral inscribed in circle → 4 glider onCircle + circleCR + mark-shape', () => {
       // "Quadrilateral ABCD inscribed in circle (O)" NAY render đủ circumcircle.
-      const m = run('Quadrilateral ABCD inscribed in circle (O)');
-      const quad = m.find((x) => (x.intents[0] as any).shape === 'quadrilateral');
+      const quad = cyclicMatch(run('Quadrilateral ABCD inscribed in circle (O)'), 'ABCD');
       expect(quad).toBeDefined();
-      expect(quad!.intents.length).toBe(2);
-      const shape = quad!.intents[0] as any;
-      const circ = quad!.intents[1] as any;
-      expect(shape.op).toBe('draw-shape');
-      expect(shape.shape).toBe('quadrilateral');
-      expect(shape.labels).toEqual(['A', 'B', 'C', 'D']);
-      expect(shape.explicitCoords).toBeDefined();
-      expect(shape.explicitCoords.A).toEqual([-3, 4]);
-      expect(shape.explicitCoords.B).toEqual([4, 3]);
-      expect(shape.explicitCoords.C).toEqual([3, -4]);
-      expect(shape.explicitCoords.D).toEqual([-4, -3]);
-      expect(circ.op).toBe('draw-circle');
-      expect(circ.spec).toBe('through3');
-      expect(circ.name).toBe('O');
-      expect(circ.points).toEqual(['A', 'B', 'C']);
+      const { circle, gliders, poly } = cyclicParts(quad!.intents as any[]);
+      expect(circle.op).toBe('draw-circle');
+      expect(circle.spec).toBe('centerRadius');
+      expect(circle.name).toBe('O');
+      expect(gliders.map((g) => g.name)).toEqual(['A', 'B', 'C', 'D']);
+      expect(poly.shape).toBe('quadrilateral');
+      expect(poly.labels).toEqual(['A', 'B', 'C', 'D']);
     });
 
     // --- EN cyclic quadrilateral (issue #46 nhóm B Tier 2) ------------------
     describe('EN cyclic', () => {
-      it('Pattern A "is inscribed in circle (O)" → 2 intents, through3', () => {
-        const m = run('Quadrilateral ABCD is inscribed in circle (O)');
-        const quad = m.find((x) => (x.intents[0] as any).shape === 'quadrilateral');
+      it('Pattern A "is inscribed in circle (O)" → 4 glider + circleCR', () => {
+        const quad = cyclicMatch(run('Quadrilateral ABCD is inscribed in circle (O)'), 'ABCD');
         expect(quad).toBeDefined();
-        expect(quad!.intents.length).toBe(2);
-        const shape = quad!.intents[0] as any;
-        const circ = quad!.intents[1] as any;
-        expect(shape.explicitCoords.A).toEqual([-3, 4]);
-        expect(shape.explicitCoords.B).toEqual([4, 3]);
-        expect(shape.explicitCoords.C).toEqual([3, -4]);
-        expect(shape.explicitCoords.D).toEqual([-4, -3]);
-        expect(circ.spec).toBe('through3');
-        expect(circ.name).toBe('O');
-        expect(circ.points).toEqual(['A', 'B', 'C']);
+        const { circle, gliders } = cyclicParts(quad!.intents as any[]);
+        expect(circle.spec).toBe('centerRadius');
+        expect(circle.name).toBe('O');
+        expect(gliders.map((g) => g.name)).toEqual(['A', 'B', 'C', 'D']);
+        expect(gliders.every((g) => g.constraint.circle === 'O')).toBe(true);
       });
 
-      it('Pattern A "is inscribed in the circle (O)" → 2 intents', () => {
-        const m = run('Quadrilateral ABCD is inscribed in the circle (O)');
-        const quad = m.find((x) => (x.intents[0] as any).shape === 'quadrilateral');
+      it('Pattern A "is inscribed in the circle (O)" → circle name "O"', () => {
+        const quad = cyclicMatch(run('Quadrilateral ABCD is inscribed in the circle (O)'), 'ABCD');
         expect(quad).toBeDefined();
-        expect(quad!.intents.length).toBe(2);
-        expect((quad!.intents[1] as any).name).toBe('O');
+        expect(cyclicParts(quad!.intents as any[]).circle.name).toBe('O');
       });
 
-      it('Pattern B "Circle (O) circumscribes quadrilateral MNPQ" → 2 intents', () => {
-        const m = run('Circle (O) circumscribes quadrilateral MNPQ');
-        const quad = m.find((x) => (x.intents[0] as any).labels?.join('') === 'MNPQ');
+      it('Pattern B "Circle (O) circumscribes quadrilateral MNPQ" → 4 glider + circleCR', () => {
+        const quad = cyclicMatch(run('Circle (O) circumscribes quadrilateral MNPQ'), 'MNPQ');
         expect(quad).toBeDefined();
-        expect(quad!.intents.length).toBe(2);
-        const shape = quad!.intents[0] as any;
-        const circ = quad!.intents[1] as any;
-        expect(shape.explicitCoords.M).toEqual([-3, 4]);
-        expect(shape.explicitCoords.Q).toEqual([-4, -3]);
-        expect(circ.spec).toBe('through3');
-        expect(circ.name).toBe('O');
+        const { circle, gliders } = cyclicParts(quad!.intents as any[]);
+        expect(circle.spec).toBe('centerRadius');
+        expect(circle.name).toBe('O');
+        expect(gliders.map((g) => g.name)).toEqual(['M', 'N', 'P', 'Q']);
       });
 
-      it('Pattern B "circle (O) is circumscribed about quadrilateral MNPQ" → 2 intents through3', () => {
-        const m = run('A circle (O) is circumscribed about quadrilateral MNPQ');
-        const quad = m.find((x) => (x.intents[0] as any).labels?.join('') === 'MNPQ');
+      it('Pattern B "circle (O) is circumscribed about quadrilateral MNPQ" → circleCR name "O"', () => {
+        const quad = cyclicMatch(run('A circle (O) is circumscribed about quadrilateral MNPQ'), 'MNPQ');
         expect(quad).toBeDefined();
-        expect(quad!.intents.length).toBe(2);
-        expect((quad!.intents[1] as any).spec).toBe('through3');
-        expect((quad!.intents[1] as any).name).toBe('O');
+        const { circle } = cyclicParts(quad!.intents as any[]);
+        expect(circle.spec).toBe('centerRadius');
+        expect(circle.name).toBe('O');
       });
 
       it('fail-safe: vertices shared with EN triangle → quad-only (no circle)', () => {

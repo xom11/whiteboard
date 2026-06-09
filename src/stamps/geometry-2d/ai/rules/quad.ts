@@ -4,7 +4,7 @@
 // (cân/vuông/thường), tứ giác chung. Mỗi loại trích 4 ký tự HOA liền sau tên
 // hình → draw-shape với shape + variant tương ứng.
 import type { LanguageRule, RuleContext, RuleMatch } from './_types';
-import { drawShape, drawCircle } from './_shared';
+import { drawShape, drawCircle, addPoint, markShape } from './_shared';
 
 // LƯU Ý: \b của JS dựa trên ASCII word-char nên KHÔNG khớp quanh ký tự Việt
 // ("đ","ề","ạ"…). Dùng lookaround \p{L} (cờ 'u') ở prefilter để chặn biên từ.
@@ -194,20 +194,32 @@ function scanClause(text: string): Hit[] {
 // through3). TRIANGLE_DECL cũng nhận "Triangle ABC" để fail-safe ownedByOthers
 // chặn silent-wrong khi tứ giác EN chia đỉnh với tam giác EN.
 //
-// KIẾN TRÚC single-emitter: quadRule LÀ emitter DUY NHẤT của draw-shape cho tứ
-// giác. Khi phát hiện ngữ cảnh nội tiếp, CHÍNH rule này emit draw-shape (với
-// explicitCoords đồng viên) + draw-circle from MỘT rule — tránh rule thứ hai
-// emit draw-shape trùng "ABCD" → buildDrawShape sinh polygon trùng "ABCD2".
+// KIẾN TRÚC single-emitter: quadRule LÀ emitter DUY NHẤT của hình tứ giác. Khi
+// phát hiện ngữ cảnh nội tiếp, CHÍNH rule này emit (circle + 4 glider + polygon)
+// — KHÔNG dùng draw-shape (vốn tạo đỉnh FREE) cho nhánh nội tiếp.
 //
-// 4 đỉnh trên đường tròn bán kính 5 tâm gốc (đồng viên CHÍNH XÁC) → circle3 qua
-// 3 đỉnh bất kỳ đi qua đỉnh thứ 4 đúng tuyệt đối (không float drift). Thứ tự
-// A→B→C→D lồi, theo chiều kim đồng hồ.
+// FIX 2026-06-09 (bug "đỉnh D không trên đường tròn, kéo đường tròn D không theo"):
+// trước đây nhánh nội tiếp emit draw-shape (4 đỉnh FREE ở toạ độ đồng viên TĨNH) +
+// circle3 qua 3 đỉnh → đỉnh thứ 4 chỉ TÌNH CỜ nằm trên circle, KHÔNG ràng buộc →
+// kéo 1 trong 3 đỉnh kia (định nghĩa lại circle3) thì đỉnh 4 ở lại, rời đường tròn.
+// NAY: đường tròn centerRadius (tâm O hiện) + 4 đỉnh là glider `onCircle` (theta cố
+// định) → TẤT CẢ ràng buộc trên đường tròn; kéo tâm O cả 4 di chuyển theo, luôn
+// đồng viên. polygon nối 4 đỉnh qua mark-shape (không tạo coord mới).
+//
+// 4 đỉnh trên đường tròn bán kính 5 (đồng viên), góc theta cố định cho layout lồi
+// A→B→C→D (chiều kim đồng hồ), bảo toàn bố cục cũ.
 const CYCLIC_QUAD_COORDS: readonly [number, number][] = [
   [-3, 4],
   [4, 3],
   [3, -4],
   [-4, -3],
 ];
+// Bán kính + góc theta dẫn xuất TỪ toạ độ trên (đồng bộ layout): glider đặt tại
+// (cos θ, sin θ)·r quanh tâm → giữ đúng vị trí lồi như bản free cũ.
+const CYCLIC_RADIUS = Math.hypot(CYCLIC_QUAD_COORDS[0][0], CYCLIC_QUAD_COORDS[0][1]);
+const CYCLIC_QUAD_THETAS: readonly number[] = CYCLIC_QUAD_COORDS.map(([x, y]) =>
+  Math.atan2(y, x),
+);
 
 // Tên tâm tuỳ chọn: "(O)" hoặc "tâm O" (mượn idiom của circleTriangle).
 const CENTER = '(?:\\(\\s*([A-Z])\\s*\\)|tâm\\s+([A-Z]))?';
@@ -304,16 +316,21 @@ export const quadRule: LanguageRule = {
             const owned = ownedByOthers(ctx, hit.labels);
             const shared = hit.labels.some((lbl) => owned.has(lbl));
             if (!shared) {
-              const coordMap: Record<string, readonly [number, number]> = {};
-              hit.labels.forEach((lbl, i) => {
-                coordMap[lbl] = CYCLIC_QUAD_COORDS[i];
-              });
               const centerName = center || 'O';
+              // Đường tròn centerRadius (tâm `centerName`) — resolveCircleNames sẽ
+              // inject point tâm + rename circle khi name trùng center ("(O)"=tâm O).
+              // 4 đỉnh = glider onCircle (theta cố định, layout lồi) → CONSTRAINED.
+              // polygon nối 4 đỉnh qua mark-shape (đỉnh đã có, không tạo coord mới).
+              // Thứ tự: circle TRƯỚC (glider ref nó), rồi 4 glider, rồi polygon.
               intents = [
-                drawShape(hit.shape, hit.labels, hit.variant, coordMap),
-                drawCircle(centerName, 'through3', {
-                  points: [hit.labels[0], hit.labels[1], hit.labels[2]],
+                drawCircle(centerName, 'centerRadius', {
+                  center: centerName,
+                  radius: CYCLIC_RADIUS,
                 }),
+                ...hit.labels.map((lbl, i) =>
+                  addPoint(lbl, { kind: 'onCircle', circle: centerName, theta: CYCLIC_QUAD_THETAS[i] }),
+                ),
+                markShape(hit.shape, hit.labels),
               ];
             }
           }

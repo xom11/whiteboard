@@ -2,95 +2,60 @@
 //
 // E2E render-correct cho "tứ giác nội tiếp đường tròn" (issue #46 nhóm C):
 //   problem → runDeterministicIntents → intentsToDsl → DslInput.parse → transpile.
-// Khẳng định KEY: 4 đỉnh ĐỒNG VIÊN (concyclic) — circumcenter của A,B,C cách
-// đều cả 4 điểm trong 1e-9 → đường tròn circle3 thực sự đi qua đỉnh thứ 4.
+//
+// KEY (fix 2026-06-09): 4 đỉnh phải CONSTRAINED trên đường tròn (glider onCircle),
+// KHÔNG phải free point đặt tĩnh ở toạ độ đồng viên. Trước fix: đỉnh thứ 4 (D) là
+// free → kéo đường tròn (di chuyển tâm / 3 đỉnh kia) thì D không đi theo, rời khỏi
+// đường tròn. Nay: circle centerRadius (tâm O) + 4 glider → kéo tâm O cả 4 di chuyển,
+// luôn đồng viên.
 
-import { runDeterministicIntents } from '../deterministic/runDeterministicIntents';
-import { intentsToDsl } from '../intentToDsl';
-import { DslInput, type DslInputT } from '../../dsl/schema';
+import { tryDeterministicFigure } from '../deterministic/tryDeterministicFigure';
+import { type DslInputT } from '../../dsl/schema';
 import { transpile } from '../../dsl/transpile';
 
+// Dùng tryDeterministicFigure — ĐÚNG path demo (qua resolveCircleNameCollisions:
+// "(O)" name circle trùng center → inject point tâm O + rename circle O→O_c).
 function pipeline(problem: string): DslInputT {
-  const result = runDeterministicIntents(problem);
+  const result = tryDeterministicFigure(problem);
   expect(result.ok).toBe(true);
-  if (!result.ok) throw new Error('deterministic pipeline not ok');
-  const dsl = intentsToDsl(result.intents);
-  const parsed = DslInput.parse(dsl); // throws on invalid
-  return parsed as DslInputT;
+  if (!result.ok) throw new Error('deterministic figure not ok: ' + result.reason);
+  return result.figure.dsl;
 }
 
-function freeCoord(dsl: DslInputT, name: string): [number, number] {
-  const p = dsl.points.find((q) => q.name === name);
-  if (!p || p.kind !== 'free') throw new Error(`point ${name} không phải free`);
-  return [p.x, p.y];
-}
-
-/** Circumcenter của 3 điểm (giao 2 trung trực). */
-function circumcenter(
-  a: [number, number],
-  b: [number, number],
-  c: [number, number],
-): [number, number] {
-  const d = 2 * (a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1]) + c[0] * (a[1] - b[1]));
-  const ax2 = a[0] * a[0] + a[1] * a[1];
-  const bx2 = b[0] * b[0] + b[1] * b[1];
-  const cx2 = c[0] * c[0] + c[1] * c[1];
-  const ux = (ax2 * (b[1] - c[1]) + bx2 * (c[1] - a[1]) + cx2 * (a[1] - b[1])) / d;
-  const uy = (ax2 * (c[0] - b[0]) + bx2 * (a[0] - c[0]) + cx2 * (b[0] - a[0])) / d;
-  return [ux, uy];
-}
-
-function dist(p: [number, number], q: [number, number]): number {
-  return Math.hypot(p[0] - q[0], p[1] - q[1]);
+/** Kiểm tra 4 đỉnh đều là glider onCircle tham chiếu cùng 1 circle có thật. */
+function assertConcyclicConstrained(dsl: DslInputT, verts: string[]) {
+  const circleId = new Set<string>();
+  for (const name of verts) {
+    const p = dsl.points.find((q) => q.name === name) as any;
+    expect(p).toBeDefined();
+    expect(p.kind).toBe('onCircle'); // CONSTRAINED, không phải free
+    circleId.add(p.circleId);
+  }
+  // Cả 4 cùng 1 đường tròn.
+  expect(circleId.size).toBe(1);
+  const cid = [...circleId][0];
+  // circle đó tồn tại (centerRadius → circleCR).
+  const circle = dsl.shapes.find((s) => s.name === cid);
+  expect(circle).toBeDefined();
+  expect((circle as any).kind).toBe('circleCR');
+  // polygon nối 4 đỉnh.
+  const poly = dsl.shapes.find((s) => s.kind === 'polygon');
+  expect(poly).toBeDefined();
+  expect((poly as any).vertices).toEqual(verts);
+  // transpile ok.
+  expect(transpile(dsl).ok).toBe(true);
 }
 
 describe('cyclic quadrilateral e2e', () => {
-  it('"tứ giác ABCD nội tiếp đường tròn (O)" → circle3 + polygon đồng viên', () => {
+  it('"tứ giác ABCD nội tiếp đường tròn (O)" → 4 glider onCircle + circleCR + polygon', () => {
     const dsl = pipeline('Cho tứ giác ABCD nội tiếp đường tròn (O)');
-
-    // 1) Có circle3.
-    const circle = dsl.shapes.find((s) => s.kind === 'circle3');
-    expect(circle).toBeDefined();
-
-    // 2) Có polygon vertices [A,B,C,D].
-    const poly = dsl.shapes.find((s) => s.kind === 'polygon');
-    expect(poly).toBeDefined();
-    expect((poly as any).vertices).toEqual(['A', 'B', 'C', 'D']);
-
-    // 3) 4 điểm ĐỒNG VIÊN — circumcenter(A,B,C) cách đều cả 4 trong 1e-9.
-    const A = freeCoord(dsl, 'A');
-    const B = freeCoord(dsl, 'B');
-    const C = freeCoord(dsl, 'C');
-    const D = freeCoord(dsl, 'D');
-    const center = circumcenter(A, B, C);
-    const rA = dist(center, A);
-    expect(dist(center, B)).toBeCloseTo(rA, 9);
-    expect(dist(center, C)).toBeCloseTo(rA, 9);
-    expect(dist(center, D)).toBeCloseTo(rA, 9); // đỉnh thứ 4 thực sự trên đường tròn
-
-    // 4) Transpile ok.
-    const t = transpile(dsl);
-    expect(t.ok).toBe(true);
+    assertConcyclicConstrained(dsl, ['A', 'B', 'C', 'D']);
+    // Tâm O hiện diện như point (resolveCircleNames inject từ "(O)" = tâm).
+    expect(dsl.points.find((p) => p.name === 'O')).toBeDefined();
   });
 
-  it('Pattern B "Đường tròn (O) ngoại tiếp tứ giác MNPQ" → đồng viên + transpile ok', () => {
+  it('Pattern B "Đường tròn (O) ngoại tiếp tứ giác MNPQ" → 4 glider + circleCR + polygon', () => {
     const dsl = pipeline('Đường tròn (O) ngoại tiếp tứ giác MNPQ');
-
-    expect(dsl.shapes.find((s) => s.kind === 'circle3')).toBeDefined();
-    const poly = dsl.shapes.find((s) => s.kind === 'polygon');
-    expect((poly as any).vertices).toEqual(['M', 'N', 'P', 'Q']);
-
-    const M = freeCoord(dsl, 'M');
-    const N = freeCoord(dsl, 'N');
-    const P = freeCoord(dsl, 'P');
-    const Q = freeCoord(dsl, 'Q');
-    const center = circumcenter(M, N, P);
-    const rM = dist(center, M);
-    expect(dist(center, N)).toBeCloseTo(rM, 9);
-    expect(dist(center, P)).toBeCloseTo(rM, 9);
-    expect(dist(center, Q)).toBeCloseTo(rM, 9);
-
-    const t = transpile(dsl);
-    expect(t.ok).toBe(true);
+    assertConcyclicConstrained(dsl, ['M', 'N', 'P', 'Q']);
   });
 });

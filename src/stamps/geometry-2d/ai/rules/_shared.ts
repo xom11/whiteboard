@@ -47,6 +47,11 @@ export function drawLine(
   return { op: 'draw-line', name, kind, ...extra } as unknown as IntentT;
 }
 
+/** Đa giác con (triangle|quadrilateral) nối các ĐIỂM ĐÃ CÓ — không tạo coord mới. */
+export function markShape(shape: string, labels: string[]): IntentT {
+  return { op: 'mark-shape', shape, labels } as unknown as IntentT;
+}
+
 // --- Point-name extraction ----------------------------------------------------
 
 const INTRO_NAME =
