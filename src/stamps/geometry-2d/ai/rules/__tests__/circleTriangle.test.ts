@@ -58,6 +58,24 @@ describe('circleTriangleRule', () => {
     expect(intent.points).toEqual(['A', 'B', 'C']);
   });
 
+  it('"tam giác ABC nội tiếp (O)" (KHÔNG có chữ "đường tròn") → circumcircle through3, name O', () => {
+    const m = run('Cho tam giác ABC nội tiếp (O)');
+    expect(m.length).toBe(1);
+    const intent = m[0].intents[0] as any;
+    expect(intent.spec).toBe('through3');
+    expect(intent.name).toBe('O');
+    expect(intent.points).toEqual(['A', 'B', 'C']);
+  });
+
+  it('"tam giác ABC ngoại tiếp (I)" (paren, không "đường tròn") → incircle inscribedIn, name I', () => {
+    const m = run('Cho tam giác ABC ngoại tiếp (I)');
+    expect(m.length).toBe(1);
+    const intent = m[0].intents[0] as any;
+    expect(intent.spec).toBe('inscribedIn');
+    expect(intent.name).toBe('I');
+    expect(intent.triangle).toEqual(['A', 'B', 'C']);
+  });
+
   it('clause "Vẽ đường tròn ngoại tiếp" KHÔNG có tam giác ngay sau → bỏ qua (escalate)', () => {
     // Bind PHẢI theo cú pháp gần: token "tam giác XYZ" ngay sau từ khoá. Không có
     // → KHÔNG vơ tam giác đầu đề (chống mis-render) → escalate AI.

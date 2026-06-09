@@ -216,3 +216,33 @@ describe('midpointRule', () => {
     });
   });
 });
+
+describe('midpointRule — distributive "lần lượt"', () => {
+  function intentsOf(problem: string) {
+    return run(problem)
+      .flatMap((m) => m.intents)
+      .map((i: any) => ({ name: i.name, of: i.constraint.of, kind: i.constraint.kind }));
+  }
+
+  it('"M, N lần lượt là trung điểm AB, AC" → M=mid(AB), N=mid(AC)', () => {
+    const out = intentsOf('Cho tam giác ABC. Gọi M, N lần lượt là trung điểm AB, AC');
+    expect(out).toEqual([
+      { name: 'M', of: 'AB', kind: 'midpoint' },
+      { name: 'N', of: 'AC', kind: 'midpoint' },
+    ]);
+  });
+
+  it('3 phần tử: "M, N, P lần lượt là trung điểm AB, BC, CA"', () => {
+    const out = intentsOf('Gọi M, N, P lần lượt là trung điểm AB, BC, CA');
+    expect(out.map((x) => `${x.name}=${x.of}`)).toEqual(['M=AB', 'N=BC', 'P=CA']);
+  });
+
+  it('"các cạnh" chêm: "M, N lần lượt là trung điểm các cạnh AB, AC"', () => {
+    const out = intentsOf('Gọi M, N lần lượt là trung điểm các cạnh AB, AC');
+    expect(out.map((x) => `${x.name}=${x.of}`)).toEqual(['M=AB', 'N=AC']);
+  });
+
+  it('lệch số (2 tên, 1 cặp) → bỏ qua (escalate, không đoán)', () => {
+    expect(run('Gọi M, N lần lượt là trung điểm AB')).toHaveLength(0);
+  });
+});

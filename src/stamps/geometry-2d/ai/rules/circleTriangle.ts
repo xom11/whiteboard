@@ -67,6 +67,21 @@ const TRI_CIRCUMSCRIBES_CIRCLE = new RegExp(
   'giu',
 );
 
+// Dạng TẮT: "(O)"/"(I)" NGAY sau "nội/ngoại tiếp" — KHÔNG có chữ "đường tròn"
+// (vd "tam giác ABC nội tiếp (O)"). Phổ biến ở đề olympiad; thiếu nhánh này thì
+// circumcircle O không được tạo → arcMidpoint tham chiếu O fail (transpile).
+// Paren BẮT BUỘC (1 ký tự HOA trong ngoặc) để KHÔNG over-match "nội tiếp" trần.
+// Phân biệt với TRI_INSCRIBED_IN_CIRCLE/TRI_CIRCUMSCRIBES_CIRCLE: ở đó sau "tiếp"
+// là "đường tròn" → 2 nhánh không chồng (dedup theo spec:tri vẫn an toàn nếu có).
+const TRI_INSCRIBED_IN_PAREN = new RegExp(
+  'tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?nội\\s*tiếp\\s+(?:trong\\s+)?\\(\\s*([A-Z])\\s*\\)',
+  'giu',
+);
+const TRI_CIRCUMSCRIBES_PAREN = new RegExp(
+  'tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?ngoại\\s*tiếp\\s+\\(\\s*([A-Z])\\s*\\)',
+  'giu',
+);
+
 // --- Ký hiệu ngoặc "(O; R)" quét TOÀN ĐỀ (segmenter cắt ';') ------------------
 // "(đường tròn)? (O; R) ngoại/nội tiếp tam giác XYZ" — circle ĐỨNG TRƯỚC. R là
 // CHỮ (bán kính ký hiệu) nên circleRadius bỏ qua (cần \d). Guard
@@ -230,6 +245,15 @@ function scanClause(text: string): CircHit[] {
       tri: [m[1], m[2], m[3]],
       center: m[4] ?? m[5] ?? '',
     });
+  }
+  // Dạng tắt "(O)"/"(I)" không kèm "đường tròn": center là group 4.
+  TRI_INSCRIBED_IN_PAREN.lastIndex = 0;
+  for (const m of text.matchAll(TRI_INSCRIBED_IN_PAREN)) {
+    hits.push({ index: m.index ?? 0, spec: 'through3', tri: [m[1], m[2], m[3]], center: m[4] ?? '' });
+  }
+  TRI_CIRCUMSCRIBES_PAREN.lastIndex = 0;
+  for (const m of text.matchAll(TRI_CIRCUMSCRIBES_PAREN)) {
+    hits.push({ index: m.index ?? 0, spec: 'inscribedIn', tri: [m[1], m[2], m[3]], center: m[4] ?? '' });
   }
 
   // --- EN (issue #46 group B) ---------------------------------------------

@@ -24,6 +24,22 @@ const NAME_AFTER_G = new RegExp(
   'gu',
 );
 
+// Distributive "lần lượt": "M, N (, P) lần lượt là trung điểm AB, AC (, BC)" →
+// zip 1-1: M=mid(AB), N=mid(AC), P=mid(BC). group1 = blob tên (≥2, phẩy),
+// group2 = blob cặp đỉnh (≥2, phẩy). Số tên PHẢI bằng số cặp (else bỏ qua,
+// escalate — không đoán lệch). SIDE_PREFIX cho "(các) cạnh/đoạn" trước blob cặp.
+const DISTRIB = new RegExp(
+  `((?:[A-Z](?:['′]?)\\s*,\\s*)+[A-Z](?:['′]?))\\s+lần\\s*lượt\\s+(?:là\\s+)?(?:điểm\\s+)?trung\\s*điểm\\s+(?:của\\s+)?(?:các\\s+)?${SIDE_PREFIX}((?:[A-Z][A-Z]\\s*,\\s*)+[A-Z][A-Z])`,
+  'u',
+);
+
+// Tách 1 token tên trong blob distributive → "M" / "M'" (prime normalize ′→').
+function nameToken(raw: string): string | undefined {
+  const m = /^([A-Z])(['′]?)/u.exec(raw.trim());
+  if (!m) return undefined;
+  return m[2] ? `${m[1]}'` : m[1];
+}
+
 // === EN patterns (issue #46 group B) ========================================
 // Prefilter EN: "midpoint" (first-letter case flex [Mm], KHÔNG cờ 'i' — phá [A-Z]).
 const MIDPOINT_EN = /[Mm]idpoint/u;
@@ -78,6 +94,21 @@ export const midpointRule: LanguageRule = {
       };
 
       if (hasVi) {
+        // Distributive "lần lượt" ưu tiên: "M, N lần lượt là trung điểm AB, AC"
+        // → M=mid(AB), N=mid(AC). Số tên = số cặp mới emit (else bỏ qua → escalate).
+        const dm = DISTRIB.exec(c.text);
+        if (dm) {
+          const names = dm[1]
+            .split(',')
+            .map((s) => nameToken(s))
+            .filter((x): x is string => !!x);
+          const pairs = dm[2].split(',').map((s) => s.trim()).filter(Boolean);
+          if (names.length >= 2 && names.length === pairs.length) {
+            for (let i = 0; i < names.length; i++) emit(names[i], pairs[i], c.id);
+            continue; // clause đã xử lý bằng distributive — skip dạng A/B + EN
+          }
+        }
+
         // Theo dõi vị trí cụm "trung điểm" đã được dạng A claim, để dạng B không
         // nhân đôi cùng một occurrence.
         const consumed = new Set<number>();
