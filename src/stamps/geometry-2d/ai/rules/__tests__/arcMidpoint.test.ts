@@ -67,9 +67,31 @@ describe('arcMidpointRule', () => {
     expect((m[0].intents[0] as any).constraint.circle).toBe('O');
   });
 
-  it('không có đường tròn → escalate (không match)', () => {
-    const m = run('Cho tam giác ABC. Gọi M là điểm chính giữa cung BC không chứa A');
-    expect(m.length).toBe(0);
+  it('không nêu (O) nhưng có tam giác chứa cung → suy circumcircle ngầm + arcMidpoint', () => {
+    const intents = run(
+      'Cho tam giác ABC. Gọi M là điểm chính giữa cung BC không chứa A',
+    ).flatMap((x) => x.intents) as any[];
+    const circ = intents.find((i) => i.op === 'draw-circle' && i.spec === 'through3');
+    expect(circ).toBeDefined();
+    expect([...circ.points].sort()).toEqual(['A', 'B', 'C']);
+    const arc = intents.find((i) => i.op === 'add-point' && i.constraint.kind === 'arcMidpoint');
+    expect(arc.name).toBe('M');
+    expect(arc.constraint.circle).toBe(circ.name); // arcMidpoint ref circumcircle ngầm
+    expect(arc.constraint.a).toBe('B');
+    expect(arc.constraint.b).toBe('C');
+    expect(arc.constraint.notContaining).toBe('A');
+    // circumcircle PHẢI emit trước arcMidpoint (transpile resolve theo thứ tự).
+    expect(intents.indexOf(circ)).toBeLessThan(intents.indexOf(arc));
+  });
+
+  it('không có (O) VÀ không có tam giác → escalate (không bịa circle)', () => {
+    expect(run('Gọi M là điểm chính giữa cung BC không chứa A').length).toBe(0);
+  });
+
+  it('không có (O), cung KHÔNG phải 2 đỉnh tam giác → escalate (không suy circumcircle sai)', () => {
+    // Tam giác ABC nhưng cung DE (D,E ∉ {A,B,C}) → circumcircle ABC không chứa cung đó.
+    const m = run('Cho tam giác ABC. Gọi M là điểm chính giữa cung DE không chứa A');
+    expect(m.flatMap((x) => x.intents)).toHaveLength(0);
   });
 
   it('không trích được tên điểm → bỏ qua clause', () => {
@@ -137,11 +159,15 @@ describe('arcMidpointRule — EN (issue #46 group B)', () => {
     expect(intent.constraint.notContaining).toBe('C');
   });
 
-  it('fail-safe: không có circle "(O)" → escalate (không match)', () => {
-    const m = run(
+  it('EN: không nêu (O) nhưng có "Triangle ABC" → suy circumcircle ngầm', () => {
+    const intents = run(
       'Triangle ABC. Let M be the midpoint of arc BC not containing A.',
-    );
-    expect(m.length).toBe(0);
+    ).flatMap((x) => x.intents) as any[];
+    const circ = intents.find((i) => i.op === 'draw-circle' && i.spec === 'through3');
+    expect(circ).toBeDefined();
+    const arc = intents.find((i) => i.constraint?.kind === 'arcMidpoint');
+    expect(arc.constraint.circle).toBe(circ.name);
+    expect(arc.constraint.notContaining).toBe('A');
   });
 
   it('fail-safe: không trích được tên (không "X is/be the") → bỏ qua', () => {

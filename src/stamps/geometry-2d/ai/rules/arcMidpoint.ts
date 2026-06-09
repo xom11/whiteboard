@@ -31,7 +31,8 @@
 // GOTCHA \b: \b của JS dựa ASCII word-char nên KHÔNG khớp quanh ký tự Việt
 // ("đ","ề","ạ"…). Mọi regex chứa ký tự Việt dùng cờ 'u' + lookaround \p{L}.
 import type { LanguageRule, RuleMatch } from './_types';
-import { addPoint, extractPointName, pairFromToken } from './_shared';
+import type { IntentT } from '../intent';
+import { addPoint, drawCircle, extractPointName, pairFromToken } from './_shared';
 
 // Prefilter toàn đề: "chính giữa cung" hoặc "trung điểm cung".
 const ARC_MID = /(?:chính\s+giữa|trung\s*điểm)\s+(?:của\s+)?cung/u;
@@ -85,6 +86,17 @@ function resolveCircle(problem: string): string | undefined {
 }
 
 /**
+ * Tên cho circumcircle NGẦM (khi đề không nêu "(O)"): ưu tiên 'O' (quy ước), né
+ * nếu đã là token HOA đứng riêng trong đề (vd điểm O); else 'O1'/'O2'/'W'.
+ */
+function synthCircleName(problem: string): string {
+  for (const cand of ['O', 'O1', 'O2', 'W']) {
+    if (!new RegExp(`(?<!\\p{L})${cand}(?![\\p{L}\\d])`, 'u').test(problem)) return cand;
+  }
+  return 'O'; // fallback (resolveCircleNameCollisions sẽ dedup nếu cần)
+}
+
+/**
  * "Gọi M là điểm chính giữa cung nhỏ BC không chứa A" → add-point M
  * {kind:'arcMidpoint', circle, a:'B', b:'C', notContaining:'A'}.
  *
@@ -98,12 +110,35 @@ export const arcMidpointRule: LanguageRule = {
   languages: ['vi', 'en'],
   patterns: [ARC_MID, ARC_MID_EN],
   match(ctx) {
-    const circle = resolveCircle(ctx.problem);
-    if (!circle) return []; // không có đường tròn → escalate
-
+    const explicitCircle = resolveCircle(ctx.problem);
     const tri = TRI.exec(ctx.problem);
+    const triEnM0 = TRI_EN.exec(ctx.problem);
+    // Tam giác để suy circumcircle NGẦM khi đề KHÔNG nêu "(O)" (VN ưu tiên, EN fallback).
+    const circumTri: string[] | null = tri
+      ? [tri[1], tri[2], tri[3]]
+      : triEnM0
+        ? [triEnM0[1], triEnM0[2], triEnM0[3]]
+        : null;
+    // "(O)" tường minh thắng; else circumcircle ngầm của tam giác (tên synth).
+    const circle = explicitCircle ?? (circumTri ? synthCircleName(ctx.problem) : undefined);
+    if (!circle) return []; // không circle tường minh + không tam giác → escalate
+    const usesCircum = !explicitCircle;
 
     const out: RuleMatch[] = [];
+    // Khi dùng circumcircle ngầm, prepend drawCircle(through3) vào arcMidpoint ĐẦU
+    // TIÊN dùng nó → circle emit TRƯỚC điểm (transpile resolve ref theo thứ tự).
+    let circumEmitted = false;
+    const withCircum = (ap: IntentT): IntentT[] => {
+      if (usesCircum && !circumEmitted && circumTri) {
+        circumEmitted = true;
+        return [drawCircle(circle, 'through3', { points: circumTri }), ap];
+      }
+      return [ap];
+    };
+    // Circumcircle ngầm chỉ hợp lệ khi 2 đầu mút cung LÀ đỉnh tam giác.
+    const arcOnCircum = (a: string, b: string): boolean =>
+      !usesCircum || (!!circumTri && circumTri.includes(a) && circumTri.includes(b));
+
     for (const c of ctx.clauses) {
       if (!ARC_MID.test(c.text)) continue;
 
@@ -118,6 +153,7 @@ export const arcMidpointRule: LanguageRule = {
       const pair = pairFromToken(pairM[1] + pairM[2]);
       if (pair.length !== 2) continue;
       const [a, b] = pair;
+      if (!arcOnCircum(a, b)) continue; // circumcircle ngầm: cung phải là 2 đỉnh tam giác
 
       // Tên điểm: lời dẫn "Gọi/Lấy X là …" ưu tiên, fallback HOA trước cụm.
       const before = NAME_BEFORE.exec(c.text);
@@ -140,14 +176,13 @@ export const arcMidpointRule: LanguageRule = {
       out.push({
         ruleId: 'arcMidpoint',
         clauseIds: [c.id],
-        intents: [addPoint(name, { kind: 'arcMidpoint', circle, a, b, notContaining })],
+        intents: withCircum(addPoint(name, { kind: 'arcMidpoint', circle, a, b, notContaining })),
       });
     }
 
     // --- EN (issue #46 group B) ---------------------------------------------------
     // Tam giác EN để suy notContaining (đỉnh thứ 3) khi đề không nêu "not containing".
-    const triEnM = TRI_EN.exec(ctx.problem);
-    const triEnVerts = triEnM ? [triEnM[1], triEnM[2], triEnM[3]] : undefined;
+    const triEnVerts = triEnM0 ? [triEnM0[1], triEnM0[2], triEnM0[3]] : undefined;
 
     for (const c of ctx.clauses) {
       if (!ARC_MID_EN.test(c.text)) continue;
@@ -161,6 +196,7 @@ export const arcMidpointRule: LanguageRule = {
       const pair = pairFromToken(pairM[1] + pairM[2]);
       if (pair.length !== 2) continue;
       const [a, b] = pair;
+      if (!arcOnCircum(a, b)) continue; // circumcircle ngầm: cung phải là 2 đỉnh tam giác
 
       // Tên điểm: "M is/be the midpoint of arc" (HOA trước). Không có → bỏ qua.
       const before = NAME_BEFORE_EN.exec(c.text);
@@ -181,7 +217,7 @@ export const arcMidpointRule: LanguageRule = {
       out.push({
         ruleId: 'arcMidpoint',
         clauseIds: [c.id],
-        intents: [addPoint(name, { kind: 'arcMidpoint', circle, a, b, notContaining })],
+        intents: withCircum(addPoint(name, { kind: 'arcMidpoint', circle, a, b, notContaining })),
       });
     }
     return out;
