@@ -40,7 +40,9 @@ describe('generateFigureIntent — Track A deterministic-first', () => {
 
   it('đề named-missing → fall through Track B (gọi LLM)', async () => {
     const { provider, call } = spyProvider(LLM_OUT);
-    await generateFigureIntent('Cho tam giác ABC. Đường trung trực của BC cắt AB tại D', {
+    // "điểm Fermat" chưa có rule → coverage complete nhưng P thiếu → named-missing
+    // → escalate Track B. (Phrasing ổn định khi thêm rule khác.)
+    await generateFigureIntent('Cho tam giác ABC, P là điểm Fermat của tam giác.', {
       provider,
     });
     expect(call).toHaveBeenCalledTimes(1);

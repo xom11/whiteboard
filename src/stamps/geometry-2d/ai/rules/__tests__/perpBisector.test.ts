@@ -153,3 +153,39 @@ describe('perpBisector EN (issue #46 group B)', () => {
     expect(m.length).toBe(0);
   });
 });
+
+describe('perpBisectorRule — trung trực ∩ đường (giao điểm)', () => {
+  function intentsOf(problem: string): any[] {
+    return run(problem).flatMap((m) => m.intents);
+  }
+
+  it('"trung trực của BC cắt AB tại D" → connect perpBisector(B,C) + intersection D of [pb_BC, AB]', () => {
+    const all = intentsOf('Cho tam giác ABC. Đường trung trực của BC cắt AB tại D.');
+    const pb = all.find((i) => i.op === 'connect' && i.style === 'perpBisector');
+    expect(pb).toBeDefined();
+    expect([pb.from, pb.to].sort()).toEqual(['B', 'C']);
+    const inter = all.find((i) => i.op === 'add-point' && i.constraint.kind === 'intersection');
+    expect(inter.name).toBe('D');
+    expect(inter.constraint.of).toEqual(['pb_BC', 'AB']);
+    // perpBisector connect PHẢI đứng trước intersection (transpile resolve theo thứ tự).
+    expect(all.indexOf(pb)).toBeLessThan(all.indexOf(inter));
+  });
+
+  it('"trung trực BC cắt AC tại E" → intersection E of [pb_BC, AC]', () => {
+    const all = intentsOf('Cho tam giác ABC. Trung trực BC cắt AC tại E.');
+    const inter = all.find((i) => i.op === 'add-point' && i.constraint.kind === 'intersection');
+    expect(inter.name).toBe('E');
+    expect(inter.constraint.of).toEqual(['pb_BC', 'AC']);
+  });
+
+  it('degenerate: giao điểm trùng đỉnh ("tại B") → KHÔNG emit intersection (chỉ perpBisector)', () => {
+    const all = intentsOf('Cho tam giác ABC. Trung trực BC cắt AB tại B.');
+    expect(all.some((i) => i.op === 'add-point' && i.constraint.kind === 'intersection')).toBe(false);
+  });
+
+  it('"trung trực BC" trơ (không "cắt … tại") vẫn chỉ perpBisector, không intersection', () => {
+    const all = intentsOf('Cho tam giác ABC. Vẽ trung trực BC.');
+    expect(all.some((i) => i.op === 'add-point')).toBe(false);
+    expect(all.some((i) => i.op === 'connect' && i.style === 'perpBisector')).toBe(true);
+  });
+});

@@ -1,6 +1,6 @@
 // src/stamps/geometry-2d/ai/rules/perpBisector.ts
 import type { LanguageRule, RuleMatch } from './_types';
-import { connect, pairFromToken } from './_shared';
+import { addPoint, connect, pairFromToken } from './_shared';
 
 // LƯU Ý: \b của JS dựa trên ASCII word-char nên KHÔNG khớp quanh ký tự Việt
 // ("đ","ề"…). Dùng lookaround \p{L} (cờ 'u') thay cho \b.
@@ -17,6 +17,18 @@ import { connect, pairFromToken } from './_shared';
 // và trung trực CA" → emit cả 2). Reset lastIndex trước mỗi clause.
 const PERP_BISECTOR =
   /(?<!\p{L})trung\s*trực\s+(?:(?:của|đoạn|đoạn\s+thẳng|cạnh)\s+)*([A-Z][A-Z])(?!\p{L})/gu;
+
+// "(đường) trung trực (của) PAIR1 cắt [đường thẳng|đoạn|cạnh|tia]? PAIR2 tại D":
+// đường trung trực CỦA PAIR1 (line dựng) ∩ đường PAIR2 = điểm D.
+//   "Đường trung trực của BC cắt AB tại D" → perpBisector(B,C) + D=giao(pb_BC, AB)
+// group1 = PAIR1 (đoạn lấy trung trực); group2 = PAIR2 (đường bị cắt); group3 = D.
+//
+// perpBisector là LINE dựng (không phải đoạn) nên KHÔNG dùng intersection rule
+// generic (vốn chỉ nhận cặp đỉnh): rule này tự đặt perpBisector + intersection ref
+// TÊN shape mà connect builder sinh ('pb_<PAIR1>', deterministic + dedup JSON nên
+// duy nhất). PAIR1/PAIR2 chia sẻ đỉnh là BÌNH THƯỜNG (pb là đường khác đoạn PAIR2).
+const PERP_BIS_CUT =
+  /(?<!\p{L})[Tt]rung\s*trực\s+(?:(?:của|đoạn|đoạn\s+thẳng|cạnh)\s+)*([A-Z][A-Z])(?!\p{L})\s+cắt\s+(?:đường\s*thẳng\s+|đoạn(?:\s+thẳng)?\s+|cạnh\s+|tia\s+)?([A-Z][A-Z])(?!\p{L})\s+tại\s+([A-Z])(?!\p{L})/gu;
 
 /** prefilter nhanh trên toàn đề. */
 const PREFILTER = /trung\s*trực/u;
@@ -53,6 +65,29 @@ export const perpBisectorRule: LanguageRule = {
           ruleId: 'perpBisector',
           clauseIds: [c.id],
           intents: [connect(pair[0], pair[1], 'perpBisector')],
+        });
+      }
+
+      // "trung trực PAIR1 cắt PAIR2 tại D" → perpBisector(PAIR1) + giao điểm D.
+      // Emit connect(perpBisector) NGAY TRƯỚC intersection (cùng match) để shape
+      // 'pb_<PAIR1>' tồn tại khi transpile resolve ref của intersection (connect
+      // trùng với loop plain ở trên sẽ bị dedup JSON → an toàn).
+      PERP_BIS_CUT.lastIndex = 0;
+      for (const m of c.text.matchAll(PERP_BIS_CUT)) {
+        const pb = pairFromToken(m[1]);
+        const line = pairFromToken(m[2]);
+        const d = m[3];
+        if (pb.length !== 2 || line.length !== 2) continue;
+        // Giao điểm phải là điểm MỚI: D không trùng đỉnh nào của 2 cặp.
+        if (new Set([pb[0], pb[1], line[0], line[1]]).has(d)) continue;
+        const pbName = `pb_${pb[0]}${pb[1]}`; // khớp connect builder uniqueShapeName('pb_BC')
+        out.push({
+          ruleId: 'perpBisector',
+          clauseIds: [c.id],
+          intents: [
+            connect(pb[0], pb[1], 'perpBisector'),
+            addPoint(d, { kind: 'intersection', of: [pbName, m[2]] }),
+          ],
         });
       }
 

@@ -17,12 +17,14 @@ const RENDERABLE: string[] = [
   'Cho tam giác ABC. Gọi H là trực tâm của tam giác ABC',
   // excenter (port 2026-06-09): "tâm bàng tiếp góc A" → excenter J, dựng deterministic.
   'Cho tam giác ABC, J là tâm bàng tiếp góc A',
+  // perpBisector ∩ line (port 2026-06-09): trung trực BC cắt AB tại D → D = giao
+  // (perpBisector BC, AB), dựng deterministic.
+  'Cho tam giác ABC. Đường trung trực của BC cắt AB tại D',
 ];
 
 // Các đề trung-bình-khó cần điểm phái sinh chưa có rule → PHẢI escalate (an toàn),
 // KHÔNG được dùng hình thiếu điểm.
 const ESCALATE: { problem: string; reason: string }[] = [
-  { problem: 'Cho tam giác ABC. Đường trung trực của BC cắt AB tại D', reason: 'named-missing' },
   { problem: 'Cho tam giác ABC. Trên cạnh AB lấy điểm D sao cho AD = 2DB', reason: 'named-missing' },
   { problem: 'Chứng minh định lý Pytago', reason: 'no-match' },
   // Guard NAMED_LA: "X là <construct chưa có rule>" cùng clause với tam giác đã
