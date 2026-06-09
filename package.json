@@ -1,6 +1,6 @@
 {
   "name": "@xom11/whiteboard",
-  "version": "0.26.2",
+  "version": "0.27.0",
   "private": false,
   "description": "Excalidraw + JSXGraph + KaTeX whiteboard component (drawing, geometry stamps, LaTeX stamps).",
   "repository": {
