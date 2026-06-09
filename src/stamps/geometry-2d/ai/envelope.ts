@@ -1,14 +1,11 @@
 // src/stamps/geometry-2d/ai/envelope.ts
 //
-// Envelope schema chung cho mọi AI provider. AI luôn emit:
+// Envelope schema cho figure build I/O:
 //   { decision: 'build', figure: <DslInput> }
 //   { decision: 'refuse', reason: '...' }
 //
-// Anthropic dùng tool_use với tool đơn ('emit_figure_envelope') input đúng
-// schema này. Ollama (Gemma) dùng `format: <schema>` constrained output.
-//
-// Ưu điểm: 1 schema, 1 prompt, parse + validate ở 1 chỗ. Provider chỉ chịu
-// trách nhiệm gửi/nhận; orchestrator (buildFigure) xử lý logic.
+// 1 schema, parse + validate ở 1 chỗ. Giữ cho advanced consumer muốn dùng
+// envelope build-side (FigureEnvelopeZ + envelopeBuildDsl) trực tiếp.
 
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
@@ -32,10 +29,9 @@ export const FigureEnvelopeZ = z
 
 export type FigureEnvelopeT = z.infer<typeof FigureEnvelopeZ>;
 
-// JSON Schema bản phẳng — pass cho Anthropic tool input_schema + Ollama format.
-// Note: refine() chỉ run ở Zod runtime; JSON Schema không representable. Provider
-// constraint output ở "any of decision/figure/reason"; orchestrator parse +
-// validate qua FigureEnvelopeZ để bắt vi phạm refine.
+// JSON Schema bản phẳng cho consumer cần schema constraint.
+// Note: refine() chỉ run ở Zod runtime; JSON Schema không representable.
+// Validate qua FigureEnvelopeZ để bắt vi phạm refine.
 export function envelopeJsonSchema(): Record<string, unknown> {
   return zodToJsonSchema(FigureEnvelopeZ, {
     target: 'jsonSchema7',

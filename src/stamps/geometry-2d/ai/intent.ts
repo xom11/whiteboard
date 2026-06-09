@@ -67,8 +67,7 @@ export const ParallelogramVariantZ = z.enum([
 // (vd nhiều 'draw-shape' schemas khác nhau). Solution: flatten — mỗi op là 1
 // schema duy nhất với `shape` là enum, runtime check variant ∈ allowed-for-shape
 // trong builder. Đánh đổi: kém type-safety hơn variant-per-shape DSU, nhưng
-// schema flatter → JSON Schema rõ ràng hơn cho LLM, Ollama format không phải
-// nested anyOf.
+// schema flatter → JSON Schema rõ ràng hơn, không nested anyOf.
 
 const ShapeNameZ = z.enum([
   'triangle',

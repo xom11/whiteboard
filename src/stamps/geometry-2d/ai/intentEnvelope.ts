@@ -1,10 +1,7 @@
 // src/stamps/geometry-2d/ai/intentEnvelope.ts
 //
-// JSON Schema helper cho Intent envelope. Provider truyền schema này cho LLM:
-//   - Anthropic: tool_use input_schema
-//   - Ollama: chat `format` field
-//
-// Refine() check ở Zod runtime; JSON Schema không representable.
+// JSON Schema helper cho Intent envelope (giữ cho advanced consumer cần
+// schema constraint). Refine() check ở Zod runtime; JSON Schema không representable.
 
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { IntentEnvelopeZ, type IntentEnvelopeT } from './intent';

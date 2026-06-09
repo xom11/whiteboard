@@ -1,27 +1,14 @@
 // src/stamps/geometry-2d/ai/index.ts
 
 // Façade HTTP transport (Vite middleware, Next.js route, ...): chạy rule-engine
-// intent pipeline (generateFigureIntent — deterministic rules-first → LLM
-// fallback) + map sang AiFigureUiResult ({ ok, state }) sẵn sàng đẩy về client.
-// Là entry chính cho UI sinh hình.
+// intent pipeline (generateFigureIntent — DETERMINISTIC-ONLY, KHÔNG LLM) + map
+// sang AiFigureUiResult ({ ok, state }) sẵn sàng đẩy về client. Entry chính cho
+// UI sinh hình.
 export { handleGenerateFigure } from './handleGenerateFigure';
 export type {
   HandleGenerateFigureInput,
   HandleGenerateFigureOptions,
 } from './handleGenerateFigure';
-
-// Provider abstraction (types + OllamaProvider — LLM-specific providers removed).
-export {
-  OllamaProvider,
-  selectProvider,
-} from './providers';
-export type {
-  AIProvider,
-  ProviderOutput,
-  ProviderRequest,
-  ProviderTokenUsage,
-  SelectProviderOptions,
-} from './providers';
 
 // Envelope (advanced consumers muốn skip generateFigure orchestrator).
 export {
@@ -31,25 +18,7 @@ export {
 } from './envelope';
 export type { FigureEnvelopeT } from './envelope';
 
-// Refine (multi-step) API
-export {
-  handleGenerateFigureDelta,
-  type HandleGenerateFigureDeltaInput,
-  type HandleGenerateFigureDeltaOptions,
-} from './handleGenerateFigureDelta';
-export {
-  generateFigureDelta,
-  type GenerateDeltaOptions,
-  type GenerateDeltaResult,
-  type GenerateFigureDeltaInput,
-} from './buildFigureDelta';
-export {
-  FigureRefineEnvelopeZ,
-  refineEnvelopeJsonSchema,
-  type FigureRefineEnvelopeT,
-} from './refineEnvelope';
-
-// Intent pipeline (4-stage: extract→translate→render→verify).
+// Intent pipeline (deterministic: rules → translate → render → verify).
 export {
   IntentZ,
   IntentEnvelopeZ,
