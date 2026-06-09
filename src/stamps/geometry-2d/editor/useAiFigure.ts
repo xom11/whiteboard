@@ -1,11 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { State } from '../../../core/scene';
 import type { GenerateGeometryFigure } from '../../shared/types';
-import { serializeState } from '../dsl/serialize';
-
-export type AiFigureMode = 'build' | 'refine';
 
 export interface UseAiFigureResult {
   prompt: string;
@@ -15,59 +12,17 @@ export interface UseAiFigureResult {
   submit: () => Promise<State | null>;
   cancel: () => void;
   tokens: number;
-  mode: AiFigureMode;
-  setMode: (mode: AiFigureMode) => void;
-  entityCount: { points: number; shapes: number };
-  hasUnsupported: boolean;
-}
-
-export interface UseAiFigureOptions {
-  currentState?: State | null;
 }
 
 export function useAiFigure(
   generator?: GenerateGeometryFigure,
-  options: UseAiFigureOptions = {},
 ): UseAiFigureResult {
-  const { currentState } = options;
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tokens, setTokens] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
   const requestIdRef = useRef(0);
-
-  const { dsl: currentDsl, unsupported, entityCount, hasContent } = useMemo(() => {
-    if (!currentState || currentState.order.length === 0) {
-      return {
-        dsl: null,
-        unsupported: [],
-        entityCount: { points: 0, shapes: 0 },
-        hasContent: false,
-      };
-    }
-    const { dsl, unsupported } = serializeState(currentState);
-    return {
-      dsl,
-      unsupported,
-      entityCount: { points: dsl.points.length, shapes: dsl.shapes.length },
-      hasContent: true,
-    };
-  }, [currentState]);
-
-  const hasUnsupported = unsupported.length > 0;
-
-  const initialMode: AiFigureMode = hasContent && !hasUnsupported ? 'refine' : 'build';
-  const [mode, setModeInternal] = useState<AiFigureMode>(initialMode);
-
-  useEffect(() => {
-    if (!hasContent && mode === 'refine') setModeInternal('build');
-    if (hasUnsupported && mode === 'refine') setModeInternal('build');
-  }, [hasContent, hasUnsupported, mode]);
-
-  const setMode = useCallback((next: AiFigureMode) => {
-    setModeInternal(next);
-  }, []);
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
@@ -96,7 +51,6 @@ export function useAiFigure(
         onProgress: (info) => {
           if (requestId === requestIdRef.current) setTokens(info.tokens);
         },
-        ...(mode === 'refine' && currentDsl ? { currentDsl } : {}),
       });
       if (controller.signal.aborted || requestId !== requestIdRef.current) return null;
       if (!generated.ok) {
@@ -125,7 +79,7 @@ export function useAiFigure(
         setIsLoading(false);
       }
     }
-  }, [generator, prompt, mode, currentDsl]);
+  }, [generator, prompt]);
 
   const cancel = useCallback(() => {
     abortRef.current?.abort();
@@ -139,9 +93,5 @@ export function useAiFigure(
     submit,
     cancel,
     tokens,
-    mode,
-    setMode,
-    entityCount,
-    hasUnsupported,
   };
 }

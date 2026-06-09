@@ -8,7 +8,6 @@ import { useAiFigure } from './useAiFigure';
 interface Props {
   generator: GenerateGeometryFigure;
   onGenerated: (state: State) => void;
-  currentState?: State | null;
 }
 
 const ArrowUpIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -33,11 +32,7 @@ const StopIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-export function AiFigurePrompt({
-  generator,
-  onGenerated,
-  currentState,
-}: Props) {
+export function AiFigurePrompt({ generator, onGenerated }: Props) {
   const {
     prompt,
     setPrompt,
@@ -46,11 +41,7 @@ export function AiFigurePrompt({
     submit,
     cancel,
     tokens,
-    mode,
-    setMode,
-    entityCount,
-    hasUnsupported,
-  } = useAiFigure(generator, { currentState });
+  } = useAiFigure(generator);
 
   // ── timer ──────────────────────────────────────────────
   const [elapsed, setElapsed] = useState(0);
@@ -70,86 +61,18 @@ export function AiFigurePrompt({
     if (generated) onGenerated(generated);
   }, [submit, onGenerated]);
 
-  const handleSwitchToBuild = useCallback(() => {
-    if (currentState && currentState.order.length > 0) {
-      const ok = window.confirm(
-        'Dựng mới sẽ thay toàn bộ hình hiện tại bằng hình mới từ AI. Tiếp tục?',
-      );
-      if (!ok) return;
-    }
-    setMode('build');
-  }, [currentState, setMode]);
-
   // ── derived ────────────────────────────────────────────
-  const hasContent = currentState != null && currentState.order.length > 0;
   const promptEmpty = !prompt.trim();
   const sendDisabled = promptEmpty || isLoading;
-  const refineChipLabel =
-    entityCount.points + entityCount.shapes > 0
-      ? `Thêm vào · ${entityCount.points}đ, ${entityCount.shapes}đoạn`
-      : 'Thêm vào';
-
-  const placeholder =
-    mode === 'refine'
-      ? 'Mô tả phần cần thêm (vd: trung điểm M của BC).'
-      : 'Mô tả đề bài cần dựng.';
 
   return (
     <div className="border-b border-slate-200 bg-slate-50 px-3 py-3">
-      {/* Header label + mode pills */}
+      {/* Header label */}
       <div className="mb-2 flex items-center justify-between gap-2">
         <span className="text-xs font-medium tracking-wide text-slate-600">
           Dựng hình bằng AI
         </span>
-        {hasContent && (
-          <div className="flex items-center gap-1" role="tablist" aria-label="Chế độ AI">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === 'refine'}
-              data-testid="geometry-ai-mode-refine"
-              onClick={() => setMode('refine')}
-              disabled={isLoading || hasUnsupported}
-              title={
-                hasUnsupported
-                  ? 'Hình có đối tượng ngoài DSL — chỉ dựng mới được'
-                  : refineChipLabel
-              }
-              className={`rounded-full px-2.5 py-0.5 text-[11px] transition ${
-                mode === 'refine'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'text-slate-500 hover:text-emerald-700'
-              } ${hasUnsupported ? 'cursor-not-allowed opacity-40' : ''}`}
-            >
-              {refineChipLabel}
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === 'build'}
-              data-testid="geometry-ai-mode-build"
-              onClick={handleSwitchToBuild}
-              disabled={isLoading}
-              className={`rounded-full px-2.5 py-0.5 text-[11px] transition ${
-                mode === 'build'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'text-slate-500 hover:text-emerald-700'
-              }`}
-            >
-              Dựng mới
-            </button>
-          </div>
-        )}
       </div>
-
-      {hasUnsupported && (
-        <p
-          className="mb-1.5 text-[10px] text-amber-700"
-          data-testid="geometry-ai-unsupported-warning"
-        >
-          Hình có đối tượng ngoài DSL — chỉ dựng mới được
-        </p>
-      )}
 
       {/* Composer */}
       <div
@@ -174,7 +97,7 @@ export function AiFigurePrompt({
           }}
           disabled={isLoading}
           rows={2}
-          placeholder={placeholder}
+          placeholder="Mô tả đề bài cần dựng."
           className="block w-full resize-none rounded-2xl bg-transparent px-3.5 pt-2.5 pb-1 text-sm leading-relaxed text-slate-800 placeholder:text-slate-400 outline-none disabled:opacity-60 field-sizing-content max-h-44"
         />
 

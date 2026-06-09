@@ -1,5 +1,5 @@
 'use client';
-import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, useSyncExternalStore } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { MiniBoard2D, type MiniBoardHandle, type GeomTool, type ObjectSnapshot, type SelectionStateSnapshot, type TransformPopoverInfo } from './MiniBoard';
 import { serializeBoard } from '../serialize';
 import { renderGeometrySvgFromState } from '../render';
@@ -105,10 +105,6 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
 
     // Phát geometry draft (debounced) khi đang dựng hình.
     useGeometryDraftEmit({ store, handleRef, api, showAxis, showGrid, onGeometryDraft });
-
-    // Reactive scene state — for AiFigurePrompt currentState (multi-step refine).
-    const snap = () => store.getState();
-    const currentSceneState = useSyncExternalStore((cb) => store.subscribe(cb), snap, snap);
 
     // hasContent: track store size để gate Insert button.
     useEffect(() => {
@@ -322,7 +318,7 @@ const GeometryEditorPanelInner = forwardRef<GeometryEditorPanelHandle, Props>(
           </button>
         </header>
         {generateGeometryFigure && (
-          <AiFigurePrompt generator={generateGeometryFigure} onGenerated={loadAiFigure} currentState={currentSceneState} />
+          <AiFigurePrompt generator={generateGeometryFigure} onGenerated={loadAiFigure} />
         )}
         <div className="flex min-h-0 flex-1">
           <div className="flex-1">
