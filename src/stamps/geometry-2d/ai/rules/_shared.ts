@@ -86,3 +86,17 @@ export function pairFromToken(token: string): string[] {
 // Là FRAGMENT regex (string, không cờ) để nhúng vào pattern lớn hơn — bổ ngữ là
 // optional nên prefix vẫn khớp dạng trần "cạnh BC".
 export const SIDE_PREFIX = '(?:cạnh(?:\\s+huyền)?\\s+|đoạn(?:\\s+thẳng)?\\s+)?';
+
+/** "đường" và typo "đương" (thiếu dấu huyền). */
+export const DUONG_KW = '[Đđ]ư[ờơ]ng';
+
+/** "đường tròn" và typo "đương tròn". */
+export const CIRCLE_KW = DUONG_KW + '\\s*tròn';
+
+/**
+ * Kiểm tra tên có phải là nhãn điểm (tâm) hay không.
+ * Thỏa mãn: 1 chữ HOA + tuỳ chọn dấu phẩy/số (vd: O, O', O1).
+ */
+export function isCenterName(name: string): boolean {
+  return /^[A-Z]['′]?\d*$/u.test(name);
+}

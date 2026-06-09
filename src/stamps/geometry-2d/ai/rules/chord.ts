@@ -24,12 +24,13 @@
 // tự Việt dùng cờ 'u' + lookaround (?!\p{L}).
 import type { LanguageRule, RuleMatch } from './_types';
 import type { Clause } from '../deterministic/coverage';
-import { addPoint, connect, drawCircle } from './_shared';
+import { addPoint, connect, drawCircle, CIRCLE_KW } from './_shared';
 import { SYMBOLIC_RADIUS } from './circleRadius';
 
 // Tên đường tròn toàn đề: "đường tròn (tâm) O" / "(O)".
-const CIRCLE_WORDS = /đường\s*tròn\s*(?:\(\s*)?(?:tâm\s+)?([A-Z])(?![A-Z])/u;
-const CIRCLE_PAREN = /\(\s*([A-Z])\s*\)/u;
+// Hỗ trợ cả tên chữ (alpha, omega...).
+const CIRCLE_WORDS = new RegExp(CIRCLE_KW + '\\s*(?:\\(\\s*)?(?:tâm\\s+)?([^\\s;,).:]+)(?![A-Z])', 'u');
+const CIRCLE_PAREN = /\(\s*([^\\s;,).:]+)\s*\)/u;
 
 // "dây (cung)? AB" (forward) / "AB là (một)? dây (cung)?" (reverse). Cặp đỉnh 2
 // ký tự HOA liền, neo (?![A-Z]) chặn cụm 3+.
@@ -46,7 +47,7 @@ const PREFILTER = /[Dd]ây/u;
 
 /** Clause id chứa khai báo đường tròn (CIRCLE_WORDS hoặc "(O)"). */
 function findCircleClauseId(clauses: readonly Clause[], circle: string): number | undefined {
-  const frag = new RegExp(`đường\\s*tròn|\\(\\s*${circle}\\s*\\)`, 'u');
+  const frag = new RegExp(CIRCLE_KW + `|\\(\\s*${circle}\\s*\\)`, 'u');
   for (const c of clauses) if (frag.test(c.text)) return c.id;
   return undefined;
 }

@@ -13,12 +13,12 @@
 // Fail-safe (escalate, KHÔNG dựng sai): thiếu tâm "(O)"; <2 đường kính chung
 // apex; đầu mút/kết quả trùng; số tên kết quả ≠ số đường kính.
 import type { LanguageRule, RuleMatch } from './_types';
-import { addPoint, connect, drawCircle } from './_shared';
+import { addPoint, connect, drawCircle, DUONG_KW } from './_shared';
 
 // Tâm đường tròn: "(O)" — ngoặc 1 chữ HOA.
 const CIRCLE_CENTER = /\(\s*([A-Z])\s*\)/u;
 // Prefilter: phải có "đường kính" + dấu hiệu "đôi một"/"cắt nhau".
-const KW_DIAMETER = /đường kính/u;
+const KW_DIAMETER = new RegExp(DUONG_KW + '\\s*kính', 'u');
 const KW_PAIRWISE = /đôi một|cắt nhau/u;
 
 // Góc đặt điểm (radian) — apex trên cao, các đầu mút còn lại rải cung dưới ở
@@ -39,7 +39,7 @@ function parse(problem: string): Parsed | undefined {
   const center = cm[1];
 
   // Vùng sau "đường kính" tới khi gặp "đôi một"/"cắt nhau" (cùng câu).
-  const dm = /đường kính\s+([^.;\n]*)/u.exec(problem);
+  const dm = new RegExp(DUONG_KW + '\\s*kính\\s+([^.;\n]*)', 'u').exec(problem);
   if (!dm) return undefined;
   let region = dm[1];
   const cut = region.search(/đôi một|cắt nhau/u);

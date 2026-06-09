@@ -18,7 +18,7 @@
 //   - Bind tam giác từ cụm ngay SAU từ khoá trong clause (không phải tam giác
 //     đầu tiên trong đề). Nhiều cấu trúc / clause → emit-all (matchAll cờ 'g').
 import type { LanguageRule, RuleMatch } from './_types';
-import { drawCircle } from './_shared';
+import { drawCircle, CIRCLE_KW } from './_shared';
 
 // \b của JS dựa trên ASCII word-char nên KHÔNG khớp quanh ký tự Việt
 // ("đ","ề","ạ"…). Dùng lookaround \p{L} + cờ 'u'.
@@ -26,7 +26,8 @@ const HAS_INSCRIBE = /(?<!\p{L})(?:nội|ngoại)\s*tiếp(?!\p{L})/iu;
 
 // Tên tâm tuỳ chọn xen giữa "đường tròn" và "ngoại/nội tiếp": "(O)" hoặc "tâm O".
 // (?:...)? để có thể vắng. Cờ 'i' an toàn ở cụm từ khoá; ([A-Z]) vẫn HOA-only.
-const CENTER = '(?:\\(\\s*([A-Z])\\s*\\)|tâm\\s+([A-Z]))?';
+// PAREN hỗ trợ cả tên chữ (alpha, omega, (O)...).
+const CENTER = '(?:\\(\\s*([^\\s;,).:]+)\\s*\\)|tâm\\s+([A-Z]))?';
 
 // "đường tròn [ (O)/tâm O ] ngoại tiếp tam giác XYZ" → circumcircle (through3).
 // Token "tam giác" + 3 đỉnh HOA BẮT BUỘC ngay sau "ngoại tiếp". Cờ 'g' để bắt
@@ -34,7 +35,7 @@ const CENTER = '(?:\\(\\s*([A-Z])\\s*\\)|tâm\\s+([A-Z]))?';
 // khớp — nhưng group đỉnh ([A-Z]) KHÔNG dùng 'i' (regex 'i' không tác động lên
 // lớp ký tự đã chỉ định HOA → vẫn chỉ khớp HOA, tránh nuốt chữ thường).
 const CIRCUM_TRI = new RegExp(
-  'đường\\s*tròn\\s*' +
+  CIRCLE_KW + '\\s*' +
     CENTER +
     '\\s*ngoại\\s*tiếp\\s+tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])',
   'giu',
@@ -42,7 +43,7 @@ const CIRCUM_TRI = new RegExp(
 
 // "đường tròn [ (I)/tâm I ] nội tiếp tam giác XYZ" → incircle (inscribedIn).
 const INCIRCLE_TRI = new RegExp(
-  'đường\\s*tròn\\s*' +
+  CIRCLE_KW + '\\s*' +
     CENTER +
     '\\s*nội\\s*tiếp\\s+tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])',
   'giu',
@@ -51,7 +52,9 @@ const INCIRCLE_TRI = new RegExp(
 // "tam giác XYZ nội tiếp (trong) đường tròn [ (O)/tâm O ]" → circumcircle.
 // Tam giác đứng TRƯỚC, đường tròn đứng SAU. Center (nếu có) đứng sau "đường tròn".
 const TRI_INSCRIBED_IN_CIRCLE = new RegExp(
-  'tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?nội\\s*tiếp\\s+(?:trong\\s+)?đường\\s*tròn\\s*' +
+  'tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?nội\\s*tiếp\\s+(?:trong\\s+)?' +
+    CIRCLE_KW +
+    '\\s*' +
     CENTER,
   'giu',
 );
@@ -62,7 +65,9 @@ const TRI_INSCRIBED_IN_CIRCLE = new RegExp(
 // "đường tròn ngoại tiếp tam giác" (circumcircle — đường tròn đứng TRƯỚC, "ngoại
 // tiếp" theo sau bởi "tam giác"). [^.]{0,40}? không vượt dấu '.' (không nhảy câu).
 const TRI_CIRCUMSCRIBES_CIRCLE = new RegExp(
-  'tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?ngoại\\s*tiếp\\s+đường\\s*tròn\\s*' +
+  'tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?ngoại\\s*tiếp\\s+' +
+    CIRCLE_KW +
+    '\\s*' +
     CENTER,
   'giu',
 );
@@ -87,7 +92,7 @@ const TRI_CIRCUMSCRIBES_PAREN = new RegExp(
 // CHỮ (bán kính ký hiệu) nên circleRadius bỏ qua (cần \d). Guard
 // (?![^)]*[A-Z]\s*[;,]) chặn paren méo nhiều dấu chấm phẩy "(A; B; C)".
 const PAREN_CENTER =
-  '(?:đường\\s*tròn\\s*)?\\(\\s*([A-Z])\\s*[;,]\\s*(?![^)]*[A-Z]\\s*[;,])[^()]*?\\)\\s*';
+  '(?:' + CIRCLE_KW + '\\s*)?\\(\\s*([A-Z])\\s*[;,]\\s*(?![^)]*[A-Z]\\s*[;,])[^()]*?\\)\\s*';
 const CIRCUM_TRI_PAREN = new RegExp(
   PAREN_CENTER + 'ngoại\\s*tiếp\\s+tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])',
   'giu',

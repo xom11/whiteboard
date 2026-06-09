@@ -1,12 +1,27 @@
 import type { LanguageRule, RuleMatch } from './_types';
-import { addPoint, connect, drawCircle, drawShape } from './_shared';
+import { addPoint, connect, drawCircle, drawShape, CIRCLE_KW, DUONG_KW } from './_shared';
 
 const TRI = /tam\s*giác(?:[^A-Z.;\n]*)\s+([A-Z])([A-Z])([A-Z])(?![A-Z])/u;
 const ALTITUDES = /các\s+đường\s*cao\s+([A-Z])([A-Z])\s*,\s*([A-Z])([A-Z])(?![A-Z])/u;
-const DIAMETER_INTERSECTION =
-  /[Đđ]ường\s*tròn\s+đường\s*kính\s+([A-Z])([A-Z])\s+và\s+[Đđ]ường\s*tròn\s+đường\s*kính\s+([A-Z])([A-Z])[^.;\n]*?tại\s+các\s+điểm\s+([A-Z])\s*,\s*([A-Z])(?![A-Z])/u;
-const SEGMENT_CIRCLE =
-  /[Đđ]oạn\s+thẳng\s+([A-Z])([A-Z])\s+cắt\s+đường\s*tròn\s+đường\s*kính\s+([A-Z])([A-Z])\s+tại\s+điểm\s+([A-Z])(?![A-Z])/gu;
+const DIAMETER_INTERSECTION = new RegExp(
+  CIRCLE_KW +
+    '\\s+' +
+    DUONG_KW +
+    '\\s*kính\\s+([A-Z])([A-Z])\\s+và\\s+' +
+    CIRCLE_KW +
+    '\\s+' +
+    DUONG_KW +
+    '\\s*kính\\s+([A-Z])([A-Z])[^.;\n]*?tại\\s+các\\s+điểm\\s+([A-Z])\\s*,\\s*([A-Z])(?![A-Z])',
+  'u',
+);
+const SEGMENT_CIRCLE = new RegExp(
+  '[Đđ]oạn\\s+thẳng\\s+([A-Z])([A-Z])\\s+cắt\\s+' +
+    CIRCLE_KW +
+    '\\s+' +
+    DUONG_KW +
+    '\\s*kính\\s+([A-Z])([A-Z])\\s+tại\\s+điểm\\s+([A-Z])(?![A-Z])',
+  'gu',
+);
 const LINE_LINE =
   /[Cc]ác\s+đường\s+thẳng\s+([A-Z])([A-Z])\s+và\s+([A-Z])([A-Z])\s+cắt\s+nhau\s+tại\s+([A-Z])(?![A-Z])/u;
 
@@ -19,7 +34,7 @@ export const altitudeDiameterCirclesRule: LanguageRule = {
   id: 'altitude-diameter-circles',
   priority: 67,
   languages: ['vi'],
-  patterns: [/[Đđ]ường\s*cao/u, /đường\s*kính/u],
+  patterns: [new RegExp(DUONG_KW + '\\s*cao', 'u'), new RegExp(DUONG_KW + '\\s*kính', 'u')],
   match(ctx) {
     const tri = TRI.exec(ctx.problem);
     const alts = ALTITUDES.exec(ctx.problem);

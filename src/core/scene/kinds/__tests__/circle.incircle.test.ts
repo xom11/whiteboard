@@ -13,7 +13,7 @@ test('circle kind: construction incircle → board.create("incircle", [A,B,C])',
   };
   const refs: Record<string, { id: string }> = { A: { id: 'A' }, B: { id: 'B' }, C: { id: 'C' } };
   const obj = {
-    id: 'c1', kind: 'circle', label: 'w', visible: true, locked: false, layer: 'd', schemaVersion: 1,
+    id: 'c1', kind: 'circle', label: 'I', visible: true, locked: false, layer: 'd', schemaVersion: 1,
     attrs: { construction: { kind: 'incircle', p1: 'A', p2: 'B', p3: 'C' } },
   } as never;
   const out = def.render(obj, { jxg: board, resolveRef: (id: string) => refs[id] } as never) as any;

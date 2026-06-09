@@ -25,14 +25,19 @@
 // luôn cách bởi dấu cách/phẩy nên \b[A-Z]\b an toàn; vẫn dùng cờ 'u'.
 import type { LanguageRule, RuleMatch } from './_types';
 import type { IntentT } from '../intent';
-import { addPoint, drawCircle } from './_shared';
+import { addPoint, drawCircle, CIRCLE_KW, DUONG_KW } from './_shared';
 
 // Anchor "đường tròn đường kính PQ cắt <cạnh…> (lần lượt)? tại <điểm…>".
 // lineRegion lazy tới "tại" đầu tiên; pointRegion tới hết clause (không . ; \n).
-const PATTERN =
-  /[Đđ]ường\s*tròn\s+đường\s*kính\s+([A-Z])([A-Z])(?![A-Z])\s+cắt\s+([^.;\n]*?)\s+(?:lần\s*lượt\s+)?tại\s+([^.;\n]*)/u;
+const PATTERN = new RegExp(
+  CIRCLE_KW +
+    '\\s+' +
+    DUONG_KW +
+    '\\s*kính\\s+([A-Z])([A-Z])(?![A-Z])\\s+cắt\\s+([^.;\\n]*?)\\s+(?:lần\\s*lượt\\s+)?tại\\s+([^.;\n]*)',
+  'u',
+);
 
-const PREFILTER = /đường\s*kính/u;
+const PREFILTER = new RegExp(DUONG_KW + '\\s*kính', 'u');
 
 /** Đỉnh chung DUY NHẤT giữa cạnh "AB" và đường kính "BC" (vd "B"). */
 function sharedVertex(line: string, dia: string): string | undefined {

@@ -25,12 +25,14 @@
 // tự Việt dùng cờ 'u' + lookaround (?!\p{L}).
 import type { LanguageRule, RuleMatch } from './_types';
 import type { IntentT } from '../intent';
-import { addPoint } from './_shared';
+import { addPoint, DUONG_KW } from './_shared';
 
-// Ref = cặp đỉnh "AB" (đúng 2 ký tự HOA, neo (?![A-Z]) chặn cụm 3+). Tiền tố
-// "đường thẳng|đoạn|tia|cạnh" optional.
+// Ref = cặp đỉnh "AB" (đúng 2 ký tự HOA, cho phép khoảng trắng ở giữa "A B", neo (?![A-Z]) chặn cụm 3+).
+// Tiền tố "đường thẳng|đoạn|tia|cạnh" optional.
 const REF =
-  '(?:đường\\s*thẳng\\s+|đoạn(?:\\s+thẳng)?\\s+|tia\\s+|cạnh\\s+)?([A-Z]{2})(?![A-Z])';
+  '(?:' +
+  DUONG_KW +
+  '\\s*thẳng\\s+|đoạn(?:\\s+thẳng)?\\s+|tia\\s+|cạnh\\s+)?([A-Z]\\s*[A-Z])(?![A-Z])';
 const CONN = '(?:và|với)';
 
 // A: "giao điểm (của)? REF1 (và|với) REF2" — tên đứng TRƯỚC qua "X là".
@@ -60,6 +62,8 @@ const PREFILTER = /giao\s*điểm|cắt|giao\s+nhau/u;
  * + tên không nằm trong ref. Ngược lại trả null (escalate).
  */
 function makeIntent(name: string, ref1: string, ref2: string): IntentT | null {
+  ref1 = ref1.replace(/\s+/g, '');
+  ref2 = ref2.replace(/\s+/g, '');
   const ends = [ref1[0], ref1[1], ref2[0], ref2[1]];
   if (new Set(ends).size !== 4) return null; // chia sẻ đỉnh / ref trùng → degenerate
   if (ends.includes(name)) return null; // ref chứa chính điểm cần dựng → vô nghĩa

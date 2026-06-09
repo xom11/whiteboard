@@ -5,19 +5,19 @@
 
 export const GEOMETRY_KEYWORDS: readonly string[] = [
   // Base shapes
-  'tam giác', 'đường tròn', 'hình chữ nhật', 'hình vuông',
+  'tam giác', 'đường tròn', 'đương tròn', 'hình chữ nhật', 'hình vuông',
   'hình bình hành', 'hình thoi', 'hình thang', 'tứ giác',
   // Triangle variants
   'vuông tại', 'cân tại', 'đều',
   // Circle parts
-  'bán kính', 'tâm', 'đường kính',
+  'bán kính', 'tâm', 'đường kính', 'đương kính',
   // Segments / on-segment
   'đoạn',
   // Derived points
-  'trung điểm', 'chân đường cao', 'hình chiếu',
+  'trung điểm', 'chân đường cao', 'chân đương cao', 'hình chiếu',
   'trọng tâm', 'trực tâm', 'tâm nội tiếp', 'tâm ngoại tiếp',
   // Cevian names
-  'đường cao', 'trung tuyến', 'phân giác', 'trung trực',
+  'đường cao', 'đương cao', 'trung tuyến', 'phân giác', 'trung trực',
   // Special lines/circles
   'tiếp tuyến', 'tiếp điểm', 'tiếp xúc',
   'nội tiếp', 'ngoại tiếp',
@@ -44,7 +44,7 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   // Lowercase vì countGeometryKeywords lowercase input.
   'chín điểm',
   // Relations
-  'song song', 'vuông góc', 'giao điểm', 'cắt',
+  'song song', 'vuông góc', 'giao điểm', 'cắt', 'đường thẳng', 'đương thẳng',
   // Ký hiệu (symbol-only phrasing tương đương từ chữ): "⊥" ≡ "vuông góc".
   // perpFoot rule đã nhận "⊥" ở tầng construct (PERP_DRAW), nhưng gate
   // hasGeometry trước đây CHỈ nhận chữ "vuông góc" → clause mà "⊥" là tín hiệu

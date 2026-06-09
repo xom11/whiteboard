@@ -113,9 +113,14 @@ const def: KindDef<CircleAttrs> = {
   render: (obj, ctx) => {
 
     const board = ctx.jxg as any;
+    
+    /** Kiểm tra label có phải tên tâm (vd O, I, O1) hay không. */
+    const isCenterLabel = (l: string) => /^[A-Z]['′]?\d*$/u.test(l);
+    const isCenter = isCenterLabel(obj.label);
+
     const baseOpts: Record<string, unknown> = {
       name: obj.label,
-      withLabel: obj.attrs.showLabel ?? false,
+      withLabel: isCenter ? (obj.attrs.showLabel ?? false) : true,
       strokeColor: obj.attrs.color ?? '#0f172a',
       strokeWidth: obj.attrs.width ?? 2,
       dash: obj.attrs.dash ?? 0,
@@ -123,27 +128,45 @@ const def: KindDef<CircleAttrs> = {
       visible: obj.visible,
       fixed: obj.locked,
     };
+
     const c = asConstruction(obj.attrs);
     if (c?.kind === 'circumscribed') {
       const p1 = ctx.resolveRef(c.p1);
       const p2 = ctx.resolveRef(c.p2);
       const p3 = ctx.resolveRef(c.p3);
+      if (isCenter) {
+        // Nếu tên là tâm (O), tạo circumcenter có nhãn.
+        const center = board.create('circumcenter', [p1, p2, p3], {
+          visible: obj.visible,
+          withLabel: true,
+          fixed: true,
+          name: obj.label,
+        });
+        const circ: any = board.create('circumcircle', [p1, p2, p3], { ...baseOpts, withLabel: false });
+        circ.center = circ.center ?? center;
+        circ._helpers = [center];
+        return circ;
+      }
       return board.create('circumcircle', [p1, p2, p3], baseOpts);
     }
     if (c?.kind === 'incircle') {
       const p1 = ctx.resolveRef(c.p1);
       const p2 = ctx.resolveRef(c.p2);
       const p3 = ctx.resolveRef(c.p3);
-      const center = board.create('incenter', [p1, p2, p3], {
-        visible: obj.visible,
-        withLabel: true,
-        fixed: true,
-        name: obj.label,
-      });
-      const circ: any = board.create('incircle', [p1, p2, p3], baseOpts);
-      circ.center = circ.center ?? center;
-      circ._helpers = [center];
-      return circ;
+      if (isCenter) {
+        const center = board.create('incenter', [p1, p2, p3], {
+          visible: obj.visible,
+          withLabel: true,
+          fixed: true,
+          name: obj.label,
+        });
+        const circ: any = board.create('incircle', [p1, p2, p3], { ...baseOpts, withLabel: false });
+        circ.center = circ.center ?? center;
+        circ._helpers = [center];
+        return circ;
+      }
+      // Tên không phải tâm (vd alpha) -> nhãn gán cho đường tròn.
+      return board.create('incircle', [p1, p2, p3], baseOpts);
     }
     if (c?.kind === 'excircle') {
 

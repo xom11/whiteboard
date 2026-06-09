@@ -24,10 +24,11 @@
 // ("đ","ề","ạ"…). Mọi regex chứa ký tự Việt dùng cờ 'u' + lookaround \p{L}.
 import type { LanguageRule, RuleMatch } from './_types';
 import type { Clause } from '../deterministic/coverage';
-import { drawCircle } from './_shared';
+import { drawCircle, CIRCLE_KW } from './_shared';
 
 // "đường tròn tâm O bán kính 3" / "(O) bán kính 3" / "O bán kính 3".
 // Tâm 1 ký tự HOA; "tâm" optional; có thể bọc trong ngoặc "(O)".
+// Hỗ trợ PAREN tên chữ (alpha, omega...).
 //
 // GLOBAL (/gu) vì 1 clause có thể nêu NHIỀU đường tròn ("tâm I bán kính 2 và
 // tâm O bán kính 5" không có dấu câu tách → cùng clause). matchAll quét hết.
@@ -37,13 +38,18 @@ import { drawCircle } from './_shared';
 // Nếu nhảy qua được, "tâm O và … tâm I bán kính 5" sẽ bind nhầm 5 vào O. Chặn ở
 // đây ⇒ match bắt đầu từ O thất bại, regex tự dời tới "tâm I bán kính 5" (đúng),
 // còn "tâm O" trơ (không số) không bị nuốt → không claim → escalate phần đó.
-const CENTER_RADIUS_WORDS_G =
-  /đường\s*tròn\s*(?:\(\s*)?(?:tâm\s+)?([A-Z])(?:\s*\))?(?:(?!đường|và\s)[^A-Z])*?bán\s*kính\s+(\d+(?:[.,]\d+)?)/gu;
+const CENTER_RADIUS_WORDS_G = new RegExp(
+  CIRCLE_KW +
+    '\\s*(?:\\(\\s*)?(?:tâm\\s+)?([^\\s;,).:]+)(?:\\s*\\))?(?:(?!đường|và\\s)[^A-Z])*?bán\\s*kính\\s+(\\d+(?:[.,]\\d+)?)',
+  'gu',
+);
 
 // "đường tròn tâm O đi qua A" / "(O) đi qua A" / "O đi qua A".
 // GLOBAL: nhiều "đường tròn … đi qua …" trong 1 clause.
-const CENTER_THROUGH_G =
-  /đường\s*tròn\s*(?:\(\s*)?(?:tâm\s+)?([A-Z])(?:\s*\))?\s+đi\s+qua\s+([A-Z])/gu;
+const CENTER_THROUGH_G = new RegExp(
+  CIRCLE_KW + '\\s*(?:\\(\\s*)?(?:tâm\\s+)?([^\\s;,).:]+)(?:\\s*\\))?\\s+đi\\s+qua\\s+([A-Z])',
+  'gu',
+);
 
 // Phần "đi qua B và C" (≥2 điểm surface): chưa hỗ trợ (DSL centerThrough 1 điểm).
 // Phát hiện để SKIP match đó → điểm thứ 2 (C) thiếu trong DSL → named-entity
@@ -68,8 +74,14 @@ const CENTER_RADIUS_LETTER_PAREN_G = /\(\s*([A-Z])\s*[;,]\s*[Rr]\s*\)/gu;
 // "đường tròn tâm O bán kính R" — words, bán kính CHỮ. Mirror tempered của
 // CENTER_RADIUS_WORDS_G; (?![A-Za-z]) chặn "Ra"/"Rồi"… và phần số ("2R") để
 // nhánh số lo. GLOBAL: nhiều đường tròn / clause.
-const CENTER_RADIUS_LETTER_WORDS_G =
-  /đường\s*tròn\s*(?:\(\s*)?(?:tâm\s+)?([A-Z])(?:\s*\))?(?:(?!đường|và\s)[^A-Z])*?bán\s*kính\s+[Rr](?![A-Za-z])/gu;
+// "đường tròn tâm O bán kính R" — words, bán kính CHỮ. Mirror tempered của
+// CENTER_RADIUS_WORDS_G; (?![A-Za-z]) chặn "Ra"/hệ số "2R" (nhánh số lo phần "2", nhưng "radius 2R"
+// hiếm; vẫn fail-safe vì \d không có sau "radius" khi viết "radius R").
+const CENTER_RADIUS_LETTER_WORDS_G = new RegExp(
+  CIRCLE_KW +
+    '\\s*(?:\\(\\s*)?(?:tâm\\s+)?([^\\s;,).:]+)(?:\\s*\\))?(?:(?!đường|và\\s)[^A-Z])*?bán\\s*kính\\s+[Rr](?![A-Za-z])',
+  'gu',
+);
 
 // === EN words patterns (issue #46 group B) ==================================
 // Tiền tố tâm EN dùng chung cho cả 3 dạng (radius số / radius CHỮ / passing

@@ -16,7 +16,7 @@
 //   - không trích được tên foot cục bộ;
 //   - modifier "trung điểm (của)? hình chiếu …" — đổi nghĩa, foot không còn là điểm cần dựng.
 import type { LanguageRule, RuleMatch } from './_types';
-import { addPoint, connect } from './_shared';
+import { addPoint, connect, DUONG_KW } from './_shared';
 
 // LƯU Ý: \b của JS dựa ASCII word-char nên KHÔNG khớp quanh ký tự Việt. Mọi
 // regex chứa ký tự Việt dùng cờ 'u' + tránh \b.
@@ -24,7 +24,12 @@ import { addPoint, connect } from './_shared';
 // Prefilter toàn đề: "hình chiếu" / "chân đường (cao|vuông góc)" / ký hiệu ⊥ /
 // "vuông góc" (cho dạng "Kẻ AH ⊥ BC tại H"). "vuông góc" rộng nhưng match() chỉ
 // emit khi pattern khớp thật → an toàn.
-const PREFILTER = /hình\s*chiếu|chân\s+(?:của\s+)?đường\s+(?:cao|vuông\s*góc)|⊥|vuông\s*góc/u;
+const PREFILTER = new RegExp(
+  'hình\\s*chiếu|chân\\s+(?:của\\s+)?' +
+    DUONG_KW +
+    '\\s+(?:cao|vuông\\s*góc)|⊥|vuông\\s*góc',
+  'u',
+);
 // EN prefilter (issue #46 group B). runRules prefilter theo `patterns` (BỎ QUA
 // field `languages`) → BẮT BUỘC có 1 EN regex thì match() mới chạy cho đề EN
 // thuần. Rộng nhưng match() chỉ emit khi core khớp thật → an toàn.
@@ -32,13 +37,13 @@ const PREFILTER_EN = /projection|perpendicular|foot\s+of/i;
 
 // onLine token: tên đường 1 ký tự HOA HOẶC cặp đỉnh 2 ký tự HOA (vd 'BC'). Chấp
 // nhận tiền tố "đường thẳng" / "cạnh" / "đoạn" trước token.
-const LINE = '(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{1,2})(?![A-Z])';
+const LINE = '(?:' + DUONG_KW + '\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{1,2})(?![A-Z])';
 const PREP = '(?:trên|lên|xuống|đến|tới)';
 
 // "hình chiếu (vuông góc)? (của)? X PREP [cạnh|đường thẳng] LINE"
 const PROJ_CORE = `hình\\s*chiếu\\s+(?:vuông\\s*góc\\s+)?(?:của\\s+)?([A-Z])\\s+${PREP}\\s+${LINE}`;
 // "chân đường (vuông góc|cao) (hạ|kẻ|vẽ|dựng)? (từ)? X PREP LINE"
-const FOOT_CORE = `chân\\s+(?:của\\s+)?đường\\s+(?:vuông\\s*góc|cao)\\s*(?:hạ\\s+|kẻ\\s+|vẽ\\s+|dựng\\s+)?(?:từ\\s+)?([A-Z])\\s+${PREP}\\s+${LINE}`;
+const FOOT_CORE = `chân\\s+(?:của\\s+)?${DUONG_KW}\\s+(?:vuông\\s*góc|cao)\\s*(?:hạ\\s+|kẻ\\s+|vẽ\\s+|dựng\\s+)?(?:từ\\s+)?([A-Z])\\s+${PREP}\\s+${LINE}`;
 
 // Phân phối "X, Y lần lượt là <core của FROM1 ... LINE1> và (của|từ)? FROM2 PREP LINE2".
 //   groups: 1=name1 2=name2 | PROJ: 3=from1 4=line1 | FOOT: 5=from1 6=line1 | tail: 7=from2 8=line2

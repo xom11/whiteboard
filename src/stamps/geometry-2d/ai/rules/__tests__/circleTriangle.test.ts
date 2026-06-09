@@ -54,11 +54,21 @@ describe('circleTriangleRule', () => {
     const m = run('Cho tam giác ABC nội tiếp đường tròn (O)');
     expect(m.length).toBe(1);
     const intent = m[0].intents[0] as any;
-    expect(intent.spec).toBe('through3');
+    expect(intent.name).toBe('O');
     expect(intent.points).toEqual(['A', 'B', 'C']);
-  });
+    });
 
-  it('"tam giác ABC nội tiếp (O)" (KHÔNG có chữ "đường tròn") → circumcircle through3, name O', () => {
+    it('TYPO: "đương tròn" → vẫn match', () => {
+    const m = run('Cho tam giác ABC nhọn, không cân nội tiếp đương tròn (O)');
+    expect(m.length).toBe(1);
+    const intent = m[0].intents[0] as any;
+    expect(intent.spec).toBe('through3');
+    expect(intent.name).toBe('O');
+    expect(intent.points).toEqual(['A', 'B', 'C']);
+    });
+
+    it('tam giác ABC nội tiếp (O) (KHÔNG có chữ "đường tròn") → circumcircle through3, name O', () => {
+
     const m = run('Cho tam giác ABC nội tiếp (O)');
     expect(m.length).toBe(1);
     const intent = m[0].intents[0] as any;
