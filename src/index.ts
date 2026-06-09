@@ -62,6 +62,7 @@ export type {
   AiFigureProgress,
   GenerateGeometryFigure,
 } from './stamps/shared/types';
+export type { GeometryDraftPreview } from './stamps/shared/draftTypes';
 
 // Vision / OCR public API.
 export {
