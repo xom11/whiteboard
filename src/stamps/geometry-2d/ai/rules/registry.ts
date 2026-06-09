@@ -28,6 +28,7 @@ import { ninePointRule } from './ninePoint';
 import { diameterCirclePairwiseRule } from './diameterCirclePairwise';
 import { angleBisectorFootRule } from './angleBisectorFoot';
 import { intersectionRule } from './intersection';
+import { chordRule } from './chord';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -55,6 +56,7 @@ const RULES: readonly LanguageRule[] = [
   diameterCirclePairwiseRule,
   angleBisectorFootRule,
   intersectionRule,
+  chordRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */
