@@ -69,3 +69,21 @@ export {
 } from './deterministic/runDeterministicIntents';
 export { mergeIntents } from './mergeIntents';
 
+// Image OCR — trích đề từ ảnh bằng Tesseract.js (client-side, offline, KHÔNG LLM).
+export {
+  handleExtractProblem,
+  type HandleExtractProblemOptions,
+  type ExtractUiResult,
+} from './handleExtractProblem';
+export {
+  extractProblemFromImage,
+  fileToImagePart,
+  validateFile,
+  inferMediaType,
+  runTesseractOcr,
+  type ExtractProblemOptions,
+  type ExtractProblemOutcome,
+  type ValidationResult,
+  type ImagePart,
+} from './vision';
+
