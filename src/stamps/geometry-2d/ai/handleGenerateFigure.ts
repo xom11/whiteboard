@@ -3,10 +3,10 @@
 // <Whiteboard generateGeometryFigure> + playground route dùng trực tiếp.
 //
 // 2026-06-09: repurpose từ path buildFigure (free-form DSL, đã xoá) sang intent
-// pipeline. generateFigureIntent TỰ làm deterministic rules-first
-// (tryDeterministicFigure → 21 rule + 4 gate) rồi mới LLM fallback, nên façade
-// chỉ cần map kết quả. Contract AiFigureUiResult GIỮ NGUYÊN → consumer
-// (playground, hoctotbachkhoa) không phải đổi route, tự hưởng rule engine khi upgrade.
+// pipeline DETERMINISTIC-ONLY. generateFigureIntent chạy rule engine
+// (tryDeterministicFigure → 21 rule + 4 gate); miss → deterministic_miss (KHÔNG
+// LLM). Façade chỉ cần map kết quả. Contract AiFigureUiResult GIỮ NGUYÊN →
+// consumer (playground, hoctotbachkhoa) không phải đổi route.
 
 import type { AiFigureUiResult } from '../../shared/types';
 import {
@@ -32,7 +32,8 @@ export interface HandleGenerateFigureOptions extends GenerateIntentOptions {
   onResult?: (result: IntentGenerateResult, attempt: number) => void;
   /**
    * Số attempt tối đa khi build error (transpile/builder). Default 2 (1 retry).
-   * LLM stochastic → lần 2 thường khá hơn. Clamp [1,5].
+   * Rule base deterministic → retry hiếm khi đổi kết quả, giữ để tương thích
+   * contract cũ. Clamp [1,5].
    */
   maxAttempts?: number;
 }
@@ -43,12 +44,11 @@ const DEFAULT_MAX_ATTEMPTS = 2;
  * Gọi rule-engine intent pipeline và trả về `AiFigureUiResult` mà
  * `<Whiteboard generateGeometryFigure>` chấp nhận trực tiếp.
  *
- * Track A (deterministic rules) chạy trong `generateFigureIntent` — đề dễ→trung
- * bình dựng KHÔNG tốn token. Miss → Track B (LLM intent).
+ * Deterministic rule base chạy trong `generateFigureIntent` — đề dễ→trung bình
+ * dựng KHÔNG tốn token. Miss → `deterministic_miss` (KHÔNG LLM fallback).
  *
- * Auto-retry: chỉ retry khi `transpile_error`/`builder_error` (AI emit hình
- * structurally sai — model stochastic có cơ hội khá hơn lần 2). KHÔNG retry
- * `refused` (cố ý), `parse_error` (sai schema), `provider_error` (network/config).
+ * Auto-retry: chỉ retry khi `transpile_error`/`builder_error`. KHÔNG retry
+ * `deterministic_miss` (rule base ổn định, retry vô nghĩa).
  *
  * Server-side caller giữ `IntentGenerateResult` đầy đủ qua `onResult` cho
  * telemetry/logging.
@@ -89,29 +89,19 @@ function mapErrorToUi(result: IntentGenerateResult): AiFigureUiResult {
   if (result.ok) return { ok: true, state: result.transpile.state };
 
   switch (result.reason) {
-    case 'refused':
-      return { ok: false, message: result.message };
-    case 'parse_error':
-      return {
-        ok: false,
-        message: 'AI trả về dữ liệu không hợp lệ. Vui lòng thử lại hoặc diễn đạt lại đề bài.',
-      };
     case 'builder_error':
     case 'transpile_error':
     case 'verify_error':
       return {
         ok: false,
         message:
-          'AI tạo hình không hợp lệ (đã thử lại). Vui lòng tách thành 1 yêu cầu/lần hoặc diễn đạt khác.',
+          'Không dựng được hình (đã thử lại). Vui lòng tách thành 1 yêu cầu/lần hoặc diễn đạt khác.',
       };
     case 'deterministic_miss':
-      // Chế độ chỉ-deterministic (đang tối ưu rule base, đã tắt LLM fallback):
-      // `message` đã là câu tiếng Việt dễ hiểu từ describeDeterministicMiss
-      // (nêu rõ cần bổ sung rule / có thể lỗi rule + phần đề chưa phủ) → trả
-      // thẳng cho UI/log, không bọc jargon.
-      return { ok: false, message: result.message };
-    case 'provider_error':
     default:
+      // Rule base chưa phủ đề này: `message` đã là câu tiếng Việt dễ hiểu từ
+      // describeDeterministicMiss (nêu rõ cần bổ sung rule / có thể lỗi rule +
+      // phần đề chưa phủ) → trả thẳng cho UI/log, không bọc jargon.
       return { ok: false, message: result.message };
   }
 }

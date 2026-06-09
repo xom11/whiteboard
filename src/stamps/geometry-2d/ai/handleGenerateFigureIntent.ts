@@ -48,9 +48,6 @@ export async function handleGenerateFigureIntent(
         },
       };
     }
-    if (r.reason === 'refused') {
-      return { kind: 'refused', message: r.message };
-    }
     return { kind: 'error', code: r.reason, message: r.message };
   } catch (e) {
     return {
