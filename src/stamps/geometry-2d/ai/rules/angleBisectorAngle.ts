@@ -48,6 +48,11 @@ const ANGLE3 =
 const ANGLE1 =
   /phân\s*giác\s+(?:(?:của|cho)\s+)?góc\s+([A-Z])(?![A-Z])/giu;
 
+// "chân (của)? (đường|tia)? " NGAY TRƯỚC "phân giác" → cụm "CHÂN phân giác" là
+// FOOT (điểm), thuộc angleBisectorFoot.ts. angleBisectorAngle né để KHÔNG vẽ tia
+// phân giác trùng (foot builder đã tự dựng tia bên trong) → tránh double-emit.
+const CHAN_BEFORE = /chân\s+(?:của\s+)?(?:đường\s*|tia\s+)?$/u;
+
 // === EN regex (issue #46 group B) ===========================================
 // First-letter flex [Bb]/[Aa] (KHÔNG cờ 'i' — sẽ phá [A-Z] nhãn). Nhãn HOA
 // strict, neo (?![A-Z]). Cờ 'g' để emit-all + matchAll. Yêu cầu chữ
@@ -109,6 +114,7 @@ export const angleBisectorAngleRule: LanguageRule = {
       // ── 3-point "góc XYZ": vertex = chữ giữa, không cần tam giác ──
       ANGLE3.lastIndex = 0;
       for (const m of c.text.matchAll(ANGLE3)) {
+        if (CHAN_BEFORE.test(c.text.slice(0, m.index))) continue; // "chân … phân giác" = foot
         const [p1, vertex, p2] = [m[1], m[2], m[3]];
         const key = `${p1}|${vertex}|${p2}`;
         if (seen.has(key)) continue;
@@ -121,6 +127,7 @@ export const angleBisectorAngleRule: LanguageRule = {
       // trí bắt đầu): so vị trí của vertex 1-letter với các 3-point đã thấy.
       ANGLE1.lastIndex = 0;
       for (const m of c.text.matchAll(ANGLE1)) {
+        if (CHAN_BEFORE.test(c.text.slice(0, m.index))) continue; // "chân … phân giác" = foot
         const vertex = m[1];
         if (!tri) continue;                 // không tam giác → escalate
         if (!tri.includes(vertex)) continue; // đỉnh ngoài tam giác → bỏ qua

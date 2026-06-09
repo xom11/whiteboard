@@ -26,6 +26,7 @@ import { radicalAxisRule } from './radicalAxis';
 import { simsonRule } from './simson';
 import { ninePointRule } from './ninePoint';
 import { diameterCirclePairwiseRule } from './diameterCirclePairwise';
+import { angleBisectorFootRule } from './angleBisectorFoot';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -51,6 +52,7 @@ const RULES: readonly LanguageRule[] = [
   simsonRule,
   ninePointRule,
   diameterCirclePairwiseRule,
+  angleBisectorFootRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */

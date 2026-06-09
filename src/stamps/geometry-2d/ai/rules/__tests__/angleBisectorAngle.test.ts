@@ -19,6 +19,20 @@ function findBisector(matches: ReturnType<typeof run>) {
 }
 
 describe('angleBisectorAngleRule', () => {
+  // ── Guard: "chân (đường) phân giác góc A" là FOOT (angleBisectorFoot sở hữu) →
+  //    angleBisectorAngle KHÔNG vẽ bisector trùng (tránh double-emit). ──
+  it('"D là chân phân giác góc A" (foot) → KHÔNG match (foot rule sở hữu)', () => {
+    expect(run('Cho tam giác ABC, D là chân phân giác góc A.').length).toBe(0);
+  });
+
+  it('"chân đường phân giác của góc B" → KHÔNG match (foot)', () => {
+    expect(run('Cho tam giác ABC. Gọi E là chân đường phân giác của góc B.').length).toBe(0);
+  });
+
+  it('"Vẽ phân giác góc A" (KHÔNG "chân") vẫn match bình thường', () => {
+    expect(findBisector(run('Cho tam giác ABC. Vẽ phân giác góc A.'))).toBeDefined();
+  });
+
   // ── 3-point angle "góc XYZ": vertex = chữ GIỮA ──
 
   it('"Vẽ tia phân giác của góc BAC" → angleBisector {p1:B, vertex:A, p2:C}, KHÔNG add-point', () => {
