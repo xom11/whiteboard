@@ -64,3 +64,11 @@ export type {
 } from './stamps/shared/types';
 export type { GeometryDraftPreview } from './stamps/shared/draftTypes';
 
+// Image OCR API — trích đề từ ảnh bằng Tesseract.js (client-side, offline, KHÔNG LLM).
+export {
+  handleExtractProblem,
+  type HandleExtractProblemOptions,
+  type ExtractUiResult,
+} from './stamps/geometry-2d/ai/handleExtractProblem';
+export type { ImagePart } from './stamps/geometry-2d/ai/vision/types';
+
