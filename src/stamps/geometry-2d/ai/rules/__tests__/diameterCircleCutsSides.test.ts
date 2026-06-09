@@ -89,4 +89,29 @@ describe('diameterCircleCutsSidesRule', () => {
   it('fail-safe: cạnh trùng đường kính (chia sẻ 2 đỉnh) → bỏ qua', () => {
     expect(intents('Đường tròn đường kính BC cắt BC tại M.')).toEqual([]);
   });
+
+  it('"nửa đường tròn" prefix → vẫn nhận', () => {
+    const all = intents('Cho tam giác ABC. Nửa đường tròn đường kính BC cắt AB tại M.');
+    expect(all).toContainEqual({ op: 'draw-circle', name: 'kBC', spec: 'diameter', endpoints: ['B', 'C'] });
+    expect(all).toContainEqual({
+      op: 'add-point', name: 'M',
+      constraint: { kind: 'secondIntersection', line: 'AB', circle: 'kBC', other: 'B' },
+    });
+  });
+
+  it('Bài 13: hai nửa đường tròn trong cùng câu → 2 circle + 2 giao', () => {
+    const all = intents(
+      'Vẽ nửa đường tròn đường kính BH cắt AB tại E, Nửa đường tròn đường kính HC cắt AC tại F.',
+    );
+    expect(all).toContainEqual({ op: 'draw-circle', name: 'kBH', spec: 'diameter', endpoints: ['B', 'H'] });
+    expect(all).toContainEqual({ op: 'draw-circle', name: 'kHC', spec: 'diameter', endpoints: ['H', 'C'] });
+    expect(all).toContainEqual({
+      op: 'add-point', name: 'E',
+      constraint: { kind: 'secondIntersection', line: 'AB', circle: 'kBH', other: 'B' },
+    });
+    expect(all).toContainEqual({
+      op: 'add-point', name: 'F',
+      constraint: { kind: 'secondIntersection', line: 'AC', circle: 'kHC', other: 'C' },
+    });
+  });
 });

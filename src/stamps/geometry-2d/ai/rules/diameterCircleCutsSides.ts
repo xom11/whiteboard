@@ -29,12 +29,15 @@ import { addPoint, drawCircle, CIRCLE_KW, DUONG_KW } from './_shared';
 
 // Anchor "đường tròn đường kính PQ cắt <cạnh…> (lần lượt)? tại <điểm…>".
 // lineRegion lazy tới "tại" đầu tiên; pointRegion tới hết clause (không . ; \n).
+// Global: một clause có thể chứa NHIỀU "đường tròn đường kính … cắt … tại …"
+// (vd Bài 13: hai nửa đường tròn). pointRegion bắt CHẶT (chỉ HOA + ,/và) để
+// không nuốt sang construct kế trong cùng clause.
 const PATTERN = new RegExp(
   CIRCLE_KW +
     '\\s+' +
     DUONG_KW +
-    '\\s*kính\\s+([A-Z])([A-Z])(?![A-Z])\\s+cắt\\s+([^.;\\n]*?)\\s+(?:lần\\s*lượt\\s+)?tại\\s+([^.;\n]*)',
-  'u',
+    '\\s*kính\\s+([A-Z])([A-Z])(?![A-Z])\\s+cắt\\s+([^.;\\n]*?)\\s+(?:lần\\s*lượt\\s+)?tại\\s+([A-Z](?!\\p{L})(?:\\s*(?:,|và)\\s*[A-Z](?!\\p{L}))*)',
+  'gu',
 );
 
 const PREFILTER = new RegExp(DUONG_KW + '\\s*kính', 'u');
@@ -55,9 +58,8 @@ export const diameterCircleCutsSidesRule: LanguageRule = {
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
-      const m = PATTERN.exec(c.text);
-      if (!m) continue;
-
+      PATTERN.lastIndex = 0;
+      for (const m of c.text.matchAll(PATTERN)) {
       const d0 = m[1];
       const d1 = m[2];
       const dia = d0 + d1; // "BC"
@@ -88,6 +90,7 @@ export const diameterCircleCutsSidesRule: LanguageRule = {
       if (!ok) continue;
 
       out.push({ ruleId: 'diameter-circle-cuts-sides', clauseIds: [c.id], intents });
+      }
     }
     return out;
   },
