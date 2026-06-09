@@ -65,6 +65,10 @@ export type Constraint2D =
   | { kind: 'tangentPointExt'; from: string; circle: string; which: 0 | 1 }
   // Giao điểm của 2 đường tròn (c1, c2). `which` chọn 1 trong 2 nghiệm.
   | { kind: 'circleIntersection'; c1: string; c2: string; which: 0 | 1 }
+  // Giao điểm THỨ HAI của 2 đường tròn (c1, c2), biết điểm chung `exclude`.
+  // JSXGraph 'otherintersection' trả nghiệm KHÁC `exclude` — dùng cho đề
+  // "đường tròn đường kính AB, AC đôi một cắt nhau lần thứ hai" (điểm chung A).
+  | { kind: 'circleSecondIntersection'; c1: string; c2: string; exclude: string }
   // Giao điểm THỨ HAI của đường thẳng `line` với đường tròn `circle`, biết
   // giao điểm thứ nhất là `other`.
   | { kind: 'secondIntersection'; line: string; circle: string; other: string }
@@ -97,6 +101,7 @@ export function constraintRefs2D(c: Constraint2D): string[] {
     case 'onCircleAroundPoint': return [c.center, c.radiusPoint];
     case 'tangentPointExt': return [c.from, c.circle];
     case 'circleIntersection': return [c.c1, c.c2];
+    case 'circleSecondIntersection': return [c.c1, c.c2, c.exclude];
     case 'secondIntersection': return [c.line, c.circle, c.other];
     case 'tangencyPoint': return [c.circle, c.onLine];
     case 'arcMidpoint': return [c.circle, c.a, c.b, c.notContaining];

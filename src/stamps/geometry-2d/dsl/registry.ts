@@ -25,8 +25,10 @@ import { tangentModule } from './kinds/lines/tangent';
 import { polygonModule } from './kinds/polygons/polygon';
 import { circleCPModule } from './kinds/circles/circleCP';
 import { circle3Module } from './kinds/circles/circle3';
+import { circleDiameterModule } from './kinds/circles/circleDiameter';
 import { secondIntersectionModule } from './kinds/points/secondIntersection';
 import { circleIntersectionModule } from './kinds/points/circleIntersection';
+import { circleSecondIntersectionModule } from './kinds/points/circleSecondIntersection';
 import { tangencyPointModule } from './kinds/points/tangencyPoint';
 import { tangentPointExtModule } from './kinds/points/tangentPointExt';
 import { circleCRModule } from './kinds/circles/circleCR';
@@ -43,12 +45,13 @@ const ALL_MODULES: ReadonlyArray<DslKindModule> = [
   perpFootModule, circumcenterModule, incenterModule, centroidModule,
   orthocenterModule, intersectionModule,
   // NEW Tier 4+5 points
-  secondIntersectionModule, circleIntersectionModule, tangencyPointModule, tangentPointExtModule,
+  secondIntersectionModule, circleIntersectionModule, circleSecondIntersectionModule,
+  tangencyPointModule, tangentPointExtModule,
   segmentModule, lineModule, rayModule,
   perpendicularModule, parallelModule, perpBisectorModule,
   angleBisectorModule, lineThroughModule, radicalAxisModule, tangentModule,
   polygonModule,
-  circleCPModule, circle3Module,
+  circleCPModule, circle3Module, circleDiameterModule,
   // NEW Tier 4+5 circles
   circleCRModule, incircleModule, excircleModule,
   // Cụm A points

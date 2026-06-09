@@ -38,6 +38,16 @@ export const buildDrawCircle: IntentBuilder<DrawCircleIntentT> = (s, intent) => 
       addPoint(s, { name: intent.center!, kind: 'free', x, y });
     }
     addShape(s, { name: intent.name, kind: 'circleCR', center: intent.center, radius: intent.radius });
+  } else if (intent.spec === 'diameter') {
+    if (!intent.endpoints) {
+      throw new IntentBuilderError('diameter cần endpoints', intent);
+    }
+    addShape(s, {
+      name: intent.name,
+      kind: 'circleDiameter',
+      p1: intent.endpoints[0],
+      p2: intent.endpoints[1],
+    });
   } else if (intent.spec === 'inscribedIn') {
     if (!intent.triangle) throw new IntentBuilderError('inscribedIn cần triangle', intent);
     for (const v of intent.triangle) {

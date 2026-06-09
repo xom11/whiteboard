@@ -70,6 +70,7 @@ export type DslPointT =
   // NEW Tier 4+5
   | { name: Name; kind: 'secondIntersection'; line: Name; circle: Name; other: Name }
   | { name: Name; kind: 'circleIntersection'; c1: Name; c2: Name; which: 0 | 1 }
+  | { name: Name; kind: 'circleSecondIntersection'; c1: Name; c2: Name; exclude: Name }
   | { name: Name; kind: 'tangencyPoint'; circle: Name; onLine: Name }
   | { name: Name; kind: 'tangentPointExt'; from: Name; circle: Name; which: 0 | 1 }
   // Cụm A
@@ -94,6 +95,7 @@ export type DslShapeT =
   | { name: Name; kind: 'tangent'; throughPoint: Name; toCircle: Name; branch?: 0 | 1 | 'on' }
   | { name: Name; kind: 'circleCP'; center: Name; surfacePoint: Name; visible?: boolean }
   | { name: Name; kind: 'circle3'; p1: Name; p2: Name; p3: Name }
+  | { name: Name; kind: 'circleDiameter'; p1: Name; p2: Name; visible?: boolean }
   // NEW Tier 4+5
   | { name: Name; kind: 'circleCR'; center: Name; radius: number }
   | { name: Name; kind: 'incircle'; vertices: [Name, Name, Name] }

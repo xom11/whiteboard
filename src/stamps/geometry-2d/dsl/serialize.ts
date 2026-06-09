@@ -153,6 +153,15 @@ function serializePoint(obj: SceneObject<PointAttrs>, state: State): SerializedE
       };
     }
 
+    case 'circleSecondIntersection': {
+      const refs = resolveRefs([c.c1, c.c2, c.exclude], state);
+      if (!refs) return fail('unresolved-ref', `${c.c1},${c.c2},${c.exclude}`);
+      return {
+        ok: true,
+        entity: { name: obj.label, kind: 'circleSecondIntersection', c1: refs[0], c2: refs[1], exclude: refs[2] },
+      };
+    }
+
     case 'secondIntersection': {
       const refs = resolveRefs([c.line, c.circle, c.other], state);
       if (!refs) return fail('unresolved-ref', `${c.line},${c.circle},${c.other}`);
@@ -435,6 +444,14 @@ function serializeCircle(obj: SceneObject<CircleAttrs>, state: State): Serialize
     return {
       ok: true,
       entity: { name: obj.label, kind: 'excircle', vertices: [refs[0], refs[1], refs[2]], opposite: refs[3] },
+    };
+  }
+  if (c.kind === 'diameter') {
+    const refs = resolveRefs([c.p1, c.p2], state);
+    if (!refs) return fail('unresolved-ref', `${c.p1},${c.p2}`);
+    return {
+      ok: true,
+      entity: { name: obj.label, kind: 'circleDiameter', p1: refs[0], p2: refs[1] },
     };
   }
   return fail('unsupported-construction');

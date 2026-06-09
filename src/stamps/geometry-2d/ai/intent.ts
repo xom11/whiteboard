@@ -127,6 +127,9 @@ export const AddPointIntentZ = z.object({
     // NEW Tier 4+5
     z.object({ kind: z.literal('secondIntersection'), line: z.string(), circle: LabelZ, other: LabelZ }),
     z.object({ kind: z.literal('circleIntersection'), c1: LabelZ, c2: LabelZ, which: z.union([z.literal(0), z.literal(1)]) }),
+    // Giao điểm THỨ HAI của 2 đường tròn, loại điểm chung `exclude` (đề "đường
+    // tròn đường kính AB, AC đôi một cắt nhau lần thứ hai" — điểm chung A).
+    z.object({ kind: z.literal('circleSecondIntersection'), c1: LabelZ, c2: LabelZ, exclude: LabelZ }),
     z.object({ kind: z.literal('tangencyPoint'), circle: LabelZ, onLine: z.string() }),
     z.object({ kind: z.literal('tangentPoint'), from: LabelZ, circle: LabelZ, which: z.union([z.literal(0), z.literal(1)]) }),
     z.object({ kind: z.literal('angleBisectorFoot'), from: LabelZ, onLine: z.string() }),
@@ -173,13 +176,15 @@ export const ConnectIntentZ = z.object({
 export const DrawCircleIntentZ = z.object({
   op: z.literal('draw-circle'),
   name: LabelZ,
-  spec: z.enum(['centerThrough', 'through3', 'centerRadius', 'inscribedIn']),
+  spec: z.enum(['centerThrough', 'through3', 'centerRadius', 'inscribedIn', 'diameter']),
   center: LabelZ.optional(),
   through: LabelZ.optional(),
   points: z.tuple([LabelZ, LabelZ, LabelZ]).optional(),
   // NEW Tier 4+5
   radius: z.number().positive().optional(),
   triangle: z.tuple([LabelZ, LabelZ, LabelZ]).optional(),
+  // spec 'diameter' — đường tròn đường kính nối 2 đầu mút.
+  endpoints: z.tuple([LabelZ, LabelZ]).optional(),
 });
 
 // op: draw-line

@@ -17,6 +17,7 @@ import { arcMidpointConstraint } from './arcMidpoint';
 import { excenterConstraint } from './excenter';
 import { pointAtDistanceConstraint } from './pointAtDistance';
 import { circleIntersectionConstraint } from './circleIntersection';
+import { circleSecondIntersectionConstraint } from './circleSecondIntersection';
 import { secondIntersectionConstraint } from './secondIntersection';
 import { tangencyPointConstraint } from './tangencyPoint';
 // Batch 3 — aux/_helpers/drag-sync kinds
@@ -43,6 +44,7 @@ const ALL: PointConstraintModule[] = [
   excenterConstraint,
   pointAtDistanceConstraint,
   circleIntersectionConstraint,
+  circleSecondIntersectionConstraint,
   secondIntersectionConstraint,
   tangencyPointConstraint,
   transformedConstraint,

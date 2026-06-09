@@ -33,3 +33,12 @@ export const buildCircleIntersection = (s: BuildState, intent: AddPointIntentT):
     c1: c.c1, c2: c.c2, which: c.which,
   });
 };
+
+export const buildCircleSecondIntersection = (s: BuildState, intent: AddPointIntentT): void => {
+  const c = intent.constraint;
+  if (c.kind !== 'circleSecondIntersection') return;
+  addPoint(s, {
+    name: intent.name, kind: 'circleSecondIntersection',
+    c1: c.c1, c2: c.c2, exclude: c.exclude,
+  });
+};

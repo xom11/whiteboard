@@ -129,6 +129,7 @@ function constraintKey(c: AddPointIntentT['constraint']): string {
     case 'free': return c.at ? c.at.join(',') : '*';
     case 'secondIntersection':  return `secondIntersection:${c.line}:${c.circle}:${c.other}`;
     case 'circleIntersection':  return `circleIntersection:${c.c1}:${c.c2}:${c.which}`;
+    case 'circleSecondIntersection': return `circleSecondIntersection:${c.c1}:${c.c2}:${c.exclude}`;
     case 'tangencyPoint':       return `tangencyPoint:${c.circle}:${c.onLine}`;
     case 'tangentPoint':        return `tangentPoint:${c.from}:${c.circle}:${c.which}`;
     case 'angleBisectorFoot':   return `angleBisectorFoot:${c.from}:${c.onLine}`;

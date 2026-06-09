@@ -48,6 +48,7 @@ export const CONSTRUCT_MANIFEST: ConstructEntry[] = [
   { dslKind: 'intersection',       sceneKind: 'point',   intentKey: 'intersection',       toolKey: 'intersect',      ruleId: null,             serialize: true,  evalFixture: null },
   { dslKind: 'secondIntersection', sceneKind: 'point',   intentKey: 'secondIntersection', toolKey: 'secondIntersection', ruleId: null,         serialize: true,  evalFixture: null },
   { dslKind: 'circleIntersection', sceneKind: 'point',   intentKey: 'circleIntersection', toolKey: 'circleIntersection', ruleId: null,         serialize: true,  evalFixture: null },
+  { dslKind: 'circleSecondIntersection', sceneKind: 'point', intentKey: 'circleSecondIntersection', toolKey: null,       ruleId: 'diameter-circle-pairwise', serialize: true, evalFixture: null },
   { dslKind: 'tangencyPoint',      sceneKind: 'point',   intentKey: 'tangencyPoint',      toolKey: 'tangencyPoint',  ruleId: null,             serialize: true,  evalFixture: null },
   { dslKind: 'tangentPointExt',    sceneKind: 'point',   intentKey: 'tangentPoint',       toolKey: 'tangentPointExt', ruleId: null,            serialize: true,  evalFixture: null },
   { dslKind: 'arcMidpoint',        sceneKind: 'point',   intentKey: 'arcMidpoint',        toolKey: 'arcMidpoint',    ruleId: 'arcMidpoint',    serialize: true,  evalFixture: null },
@@ -78,6 +79,7 @@ export const CONSTRUCT_MANIFEST: ConstructEntry[] = [
   // ── circles ─────────────────────────────────────────────────────────────────
   { dslKind: 'circleCP',           sceneKind: 'circle',  intentKey: 'draw-circle',        toolKey: 'circleCenter',   ruleId: 'circleRadius',   serialize: true,  evalFixture: null },
   { dslKind: 'circle3',            sceneKind: 'circle',  intentKey: 'draw-circle',        toolKey: 'circle3',        ruleId: 'circleTriangle', serialize: true,  evalFixture: null },
+  { dslKind: 'circleDiameter',     sceneKind: 'circle',  intentKey: 'draw-circle',        toolKey: null,             ruleId: 'diameter-circle-pairwise', serialize: true, evalFixture: null },
   { dslKind: 'circleCR',           sceneKind: 'circle',  intentKey: 'draw-circle',        toolKey: null,             ruleId: 'circleRadius',   serialize: true,  evalFixture: null },
   { dslKind: 'incircle',           sceneKind: 'circle',  intentKey: 'draw-circle',        toolKey: 'incircle',       ruleId: 'circleTriangle', serialize: true,  evalFixture: null },
   { dslKind: 'excircle',           sceneKind: 'circle',  intentKey: null,                 toolKey: 'excircle',       ruleId: null,             serialize: true,  evalFixture: null },

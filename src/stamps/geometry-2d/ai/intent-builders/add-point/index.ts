@@ -8,7 +8,7 @@ import type { AddPointIntentT } from '../../intent';
 import { buildMidpoint } from './midpoint';
 import { buildPerpFoot } from './perpFoot';
 import { buildCentroid, buildCircumcenter, buildIncenter, buildOrthocenter, buildExcenter } from './centers';
-import { buildIntersection, buildSecondIntersection, buildCircleIntersection } from './intersections';
+import { buildIntersection, buildSecondIntersection, buildCircleIntersection, buildCircleSecondIntersection } from './intersections';
 import { buildTangencyPoint, buildTangentPoint } from './tangency';
 import { buildOnSegment, buildFree } from './onSegment-free';
 import { buildAngleBisectorFoot } from './angleBisectorFoot';
@@ -25,6 +25,7 @@ export const ADD_POINT_BUILDERS: Record<string, (s: BuildState, intent: AddPoint
   centroid: buildCentroid, circumcenter: buildCircumcenter, incenter: buildIncenter,
   orthocenter: buildOrthocenter, excenter: buildExcenter,
   intersection: buildIntersection, secondIntersection: buildSecondIntersection, circleIntersection: buildCircleIntersection,
+  circleSecondIntersection: buildCircleSecondIntersection,
   tangencyPoint: buildTangencyPoint, tangentPoint: buildTangentPoint,
   onSegment: buildOnSegment, free: buildFree,
   angleBisectorFoot: buildAngleBisectorFoot, externalAngleBisectorFoot: buildExternalAngleBisectorFoot,

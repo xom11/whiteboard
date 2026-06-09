@@ -12,7 +12,9 @@ import { excenter } from './pointConstructions';
 export type CircleConstruction =
   | { kind: 'circumscribed'; p1: string; p2: string; p3: string }
   | { kind: 'incircle'; p1: string; p2: string; p3: string }
-  | { kind: 'excircle'; p1: string; p2: string; p3: string; opposite: string };
+  | { kind: 'excircle'; p1: string; p2: string; p3: string; opposite: string }
+  // Đường tròn đường kính p1p2: tâm = trung điểm p1p2, bán kính = |p1p2|/2.
+  | { kind: 'diameter'; p1: string; p2: string };
 
 export type CircleAttrs = {
   /** Hai-điểm fallback — bắt buộc khi không có `construction` / `radius`. */
@@ -33,6 +35,7 @@ function constructionRefs(c: CircleConstruction): string[] {
     case 'circumscribed': return [c.p1, c.p2, c.p3];
     case 'incircle': return [c.p1, c.p2, c.p3];
     case 'excircle': return [c.p1, c.p2, c.p3];
+    case 'diameter': return [c.p1, c.p2];
   }
 }
 
@@ -83,6 +86,9 @@ const def: KindDef<CircleAttrs> = {
     }
     if (c?.kind === 'excircle') {
       return `Đường tròn bàng tiếp Δ${L(c.p1)}${L(c.p2)}${L(c.p3)} đối diện ${L(c.opposite)}`;
+    }
+    if (c?.kind === 'diameter') {
+      return `Đường tròn đường kính ${L(c.p1)}${L(c.p2)}`;
     }
     if (typeof obj.attrs.radius === 'number') {
       return `Đường tròn tâm ${L(obj.attrs.center!)} bán kính ${obj.attrs.radius}`;
@@ -136,6 +142,15 @@ const def: KindDef<CircleAttrs> = {
       const center = board.create('point', [() => ctr()[0], () => ctr()[1]], { visible: false, withLabel: false, fixed: true, name: '' });
 
       const circ: any = board.create('circle', [center, () => radius()], baseOpts);
+      circ._helpers = [center];
+      return circ;
+    }
+    if (c?.kind === 'diameter') {
+      const p1 = ctx.resolveRef(c.p1);
+      const p2 = ctx.resolveRef(c.p2);
+      // Tâm = trung điểm p1p2 (ẩn); circle qua p2 → bán kính = |tâm p2| = |p1p2|/2.
+      const center = board.create('midpoint', [p1, p2], { visible: false, withLabel: false, fixed: true, name: '' });
+      const circ: any = board.create('circle', [center, p2], baseOpts);
       circ._helpers = [center];
       return circ;
     }
