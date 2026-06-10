@@ -41,8 +41,10 @@ const GIAO_DIEM = new RegExp(`giao\\s*điểm\\s+(?:của\\s+)?${REF}\\s*${CONN}
 const CAT_TAI = new RegExp(`${REF}\\s+cắt\\s+${REF}\\s+tại\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])`, 'gu');
 // C: "REF1 (và|với) REF2 (cắt|giao) nhau tại D" — tên SAU. REF2 NGAY trước "cắt
 //    nhau" → "đôi một" (diameterCirclePairwise) chen vào sẽ phá khớp.
+// CONN gồm dấu phẩy: "AB, CD cắt nhau tại E" (Câu 13). "đôi một" vẫn bị loại vì
+// nó chen giữa REF2 và "cắt nhau" → REF2 không liền "cắt nhau".
 const CAT_NHAU = new RegExp(
-  `${REF}\\s*${CONN}\\s*${REF}\\s+(?:cắt|giao)\\s+nhau\\s+tại\\s+([A-Z])(?![A-Z])`,
+  `${REF}\\s*(?:,|và|với)\\s*${REF}\\s+(?:cắt|giao)\\s+nhau\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])`,
   'gu',
 );
 // D: "E, F lần lượt là giao điểm của AB và CD, của AD và BC" → zip 2 tên với 2 cặp.

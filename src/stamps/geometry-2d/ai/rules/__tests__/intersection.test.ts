@@ -91,3 +91,14 @@ describe('intersectionRule', () => {
     });
   });
 });
+
+describe('intersection — "cắt nhau" comma + "đôi một" guard', () => {
+  const names = (p: string) => intersectionRule.match({ problem: p, clauses: segmentClauses(p) })
+    .flatMap((m) => m.intents).map((i: any) => i.name).sort();
+  it('"AB, CD cắt nhau tại E" (phẩy) → E', () => {
+    expect(names('AB, CD cắt nhau tại E')).toEqual(['E']);
+  });
+  it('"đôi một cắt nhau" vẫn KHÔNG match', () => {
+    expect(names('Đường tròn đường kính AB, AC đôi một cắt nhau tại M, N')).toEqual([]);
+  });
+});
