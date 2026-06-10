@@ -18,9 +18,13 @@ export const arcMidpointModule = defineModule<'arcMidpoint', Input>({
     circle: NameZ,
     a: NameZ,
     b: NameZ,
-    notContaining: NameZ,
+    // Đúng 1 trong notContaining / containing — bất biến cứng kiểm ở
+    // scene-constraint validate (không .refine vì registry dựng
+    // discriminatedUnion yêu cầu ZodObject thuần).
+    notContaining: NameZ.optional(),
+    containing: NameZ.optional(),
   }),
-  collectRefs: (e) => [e.circle, e.a, e.b, e.notContaining],
+  collectRefs: (e) => [e.circle, e.a, e.b, (e.notContaining ?? e.containing)!],
   emit: (e, ctx) => [{
     role: 'primary',
     object: emitPointObject(ctx.resolveId(e.name), e.name, {
@@ -28,7 +32,9 @@ export const arcMidpointModule = defineModule<'arcMidpoint', Input>({
       circle: ctx.resolveId(e.circle),
       a: ctx.resolveId(e.a),
       b: ctx.resolveId(e.b),
-      notContaining: ctx.resolveId(e.notContaining),
+      ...(e.containing
+        ? { containing: ctx.resolveId(e.containing) }
+        : { notContaining: ctx.resolveId(e.notContaining!) }),
     }),
   }],
 });

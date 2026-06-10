@@ -140,7 +140,7 @@ export const AddPointIntentZ = z.object({
     // (phân giác ngoài ⊥ phân giác trong tại `from`). Issue #46 nhóm A.
     z.object({ kind: z.literal('externalAngleBisectorFoot'), from: LabelZ, onLine: z.string() }),
     // Cụm A
-    z.object({ kind: z.literal('arcMidpoint'), circle: LabelZ, a: LabelZ, b: LabelZ, notContaining: LabelZ }),
+    z.object({ kind: z.literal('arcMidpoint'), circle: LabelZ, a: LabelZ, b: LabelZ, notContaining: LabelZ.optional(), containing: LabelZ.optional() }),
     z.object({ kind: z.literal('reflectPoint'), of: LabelZ, through: LabelZ }),
     z.object({ kind: z.literal('reflectLine'), of: LabelZ, through: z.string() }),
     z.object({ kind: z.literal('excenter'), of: z.tuple([LabelZ, LabelZ, LabelZ]), opposite: LabelZ }),

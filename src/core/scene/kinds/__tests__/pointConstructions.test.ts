@@ -25,6 +25,26 @@ describe('arcMidpoint', () => {
     expect(p[0]).toBeCloseTo(0, 6);
     expect(p[1]).toBeCloseTo(-1, 6);
   });
+
+  it('sameSide=true → cung CHỨA reference (cùng phía, = antipode)', () => {
+    // reference ở (0.707,0.707) (cung 45°). sameSide=false → cung đối (225°).
+    // sameSide=true → cung chứa reference (45°) = đối xứng qua tâm.
+    const ref: [number, number] = [Math.SQRT1_2, Math.SQRT1_2];
+    const opp = arcMidpoint([0, 0], 1, [1, 0], [0, 1], ref);
+    const same = arcMidpoint([0, 0], 1, [1, 0], [0, 1], ref, true);
+    expect(same[0]).toBeCloseTo(Math.SQRT1_2, 6);
+    expect(same[1]).toBeCloseTo(Math.SQRT1_2, 6);
+    // antipode của ứng viên notContaining qua tâm (0,0).
+    expect(same[0]).toBeCloseTo(-opp[0], 6);
+    expect(same[1]).toBeCloseTo(-opp[1], 6);
+  });
+
+  it('sameSide=true với đường kính: chọn cung cùng phía reference', () => {
+    // A=(1,0), B=(-1,0). reference trên (y>0). sameSide=true → cung TRÊN (0,1).
+    const p = arcMidpoint([0, 0], 1, [1, 0], [-1, 0], [0, 1], true);
+    expect(p[0]).toBeCloseTo(0, 6);
+    expect(p[1]).toBeCloseTo(1, 6);
+  });
 });
 
 describe('excenter', () => {

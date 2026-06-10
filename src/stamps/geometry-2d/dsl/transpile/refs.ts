@@ -133,7 +133,14 @@ export function validateRefs(dsl: DslInputT, symbols: Map<string, Symbol>): Refs
         check(p.name, 'circle', p.circle, isCircleLike, 'circle');
         check(p.name, 'a', p.a, isPointLike, 'point');
         check(p.name, 'b', p.b, isPointLike, 'point');
-        check(p.name, 'notContaining', p.notContaining, isPointLike, 'point');
+        // Đúng 1 trong notContaining / containing.
+        check(
+          p.name,
+          p.containing ? 'containing' : 'notContaining',
+          (p.containing ?? p.notContaining)!,
+          isPointLike,
+          'point',
+        );
         break;
       case 'excenter':
         for (let i = 0; i < 3; i++) {

@@ -131,6 +131,22 @@ describe('centersRule', () => {
     expect(all.some((i) => i.constraint?.kind === 'circumcenter')).toBe(true);
   });
 
+  it('"tâm ngoại tiếp O và tâm nội tiếp I" (song tâm cùng clause) → CẢ HAI', () => {
+    const all = intents('Cho tam giác ABC, có tâm ngoại tiếp O và tâm nội tiếp I');
+    const circ = all.find((i) => i.constraint?.kind === 'circumcenter');
+    const inc = all.find((i) => i.constraint?.kind === 'incenter');
+    expect(circ?.name).toBe('O');
+    expect(inc?.name).toBe('I');
+    expect(circ.constraint.of).toEqual(['A', 'B', 'C']);
+    expect(inc.constraint.of).toEqual(['A', 'B', 'C']);
+  });
+
+  it('"tam giác ABC nội tiếp (O)" + "ngoại tiếp" KHÔNG nêu "tâm nội tiếp" → không incenter', () => {
+    // "nội tiếp" ở đây = tam giác inscribed, không phải tâm nội tiếp.
+    const all = intents('Tam giác ABC nội tiếp đường tròn (O) là đường tròn ngoại tiếp');
+    expect(all.some((i) => i.constraint?.kind === 'incenter')).toBe(false);
+  });
+
   it('claim clauseIds của clause chứa từ khoá', () => {
     const m = run('Cho tam giác ABC. Gọi G là trọng tâm tam giác ABC');
     expect(m.length).toBeGreaterThan(0);

@@ -468,6 +468,16 @@ describe('intentsToDsl Cụm A', () => {
     });
   });
 
+  it('arcMidpoint biến thể containing giữ nguyên field', () => {
+    const dsl = intentsToDsl([
+      { op: 'draw-circle', name: 'O', spec: 'through3', points: ['A', 'B', 'C'] },
+      { op: 'add-point', name: 'T', constraint: { kind: 'arcMidpoint', circle: 'O', a: 'B', b: 'C', containing: 'A' } },
+    ] as IntentT[]);
+    const t = dsl.points.find((p) => p.name === 'T');
+    expect(t).toMatchObject({ kind: 'arcMidpoint', circle: 'O', a: 'B', b: 'C', containing: 'A' });
+    expect((t as { notContaining?: string }).notContaining).toBeUndefined();
+  });
+
   it('reflectLine resolve through thành segment ref', () => {
     const dsl = intentsToDsl([
       { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },

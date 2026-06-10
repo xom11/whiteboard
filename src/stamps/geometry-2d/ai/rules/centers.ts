@@ -31,6 +31,10 @@ const ORTHO_KW = /(?<!\p{L})trực\s*tâm(?!\p{L})/u;
 const CIRCUM_KW = /(?<!\p{L})ngoại\s*tiếp(?!\p{L})/u;
 // "nội tiếp" → incenter (chỉ khi nói về TÂM, không phải "tam giác nội tiếp đường tròn").
 const INSCRIBE_KW = /(?<!\p{L})nội\s*tiếp(?!\p{L})/u;
+// "tâm (đường tròn) nội tiếp" tường minh = incenter THẬT (phân biệt "tam giác …
+// nội tiếp"). Dùng để cho phép incenter SONG SONG circumcenter cùng clause
+// (vd "tâm ngoại tiếp O và tâm nội tiếp I").
+const TAM_INSCRIBE = /(?<!\p{L})tâm\s*(?:đường\s*tròn\s*)?nội\s*tiếp(?!\p{L})/u;
 // Tên tâm đứng trước "tâm" qua "là": "O là tâm", "Gọi O là tâm (đường tròn)…".
 const NAME_BEFORE_TAM = /(?<!\p{L})([A-Z])\s+là\s+tâm(?!\p{L})/u;
 
@@ -215,16 +219,24 @@ export const centersRule: LanguageRule = {
         const of = ofFor(c.text, ORTHO_KW);
         if (name && of) intents.push(addPoint(name, { kind: 'orthocenter', of }));
       }
-      // circumcenter: "ngoại tiếp". incenter: "nội tiếp" nhưng KHÔNG khi clause
-      // cũng có "ngoại tiếp" (cùng cụm gây nhập nhằng) — ưu tiên ngoại tiếp.
+      // circumcenter: "ngoại tiếp".
+      let circumName: string | undefined;
       if (CIRCUM_KW.test(c.text)) {
-        const name = resolveCenterName(c.text, CIRCUM_KW);
+        circumName = resolveCenterName(c.text, CIRCUM_KW);
         const of = ofFor(c.text, CIRCUM_KW);
-        if (name && of) intents.push(addPoint(name, { kind: 'circumcenter', of }));
-      } else if (INSCRIBE_KW.test(c.text)) {
+        if (circumName && of) intents.push(addPoint(circumName, { kind: 'circumcenter', of }));
+      }
+      // incenter: "nội tiếp". Khi clause CŨNG có "ngoại tiếp", chỉ emit nếu có
+      // cụm "tâm … nội tiếp" tường minh + tên RIÊNG (vd "tâm ngoại tiếp O và tâm
+      // nội tiếp I") — tránh nuốt incenter. Không có "tâm …" ⇒ giữ guard cũ (ưu
+      // tiên ngoại tiếp, né nhập nhằng "tam giác nội tiếp").
+      if (INSCRIBE_KW.test(c.text)) {
+        const allow = CIRCUM_KW.test(c.text) ? TAM_INSCRIBE.test(c.text) : true;
         const name = resolveCenterName(c.text, INSCRIBE_KW);
         const of = ofFor(c.text, INSCRIBE_KW);
-        if (name && of) intents.push(addPoint(name, { kind: 'incenter', of }));
+        if (allow && name && of && name !== circumName) {
+          intents.push(addPoint(name, { kind: 'incenter', of }));
+        }
       }
 
       // --- EN (issue #46 group B) — mirror VN semantics, mỗi từ khoá độc lập --

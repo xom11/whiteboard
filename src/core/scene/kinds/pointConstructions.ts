@@ -19,12 +19,16 @@ function sideOf(a: XY, b: XY, p: XY): number {
  * `notContaining`. Trả về toạ độ [x, y].
  *
  * Hai ứng viên = giao của đường thẳng (center → trung điểm dây AB) với đường
- * tròn. Cung không chứa notContaining nằm KHÁC PHÍA dây AB so với notContaining,
- * nên chọn ứng viên có dấu side khác dấu side của notContaining.
+ * tròn. Cung không chứa `reference` nằm KHÁC PHÍA dây AB so với reference,
+ * nên chọn ứng viên có dấu side khác dấu side của reference.
+ *
+ * `sameSide=true` → đảo lựa chọn: lấy ứng viên CÙNG PHÍA reference = trung điểm
+ * cung CHỨA reference (= antipode qua tâm của ứng viên "không chứa").
  */
 export function arcMidpoint(
-  center: XY, radius: number, a: XY, b: XY, notContaining: XY,
+  center: XY, radius: number, a: XY, b: XY, reference: XY, sameSide = false,
 ): XY {
+  const notContaining = reference;
   const mcx = (a[0] + b[0]) / 2;
   const mcy = (a[1] + b[1]) / 2;
   let ux = mcx - center[0];
@@ -42,12 +46,17 @@ export function arcMidpoint(
 
   const sN = sideOf(a, b, notContaining);
   if (Math.abs(sN) < 1e-9) {
-    // notContaining nằm trên đường AB → side-test suy biến: chọn ứng viên xa notContaining hơn.
-    return dist(cand1, notContaining) >= dist(cand2, notContaining) ? cand1 : cand2;
+    // reference nằm trên đường AB → side-test suy biến: chọn ứng viên xa reference
+    // hơn (notContaining), hoặc gần hơn khi sameSide.
+    const far = dist(cand1, notContaining) >= dist(cand2, notContaining) ? cand1 : cand2;
+    const near = far === cand1 ? cand2 : cand1;
+    return sameSide ? near : far;
   }
   const s1 = sideOf(a, b, cand1);
-  // Khác phía ⇔ tích dấu < 0.
-  return s1 * sN < 0 ? cand1 : cand2;
+  // notContaining: khác phía ⇔ tích dấu < 0. sameSide: cùng phía ⇔ tích dấu > 0.
+  const opp = s1 * sN < 0 ? cand1 : cand2;
+  const same = opp === cand1 ? cand2 : cand1;
+  return sameSide ? same : opp;
 }
 
 /**

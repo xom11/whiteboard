@@ -74,7 +74,7 @@ export type DslPointT =
   | { name: Name; kind: 'tangencyPoint'; circle: Name; onLine: Name }
   | { name: Name; kind: 'tangentPointExt'; from: Name; circle: Name; which: 0 | 1 }
   // Cụm A
-  | { name: Name; kind: 'arcMidpoint'; circle: Name; a: Name; b: Name; notContaining: Name }
+  | { name: Name; kind: 'arcMidpoint'; circle: Name; a: Name; b: Name; notContaining?: Name; containing?: Name }
   | { name: Name; kind: 'excenter'; vertices: [Name, Name, Name]; opposite: Name }
   | { name: Name; kind: 'reflectPoint'; of: Name; through: Name }
   | { name: Name; kind: 'reflectLine'; of: Name; through: Name }

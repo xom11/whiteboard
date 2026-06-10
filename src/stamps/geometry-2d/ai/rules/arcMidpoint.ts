@@ -46,9 +46,6 @@ const ARC_PAIR =
 const NAME_BEFORE =
   /([A-Z])(?:['′]?)\s+(?:là\s+)?(?:điểm\s+)?(?:chính\s+giữa|trung\s*điểm)\s+(?:của\s+)?cung/u;
 
-// "không chứa X" → X.
-const NOT_CONTAINING = /không\s+chứa\s+([A-Z])/u;
-
 // Tam giác trong toàn đề → 3 đỉnh (dùng suy notContaining khi đề không nêu).
 const TRI = /tam giác\s+([A-Z])([A-Z])([A-Z])/u;
 
@@ -69,12 +66,43 @@ const ARC_PAIR_EN =
 // Tên đứng TRƯỚC: "M is/be the midpoint of arc". (EN không có lời dẫn VN; extractPointName VN-only.)
 const NAME_BEFORE_EN =
   /([A-Z])(?:['′]?)\s+(?:is|be)\s+the\s+midpoint\s+of\s+(?:the\s+)?(?:minor\s+|major\s+)?arc/u;
-// "not containing (the)? (point|vertex)? X".
-const NOT_CONTAINING_EN = /not\s+containing\s+(?:the\s+)?(?:point\s+|vertex\s+)?([A-Z])(?![A-Za-z])/u;
 // Tam giác EN (suy notContaining khi không nêu "not containing").
 const TRI_EN = /[Tt]riangle\s+([A-Z])([A-Z])([A-Z])(?![A-Za-z])/u;
 // Scope guard: "major arc" → defer (mirror VN "cung lớn").
 const MAJOR_ARC_EN = /major\s+arc/u;
+
+// === Containment (chứa / không chứa) =========================================
+// Một mệnh đề containment = "(không )?chứa X". `rel:'not'` ⇒ notContaining,
+// `rel:'in'` ⇒ containing. Trích THEO THỨ TỰ để zip với danh sách tên (phân phối).
+// /g + lastIndex reset 0; ký tự Việt ⇒ lookaround \p{L} thay \b.
+type Containment = { rel: 'not' | 'in'; point: string };
+function parseContainmentsVN(text: string): Containment[] {
+  const re = /(không\s+)?chứa\s+([A-Z])(?!\p{L})/gu;
+  const out: Containment[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text))) out.push({ rel: m[1] ? 'not' : 'in', point: m[2] });
+  return out;
+}
+function parseContainmentsEN(text: string): Containment[] {
+  const re = /(not\s+)?containing\s+(?:the\s+)?(?:point\s+|vertex\s+)?([A-Z])(?![A-Za-z])/gu;
+  const out: Containment[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text))) out.push({ rel: m[1] ? 'not' : 'in', point: m[2] });
+  return out;
+}
+
+// Trường constraint từ 1 mệnh đề containment (notContaining XOR containing).
+function containmentField(ct: Containment): { notContaining: string } | { containing: string } {
+  return ct.rel === 'in' ? { containing: ct.point } : { notContaining: ct.point };
+}
+
+// Phân phối VN: "N, T lần lượt là (điểm) (chính giữa|trung điểm) (của) cung (nhỏ|lớn)? BC <tail>".
+// group1 = blob tên (≥2, phẩy), group2/3 = cặp đỉnh, group4 = đuôi chứa danh sách containment.
+const DISTRIB_VN = new RegExp(
+  '((?:[A-Z](?:[\'′]?)\\s*,\\s*)+[A-Z](?:[\'′]?))\\s+lần\\s*lượt\\s+(?:là\\s+)?(?:điểm\\s+)?' +
+    '(?:chính\\s+giữa|trung\\s*điểm)\\s+(?:của\\s+)?cung\\s+(?:nhỏ\\s+|lớn\\s+)?([A-Z])([A-Z])\\s+(.+)',
+  'u',
+);
 
 /** Tên đường tròn từ toàn đề; undefined nếu không tìm thấy. */
 function resolveCircle(problem: string): string | undefined {
@@ -139,14 +167,25 @@ export const arcMidpointRule: LanguageRule = {
     const arcOnCircum = (a: string, b: string): boolean =>
       !usesCircum || (!!circumTri && circumTri.includes(a) && circumTri.includes(b));
 
+    // Đẩy 1 arcMidpoint (containment đã phân loại). endpoint-cung làm tham chiếu
+    // containment ⇒ vô nghĩa → trả false (caller escalate). Trả true nếu emit OK.
+    const pushArc = (
+      c: { id: number }, name: string, a: string, b: string, ct: Containment,
+    ): boolean => {
+      if (ct.point === a || ct.point === b) return false; // tham chiếu = đầu mút cung → vô nghĩa
+      out.push({
+        ruleId: 'arcMidpoint',
+        clauseIds: [c.id],
+        intents: withCircum(addPoint(name, { kind: 'arcMidpoint', circle, a, b, ...containmentField(ct) })),
+      });
+      return true;
+    };
+
     for (const c of ctx.clauses) {
       if (!ARC_MID.test(c.text)) continue;
 
-      // Vượt scope (chỉ xử lý "cung (nhỏ) PAIR không chứa Z"):
-      //   - "cung lớn"  → cung đối, defer → escalate
-      //   - "chứa X" containment DƯƠNG (không có "không" trước) → defer → escalate
+      // Vượt scope: "cung lớn" → cung đối, defer → escalate.
       if (/cung\s+lớn/u.test(c.text)) continue;
-      if (/chứa/u.test(c.text) && !/không\s+chứa/u.test(c.text)) continue;
 
       const pairM = ARC_PAIR.exec(c.text);
       if (!pairM) continue;
@@ -155,29 +194,34 @@ export const arcMidpointRule: LanguageRule = {
       const [a, b] = pair;
       if (!arcOnCircum(a, b)) continue; // circumcircle ngầm: cung phải là 2 đỉnh tam giác
 
-      // Tên điểm: lời dẫn "Gọi/Lấy X là …" ưu tiên, fallback HOA trước cụm.
+      // --- Phân phối "X, Y lần lượt là … cung BC <containment1> và <containment2>" ---
+      const dm = DISTRIB_VN.exec(c.text);
+      if (dm) {
+        const names = dm[1].split(/\s*,\s*/u).map((s) => s.replace(/['′]/gu, ''));
+        const contains = parseContainmentsVN(dm[4]);
+        // Zip 1-1: số tên phải = số mệnh đề containment, ≥2. Lệch → escalate (fail-safe).
+        if (names.length >= 2 && names.length === contains.length) {
+          const mark = out.length;
+          let ok = true;
+          for (let i = 0; i < names.length && ok; i++) ok = pushArc(c, names[i], a, b, contains[i]);
+          if (!ok) out.length = mark; // 1 phần tử lỗi (endpoint cung) → bỏ TOÀN clause
+        }
+        continue; // clause phân phối: xử lý xong (hoặc escalate), không rơi xuống dạng đơn
+      }
+
+      // --- Dạng đơn: tên qua lời dẫn "Gọi/Lấy X là …" ưu tiên, fallback HOA trước cụm ---
       const before = NAME_BEFORE.exec(c.text);
       const name = extractPointName(c.text) ?? (before ? before[1] : undefined);
       if (!name) continue; // không trích được tên → bỏ qua
 
-      // notContaining: "không chứa X" hoặc đỉnh thứ 3 của tam giác.
-      let notContaining: string | undefined;
-      const nc = NOT_CONTAINING.exec(c.text);
-      if (nc) {
-        notContaining = nc[1];
-        // notContaining = endpoint của cung (a/b) → vô nghĩa hình học → escalate.
-        if (notContaining === a || notContaining === b) continue;
+      // Containment: "(không) chứa X" tường minh (lấy mệnh đề đầu), else đỉnh thứ 3 tam giác.
+      const conts = parseContainmentsVN(c.text);
+      if (conts.length >= 1) {
+        pushArc(c, name, a, b, conts[0]);
       } else if (tri) {
-        const verts = [tri[1], tri[2], tri[3]];
-        notContaining = verts.find((v) => v !== a && v !== b);
+        const third = [tri[1], tri[2], tri[3]].find((v) => v !== a && v !== b);
+        if (third) pushArc(c, name, a, b, { rel: 'not', point: third });
       }
-      if (!notContaining) continue; // không suy được → bỏ qua
-
-      out.push({
-        ruleId: 'arcMidpoint',
-        clauseIds: [c.id],
-        intents: withCircum(addPoint(name, { kind: 'arcMidpoint', circle, a, b, notContaining })),
-      });
     }
 
     // --- EN (issue #46 group B) ---------------------------------------------------
@@ -188,8 +232,6 @@ export const arcMidpointRule: LanguageRule = {
       if (!ARC_MID_EN.test(c.text)) continue;
       // Vượt scope (mirror VN): "major arc" → cung đối, defer → escalate.
       if (MAJOR_ARC_EN.test(c.text)) continue;
-      // "containing X" DƯƠNG (không có "not" trước) → defer → escalate.
-      if (/containing/u.test(c.text) && !/not\s+containing/u.test(c.text)) continue;
 
       const pairM = ARC_PAIR_EN.exec(c.text);
       if (!pairM) continue;
@@ -203,22 +245,14 @@ export const arcMidpointRule: LanguageRule = {
       const name = before ? before[1] : undefined;
       if (!name) continue;
 
-      // notContaining: "not containing X" tường minh, hoặc đỉnh thứ 3 của tam giác EN.
-      let notContaining: string | undefined;
-      const nc = NOT_CONTAINING_EN.exec(c.text);
-      if (nc) {
-        notContaining = nc[1];
-        if (notContaining === a || notContaining === b) continue; // endpoint cung → vô nghĩa
+      // Containment: "(not) containing X" tường minh (mệnh đề đầu), else đỉnh thứ 3 tam giác EN.
+      const conts = parseContainmentsEN(c.text);
+      if (conts.length >= 1) {
+        pushArc(c, name, a, b, conts[0]);
       } else if (triEnVerts) {
-        notContaining = triEnVerts.find((v) => v !== a && v !== b);
+        const third = triEnVerts.find((v) => v !== a && v !== b);
+        if (third) pushArc(c, name, a, b, { rel: 'not', point: third });
       }
-      if (!notContaining) continue;
-
-      out.push({
-        ruleId: 'arcMidpoint',
-        clauseIds: [c.id],
-        intents: withCircum(addPoint(name, { kind: 'arcMidpoint', circle, a, b, notContaining })),
-      });
     }
     return out;
   },

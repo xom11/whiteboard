@@ -252,6 +252,32 @@ describe('point arcMidpoint', () => {
       kind: 'arcMidpoint', circle: 'k', a: 'B', b: 'C', notContaining: 'A',
     }).attrs)).toEqual(['k', 'B', 'C', 'A']);
   });
+  it('validate chấp nhận biến thể containing', () => {
+    expect(() => pointDef.validate!(mkArcObj({
+      kind: 'arcMidpoint', circle: 'k', a: 'B', b: 'C', containing: 'A',
+    }).attrs)).not.toThrow();
+  });
+  it('validate ném khi có cả notContaining lẫn containing', () => {
+    expect(() => pointDef.validate!(mkArcObj({
+      kind: 'arcMidpoint', circle: 'k', a: 'B', b: 'C', notContaining: 'A', containing: 'A',
+    }).attrs)).toThrow();
+  });
+  it('validate ném khi thiếu cả notContaining lẫn containing', () => {
+    expect(() => pointDef.validate!(mkArcObj({
+      kind: 'arcMidpoint', circle: 'k', a: 'B', b: 'C',
+    }).attrs)).toThrow();
+  });
+  it('describe biến thể containing', () => {
+    const s = { objects: { B: { label: 'B' }, C: { label: 'C' }, A: { label: 'A' } } } as never;
+    expect(pointDef.describe!(mkArcObj({
+      kind: 'arcMidpoint', circle: 'k', a: 'B', b: 'C', containing: 'A',
+    }), s)).toBe('M = trung điểm cung BC (chứa A)');
+  });
+  it('dependsOn dùng containing khi không có notContaining', () => {
+    expect(pointDef.dependsOn!(mkArcObj({
+      kind: 'arcMidpoint', circle: 'k', a: 'B', b: 'C', containing: 'A',
+    }).attrs)).toEqual(['k', 'B', 'C', 'A']);
+  });
 });
 
 describe('point excenter', () => {

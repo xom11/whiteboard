@@ -178,6 +178,56 @@ describe('arcMidpointRule — EN (issue #46 group B)', () => {
   });
 });
 
+describe('arcMidpointRule — containing (containment dương)', () => {
+  it('"trung điểm cung BC chứa A" → containing A', () => {
+    const m = run(
+      'Cho tam giác ABC nội tiếp (O). Gọi T là trung điểm cung BC chứa A',
+    );
+    expect(m.length).toBe(1);
+    const c = (m[0].intents[0] as any).constraint;
+    expect((m[0].intents[0] as any).name).toBe('T');
+    expect(c.kind).toBe('arcMidpoint');
+    expect(c.a).toBe('B');
+    expect(c.b).toBe('C');
+    expect(c.containing).toBe('A');
+    expect(c.notContaining).toBeUndefined();
+  });
+
+  it('EN "midpoint of arc BC containing A" → containing A', () => {
+    const m = run(
+      'Triangle ABC is inscribed in circle (O). Let T be the midpoint of arc BC containing A.',
+    );
+    expect(m.length).toBe(1);
+    const c = (m[0].intents[0] as any).constraint;
+    expect((m[0].intents[0] as any).name).toBe('T');
+    expect(c.containing).toBe('A');
+    expect(c.notContaining).toBeUndefined();
+  });
+});
+
+describe('arcMidpointRule — phân phối 2-tên "lần lượt"', () => {
+  it('"N, T lần lượt là trung điểm của cung BC không chứa A và chứa A" → N notContaining, T containing', () => {
+    const intents = run(
+      'Cho tam giác ABC nội tiếp (O). N, T lần lượt là trung điểm của cung BC không chứa A và chứa A',
+    ).flatMap((x) => x.intents) as any[];
+    const arcs = intents.filter((i) => i.op === 'add-point' && i.constraint.kind === 'arcMidpoint');
+    expect(arcs.length).toBe(2);
+    const N = arcs.find((i) => i.name === 'N');
+    const T = arcs.find((i) => i.name === 'T');
+    expect(N.constraint).toMatchObject({ circle: 'O', a: 'B', b: 'C', notContaining: 'A' });
+    expect(N.constraint.containing).toBeUndefined();
+    expect(T.constraint).toMatchObject({ circle: 'O', a: 'B', b: 'C', containing: 'A' });
+    expect(T.constraint.notContaining).toBeUndefined();
+  });
+
+  it('phân phối: số tên ≠ số mệnh đề chứa → bỏ qua (escalate fail-safe)', () => {
+    const m = run(
+      'Cho tam giác ABC nội tiếp (O). M, N, P lần lượt là trung điểm của cung BC không chứa A và chứa A',
+    );
+    expect(m.flatMap((x) => x.intents)).toHaveLength(0);
+  });
+});
+
 describe('arcMidpoint EN không collision với midpoint rule', () => {
   it('midpoint rule emit rỗng cho clause "midpoint of arc BC"', () => {
     const problem =

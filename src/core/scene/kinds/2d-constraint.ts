@@ -75,8 +75,10 @@ export type Constraint2D =
   // Tiếp điểm của đường thẳng `onLine` (đã tiếp xúc) với đường tròn `circle`
   // = chân vuông góc hạ từ tâm xuống đường thẳng.
   | { kind: 'tangencyPoint'; circle: string; onLine: string }
-  // Trung điểm cung AB của đường tròn `circle`, ở cung KHÔNG chứa `notContaining`.
-  | { kind: 'arcMidpoint'; circle: string; a: string; b: string; notContaining: string }
+  // Trung điểm cung AB của đường tròn `circle`. Đúng 1 trong:
+  //   - `notContaining`: cung KHÔNG chứa điểm này
+  //   - `containing`:    cung CHỨA điểm này (= antipode của trường hợp notContaining)
+  | { kind: 'arcMidpoint'; circle: string; a: string; b: string; notContaining?: string; containing?: string }
   // Điểm trên tia from→through kéo dài qua through, cách through khoảng `distance`.
   | { kind: 'pointAtDistance'; from: string; through: string; distance: ConstraintDistanceSpec }
   // Tâm bàng tiếp tam giác `vertices` đối diện đỉnh `opposite`.
@@ -104,7 +106,7 @@ export function constraintRefs2D(c: Constraint2D): string[] {
     case 'circleSecondIntersection': return [c.c1, c.c2, c.exclude];
     case 'secondIntersection': return [c.line, c.circle, c.other];
     case 'tangencyPoint': return [c.circle, c.onLine];
-    case 'arcMidpoint': return [c.circle, c.a, c.b, c.notContaining];
+    case 'arcMidpoint': return [c.circle, c.a, c.b, (c.notContaining ?? c.containing)!];
     case 'pointAtDistance': {
       const d = c.distance;
       const extra = d.kind === 'circleRadius' ? [d.circle]

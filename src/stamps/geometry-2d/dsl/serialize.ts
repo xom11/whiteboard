@@ -181,8 +181,10 @@ function serializePoint(obj: SceneObject<PointAttrs>, state: State): SerializedE
     }
 
     case 'arcMidpoint': {
-      const refs = resolveRefs([c.circle, c.a, c.b, c.notContaining], state);
-      if (!refs) return fail('unresolved-ref', `${c.circle},${c.a},${c.b},${c.notContaining}`);
+      // Đúng 1 trong notContaining / containing.
+      const containment = (c.containing ?? c.notContaining)!;
+      const refs = resolveRefs([c.circle, c.a, c.b, containment], state);
+      if (!refs) return fail('unresolved-ref', `${c.circle},${c.a},${c.b},${containment}`);
       return {
         ok: true,
         entity: {
@@ -191,7 +193,7 @@ function serializePoint(obj: SceneObject<PointAttrs>, state: State): SerializedE
           circle: refs[0],
           a: refs[1],
           b: refs[2],
-          notContaining: refs[3],
+          ...(c.containing ? { containing: refs[3] } : { notContaining: refs[3] }),
         },
       };
     }
