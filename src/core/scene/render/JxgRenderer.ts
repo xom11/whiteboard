@@ -4,6 +4,7 @@ import type { State, SceneObject, RenderCtx } from '../types';
 import { getKind } from '../registry';
 import { DEFAULT_THEME_2D, type Theme2D } from './types2d';
 import { collectFreeVars } from '../expressions/parser';
+import { readLabelOffset } from '../kinds/_label';
 
 export type JxgRendererOptions = { theme?: Theme2D };
 
@@ -84,6 +85,7 @@ export class JxgRenderer {
       this.elements.set(obj.id, el);
       this.attachFreePointDragSync(obj, el);
       this.attachGliderDragSync(obj, el);
+      this.attachLabelDragSync(obj, el);
     } catch (err) {
       console.warn(`[scene/render/2d] không render được ${obj.kind} id="${obj.id}":`, err);
     }
@@ -213,6 +215,60 @@ export class JxgRenderer {
         payload: { id: sceneId, patch: { constraint: { kind: 'free', x, y } } },
       });
     });
+  }
+
+  /**
+   * Cho phép kéo NHÃN của bất kỳ object nào có label (point/line/segment/
+   * circle...). Khi user kéo nhãn, JSXGraph cộng dồn vào label.relativeCoords
+   * (drag-delta screen px) nhưng KHÔNG đổi attribute offset → vị trí cuối =
+   * offset + relativeCoords. Ta gộp lại thành offset thuần (readLabelOffset),
+   * zero relativeCoords để khỏi double-count khi update-hook/recreate áp lại
+   * offset, rồi dispatch UPDATE_ATTRS { labelOffset }. Right-click → reset.
+   */
+  private attachLabelDragSync(obj: SceneObject, el: unknown): void {
+
+    const label = (el as { label?: any })?.label;
+    if (!label || typeof label.on !== 'function') return;
+    const sceneId = obj.id;
+
+    label.on('up', () => {
+      if (this.disposed) return;
+      const off = readLabelOffset(label);
+      if (!off) return;
+      const cur = this.store.getState().objects[sceneId];
+      if (!cur) return;
+      const prev = (cur.attrs as { labelOffset?: [number, number] }).labelOffset;
+      if (prev && prev[0] === off[0] && prev[1] === off[1]) return;
+      // Gộp drag-delta vào offset thuần + zero relativeCoords → vị trí không đổi,
+      // tránh double-count khi update-hook/recreate áp lại offset.
+      try {
+        label.setAttribute({ offset: off });
+        if (label.relativeCoords?.scrCoords) {
+          label.relativeCoords.scrCoords[1] = 0;
+          label.relativeCoords.scrCoords[2] = 0;
+        }
+      } catch { /* ignore */ }
+      this.store.dispatch({
+        type: 'UPDATE_ATTRS',
+        payload: { id: sceneId, patch: { labelOffset: off } },
+      });
+    });
+
+    // Reset bằng chuột phải trên nhãn.
+    const node = (label as { rendNode?: { addEventListener?: (e: string, cb: (ev: Event) => void) => void } }).rendNode;
+    if (node?.addEventListener) {
+      node.addEventListener('contextmenu', (ev: Event) => {
+        if (this.disposed) return;
+        ev.preventDefault();
+        const c = this.store.getState().objects[sceneId];
+        if (!c) return;
+        if ((c.attrs as { labelOffset?: unknown }).labelOffset === undefined) return;
+        this.store.dispatch({
+          type: 'UPDATE_ATTRS',
+          payload: { id: sceneId, patch: { labelOffset: undefined } },
+        });
+      });
+    }
   }
 
   private remove(id: string): void {
