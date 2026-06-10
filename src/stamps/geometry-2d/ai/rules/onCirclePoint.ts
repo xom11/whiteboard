@@ -10,9 +10,12 @@ import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint } from './_shared';
 
 const PREFILTER = /(?:nằm|thuộc|lấy\s+điểm|trên\s+(?:nửa\s+)?(?:đường\s*tròn|cung))/iu;
-const NAMED_CIRCLE = /(?:nửa\s+)?đường\s*tròn\s*\(\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)/u;
+const NAMED_CIRCLE = /(?:nửa\s+)?đường\s*tròn\s*(?:tâm\s+)?\(?\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)?/u;
 const COMPACT_CIRCLE = /\(\s*([A-Z])\s*[;,]\s*[Rr]\s*\)/u;
-const POINT_ON = /(?:[Đđ]iểm\s+)?([A-Z])(?:\s+[^.]{0,12}?)?\s+(?:nằm\s+trên|thuộc)\s+(?:cung\s+[A-Z]{2}\s*(?:nhỏ|lớn)?|(?:nửa\s+)?đường\s*tròn)/u;
+// "<Name> thuộc/nằm trên/là (một) điểm trên  cung (nhỏ|lớn)? <pair>" — chấp nhận
+// tính từ cung ĐỨNG TRƯỚC cặp đỉnh ("cung lớn AB") lẫn sau ("cung AB nhỏ").
+const POINT_ON =
+  /(?:[Đđ]iểm\s+)?([A-Z])(?:\s+[^.]{0,12}?)?\s+(?:nằm\s+trên|thuộc|là\s+(?:một\s+)?điểm\s+(?:nằm\s+)?trên)\s+(?:cung\s+(?:nhỏ\s+|lớn\s+)?[A-Z]{2}(?:\s*(?:nhỏ|lớn))?|(?:nửa\s+)?đường\s*tròn)/u;
 const TAKE_ON = /[Ll]ấy\s+điểm\s+([A-Z])[^.]{0,20}?(?:trên|thuộc)\s+(?:cung|(?:nửa\s+)?đường\s*tròn)/u;
 // Đảo: "Trên (nửa)? đường tròn (X) lấy điểm P" — clause TỰ nêu circle (X). Bắt
 // CẢ circle lẫn điểm để không nhầm sang circle toàn-đề khác. group1=center,

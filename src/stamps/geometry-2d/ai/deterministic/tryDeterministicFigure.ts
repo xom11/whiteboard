@@ -13,6 +13,7 @@ import type { CoverageReport } from './coverage';
 import { runDeterministicIntents } from './runDeterministicIntents';
 import { allNamedEntitiesPresent, verifyIntentFidelity } from './guards';
 import { normalizeIntents } from '../normalizeIntent';
+import { normalizeProblemText } from './normalizeText';
 import { resolveCircleNameCollisions } from '../resolveCircleNames';
 import { intentsToDsl } from '../intentToDsl';
 import { transpile } from '../../dsl';
@@ -40,7 +41,10 @@ export type TryDeterministicResult =
   | { ok: true; figure: DeterministicFigure }
   | { ok: false; reason: DeterministicReason; detail?: string; coverage?: CoverageReport };
 
-export function tryDeterministicFigure(problem: string): TryDeterministicResult {
+export function tryDeterministicFigure(rawProblem: string): TryDeterministicResult {
+  // Chuẩn hoá ký hiệu (Δ→tam giác, vòng tròn→đường tròn) MỘT lần để mọi stage
+  // (rule, normalizeIntents, named-entity guard) thấy text nhất quán.
+  const problem = normalizeProblemText(rawProblem);
   const det = runDeterministicIntents(problem);
   if (!det.ok) return { ok: false, reason: det.reason, coverage: det.coverage };
 
