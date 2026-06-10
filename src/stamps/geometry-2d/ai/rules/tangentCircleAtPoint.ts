@@ -24,6 +24,16 @@ const RE = new RegExp(
   'gu',
 );
 
+// Pattern B (Câu 21): "Đường tròn (K) đi qua C, T tiếp xúc AB có tâm K thuộc BC"
+//   → tâm K cách đều C, T (trên đường tròn) ⇒ K ∈ trung-trực(C,T); K ∈ BC.
+//     K = trung-trực(C,T) ∩ BC; circle = centerThrough(K, C). Tiếp xúc AB tự
+//     thoả theo dựng hình (đề đảm bảo). group1=K, 2=C, 3=T, 4=đường chứa tâm.
+const RE_THROUGH2_CENTER_ON = new RegExp(
+  '[Đđ]ường\\s*tròn\\s*\\(\\s*([A-Z])\\s*\\)\\s*(?:đi\\s+)?qua\\s+([A-Z])\\s*,\\s*([A-Z])(?!\\p{L})' +
+    '[^.]{0,40}?tâm\\s+[A-Z]\\s+thuộc\\s+([A-Z]{2})(?![A-Z])',
+  'gu',
+);
+
 export const tangentCircleAtPointRule: LanguageRule = {
   id: 'tangentCircleAtPoint',
   priority: 60,
@@ -56,6 +66,27 @@ export const tangentCircleAtPointRule: LanguageRule = {
             drawCircle(circ, 'centerThrough', { center: k, through: at }),
             addPoint(p1, { kind: 'secondIntersection', line: side1, circle: circ, other: through }),
             addPoint(p2, { kind: 'secondIntersection', line: side2, circle: circ, other: through }),
+          ],
+        });
+      }
+
+      // Pattern B: qua 2 điểm, tâm trên đường M (tiếp xúc tự thoả).
+      RE_THROUGH2_CENTER_ON.lastIndex = 0;
+      for (const m of c.text.matchAll(RE_THROUGH2_CENTER_ON)) {
+        const k = m[1];
+        const x = m[2];
+        const y = m[3];
+        const centerLine = m[4];
+        if (x === y) continue;
+        const circ = `${k}_c`;
+        const pb = `${k}_pb`;
+        out.push({
+          ruleId: 'tangentCircleAtPoint',
+          clauseIds: [c.id],
+          intents: [
+            drawLine(pb, 'perpBisector', { p1: x, p2: y }),
+            addPoint(k, { kind: 'intersection', of: [pb, centerLine] }),
+            drawCircle(circ, 'centerThrough', { center: k, through: x }),
           ],
         });
       }
