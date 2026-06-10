@@ -46,3 +46,11 @@ describe('lineCircleIntersectionRule', () => {
     expect(pt.name).toBe('R');
   });
 }
+
+describe('lineCircleIntersection — "cắt (O) tại hai điểm M, N" (cả 2 nhánh)', () => {
+  it('M=branch0, N=branch1 intersection lineCircle', () => {
+    const it = run('BD cắt (O) tại hai điểm M, N').flatMap((m) => m.intents) as any[];
+    expect(it.find((i) => i.name === 'M').constraint).toEqual({ kind: 'intersection', of: ['BD', 'O'], branch: 0 });
+    expect(it.find((i) => i.name === 'N').constraint).toEqual({ kind: 'intersection', of: ['BD', 'O'], branch: 1 });
+  });
+});
