@@ -6,6 +6,7 @@ import type { IntentT } from '../intent';
 import { segmentClauses, computeCoverage, type Clause, type CoverageReport } from './coverage';
 import { runRules } from '../rules/registry';
 import { normalizeProblemText } from './normalizeText';
+import { countGeometryKeywords } from './vocabulary';
 
 export type DetIntentResult =
   | { ok: true; intents: IntentT[]; coverage: CoverageReport }
@@ -36,6 +37,13 @@ function collectDeterministic(rawProblem: string): Collected {
     // segmentClauses tách "(O; 3)" thành "(O" + "3)"; phần "3)" không tự có
     // keyword hình học nhưng vẫn cần giữ để các rule quét toàn đề parse đủ paren.
     if (/^\s*(?:\d+(?:[,.]\d+)?|[Rr])\s*\)/u.test(c.text)) continue;
+    // CHỈ blank proof/locus clause CÓ geometry keyword (câu dài, gần như duy
+    // nhất — "Chứng minh tứ giác BCDE nội tiếp"). KHÔNG blank fragment ngắn
+    // không keyword ("AB", "AD", "AC = AE" tách từ "Chứng minh AD.AC=AE.AB"):
+    // ".replace(c.text,' ')" replace occurrence ĐẦU TIÊN — "AB" sẽ nuốt "tam
+    // giác ABC" → "tam giác  C", mất construction. Fragment không keyword vô hại
+    // (không rule nào construct từ chúng) nên để nguyên.
+    if (countGeometryKeywords(c.text) === 0) continue;
     drawableProblem = drawableProblem.replace(c.text, ' ');
   }
   const matches = runRules({ problem: drawableProblem, clauses: drawableClauses });

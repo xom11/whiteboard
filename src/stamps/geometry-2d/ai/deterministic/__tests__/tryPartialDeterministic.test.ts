@@ -36,4 +36,18 @@ describe('tryPartialDeterministic', () => {
     expect(partial.ok).toBe(false);
     if (!partial.ok) expect(partial.reason).toBe('incomplete-coverage');
   });
+
+  it('proof fragment "AB" KHÔNG corrupt construction "tam giác ABC" (blank-by-replace bug)', () => {
+    // Regression: ".replace(c.text,' ')" cho proof fragment "AB" (tách từ
+    // "Chứng minh AD . AC = AE . AB") replace occurrence ĐẦU TIÊN trong
+    // "tam giác ABC" → "tam giác  C" → mất triangle. Chỉ blank proof clause CÓ
+    // geometry keyword (câu dài, unique), không blank fragment ngắn không keyword.
+    const detIntents = tryPartialDeterministic(
+      'Cho tam giác ABC nhọn nội tiếp đường tròn (O). Hai đường cao BD và CE cắt nhau tại H.\n' +
+        '1. Chứng minh tứ giác BCDE nội tiếp.\n' +
+        '2. Chứng minh AD . AC = AE . AB.\n' +
+        '3. Đường thẳng DE cắt đường tròn (O) tại M và N. Chứng minh tam giác AMN cân tại A.',
+    ).detIntents;
+    expect(detIntents.some((i: any) => i.op === 'draw-shape' && i.shape === 'triangle')).toBe(true);
+  });
 });

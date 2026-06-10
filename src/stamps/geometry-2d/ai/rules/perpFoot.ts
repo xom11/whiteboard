@@ -154,8 +154,10 @@ const PERP_DRAW_EN = new RegExp(
 // giác ABC cắt nhau tại H". Mỗi token XY: X là đỉnh, Y là chân đường cao; cạnh
 // đối diện X được suy từ tam giác bind được. Nếu có "cắt nhau tại H" thì H là
 // trực tâm. Chỉ nhận 2-3 đường cao để tránh vơ một đoạn rời.
+// Separator giữa các token đường cao: dấu phẩy HOẶC "và" ("BD và CE", "AD, BE,
+// CF"). parseAltitudeBundle split theo cùng pattern.
 const ALTITUDE_BUNDLE = new RegExp(
-  `(?:hai\\s+|ba\\s+|các\\s+)?${DUONG_KW}\\s+cao\\s+((?:[A-Z]{2}\\s*,\\s*){0,2}[A-Z]{2})(?![A-Z])(?:\\s+của\\s+tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z]))?[^.]{0,60}?cắt\\s+nhau\\s+tại\\s+([A-Z])`,
+  `(?:hai\\s+|ba\\s+|các\\s+)?${DUONG_KW}\\s+cao\\s+((?:[A-Z]{2}\\s*(?:,|và)\\s*){0,2}[A-Z]{2})(?![A-Z])(?:\\s+của\\s+tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z]))?[^.]{0,60}?cắt\\s+nhau\\s+tại\\s+([A-Z])`,
   'gu',
 );
 const TRI_G = /tam\s*giác\s+(?:(?:nhọn|cân|đều|vuông|tù)\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
@@ -209,7 +211,7 @@ function parseAltitudeBundle(text: string, fallbackTri: string[] | undefined): F
     const localTri = m[2] && m[3] && m[4] ? [m[2], m[3], m[4]] : fallbackTri;
     if (!localTri) continue;
     const tokens = m[1]
-      .split(',')
+      .split(/,|và/)
       .map((s) => s.trim())
       .filter(Boolean);
     if (tokens.length < 2 || tokens.length > 3) continue;

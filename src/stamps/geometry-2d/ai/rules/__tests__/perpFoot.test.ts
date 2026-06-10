@@ -360,6 +360,17 @@ describe('perpFootRule — bundled altitudes from exam statements', () => {
     ]);
   });
 
+  it('"Hai đường cao BD và CE cắt nhau tại H" (separator "và") → D/E feet + H', () => {
+    const intents = all('Cho tam giác ABC nhọn. Hai đường cao BD và CE cắt nhau tại H');
+    expect(intents).toEqual([
+      { op: 'add-point', name: 'D', constraint: { kind: 'perpFoot', from: 'B', onLine: 'AC' } },
+      { op: 'connect', from: 'B', to: 'D', style: 'segment' },
+      { op: 'add-point', name: 'E', constraint: { kind: 'perpFoot', from: 'C', onLine: 'AB' } },
+      { op: 'connect', from: 'C', to: 'E', style: 'segment' },
+      { op: 'add-point', name: 'H', constraint: { kind: 'orthocenter', of: ['A', 'B', 'C'] } },
+    ]);
+  });
+
   it('"Các đường cao AD, BE, CF ... cắt nhau tại H" → 3 feet + orthocenter', () => {
     const intents = all(
       'Cho tam giác ABC. Các đường cao AD, BE, CF của tam giác ABC cắt nhau tại H',
