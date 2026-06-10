@@ -1,0 +1,69 @@
+// Batch test cho các pattern thêm khi phủ dataset T02 (olympiad).
+import { intersectionRule } from '../intersection';
+import { tangentsAtMeetRule } from '../tangentsAtMeet';
+import { triangleRule } from '../triangle';
+import { onSegmentPointRule } from '../onSegmentPoint';
+import { segmentClauses } from '../../deterministic/coverage';
+
+function run(rule: any, problem: string) {
+  return rule.match({ problem, clauses: segmentClauses(problem) }).flatMap((m: any) => m.intents);
+}
+
+describe('intersection — phân phối N cặp + ký hiệu ∩', () => {
+  it('"M, N, P lần lượt là giao của các cặp đường thẳng AC và BD; AB và CD; AD và BC" (Brokard)', () => {
+    const all = run(
+      intersectionRule,
+      'Gọi M, N, P lần lượt là giao của các cặp đường thẳng AC và BD; AB và CD; AD và BC',
+    );
+    const by = Object.fromEntries(all.map((i: any) => [i.name, i.constraint.of.join('∩')]));
+    expect(by).toEqual({ M: 'AC∩BD', N: 'AB∩CD', P: 'AD∩BC' });
+  });
+
+  it('blob KHÔNG vượt dấu chấm (proof phía sau không tạo cặp giả)', () => {
+    const all = run(
+      intersectionRule,
+      'Gọi X, Y, Z lần lượt là giao của các cặp đường thẳng (MP, NQ), (CX, MQ), (BX, PN). Chứng minh rằng AX, BY, CZ đồng quy.',
+    );
+    expect(all.map((i: any) => i.name).sort()).toEqual(['X', 'Y', 'Z']);
+  });
+
+  it('ký hiệu ∩ — "K = AE ∩ BD"', () => {
+    const all = run(intersectionRule, 'Gọi K = AE ∩ BD');
+    expect(all).toContainEqual(
+      expect.objectContaining({ name: 'K', constraint: { kind: 'intersection', of: ['AE', 'BD'] } }),
+    );
+  });
+});
+
+describe('tangentsAtMeet — 2 tiếp tuyến tại B, C cắt nhau', () => {
+  it('"Các tiếp tuyến của (O) tại B và C cắt nhau tại J" → tB, tC, J=tB∩tC', () => {
+    const all = run(tangentsAtMeetRule, 'Cho tam giác ABC nội tiếp (O). Các tiếp tuyến của (O) tại B và C cắt nhau tại J');
+    expect(all).toContainEqual(expect.objectContaining({ op: 'draw-line', kind: 'tangentAt' }));
+    expect(all).toContainEqual({ op: 'add-point', name: 'J', constraint: { kind: 'intersection', of: ['tB', 'tC'] } });
+  });
+
+  it('chữ HOA đầu "Tiếp tuyến" cũng khớp', () => {
+    const all = run(tangentsAtMeetRule, 'Cho (O). Tiếp tuyến tại B và C của (O) cắt nhau tại T');
+    expect(all.some((i: any) => i.name === 'T')).toBe(true);
+  });
+});
+
+describe('triangle — tên đứng trước "ABC là tam giác …"', () => {
+  it('"ABC là tam giác vuông tại A" → right-at-A', () => {
+    const all = run(triangleRule, 'Cho ABC là tam giác vuông tại A');
+    expect(all.some((i: any) => i.op === 'draw-shape' && i.shape === 'triangle')).toBe(true);
+  });
+});
+
+describe('onSegment — phân phối + prefix "cạnh" optional', () => {
+  it('"Các điểm M, N thuộc BC, các điểm P, Q theo thứ tự thuộc AC, AB"', () => {
+    const all = run(onSegmentPointRule, 'Các điểm M, N thuộc BC, các điểm P, Q theo thứ tự thuộc AC, AB');
+    const by = Object.fromEntries(all.map((i: any) => [i.name, i.constraint.of]));
+    expect(by).toMatchObject({ M: 'BC', N: 'BC', P: 'AC', Q: 'AB' });
+  });
+
+  it('"Điểm D thuộc AC" (không chữ cạnh) → D onSegment AC', () => {
+    const all = run(onSegmentPointRule, 'Điểm D thuộc AC và E là điểm khác');
+    expect(all).toContainEqual({ op: 'add-point', name: 'D', constraint: { kind: 'onSegment', of: 'AC' } });
+  });
+});

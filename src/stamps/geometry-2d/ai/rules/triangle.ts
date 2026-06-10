@@ -14,6 +14,9 @@ import { drawShape, addPoint, drawCircle, markShape } from './_shared';
 // leadMod gồm cả "nhọn"/"tù" (acute/obtuse) — KHÔNG ngụ ý variant (→ 'any') nhưng
 // PHẢI nuốt để bộ 3 đỉnh khớp ("tam giác nhọn ABC"). variantForVi bỏ qua chúng.
 const TRI_G = /tam giác\s+(?:(đều|vuông|cân|nhọn|tù)\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
+// Tên ĐỨNG TRƯỚC: "ABC là tam giác (vuông|cân|đều)? …" — variant suy từ window
+// SAU "tam giác" (vd "ABC là tam giác vuông tại A" → window "vuông tại A").
+const TRI_BEFORE_G = /(?<![A-Z])([A-Z])([A-Z])([A-Z])(?![A-Z])\s+là\s+tam\s*giác/gu;
 const RIGHT_AT = /vuông\s+tại\s+([A-Z])(?![A-Za-z])/u;
 const ISO_AT = /cân\s+tại\s+([A-Z])(?![A-Za-z])/u;
 // LƯU Ý: \b của JS dựa trên ASCII word-char nên KHÔNG khớp quanh ký tự Việt
@@ -208,7 +211,7 @@ export const triangleRule: LanguageRule = {
   id: 'triangle',
   priority: 100,
   languages: ['vi', 'en'],
-  patterns: [TRI_G, TRI_EN_G],
+  patterns: [TRI_G, TRI_EN_G, TRI_BEFORE_G],
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
@@ -232,6 +235,18 @@ export const triangleRule: LanguageRule = {
           lead: normLeadEn(m[1]),
           lang: 'en',
           labels: [m[2], m[3], m[4]],
+          start: m.index,
+          end: m.index + m[0].length,
+        });
+      }
+
+      // Name-before: "ABC là tam giác …" (variant từ window sau "tam giác").
+      TRI_BEFORE_G.lastIndex = 0;
+      while ((m = TRI_BEFORE_G.exec(c.text)) !== null) {
+        hits.push({
+          lead: undefined,
+          lang: 'vi',
+          labels: [m[1], m[2], m[3]],
           start: m.index,
           end: m.index + m[0].length,
         });

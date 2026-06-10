@@ -70,8 +70,24 @@ const CAT_TWO_ONE = new RegExp(
 // Tên điểm đứng TRƯỚC (pattern A): "X là " NGAY TRƯỚC "giao điểm".
 const NAME_BEFORE = /([A-Z])(?:['′]?)\s+là\s+$/u;
 
+// G: phân phối N CẶP — "X, Y, Z lần lượt là giao (điểm)? của (các)? cặp (đường
+//    thẳng)? (R1a, R1b), (R2a, R2b), …" / "… AC và BD; AB và CD; …". Zip tên↔cặp.
+//    Brokard/Pappus-family (giao của 3-4 cặp đường thẳng).
+const NAMES_LIST = '((?:[A-Z]\\s*,\\s*)+[A-Z])(?![A-Z])';
+const DISTRIB_PAIRS = new RegExp(
+  NAMES_LIST +
+    '\\s+(?:lần\\s*lượt\\s+|theo\\s+thứ\\s+tự\\s+)?là\\s+giao\\s*(?:điểm)?\\s+(?:của\\s+)?(?:các\\s+)?cặp\\s+(?:đường\\s*thẳng\\s+)?([^.]+)',
+  'u',
+);
+// Cặp bên trong blob: "(R1, R2)" hoặc "R1 và R2" — quét toàn cục, optional ngoặc.
+const PAIR_IN_BLOB = new RegExp(`\\(?\\s*([A-Z]\\s*[A-Z])\\s*(?:,|${CONN})\\s*([A-Z]\\s*[A-Z])\\s*\\)?`, 'gu');
+
+// H: ký hiệu ∩ — "X = REF1 ∩ REF2" (A1=BC∩AP dùng subscript → [A-Z] không khớp,
+//    tự loại). Tên 1 ký tự HOA trước "=".
+const CAP_SYMBOL = new RegExp(`([A-Z])(?![A-Z])\\s*=\\s*${REF}\\s*∩\\s*${REF}`, 'gu');
+
 // Prefilter toàn đề.
-const PREFILTER = /giao\s*điểm|cắt|giao\s+nhau/u;
+const PREFILTER = /giao\s*điểm|cắt|giao\s+nhau|giao\s+của|∩/u;
 
 /**
  * Build intent intersection nếu hợp lệ: 4 đầu mút phân biệt (không chia sẻ đỉnh)
@@ -113,6 +129,10 @@ export const intersectionRule: LanguageRule = {
         emit(m[2], m[5], m[6]);
       }
 
+      // H: ký hiệu ∩ — "X = REF1 ∩ REF2".
+      CAP_SYMBOL.lastIndex = 0;
+      for (const m of c.text.matchAll(CAP_SYMBOL)) emit(m[1], m[2], m[3]);
+
       // E: 1 đường ∩ 2 đường ("MA cắt DB, DC tại X, Z").
       CAT_ONE_TWO.lastIndex = 0;
       for (const m of c.text.matchAll(CAT_ONE_TWO)) {
@@ -142,6 +162,31 @@ export const intersectionRule: LanguageRule = {
       // C: "REF1 và REF2 cắt nhau tại D".
       CAT_NHAU.lastIndex = 0;
       for (const m of c.text.matchAll(CAT_NHAU)) emit(m[3], m[1], m[2]);
+    }
+
+    // G: phân phối N cặp — quét TOÀN ĐỀ (segmentClauses cắt ';' nên blob
+    //    "AC và BD; AB và CD; AD và BC" bị tách; cặp 2,3 ở clause khác). Claim
+    //    clause chứa danh sách tên ("lần lượt là giao").
+    const dp = DISTRIB_PAIRS.exec(ctx.problem);
+    if (dp) {
+      const names = dp[1].split(',').map((s) => s.trim()).filter(Boolean);
+      const pairs: Array<[string, string]> = [];
+      PAIR_IN_BLOB.lastIndex = 0;
+      for (const pm of dp[2].matchAll(PAIR_IN_BLOB)) pairs.push([pm[1], pm[2]]);
+      // Zip 1-1: số tên = số cặp (≥2). Lệch → bỏ (escalate, không đoán lệch).
+      if (names.length >= 2 && names.length === pairs.length) {
+        // Clause chứa danh sách tên + "giao của ... cặp" (để coverage claim).
+        const owner = ctx.clauses.find(
+          (c) => c.text.includes(names[0]) && /giao\s*(?:điểm)?\s+(?:của\s+)?(?:các\s+)?cặp/u.test(c.text),
+        );
+        const seenG = new Set<string>();
+        for (let i = 0; i < names.length; i++) {
+          const intent = makeIntent(names[i], pairs[i][0], pairs[i][1]);
+          if (!intent || seenG.has(names[i])) continue;
+          seenG.add(names[i]);
+          out.push({ ruleId: 'intersection', clauseIds: owner ? [owner.id] : [], intents: [intent] });
+        }
+      }
     }
     return out;
   },

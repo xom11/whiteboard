@@ -16,8 +16,9 @@ const PREFILTER = /tiếp\s*xúc/u;
 const INCIRCLE_IN_CLAUSE = /đường\s*tròn\s*(?:\(\s*([A-Z])\s*\)|tâm\s+([A-Z]))?\s*nội\s*tiếp\s+tam\s*giác(?:\s+([A-Z])([A-Z])([A-Z])(?![A-Z]))?/iu;
 
 // "cạnh|đoạn" optional: "tiếp xúc với AB, AC, BC lần lượt tại D, E, F" (Bài 18)
-// không nêu chữ "cạnh" trước danh sách cạnh.
-const SIDE_POINT_LIST = /tiếp\s*xúc\s+(?:với\s+)?(?:các\s+)?(?:(?:cạnh|đoạn)\s+)?([A-Z]{2}(?:\s*,\s*[A-Z]{2})*)\s+(?:lần\s*lượt\s+|tương\s*ứng\s+)?tại\s+(?:các\s+)?(?:điểm\s+)?([A-Z](?:\s*,\s*[A-Z])*)(?![A-Za-z])/iu;
+// không nêu chữ "cạnh". Separator danh sách = "," HOẶC "và" ("AB, AC lần lượt
+// tại D và E" — VD12, tiếp xúc 2 cạnh). splitCsv tách cả "và".
+const SIDE_POINT_LIST = /tiếp\s*xúc\s+(?:với\s+)?(?:các\s+)?(?:(?:cạnh|đoạn)\s+)?([A-Z]{2}(?:\s*(?:,|và)\s*[A-Z]{2})*)\s+(?:lần\s*lượt\s+|tương\s*ứng\s+)?tại\s+(?:các\s+)?(?:điểm\s+)?([A-Z](?:\s*(?:,|và)\s*[A-Z])*)(?![A-Za-z])/iu;
 
 // Dạng ĐẢO (Bài 11): "Cạnh AB, BC, CA tiếp xúc với đường tròn (O) tại D, E, F".
 // Cạnh đứng TRƯỚC "tiếp xúc"; đường tròn (O) là đường tròn NỘI TIẾP (tiếp xúc cả
@@ -26,7 +27,7 @@ const REVERSED_SIDE_POINT = /(?:các\s+)?(?:cạnh|đoạn)\s+([A-Z]{2}(?:\s*,\s
 
 function splitCsv(blob: string): string[] {
   return blob
-    .split(',')
+    .split(/,|\bvà\b|\s+và\s+/u)
     .map((s) => s.trim())
     .filter(Boolean);
 }
