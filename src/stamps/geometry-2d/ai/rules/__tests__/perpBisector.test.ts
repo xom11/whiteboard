@@ -189,3 +189,13 @@ describe('perpBisectorRule — trung trực ∩ đường (giao điểm)', () =>
     expect(all.some((i) => i.op === 'connect' && i.style === 'perpBisector')).toBe(true);
   });
 });
+
+describe('perpBisector — phân phối "trung trực CA, AB cắt PA tại E, F"', () => {
+  it('E=giao(pb_CA,PA), F=giao(pb_AB,PA)', () => {
+    const { perpBisectorRule } = require('../perpBisector');
+    const { segmentClauses } = require('../../deterministic/coverage');
+    const it = perpBisectorRule.match({ problem: 'Trung trực của CA, AB cắt PA tại E, F', clauses: segmentClauses('Trung trực của CA, AB cắt PA tại E, F') }).flatMap((m: any) => m.intents);
+    expect(it.find((i: any) => i.name === 'E').constraint).toEqual({ kind: 'intersection', of: ['pb_CA', 'PA'] });
+    expect(it.find((i: any) => i.name === 'F').constraint).toEqual({ kind: 'intersection', of: ['pb_AB', 'PA'] });
+  });
+});

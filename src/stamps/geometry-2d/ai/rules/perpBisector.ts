@@ -16,7 +16,7 @@ import { addPoint, connect, pairFromToken } from './_shared';
 // Cờ 'g' để bắt MỌI cụm "trung trực <PAIR>" trong 1 clause (vd "trung trực BC
 // và trung trực CA" → emit cả 2). Reset lastIndex trước mỗi clause.
 const PERP_BISECTOR =
-  /(?<!\p{L})trung\s*trực\s+(?:(?:của|đoạn|đoạn\s+thẳng|cạnh)\s+)*([A-Z][A-Z])(?!\p{L})/gu;
+  /(?<!\p{L})[Tt]rung\s*trực\s+(?:(?:của|đoạn|đoạn\s+thẳng|cạnh)\s+)*([A-Z][A-Z])(?!\p{L})/gu;
 
 // "(đường) trung trực (của) PAIR1 cắt [đường thẳng|đoạn|cạnh|tia]? PAIR2 tại D":
 // đường trung trực CỦA PAIR1 (line dựng) ∩ đường PAIR2 = điểm D.
@@ -30,8 +30,13 @@ const PERP_BISECTOR =
 const PERP_BIS_CUT =
   /(?<!\p{L})[Tt]rung\s*trực\s+(?:(?:của|đoạn|đoạn\s+thẳng|cạnh)\s+)*([A-Z][A-Z])(?!\p{L})\s+cắt\s+(?:đường\s*thẳng\s+|đoạn(?:\s+thẳng)?\s+|cạnh\s+|tia\s+)?([A-Z][A-Z])(?!\p{L})\s+tại\s+([A-Z])(?!\p{L})/gu;
 
+// Phân phối: "Trung trực của CA, AB cắt PA tại E, F" → trung trực(CA)∩PA=E,
+// trung trực(AB)∩PA=F. group1=PAIR1, 2=PAIR2, 3=đường bị cắt, 4=P1, 5=P2.
+const PERP_BIS_CUT_DISTRIB =
+  /(?<!\p{L})[Tt]rung\s*trực\s+(?:(?:của|đoạn|đoạn\s+thẳng|cạnh)\s+)*([A-Z][A-Z])\s*,\s*([A-Z][A-Z])(?!\p{L})\s+cắt\s+(?:đường\s*thẳng\s+|đoạn(?:\s+thẳng)?\s+|cạnh\s+|tia\s+)?([A-Z][A-Z])(?!\p{L})\s+(?:lần\s*lượt\s+)?tại\s+([A-Z])\s*,\s*([A-Z])(?!\p{L})/gu;
+
 /** prefilter nhanh trên toàn đề. */
-const PREFILTER = /trung\s*trực/u;
+const PREFILTER = /[Tt]rung\s*trực/u;
 
 // === EN (issue #46 group B) ===
 // "(the)? perpendicular bisector (of|the|segment|line|side)* PAIR" → connect(P1,P2,'perpBisector').
@@ -87,6 +92,26 @@ export const perpBisectorRule: LanguageRule = {
           intents: [
             connect(pb[0], pb[1], 'perpBisector'),
             addPoint(d, { kind: 'intersection', of: [pbName, m[2]] }),
+          ],
+        });
+      }
+
+      // Phân phối "trung trực CA, AB cắt PA tại E, F" → 2 perpBisector + 2 giao.
+      PERP_BIS_CUT_DISTRIB.lastIndex = 0;
+      for (const m of c.text.matchAll(PERP_BIS_CUT_DISTRIB)) {
+        const pb1 = pairFromToken(m[1]);
+        const pb2 = pairFromToken(m[2]);
+        const line = pairFromToken(m[3]);
+        const [d1, d2] = [m[4], m[5]];
+        if (pb1.length !== 2 || pb2.length !== 2 || line.length !== 2 || d1 === d2) continue;
+        out.push({
+          ruleId: 'perpBisector',
+          clauseIds: [c.id],
+          intents: [
+            connect(pb1[0], pb1[1], 'perpBisector'),
+            connect(pb2[0], pb2[1], 'perpBisector'),
+            addPoint(d1, { kind: 'intersection', of: [`pb_${pb1[0]}${pb1[1]}`, m[3]] }),
+            addPoint(d2, { kind: 'intersection', of: [`pb_${pb2[0]}${pb2[1]}`, m[3]] }),
           ],
         });
       }
