@@ -34,8 +34,10 @@ const CENTER = '(?:\\(\\s*([^\\s;,).:]+)\\s*\\)|tâm\\s+([A-Z]))?';
 // MỌI cấu trúc trong clause; 'i' để hoa đầu câu ("Đường"/"Ngoại"/"Tam") cũng
 // khớp — nhưng group đỉnh ([A-Z]) KHÔNG dùng 'i' (regex 'i' không tác động lên
 // lớp ký tự đã chỉ định HOA → vẫn chỉ khớp HOA, tránh nuốt chữ thường).
+// Guard "(?<!tâm\s)": "tâm đường tròn nội/ngoại tiếp tam giác" = TÂM (điểm,
+// centers rule lo) — KHÔNG vẽ đường tròn ở đây (tránh circle thừa đụng tên).
 const CIRCUM_TRI = new RegExp(
-  CIRCLE_KW + '\\s*' +
+  '(?<!tâm\\s)' + CIRCLE_KW + '\\s*' +
     CENTER +
     '\\s*ngoại\\s*tiếp\\s+tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])',
   'giu',
@@ -43,7 +45,7 @@ const CIRCUM_TRI = new RegExp(
 
 // "đường tròn [ (I)/tâm I ] nội tiếp tam giác XYZ" → incircle (inscribedIn).
 const INCIRCLE_TRI = new RegExp(
-  CIRCLE_KW + '\\s*' +
+  '(?<!tâm\\s)' + CIRCLE_KW + '\\s*' +
     CENTER +
     '\\s*nội\\s*tiếp\\s+tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])',
   'giu',

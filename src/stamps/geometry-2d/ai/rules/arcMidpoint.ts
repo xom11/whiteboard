@@ -39,8 +39,9 @@ const ARC_MID = /(?:chính\s+giữa|trung\s*điểm)\s+(?:của\s+)?cung/u;
 
 // Cụm cung + cặp đỉnh: "điểm chính giữa cung (nhỏ|lớn) BC".
 // "nhỏ|lớn" optional; "của" optional. Cặp đỉnh = 2 ký tự HOA liền.
+// group1 = tính từ cung (nhỏ|lớn) optional, group2+3 = cặp đỉnh.
 const ARC_PAIR =
-  /(?:chính\s+giữa|trung\s*điểm)\s+(?:của\s+)?cung\s+(?:nhỏ\s+|lớn\s+)?([A-Z])([A-Z])/u;
+  /(?:chính\s+giữa|trung\s*điểm)\s+(?:của\s+)?cung\s+(nhỏ\s+|lớn\s+)?([A-Z])([A-Z])/u;
 
 // Tên điểm đứng TRƯỚC cụm: "M (là) (điểm) (chính giữa|trung điểm) cung".
 const NAME_BEFORE =
@@ -77,7 +78,7 @@ const MAJOR_ARC_EN = /major\s+arc/u;
 // /g + lastIndex reset 0; ký tự Việt ⇒ lookaround \p{L} thay \b.
 type Containment = { rel: 'not' | 'in'; point: string };
 function parseContainmentsVN(text: string): Containment[] {
-  const re = /(không\s+)?chứa\s+([A-Z])(?!\p{L})/gu;
+  const re = /(không\s+)?chứa\s+(?:điểm\s+|đỉnh\s+)?([A-Z])(?!\p{L})/gu;
   const out: Containment[] = [];
   let m: RegExpExecArray | null;
   while ((m = re.exec(text))) out.push({ rel: m[1] ? 'not' : 'in', point: m[2] });
@@ -184,12 +185,13 @@ export const arcMidpointRule: LanguageRule = {
     for (const c of ctx.clauses) {
       if (!ARC_MID.test(c.text)) continue;
 
-      // Vượt scope: "cung lớn" → cung đối, defer → escalate.
-      if (/cung\s+lớn/u.test(c.text)) continue;
-
       const pairM = ARC_PAIR.exec(c.text);
       if (!pairM) continue;
-      const pair = pairFromToken(pairM[1] + pairM[2]);
+      // Vượt scope CỤC BỘ: cung ĐANG lấy trung điểm là "lớn" → cung đối, defer.
+      // (Kiểm trên match — KHÔNG quét cả clause: clause gộp phẩy có thể chứa
+      // "cung lớn" ở định nghĩa khác, vd "M thuộc cung lớn AB, P là … cung AM".)
+      if (pairM[1] && /lớn/u.test(pairM[1])) continue;
+      const pair = pairFromToken(pairM[2] + pairM[3]);
       if (pair.length !== 2) continue;
       const [a, b] = pair;
       if (!arcOnCircum(a, b)) continue; // circumcircle ngầm: cung phải là 2 đỉnh tam giác
@@ -211,7 +213,10 @@ export const arcMidpointRule: LanguageRule = {
 
       // --- Dạng đơn: tên qua lời dẫn "Gọi/Lấy X là …" ưu tiên, fallback HOA trước cụm ---
       const before = NAME_BEFORE.exec(c.text);
-      const name = extractPointName(c.text) ?? (before ? before[1] : undefined);
+      // Ưu tiên tên CỤC BỘ (ngay trước "chính giữa cung") hơn lời dẫn clause-wide:
+      // clause gộp phẩy "I là tâm…, P là điểm chính giữa cung…" → extractPointName
+      // bắt nhầm "I"; NAME_BEFORE bắt đúng "P".
+      const name = (before ? before[1] : undefined) ?? extractPointName(c.text);
       if (!name) continue; // không trích được tên → bỏ qua
 
       // Containment: "(không) chứa X" tường minh (lấy mệnh đề đầu), else đỉnh thứ 3 tam giác.
