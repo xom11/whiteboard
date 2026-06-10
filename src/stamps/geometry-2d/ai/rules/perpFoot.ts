@@ -42,10 +42,10 @@ const PREFILTER_EN = /projection|perpendicular|foot\s+of/i;
 const LINE = '(?:' + DUONG_KW + '\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{1,2})(?![A-Z])';
 const PREP = '(?:trên|lên|xuống|đến|tới)';
 
-// "hình chiếu (vuông góc)? (của)? X PREP [cạnh|đường thẳng] LINE"
-const PROJ_CORE = `hình\\s*chiếu\\s+(?:vuông\\s*góc\\s+)?(?:của\\s+)?([A-Z])\\s+${PREP}\\s+${LINE}`;
-// "chân đường (vuông góc|cao) (hạ|kẻ|vẽ|dựng)? (từ)? X PREP LINE"
-const FOOT_CORE = `chân\\s+(?:của\\s+)?${DUONG_KW}\\s+(?:vuông\\s*góc|cao)\\s*(?:hạ\\s+|kẻ\\s+|vẽ\\s+|dựng\\s+)?(?:từ\\s+)?([A-Z])\\s+${PREP}\\s+${LINE}`;
+// "hình chiếu (vuông góc)? (của)? (điểm)? X PREP [cạnh|đường thẳng] LINE"
+const PROJ_CORE = `hình\\s*chiếu\\s+(?:vuông\\s*góc\\s+)?(?:của\\s+)?(?:điểm\\s+)?([A-Z])\\s+${PREP}\\s+${LINE}`;
+// "chân đường (vuông góc|cao) (hạ|kẻ|vẽ|dựng)? (từ)? (điểm)? X PREP LINE"
+const FOOT_CORE = `chân\\s+(?:của\\s+)?${DUONG_KW}\\s+(?:vuông\\s*góc|cao)\\s*(?:hạ\\s+|kẻ\\s+|vẽ\\s+|dựng\\s+)?(?:từ\\s+)?(?:điểm\\s+)?([A-Z])\\s+${PREP}\\s+${LINE}`;
 
 // Phân phối "X, Y lần lượt là <core của FROM1 ... LINE1> và (của|từ)? FROM2 PREP LINE2".
 //   groups: 1=name1 2=name2 | PROJ: 3=from1 4=line1 | FOOT: 5=from1 6=line1 | tail: 7=from2 8=line2
@@ -65,17 +65,22 @@ const SINGLE = new RegExp(`(?:${PROJ_CORE})|(?:${FOOT_CORE})`, 'gu');
 //   groups: 1=names blob (≥2, phẩy) | 2=from | 3=lines blob (≥2, phẩy)
 const NAMES_BLOB = "((?:[A-Z](?:['′]?)\\s*,\\s*)+[A-Z](?:['′]?))";
 const LINES_BLOB = '((?:[A-Z]{1,2}\\s*,\\s*)+[A-Z]{1,2})(?!\\p{L})';
+// Tiền tố trước DANH SÁCH cạnh: "(các)? (đường thẳng|cạnh|đoạn)?".
+const LINES_PREFIX = '(?:các\\s+)?(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?';
+// "lần lượt" optional → bắt cả "X, Y là các hình chiếu của F trên L1, L2".
 const DISTRIB_PROJ = new RegExp(
   NAMES_BLOB +
-    '\\s+lần\\s*lượt\\s+(?:là\\s+)?hình\\s*chiếu\\s+(?:vuông\\s*góc\\s+)?(?:của\\s+)?([A-Z])(?!\\p{L})' +
-    '\\s+(?:trên|lên|xuống|đến)\\s+(?:các\\s+)?' +
+    '\\s+(?:lần\\s*lượt\\s+)?(?:là\\s+)?(?:các\\s+)?hình\\s*chiếu\\s+(?:vuông\\s*góc\\s+)?(?:của\\s+)?(?:điểm\\s+)?([A-Z])(?!\\p{L})' +
+    '\\s+(?:trên|lên|xuống|đến)\\s+' +
+    LINES_PREFIX +
     LINES_BLOB,
   'gu',
 );
 const DISTRIB_FOOT = new RegExp(
   NAMES_BLOB +
-    '\\s+lần\\s*lượt\\s+(?:là\\s+)?chân\\s+(?:của\\s+)?đường\\s+(?:vuông\\s*góc|cao)\\s*(?:hạ\\s+|kẻ\\s+|vẽ\\s+|dựng\\s+)?(?:từ\\s+)?([A-Z])(?!\\p{L})' +
-    '\\s+(?:đến|xuống|trên|tới)\\s+(?:các\\s+)?' +
+    '\\s+(?:lần\\s*lượt\\s+)?(?:là\\s+)?(?:các\\s+)?chân\\s+(?:của\\s+)?đường\\s+(?:vuông\\s*góc|cao)\\s*(?:hạ\\s+|kẻ\\s+|vẽ\\s+|dựng\\s+)?(?:từ\\s+)?(?:điểm\\s+)?([A-Z])(?!\\p{L})' +
+    '\\s+(?:đến|xuống|trên|tới)\\s+' +
+    LINES_PREFIX +
     LINES_BLOB,
   'gu',
 );

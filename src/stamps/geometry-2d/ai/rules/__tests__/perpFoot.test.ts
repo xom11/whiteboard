@@ -398,3 +398,20 @@ describe('perpFootRule — bundled altitudes from exam statements', () => {
     expect(all('Cho tam giác ABC, đường cao PQ cắt nhau tại H')).toHaveLength(0);
   });
 });
+
+describe('perpFootRule — biến thể "điểm" + "các đường thẳng"', () => {
+  const feet = (p: string) =>
+    run(p).flatMap((m) => m.intents)
+      .filter((i: any) => i.op === 'add-point')
+      .map((i: any) => `${i.name}:${i.constraint.from}->${i.constraint.onLine}`);
+
+  it('Câu 18: "P là hình chiếu của điểm C trên AN và Q là hình chiếu của điểm M trên AB"', () => {
+    expect(feet('P là hình chiếu vuông góc của điểm C trên AN và Q là hình chiếu vuông góc của điểm M trên AB'))
+      .toEqual(['P:C->AN', 'Q:M->AB']);
+  });
+
+  it('Câu 12: "E, F lần lượt là hình chiếu của D trên các đường thẳng BH, CH"', () => {
+    expect(feet('E, F lần lượt là hình chiếu của D trên các đường thẳng BH, CH'))
+      .toEqual(['E:D->BH', 'F:D->CH']);
+  });
+});
