@@ -130,6 +130,15 @@ const PERP_DRAW = new RegExp(
   'gu',
 );
 
+// Cặp ⊥ KHÔNG verb dẫn ("XY ⊥ L") — dùng cho phần SAU dấu phẩy của directive
+// "Kẻ AC ⊥ MB, BD ⊥ MA" (PERP_DRAW chỉ bắt cặp đầu có verb). CHỈ chạy khi clause
+// có verb dựng (Kẻ/Vẽ/Dựng) → tránh nuốt quan hệ ⊥ trong câu chứng minh.
+const PERP_BARE = new RegExp(
+  `([A-Z])([A-Z])(?![A-Z])\\s+(?:⊥|vuông\\s*góc(?:\\s+với)?)\\s+(?:với\\s+)?(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{1,2})(?![A-Z])(?:\\s+tại\\s+([A-Z]))?`,
+  'gu',
+);
+const DRAW_VERB = /[Kk]ẻ|[Vv]ẽ|[Dd]ựng/u;
+
 // modifier "trung điểm (của)?" NGAY TRƯỚC cụm → đổi nghĩa, không dựng foot.
 const MID_BEFORE = /trung\s+điểm(?:\s+của)?\s*$/u;
 // Tên foot cục bộ: ký tự HOA + "là" NGAY TRƯỚC cụm (vd "Gọi H là ", "… , H là ").
@@ -354,6 +363,24 @@ function parseFeet(text: string, fallbackTri?: string[]): Foot[] {
     if (at && at !== foot) continue; // "tại K" ≠ chân H → xung đột → escalate
     if (onLine.includes(foot)) continue; // chân trùng đỉnh của đường → degenerate
     out.push({ name: foot, from, onLine });
+  }
+
+  // 3b) Cặp ⊥ phân phối sau dấu phẩy ("Kẻ AC ⊥ MB, BD ⊥ MA" — cặp 2 thiếu verb).
+  //     Chỉ khi clause là directive dựng (có Kẻ/Vẽ/Dựng). Bỏ chân đã có (cặp đầu
+  //     PERP_DRAW emit rồi) + chân trùng đỉnh đường.
+  if (DRAW_VERB.test(text)) {
+    PERP_BARE.lastIndex = 0;
+    let bm: RegExpExecArray | null;
+    while ((bm = PERP_BARE.exec(text)) !== null) {
+      const from = bm[1];
+      const foot = bm[2];
+      const onLine = bm[3];
+      const at = bm[4]; // "tại Z" (optional) — Z ≠ foot ⇒ xung đột ⇒ bỏ (escalate)
+      if (at && at !== foot) continue;
+      if (onLine.includes(foot)) continue;
+      if (out.some((o) => o.name === foot)) continue;
+      out.push({ name: foot, from, onLine });
+    }
   }
 
   // 4) EN projection / foot-of — tên bind ĐỨNG TRƯỚC qua "Let X be the …"/"X is

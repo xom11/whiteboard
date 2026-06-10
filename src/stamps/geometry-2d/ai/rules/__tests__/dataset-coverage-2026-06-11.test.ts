@@ -39,6 +39,14 @@ describe('dataset coverage batch 2026-06-11 (end-to-end)', () => {
       'phang:17 đường tròn đường kính MP cắt cung BC tại N (circle∩circle)',
       'Cho tam giác nhọn ABC nội tiếp đường tròn tâm O. Gọi M là một điểm trên cung nhỏ BC (M khác B, C và AM không đi qua O). Giả sử P là một điểm thuộc đoạn thẳng AM sao cho đường tròn đường kính MP cắt cung nhỏ BC tại điểm N khác M.',
     ],
+    [
+      'd80:5 tiếp tuyến d tại A trên (O) + M trên d + AC⊥MB, BD⊥MA',
+      'Cho đường tròn (O; R), từ một điểm A trên (O) kẻ tiếp tuyến d với (O). Trên đường thẳng d lấy điểm M bất kì (M khác A) kẻ cát tuyến MNP và gọi K là trung điểm của NP, kẻ tiếp tuyến MB (B là tiếp điểm). Kẻ AC vuông góc MB, BD vuông góc MA, gọi H là giao điểm của AC và BD, I là giao điểm của OM và AB.',
+    ],
+    [
+      'd80:18 trên đường thẳng vuông góc với OB tại H (KHÔNG nuốt "vu")',
+      'Cho đường tròn (O) đường kính AB. Trên đoạn thẳng OB lấy điểm H bất kì; trên đường thẳng vuông góc với OB tại H, lấy một điểm M ở ngoài đường tròn; MA và MB thứ tự cắt đường tròn (O) tại C và D.',
+    ],
   ];
 
   it.each(OK_CASES)('dựng được: %s', (_label, problem) => {

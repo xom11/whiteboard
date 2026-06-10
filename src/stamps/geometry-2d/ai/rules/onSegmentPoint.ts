@@ -19,7 +19,17 @@ import { addPoint } from './_shared';
 // prefilter rộng vô hại.
 // "đường kính AB" là 1 ĐOẠN (đường kính của đường tròn) → cho phép "trên đường
 // kính AB lấy điểm C" (phang:14). Thêm vào prefix đoạn-loại.
-const PREFILTER = /(?:thuộc\s+(?:cạnh|đoạn|bán\s*kính|đường\s*kính|dây|[A-Z]{2})|[Tt]rên\s+(?:cạnh|đoạn|bán\s*kính|đường\s*kính|dây|[A-Z]{2})|nằm\s+giữa)/u;
+const PREFILTER = /(?:thuộc\s+(?:cạnh|đoạn|bán\s*kính|đường\s*kính|dây|[A-Z]{2})|[Tt]rên\s+(?:cạnh|đoạn|bán\s*kính|đường\s*kính|đường\s*thẳng|dây|[A-Z]{2})|nằm\s+giữa)/u;
+
+// "Trên đường thẳng d (lấy)? (một)? (điểm)? M" — đường ĐẶT TÊN chữ thường (d, d1).
+// resolveSegmentRef thấy shape "d" (tangentLineNamedAtPoint dựng) → glider trên d.
+// Token tên đường = 1 chữ thường + tối đa 1 chữ số, NEO (?!\p{L}) để KHÔNG nuốt
+// từ tiếng Việt "vuông"/"song"… ("đường thẳng vuông góc" → "v"+(?!\p{L}) thất bại
+// vì sau "v" là "u" (chữ) — không khớp; tránh bịa đoạn "vu").
+const ON_NAMED_LINE = new RegExp(
+  String.raw`[Tt]rên\s+đường\s*thẳng\s+([a-z][0-9]?)(?!\p{L})[^.]{0,20}?(?:lấy\s+)?(?:một\s+)?(?:điểm\s+)?([A-Z](?:['′])?)(?![A-Z])`,
+  'gu',
+);
 
 const SEG = '([A-Z]{2})(?![A-Z])';
 const POINT = "([A-Z](?:['′])?)(?![A-Z])";
@@ -109,6 +119,14 @@ export const onSegmentPointRule: LanguageRule = {
       if (hasMetricConstraint(c.text)) {
         if (intents.length > 0) out.push({ ruleId: 'on-segment-point', clauseIds: [c.id], intents });
         continue;
+      }
+
+      // Điểm trên đường ĐẶT TÊN chữ thường ("Trên đường thẳng d lấy điểm M").
+      ON_NAMED_LINE.lastIndex = 0;
+      for (const m of c.text.matchAll(ON_NAMED_LINE)) {
+        const line = m[1];
+        const name = normalizePoint(m[2]);
+        if (/^[A-Z]['′]?$/u.test(name)) intents.push(addPoint(name, { kind: 'onSegment', of: line }));
       }
 
       ON_SEG_THEN_POINT.lastIndex = 0;

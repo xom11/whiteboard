@@ -73,6 +73,7 @@ import { tangentsAtMeetRule } from './tangentsAtMeet';
 import { angleBisectorCutsSideCircleRule } from './angleBisectorCutsSideCircle';
 import { circleCutsArcSecondRule } from './circleCutsArcSecond';
 import { angleBisectorCutsCircleLineRule } from './angleBisectorCutsCircleLine';
+import { tangentLineNamedAtPointRule } from './tangentLineNamedAtPoint';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -145,6 +146,7 @@ const RULES: readonly LanguageRule[] = [
   angleBisectorCutsSideCircleRule,
   circleCutsArcSecondRule,
   angleBisectorCutsCircleLineRule,
+  tangentLineNamedAtPointRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */
