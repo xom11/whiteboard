@@ -21,13 +21,17 @@ const TRIPLE_DISTRIB = new RegExp(
   'gu',
 );
 
+// "XY cắt (O) (ở|tại) (điểm (thứ hai)?)? Z (khác W)?" — "điểm thứ hai" + "khác W"
+// optional. `khác W` (nếu có) là điểm chung cần loại (other); else mặc định
+// chữ đầu của line (đầu mút nằm trên đường tròn).
 const SINGLE = new RegExp(
-  String.raw`([A-Z]{2})(?![A-Z])\s+cắt\s+` + CIRCLE + String.raw`\s+(?:ở|tại)\s+([A-Z])(?![A-Z])`,
+  String.raw`([A-Z]{2})(?![A-Z])\s+cắt\s+` + CIRCLE +
+    String.raw`\s+(?:ở|tại)\s+(?:điểm\s+(?:thứ\s+hai\s+)?)?([A-Z])(?![A-Z])(?:\s+khác\s+([A-Z])(?![A-Z]))?`,
   'gu',
 );
 
-function secondIntersection(name: string, line: string, circle: string) {
-  return addPoint(name, { kind: 'secondIntersection', line, circle, other: line[0] });
+function secondIntersection(name: string, line: string, circle: string, other?: string) {
+  return addPoint(name, { kind: 'secondIntersection', line, circle, other: other ?? line[0] });
 }
 
 function valid(name: string, line: string): boolean {
@@ -58,7 +62,8 @@ export const lineCircleIntersectionRule: LanguageRule = {
         const line = m[1];
         const circle = m[2];
         const name = m[3];
-        if (valid(name, line)) intents.push(secondIntersection(name, line, circle));
+        const other = m[4]; // "khác W" (optional) → điểm chung cần loại
+        if (valid(name, line)) intents.push(secondIntersection(name, line, circle, other));
       }
 
       if (intents.length > 0) out.push({ ruleId: 'line-circle-intersection', clauseIds: [c.id], intents });

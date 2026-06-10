@@ -26,9 +26,16 @@ const TAKE_ON_REV =
 // → 2 điểm onCircle với theta KHÁC nhau. group1=điểm 1 (C), group2=điểm 2 (D).
 const TWO_ON =
   /(?:lấy\s+)?hai\s+điểm\s+([A-Z])(?![A-Za-z])\s+và\s+([A-Z])(?![A-Za-z])\s+thuộc\s+(?:nửa\s+)?(?:đường\s*tròn|cung)/u;
+// "(Các)? điểm E, F thuộc cung BC …" — 2 điểm phân phối ngăn bởi dấu phẩy.
+const TWO_ON_COMMA =
+  /(?:[CcNn]ác\s+|[Nn]hững\s+)?điểm\s+([A-Z])(?![A-Za-z])\s*,\s*([A-Z])(?![A-Za-z])\s+thuộc\s+(?:nửa\s+)?(?:đường\s*tròn|cung)/u;
+
+// Bare "(O)" (1 ký tự HOA trong ngoặc) — fallback khi không có tiền tố "đường
+// tròn". Dùng cuối cùng vì rộng (mọi "(X)").
+const BARE_CIRCLE = /\(\s*([A-Z])\s*\)/u;
 
 function resolveCircle(problem: string): string | undefined {
-  const m = NAMED_CIRCLE.exec(problem) ?? COMPACT_CIRCLE.exec(problem);
+  const m = NAMED_CIRCLE.exec(problem) ?? COMPACT_CIRCLE.exec(problem) ?? BARE_CIRCLE.exec(problem);
   if (!m) return undefined;
   const center = m[1];
   // circleDiameterRule names its support circle "<center>_c"; radius rules use
@@ -65,7 +72,7 @@ export const onCirclePointRule: LanguageRule = {
       if (!circle) continue; // forward patterns cần circle toàn-đề
       // Distributive 2 điểm: "lấy hai điểm C và D thuộc nửa đường tròn" — 2 điểm
       // onCircle theta khác nhau trên circle toàn-đề.
-      const two = TWO_ON.exec(c.text);
+      const two = TWO_ON.exec(c.text) ?? TWO_ON_COMMA.exec(c.text);
       if (two && two[1].length === 1 && two[2].length === 1) {
         out.push({
           ruleId: 'on-circle-point',

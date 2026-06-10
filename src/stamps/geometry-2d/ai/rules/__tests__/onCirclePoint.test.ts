@@ -57,4 +57,17 @@ describe('onCirclePointRule', () => {
     // KHÔNG có intent đặt P trên O_c.
     expect(all.find((i) => i.name === 'P' && i.constraint.circle === 'O_c')).toBeUndefined();
   });
+
+  it('"Các điểm E, F thuộc cung BC" (phân phối phẩy) → E,F onCircle (Câu 28)', () => {
+    const all = run('Cho tam giác ABC nội tiếp (O). Các điểm E, F thuộc cung BC không chứa A')
+      .flatMap((m) => m.intents) as any[];
+    const names = all.filter((i) => i.constraint?.kind === 'onCircle').map((i) => i.name).sort();
+    expect(names).toEqual(['E', 'F']);
+  });
+
+  it('bare "(O)" (không tiền tố "đường tròn") vẫn resolve circle', () => {
+    const all = run('Cho tam giác ABC nội tiếp (O). Điểm M thuộc cung nhỏ BC')
+      .flatMap((m) => m.intents) as any[];
+    expect(all.find((i) => i.name === 'M' && i.constraint?.kind === 'onCircle')).toBeDefined();
+  });
 });

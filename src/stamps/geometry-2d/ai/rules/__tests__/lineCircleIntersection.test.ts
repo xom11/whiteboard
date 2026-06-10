@@ -28,4 +28,15 @@ describe('lineCircleIntersectionRule', () => {
   it('không nhận nếu điểm giao trùng đầu mút line', () => {
     expect(run('AB cắt (O) tại A')).toEqual([]);
   });
+
+  it('"FH cắt (O) tại điểm G khác F" → secondIntersection other=F (Câu 28)', () => {
+    const pt = run('FH cắt (O) tại điểm G khác F').flatMap((m) => m.intents)[0] as any;
+    expect(pt.constraint).toEqual({ kind: 'secondIntersection', line: 'FH', circle: 'O', other: 'F' });
+  });
+
+  it('"Tia CB cắt (O) ở điểm thứ hai D" → secondIntersection', () => {
+    const pt = run('Tia CB cắt (O) ở điểm thứ hai D').flatMap((m) => m.intents)[0] as any;
+    expect(pt.constraint.kind).toBe('secondIntersection');
+    expect(pt.name).toBe('D');
+  });
 }
