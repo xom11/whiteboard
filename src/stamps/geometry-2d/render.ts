@@ -4,7 +4,7 @@ import { createStore } from '../../core/scene';
 import { DEFAULT_VIEW_2D } from '../../core/scene/types';
 import { JxgRenderer } from '../../core/scene/render/JxgRenderer';
 import { renderJsxgOffscreen } from '../shared/jxgOffscreenRender';
-import { computeAutoFitBbox } from './autoFitBbox';
+import { autoFitBoardToContent, isDefaultBbox } from './autoFitBoard';
 import { radialLabelOffsets } from './labelLayout';
 
 /**
@@ -71,46 +71,6 @@ export function containerDimsForBbox(bbox: [number, number, number, number]): { 
 }
 
 /**
- * Auto-fit board bbox sau khi entities đã render. Thu thập toạ độ point + 4
- * điểm biên của mỗi circle, đưa qua `computeAutoFitBbox` (Tukey IQR trim
- * outlier + expand theo aspect container) rồi gọi setBoundingBox.
- *
- * Áp dụng khi state.meta.view.bbox còn là DEFAULT_VIEW_2D — i.e. AI-generated
- * figure chưa được editor zoom/pan. Stamp đã edit có bbox riêng của user, giữ
- * nguyên (consumer expectation: re-render khớp với view editor lúc save).
- *
- * `aspect` = container width/height. computeAutoFitBbox expand bbox về đúng
- * aspect này nên setBoundingBox (keepAspectRatio mặc định) cho units vuông →
- * circle tròn (không méo thành ellipse).
- */
-function autoFitBboxFromBoard(board: any, aspect: number): void {
-  const objs = board?.objectsList;
-  if (!Array.isArray(objs)) return;
-  const points: [number, number][] = [];
-  const circles: { cx: number; cy: number; r: number }[] = [];
-  for (const o of objs) {
-    // OBJECT_CLASS_POINT = 1
-    if (o?.elementClass === 1 && typeof o.X === 'function' && typeof o.Y === 'function') {
-      const x = o.X(), y = o.Y();
-      if (Number.isFinite(x) && Number.isFinite(y)) points.push([x, y]);
-    } else if (o?.elementClass === 3 && o.center?.X && typeof o.Radius === 'function') {
-      // OBJECT_CLASS_CIRCLE
-      const cx = o.center.X(), cy = o.center.Y(), r = o.Radius();
-      if (Number.isFinite(cx) && Number.isFinite(cy) && Number.isFinite(r)) {
-        circles.push({ cx, cy, r });
-      }
-    }
-  }
-  const bbox = computeAutoFitBbox(points, circles, aspect);
-  if (!bbox) return;
-  try {
-    board.setBoundingBox(bbox);
-    if (typeof board.update === 'function') board.update();
-    if (typeof board.fullUpdate === 'function') board.fullUpdate();
-  } catch { /* ignore */ }
-}
-
-/**
  * Đẩy label điểm ra xa centroid (radial) để giảm chồng nhãn. Chỉ chạy cho
  * AI-generated figure (shouldAutoFit) — stamp user-edit giữ layout nhãn mặc định.
  */
@@ -134,11 +94,6 @@ function applyRadialLabelOffsets(board: any): void {
   try {
     if (typeof board.update === 'function') board.update();
   } catch { /* ignore */ }
-}
-
-function isDefaultBbox(bbox: readonly number[]): boolean {
-  const d = DEFAULT_VIEW_2D.bbox;
-  return bbox.length === 4 && bbox[0] === d[0] && bbox[1] === d[1] && bbox[2] === d[2] && bbox[3] === d[3];
 }
 
 export async function renderGeometrySvgFromState(jsonState: string): Promise<string> {
@@ -178,7 +133,7 @@ export async function renderGeometrySvgFromState(jsonState: string): Promise<str
       const store = createStore(state);
       const renderer = new JxgRenderer(store, board);
       if (shouldAutoFit) {
-        autoFitBboxFromBoard(board, dims.width / dims.height);
+        autoFitBoardToContent(board, dims.width / dims.height);
         applyRadialLabelOffsets(board);
       }
       return renderer;

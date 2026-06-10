@@ -40,6 +40,7 @@ import { useToolStateMachine } from '../../shared/useToolStateMachine';
 import { safeJsx } from '../../shared/safeJsx';
 import { attachJxgWheelZoom } from '../../shared/attachJxgWheelZoom';
 import { initJxgBoard } from '../../shared/initJxgBoard';
+import { autoFitBoardToContent, isDefaultBbox } from '../autoFitBoard';
 import { buildObjectSnapshot } from './snapshot';
 import {
   clearPreviewSegs as clearPreviewSegsImpl,
@@ -341,6 +342,17 @@ export const MiniBoard2D = forwardRef<MiniBoardHandle, Props>(function MiniBoard
       rendererRef.current = new JxgRenderer(store, board, {
         theme: paletteFor(isDarkRef.current),
       });
+
+      // Editor view phải KHỚP ảnh đã chèn. render.ts auto-fit figure vào khung
+      // khi bbox lưu là DEFAULT (re-edit figure chưa zoom / AI-gen). Nếu editor
+      // chỉ boot ở bbox default → figure trong editor nhỏ/lệch so với ảnh to
+      // ngoài canvas ("vào edit trở về mặc định"). Fit luôn nội dung khi mount
+      // với bbox default. Figure đã zoom (bbox != default) → giữ nguyên view.
+      if (isDefaultBbox(initialView.bbox)) {
+        const el = containerRef.current;
+        const aspect = el && el.clientHeight > 0 ? el.clientWidth / el.clientHeight : 1;
+        safeJsx('MiniBoard.autoFit', () => autoFitBoardToContent(board, aspect));
+      }
 
       // Ctrl/Cmd + wheel zoom (Excalidraw-style).
       if (containerRef.current) {
