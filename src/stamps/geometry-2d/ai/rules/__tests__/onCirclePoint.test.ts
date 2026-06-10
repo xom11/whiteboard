@@ -68,4 +68,10 @@ describe('onCirclePointRule', () => {
     const all = intents('Cho tam giác ABC nội tiếp (O). Điểm M thuộc cung nhỏ BC');
     expect(all.find((i) => i.name === 'M' && i.constraint?.kind === 'onCircle')).toBeDefined();
   });
+
+  it('"M, N là hai điểm thuộc cung nhỏ BC" (tên trước) → M,N onCircle (Câu 18)', () => {
+    const all = intents('Cho tam giác ABC nội tiếp (O). M, N là hai điểm thuộc cung nhỏ BC');
+    const names = all.filter((i) => i.constraint?.kind === 'onCircle').map((i) => i.name).sort();
+    expect(names).toEqual(['M', 'N']);
+  });
 });

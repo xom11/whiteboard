@@ -37,7 +37,7 @@ const CENTER = '(?:\\(\\s*([^\\s;,).:]+)\\s*\\)|tâm\\s+([A-Z]))?';
 const CIRCUM_TRI = new RegExp(
   CIRCLE_KW + '\\s*' +
     CENTER +
-    '\\s*ngoại\\s*tiếp\\s+tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])',
+    '\\s*ngoại\\s*tiếp\\s+tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])',
   'giu',
 );
 
@@ -45,14 +45,14 @@ const CIRCUM_TRI = new RegExp(
 const INCIRCLE_TRI = new RegExp(
   CIRCLE_KW + '\\s*' +
     CENTER +
-    '\\s*nội\\s*tiếp\\s+tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])',
+    '\\s*nội\\s*tiếp\\s+tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])',
   'giu',
 );
 
 // "tam giác XYZ nội tiếp (trong) đường tròn [ (O)/tâm O ]" → circumcircle.
 // Tam giác đứng TRƯỚC, đường tròn đứng SAU. Center (nếu có) đứng sau "đường tròn".
 const TRI_INSCRIBED_IN_CIRCLE = new RegExp(
-  'tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?nội\\s*tiếp\\s+(?:trong\\s+)?' +
+  'tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?nội\\s*tiếp\\s+(?:trong\\s+)?' +
     CIRCLE_KW +
     '\\s*' +
     CENTER,
@@ -65,7 +65,7 @@ const TRI_INSCRIBED_IN_CIRCLE = new RegExp(
 // "đường tròn ngoại tiếp tam giác" (circumcircle — đường tròn đứng TRƯỚC, "ngoại
 // tiếp" theo sau bởi "tam giác"). [^.]{0,40}? không vượt dấu '.' (không nhảy câu).
 const TRI_CIRCUMSCRIBES_CIRCLE = new RegExp(
-  'tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?ngoại\\s*tiếp\\s+' +
+  'tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?ngoại\\s*tiếp\\s+' +
     CIRCLE_KW +
     '\\s*' +
     CENTER,
@@ -79,11 +79,11 @@ const TRI_CIRCUMSCRIBES_CIRCLE = new RegExp(
 // Phân biệt với TRI_INSCRIBED_IN_CIRCLE/TRI_CIRCUMSCRIBES_CIRCLE: ở đó sau "tiếp"
 // là "đường tròn" → 2 nhánh không chồng (dedup theo spec:tri vẫn an toàn nếu có).
 const TRI_INSCRIBED_IN_PAREN = new RegExp(
-  'tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?nội\\s*tiếp\\s+(?:trong\\s+)?\\(\\s*([A-Z])\\s*\\)',
+  'tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?nội\\s*tiếp\\s+(?:trong\\s+)?\\(\\s*([A-Z])\\s*\\)',
   'giu',
 );
 const TRI_CIRCUMSCRIBES_PAREN = new RegExp(
-  'tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?ngoại\\s*tiếp\\s+\\(\\s*([A-Z])\\s*\\)',
+  'tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?ngoại\\s*tiếp\\s+\\(\\s*([A-Z])\\s*\\)',
   'giu',
 );
 
@@ -94,11 +94,11 @@ const TRI_CIRCUMSCRIBES_PAREN = new RegExp(
 const PAREN_CENTER =
   '(?:' + CIRCLE_KW + '\\s*)?\\(\\s*([A-Z])\\s*[;,]\\s*(?![^)]*[A-Z]\\s*[;,])[^()]*?\\)\\s*';
 const CIRCUM_TRI_PAREN = new RegExp(
-  PAREN_CENTER + 'ngoại\\s*tiếp\\s+tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])',
+  PAREN_CENTER + 'ngoại\\s*tiếp\\s+tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])',
   'giu',
 );
 const INCIRCLE_TRI_PAREN = new RegExp(
-  PAREN_CENTER + 'nội\\s*tiếp\\s+tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])',
+  PAREN_CENTER + 'nội\\s*tiếp\\s+tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])',
   'giu',
 );
 

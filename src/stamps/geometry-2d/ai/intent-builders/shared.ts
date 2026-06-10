@@ -177,9 +177,17 @@ export function resolveLineRefWithFallback(s: BuildState, ref: string, anchor: s
 
 export function resolveSegmentRef(s: BuildState, ref: string): string {
   // ref có thể là tên segment ('AB') hoặc shape name đã có.
-  // Nếu là 2 ký tự label đều đã tồn tại → ensure segment 2 đỉnh đó.
+  // Tên shape đã có (gồm circle "AB" nếu lỡ đặt) → giữ nguyên.
   if (s.shapeNames.has(ref)) return ref;
-  // Tách "AB" → A,B
+  // 2 ký tự HOA "AN" = cặp đỉnh → ensureSegment OPTIMISTIC, kể cả khi điểm CHƯA
+  // add (điểm phái sinh dựng sau do priority thấp hơn — vd onArc N < perpFoot).
+  // intentsToDsl KHÔNG topo-sort theo dep nên ref tới điểm-dựng-sau hay thất bại;
+  // segment trỏ p1/p2 = tên điểm, transpile resolve theo thứ tự + validate → token
+  // KHÔNG phải điểm sẽ fail-safe escalate (không render sai).
+  if (/^[A-Z][A-Z]$/u.test(ref)) {
+    return ensureSegment(s, ref[0], ref[1]);
+  }
+  // Tách "AB" → A,B (mixed-case / đã tồn tại).
   if (ref.length === 2 && s.pointNames.has(ref[0]) && s.pointNames.has(ref[1])) {
     return ensureSegment(s, ref[0], ref[1]);
   }

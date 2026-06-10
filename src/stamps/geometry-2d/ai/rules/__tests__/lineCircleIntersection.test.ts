@@ -39,4 +39,10 @@ describe('lineCircleIntersectionRule', () => {
     expect(pt.constraint.kind).toBe('secondIntersection');
     expect(pt.name).toBe('D');
   });
+
+  it('"giao điểm của NQ và (O) là R khác N" → secondIntersection(NQ,O,other=N)', () => {
+    const pt = run('Gọi giao điểm của NQ và (O) là R khác N').flatMap((m) => m.intents)[0] as any;
+    expect(pt.constraint).toEqual({ kind: 'secondIntersection', line: 'NQ', circle: 'O', other: 'N' });
+    expect(pt.name).toBe('R');
+  });
 }

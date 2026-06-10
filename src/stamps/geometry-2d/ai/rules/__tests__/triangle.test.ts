@@ -22,6 +22,13 @@ describe('triangleRule', () => {
     expect((m[0].intents[0] as any).variant).toBe('right-at-A');
   });
 
+  it('"tam giác nhọn ABC" → vẫn dựng ABC (nhọn = any, không chặn nhãn)', () => {
+    const i = run('Cho tam giác nhọn ABC nội tiếp (O)').flatMap((m) => m.intents)[0] as any;
+    expect(i.shape).toBe('triangle');
+    expect(i.labels).toEqual(['A', 'B', 'C']);
+    expect(i.variant).toBe('any');
+  });
+
   it('"cân tại A" → isoceles-BC (đáy 2 đỉnh còn lại)', () => {
     const m = run('Cho tam giác ABC cân tại A');
     expect((m[0].intents[0] as any).variant).toBe('isoceles-BC');

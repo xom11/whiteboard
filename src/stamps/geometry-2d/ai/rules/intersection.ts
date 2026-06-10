@@ -37,8 +37,8 @@ const CONN = '(?:và|với)';
 
 // A: "giao điểm (của)? REF1 (và|với) REF2" — tên đứng TRƯỚC qua "X là".
 const GIAO_DIEM = new RegExp(`giao\\s*điểm\\s+(?:của\\s+)?${REF}\\s*${CONN}\\s*${REF}`, 'gu');
-// B: "REF1 cắt REF2 tại D" — tên SAU.
-const CAT_TAI = new RegExp(`${REF}\\s+cắt\\s+${REF}\\s+tại\\s+([A-Z])(?![A-Z])`, 'gu');
+// B: "REF1 cắt REF2 tại (điểm)? D" — tên SAU.
+const CAT_TAI = new RegExp(`${REF}\\s+cắt\\s+${REF}\\s+tại\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])`, 'gu');
 // C: "REF1 (và|với) REF2 (cắt|giao) nhau tại D" — tên SAU. REF2 NGAY trước "cắt
 //    nhau" → "đôi một" (diameterCirclePairwise) chen vào sẽ phá khớp.
 const CAT_NHAU = new RegExp(

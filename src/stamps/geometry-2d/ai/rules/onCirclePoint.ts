@@ -29,6 +29,9 @@ const TWO_ON =
 // "(Các)? điểm E, F thuộc cung BC …" — 2 điểm phân phối ngăn bởi dấu phẩy.
 const TWO_ON_COMMA =
   /(?:[CcNn]ác\s+|[Nn]hững\s+)?điểm\s+([A-Z])(?![A-Za-z])\s*,\s*([A-Z])(?![A-Za-z])\s+thuộc\s+(?:nửa\s+)?(?:đường\s*tròn|cung)/u;
+// "M, N là hai điểm thuộc cung nhỏ BC …" — tên ĐỨNG TRƯỚC "là hai điểm thuộc".
+const TWO_ON_NAMES =
+  /([A-Z])(?![A-Za-z])\s*,\s*([A-Z])(?![A-Za-z])\s+là\s+hai\s+điểm\s+(?:thuộc|nằm\s+trên|trên)\s+(?:nửa\s+)?(?:đường\s*tròn|cung)/u;
 
 // Bare "(O)" (1 ký tự HOA trong ngoặc) — fallback khi không có tiền tố "đường
 // tròn". Dùng cuối cùng vì rộng (mọi "(X)").
@@ -72,7 +75,7 @@ export const onCirclePointRule: LanguageRule = {
       if (!circle) continue; // forward patterns cần circle toàn-đề
       // Distributive 2 điểm: "lấy hai điểm C và D thuộc nửa đường tròn" — 2 điểm
       // onCircle theta khác nhau trên circle toàn-đề.
-      const two = TWO_ON.exec(c.text) ?? TWO_ON_COMMA.exec(c.text);
+      const two = TWO_ON.exec(c.text) ?? TWO_ON_COMMA.exec(c.text) ?? TWO_ON_NAMES.exec(c.text);
       if (two && two[1].length === 1 && two[2].length === 1) {
         out.push({
           ruleId: 'on-circle-point',

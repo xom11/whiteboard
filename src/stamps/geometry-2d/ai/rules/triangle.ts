@@ -11,7 +11,9 @@ import { drawShape, addPoint, drawCircle, markShape } from './_shared';
 // leadMod = từ bổ nghĩa ĐỨNG TRƯỚC bộ 3 đỉnh ("tam giác đều DEF", "tam giác
 // vuông ABC", "tam giác cân ABC"). leadMod "đều" → equilateral ngay; "vuông"/
 // "cân" leadMod (không có "tại X") không đủ thông tin chọn đỉnh → để window xử lý.
-const TRI_G = /tam giác\s+(?:(đều|vuông|cân)\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
+// leadMod gồm cả "nhọn"/"tù" (acute/obtuse) — KHÔNG ngụ ý variant (→ 'any') nhưng
+// PHẢI nuốt để bộ 3 đỉnh khớp ("tam giác nhọn ABC"). variantForVi bỏ qua chúng.
+const TRI_G = /tam giác\s+(?:(đều|vuông|cân|nhọn|tù)\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
 const RIGHT_AT = /vuông\s+tại\s+([A-Z])(?![A-Za-z])/u;
 const ISO_AT = /cân\s+tại\s+([A-Z])(?![A-Za-z])/u;
 // LƯU Ý: \b của JS dựa trên ASCII word-char nên KHÔNG khớp quanh ký tự Việt

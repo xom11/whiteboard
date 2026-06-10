@@ -11,7 +11,7 @@
 import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint } from './_shared';
 
-const PREFILTER = /cắt\s+(?:đường\s*tròn\s*)?\(/u;
+const PREFILTER = /cắt\s+(?:đường\s*tròn\s*)?\(|giao\s*điểm\s+(?:của\s+)?[A-Z]{2}\s+(?:và|với)\s+\(/u;
 const CIRCLE = String.raw`(?:đường\s*tròn\s*)?\(\s*([A-Z])(?:['′]?)\s*\)`;
 
 const TRIPLE_DISTRIB = new RegExp(
@@ -27,6 +27,14 @@ const TRIPLE_DISTRIB = new RegExp(
 const SINGLE = new RegExp(
   String.raw`([A-Z]{2})(?![A-Z])\s+cắt\s+` + CIRCLE +
     String.raw`\s+(?:ở|tại)\s+(?:điểm\s+(?:thứ\s+hai\s+)?)?([A-Z])(?![A-Z])(?:\s+khác\s+([A-Z])(?![A-Z]))?`,
+  'gu',
+);
+
+// "giao điểm của XY và (O) là R (khác W)?" — dạng "Gọi giao điểm của NQ và (O)
+// là R khác N". Ref đầu = line (cặp đỉnh), ref sau = circle "(O)".
+const GIAO_CIRCLE = new RegExp(
+  String.raw`giao\s*điểm\s+(?:của\s+)?([A-Z]{2})(?![A-Z])\s+(?:và|với)\s+` + CIRCLE +
+    String.raw`\s+là\s+([A-Z])(?![A-Z])(?:\s+khác\s+([A-Z])(?![A-Z]))?`,
   'gu',
 );
 
@@ -63,6 +71,15 @@ export const lineCircleIntersectionRule: LanguageRule = {
         const circle = m[2];
         const name = m[3];
         const other = m[4]; // "khác W" (optional) → điểm chung cần loại
+        if (valid(name, line)) intents.push(secondIntersection(name, line, circle, other));
+      }
+
+      GIAO_CIRCLE.lastIndex = 0;
+      for (const m of c.text.matchAll(GIAO_CIRCLE)) {
+        const line = m[1];
+        const circle = m[2];
+        const name = m[3];
+        const other = m[4];
         if (valid(name, line)) intents.push(secondIntersection(name, line, circle, other));
       }
 
