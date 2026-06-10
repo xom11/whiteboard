@@ -196,8 +196,23 @@ export function resolveSegmentRef(s: BuildState, ref: string): string {
   if (dashMatch && s.pointNames.has(dashMatch[1]) && s.pointNames.has(dashMatch[2])) {
     return ensureSegment(s, dashMatch[1], dashMatch[2]);
   }
+  // Cặp điểm CÓ CHỈ SỐ không dấu phân tách ("B1C1" = B1,C1; "A1P" = A1,P): tách
+  // thành 2 điểm ĐÃ BIẾT bằng longest-prefix match. Đề projective hay đặt tên
+  // A1,B1…; "B1C1" → "B1"+"C1" (ưu tiên prefix dài, không "B"+"1C1").
+  const sub = splitKnownPair(s, ref);
+  if (sub) return ensureSegment(s, sub[0], sub[1]);
   // Trả về ref gốc (transpile sẽ báo lỗi nếu invalid)
   return ref;
+}
+
+/** Tách "B1C1"/"A1P" → [p1,p2] khi CẢ HAI là điểm đã biết; longest-prefix. */
+export function splitKnownPair(s: BuildState, ref: string): [string, string] | null {
+  for (let i = ref.length - 1; i >= 1; i--) {
+    const a = ref.slice(0, i);
+    const b = ref.slice(i);
+    if (s.pointNames.has(a) && s.pointNames.has(b)) return [a, b];
+  }
+  return null;
 }
 
 export function parseEnds(ref: string): [string, string] | null {

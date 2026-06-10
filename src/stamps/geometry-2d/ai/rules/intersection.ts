@@ -82,9 +82,15 @@ const DISTRIB_PAIRS = new RegExp(
 // Cặp bên trong blob: "(R1, R2)" hoặc "R1 và R2" — quét toàn cục, optional ngoặc.
 const PAIR_IN_BLOB = new RegExp(`\\(?\\s*([A-Z]\\s*[A-Z])\\s*(?:,|${CONN})\\s*([A-Z]\\s*[A-Z])\\s*\\)?`, 'gu');
 
-// H: ký hiệu ∩ — "X = REF1 ∩ REF2" (A1=BC∩AP dùng subscript → [A-Z] không khớp,
-//    tự loại). Tên 1 ký tự HOA trước "=".
-const CAP_SYMBOL = new RegExp(`([A-Z])(?![A-Z])\\s*=\\s*${REF}\\s*∩\\s*${REF}`, 'gu');
+// H: ký hiệu ∩ — "X = REF1 ∩ REF2", HỖ TRỢ điểm CÓ CHỈ SỐ (A1, A', B1C1):
+//    "A1 = BC ∩ AP", "A2 = BC ∩ B1C1". PT = HOA + (số|prime) optional. Cặp =
+//    2 PT liền (greedy → "B1C1"→B1,C1). builder resolveSegmentRef tách cặp
+//    subscript qua splitKnownPair. Tên = 1 PT trước "=".
+const PT = "[A-Z](?:[0-9]|['′])?";
+const CAP_SYMBOL = new RegExp(
+  `(${PT})\\s*=\\s*(${PT})\\s*(${PT})\\s*∩\\s*(${PT})\\s*(${PT})(?!${PT})`,
+  'gu',
+);
 
 // Prefilter toàn đề.
 const PREFILTER = /giao\s*điểm|cắt|giao\s+nhau|giao\s+của|∩/u;
@@ -100,6 +106,14 @@ function makeIntent(name: string, ref1: string, ref2: string): IntentT | null {
   if (new Set(ends).size !== 4) return null; // chia sẻ đỉnh / ref trùng → degenerate
   if (ends.includes(name)) return null; // ref chứa chính điểm cần dựng → vô nghĩa
   return addPoint(name, { kind: 'intersection', of: [ref1, ref2] });
+}
+
+/** Như makeIntent nhưng 4 đầu mút TƯỜNG MINH (cho điểm có chỉ số: B1, A'…). */
+function makeIntentEnds(name: string, e1: string, e2: string, e3: string, e4: string): IntentT | null {
+  const ends = [e1, e2, e3, e4];
+  if (new Set(ends).size !== 4) return null;
+  if (ends.includes(name)) return null;
+  return addPoint(name, { kind: 'intersection', of: [e1 + e2, e3 + e4] });
 }
 
 export const intersectionRule: LanguageRule = {
@@ -129,9 +143,17 @@ export const intersectionRule: LanguageRule = {
         emit(m[2], m[5], m[6]);
       }
 
-      // H: ký hiệu ∩ — "X = REF1 ∩ REF2".
+      // H: ký hiệu ∩ — "X = e1e2 ∩ e3e4" (hỗ trợ chỉ số). Dùng emit-by-ends để
+      //    không index ref[0]/ref[1] (sai với "B1C1").
       CAP_SYMBOL.lastIndex = 0;
-      for (const m of c.text.matchAll(CAP_SYMBOL)) emit(m[1], m[2], m[3]);
+      for (const m of c.text.matchAll(CAP_SYMBOL)) {
+        const name = m[1];
+        if (seen.has(name)) continue;
+        const intent = makeIntentEnds(name, m[2], m[3], m[4], m[5]);
+        if (!intent) continue;
+        seen.add(name);
+        out.push({ ruleId: 'intersection', clauseIds: [c.id], intents: [intent] });
+      }
 
       // E: 1 đường ∩ 2 đường ("MA cắt DB, DC tại X, Z").
       CAT_ONE_TWO.lastIndex = 0;

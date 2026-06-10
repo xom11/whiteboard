@@ -6,6 +6,7 @@ import { onSegmentPointRule } from '../onSegmentPoint';
 import { lineCircleIntersectionRule } from '../lineCircleIntersection';
 import { parallelPerpRule } from '../parallelPerp';
 import { segmentClauses } from '../../deterministic/coverage';
+import { tryDeterministicFigure } from '../../deterministic/tryDeterministicFigure';
 
 function run(rule: any, problem: string) {
   return rule.match({ problem, clauses: segmentClauses(problem) }).flatMap((m: any) => m.intents);
@@ -35,6 +36,16 @@ describe('intersection — phân phối N cặp + ký hiệu ∩', () => {
       expect.objectContaining({ name: 'K', constraint: { kind: 'intersection', of: ['AE', 'BD'] } }),
     );
   });
+
+  it('∩ với điểm CÓ CHỈ SỐ — "A1 = BC ∩ AP", "A2 = BC ∩ B1C1"', () => {
+    const all = run(intersectionRule, 'A1 = BC ∩ AP, A2 = BC ∩ B1C1');
+    expect(all).toContainEqual(
+      expect.objectContaining({ name: 'A1', constraint: { kind: 'intersection', of: ['BC', 'AP'] } }),
+    );
+    expect(all).toContainEqual(
+      expect.objectContaining({ name: 'A2', constraint: { kind: 'intersection', of: ['BC', 'B1C1'] } }),
+    );
+  });
 });
 
 describe('tangentsAtMeet — 2 tiếp tuyến tại B, C cắt nhau', () => {
@@ -54,6 +65,25 @@ describe('triangle — tên đứng trước "ABC là tam giác …"', () => {
   it('"ABC là tam giác vuông tại A" → right-at-A', () => {
     const all = run(triangleRule, 'Cho ABC là tam giác vuông tại A');
     expect(all.some((i: any) => i.op === 'draw-shape' && i.shape === 'triangle')).toBe(true);
+  });
+});
+
+describe('e2e — điểm có chỉ số + excenter Ja dựng được', () => {
+  it('"Ja là tâm đường tròn bàng tiếp góc A" → excenter point tên Ja', () => {
+    const r = tryDeterministicFigure('Cho tam giác ABC. Gọi Ja là tâm đường tròn bàng tiếp góc A của tam giác ABC.');
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.figure.dsl.points.some((p: any) => p.name === 'Ja' && p.kind === 'excenter')).toBe(true);
+  });
+
+  it('điểm chỉ số A1/B1 + cặp B1C1 dựng (splitKnownPair builder)', () => {
+    const r = tryDeterministicFigure(
+      'Cho P là một điểm nằm trong mặt phẳng chứa tam giác ABC. Gọi A1 = BC ∩ AP, B1 = AC ∩ BP, C1 = AB ∩ CP, A2 = BC ∩ B1C1.',
+    );
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      const names = r.figure.dsl.points.map((p: any) => p.name);
+      expect(names).toEqual(expect.arrayContaining(['A1', 'B1', 'C1', 'A2']));
+    }
   });
 });
 

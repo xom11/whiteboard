@@ -60,6 +60,10 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   // hình học DUY NHẤT bị coi là văn xuôi (hasGeometry=false). Thêm "⊥" để 2
   // phrasing hành xử như nhau ở gate coverage (issue #46 nhóm A).
   '⊥',
+  // Ký hiệu giao "∩" ("A1 = BC ∩ AP"): tương đương "giao điểm". Thiếu nó, clause
+  // chỉ dùng "∩" (không chữ "giao điểm/cắt") bị coi văn xuôi (hasGeometry=false)
+  // → điểm giao KHÔNG dựng (silent-incomplete) dù intersection rule khớp "∩".
+  '∩',
 
   // === EN keywords (issue #46 group B) =======================================
   // Bộ từ khoá tiếng Anh để 1 clause TOÀN tiếng Anh được tính là geo-clause

@@ -34,9 +34,11 @@ const TRI_G = /tam\s*giác\s+(?:(?:cân|vuông|đều|nhọn|tù)(?:\s+(?:tại|
 const OPPOSITE =
   /bàng\s*tiếp\s+(?:trong\s+)?(?:góc|đỉnh|ứng\s+với(?:\s+đỉnh)?|đối\s+diện(?:\s+đỉnh)?)\s+([A-Z])(?!\p{L})/u;
 
-// Tên tâm đứng TRƯỚC: "J (là)? tâm (của)? (đường tròn)? bàng tiếp".
+// Tên tâm đứng TRƯỚC: "Ja (là)? tâm (của)? (đường tròn)? bàng tiếp". Tên có thể
+// kèm CHỈ SỐ: "Ja" (J + a chỉ góc A), "J1", "J'", "J_a" — đề hay đặt vậy. Token
+// = HOA + (chữ thường | số | prime | _<chữ/số>). DSL LabelZ chấp nhận.
 const NAME_BEFORE =
-  /([A-Z])(?:['′]?)\s+(?:là\s+)?(?:tâm\s+)?(?:(?:của\s+)?đường\s*tròn\s+)?bàng\s*tiếp/u;
+  /([A-Z](?:[a-z0-9]|['′]|_[A-Za-z0-9])?)\s+(?:là\s+)?(?:tâm\s+)?(?:(?:của\s+)?đường\s*tròn\s+)?bàng\s*tiếp/u;
 
 /**
  * of=[A,B,C] cho 1 clause: ưu tiên tam giác nêu trong clause; else tam giác DUY

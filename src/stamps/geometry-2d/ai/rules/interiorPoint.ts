@@ -12,9 +12,11 @@
 import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint } from './_shared';
 
-const PREFILTER = /(?:nằm\s+)?(?:bên\s+)?trong\s+(?:tam\s*giác|tứ\s*giác|hình)/u;
+const PREFILTER = /(?:nằm\s+)?(?:bên\s+)?trong\s+(?:tam\s*giác|tứ\s*giác|hình|mặt\s*phẳng)/u;
+// "trong tam giác/tứ giác/hình ABCD" HOẶC "trong mặt phẳng (chứa) tam giác ABC"
+// (điểm thuộc mặt phẳng tam giác = điểm tự do gần tam giác → unblock construct).
 const RE =
-  /(?:[Gg]ọi\s+|[Ll]ấy\s+)?(?:điểm\s+)?([A-Z])(?!\p{L})\s+(?:là\s+)?(?:một\s+)?điểm\s+(?:nằm\s+)?(?:bên\s+)?trong\s+(?:tam\s*giác|tứ\s*giác|hình\s+\S+)\s+[A-Z]{3,4}(?![A-Z])/u;
+  /(?:[Gg]ọi\s+|[Ll]ấy\s+)?(?:điểm\s+)?([A-Z])(?!\p{L})\s+(?:là\s+)?(?:một\s+)?điểm\s+(?:nằm\s+)?(?:bên\s+)?trong\s+(?:mặt\s*phẳng\s+(?:chứa\s+)?)?(?:tam\s*giác|tứ\s*giác|hình\s+\S+)\s+[A-Z]{3,4}(?![A-Z])/u;
 
 export const interiorPointRule: LanguageRule = {
   id: 'interiorPoint',
