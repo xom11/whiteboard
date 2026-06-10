@@ -50,6 +50,18 @@ const DISTRIB_TWO = new RegExp(
   `([A-Z])\\s*,\\s*([A-Z])\\s+lần\\s*lượt\\s+là\\s+giao\\s*điểm\\s+của\\s+${REF}\\s*${CONN}\\s*${REF}\\s*,\\s*của\\s+${REF}\\s*${CONN}\\s*${REF}`,
   'gu',
 );
+// E: 1 đường ∩ 2 đường — "MA cắt DB, DC (theo thứ tự|lần lượt)? tại X, Z"
+//    → X=MA∩DB, Z=MA∩DC. groups: 1=line, 2=ref1, 3=ref2, 4=name1, 5=name2.
+const CAT_ONE_TWO = new RegExp(
+  `${REF}\\s+cắt\\s+${REF}\\s*,\\s*${REF}\\s+(?:theo\\s+thứ\\s+tự\\s+|lần\\s*lượt\\s+)?tại\\s+([A-Z])\\s*,\\s*([A-Z])(?![A-Z])`,
+  'gu',
+);
+// F: 2 đường ∩ 1 đường — "TC, TB (lần lượt|theo thứ tự)? cắt EF tại P, Q"
+//    → P=TC∩EF, Q=TB∩EF. groups: 1=ref1, 2=ref2, 3=sharedLine, 4=name1, 5=name2.
+const CAT_TWO_ONE = new RegExp(
+  `${REF}\\s*,\\s*${REF}\\s+(?:lần\\s*lượt\\s+|theo\\s+thứ\\s+tự\\s+)?cắt\\s+${REF}\\s+tại\\s+([A-Z])\\s*,\\s*([A-Z])(?![A-Z])`,
+  'gu',
+);
 
 // Tên điểm đứng TRƯỚC (pattern A): "X là " NGAY TRƯỚC "giao điểm".
 const NAME_BEFORE = /([A-Z])(?:['′]?)\s+là\s+$/u;
@@ -95,6 +107,19 @@ export const intersectionRule: LanguageRule = {
       for (const m of c.text.matchAll(DISTRIB_TWO)) {
         emit(m[1], m[3], m[4]);
         emit(m[2], m[5], m[6]);
+      }
+
+      // E: 1 đường ∩ 2 đường ("MA cắt DB, DC tại X, Z").
+      CAT_ONE_TWO.lastIndex = 0;
+      for (const m of c.text.matchAll(CAT_ONE_TWO)) {
+        emit(m[4], m[1], m[2]);
+        emit(m[5], m[1], m[3]);
+      }
+      // F: 2 đường ∩ 1 đường ("TC, TB cắt EF tại P, Q").
+      CAT_TWO_ONE.lastIndex = 0;
+      for (const m of c.text.matchAll(CAT_TWO_ONE)) {
+        emit(m[4], m[1], m[3]);
+        emit(m[5], m[2], m[3]);
       }
 
       // A: tên TRƯỚC — "X là giao điểm của REF1 và REF2".

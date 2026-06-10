@@ -77,4 +77,17 @@ describe('intersectionRule', () => {
       run('Đường tròn đường kính AB, AC đôi một cắt nhau tại M, N.').length,
     ).toBe(0);
   });
+
+  describe('distributive 1 đường ∩ 2 đường + 2 đường ∩ 1 đường', () => {
+    const pairs = (p: string) =>
+      run(p).flatMap((m) => m.intents).map((i: any) => `${i.name}:${i.constraint.of.join('∩')}`);
+
+    it('"MA cắt DB, DC theo thứ tự tại X, Z" → X=MA∩DB, Z=MA∩DC', () => {
+      expect(pairs('MA cắt DB, DC theo thứ tự tại X, Z')).toEqual(['X:MA∩DB', 'Z:MA∩DC']);
+    });
+
+    it('"TC, TB lần lượt cắt EF tại P, Q" → P=TC∩EF, Q=TB∩EF', () => {
+      expect(pairs('TC, TB lần lượt cắt EF tại P, Q')).toEqual(['P:TC∩EF', 'Q:TB∩EF']);
+    });
+  });
 });

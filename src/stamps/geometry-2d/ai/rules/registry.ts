@@ -49,6 +49,7 @@ import { circleCenterRadiusSegmentRule } from './circleCenterRadiusSegment';
 import { perpDiametersRule } from './perpDiameters';
 import { perpLineCutsTangentRule } from './perpLineCutsTangent';
 import { perpChordThroughPointRule } from './perpChordThroughPoint';
+import { polygonInscribedCircleRule } from './polygonInscribedCircle';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -97,6 +98,7 @@ const RULES: readonly LanguageRule[] = [
   perpDiametersRule,
   perpLineCutsTangentRule,
   perpChordThroughPointRule,
+  polygonInscribedCircleRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */
