@@ -11,20 +11,34 @@ const REFLECT = /đối\s*xứng/u;
 // Dạng A: tên điểm ĐỨNG TRƯỚC.
 //   "D đối xứng (với) H qua BC"
 //   "D là (điểm) đối xứng (của|với) H qua (đường thẳng|cạnh|trục) <Z>"
-// Z bắt mở (chữ cái + dấu phẩy/′), phân loại điểm/đường ở dưới.
-const NAME_BEFORE =
-  /([A-Z])(?:['′]?)\s+(?:là\s+)?(?:điểm\s+)?đối\s*xứng\s+(?:của\s+|với\s+)?(?:điểm\s+)?([A-Z])(?:['′]?)\s+qua\s+(?:đường\s*thẳng\s+|cạnh\s+|đoạn\s+|trục\s+|trung\s*điểm\s+|tâm\s+|điểm\s+)?([A-Za-z][A-Za-z′']?)/u;
+//   "M' là điểm đối xứng của M qua AB"   (tên ẢNH CÓ PRIME)
+// PRIME phải nằm TRONG group bắt tên (ảnh M') + group gốc (M') — nếu để
+// (?:['′]?) non-capturing thì "M'" → "M", sinh phụ thuộc vòng M→M (d80:10).
+// normalizePointName chuẩn hoá ′→' để đồng bộ naming layer.
+const PT = `[A-Z](?:['′])?`;
+const NAME_BEFORE = new RegExp(
+  `(${PT})\\s+(?:là\\s+)?(?:điểm\\s+)?đối\\s*xứng\\s+(?:của\\s+|với\\s+)?(?:điểm\\s+)?(${PT})\\s+qua\\s+(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+|trục\\s+|trung\\s*điểm\\s+|tâm\\s+|điểm\\s+)?([A-Za-z][A-Za-z′']?)`,
+  'u',
+);
 
 // Dạng phân phối: "P, Q lần lượt (là điểm)? đối xứng (của|với) (điểm)? A qua L1, L2"
 //   → P = đối xứng A qua L1; Q = đối xứng A qua L2 (CÙNG gốc A, 2 trục/điểm).
-const DISTRIB =
-  /([A-Z])(?:['′]?)\s*,\s*([A-Z])(?:['′]?)\s+lần\s*lượt\s+(?:là\s+)?(?:điểm\s+)?đối\s*xứng\s+(?:của\s+|với\s+)?(?:điểm\s+)?([A-Z])(?:['′]?)\s+qua\s+([A-Za-z]{1,2})(?:['′]?)\s*(?:,|và)\s*([A-Za-z]{1,2})(?:['′]?)/u;
+const DISTRIB = new RegExp(
+  `(${PT})\\s*,\\s*(${PT})\\s+lần\\s*lượt\\s+(?:là\\s+)?(?:điểm\\s+)?đối\\s*xứng\\s+(?:của\\s+|với\\s+)?(?:điểm\\s+)?(${PT})\\s+qua\\s+([A-Za-z]{1,2})(?:['′]?)\\s*(?:,|và)\\s*([A-Za-z]{1,2})(?:['′]?)`,
+  'u',
+);
 
 // Dạng B: KHÔNG có tên dẫn trước "đối xứng" (lấy tên từ lời dẫn "Gọi/Lấy …").
 //   "Gọi D là điểm đối xứng của H qua BC"
 //   "Lấy điểm đối xứng của H qua M"
-const NAME_AFTER =
-  /(?:điểm\s+)?đối\s*xứng\s+(?:của\s+|với\s+)?(?:điểm\s+)?([A-Z])(?:['′]?)\s+qua\s+(?:đường\s*thẳng\s+|cạnh\s+|đoạn\s+|trục\s+|trung\s*điểm\s+|tâm\s+|điểm\s+)?([A-Za-z][A-Za-z′']?)/u;
+const NAME_AFTER = new RegExp(
+  `(?:điểm\\s+)?đối\\s*xứng\\s+(?:của\\s+|với\\s+)?(?:điểm\\s+)?(${PT})\\s+qua\\s+(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+|trục\\s+|trung\\s*điểm\\s+|tâm\\s+|điểm\\s+)?([A-Za-z][A-Za-z′']?)`,
+  'u',
+);
+
+function normalizePointName(name: string): string {
+  return name.replace(/['′]/gu, "'");
+}
 
 // === EN (issue #46 group B) ===
 // "<Name> is/be the reflection of <Of> (over|across|in|about|through) (the)? (line|point|segment)? <Z>"
@@ -72,7 +86,13 @@ export const reflectionRule: LanguageRule = {
       // sẽ chỉ bắt được P). Cả 2 trục phân loại bằng classifyThrough.
       const dm = DISTRIB.exec(c.text);
       if (dm) {
-        const [n1, n2, ofPt, raw1, raw2] = [dm[1], dm[2], dm[3], dm[4], dm[5]];
+        const [n1, n2, ofPt, raw1, raw2] = [
+          normalizePointName(dm[1]),
+          normalizePointName(dm[2]),
+          normalizePointName(dm[3]),
+          dm[4],
+          dm[5],
+        ];
         const t1 = classifyThrough(raw1);
         const t2 = classifyThrough(raw2);
         if (t1 && t2) {
@@ -95,22 +115,22 @@ export const reflectionRule: LanguageRule = {
 
       const before = NAME_BEFORE.exec(c.text);
       if (before) {
-        name = before[1];
-        of = before[2];
+        name = normalizePointName(before[1]);
+        of = normalizePointName(before[2]);
         throughRaw = before[3];
       } else {
         const after = NAME_AFTER.exec(c.text);
         if (after) {
           // Không có tên đứng trước → lấy từ lời dẫn ("Gọi D là …").
           name = extractPointName(c.text);
-          of = after[1];
+          of = normalizePointName(after[1]);
           throughRaw = after[2];
         } else {
           // --- EN (issue #46 group B) — chỉ chạy khi cả 2 dạng VN fail. ---
           const en = REFLECT_EN.exec(c.text);
           if (en) {
-            name = en[1];
-            of = en[2];
+            name = normalizePointName(en[1]);
+            of = normalizePointName(en[2]);
             throughRaw = en[3];
           }
         }

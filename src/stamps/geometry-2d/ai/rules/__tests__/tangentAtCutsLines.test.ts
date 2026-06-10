@@ -19,6 +19,16 @@ describe('tangentAtCutsLinesRule', () => {
     expect(line).toMatchObject({ kind: 'tangentAt', through: 'C' });
   });
 
+  it('cắt tia tiếp tuyến đặt tên "Ax, By" (tiếp tuyến tại M cắt Ax, By tại C, D)', () => {
+    const P =
+      'Cho nửa đường tròn (O) đường kính AB. Kẻ các tia tiếp tuyến Ax, By. Tiếp tuyến tại M cắt Ax, By lần lượt tại C, D.';
+    const intents = run(P).flatMap((m) => m.intents) as any[];
+    const line = intents.find((i) => i.op === 'draw-line');
+    expect(line).toMatchObject({ kind: 'tangentAt', through: 'M' });
+    const pts = intents.filter((i) => i.op === 'add-point');
+    expect(pts.map((p) => `${p.name}:${p.constraint.of.join('∩')}`)).toEqual(['C:tM∩Ax', 'D:tM∩By']);
+  });
+
   it('không có circle → không claim', () => {
     expect(run('Tiếp tuyến tại C cắt AD, AB tại P, Q').length).toBe(0);
   });

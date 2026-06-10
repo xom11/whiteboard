@@ -92,6 +92,22 @@ const CAP_SYMBOL = new RegExp(
   'gu',
 );
 
+// I (fallback): "Z là giao điểm của (hai)? (tia)? REF1 (,|và|với) REF2" với đầu
+// mút CÓ PRIME ("M'A") và/hoặc separator DẤU PHẨY — 2 trường hợp GIAO_DIEM (chỉ
+// và|với, ref 2 HOA) bỏ lỡ. Vd "S là giao điểm của hai tia BM, M'A" (d80:10).
+// CHẠY CUỐI per-clause (sau mọi pattern khác) + seen-dedup → thuần additive.
+const PTP = "[A-Z](?:['′])?";
+const REFP = `(?:đường\\s*thẳng\\s+|đoạn(?:\\s+thẳng)?\\s+|tia\\s+|cạnh\\s+)?(${PTP}\\s*${PTP})(?![A-Za-z])`;
+const GIAO_PRIMED = new RegExp(
+  `giao\\s*điểm\\s+(?:của\\s+)?(?:hai\\s+)?(?:tia\\s+|đường\\s*thẳng\\s+|đoạn\\s+|cạnh\\s+)?${REFP}\\s*(?:,|và|với)\\s*${REFP}`,
+  'gu',
+);
+function splitPrimedPair(tok: string): [string, string] {
+  const m = /^([A-Z](?:['′])?)([A-Z](?:['′])?)$/u.exec(tok.replace(/\s+/g, ''));
+  if (!m) return ['', ''];
+  return [m[1].replace('′', "'"), m[2].replace('′', "'")];
+}
+
 // Prefilter toàn đề.
 const PREFILTER = /giao\s*điểm|cắt|giao\s+nhau|giao\s+của|∩/u;
 
@@ -184,6 +200,27 @@ export const intersectionRule: LanguageRule = {
       // C: "REF1 và REF2 cắt nhau tại D".
       CAT_NHAU.lastIndex = 0;
       for (const m of c.text.matchAll(CAT_NHAU)) emit(m[3], m[1], m[2]);
+
+      // I (fallback): primed/comma — "Z là giao điểm của hai tia BM, M'A". Tên
+      //   ĐỨNG TRƯỚC. Chỉ điểm chưa được pattern trên claim (seen-dedup).
+      GIAO_PRIMED.lastIndex = 0;
+      for (const m of c.text.matchAll(GIAO_PRIMED)) {
+        const nm = NAME_BEFORE.exec(c.text.slice(0, m.index));
+        if (!nm) continue;
+        const name = nm[1];
+        if (seen.has(name)) continue;
+        const [a, b] = splitPrimedPair(m[1]);
+        const [d, e] = splitPrimedPair(m[2]);
+        if (!a || !b || !d || !e) continue;
+        const ends = [a, b, d, e];
+        if (new Set(ends).size !== 4 || ends.includes(name)) continue;
+        seen.add(name);
+        out.push({
+          ruleId: 'intersection',
+          clauseIds: [c.id],
+          intents: [addPoint(name, { kind: 'intersection', of: [a + b, d + e] })],
+        });
+      }
     }
 
     // G: phân phối N cặp — quét TOÀN ĐỀ (segmentClauses cắt ';' nên blob

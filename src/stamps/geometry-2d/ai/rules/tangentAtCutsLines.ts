@@ -26,8 +26,10 @@ const SINGLE_RE = new RegExp(
 // group1 = tangent point, 2+3 = 2 đường bị cắt, 4+5 = 2 giao điểm.
 const RE = new RegExp(
   '[Tt]iếp\\s*tuyến\\s+(?:của\\s+[^.]{0,14}?\\s+)?tại\\s+(?:điểm\\s+)?([A-Z])(?!\\p{L})' +
-    '(?:\\s+của\\s+[^.]{0,14}?)?\\s+cắt\\s+(?:các\\s+)?(?:đường\\s*thẳng\\s+|cạnh\\s+)?' +
-    '([A-Z]{2})\\s*(?:,|và)\\s*([A-Z]{2})(?!\\p{L})\\s+(?:lần\\s*lượt\\s+)?(?:tại|ở)\\s+([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])',
+    '(?:\\s+của\\s+[^.]{0,14}?)?\\s+cắt\\s+(?:các\\s+)?(?:(?:các\\s+)?tiếp\\s*tuyến\\s+|đường\\s*thẳng\\s+|cạnh\\s+)?' +
+    // Đường bị cắt: cặp đỉnh "AD" HOẶC token tia đã đặt tên "Ax"/"By" (1 HOA +
+    // x/y/z/t). tangentRay dựng tia Ax,By (priority 63>62) trước → giao hợp lệ.
+    '([A-Z](?:[A-Z]|[xyzt]))\\s*(?:,|và)\\s*([A-Z](?:[A-Z]|[xyzt]))(?!\\p{L})\\s+(?:lần\\s*lượt\\s+)?(?:tại|ở)\\s+([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])',
   'gu',
 );
 

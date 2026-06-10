@@ -19,14 +19,19 @@ const TWO_PERP_DIAMETERS = new RegExp(
   'hai\\s+' + DUONG_KW + '\\s*kính[^.]{0,40}?vuông\\s*góc',
   'u',
 );
-const CIRCLE_NAME = String.raw`(?:${CIRCLE_KW}|nửa\s+${CIRCLE_KW})\s*(?:\(\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)|tâm\s+([A-Z]))?`;
+// Tên tâm: 1 chữ HOA + tuỳ chọn prime (') hoặc chỉ số ("O'", "O1", "O2"). Đề
+// olympiad hay có 2-3 đường tròn (O), (O'), (O₁) → cần bắt prime/subscript, nếu
+// không "(O') đường kính BC" không khớp (paren branch kẹt ở ký tự ') → bỏ sót
+// đường tròn thứ hai (phang:6). circleDiameter dựng circle "O'_c" + center "O'".
+const CTR = String.raw`[A-Z](?:['′]|\d{1,2})?`;
+const CIRCLE_NAME = String.raw`(?:${CIRCLE_KW}|nửa\s+${CIRCLE_KW})\s*(?:\(\s*(${CTR})(?:\s*[;,]\s*[Rr])?\s*\)|tâm\s+(${CTR}))?`;
 
 const WORDS = new RegExp(
   CIRCLE_NAME + String.raw`[^.;\n]{0,40}?` + DUONG_KW + String.raw`\s*kính\s+([A-Z])([A-Z])(?![A-Z])`,
   'gu',
 );
 const COMPACT = new RegExp(
-  String.raw`\(\s*([A-Z])\s*[;,]\s*[Rr]\s*\)\s*` + DUONG_KW + String.raw`\s*kính\s+([A-Z])([A-Z])(?![A-Z])`,
+  String.raw`\(\s*(${CTR})\s*[;,]\s*[Rr]\s*\)\s*` + DUONG_KW + String.raw`\s*kính\s+([A-Z])([A-Z])(?![A-Z])`,
   'gu',
 );
 

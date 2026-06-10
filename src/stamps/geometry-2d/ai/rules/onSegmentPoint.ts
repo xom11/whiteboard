@@ -14,7 +14,10 @@ import { addPoint } from './_shared';
 // "thuộc <2 HOA>" (vd "D thuộc AC") cũng kích hoạt — KHÔNG bắt buộc chữ "cạnh".
 // "thuộc (O)"/"thuộc cung" KHÔNG khớp ([A-Z]{2} cần 2 HOA liền, paren/'cung' loại)
 // → onCirclePoint lo. match() vẫn validate SEG nên prefilter rộng vô hại.
-const PREFILTER = /(?:thuộc\s+(?:cạnh|đoạn|bán\s*kính|dây|[A-Z]{2})|[Tt]rên\s+(?:cạnh|đoạn|bán\s*kính|dây)|nằm\s+giữa)/u;
+// "[Tt]rên\s+[A-Z]{2}" cho dạng đoạn-trước "trên BC, CA, AB … lấy điểm M, N, E"
+// (cạnh nêu trần bằng cặp đỉnh, không chữ "cạnh/đoạn"). match() vẫn validate nên
+// prefilter rộng vô hại.
+const PREFILTER = /(?:thuộc\s+(?:cạnh|đoạn|bán\s*kính|dây|[A-Z]{2})|[Tt]rên\s+(?:cạnh|đoạn|bán\s*kính|dây|[A-Z]{2})|nằm\s+giữa)/u;
 
 const SEG = '([A-Z]{2})(?![A-Z])';
 const POINT = "([A-Z](?:['′])?)(?![A-Z])";
@@ -50,6 +53,14 @@ const ZIP_SEG = new RegExp(
   String.raw`(?:[CcNn]ác\s+|[Nn]hững\s+)?điểm\s+([A-Z])\s*,\s*([A-Z])(?![A-Z])\s+(?:theo\s+thứ\s+tự|lần\s*lượt)\s+thuộc\s+(?:cạnh\s+|đoạn\s+)?${SEG}\s*,\s*${SEG}`,
   'gu',
 );
+// Distributive ĐOẠN-TRƯỚC: "trên BC, CA, AB (thứ tự|lần lượt)? lấy (các)? điểm
+// M, N, E" → zip SEG_i ↔ point_i (N≥2). Đề hay nêu cạnh TRƯỚC rồi tên điểm SAU.
+// CHẠY kể cả khi clause có "sao cho …=…" (metric chỉ TINH CHỈNH vị trí; đặt điểm
+// free trên cạnh là đủ cho hình). group1 = blob đoạn, group2 = blob tên điểm.
+const SEGS_THEN_POINTS = new RegExp(
+  String.raw`[Tt]rên\s+((?:[A-Z]{2}\s*,\s*)+[A-Z]{2})(?![A-Z])\s+(?:(?:theo\s+)?thứ\s+tự\s+|lần\s*lượt\s+)?lấy\s+(?:các\s+)?điểm\s+((?:[A-Z]\s*,\s*)+[A-Z])(?![A-Z])`,
+  'gu',
+);
 
 function normalizePoint(name: string): string {
   return name.replace('′', "'");
@@ -71,8 +82,32 @@ export const onSegmentPointRule: LanguageRule = {
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
-      if (hasMetricConstraint(c.text)) continue;
       const intents = [];
+
+      // Distributive đoạn-trước CHẠY TRƯỚC metric-skip (vẽ điểm free trên cạnh dù
+      // có "sao cho …=…"). "trên BC, CA, AB … lấy điểm M, N, E" → zip 1-1.
+      SEGS_THEN_POINTS.lastIndex = 0;
+      for (const m of c.text.matchAll(SEGS_THEN_POINTS)) {
+        const segs = m[1].split(',').map((s) => s.trim());
+        const pts = m[2].split(',').map((s) => normalizePoint(s.trim()));
+        if (segs.length === pts.length && segs.length >= 2) {
+          const seenD = new Set<string>();
+          for (let i = 0; i < segs.length; i++) {
+            if (seenD.has(pts[i])) continue;
+            if (validOnSegment(pts[i], segs[i])) {
+              seenD.add(pts[i]);
+              intents.push(addPoint(pts[i], { kind: 'onSegment', of: segs[i] }));
+            }
+          }
+        }
+      }
+
+      // Còn lại CỐ Ý bỏ qua clause có ràng buộc metric (vd "sao cho AD=2DB") để
+      // không đoán sai vị trí — distributive ở trên đã dựng điểm free đủ cho hình.
+      if (hasMetricConstraint(c.text)) {
+        if (intents.length > 0) out.push({ ruleId: 'on-segment-point', clauseIds: [c.id], intents });
+        continue;
+      }
 
       ON_SEG_THEN_POINT.lastIndex = 0;
       for (const m of c.text.matchAll(ON_SEG_THEN_POINT)) {

@@ -20,9 +20,11 @@ import { drawLine } from './_shared';
 // Prefilter: phải có "tiếp tuyến" + 1 token tia (chữ HOA + x/y/z/t thường).
 const PREFILTER = /tiếp\s*tuyến\s+[A-Z][xyzt](?![A-Za-z])/u;
 
-// Đường tròn đường kính: "(O; R) đường kính AB" hoặc "(O) đường kính AB".
-// Lấy tâm O + 2 đầu mút đường kính (A,B) để validate token tia neo đúng đầu mút.
-const CIRCLE_CENTER = /\(\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)/u;
+// Đường tròn đường kính: "(O; R) đường kính AB" / "(O) đường kính AB" / "tâm O
+// đường kính AB". Lấy tâm O + 2 đầu mút đường kính (A,B) để validate token tia
+// neo đúng đầu mút. circleDiameter dựng circle "O_c" + point O cho cả hai cách
+// viết tâm (ngoặc lẫn "tâm O"); resolveCircleNames map "O"→"O_c".
+const CIRCLE_CENTER = /\(\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)|tâm\s+([A-Z])(?![A-Za-z])/u;
 const DIAMETER_ENDS = /đường\s*kính\s+([A-Z])([A-Z])(?![A-Z])/u;
 
 // Token tia "Ax" = 1 chữ HOA (đầu mút) + 1 chữ thường x/y/z/t.
@@ -45,7 +47,7 @@ export const tangentRayRule: LanguageRule = {
     // Cần đường tròn ĐƯỜNG KÍNH (có tâm + 2 đầu mút) — chỉ những đầu mút này
     // mới hợp lệ làm điểm tiếp xúc của tiếp tuyến tại đầu mút.
     if (!cm || !dm) return [];
-    const center = cm[1];
+    const center = cm[1] ?? cm[2]; // "(O)" → cm[1]; "tâm O" → cm[2]
     const ends = new Set([dm[1], dm[2]]);
 
     const out: RuleMatch[] = [];

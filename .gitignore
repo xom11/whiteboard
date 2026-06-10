@@ -29,3 +29,6 @@ tests/e2e/.auth/
 .env
 .env.local
 .env.*.local
+
+# diagnostic scratch (probe outputs)
+.work/
