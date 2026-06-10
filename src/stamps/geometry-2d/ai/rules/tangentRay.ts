@@ -46,8 +46,11 @@ export const tangentRayRule: LanguageRule = {
     const dm = DIAMETER_ENDS.exec(ctx.problem);
     // Cần đường tròn ĐƯỜNG KÍNH (có tâm + 2 đầu mút) — chỉ những đầu mút này
     // mới hợp lệ làm điểm tiếp xúc của tiếp tuyến tại đầu mút.
-    if (!cm || !dm) return [];
-    const center = cm[1] ?? cm[2]; // "(O)" → cm[1]; "tâm O" → cm[2]
+    if (!dm) return [];
+    // "(O)" → cm[1]; "tâm O" → cm[2]; KHÔNG tên tâm → đường tròn đường kính vô
+    // danh "kXY" (diameterCircleSecant đặt tên vậy). Tiếp tuyến tại đầu mút A của
+    // đường kính AB = tiếp tuyến tại A của đường tròn đó.
+    const center = cm ? (cm[1] ?? cm[2]) : `k${dm[1]}${dm[2]}`;
     const ends = new Set([dm[1], dm[2]]);
 
     const out: RuleMatch[] = [];

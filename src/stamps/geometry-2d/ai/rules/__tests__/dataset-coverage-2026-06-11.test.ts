@@ -47,6 +47,10 @@ describe('dataset coverage batch 2026-06-11 (end-to-end)', () => {
       'd80:18 trên đường thẳng vuông góc với OB tại H (KHÔNG nuốt "vu")',
       'Cho đường tròn (O) đường kính AB. Trên đoạn thẳng OB lấy điểm H bất kì; trên đường thẳng vuông góc với OB tại H, lấy một điểm M ở ngoài đường tròn; MA và MB thứ tự cắt đường tròn (O) tại C và D.',
     ],
+    [
+      'd80:3 tiếp tuyến Ax,By (đường tròn vô danh) + tiếp tuyến thứ ba cắt → C,D',
+      'Cho nửa đường tròn đường kính AB = 2R. Từ A và B kẻ hai tiếp tuyến Ax, By. Qua điểm M thuộc nửa đường tròn kẻ tiếp tuyến thứ ba cắt các tiếp tuyến Ax, By lần lượt ở C và D. Các đường thẳng AD và BC cắt nhau tại N.',
+    ],
   ];
 
   it.each(OK_CASES)('dựng được: %s', (_label, problem) => {

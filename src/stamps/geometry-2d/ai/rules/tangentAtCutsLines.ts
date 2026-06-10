@@ -11,8 +11,19 @@
 import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint, drawLine } from './_shared';
 
-const PREFILTER = /[Tt]iếp\s*tuyến[^.]{0,30}?tại\s+[A-Z][^.]{0,40}?cắt/u;
+const PREFILTER = /[Tt]iếp\s*tuyến[^.]{0,30}?tại\s+[A-Z][^.]{0,40}?cắt|Qua\s+(?:điểm\s+)?[A-Z][^.]{0,40}?tiếp\s*tuyến[^.]{0,20}?cắt/u;
 const CIRCLE_REF = /đường\s*tròn\s*(?:tâm\s+)?\(?\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)?/u;
+const UNNAMED_DIAMETER = /(?:nửa\s+)?đường\s*tròn\s+đường\s*kính\s+([A-Z])([A-Z])(?![A-Z])/u;
+
+// "Qua (điểm)? M … (kẻ)? tiếp tuyến (thứ ba)? cắt (các tiếp tuyến)? Ax, By (lần
+// lượt)? (ở|tại) C, D" → tiếp tuyến TẠI M (M trên đường tròn) cắt 2 tia → C,D.
+// group1=M(tiếp điểm), 2+3=2 đường/tia bị cắt, 4+5=2 giao điểm.
+const QUA_RE = new RegExp(
+  'Qua\\s+(?:điểm\\s+)?([A-Z])(?!\\p{L})[^.]{0,40}?tiếp\\s*tuyến\\s+(?:thứ\\s+(?:ba|3|hai|2)\\s+)?cắt\\s+' +
+    '(?:các\\s+)?(?:(?:các\\s+)?tiếp\\s*tuyến\\s+|đường\\s*thẳng\\s+|cạnh\\s+)?' +
+    '([A-Z](?:[A-Z]|[xyzt]))\\s*(?:,|và)\\s*([A-Z](?:[A-Z]|[xyzt]))(?!\\p{L})\\s+(?:lần\\s*lượt\\s+)?(?:ở|tại)\\s+([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])',
+  'gu',
+);
 
 // SINGLE: "Tiếp tuyến tại A (của (O))? cắt (tia)? BC tại D" → 1 đường + 1 giao.
 //   group1=tiếp điểm, group2=đường bị cắt (1-2 ký tự), group3=giao điểm.
@@ -35,8 +46,10 @@ const RE = new RegExp(
 
 function circleName(problem: string): string | undefined {
   const m = CIRCLE_REF.exec(problem);
-  if (!m) return undefined;
-  return /đường\s*kính/u.test(problem) ? `${m[1]}_c` : m[1];
+  if (m) return /đường\s*kính/u.test(problem) ? `${m[1]}_c` : m[1];
+  // Không tâm đặt tên → đường tròn đường kính vô danh "kXY" (diameterCircleSecant).
+  const dm = UNNAMED_DIAMETER.exec(problem);
+  return dm ? `k${dm[1]}${dm[2]}` : undefined;
 }
 
 export const tangentAtCutsLinesRule: LanguageRule = {
@@ -50,6 +63,26 @@ export const tangentAtCutsLinesRule: LanguageRule = {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
       let matchedTwo = false;
+
+      // "Qua điểm M … tiếp tuyến thứ ba cắt Ax, By ở C, D" → tiếp tuyến tại M.
+      QUA_RE.lastIndex = 0;
+      for (const m of c.text.matchAll(QUA_RE)) {
+        const at = m[1];
+        const [l1, l2, p, q] = [m[2], m[3], m[4], m[5]];
+        if (p === q || at === p || at === q) continue;
+        matchedTwo = true;
+        const t = `t${at}`;
+        out.push({
+          ruleId: 'tangentAtCutsLines',
+          clauseIds: [c.id],
+          intents: [
+            drawLine(t, 'tangentAt', { through: at, circle }),
+            addPoint(p, { kind: 'intersection', of: [t, l1] }),
+            addPoint(q, { kind: 'intersection', of: [t, l2] }),
+          ],
+        });
+      }
+
       RE.lastIndex = 0;
       for (const m of c.text.matchAll(RE)) {
         matchedTwo = true;

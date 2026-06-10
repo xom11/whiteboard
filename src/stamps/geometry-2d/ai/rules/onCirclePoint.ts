@@ -57,9 +57,17 @@ const TWO_ON_NAMES =
 // tròn". Dùng cuối cùng vì rộng (mọi "(X)").
 const BARE_CIRCLE = /\(\s*([A-Z])\s*\)/u;
 
+// Đường tròn đường kính KHÔNG tên tâm: "(nửa)? đường tròn đường kính XY" →
+// diameterCircleSecant đặt tên "kXY". Dùng làm fallback khi không có tâm nêu tên.
+const UNNAMED_DIAMETER = /(?:nửa\s+)?đường\s*tròn\s+đường\s*kính\s+([A-Z])([A-Z])(?![A-Z])/u;
+
 function resolveCircle(problem: string): string | undefined {
   const m = NAMED_CIRCLE.exec(problem) ?? COMPACT_CIRCLE.exec(problem) ?? BARE_CIRCLE.exec(problem);
-  if (!m) return undefined;
+  if (!m) {
+    // Không có tâm đặt tên → thử đường tròn đường kính vô danh duy nhất ("kXY").
+    const dm = UNNAMED_DIAMETER.exec(problem);
+    return dm ? `k${dm[1]}${dm[2]}` : undefined;
+  }
   const center = m[1];
   // circleDiameterRule names its support circle "<center>_c" (đường tròn ĐƯỜNG
   // KÍNH có tên tâm). Chỉ thêm "_c" khi "đường kính" gắn với CHÍNH center NÀY —
