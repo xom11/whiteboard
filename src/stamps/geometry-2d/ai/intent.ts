@@ -195,7 +195,7 @@ export const DrawCircleIntentZ = z.object({
 export const DrawLineIntentZ = z.object({
   op: z.literal('draw-line'),
   name: LabelZ,
-  kind: z.enum(['perpThrough', 'parallelThrough', 'tangentAt', 'tangentFromExt', 'angleBisector', 'lineThrough', 'radicalAxis']),
+  kind: z.enum(['perpThrough', 'parallelThrough', 'tangentAt', 'tangentFromExt', 'angleBisector', 'lineThrough', 'radicalAxis', 'perpBisector']),
   through: LabelZ.optional(),
   to: LabelZ.optional(),
   from: LabelZ.optional(),

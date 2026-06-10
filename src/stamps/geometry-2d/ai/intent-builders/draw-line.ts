@@ -68,5 +68,12 @@ export const buildDrawLine: IntentBuilder<DrawLineIntentT> = (s, intent) => {
       addShape(s, { name: intent.name, kind: 'radicalAxis', circle1: intent.circle1, circle2: intent.circle2 });
       break;
     }
+    case 'perpBisector': {
+      // Trung trực đoạn p1p2 (line construction). Dùng cho tâm đường tròn tiếp
+      // xúc đường tại 1 điểm + qua 1 điểm (tâm = perpBisector ∩ perp-tại-tiếp-điểm).
+      if (!intent.p1 || !intent.p2) throw new IntentBuilderError('perpBisector cần p1 + p2', intent);
+      addShape(s, { name: intent.name, kind: 'perpBisector', p1: intent.p1, p2: intent.p2 });
+      break;
+    }
   }
 };

@@ -56,6 +56,7 @@ import { diameterEndpointRule } from './diameterEndpoint';
 import { circleThroughTwoCutsSidesRule } from './circleThroughTwoCutsSides';
 import { circumcircleNamedDistribRule } from './circumcircleNamedDistrib';
 import { circumcirclePairMeetRule } from './circumcirclePairMeet';
+import { tangentCircleAtPointRule } from './tangentCircleAtPoint';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -111,6 +112,7 @@ const RULES: readonly LanguageRule[] = [
   circleThroughTwoCutsSidesRule,
   circumcircleNamedDistribRule,
   circumcirclePairMeetRule,
+  tangentCircleAtPointRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */

@@ -142,3 +142,11 @@ describe('runDeterministicIntents', () => {
     });
   });
 });
+
+describe('locus clause exclusion', () => {
+  it('"Điểm A di chuyển trên đường tròn (O)" → không tính geo (quỹ tích)', () => {
+    const cls = segmentClauses('Cho tam giác ABC nội tiếp (O). Điểm A di chuyển trên đường tròn (O) sao cho AB < AC.');
+    const locus = cls.find((c) => c.text.includes('di chuyển'));
+    expect(locus?.hasGeometry).toBe(false);
+  });
+});

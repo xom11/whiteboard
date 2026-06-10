@@ -46,13 +46,19 @@ export function segmentClauses(problem: string): Clause[] {
       const hasGeometryKeyword = countGeometryKeywords(text) > 0;
       const proofOnly = isProofOnlyClause(text, proofMode);
       if (startsProofSection(text)) proofMode = true;
-      return { id, text, hasGeometry: hasGeometryKeyword && !proofOnly };
+      // Mệnh đề LOCUS ("điểm A di chuyển/di động trên (O)") = điều kiện chuyển
+      // động trên điểm ĐÃ dựng (đỉnh), KHÔNG phải construct → loại khỏi coverage.
+      const locusOnly = LOCUS_CLAUSE.test(text) && !CONSTRUCTION_LEAD.test(text);
+      return { id, text, hasGeometry: hasGeometryKeyword && !proofOnly && !locusOnly };
     });
 }
 
 // Tiền tố đánh số mục: "1.", "2)", "a)", "b.", "II." — có thể lặp ("1. a)").
 // Strip trước khi nhận diện từ dẫn proof/construction (đề thi hay đánh số câu/ý).
 const ENUM_PREFIX = '(?:[0-9]+\\s*[.)]?\\s*|[a-zA-Z]\\s*[.)]\\s*)*';
+
+// Locus: "(Điểm)? X di chuyển/di động trên …" — quỹ tích của điểm đã có.
+const LOCUS_CLAUSE = /(?:di\s*chuyển|di\s*động)\s+trên/u;
 
 const PROOF_SECTION_START = new RegExp(
   `^${ENUM_PREFIX}(?:[Cc]hứng\\s*minh|[Tt]ính|[Tt]ìm|[Xx]ác\\s*định|[Hh]ãy\\s+xác\\s*định)(?!\\p{L})`,
