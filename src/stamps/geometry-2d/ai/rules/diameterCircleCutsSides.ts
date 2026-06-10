@@ -35,6 +35,8 @@ import { addPoint, drawCircle, CIRCLE_KW, DUONG_KW } from './_shared';
 const PATTERN = new RegExp(
   CIRCLE_KW +
     '\\s+' +
+    // tên tâm xen giữa: "đường tròn (I) đường kính AH" / "đường tròn tâm I đường kính AH".
+    '(?:(?:\\(\\s*[A-Z]\\s*\\)|tâm\\s+[A-Z])\\s+)?' +
     DUONG_KW +
     '\\s*kính\\s+([A-Z])([A-Z])(?![A-Z])\\s+cắt\\s+([^.;\\n]*?)\\s+(?:lần\\s*lượt\\s+)?tại\\s+([A-Z](?!\\p{L})(?:\\s*(?:,|và)\\s*[A-Z](?!\\p{L}))*)',
   'gu',
