@@ -68,6 +68,7 @@ import { tangentNamedFromExtRule } from './tangentNamedFromExt';
 import { secantRule } from './secant';
 import { oppositeRayPointRule } from './oppositeRayPoint';
 import { perpChordAtFootRule } from './perpChordAtFoot';
+import { diameterCircleSecantRule } from './diameterCircleSecant';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -135,6 +136,7 @@ const RULES: readonly LanguageRule[] = [
   secantRule,
   oppositeRayPointRule,
   perpChordAtFootRule,
+  diameterCircleSecantRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */
