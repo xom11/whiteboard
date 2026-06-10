@@ -55,6 +55,12 @@ function parseIncircleName(text: string): string | undefined {
   return m[1] ?? m[2] ?? 'O';
 }
 
+// "Đường tròn (X) (…)? tiếp xúc …" — tên đường tròn ĐỨNG TRƯỚC "tiếp xúc" trong
+// chunk. Dùng khi đề nêu "(tam giác) ngoại tiếp (X)" ở chỗ khác (không "(X) nội
+// tiếp tam giác") nên parseIncircleName miss. Chỉ tin là incircle khi tiếp xúc
+// ĐỦ 3 cạnh (3 đỉnh phân biệt) — caller kiểm.
+const FORWARD_CIRCLE = /đường\s*tròn\s*\(\s*([A-Z])\s*\)[^.]*?tiếp\s*xúc/iu;
+
 function parseTangencies(text: string, circle: string): IntentT[] {
   const m = SIDE_POINT_LIST.exec(text);
   if (!m) return [];
@@ -98,8 +104,18 @@ export const incircleTangencyRule: LanguageRule = {
         }
       }
 
-      const circle = parseIncircleName(chunk.text);
-      if (!circle) continue;
+      let circle = parseIncircleName(chunk.text);
+      if (!circle) {
+        // Fallback: "Đường tròn (X) tiếp xúc <đủ 3 cạnh>" (đề nêu "ngoại tiếp (X)"
+        // ở chỗ khác → parseIncircleName miss). Chỉ nhận khi 3 đỉnh phân biệt.
+        const fm = FORWARD_CIRCLE.exec(chunk.text);
+        const sp = SIDE_POINT_LIST.exec(chunk.text);
+        if (fm && sp) {
+          const verts = [...new Set(splitCsv(sp[1]).join('').split(''))];
+          if (verts.length === 3) circle = fm[1];
+        }
+        if (!circle) continue;
+      }
 
       const tangencies = parseTangencies(chunk.text, circle);
       if (tangencies.length === 0) continue;
