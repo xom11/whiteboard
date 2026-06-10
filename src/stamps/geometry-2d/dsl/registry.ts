@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { DslKindModule } from './kinds/_types';
 import { freeModule } from './kinds/points/free';
 import { midpointModule } from './kinds/points/midpoint';
+import { onPerpBisectorModule } from './kinds/points/onPerpBisector';
 import { onSegmentModule } from './kinds/points/onSegment';
 import { onLineModule } from './kinds/points/onLine';
 import { onCircleModule } from './kinds/points/onCircle';
@@ -41,7 +42,7 @@ import { reflectLineModule } from './kinds/points/reflectLine';
 import { pointAtDistanceModule } from './kinds/points/pointAtDistance';
 
 const ALL_MODULES: ReadonlyArray<DslKindModule> = [
-  freeModule, midpointModule, onSegmentModule, onLineModule, onCircleModule,
+  freeModule, midpointModule, onPerpBisectorModule, onSegmentModule, onLineModule, onCircleModule,
   perpFootModule, circumcenterModule, incenterModule, centroidModule,
   orthocenterModule, intersectionModule,
   // NEW Tier 4+5 points

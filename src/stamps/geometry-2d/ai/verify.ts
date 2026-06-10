@@ -118,6 +118,7 @@ function intentKey(intent: IntentT): string {
 function constraintKey(c: AddPointIntentT['constraint']): string {
   switch (c.kind) {
     case 'midpoint': return c.of;
+    case 'onPerpBisector': return `onPerpBisector:${c.p1}:${c.p2}`;
     case 'perpFoot': return `${c.from}->${c.onLine}`;
     case 'centroid':
     case 'circumcenter':

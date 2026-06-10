@@ -108,6 +108,7 @@ export const AddPointIntentZ = z.object({
   name: LabelZ,
   constraint: z.discriminatedUnion('kind', [
     z.object({ kind: z.literal('midpoint'), of: z.string() }),
+    z.object({ kind: z.literal('onPerpBisector'), p1: LabelZ, p2: LabelZ }),
     z.object({ kind: z.literal('perpFoot'), from: LabelZ, onLine: z.string() }),
     z.object({ kind: z.literal('centroid'), of: z.tuple([LabelZ, LabelZ, LabelZ]) }),
     z.object({ kind: z.literal('circumcenter'), of: z.tuple([LabelZ, LabelZ, LabelZ]) }),

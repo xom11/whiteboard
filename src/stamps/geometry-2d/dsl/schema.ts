@@ -58,6 +58,7 @@ export type DslDistanceSpec =
 export type DslPointT =
   | { name: Name; kind: 'free'; x: number; y: number }
   | { name: Name; kind: 'midpoint'; p1: Name; p2: Name; visible?: boolean }
+  | { name: Name; kind: 'onPerpBisector'; p1: Name; p2: Name; t?: number }
   | { name: Name; kind: 'onSegment'; segmentId: Name; t: number }
   | { name: Name; kind: 'onLine'; lineId: Name; t: number }
   | { name: Name; kind: 'onCircle'; circleId: Name; theta: number }

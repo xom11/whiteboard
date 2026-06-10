@@ -65,6 +65,7 @@ function describeEntity(e: DslPointT | DslShapeT): string {
         : `${d.value}`;
       return `${e.name} = điểm trên tia ${e.from}${e.through} cách ${e.through} một khoảng ${distStr}`;
     }
+    case 'onPerpBisector': return `${e.name} = điểm trên trung trực ${e.p1}${e.p2}`;
     default: {
       const _exhaust: never = e;
       void _exhaust;

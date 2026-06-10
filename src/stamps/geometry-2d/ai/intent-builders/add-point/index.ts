@@ -6,6 +6,7 @@
 import type { BuildState } from '../_types';
 import type { AddPointIntentT } from '../../intent';
 import { buildMidpoint } from './midpoint';
+import { buildOnPerpBisector } from './onPerpBisector';
 import { buildPerpFoot } from './perpFoot';
 import { buildCentroid, buildCircumcenter, buildIncenter, buildOrthocenter, buildExcenter } from './centers';
 import { buildIntersection, buildSecondIntersection, buildCircleIntersection, buildCircleSecondIntersection } from './intersections';
@@ -21,7 +22,7 @@ import { buildExternalToCircle } from './externalToCircle';
 import { buildOnCircle } from './onCircle';
 
 export const ADD_POINT_BUILDERS: Record<string, (s: BuildState, intent: AddPointIntentT) => void> = {
-  midpoint: buildMidpoint, perpFoot: buildPerpFoot,
+  midpoint: buildMidpoint, onPerpBisector: buildOnPerpBisector, perpFoot: buildPerpFoot,
   centroid: buildCentroid, circumcenter: buildCircumcenter, incenter: buildIncenter,
   orthocenter: buildOrthocenter, excenter: buildExcenter,
   intersection: buildIntersection, secondIntersection: buildSecondIntersection, circleIntersection: buildCircleIntersection,
