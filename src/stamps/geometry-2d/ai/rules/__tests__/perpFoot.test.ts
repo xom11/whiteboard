@@ -415,3 +415,14 @@ describe('perpFootRule — biến thể "điểm" + "các đường thẳng"', (
       .toEqual(['E:D->BH', 'F:D->CH']);
   });
 });
+
+describe('perpFoot — "BE, CF là hai đường cao" (token trước, không cần H)', () => {
+  it('suy chân E,F trên cạnh đối từ tam giác', () => {
+    const feet = run('Cho tam giác nhọn ABC. BE, CF là hai đường cao')
+      .flatMap((m) => m.intents)
+      .filter((i: any) => i.op === 'add-point')
+      .map((i: any) => `${i.name}:${i.constraint.from}->${i.constraint.onLine}`)
+      .sort();
+    expect(feet).toEqual(['E:B->AC', 'F:C->AB']);
+  });
+});

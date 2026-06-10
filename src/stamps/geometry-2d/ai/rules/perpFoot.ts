@@ -158,7 +158,15 @@ const ALTITUDE_BUNDLE = new RegExp(
   `(?:hai\\s+|ba\\s+|các\\s+)?${DUONG_KW}\\s+cao\\s+((?:[A-Z]{2}\\s*,\\s*){0,2}[A-Z]{2})(?![A-Z])(?:\\s+của\\s+tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z]))?[^.]{0,60}?cắt\\s+nhau\\s+tại\\s+([A-Z])`,
   'gu',
 );
-const TRI_G = /tam\s*giác\s+([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
+const TRI_G = /tam\s*giác\s+(?:(?:nhọn|cân|đều|vuông|tù)\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
+
+// "BE, CF là (hai)? đường cao" — token đường cao ĐỨNG TRƯỚC "là … đường cao"
+// (KHÁC ALTITUDE_BUNDLE: token sau "đường cao"). Mỗi token XY: X=đỉnh, Y=chân
+// trên cạnh đối X (suy từ tam giác). KHÔNG cần "cắt nhau tại H".
+const ALTITUDE_BEFORE = new RegExp(
+  `((?:[A-Z]{2}\\s*,\\s*)+[A-Z]{2})(?![A-Z])\\s+là\\s+(?:hai\\s+|ba\\s+)?${DUONG_KW}\\s+cao(?!\\s*[A-Z])`,
+  'gu',
+);
 
 // Tên foot ĐỨNG TRƯỚC core qua "Let X be the …" / "X is the …".
 //   "Let H be the projection …" | "K is the orthogonal projection …"
@@ -231,6 +239,23 @@ function parseFeet(text: string, fallbackTri?: string[]): Foot[] {
   // name=H/from='' để flatMap bên dưới emit addPoint orthocenter đúng thứ tự.
   const bundled = parseAltitudeBundle(text, fallbackTri);
   if (bundled.length > 0) return bundled;
+
+  // -0.5) "BE, CF là (hai) đường cao" — token TRƯỚC, không cần "cắt nhau tại H".
+  ALTITUDE_BEFORE.lastIndex = 0;
+  for (const m of text.matchAll(ALTITUDE_BEFORE)) {
+    if (!fallbackTri) continue;
+    const tokens = m[1].split(',').map((s) => s.trim()).filter(Boolean);
+    let ok = true;
+    const local: Foot[] = [];
+    for (const token of tokens) {
+      const from = token[0];
+      const name = token[1];
+      const onLine = oppositeSide(from, fallbackTri);
+      if (!onLine || fallbackTri.includes(name)) { ok = false; break; }
+      local.push({ name, from, onLine, withSegment: true });
+    }
+    if (ok && local.length > 0) return local;
+  }
 
   // 0) Distributive SHARED-FROM: "X, Y, Z lần lượt là hình chiếu/chân vuông góc
   //    của D trên BC, CA, AB" → zip tên↔cạnh (from D chung). Span đã khớp →
