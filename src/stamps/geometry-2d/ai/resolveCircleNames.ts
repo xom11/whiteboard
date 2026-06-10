@@ -185,6 +185,13 @@ function rewriteCircleRefs(intent: IntentT, rename: Map<string, string>): Intent
       if (newC1 !== c.c1 || newC2 !== c.c2) {
         return { ...intent, constraint: { ...c, c1: newC1, c2: newC2 } };
       }
+    } else if (c.kind === 'intersection') {
+      // `of` có thể chứa tên CIRCLE (line∩circle "BD","O"). Rewrite entry trùng
+      // circle bị đổi tên; entry line (segment) không có trong rename → giữ.
+      const newOf = c.of.map((r) => rename.get(r) ?? r) as [string, string];
+      if (newOf[0] !== c.of[0] || newOf[1] !== c.of[1]) {
+        return { ...intent, constraint: { ...c, of: newOf } };
+      }
     }
   } else if (intent.op === 'draw-line') {
     if (intent.circle && rename.has(intent.circle)) {

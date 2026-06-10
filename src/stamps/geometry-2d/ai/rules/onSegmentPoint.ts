@@ -77,6 +77,11 @@ export const onSegmentPointRule: LanguageRule = {
 
       BETWEEN.lastIndex = 0;
       for (const m of c.text.matchAll(BETWEEN)) {
+        // "sao cho X nằm giữa Y và Z" = ĐIỀU KIỆN thứ tự trên điểm ĐÃ có (vd đỉnh
+        // hình, hoặc giao điểm vừa dựng) — KHÔNG dựng onSegment (sẽ tạo phụ thuộc
+        // vòng nếu Y/Z lại phái sinh từ X). Chỉ nhận "nằm giữa" khi GIỚI THIỆU điểm mới.
+        const before = c.text.slice(0, m.index ?? 0);
+        if (/sao\s+cho\s*$/u.test(before) || /sao\s+cho\b/u.test(before)) continue;
         const name = normalizePoint(m[1]);
         const segment = `${m[2]}${m[3]}`;
         if (validOnSegment(name, segment)) {
