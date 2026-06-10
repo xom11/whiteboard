@@ -8,10 +8,13 @@
 import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint, drawLine } from './_shared';
 
-const PREFILTER = /tiếp\s*tuyến\s+tại/u;
+const PREFILTER = /[Tt]iếp\s*tuyến\s+tại/u;
 const CIRCLE_REF = /đường\s*tròn\s*\(\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)|\(\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)/u;
 
 const DISTRIB = /[Tt]iếp\s*tuyến\s+tại\s+([A-Z])\s+cắt\s+tiếp\s*tuyến\s+tại\s+([A-Z])\s+và\s+([A-Z])[^.]{0,60}?lần\s*lượt\s+tại\s+([A-Z])\s+và\s+([A-Z])/u;
+// "Tiếp tuyến tại B, C (của (O))? cắt nhau tại T" → tB, tC, T = tB∩tC.
+const TWO_MEET =
+  /[Tt]iếp\s*tuyến\s+tại\s+([A-Z])\s*,\s*([A-Z])(?![A-Z])[^.]{0,30}?cắt\s+nhau\s+(?:ở|tại)\s+([A-Z])(?![A-Z])/u;
 const SINGLE = /[Tt]iếp\s*tuyến\s+tại\s+(?:điểm\s+)?([A-Z])(?:\s+với|\s+của|\s+đường|\s*$)/u;
 
 function circleName(problem: string): string | undefined {
@@ -54,6 +57,23 @@ export const tangentAtRule: LanguageRule = {
           ],
         });
         continue;
+      }
+
+      const tm = TWO_MEET.exec(c.text);
+      if (tm) {
+        const [b, cc, t] = [tm[1], tm[2], tm[3]];
+        if (b !== cc && t !== b && t !== cc) {
+          out.push({
+            ruleId: 'tangent-at',
+            clauseIds: [c.id],
+            intents: [
+              drawLine(tName(b), 'tangentAt', { through: b, circle }),
+              drawLine(tName(cc), 'tangentAt', { through: cc, circle }),
+              addPoint(t, { kind: 'intersection', of: [tName(b), tName(cc)] }),
+            ],
+          });
+          continue;
+        }
       }
 
       const s = SINGLE.exec(c.text);

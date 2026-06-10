@@ -36,3 +36,17 @@ describe('tangentAtRule', () => {
     expect(intents('Tiếp tuyến tại B cắt AB tại C')).toEqual([]);
   });
 });
+
+describe('tangentAt — hai tiếp tuyến cắt nhau', () => {
+  it('"Tiếp tuyến tại B, C của (O) cắt nhau tại T" → tB,tC,T=tB∩tC', () => {
+    const m = tangentAtRule.match({
+      problem: 'Cho (O). Tiếp tuyến tại B, C của (O) cắt nhau tại T',
+      clauses: segmentClauses('Cho (O). Tiếp tuyến tại B, C của (O) cắt nhau tại T'),
+    });
+    const intents = m.flatMap((x) => x.intents) as any[];
+    expect(intents.filter((i) => i.op === 'draw-line').map((i) => i.through).sort()).toEqual(['B', 'C']);
+    const t = intents.find((i) => i.op === 'add-point');
+    expect(t.name).toBe('T');
+    expect(t.constraint).toEqual({ kind: 'intersection', of: ['tB', 'tC'] });
+  });
+});
