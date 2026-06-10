@@ -2,6 +2,7 @@
 import { registerKind } from '../registry';
 import type { KindDef } from '../types';
 import { labelOf } from './labelOf';
+import { labelOpts } from './_label';
 
 export type SegmentAttrs = {
   p1: string;
@@ -47,6 +48,7 @@ const def: KindDef<SegmentAttrs> = {
       dash: obj.attrs.dash ?? 0,
       visible: obj.visible,
       fixed: obj.locked,
+      ...labelOpts(obj.attrs.labelOffset),
     });
   },
 };

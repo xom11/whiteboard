@@ -2,6 +2,7 @@
 import { registerKind } from '../registry';
 import type { KindDef } from '../types';
 import { labelOf } from './labelOf';
+import { labelOpts } from './_label';
 import { radicalAxisFoot } from './pointConstructions';
 
 /**
@@ -101,6 +102,7 @@ const def: KindDef<LineAttrs> = {
       dash: obj.attrs.dash ?? 0,
       visible: obj.visible,
       fixed: obj.locked,
+      ...labelOpts(obj.attrs.labelOffset),
     };
     const c = obj.attrs.construction;
     if (!c) {

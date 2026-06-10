@@ -2,6 +2,7 @@
 import { registerKind } from '../registry';
 import type { KindDef } from '../types';
 import { labelOf } from './labelOf';
+import { labelOpts } from './_label';
 import { excenter } from './pointConstructions';
 
 /**
@@ -129,6 +130,7 @@ const def: KindDef<CircleAttrs> = {
       fillColor: 'none',
       visible: obj.visible,
       fixed: obj.locked,
+      ...labelOpts(obj.attrs.labelOffset),
     };
 
     const c = asConstruction(obj.attrs);

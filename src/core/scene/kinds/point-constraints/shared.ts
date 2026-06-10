@@ -2,6 +2,7 @@
 import type { RenderCtx, SceneObject } from '../../types';
 import type { ConstraintDistanceSpec, TransformDef } from '../2d-constraint';
 import type { PointAttrs } from './_types';
+import { labelOpts } from '../_label';
 
 /**
  * Build mảng JSXGraph 'transform' elements cho TransformDef. Dilate → chain
@@ -76,5 +77,6 @@ export function buildPointOpts(obj: SceneObject<PointAttrs>): Record<string, unk
     fillColor: obj.attrs.color ?? '#1e40af',
     face: obj.attrs.face ?? 'o',
     size: obj.attrs.size ?? 4,
+    ...labelOpts(obj.attrs.labelOffset, [10, 10]),
   };
 }
