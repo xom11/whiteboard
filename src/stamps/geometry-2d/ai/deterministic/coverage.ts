@@ -50,11 +50,19 @@ export function segmentClauses(problem: string): Clause[] {
     });
 }
 
-const PROOF_SECTION_START =
-  /^(?:\d+\s*)?(?:[Cc]hứng\s*minh|[Tt]ính|[Tt]ìm|[Xx]ác\s*định|[Hh]ãy\s+xác\s*định)(?!\p{L})/u;
+// Tiền tố đánh số mục: "1.", "2)", "a)", "b.", "II." — có thể lặp ("1. a)").
+// Strip trước khi nhận diện từ dẫn proof/construction (đề thi hay đánh số câu/ý).
+const ENUM_PREFIX = '(?:[0-9]+\\s*[.)]?\\s*|[a-zA-Z]\\s*[.)]\\s*)*';
 
-const CONSTRUCTION_LEAD =
-  /^(?:\d+\s*)?(?:[Cc]ho|[Gg]ọi|[Vv]ẽ|[Kk]ẻ|[Ll]ấy|[Dd]ựng|[Qq]ua|[Tt]ừ|[Tt]rên|[Nn]ối|Let|Draw|Mark|Take|Construct|Join)(?!\p{L})/u;
+const PROOF_SECTION_START = new RegExp(
+  `^${ENUM_PREFIX}(?:[Cc]hứng\\s*minh|[Tt]ính|[Tt]ìm|[Xx]ác\\s*định|[Hh]ãy\\s+xác\\s*định)(?!\\p{L})`,
+  'u',
+);
+
+const CONSTRUCTION_LEAD = new RegExp(
+  `^${ENUM_PREFIX}(?:[Cc]ho|[Gg]ọi|[Vv]ẽ|[Kk]ẻ|[Ll]ấy|[Dd]ựng|[Qq]ua|[Tt]ừ|[Tt]rên|[Nn]ối|Let|Draw|Mark|Take|Construct|Join)(?!\\p{L})`,
+  'u',
+);
 
 function startsProofSection(text: string): boolean {
   return PROOF_SECTION_START.test(text);

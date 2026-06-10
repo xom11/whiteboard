@@ -49,6 +49,20 @@ describe('segmentClauses', () => {
     const cls = segmentClauses('Trên cạnh BC lấy điểm M bất kì. Điểm E thuộc cạnh AB.');
     expect(cls.every((c) => c.hasGeometry)).toBe(true);
   });
+
+  it('mục "a) Chứng minh …" / "b) …" (enumeration chữ) tính là proof', () => {
+    const cls = segmentClauses(
+      [
+        'Cho tam giác ABC nội tiếp (O). Gọi M là trung điểm BC.',
+        'a) Chứng minh MN là tiếp tuyến của (O).',
+        'b) Tứ giác BMNC nội tiếp.',
+      ].join('\n'),
+    );
+    const geo = cls.filter((c) => c.hasGeometry).map((c) => c.text);
+    expect(geo.some((t) => t.includes('Chứng minh MN'))).toBe(false);
+    expect(geo.some((t) => t.includes('Tứ giác BMNC'))).toBe(false);
+    expect(geo.some((t) => t.includes('trung điểm BC'))).toBe(true);
+  });
 });
 
 describe('computeCoverage', () => {
