@@ -71,6 +71,8 @@ import { perpChordAtFootRule } from './perpChordAtFoot';
 import { diameterCircleSecantRule } from './diameterCircleSecant';
 import { tangentsAtMeetRule } from './tangentsAtMeet';
 import { angleBisectorCutsSideCircleRule } from './angleBisectorCutsSideCircle';
+import { circleCutsArcSecondRule } from './circleCutsArcSecond';
+import { angleBisectorCutsCircleLineRule } from './angleBisectorCutsCircleLine';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -141,6 +143,8 @@ const RULES: readonly LanguageRule[] = [
   diameterCircleSecantRule,
   tangentsAtMeetRule,
   angleBisectorCutsSideCircleRule,
+  circleCutsArcSecondRule,
+  angleBisectorCutsCircleLineRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */

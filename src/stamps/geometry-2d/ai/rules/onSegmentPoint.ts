@@ -17,14 +17,16 @@ import { addPoint } from './_shared';
 // "[Tt]rên\s+[A-Z]{2}" cho dạng đoạn-trước "trên BC, CA, AB … lấy điểm M, N, E"
 // (cạnh nêu trần bằng cặp đỉnh, không chữ "cạnh/đoạn"). match() vẫn validate nên
 // prefilter rộng vô hại.
-const PREFILTER = /(?:thuộc\s+(?:cạnh|đoạn|bán\s*kính|dây|[A-Z]{2})|[Tt]rên\s+(?:cạnh|đoạn|bán\s*kính|dây|[A-Z]{2})|nằm\s+giữa)/u;
+// "đường kính AB" là 1 ĐOẠN (đường kính của đường tròn) → cho phép "trên đường
+// kính AB lấy điểm C" (phang:14). Thêm vào prefix đoạn-loại.
+const PREFILTER = /(?:thuộc\s+(?:cạnh|đoạn|bán\s*kính|đường\s*kính|dây|[A-Z]{2})|[Tt]rên\s+(?:cạnh|đoạn|bán\s*kính|đường\s*kính|dây|[A-Z]{2})|nằm\s+giữa)/u;
 
 const SEG = '([A-Z]{2})(?![A-Z])';
 const POINT = "([A-Z](?:['′])?)(?![A-Z])";
 
 // "Trên cạnh AC lấy điểm M" / "Trên đoạn thẳng OB lấy điểm H".
 const ON_SEG_THEN_POINT = new RegExp(
-  String.raw`[Tt]rên\s+(?:cạnh|đoạn(?:\s+thẳng)?|bán\s*kính|dây\s*(?:cung)?)\s+${SEG}[^.]{0,30}?(?:lấy\s+)?(?:một\s+)?(?:điểm\s+)?${POINT}`,
+  String.raw`[Tt]rên\s+(?:cạnh|đoạn(?:\s+thẳng)?|bán\s*kính|đường\s*kính|dây\s*(?:cung)?)\s+${SEG}[^.]{0,30}?(?:lấy\s+)?(?:một\s+)?(?:điểm\s+)?${POINT}`,
   'gu',
 );
 

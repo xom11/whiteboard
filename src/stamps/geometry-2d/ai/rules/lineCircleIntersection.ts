@@ -11,8 +11,20 @@
 import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint } from './_shared';
 
-const PREFILTER = /cắt\s+(?:đường\s*tròn\s*)?\(|giao\s*điểm\s+(?:của\s+)?[A-Z]{2}\s+(?:và|với)\s+\(/u;
+const PREFILTER = /cắt\s+(?:(?:nửa\s+)?đường\s*tròn\s*)?\(|giao\s*điểm\s+(?:của\s+)?[A-Z]{2}\s+(?:và|với)\s+\(/u;
 const CIRCLE = String.raw`(?:đường\s*tròn\s*)?\(\s*([A-Z])(?:['′]?)\s*\)`;
+// Circle GIỮ prime trong tên tâm (O'): cần cho "(O')" — đường tròn đường kính
+// đặt tên "O'_c" (circleDiameter). emit raw "O'" → resolveCircleNames map "O'_c".
+const CIRCLE_P = String.raw`(?:(?:nửa\s+)?đường\s*tròn\s*)?\(\s*([A-Z](?:['′])?)\s*\)`;
+
+// "<XY> vuông góc <L> (tại I)? … cắt (nửa)? đường tròn (O') (ở|tại) F" → đường
+// vuông góc XY cắt đường tròn (O') tại F (2 nhánh, lấy branch 0). XY có thể là
+// "EI" (E onCircle + I chân vuông góc) — cả 2 điểm dựng trước, line ref hợp lệ.
+const PERP_CUTS_CIRCLE = new RegExp(
+  String.raw`([A-Z])([A-Z])(?![A-Z])\s+(?:vuông\s*góc|⊥)\s+(?:với\s+)?[A-Z]{2}(?![A-Z])(?:\s+tại\s+[A-Z])?` +
+    String.raw`[^.]{0,30}?cắt\s+` + CIRCLE_P + String.raw`\s+(?:ở|tại)\s+(?:điểm\s+)?([A-Z])(?![A-Z])`,
+  'gu',
+);
 
 const TRIPLE_DISTRIB = new RegExp(
   String.raw`([A-Z]{2})\s*,\s*([A-Z]{2})\s*,\s*([A-Z]{2})(?![A-Z])[^.]{0,80}?cắt\s+` +
@@ -119,6 +131,17 @@ export const lineCircleIntersectionRule: LanguageRule = {
         const line = m[3];
         const circle = m[4];
         if (valid(name, line)) intents.push(secondIntersection(name, line, circle, other));
+      }
+
+      // "EI ⊥ BC … cắt (nửa)? đường tròn (O') ở F" → F = giao đường vuông góc với
+      // đường tròn (2 nhánh, branch 0). circle raw (giữ prime) → resolveCircleNames map.
+      PERP_CUTS_CIRCLE.lastIndex = 0;
+      for (const m of c.text.matchAll(PERP_CUTS_CIRCLE)) {
+        const line = m[1] + m[2];
+        const circle = m[3];
+        const name = m[4];
+        if (line.includes(name)) continue;
+        intents.push(addPoint(name, { kind: 'intersection', of: [line, circle], branch: 0 }));
       }
 
       if (intents.length > 0) out.push({ ruleId: 'line-circle-intersection', clauseIds: [c.id], intents });
