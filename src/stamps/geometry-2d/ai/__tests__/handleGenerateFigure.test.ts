@@ -56,15 +56,25 @@ describe('handleGenerateFigure — deterministic miss', () => {
     expect(r.ok).toBe(true);
   });
 
-  test('đề miss (điểm Fermat) → ok:false message dễ hiểu (KHÔNG LLM)', async () => {
-    const r = await handleGenerateFigure({
-      problem: 'Cho tam giác ABC, P là điểm Fermat của tam giác.',
-    });
+  test('đề FULL MISS (không dựng được hình) → ok:false message dễ hiểu (KHÔNG LLM)', async () => {
+    const r = await handleGenerateFigure({ problem: 'Chứng minh định lý Pytago.' });
     expect(r.ok).toBe(false);
     if (!r.ok) {
       // message dễ hiểu: nêu hướng xử lý (thêm/sửa rule), không leak jargon cũ.
-      expect(r.message).toMatch(/bổ sung rule|lỗi rule/i);
+      expect(r.message).toMatch(/bổ sung rule|lỗi rule|chưa nhận ra/i);
       expect(r.message).not.toMatch(/LLM fallback/i);
+    }
+  });
+
+  test('đề PARTIAL (điểm Fermat) → ok:true + partial.message to-do (render phần ABC)', async () => {
+    const r = await handleGenerateFigure({
+      problem: 'Cho tam giác ABC, P là điểm Fermat của tam giác.',
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.partial).toBeDefined();
+      expect(r.partial?.message).toContain('P');
+      expect(r.partial?.message).toContain('tự dựng nốt');
     }
   });
 });

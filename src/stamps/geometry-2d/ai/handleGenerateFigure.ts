@@ -71,7 +71,7 @@ export async function handleGenerateFigure(
     if (onResult) {
       try { onResult(r, attempt); } catch { /* swallow telemetry errors */ }
     }
-    if (r.ok) return { ok: true, state: r.transpile.state };
+    if (r.ok) return toSuccessUi(r);
     if ((r.reason === 'transpile_error' || r.reason === 'builder_error') && attempt < maxAttempts) {
       continue;
     }
@@ -85,8 +85,15 @@ function clampAttempts(n: number): number {
   return Math.max(1, Math.min(5, Math.floor(n)));
 }
 
+/** Map intent success → UI, kèm `partial` to-do nếu là partial render. */
+function toSuccessUi(r: Extract<IntentGenerateResult, { ok: true }>): AiFigureUiResult {
+  return r.partial
+    ? { ok: true, state: r.transpile.state, partial: r.partial }
+    : { ok: true, state: r.transpile.state };
+}
+
 function mapErrorToUi(result: IntentGenerateResult): AiFigureUiResult {
-  if (result.ok) return { ok: true, state: result.transpile.state };
+  if (result.ok) return toSuccessUi(result);
 
   switch (result.reason) {
     case 'builder_error':

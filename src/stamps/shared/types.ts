@@ -4,7 +4,16 @@ import type { State } from '../../core/scene/types';
 
 /** Minimal client-safe response required by the geometry AI editor. */
 export type AiFigureUiResult =
-  | { ok: true; state: State }
+  | {
+      ok: true;
+      state: State;
+      /**
+       * Có mặt khi rule base chỉ dựng được MỘT PHẦN đề (partial render). `state`
+       * vẫn là phần hình CHẮC CHẮN ĐÚNG đã dựng; `partial.message` là to-do list
+       * tiếng Việt cho user tự dựng nốt. Vắng mặt = dựng đầy đủ.
+       */
+      partial?: { message: string };
+    }
   | { ok: false; message: string };
 
 /**

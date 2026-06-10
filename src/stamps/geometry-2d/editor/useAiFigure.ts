@@ -9,6 +9,11 @@ export interface UseAiFigureResult {
   setPrompt: (value: string) => void;
   isLoading: boolean;
   error: string | null;
+  /**
+   * Thông báo partial render (không phải lỗi): rule base đã dựng phần chắc chắn
+   * đúng + to-do list cho user tự dựng nốt. Hiện song song với hình đã chèn.
+   */
+  notice: string | null;
   submit: () => Promise<State | null>;
   cancel: () => void;
   tokens: number;
@@ -20,6 +25,7 @@ export function useAiFigure(
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [tokens, setTokens] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
   const requestIdRef = useRef(0);
@@ -43,6 +49,7 @@ export function useAiFigure(
     abortRef.current = controller;
     setIsLoading(true);
     setError(null);
+    setNotice(null);
     setTokens(0);
 
     try {
@@ -57,6 +64,8 @@ export function useAiFigure(
         setError(generated.message);
         return null;
       }
+      // Partial render: hình đã dựng phần chắc chắn đúng + to-do cho user dựng nốt.
+      if (generated.partial) setNotice(generated.partial.message);
       return generated.state;
     } catch (caught) {
       if (
@@ -90,6 +99,7 @@ export function useAiFigure(
     setPrompt,
     isLoading,
     error,
+    notice,
     submit,
     cancel,
     tokens,

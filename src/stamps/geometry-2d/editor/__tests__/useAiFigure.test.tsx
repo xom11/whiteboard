@@ -83,6 +83,41 @@ describe('useAiFigure', () => {
     expect(result.current.isLoading).toBe(false);
   });
 
+  it('partial render → trả state + set notice (to-do list), không phải error', async () => {
+    const generator: GenerateGeometryFigure = jest.fn(async () => ({
+      ok: true as const,
+      state: generatedState('A'),
+      partial: { message: '✏️ Bạn tự dựng nốt:\n• P (chưa dựng được)' },
+    }));
+    const { result } = renderHook(() => useAiFigure(generator));
+
+    act(() => result.current.setPrompt('Cho tam giác ABC, P là điểm Fermat.'));
+    let state: State | null = null;
+    await act(async () => {
+      state = await result.current.submit();
+    });
+
+    expect(state).not.toBeNull();
+    expect(result.current.error).toBeNull();
+    expect(result.current.notice).toContain('P');
+    expect(result.current.notice).toContain('tự dựng nốt');
+  });
+
+  it('full success (không partial) → notice vẫn null', async () => {
+    const generator: GenerateGeometryFigure = jest.fn(async () => ({
+      ok: true as const,
+      state: generatedState('A'),
+    }));
+    const { result } = renderHook(() => useAiFigure(generator));
+
+    act(() => result.current.setPrompt('Cho tam giác ABC.'));
+    await act(async () => {
+      await result.current.submit();
+    });
+
+    expect(result.current.notice).toBeNull();
+  });
+
   it('cancel() aborts the inflight request', async () => {
     const seenSignals: AbortSignal[] = [];
     const generator: GenerateGeometryFigure = jest.fn(

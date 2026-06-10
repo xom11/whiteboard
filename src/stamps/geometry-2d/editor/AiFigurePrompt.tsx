@@ -57,6 +57,7 @@ export function AiFigurePrompt({ generator, onGenerated }: Props) {
     setPrompt,
     isLoading,
     error,
+    notice,
     submit,
     cancel,
     tokens,
@@ -344,6 +345,16 @@ export function AiFigurePrompt({ generator, onGenerated }: Props) {
         <p role="alert" className="mt-1 px-1 text-xs text-red-600">
           {error}
         </p>
+      )}
+
+      {notice && (
+        <div
+          role="status"
+          data-testid="geometry-ai-partial-notice"
+          className="mt-2 whitespace-pre-wrap rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800"
+        >
+          {notice}
+        </div>
       )}
     </div>
   );

@@ -15,6 +15,7 @@ import type { IntentT } from './intent';
 import { type VerifyReport } from './verify';
 import { tryDeterministicFigure } from './deterministic/tryDeterministicFigure';
 import { describeDeterministicMiss } from './deterministic/describeMiss';
+import { tryPartialFigure, describePartialTodo } from './deterministic/partialFigure';
 
 const ZERO_USAGE: IntentTokenUsage = {
   inputTokens: 0,
@@ -42,6 +43,11 @@ export interface IntentSuccessResult {
   verify: VerifyReport;
   usage: IntentTokenUsage;
   provider: string;
+  /**
+   * Có mặt khi đây là PARTIAL render: rule base chỉ dựng được một phần đề (phần
+   * chắc chắn đúng), `message` là to-do list cho user tự dựng nốt. Vắng = full.
+   */
+  partial?: { message: string };
 }
 
 export interface IntentFailureResult {
@@ -77,6 +83,25 @@ export async function generateFigureIntent(
       verify: det.figure.verify,
       usage: ZERO_USAGE,
       provider: 'deterministic',
+    };
+  }
+
+  // === Partial render ===
+  // Full miss nhưng có thể rule base vẫn dựng được PHẦN chắc chắn đúng (vd tam
+  // giác ABC ok, chỉ điểm cuối D dùng construct chưa hỗ trợ). Cắt phần phụ thuộc
+  // entity chưa dựng được, verify lại tập con; nếu còn ≥1 hình thật → render phần
+  // đó + trả to-do list cho user tự dựng nốt. KHÔNG LLM.
+  const partial = tryPartialFigure(problem);
+  if (partial) {
+    return {
+      ok: true,
+      intents: partial.figure.intents,
+      dsl: partial.figure.dsl,
+      transpile: partial.figure.transpile,
+      verify: partial.figure.verify,
+      usage: ZERO_USAGE,
+      provider: 'deterministic-partial',
+      partial: { message: describePartialTodo(partial.todo) },
     };
   }
 

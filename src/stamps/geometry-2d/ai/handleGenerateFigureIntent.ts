@@ -20,6 +20,8 @@ export type AiFigureIntentUiResult =
       intents: readonly IntentT[];
       svg?: string;
       usage: { inputTokens: number; outputTokens: number };
+      /** Có mặt khi partial render: `message` là to-do list cho user tự dựng nốt. */
+      partial?: { message: string };
     }
   | {
       kind: 'refused';
@@ -46,6 +48,7 @@ export async function handleGenerateFigureIntent(
           inputTokens: r.usage.inputTokens,
           outputTokens: r.usage.outputTokens,
         },
+        ...(r.partial ? { partial: r.partial } : {}),
       };
     }
     return { kind: 'error', code: r.reason, message: r.message };
