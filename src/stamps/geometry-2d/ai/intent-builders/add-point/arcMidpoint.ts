@@ -11,6 +11,11 @@ export const buildArcMidpoint = (s: BuildState, intent: AddPointIntentT): void =
   if (c.kind !== 'arcMidpoint') return;
   addPoint(s, {
     name: intent.name, kind: 'arcMidpoint', circle: c.circle, a: c.a, b: c.b,
-    ...(c.containing ? { containing: c.containing } : { notContaining: c.notContaining }),
+    // notContaining/containing optional: cung không mơ hồ (nửa đường tròn) → bỏ cả hai.
+    ...(c.containing
+      ? { containing: c.containing }
+      : c.notContaining
+        ? { notContaining: c.notContaining }
+        : {}),
   });
 };

@@ -26,9 +26,8 @@ function sideOf(a: XY, b: XY, p: XY): number {
  * cung CHỨA reference (= antipode qua tâm của ứng viên "không chứa").
  */
 export function arcMidpoint(
-  center: XY, radius: number, a: XY, b: XY, reference: XY, sameSide = false,
+  center: XY, radius: number, a: XY, b: XY, reference?: XY, sameSide = false,
 ): XY {
-  const notContaining = reference;
   const mcx = (a[0] + b[0]) / 2;
   const mcy = (a[1] + b[1]) / 2;
   let ux = mcx - center[0];
@@ -44,6 +43,11 @@ export function arcMidpoint(
   const cand1: XY = [center[0] + radius * ux, center[1] + radius * uy];
   const cand2: XY = [center[0] - radius * ux, center[1] - radius * uy];
 
+  // Không có reference (cung KHÔNG mơ hồ, vd nửa đường tròn đường kính AB):
+  // chọn ứng viên ở phía dương pháp tuyến (deterministic) — đỉnh "trên" của cung.
+  if (!reference) return cand1[1] >= cand2[1] ? cand1 : cand2;
+
+  const notContaining = reference;
   const sN = sideOf(a, b, notContaining);
   if (Math.abs(sN) < 1e-9) {
     // reference nằm trên đường AB → side-test suy biến: chọn ứng viên xa reference

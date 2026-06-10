@@ -262,10 +262,11 @@ describe('point arcMidpoint', () => {
       kind: 'arcMidpoint', circle: 'k', a: 'B', b: 'C', notContaining: 'A', containing: 'A',
     }).attrs)).toThrow();
   });
-  it('validate ném khi thiếu cả notContaining lẫn containing', () => {
+  it('validate KHÔNG ném khi thiếu cả notContaining lẫn containing (cung không mơ hồ)', () => {
+    // Nửa đường tròn đường kính AB: điểm chính giữa cung duy nhất → containment optional.
     expect(() => pointDef.validate!(mkArcObj({
       kind: 'arcMidpoint', circle: 'k', a: 'B', b: 'C',
-    }).attrs)).toThrow();
+    }).attrs)).not.toThrow();
   });
   it('describe biến thể containing', () => {
     const s = { objects: { B: { label: 'B' }, C: { label: 'C' }, A: { label: 'A' } } } as never;

@@ -129,19 +129,17 @@ export function validateRefs(dsl: DslInputT, symbols: Map<string, Symbol>): Refs
         check(p.name, 'ref2', p.ref2, refPredicate, 'line-like hoặc circle');
         break;
       }
-      case 'arcMidpoint':
+      case 'arcMidpoint': {
         check(p.name, 'circle', p.circle, isCircleLike, 'circle');
         check(p.name, 'a', p.a, isPointLike, 'point');
         check(p.name, 'b', p.b, isPointLike, 'point');
-        // Đúng 1 trong notContaining / containing.
-        check(
-          p.name,
-          p.containing ? 'containing' : 'notContaining',
-          (p.containing ?? p.notContaining)!,
-          isPointLike,
-          'point',
-        );
+        // notContaining/containing TỐI ĐA 1 — có thể không có (cung không mơ hồ).
+        const containment = p.containing ?? p.notContaining;
+        if (containment) {
+          check(p.name, p.containing ? 'containing' : 'notContaining', containment, isPointLike, 'point');
+        }
         break;
+      }
       case 'excenter':
         for (let i = 0; i < 3; i++) {
           check(p.name, `vertices[${i}]`, p.vertices[i], isPointLike, 'point');

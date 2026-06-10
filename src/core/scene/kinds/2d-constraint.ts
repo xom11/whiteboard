@@ -109,7 +109,10 @@ export function constraintRefs2D(c: Constraint2D): string[] {
     case 'circleSecondIntersection': return [c.c1, c.c2, c.exclude];
     case 'secondIntersection': return [c.line, c.circle, c.other];
     case 'tangencyPoint': return [c.circle, c.onLine];
-    case 'arcMidpoint': return [c.circle, c.a, c.b, (c.notContaining ?? c.containing)!];
+    case 'arcMidpoint': {
+      const containment = c.notContaining ?? c.containing;
+      return containment ? [c.circle, c.a, c.b, containment] : [c.circle, c.a, c.b];
+    }
     case 'mixtilinearPoint': return [c.vertices[0], c.vertices[1], c.vertices[2]];
     case 'pointAtDistance': {
       const d = c.distance;

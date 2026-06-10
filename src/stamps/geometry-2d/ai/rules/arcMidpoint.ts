@@ -226,11 +226,16 @@ export const arcMidpointRule: LanguageRule = {
       } else if (tri) {
         const third = [tri[1], tri[2], tri[3]].find((v) => v !== a && v !== b);
         if (third) pushArc(c, name, a, b, { rel: 'not', point: third });
+      } else {
+        // Không "chứa" tường minh + không tam giác → cung KHÔNG mơ hồ (nửa đường
+        // tròn đường kính AB: điểm chính giữa cung = đỉnh duy nhất). arcMidpoint
+        // không containment (notContaining/containing optional trong DSL).
+        out.push({
+          ruleId: 'arcMidpoint',
+          clauseIds: [c.id],
+          intents: withCircum(addPoint(name, { kind: 'arcMidpoint', circle, a, b })),
+        });
       }
-      // else: không "chứa" tường minh + không tam giác → KHÔNG đủ thông tin chọn
-      // cung (DSL bắt buộc 1 của notContaining/containing) → bỏ qua (escalate).
-      // (Trường hợp nửa đường tròn đường kính AB defer — xem Task arcMidpoint
-      // optional-containment.)
     }
 
     // --- EN (issue #46 group B) ---------------------------------------------------

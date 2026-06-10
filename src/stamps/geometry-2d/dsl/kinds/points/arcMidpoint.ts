@@ -24,7 +24,12 @@ export const arcMidpointModule = defineModule<'arcMidpoint', Input>({
     notContaining: NameZ.optional(),
     containing: NameZ.optional(),
   }),
-  collectRefs: (e) => [e.circle, e.a, e.b, (e.notContaining ?? e.containing)!],
+  collectRefs: (e) => {
+    const refs = [e.circle, e.a, e.b];
+    const containment = e.notContaining ?? e.containing;
+    if (containment) refs.push(containment);
+    return refs;
+  },
   emit: (e, ctx) => [{
     role: 'primary',
     object: emitPointObject(ctx.resolveId(e.name), e.name, {
@@ -32,9 +37,12 @@ export const arcMidpointModule = defineModule<'arcMidpoint', Input>({
       circle: ctx.resolveId(e.circle),
       a: ctx.resolveId(e.a),
       b: ctx.resolveId(e.b),
+      // notContaining/containing optional: cung KHÔNG mơ hồ (nửa đường tròn) → bỏ cả hai.
       ...(e.containing
         ? { containing: ctx.resolveId(e.containing) }
-        : { notContaining: ctx.resolveId(e.notContaining!) }),
+        : e.notContaining
+          ? { notContaining: ctx.resolveId(e.notContaining) }
+          : {}),
     }),
   }],
 });
