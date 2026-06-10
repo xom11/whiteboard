@@ -11,20 +11,20 @@
 import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint } from './_shared';
 
-const PREFILTER = /(?:thuộc\s+(?:cạnh|đoạn|bán\s*kính)|[Tt]rên\s+(?:cạnh|đoạn|bán\s*kính)|nằm\s+giữa)/u;
+const PREFILTER = /(?:thuộc\s+(?:cạnh|đoạn|bán\s*kính|dây)|[Tt]rên\s+(?:cạnh|đoạn|bán\s*kính|dây)|nằm\s+giữa)/u;
 
 const SEG = '([A-Z]{2})(?![A-Z])';
 const POINT = "([A-Z](?:['′])?)(?![A-Z])";
 
 // "Trên cạnh AC lấy điểm M" / "Trên đoạn thẳng OB lấy điểm H".
 const ON_SEG_THEN_POINT = new RegExp(
-  String.raw`[Tt]rên\s+(?:cạnh|đoạn(?:\s+thẳng)?|bán\s*kính)\s+${SEG}[^.]{0,30}?(?:lấy\s+)?(?:một\s+)?(?:điểm\s+)?${POINT}`,
+  String.raw`[Tt]rên\s+(?:cạnh|đoạn(?:\s+thẳng)?|bán\s*kính|dây\s*(?:cung)?)\s+${SEG}[^.]{0,30}?(?:lấy\s+)?(?:một\s+)?(?:điểm\s+)?${POINT}`,
   'gu',
 );
 
 // "điểm E thuộc cạnh BC" / "C thuộc đoạn thẳng AB".
 const POINT_THUOC_SEG = new RegExp(
-  String.raw`(?:điểm\s+)?${POINT}\s+thuộc\s+(?:cạnh|đoạn(?:\s+thẳng)?|bán\s*kính)\s+${SEG}`,
+  String.raw`(?:điểm\s+)?${POINT}\s+(?:là\s+(?:một\s+)?điểm\s+)?thuộc\s+(?:cạnh|đoạn(?:\s+thẳng)?|bán\s*kính|dây\s*(?:cung)?)\s+${SEG}`,
   'gu',
 );
 

@@ -54,3 +54,13 @@ describe('onSegmentPointRule', () => {
     expect(intents('Trên cạnh AB lấy điểm D sao cho AD = 2DB')).toEqual([]);
   });
 }
+
+describe('onSegmentPoint — "dây" + "là điểm thuộc"', () => {
+  const run = (p: string) => onSegmentPointRule.match({ problem: p, clauses: segmentClauses(p) }).flatMap((m) => m.intents);
+  it('"Gọi K là điểm thuộc dây AD" → K onSegment AD', () => {
+    const i = run('Gọi K là điểm thuộc dây AD')[0] as any;
+    expect(i.name).toBe('K');
+    expect(i.constraint.kind).toBe('onSegment');
+    expect(i.constraint.segmentId).toBe('AD');
+  });
+});
