@@ -11,14 +11,16 @@ import type { Clause } from '../deterministic/coverage';
 
 const PREFILTER = /tiếp\s*xúc/u;
 
-const INCIRCLE_IN_CLAUSE = /đường\s*tròn\s*(?:\(\s*([A-Z])\s*\)|tâm\s+([A-Z]))?\s*nội\s*tiếp\s+tam\s*giác\s+([A-Z])([A-Z])([A-Z])(?![A-Z])/iu;
+// Vertices SAU "tam giác" optional — "(I) nội tiếp tam giác tiếp xúc …" (đỉnh suy
+// từ các cạnh tiếp xúc) cũng hợp lệ.
+const INCIRCLE_IN_CLAUSE = /đường\s*tròn\s*(?:\(\s*([A-Z])\s*\)|tâm\s+([A-Z]))?\s*nội\s*tiếp\s+tam\s*giác(?:\s+([A-Z])([A-Z])([A-Z])(?![A-Z]))?/iu;
 
-const SIDE_POINT_LIST = /tiếp\s*xúc\s+(?:với\s+)?(?:các\s+)?(?:cạnh|đoạn)\s+([A-Z]{2}(?:\s*,\s*[A-Z]{2})*)\s+(?:lần\s*lượt\s+)?tại\s+(?:các\s+)?(?:điểm\s+)?([A-Z](?:\s*,\s*[A-Z])*)(?![A-Za-z])/iu;
+const SIDE_POINT_LIST = /tiếp\s*xúc\s+(?:với\s+)?(?:các\s+)?(?:cạnh|đoạn)\s+([A-Z]{2}(?:\s*,\s*[A-Z]{2})*)\s+(?:lần\s*lượt\s+|tương\s*ứng\s+)?tại\s+(?:các\s+)?(?:điểm\s+)?([A-Z](?:\s*,\s*[A-Z])*)(?![A-Za-z])/iu;
 
 // Dạng ĐẢO (Bài 11): "Cạnh AB, BC, CA tiếp xúc với đường tròn (O) tại D, E, F".
 // Cạnh đứng TRƯỚC "tiếp xúc"; đường tròn (O) là đường tròn NỘI TIẾP (tiếp xúc cả
 // 3 cạnh) — không rule nào khác dựng nên rule này tự emit circle inscribedIn.
-const REVERSED_SIDE_POINT = /(?:các\s+)?(?:cạnh|đoạn)\s+([A-Z]{2}(?:\s*,\s*[A-Z]{2})*)\s+tiếp\s*xúc\s+(?:với\s+)?đường\s*tròn\s*\(\s*([A-Z])\s*\)\s+(?:lần\s*lượt\s+)?tại\s+(?:các\s+)?(?:điểm\s+)?([A-Z](?:\s*,\s*[A-Z])*)(?![A-Za-z])/iu;
+const REVERSED_SIDE_POINT = /(?:các\s+)?(?:cạnh|đoạn)\s+([A-Z]{2}(?:\s*,\s*[A-Z]{2})*)\s+tiếp\s*xúc\s+(?:với\s+)?đường\s*tròn\s*\(\s*([A-Z])\s*\)\s+(?:lần\s*lượt\s+|tương\s*ứng\s+)?tại\s+(?:các\s+)?(?:điểm\s+)?([A-Z](?:\s*,\s*[A-Z])*)(?![A-Za-z])/iu;
 
 function splitCsv(blob: string): string[] {
   return blob
@@ -96,8 +98,19 @@ export const incircleTangencyRule: LanguageRule = {
       const circle = parseIncircleName(chunk.text);
       if (!circle) continue;
 
-      const intents = parseTangencies(chunk.text, circle);
-      if (intents.length === 0) continue;
+      const tangencies = parseTangencies(chunk.text, circle);
+      if (tangencies.length === 0) continue;
+
+      // Nếu tiếp xúc đủ 3 cạnh → tự dựng đường tròn nội tiếp (circleTriangle có
+      // thể đã bỏ lỡ khi "nội tiếp tam giác" KHÔNG nêu đỉnh liền kề). Dedup theo
+      // tên: nếu circle đã có (circleTriangle emit) thì intentsToDsl bỏ trùng.
+      const m = SIDE_POINT_LIST.exec(chunk.text);
+      const sides = m ? splitCsv(m[1]) : [];
+      const verts = [...new Set(sides.join('').split(''))];
+      const intents: IntentT[] =
+        verts.length === 3
+          ? [drawCircle(circle, 'inscribedIn', { triangle: verts }), ...tangencies]
+          : tangencies;
 
       out.push({ ruleId: 'incircleTangency', clauseIds: chunk.clauseIds, intents });
     }
