@@ -74,6 +74,14 @@ export function AiFigurePrompt({ generator, onGenerated }: Props) {
     return () => clearInterval(id);
   }, [isLoading]);
 
+  // ── partial-notice dismiss ─────────────────────────────
+  // Thông báo to-do có thể dài → cho phép đóng hẳn (×). Reset mỗi khi có notice
+  // MỚI (lần dựng sau) để không nuốt thông báo mới.
+  const [noticeDismissed, setNoticeDismissed] = useState(false);
+  useEffect(() => {
+    setNoticeDismissed(false);
+  }, [notice]);
+
   // ── OCR state ──────────────────────────────────────────
   const [image, setImage] = useState<ImagePart | null>(null);
   const [ocrLoading, setOcrLoading] = useState(false);
@@ -347,13 +355,23 @@ export function AiFigurePrompt({ generator, onGenerated }: Props) {
         </p>
       )}
 
-      {notice && (
+      {notice && !noticeDismissed && (
         <div
           role="status"
           data-testid="geometry-ai-partial-notice"
-          className="mt-2 whitespace-pre-wrap rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800"
+          className="relative mt-2 whitespace-pre-wrap rounded-lg border border-amber-200 bg-amber-50 py-2 pl-3 pr-8 text-xs leading-relaxed text-amber-800"
         >
           {notice}
+          <button
+            type="button"
+            onClick={() => setNoticeDismissed(true)}
+            aria-label="Đóng thông báo"
+            title="Đóng thông báo"
+            data-testid="geometry-ai-partial-dismiss"
+            className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded text-amber-500 transition hover:bg-amber-100 hover:text-amber-800"
+          >
+            ×
+          </button>
         </div>
       )}
     </div>
