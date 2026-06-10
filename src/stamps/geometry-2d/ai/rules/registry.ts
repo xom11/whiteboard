@@ -62,6 +62,7 @@ import { tangentTwoSidesCircleRule } from './tangentTwoSidesCircle';
 import { interiorPointRule } from './interiorPoint';
 import { parallelCutsTangentAtRule } from './parallelCutsTangentAt';
 import { inExCircleTangentBCRule } from './inExCircleTangentBC';
+import { tangentPointsFromExtRule } from './tangentPointsFromExt';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -123,6 +124,7 @@ const RULES: readonly LanguageRule[] = [
   interiorPointRule,
   parallelCutsTangentAtRule,
   inExCircleTangentBCRule,
+  tangentPointsFromExtRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */
