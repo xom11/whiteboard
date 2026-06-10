@@ -32,7 +32,14 @@ import { radialLabelOffsets } from './labelLayout';
  * label bằng HTML <div> overlay → clone SVG export sẽ thiếu label.
  */
 
-const PIXELS_PER_UNIT = 20;
+// Canvas max-axis (px) cho view tham chiếu (un-zoomed). Trước đây dùng
+// PIXELS_PER_UNIT=20 cố định → figure px BẤT BIẾN với zoom (chỉ canvas đổi),
+// và zoom-in (bbox nhỏ lại) lại cho element NHỎ hơn — ngược trực giác. Giờ
+// pxPerUnit = DEFAULT_VIEW_PX / maxSpan(bbox): max-axis canvas luôn ~constant,
+// figure bên trong scale theo zoom (zoom-in → span nhỏ → figure to ra) → ảnh
+// chèn KHỚP với view trong editor (WYSIWYG). Bump 400→500 nên figure mặc định
+// (gen ra) cũng to hơn một tí.
+const DEFAULT_VIEW_PX = 500;
 const MIN_DIM = 100;
 const MAX_DIM = 1200;
 const FALLBACK_W = 400;
@@ -45,8 +52,9 @@ export function containerDimsForBbox(bbox: [number, number, number, number]): { 
   if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) {
     return { width: FALLBACK_W, height: FALLBACK_H };
   }
-  let width = w * PIXELS_PER_UNIT;
-  let height = h * PIXELS_PER_UNIT;
+  const pxPerUnit = DEFAULT_VIEW_PX / Math.max(w, h);
+  let width = w * pxPerUnit;
+  let height = h * pxPerUnit;
   const maxAxis = Math.max(width, height);
   if (maxAxis > MAX_DIM) {
     const ratio = MAX_DIM / maxAxis;
