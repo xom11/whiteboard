@@ -26,6 +26,15 @@ describe('onCirclePointRule', () => {
     });
   });
 
+  it('"Lấy điểm C thuộc (O)" bare paren → C on circle', () => {
+    const all = intents('Cho đường tròn (O) đường kính AB. Lấy điểm C thuộc (O)');
+    expect(all).toContainEqual({
+      op: 'add-point',
+      name: 'C',
+      constraint: { kind: 'onCircle', circle: 'O_c', theta: 1.2 },
+    });
+  });
+
   it('"lấy hai điểm C và D thuộc nửa đường tròn" → C, D on O_c với theta KHÁC nhau (Bài 9)', () => {
     const all = intents(
       'Cho nửa đường tròn (O; R) đường kính AB. Kẻ tiếp tuyến Bx và lấy hai điểm C và D thuộc nửa đường tròn.',

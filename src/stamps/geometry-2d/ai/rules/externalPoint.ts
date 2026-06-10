@@ -29,6 +29,15 @@ const VN_FORM = new RegExp(
   'u',
 );
 
+// VN không nêu tên circle: "(Lấy|Gọi) (điểm)? A ... ngoài đường tròn" (KHÔNG
+// "(X)" theo sau) → resolve circle DUY NHẤT trong đề. Phổ biến: "Lấy điểm C nằm
+// ngoài đường tròn và …". group1 = A. Circle suy từ "(X)" duy nhất toàn đề.
+const VN_FORM_UNNAMED = new RegExp(
+  String.raw`(?:[Ll]ấy|[Gg]ọi)\s+(?:điểm\s+)?([A-Z])(?:['′]?)[^.A-Z]{0,14}?ngoài\s+đường\s*tròn(?!\s*\(?\s*[A-Z]\s*\)?)`,
+  'u',
+);
+const ONLY_CIRCLE = /\(\s*([A-Z])\s*\)/u;
+
 // EN: "(Take|Let|Mark|Choose|Pick) (a)? (point)? A ... outside (the)? (circle (X) | (X))".
 //   - from = nhóm 1; circle = nhóm 2 ("circle X") HOẶC nhóm 3 ("(X)").
 //   - [^.A-Z]{0,24}? cho "be a point"/"nằm" chen giữa, chặn dấu chấm / nhãn HOA.
@@ -48,9 +57,20 @@ export const externalPointRule: LanguageRule = {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
       const m = VN_FORM.exec(c.text) ?? EN_FORM.exec(c.text);
-      if (!m) continue;
-      const from = m[1];
-      const circle = m[2] ?? m[3];
+      let from: string | undefined;
+      let circle: string | undefined;
+      if (m) {
+        from = m[1];
+        circle = m[2] ?? m[3];
+      } else {
+        // Fallback: "ngoài đường tròn" KHÔNG nêu tên → circle duy nhất toàn đề.
+        const u = VN_FORM_UNNAMED.exec(c.text);
+        const oc = ONLY_CIRCLE.exec(ctx.problem);
+        if (u && oc) {
+          from = u[1];
+          circle = oc[1];
+        }
+      }
       if (!from || !circle) continue; // escalate-safe
       out.push({
         ruleId: 'externalPoint',

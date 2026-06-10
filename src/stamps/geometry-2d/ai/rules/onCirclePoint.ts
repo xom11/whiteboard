@@ -14,9 +14,18 @@ const NAMED_CIRCLE = /(?:nửa\s+)?đường\s*tròn\s*(?:tâm\s+)?\(?\s*([A-Z])
 const COMPACT_CIRCLE = /\(\s*([A-Z])\s*[;,]\s*[Rr]\s*\)/u;
 // "<Name> thuộc/nằm trên/là (một) điểm trên  cung (nhỏ|lớn)? <pair>" — chấp nhận
 // tính từ cung ĐỨNG TRƯỚC cặp đỉnh ("cung lớn AB") lẫn sau ("cung AB nhỏ").
-const POINT_ON =
-  /(?:[Đđ]iểm\s+)?([A-Z])(?:\s+[^.]{0,12}?)?\s+(?:nằm\s+trên|thuộc|là\s+(?:một\s+)?điểm\s+(?:nằm\s+)?trên)\s+(?:cung\s+(?:nhỏ\s+|lớn\s+)?[A-Z]{2}(?:\s*(?:nhỏ|lớn))?|(?:nửa\s+)?đường\s*tròn)/u;
-const TAKE_ON = /[Ll]ấy\s+điểm\s+([A-Z])[^.]{0,20}?(?:trên|thuộc)\s+(?:cung|(?:nửa\s+)?đường\s*tròn)/u;
+// Hậu tố circle/cung: "cung (nhỏ|lớn)? AB" | "(nửa)? đường tròn" | "(O)" bare
+// paren (1 ký tự HOA — "thuộc (O)" cực phổ biến khi đề đã đặt tên đường tròn).
+const ON_SUFFIX =
+  '(?:cung\\s+(?:nhỏ\\s+|lớn\\s+)?[A-Z]{2}(?:\\s*(?:nhỏ|lớn))?|(?:nửa\\s+)?đường\\s*tròn|\\(\\s*[A-Z]\\s*\\))';
+const POINT_ON = new RegExp(
+  `(?:[Đđ]iểm\\s+)?([A-Z])(?:\\s+[^.]{0,12}?)?\\s+(?:nằm\\s+trên|thuộc|là\\s+(?:một\\s+)?điểm\\s+(?:nằm\\s+)?trên)\\s+${ON_SUFFIX}`,
+  'u',
+);
+const TAKE_ON = new RegExp(
+  `[Ll]ấy\\s+điểm\\s+([A-Z])[^.]{0,20}?(?:trên|thuộc)\\s+(?:cung|(?:nửa\\s+)?đường\\s*tròn|\\(\\s*[A-Z]\\s*\\))`,
+  'u',
+);
 // Đảo: "Trên (nửa)? đường tròn (X) lấy điểm P" — clause TỰ nêu circle (X). Bắt
 // CẢ circle lẫn điểm để không nhầm sang circle toàn-đề khác. group1=center,
 // group2=point. Center emit THÔ (resolveCircleNames map X→X_c nếu cần).

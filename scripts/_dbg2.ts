@@ -1,13 +1,7 @@
-import { runRules } from '../src/stamps/geometry-2d/ai/rules/registry';
+import { externalPointRule } from '../src/stamps/geometry-2d/ai/rules/externalPoint';
 import { segmentClauses } from '../src/stamps/geometry-2d/ai/deterministic/coverage';
 import { normalizeProblemText } from '../src/stamps/geometry-2d/ai/deterministic/normalizeText';
-for (const raw of [
-  'Cho tam giác ABC nhọn. Các đường cao AD, BE, CF cắt nhau tại H.',
-  'Cho tam giác ABC nhọn. Hai đường cao BD và CE cắt nhau tại H.',
-]) {
-  const t = normalizeProblemText(raw);
-  console.log('\n===', JSON.stringify(raw));
-  const clauses = segmentClauses(t);
-  const matches = runRules({ problem: t, clauses: clauses.filter(c=>c.hasGeometry) });
-  for (const m of matches) console.log(' ', m.ruleId, JSON.stringify(m.clauseIds), '→', m.intents.map((i:any)=>i.op+(i.shape?'/'+i.shape:i.constraint?'/'+i.constraint.kind:i.spec?'/'+i.spec:i.kind?'/'+i.kind:'')+(i.name?`(${i.name})`:'')).join(','));
-}
+const t = normalizeProblemText('Cho đường tròn (O) và dây AB. Lấy điểm C nằm ngoài đường tròn và nằm trên tia đối của tia AB. Kẻ các tiếp tuyến CP, CQ với đường tròn.');
+const clauses = segmentClauses(t);
+for (const c of clauses) console.log(c.id, c.hasGeometry, JSON.stringify(c.text));
+console.log('externalPoint:', JSON.stringify(externalPointRule.match({problem:t, clauses})));

@@ -66,7 +66,11 @@ function resolveCircle(problem: string): string | undefined {
 export const chordRule: LanguageRule = {
   id: 'chord',
   // Dưới circleRadius (75) — nếu circle O có bán kính cụ thể, định nghĩa đó thắng.
-  priority: 52,
+  // 71: TRÊN externalPoint (68) + tangentNamedFromExt (50) để đường tròn nền
+  // (do dây định nghĩa) build TRƯỚC điểm ngoài / tiếp điểm tham chiếu nó (Bài 8:
+  // "(O) và dây AB. Lấy C ngoài. Kẻ tiếp tuyến CP, CQ"). DƯỚI circleRadius (75)
+  // để bán kính SỐ cụ thể vẫn thắng (idempotent theo tên).
+  priority: 71,
   languages: ['vi'],
   patterns: [PREFILTER],
   match(ctx) {
