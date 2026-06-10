@@ -5,7 +5,7 @@ Harness: `npx tsx scripts/eval-dataset.ts [--only=N] [--verbose]` (chạy `tryDe
 
 ## Kết quả
 
-**0/29 → 6/29 HIT** (Câu 7, 9, 10, 16, 18, 28). Mục tiêu 90% / Tier-1 65-70% KHÔNG đạt:
+**0/29 → 14/29 HIT** (Câu 5,7,8,9,10,11,13,16,18,19,22,27,28,29) — cập nhật sau phiên 2 (mở rộng). Mục tiêu 90% / Tier-1 65-70% KHÔNG đạt:
 đề olympiad mỗi bài xâu chuỗi 5-10 construct + coverage gate all-or-nothing (1 clause
 miss → cả bài escalate) ⇒ phải hoàn tất TRỌN chuỗi mới flip. Tất cả thay đổi
 regression-free (2627 test + 207 golden snapshot xanh, typecheck sạch).
