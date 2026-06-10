@@ -51,6 +51,10 @@ describe('dataset coverage batch 2026-06-11 (end-to-end)', () => {
       'd80:3 tiếp tuyến Ax,By (đường tròn vô danh) + tiếp tuyến thứ ba cắt → C,D',
       'Cho nửa đường tròn đường kính AB = 2R. Từ A và B kẻ hai tiếp tuyến Ax, By. Qua điểm M thuộc nửa đường tròn kẻ tiếp tuyến thứ ba cắt các tiếp tuyến Ax, By lần lượt ở C và D. Các đường thẳng AD và BC cắt nhau tại N.',
     ],
+    [
+      'd80:14 arbelos: 3 nửa đường tròn (O,I,K) + perp tại C cắt (O) + EA∩(I), EB∩(K)',
+      'Cho điểm C thuộc đoạn thẳng AB sao cho AC = 10 cm, CB = 40 cm. Vẽ về một phía của AB các nửa đường tròn có đường kính theo thứ tự là AB, AC, CB và có tâm theo thứ tự là O, I, K. Đường vuông góc với AB tại C cắt nửa đường tròn (O) tại E. Gọi M, N theo thứ tự là giao điểm của EA, EB với các nửa đường tròn (I), (K).',
+    ],
   ];
 
   it.each(OK_CASES)('dựng được: %s', (_label, problem) => {

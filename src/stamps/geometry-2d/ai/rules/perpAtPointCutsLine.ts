@@ -21,6 +21,16 @@ const RE = new RegExp(
   'gu',
 );
 
+// Biến thể cắt ĐƯỜNG TRÒN: "Đường vuông góc với AB tại C cắt (nửa)? đường tròn
+// (O) (ở|tại) E" → E = giao đường vuông góc với đường tròn (branch 0). circle
+// raw (resolveCircleNames map "_c"). group1+2=L1, 3=qua P, 4=tâm O, 5=giao E.
+const RE_CIRCLE = new RegExp(
+  'Đường\\s*(?:thẳng\\s+)?vuông\\s*góc\\s+(?:với\\s+)?(?:cạnh\\s+|đoạn(?:\\s+thẳng)?\\s+|đường\\s*thẳng\\s+)?' +
+    '([A-Z])([A-Z])(?!\\p{L})\\s+tại\\s+([A-Z])(?!\\p{L})' +
+    "[^.]{0,24}?cắt\\s+(?:nửa\\s+)?đường\\s*tròn\\s*\\(\\s*([A-Z](?:['′])?)\\s*\\)\\s+(?:ở|tại)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])",
+  'gu',
+);
+
 const PREFILTER = /Đường\s*(?:thẳng\s+)?(?:vuông\s*góc|song\s*song)[^.]{0,40}?tại\s+[A-Z][^.]{0,24}?cắt/u;
 
 export const perpAtPointCutsLineRule: LanguageRule = {
@@ -49,6 +59,25 @@ export const perpAtPointCutsLineRule: LanguageRule = {
           intents: [
             drawLine(name, kind, { through, to: l1 }),
             addPoint(q, { kind: 'intersection', of: [name, l2] }),
+          ],
+        });
+      }
+
+      // Cắt ĐƯỜNG TRÒN: "Đường vuông góc với AB tại C cắt (nửa)? đường tròn (O) tại E".
+      RE_CIRCLE.lastIndex = 0;
+      for (const m of c.text.matchAll(RE_CIRCLE)) {
+        const l1 = m[1] + m[2];
+        const through = m[3];
+        const circle = m[4];
+        const e = m[5];
+        if (l1.includes(e) || through === e) continue;
+        const name = `prp${through}`;
+        out.push({
+          ruleId: 'perpAtPointCutsLine',
+          clauseIds: [c.id],
+          intents: [
+            drawLine(name, 'perpThrough', { through, to: l1 }),
+            addPoint(e, { kind: 'intersection', of: [name, circle], branch: 0 }),
           ],
         });
       }
