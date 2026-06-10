@@ -85,6 +85,21 @@ const DISTRIB_FOOT = new RegExp(
   'gu',
 );
 
+// SHARED-FROM 2 đường nối bằng "và": "I, K lần lượt là hình chiếu (vuông góc)?
+// của H trên AC và BC" → I↔AC, K↔BC, MỘT from H. KHÁC DISTRIB_* (danh sách cạnh
+// ngăn PHẨY ≥2): ở đây ĐÚNG 2 cạnh nối "và". Hỗ trợ cả "hình chiếu" lẫn "chân
+// đường (vuông góc|cao)".
+//   groups: 1=name1 2=name2 3=from 4=line1 5=line2
+const TWO_LINES_PREP = '(?:trên|lên|xuống|đến|tới)';
+const TWO_LINES_LINE = '(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{1,2})(?![A-Z])';
+const SHARED_FROM_TWO = new RegExp(
+  "([A-Z])(?:['′])?\\s*,\\s*([A-Z])(?:['′])?\\s+(?:lần\\s+lượt\\s+)?(?:là\\s+)?(?:các\\s+)?" +
+    '(?:hình\\s*chiếu\\s+(?:vuông\\s*góc\\s+)?|chân\\s+(?:của\\s+)?đường\\s+(?:vuông\\s*góc|cao)\\s+)' +
+    '(?:của\\s+|từ\\s+)?(?:điểm\\s+)?([A-Z])\\s+' +
+    TWO_LINES_PREP + '\\s+' + TWO_LINES_LINE + '\\s+và\\s+' + TWO_LINES_LINE,
+  'gu',
+);
+
 // "từ M kẻ MP, MQ vuông góc với các cạnh AB, AC" → P=foot(M,AB), Q=foot(M,AC).
 // Cặp MP/MQ phải cùng chữ đầu với điểm from. Số pair/line cố định 2 vì đây là
 // dạng đề lớp 9 phổ biến; zip nhiều hơn đã có DISTRIB_PROJ/FOOT theo tên điểm.
@@ -290,6 +305,17 @@ function parseFeet(text: string, fallbackTri?: string[]): Foot[] {
     out.push({ name: foot1, from, onLine: line1, withSegment: true });
     out.push({ name: foot2, from, onLine: line2, withSegment: true });
     consumed.push([fm.index ?? 0, (fm.index ?? 0) + fm[0].length]);
+  }
+
+  // 0b) SHARED-FROM 2 đường nối "và": "I, K lần lượt là hình chiếu của H trên
+  //     AC và BC" → I↔AC, K↔BC, from=H chung.
+  SHARED_FROM_TWO.lastIndex = 0;
+  for (const sm of text.matchAll(SHARED_FROM_TWO)) {
+    const [n1, n2, from, l1, l2] = [sm[1], sm[2], sm[3], sm[4], sm[5]];
+    if (l1.includes(n1) || l2.includes(n2) || n1 === n2) continue;
+    out.push({ name: n1, from, onLine: l1, withSegment: true });
+    out.push({ name: n2, from, onLine: l2, withSegment: true });
+    consumed.push([sm.index ?? 0, (sm.index ?? 0) + sm[0].length]);
   }
 
   // 1) "X, Y lần lượt là … và …" → 2 foot (name bind sẵn trong cú pháp).

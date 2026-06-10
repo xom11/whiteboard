@@ -102,6 +102,14 @@ describe('perpFootRule', () => {
     expect(byName.K.constraint).toMatchObject({ kind: 'perpFoot', from: 'C', onLine: 'AB' });
   });
 
+  it('"I, K lần lượt là hình chiếu của H trên AC và BC" → shared-from H, 2 line "và"', () => {
+    const m = run('Gọi I, K lần lượt là hình chiếu của H trên AC và BC');
+    const intents = m.flatMap((x) => x.intents).filter((i: any) => i.op === 'add-point') as any[];
+    const byName = Object.fromEntries(intents.map((i) => [i.name, i]));
+    expect(byName.I.constraint).toMatchObject({ kind: 'perpFoot', from: 'H', onLine: 'AC' });
+    expect(byName.K.constraint).toMatchObject({ kind: 'perpFoot', from: 'H', onLine: 'BC' });
+  });
+
   it('"từ M kẻ MP, MQ vuông góc với các cạnh AB, AC" → P,Q foot từ M', () => {
     const m = run('từ M kẻ MP, MQ vuông góc với các cạnh AB, AC');
     const intents = m.flatMap((x) => x.intents) as any[];
