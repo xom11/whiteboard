@@ -134,3 +134,12 @@ describe('reflection EN (issue #46 group B)', () => {
     expect(c).toEqual({ kind: 'reflectPoint', of: 'D', through: 'O' });
   });
 });
+
+describe('reflection — phân phối "P, Q lần lượt đối xứng A qua BE, CF"', () => {
+  it('P=reflectLine(A,BE), Q=reflectLine(A,CF)', () => {
+    const m = run('P, Q lần lượt đối xứng với A qua BE, CF');
+    const byName = Object.fromEntries(m.flatMap((x) => x.intents).map((i: any) => [i.name, i.constraint]));
+    expect(byName.P).toEqual({ kind: 'reflectLine', of: 'A', through: 'BE' });
+    expect(byName.Q).toEqual({ kind: 'reflectLine', of: 'A', through: 'CF' });
+  });
+});

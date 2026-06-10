@@ -19,7 +19,7 @@ const PREFILTER = /[Đđ]ường\s*tròn\s*\(?[A-Z]\)?[^.]{0,30}?(?:đi\s+)?qua\
 
 // group1 = tâm I, 2+3 = 2 điểm qua (B,C), 4+5 = 2 cạnh (AB,AC), 6+7 = 2 giao (M,N).
 const RE = new RegExp(
-  '[Đđ]ường\\s*tròn\\s*\\(\\s*([A-Z])\\s*\\)\\s*(?:luôn\\s+)?(?:đi\\s+)?qua\\s+([A-Z])\\s+(?:và|,)\\s+([A-Z])(?!\\p{L})' +
+  '[Đđ]ường\\s*tròn\\s*\\(\\s*([A-Z])\\s*\\)\\s*(?:luôn\\s+)?(?:đi\\s+)?qua\\s+([A-Z])\\s*(?:,|và)\\s+([A-Z])(?!\\p{L})' +
     '[^.]{0,20}?cắt\\s+(?:các\\s+(?:cạnh|đoạn)\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{2})\\s*(?:,|và)\\s*([A-Z]{2})(?!\\p{L})' +
     '\\s+(?:lần\\s*lượt\\s+)?(?:ở|tại)\\s+([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])',
   'gu',

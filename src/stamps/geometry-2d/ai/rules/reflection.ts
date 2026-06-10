@@ -15,6 +15,11 @@ const REFLECT = /đối\s*xứng/u;
 const NAME_BEFORE =
   /([A-Z])(?:['′]?)\s+(?:là\s+)?(?:điểm\s+)?đối\s*xứng\s+(?:của\s+|với\s+)?(?:điểm\s+)?([A-Z])(?:['′]?)\s+qua\s+(?:đường\s*thẳng\s+|cạnh\s+|đoạn\s+|trục\s+|trung\s*điểm\s+|tâm\s+|điểm\s+)?([A-Za-z][A-Za-z′']?)/u;
 
+// Dạng phân phối: "P, Q lần lượt (là điểm)? đối xứng (của|với) (điểm)? A qua L1, L2"
+//   → P = đối xứng A qua L1; Q = đối xứng A qua L2 (CÙNG gốc A, 2 trục/điểm).
+const DISTRIB =
+  /([A-Z])(?:['′]?)\s*,\s*([A-Z])(?:['′]?)\s+lần\s*lượt\s+(?:là\s+)?(?:điểm\s+)?đối\s*xứng\s+(?:của\s+|với\s+)?(?:điểm\s+)?([A-Z])(?:['′]?)\s+qua\s+([A-Za-z]{1,2})(?:['′]?)\s*(?:,|và)\s*([A-Za-z]{1,2})(?:['′]?)/u;
+
 // Dạng B: KHÔNG có tên dẫn trước "đối xứng" (lấy tên từ lời dẫn "Gọi/Lấy …").
 //   "Gọi D là điểm đối xứng của H qua BC"
 //   "Lấy điểm đối xứng của H qua M"
@@ -62,6 +67,27 @@ export const reflectionRule: LanguageRule = {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
       if (!REFLECT.test(c.text) && !REFLECT_EN_PRE.test(c.text)) continue;
+
+      // Phân phối "P, Q lần lượt đối xứng A qua L1, L2" — xử lý TRƯỚC (NAME_BEFORE
+      // sẽ chỉ bắt được P). Cả 2 trục phân loại bằng classifyThrough.
+      const dm = DISTRIB.exec(c.text);
+      if (dm) {
+        const [n1, n2, ofPt, raw1, raw2] = [dm[1], dm[2], dm[3], dm[4], dm[5]];
+        const t1 = classifyThrough(raw1);
+        const t2 = classifyThrough(raw2);
+        if (t1 && t2) {
+          const mk = (nm: string, t: { kind: 'point' | 'line'; value: string }) =>
+            t.kind === 'point'
+              ? { kind: 'reflectPoint', of: ofPt, through: t.value }
+              : { kind: 'reflectLine', of: ofPt, through: t.value };
+          out.push({
+            ruleId: 'reflection',
+            clauseIds: [c.id],
+            intents: [addPoint(n1, mk(n1, t1)), addPoint(n2, mk(n2, t2))],
+          });
+          continue;
+        }
+      }
 
       let name: string | undefined;
       let of: string | undefined;
