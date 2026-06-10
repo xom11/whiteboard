@@ -102,3 +102,12 @@ describe('intersection — "cắt nhau" comma + "đôi một" guard', () => {
     expect(names('Đường tròn đường kính AB, AC đôi một cắt nhau tại M, N')).toEqual([]);
   });
 });
+
+describe('intersection — "giao điểm của X và Y là Z" (tên sau)', () => {
+  it('"Gọi giao điểm của CE và AB là M" → M', () => {
+    const m = intersectionRule.match({ problem: 'Gọi giao điểm của CE và AB là M', clauses: segmentClauses('Gọi giao điểm của CE và AB là M') });
+    const i = m.flatMap((x) => x.intents)[0] as any;
+    expect(i.name).toBe('M');
+    expect(i.constraint).toEqual({ kind: 'intersection', of: ['CE', 'AB'] });
+  });
+});

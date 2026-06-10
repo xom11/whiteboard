@@ -37,6 +37,8 @@ const CONN = '(?:và|với)';
 
 // A: "giao điểm (của)? REF1 (và|với) REF2" — tên đứng TRƯỚC qua "X là".
 const GIAO_DIEM = new RegExp(`giao\\s*điểm\\s+(?:của\\s+)?${REF}\\s*${CONN}\\s*${REF}`, 'gu');
+// A2: "giao điểm (của)? REF1 (và|với) REF2 là Z" — tên đứng SAU ("… là M").
+const GIAO_LA = new RegExp(`giao\\s*điểm\\s+(?:của\\s+)?${REF}\\s*${CONN}\\s*${REF}\\s+là\\s+([A-Z])(?![A-Z])`, 'gu');
 // B: "REF1 cắt REF2 tại (điểm)? D" — tên SAU.
 const CAT_TAI = new RegExp(`${REF}\\s+cắt\\s+${REF}\\s+tại\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])`, 'gu');
 // C: "REF1 (và|với) REF2 (cắt|giao) nhau tại D" — tên SAU. REF2 NGAY trước "cắt
@@ -124,6 +126,10 @@ export const intersectionRule: LanguageRule = {
         emit(m[5], m[2], m[3]);
       }
 
+      // A2: tên SAU — "giao điểm của REF1 và REF2 là Z" (ưu tiên trước A để
+      //     không bị NAME_BEFORE bắt nhầm lời dẫn "Gọi" đứng trước).
+      GIAO_LA.lastIndex = 0;
+      for (const m of c.text.matchAll(GIAO_LA)) emit(m[3], m[1], m[2]);
       // A: tên TRƯỚC — "X là giao điểm của REF1 và REF2".
       GIAO_DIEM.lastIndex = 0;
       for (const m of c.text.matchAll(GIAO_DIEM)) {
