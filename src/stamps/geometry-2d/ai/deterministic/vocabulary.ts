@@ -11,6 +11,11 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   'vuông tại', 'cân tại', 'đều',
   // Circle parts
   'bán kính', 'tâm', 'đường kính', 'đương kính',
+  // Cung (arc) + điểm trên cung. "cung" cực phổ biến (điểm trên cung, điểm chính
+  // giữa cung, trung điểm cung) — thiếu nó các clause arc bị coi là văn xuôi
+  // (hasGeometry=false) → escalate dù onCircle/arcMidpoint rule khớp. "chính giữa"
+  // (≥9 ký tự) phủ "điểm chính giữa cung" mà không va chạm.
+  'cung', 'chính giữa',
   // Segments / on-segment
   'đoạn', 'cạnh', 'thuộc', 'nằm giữa', 'nằm ngoài',
   // Derived points

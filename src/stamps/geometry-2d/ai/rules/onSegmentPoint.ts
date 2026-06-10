@@ -75,8 +75,13 @@ export const onSegmentPointRule: LanguageRule = {
         }
       }
 
+      // "cắt … (tại|ở) D và E (D nằm giữa A và E)": D,E là GIAO ĐIỂM cát tuyến
+      // (secant/lineCircleIntersection dựng), "nằm giữa" chỉ là thứ tự → onSegment
+      // sẽ tạo phụ thuộc vòng (D onSegment AE, E = secondIntersection AD). Bỏ
+      // toàn bộ BETWEEN trong clause có "cắt … tại/ở".
+      const cutContext = /cắt[^.]{0,40}?(?:tại|ở)\s+[A-Z]/u.test(c.text);
       BETWEEN.lastIndex = 0;
-      for (const m of c.text.matchAll(BETWEEN)) {
+      for (const m of cutContext ? [] : c.text.matchAll(BETWEEN)) {
         // "sao cho X nằm giữa Y và Z" = ĐIỀU KIỆN thứ tự trên điểm ĐÃ có (vd đỉnh
         // hình, hoặc giao điểm vừa dựng) — KHÔNG dựng onSegment (sẽ tạo phụ thuộc
         // vòng nếu Y/Z lại phái sinh từ X). Chỉ nhận "nằm giữa" khi GIỚI THIỆU điểm mới.

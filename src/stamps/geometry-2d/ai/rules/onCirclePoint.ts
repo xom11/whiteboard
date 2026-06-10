@@ -19,13 +19,16 @@ const COMPACT_CIRCLE = /\(\s*([A-Z])\s*[;,]\s*[Rr]\s*\)/u;
 const ON_SUFFIX =
   '(?:cung\\s+(?:nhỏ\\s+|lớn\\s+)?[A-Z]{2}(?:\\s*(?:nhỏ|lớn))?|(?:nửa\\s+)?đường\\s*tròn|\\(\\s*[A-Z]\\s*\\))';
 const POINT_ON = new RegExp(
-  `(?:[Đđ]iểm\\s+)?([A-Z])(?:\\s+[^.]{0,12}?)?\\s+(?:nằm\\s+trên|thuộc|là\\s+(?:một\\s+)?điểm\\s+(?:nằm\\s+)?trên)\\s+${ON_SUFFIX}`,
+  `(?:[Đđ]iểm\\s+)?([A-Z])(?:\\s+[^.]{0,12}?)?\\s+(?:nằm\\s+trên|thuộc|là\\s+(?:một\\s+)?điểm\\s+(?:[^.A-Z]{0,16}?\\s+)?(?:nằm\\s+)?trên)\\s+${ON_SUFFIX}`,
   'u',
 );
 const TAKE_ON = new RegExp(
   `[Ll]ấy\\s+điểm\\s+([A-Z])[^.]{0,20}?(?:trên|thuộc)\\s+(?:cung|(?:nửa\\s+)?đường\\s*tròn|\\(\\s*[A-Z]\\s*\\))`,
   'u',
 );
+// Đảo trên CUNG (không paren): "Trên cung BC lấy điểm M" → M onCircle. KHÁC
+// TAKE_ON_REV (cần "(X)"): ở đây cung nêu bằng cặp đỉnh; circle = toàn đề.
+const TAKE_ON_CUNG = /[Tt]rên\s+cung\s+(?:nhỏ\s+|lớn\s+)?[A-Z]{2}(?:\s*(?:nhỏ|lớn))?[^.]{0,16}?lấy\s+điểm\s+([A-Z])(?![A-Z])/u;
 // Đảo: "Trên (nửa)? đường tròn (X) lấy điểm P" — clause TỰ nêu circle (X). Bắt
 // CẢ circle lẫn điểm để không nhầm sang circle toàn-đề khác. group1=center,
 // group2=point. Center emit THÔ (resolveCircleNames map X→X_c nếu cần).
@@ -97,7 +100,7 @@ export const onCirclePointRule: LanguageRule = {
         theta += 1.6;
         continue;
       }
-      const m = POINT_ON.exec(c.text) ?? TAKE_ON.exec(c.text);
+      const m = POINT_ON.exec(c.text) ?? TAKE_ON.exec(c.text) ?? TAKE_ON_CUNG.exec(c.text);
       if (!m) continue;
       const name = m[1];
       if (name.length !== 1) continue;

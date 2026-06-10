@@ -65,6 +65,7 @@ import { inExCircleTangentBCRule } from './inExCircleTangentBC';
 import { tangentPointsFromExtRule } from './tangentPointsFromExt';
 import { circleExternalPointRule } from './circleExternalPoint';
 import { tangentNamedFromExtRule } from './tangentNamedFromExt';
+import { secantRule } from './secant';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -129,6 +130,7 @@ const RULES: readonly LanguageRule[] = [
   tangentPointsFromExtRule,
   circleExternalPointRule,
   tangentNamedFromExtRule,
+  secantRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */

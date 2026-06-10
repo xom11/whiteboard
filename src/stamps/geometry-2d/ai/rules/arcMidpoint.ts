@@ -227,6 +227,10 @@ export const arcMidpointRule: LanguageRule = {
         const third = [tri[1], tri[2], tri[3]].find((v) => v !== a && v !== b);
         if (third) pushArc(c, name, a, b, { rel: 'not', point: third });
       }
+      // else: không "chứa" tường minh + không tam giác → KHÔNG đủ thông tin chọn
+      // cung (DSL bắt buộc 1 của notContaining/containing) → bỏ qua (escalate).
+      // (Trường hợp nửa đường tròn đường kính AB defer — xem Task arcMidpoint
+      // optional-containment.)
     }
 
     // --- EN (issue #46 group B) ---------------------------------------------------
