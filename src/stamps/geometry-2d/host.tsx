@@ -80,6 +80,7 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
               jsonState,
             }),
             editingElementId: editingElement?.id ?? null,
+            preserveExistingSize: true,
           });
         } catch (err) {
           console.error('Geometry insert failed:', err);

@@ -171,6 +171,7 @@ export const Graph2DStampHost = forwardRef<StampHostHandle, StampHostProps>(
               jsonState,
             }),
             editingElementId: editingElement?.id ?? null,
+            preserveExistingSize: true,
           });
         } catch (err) {
           console.error('Graph2D insert failed:', err);

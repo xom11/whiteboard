@@ -61,6 +61,50 @@ describe('insertStampImage', () => {
     expect(result.elementId).toBe('el_existing');
   });
 
+  it('giữ size hiện tại của element khi re-edit (không reset về size SVG mới)', async () => {
+    // User đã chèn rồi (có thể đã resize) → element 200×160. SVG mới render
+    // natural 100×80 (cùng tỉ lệ). Re-edit KHÔNG được reset về 100×80.
+    const api = makeApiStub([{ id: 'el_existing', type: 'image', width: 200, height: 160 }]);
+    const result = await insertStampImage(api, {
+      svgString: '<svg></svg>',
+      makeCustomData: () => ({ kind: 'replaced' }),
+      editingElementId: 'el_existing',
+      preserveExistingSize: true,
+    });
+    const updated = api._state.elements[0] as { width: number; height: number };
+    expect(updated.width).toBe(200);
+    expect(updated.height).toBe(160);
+    expect(result.width).toBe(200);
+    expect(result.height).toBe(160);
+  });
+
+  it('giữ cạnh dài nhất + áp tỉ lệ mới khi re-edit đổi aspect', async () => {
+    // Element cũ 300×100 (cạnh dài 300). SVG mới natural 100×80 (aspect 1.25).
+    // Giữ cạnh dài 300 → scale 3 → 300×240.
+    const api = makeApiStub([{ id: 'el_existing', type: 'image', width: 300, height: 100 }]);
+    await insertStampImage(api, {
+      svgString: '<svg></svg>',
+      makeCustomData: () => ({}),
+      editingElementId: 'el_existing',
+      preserveExistingSize: true,
+    });
+    const updated = api._state.elements[0] as { width: number; height: number };
+    expect(updated.width).toBe(300);
+    expect(updated.height).toBe(240);
+  });
+
+  it('reset về size SVG mới khi re-edit KHÔNG preserveExistingSize (vd latex)', async () => {
+    const api = makeApiStub([{ id: 'el_existing', type: 'image', width: 200, height: 160 }]);
+    await insertStampImage(api, {
+      svgString: '<svg></svg>',
+      makeCustomData: () => ({}),
+      editingElementId: 'el_existing',
+    });
+    const updated = api._state.elements[0] as { width: number; height: number };
+    expect(updated.width).toBe(100);
+    expect(updated.height).toBe(80);
+  });
+
   it('clear selectedElementIds và croppingElementId trong updateScene', async () => {
     const api = makeApiStub();
     await insertStampImage(api, {

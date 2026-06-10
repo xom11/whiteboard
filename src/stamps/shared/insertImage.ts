@@ -19,6 +19,14 @@ export interface InsertStampImageOptions {
   editingElementId?: string | null;
   /** Vị trí gốc (lúc tạo mới). Bỏ qua khi đang re-edit. */
   position?: { x?: number; y?: number };
+  /**
+   * Khi re-edit: GIỮ size hiện tại của element trên canvas (kể cả user đã
+   * resize bằng tay) thay vì reset về size SVG mới render. Dùng cho stamp có
+   * "khung cố định" (geometry 2D/3D, graph) — size do user kiểm soát. KHÔNG
+   * dùng cho latex (size phụ thuộc nội dung công thức → cần re-fit theo natural).
+   * Mặc định false.
+   */
+  preserveExistingSize?: boolean;
 }
 
 export interface InsertStampImageResult {
@@ -110,11 +118,22 @@ export async function insertStampImage(
   const editingId = opts.editingElementId ?? null;
 
   if (editingId) {
+    // Re-edit. Với stamp khung-cố-định (preserveExistingSize): GIỮ size hiện
+    // tại của element (kể cả user đã resize tay) thay vì reset về size SVG mới.
+    // Giữ cạnh dài nhất của element cũ, áp tỉ lệ (aspect) của SVG mới → không
+    // méo khi sửa nội dung làm đổi aspect. Element cũ chưa có size hợp lệ →
+    // dùng natural.
+    const old = opts.preserveExistingSize ? elements.find((e) => e.id === editingId) : undefined;
+    const oldLongest = old ? Math.max(old.width ?? 0, old.height ?? 0) : 0;
+    const newLongest = Math.max(width, height);
+    const scale = oldLongest > 0 && newLongest > 0 ? oldLongest / newLongest : 1;
+    const w = width * scale;
+    const h = height * scale;
     const updated = elements.map((e) =>
-      e.id === editingId ? { ...e, fileId, customData, width, height } : e,
+      e.id === editingId ? { ...e, fileId, customData, width: w, height: h } : e,
     );
     api.updateScene({ elements: updated, appState: clearAppStateAfterInsert() });
-    return { fileId, width, height, elementId: editingId };
+    return { fileId, width: w, height: h, elementId: editingId };
   }
 
   const newElement = buildStampImageElement(

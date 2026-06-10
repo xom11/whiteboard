@@ -98,6 +98,7 @@ export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
             jsonState,
           }),
           editingElementId: editingElement?.id ?? null,
+          preserveExistingSize: true,
         });
         onClose();
       },
