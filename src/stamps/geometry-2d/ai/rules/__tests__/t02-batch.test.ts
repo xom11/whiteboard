@@ -3,6 +3,8 @@ import { intersectionRule } from '../intersection';
 import { tangentsAtMeetRule } from '../tangentsAtMeet';
 import { triangleRule } from '../triangle';
 import { onSegmentPointRule } from '../onSegmentPoint';
+import { lineCircleIntersectionRule } from '../lineCircleIntersection';
+import { parallelPerpRule } from '../parallelPerp';
 import { segmentClauses } from '../../deterministic/coverage';
 
 function run(rule: any, problem: string) {
@@ -52,6 +54,30 @@ describe('triangle — tên đứng trước "ABC là tam giác …"', () => {
   it('"ABC là tam giác vuông tại A" → right-at-A', () => {
     const all = run(triangleRule, 'Cho ABC là tam giác vuông tại A');
     expect(all.some((i: any) => i.op === 'draw-shape' && i.shape === 'triangle')).toBe(true);
+  });
+});
+
+describe('lineCircleIntersection — tên trước + "khác A của"', () => {
+  it('"K là giao điểm khác A của AY và (O)" → K secondIntersection(AY,O,other=A)', () => {
+    const all = run(lineCircleIntersectionRule, 'Gọi K là giao điểm khác A của AY và (O)');
+    expect(all).toContainEqual({
+      op: 'add-point',
+      name: 'K',
+      constraint: { kind: 'secondIntersection', line: 'AY', circle: 'O', other: 'A' },
+    });
+  });
+});
+
+describe('parallelPerp — đường qua P vuông góc cắt đường khác tại F', () => {
+  it('"F là giao điểm của đường thẳng qua D vuông góc với BC và đường CE"', () => {
+    const all = run(parallelPerpRule, 'F là giao điểm của đường thẳng qua D vuông góc với BC và đường CE');
+    expect(all).toContainEqual(expect.objectContaining({ op: 'draw-line', name: 'prpD', kind: 'perpThrough' }));
+    expect(all).toContainEqual({ op: 'add-point', name: 'F', constraint: { kind: 'intersection', of: ['prpD', 'CE'] } });
+  });
+
+  it('"đường thẳng qua D vuông góc với BC cắt CE tại F" (tên sau)', () => {
+    const all = run(parallelPerpRule, 'đường thẳng qua D vuông góc với BC cắt CE tại F');
+    expect(all).toContainEqual({ op: 'add-point', name: 'F', constraint: { kind: 'intersection', of: ['prpD', 'CE'] } });
   });
 });
 

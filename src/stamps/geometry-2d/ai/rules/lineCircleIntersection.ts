@@ -47,6 +47,13 @@ const GIAO_CIRCLE = new RegExp(
   'gu',
 );
 
+// Tên ĐỨNG TRƯỚC + "khác" TRƯỚC "của": "K là giao điểm (thứ hai)? khác A của AY
+// và (O)" (VD8). g1=name, g2=other(khác), g3=line, g4|g5=circle.
+const NAME_KHAC_CUA = new RegExp(
+  String.raw`([A-Z])(?![A-Z])\s+là\s+giao\s*điểm\s+(?:thứ\s+hai\s+)?khác\s+([A-Z])(?![A-Z])\s+của\s+([A-Z]{2})(?![A-Z])\s+(?:và|với)\s+` + CIRCLE,
+  'gu',
+);
+
 function secondIntersection(name: string, line: string, circle: string, other?: string) {
   return addPoint(name, { kind: 'secondIntersection', line, circle, other: other ?? line[0] });
 }
@@ -101,6 +108,16 @@ export const lineCircleIntersectionRule: LanguageRule = {
         const circle = m[2];
         const name = m[3];
         const other = m[4];
+        if (valid(name, line)) intents.push(secondIntersection(name, line, circle, other));
+      }
+
+      // "K là giao điểm khác A của AY và (O)" — tên trước, "khác" trước "của".
+      NAME_KHAC_CUA.lastIndex = 0;
+      for (const m of c.text.matchAll(NAME_KHAC_CUA)) {
+        const name = m[1];
+        const other = m[2];
+        const line = m[3];
+        const circle = m[4];
         if (valid(name, line)) intents.push(secondIntersection(name, line, circle, other));
       }
 
