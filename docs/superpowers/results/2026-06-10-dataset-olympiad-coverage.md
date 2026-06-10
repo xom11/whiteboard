@@ -5,7 +5,7 @@ Harness: `npx tsx scripts/eval-dataset.ts [--only=N] [--verbose]` (chạy `tryDe
 
 ## Kết quả
 
-**0/29 → 18/29 HIT** (+23 Group A). Tổng 18 bài: 4,5,7,8,9,10,11,12,13,16,18,19,22,23,24,27,28,29.
+**0/29 → 21/29 HIT (72%)** — phiên 4 gỡ tangle 2,3,25. Còn MISS: 1,6,14,15,17,20,21,26.
 đề olympiad mỗi bài xâu chuỗi 5-10 construct + coverage gate all-or-nothing (1 clause
 miss → cả bài escalate) ⇒ phải hoàn tất TRỌN chuỗi mới flip. Tất cả thay đổi
 regression-free (2627 test + 207 golden snapshot xanh, typecheck sạch).
