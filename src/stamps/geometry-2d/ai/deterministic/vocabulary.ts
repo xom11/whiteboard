@@ -18,6 +18,9 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   'cung', 'chính giữa',
   // Segments / on-segment
   'đoạn', 'cạnh', 'thuộc', 'nằm giữa', 'nằm ngoài',
+  // Tia đối (opposite ray): "Trên tia đối của tia AB lấy điểm C" — điểm trên tia
+  // đối. Thiếu "tia đối" thì clause này bị coi văn xuôi (hasGeometry=false).
+  'tia đối', 'tia',
   // Derived points
   'trung điểm', 'chân đường cao', 'chân đương cao', 'hình chiếu',
   'trọng tâm', 'trực tâm', 'tâm nội tiếp', 'tâm ngoại tiếp',
