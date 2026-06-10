@@ -15,6 +15,7 @@ import { onPolygonConstraint } from './onPolygon';
 import { centroidConstraint } from './centroid';
 import { arcMidpointConstraint } from './arcMidpoint';
 import { excenterConstraint } from './excenter';
+import { mixtilinearPointConstraint } from './mixtilinearPoint';
 import { pointAtDistanceConstraint } from './pointAtDistance';
 import { circleIntersectionConstraint } from './circleIntersection';
 import { circleSecondIntersectionConstraint } from './circleSecondIntersection';
@@ -42,6 +43,7 @@ const ALL: PointConstraintModule[] = [
   centroidConstraint,
   arcMidpointConstraint,
   excenterConstraint,
+  mixtilinearPointConstraint,
   pointAtDistanceConstraint,
   circleIntersectionConstraint,
   circleSecondIntersectionConstraint,

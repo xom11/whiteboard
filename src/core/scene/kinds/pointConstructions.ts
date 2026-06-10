@@ -86,6 +86,45 @@ export function excenter(
  * C = through + d · (through − from)/|through − from|.
  * `from ≡ through` (hướng suy biến) → trả về chính `through` (d bị nuốt vì len=1 guard).
  */
+/** Tâm đường tròn ngoại tiếp tam giác (giao 2 trung trực). */
+function circumcenterXY(a: XY, b: XY, c: XY): XY {
+  const ax = a[0], ay = a[1], bx = b[0], by = b[1], cx = c[0], cy = c[1];
+  const d = 2 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
+  if (Math.abs(d) < 1e-12) return [(ax + bx + cx) / 3, (ay + by + cy) / 3];
+  const ux = ((ax * ax + ay * ay) * (by - cy) + (bx * bx + by * by) * (cy - ay) + (cx * cx + cy * cy) * (ay - by)) / d;
+  const uy = ((ax * ax + ay * ay) * (cx - bx) + (bx * bx + by * by) * (ax - cx) + (cx * cx + cy * cy) * (bx - ax)) / d;
+  return [ux, uy];
+}
+
+/**
+ * Tâm đường tròn mixtilinear nội tiếp ứng đỉnh A: tiếp xúc 2 cạnh AB, AC và tiếp
+ * xúc TRONG đường tròn ngoại tiếp (O,R). Tâm K trên phân giác trong từ A, cách A
+ * khoảng d; bán kính r = d·sin(A/2). Điều kiện tiếp xúc trong |OK| = R − r giải ra
+ *   d = 2( bis·(O−A) − R·sin(A/2) ) / cos²(A/2).
+ * `which='center'` → K; `which='touch'` → tiếp điểm S với (O) = O + R·unit(K−O).
+ */
+export function mixtilinearPoint(a: XY, b: XY, c: XY, which: 'center' | 'touch'): XY {
+  const O = circumcenterXY(a, b, c);
+  const R = Math.hypot(O[0] - a[0], O[1] - a[1]);
+  const ux1 = (b[0] - a[0]) / (Math.hypot(b[0] - a[0], b[1] - a[1]) || 1);
+  const uy1 = (b[1] - a[1]) / (Math.hypot(b[0] - a[0], b[1] - a[1]) || 1);
+  const ux2 = (c[0] - a[0]) / (Math.hypot(c[0] - a[0], c[1] - a[1]) || 1);
+  const uy2 = (c[1] - a[1]) / (Math.hypot(c[0] - a[0], c[1] - a[1]) || 1);
+  let bx = ux1 + ux2, by = uy1 + uy2;
+  const bl = Math.hypot(bx, by) || 1;
+  bx /= bl; by /= bl; // unit bisector từ A
+  const cosA = ux1 * ux2 + uy1 * uy2; // cos góc A
+  const sinHalf = Math.sqrt(Math.max(0, (1 - cosA) / 2)); // sin(A/2)
+  const cos2Half = Math.max(1e-9, (1 + cosA) / 2); // cos²(A/2)
+  const dotAO = bx * (O[0] - a[0]) + by * (O[1] - a[1]);
+  const d = (2 * (dotAO - R * sinHalf)) / cos2Half;
+  const K: XY = [a[0] + d * bx, a[1] + d * by];
+  if (which === 'center') return K;
+  // Tiếp điểm S trên (O) theo hướng O→K (tiếp xúc trong).
+  const kl = Math.hypot(K[0] - O[0], K[1] - O[1]) || 1;
+  return [O[0] + (R * (K[0] - O[0])) / kl, O[1] + (R * (K[1] - O[1])) / kl];
+}
+
 export function pointAtDistanceCoord(from: XY, through: XY, d: number): XY {
   const dx = through[0] - from[0];
   const dy = through[1] - from[1];

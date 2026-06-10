@@ -37,6 +37,7 @@ import { incircleModule } from './kinds/circles/incircle';
 import { excircleModule } from './kinds/circles/excircle';
 import { arcMidpointModule } from './kinds/points/arcMidpoint';
 import { excenterModule } from './kinds/points/excenter';
+import { mixtilinearPointModule } from './kinds/points/mixtilinearPoint';
 import { reflectPointModule } from './kinds/points/reflectPoint';
 import { reflectLineModule } from './kinds/points/reflectLine';
 import { pointAtDistanceModule } from './kinds/points/pointAtDistance';
@@ -56,7 +57,7 @@ const ALL_MODULES: ReadonlyArray<DslKindModule> = [
   // NEW Tier 4+5 circles
   circleCRModule, incircleModule, excircleModule,
   // Cụm A points
-  arcMidpointModule, excenterModule, reflectPointModule, reflectLineModule,
+  arcMidpointModule, excenterModule, mixtilinearPointModule, reflectPointModule, reflectLineModule,
   // Cụm B points
   pointAtDistanceModule,
 ];

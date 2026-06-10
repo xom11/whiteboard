@@ -61,6 +61,6 @@ describe('onSegmentPoint — "dây" + "là điểm thuộc"', () => {
     const i = run('Gọi K là điểm thuộc dây AD')[0] as any;
     expect(i.name).toBe('K');
     expect(i.constraint.kind).toBe('onSegment');
-    expect(i.constraint.segmentId).toBe('AD');
+    expect(i.constraint.of).toBe("AD");
   });
 });

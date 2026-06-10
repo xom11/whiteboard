@@ -83,7 +83,10 @@ export type Constraint2D =
   | { kind: 'pointAtDistance'; from: string; through: string; distance: ConstraintDistanceSpec }
   // Tâm bàng tiếp tam giác `vertices` đối diện đỉnh `opposite`.
   // `opposite` LUÔN là một phần tử của `vertices` (vì vậy constraintRefs2D không cần thêm nó).
-  | { kind: 'excenter'; vertices: [string, string, string]; opposite: string };
+  | { kind: 'excenter'; vertices: [string, string, string]; opposite: string }
+  // Mixtilinear: tâm (which='center') hoặc tiếp điểm với (O) (which='touch') của
+  // đường tròn tiếp xúc 2 cạnh từ `vertices[0]` + tiếp xúc trong đường tròn ngoại tiếp.
+  | { kind: 'mixtilinearPoint'; vertices: [string, string, string]; which: 'center' | 'touch' };
 
 export function constraintRefs2D(c: Constraint2D): string[] {
   switch (c.kind) {
@@ -107,6 +110,7 @@ export function constraintRefs2D(c: Constraint2D): string[] {
     case 'secondIntersection': return [c.line, c.circle, c.other];
     case 'tangencyPoint': return [c.circle, c.onLine];
     case 'arcMidpoint': return [c.circle, c.a, c.b, (c.notContaining ?? c.containing)!];
+    case 'mixtilinearPoint': return [c.vertices[0], c.vertices[1], c.vertices[2]];
     case 'pointAtDistance': {
       const d = c.distance;
       const extra = d.kind === 'circleRadius' ? [d.circle]

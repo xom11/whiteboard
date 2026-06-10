@@ -11,7 +11,15 @@
 import type { LanguageRule, RuleMatch } from './_types';
 import { drawCircle, addPoint } from './_shared';
 
-const PREFILTER = /[Đđ]ường\s*tròn\s+ngoại\s*tiếp\s+tam\s*giác\s+[A-Z]{3}\s+và\s+đường\s*tròn\s+ngoại\s*tiếp/u;
+const PREFILTER = /[Đđ]ường\s*tròn\s+ngoại\s*tiếp\s+(?:các\s+)?tam\s*giác\s+[A-Z]{3}\s*(?:,|\s+và\s+đường\s*tròn\s+ngoại\s*tiếp\s+tam\s*giác)/u;
+
+// Dạng NÉN: "đường tròn ngoại tiếp tam giác AEM, AFN cắt nhau tại P khác A"
+// (một "đường tròn ngoại tiếp" + 2 tam giác ngăn phẩy).
+const RE_COMPACT = new RegExp(
+  '[Đđ]ường\\s*tròn\\s+ngoại\\s*tiếp\\s+(?:các\\s+)?tam\\s*giác\\s+([A-Z]{3})(?![A-Z])\\s*,\\s*([A-Z]{3})(?![A-Z])\\s+' +
+    'cắt\\s+nhau\\s+(?:tại|ở)\\s+([A-Z])(?![A-Z])(?:\\s+khác\\s+([A-Z])(?![A-Z]))?',
+  'u',
+);
 
 // group1 = tam giác 1 (3 đỉnh), 2 = tam giác 2, 3 = giao điểm, 4 = điểm loại (khác A).
 const RE = new RegExp(
@@ -29,7 +37,7 @@ export const circumcirclePairMeetRule: LanguageRule = {
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
-      const m = RE.exec(c.text);
+      const m = RE.exec(c.text) ?? RE_COMPACT.exec(c.text);
       if (!m) continue;
       const tri1 = m[1].split('');
       const tri2 = m[2].split('');

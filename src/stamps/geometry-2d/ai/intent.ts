@@ -145,6 +145,7 @@ export const AddPointIntentZ = z.object({
     z.object({ kind: z.literal('reflectPoint'), of: LabelZ, through: LabelZ }),
     z.object({ kind: z.literal('reflectLine'), of: LabelZ, through: z.string() }),
     z.object({ kind: z.literal('excenter'), of: z.tuple([LabelZ, LabelZ, LabelZ]), opposite: LabelZ }),
+    z.object({ kind: z.literal('mixtilinearPoint'), of: z.tuple([LabelZ, LabelZ, LabelZ]), which: z.union([z.literal('center'), z.literal('touch')]) }),
     // Góc vuông nhìn đoạn: M trên onLine sao cho ∠ a-name-b = 90°
     z.object({ kind: z.literal('rightAngleViewing'), a: LabelZ, b: LabelZ, onLine: z.string(), which: z.union([z.literal(0), z.literal(1)]).optional() }),
     z.object({

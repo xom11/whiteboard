@@ -37,6 +37,7 @@ export const CONSTRUCT_MANIFEST: ConstructEntry[] = [
   // ── points ────────────────────────────────────────────────────────────────
   { dslKind: 'free',               sceneKind: 'point',   intentKey: 'free',               toolKey: 'pointOn',        ruleId: null,             serialize: true,  evalFixture: null },
   { dslKind: 'midpoint',           sceneKind: 'point',   intentKey: 'midpoint',           toolKey: 'midpoint',       ruleId: 'midpoint',       serialize: true,  evalFixture: null },
+  { dslKind: 'mixtilinearPoint',     sceneKind: 'point',   intentKey: 'mixtilinearPoint',   toolKey: 'pointOn',        ruleId: 'tangentTwoSidesCircle', serialize: false, evalFixture: null },
   { dslKind: 'onPerpBisector',     sceneKind: 'point',   intentKey: 'onPerpBisector',     toolKey: 'pointOn',        ruleId: 'circleThroughTwoCutsSides', serialize: true, evalFixture: null },
   { dslKind: 'onSegment',          sceneKind: 'point',   intentKey: 'onSegment',          toolKey: 'pointOn',        ruleId: null,             serialize: true,  evalFixture: null },
   { dslKind: 'onLine',             sceneKind: 'point',   intentKey: null,                 toolKey: 'pointOn',        ruleId: null,             serialize: true,  evalFixture: null },

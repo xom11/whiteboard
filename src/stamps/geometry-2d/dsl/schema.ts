@@ -77,6 +77,7 @@ export type DslPointT =
   // Cụm A
   | { name: Name; kind: 'arcMidpoint'; circle: Name; a: Name; b: Name; notContaining?: Name; containing?: Name }
   | { name: Name; kind: 'excenter'; vertices: [Name, Name, Name]; opposite: Name }
+  | { name: Name; kind: 'mixtilinearPoint'; vertices: [Name, Name, Name]; which: 'center' | 'touch' }
   | { name: Name; kind: 'reflectPoint'; of: Name; through: Name }
   | { name: Name; kind: 'reflectLine'; of: Name; through: Name }
   // Cụm B points

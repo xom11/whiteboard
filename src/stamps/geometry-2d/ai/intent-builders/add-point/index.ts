@@ -20,6 +20,7 @@ import { buildReflectPoint, buildReflectLine } from './reflect';
 import { buildPointAtDistance } from './pointAtDistance';
 import { buildExternalToCircle } from './externalToCircle';
 import { buildOnCircle } from './onCircle';
+import { buildMixtilinearPoint } from './mixtilinear';
 
 export const ADD_POINT_BUILDERS: Record<string, (s: BuildState, intent: AddPointIntentT) => void> = {
   midpoint: buildMidpoint, onPerpBisector: buildOnPerpBisector, perpFoot: buildPerpFoot,
@@ -35,6 +36,7 @@ export const ADD_POINT_BUILDERS: Record<string, (s: BuildState, intent: AddPoint
   pointAtDistance: buildPointAtDistance,
   externalToCircle: buildExternalToCircle,
   onCircle: buildOnCircle,
+  mixtilinearPoint: buildMixtilinearPoint,
 };
 
 export const buildAddPoint = (s: BuildState, intent: AddPointIntentT): void => {

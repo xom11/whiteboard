@@ -243,6 +243,7 @@ function serializePoint(obj: SceneObject<PointAttrs>, state: State): SerializedE
     case 'onPerpendicular':
     case 'onPerpBisector':
     case 'onCircleAroundPoint':
+    case 'mixtilinearPoint':
       return fail('unsupported-constraint', c.kind);
 
     default: {
