@@ -13,13 +13,13 @@ const REFLECT = /đối\s*xứng/u;
 //   "D là (điểm) đối xứng (của|với) H qua (đường thẳng|cạnh|trục) <Z>"
 // Z bắt mở (chữ cái + dấu phẩy/′), phân loại điểm/đường ở dưới.
 const NAME_BEFORE =
-  /([A-Z])(?:['′]?)\s+(?:là\s+)?(?:điểm\s+)?đối\s*xứng\s+(?:của\s+|với\s+)?([A-Z])(?:['′]?)\s+qua\s+(?:đường\s*thẳng\s+|cạnh\s+|đoạn\s+|trục\s+|trung\s*điểm\s+|điểm\s+)?([A-Za-z][A-Za-z′']?)/u;
+  /([A-Z])(?:['′]?)\s+(?:là\s+)?(?:điểm\s+)?đối\s*xứng\s+(?:của\s+|với\s+)?(?:điểm\s+)?([A-Z])(?:['′]?)\s+qua\s+(?:đường\s*thẳng\s+|cạnh\s+|đoạn\s+|trục\s+|trung\s*điểm\s+|tâm\s+|điểm\s+)?([A-Za-z][A-Za-z′']?)/u;
 
 // Dạng B: KHÔNG có tên dẫn trước "đối xứng" (lấy tên từ lời dẫn "Gọi/Lấy …").
 //   "Gọi D là điểm đối xứng của H qua BC"
 //   "Lấy điểm đối xứng của H qua M"
 const NAME_AFTER =
-  /(?:điểm\s+)?đối\s*xứng\s+(?:của\s+|với\s+)?([A-Z])(?:['′]?)\s+qua\s+(?:đường\s*thẳng\s+|cạnh\s+|đoạn\s+|trục\s+|trung\s*điểm\s+|điểm\s+)?([A-Za-z][A-Za-z′']?)/u;
+  /(?:điểm\s+)?đối\s*xứng\s+(?:của\s+|với\s+)?(?:điểm\s+)?([A-Z])(?:['′]?)\s+qua\s+(?:đường\s*thẳng\s+|cạnh\s+|đoạn\s+|trục\s+|trung\s*điểm\s+|tâm\s+|điểm\s+)?([A-Za-z][A-Za-z′']?)/u;
 
 // === EN (issue #46 group B) ===
 // "<Name> is/be the reflection of <Of> (over|across|in|about|through) (the)? (line|point|segment)? <Z>"

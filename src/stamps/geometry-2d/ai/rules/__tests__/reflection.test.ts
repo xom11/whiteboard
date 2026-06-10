@@ -123,4 +123,14 @@ describe('reflection EN (issue #46 group B)', () => {
     const m = run('D is the reflection of H.');
     expect(m.length).toBe(0);
   });
+
+  it('"D là điểm đối xứng với điểm M qua O" → reflectPoint (với + điểm)', () => {
+    const c = (run('Gọi D là điểm đối xứng với điểm M qua O')[0].intents[0] as any).constraint;
+    expect(c).toEqual({ kind: 'reflectPoint', of: 'M', through: 'O' });
+  });
+
+  it('"đối xứng với D qua tâm O" → reflectPoint qua O (không nhầm thành line "t")', () => {
+    const c = (run('Gọi E là điểm đối xứng với D qua tâm O')[0].intents[0] as any).constraint;
+    expect(c).toEqual({ kind: 'reflectPoint', of: 'D', through: 'O' });
+  });
 });
