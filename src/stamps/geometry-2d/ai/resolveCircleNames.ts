@@ -140,6 +140,12 @@ function collectPointRefs(intents: readonly IntentT[]): Set<string> {
         addEdgeRef(c.of);
       } else if (c.kind === 'intersection') {
         for (const r of c.of) addEdgeRef(r);
+      } else if (c.kind === 'reflectPoint') {
+        // through = tâm/điểm đối xứng. "đối xứng A qua O" với O là circle name →
+        // O dùng như POINT (tâm) → collision, phải inject center + rename circle.
+        refs.add(c.through);
+      } else if (c.kind === 'reflectLine') {
+        addEdgeRef(c.through);
       }
     } else if (i.op === 'draw-circle') {
       if (i.center) refs.add(i.center);
