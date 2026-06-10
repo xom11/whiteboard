@@ -5,6 +5,7 @@ import { triangleRule } from '../triangle';
 import { onSegmentPointRule } from '../onSegmentPoint';
 import { lineCircleIntersectionRule } from '../lineCircleIntersection';
 import { parallelPerpRule } from '../parallelPerp';
+import { angleBisectorCutsSideCircleRule } from '../angleBisectorCutsSideCircle';
 import { segmentClauses } from '../../deterministic/coverage';
 import { tryDeterministicFigure } from '../../deterministic/tryDeterministicFigure';
 
@@ -108,6 +109,14 @@ describe('parallelPerp — đường qua P vuông góc cắt đường khác t�
   it('"đường thẳng qua D vuông góc với BC cắt CE tại F" (tên sau)', () => {
     const all = run(parallelPerpRule, 'đường thẳng qua D vuông góc với BC cắt CE tại F');
     expect(all).toContainEqual({ op: 'add-point', name: 'F', constraint: { kind: 'intersection', of: ['prpD', 'CE'] } });
+  });
+});
+
+describe('angleBisectorCutsSideCircle — phân giác cắt BC tại D và (O) tại E', () => {
+  it('"Đường phân giác của góc BAC cắt BC tại D và cắt (O) tại E khác A"', () => {
+    const all = run(angleBisectorCutsSideCircleRule, 'Đường phân giác của góc BAC cắt BC tại D và cắt (O) tại E khác A');
+    expect(all).toContainEqual({ op: 'add-point', name: 'D', constraint: { kind: 'angleBisectorFoot', from: 'A', onLine: 'BC' } });
+    expect(all).toContainEqual({ op: 'add-point', name: 'E', constraint: { kind: 'secondIntersection', line: 'AD', circle: 'O', other: 'A' } });
   });
 });
 

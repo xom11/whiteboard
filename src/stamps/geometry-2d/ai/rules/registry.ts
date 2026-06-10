@@ -70,6 +70,7 @@ import { oppositeRayPointRule } from './oppositeRayPoint';
 import { perpChordAtFootRule } from './perpChordAtFoot';
 import { diameterCircleSecantRule } from './diameterCircleSecant';
 import { tangentsAtMeetRule } from './tangentsAtMeet';
+import { angleBisectorCutsSideCircleRule } from './angleBisectorCutsSideCircle';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -139,6 +140,7 @@ const RULES: readonly LanguageRule[] = [
   perpChordAtFootRule,
   diameterCircleSecantRule,
   tangentsAtMeetRule,
+  angleBisectorCutsSideCircleRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */
