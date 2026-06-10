@@ -4,6 +4,7 @@ import type { KindDef } from '../types';
 import { constraintRefs2D } from './2d-constraint';
 import { POINT_CONSTRAINTS } from './point-constraints/registry';
 import { buildPointOpts } from './point-constraints/shared';
+import { labelOpts } from './_label';
 
 export type { PointAttrs } from './point-constraints/_types';
 import type { PointAttrs } from './point-constraints/_types';
@@ -76,6 +77,7 @@ const def: KindDef<PointAttrs> = {
             fillColor: obj.attrs.color ?? '#1e40af',
             face: obj.attrs.face ?? 'o',
             size: obj.attrs.size ?? 4,
+            ...labelOpts(obj.attrs.labelOffset, [10, 10]),
           });
         } catch { /* ignore */ }
       }
