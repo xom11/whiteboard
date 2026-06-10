@@ -9,6 +9,8 @@ export type PointAttrs = {
   showValue?: boolean;
   face?: 'o' | 'circle' | 'cross' | 'plus';
   size?: number;
+  /** Offset nhãn (pixel) so với anchor; undefined = default JSXGraph [10,10]. */
+  labelOffset?: [number, number];
 };
 
 type C<K extends Constraint2D['kind']> = Extract<Constraint2D, { kind: K }>;

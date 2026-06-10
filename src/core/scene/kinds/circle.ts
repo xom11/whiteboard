@@ -28,6 +28,8 @@ export type CircleAttrs = {
   dash?: number;
   showLabel?: boolean;
   showValue?: boolean;
+  /** Offset nhãn (pixel) so với anchor; undefined = default JSXGraph. */
+  labelOffset?: [number, number];
 };
 
 function asConstruction(a: CircleAttrs): CircleConstruction | undefined {

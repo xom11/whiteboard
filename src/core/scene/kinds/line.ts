@@ -32,6 +32,8 @@ export type LineAttrs = {
   width?: number;
   dash?: number;
   showLabel?: boolean;
+  /** Offset nhãn (pixel) so với anchor; undefined = default JSXGraph. */
+  labelOffset?: [number, number];
 };
 
 // Polygon edges là sub-segment do JSXGraph tự tạo bên trong polygon — không có
