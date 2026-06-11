@@ -83,12 +83,14 @@ import { circumcircleCutsLineRule } from './circumcircleCutsLine';
 import { lineConcurrencyRule } from './lineConcurrency';
 import { parallelThroughCutsCircleRule } from './parallelThroughCutsCircle';
 import { lineThroughCutsTwoLinesRule } from './lineThroughCutsTwoLines';
+import { rightAngleViewingRule } from './rightAngleViewing';
 
 const RULES: readonly LanguageRule[] = [
   circumcircleCutsLineRule,
   lineConcurrencyRule,
   parallelThroughCutsCircleRule,
   lineThroughCutsTwoLinesRule,
+  rightAngleViewingRule,
   triangleRule,
   quadRule,
   connectRule,

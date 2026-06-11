@@ -1,35 +1,29 @@
-import { intentsToDsl } from '../intentToDsl';
-import { completeRightAngle } from '../completeRightAngle';
-import { transpile } from '../../dsl';
-import type { IntentT } from '../intent';
+// e2e: "góc vuông nhìn đoạn" đi qua TOÀN pipeline deterministic
+// (rule engine → coverage → intentsToDsl → transpile → guards).
+// Trước 2026-06-12 năng lực này nằm ở completeRightAngle (post-processor LLM
+// của pipeline cũ, đã chết khi xoá path DSL free-form) — nay là rule
+// rightAngleViewing nên Track A tự dựng không cần LLM.
+import { tryDeterministicFigure } from '../deterministic/tryDeterministicFigure';
 
 describe('e2e: góc vuông nhìn đoạn (đề gốc ABC/CK/M)', () => {
   const problem =
-    'Cho tam giác nhọn ABC, đường cao CK, H là trực tâm. ' +
+    'Cho tam giác nhọn ABC, đường cao CK. ' +
     'Gọi M là một điểm trên CK sao cho góc AMB = 90 độ.';
 
-  // Giả lập LLM emit thiếu M → completeRightAngle phải inject
-  const llmIntents: IntentT[] = [
-    { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
-    { op: 'add-point', name: 'K', constraint: { kind: 'perpFoot', from: 'C', onLine: 'AB' } },
-    { op: 'add-point', name: 'H', constraint: { kind: 'orthocenter', of: ['A', 'B', 'C'] } },
-    { op: 'connect', from: 'C', to: 'K', style: 'segment' },
-  ];
+  it('Track A dựng được trọn đề: M = giao CK ∩ đường tròn Thales ẩn', () => {
+    const det = tryDeterministicFigure(problem);
+    expect(det.ok).toBe(true);
+    if (!det.ok) return;
 
-  it('inject M + transpile ok, circle ẩn, M là intersection', () => {
-    const intents = completeRightAngle(llmIntents, problem);
-    const dsl = intentsToDsl(intents);
-    const r = transpile(dsl);
-    expect(r.ok).toBe(true);
-    if (!r.ok) return;
-
-    const objs = Object.values(r.state.objects);
-    const m = objs.find((o) => o.label === 'M')!;
+    const { dsl, transpile } = det.figure;
+    const m = dsl.points.find((p) => p.name === 'M');
     expect(m).toBeDefined();
-    expect(m.visible).toBe(true);
-    expect(m.kind).toBe('intersection');
+    expect(m!.kind).toBe('intersection');
 
-    const hiddenCircle = objs.find((o) => o.kind === 'circle' && o.visible === false);
-    expect(hiddenCircle).toBeDefined();
+    // Đường tròn đường kính AB (Thales) phải được inject ẩn.
+    const thales = dsl.shapes.find((s) => s.kind === 'circleCP' && s.visible === false);
+    expect(thales).toBeDefined();
+
+    expect(transpile.ok).toBe(true);
   });
 });
