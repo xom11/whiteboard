@@ -35,10 +35,11 @@ const REF =
   '\\s*thẳng\\s+|đoạn(?:\\s+thẳng)?\\s+|tia\\s+|cạnh\\s+)?([A-Z]\\s*[A-Z])(?![A-Z])';
 const CONN = '(?:và|với)';
 
-// A: "giao điểm (của)? REF1 (và|với) REF2" — tên đứng TRƯỚC qua "X là".
-const GIAO_DIEM = new RegExp(`giao\\s*điểm\\s+(?:của\\s+)?${REF}\\s*${CONN}\\s*${REF}`, 'gu');
+// A: "giao điểm (của)? REF1 (và|với) REF2" — tên đứng TRƯỚC qua "X là". "của"
+//    lặp 0..2 (OCR đôi khi nhân đôi "của của").
+const GIAO_DIEM = new RegExp(`giao\\s*điểm\\s+(?:của\\s+){0,2}${REF}\\s*${CONN}\\s*${REF}`, 'gu');
 // A2: "giao điểm (của)? REF1 (và|với) REF2 là Z" — tên đứng SAU ("… là M").
-const GIAO_LA = new RegExp(`giao\\s*điểm\\s+(?:của\\s+)?${REF}\\s*${CONN}\\s*${REF}\\s+là\\s+([A-Z])(?![A-Z])`, 'gu');
+const GIAO_LA = new RegExp(`giao\\s*điểm\\s+(?:của\\s+){0,2}${REF}\\s*${CONN}\\s*${REF}\\s+là\\s+([A-Z])(?![A-Z])`, 'gu');
 // B: "REF1 cắt REF2 tại (điểm)? D" — tên SAU.
 const CAT_TAI = new RegExp(`${REF}\\s+cắt\\s+${REF}\\s+tại\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])`, 'gu');
 // C: "REF1 (và|với) REF2 (cắt|giao) nhau tại D" — tên SAU. REF2 NGAY trước "cắt
@@ -46,7 +47,7 @@ const CAT_TAI = new RegExp(`${REF}\\s+cắt\\s+${REF}\\s+tại\\s+(?:điểm\\s+
 // CONN gồm dấu phẩy: "AB, CD cắt nhau tại E" (Câu 13). "đôi một" vẫn bị loại vì
 // nó chen giữa REF2 và "cắt nhau" → REF2 không liền "cắt nhau".
 const CAT_NHAU = new RegExp(
-  `${REF}\\s*(?:,|và|với)\\s*${REF}\\s+(?:cắt|giao)\\s+nhau\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])`,
+  `${REF}\\s*(?:,|và|với)\\s*${REF}\\s+(?:của\\s+tam\\s*giác\\s+[A-Z]{3}\\s+)?(?:cắt|giao)\\s+nhau\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])`,
   'gu',
 );
 // D: "E, F lần lượt là giao điểm của AB và CD, của AD và BC" → zip 2 tên với 2 cặp.

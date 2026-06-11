@@ -39,7 +39,7 @@ const PREFILTER_EN = /projection|perpendicular|foot\s+of/i;
 
 // onLine token: tên đường 1 ký tự HOA HOẶC cặp đỉnh 2 ký tự HOA (vd 'BC'). Chấp
 // nhận tiền tố "đường thẳng" / "cạnh" / "đoạn" trước token.
-const LINE = '(?:' + DUONG_KW + '\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{1,2})(?![A-Z])';
+const LINE = '(?:' + DUONG_KW + '\\s*thẳng\\s+|cạnh\\s+|đoạn(?:\\s+thẳng)?\\s+)?([A-Z]{1,2})(?![A-Z])';
 const PREP = '(?:trên|lên|xuống|đến|tới)';
 
 // "hình chiếu (vuông góc)? (của)? (điểm)? X PREP [cạnh|đường thẳng] LINE"

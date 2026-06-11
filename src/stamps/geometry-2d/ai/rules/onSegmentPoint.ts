@@ -59,7 +59,7 @@ const POINT_MOVE_SEG = new RegExp(
 
 // "D nằm giữa A và B" / "một điểm D nằm giữa A và B".
 const BETWEEN = new RegExp(
-  String.raw`(?:một\s+)?(?:điểm\s+)?${POINT}\s+nằm\s+giữa\s+([A-Z])\s+và\s+([A-Z])`,
+  String.raw`(?:một\s+)?(?:điểm\s+)?${POINT}\s+nằm\s+giữa\s+(?:hai\s+điểm\s+)?([A-Z])\s+và\s+([A-Z])(?![A-Z])`,
   'gu',
 );
 
