@@ -78,6 +78,7 @@ import { givenDiameterCircleRule } from './givenDiameterCircle';
 import { multiDiameterCirclesRule } from './multiDiameterCircles';
 import { cutCirclesDistribRule } from './cutCirclesDistrib';
 import { givenNamedCircleRule } from './givenNamedCircle';
+import { twoPerpLinesMeetRule } from './twoPerpLinesMeet';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -155,6 +156,7 @@ const RULES: readonly LanguageRule[] = [
   multiDiameterCirclesRule,
   cutCirclesDistribRule,
   givenNamedCircleRule,
+  twoPerpLinesMeetRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */
