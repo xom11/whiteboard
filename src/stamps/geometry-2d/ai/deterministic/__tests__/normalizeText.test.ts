@@ -13,4 +13,10 @@ describe('normalizeProblemText', () => {
     const s = 'Cho tam giác ABC nội tiếp đường tròn (O)';
     expect(normalizeProblemText(s)).toBe(s);
   });
+  it('bỏ ký hiệu căn √ (nhiễu OCR) → khoảng trắng, không dính chữ', () => {
+    expect(normalizeProblemText('hình chiếu của H lên √ √ √ AB,AC').replace(/\s+/g, ' ')).toBe(
+      'hình chiếu của H lên AB,AC',
+    );
+    expect(normalizeProblemText('√3')).not.toContain('√');
+  });
 });
