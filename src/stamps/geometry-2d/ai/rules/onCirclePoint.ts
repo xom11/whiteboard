@@ -22,7 +22,11 @@ const POINT_ON = new RegExp(
   // "nằm" optional → bắt "M (bất kì)? trên (nửa)? đường tròn" / "điểm A trên (O)"
   // (chỉ "trên" trần, không "nằm trên"). ON_SUFFIX neo circle/cung nên "trên"
   // trần vẫn an toàn (không nuốt "trên đoạn/tia").
-  `(?:[Đđ]iểm\\s+)?([A-Z])(?:\\s+[^.]{0,12}?)?\\s+(?:(?:nằm\\s+)?trên|thuộc|là\\s+(?:một\\s+)?điểm\\s+(?:[^.A-Z]{0,16}?\\s+)?(?:nằm\\s+)?trên)\\s+${ON_SUFFIX}`,
+  //
+  // Nhánh "là (một)? điểm …" chấp nhận giới từ kết là "trên" HOẶC "thuộc"
+  // ("Gọi E là một điểm bất kì thuộc cung nhỏ BC" — hinh9 #108). ON_SUFFIX vẫn
+  // neo circle/cung nên "thuộc" trần không nuốt "thuộc cạnh/đoạn".
+  `(?:[Đđ]iểm\\s+)?([A-Z])(?:\\s+[^.]{0,12}?)?\\s+(?:(?:nằm\\s+)?trên|thuộc|là\\s+(?:một\\s+)?điểm\\s+(?:[^.A-Z]{0,16}?\\s+)?(?:(?:nằm\\s+)?trên|thuộc))\\s+${ON_SUFFIX}`,
   'u',
 );
 const TAKE_ON = new RegExp(

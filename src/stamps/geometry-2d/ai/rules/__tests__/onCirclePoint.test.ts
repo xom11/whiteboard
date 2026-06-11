@@ -1,10 +1,22 @@
 import { onCirclePointRule } from '../onCirclePoint';
 import { segmentClauses } from '../../deterministic/coverage';
+import { normalizeProblemText } from '../../deterministic/normalizeText';
 
 function intents(problem: string) {
   return onCirclePointRule
     .match({ problem, clauses: segmentClauses(problem) })
     .flatMap((m) => m.intents as any[]);
+}
+
+// Như pipeline thật: normalize + chỉ feed clause hasGeometry vào rule. Dùng cho
+// các phrasing mới (di chuyển/thay đổi/Gọi … thuộc cung) để bám sát runRules.
+function ctxOf(text: string) {
+  const problem = normalizeProblemText(text);
+  const clauses = segmentClauses(problem).filter((c) => c.hasGeometry);
+  return { problem, clauses };
+}
+function geoIntents(text: string) {
+  return onCirclePointRule.match(ctxOf(text)).flatMap((m) => m.intents as any[]);
 }
 
 describe('onCirclePointRule', () => {
@@ -82,5 +94,71 @@ describe('onCirclePointRule', () => {
     const all = intents('Cho tam giác ABC nội tiếp (O). M, N là hai điểm thuộc cung nhỏ BC');
     const names = all.filter((i) => i.constraint?.kind === 'onCircle').map((i) => i.name).sort();
     expect(names).toEqual(['M', 'N']);
+  });
+});
+
+// Các phrasing "điểm chạy trên cung" / "Gọi … là điểm … thuộc cung" — feed qua
+// ctxOf (normalize + lọc hasGeometry) để bám sát pipeline runRules.
+describe('onCirclePointRule — điểm tự do trên cung (di chuyển / thay đổi / thuộc)', () => {
+  it('hinh9 #108: "Gọi E là một điểm bất kì thuộc cung nhỏ BC của (O)" → E onCircle (O)', () => {
+    const all = geoIntents(
+      'Cho tam giác ABC nhọn, AB < AC, nội tiếp đường tròn (O). Gọi E là một điểm bất kì thuộc cung nhỏ BC của đường tròn (O) sao cho BE < BA.',
+    );
+    expect(all).toContainEqual(
+      expect.objectContaining({
+        op: 'add-point',
+        name: 'E',
+        constraint: expect.objectContaining({ kind: 'onCircle', circle: 'O' }),
+      }),
+    );
+  });
+
+  it('hinh9 #116: "điểm A thay đổi trên cung lớn BC" → A onCircle (O)', () => {
+    const all = geoIntents(
+      'Cho đường tròn (O), dây cung BC không chứa tâm O và điểm A thay đổi trên cung lớn BC.',
+    );
+    expect(all).toContainEqual(
+      expect.objectContaining({
+        op: 'add-point',
+        name: 'A',
+        constraint: expect.objectContaining({ kind: 'onCircle', circle: 'O' }),
+      }),
+    );
+  });
+
+  it('hinh9 #126: "Điểm P di chuyển trên cung nhỏ AD" → P onCircle (O) [rule-level]', () => {
+    // onCirclePoint CLAIM được clause này (regex POINT_ON khớp "P di chuyển trên
+    // cung nhỏ AD"). Dùng segmentClauses TRẦN (như các test khác trong file) để
+    // kiểm tra phần rule chịu trách nhiệm.
+    //
+    // GOTCHA pipeline (ngoài phạm vi rule này): trong runDeterministicIntents,
+    // clause "(Điểm)? P di chuyển trên cung …" bị coverage.ts đánh dấu
+    // hasGeometry=false (LOCUS_CLAUSE: "di chuyển trên cung" = locus điểm-trên-
+    // đường-tròn) → KHÔNG được feed vào runRules → P không dựng → transpile-fail
+    // (PB/PC ref P). Để #126 chạy end-to-end cần nới LOCUS_CLAUSE/locusOnly trong
+    // coverage.ts (file đó nằm ngoài phạm vi thay đổi của task này).
+    const all = intents(
+      'Cho hình vuông ABCD nội tiếp đường tròn (O). Điểm P di chuyển trên cung nhỏ AD.',
+    );
+    expect(all).toContainEqual(
+      expect.objectContaining({
+        op: 'add-point',
+        name: 'P',
+        constraint: expect.objectContaining({ kind: 'onCircle', circle: 'O' }),
+      }),
+    );
+  });
+
+  // GUARD chống regress (shared rule): onCirclePoint KHÔNG được claim điểm trên
+  // CẠNH/đoạn — đó là việc của onSegmentPoint. Hậu tố ON_SUFFIX neo circle/cung,
+  // "cạnh AC" không khớp → không emit.
+  it('GUARD: "Trên cạnh AC lấy điểm M" KHÔNG bị onCirclePoint claim (thuộc onSegmentPoint)', () => {
+    const all = geoIntents('Cho tam giác ABC nội tiếp đường tròn (O). Trên cạnh AC lấy điểm M.');
+    expect(all.find((i) => i.name === 'M')).toBeUndefined();
+  });
+
+  it('GUARD: "Điểm E thuộc cạnh BC" KHÔNG bị onCirclePoint claim', () => {
+    const all = geoIntents('Cho tam giác ABC nội tiếp đường tròn (O). Điểm E thuộc cạnh BC.');
+    expect(all.find((i) => i.name === 'E')).toBeUndefined();
   });
 });
