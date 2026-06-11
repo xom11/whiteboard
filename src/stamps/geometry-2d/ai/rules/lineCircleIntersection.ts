@@ -9,9 +9,9 @@
 // "đường cao AD cắt lại ngoại tiếp tại M", "CM cắt (O) tại N"; dạng cần loại
 // chữ thứ hai sẽ phải có rule riêng/fail-safe sau.
 import type { LanguageRule, RuleMatch } from './_types';
-import { addPoint } from './_shared';
+import { addPoint, CIRCLE_KW } from './_shared';
 
-const PREFILTER = /cắt\s+(?:lại\s+)?(?:(?:nửa\s+)?đường\s*tròn\s*)?\(|giao\s*điểm\s+(?:thứ\s+hai\s+)?(?:của\s+|khác\s+[A-Z]\s+của\s+)?[A-Z]{2}\s+(?:và|với)\s+(?:đường\s*tròn\s*)?\(/u;
+const PREFILTER = /cắt\s+(?:lại\s+)?(?:(?:nửa\s+)?đường\s*tròn\s*)?\(|giao\s*điểm\s+(?:thứ\s+hai\s+)?(?:của\s+|khác\s+[A-Z]\s+của\s+)?[A-Z]{2}\s+(?:và|với)\s+(?:(?:nửa\s+)?đường\s*tròn\s*)?(?:\(|ngoại\s*tiếp\s+tam\s*giác)/u;
 const CIRCLE = String.raw`(?:đường\s*tròn\s*)?\(\s*([A-Z])(?:['′]?)\s*\)`;
 // Circle GIỮ prime trong tên tâm (O'): cần cho "(O')" — đường tròn đường kính
 // đặt tên "O'_c" (circleDiameter). emit raw "O'" → resolveCircleNames map "O'_c".
@@ -79,6 +79,20 @@ const DISTRIB_2ND = new RegExp(
 // và (O)" (VD8). g1=name, g2=other(khác), g3=line, g4|g5=circle.
 const NAME_KHAC_CUA = new RegExp(
   String.raw`([A-Z])(?![A-Z])\s+là\s+giao\s*điểm\s+(?:thứ\s+hai\s+)?khác\s+([A-Z])(?![A-Z])\s+của\s+([A-Z]{2})(?![A-Z])\s+(?:và|với)\s+` + CIRCLE,
+  'gu',
+);
+
+// Đường tròn MÔ TẢ (KHÔNG "(O)"): "giao điểm thứ hai của <LINE> (và|với) (nửa)?
+// đường tròn ngoại tiếp tam giác XYZ là (điểm)? P (khác Q)?" (hinh9 #66).
+// circleTriangle dựng circumcircle này KHÔNG khai báo tâm → tên mặc định "O"
+// (intentFor: center || 'O'). Vì cụm "đường tròn ngoại tiếp tam giác XYZ" ở đây
+// KHÔNG có token tâm "(X)"/"tâm X" chen giữa → resolve circle ref = "O".
+// Tên P đứng SAU, "khác Q" optional (Q = điểm chung cần loại; else default line[0]).
+const NAME_2ND_CIRCUM = new RegExp(
+  String.raw`giao\s*điểm\s+thứ\s+hai\s+của\s+([A-Z]{2})(?![A-Z])\s+(?:và|với)\s+` +
+    String.raw`(?:nửa\s+)?` + CIRCLE_KW +
+    String.raw`\s+ngoại\s*tiếp\s+tam\s*giác\s+[A-Z]{3}(?![A-Z])` +
+    String.raw`\s+là\s+(?:điểm\s+)?([A-Z])(?![A-Z])(?:\s+khác\s+([A-Z])(?![A-Z]))?`,
   'gu',
 );
 
@@ -162,6 +176,17 @@ export const lineCircleIntersectionRule: LanguageRule = {
         const line = m[3];
         const circle = m[4];
         if (valid(name, line)) intents.push(secondIntersection(name, line, circle, other));
+      }
+
+      // "giao điểm thứ hai của AI và đường tròn ngoại tiếp tam giác ABC là điểm P
+      // khác A" — circle MÔ TẢ (không "(O)"), resolve = "O" (tên circleTriangle dùng
+      // cho circumcircle không khai báo tâm). other = "khác Q" (nếu có), else line[0].
+      NAME_2ND_CIRCUM.lastIndex = 0;
+      for (const m of c.text.matchAll(NAME_2ND_CIRCUM)) {
+        const line = m[1];
+        const name = m[2];
+        const other = m[3]; // "khác Q" optional
+        if (valid(name, line)) intents.push(secondIntersection(name, line, 'O', other));
       }
 
       // "EI ⊥ BC … cắt (nửa)? đường tròn (O') ở F" → F = giao đường vuông góc với

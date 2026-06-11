@@ -1,8 +1,15 @@
 import { lineCircleIntersectionRule } from '../lineCircleIntersection';
 import { segmentClauses } from '../../deterministic/coverage';
+import { normalizeProblemText } from '../../deterministic/normalizeText';
 
 function run(problem: string) {
   return lineCircleIntersectionRule.match({ problem, clauses: segmentClauses(problem) });
+}
+
+function ctxOf(text: string) {
+  const problem = normalizeProblemText(text);
+  const clauses = segmentClauses(problem).filter((c) => c.hasGeometry);
+  return { problem, clauses };
 }
 
 describe('lineCircleIntersectionRule', () => {
@@ -64,5 +71,31 @@ describe('lineCircleIntersection — "cắt (O) tại hai điểm M, N" (cả 2 
     const it = run('BD cắt (O) tại hai điểm M, N').flatMap((m) => m.intents) as any[];
     expect(it.find((i) => i.name === 'M').constraint).toEqual({ kind: 'intersection', of: ['BD', 'O'], branch: 0 });
     expect(it.find((i) => i.name === 'N').constraint).toEqual({ kind: 'intersection', of: ['BD', 'O'], branch: 1 });
+  });
+});
+
+describe('lineCircleIntersection — circumcircle mô tả (không "(O)")', () => {
+  // hinh9 #66: "Gọi giao điểm thứ hai của AI và đường tròn ngoại tiếp tam giác
+  // ABC là điểm P khác A". circleTriangle đặt tên circumcircle = "O" (default,
+  // không khai báo tâm) → secondIntersection phải tham chiếu "O".
+  it('"giao điểm thứ hai của AI và đường tròn ngoại tiếp tam giác ABC là điểm P khác A"', () => {
+    const ctx = ctxOf(
+      'Cho tam giác ABC. Gọi giao điểm thứ hai của AI và đường tròn ngoại tiếp tam giác ABC là điểm P khác A',
+    );
+    const intents = lineCircleIntersectionRule.match(ctx).flatMap((m) => m.intents) as any[];
+    const p = intents.find((i) => i.name === 'P');
+    expect(p).toBeDefined();
+    expect(p.op).toBe('add-point');
+    expect(p.constraint).toEqual({ kind: 'secondIntersection', line: 'AI', circle: 'O', other: 'A' });
+  });
+
+  it('claim clause chứa "đường tròn ngoại tiếp tam giác"', () => {
+    const ctx = ctxOf(
+      'Cho tam giác ABC. Gọi giao điểm thứ hai của AI và đường tròn ngoại tiếp tam giác ABC là điểm P khác A',
+    );
+    const matches = lineCircleIntersectionRule.match(ctx);
+    const target = ctx.clauses.find((c) => /giao\s*điểm\s+thứ\s+hai/u.test(c.text))!;
+    const claimed = matches.some((m) => m.clauseIds.includes(target.id));
+    expect(claimed).toBe(true);
   });
 });
