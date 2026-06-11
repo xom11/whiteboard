@@ -63,6 +63,14 @@ describe('dataset coverage batch 2026-06-11 (end-to-end)', () => {
       't02:BT23 incircle D,E,F + trung điểm NP, PM, MN (distributive zip không "lần lượt")',
       'Cho đường tròn (I) nội tiếp tam giác ABC không cân, tiếp xúc các cạnh BC, CA, AB tại M, N, P. Gọi D, E, F là trung điểm của NP, PM, MN.',
     ],
+    [
+      "t02:BT18 đường cao BB', CC' (chân prime) + EF, B'C' cắt nhau tại K (primed)",
+      "Cho tam giác ABC, đường cao BB', CC'. Gọi E, F lần lượt là trung điểm của AC, AB. Các đường thẳng EF, B'C' cắt nhau tại K.",
+    ],
+    [
+      't02:BT19 nội tiếp (O;R) + phân giác BE,CF cắt (O) + 2 đường ⊥ gặp tại S',
+      'Cho tam giác ABC nội tiếp (O; R). Các đường phân giác trong BE, CF theo thứ tự cắt (O) tại M, N. Đường thẳng qua M vuông góc với BM cắt đường thẳng qua N vuông góc với CN tại S.',
+    ],
   ];
 
   it.each(OK_CASES)('dựng được: %s', (_label, problem) => {
