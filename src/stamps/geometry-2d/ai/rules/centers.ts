@@ -38,6 +38,23 @@ const TAM_INSCRIBE = /(?<!\p{L})tâm\s*(?:đường\s*tròn\s*)?nội\s*tiếp(?
 // Tên tâm đứng trước "tâm" qua "là": "O là tâm", "Gọi O là tâm (đường tròn)…".
 const NAME_BEFORE_TAM = /(?<!\p{L})([A-Z])\s+là\s+tâm(?!\p{L})/u;
 
+// Distributive tâm: "O và H lần lượt là tâm (đường tròn)? ngoại tiếp và trực
+// tâm (của tam giác ABC)?" → O=circumcenter, H=orthocenter (zip tên↔loại). Hỗ
+// trợ mọi cặp loại tâm. Bài 30/31/84.
+const CENTER_TYPE =
+  '(tâm\\s*(?:đường\\s*tròn\\s*)?ngoại\\s*tiếp|tâm\\s*(?:đường\\s*tròn\\s*)?nội\\s*tiếp|trực\\s*tâm|trọng\\s*tâm)';
+const DISTRIB_CENTERS = new RegExp(
+  `([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])\\s+lần\\s*lượt\\s+là\\s+${CENTER_TYPE}\\s+và\\s+${CENTER_TYPE}` +
+    '(?:\\s+(?:của\\s+)?tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z]))?',
+  'u',
+);
+function centerTypeToKind(t: string): 'circumcenter' | 'incenter' | 'orthocenter' | 'centroid' {
+  if (/ngoại/u.test(t)) return 'circumcenter';
+  if (/nội/u.test(t)) return 'incenter';
+  if (/trực/u.test(t)) return 'orthocenter';
+  return 'centroid';
+}
+
 // === EN keyword (issue #46 group B) =========================================
 // Từ khoá tâm tiếng Anh. First-letter case flex ([Cc], [Oo]…) — KHÔNG cờ 'i'
 // (sẽ phá [A-Z] nhãn). British spelling -centre cũng nhận. Neo (?![A-Za-z]) để
@@ -208,6 +225,18 @@ export const centersRule: LanguageRule = {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
       const intents = [];
+
+      // Distributive "N1 và N2 lần lượt là <loại1> và <loại2>" — zip tên↔loại.
+      const dc = DISTRIB_CENTERS.exec(c.text);
+      if (dc) {
+        const of = dc[5] && dc[6] && dc[7] ? [dc[5], dc[6], dc[7]] : uniqueProblemTri;
+        if (of) {
+          intents.push(addPoint(dc[1], { kind: centerTypeToKind(dc[3]), of }));
+          intents.push(addPoint(dc[2], { kind: centerTypeToKind(dc[4]), of }));
+          out.push({ ruleId: 'centers', clauseIds: [c.id], intents });
+          continue; // clause đã xử lý bằng distributive
+        }
+      }
 
       if (CENTROID_KW.test(c.text)) {
         const name = resolveName(c.text, CENTROID_KW);

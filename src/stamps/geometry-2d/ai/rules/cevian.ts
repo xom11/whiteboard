@@ -60,9 +60,10 @@ const CEVIAN_PATTERNS: ReadonlyArray<{ type: CevianType; patterns: readonly RegE
   {
     type: 'median',
     patterns: [
-      /(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\s+[Tt]rung\s*tuyến\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      /(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\s+(?:[Đđ]ường\s*)?[Tt]rung\s*tuyến\s+([A-Z])([A-Z])(?![A-Z])/gu,
       /[Tt]rung\s*tuyến\s+([A-Z])([A-Z])(?![A-Z])/gu,
-      /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?trung\s*tuyến/gu,
+      // "AM là (đường)? trung tuyến" — "đường" tuỳ chọn ("AM là đường trung tuyến").
+      /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?(?:đường\s*)?trung\s*tuyến/gu,
       // EN (issue #46 group B). g1=apex g2=foot. First-letter flex [Mm].
       /[Mm]edian\s+([A-Z])([A-Z])(?![A-Z])/gu,
       /(?<![A-Z])([A-Z])([A-Z])\s+(?:is|be)\s+(?:the\s+)?median(?![A-Za-z])/gu,

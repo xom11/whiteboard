@@ -200,6 +200,16 @@ const ALTITUDE_BUNDLE = new RegExp(
 );
 const TRI_G = /tam\s*giác\s+(?:(?:nhọn|cân|đều|vuông|tù)\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
 
+// "D, E lần lượt là chân (các)? đường cao (của tam giác XYZ)? (kẻ|hạ)? từ A, B" →
+// chân đường cao ĐẶT TÊN + đỉnh xuất phát qua "từ A,B"; cạnh đối suy từ tam giác.
+// Bài 112: "Gọi D,E lần lượt là chân các đường cao của tam giác ABC hạ từ A,B".
+//   groups: 1=names blob | 2,3,4=tam giác (optional) | 5=from blob
+const ALTITUDE_FEET_FROM = new RegExp(
+  `((?:[A-Z](?:['′]?)\\s*,\\s*)+[A-Z](?:['′]?))\\s+(?:lần\\s*lượt\\s+|theo\\s+thứ\\s+tự\\s+)?là\\s+(?:các\\s+)?chân\\s+(?:các\\s+)?${DUONG_KW}\\s+cao` +
+    `(?:\\s+của\\s+tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z]))?\\s*(?:kẻ\\s+|hạ\\s+|vẽ\\s+)?(?:từ|của)\\s+((?:[A-Z]\\s*,\\s*)+[A-Z])(?![A-Z])`,
+  'gu',
+);
+
 // "BE, CF là (hai)? đường cao" — token đường cao ĐỨNG TRƯỚC "là … đường cao"
 // (KHÁC ALTITUDE_BUNDLE: token sau "đường cao"). Mỗi token XY: X=đỉnh, Y=chân
 // trên cạnh đối X (suy từ tam giác). KHÔNG cần "cắt nhau tại H".
@@ -295,6 +305,25 @@ function parseFeet(text: string, fallbackTri?: string[]): Foot[] {
       local.push({ name, from, onLine, withSegment: true });
     }
     if (ok && local.length > 0) return local;
+  }
+
+  // -0.4) "D,E lần lượt là chân (các) đường cao (của tam giác XYZ)? hạ từ A,B" →
+  //   chân = tên ĐẶT; đỉnh từ blob "từ A,B"; cạnh đối suy từ tam giác. Zip 1-1.
+  ALTITUDE_FEET_FROM.lastIndex = 0;
+  for (const m of text.matchAll(ALTITUDE_FEET_FROM)) {
+    const localTri = m[2] && m[3] && m[4] ? [m[2], m[3], m[4]] : fallbackTri;
+    if (!localTri) continue;
+    const names = splitNames(m[1]);
+    const froms = m[5].split(',').map((s) => s.trim()).filter(Boolean);
+    if (names.length < 2 || names.length !== froms.length) continue;
+    let ok = true;
+    const local: Foot[] = [];
+    for (let i = 0; i < names.length; i++) {
+      const onLine = oppositeSide(froms[i], localTri);
+      if (!onLine || localTri.includes(names[i])) { ok = false; break; }
+      local.push({ name: names[i], from: froms[i], onLine, withSegment: true });
+    }
+    if (ok) return local;
   }
 
   // 0) Distributive SHARED-FROM: "X, Y, Z lần lượt là hình chiếu/chân vuông góc

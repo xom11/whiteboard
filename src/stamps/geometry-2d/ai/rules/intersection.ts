@@ -76,6 +76,15 @@ const GIAO_TWO_ONE_LA = new RegExp(
   'gu',
 );
 
+// F3 (ZIP): "R1, R2 lần lượt cắt R3, R4 tại M, N" → M=R1∩R3, N=R2∩R4 (zip
+//   1-1, KHÔNG dùng chung đường). "lần lượt/theo thứ tự" BẮT BUỘC để chắc zip.
+//   Bài 99: "Các đường thẳng BO,CO lần lượt cắt các đoạn thẳng AC,AB tại M,N".
+//   groups: 1=ref1 2=ref2 3=ref3 4=ref4 5=name1 6=name2.
+const CAT_ZIP = new RegExp(
+  `${REF}\\s*,\\s*${REF}\\s+(?:lần\\s*lượt\\s+|theo\\s+thứ\\s+tự\\s+)cắt\\s+(?:các\\s+)?(?:đoạn(?:\\s+thẳng)?\\s+|cạnh\\s+|${DUONG_KW}\\s*thẳng\\s+)?${REF}\\s*,\\s*${REF}\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])`,
+  'gu',
+);
+
 // Tên điểm đứng TRƯỚC (pattern A): "X là " NGAY TRƯỚC "giao điểm".
 const NAME_BEFORE = /([A-Z])(?:['′]?)\s+là\s+$/u;
 
@@ -203,6 +212,12 @@ export const intersectionRule: LanguageRule = {
       for (const m of c.text.matchAll(GIAO_TWO_ONE_LA)) {
         emit(m[4], m[1], m[3]);
         emit(m[5], m[2], m[3]);
+      }
+      // F3 (ZIP): "R1, R2 lần lượt cắt R3, R4 tại M, N" → M=R1∩R3, N=R2∩R4.
+      CAT_ZIP.lastIndex = 0;
+      for (const m of c.text.matchAll(CAT_ZIP)) {
+        emit(m[5], m[1], m[3]);
+        emit(m[6], m[2], m[4]);
       }
 
       // A2: tên SAU — "giao điểm của REF1 và REF2 là Z" (ưu tiên trước A để
