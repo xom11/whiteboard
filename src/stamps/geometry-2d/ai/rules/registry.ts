@@ -79,8 +79,10 @@ import { multiDiameterCirclesRule } from './multiDiameterCircles';
 import { cutCirclesDistribRule } from './cutCirclesDistrib';
 import { givenNamedCircleRule } from './givenNamedCircle';
 import { twoPerpLinesMeetRule } from './twoPerpLinesMeet';
+import { circumcircleCutsLineRule } from './circumcircleCutsLine';
 
 const RULES: readonly LanguageRule[] = [
+  circumcircleCutsLineRule,
   triangleRule,
   quadRule,
   connectRule,
