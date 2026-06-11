@@ -195,7 +195,7 @@ const PERP_DRAW_EN = new RegExp(
 // Separator giữa các token đường cao: dấu phẩy HOẶC "và" ("BD và CE", "AD, BE,
 // CF"). parseAltitudeBundle split theo cùng pattern.
 const ALTITUDE_BUNDLE = new RegExp(
-  `(?:hai\\s+|ba\\s+|các\\s+)?${DUONG_KW}\\s+cao\\s+((?:[A-Z]{2}\\s*(?:,|và)\\s*){0,2}[A-Z]{2})(?![A-Z])(?:\\s+của\\s+tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z]))?[^.]{0,60}?(?:cắt\\s+nhau|đồng\\s*quy)\\s+tại\\s+([A-Z])`,
+  `(?:hai\\s+|ba\\s+|các\\s+)?${DUONG_KW}\\s+cao\\s+((?:[A-Z]{2}\\s*(?:,|và)\\s*){0,2}[A-Z]{2})(?![A-Z])(?:\\s+của\\s+tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z]))?[^.]{0,60}?(?:cắt\\s+nhau|đồng\\s*quy|cùng\\s+đi\\s+qua)\\s+(?:tại\\s+|qua\\s+)?(?:điểm\\s+)?([A-Z])(?![A-Z])`,
   'gu',
 );
 const TRI_G = /tam\s*giác\s+(?:(?:nhọn|cân|đều|vuông|tù)\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;

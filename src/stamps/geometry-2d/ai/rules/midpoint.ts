@@ -32,7 +32,7 @@ const NAME_AFTER_G = new RegExp(
 // của NP, PM, MN" cũng là zip (≥2 tên liệt kê phẩy NGAY trước "(là) trung điểm"
 // → an toàn; dạng đơn "M là trung điểm BC" không có blob tên ≥2 nên không dính).
 const DISTRIB = new RegExp(
-  `((?:[A-Z](?:['′]?)\\s*,\\s*)+[A-Z](?:['′]?))\\s+(?:lần\\s*lượt\\s+|theo\\s+thứ\\s+tự\\s+)?(?:là\\s+)?(?:điểm\\s+)?trung\\s*điểm\\s+(?:của\\s+)?(?:các\\s+)?${SIDE_PREFIX}((?:[A-Z][A-Z]\\s*,\\s*)*(?:[A-Z][A-Z]\\s*,\\s*)?[A-Z][A-Z](?:\\s*và\\s*[A-Z][A-Z])?)`,
+  `((?:[A-Z](?:['′]?)\\s*(?:,|và)\\s*)+[A-Z](?:['′]?))\\s+(?:lần\\s*lượt\\s+|theo\\s+thứ\\s+tự\\s+)?(?:là\\s+)?(?:điểm\\s+)?trung\\s*điểm\\s+(?:của\\s+)?(?:các\\s+)?${SIDE_PREFIX}((?:[A-Z][A-Z]\\s*,\\s*)*(?:[A-Z][A-Z]\\s*,\\s*)?[A-Z][A-Z](?:\\s*và\\s*[A-Z][A-Z])?)`,
   'u',
 );
 
@@ -102,7 +102,7 @@ export const midpointRule: LanguageRule = {
         const dm = DISTRIB.exec(c.text);
         if (dm) {
           const names = dm[1]
-            .split(',')
+            .split(/\s*,\s*|\s+và\s+/u)
             .map((s) => nameToken(s))
             .filter((x): x is string => !!x);
           const pairs = dm[2]

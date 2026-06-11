@@ -71,7 +71,7 @@ const TWO_SAME_SEG = new RegExp(
 // Distributive ZIP: "(các)? điểm P, Q (theo thứ tự|lần lượt)? thuộc AC, AB"
 //   → P↔AC, Q↔AB. (Cần "theo thứ tự"/"lần lượt" để chắc là zip, không phải cùng đoạn.)
 const ZIP_SEG = new RegExp(
-  String.raw`(?:[CcNn]ác\s+|[Nn]hững\s+)?điểm\s+([A-Z])\s*,\s*([A-Z])(?![A-Z])\s+(?:theo\s+thứ\s+tự|lần\s*lượt)\s+thuộc\s+(?:cạnh\s+|đoạn\s+)?${SEG}\s*,\s*${SEG}`,
+  String.raw`(?:[CcNn]ác\s+|[Nn]hững\s+)?điểm\s+([A-Z])\s*,\s*([A-Z])(?![A-Z])\s+(?:theo\s+thứ\s+tự|lần\s*lượt)\s+thuộc\s+(?:các\s+)?(?:cạnh\s+|đoạn\s+)?${SEG}\s*,\s*${SEG}`,
   'gu',
 );
 // Distributive ĐOẠN-TRƯỚC: "trên BC, CA, AB (thứ tự|lần lượt)? lấy (các)? điểm
