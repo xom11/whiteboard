@@ -120,6 +120,17 @@ const CEVIAN_PATTERNS: ReadonlyArray<{ type: CevianType; patterns: readonly RegE
 const PAIR_LIST = String.raw`(?:[A-Z][A-Z](?:['′])?\s*,\s*)+[A-Z][A-Z](?:['′])?`;
 const CEVIAN_LISTS: ReadonlyArray<{ type: CevianType; re: RegExp }> = [
   { type: 'altitude', re: new RegExp(String.raw`[Đđ]ường\s*cao\s+(${PAIR_LIST})(?![A-Z])`, 'gu') },
+  // Reverse-distributive (tên TRƯỚC, list): "AD,BE,CF (là) (các) đường cao"
+  // (hinh9 #119: "Gọi AD,BE,CF là các đường cao và H là trực tâm"). DISTRIB_LIST
+  // ở trên cần keyword TRƯỚC list nên bỏ sót dạng này. Capture group 1 = PAIR_LIST
+  // (giống forward) → tái dùng nguyên path split→splitCevianPair→addCandidate
+  // (apex=chữ đầu, foot=chữ sau, onLine=cạnh đối) — KHÔNG dựng lại logic chân.
+  // CHỈ altitude (median/bisector reverse-list ngoài phạm vi). (?!\p{L}) chặn
+  // nuốt chữ nối ("đường cao nhất"…). dedup theo (apex,foot,type) né trùng single.
+  {
+    type: 'altitude',
+    re: new RegExp(String.raw`(${PAIR_LIST})\s+(?:là\s+)?(?:các\s+)?đường\s*cao(?!\p{L})`, 'gu'),
+  },
   { type: 'median', re: new RegExp(String.raw`[Tt]rung\s*tuyến\s+(${PAIR_LIST})(?![A-Z])`, 'gu') },
   {
     type: 'bisector',

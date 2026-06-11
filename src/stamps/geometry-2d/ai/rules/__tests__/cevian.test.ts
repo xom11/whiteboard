@@ -101,6 +101,22 @@ describe('cevianRule', () => {
     expect((med!.intents[0] as any).constraint).toEqual({ kind: 'midpoint', of: 'AC' });
   });
 
+  it('reverse-LIST "AD,BE,CF là các đường cao" → perpFoot D,E,F (tên trước, list)', () => {
+    // hinh9 #119: "Gọi AD,BE,CF là các đường cao và H là trực tâm của tam giác ABC".
+    // Danh sách tên ĐỨNG TRƯỚC "đường cao" → DISTRIB_LIST (keyword trước) bỏ sót.
+    const m = run(
+      'Cho tam giác ABC. Gọi AD,BE,CF là các đường cao và H là trực tâm của tam giác ABC.',
+    );
+    const feet = m
+      .map((rm) => rm.intents[0] as any)
+      .filter((p) => p.op === 'add-point' && p.constraint.kind === 'perpFoot');
+    const byName = new Map(feet.map((p) => [p.name, p.constraint]));
+    expect([...byName.keys()].sort()).toEqual(['D', 'E', 'F']);
+    expect(byName.get('D')).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
+    expect(byName.get('E')).toEqual({ kind: 'perpFoot', from: 'B', onLine: 'AC' });
+    expect(byName.get('F')).toEqual({ kind: 'perpFoot', from: 'C', onLine: 'AB' });
+  });
+
   it('2 cevian CÙNG loại cùng 1 clause → emit ĐỦ 2 (matchAll, không drop)', () => {
     // "đường cao AH và đường cao BK" — 2 perpFoot khác chân → cả 2 phải emit.
     const m = run('Cho tam giác ABC. Kẻ đường cao AH và đường cao BK.');
