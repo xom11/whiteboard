@@ -50,6 +50,24 @@ describe('segmentClauses', () => {
     expect(cls.every((c) => c.hasGeometry)).toBe(true);
   });
 
+  // Bug \b ASCII: "Vẽ"/"Kẻ" kết thúc bằng chữ Việt ('ẽ'/'ẻ' non-word theo ASCII)
+  // → `Vẽ\b` KHÔNG bao giờ khớp khi sau là space → comma-split chết im lặng.
+  it('tách clause ở dấu phẩy trước từ dẫn "Vẽ"/"Kẻ" (kết thúc bằng chữ Việt)', () => {
+    const ve = segmentClauses('Cho tam giác ABC, Vẽ đường cao AH');
+    expect(ve.map((c) => c.text)).toEqual(['Cho tam giác ABC', 'Vẽ đường cao AH']);
+
+    const ke = segmentClauses('Cho tam giác ABC, Kẻ phân giác AD');
+    expect(ke.map((c) => c.text)).toEqual(['Cho tam giác ABC', 'Kẻ phân giác AD']);
+  });
+
+  // Guard hồi quy: các từ dẫn kết thúc bằng ký tự ASCII vẫn split như cũ.
+  it('vẫn tách ở ", Gọi" và ", Let" như trước', () => {
+    const vn = segmentClauses('Cho tam giác ABC, Gọi M là trung điểm BC');
+    expect(vn.length).toBe(2);
+    const en = segmentClauses('Triangle ABC, Let M be the midpoint of BC');
+    expect(en.length).toBe(2);
+  });
+
   it('mục "a) Chứng minh …" / "b) …" (enumeration chữ) tính là proof', () => {
     const cls = segmentClauses(
       [

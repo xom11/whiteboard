@@ -54,9 +54,11 @@ export function markShape(shape: string, labels: string[]): IntentT {
 
 // --- Point-name extraction ----------------------------------------------------
 
+// KHÔNG dùng \b quanh chữ Việt: \b của JS theo ASCII nên 'à'/'ẽ' là non-word-char
+// → `là\b` chết khi sau là space (và khớp NHẦM "làm"). Neo bằng lookaround Unicode.
 const INTRO_NAME =
-  /(?:Gọi|Lấy|Dựng|Vẽ|Kẻ|Đặt|Xác định)\s+(?:điểm\s+)?([A-Z])(?:['′]?)\b/u;
-const NAME_LA = /\b([A-Z])(?:['′]?)\s+là\b/u;
+  /(?:Gọi|Lấy|Dựng|Vẽ|Kẻ|Đặt|Xác định)\s+(?:điểm\s+)?([A-Z])['′]?(?![\p{L}\d])/u;
+const NAME_LA = /(?<![\p{L}\d])([A-Z])['′]?\s+là(?!\p{L})/u;
 
 /**
  * Trích tên điểm được giới thiệu trong clause:

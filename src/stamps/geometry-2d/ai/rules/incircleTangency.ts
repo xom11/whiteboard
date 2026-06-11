@@ -34,8 +34,10 @@ const SIDE_POINT_LIST = /tiếp\s*xúc\s+(?:với\s+)?(?:các\s+|ba\s+|hai\s+|b�
 const REVERSED_SIDE_POINT = /(?:các\s+)?(?:cạnh|đoạn)\s+([A-Z]{2}(?:\s*,\s*[A-Z]{2})*)\s+tiếp\s*xúc\s+(?:với\s+)?đường\s*tròn\s*\(\s*([A-Z])\s*\)\s+(?:lần\s*lượt\s+|tương\s*ứng\s+)?tại\s+(?:các\s+)?(?:điểm\s+)?([A-Z](?:\s*,\s*[A-Z])*)(?![A-Za-z])/iu;
 
 function splitCsv(blob: string): string[] {
+  // Blob do capture đảm bảo chỉ gồm tên HOA + separator (,/và) → split thẳng.
+  // KHÔNG dùng \bvà\b: 'à' non-word theo ASCII nên \b sau 'à' chết trước space.
   return blob
-    .split(/,|\bvà\b|\s+và\s+/u)
+    .split(/,|và/iu)
     .map((s) => s.trim())
     .filter(Boolean);
 }

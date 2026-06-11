@@ -38,7 +38,9 @@ export function segmentClauses(problem: string): Clause[] {
 
   return problem
     .split(
-      /[.;\n]+|,\s*(?=(?:Gọi|Vẽ|Kẻ|Cho|Lấy|Dựng|trên|với|Let|Draw|Mark|Take|Construct|Join)\b)/u,
+      // (?!\p{L}) thay \b: "Vẽ"/"Kẻ" kết thúc bằng chữ Việt — \b ASCII không bao
+      // giờ khớp trước space → split chết im lặng (bug class \b+tiếng Việt).
+      /[.;\n]+|,\s*(?=(?:Gọi|Vẽ|Kẻ|Cho|Lấy|Dựng|trên|với|Let|Draw|Mark|Take|Construct|Join)(?!\p{L}))/u,
     )
     .map((s) => s.trim())
     .filter((s) => s.length > 0)
