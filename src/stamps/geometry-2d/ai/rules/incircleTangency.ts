@@ -18,7 +18,9 @@ const INCIRCLE_IN_CLAUSE = /đường\s*tròn\s*(?:\(\s*([A-Z])\s*\)|tâm\s+([A-
 // "cạnh|đoạn" optional: "tiếp xúc với AB, AC, BC lần lượt tại D, E, F" (Bài 18)
 // không nêu chữ "cạnh". Separator danh sách = "," HOẶC "và" ("AB, AC lần lượt
 // tại D và E" — VD12, tiếp xúc 2 cạnh). splitCsv tách cả "và".
-const SIDE_POINT_LIST = /tiếp\s*xúc\s+(?:với\s+)?(?:các\s+)?(?:(?:cạnh|đoạn)\s+)?([A-Z]{2}(?:\s*(?:,|và)\s*[A-Z]{2})*)\s+(?:lần\s*lượt\s+|tương\s*ứng\s+)?tại\s+(?:các\s+)?(?:điểm\s+)?([A-Z](?:\s*(?:,|và)\s*[A-Z])*)(?![A-Za-z])/iu;
+// Tiền tố đếm "các|ba|hai|bốn" trước "cạnh"/"điểm" ("ba cạnh BC,CA và AB",
+// "tại ba điểm D,E và F" — Bài 57).
+const SIDE_POINT_LIST = /tiếp\s*xúc\s+(?:với\s+)?(?:các\s+|ba\s+|hai\s+|bốn\s+)?(?:(?:cạnh|đoạn)\s+)?([A-Z]{2}(?:\s*(?:,|và)\s*[A-Z]{2})*)\s+(?:lần\s*lượt\s+|tương\s*ứng\s+)?tại\s+(?:các\s+|ba\s+|hai\s+|bốn\s+)?(?:điểm\s+)?([A-Z](?:\s*(?:,|và)\s*[A-Z])*)(?![A-Za-z])/iu;
 
 // Dạng ĐẢO (Bài 11): "Cạnh AB, BC, CA tiếp xúc với đường tròn (O) tại D, E, F".
 // Cạnh đứng TRƯỚC "tiếp xúc"; đường tròn (O) là đường tròn NỘI TIẾP (tiếp xúc cả

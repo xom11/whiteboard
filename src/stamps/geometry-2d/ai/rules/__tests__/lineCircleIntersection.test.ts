@@ -29,6 +29,18 @@ describe('lineCircleIntersectionRule', () => {
     expect(run('AB cắt (O) tại A')).toEqual([]);
   });
 
+  it('Bài 84: "AI cắt lại đường tròn (O) tại điểm thứ hai M" (cắt lại + thứ hai)', () => {
+    expect(run('Đường thẳng AI cắt lại đường tròn (O) tại điểm thứ hai M').flatMap((x) => x.intents)).toEqual([
+      { op: 'add-point', name: 'M', constraint: { kind: 'secondIntersection', line: 'AI', circle: 'O', other: 'A' } },
+    ]);
+  });
+
+  it('Bài 88: "DM cắt đường tròn (O) tại điểm thứ hai là S" (là trước tên)', () => {
+    expect(run('Đường thẳng DM cắt đường tròn (O) tại điểm thứ hai là S').flatMap((x) => x.intents)).toEqual([
+      { op: 'add-point', name: 'S', constraint: { kind: 'secondIntersection', line: 'DM', circle: 'O', other: 'D' } },
+    ]);
+  });
+
   it('"FH cắt (O) tại điểm G khác F" → secondIntersection other=F (Câu 28)', () => {
     const pt = run('FH cắt (O) tại điểm G khác F').flatMap((m) => m.intents)[0] as any;
     expect(pt.constraint).toEqual({ kind: 'secondIntersection', line: 'FH', circle: 'O', other: 'F' });

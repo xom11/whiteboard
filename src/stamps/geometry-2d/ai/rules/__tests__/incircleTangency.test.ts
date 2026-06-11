@@ -20,6 +20,17 @@ describe('incircle tangency rule', () => {
     ]);
   });
 
+  it('Bài 57: "tiếp xúc với ba cạnh BC,CA và AB lần lượt tại ba điểm D,E và F" (từ đếm "ba")', () => {
+    const tang = intents(
+      'Đường tròn (I) nội tiếp tam giác ABC, tiếp xúc với ba cạnh BC,CA và AB lần lượt tại ba điểm D,E và F.',
+    ).filter((i) => i.op === 'add-point' && i.constraint?.kind === 'tangencyPoint');
+    expect(tang).toEqual([
+      { op: 'add-point', name: 'D', constraint: { kind: 'tangencyPoint', circle: 'I', onLine: 'BC' } },
+      { op: 'add-point', name: 'E', constraint: { kind: 'tangencyPoint', circle: 'I', onLine: 'CA' } },
+      { op: 'add-point', name: 'F', constraint: { kind: 'tangencyPoint', circle: 'I', onLine: 'AB' } },
+    ]);
+  });
+
   it('Bài 11 reversed: "Cạnh AB, BC, CA tiếp xúc với đường tròn (O) tại D, E, F" → incircle O + tangency', () => {
     const all = intents(
       'Cho tam giác ABC. Cạnh AB, BC, CA tiếp xúc với đường tròn (O) tại các điểm D, E, F.',

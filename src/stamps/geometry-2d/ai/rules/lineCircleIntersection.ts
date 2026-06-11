@@ -37,8 +37,8 @@ const TRIPLE_DISTRIB = new RegExp(
 // optional. `khác W` (nếu có) là điểm chung cần loại (other); else mặc định
 // chữ đầu của line (đầu mút nằm trên đường tròn).
 const SINGLE = new RegExp(
-  String.raw`([A-Z]{2})(?![A-Z])\s+cắt\s+` + CIRCLE +
-    String.raw`\s+(?:ở|tại)\s+(?:điểm\s+(?:thứ\s+hai\s+)?)?([A-Z])(?![A-Z])(?:\s+khác\s+([A-Z])(?![A-Z]))?`,
+  String.raw`([A-Z]{2})(?![A-Z])\s+cắt\s+(?:lại\s+)?` + CIRCLE +
+    String.raw`\s+(?:ở|tại)\s+(?:điểm\s+(?:thứ\s+hai\s+)?)?(?:là\s+)?([A-Z])(?![A-Z])(?:\s+khác\s+([A-Z])(?![A-Z]))?`,
   'gu',
 );
 
