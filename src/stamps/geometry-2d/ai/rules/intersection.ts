@@ -64,7 +64,7 @@ const CAT_ONE_TWO = new RegExp(
 // F: 2 đường ∩ 1 đường — "TC, TB (lần lượt|theo thứ tự)? cắt EF tại P, Q"
 //    → P=TC∩EF, Q=TB∩EF. groups: 1=ref1, 2=ref2, 3=sharedLine, 4=name1, 5=name2.
 const CAT_TWO_ONE = new RegExp(
-  `${REF}\\s*,\\s*${REF}\\s+(?:lần\\s*lượt\\s+|theo\\s+thứ\\s+tự\\s+)?cắt\\s+${REF}\\s+tại\\s+([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])`,
+  `${REF}\\s*(?:,|và)\\s*${REF}\\s+(?:lần\\s*lượt\\s+|theo\\s+thứ\\s+tự\\s+)?cắt\\s+${REF}\\s+tại\\s+([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])`,
   'gu',
 );
 

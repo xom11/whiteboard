@@ -9,7 +9,13 @@ import { addPoint, drawCircle } from './_shared';
 import type { IntentT } from '../intent';
 import type { Clause } from '../deterministic/coverage';
 
-const PREFILTER = /tiếp\s*xúc/u;
+const PREFILTER = /tiếp\s*xúc|tiếp\s*điểm/u;
+
+// "tiếp điểm của (đường tròn)? (I) với (các cạnh)? BC,CA,AB lần lượt là D,E,F"
+// (tên ĐẶT SAU "là") + dạng đảo "tiếp điểm của BC,CA,AB với (đường tròn)? (I)
+// lần lượt là D,E,F". circle = tâm trong ngoặc. Bài 76, 91.
+const TANGENT_NAMED_FWD = /tiếp\s*điểm\s+(?:của\s+)?(?:đường\s*tròn\s*)?\(\s*([A-Z])\s*\)\s+với\s+(?:các\s+)?(?:(?:cạnh|đoạn)\s+)?([A-Z]{2}(?:\s*(?:,|và)\s*[A-Z]{2})*)\s+(?:lần\s*lượt\s+|theo\s+thứ\s+tự\s+)?là\s+(?:các\s+)?(?:điểm\s+)?([A-Z](?:\s*(?:,|và)\s*[A-Z])*)(?![A-Za-z])/iu;
+const TANGENT_NAMED_REV = /tiếp\s*điểm\s+(?:của\s+)?(?:các\s+)?(?:(?:cạnh|đoạn)\s+)?([A-Z]{2}(?:\s*(?:,|và)\s*[A-Z]{2})*)\s+với\s+(?:đường\s*tròn\s*)?\(\s*([A-Z])\s*\)\s+(?:lần\s*lượt\s+|theo\s+thứ\s+tự\s+)?là\s+(?:các\s+)?(?:điểm\s+)?([A-Z](?:\s*(?:,|và)\s*[A-Z])*)(?![A-Za-z])/iu;
 
 // Vertices SAU "tam giác" optional — "(I) nội tiếp tam giác tiếp xúc …" (đỉnh suy
 // từ các cạnh tiếp xúc) cũng hợp lệ.
@@ -94,6 +100,25 @@ export const incircleTangencyRule: LanguageRule = {
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const chunk of logicalChunks(ctx.problem, ctx.clauses)) {
+      // "tiếp điểm của (I) với BC,CA,AB lần lượt là D,E,F" (tên SAU "là") + đảo.
+      const tn = TANGENT_NAMED_FWD.exec(chunk.text) ?? TANGENT_NAMED_REV.exec(chunk.text);
+      if (tn) {
+        const fwd = TANGENT_NAMED_FWD.test(chunk.text);
+        const circle = fwd ? tn[1] : tn[2];
+        const sides = splitCsv(fwd ? tn[2] : tn[1]);
+        const names = splitCsv(tn[3]);
+        if (sides.length >= 1 && sides.length === names.length) {
+          const verts = [...new Set(sides.join('').split(''))];
+          const intents: IntentT[] = [];
+          if (verts.length === 3) intents.push(drawCircle(circle, 'inscribedIn', { triangle: verts }));
+          for (let i = 0; i < names.length; i++) {
+            intents.push(addPoint(names[i], { kind: 'tangencyPoint', circle, onLine: sides[i] }));
+          }
+          out.push({ ruleId: 'incircleTangency', clauseIds: chunk.clauseIds, intents });
+          continue;
+        }
+      }
+
       // Dạng ĐẢO trước: "Cạnh ... tiếp xúc với đường tròn (O) tại ..." — circle là
       // đường tròn nội tiếp, tự dựng inscribedIn + tiếp điểm.
       const rev = REVERSED_SIDE_POINT.exec(chunk.text);
