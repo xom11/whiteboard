@@ -423,6 +423,12 @@ export class JxgRenderer {
           center?: unknown;
           Radius?: () => number;
           vertices?: unknown[];
+          // Arc: radiuspoint/anglepoint (chữ thường). Sector/Angle: radiusPoint/
+          // anglePoint (chữ P HOA). center dùng chung.
+          radiuspoint?: unknown;
+          anglepoint?: unknown;
+          radiusPoint?: unknown;
+          anglePoint?: unknown;
         }
       | undefined;
     if (!el) return;
@@ -518,14 +524,45 @@ export class JxgRenderer {
         });
         halos.push(halo);
       } else if (isLineLike && el.point1 && el.point2) {
+        // Gồm cả slopetriangle (extends Line, elementClass 2) → halo line dọc
+        // đường dốc.
         const halo = board.create('line', [el.point1, el.point2], {
           ...haloBase,
           strokeWidth: 9,
         });
         halos.push(halo);
+      } else if (
+        (elType === 'arc' || elType === 'semicircle' || elType === 'circumcirclearc') &&
+        el.center && el.radiuspoint && el.anglepoint
+      ) {
+        // Arc (CURVE class) — dựng lại arc dày xám qua center/radiuspoint/anglepoint.
+        const halo = board.create('arc', [el.center, el.radiuspoint, el.anglepoint], {
+          ...haloBase,
+          strokeWidth: 9,
+          fillColor: 'none',
+          fillOpacity: 0,
+        });
+        halos.push(halo);
+      } else if (elType === 'sector' && el.center && el.radiusPoint && el.anglePoint) {
+        // Sector — chú ý property chữ P HOA (radiusPoint/anglePoint).
+        const halo = board.create('sector', [el.center, el.radiusPoint, el.anglePoint], {
+          ...haloBase,
+          strokeWidth: 7,
+          fillOpacity: 0.2,
+        });
+        halos.push(halo);
+      } else if (elType === 'angle' && el.center && el.radiusPoint && el.anglePoint) {
+        // Angle extends Sector: vertex = center, hai cạnh = radiusPoint/anglePoint.
+        // create('angle', [p1, vertex, p2]).
+        const halo = board.create('angle', [el.radiusPoint, el.center, el.anglePoint], {
+          ...haloBase,
+          strokeWidth: 7,
+          fillOpacity: 0.2,
+          radius: (el.getAttribute?.('radius') as number | undefined) ?? 1,
+        });
+        halos.push(halo);
       }
-      // Các kind khác (curve/functiongraph, arc, sector, angle, slopetriangle,
-      // text...) — chưa hỗ trợ halo; chỉ vẽ tay trong editor, AI pipeline không emit.
+      // Còn lại (functiongraph/curve, text...) — chưa hỗ trợ halo; hiếm khi chọn.
     } catch (err) {
       console.warn('[scene/render/2d] halo create fail:', err);
     }

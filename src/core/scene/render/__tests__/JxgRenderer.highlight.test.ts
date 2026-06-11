@@ -118,6 +118,44 @@ try { getKind(FAKE_REGPOLY); } catch {
   });
 }
 
+// Mock arc/semicircle/circumcirclearc: JSXGraph Arc — center/radiuspoint/anglepoint
+// (chữ thường), elementClass=4 (CURVE) nên KHÔNG bắt qua class → dùng elType.
+const FAKE_ARC = 'highlight_arc_kind';
+try { getKind(FAKE_ARC); } catch {
+  registerKind({
+    type: FAKE_ARC, schemaVersion: 1, migrate: {}, dependsOn: () => [], describe: (o) => o.label,
+    render: () => ({
+      elType: 'arc', elementClass: 4,
+      center: { id: 'O' }, radiuspoint: { id: 'A' }, anglepoint: { id: 'B' },
+      attrs: {}, getAttribute() { return undefined; }, setAttribute() { /* noop */ },
+    }),
+  });
+}
+
+// Mock sector + angle: Sector/Angle — center/radiusPoint/anglePoint (chữ P HOA).
+const FAKE_SECTOR = 'highlight_sector_kind';
+try { getKind(FAKE_SECTOR); } catch {
+  registerKind({
+    type: FAKE_SECTOR, schemaVersion: 1, migrate: {}, dependsOn: () => [], describe: (o) => o.label,
+    render: () => ({
+      elType: 'sector', elementClass: 4,
+      center: { id: 'O' }, radiusPoint: { id: 'A' }, anglePoint: { id: 'B' },
+      attrs: {}, getAttribute() { return undefined; }, setAttribute() { /* noop */ },
+    }),
+  });
+}
+const FAKE_ANGLE = 'highlight_angle_kind';
+try { getKind(FAKE_ANGLE); } catch {
+  registerKind({
+    type: FAKE_ANGLE, schemaVersion: 1, migrate: {}, dependsOn: () => [], describe: (o) => o.label,
+    render: () => ({
+      elType: 'angle', elementClass: 4,
+      center: { id: 'V' }, radiusPoint: { id: 'A' }, anglePoint: { id: 'C' },
+      attrs: {}, getAttribute() { return undefined; }, setAttribute() { /* noop */ },
+    }),
+  });
+}
+
 function mockBoard() {
   const created: Array<{ kind: string; parents: unknown[]; attrs?: unknown; id: number }> = [];
   let counter = 0;
@@ -240,6 +278,38 @@ describe('JxgRenderer.highlight (halo overlay)', () => {
     const polyHalos = board.created.filter((c) => c.kind === 'polygon');
     expect(polyHalos.length).toBe(1);
 
+    r.dispose();
+  });
+
+  it('creates an arc halo (center/radiuspoint/anglepoint) for arc/semicircle/circumcirclearc', () => {
+    const A: SceneObject = { id: 'A', label: 'arc', kind: FAKE_ARC, visible: true, locked: false, attrs: {} };
+    const board = mockBoard();
+    const r = new JxgRenderer(createStore(makeState(A)), board);
+    r.highlight('A');
+    const arcHalos = board.created.filter((c) => c.kind === 'arc');
+    expect(arcHalos.length).toBe(1);
+    expect((arcHalos[0].parents as Array<{ id: string }>).map((p) => p.id)).toEqual(['O', 'A', 'B']);
+    r.dispose();
+  });
+
+  it('creates a sector halo (center/radiusPoint/anglePoint — chữ P hoa) for sector', () => {
+    const A: SceneObject = { id: 'A', label: 'sec', kind: FAKE_SECTOR, visible: true, locked: false, attrs: {} };
+    const board = mockBoard();
+    const r = new JxgRenderer(createStore(makeState(A)), board);
+    r.highlight('A');
+    expect(board.created.filter((c) => c.kind === 'sector').length).toBe(1);
+    r.dispose();
+  });
+
+  it('creates an angle halo for angle (vertex = center, arms = radiusPoint/anglePoint)', () => {
+    const A: SceneObject = { id: 'A', label: 'ang', kind: FAKE_ANGLE, visible: true, locked: false, attrs: {} };
+    const board = mockBoard();
+    const r = new JxgRenderer(createStore(makeState(A)), board);
+    r.highlight('A');
+    const angHalos = board.created.filter((c) => c.kind === 'angle');
+    expect(angHalos.length).toBe(1);
+    // angle(p1, vertex, p2): vertex = center, arms = radiusPoint/anglePoint
+    expect((angHalos[0].parents as Array<{ id: string }>).map((p) => p.id)).toEqual(['A', 'V', 'C']);
     r.dispose();
   });
 
