@@ -80,12 +80,15 @@ const TRI_CIRCUMSCRIBES_CIRCLE = new RegExp(
 // Paren BẮT BUỘC (1 ký tự HOA trong ngoặc) để KHÔNG over-match "nội tiếp" trần.
 // Phân biệt với TRI_INSCRIBED_IN_CIRCLE/TRI_CIRCUMSCRIBES_CIRCLE: ở đó sau "tiếp"
 // là "đường tròn" → 2 nhánh không chồng (dedup theo spec:tri vẫn an toàn nếu có).
+// Paren cho phép hậu tố bán kính "(O; R)" / "(O; 3)" (đề olympiad rất hay viết
+// "tam giác ABC nội tiếp (O; R)" — KHÔNG chữ "đường tròn"). Suffix [;,][^()]*
+// optional. circleRadius bỏ qua "(O;R)" khi có "nội/ngoại tiếp" nên không double.
 const TRI_INSCRIBED_IN_PAREN = new RegExp(
-  'tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?nội\\s*tiếp\\s+(?:trong\\s+)?\\(\\s*([A-Z])\\s*\\)',
+  'tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?nội\\s*tiếp\\s+(?:trong\\s+)?\\(\\s*([A-Z])(?:\\s*[;,][^()]*)?\\s*\\)',
   'giu',
 );
 const TRI_CIRCUMSCRIBES_PAREN = new RegExp(
-  'tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?ngoại\\s*tiếp\\s+\\(\\s*([A-Z])\\s*\\)',
+  'tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?ngoại\\s*tiếp\\s+\\(\\s*([A-Z])(?:\\s*[;,][^()]*)?\\s*\\)',
   'giu',
 );
 
@@ -398,6 +401,24 @@ export const circleTriangleRule: LanguageRule = {
         clauseIds: [c.id],
         intents: hits.map((h) => intentFor(h.spec, h.tri, h.center)),
       });
+    }
+
+    // 1.5) Toàn đề: PAREN dạng tắt "tam giác XYZ nội/ngoại tiếp (O; R)" (KHÔNG chữ
+    //      "đường tròn"). segmenter cắt ';' → per-clause mất ')'. Whole-problem giữ
+    //      "(O; R)" nguyên. Dedup theo emitted (spec:tri).
+    for (const [re, spec] of [
+      [TRI_INSCRIBED_IN_PAREN, 'through3'],
+      [TRI_CIRCUMSCRIBES_PAREN, 'inscribedIn'],
+    ] as const) {
+      re.lastIndex = 0;
+      for (const m of ctx.problem.matchAll(re)) {
+        const tri = [m[1], m[2], m[3]];
+        const key = `${spec}:${tri.join('')}`;
+        if (emitted.has(key)) continue;
+        emitted.add(key);
+        const clauseIds = ctx.clauses.filter((c) => m[0].includes(c.text)).map((c) => c.id);
+        out.push({ ruleId: 'circleTriangle', clauseIds, intents: [intentFor(spec, tri, m[4] ?? '')] });
+      }
     }
 
     // 2) Toàn đề: ký hiệu "(O; R)" (segmenter cắt ';'). Bỏ qua nếu (spec:tri) đã

@@ -77,6 +77,7 @@ import { tangentLineNamedAtPointRule } from './tangentLineNamedAtPoint';
 import { givenDiameterCircleRule } from './givenDiameterCircle';
 import { multiDiameterCirclesRule } from './multiDiameterCircles';
 import { cutCirclesDistribRule } from './cutCirclesDistrib';
+import { givenNamedCircleRule } from './givenNamedCircle';
 
 const RULES: readonly LanguageRule[] = [
   triangleRule,
@@ -153,6 +154,7 @@ const RULES: readonly LanguageRule[] = [
   givenDiameterCircleRule,
   multiDiameterCirclesRule,
   cutCirclesDistribRule,
+  givenNamedCircleRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */
