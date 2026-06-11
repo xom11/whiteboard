@@ -63,8 +63,9 @@ const SINGLE = new RegExp(`(?:${PROJ_CORE})|(?:${FOOT_CORE})`, 'gu');
 // mỗi chân from riêng, nối "và"): ở đây 1 from + DANH SÁCH cạnh ngăn phẩy (≥2).
 // Số tên PHẢI bằng số cạnh (else bỏ → escalate, không đoán lệch).
 //   groups: 1=names blob (≥2, phẩy) | 2=from | 3=lines blob (≥2, phẩy)
-const NAMES_BLOB = "((?:[A-Z](?:['′]?)\\s*,\\s*)+[A-Z](?:['′]?))";
-const LINES_BLOB = '((?:[A-Z]{1,2}\\s*,\\s*)+[A-Z]{1,2})(?!\\p{L})';
+const NAMES_BLOB = "((?:[A-Z](?:['′]?)\\s*(?:,|và)\\s*)+[A-Z](?:['′]?))";
+// Cạnh ngăn bằng "," HOẶC "và" (vd "BC,CN và NB" — dấu cuối là "và").
+const LINES_BLOB = '((?:[A-Z]{1,2}\\s*(?:,|và)\\s*)+[A-Z]{1,2})(?!\\p{L})';
 // Tiền tố trước DANH SÁCH cạnh: "(các)? (đường thẳng|cạnh|đoạn)?".
 const LINES_PREFIX = '(?:các\\s+)?(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?';
 // "lần lượt" optional → bắt cả "X, Y là các hình chiếu của F trên L1, L2".
@@ -91,12 +92,25 @@ const DISTRIB_FOOT = new RegExp(
 // đường (vuông góc|cao)".
 //   groups: 1=name1 2=name2 3=from 4=line1 5=line2
 const TWO_LINES_PREP = '(?:trên|lên|xuống|đến|tới)';
-const TWO_LINES_LINE = '(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{1,2})(?![A-Z])';
+const TWO_LINES_LINE = '(?:các\\s+)?(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{1,2})(?![A-Z])';
+// Tên ngăn bằng "," HOẶC "và" ("E, F" / "E và F"). Cụm "chân đường vuông góc"
+// cho phép verb dựng "(kẻ|hạ|vẽ|dựng)" giữa "vuông góc" và "(từ|của)".
 const SHARED_FROM_TWO = new RegExp(
-  "([A-Z])(?:['′])?\\s*,\\s*([A-Z])(?:['′])?\\s+(?:lần\\s+lượt\\s+)?(?:là\\s+)?(?:các\\s+)?" +
+  "([A-Z])(?:['′])?\\s*(?:,|và)\\s*([A-Z])(?:['′])?\\s+(?:lần\\s+lượt\\s+)?(?:là\\s+)?(?:các\\s+)?" +
     '(?:hình\\s*chiếu\\s+(?:vuông\\s*góc\\s+)?|chân\\s+(?:của\\s+)?đường\\s+(?:vuông\\s*góc|cao)\\s+)' +
-    '(?:của\\s+|từ\\s+)?(?:điểm\\s+)?([A-Z])\\s+' +
+    '(?:kẻ\\s+|hạ\\s+|vẽ\\s+|dựng\\s+)?(?:của\\s+|từ\\s+)?(?:điểm\\s+)?([A-Z])\\s+' +
     TWO_LINES_PREP + '\\s+' + TWO_LINES_LINE + '\\s+và\\s+' + TWO_LINES_LINE,
+  'gu',
+);
+
+// "Kẻ/Vẽ/Dựng XY,XZ (lần lượt)? (⊥|vuông góc với?) L1,L2 (tại Z1,Z2)?" — phân
+// phối: cặp XY,XZ CÙNG chữ đầu (from), chân = chữ thứ 2, zip với L1,L2. Bài 4
+// ("Kẻ HE,HF ⊥ AB,AC"), Bài 35 ("Vẽ ME,MF ⊥ AC,AB tại E,F").
+//   groups: 1=from1 2=foot1 3=from2 4=foot2 5=line1 6=line2
+const PERP_DRAW_DISTRIB = new RegExp(
+  '(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\\s+([A-Z])([A-Z])\\s*,\\s*([A-Z])([A-Z])(?![A-Z])\\s+' +
+    '(?:lần\\s*lượt\\s+)?(?:⊥|vuông\\s*góc(?:\\s+với)?)\\s+(?:với\\s+)?(?:các\\s+)?' +
+    '(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{2})\\s*,\\s*([A-Z]{2})(?![A-Z])',
   'gu',
 );
 
@@ -111,7 +125,7 @@ const FROM_DRAW_DISTRIB = new RegExp(
 /** Tách blob tên distributive "X, Y, Z" → ['X','Y','Z'] (chuẩn hoá prime ′→'). */
 function splitNames(blob: string): string[] {
   return blob
-    .split(',')
+    .split(/,|và/)
     .map((s) => {
       const mm = /^([A-Z])(['′]?)/u.exec(s.trim());
       return mm ? (mm[2] ? `${mm[1]}'` : mm[1]) : '';
@@ -291,7 +305,7 @@ function parseFeet(text: string, fallbackTri?: string[]): Foot[] {
     for (const dm of text.matchAll(re)) {
       const names = splitNames(dm[1]);
       const from = dm[2];
-      const lines = dm[3].split(',').map((s) => s.trim()).filter(Boolean);
+      const lines = dm[3].split(/,|và/).map((s) => s.trim()).filter(Boolean);
       if (names.length < 2 || names.length !== lines.length) continue; // zip lệch → escalate
       // withSegment: vẽ kèm đoạn vuông góc from→foot (DX/DY/DZ) để THỂ HIỆN hình
       // chiếu (render perpFoot chỉ tạo điểm chân, không tự vẽ đường rớt vuông góc).
@@ -320,6 +334,8 @@ function parseFeet(text: string, fallbackTri?: string[]): Foot[] {
   //     AC và BC" → I↔AC, K↔BC, from=H chung.
   SHARED_FROM_TWO.lastIndex = 0;
   for (const sm of text.matchAll(SHARED_FROM_TWO)) {
+    const start = sm.index ?? 0;
+    if (consumed.some(([a, b]) => start >= a && start < b)) continue; // DISTRIB đã xử (overlap "và")
     const [n1, n2, from, l1, l2] = [sm[1], sm[2], sm[3], sm[4], sm[5]];
     if (l1.includes(n1) || l2.includes(n2) || n1 === n2) continue;
     out.push({ name: n1, from, onLine: l1, withSegment: true });
@@ -350,6 +366,18 @@ function parseFeet(text: string, fallbackTri?: string[]): Foot[] {
     const nm = NAME_BEFORE.exec(before);
     if (!nm) continue; // không có tên cục bộ → escalate AI
     out.push({ name: nm[1], from: m[1] ?? m[3], onLine: m[2] ?? m[4] });
+  }
+
+  // 2b) "Kẻ/Vẽ XY,XZ ⊥ L1,L2" phân phối — cặp cùng chữ đầu (from), chân = chữ
+  //     thứ 2, zip với L1,L2. Span consumed để PERP_DRAW không xử lại cặp đầu.
+  PERP_DRAW_DISTRIB.lastIndex = 0;
+  for (const ddm of text.matchAll(PERP_DRAW_DISTRIB)) {
+    const [from1, foot1, from2, foot2, line1, line2] = [ddm[1], ddm[2], ddm[3], ddm[4], ddm[5], ddm[6]];
+    if (from1 !== from2) continue; // không cùng điểm gốc → không phải dạng này
+    if (line1.includes(foot1) || line2.includes(foot2) || foot1 === foot2) continue;
+    out.push({ name: foot1, from: from1, onLine: line1, withSegment: true });
+    out.push({ name: foot2, from: from2, onLine: line2, withSegment: true });
+    consumed.push([ddm.index ?? 0, (ddm.index ?? 0) + ddm[0].length]);
   }
 
   // 3) "Kẻ XY ⊥ LINE (tại Z)" — tên foot lấy từ cặp XY (không cần "X là").

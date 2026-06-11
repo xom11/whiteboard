@@ -82,6 +82,12 @@ const DATASETS: DS[] = [
     parse: blockParse(/^Câu\s+(\d+):/, (m) => m[1]),
     intro: introBeforeProof,
   },
+  {
+    name: 'son123',
+    file: 'docs/datasets/son_123_problems_cleaned.txt',
+    parse: blockParse(/^Bài\s+(\d+):/, (m) => m[1]),
+    intro: introBeforeProof,
+  },
 ];
 
 interface Row {

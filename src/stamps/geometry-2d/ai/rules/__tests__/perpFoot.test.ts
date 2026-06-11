@@ -445,3 +445,39 @@ describe('perpFoot — "BE, CF là hai đường cao" (token trước, không c�
     expect(feet).toEqual(['E:B->AC', 'F:C->AB']);
   });
 });
+
+describe('perpFoot — "Kẻ/Vẽ XY,XZ ⊥ L1,L2" distributive (cùng chữ đầu)', () => {
+  const feet = (p: string) =>
+    run(p).flatMap((m) => m.intents)
+      .filter((i: any) => i.op === 'add-point')
+      .map((i: any) => `${i.name}:${i.constraint.from}->${i.constraint.onLine}`)
+      .sort();
+
+  it('Bài 4: "Kẻ HE,HF lần lượt vuông góc với AB,AC" → E,F chân từ H', () => {
+    expect(feet('Cho tam giác ABC vuông tại A, đường cao AH. Kẻ HE,HF lần lượt vuông góc với AB,AC.'))
+      .toEqual(expect.arrayContaining(['E:H->AB', 'F:H->AC']));
+  });
+
+  it('Bài 35: "Vẽ ME,MF lần lượt vuông góc AC,AB tại E,F"', () => {
+    expect(feet('Điểm M thuộc cung nhỏ BC. Vẽ ME,MF lần lượt vuông góc AC,AB tại E,F.'))
+      .toEqual(expect.arrayContaining(['E:M->AC', 'F:M->AB']));
+  });
+});
+
+describe('perpFoot — "X và Y lần lượt là chân đường vuông góc kẻ từ D xuống L1 và L2"', () => {
+  const feet = (p: string) =>
+    run(p).flatMap((m) => m.intents)
+      .filter((i: any) => i.op === 'add-point')
+      .map((i: any) => `${i.name}:${i.constraint.from}->${i.constraint.onLine}`)
+      .sort();
+
+  it('Bài 74: tên nối "và" + "kẻ từ điểm D xuống các đường thẳng AB và AC"', () => {
+    expect(feet('Gọi các điểm E và F lần lượt là chân đường vuông góc kẻ từ điểm D xuống các đường thẳng AB và AC.'))
+      .toEqual(['E:D->AB', 'F:D->AC']);
+  });
+
+  it('Bài 111: "D,E,F lần lượt là hình chiếu vuông góc của I trên BC,CN,NB"', () => {
+    expect(feet('Gọi D,E,F lần lượt là hình chiếu vuông góc của điểm I trên các đường thẳng BC,CN và NB.'))
+      .toEqual(['D:I->BC', 'E:I->CN', 'F:I->NB']);
+  });
+});
