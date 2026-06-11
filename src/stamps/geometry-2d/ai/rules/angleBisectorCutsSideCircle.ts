@@ -26,6 +26,17 @@ const FOOT = new RegExp(
 // "... (và)? cắt (đường tròn|(O)) (tại|ở) E (khác A)?" — phần giao đường tròn.
 const CIRCLE_CUT = /cắt\s+(?:lại\s+)?(?:đường\s*tròn\s*)?\(\s*([A-Z])\s*\)\s+(?:tại|ở)\s+(?:điểm\s+)?([A-Z])(?![A-Z])(?:\s+khác\s+([A-Z])(?![A-Z]))?/u;
 
+// DẠNG NÉN distributive: "(đường|tia)? phân giác trong (của)? (góc)? BAC cắt
+// BC, (O) lần lượt tại D, E" → D=bisectorFoot(A,BC), E=secondIntersection(AD,O,
+// other=A). Bài 71. vertex = chữ GIỮA của "BAC".
+//   groups: 1,2,3 = B,A,C | 4 = side BC | 5 = circle O | 6 = D | 7 = E.
+const FOOT_CIRCLE_DISTRIB = new RegExp(
+  '(?:đường\\s*|tia\\s+)?phân\\s*giác\\s+(?:trong\\s+)?(?:của\\s+)?(?:góc\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])' +
+    '\\s+cắt\\s+(?:cạnh\\s+)?([A-Z]{2})\\s*,\\s*\\(\\s*([A-Z])\\s*\\)\\s+(?:lần\\s*lượt\\s+|theo\\s+thứ\\s+tự\\s+)?' +
+    '(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])',
+  'u',
+);
+
 export const angleBisectorCutsSideCircleRule: LanguageRule = {
   id: 'angleBisectorCutsSideCircle',
   priority: 48, // sau triangle/circle/cevian; trước intersection(45)
@@ -34,6 +45,25 @@ export const angleBisectorCutsSideCircleRule: LanguageRule = {
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
+      // Dạng nén distributive "phân giác ... BAC cắt BC,(O) lần lượt tại D,E".
+      const dm = FOOT_CIRCLE_DISTRIB.exec(c.text);
+      if (dm) {
+        const vertex = dm[2];
+        const side = dm[4];
+        const [circle, foot, e] = [dm[5], dm[6], dm[7]];
+        if (!side.includes(foot) && !side.includes(vertex) && e !== foot && e !== vertex) {
+          out.push({
+            ruleId: 'angleBisectorCutsSideCircle',
+            clauseIds: [c.id],
+            intents: [
+              addPoint(foot, { kind: 'angleBisectorFoot', from: vertex, onLine: side }),
+              addPoint(e, { kind: 'secondIntersection', line: vertex + foot, circle, other: vertex }),
+            ],
+          });
+          continue;
+        }
+      }
+
       const fm = FOOT.exec(c.text);
       if (!fm) continue;
       // vertex: "góc BAC" → chữ giữa (g2); "góc A" → g1 (g2,g3 rỗng).

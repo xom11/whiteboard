@@ -1,0 +1,689 @@
+Bài 1: Tính x trong mỗi hình vẽ sau C P B 800° x S 120° 65° 110° A Q x x 95° D R
+
+Bài 2: Tính x trong mỗi hình vẽ sau C F   60o M N D xG 65o 105o x H x Q P E F  E
+
+Bài 3: Tính x trong mỗi hình vẽ sau C M E F 114° D 90° 96° 120° x 71° N 71° 76° 120° 61° x x G F E Q Hình b P H Hình c Hình a
+
+Bài 4: Góc kề bù với một góc của tứ giác gọi là góc ngoài của tứ giác a) Hãy tính các góc ngoài của tứ giác ở hình a) b) Tính tổng các góc ngoài của tứ giác ở Hình b) (tại mỗi đỉnh của tứ giác chỉ chọn một góc ngoài):  +C +D  A +B =? 1 1 1 1 c) Có nhận xét gì về tổng các góc ngoài của tứ giác? A  1 1 1 B  B C  120o
+
+Bài 5: Tính x,y trong mỗi hình vẽ sau G H A x y 111o B GH//IK y AD//BC 74o 59o K I x 50o   D C Hình a) Hình b)
+
+Bài 1: Cho ◊ABCD có  A=1300,B  =900. Góc ngoài tại D đỉnh C bằng 1200. Tính góc D  A 130° 120° B C
+
+Bài 2: Cho ◊EFGH có E  =700,F  =800. Tính G  ,H  , G H   biết G −H =200. F E
+
+Bài 3:   Cho hình vẽ, hãy tính P ; Q M Q 70° 2x 80° x N P
+
+Bài 4: Cho ◊ABCD, biết     A:B :C :D =1:2:3:4 E a) Tính các góc của ◊ABCD 72° b) Chứng minh rằng AB//CD D c) Gọi giao điểm của AD và BC là E. Tính C 108° 144° các góc của ∆CDE 36° 72° A B
+
+Bài 5: Cho ◊ABCD, biết     A:B :C :D =4:3:2:1 D a) Tính các góc của ◊ABCD A F b) Các tia phân giác của góc C và D cắt nhau E tại E. Các đường phân giác của góc ngoài tại đỉnh C và D cắt nhau tại F . Tính C   FD ED;C B C
+
+Bài 6:    +300;D   Tính các góc của ◊ABCD, biết B = A+150;C = B =2 A+100
+
+Bài 7:     −C  Cho ◊ABCD, biết B = A+150;C =3 A;D =250. Tính các góc của ◊ABCD
+
+Bài 8:   +100;F   +300;H  . Tính các góc của ◊EFGH Cho ◊EFGH , biết G = E = E =2G
+
+Bài 9:  +50;M  +450;N  −400. Tính các góc của ◊MNPQ Cho ◊MNPQ, biết P =Q =Q =2Q
+
+Bài 10: Cho ◊ABCD, có       A=700;B =800;C −D =200. Tính các góc C ;D
+
+Bài 11: +C  +D    Cho ◊ABCD, biết B =2000;B =1800;C +D =1200. Tính số đo các góc của tứ giác ◊ABCD
+
+Bài 1: Tính độ dài các cạnh a,b,c,d của một tứ giác có chu vi bằng 76cm và a:b:c:d =2:5:4:8
+
+Bài 2: Cho hình vẽ, biết ∆ABC có chu vi bằng 25cm A . Tam giác ADC có chu vi bằng 27cm. Tứ D giác ABCD có chu vi bằng 32cm. Tính AC B C
+
+Bài 1:   Cho ◊ABCD có B AD= B CD=900, phân giác A trong của  ABC cắt AD tại E. Phân giác trong của  ADC cắt BC tại F . Chứng minh 1 E α BE//DF B D β C
+
+Bài 2: Cho ◊ABCD có  ABC+B  AD=1800. Phân giác A B trong của các góc B   AD cắt nhau tại E, CD,C M biết CD=2DE. Chứng minh rằng   ADC =2B CD 1 1 D E C
+
+Bài 3:   CD=1800;DA= Cho ◊ABCD có B AD+B DC. C B 1
+
+Bài 4:  Cho ◊ABCD có BD là phân giác của ABC, E C B AD=CD,AB< AC. Chứng minh rằng 1 2 B  AD+B  CD=1800 1 D A
+
+Bài 5: Cho ◊ABCD, biết     A:B :C :D =5:8:13:10 E a) Tính các góc của ◊ABCD
+
+Bài 1: +D  Cho tứ giác lồi ◊ABCD, có B =1800 A CB=CD. Chứng minh AC là tia phân giác D  của B AD B C I
+
+Bài 2: Cho tứ giác ◊ABCD, các tia phân giác của góc B A A và B cắt nhau tại . Các tia phân giác M N  góc C và D cắt nhau tại . Chứng minh N rằng:   ND=1800 AMB+C M D C
+
+Bài 3: Cho tứ giác lồi ABCD, hai cạnh AD và BC F cắt nhau tại E, hai cạnh DC và AB cắt nhau tại F . Kẻ tia phân giác của hai góc CDE và A cắt nhau tại I . Tính góc EIF theo các BFC D góc trong ABCD I E C K B
+
+Bài 4: Cho tứ giác ABCD, có AC là tia phân giác D E   A của  A,BC =CD,AB<CD 
+
+Bài 5: Cho tứ giác ABCD, phân giác ngoài của góc x A  A và B cắt nhau tại Q. Chứng minh rằng: D    A+B Q  AQB= 
+
+Bài 6:  Tam giác ABC có A=76o, các tia phân giác của góc B và góc C cắt nhau tại I, các tia phân giác góc ngoài tại đỉnh B và C cắt nhau tại K. B  K Tính các góc của tứ giác BICK. I 76o A  C
+
+Bài 7:  Cho tứ giác lồi ABCD, biết có A=90o, D  =90o; góc B và C khác nhau. a) Chứng minh AB// DC. b) Chứng tỏ trong hai góc B và C phải có một góc nhọn. c) Khi góc C nhọn. Chứng minh AB < DC.
+
+Câu 1: Tổng số đo bốn góc của một tứ giác bằng a) 900 b) 1800 c) 2700 d) 3600 Chọn đáp án A
+
+Câu 2: Tứ giác ABCD có  A=780, B  =520,D  =1540. Số đo của góc C là: a) 750 b) 1280 c) 760 d) 260 Chọn đáp án D
+
+Câu 3: Cho tứ giác ABCD có  A+B  =1400. Tổng C  +D  bằng bao nhiêu a) 2200 b) 2000 c) 1600 d) 1500 Chọn đáp án D
+
+Câu 4: Chọn câu đúng trong các câu sau a) Tứ giác ABCD có bốn góc đều là góc nhọn b) Tứ giác ABCD có bốn góc đều là góc tù c) Tứ giác ABCD có 2 góc vuông và 2 góc tù d) Tứ giác ABCD có bốn góc đều là góc vuông Chọn đáp án D
+
+Câu 5: Cho ◊ABCD biết A=800, B =1100,C =400. Hỏi số đo góc ngoài tại đỉnh D bằng bao nhiêu a) 1500 b) 1300 c) 1200 d) 500 Chọn đáp án D
+
+Câu 6: Các số đo nào chỉ bốn góc của một tứ giác a) 800;900;1100;900 b) 1200;1000;600;800 c) 750;750;400;1400 d) 860;700;800;900 Chọn đáp án D
+
+Câu 7: Cho ◊ABCD biết B =500 và góc A gấp đôi góc B, góc C gấp đôi góc D. Số đo các góc của tứ giác ABCD là: a)  A=1000;B  =500;C  =1400;D  =700 b)  A=900;B  =600;C  =1400;D  =700 c)     =700 d)     A=800;B =700;C =1400;D A=800;B =500;C =1600;D =700 Chọn đáp án D
+
+Câu 8: Số đo các góc của ◊ABCD tỉ lệ: A:B:C:D=4:3:2:1. Số đo các góc theo thứ tự đó là: a) 1200;900;600;300 b) 1400;1050;700;350 c) 1400;1050;700;400 d) 1400;1080;720;360 Chọn đáp án D
+
+Câu 9: Một tứ giác có nhiều nhất a) 3 góc nhọn b) 4 góc nhọn c) 2 góc nhọn d) 1 góc nhọn Chọn đáp án D
+
+Câu 10: Hình vẽ bên khẳng định nào sau đây là sai a) ABCD là tứ giác lồi b) ABED là tứ giác lồi c) BCDF là tứ giác lồi d) BCDE là tứ giác lồi Chọn đáp án D B
+
+Câu 11: Cho hình vẽ bên, chọn giá trị của x a) x=800 b) x=700 c) x=400 d) x=600
+
+Bài 1: Tính x,y trong mỗi hình vẽ sau Cho tứ giác ABCD, AB cắt CD tại E, BC cắt AD tại F . Các tia phân giác của góc E và F F cắt nhau tại I . Chứng minh A  ABC+ ADC  a) E IF = 1 B
+
+Bài 2: Tính x,y trong mỗi hình vẽ sau  =90o, Cho tứ giác ABCD, biết AB= AD; B B   A=60o, D =135o. a) Tính góc C.  C b) Từ A ta kẻ AE vuông góc với đường thẳng  CD. Tính các góc của tam giác AEC. A  D  E
+
+Bài 3: Tính x,y trong mỗi hình vẽ sau Tính các góc của tứ giác ABEF biết  A:B  :E  :F  =1:3:4:7.
+
+Bài 4: Tính x,y trong mỗi hình vẽ sau Tính các góc của tứ giác ABCD biết B  A:B  :C  :D  =1:2:4:5. A I D C
+
+Bài 1: Hình thang ABCD ( AB//CD ) có  A−D  =400;  A=2C  . Tính các góc của hình thang
+
+Bài 2: Hình thang ABCD ( AB//CD ) có  A−D  =200;B  =2C  . Tính các góc của hình thang
+
+Bài 3: Hình thang ABCD ( AB//CD ) có D  =600 B  4 a) Tính  A b) Biết . Tính B   = ,C  D 5
+
+Bài 4: Cho ∆ABC vuông cân tại A, BC =20cm. Vẽ A E tam giác ACE vuông cân tại E (E và B 1 khác phía với C). Chứng minh rằng tứ giác
+
+Bài 5: Hình thang vuông ABCD có A B  A= D  =900,C  =450, biết đường cao AD=4cm,AB+CD=10cm. Tính độ dài hai
+
+Bài 6: Hình thang vuông ABCD có  A= D  =900, A 3cm B AB= AD=3cm,DC =6cm. Tính B  ,C  của hình thang 3cm D E C
+
+Bài 7: Hình thang vuông ABCD có   A= D =900, A B AB=9cm,AC =17cm. Tính độ dài các cạnh bên D H C
+
+Bài 8: Cho hình thang ABCD có  A= D  =900, A ? B AD=20cm,AC =52cm,BC =29cm. Tính độ dài
+
+Bài 1: Tứ giác ABCD có AB= BC và AC là phân C B giác của góc A. Chứng minh rằng ABCD là 1 hình thang
+
+Bài 2: Cho hình thang ABCD, đáy A B AB =40cm,CD=80cm,BC =50cm,AD=30cm. Chứng minh rằng ABCD là hình thang vuông D H C
+
+Bài 3: Cho hình thang ABCD ( AB//CD ), các tia A B
+
+Bài 4: Cho hình thang ABCD ( AB//CD ), tia phân E A B giác của góc C đi qua trung điểm M của AD và cắt cạnh AB tại E. Chứng minh rằng: M  a) B MC =900 b) BC AB+CD =
+
+Bài 5: ( ), Cho hình thang ABCD AB//CD A B AB+CD= AD. Chứng minh rằng phân giác M trong các góc A và D cắt nhau tại trung điểm của BC 1 D 2 C E
+
+Bài 6: Cho hình thang ABCD ( AB//CD ), trong đó A B 2 2 1 1 CD= BC+ AD. Hai đường phân giác của hai góc A và B cắt nhau tại K. Chứng minh 2 1 rằng C,D,K thẳng hàng. D E C
+
+Bài 7: Cho hình thang ABCD ( AB//CD,AB<CD ) E B A hai tia phân giác của góc B và C cắt nhau ở . Qua I kẻ đường thẳng song song với BC I I cắt AB,CD lần lượt ở E và F . C D F a. Tìm các hình thang b. Chứng minh tam giác cân ở E và BEI tam giác IFC cân ở F c. Chứng minh: EF = BE+CF
+
+Bài 8: ( ), Cho hình thang ABCD AB//CD trong đó A B
+
+Bài 9: Cho hình thang vuông ABCD có 2 B A  A= D  =900,AB= AD=2cm,DC =4cm,BH ⊥CD≡ H
+
+Bài 10: ( ), Cho hình thang ABCD AB//CD,AD> BC B C có đường chéo AC,BD vuông góc với nhau I tại . Trên đáy AD lấy sao cho N I M AM P bằng độ dài đường trung bình của hình thang. Chứng minh tam giác ACM cân tại A M D L M .
+
+Bài 1: ( ), biết   −C  Cho hình thang ABCD AB//CD A=3D ;B =300. Tính các góc của hình thang
+
+Bài 2: ) , biết rằng:  1  −C  Tính các góc của hình thang ABCD ( AB//CD A= D ;B =500
+
+Bài 3: Cho hình thang ABCD ( AB//CD ), biết  A=3D   =C  ;AB=3cm,CD=4cm. Tính đường cao AH ;B của hình thang và diện tích của hình thang
+
+Bài 4: Cho hình thang ABCD, biết CD= AD+BC. A B Gọi K là điểm thuộc đáy CD sao cho 2 1 1 2 KD= AD. Chứng minh rằng: a. AK là tia phân giác của  A
+
+Bài 1: Cho tam giác ABC cân tại A có BD và CE A là hai đường trung tuyến của tam giác. Chứng minh tứ giác BCDE là hình thang cân E D B C
+
+Bài 2: Cho tam giác ABC cân tại A có BH và CK A là hai đường cao của tam giác. Chứng minh BCHK là hình thang cân K H B C
+
+Bài 3: Cho tam giác ABC cân tại A, điểm I thuộc A đường cao AH,BI giao với AC tại D, CI 1 2 giao với AB tại E D E a. Chứng minh rằng AD= AE I b. Xác định dạng của tứ giác BDEC 1 1 2 2 C H B c. Xác định vị trí của điểm I sao cho
+
+Bài 4: Cho tam giác ABC đều, M là điểm nằm A trong tam giác đó. Qua M kẻ đường thẳng 60° E song song với AC và cắt BC ở D, kẻ đường thẳng song song với AB cắt cắt AC tại E, kẻ đường thẳng song song với BC và cắt 3 F 2 M AB ở F . Chứng minh rằng 60° 60° a. Tứ giác BFMD,CDME,AEMF là các hình B D C thang cân    b. D ME,E MF,D MF
+
+Bài 5: Cho hình thang cân ABCD ( AB//CD ) có A B AC = BD. Qua B kẻ đường thẳng song song với AC, cắt đường thẳng DC tại E. Chứng minh rằng: a) ∆BDE là tam giác cân 1 1 D C E b) ∆ACD=∆BDC c) Hình thang ABCD là hình thang cân
+
+Bài 6: Hình thang cân ABCD ( AB//CD,AB<CD ), O AD cắt BC tại O a) Chứng minh rằng ∆OAB cân I A B b) Gọi I,J lần lượt là trung điểm của AB và CD. Chứng minh rằng ba điểm I,J,O thẳng N M hàng c) Qua điểm M thuộc cạnh AC, vẽ đường D C thẳng song song với CD, cắt BD tại . N Chứng minh rằng MNAB,MNDC là các hình
+
+Bài 7: Tứ giác ABCD, có B  =1050,D  =750 và H = =CD AB BC C B 1 a) AC là tia phân giác của góc A b) ABCD là hình thang cân
+
+Bài 1: ( ) Cho hình thang cân ABCD AB//CD có A B  . Tính các góc của hình thang cân A=2C D C
+
+Bài 2: ( ) Cho hình thang cân ABCD AB//CD có A B   A=3D . Tính các góc của hình thang cân D C
+
+Bài 3: Cho hình thang cân ABCD ( AB//CD ) có AH A B và BK là hai đường cao của hình thang CD−AB a. Chứng minh: DH =
+
+Bài 4: Cho hình thang cân ABCD ( AB//CD ) có D C  A= B  =600;AB=4,5cm;AD= BC =2cm. Tính độ dài đáy CD và diện tích hình thang cân ABCD A K H B
+
+Bài 5: Cho hình thang cân ABCD ( AB//CD ) có A B
+
+Bài 6: Cho hình thang cân ABCD ( AB//CD ) đáy A B lớn CD=2,7cm. Cạnh bên dài 1cm,  =600, Kẻ AE//BC. Tính độ dài AB ADC 60° 60° E D C
+
+Bài 7: Cho hình thang cân ABCD có tổng hai góc D C
+
+Bài 1: ( ), có C  Hình thang cân ABCD AB//CD =600 A B DB là tia phân giác của góc D, AB=4cm a) Chứnh minh rằng BD vuông góc với BC
+
+Bài 2: Cho hình thang cân ABCD ( AB//CD ) với O AB<CD. Gọi O là giao điểm của AD và BC, gọi E là giao điểm của AC và BD. Chứng minh A B a. Tam giác OAB cân tại O E b. ∆ABD=∆BAC c. EC = ED B C d. OE là đường trung trực chung của AB và CD
+
+Bài 3: ( ), trong đó Cho hình thang ABCD AB//CD A B 2 2 CD= BC+ AD. Hai đường phân giác của hai 1 1 góc A và B cắt nhau tại K. Chứng minh rằng C,D,K thẳng hàng 2 1 D C E
+
+Bài 4: A Cho tam giác ABC cân tại A và điểm M tùy ý nằm trong tam giác. Kẻ tia Mx song song với BC cắt AB tại D, tia My song D M song với AC cắt BC ở E. Chứng minh  A rằng: D  ME =900 + 2 B E C
+
+Bài 5: Cho hình thang cân ( ) ABCD AB//CD A B ,AB= BC và BC ⊥ BD O a) Chứng minh rằng AC ⊥ AD 2 2 b) Tính số đo các góc của hình thang
+
+Bài 1: Hình thang cân ABCD có đáy nhỏ AB bằng A B cạnh bên BC. Chứng minh CA là tia phân giác của B  CD D C
+
+Bài 2: Cho hình thang cân ( ) có E ABCD AB//CD A E B và F lần lượt là trung điểm hai đáy AB và CD. Chứng minh EF ⊥ AB D F C
+
+Bài 3: ( ) có hai Cho hình thang cân ABCD AB//CD A B đường chéo vuông góc với nhau. Chứng minh chiều cao của hình thang cân bằng nửa tổng hai cạnh đáy D C
+
+Bài 4: Cho hình thang cân ( ) có ABCD AB//CD A B đường chéo BD vuông góc với cạnh bên BC và đồng thời DB là tia phân giác của D K C  ACD a. Tính các góc của hình thang cân ABCD b. Biết BC =6cm, tính chu vi và diện tích của hình thang cân ABCD
+
+Bài 5: Cho tam giác đều ABC . Từ 1 điểm M nằm A bên trong tam giác ta vẽ các tia gốc M song F song với BC cắt AB ở D, song song với AC cắt BC tại E, song song với AB cắt AC tại F . Chứng minh rằng chu vi tam giác M D DEF bằng tổng các khoảng cách từ M đến ba đỉnh của tam giác. C B E
+
+Bài 1: Cho tam giác ABC. Gọi M,N,P theo thứ tự là trung điểm của AB,AC,BC. Tính chu vi của
+
+Bài 2: Cho tam giác ABC có  A=600,B  =700. Gọi A D và E theo thứ tự là trung điểm của 60° E D AB,AC. Xác định dạng của tứ giác BDEC và 70° tính các góc của tứ giác đó. B C
+
+Bài 3:   Cho hình thang ABCD có A= D =900 và A H B AB=2AD=2CD. Kẻ CH vuông góc với AB Tại H O O' a) Tính số đo các góc của hình thang ABCD b) Chứng minh rằng ∆ABC vuông cân C D c) Tính chu vi hình thang nếu AB=6cm d) Gọi O là giao điểm của AC và DH , O' là giao điểm của DB và CH . Chứng minh rằng AB=4OO'
+
+Bài 4: ( ), đường cao Cho ∆ABC AC > AB AH . Gọi A theo thứ tự là trung điểm của D,E,K AB,AC,BC. Chứng minh rằng: I E D a) DE là đường trung trực của AH b) DEKH là hình thang cân B H C K
+
+Bài 5: Cho tam giác ABC, trên tia đối của tia BC A lấy điểm D sao cho BD= BA. Trên tia đối K H của tia CB lấy điểm E sao cho CE =CA. Kẻ BH ⊥ AD,CK ⊥ AE. Chứng minh rằng C D B E a. AH = HD b. HK //BC
+
+Bài 6: Cho tam giác ABC, kẻ trung tuyến AM . A Trên cạnh AC lấy điểm D,E sao cho D AD= DE = EC I a. Chứng minh rằng: ME//BD E b. Gọi I là giao điểm của AM,BD. Chứng C minh AI = IM B M
+
+Bài 7: Cho tam giác ABC, A là trung điểm của D BD,B là trung điểm của EC. AC và DE cắt I A J DE nhau tại I . Chứng minh rằng: DI =
+
+Bài 8: Cho ∆ABC vuông tại A, kẻ đường cao AH . E Từ H kẻ Hx⊥ AB= P, trên Hx lấy điểm D A sao cho P là trung điểm của HD. Từ H kẻ D Q Hy vuông góc với AC tại Q và trên Hy lấy P điểm E sao cho Q là trung điểm của HE B H C a) Chứng minh ba điểm A,D,E thẳng hàng b) PQ//DE c) PQ= AH
+
+Bài 9: Cho tứ giác ABCD có  =400,D  =800. C M AD= BC. E,F lần lượt là trung điểm của P N AB,CD. Tính góc nhọn tạo bởi các đường
+
+Bài 10: Cho tam giác ABC. Điểm D thuộc tia đối A của tia BA sao cho BD= BA, M là trung N điểm của BC. Gọi K là giao điểm của DM K và AC, Chứng minh rằng: AK =2KC B C M D
+
+Bài 4: Hình thang cân ABCD ( AB//CD ) có A B AB=4cm,CD=10cm,BD=5cm. Tính khoảng I cách từ trung điểm I của BD đến CD D K H C
+
+Bài 2: ( ) Tam giác vuông  =900 có đường ABC B A cao BD. Gọi E,F lần lượt là trung điểm của BD,DC và H là giao điểm của AE,BF . Tính D góc AHF E F H C B
+
+Bài 3: ( ) Cho ABC  A=900 , đường cao AH . Gọi M A là trung điểm của HC , K là trung điểm của AH . Chứng minh rằng BK ⊥ AM K H M C B
+
+Bài 4: Cho tam giác ∆ABC có AM là trung tuyến A ứng với BC. Trên cạnh AC lấy điểm D sao D
+
+Bài 5: Cho tam giác ABC cân tại A, hai đường A trung tuyến BD và CE cắt nhau tại G. Gọi M,N lần lượt là trung điểm của BG và CG, I và K là trung điểm của GM và GN E D a. Chứng minh BD =CE G b. Chứng minh tứ giác IEDK là hình thang I K M N cân B C c. Tính DE+IK , biết BC =10cm
+
+Bài 6: Cho tam giác ( ) có  A=500. ABC AB> AC A E Trên cạnh AB lấy điểm D sao cho BD= AC. D 12 Gọi E,F lần lượt là trung điểm của AD,BC
+
+Bài 7: Cho tam giác ABC có các trung tuyến BD A và CE. Trên cạnh BC lấy các điểm M,N sao cho BM =MN = NC. Gọi I là giao điểm G D E của AM và BD, K là giao điểm của AN,CE. K Chứng minh rằng: I a) BCDE là hình thang B M F N C b) K là trung điểm của EC c) BC =4IK
+
+Bài 1: Tính x,y trên hình vẽ A B 8cm D C x E F 16cm G y H
+
+Bài 2: ( ), Cho hình thang ABCD AB//CD M là A B trung điểm của AD, N là trung điểm của BC. Gọi P,Q theo thứ tự là giao điểm của M N P 6 Q MN với BD và AC. Cho CD=8cm, MN =6cm G 8 H a. Tính AB b. Tính MP,PQ,QN
+
+Bài 3: Cho hình thang ABCD ( AB//CD ). Gọi E,F A B 2 1 lần lượt là trung điểm của AD và BC. Phân 1 2 giác của góc A và B cắt EF theo thứ tự tại E F I K I và K
+
+Bài 4: Cho hình thang ABCD, các đường phân giác của các góc ngoài tại đỉnh A và D cắt A B 2 2 nhau ở M . Các đường phân giác của các M 1 1 N góc ngoài tại đỉnh B và C cắt nhau ở N 2 2 a. Chứng minh rằng MN //CD 2
+
+Bài 5: Cho tam giác ABC, M là trung điểm của B M cạnh BC. Gọi G là trọng tâm của tam giác. G C Vẽ đường thẳng BD,CE,MH,GI cùng vuông J góc với Ay. Chứng minh rằng: BD+CE =2MH và BD+CE =3GI y A K D I H E
+
+Bài 1: Cho tứ giác ABCD. Gọi E,K,F lần lượt là B trung điểm của AD,BC,AC A a. Chứng minh EK //AB //CD,FK E F
+
+Bài 2: Cho hình thang ABCD(AB//CD). Gọi A B M,N,P,Q lần lượt là trung điểm của AD,BD,AC,BC. Chứng minh Q M N P a) M,N,P,Q cùng nằm trên một đường thẳng D C
+
+Bài 3: Cho hình thang ABCD(AB//CD). với AB=a,BC =b,CD=c,DA=d . Các tia phân giác của góc A và D cắt nhau tại E, các tia phân giác của góc B và C cắt nhau tại F . Gọi M,N theo thứ tự là trung điểm của AD và BC a) Chứng minh M,E,N,F cùng nằm trên một đường thẳng b) Tính độ dài MN,MF,NF theo a,b,c,d
+
+Bài 4: Cho hình thang ABCD(AB//CD) Gọi A B M,N,P,Q lần lượt là trung điểm của AD,BD,AC,BC. Chứng minh Q M N P a) M,N,P,Q cùng nằm trên một đường thẳng D C
+
+Bài 5: Cho tứ giác ABCD. Có G là trung điểm của đoạn nối các trung điểm của hai đường chéo AC và BD. Gọi m là một đường thẳng không cắt cạnh nào của hình thang ABCD; Gọi A',B',C',D',G' lần lượt là hình chiếu của A,B,C,D,G lên đường thẳng m. Chứng
+
+Bài 1: Cho hình bình hành ABCD, đường chéo BD A B . Từ A và C kẻ AE,CF vuông góc với BD K ở H và K. Chứng minh tứ giác AHCK là H hình bình hành. D C
+
+Bài 2: Cho hình bình hành ABCD. Gọi O là giao A K B điểm của hai đường chéo AC và BD. Qua điểm O, vẽ đường thẳng a cắt hai đường F thẳng AD,BC lần lượt tại E,F. Qua điểm O E O vẽ đường thẳng b cắt hai cạnh AB,CD lần D H C lượt tại H,K. Chứng minh tứ giác EKFH là hình bình hành.
+
+Bài 3: Cho hình bình hành ABCD. Trên các cạnh A E B AD,BC theo thứ tự ta lấy hai điểm H và G sao cho = BG và trên các cạnh AB,CD G DH H theo thứ tự lấy các điểm E,F sao cho D F C AE =CF. Chứng minh rằng EFGH là hình bình hành.
+
+Bài 4: Cho tứ giác ABCD, E và F lần lượt là C trung điểm của các cạnh AB và CD. Gọi M,N,P,Q lần lượt là trung điểm của các N B P đoạn AF,CE,BF,DE. Chứng minh rằng F MNPQ là hình bình hành. E M Q A D
+
+Bài 5: Cho hình bình hành ABCD. Tia phân giác A F B 2 1 của góc A cắt CD ở E, tia phân giác của
+
+Bài 1: Cho ∆ABC, trung tuyến AM . Gọi I là trung A điểm của AM , D là giao điểm của BI và D
+
+Bài 2: Cho ∆ABC cân tại C. Gọi lần lượt A,B,C 1 1 1 C là trung điểm các cạnh BC,AC và AB. Lấy các điểm A ,B tương ứng đối xứng qua AB 2 2 B A 1 1 Của A,B . CA và AC cắt nhau tại M , CB P 1 1 2 1 1 2 N M Và BC cắt nhau tại N . Gọi P là giao điểm 1 1 của AN và BM . Chứng minh rằng AP = BP A B C
+
+Bài 4: Cho hình bình hành ABCD. Gọi E là trung A B điểm của AD, F là trung điểm của BC Chứng minh E F a) BE = DF;  ABE =C  DF D C b) BE//DF
+
+Bài 5: Cho tam giác ABC, các đường trung tuyến A G AD,BE,CF . Đường thẳng kẻ qua E song song với AB, qua song song với BE cắt F F E nhau tại G. Chứng minh rằng: a. Tứ giác AFEG là hình bình hành b. D,E,G thẳng hàng và CG = AD B D C
+
+Bài 6: Cho hình bình hành ABCD, O là giao điểm A B của hai đường chéo. E và F lần lượt là F O trung điểm của OD và OB a. Chứng minh rằng AE//CF E b. Gọi K là giao điểm của AE và . DC D K H C
+
+Bài 7: Cho hình bình hành ABCD. Gọi lần K,I A K B lượt là trung điểm của các cạnh AB và CD. N Gọi M và N lần lượt là giao điểm của AI O M và CK với BD. Chứng minh a. ∆ADM =∆CBN D I C b. M   AC = N CA, IM //CN
+
+Bài 8: Cho tam giác ABC, các đường trung tuyến A trong đó AD=3cm,BE =4cm AD,BE,CF
+
+Bài 9: Cho tam giác ABC trực tâm H. Gọi là M T trung điểm của BC, các đường trung trực N của BC và AC cắt nhau tại O. Trên tia đối H K O của tia OC lấy điểm K sao cho OK =OC. Chứng minh rằng: B C Q a. Tứ giác AHBK là hình bình hành
+
+Bài 10: Cho tam giác ABC trực tâm H. Các đường A thẳng vuông góc với AB tại B, vuông góc với AC tại C cắt nhau ở D, Chứng minh H rằng O a. Tứ giác BDCH là hình bình hành B C b. B  AC+B  =1800 M DC c. H,M,D thẳng hàng (MB=MC) 1 D d. OM = AH(OA=OD)
+
+Bài 1: Cho hình bình hành ABCD, O là giao điểm A B
+
+Bài 2: Cho hình bình hành ABCD. Trên tia đối của M tia AD và CB, lấy các điểm M và P sao B A N cho =CP. Tên tia đối của BA và AM DC lấy các điểm và Q sao cho = DQ. O N BN Chứng minh rằng bốn đường thẳng MP,NQ Q D C AC và BD đồng quy. P
+
+Bài 3: Cho tam giác ABC và O là một điểm thuộc A miền trong của tam giác. Gọi D,E,F lần L lượt là trung điểm của các cạnh AB,BC,CA O F D và lần lượt là trung điểm của các L,M,N M N đoạn OA,OB,OC Chứng minh rằng B E C EL,EM,DN đồng quy.
+
+Bài 1: Cho tam giác ABC. Từ 1 điểm E trên cạnh A AC vẽ đường thẳng song song với BC cắt E F AB tại F và đường thẳng song song với AB cắt BC tại D. Giả sử = BF, chứng AE minh B D C a. Tam giác AED cân b. AD là phân giác của góc A
+
+Bài 2: Cho hình bình hành ABCD có AD=2AB. Từ E C vẽ CE vuông góc với AB. Nối E với F trung điểm M của AD. Từ M vẽ MF vuông góc với CE cắt BC tại N B N a. Tứ giác MNCD là hình gì? b. Tam giác EMC là tam giác gì? A M D c. Chứng minh B   AD=2 AEM
+
+Bài 3: Cho hai điểm cố định . Một điểm A B,C E A thay đổi trên một trong hai nửa mặt phẳng M bờ BC sao cho A,B,C không thẳng hàng. N H Dựng hai tam giác vuông cân ADB và ACE D Với DA= DB,EA= EC sao cho điểm D nằm khác phía đối với C đối với đường thẳng AB và điểm E nằm khác phía điểm B đối B C với đường thẳng AC. Gọi M là trung điểm của DE. Chứng minh rằng đường thẳng AM luôn đi qua một điểm cố định.
+
+Bài 2: Cho tam giác ABC vuông cân tại C. Trên A cạnh AC,BC lấy lần lượt các điểm P,Q sao cho AP=CQ. Từ điểm P vẽ PM //BC (M thuộc AB). Chứng minh tứ giác là P M PCQM hình chữ nhật C Q B
+
+Bài 3: Cho hình chữ nhật ABCD, E thuộc AD, F F A B thuộc AB. Gọi I,K,M,N theo thứ tự là I M E trung điểm của EF,DF,BE,BD. Chứng minh K N rằng IN = KM D C
+
+Bài 4: Cho tam giác ABC vuông tại A, AB< , A AC đường cao AH . Lấy điểm E trên cạnh AC sao cho AE = AB. Gọi I là trung điểm của BE, kẻ EK ⊥ BC(K∈BC),EN ⊥ AH(N∈AH) N E a. Chứng minh tứ giác NEKH là hình chữ I B H K C nhật b. I  HA= I  HC
+
+Bài 5: Cho tam giác ABC cân tại A, các đường A trung tuyến BD,CE cắt nhau tại O. Gọi M Là điểm đối xứng với O qua D và N là N M điểm đối xứng với O qua E. Tứ giác BNMC E D Là hình gì? Vì sao? O B C
+
+Bài 1: Cho ∆ABC có góc B nhọn và B  =2C . Kẻ A E đường cao AH , trên tia đối của tia BA lấy 1 điểm D sao cho BD= BH , gọi I là giao điểm của DH và BC. Chứng minh rằng: I
+
+Bài 2: Cho ∆ABC vuông tại A có AH,AM tương B ứng là đường cao, đường trung tuyến. Kẻ D H HD,HE lần lượt vuông góc với AB,AC. Kẻ M K ⊥ AB. Gọi là giao điểm của và MK N AM O N HE. Chứng minh rằng: a) AM ⊥ DE A E C b) BN //DE c) MK,BN,AH đồng quy.
+
+Bài 3: Cho ∆ABC vuông tại A, có AM là đường B trung tuyến. Gọi D là một điểm thuộc AM . Kẻ DI vuông góc với AB, DK vuông góc với AC M I a) Chứng minh rằng IK //BC D b) Xác định vị trí điểm D trên sao cho AM 1 A C K IK = BC
+
+Bài 4: Cho ∆ABC cân tại A, đường cao BH . Từ A điểm trên cạnh BC kẻ M MP⊥ AB,MQ⊥ AC . Chứng minh rằng MP+MQ= BH H K P Q B C M
+
+Bài 5: Cho hình chữ nhật ABCD,AB=40cm,AD=30
+
+Bài 6: Cho hình chữ nhật ABCD. Gọi E là chân A B đường vuông góc kẻ từ B đến AC. I là H trung điểm của AE, là trung điểm của I M CD, H là trung điểm của BE E D M C a. Chứng minh rằng CH //IM b. Tính góc BIM
+
+Bài 7: Cho hình chữ nhật ABCD. Lấy điểm P tùy B C ý trên đường chéo BD. Gọi M là điểm đối P xứng của C qua P M O F a. Chứng minh AM //BD I b. Gọi E,F lần lượt là hình chiếu của 1 2 1 1 M E A D trên AD,AB. Chứng minh AEMF là hình chữ nhật c. EF //AC d. E,P,F thẳng hàng
+
+Bài 8: Cho tam giác ABC cân tại A. Từ điểm D H E trên đáy BC kẻ đường vuông góc với BC cắt AB ở E và AC ở F . Vẽ các hình chữ A nhật DBHE và CDFK . Gọi I là tâm của hình chữ nhật BDEH , J là tâm của hình chữ I K nhật CDFK . Chứng minh rằng F a. AIDJ và AHIJ là các hình chữ nhật J b. A,H,K thẳng hàng và A là trung điểm của HK 2 1 1 1 B D C
+
+Bài 1: Cho tam giác ABC, các đường cao BD và A N CE. Gọi M,N là chân các đường vuông góc D I kẻ từ B,C đến DE. Gọi I là trung điểm của E DE, K là trung điểm của BC. Chứng minh M rằng a. IK ⊥ ED B K C b. EM = DN
+
+Bài 2: Cho tam giác ABC vuông tại A, đường cao B AH . Gọi I,K theo thứ tự là trung điểm của H AB,AC. Chứng minh I  =900 a. I HK b. Chu vi tam giác bằng nửa chu vi tam IHK A K C giác ABC
+
+Bài 3: Cho tam giác ABC có đường cao AI. Từ A A kẻ tia Ax vuông góc với AC, từ B kẻ tia By Q song song với AC. Gọi M là giao điểm của P H hai tia Ax và By. Nối M với trung điểm P của AB, đường MP cắt AC tại Q và BQ cắt M AI tại H B I C a. Tứ giác AMBQ là hình gì b. Chứng minh rằng CH vuông góc với AB c. Chứng minh tam giác PIQ cân
+
+Bài 1: Cho tứ giác ABCD. Gọi E,F,G,H theo thứ B E tự là trung điểm của các cạnh AB,BC,CD,DA A . Tìm điều kiện của tứ giác ABCD để tứ giác F là hình chữ nhật EFGH H D C G
+
+Bài 2: Cho tam giác ABC. Gọi O là 1 điểm thuộc A miền trong của tứ giác. M,N,P,Q lần lượt là trung điểm của các đoạn thẳng P Q O OB,OC,AC,AB a. Chứng minh tứ giác MNPQ là hình bình M N B C hành b. Xác định vị trí của điểm O để tứ giác MNPQ là hình chữ nhật
+
+Bài 3: Cho hình thang cân ABCD ( AB//CD ), A B AB<CD. Gọi M,N,P,Q lần lượt là trung M Q điểm của các đoạn thẳng AD,BD,AC,BC N P a. Chứng minh bốn điểm M,N,P,Q thẳng D C hàng A B b. Chứng minh tứ giác là hình thang ABPN M cân Q P N c. Tìm một hệ thức liên hệ giữa AB và CD để ABPN là hình chữ nhật D C
+
+Bài 1: Cho tam giác ABC, đường cao AH . Gọi I A E là trung điểm của AC. Lấy E là điểm đối K xứng với H qua I . Gọi M,N lần lượt là N trung điểm của HC,CE. Các đường thẳng I G AM,AN cắt HE tại G và K B H M C a. Chứng minh tứ giác AHCE là hình chữ nhật b. Chứng minh HG =GK = KE
+
+Bài 2: Cho tam giác ABC, các đường cao A AD,BE,CF cắt nhau tại H , gọi I,H,R theo I E thứ tự là trung điểm của HA,HB,HC. Gọi N M,N,P theo thứ tự là trung điểm của P F O BC,AC,AB. Chứng minh rằng R H a. Tứ giác MNIK,PNRK là các hình chữ nhật B D M C b. P,N,R,K,I,M cùng thuộc 1 đường tròn c. D,E,F cũng thuộc đường tròn trên
+
+Bài 3: Cho tam giác ABC vuông tại A, M thuộc A BC. Gọi D và E là chân đường vuông góc D kẻ từ M đến AB và AC E I a. Định dạng tứ giác ADME b. Gọi là trung điểm của DE. Chứng I B M C H minh A,I,M thẳng hàng c. Điểm M nằm ở đâu trên BC thì DE nhỏ nhất. Tính DE trong trường hợp đó biết AB=15cm,AC =20cm
+
+Bài 4: Cho tam giác ABC vuông tại A. Về phía E ngoài tam giác ABC, vẽ hai tam giác vuông A D cân ADB ( DA= DB ) và ACE ( AE = EC ). Gọi K I M là trung điểm của BC, I là giao điểm của với AB, và K là giao điểm của B C DM M EM với AC. Chứng minh: a) Ba điểm D,A,E thẳng hàng. b) Tứ giác IAKM là hình chữ nhật.
+
+Bài 5: Cho hình thang vuông ABCD ( A= D  =900) D C có các điểm E và F thuộc cạnh AD sao cho AE = DF và B  FC =900. Chứng minh F  =900. K I B EC E A B
+
+Bài 1: Cho tam giác ABC cân tại A. Hai đường A cao BE và CF cắt nhau tại H. Đường thẳng cắt EF tại D, cắt BC tại G. Gọi M và AH N lần lượt là hình chiếu của G trên AB,AC. F D E Chứng minh rằng tứ giác là hình DNGM M thoi. N H B G C
+
+Bài 2: Cho tam giác ABC, điểm D thuộc cạnh AB, A điểm E thuộc cạnh AC sao cho BD=CE. Gọi I,K,M,N theo thứ tự là trung điểm của D H BE,CD,BC,DE. Chứng minh rằng tứ giác E K MNIK là hình thoi. I B M C
+
+Bài 3: Cho hình bình hành ABCD có AC vuông A D góc với AD. Gọi E,F theo thứ tự là trung điểm của các cạnh AB,CD. Chứng minh tứ giác AECF là hình thoi. E F O B C
+
+Bài 4:  A=600. Cho hình thoi ABCD có Từ đỉnh B góc tù B kẻ các đường vuông góc BE,BF đến AD và DC , cắt AC theo thứ tự ở M và M N A C . Chứng minh rằng N E F a. AE =CF b. Tam giác BEF đều D c. Tứ giác BMND là hình thoi d. Cho AC =16cm, tính chu vi tam giác BEF
+
+Bài 5: Cho tam giác ABE vuông tại A. Từ điểm O E trên cạnh BE kẻ đường vuông góc với BE 1 2 cắt tia đối của tia AB tại F , cắt AE ở D. O
+
+Bài 6: Cho tam giác đều ABC. Gọi M là điểm A thuộc cạnh BC,E và F lần lượt là chân
+
+Bài 7: Cho tam giác ABC đều trọng tâm G. Vẽ A hình chữ nhật ABDE sao cho C thuộc đoạn thẳng DE. Tia AG cắt BD tại I , tia AE cắt J BG tại J . Chứng minh rằng E a) I và J đối xứng nhau qua CG G b) Các tứ giác CGBI,GICJ,CJAG là hình thoi. B M C I D
+
+Bài 1: Cho hình thoi ABCD, độ dài mỗi cạnh là B 13cm. Gọi O là giao điểm của hai đường chéo. Vẽ OH ⊥ AD. Biết OH =6cm, tính tỉ số O A C của hai đường chéo BD và AC K H D
+
+Bài 2: Cho hình thoi ABCD có góc A tù. Biết A B đường cao kẻ từ đỉnh A đến cạnh CD chia đôi cạnh đó. Tính các góc của hình thoi D H C
+
+Bài 3: Trên cạnh AB và CD của hình thoi ABCD I K B lấy các điểm P và Q sao cho M 1 1 P AP= AB,CQ= CD. Gọi I là giao điểm C 3 3 A O Q của PQ và AD, K là giao điểm của DP và BI . Chứng minh rằng: D a) ∆BID vuông b) BK = IK
+
+Bài 4: Cho ∆ABC có AB< . Trên cạnh AC của AC A tam giác lấy điểm D sao cho CD= AB. Gọi P D Q là trung điểm của AC, N là trung điểm Q của BD. Vẽ đường phân giác AK của góc N BAC . Chứng minh rằng AK ⊥ NQ K M C B
+
+Bài 5:  Cho hình thoi ABCD có A=600, vẽ BH B vuông góc với AD rồi kéo dài một đoạn HE = HB. Nối E với A, E với D A C a. Chứng minh rằng tứ giác ABDE là hình H thoi D b. E,D,C thẳng hàng c. EB= AC E
+
+Bài 6: Cho hình bình hành ABCD có F  A=600,AD=2AB. Gọi M là trung điểm của E AD,N là trung điểm của BC. Từ C kẻ đường thẳng vuông góc với MN ở E cắt B C AB ở F . Chứng minh rằng a. Tứ giác MNCD là hình thoi
+
+Bài 7: Cho hình thoi ABCD có B  =600. Kẻ ⊥ ⊥ BC AE DC,AF a) Chứng minh AE = AF b) Chứng minh tam giác AEF đều. c) Biết BD=16cm, tính chu vi tam giác AEF
+
+Bài 8: Cho ∆ABC ( AB< ). Trên tia đối của tia AC A I BA lấy điểm M , trên tia đối của tia CA lấy 1 2 J điểm N sao cho BM =CN. Gọi D,E,P,Q lần B D C lượt là trung điểm của BC,MN,MC,NB Q a) DE cắt AM tại J . Chứng minh rằng P  EQ=M  JQ P N E b) DE cắt AN tại I . Chứng minh rằng DE M  song song với đường phân giác của B AC
+
+Bài 1: Cho hình thang ABCD gọi M,N,P,Q lần A M B lượt là trung điểm của hai đáy và hai đường chéo của hình thang P Q a. Chứng minh tứ giác MNPQ là hình bình hành D N C b. Hình thang ABCD phải có thêm điều kiện gì để tứ giác MNPQ là hình thoi
+
+Bài 2: Cho tam giác ABC, qua điểm D thuộc cạnh A BC, kẻ các đường thẳng song song với AB và AC, cắt AB và AC theo thứ tự tại E và F F E a. Tứ giác AEDF là hình gì? b. Điểm D ở vị trí nào trên BC thì AEDF là B D C hình thoi
+
+Bài 3: Cho hình bình hành ABCD. Trên các cạnh E AB và CD lần lượt lấy các điểm và M N sao cho = DN. Đường trung trực của AM BM lần lượt cắt các đường thẳng MN và BC tại E và F . A M P B a. Chứng minh E và F đối xứng với nhau qua AB C b. Chứng minh tứ giác MEBF là hình thoi D N c. Hình bình hành ABCD có thêm điều kiện F gì để tứ giác BCNE là hình thang cân
+
+Bài 1: Cho tam giác ABC nhọn, các đường cao A BD,CE. Tia phân giác của các góc ABD và N ACE cắt nhau tại O, và lần lượt cắt AC,AB D M O tại . Tia BN cắt CE tại K, tia CM cắt N,M K H E BD tại H . Chứng minh rằng a. BN ⊥CM b. Tứ giác MNHK là hình thoi B C
+
+Bài 2: Cho hình chữ nhật ABCD. Gọi EFGH lần lượt là trung điểm của AB,BC,CD,DA a) EFGH là hình gì, vì sao b) Chứng minh AC,BD,EG,FH đồng qui.
+
+Bài 3: Cho tam giác ABC cân tại A, trung tuyến AM . Qua M kẻ đường thẳng song song với AC cắt AB tại P và đường thẳng song song với AB cắt AC tại Q a) Tứ giác APMQ là hình gì ? Vì sao? b) Chứng minh PQ//BC
+
+Bài 4: Cho tam giác đều ABC có AD là đường A cao, H là trực tâm. Từ một điểm bất kỳ M trên cạnh BC kẻ ME,MP theo thứ tự vuông K góc với AB,AC. Gọi I là trung điểm của I Q AM . Chứng minh: H P a) DEIP là hình thoi O b) Ba đường thẳng MH,ID,EP đồng quy E B M D C
+
+Bài 1: Cho hình vuông DEBC. Trên cạnh CD lấy K I điểm A, trên tia đối của tia DC lấy điểm K, D M H E trên tia đối của tia ED lấy điểm M sao cho CA= DK = EM . Vẽ hình vuông ( ). A DKIH H∈DE Chứng minh rằng tứ giác là hình vuông C B ABMI
+
+Bài 2: Cho tam giác ABC vuông tại A. Trên cạnh A AB,AC theo thứ tự lấy các điểm D và E M D sao cho BD= EC. Gọi M,N,P,Q theo thứ tự E N là trung điểm của DE,EB,BC,CD. Chứng Q C P B minh rằng tứ giác MNPQ là hình vuông
+
+Bài 3: Cho tam giác ABC. Dựng về phía ngoài tam G giác các hình vuông ABDE và ACFG. Gọi P Q,N lần lượt là giao điểm các đường chéo E F của hình vuông ABDE và hình vuông ACFG A N . Gọi M,P lần lượt là trung điểm BC và EG I Q . Chứng minh rằng tứ giác MNPQ là hình D B M C vuông
+
+Bài 4: Cho hình thang ABCD, có: A B  A=  =900,CD=2AB=2AD. Gọi là hình D H H chiếu của D lên AC. M,N,P lần lượt là P Q trung điểm của CD,HC,HD a. Chứng minh tứ giác ABMD là hình D M C vuông, tam giác BCD vuông cân b. Chứng minh tứ giác DMPQ là hình bình hành c. AQ⊥ PD
+
+Bài 1: Cho hình chữ nhật ABCD. Trên tia đối của A B tia CB và DA lần lượt lấy hai điểm E và F H D K C Sao cho CE = DF =CD. Trên tia đối của tia CD lấy điểm H sao cho =CB. Chứng CH minh AE vuông góc FH E F
+
+Bài 2: Cho hình vuông ABCD. Trên các cạnh A B AD,CD lần lượt lấy các điểm E,F sao cho AE = DF . Chứng minh I a. ∆ADF =∆BAE b. BE ⊥ AF D F C
+
+Bài 3: Cho hình vuông ABCD. Trên tia đối của tia A B E BA lấy điểm E, trên tia đối của tia CB lấy điểm F sao cho AE =CF O a. Chứng minh ∆EDF vuông cân D C b. Gọi I là trung điểm của EF . Chứng minh I IB= ID c. Chứng minh A,C,I thẳng hàng F
+
+Bài 4: Cho hình bình hành ABCD. Vẽ về phía F E ngoài hình bình hành hai hình vuông ABEF và ADGH . Chứng minh I a. AC = FH và AC ⊥ FH H A b. ∆CEG vuông cân B G D C
+
+Bài 5: Cho hình vuông ABCD cạnh 6cm, điểm E A B thuộc cạnh CD, tia phân giác của góc DAE 4
+
+Bài 6: Cho hình vuông ABCD và E,F theo thứ tự E A B là trung điểm của AB,BC a. Chứng minh rằng CE ⊥ DF F b. Gọi là giao điểm của CE và DF. M M Chứng minh AM = BM (Gợi ý có thể gọi N H
+
+Bài 7: Cho hình vuông ABCD và 1 điểm E bất kỳ A E B nằm giữa hai điểm A và B. Trên tia đối của tia CB lấy điểm F sao cho AE =CF G a. Tính E  DF =900 b. Gọi G là điểm đối xứng với D qua trung điểm I của EF . Tứ giác DEGF là hình gì? C D Vì sao? c. Chứng minh ba đường thẳng AC,DG,EF F đồng quy tại 1 điểm.
+
+Bài 8: Cho hình vuông ABCD. Trên tia đối của tia H F CB lấy điểm M , trên tia đối của tia DC lấy điểm N sao cho BM = DN . Vẽ hình bình 2 M O hành AFMN . Chứng minh rằng: 1
+
+Bài 9: Cho tam giác ABC vuông tại A, đường cao A AH và trung tuyến AM 4 1 a. Chứng minh rằng M  AC = B  AH b. Kẻ trung trực của BC và trên đó lấy điểm F B M D sao cho MD=MA (D và A nằm trong hai C H E nửa mặt phẳng khác nhau bờ là đường thẳng BC). Chứng minh AD là phân giác của 2   góc M AH, A c. Kẻ DE ⊥ AB,DF ⊥ AC. Tứ giác AEDF là D hình gì? d. Chứng minh: ∆DBE =∆DCF
+
+Bài 10: Cho tam giác ABC vuông tại A, đường K cao AH . Vẽ về phía ngoài tam giác hai G
+
+Bài 1: Cho tam giác ABC vuông tại A,M là một A điểm thuộc cạnh BC. Qua M vẽ các đường thẳng song song với AB và AC, chúng cắt E F các cạnh AC,AB theo thứ tự tại E và F a. Tứ giác FFME là hình gì B M C b. Xác định vị trí của điểm M trên cạnh BC để tứ giác AFME là hình vuông
+
+Bài 2: Cho tứ giác ABCD. Gọi E,F,G,H theo thứ B E tự là trung điểm của các cạnh AB,BC,CD,DA A . Tìm điềm kiện của tứ giác ABCD để tứ F giác EFGH là H a. Hình chữ nhật b. Hình thoi G C c. Hình vuông D
+
+Bài 1: Cho đoạn thẳng AB và điểm M thuộc đoạn E F thẳng đó. Vẽ về một phía của AB các hình I vuông AMCD,BMEF H D a. Chứng minh AE ⊥ BC O' C b. Gọi H là giao điểm của AE và BC. O Chứng minh ba điểm D,H,F thẳng hàng B A M c. Chứng minh đường thẳng DF luôn đi qua K một điểm cố định khi M di chuyển trên đoạn thẳng cố định AB
+
+Bài 2: Cho tam giác ABC, vẽ ra phía ngoài tam E giác các hình vuông ABDE và BCKH , BM A là trung tuyến của AC   D M a. Chứng minh D BH + ABC =1800 B b. Vẽ hình bình hành DBHN . Chứng minh C =∆NHB ∆ABC O c. Chứng minh DH =2BM N d. Chứng minh BM ⊥ DH K H
+
+Bài 3: Cho đoạn thẳng AB và điểm M thuộc đoạn thẳng đó. Vẽ về một phía của AB, các hình vuông AMCD,BMEF a) Chứng minh AE vuông góc với BC b) Gọi H là giao điểm của AE và BC. Chứng minh ba điểm D,H,F thẳng hàng. c) Chứng minh đường thẳng DF luôn đi qua một điểm cố định khi M di chuyển trên
+
+Bài 4: Cho tam giác ABC, vẽ ra phía ngoài tam giác các hình vuông ABDE và . BCKH BM là đường trung tuyến của tam giác ABC   =1800. a) Chứng minh D BH + ABC b) Vẽ hình bình hành . Chứng minh DBHN ∆ABC =∆NHB c) Chứng minh DH =2BM d) Chứng minh BM vuông góc với DH
+
+Bài 1: Cho hình chữ nhật ABCD có AD=14cm và A 48 B BD=50cm. O là giao điểm của hai đường E F chéo. Gọi lần lượt là trung điểm 14 E,F,G,H O H G của OA,OB,OC,OD. Tính S D C EFGH
+
+Bài 2: Chiều dài và chiều rộng của một hình chữ nhật tỷ lệ với 9, 4. Chu vi của hình chữ nhật là 52cm. Tính diện tích của hình chữ nhật
+
+Bài 3: Tính các cạnh của hình chữ nhật, biết diện tích của hình chữ nhật là 3cm2, chu vi bằng 8cm
+
+Bài 4: Diện tích của hình chữ nhật thay đổi như thế nào, nếu chiều dài tăng 2 lần, chiều rộng giảm 4 lần
+
+Bài 6: Tính diện tích của hình chữ nhật có đường chéo d = 40cm và các cạnh của nó tỉ lệ với hai số 3 và 4
+
+Bài 7: Hình chữ nhật có diện tích 6000cm2. Nếu chiều dài tăng thêm 20cm còn chiều rộng giảm 5cm thì diện tích tăng thêm 600cm2. Tính chu vi của hình chữ nhật ban đầu
+
+Bài 8: Một thửa đất hình chữ nhật. Nếu tăng chiều dài 20cm còn chiều rộng giảm 5cm thì diện tích tăng thêm 600cm2. Nếu chiều dài giảm 10cm còn chiều rộng tăng 10cm thì diện tích tăng 300cm2. Tính chu vi hình chữ nhật ban đầu.
+
+Bài 9: Cho hình chữ nhật có chu vi 320cm, diện tích 6000m2. Tính chiều dài và chiều rộng của hình chữ nhật đó
+
+Bài 10: Trong các hình chữ nhật có cùng diện tích bằng 100m2, hình nào có chu vi nhỏ nhất
+
+Bài 11: Cho hình chữ nhật ABCD. Qua điểm E là A F B một điểm bất kì nằm trên đường chéo AC, H K E kẻ hai đường thẳng FG//AD và HK //AB ( ).Chứng minh F∈AB,G∈DC,H∈AD,K∈BC rằng hai hình chữ nhật EFBK và có EGDH D G C cùng diện tích.
+
+Bài 1: Cho hình chữ nhật ABCD. Qua điểm E là B A F một điểm bất kì nằm trên đường chéo AC, H K E kẻ hai đường thẳng FG//AD và HK //AB ( F∈AB,G∈DC,H∈AD,K∈BC ).Chứng minh rằng hai hình chữ nhật EFBK và EGDH có D G C cùng diện tích.
+
+Bài 2: Một hình thang cân có hai đường chéo E A B vuông góc với nhau, độ dài đường chéo bẳng 4cm. Tính diện tích của tứ giác có đỉnh H F là trung điểm của các cạnh của hình thang G C D đó
+
+Bài 3: Cho hình vuông ABCD có cạnh bằng 10cm. B C O là giao điểm của AC và BD. Gọi N P M,N,P,Q lần lượt là trung điểm của OA,OB OC,OD M Q a. Tứ giác MNPQ là hình gì? Vì sao A D b. Tính diện tích phần hình vuông ABCD nằm ngoài tứ giác MNPQ
+
+Bài 4: Một hình chữ nhật có diện tích 350cm2 và hai cạnh tỉ lệ với các số 2 và 7. Tính diện tích hình vuông có cùng chu vi với hình chữ nhật
+
+Bài 5: Diện tích một hình vuông tăng thêm bao nhiêu % nếu mỗi cạnh của nó tăng thêm 20%?
+
+Bài 1: Tính diện tích tam giác ABC ( A=900), biết AB=5cm, BC =13cm
+
+Bài 2: Cho hình vẽ, biết AB=3cm,AD=4cm
+
+Bài 3: Cho tam giác ABC vuông cân tại A, có BC =1cm. Tính diện tích tam giác ABC
+
+Bài 4: Tính diện tích của 1 tam giác vuông có cạnh huyền bằng 10cm. Tổng hai cạnh góc vuông bằng 14cm
+
+Bài 5: Cho tam giác ABC vuông tại A, có B M AC =8cm,AB=6cm H E a. Tính BC
+
+Bài 6: Tính diện tích của tam giác vuông có cạnh B huyền bằng 10cm, tỉ số hai cạnh góc vuông là 1:2 A C
+
+Bài 7: Cho hình chữ nhật ABCD, có AB=a ( ) cm A B G BC =b ( cm )(a≥b). Các tia phân giác của góc A và B; Góc B và C; Góc C và D; Góc D H F và A cắt nhau tại E,F,G,H E 1 1 a. Tính S D C ABCD b. Tính S ,S ,S CDG ADH BCF c. Tính S EFGH
+
+Bài 1: Cho tam giác ABC cân tại A có cạnh đáy A BC =60cm, đường cao AH =40cm. Tính K đường cao tương ứng với cạnh bên C B H
+
+Bài 2: Một tam giác cân có đường cao ứng với A cạnh đáy bằng 15cm, đường cao ứng với K cạnh bên bằng 20cm. Tính các cạnh của tam giác đó (chính xác đến 0,1cm) B H C
+
+Bài 3: Cho tam giác ABC đường cao AH (H thuộc A BC), biết =41cm,BH =12cm. AB=15cm,AC
+
+Bài 4: Cho hình vẽ, tính BK A
+
+Bài 5: Cho tam giác ABC, các đường trung tuyến A BD và CE. Cho BC =10cm,BD=9cm và CE =12cm. Chứng minh rằng tam giác BGC E D G vuông (G là giao điểm của BD và CE). Tính S , S BEC BGC
+
+Bài 1: Cho hình thang ABCD ( AB//CD ). Gọi O là A B giao điểm của hai đường chéo. Kẻ AH,BK D' O vuông góc với CD. Chứng minh rằng: B' a. S =S ACD BGC D H K C b. Biết S =4cm2,S =9cm2. Tính OAB COD =S S AOD BOC
+
+Bài 2: Cho tam giác ABC và đường trung tuyến A AM . Chứng minh S = S AMB AMC B H M C
+
+Bài 3: Cho tam giác ABC, các đường trung tuyến A AM,BN,CP cắt nhau tại trọng tâm G. Chứng minh: N P G a) S =S =S =S =S =S AGP PGB BGM MGC CGN NGA b) Các tam giác GAB,GBC,GCA có diện tích B M C bằng nhau
+
+Bài 1: Tính diện tích hình thang ABCD, biết A 1 B   =900,C  =450,AB=1cm,CD=3cm A= D D 1 H 2 C
+
+Bài 2: Cho hình thang ABCD có B A 3   =900,AB=3cm,BC =5cm,CD=6cm. Tính A= D diện tích hình thang 5
+
+Bài 3: Cho hình thang cân A B ( ). ABCD AB//CD,AB<CD Kẻ đường cao AH , biết AH =8cm,HC =12cm. Tính diện
+
+Bài 4: Cho hình thang cân A 10 B ABCD ( AB//CD,AB<CD ). Biết AB=10cm,CD=20cm,AD=13cm. Tính diện
+
+Bài 5: Cho hình thang ( ) có ABCD AB//CD AB=2cm,BC =2cm,CD=9cm và C  =300. Tính diện tích hình thang ABCD
+
+Bài 6: Cho hình thang ABCD có hai đáy AB=5cm,CD=15cm và hai đường chéo là AC =16cm,BD=12cm. Tính diện tích hình thang ABCD
+
+Bài 7: Cho hình thang cân A B ABCD ( AB//CD ) ,AB=10cm,CD=22cm, DB là 1
+
+Bài 8: Tính S (AB//CD) , biết AB=4cm ABCD
+
+Bài 9: Trên đường chéo AC của hình vuông ta lấy một điểm E ( E ≠ A,C ). Đường thẳng qua E và song song với AB cắt AD và BC theo thứ tự tại các điểm Q,N . Đường thẳng qua E và song song với BC cắt AB và CD theo thứ tự tại P,M a) Chứng minh tứ giác MNPQ là hình thang cân b) So sánh S và S MNPQ ABCD c) Xác định vị trí của E để hình thang MNPQ có chu vi nhỏ nhất.
+
+Bài 1: Cho hình bình hành ABCD có cạnh D C ˆ AB=10 3cm;AD=8cm,A =600.S =? ABCD 60° A H B
+
+Bài 2: Cho hình bình hành ABCD. Gọi P,Q,R,S A R B lần lượt là trung điểm của các cạnh CD,DAC G I AB,BC. Đoạn DR cắt CQ,CA,SA theo thứ tự Q J S F H K E tại H,I,G. Đoạn BP cắt SA,AC,CQ theo thứ P D C tự tại F,J,E. Chứng minh rằng: a. Tứ giác EFGH là hình bình hành b. AI = IJ = JC
+
+Bài 1: Cho tam giác ABC vuông tại ( AB< ). A AC C Gọi I là trung điểm của cạnh BC. Qua I kẻ IM vuông góc với AB tại M và IN vuông K I góc với AC tại N . Lấy D đối xứng với I D N qua N G a. Tứ giác ADCI là hình gì? b. Đường thẳng BN cắt DC tại K. Chứng A M B DK 1 minh = DC 3 c. Cho AB=12cm,BC =20cm. Tính diện tích hình thoi ADCI
+
+Bài 1: Cho hình bình hành ABCD có CD=4cm, A M B đường cao vẽ từ A đến cạnh CD bằng 3m N a. Tính diện tích hình bình hành ABCD O b. Gọi M là trung điểm của AB. Tính diện tích tam giác ADM D C H c. DM cắt AC tại N . Chứng minh rằng DN =2NM d. Tính diện tích tam giác AMN
+
+Bài 1: Trên tia Ax lấy các điểm B,C,D theo thứ tự A C D B đó sao cho AB=2cm,BC =4cm,CD=8cm AB BC a. Tính các tỉ số ; BC CD b. Chứng minh: BC2 = AB.CD
+
+Bài 1: Trên đường thẳng d lấy bốn điểm A,B,C,D AB 3 BC 5 theo thứ tự đó sao cho = ; = BC 5 CD 6 AB a. Tính tỉ số CD b. Cho biết AD=28cm. Tính độ dài các đoạn thẳng AB,BC và CD
+
+Bài 1: Cho tam giác ABC và các điểm D,E lần A lượt nằm trên hai cạnh AB,AC sao cho AD AE = E D AB AC AD AE a. Chứng minh = B C BD EC b. Cho biết AD=2cm,BD=1cm,AE =4cm. Tính AC
+
+Bài 1: Gọi M là điểm nằm trên đoạn thẳng AB sao MA 1 AM MB A M B cho = . Tính , . MB 2 AB AB
+
+Bài 1: Cho điểm C thuộc đoạn AB, biết AB=20cm A C B CA 2 , = . Tính AC,BC CB 3
+
+Bài 1: Cho đoạn thẳng AB, điểm C thuộc AB, điểm D thuộc tia đối của tia BA sao cho: C B D A CA DA =2, biết CD=4cm. Tính AB = CB DB
+
+Bài 1: Cho hình thang ABCD ( AB//CD ). Một đường A B thẳng song song với hai đáy cắt các cạnh 4 6 K F bên AD và BC theo thứ tự tại E và F . Tính E x
+
+Bài 2: Tính x,y,z trong hình vẽ sau, biết MN //BC A và AB//NI
+
+Bài 3: Cho tam giác ACE có =11cm. Lấy điểm AC A B trên cạnh AC sao cho BC =6cm. Lấy điểm D trên cạnh AE sao cho BD//EC. Giả D B sử AE+ED=25,5cm. Hãy tính: DE a. Tỉ số AE b. Độ dài các đoạn thẳng AE,DE,AD C E
+
+Bài 4: Cho tam giác ABC có AB=11cm. Lấy điểm A D trên cạnh AB sao cho AD=4cm. Lấy
+
+Bài 5: Cho tam giác ABC và điểm D trên cạnh BC A BD 3 sao cho = , điểm E trên đoạn thẳng K BC 4 E AE 1 AD sao cho = . Gọi K là giao điểm AD 3 M AK của BE và AC. Tính tỉ số ? B D C KC
+
+Bài 1: Cho tam giác ABC có là trung tuyến và AM A điểm E thuộc đoạn thẳng . Qua E kẻ MC D đường thẳng song song với AC, cắt AB tại G D và cắt AM tại K. Qua E kẻ đường thẳng K F song song với AB, cắt AC ở F . Chứng minh CF = DK. B E C M
+
+Bài 1: Cho tam giác nhọn ABC, M là trung điểm A của BC và H là trực tâm. Đường thẳng qua K H và vuông góc với MH cắt AB và AC H I theo thứ tự ở I và K. Qua C kẻ đường M B thẳng song song với IK, cắt AH và AB theo C thứ tự ở N và D. Chứng minh N a. NC = ND D b. HI = HK
+
+Bài 1: Cho đoạn thẳng AB=42cm và điểm C thuộc CA 2 đoạn thẳng đó sao cho = . Tính độ dài CB 3 A C O B các đoạn thẳng CA,CB và khoảng cách từ C đến trung điểm O của AB.
+
+Bài 2: Cho tam giác ABC, điểm M bất kì trên cạnh A AB. Qua M kẻ đường thẳng song song với BC cắt AC ở N . Biết AM =11cm ,MB=8cm M N Tính độ dài các đoạn AN,NC B C
+
+Bài 3: Cho  Ay, trên tia Ax lấy hai điểm D và E, x x H trên tia Ay lấy hai điểm F và G sao cho E FD//EG. Đường thẳng kẻ qua G song song D với EF cắt tia Ax ở H . Chứng minh: y AE2 A F G = AD.AH
+
+Bài 4: Cho hình bình hành ABCD. Gọi E là một A E B điểm bất kỳ trên cạnh AB. Qua E kẻ đường H thẳng song song với AC cắt BC ở F và kẻ F đường thẳng song song với BD cắt AD ở H D G C . Đường thẳng kẻ qua song song với BD F cắt CD ở G. Chứng minh: AH.CD= AD.CG
+
+Bài 1: Cho tam giác ABC có cạnh BC =m. Trên A cạnh AB lấy các điểm D, E sao cho M AD= = EB. Từ E kẻ các đường thẳng D DE D, song song với BC, cắt cạnh AC theo thứ tự N E tại và . Tính độ dài các đoạn thẳng M N B C DM và EN theo m.
+
+Bài 2: Cho hình thang ABCD (với A AB//CD,AB<CD). Gọi trung điểm của B đường chéo BD là . Qua kẻ đường M M thẳng song song với cắt AC tại . N DC N M Q Chứng minh: a) N là trung điểm của AC C D CD−AB b) MN =
+
+Bài 3: Cho hình thang ABCD có AB//CD. E thuộc A B
+
+Bài 4: Cho tam giác ABC vuông tại A,BC =53cm, B D thuộc AC, AD=20cm,CD=8cm. Đường vuông góc với AC tại C cắt đường thẳng
+
+Bài 5: Cho hình thang ABCD ( AB//CD ), có O là A x=3 B giao điểm của hai đường chéo AC và BD, OA 1 O biết = ,CD=6cm. Tính AB. AC 3 6cm D C
+
+Bài 6: Cho hình bình hành ABCD. Trên cạnh CD A B DE 1 lấy điểm E sao cho = . Gọi I là giao DC 4 I DI điểm của AE và BD. Tính DB D E C
+
+Bài 1: Cho hình thang ( ), có O là ABCD AB//CD A B giao điểm của 2 đường chéo. Đường thẳng F qua O song song với hai đáy cắt AD và BC E O lần lượt tại E và F . Chứng minh rằng a. OE =OF C D 1 1 1 b*. + = AB CD OE
+
+Bài 7: Cho tam giác ABC, đường trung tuyến . AM K Trên cạnh AC lấy điểm D. Gọi I là giao A điểm của AM và BD. Qua C kẻ đường D thẳng song song với AB, cắt BD ở K. I Chứng minh rằng: IB2 = ID.IK B M C
+
+Bài 7: Cho tam giác ABC, I là một điểm trong tam A giác. IA,IB,IC lần lượt cắt BC,CA,AB ở E F N P M,N,P. Qua A kẻ đường thẳng song song I với BC cắt BN,CM tại E và F . Chứng M B C minh rằng: AE AF a. = BM MC
+
+Bài 1: Cho tứ giác ABCD. Đường thẳng qua A và B song song với BC cắt BD ở E. Đường thẳng A qua B và song song với AD cắt AC ở G. O Chứng minh rằng EG//CD E G D C
+
+Bài 2: Cho tam giác ABC có điểm trên cạnh M A BC sao cho =4CM . Trên cạnh AC lấy BC CN 1 điểm N sao cho = . N AN 3 Chứng minh MN //AB B C M
+
+Bài 3: Cho tam giác ABC, điểm I thuộc cạnh AB, A điểm K thuộc cạnh AC. Kẻ IM //BK (M M thuộc AC), kẻ KN //CI (N thuộc AB). N K Chứng minh MN //BC I C B
+
+Bài 4: Cho tam giác ABC, đường trung tuyến AM , A H K điểm I thuộc đoạn thẳng AM . Gọi E là giao điểm của BI và là giao điểm của AC,F F E CI và AB. Chứng minh EF //BC I B M C
+
+Bài 1: Cho tam giác AOB có AB=18cm,OA=12cm, F OB=9cm. Trên tia đối của tia OB lấy điểm D sao cho OD=3cm. Qua D kẻ đường D C thẳng song song với AB cắt tia AO ở C. O Gọi F là giao điểm của AD và BC. Tính a. Độ dài OC,OD FD A B b. Tính tỉ số: FA
+
+Bài 2: Cho hình thang ABCD có hai đáy AB,CD. A B Gọi M là trung điểm của CD, E là giao điểm của MA và BD, F là giao điểm của E F N H MB và AC a. Chứng minh EF //AB D M C b. Đường thẳng EF cắt AD,BC lần lượt tại và N . Chứng minh HE = EF = FN H c. Biết AB=7,5cm, CD=12cm. Tính độ dài . HN
+
+Bài 1: Cho tam giác ABC có AB=30cm, A =45cm;BC =50cm, đường phân giác AD AC a. Tính BD,CD b. Qua D vẽ ( ). DE//AB,DF //AC E∈AC;F∈AB Tính các B D C cạnh của ◊AEDF
+
+Bài 2: Cho tam giác ABC, hai đường phân A giác AE và BD cắt nhau tại O. Tính AC, biết OA 3 AD 6 AB=12cm, = , =
+
+Bài 3: Cho tam giác ABC có ba đường phân A giác AM,BN,CK . Biết AB=30,AC =45,
+
+Bài 4: Cho tam giác ABC vuông tại A, A đường cao AH,AB=15cm,AC =20cm. Tia phân giác của góc HAB cắt HB tại O, tia phân giác
+
+Bài 1: Cho tam giác ABC có các đường phân A giác AD,BE,CF DB EC FA a. Chứng minh: =1 E . . DC AE FB F b. Khi tam giác ABC cân tại A, chứng minh EF //BC B D C AB 2 c. Biết = , tính tỉ số diện tích hai tam giác AC 3 ABD và ACD.
+
+Bài 2: Cho tam giác ABC, các đường phân A giác AD,BE,CF giao nhau tại I . Chứng minh: DI BC E a) = DA C F ABC DI EI FI I b) + + =1 DA EB FC B D C
+
+Bài 3: Cho tam giác ABC (AB< AC ), đường E phân giác AD của  ( D∈BC ). Từ trung B AC A điểm M của BC, kẻ một đường thẳng song F song với AD, cắt AC tại F và cắt tia đối của tia AB tại E. Chứng minh: AE = AF. D B M C
+
+Bài 4: Cho hình bình hành ABCD, phân giác B C   cắt các đường chéo BD và AC của góc A;D M N lần lượt tại M và N. Chứng minh MN //AD. I A D
+
+Bài 5: Cho tam giác ABC, trung tuyến AM . A Phân giác của góc AMB cắt AB ở D, phân D giác của góc AMC cắt AC ở E I a. Chứng minh DE//BC b. Gọi I là giao điểm của DE với AM . Chứng B M C minh I là trung điểm của DE.
+
+Bài 1: Cho tam giác ABC vuông tại A có A AB=6cm,AC =8cm và đường phân giác BD a. Tính các độ dài DA,DC I D E b. Tia phân giác của góc C cắt BD tại I . Gọi là trung điểm của BC. Chứng minh M B M C  =900. B IM
+
+Bài 2: Cho tam giác ABC có BC =15cm, B CA=18cm,AB=12cm. Gọi I và G lần lượt là tâm đường tròn nội tiếp và trọng tâm tam giác ABC G I a. Chứng minh IG//BC b. Tính độ dài đoạn thẳng IG A D M C
+
+Bài 3: Cho tam giác ABC có AB=4cm A =5cm,BC =6cm. Các đường phân giác BD AC D và CE cắt nhau tại I E a. Tính AD,CD I b. Tính tỉ số diện tích các tam giác DIE và B C ABC.
+
+Bài 1: Cho tam giác ABC có AB=6cm,AC =9cm. Các điểm D và E theo thứ tự thuộc các A cạnh AB,AC sao cho BD=4cm,CE =6cm E D a. Chứng minh rằng: ∆ABC và xác ∆ADE# định tỉ số đồng dạng b. Kẻ EK //EB (K thuộc BC). Chứng minh: B K C ∆ADE# ∆EKC c. Tính tỉ số chu vi tam giác ADE và ECK .
+
+Bài 2: Cho O là một điểm nằm trong tam giác A ABC. Trên OA lấy điểm D sao cho:
+
+Bài 3: Cho tam giác ABC. Trên tia đối của tia AB C lấy điểm D sao cho AD=2AB. Trên tia đối A M D của tia AC lấy điểm E sao cho AE =2AC. B Chứng minh ∆ADE# ∆ABC N E
+
+Bài 1: Cho tam giác ABC có AB=3cm,BC =4cm,CA=5cm, biết ∆ABC # ∆ABC 1 1 1 a. Tính các cạnh AB,AC biết BC =8cm , 1 1 1 1 1 1 b. Tính các cạnh AB,AC ,BC biết ∆ABC # ∆ABC theo tỉ số đồng dạng bằng 3. 1 1 1 1 1 1 1 1 1
+
+Bài 2: Cho tam giác ABC vuông tại A có AB=6cm A BC =10cm. Kẻ một đường thẳng song song E F với BC, cắt các cạnh AB,AC tại E và . F Biết AE =2cm, tính tỉ số đồng dạng của tam giác và ABC và độ dài các cạnh B C AEF AF,EF.
+
+Bài 3: Cho tam giác ABC có AB=5cm,BC =8cm =7cm. Điểm D nằm trên cạnh BC sao A AC cho BD=2cm. Qua D kẻ các đường thẳng F song song với AB và AC, cắt AB, AC lần E lượt tại F và E C B D a. Chứng minh: ∆BDE# ∆DCF b. Tính chu vi tứ giác AEDF .
+
+Bài 1: Cho hình bình hành ABCD có AB=6cm A B AD=5cm. Lấy F trên cạnh BC sao cho G CF =3cm. Tia DF cắt tai AB tại G F a. Chứng minh: ∆GBF# ∆DCF và ∆GAD# ∆DCF D C b. Tính độ dài đoạn thẳng AG c. Chứng minh AG.CF = AD.AB
+
+Bài 2: Cho tam giác ABC, kẻ Ax//BC. Từ trung A N điểm của cạnh BC, kẻ một đường thẳng M bất kì cắt Ax ở N , cắt AB ở P cắt cắt AC ở Q PN QN B Q. Chứng minh: = . M C PM QM P
+
+Bài 1: Cho tam giác ABC có A BC =10cm,CA=14cm,AB=6cm. Tam giác F ABC đồng dạng với tam giác có cạnh DEF E nhỏ nhất là 9cm. Tính các cạnh còn lại của tam giác DEF . B D C
+
+Bài 2: Cho tam giác ABC có AB=2cm,BC =3cm,CA=4cm đồng dạng với ∆MNP. Tính độ dài các cạnh của ∆MNP, biết chu vi ∆MNP là 36cm.
+
+Bài 3: MB 1 Cho tam giác, lấy M trên cạnh BC sao cho = . Qua M kẻ đường thẳng song song với MC 2 AC cắt AB tại D. Qua M kẻ đường thẳng song song với AB cắt AC tại E. a) Tìm các cặp tam giác đồng dạng và tìm tỉ số đòng dạng b) Tính chu vi các tam giác DMB,EMC biết chu vi tam giác ABC bằng 24cm.
+
+Bài 1: Cho hình vẽ A a) ∆ABC có đồng dạng với ∆DEF hay không? D
+
+Bài 2: Cho tam giác ABC có độ dài các cạnh A tỉ lệ với 4, 5, 6. Cho biết: ∆DFE ∆ACB và D ∆DEF cạnh nhỏ nhất của là 0,8cm. Tính độ dài các cạnh còn lại của ∆DEF . B C E F
+
+Bài 3: Cho tam giác ABC đồng dạng với tam giác A'B'C'. Cho biết AB=6cm,BC =10cm CA=14cm và chu vi tam giác A'B'C' bằng 45cm. Tính độ dài các cạnh của tam giác A'B'C'.
+
+Bài 4: Cho tam giác ABC và một điểm O nằm trong tam giác đó. Gọi P,Q,R lần lượt là trung điểm của các đoạn thẳng OA,OB,OC. a) Chứng minh: ∆PQR∆ABC b) Cho biết ∆ABC có chu vi bằng 543cm. Tính chu vi ∆PQR
+
+Bài 5: Cho tam giác ABC đồng dạng với tam giác A'B'C'. Cho biết BC AB=16,2cm. Tính độ dài các cạnh của tam giác A'B'C' nếu: a) AB−A'B'=10cm b) A'B'−AB=10cm
+
+Bài 6: Cho tứ giác ABCD có AB=3cm, A 3 B BC =10cm, CD=12cm, AD=5cm, đường chéo BD=6cm. Chứng minh rằng:
+
+Bài 7: Cho tam giác ABC vuông tại A có BC =10cm,AC =8cm và tam giác A'B'C' vuông tại A' có B'C'=5cm, A'C'=4cm a. Chứng minh rằng: ∆ABC# ∆A'B'C' b. Tính tỉ số chu vi của ∆ABC và ∆A'B'C'
+
+Bài 8: Cho tam giác ABC. Các đường cao AF,BK,CL cắt A nhau tại H . Từ A kẻ Ax vuông góc với AB, từ C kẻ Cy K vuông góc với BC. Gọi P là giao điểm của Ax và Cy P E a. Chứng minh tứ giác AHCP là hình bình hành L O H b. Lấy O là trung điểm của BP. D,E lần lượt là trung điểm của BC và AC. Chứng minh rằng: ∆ODE# ∆HAB. F B D C
+
+Bài 9: Cho tam giác ABC. Điểm M thuộc cạnh BC sao A MB 2 cho = . Kẻ MH ( ) ( ) //AC H∈AB ;MK //AB K∈AC MC 3 K a) Tính độ dài MB,MC biết BC =25 ( cm ) H b) Tính chu vi tam giác ABC khi biết chu vi ∆KMC bằng 30cm B M C c. Chứng minh: HB.MC = BM.KM
+
+Bài 1: Hình thang vuông ABCD có:  A= D  =900, A B 4 1
+
+Bài 2: Cho tam giác ABC có các cạnh AB=24cm A AC =28cm. Đường phân giác góc A cắt cạnh BC tại D. Gọi M,N lần lượt là hình chiếu của các điểm B,C trên đường thẳng AD. M BM a) Tính tỉ số CN C B AM DM b) Chứng minh = N AN DN
+
+Bài 3: Cho tam giác ABC có =8cm,AC =16cm. Gọi AC A
+
+Bài 4: Cho hình vuông ABCD. Trên cạnh BC lấy điểm B A N E, tia AE cắt đường thẳng CD tại , tia DE cắt M E đường thẳng AB tại N , Chứng minh rằng: H a) ∆NBC ∆BCM
+
+Bài 5: Cho tam giác ABC vuông tại A, đường cao A AH . Gọi M,N là trung điểm của CH và AC. Nối
+
+Bài 6: Cho hình thoi ABCD, A ˆ =600. Qua C kẻ E đường thẳng d cắt các tia đối của các tia BA,DA theo 1 thứ tự tại E,F. Chứng minh rằng C B EB AD 1 I a. = AB DF b. ∆EBD# ∆BDF 1 60° 2 1 A D F  c. B ID=1200(DE∩BF = I)
+
+Bài 7: Cho tam giác ABC có AB=6cm,AC =7,5cm, D =9cm. Trên tia đối của tia AB lấy điểm D sao BC cho AD= AC A 2 a. Chứng minh rằng: ∆ABC# ∆CBD
+
+Bài 8: Cho hình chữ nhật ABCD. Gọi H là chân A B đường vuông góc kẻ từ A đến BD. Lấy điểm E trên
+
+Bài 9: Cho tam giác ABC vuông tại A, AB=1cm, C AC =3cm. Trên cạnh AC lấy các điểm D,E sao cho AD= DE = EC E a. Tính độ dài BD D b. Chứng minh: ∆BDE# ∆CDB   c. Tính: D EB+D CB B A
+
+Bài 1: Cho tam giác ABC có AB=6cm,AC =9cm, D A thuộc AC sao cho  ABD=C  . Tính AD? D B C
+
+Bài 2: Cho tam giác ABC có AB> AC. Đường phân A giác AD. Lấy điểm E trên cạnh AC sao cho 1 2   E C ED= B AC a. Tìm tam giác đồng dạng với ∆ABC b. Chứng minh rằng DE = DB C B D
+
+Bài 3: Cho ∆ABC có AM là phân giác B AC M ∈BC A Kẻ tia Cx thuộc nửa mặt phẳng bờ BC không chứa
+
+Bài 4: Cho hình chữ nhật ABCD, kẻ DH ⊥ AC ≡ H . A B 1 N Gọi M,N,K lần lượt là trung điểm của BC,AH,DH H a. Tứ giác MNCK là hình gì? M
+
+Bài 5: Cho hình bình hành ABCD, qua D kẻ đường N thẳng cắt AC,AB,BC lần lượt tại I,M,N. Chứng minh rằng: A M a. ∆AID# ∆CIN B b. ∆ADM# ∆CND I
+
+Bài 6: Cho tam giác ( AB< ), phân giác . ABC AC AM A Ở miền ngoài tam giác vẽ tia Cx sao cho B   AD. Cx= B Gọi là giao điểm của Cx và AM . Chứng minh N rằng: M B a. BM.MC =MN.MA C b. ∆ABM# ∆ACN N c. ∆BCN cân d. AM2 = AB.AC−MB.MC
+
+Bài 7: [GVG Tỉnh 2016 – 2017] E Cho hình bình hành ABCD có đường chéo AC lớn B C hơn BD. Từ C hạ các đường vuông góc CE,CF lần K lượt xuống các tia AB và AD. Chứng minh rằng: AB.AE+ AD.FA= AC2. H A D F
+
+Bài 8: Cho tam giác đều ABC, gọi M là trung điểm A y của BC. Một góc xMy =600 quay quanh điểm M sao x cho 2 cạnh Mx,My luôn cắt cạnh AB,AC lần lượt tại D và E. Chứng minh: D I E
+
+Bài 9: Cho tam giác ABC và d là đường thẳng tùy ý A qua B. Qua E là điểm bất kỳ trên AC, vẽ đường thẳng song song với AB,BC, lần lượt cắt d tại M và E N K F N . Gọi D là giao điểm của ME và BC. Đường D C B thẳng NE cắt AB và MC lần lượt tại F và K. Chứng minh M a. ∆AFN# ∆MDC b. AN //MK
+
+Bài 1: Cho ∆ABC( AC). Vẽ đường cao F AH (H∈BC). Lấy điểm D đối xứng với B qua H a. Chứng minh ∆ABC# ∆HBA B H b. Qua C dựng đường thẳng vuông góc với tia AD cắt AD tại E. Chứng minh rằng AH.CD=CE.AD E c. Chứng minh rằng ∆HDE# ∆ADC D d. Cho AB=6cm,AC =8cm. Tính diện tích ∆DEC e. cắt CE tại . Chứng minh tứ giác ABFD là A C AH F hình thoi.
+
+Bài 2: Cho tam giác ABC nhọn. Kẻ các đường cao A BE và CF cắt nhau tại H E a. Chứng minh: AE.AC = AB.FA;∆AEF# ∆ABC K b. Qua B kẻ đường thẳng vuông góc với CF cắt tia F AH tại M , AH cắt BC tại D. Chứng minh rằng H 45° BD2 = AD.DM B D C c. Cho AC ˆ B=450 và kẻ AK vuông góc với EF tại K. M S Tính tỉ số AFH S AKE d. Chứng minh ∆AEB# ∆HEC;∆AFC# ∆HEC e. Chứng minh AB.AC = BE.CF + AE.AF .
+
+Bài 3: Cho tam giác ABC vuông tại ( AB< ). Kẻ A AC A AH ⊥ BC = H. Gọi E và F lần lượt là hình chiếu của 1 F H trên AB và AC I N
+
+Bài 4: Cho hình vuông ABCD, lấy điểm E là trung E điểm của AB. Qua D kẻ đường thẳng vuông góc với A B CE tại I cắt BC tại F a. Chứng minh ∆CIF# ∆CBE F I b. Chứng minh IC2 = IF.ID H c. Chứng minh ∆ADI cân D K C d. Gọi K là trung điểm của DC,AK cắt DF tại H . Tính diện tích tứ giác KHCI biết AB=6cm
+
+Bài 1: Cho tam giác ABC vuông tại A, A đường cao AH
+
+Bài 2: Cho tam giác ABC vuông tại A ( A AB< AC ). Kẻ AH ⊥ BC = H. Gọi E,F lần lượt 1 F là hình chiếu của H trên AB,AC.
+
+Bài 3: Cho tam giác ABC vuông tại A, B đường cao AH . Gọi M,N lần lượt là trung N H điểm của AH,BH . Gọi O là giao điểm của AN với CM . Chứng minh rằng: O a) ∆ABH” ∆CAH M
+
+Bài 4: Cho hình bình hành ABCD có E BD. Kẻ ⊥ AB= ⊥ AD= F và AC > CE E;CF BH ⊥ AC = H , DK ⊥ AC = K. Chứng minh: B AB AH C a. = K AC AE b. AD.AF = AK.AC H c. AD.AF + AB.AE = AC2 A D F
+
+Bài 1: Cho hình chữ nhật ABCD. Kẻ DE D C vuông góc với AC tại E. Gọi M,N,P lần P lượt là trung điểm của BC,AE và DE. Chứng M minh: E AD AE a. = N DC DE b. ∆AND” ∆DPC A B c. ND⊥ NM
+
+Bài 2: Cho tam giác ABC cân tại A, gọi H là A trung điểm của BC. Vẽ HE vuông góc với AC, gọi O là trung điểm của HE. Vẽ BK vuông góc với AC,BE cắt AO tại I K a. Chứng minh: ∆AHE# ∆BCK I E b. Chứng minh: AE.EK = BK.OE O c. Chứng minh: OA⊥ BE B H C
+
+Bài 3: Cho tam giác ABC, trực tâm H . Gọi A lần lượt là trung điểm của BC và AC. M,N Gọi O là giao điểm các đường trung trực của tam giác, G là trọng tâm tam giác ABC. N O Chứng minh H G a) ∆OMN” ∆HAB⇒ AH =2OM b. Chứng minh ∆HAG” ∆OMG B M C c. Ba điểm H,G,O thẳng hàng và GH =2GO.
+
+Bài 1: Cho tam giác ABC vuông tại A có N AB=6cm,AC =8cm. Lấy điểm M trên cạnh AC sao cho AM = AB. Kẻ ME ⊥ BC = E. a) Chứng minh CM.CA=CE.CB. b) Tia BA và tia cắt nhau tại , đường EM N A thẳng cắt tại . Chứng minh BM CN F ∆AMB# FMC và tam giác ACN vuông cân. F M c) Tính tỉ số diện tích của hai tam giác BFN E B C và tam giác MFC.
+
+Bài 2: Cho tam giác ABC vuông tại A, B đường cao AH . Tia phân giác AB ˆ C cắt H ở H M D và cắt AC ở E a. Chứng minh rằng: ∆ABE” ∆HBD;∆AHB” ∆CHA;∆ABC” ∆HBA b. Kẻ phân giác AM của B  AC(M ∈BC), cho A E O C AB=6cm,AC =8cm. Tính +) BM,CM S S +) ABE ; AHB S S BHD CHA c. Kẻ phân giác HO của  AHC (O∈AC).
+
+Bài 3: [Ba Đình, 2016 - 2017] A B Cho hình chữ nhật ABCD có AB=8cm, O AD=6cm, hai đường chéo AC và BD cắt D C nhau tại O. Qua D kẻ đường thẳng d vuông K H góc với BD,d cắt BC tại E a. Chứng minh: ∆BDE” ∆DCE b. Kẻ CH vuông góc với DE tại H . Chứng minh DC2 =CH.DB c. Gọi K là giao điểm của OE và CH . CMR S E K là trung điểm của CH và tính EHC S EDB d. Chứng minh OE,CD,BH đồng quy
+
+Bài 4: [Cuối năm 2017 – 2018] B C Cho hình chữ nhật ABCD có AD=6cm, E AB=8cm. Hai đường chéo AC và BD cắt K nhau tại O. Qua D kẻ đường thẳng O d I vuông góc với BD,d cắt BC tại E H a. Chứng minh rằng: ∆BDE” ∆DCE b. Kẻ CH vuông góc với DE tại H . A D Chứng minh rằng: DC2 =CH.DB c. Gọi K là giao điểm của OE và HC . Chứng minh K là trung điểm của HC . Tính tỉ số giữa diện tích tam giác ECH và diện tích tam giác EBD d. Chứng minh ba đường thẳng OE,CD,BH đồng quy.
+
+Bài 5: [Cuối năm 2015 – 2016] A Cho tam giác ABC vuông tại A ( AB< AC ), đường trung tuyến AM . Qua M kẻ đường thẳng vuông góc với AM F cắt AB tại E và cắt AC tại F . Kẻ H B M C AH ⊥ BC(H∈BC), AH cắt EF tại I . I Chứng minh rằng: E a. B  AM =  ABM b.  ACB=  AEF từ đó suy ra ∆MBE# ∆MFC c. AB.AE = AC.AF S  AM  2 d. ABC =   S  AI  AFE
+
+Bài 6: [Cuối năm 2016 – 2017] Cho tam giác ABC vuông tại A, có A BC =5cm,AC =3cm. Trên tia đối của tia M D CB lấy điểm D sao cho CD=6cm. Qua B H C D kẻ đường vuông góc với BD cắt AC K tại E a. Chứng minh rằng: ∆ABC# ∆DEC b. Kẻ E AH ⊥ BC(H∈BC);DK ⊥CE(K∈CE). Chứng minh rằng: CH.CD=CK.CA c. Tính độ dài CE và KD d. Vẽ đường phân giác BM của MA EK  ABC(M ∈BC).CMR: = MC ED

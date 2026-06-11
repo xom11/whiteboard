@@ -30,6 +30,19 @@ const RE = new RegExp(
 const PREFILTER =
   /(?:Qua|qua|Từ|từ)\s+(?:điểm\s+)?[A-Z][^.]{0,24}?(?:song\s*song|vuông\s*góc)[^.]{0,80}?cắt/u;
 
+// SINGLE: "(Một đường thẳng (đi)? )?(Qua|Từ) (điểm)? P ... (vuông góc|song song)
+// với L1 ... cắt L2 (ở|tại) Q" — CHỈ 1 đường bị cắt, 1 giao điểm. Bài 30
+// ("Kẻ đường thẳng qua D vuông góc OD, cắt AB ở K"), Bài 33 ("Một đường thẳng đi
+// qua điểm D, vuông góc với OD và cắt BC tại E").
+//   groups: 1=qua P, 2=kind, 3+4=L1, 5+6=L2, 7=giao Q.
+const RE_SINGLE = new RegExp(
+  '(?:Qua|qua|Từ|từ)\\s+(?:điểm\\s+)?([A-Z])(?:[\'′]?)(?!\\p{L})' +
+    '[^.]{0,30}?(song\\s*song|vuông\\s*góc)\\s+(?:với\\s+)?(?:cạnh\\s+|đoạn(?:\\s+thẳng)?\\s+|đường\\s*thẳng\\s+)?' +
+    '([A-Z])([A-Z])(?!\\p{L})' +
+    '[^.]{0,30}?cắt\\s+(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z])([A-Z])(?!\\p{L})\\s+(?:ở|tại)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])',
+  'gu',
+);
+
 export const perpThroughCutsLinesRule: LanguageRule = {
   id: 'perpThroughCutsLines',
   priority: 50,
@@ -38,8 +51,10 @@ export const perpThroughCutsLinesRule: LanguageRule = {
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
+      let twoCut = false;
       RE.lastIndex = 0;
       for (const m of c.text.matchAll(RE)) {
+        twoCut = true;
         const through = m[1];
         const isParallel = /song/.test(m[2]);
         const to = m[3] + m[4];
@@ -58,6 +73,29 @@ export const perpThroughCutsLinesRule: LanguageRule = {
             drawLine(name, kind, { through, to }),
             addPoint(h, { kind: 'intersection', of: [name, line1] }),
             addPoint(k, { kind: 'intersection', of: [name, line2] }),
+          ],
+        });
+      }
+
+      // SINGLE-cut (chỉ khi clause KHÔNG khớp dạng 2-cut → tránh nhân đôi).
+      if (twoCut) continue;
+      RE_SINGLE.lastIndex = 0;
+      for (const m of c.text.matchAll(RE_SINGLE)) {
+        const through = m[1];
+        const isParallel = /song/.test(m[2]);
+        const to = m[3] + m[4];
+        const l2 = m[5] + m[6];
+        const q = m[7];
+        if (isParallel && to.includes(through)) continue;
+        if (l2.includes(q) || through === q) continue;
+        const kind = isParallel ? 'parallelThrough' : 'perpThrough';
+        const name = (isParallel ? 'par' : 'prp') + through;
+        out.push({
+          ruleId: 'perpThroughCutsLines',
+          clauseIds: [c.id],
+          intents: [
+            drawLine(name, kind, { through, to }),
+            addPoint(q, { kind: 'intersection', of: [name, l2] }),
           ],
         });
       }
