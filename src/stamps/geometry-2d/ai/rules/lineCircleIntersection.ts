@@ -54,8 +54,24 @@ const BOTH = new RegExp(
 // "giao điểm của XY và (O) là R (khác W)?" — dạng "Gọi giao điểm của NQ và (O)
 // là R khác N". Ref đầu = line (cặp đỉnh), ref sau = circle "(O)".
 const GIAO_CIRCLE = new RegExp(
-  String.raw`giao\s*điểm\s+(?:của\s+)?([A-Z]{2})(?![A-Z])\s+(?:và|với)\s+` + CIRCLE +
+  String.raw`giao\s*điểm\s+(?:thứ\s+hai\s+)?(?:của\s+)?([A-Z]{2})(?![A-Z])\s+(?:và|với)\s+` + CIRCLE +
     String.raw`\s+là\s+([A-Z])(?![A-Z])(?:\s+khác\s+([A-Z])(?![A-Z]))?`,
+  'gu',
+);
+
+// "X là giao điểm thứ hai của XY (và|với) (O)" — tên TRƯỚC, "thứ hai", KHÔNG
+// "khác" (Bài 114: "I là giao điểm thứ hai của KA với (O)"). other = đầu mút
+// line nằm trên đường tròn: ưu tiên chữ THỨ HAI (đỉnh tam giác/điểm-trên-(O)
+// thường đứng sau, vd KA→A, AH→H?) — mặc định line[1] cho dạng này.
+const NAME_2ND_CUA = new RegExp(
+  String.raw`([A-Z])(?![A-Z])\s+là\s+giao\s*điểm\s+thứ\s+hai\s+của\s+([A-Z]{2})(?![A-Z])\s+(?:và|với)\s+` + CIRCLE,
+  'gu',
+);
+
+// Distributive "E,F lần lượt là giao điểm thứ hai của AM,AN với (O)" → E=2nd(AM,O),
+// F=2nd(AN,O). 2 line cùng circle. groups: 1=n1 2=n2 3=line1 4=line2 5=circle.
+const DISTRIB_2ND = new RegExp(
+  String.raw`([A-Z])\s*,\s*([A-Z])(?![A-Z])\s+(?:lần\s*lượt\s+|theo\s+thứ\s+tự\s+)?là\s+giao\s*điểm\s+thứ\s+hai\s+của\s+([A-Z]{2})\s*,\s*([A-Z]{2})(?![A-Z])\s+(?:và|với)\s+` + CIRCLE,
   'gu',
 );
 
@@ -112,6 +128,21 @@ export const lineCircleIntersectionRule: LanguageRule = {
           addPoint(x, { kind: 'intersection', of: [line, circle], branch: 0 }),
           addPoint(y, { kind: 'intersection', of: [line, circle], branch: 1 }),
         );
+      }
+
+      // "X là giao điểm thứ hai của XY (và|với) (O)" — name trước, other=line[1].
+      NAME_2ND_CUA.lastIndex = 0;
+      for (const m of c.text.matchAll(NAME_2ND_CUA)) {
+        const [name, line, circle] = [m[1], m[2], m[3]];
+        if (valid(name, line)) intents.push(secondIntersection(name, line, circle, line[1]));
+      }
+
+      // "E,F lần lượt là giao điểm thứ hai của AM,AN với (O)" — 2 line cùng circle.
+      DISTRIB_2ND.lastIndex = 0;
+      for (const m of c.text.matchAll(DISTRIB_2ND)) {
+        const [n1, n2, l1, l2, circle] = [m[1], m[2], m[3], m[4], m[5]];
+        if (valid(n1, l1)) intents.push(secondIntersection(n1, l1, circle));
+        if (valid(n2, l2)) intents.push(secondIntersection(n2, l2, circle));
       }
 
       GIAO_CIRCLE.lastIndex = 0;

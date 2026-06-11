@@ -36,6 +36,13 @@ const DISTRIB = new RegExp(
   'u',
 );
 
+// Distributive NAME-AFTER: "(Gọi)? trung điểm của AC, AB lần lượt là K, L" →
+// K=mid(AC), L=mid(AB). group1 = blob cặp đỉnh, group2 = blob tên. Zip 1-1.
+const DISTRIB_AFTER = new RegExp(
+  `trung\\s*điểm\\s+(?:của\\s+)?(?:các\\s+)?${SIDE_PREFIX}((?:[A-Z][A-Z]\\s*(?:,|và)\\s*)+[A-Z][A-Z])(?![A-Z])\\s+(?:lần\\s*lượt\\s+|theo\\s+thứ\\s+tự\\s+)?là\\s+((?:[A-Z](?:['′]?)\\s*(?:,|và)\\s*)+[A-Z](?:['′]?))(?!\\p{L})`,
+  'u',
+);
+
 // Tách 1 token tên trong blob distributive → "M" / "M'" (prime normalize ′→').
 function nameToken(raw: string): string | undefined {
   const m = /^([A-Z])(['′]?)/u.exec(raw.trim());
@@ -112,6 +119,17 @@ export const midpointRule: LanguageRule = {
           if (names.length >= 2 && names.length === pairs.length) {
             for (let i = 0; i < names.length; i++) emit(names[i], pairs[i], c.id);
             continue; // clause đã xử lý bằng distributive — skip dạng A/B + EN
+          }
+        }
+
+        // Distributive NAME-AFTER: "trung điểm của AC, AB lần lượt là K, L".
+        const da = DISTRIB_AFTER.exec(c.text);
+        if (da) {
+          const pairs = da[1].split(/\s*,\s*|\s+và\s+/u).map((s) => s.trim()).filter(Boolean);
+          const names = da[2].split(/\s*,\s*|\s+và\s+/u).map((s) => nameToken(s)).filter((x): x is string => !!x);
+          if (names.length >= 2 && names.length === pairs.length) {
+            for (let i = 0; i < names.length; i++) emit(names[i], pairs[i], c.id);
+            continue;
           }
         }
 

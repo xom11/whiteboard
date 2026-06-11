@@ -67,6 +67,15 @@ const CAT_TWO_ONE = new RegExp(
   'gu',
 );
 
+// F2: "giao điểm của R1 (,|và) R2 với R3 (lần lượt|theo thứ tự)? là M và N" →
+//     M=R1∩R3, N=R2∩R3 (2 đường giao 1 đường chung, tên SAU, dạng "giao điểm
+//     của"). Bài 29 ("CF,DE với AB"), Bài 122 ("PB và BC với AD").
+//     groups: 1=ref1 2=ref2 3=shared 4=name1 5=name2.
+const GIAO_TWO_ONE_LA = new RegExp(
+  `giao\\s*điểm\\s+(?:của\\s+)?${REF}\\s*(?:,|và)\\s*${REF}\\s+với\\s+${REF}\\s+(?:lần\\s*lượt\\s+|theo\\s+thứ\\s+tự\\s+)?là\\s+([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])`,
+  'gu',
+);
+
 // Tên điểm đứng TRƯỚC (pattern A): "X là " NGAY TRƯỚC "giao điểm".
 const NAME_BEFORE = /([A-Z])(?:['′]?)\s+là\s+$/u;
 
@@ -186,6 +195,12 @@ export const intersectionRule: LanguageRule = {
       // F: 2 đường ∩ 1 đường ("TC, TB cắt EF tại P, Q").
       CAT_TWO_ONE.lastIndex = 0;
       for (const m of c.text.matchAll(CAT_TWO_ONE)) {
+        emit(m[4], m[1], m[3]);
+        emit(m[5], m[2], m[3]);
+      }
+      // F2: "giao điểm của R1 (,|và) R2 với R3 lần lượt là M và N".
+      GIAO_TWO_ONE_LA.lastIndex = 0;
+      for (const m of c.text.matchAll(GIAO_TWO_ONE_LA)) {
         emit(m[4], m[1], m[3]);
         emit(m[5], m[2], m[3]);
       }
