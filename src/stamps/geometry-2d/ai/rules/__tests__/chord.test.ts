@@ -1,8 +1,16 @@
 import { chordRule } from '../chord';
 import { segmentClauses } from '../../deterministic/coverage';
+import { normalizeProblemText } from '../../deterministic/normalizeText';
 
 function ints(problem: string): any[] {
   return chordRule.match({ problem, clauses: segmentClauses(problem) }).flatMap((m) => m.intents);
+}
+
+// Harness dùng normalize + lọc clause hasGeometry (giống pipeline thật).
+function ctxOf(text: string) {
+  const problem = normalizeProblemText(text);
+  const clauses = segmentClauses(problem).filter((c) => c.hasGeometry);
+  return { problem, clauses };
 }
 
 function summary(problem: string) {
@@ -81,6 +89,30 @@ describe('chordRule', () => {
     // Clause "dây MN" KHÔNG có "vuông góc" → vẫn dựng bình thường.
     const { onCircle } = summary('Cho đường tròn (O). Dây MN. Qua P kẻ dây cung DE vuông góc với AB.');
     expect(onCircle.map((i) => i.name).sort()).toEqual(['M', 'N']);
+  });
+
+  it('"hai dây CD,EF cùng đi qua I" → cả 4 đầu mút C,D,E,F là onCircle (cùng A,B của dây AB)', () => {
+    const { problem, clauses } = ctxOf(
+      'Cho đường tròn (O) và dây AB. Lấy I là một điểm bất kì thuộc dây AB, vẽ hai dây CD,EF cùng đi qua I.',
+    );
+    const all = chordRule.match({ problem, clauses }).flatMap((m) => m.intents);
+    const onCircleNames = all
+      .filter((i) => i.op === 'add-point' && i.constraint.kind === 'onCircle')
+      .map((i) => i.name)
+      .sort();
+    // A,B (dây AB) + C,D,E,F (hai dây CD,EF) — tất cả glider trên (O).
+    expect(onCircleNames).toEqual(['A', 'B', 'C', 'D', 'E', 'F']);
+    // Mọi glider tham chiếu cùng đường tròn O.
+    const gliders = all.filter((i) => i.op === 'add-point' && i.constraint.kind === 'onCircle');
+    expect(gliders.every((i) => i.constraint.circle === 'O')).toBe(true);
+    // Theta phân biệt cho từng đầu mút → không trùng điểm.
+    const thetas = gliders.map((i) => i.constraint.theta);
+    expect(new Set(thetas).size).toBe(thetas.length);
+    // 3 đoạn nối: AB, CD, EF.
+    const connects = all.filter((i) => i.op === 'connect');
+    expect(connects.length).toBe(3);
+    const connPairs = connects.map((c) => [c.from, c.to].sort().join('')).sort();
+    expect(connPairs).toEqual(['AB', 'CD', 'EF']);
   });
 
   it('không có "dây" → không match (prefilter)', () => {

@@ -38,9 +38,19 @@ const CIRCLE_PAREN = /\(\s*([^\\s;,).:]+)\s*\)/u;
 const CHORD_FWD = /[Dd]ây\s+(?:cung\s+)?([A-Z])([A-Z])(?![A-Z])/gu;
 const CHORD_REV = /([A-Z])([A-Z])(?![A-Z])\s+là\s+(?:một\s+)?dây(?:\s+cung)?(?!\p{L})/gu;
 
-// Glider angle cho 2 đầu mút dây (radian) — phân biệt để A≠B, dây trải phần trên.
+// "(vẽ)? hai dây CD,EF" — HAI dây liệt kê: 2 cặp đỉnh HOA ngăn cách dấu phẩy sau
+// "hai dây". CHORD_FWD chỉ bắt cặp NGAY sau "dây" (CD) nên bỏ sót cặp thứ hai (EF
+// sau dấu phẩy). Bắt riêng để cả 4 đầu mút thành glider onCircle. Bỏ qua phần
+// "cùng đi qua I" (I là điểm trên dây AB, rule khác xử lý).
+const CHORD_TWO =
+  /(?:vẽ\s+)?hai\s+dây\s+(?:cung\s+)?([A-Z])([A-Z])(?![A-Z])\s*,\s*([A-Z])([A-Z])(?![A-Z])/gu;
+
+// Glider angle cho 2 đầu mút dây ĐẦU TIÊN (radian) — phân biệt để A≠B, dây trải
+// phần trên. Dây thứ k (k≥1) tịnh tiến theta thêm k·THETA_STEP để KHÔNG trùng
+// điểm khi nhiều dây trên cùng đường tròn.
 const THETA_A = 2.3;
 const THETA_B = 0.7;
+const THETA_STEP = 0.9;
 
 // Prefilter toàn đề ("Dây" HOA đầu câu cũng khớp).
 const PREFILTER = /[Dd]ây/u;
@@ -90,18 +100,23 @@ export const chordRule: LanguageRule = {
       // (D,E là giao của đường ⊥ với đường tròn SẴN CÓ). chord không được dựng đường
       // tròn lạ + glider rời cho clause này (sẽ chồng + sai hình).
       if (/vuông\s*góc|⊥/u.test(c.text)) continue;
+      const pushChord = (clauseId: number, a: string, b: string) => {
+        if (a === b) return; // cặp trùng → degenerate
+        if (a === circle || b === circle) return; // đầu mút trùng tâm → degenerate
+        const key = [a, b].sort().join('|');
+        if (seen.has(key)) return;
+        seen.add(key);
+        chords.push({ clauseId, a, b });
+      };
+      // "hai dây CD,EF" — bắt TRƯỚC để cả 2 cặp vào (CHORD_FWD chỉ lấy cặp đầu).
+      CHORD_TWO.lastIndex = 0;
+      for (const m of c.text.matchAll(CHORD_TWO)) {
+        pushChord(c.id, m[1], m[2]);
+        pushChord(c.id, m[3], m[4]);
+      }
       const collect = (re: RegExp) => {
         re.lastIndex = 0;
-        for (const m of c.text.matchAll(re)) {
-          const a = m[1];
-          const b = m[2];
-          if (a === b) continue; // cặp trùng → degenerate
-          if (a === circle || b === circle) continue; // đầu mút trùng tâm → degenerate
-          const key = [a, b].sort().join('|');
-          if (seen.has(key)) continue;
-          seen.add(key);
-          chords.push({ clauseId: c.id, a, b });
-        }
+        for (const m of c.text.matchAll(re)) pushChord(c.id, m[1], m[2]);
       };
       collect(CHORD_FWD);
       collect(CHORD_REV);
@@ -117,18 +132,21 @@ export const chordRule: LanguageRule = {
       clauseIds: circleClauseId === undefined ? [] : [circleClauseId],
       intents: [drawCircle(circle, 'centerRadius', { center: circle, radius: SYMBOLIC_RADIUS })],
     });
-    // 2) Mỗi dây: A,B glider onCircle (theta phân biệt) + đoạn nối.
-    for (const ch of chords) {
+    // 2) Mỗi dây: 2 đầu mút glider onCircle (theta phân biệt) + đoạn nối. Dây thứ
+    //    k tịnh tiến theta thêm k·THETA_STEP → nhiều dây KHÔNG trùng điểm (dây đầu
+    //    giữ 2.3/0.7 như cũ ⇒ hành vi 1-dây không đổi).
+    chords.forEach((ch, k) => {
+      const offset = k * THETA_STEP;
       out.push({
         ruleId: 'chord',
         clauseIds: [ch.clauseId],
         intents: [
-          addPoint(ch.a, { kind: 'onCircle', circle, theta: THETA_A }),
-          addPoint(ch.b, { kind: 'onCircle', circle, theta: THETA_B }),
+          addPoint(ch.a, { kind: 'onCircle', circle, theta: THETA_A + offset }),
+          addPoint(ch.b, { kind: 'onCircle', circle, theta: THETA_B + offset }),
           connect(ch.a, ch.b, 'segment'),
         ],
       });
-    }
+    });
     return out;
   },
 };
