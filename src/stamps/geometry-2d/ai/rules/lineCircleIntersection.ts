@@ -11,7 +11,7 @@
 import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint } from './_shared';
 
-const PREFILTER = /cắt\s+(?:(?:nửa\s+)?đường\s*tròn\s*)?\(|giao\s*điểm\s+(?:của\s+)?[A-Z]{2}\s+(?:và|với)\s+\(/u;
+const PREFILTER = /cắt\s+(?:lại\s+)?(?:(?:nửa\s+)?đường\s*tròn\s*)?\(|giao\s*điểm\s+(?:của\s+)?[A-Z]{2}\s+(?:và|với)\s+\(/u;
 const CIRCLE = String.raw`(?:đường\s*tròn\s*)?\(\s*([A-Z])(?:['′]?)\s*\)`;
 // Circle GIỮ prime trong tên tâm (O'): cần cho "(O')" — đường tròn đường kính
 // đặt tên "O'_c" (circleDiameter). emit raw "O'" → resolveCircleNames map "O'_c".

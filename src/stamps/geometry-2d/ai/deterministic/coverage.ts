@@ -57,8 +57,11 @@ export function segmentClauses(problem: string): Clause[] {
 // Strip trước khi nhận diện từ dẫn proof/construction (đề thi hay đánh số câu/ý).
 const ENUM_PREFIX = '(?:[0-9]+\\s*[.)]?\\s*|[a-zA-Z]\\s*[.)]\\s*)*';
 
-// Locus: "(Điểm)? X di chuyển/di động trên …" — quỹ tích của điểm đã có.
-const LOCUS_CLAUSE = /(?:di\s*chuyển|di\s*động)\s+trên/u;
+// Locus: "(Điểm)? X di chuyển/di động trên (O)/cung/đường tròn" — điểm chạy
+// trên đường tròn/cung thường là ĐỈNH đã dựng (animation), KHÔNG construct mới.
+// NHƯNG "di chuyển/di động trên cạnh/đoạn AC" GIỚI THIỆU điểm free mới (P) cần
+// dựng để các construct sau (BP, …) có ref hợp lệ → KHÔNG coi là locus.
+const LOCUS_CLAUSE = /(?:di\s*chuyển|di\s*động)\s+trên\s+(?:\(|đường\s*tròn|đương\s*tròn|cung|nửa)/u;
 
 const PROOF_SECTION_START = new RegExp(
   `^${ENUM_PREFIX}(?:[Cc]hứng\\s*minh|[Tt]ính|[Tt]ìm|[Xx]ác\\s*định|[Hh]ãy\\s+xác\\s*định)(?!\\p{L})`,

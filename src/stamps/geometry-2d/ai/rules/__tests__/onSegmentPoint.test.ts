@@ -55,6 +55,18 @@ describe('onSegmentPointRule', () => {
   });
 }
 
+describe('onSegmentPoint — điểm di chuyển/di động trên cạnh', () => {
+  it('Bài 79: "Điểm P di chuyển trên cạnh AC" → P onSegment AC', () => {
+    const i = intents('Điểm P di chuyển trên cạnh AC')[0];
+    expect(i.name).toBe('P');
+    expect(i.constraint.kind).toBe('onSegment');
+    expect(i.constraint.of).toBe('AC');
+  });
+  it('"P di động trên đoạn BC" → P onSegment BC', () => {
+    expect(intents('P di động trên đoạn BC')[0].constraint.of).toBe('BC');
+  });
+});
+
 describe('onSegmentPoint — "dây" + "là điểm thuộc"', () => {
   const run = (p: string) => onSegmentPointRule.match({ problem: p, clauses: segmentClauses(p) }).flatMap((m) => m.intents);
   it('"Gọi K là điểm thuộc dây AD" → K onSegment AD', () => {

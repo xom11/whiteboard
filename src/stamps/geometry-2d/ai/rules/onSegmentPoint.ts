@@ -48,6 +48,15 @@ const POINT_THUOC_SEG = new RegExp(
   'gu',
 );
 
+// "Điểm P di chuyển trên cạnh AC" / "P di động trên đoạn BC" / "Lấy P trên cạnh
+// AC" — điểm ĐỨNG TRƯỚC + động từ chuyển động (di chuyển/thay đổi/di động/nằm)
+// optional + "trên (cạnh) SEG". Điểm 1-DOF (di động) vẫn dựng 1 vị trí đại diện.
+// KHÔNG nhận "trên cung" (onCircle lo) — chỉ cạnh/đoạn/đường thẳng/bán kính.
+const POINT_MOVE_SEG = new RegExp(
+  String.raw`(?:điểm\s+)?${POINT}\s+(?:di\s*chuyển|thay\s*đổi|di\s*động|chuyển\s*động|nằm)\s+trên\s+(?:cạnh\s+|đoạn(?:\s+thẳng)?\s+|đường\s*thẳng\s+|bán\s*kính\s+|đường\s*kính\s+)?${SEG}`,
+  'gu',
+);
+
 // "D nằm giữa A và B" / "một điểm D nằm giữa A và B".
 const BETWEEN = new RegExp(
   String.raw`(?:một\s+)?(?:điểm\s+)?${POINT}\s+nằm\s+giữa\s+([A-Z])\s+và\s+([A-Z])`,
@@ -162,6 +171,16 @@ export const onSegmentPointRule: LanguageRule = {
 
       POINT_THUOC_SEG.lastIndex = 0;
       for (const m of c.text.matchAll(POINT_THUOC_SEG)) {
+        const name = normalizePoint(m[1]);
+        const segment = m[2];
+        if (validOnSegment(name, segment)) {
+          intents.push(addPoint(name, { kind: 'onSegment', of: segment }));
+        }
+      }
+
+      // "Điểm P di chuyển/di động/nằm trên cạnh AC" — điểm trước + động từ.
+      POINT_MOVE_SEG.lastIndex = 0;
+      for (const m of c.text.matchAll(POINT_MOVE_SEG)) {
         const name = normalizePoint(m[1]);
         const segment = m[2];
         if (validOnSegment(name, segment)) {
