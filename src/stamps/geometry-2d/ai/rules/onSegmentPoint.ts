@@ -52,7 +52,7 @@ const ON_SEG_MULTI_POINT = new RegExp(
 // chữ "cạnh"). Prefix "cạnh|đoạn|…" optional; SEG = cặp HOA [A-Z]{2} nên "thuộc
 // (O)"/"thuộc cung BC" KHÔNG khớp (paren/'cung' chữ thường) → onCirclePoint lo.
 const POINT_THUOC_SEG = new RegExp(
-  String.raw`(?:điểm\s+)?${POINT}\s+(?:là\s+(?:một\s+)?điểm\s+)?thuộc\s+(?:(?:cạnh|đoạn(?:\s+thẳng)?|bán\s*kính|dây\s*(?:cung)?)\s+)?${SEG}`,
+  String.raw`(?:điểm\s+)?${POINT}\s+(?:là\s+(?:một\s+)?điểm\s+(?:bất\s*k[iìyỳ]\s+)?)?thuộc\s+(?:(?:cạnh|đoạn(?:\s+thẳng)?|bán\s*kính|dây\s*(?:cung)?)\s+)?${SEG}`,
   'gu',
 );
 
@@ -61,7 +61,7 @@ const POINT_THUOC_SEG = new RegExp(
 // optional + "trên (cạnh) SEG". Điểm 1-DOF (di động) vẫn dựng 1 vị trí đại diện.
 // KHÔNG nhận "trên cung" (onCircle lo) — chỉ cạnh/đoạn/đường thẳng/bán kính.
 const POINT_MOVE_SEG = new RegExp(
-  String.raw`(?:điểm\s+)?${POINT}\s+(?:di\s*chuyển|thay\s*đổi|di\s*động|chuyển\s*động|nằm)\s+trên\s+(?:cạnh\s+|đoạn(?:\s+thẳng)?\s+|đường\s*thẳng\s+|bán\s*kính\s+|đường\s*kính\s+)?${SEG}`,
+  String.raw`(?:điểm\s+)?${POINT}\s+(?:là\s+(?:một\s+)?điểm\s+)?(?:di\s*chuyển|thay\s*đổi|di\s*động|chuyển\s*động|nằm)\s+trên\s+(?:cạnh\s+|đoạn(?:\s+thẳng)?\s+|đường\s*thẳng\s+|bán\s*kính\s+|đường\s*kính\s+)?${SEG}`,
   'gu',
 );
 
@@ -87,7 +87,16 @@ const ZIP_SEG = new RegExp(
 // CHẠY kể cả khi clause có "sao cho …=…" (metric chỉ TINH CHỈNH vị trí; đặt điểm
 // free trên cạnh là đủ cho hình). group1 = blob đoạn, group2 = blob tên điểm.
 const SEGS_THEN_POINTS = new RegExp(
-  String.raw`[Tt]rên\s+((?:[A-Z]{2}\s*,\s*)+[A-Z]{2})(?![A-Z])\s+(?:(?:theo\s+)?thứ\s+tự\s+|lần\s*lượt\s+)?lấy\s+(?:các\s+)?điểm\s+((?:[A-Z]\s*,\s*)+[A-Z])(?![A-Z])`,
+  String.raw`[Tt]rên\s+(?:các\s+)?(?:cạnh\s+|đoạn(?:\s+thẳng)?\s+|đáy\s+)?((?:[A-Z]{2}\s*,\s*)+[A-Z]{2})(?![A-Z])(?:\s+của\s+(?:tam\s*giác\s+|tứ\s*giác\s+)?[A-Z]{2,4})?\s+(?:(?:theo\s+)?thứ\s+tự\s+|lần\s*lượt\s+)?lấy\s+(?:các\s+)?điểm\s+((?:[A-Z]\s*,\s*)+[A-Z])(?![A-Z])`,
+  'gu',
+);
+
+// "Trên đoạn BH lấy điểm M và trên đoạn CH lấy điểm N" — 2 điểm trên 2 đoạn KHÁC
+// nối "và". Distributive coordinated → CHẠY TRƯỚC metric-skip (đặt free dù "sao
+// cho ∠=90°"). Chỉ cạnh/đáy/đoạn (KHÔNG tia → tránh đụng pointAtDistance). KHÔNG
+// khớp đơn lẻ "Trên cạnh AB lấy điểm D sao cho AD=2DB" (cần vế "và … lấy" thứ 2).
+const TWO_SEG_LAY = new RegExp(
+  String.raw`[Tt]rên\s+(?:cạnh|đáy|đoạn(?:\s+thẳng)?)\s+${SEG}\s+(?:lấy\s+)?(?:một\s+)?(?:điểm\s+)?${POINT}\s+và\s+(?:trên\s+)?(?:cạnh|đáy|đoạn(?:\s+thẳng)?)\s+${SEG}\s+(?:lấy\s+)?(?:một\s+)?(?:điểm\s+)?${POINT}`,
   'gu',
 );
 
@@ -128,6 +137,16 @@ export const onSegmentPointRule: LanguageRule = {
               intents.push(addPoint(pts[i], { kind: 'onSegment', of: segs[i] }));
             }
           }
+        }
+      }
+
+      // Coordinated "Trên đoạn BH lấy điểm M và trên đoạn CH lấy điểm N" → M∈BH,
+      // N∈CH. Pre-metric (đặt free dù "sao cho ∠=90°"). group 1/3 = đoạn, 2/4 = tên.
+      TWO_SEG_LAY.lastIndex = 0;
+      for (const m of c.text.matchAll(TWO_SEG_LAY)) {
+        for (const [pt, seg] of [[m[2], m[1]], [m[4], m[3]]] as Array<[string, string]>) {
+          const n = normalizePoint(pt);
+          if (validOnSegment(n, seg)) intents.push(addPoint(n, { kind: 'onSegment', of: seg }));
         }
       }
 

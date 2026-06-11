@@ -76,3 +76,31 @@ describe('onSegmentPoint — "dây" + "là điểm thuộc"', () => {
     expect(i.constraint.of).toBe("AD");
   });
 });
+
+describe('onSegmentPoint — Wave hinh9 (coordinated / là-điểm / bất-kì / đoạn-trước interjection)', () => {
+  it('Bài 24: "Trên đoạn BH lấy điểm M và trên đoạn CH lấy điểm N sao cho ..." → M∈BH, N∈CH', () => {
+    const i = intents('Cho tam giác ABC nhọn, trực tâm H. Trên đoạn BH lấy điểm M và trên đoạn CH lấy điểm N sao cho AMC = ANB = 90');
+    expect(i).toContainEqual({ op: 'add-point', name: 'M', constraint: { kind: 'onSegment', of: 'BH' } });
+    expect(i).toContainEqual({ op: 'add-point', name: 'N', constraint: { kind: 'onSegment', of: 'CH' } });
+  });
+
+  it('Bài 66: "X là một điểm nằm trên BC" → X onSegment BC', () => {
+    const i = intents('Cho tam giác ABC. X là một điểm nằm trên BC sao cho đường thẳng đi qua X song song với AC là tiếp tuyến');
+    expect(i).toContainEqual({ op: 'add-point', name: 'X', constraint: { kind: 'onSegment', of: 'BC' } });
+  });
+
+  it('Bài 46: "Lấy I là một điểm bất kì thuộc dây AB" → I onSegment AB', () => {
+    const i = intents('Cho đường tròn (O) và dây AB. Lấy I là một điểm bất kì thuộc dây AB');
+    expect(i).toContainEqual({ op: 'add-point', name: 'I', constraint: { kind: 'onSegment', of: 'AB' } });
+  });
+
+  it('Bài 108: "Trên các cạnh AB,AC của tam giác ABC lần lượt lấy các điểm K, L sao cho ..." → K∈AB, L∈AC', () => {
+    const i = intents('Trên các cạnh AB,AC của tam giác ABC lần lượt lấy các điểm K, L sao cho BK = BE và CL = CE');
+    expect(i).toContainEqual({ op: 'add-point', name: 'K', constraint: { kind: 'onSegment', of: 'AB' } });
+    expect(i).toContainEqual({ op: 'add-point', name: 'L', constraint: { kind: 'onSegment', of: 'AC' } });
+  });
+
+  it('GIỮ NGUYÊN: đơn lẻ "Trên cạnh AB lấy điểm D sao cho AD=2DB" vẫn escalate ([])', () => {
+    expect(intents('Trên cạnh AB lấy điểm D sao cho AD = 2DB')).toEqual([]);
+  });
+});
