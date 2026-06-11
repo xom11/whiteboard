@@ -20,6 +20,44 @@ describe('segmentClauses', () => {
     expect(word[1].hasGeometry).toBe(true);
   });
 
+  // Dataset vao10: "(O;R)" — dấu ";" TRONG ngoặc không phải ranh giới clause.
+  it('không tách clause tại ";" bên trong ngoặc "(O;R)"', () => {
+    const cls = segmentClauses('Cho đường tròn (O;R) có đường kính BC. Gọi M là trung điểm BO');
+    expect(cls.length).toBe(2);
+    expect(cls[0].text).toBe('Cho đường tròn (O;R) có đường kính BC');
+  });
+
+  it('không tách tại ";"/"," trong ngoặc chú thích "(M, N thuộc đường tròn; AM khác AN)"', () => {
+    const cls = segmentClauses(
+      'Từ A kẻ cát tuyến AMN với đường tròn (M, N thuộc đường tròn; AM khác AN). Gọi I là trung điểm MN',
+    );
+    expect(cls.length).toBe(2);
+    expect(cls[0].text).toBe(
+      'Từ A kẻ cát tuyến AMN với đường tròn (M, N thuộc đường tròn; AM khác AN)',
+    );
+  });
+
+  // ";" giữa phần tử LIST ("AD; BE; CF cắt nhau tại H") là phân cách liệt kê,
+  // không phải ranh giới clause — giữ nguyên để rule distributive cevian thấy cả list.
+  it('không tách tại ";" giữa phần tử list "AD; BE; CF cắt nhau tại H"', () => {
+    const cls = segmentClauses(
+      'Cho tam giác ABC nhọn. Ba đường cao AD; BE; CF cắt nhau tại H. Gọi I là trung điểm BC',
+    );
+    expect(cls.length).toBe(3);
+    expect(cls[1].text).toBe('Ba đường cao AD; BE; CF cắt nhau tại H');
+  });
+
+  // ";" trước clause THẬT vẫn tách ("AE và BC..." là mệnh đề mới, không phải list).
+  it('";" trước mệnh đề mới vẫn tách như cũ', () => {
+    const cls = segmentClauses('nối BM cắt cung AC tại E; AE và BC kéo dài cắt nhau tại D');
+    expect(cls.length).toBe(2);
+  });
+
+  it('ngoặc không cân (OCR) không nuốt toàn bộ phần sau', () => {
+    const cls = segmentClauses('Cho đường tròn (O. Gọi M là trung điểm BC. Vẽ MH vuông góc AB');
+    expect(cls.length).toBe(3);
+  });
+
   it('bỏ qua các mục chứng minh thuần kết luận sau phần dựng hình', () => {
     const cls = segmentClauses(
       [

@@ -23,6 +23,37 @@ interface MatchLike {
   clauseIds: number[];
 }
 
+// Mask dấu câu KHÔNG phải ranh giới clause trước khi split, unmask sau khi split.
+// Sentinel = control char không bao giờ xuất hiện trong đề.
+const MASK_SEMI = '\u0001';
+const MASK_DOT = '\u0002';
+const MASK_COMMA = '\u0003';
+
+// 1) Dấu ;/./, BÊN TRONG ngoặc ngắn không lồng: "(O;R)", "(M, N thuộc đường tròn;
+//    AM khác AN)" — chú thích/tên đường tròn, không phải ranh giới clause. Giới hạn
+//    ≤40 ký tự để ngoặc OCR không cân "(O. Gọi…" không nuốt phần sau.
+// 2) ";" giữa phần tử LIST ("đường cao AD; BE; CF cắt nhau tại H"): ";" theo sau là
+//    token điểm/đoạn ngắn rồi tới ";" "," hoặc "cắt nhau"/"đồng quy" → phân cách
+//    liệt kê. ";" trước mệnh đề thật ("…tại E; AE và BC kéo dài…") vẫn split vì
+//    sau token là từ khác ("và", "kéo"…).
+function maskNonBoundaryPunct(s: string): string {
+  return s
+    .replace(/\(([^()\n]{1,40})\)/g, (m) =>
+      m.replace(/;/g, MASK_SEMI).replace(/\./g, MASK_DOT).replace(/,/g, MASK_COMMA),
+    )
+    .replace(
+      /;(?=\s*[A-Z][A-Z]?['′]?\d?\s*(?:[;,]|cắt nhau|đồng quy))/gu,
+      MASK_SEMI,
+    );
+}
+
+function unmask(s: string): string {
+  return s
+    .replace(/\u0001/g, ';')
+    .replace(/\u0002/g, '.')
+    .replace(/\u0003/g, ',');
+}
+
 /**
  * Tách đề thành clause theo dấu câu (. ; xuống dòng) và dấu phẩy đứng trước
  * từ dẫn ("Gọi", "Vẽ", "Kẻ"…). Clause thuần văn xuôi (không từ khoá hình học)
@@ -36,13 +67,13 @@ export function segmentClauses(problem: string): Clause[] {
   // đổi segmentation VN (alternation rời nhau, không trùng từ).
   let proofMode = false;
 
-  return problem
+  return maskNonBoundaryPunct(problem)
     .split(
       // (?!\p{L}) thay \b: "Vẽ"/"Kẻ" kết thúc bằng chữ Việt — \b ASCII không bao
       // giờ khớp trước space → split chết im lặng (bug class \b+tiếng Việt).
       /[.;\n]+|,\s*(?=(?:Gọi|Vẽ|Kẻ|Cho|Lấy|Dựng|trên|với|Let|Draw|Mark|Take|Construct|Join)(?!\p{L}))/u,
     )
-    .map((s) => s.trim())
+    .map((s) => unmask(s).trim())
     .filter((s) => s.length > 0)
     .map((text, id) => {
       const hasGeometryKeyword = countGeometryKeywords(text) > 0;

@@ -34,10 +34,10 @@ describe('circleDiameterRule', () => {
     expect(all).toContainEqual({ op: 'add-point', name: 'O', constraint: { kind: 'midpoint', of: 'AB' } });
   });
 
-  it('compact "(O; R)" claim cả clause chứa tâm và clause chứa đường kính', () => {
+  it('compact "(O; R)" là MỘT clause (mask ";" trong ngoặc) và được claim', () => {
     const m = matches('Cho đường tròn (O; R) đường kính AB.');
     expect(m).toHaveLength(1);
-    expect(m[0].clauseIds).toEqual([0, 1]);
+    expect(m[0].clauseIds).toEqual([0]);
   });
 
   it('"Cho nửa đường tròn (O) đường kính AB" uses the support circle', () => {

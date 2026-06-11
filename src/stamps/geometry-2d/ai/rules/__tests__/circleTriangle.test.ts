@@ -181,12 +181,12 @@ describe('circleTriangleRule', () => {
     expect(all[0].name).toBe('O');
   });
 
-  it('coverage: ký hiệu "(O; R)" claim CẢ HAI clause bị segmenter cắt', () => {
+  it('coverage: "(O; R)" là MỘT clause (segmenter mask ";" trong ngoặc) và được claim', () => {
     const problem = 'Đường tròn (O; R) ngoại tiếp tam giác ABC';
     const m = run(problem);
     expect(m.length).toBe(1);
-    // clause "...(O" + clause "R) ngoại tiếp tam giác ABC" — cả 2 hasGeometry.
-    expect(m[0].clauseIds.length).toBeGreaterThanOrEqual(2);
+    // segmenter không còn cắt tại ";" trong ngoặc → đúng 1 clause, claim đủ.
+    expect(m[0].clauseIds.length).toBeGreaterThanOrEqual(1);
   });
 
   it('"Đường tròn (I; r) nội tiếp tam giác DEF" → inscribedIn, name I', () => {
