@@ -83,6 +83,13 @@ const DATASETS: DS[] = [
     intro: introBeforeProof,
   },
   {
+    name: 'vao10',
+    file: 'docs/datasets/tuyen-tap-400-hinh-vao-10.txt',
+    // extractor đã cắt intro sẵn; introBeforeProof chỉ là lưới an toàn
+    parse: blockParse(/^Câu\s+(\d+):/, (m) => m[1]),
+    intro: introBeforeProof,
+  },
+  {
     name: 'son123',
     file: 'docs/datasets/son_123_problems_cleaned.txt',
     parse: blockParse(/^Bài\s+(\d+):/, (m) => m[1]),
