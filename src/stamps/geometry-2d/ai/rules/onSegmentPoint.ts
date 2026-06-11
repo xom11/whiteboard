@@ -19,7 +19,7 @@ import { addPoint } from './_shared';
 // prefilter rộng vô hại.
 // "đường kính AB" là 1 ĐOẠN (đường kính của đường tròn) → cho phép "trên đường
 // kính AB lấy điểm C" (phang:14). Thêm vào prefix đoạn-loại.
-const PREFILTER = /(?:thuộc\s+(?:các\s+|hai\s+|ba\s+)?(?:cạnh|đoạn|bán\s*kính|đường\s*kính|dây|[A-Z]{2})|[Tt]rên\s+(?:các\s+|hai\s+|ba\s+)?(?:cạnh|đoạn|bán\s*kính|đường\s*kính|đường\s*thẳng|dây|[A-Z]{2})|(?:di\s*chuyển|di\s*động)\s+trên|nằm\s+giữa)/u;
+const PREFILTER = /(?:thuộc\s+(?:các\s+|hai\s+|ba\s+)?(?:cạnh|đoạn|tia|bán\s*kính|đường\s*kính|dây|[A-Z]{2})|[Tt]rên\s+(?:các\s+|hai\s+|ba\s+)?(?:cạnh|đoạn|tia|bán\s*kính|đường\s*kính|đường\s*thẳng|dây|[A-Z]{2})|(?:di\s*chuyển|di\s*động)\s+trên|nằm\s+giữa)/u;
 
 // "Trên đường thẳng d (lấy)? (một)? (điểm)? M" — đường ĐẶT TÊN chữ thường (d, d1).
 // resolveSegmentRef thấy shape "d" (tangentLineNamedAtPoint dựng) → glider trên d.
@@ -71,7 +71,7 @@ const TWO_SAME_SEG = new RegExp(
 // Distributive ZIP: "(các)? điểm P, Q (theo thứ tự|lần lượt)? thuộc AC, AB"
 //   → P↔AC, Q↔AB. (Cần "theo thứ tự"/"lần lượt" để chắc là zip, không phải cùng đoạn.)
 const ZIP_SEG = new RegExp(
-  String.raw`(?:[CcNn]ác\s+|[Nn]hững\s+)?điểm\s+([A-Z])\s*,\s*([A-Z])(?![A-Z])\s+(?:theo\s+thứ\s+tự|lần\s*lượt)\s+thuộc\s+(?:các\s+)?(?:cạnh\s+|đoạn\s+)?${SEG}\s*,\s*${SEG}`,
+  String.raw`(?:[CcNn]ác\s+|[Nn]hững\s+)?điểm\s+([A-Z])\s*,\s*([A-Z])(?![A-Z])\s+(?:theo\s+thứ\s+tự|lần\s*lượt)\s+thuộc\s+(?:các\s+)?(?:cạnh\s+|đoạn\s+|tia\s+)?${SEG}\s*,\s*${SEG}`,
   'gu',
 );
 // Distributive ĐOẠN-TRƯỚC: "trên BC, CA, AB (thứ tự|lần lượt)? lấy (các)? điểm
@@ -123,6 +123,19 @@ export const onSegmentPointRule: LanguageRule = {
         }
       }
 
+      // ZIP distributive "P, Q lần lượt thuộc (tia|cạnh) AC, AB" CHẠY TRƯỚC
+      // metric-skip (đặt điểm free trên cạnh/tia dù có "sao cho …=…" — Bài 47).
+      const zipConsumed: Array<[number, number]> = [];
+      ZIP_SEG.lastIndex = 0;
+      for (const m of c.text.matchAll(ZIP_SEG)) {
+        const [n1, n2, s1, s2] = [normalizePoint(m[1]), normalizePoint(m[2]), m[3], m[4]];
+        if (validOnSegment(n1, s1) && validOnSegment(n2, s2)) {
+          intents.push(addPoint(n1, { kind: 'onSegment', of: s1 }));
+          intents.push(addPoint(n2, { kind: 'onSegment', of: s2 }));
+          zipConsumed.push([m.index ?? 0, (m.index ?? 0) + m[0].length]);
+        }
+      }
+
       // Còn lại CỐ Ý bỏ qua clause có ràng buộc metric (vd "sao cho AD=2DB") để
       // không đoán sai vị trí — distributive ở trên đã dựng điểm free đủ cho hình.
       if (hasMetricConstraint(c.text)) {
@@ -147,17 +160,7 @@ export const onSegmentPointRule: LanguageRule = {
         }
       }
 
-      // ZIP trước (chặt hơn) rồi TWO_SAME_SEG: "P, Q theo thứ tự thuộc AC, AB".
-      const zipConsumed: Array<[number, number]> = [];
-      ZIP_SEG.lastIndex = 0;
-      for (const m of c.text.matchAll(ZIP_SEG)) {
-        const [n1, n2, s1, s2] = [normalizePoint(m[1]), normalizePoint(m[2]), m[3], m[4]];
-        if (validOnSegment(n1, s1) && validOnSegment(n2, s2)) {
-          intents.push(addPoint(n1, { kind: 'onSegment', of: s1 }));
-          intents.push(addPoint(n2, { kind: 'onSegment', of: s2 }));
-          zipConsumed.push([m.index ?? 0, (m.index ?? 0) + m[0].length]);
-        }
-      }
+      // (ZIP đã chạy trước metric-skip ở trên — zipConsumed dùng cho TWO_SAME_SEG.)
       // "Các điểm M, N thuộc BC" — cùng đoạn (bỏ span đã khớp ZIP).
       TWO_SAME_SEG.lastIndex = 0;
       for (const m of c.text.matchAll(TWO_SAME_SEG)) {

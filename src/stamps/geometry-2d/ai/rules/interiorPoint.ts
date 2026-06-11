@@ -22,7 +22,7 @@ const RE =
 // (hình chữ nhật|tam giác|…)" (Bài 5: "và một điểm O nằm trong hình chữ nhật").
 // Hình đã được dựng ở chỗ khác (quad/triangle) → O là điểm tự do bên trong.
 const RE2 =
-  /(?:một\s+)?điểm\s+([A-Z])(?!\p{L})\s+nằm\s+(?:bên\s+)?trong\s+(?:tam\s*giác|tứ\s*giác|hình(?:\s+(?:chữ\s*nhật|vuông|thoi|bình\s*hành|thang|\S+))?)(?:\s+[A-Z]{3,4}(?![A-Z]))?/u;
+  /(?:một\s+)?[Đđ]iểm\s+([A-Z])(?!\p{L})\s+nằm\s+(?:bên\s+)?trong\s+(?:tam\s*giác|tứ\s*giác|hình(?:\s+(?:chữ\s*nhật|vuông|thoi|bình\s*hành|thang|\S+))?)(?:\s+[A-Z]{3,4}(?![A-Z]))?/u;
 
 export const interiorPointRule: LanguageRule = {
   id: 'interiorPoint',
