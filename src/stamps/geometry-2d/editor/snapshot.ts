@@ -16,11 +16,17 @@ export function buildObjectSnapshot(
   const obj = state.objects[id];
   if (!obj) return null;
   const k = obj.kind;
-  if (k !== 'point' && k !== 'line' && k !== 'circle' && k !== 'segment' && k !== 'ray' && k !== 'vector') {
+  // 'intersection' (giao đường–đường/…) cũng vào allowlist và hiển thị như
+  // một điểm → đổi tên / đổi màu được như mọi điểm khác.
+  if (
+    k !== 'point' && k !== 'line' && k !== 'circle' &&
+    k !== 'segment' && k !== 'ray' && k !== 'vector' && k !== 'intersection'
+  ) {
     return null;
   }
   const a = obj.attrs as Record<string, unknown>;
-  const jKind: 'point' | 'line' | 'circle' = k === 'point' ? 'point' : (k === 'circle' ? 'circle' : 'line');
+  const jKind: 'point' | 'line' | 'circle' =
+    (k === 'point' || k === 'intersection') ? 'point' : (k === 'circle' ? 'circle' : 'line');
   return {
     id,
     kind: jKind,

@@ -35,8 +35,11 @@ const def: KindDef<IntersectionAttrs> = {
     const opts: Record<string, unknown> = {
       name: obj.label,
       withLabel: true,
-      strokeColor: obj.attrs.color ?? '#dc2626',
-      fillColor: obj.attrs.color ?? '#dc2626',
+      // Cùng màu xanh với mọi điểm khác (buildPointOpts dùng '#1e40af').
+      // Trước đây điểm giao tô đỏ '#dc2626' → tách biệt thị giác nhưng gây
+      // khó hiểu ("vì sao điểm này khác màu?"). Giữ chung một màu.
+      strokeColor: obj.attrs.color ?? '#1e40af',
+      fillColor: obj.attrs.color ?? '#1e40af',
       visible: obj.visible,
       fixed: obj.locked,
     };
@@ -46,6 +49,38 @@ const def: KindDef<IntersectionAttrs> = {
     // lineCircle hoặc circleCircle: branch 0/1
     const branch = obj.attrs.branch ?? 0;
     return board.create('intersection', [a, b, branch], opts);
+  },
+  /**
+   * Cập nhật TẠI CHỖ các thuộc tính "trang trí" (tên/màu/ẩn-hiện/khoá) qua
+   * setAttribute — giữ nguyên JxgObj identity nên các object phụ thuộc điểm
+   * giao (đường thẳng qua nó, …) KHÔNG bị stale parent ref. Mô phỏng update
+   * hook của point.ts.
+   *
+   * Nếu định nghĩa hình học đổi (kind/ref1/ref2/branch) thì throw → renderer
+   * fallback remove + create để JSXGraph dựng lại phép giao đúng.
+   */
+  update: (obj, prev, ctx, existing) => {
+    const a = obj.attrs;
+    const p = prev.attrs;
+    const branchA = (a as { branch?: number }).branch;
+    const branchP = (p as { branch?: number }).branch;
+    if (a.kind !== p.kind || a.ref1 !== p.ref1 || a.ref2 !== p.ref2 || branchA !== branchP) {
+      throw new Error('intersection: định nghĩa hình học đổi — recreate');
+    }
+    const el = existing as { setAttribute?: (o: Record<string, unknown>) => void };
+    if (typeof el.setAttribute === 'function') {
+      try {
+        el.setAttribute({
+          name: obj.label,
+          withLabel: true,
+          strokeColor: a.color ?? '#1e40af',
+          fillColor: a.color ?? '#1e40af',
+          visible: obj.visible,
+          fixed: obj.locked,
+        });
+      } catch { /* ignore */ }
+    }
+    void ctx;
   },
 };
 
