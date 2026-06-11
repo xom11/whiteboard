@@ -81,10 +81,14 @@ import { givenNamedCircleRule } from './givenNamedCircle';
 import { twoPerpLinesMeetRule } from './twoPerpLinesMeet';
 import { circumcircleCutsLineRule } from './circumcircleCutsLine';
 import { lineConcurrencyRule } from './lineConcurrency';
+import { parallelThroughCutsCircleRule } from './parallelThroughCutsCircle';
+import { lineThroughCutsTwoLinesRule } from './lineThroughCutsTwoLines';
 
 const RULES: readonly LanguageRule[] = [
   circumcircleCutsLineRule,
   lineConcurrencyRule,
+  parallelThroughCutsCircleRule,
+  lineThroughCutsTwoLinesRule,
   triangleRule,
   quadRule,
   connectRule,
