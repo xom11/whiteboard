@@ -49,7 +49,12 @@ describe('incircle "đường tròn nội tiếp (I)" e2e', () => {
     expect(intents.some((i) => i.op === 'draw-circle' && i.spec === 'through3')).toBe(false);
     const inc = intents.find((i) => i.op === 'draw-circle' && i.spec === 'inscribedIn');
     expect(inc).toBeDefined();
-    expect(inc.name).toBe('I');
+    // "(I)" = đường tròn nội tiếp TÂM I → tâm tách thành scene point incenter,
+    // circle đổi tên "I_c" (force-split trong resolveCircleNameCollisions).
+    expect(inc.name).toBe('I_c');
+    expect(
+      intents.some((i) => i.op === 'add-point' && i.name === 'I' && i.constraint?.kind === 'incenter'),
+    ).toBe(true);
     expect(transpile(f.dsl).ok).toBe(true);
   });
 });

@@ -32,9 +32,29 @@ export function resolveCircleNameCollisions(intents: readonly IntentT[]): Intent
     }
   }
 
+  // Circumcircle/incircle đặt tên kiểu NHÃN-TÂM (vd "(O)", "(I)", "O1", "O′"):
+  // notation Việt "(O)" = đường tròn CÓ TÂM O, nên tâm LUÔN là điểm thật. Tách
+  // vô điều kiện (dù O không bị tham chiếu như point ở đâu) → circle.ts đổi tên
+  // circle → "O_c" làm `isCenter` thành false → tắt helper tâm cố định màu cam;
+  // center point inject (circumcenter/incenter) vẽ chấm scene chọn được, đổi
+  // tên/màu như mọi điểm. Tên synth không-phải-nhãn-tâm (vd "w") KHÔNG tách.
+  const centerLabel = /^[A-Z]['′]?\d*$/u;
+  const forceSplit = new Set<string>();
+  for (const i of intents) {
+    if (
+      i.op === 'draw-circle' &&
+      (i.spec === 'through3' || i.spec === 'inscribedIn') &&
+      centerLabel.test(i.name)
+    ) {
+      forceSplit.add(i.name);
+    }
+  }
+
   const collisions = new Set<string>();
   for (const name of circleNames) {
-    if (pointRefs.has(name) || existingPoints.has(name)) collisions.add(name);
+    if (pointRefs.has(name) || existingPoints.has(name) || forceSplit.has(name)) {
+      collisions.add(name);
+    }
   }
 
   const rename = new Map<string, string>();

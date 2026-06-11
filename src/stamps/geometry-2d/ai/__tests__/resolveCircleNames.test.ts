@@ -50,6 +50,64 @@ describe('resolveCircleNameCollisions', () => {
     ]);
   });
 
+  it('through3 tên-tâm "O" CHỈ tham chiếu như đường tròn → vẫn tách thành scene point', () => {
+    // Bug thực tế: "tam giác ABC nội tiếp (O). Đường cao cắt (O) tại M,N,P" —
+    // O chỉ xuất hiện làm circle ref (secondIntersection.circle), KHÔNG làm point
+    // ref. Trước fix: không collide → circle giữ tên "O" → circle.ts vẽ tâm = helper
+    // cố định màu cam, không chọn được. Notation "(O)" = đường tròn TÂM O nên tâm
+    // PHẢI là scene point thật (chọn được, đổi tên/màu).
+    const intents: IntentT[] = [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'draw-circle', name: 'O', spec: 'through3', points: ['A', 'B', 'C'] },
+      { op: 'add-point', name: 'M', constraint: { kind: 'secondIntersection', line: 'AD', circle: 'O', other: 'A' } },
+    ];
+    const result = resolveCircleNameCollisions(intents);
+    expect(result).toEqual([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'add-point', name: 'O', constraint: { kind: 'circumcenter', of: ['A', 'B', 'C'] } },
+      { op: 'draw-circle', name: 'O_c', spec: 'through3', points: ['A', 'B', 'C'] },
+      { op: 'add-point', name: 'M', constraint: { kind: 'secondIntersection', line: 'AD', circle: 'O_c', other: 'A' } },
+    ]);
+  });
+
+  it('inscribedIn tên-tâm "I" CHỈ tham chiếu như đường tròn → vẫn tách thành scene point', () => {
+    const intents: IntentT[] = [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'draw-circle', name: 'I', spec: 'inscribedIn', triangle: ['A', 'B', 'C'] },
+      { op: 'add-point', name: 'D', constraint: { kind: 'tangencyPoint', circle: 'I', onLine: 'BC' } },
+    ];
+    const result = resolveCircleNameCollisions(intents);
+    expect(result).toEqual([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'add-point', name: 'I', constraint: { kind: 'incenter', of: ['A', 'B', 'C'] } },
+      { op: 'draw-circle', name: 'I_c', spec: 'inscribedIn', triangle: ['A', 'B', 'C'] },
+      { op: 'add-point', name: 'D', constraint: { kind: 'tangencyPoint', circle: 'I_c', onLine: 'BC' } },
+    ]);
+  });
+
+  it('through3 tên-tâm "O" KHÔNG tham chiếu gì → vẫn tách (tâm luôn là điểm)', () => {
+    const intents: IntentT[] = [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'draw-circle', name: 'O', spec: 'through3', points: ['A', 'B', 'C'] },
+    ];
+    const result = resolveCircleNameCollisions(intents);
+    expect(result).toEqual([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'add-point', name: 'O', constraint: { kind: 'circumcenter', of: ['A', 'B', 'C'] } },
+      { op: 'draw-circle', name: 'O_c', spec: 'through3', points: ['A', 'B', 'C'] },
+    ]);
+  });
+
+  it('through3 tên synth KHÔNG-phải-tâm (vd "w") → KHÔNG tách', () => {
+    // Implied circumcircle (arcMidpoint) đặt tên synth không theo kiểu nhãn-tâm.
+    // Chỉ tách khi tên khớp pattern nhãn-tâm hoa (O, I, O1, O′...).
+    const intents: IntentT[] = [
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'draw-circle', name: 'w', spec: 'through3', points: ['A', 'B', 'C'] },
+    ];
+    expect(resolveCircleNameCollisions(intents)).toEqual(intents);
+  });
+
   it('rewrite circle ref trong tangencyPoint, secondIntersection (cần follow rename)', () => {
     const intents: IntentT[] = [
       { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
@@ -171,16 +229,23 @@ describe('resolveCircleNameCollisions', () => {
   });
 
   it('edge name "BC" (composite) KHÔNG bị nhầm là point ref', () => {
-    // intersection.of là array các edge name (2-letter), không phải point ref
+    // intersection.of là array các edge name (2-letter), không phải point ref.
+    // Circle 'O' through3 vẫn force-split (tâm = scene point), nhưng các edge
+    // 'AC'/'BD' KHÔNG bị nhầm thành point ref → intersection.of giữ nguyên.
     const intents: IntentT[] = [
       { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
       { op: 'draw-circle', name: 'O', spec: 'through3', points: ['A', 'B', 'C'] },
       // intersection.of: ['AC','BD'] — KHÔNG match circle name 'O'
       { op: 'add-point', name: 'P', constraint: { kind: 'intersection', of: ['AC', 'BD'] } },
     ];
-    // O không bị reference làm point → không collide → pass through
     const result = resolveCircleNameCollisions(intents);
-    expect(result).toEqual(intents);
+    expect(result).toEqual([
+      { op: 'draw-shape', shape: 'triangle', labels: ['A', 'B', 'C'], variant: 'any' },
+      { op: 'add-point', name: 'O', constraint: { kind: 'circumcenter', of: ['A', 'B', 'C'] } },
+      { op: 'draw-circle', name: 'O_c', spec: 'through3', points: ['A', 'B', 'C'] },
+      // edge 'AC'/'BD' không match → intersection.of không bị rewrite
+      { op: 'add-point', name: 'P', constraint: { kind: 'intersection', of: ['AC', 'BD'] } },
+    ]);
   });
 
   it('cau-03 regression: centerThrough với center===name → inject free point + rename', () => {

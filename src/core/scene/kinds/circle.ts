@@ -120,10 +120,15 @@ const def: KindDef<CircleAttrs> = {
     /** Kiểm tra label có phải tên tâm (vd O, I, O1) hay không. */
     const isCenterLabel = (l: string) => /^[A-Z]['′]?\d*$/u.test(l);
     const isCenter = isCenterLabel(obj.label);
+    // Circle bị resolveCircleNameCollisions đổi tên "X" → "X_c" khi tâm X được
+    // tách thành scene point riêng. "_c" là id nội bộ (đảm bảo unique), KHÔNG
+    // phải nhãn hiển thị — suppress để không hiện "O_c" nổi trên vòng tròn (tâm
+    // đã có nhãn ở scene point).
+    const isRenamedCircle = /_c$/.test(obj.label);
 
     const baseOpts: Record<string, unknown> = {
       name: obj.label,
-      withLabel: isCenter ? (obj.attrs.showLabel ?? false) : true,
+      withLabel: isCenter ? (obj.attrs.showLabel ?? false) : isRenamedCircle ? false : true,
       strokeColor: obj.attrs.color ?? '#0f172a',
       strokeWidth: obj.attrs.width ?? 2,
       dash: obj.attrs.dash ?? 0,

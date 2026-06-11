@@ -65,27 +65,34 @@ describe('tryDeterministicFigure — đường tròn nội tiếp tiếp xúc ba
     expect(r.ok).toBe(true);
     if (!r.ok) return;
 
+    // "(I)" = đường tròn nội tiếp TÂM I → tâm tách thành scene point incenter,
+    // circle đổi tên "I_c" (xem resolveCircleNameCollisions force-split).
     expect(r.figure.dsl.shapes).toContainEqual({
-      name: 'I',
+      name: 'I_c',
       kind: 'incircle',
+      vertices: ['A', 'B', 'C'],
+    });
+    expect(r.figure.dsl.points).toContainEqual({
+      name: 'I',
+      kind: 'incenter',
       vertices: ['A', 'B', 'C'],
     });
     expect(r.figure.dsl.points).toContainEqual({
       name: 'D',
       kind: 'tangencyPoint',
-      circle: 'I',
+      circle: 'I_c',
       onLine: 'BC',
     });
     expect(r.figure.dsl.points).toContainEqual({
       name: 'E',
       kind: 'tangencyPoint',
-      circle: 'I',
+      circle: 'I_c',
       onLine: 'CA',
     });
     expect(r.figure.dsl.points).toContainEqual({
       name: 'G',
       kind: 'tangencyPoint',
-      circle: 'I',
+      circle: 'I_c',
       onLine: 'AB',
     });
   });
@@ -100,7 +107,7 @@ describe('tryDeterministicFigure — đường tròn nội tiếp tiếp xúc ba
     expect(r.figure.dsl.points).toContainEqual({
       name: 'D',
       kind: 'tangencyPoint',
-      circle: 'I',
+      circle: 'I_c',
       onLine: 'BC',
     });
   });
