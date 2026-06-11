@@ -34,6 +34,18 @@ describe('circleDiameterRule', () => {
     expect(all).toContainEqual({ op: 'add-point', name: 'O', constraint: { kind: 'midpoint', of: 'AB' } });
   });
 
+  // vao10: "(O,R) CÓ đường kính BC" — phẩy thay ';' + chữ "có" xen giữa.
+  it('"Cho (O,R) có đường kính BC" → circle O_c diameter BC', () => {
+    const all = intents('Cho (O,R) có đường kính BC.');
+    expect(all).toContainEqual({
+      op: 'draw-circle',
+      name: 'O_c',
+      spec: 'diameter',
+      endpoints: ['B', 'C'],
+    });
+    expect(all).toContainEqual({ op: 'add-point', name: 'O', constraint: { kind: 'midpoint', of: 'BC' } });
+  });
+
   it('compact "(O; R)" là MỘT clause (mask ";" trong ngoặc) và được claim', () => {
     const m = matches('Cho đường tròn (O; R) đường kính AB.');
     expect(m).toHaveLength(1);

@@ -30,8 +30,9 @@ const WORDS = new RegExp(
   CIRCLE_NAME + String.raw`[^.;\n]{0,40}?` + DUONG_KW + String.raw`\s*kính\s+([A-Z])([A-Z])(?![A-Z])`,
   'gu',
 );
+// "(O;R) đường kính AB" / "(O,R) có đường kính BC" — "có" xen giữa (vao10).
 const COMPACT = new RegExp(
-  String.raw`\(\s*(${CTR})\s*[;,]\s*[Rr]\s*\)\s*` + DUONG_KW + String.raw`\s*kính\s+([A-Z])([A-Z])(?![A-Z])`,
+  String.raw`\(\s*(${CTR})\s*[;,]\s*[Rr]\s*\)\s*(?:có\s+)?` + DUONG_KW + String.raw`\s*kính\s+([A-Z])([A-Z])(?![A-Z])`,
   'gu',
 );
 

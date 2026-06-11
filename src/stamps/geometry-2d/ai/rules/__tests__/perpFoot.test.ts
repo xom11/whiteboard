@@ -12,6 +12,15 @@ function firstPoint(problem: string) {
 }
 
 describe('perpFootRule', () => {
+  // vao10: verb "Hạ" dẫn dạng vẽ trực tiếp ("Hạ BK ⊥ AM tại K").
+  it('"Hạ BK ⊥ AM tại K" → K = perpFoot(B, AM)', () => {
+    const intents = run('Cho tam giác ABM. Hạ BK ⊥ AM tại K').flatMap((x) => x.intents) as any[];
+    const k = intents.find((i) => i.op === 'add-point' && i.name === 'K');
+    expect(k).toBeDefined();
+    expect(k.constraint).toMatchObject({ kind: 'perpFoot', from: 'B', onLine: 'AM' });
+  });
+
+
   it('"hình chiếu vuông góc của A trên BC" → perpFoot from A onLine BC', () => {
     const intent = firstPoint('Gọi H là hình chiếu vuông góc của A trên BC');
     expect(intent.op).toBe('add-point');

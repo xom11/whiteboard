@@ -108,7 +108,7 @@ const SHARED_FROM_TWO = new RegExp(
 // ("Kẻ HE,HF ⊥ AB,AC"), Bài 35 ("Vẽ ME,MF ⊥ AC,AB tại E,F").
 //   groups: 1=from1 2=foot1 3=from2 4=foot2 5=line1 6=line2
 const PERP_DRAW_DISTRIB = new RegExp(
-  '(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\\s+([A-Z])([A-Z])\\s*,\\s*([A-Z])([A-Z])(?![A-Z])\\s+' +
+  '(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng|[Hh]ạ)\\s+([A-Z])([A-Z])\\s*,\\s*([A-Z])([A-Z])(?![A-Z])\\s+' +
     '(?:lần\\s*lượt\\s+)?(?:⊥|vuông\\s*góc(?:\\s+với)?)\\s+(?:với\\s+)?(?:các\\s+)?' +
     '(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{2})\\s*,\\s*([A-Z]{2})(?![A-Z])',
   'gu',
@@ -140,7 +140,7 @@ function splitNames(blob: string): string[] {
 // đoạn AH → rule này CHỈ emit add-point, KHÔNG connect (tránh double).
 //   groups: 1=from 2=foot 3=onLine 4=tại-point(optional)
 const PERP_DRAW = new RegExp(
-  `(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\\s+([A-Z])([A-Z])(?![A-Z])\\s+(?:⊥|vuông\\s*góc(?:\\s+với)?)\\s+(?:với\\s+)?(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{1,2})(?![A-Z])(?:\\s+tại\\s+([A-Z]))?`,
+  `(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng|[Hh]ạ)\\s+([A-Z])([A-Z])(?![A-Z])\\s+(?:⊥|vuông\\s*góc(?:\\s+với)?)\\s+(?:với\\s+)?(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{1,2})(?![A-Z])(?:\\s+tại\\s+([A-Z]))?`,
   'gu',
 );
 
