@@ -1,8 +1,18 @@
 // src/stamps/geometry-2d/ai/rules/twoPerpLinesMeet.ts
 //
-// Giao của HAI đường vuông-góc-qua-điểm:
+// Giao của HAI đường vuông-góc-qua-điểm.
+//
+// Dạng 1 (gốc, 2 mệnh đề tách rời):
 //   "Đường thẳng qua M vuông góc với BM cắt đường thẳng qua N vuông góc với CN tại S"
 //     → prpM = perpThrough(M, BM); prpN = perpThrough(N, CN); S = prpM ∩ prpN.
+//
+// Dạng 2 (phân phối — gộp 2 đường vào 1 cụm):
+//   "Đường thẳng qua E,F lần lượt vuông góc với OC,OB cắt nhau tại X"
+//     → zip E↔OC, F↔OB → prpE = perpThrough(E, OC); prpF = perpThrough(F, OB);
+//       X = prpE ∩ prpF.
+//   (parallelPerp chỉ catch ĐƯỜNG ĐẦU "qua E ⊥ OC" → prpE, KHÔNG dựng prpF/X →
+//    coverage báo named-missing X. Rule này emit đủ cả 3; prpE byte-identical với
+//    parallelPerp nên dedup theo JSON.)
 //
 // Tên đường theo quy ước parallelPerp ("prp"+điểm-qua) → dedup nếu rule khác đã
 // dựng cùng đường. KHÁC perpThroughCutsLines (1 đường ⊥ cắt 2 đường có sẵn): ở
@@ -12,12 +22,25 @@
 import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint, drawLine } from './_shared';
 
-const PREFILTER = /[Đđ]ường\s*thẳng\s+qua\s+[A-Z][^.]{0,30}?(?:vuông\s*góc|⊥)[^.]{0,40}?cắt\s+[Đđ]ường\s*thẳng\s+qua/u;
+// PREFILTER nhận CẢ hai dạng: (a) "…cắt đường thẳng qua…" (gốc), (b) "…cắt
+// nhau…" (phân phối). Đều mở đầu "Đường thẳng qua <P> … vuông góc/⊥".
+const PREFILTER =
+  /[Đđ]ường\s*thẳng\s+qua\s+[A-Z][^.]{0,30}?(?:vuông\s*góc|⊥)[^.]{0,40}?cắt\s+(?:[Đđ]ường\s*thẳng\s+qua|nhau)/u;
 
 const RE = new RegExp(
   '[Đđ]ường\\s*thẳng\\s+qua\\s+([A-Z])(?!\\p{L})\\s+(?:vuông\\s*góc|⊥)\\s+(?:với\\s+)?([A-Z])([A-Z])(?![A-Z])' +
     '[^.]{0,20}?cắt\\s+[Đđ]ường\\s*thẳng\\s+qua\\s+([A-Z])(?!\\p{L})\\s+(?:vuông\\s*góc|⊥)\\s+(?:với\\s+)?([A-Z])([A-Z])(?![A-Z])' +
     '\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])',
+  'gu',
+);
+
+// Dạng phân phối: "qua <P1>,<P2> (lần lượt|theo thứ tự)? ⊥ <L1>,<L2> cắt nhau tại <S>".
+// P1,P2 = HOA đơn; L1,L2 = cặp đỉnh (2 HOA); S = HOA đơn. Zip P1↔L1, P2↔L2.
+const RE_DISTRIB = new RegExp(
+  '[Đđ]ường\\s*thẳng\\s+qua\\s+([A-Z])(?!\\p{L})\\s*,\\s*([A-Z])(?!\\p{L})\\s+' +
+    '(?:lần\\s*lượt\\s+|theo\\s*thứ\\s*tự\\s+)?(?:vuông\\s*góc|⊥)\\s+(?:với\\s+)?' +
+    '([A-Z])([A-Z])(?![A-Z])\\s*,\\s*([A-Z])([A-Z])(?![A-Z])' +
+    '[^.]{0,20}?cắt\\s+nhau\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])',
   'gu',
 );
 
@@ -28,26 +51,30 @@ export const twoPerpLinesMeetRule: LanguageRule = {
   patterns: [PREFILTER],
   match(ctx) {
     const out: RuleMatch[] = [];
+    const emit = (c: { id: number }, p1: string, l1: string, p2: string, l2: string, s: string) => {
+      if (p1 === p2 || s === p1 || s === p2) return;
+      const n1 = `prp${p1}`;
+      const n2 = `prp${p2}`;
+      out.push({
+        ruleId: 'twoPerpLinesMeet',
+        clauseIds: [c.id],
+        intents: [
+          drawLine(n1, 'perpThrough', { through: p1, to: l1 }),
+          drawLine(n2, 'perpThrough', { through: p2, to: l2 }),
+          addPoint(s, { kind: 'intersection', of: [n1, n2] }),
+        ],
+      });
+    };
     for (const c of ctx.clauses) {
+      // Dạng gốc (2 mệnh đề tách rời).
       RE.lastIndex = 0;
       for (const m of c.text.matchAll(RE)) {
-        const p1 = m[1];
-        const l1 = m[2] + m[3];
-        const p2 = m[4];
-        const l2 = m[5] + m[6];
-        const s = m[7];
-        if (p1 === p2 || s === p1 || s === p2) continue;
-        const n1 = `prp${p1}`;
-        const n2 = `prp${p2}`;
-        out.push({
-          ruleId: 'twoPerpLinesMeet',
-          clauseIds: [c.id],
-          intents: [
-            drawLine(n1, 'perpThrough', { through: p1, to: l1 }),
-            drawLine(n2, 'perpThrough', { through: p2, to: l2 }),
-            addPoint(s, { kind: 'intersection', of: [n1, n2] }),
-          ],
-        });
+        emit(c, m[1], m[2] + m[3], m[4], m[5] + m[6], m[7]);
+      }
+      // Dạng phân phối: zip <P1>↔<L1>, <P2>↔<L2>.
+      RE_DISTRIB.lastIndex = 0;
+      for (const m of c.text.matchAll(RE_DISTRIB)) {
+        emit(c, m[1], m[3] + m[4], m[2], m[5] + m[6], m[7]);
       }
     }
     return out;
