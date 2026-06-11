@@ -22,15 +22,32 @@
 import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint, connect } from './_shared';
 
-const PREFILTER = /(?:[Kk]ẻ|[Vv]ẽ)\s+(?:các\s+|hai\s+)?tiếp\s*tuyến\s+[A-Z]{2}/u;
+const PREFILTER =
+  /(?:[Kk]ẻ|[Vv]ẽ)\s+(?:các\s+|hai\s+|2\s+)?tiếp\s*tuyến\s+[A-Z]{2}|[Cc]ác\s+tiếp\s*tuyến\s+với/u;
 
-// 2 tiếp tuyến: "Kẻ (các/hai)? tiếp tuyến XY, XZ". g1g2 = cặp 1, g3g4 = cặp 2.
+// 2 tiếp tuyến: "Kẻ (các/hai/2)? tiếp tuyến XY, XZ" / "XY và XZ" (vao10).
+// g1g2 = cặp 1, g3g4 = cặp 2.
 const TWO = new RegExp(
-  '(?:[Kk]ẻ|[Vv]ẽ)\\s+(?:các\\s+|hai\\s+)?tiếp\\s*tuyến\\s+([A-Z])([A-Z])\\s*,\\s*([A-Z])([A-Z])(?!\\p{L})',
+  '(?:[Kk]ẻ|[Vv]ẽ)\\s+(?:các\\s+|hai\\s+|2\\s+)?tiếp\\s*tuyến\\s+([A-Z])([A-Z])\\s*(?:,\\s*|và\\s+)([A-Z])([A-Z])(?!\\p{L})',
   'gu',
 );
 // 1 tiếp tuyến: "Kẻ tiếp tuyến XY". g1=ngoài, g2=tiếp điểm.
 const ONE = new RegExp('(?:[Kk]ẻ|[Vv]ẽ)\\s+tiếp\\s*tuyến\\s+([A-Z])([A-Z])(?![A-Z])', 'gu');
+
+// "Các tiếp tuyến với đường tròn kẻ từ A tiếp xúc (với đường tròn)? tại B,C"
+// (vao10) — điểm ngoài nêu sau "kẻ từ", tiếp điểm sau "tại".
+const FROM_TOUCH = new RegExp(
+  '[Cc]ác\\s+tiếp\\s*tuyến\\s+với\\s+đường\\s*tròn\\s+kẻ\\s+từ\\s+([A-Z])(?!\\p{L})' +
+    '[^.;]{0,40}?tại\\s+([A-Z])\\s*(?:,\\s*|và\\s+)([A-Z])(?!\\p{L})',
+  'gu',
+);
+
+// Appositive đặt tên tiếp điểm: "(với)? P và Q là (các|hai|2)? tiếp điểm" —
+// claim-only khi P,Q đều đã được emit là tangentPoint (không thông tin mới).
+const TOUCH_APPOS = new RegExp(
+  '^(?:với\\s+)?([A-Z])\\s*(?:,\\s*|và\\s+)([A-Z])\\s+là\\s+(?:các\\s+|hai\\s+|2\\s+)?tiếp\\s*điểm',
+  'u',
+);
 
 const PAREN_CIRCLE = /\(\s*([A-Z])\s*\)/u;
 
@@ -71,6 +88,30 @@ export const tangentNamedFromExtRule: LanguageRule = {
       }
     }
 
+    // --- "Các tiếp tuyến với đường tròn kẻ từ A … tại B,C" (vao10) ---
+    for (const c of ctx.clauses) {
+      if (twoClauses.has(c.id)) continue;
+      FROM_TOUCH.lastIndex = 0;
+      for (const m of c.text.matchAll(FROM_TOUCH)) {
+        const ext = m[1];
+        const p = m[2];
+        const q = m[3];
+        if (p === q || p === ext || q === ext) continue;
+        twoClauses.add(c.id);
+        whichOf.set(ext, 1);
+        out.push({
+          ruleId: 'tangentNamedFromExt',
+          clauseIds: [c.id],
+          intents: [
+            addPoint(p, { kind: 'tangentPoint', from: ext, circle, which: 0 }),
+            addPoint(q, { kind: 'tangentPoint', from: ext, circle, which: 1 }),
+            connect(ext, p, 'segment'),
+            connect(ext, q, 'segment'),
+          ],
+        });
+      }
+    }
+
     // --- 1 tiếp tuyến (bỏ clause đã khớp 2-tiếp-tuyến) ---
     for (const c of ctx.clauses) {
       if (twoClauses.has(c.id)) continue;
@@ -91,6 +132,22 @@ export const tangentNamedFromExtRule: LanguageRule = {
             connect(ext, p, 'segment'),
           ],
         });
+      }
+    }
+
+    // --- Appositive "với P và Q là hai tiếp điểm": claim-only nếu cả 2 tên đã
+    // được emit là tangentPoint trong các match trên (không thông tin mới).
+    const touchNames = new Set(
+      out.flatMap((m) =>
+        m.intents
+          .filter((i: any) => i.op === 'add-point' && i.constraint?.kind === 'tangentPoint')
+          .map((i: any) => i.name as string),
+      ),
+    );
+    for (const c of ctx.clauses) {
+      const m = TOUCH_APPOS.exec(c.text);
+      if (m && touchNames.has(m[1]) && touchNames.has(m[2])) {
+        out.push({ ruleId: 'tangentNamedFromExt', clauseIds: [c.id], intents: [] });
       }
     }
     return out;

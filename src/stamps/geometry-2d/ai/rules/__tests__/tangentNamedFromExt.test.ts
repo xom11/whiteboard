@@ -22,6 +22,56 @@ describe('circleExternalPointRule', () => {
   });
 });
 
+describe('tangentNamedFromExtRule (vao10 variants)', () => {
+  it('"Qua A kẻ hai tiếp tuyến AP và AQ của đường tròn (O)" — separator "và"', () => {
+    const all = run(
+      tangentNamedFromExtRule,
+      'Cho đường tròn (O) và điểm A. Qua A kẻ hai tiếp tuyến AP và AQ của đường tròn (O)',
+    );
+    expect(all).toContainEqual({
+      op: 'add-point',
+      name: 'P',
+      constraint: { kind: 'tangentPoint', from: 'A', circle: 'O', which: 0 },
+    });
+    expect(all).toContainEqual({
+      op: 'add-point',
+      name: 'Q',
+      constraint: { kind: 'tangentPoint', from: 'A', circle: 'O', which: 1 },
+    });
+  });
+
+  it('"Qua M kẻ 2 tiếp tuyến ME, MF tới đường tròn (O)" — số từ "2"', () => {
+    const all = run(tangentNamedFromExtRule, 'Qua M kẻ 2 tiếp tuyến ME, MF tới đường tròn (O)');
+    expect(all.filter((i) => i.constraint?.kind === 'tangentPoint')).toHaveLength(2);
+  });
+
+  it('"Các tiếp tuyến với đường tròn kẻ từ A tiếp xúc với đường tròn tại B,C"', () => {
+    const all = run(
+      tangentNamedFromExtRule,
+      'Cho đường tròn (O) và một điểm A nằm ngoài đường tròn. Các tiếp tuyến với đường tròn kẻ từ A tiếp xúc với đường tròn tại B,C',
+    );
+    expect(all).toContainEqual({
+      op: 'add-point',
+      name: 'B',
+      constraint: { kind: 'tangentPoint', from: 'A', circle: 'O', which: 0 },
+    });
+    expect(all).toContainEqual({
+      op: 'add-point',
+      name: 'C',
+      constraint: { kind: 'tangentPoint', from: 'A', circle: 'O', which: 1 },
+    });
+  });
+
+  it('claim appositive "với P và Q là hai tiếp điểm" (không intent mới)', () => {
+    const p = 'Qua A kẻ hai tiếp tuyến AP và AQ của đường tròn (O), với P và Q là hai tiếp điểm';
+    const cls = segmentClauses(p);
+    const ms = tangentNamedFromExtRule.match({ problem: p, clauses: cls });
+    const claimed = new Set(ms.flatMap((m) => m.clauseIds));
+    const appos = cls.find((c) => /tiếp điểm/.test(c.text))!;
+    expect(claimed.has(appos.id)).toBe(true);
+  });
+});
+
 describe('tangentNamedFromExtRule', () => {
   it('"Kẻ các tiếp tuyến AB, AC" → tangentPoint B(0), C(1) từ A + 2 đoạn', () => {
     const all = run(tangentNamedFromExtRule, 'Cho đường tròn (O). Kẻ các tiếp tuyến AB, AC với đường tròn');
