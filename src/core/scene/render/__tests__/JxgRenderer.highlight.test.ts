@@ -48,6 +48,33 @@ try { getKind(FAKE_SEG); } catch {
   });
 }
 
+// Mock một điểm PHÁI SINH kiểu JSXGraph (circumcenter/otherintersection/
+// perpendicularpoint...): elType riêng cho mỗi cách dựng NHƯNG elementClass=1
+// (OBJECT_CLASS_POINT) cho mọi subtype. addHalo phải nhận diện qua elementClass,
+// không phải liệt kê elType.
+const FAKE_DERIVED_PT = 'highlight_derived_point_kind';
+try { getKind(FAKE_DERIVED_PT); } catch {
+  registerKind({
+    type: FAKE_DERIVED_PT,
+    schemaVersion: 1,
+    migrate: {},
+    dependsOn: () => [],
+    describe: (o) => o.label,
+    render: () => {
+      const attrs: Record<string, unknown> = { size: 4 };
+      return {
+        elType: 'circumcenter',
+        elementClass: 1,
+        X: () => 1,
+        Y: () => 2,
+        attrs,
+        getAttribute(k: string) { return attrs[k]; },
+        setAttribute(patch: Record<string, unknown>) { Object.assign(attrs, patch); },
+      };
+    },
+  });
+}
+
 function mockBoard() {
   const created: Array<{ kind: string; parents: unknown[]; attrs?: unknown; id: number }> = [];
   let counter = 0;
@@ -123,6 +150,22 @@ describe('JxgRenderer.highlight (halo overlay)', () => {
     // Halo overlay model giữ nguyên màu gốc.
     expect(elA.attrs.strokeColor).toBe('#1e40af');
     expect(elA.attrs.strokeWidth).toBe(2);
+
+    r.dispose();
+  });
+
+  it('creates a point halo for DERIVED points (circumcenter/otherintersection) via elementClass', () => {
+    const A: SceneObject = {
+      id: 'A', label: 'O', kind: FAKE_DERIVED_PT, visible: true, locked: false, attrs: {},
+    };
+    const store = createStore(makeState(A));
+    const board = mockBoard();
+    const r = new JxgRenderer(store, board);
+
+    r.highlight('A');
+    // Dù elType là 'circumcenter' (không nằm trong danh sách cũ), vẫn tạo point halo.
+    const ptHalos = board.created.filter((c) => c.kind === 'point');
+    expect(ptHalos.length).toBe(1);
 
     r.dispose();
   });

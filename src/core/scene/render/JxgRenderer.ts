@@ -447,27 +447,34 @@ export class JxgRenderer {
       layer: 4,
       needsRegularUpdate: true,
     };
+    // Point-like: JSXGraph đặt elType RIÊNG cho mỗi cách dựng điểm (circumcenter,
+    // otherintersection, perpendicularpoint, incenter, midpoint, glider...) nên
+    // KHÔNG liệt kê xuể — nhận diện qua elementClass=1 (OBJECT_CLASS_POINT, set
+    // cho MỌI subtype) như objKind (tools.tsx). Fallback elType cho test mock
+    // không set elementClass.
+    const elementClass = (el as { elementClass?: number }).elementClass;
+    const isPointLike =
+      elementClass === 1 ||
+      el.elType === 'point' || el.elType === 'glider' || el.elType === 'intersection';
+
     const halos: unknown[] = [];
     try {
-      switch (el.elType) {
-        case 'point':
-        case 'glider':
-        case 'intersection': {
-          const baseSize = (el.getAttribute?.('size') as number | undefined) ?? 4;
-          const halo = board.create('point', [
-            () => el.X?.() ?? 0,
-            () => el.Y?.() ?? 0,
-          ], {
-            ...haloBase,
-            size: baseSize + 6,
-            face: 'o',
-            strokeWidth: 2,
-            strokeOpacity: 0.75,
-            fillOpacity: 0.25,
-          });
-          halos.push(halo);
-          break;
-        }
+      if (isPointLike) {
+        const baseSize = (el.getAttribute?.('size') as number | undefined) ?? 4;
+        const halo = board.create('point', [
+          () => el.X?.() ?? 0,
+          () => el.Y?.() ?? 0,
+        ], {
+          ...haloBase,
+          size: baseSize + 6,
+          face: 'o',
+          strokeWidth: 2,
+          strokeOpacity: 0.75,
+          fillOpacity: 0.25,
+        });
+        halos.push(halo);
+      } else {
+        switch (el.elType) {
         case 'segment': {
           if (el.point1 && el.point2) {
             const halo = board.create('segment', [el.point1, el.point2], {
@@ -534,6 +541,7 @@ export class JxgRenderer {
         default:
           // Các kind khác (curve, arc, sector, angle, ...) — chưa hỗ trợ halo.
           break;
+        }
       }
     } catch (err) {
       console.warn('[scene/render/2d] halo create fail:', err);
