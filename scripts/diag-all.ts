@@ -88,6 +88,28 @@ const DATASETS: DS[] = [
     parse: blockParse(/^Bài\s+(\d+):/, (m) => m[1]),
     intro: introBeforeProof,
   },
+  {
+    name: 'toan8',
+    file: 'docs/datasets/toan_8_hinh_drawing_useful.txt',
+    parse: (raw: string) => {
+      // "Bài N:" lặp lại theo nhiều cụm → đánh số tuần tự. Strip prefix nhiễu OCR
+      // "[D B ...]" (nhãn hình) trước header.
+      const out: Bai[] = [];
+      let seq = 0;
+      let cur: Bai | null = null;
+      for (const line of raw.split('\n')) {
+        const stripped = line.replace(/^\s*\[[^\]]*\]\s*/, '');
+        const m = stripped.match(/^Bài\s+\d+[.:]?\s*(.*)$/);
+        if (m) {
+          if (cur) out.push(cur);
+          cur = { id: String(++seq), text: m[1] };
+        } else if (cur) cur.text += '\n' + stripped;
+      }
+      if (cur) out.push(cur);
+      return out;
+    },
+    intro: introBeforeProof,
+  },
 ];
 
 interface Row {

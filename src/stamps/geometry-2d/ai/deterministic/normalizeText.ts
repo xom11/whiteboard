@@ -11,9 +11,12 @@
 
 const TRIANGLE_SYMBOL = /[Δ∆]\s*(?=[A-Z])/gu;
 const CIRCLE_SYNONYM = /vòng\s+tròn/giu;
+// "◊ABCD" (U+25CA lozenge) / "▱" / "□" → "tứ giác ABCD" (đề toán 8 hay dùng).
+const QUAD_SYMBOL = /[◊▱□]\s*(?=[A-Z])/gu;
 
 export function normalizeProblemText(problem: string): string {
   return problem
     .replace(TRIANGLE_SYMBOL, 'tam giác ')
+    .replace(QUAD_SYMBOL, 'tứ giác ')
     .replace(CIRCLE_SYNONYM, 'đường tròn');
 }

@@ -19,7 +19,7 @@ import { addPoint } from './_shared';
 // prefilter rộng vô hại.
 // "đường kính AB" là 1 ĐOẠN (đường kính của đường tròn) → cho phép "trên đường
 // kính AB lấy điểm C" (phang:14). Thêm vào prefix đoạn-loại.
-const PREFILTER = /(?:thuộc\s+(?:các\s+|hai\s+|ba\s+)?(?:cạnh|đoạn|tia|bán\s*kính|đường\s*kính|dây|[A-Z]{2})|[Tt]rên\s+(?:các\s+|hai\s+|ba\s+)?(?:cạnh|đoạn|tia|bán\s*kính|đường\s*kính|đường\s*thẳng|dây|[A-Z]{2})|(?:di\s*chuyển|di\s*động)\s+trên|nằm\s+giữa)/u;
+const PREFILTER = /(?:thuộc\s+(?:các\s+|hai\s+|ba\s+)?(?:cạnh|đoạn|đáy|tia|bán\s*kính|đường\s*kính|dây|[A-Z]{2})|[Tt]rên\s+(?:các\s+|hai\s+|ba\s+)?(?:cạnh|đoạn|đáy|tia|bán\s*kính|đường\s*kính|đường\s*thẳng|dây|[A-Z]{2})|(?:di\s*chuyển|di\s*động)\s+trên|nằm\s+giữa)/u;
 
 // "Trên đường thẳng d (lấy)? (một)? (điểm)? M" — đường ĐẶT TÊN chữ thường (d, d1).
 // resolveSegmentRef thấy shape "d" (tangentLineNamedAtPoint dựng) → glider trên d.
@@ -34,9 +34,17 @@ const ON_NAMED_LINE = new RegExp(
 const SEG = '([A-Z]{2})(?![A-Z])';
 const POINT = "([A-Z](?:['′])?)(?![A-Z])";
 
-// "Trên cạnh AC lấy điểm M" / "Trên đoạn thẳng OB lấy điểm H".
+// "Trên cạnh AC lấy điểm M" / "Trên đoạn thẳng OB lấy điểm H" / "trên đáy CD …".
 const ON_SEG_THEN_POINT = new RegExp(
-  String.raw`[Tt]rên\s+(?:cạnh|đoạn(?:\s+thẳng)?|bán\s*kính|đường\s*kính|dây\s*(?:cung)?)\s+${SEG}[^.]{0,30}?(?:lấy\s+)?(?:một\s+)?(?:điểm\s+)?${POINT}`,
+  String.raw`[Tt]rên\s+(?:cạnh|đáy|đoạn(?:\s+thẳng)?|bán\s*kính|đường\s*kính|dây\s*(?:cung)?)\s+${SEG}[^.]{0,30}?(?:lấy\s+)?(?:một\s+)?(?:điểm\s+)?${POINT}`,
+  'gu',
+);
+
+// "Trên (cạnh|đáy)? AC lấy (các)? điểm D, E (, F)" — NHIỀU điểm CÙNG đoạn AC
+// (toán 8: "Trên cạnh AC lấy các điểm D,E sao cho AD=DE=EC"). group1=seg,
+// group2=blob tên. Chạy TRƯỚC metric-skip (đặt điểm free dù có "sao cho =").
+const ON_SEG_MULTI_POINT = new RegExp(
+  String.raw`[Tt]rên\s+(?:cạnh\s+|đáy\s+|đoạn(?:\s+thẳng)?\s+)?${SEG}\s+(?:lấy\s+)?(?:các\s+)?(?:điểm\s+)?((?:[A-Z](?:['′])?\s*,\s*)+[A-Z](?:['′])?)(?![A-Z])`,
   'gu',
 );
 
@@ -121,6 +129,16 @@ export const onSegmentPointRule: LanguageRule = {
             }
           }
         }
+      }
+
+      // "Trên cạnh AC lấy các điểm D, E (, F)" — nhiều điểm CÙNG đoạn, TRƯỚC
+      // metric-skip (toán8: "lấy các điểm D,E sao cho AD=DE=EC").
+      ON_SEG_MULTI_POINT.lastIndex = 0;
+      for (const m of c.text.matchAll(ON_SEG_MULTI_POINT)) {
+        const seg = m[1];
+        const names = m[2].split(',').map((x) => normalizePoint(x.trim())).filter(Boolean);
+        if (names.length < 2) continue;
+        for (const n of names) if (validOnSegment(n, seg)) intents.push(addPoint(n, { kind: 'onSegment', of: seg }));
       }
 
       // ZIP distributive "P, Q lần lượt thuộc (tia|cạnh) AC, AB" CHẠY TRƯỚC
