@@ -532,35 +532,31 @@ export class JxgRenderer {
         });
         halos.push(halo);
       } else if (
-        (elType === 'arc' || elType === 'semicircle' || elType === 'circumcirclearc') &&
-        el.center && el.radiuspoint && el.anglepoint
+        el.center && (el.radiuspoint ?? el.radiusPoint) && (el.anglepoint ?? el.anglePoint) &&
+        (elType === 'arc' || elType === 'semicircle' || elType === 'circumcirclearc' ||
+          elType === 'sector' || elType === 'angle')
       ) {
-        // Arc (CURVE class) — dựng lại arc dày xám qua center/radiuspoint/anglepoint.
-        const halo = board.create('arc', [el.center, el.radiuspoint, el.anglepoint], {
-          ...haloBase,
-          strokeWidth: 9,
-          fillColor: 'none',
-          fillOpacity: 0,
-        });
-        halos.push(halo);
-      } else if (elType === 'sector' && el.center && el.radiusPoint && el.anglePoint) {
-        // Sector — chú ý property chữ P HOA (radiusPoint/anglePoint).
-        const halo = board.create('sector', [el.center, el.radiusPoint, el.anglePoint], {
-          ...haloBase,
-          strokeWidth: 7,
-          fillOpacity: 0.2,
-        });
-        halos.push(halo);
-      } else if (elType === 'angle' && el.center && el.radiusPoint && el.anglePoint) {
-        // Angle extends Sector: vertex = center, hai cạnh = radiusPoint/anglePoint.
-        // create('angle', [p1, vertex, p2]).
-        const halo = board.create('angle', [el.radiusPoint, el.center, el.anglePoint], {
-          ...haloBase,
-          strokeWidth: 7,
-          fillOpacity: 0.2,
-          radius: (el.getAttribute?.('radius') as number | undefined) ?? 1,
-        });
-        halos.push(halo);
+        // Arc/Sector/Angle (CURVE class) — dựng lại element cùng loại, dày xám.
+        // ⚠️ Runtime JSXGraph dùng `radiuspoint`/`anglepoint` (chữ THƯỜNG) cho cả
+        // Arc LẪN Sector/Angle — .d.ts ghi `radiusPoint`/`anglePoint` (P HOA) cho
+        // Sector/Angle là SAI (đã verify bằng Playwright). Đọc cả hai cho an toàn.
+        const rp = el.radiuspoint ?? el.radiusPoint;
+        const ap = el.anglepoint ?? el.anglePoint;
+        if (elType === 'sector') {
+          halos.push(board.create('sector', [el.center, rp, ap], {
+            ...haloBase, strokeWidth: 7, fillOpacity: 0.2,
+          }));
+        } else if (elType === 'angle') {
+          // create('angle', [p1, vertex, p2]); vertex = center.
+          halos.push(board.create('angle', [rp, el.center, ap], {
+            ...haloBase, strokeWidth: 7, fillOpacity: 0.2,
+            radius: (el.getAttribute?.('radius') as number | undefined) ?? 1,
+          }));
+        } else {
+          halos.push(board.create('arc', [el.center, rp, ap], {
+            ...haloBase, strokeWidth: 9, fillColor: 'none', fillOpacity: 0,
+          }));
+        }
       }
       // Còn lại (functiongraph/curve, text...) — chưa hỗ trợ halo; hiếm khi chọn.
     } catch (err) {

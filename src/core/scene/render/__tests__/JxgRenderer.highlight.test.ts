@@ -132,14 +132,16 @@ try { getKind(FAKE_ARC); } catch {
   });
 }
 
-// Mock sector + angle: Sector/Angle — center/radiusPoint/anglePoint (chữ P HOA).
+// Mock sector + angle: Sector/Angle — runtime JSXGraph dùng radiuspoint/anglepoint
+// (chữ THƯỜNG, GIỐNG Arc), KHÔNG phải chữ P hoa như .d.ts ghi (đã verify bằng
+// Playwright trên angle thật). addHalo đọc cả hai spelling cho an toàn.
 const FAKE_SECTOR = 'highlight_sector_kind';
 try { getKind(FAKE_SECTOR); } catch {
   registerKind({
     type: FAKE_SECTOR, schemaVersion: 1, migrate: {}, dependsOn: () => [], describe: (o) => o.label,
     render: () => ({
       elType: 'sector', elementClass: 4,
-      center: { id: 'O' }, radiusPoint: { id: 'A' }, anglePoint: { id: 'B' },
+      center: { id: 'O' }, radiuspoint: { id: 'A' }, anglepoint: { id: 'B' },
       attrs: {}, getAttribute() { return undefined; }, setAttribute() { /* noop */ },
     }),
   });
@@ -150,7 +152,7 @@ try { getKind(FAKE_ANGLE); } catch {
     type: FAKE_ANGLE, schemaVersion: 1, migrate: {}, dependsOn: () => [], describe: (o) => o.label,
     render: () => ({
       elType: 'angle', elementClass: 4,
-      center: { id: 'V' }, radiusPoint: { id: 'A' }, anglePoint: { id: 'C' },
+      center: { id: 'V' }, radiuspoint: { id: 'A' }, anglepoint: { id: 'C' },
       attrs: {}, getAttribute() { return undefined; }, setAttribute() { /* noop */ },
     }),
   });
