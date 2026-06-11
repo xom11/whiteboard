@@ -111,6 +111,18 @@ const CEVIAN_PATTERNS: ReadonlyArray<{ type: CevianType; patterns: readonly RegE
   },
 ];
 
+// Distributive LIST: "(các)? đường cao AD, BE, CF" / "trung tuyến AM, BN" /
+// "phân giác AD, BE" — 1 keyword + ≥2 cặp đỉnh phẩy. Single-pattern chỉ bắt cặp
+// ĐẦU (cặp sau thiếu keyword). Capture blob → tách từng cặp (apex+foot).
+const CEVIAN_LISTS: ReadonlyArray<{ type: CevianType; re: RegExp }> = [
+  { type: 'altitude', re: /[Đđ]ường\s*cao\s+((?:[A-Z]{2}\s*,\s*)+[A-Z]{2})(?![A-Z])/gu },
+  { type: 'median', re: /[Tt]rung\s*tuyến\s+((?:[A-Z]{2}\s*,\s*)+[A-Z]{2})(?![A-Z])/gu },
+  {
+    type: 'bisector',
+    re: /(?:[Đđ]ường\s*phân\s*giác|[Tt]ia\s+phân\s*giác|[Pp]hân\s*giác)(?:\s+trong)?\s+((?:[A-Z]{2}\s*,\s*)+[A-Z]{2})(?![A-Z])/gu,
+  },
+];
+
 // Prefilter: bất kỳ từ khoá cevian nào trên toàn đề (hoa đầu câu → [Đđ]/[Tt]/[Pp]).
 // EN (issue #46 group B): runRules prefilter theo `patterns` (BỎ QUA field
 // `languages`) → đề EN thuần cần EN prefilter thì match() mới chạy. Đây là cờ
@@ -166,7 +178,28 @@ export const cevianRule: LanguageRule = {
     const candidates: Cevian[] = [];
     const seen = new Set<string>(); // "apex|foot|type"
 
+    // Helper: thêm 1 cevian candidate sau khi validate apex/foot.
+    const addCandidate = (clauseId: number, type: CevianType, apex: string, foot: string) => {
+      if (!tri.includes(apex)) return;
+      if (tri.includes(foot)) return;
+      const opp = opposite(tri, apex);
+      if (!opp) return;
+      const key = `${apex}|${foot}|${type}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      candidates.push({ clauseId, type, apex, foot, opp });
+    };
+
     for (const c of ctx.clauses) {
+      // Distributive list "đường cao AD, BE, CF" → tách từng cặp.
+      for (const cl of CEVIAN_LISTS) {
+        cl.re.lastIndex = 0;
+        for (const m of c.text.matchAll(cl.re)) {
+          for (const tok of m[1].split(',').map((s) => s.trim())) {
+            if (/^[A-Z]{2}$/u.test(tok)) addCandidate(c.id, cl.type, tok[0], tok[1]);
+          }
+        }
+      }
       for (const cp of CEVIAN_PATTERNS) {
         for (const re of cp.patterns) {
           re.lastIndex = 0;

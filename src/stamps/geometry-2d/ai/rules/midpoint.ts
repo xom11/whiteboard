@@ -28,8 +28,11 @@ const NAME_AFTER_G = new RegExp(
 // zip 1-1: M=mid(AB), N=mid(AC), P=mid(BC). group1 = blob tên (≥2, phẩy),
 // group2 = blob cặp đỉnh (≥2, phẩy). Số tên PHẢI bằng số cặp (else bỏ qua,
 // escalate — không đoán lệch). SIDE_PREFIX cho "(các) cạnh/đoạn" trước blob cặp.
+// "lần lượt"/"theo thứ tự" OPTIONAL: cấu trúc song song "D, E, F là trung điểm
+// của NP, PM, MN" cũng là zip (≥2 tên liệt kê phẩy NGAY trước "(là) trung điểm"
+// → an toàn; dạng đơn "M là trung điểm BC" không có blob tên ≥2 nên không dính).
 const DISTRIB = new RegExp(
-  `((?:[A-Z](?:['′]?)\\s*,\\s*)+[A-Z](?:['′]?))\\s+lần\\s*lượt\\s+(?:là\\s+)?(?:điểm\\s+)?trung\\s*điểm\\s+(?:của\\s+)?(?:các\\s+)?${SIDE_PREFIX}((?:[A-Z][A-Z]\\s*,\\s*)*(?:[A-Z][A-Z]\\s*,\\s*)?[A-Z][A-Z](?:\\s*và\\s*[A-Z][A-Z])?)`,
+  `((?:[A-Z](?:['′]?)\\s*,\\s*)+[A-Z](?:['′]?))\\s+(?:lần\\s*lượt\\s+|theo\\s+thứ\\s+tự\\s+)?(?:là\\s+)?(?:điểm\\s+)?trung\\s*điểm\\s+(?:của\\s+)?(?:các\\s+)?${SIDE_PREFIX}((?:[A-Z][A-Z]\\s*,\\s*)*(?:[A-Z][A-Z]\\s*,\\s*)?[A-Z][A-Z](?:\\s*và\\s*[A-Z][A-Z])?)`,
   'u',
 );
 

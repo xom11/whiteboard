@@ -55,6 +55,14 @@ describe('dataset coverage batch 2026-06-11 (end-to-end)', () => {
       'd80:14 arbelos: 3 nửa đường tròn (O,I,K) + perp tại C cắt (O) + EA∩(I), EB∩(K)',
       'Cho điểm C thuộc đoạn thẳng AB sao cho AC = 10 cm, CB = 40 cm. Vẽ về một phía của AB các nửa đường tròn có đường kính theo thứ tự là AB, AC, CB và có tâm theo thứ tự là O, I, K. Đường vuông góc với AB tại C cắt nửa đường tròn (O) tại E. Gọi M, N theo thứ tự là giao điểm của EA, EB với các nửa đường tròn (I), (K).',
     ],
+    [
+      't02:VD13 đường cao AD, BE, CF (distributive) + d // EF',
+      'Cho tam giác ABC không cân với các đường cao AD, BE, CF. Đường thẳng d đi qua D song song với EF, cắt các đường thẳng AB, AC tại M, N, các đường thẳng EF, BC cắt nhau tại P.',
+    ],
+    [
+      't02:BT23 incircle D,E,F + trung điểm NP, PM, MN (distributive zip không "lần lượt")',
+      'Cho đường tròn (I) nội tiếp tam giác ABC không cân, tiếp xúc các cạnh BC, CA, AB tại M, N, P. Gọi D, E, F là trung điểm của NP, PM, MN.',
+    ],
   ];
 
   it.each(OK_CASES)('dựng được: %s', (_label, problem) => {
