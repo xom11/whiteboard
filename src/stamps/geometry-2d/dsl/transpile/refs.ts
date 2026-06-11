@@ -77,7 +77,11 @@ export function validateRefs(dsl: DslInputT, symbols: Map<string, Symbol>): Refs
     const specs: readonly RefSpec[] =
       typeof raw === 'function' ? raw(entity as never) : raw;
     for (const spec of specs) {
-      const val = (entity as Record<string, unknown>)[spec.field];
+      // field hỗ trợ dotted path ('distance.circle') cho ref nested trong
+      // object con (vd pointAtDistance.distance.*).
+      const val = spec.field
+        .split('.')
+        .reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], entity);
       const names: string[] = spec.many
         ? ((val as string[]) ?? [])
         : val == null

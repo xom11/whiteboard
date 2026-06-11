@@ -2,7 +2,7 @@
 import { z } from 'zod';
 import { NameZ } from '../../names';
 import type { DslPointT } from '../../schema';
-import { defineModule } from '../_types';
+import { defineModule, type RefSpec } from '../_types';
 import { emitPointObject } from '../_shared';
 
 type Input = Extract<DslPointT, { kind: 'pointAtDistance' }>;
@@ -45,12 +45,25 @@ export const pointAtDistanceModule = defineModule<'pointAtDistance', Input>({
       : d.kind === 'segmentLength' ? [d.p1, d.p2] : [];
     return [e.from, e.through, ...extra];
   },
-  // TODO(Mức 1 defer): distance.{circle,p1,p2} là nested trong `distance` — refSpec
-  // phẳng đọc top-level không với tới, validate riêng nếu cần. Hiện validate from/through.
-  refSpecs: [
-    { field: 'from', role: 'point' },
-    { field: 'through', role: 'point' },
-  ],
+  // refSpecs động: distance.{circle,p1,p2} nested validate qua dotted path
+  // ('distance.circle' — runSpecs ở transpile/refs.ts đọc bằng reduce theo '.').
+  refSpecs: (e) => {
+    const base: RefSpec[] = [
+      { field: 'from', role: 'point' },
+      { field: 'through', role: 'point' },
+    ];
+    if (e.distance.kind === 'circleRadius') {
+      return [...base, { field: 'distance.circle', role: 'circle' }];
+    }
+    if (e.distance.kind === 'segmentLength') {
+      return [
+        ...base,
+        { field: 'distance.p1', role: 'point' },
+        { field: 'distance.p2', role: 'point' },
+      ];
+    }
+    return base;
+  },
   emit: (e, ctx) => {
     const d = e.distance;
     const distance = d.kind === 'circleRadius'

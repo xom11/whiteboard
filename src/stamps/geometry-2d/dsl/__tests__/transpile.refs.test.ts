@@ -79,6 +79,59 @@ describe('validateRefs', () => {
     expect(check(dsl).errors.some((e) => e.code === 'KIND_MISMATCH')).toBe(true);
   });
 
+  // refSpec dotted-path: ref NESTED trong object con (pointAtDistance.distance.*)
+  // trước đây không được validate (TODO ở kind module) → UNKNOWN_REF lọt xuống emit.
+  it('pointAtDistance distance.circle không tồn tại → UNKNOWN_REF', () => {
+    const dsl: DslInputT = {
+      version: 1,
+      points: [
+        { name: 'A', kind: 'free', x: 0, y: 0 },
+        { name: 'B', kind: 'free', x: 1, y: 0 },
+        {
+          name: 'C', kind: 'pointAtDistance', from: 'A', through: 'B',
+          distance: { kind: 'circleRadius', circle: 'nope' },
+        },
+      ],
+      shapes: [],
+    };
+    const r = check(dsl);
+    expect(
+      r.errors.some((e) => e.code === 'UNKNOWN_REF' && e.path?.includes('distance.circle')),
+    ).toBe(true);
+  });
+
+  it('pointAtDistance distance.p1 trỏ segment → KIND_MISMATCH', () => {
+    const dsl: DslInputT = {
+      version: 1,
+      points: [
+        { name: 'A', kind: 'free', x: 0, y: 0 },
+        { name: 'B', kind: 'free', x: 1, y: 0 },
+        {
+          name: 'C', kind: 'pointAtDistance', from: 'A', through: 'B',
+          distance: { kind: 'segmentLength', p1: 'AB', p2: 'B' },
+        },
+      ],
+      shapes: [{ name: 'AB', kind: 'segment', p1: 'A', p2: 'B' }],
+    };
+    expect(check(dsl).errors.some((e) => e.code === 'KIND_MISMATCH')).toBe(true);
+  });
+
+  it('pointAtDistance distance hợp lệ → no errors', () => {
+    const dsl: DslInputT = {
+      version: 1,
+      points: [
+        { name: 'A', kind: 'free', x: 0, y: 0 },
+        { name: 'B', kind: 'free', x: 1, y: 0 },
+        {
+          name: 'C', kind: 'pointAtDistance', from: 'A', through: 'B',
+          distance: { kind: 'circleRadius', circle: 'k' },
+        },
+      ],
+      shapes: [{ name: 'k', kind: 'circleCR', center: 'A', radius: 2 }],
+    };
+    expect(check(dsl).errors).toEqual([]);
+  });
+
   it('intersection.ref1 must be line-like or circle-like', () => {
     const dsl: DslInputT = {
       version: 1,
