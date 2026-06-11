@@ -36,6 +36,33 @@ describe('incircle tangency rule', () => {
     ]);
   });
 
+  it('tên đường tròn ĐỨNG SAU "nội tiếp": "đường tròn nội tiếp (I) tiếp xúc AB, BC, CA tại D, E, F"', () => {
+    const all = intents(
+      'cho tam giác ABC, đường tròn nội tiếp (I) tiếp xúc AB, BC, CA tại D, E, F',
+    );
+    expect(all).toContainEqual(
+      expect.objectContaining({ op: 'draw-circle', name: 'I', spec: 'inscribedIn', triangle: ['A', 'B', 'C'] }),
+    );
+    const tangencies = all.filter((i) => i.op === 'add-point' && i.constraint?.kind === 'tangencyPoint');
+    expect(tangencies).toEqual([
+      { op: 'add-point', name: 'D', constraint: { kind: 'tangencyPoint', circle: 'I', onLine: 'AB' } },
+      { op: 'add-point', name: 'E', constraint: { kind: 'tangencyPoint', circle: 'I', onLine: 'BC' } },
+      { op: 'add-point', name: 'F', constraint: { kind: 'tangencyPoint', circle: 'I', onLine: 'CA' } },
+    ]);
+  });
+
+  it('tên đường tròn chữ TRẦN sau "nội tiếp": "đường tròn nội tiếp I tiếp xúc ..."', () => {
+    const all = intents(
+      'cho tam giác ABC, đường tròn nội tiếp I tiếp xúc AB, BC, CA tại D, E, F',
+    );
+    const tangencies = all.filter((i) => i.op === 'add-point' && i.constraint?.kind === 'tangencyPoint');
+    expect(tangencies.map((i) => [i.name, i.constraint.circle, i.constraint.onLine])).toEqual([
+      ['D', 'I', 'AB'],
+      ['E', 'I', 'BC'],
+      ['F', 'I', 'CA'],
+    ]);
+  });
+
   it('không vỡ khi OCR/người dùng xuống dòng giữa "các" và "cạnh"', () => {
     const all = intents(
       'Cho tam giác ABC. Đường tròn (I) nội tiếp tam giác ABC tiếp xúc với các\ncạnh BC, CA, AB tại các điểm D, E, G.',

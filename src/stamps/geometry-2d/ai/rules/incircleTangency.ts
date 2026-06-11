@@ -49,10 +49,20 @@ function logicalChunks(problem: string, clauses: readonly Clause[]): Array<{ tex
     }));
 }
 
+// "đường tròn nội tiếp (I)" / "đường tròn nội tiếp I" — tên tâm ĐỨNG SAU "nội
+// tiếp" (tam giác đứng TRƯỚC "đường tròn": "tam giác ABC, đường tròn nội tiếp
+// (I) tiếp xúc …"). Phân biệt với INCIRCLE_IN_CLAUSE (tên giữa "đường tròn" và
+// "nội tiếp" + "tam giác" theo sau). Bare ([A-Z]) neo (?![A-Za-z]) để chỉ nhận 1
+// chữ tâm, KHÔNG nuốt "ABC" (3 đỉnh viết liền).
+// KHÔNG cờ 'i' ([A-Z] dưới 'i' nuốt chữ thường); [Đđ] để "Đường" đầu câu vẫn khớp.
+const INCIRCLE_NAME_AFTER = /[Đđ]ường\s*tròn\s+nội\s*tiếp\s+(?:\(\s*([A-Z])\s*\)|([A-Z])(?![A-Za-z]))/u;
+
 function parseIncircleName(text: string): string | undefined {
   const m = INCIRCLE_IN_CLAUSE.exec(text);
-  if (!m) return undefined;
-  return m[1] ?? m[2] ?? 'O';
+  if (m) return m[1] ?? m[2] ?? 'O';
+  const m2 = INCIRCLE_NAME_AFTER.exec(text);
+  if (m2) return m2[1] ?? m2[2] ?? 'O';
+  return undefined;
 }
 
 // "Đường tròn (X) (…)? tiếp xúc …" — tên đường tròn ĐỨNG TRƯỚC "tiếp xúc" trong

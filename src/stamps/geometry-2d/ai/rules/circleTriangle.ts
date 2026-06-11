@@ -83,14 +83,48 @@ const TRI_CIRCUMSCRIBES_CIRCLE = new RegExp(
 // Paren cho phép hậu tố bán kính "(O; R)" / "(O; 3)" (đề olympiad rất hay viết
 // "tam giác ABC nội tiếp (O; R)" — KHÔNG chữ "đường tròn"). Suffix [;,][^()]*
 // optional. circleRadius bỏ qua "(O;R)" khi có "nội/ngoại tiếp" nên không double.
+// Khoảng đệm giữa "tam giác XYZ" và "nội/ngoại tiếp (X)" KHÔNG được vượt qua
+// "đường tròn": nếu có "đường tròn" chêm vào thì đó là "(tam giác …) đường tròn
+// nội/ngoại tiếp (X)" — SUBJECT là ĐƯỜNG TRÒN (in/circumcircle, ngữ nghĩa NGƯỢC),
+// KHÔNG phải "tam giác nội/ngoại tiếp (X)". Tempered token chặn over-match đó.
+// (vd "tam giác ABC, đường tròn nội tiếp (I)" → KHÔNG được hiểu là tam giác ABC
+//  nội tiếp (I) = circumcircle; đây là incircle (I), incircleTangency lo.)
+const GAP_NO_CIRCLE = `(?:(?!${CIRCLE_KW})[^.]){0,40}?`;
 const TRI_INSCRIBED_IN_PAREN = new RegExp(
-  'tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?nội\\s*tiếp\\s+(?:trong\\s+)?\\(\\s*([A-Z])(?:\\s*[;,][^()]*)?\\s*\\)',
+  'tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])' + GAP_NO_CIRCLE + 'nội\\s*tiếp\\s+(?:trong\\s+)?\\(\\s*([A-Z])(?:\\s*[;,][^()]*)?\\s*\\)',
   'giu',
 );
 const TRI_CIRCUMSCRIBES_PAREN = new RegExp(
-  'tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,40}?ngoại\\s*tiếp\\s+\\(\\s*([A-Z])(?:\\s*[;,][^()]*)?\\s*\\)',
+  'tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])' + GAP_NO_CIRCLE + 'ngoại\\s*tiếp\\s+\\(\\s*([A-Z])(?:\\s*[;,][^()]*)?\\s*\\)',
   'giu',
 );
+
+// Standalone circle-SUBJECT: "đường tròn nội/ngoại tiếp <tâm>" — tâm (paren /
+// "tâm X" / chữ trần) ĐỨNG NGAY SAU "nội/ngoại tiếp" và KHÔNG kèm "tam giác".
+// Bind tam giác DUY NHẤT của đề (giống centers.ts). Hoàn tất ngữ nghĩa: "đường
+// tròn nội tiếp (I)" = INCIRCLE (inscribedIn), "đường tròn ngoại tiếp (O)" =
+// circumcircle (through3) — đối xứng với "tam giác ABC nội/ngoại tiếp (X)".
+// Tâm BẮT BUỘC (NAMED_AFTER) để không over-match "đường tròn nội tiếp" trần.
+// "tâm" (â) ≠ "tam" (a) nên "đường tròn nội tiếp tam giác ABC" KHÔNG khớp (đỉnh
+// không cấp tâm) → INCIRCLE_TRI lo.
+// KHÔNG cờ 'i': dưới 'i', `[A-Z]` khớp CẢ chữ thường (vd nuốt "t" của "tứ giác")
+// → mis-render. CIRCLE_KW đã mã hoá [Đđ] nên "Đường" đầu câu vẫn khớp; "nội/ngoại
+// tiếp" luôn viết thường (đứng sau "đường tròn").
+const NAMED_AFTER = '(?:\\(\\s*([A-Z])\\s*\\)|tâm\\s+([A-Z])|([A-Z])(?![A-Za-z]))';
+const CIRCLE_INCIRCLE_NAMED_NOTRI = new RegExp(CIRCLE_KW + '\\s*nội\\s*tiếp\\s*' + NAMED_AFTER, 'gu');
+const CIRCLE_CIRCUM_NAMED_NOTRI = new RegExp(CIRCLE_KW + '\\s*ngoại\\s*tiếp\\s*' + NAMED_AFTER, 'gu');
+
+// Tam giác DUY NHẤT trong đề (dedup theo bộ đỉnh). Nhiều tam giác khác nhau →
+// undefined (nhập nhằng → không bind standalone, escalate).
+const TRI_SCAN_G = /tam\s*giác\s+(?:(?:nhọn|cân|đều|vuông|tù)\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])/giu;
+function uniqueProblemTriangle(problem: string): [string, string, string] | undefined {
+  const map = new Map<string, [string, string, string]>();
+  TRI_SCAN_G.lastIndex = 0;
+  for (const m of problem.matchAll(TRI_SCAN_G)) {
+    map.set(`${m[1]}${m[2]}${m[3]}`, [m[1], m[2], m[3]]);
+  }
+  return map.size === 1 ? [...map.values()][0] : undefined;
+}
 
 // --- Ký hiệu ngoặc "(O; R)" quét TOÀN ĐỀ (segmenter cắt ';') ------------------
 // "(đường tròn)? (O; R) ngoại/nội tiếp tam giác XYZ" — circle ĐỨNG TRƯỚC. R là
@@ -401,6 +435,33 @@ export const circleTriangleRule: LanguageRule = {
         clauseIds: [c.id],
         intents: hits.map((h) => intentFor(h.spec, h.tri, h.center)),
       });
+    }
+
+    // 1.6) Standalone circle-SUBJECT: "đường tròn nội/ngoại tiếp <tâm>" (tâm ngay
+    //      sau, KHÔNG kèm "tam giác") → bind tam giác DUY NHẤT của đề. Cho phép
+    //      "Cho tam giác ABC có đường tròn nội tiếp (I)" vẽ INCIRCLE (không phải
+    //      circumcircle). Dedup theo emitted (spec:tri) — KHÔNG đụng các nhánh trên.
+    const uniqTri = uniqueProblemTriangle(ctx.problem);
+    if (uniqTri) {
+      for (const c of ctx.clauses) {
+        for (const [re, spec] of [
+          [CIRCLE_INCIRCLE_NAMED_NOTRI, 'inscribedIn'],
+          [CIRCLE_CIRCUM_NAMED_NOTRI, 'through3'],
+        ] as const) {
+          re.lastIndex = 0;
+          const m = re.exec(c.text);
+          if (!m) continue;
+          const key = `${spec}:${uniqTri.join('')}`;
+          if (emitted.has(key)) continue;
+          emitted.add(key);
+          const center = m[1] ?? m[2] ?? m[3] ?? '';
+          out.push({
+            ruleId: 'circleTriangle',
+            clauseIds: [c.id],
+            intents: [intentFor(spec, uniqTri, center)],
+          });
+        }
+      }
     }
 
     // 1.5) Toàn đề: PAREN dạng tắt "tam giác XYZ nội/ngoại tiếp (O; R)" (KHÔNG chữ

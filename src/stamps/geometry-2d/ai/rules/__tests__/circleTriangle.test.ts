@@ -241,6 +241,70 @@ describe('circleTriangleRule', () => {
     expect(all[0].points).toEqual(['A', 'B', 'C']);
   });
 
+  // === BUG: "đường tròn nội/ngoại tiếp (X)" với "đường tròn" CHÊM giữa tam giác
+  //     và "nội/ngoại tiếp" — KHÔNG được lật thành "tam giác nội/ngoại tiếp (X)".
+  //     "đường tròn nội tiếp" = incircle (incircleTangency lo); "đường tròn ngoại
+  //     tiếp" = circumcircle. Dạng tắt PAREN chỉ áp dụng khi KHÔNG có "đường tròn"
+  //     trong khoảng đệm (vd "tam giác ABC nội tiếp (O)").
+  describe('BUG: "đường tròn" chêm giữa tam giác và nội/ngoại tiếp (X)', () => {
+    it('"tam giác ABC, đường tròn nội tiếp (I)" → KHÔNG emit through3 (mis-render circumcircle)', () => {
+      const m = run('cho tam giác ABC, đường tròn nội tiếp (I) tiếp xúc AB, BC, CA tại D, E, F');
+      const all = m.flatMap((x) => x.intents) as any[];
+      expect(all.some((i) => i.spec === 'through3')).toBe(false);
+    });
+
+    it('"tam giác ABC, đường tròn ngoại tiếp (O)" → KHÔNG emit inscribedIn (mis-render incircle)', () => {
+      const m = run('cho tam giác ABC, đường tròn ngoại tiếp (O)');
+      const all = m.flatMap((x) => x.intents) as any[];
+      expect(all.some((i) => i.spec === 'inscribedIn')).toBe(false);
+    });
+
+    it('REGRESSION: "tam giác ABC nội tiếp (O)" (KHÔNG "đường tròn") VẪN through3', () => {
+      const m = run('Cho tam giác ABC nội tiếp (O)');
+      const all = m.flatMap((x) => x.intents) as any[];
+      expect(all.length).toBe(1);
+      expect(all[0].spec).toBe('through3');
+      expect(all[0].name).toBe('O');
+    });
+
+    it('REGRESSION: "tam giác ABC ngoại tiếp (I)" (KHÔNG "đường tròn") VẪN inscribedIn', () => {
+      const m = run('Cho tam giác ABC ngoại tiếp (I)');
+      const all = m.flatMap((x) => x.intents) as any[];
+      expect(all.length).toBe(1);
+      expect(all[0].spec).toBe('inscribedIn');
+      expect(all[0].name).toBe('I');
+    });
+
+    // Standalone (circle SUBJECT, tên SAU "nội/ngoại tiếp", KHÔNG kèm "tam giác")
+    // → bind tam giác DUY NHẤT của đề. Hoàn tất complaint: "đường tròn nội tiếp
+    // (I)" phải vẽ INCIRCLE, không phải circumcircle.
+    it('standalone "Cho tam giác ABC có đường tròn nội tiếp (I)" → inscribedIn I [A,B,C]', () => {
+      const m = run('Cho tam giác ABC có đường tròn nội tiếp (I)');
+      const all = m.flatMap((x) => x.intents) as any[];
+      const inc = all.find((i) => i.spec === 'inscribedIn');
+      expect(inc).toBeDefined();
+      expect(inc.name).toBe('I');
+      expect(inc.triangle).toEqual(['A', 'B', 'C']);
+      expect(all.some((i) => i.spec === 'through3')).toBe(false);
+    });
+
+    it('standalone "Cho tam giác ABC, đường tròn ngoại tiếp (O)" → through3 O [A,B,C]', () => {
+      const m = run('Cho tam giác ABC, đường tròn ngoại tiếp (O)');
+      const all = m.flatMap((x) => x.intents) as any[];
+      const cir = all.find((i) => i.spec === 'through3');
+      expect(cir).toBeDefined();
+      expect(cir.name).toBe('O');
+      expect(cir.points).toEqual(['A', 'B', 'C']);
+      expect(all.some((i) => i.spec === 'inscribedIn')).toBe(false);
+    });
+
+    it('GUARD: nhiều tam giác → standalone "đường tròn nội tiếp (I)" KHÔNG bind (escalate)', () => {
+      const m = run('Cho tam giác ABC và tam giác DEF, đường tròn nội tiếp (I)');
+      const all = m.flatMap((x) => x.intents) as any[];
+      expect(all.some((i) => i.spec === 'inscribedIn')).toBe(false);
+    });
+  });
+
   // === EN (issue #46 group B) ================================================
   // Semantics đối xứng VN. through3 (circumcircle) / inscribedIn (incircle) phân
   // biệt theo SUBJECT (triangle vs circle) + verb (inscribed in / circumscribes
