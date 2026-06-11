@@ -278,4 +278,27 @@ describe('triangleRule', () => {
       expect(ints.find((i) => i.name === 'C').constraint.kind).toBe('free');
     });
   });
+
+  describe('nhiều tính từ trước nhãn (nhọn, không cân …)', () => {
+    const labelsOf = (p: string) => {
+      const i = run(p).flatMap((m) => m.intents).find((x: any) => x.op === 'draw-shape') as any;
+      return i?.labels;
+    };
+    it('"tam giác nhọn, không cân ABC" → dựng ABC (variant any)', () => {
+      const i = run('Cho tam giác nhọn, không cân ABC nội tiếp đường tròn (O)').flatMap((m) => m.intents)[0] as any;
+      expect(i.labels).toEqual(['A', 'B', 'C']);
+      expect(i.variant).toBe('any');
+    });
+    it('"tam giác nhọn không cân ABC" (không dấu phẩy) → dựng ABC', () => {
+      expect(labelsOf('Cho tam giác nhọn không cân ABC')).toEqual(['A', 'B', 'C']);
+    });
+    it('"tam giác không cân ABC" → dựng ABC', () => {
+      expect(labelsOf('Cho tam giác không cân ABC nội tiếp (O)')).toEqual(['A', 'B', 'C']);
+    });
+    it('GIỮ NGUYÊN: "tam giác đều DEF" vẫn equilateral', () => {
+      const i = run('Cho tam giác đều DEF').flatMap((m) => m.intents)[0] as any;
+      expect(i.labels).toEqual(['D', 'E', 'F']);
+      expect(i.variant).toBe('equilateral');
+    });
+  });
 });

@@ -13,7 +13,13 @@ import { drawShape, addPoint, drawCircle, markShape } from './_shared';
 // "cân" leadMod (không có "tại X") không đủ thông tin chọn đỉnh → để window xử lý.
 // leadMod gồm cả "nhọn"/"tù" (acute/obtuse) — KHÔNG ngụ ý variant (→ 'any') nhưng
 // PHẢI nuốt để bộ 3 đỉnh khớp ("tam giác nhọn ABC"). variantForVi bỏ qua chúng.
-const TRI_G = /tam giác\s+(?:(đều|vuông|cân|nhọn|tù)\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
+// leadMod (group 1) = tính từ variant ĐẦU TIÊN (đều/vuông/cân/nhọn/tù). Sau đó
+// một CHUỖI tính từ phụ (đứng trước bộ 3 đỉnh) được NUỐT không-bắt: "không cân/đều/
+// vuông" (phủ định → 'any') + lặp lại các tính từ trên, ngăn bằng dấu phẩy/khoảng
+// trắng. Phủ "tam giác nhọn, không cân ABC" / "tam giác không cân ABC" (olympiad).
+// (?!\p{L}) thay \b quanh ký tự Việt.
+const TRI_G =
+  /tam giác\s+(?:(đều|vuông|cân|nhọn|tù)(?!\p{L})\s*,?\s*)?(?:(?:không\s+(?:cân|đều|vuông)|đều|vuông|cân|nhọn|tù)(?!\p{L})\s*,?\s*)*([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
 // Tên ĐỨNG TRƯỚC: "ABC là tam giác (vuông|cân|đều)? …" — variant suy từ window
 // SAU "tam giác" (vd "ABC là tam giác vuông tại A" → window "vuông tại A").
 const TRI_BEFORE_G = /(?<![A-Z])([A-Z])([A-Z])([A-Z])(?![A-Z])\s+là\s+tam\s*giác/gu;
