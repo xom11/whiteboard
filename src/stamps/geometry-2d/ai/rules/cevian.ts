@@ -114,14 +114,24 @@ const CEVIAN_PATTERNS: ReadonlyArray<{ type: CevianType; patterns: readonly RegE
 // Distributive LIST: "(các)? đường cao AD, BE, CF" / "trung tuyến AM, BN" /
 // "phân giác AD, BE" — 1 keyword + ≥2 cặp đỉnh phẩy. Single-pattern chỉ bắt cặp
 // ĐẦU (cặp sau thiếu keyword). Capture blob → tách từng cặp (apex+foot).
+// Cặp đỉnh có thể có PRIME ở chân ("BB'", "CC'") — đề olympiad đặt chân đường cao
+// B', C'. apex = chữ đầu, foot = chữ + prime optional.
+const PAIR_LIST = String.raw`(?:[A-Z][A-Z](?:['′])?\s*,\s*)+[A-Z][A-Z](?:['′])?`;
 const CEVIAN_LISTS: ReadonlyArray<{ type: CevianType; re: RegExp }> = [
-  { type: 'altitude', re: /[Đđ]ường\s*cao\s+((?:[A-Z]{2}\s*,\s*)+[A-Z]{2})(?![A-Z])/gu },
-  { type: 'median', re: /[Tt]rung\s*tuyến\s+((?:[A-Z]{2}\s*,\s*)+[A-Z]{2})(?![A-Z])/gu },
+  { type: 'altitude', re: new RegExp(String.raw`[Đđ]ường\s*cao\s+(${PAIR_LIST})(?![A-Z])`, 'gu') },
+  { type: 'median', re: new RegExp(String.raw`[Tt]rung\s*tuyến\s+(${PAIR_LIST})(?![A-Z])`, 'gu') },
   {
     type: 'bisector',
-    re: /(?:[Đđ]ường\s*phân\s*giác|[Tt]ia\s+phân\s*giác|[Pp]hân\s*giác)(?:\s+trong)?\s+((?:[A-Z]{2}\s*,\s*)+[A-Z]{2})(?![A-Z])/gu,
+    re: new RegExp(String.raw`(?:[Đđ]ường\s*phân\s*giác|[Tt]ia\s+phân\s*giác|[Pp]hân\s*giác)(?:\s+trong)?\s+(${PAIR_LIST})(?![A-Z])`, 'gu'),
   },
 ];
+
+// Tách 1 token cặp "BB'" → [apex "B", foot "B'" (prime normalize ′→')].
+function splitCevianPair(tok: string): [string, string] | null {
+  const m = /^([A-Z])([A-Z])(['′]?)$/u.exec(tok.trim());
+  if (!m) return null;
+  return [m[1], m[3] ? `${m[2]}'` : m[2]];
+}
 
 // Prefilter: bất kỳ từ khoá cevian nào trên toàn đề (hoa đầu câu → [Đđ]/[Tt]/[Pp]).
 // EN (issue #46 group B): runRules prefilter theo `patterns` (BỎ QUA field
@@ -196,7 +206,8 @@ export const cevianRule: LanguageRule = {
         cl.re.lastIndex = 0;
         for (const m of c.text.matchAll(cl.re)) {
           for (const tok of m[1].split(',').map((s) => s.trim())) {
-            if (/^[A-Z]{2}$/u.test(tok)) addCandidate(c.id, cl.type, tok[0], tok[1]);
+            const pair = splitCevianPair(tok);
+            if (pair) addCandidate(c.id, cl.type, pair[0], pair[1]);
           }
         }
       }

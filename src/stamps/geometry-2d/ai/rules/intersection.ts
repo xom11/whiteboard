@@ -102,6 +102,12 @@ const GIAO_PRIMED = new RegExp(
   `giao\\s*điểm\\s+(?:của\\s+)?(?:hai\\s+)?(?:tia\\s+|đường\\s*thẳng\\s+|đoạn\\s+|cạnh\\s+)?${REFP}\\s*(?:,|và|với)\\s*${REFP}`,
   'gu',
 );
+// "REF1, REF2 cắt nhau tại Z" với đầu mút CÓ PRIME ("EF, B'C' cắt nhau tại K").
+// Tên SAU. group1=ref1, 2=ref2, 3=tên.
+const CAT_NHAU_PRIMED = new RegExp(
+  `${REFP}\\s*(?:,|và|với)\\s*${REFP}\\s+(?:cắt|giao)\\s+nhau\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])`,
+  'gu',
+);
 function splitPrimedPair(tok: string): [string, string] {
   const m = /^([A-Z](?:['′])?)([A-Z](?:['′])?)$/u.exec(tok.replace(/\s+/g, ''));
   if (!m) return ['', ''];
@@ -208,6 +214,24 @@ export const intersectionRule: LanguageRule = {
         const nm = NAME_BEFORE.exec(c.text.slice(0, m.index));
         if (!nm) continue;
         const name = nm[1];
+        if (seen.has(name)) continue;
+        const [a, b] = splitPrimedPair(m[1]);
+        const [d, e] = splitPrimedPair(m[2]);
+        if (!a || !b || !d || !e) continue;
+        const ends = [a, b, d, e];
+        if (new Set(ends).size !== 4 || ends.includes(name)) continue;
+        seen.add(name);
+        out.push({
+          ruleId: 'intersection',
+          clauseIds: [c.id],
+          intents: [addPoint(name, { kind: 'intersection', of: [a + b, d + e] })],
+        });
+      }
+
+      // J (fallback): primed "cắt nhau" — "EF, B'C' cắt nhau tại K". Tên SAU.
+      CAT_NHAU_PRIMED.lastIndex = 0;
+      for (const m of c.text.matchAll(CAT_NHAU_PRIMED)) {
+        const name = m[3];
         if (seen.has(name)) continue;
         const [a, b] = splitPrimedPair(m[1]);
         const [d, e] = splitPrimedPair(m[2]);
