@@ -51,7 +51,7 @@ export const angleBisectorCutsCircleLineRule: LanguageRule = {
       const f = m[7];
       const bis = `bis${p1}${vertex}${p2}`;
 
-      let circle = circleInline;
+      let circle: string | undefined = circleInline;
       if (!circle) {
         const cm = ANY_CIRCLE.exec(ctx.problem);
         circle = cm?.[1] ?? cm?.[2];

@@ -75,6 +75,49 @@ try { getKind(FAKE_DERIVED_PT); } catch {
   });
 }
 
+// Mock circumcircle/incircle: elType 'circumcircle' (≠ 'circle') nhưng
+// elementClass=3 (OBJECT_CLASS_CIRCLE) + center/Radius. addHalo phải nhận diện
+// qua elementClass, không chỉ elType === 'circle'.
+const FAKE_CIRCUMCIRCLE = 'highlight_circumcircle_kind';
+try { getKind(FAKE_CIRCUMCIRCLE); } catch {
+  registerKind({
+    type: FAKE_CIRCUMCIRCLE,
+    schemaVersion: 1,
+    migrate: {},
+    dependsOn: () => [],
+    describe: (o) => o.label,
+    render: () => ({
+      elType: 'circumcircle',
+      elementClass: 3,
+      center: { id: 'ctr' },
+      Radius: () => 5,
+      attrs: {},
+      getAttribute() { return undefined; },
+      setAttribute() { /* noop */ },
+    }),
+  });
+}
+
+// Mock regularpolygon (square/đa giác đều): elType 'regularpolygon' (≠ 'polygon')
+// — addHalo phải nhận diện polygon qua vertices, không chỉ elType === 'polygon'.
+const FAKE_REGPOLY = 'highlight_regularpolygon_kind';
+try { getKind(FAKE_REGPOLY); } catch {
+  registerKind({
+    type: FAKE_REGPOLY,
+    schemaVersion: 1,
+    migrate: {},
+    dependsOn: () => [],
+    describe: (o) => o.label,
+    render: () => ({
+      elType: 'regularpolygon',
+      vertices: [{ id: 'v0' }, { id: 'v1' }, { id: 'v2' }, { id: 'v3' }],
+      attrs: {},
+      getAttribute() { return undefined; },
+      setAttribute() { /* noop */ },
+    }),
+  });
+}
+
 function mockBoard() {
   const created: Array<{ kind: string; parents: unknown[]; attrs?: unknown; id: number }> = [];
   let counter = 0;
@@ -166,6 +209,36 @@ describe('JxgRenderer.highlight (halo overlay)', () => {
     // Dù elType là 'circumcenter' (không nằm trong danh sách cũ), vẫn tạo point halo.
     const ptHalos = board.created.filter((c) => c.kind === 'point');
     expect(ptHalos.length).toBe(1);
+
+    r.dispose();
+  });
+
+  it('creates a circle halo for circumcircle/incircle via elementClass (elType ≠ "circle")', () => {
+    const A: SceneObject = {
+      id: 'A', label: 'O_c', kind: FAKE_CIRCUMCIRCLE, visible: true, locked: false, attrs: {},
+    };
+    const store = createStore(makeState(A));
+    const board = mockBoard();
+    const r = new JxgRenderer(store, board);
+
+    r.highlight('A');
+    const circHalos = board.created.filter((c) => c.kind === 'circle');
+    expect(circHalos.length).toBe(1);
+
+    r.dispose();
+  });
+
+  it('creates a polygon halo for regularpolygon (square) via vertices (elType ≠ "polygon")', () => {
+    const A: SceneObject = {
+      id: 'A', label: 'sq', kind: FAKE_REGPOLY, visible: true, locked: false, attrs: {},
+    };
+    const store = createStore(makeState(A));
+    const board = mockBoard();
+    const r = new JxgRenderer(store, board);
+
+    r.highlight('A');
+    const polyHalos = board.created.filter((c) => c.kind === 'polygon');
+    expect(polyHalos.length).toBe(1);
 
     r.dispose();
   });

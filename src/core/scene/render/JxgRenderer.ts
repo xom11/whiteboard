@@ -447,15 +447,26 @@ export class JxgRenderer {
       layer: 4,
       needsRegularUpdate: true,
     };
-    // Point-like: JSXGraph đặt elType RIÊNG cho mỗi cách dựng điểm (circumcenter,
-    // otherintersection, perpendicularpoint, incenter, midpoint, glider...) nên
-    // KHÔNG liệt kê xuể — nhận diện qua elementClass=1 (OBJECT_CLASS_POINT, set
-    // cho MỌI subtype) như objKind (tools.tsx). Fallback elType cho test mock
-    // không set elementClass.
+    // Phân loại element bằng `elementClass` (JSXGraph constant: 1=POINT, 2=LINE,
+    // 3=CIRCLE) — set ĐÚNG cho MỌI cách dựng phái sinh (circumcenter,
+    // otherintersection, perpendicularpoint, circumcircle, incircle, perpendicular,
+    // parallel, tangent...). elType string KHÔNG đủ vì mỗi construction 1 tên riêng
+    // → trước đây O/M/N/D/E/F (điểm), O_c (circumcircle), square (regularpolygon)
+    // bị bỏ halo. Đồng bộ với objKind (tools.tsx). Polygon nhận qua `vertices`
+    // (elementClass polygon ≠ 1/2/3). Fallback elType cho test mock không set class.
     const elementClass = (el as { elementClass?: number }).elementClass;
+    const elType = el.elType;
     const isPointLike =
-      elementClass === 1 ||
-      el.elType === 'point' || el.elType === 'glider' || el.elType === 'intersection';
+      elementClass === 1 || elType === 'point' || elType === 'glider' || elType === 'intersection';
+    const isPolygonLike = Array.isArray(el.vertices) && el.vertices.length >= 3;
+    const isCircleLike =
+      elementClass === 3 || elType === 'circle' || elType === 'circumcircle' || elType === 'incircle';
+    const isSegment = elType === 'segment';
+    const isLineLike =
+      elementClass === 2 ||
+      elType === 'line' || elType === 'arrow' || elType === 'ray' || elType === 'vector' ||
+      elType === 'tangent' || elType === 'normal' || elType === 'parallel' ||
+      elType === 'perpendicular' || elType === 'bisector';
 
     const halos: unknown[] = [];
     try {
@@ -473,76 +484,48 @@ export class JxgRenderer {
           fillOpacity: 0.25,
         });
         halos.push(halo);
-      } else {
-        switch (el.elType) {
-        case 'segment': {
-          if (el.point1 && el.point2) {
-            const halo = board.create('segment', [el.point1, el.point2], {
-              ...haloBase,
-              strokeWidth: 9,
-              straightFirst: false,
-              straightLast: false,
-            });
-            halos.push(halo);
-          }
-          break;
-        }
-        case 'line':
-        case 'arrow':
-        case 'ray':
-        case 'vector':
-        case 'tangent':
-        case 'normal':
-        case 'parallel':
-        case 'perpendicular':
-        case 'bisector': {
-          if (el.point1 && el.point2) {
-            const halo = board.create('line', [el.point1, el.point2], {
-              ...haloBase,
-              strokeWidth: 9,
-            });
-            halos.push(halo);
-          }
-          break;
-        }
-        case 'circle': {
-          if (el.center && typeof el.Radius === 'function') {
-            const halo = board.create('circle', [el.center, () => el.Radius?.() ?? 0], {
-              ...haloBase,
-              strokeWidth: 9,
-              fillOpacity: 0,
-            });
-            halos.push(halo);
-          }
-          break;
-        }
-        case 'polygon': {
-          if (Array.isArray(el.vertices) && el.vertices.length >= 3) {
-            // JSXGraph polygon.vertices có thể append vertex đầu lặp lại ở
-            // cuối để đóng path — trim cho an toàn.
-            const last = el.vertices.length - 1;
-            const verts = el.vertices[last] === el.vertices[0]
-              ? el.vertices.slice(0, last)
-              : el.vertices.slice();
-            const halo = board.create('polygon', verts, {
-              ...haloBase,
-              fillOpacity: 0.2,
-              borders: {
-                strokeColor: SEL_STROKE,
-                strokeWidth: 7,
-                strokeOpacity: 0.55,
-                highlight: false,
-              },
-            });
-            halos.push(halo);
-          }
-          break;
-        }
-        default:
-          // Các kind khác (curve, arc, sector, angle, ...) — chưa hỗ trợ halo.
-          break;
-        }
+      } else if (isPolygonLike) {
+        // JSXGraph polygon.vertices có thể append vertex đầu lặp lại ở cuối để
+        // đóng path — trim cho an toàn. Bắt cả 'polygon' lẫn 'regularpolygon'.
+        const verts = el.vertices!;
+        const last = verts.length - 1;
+        const trimmed = verts[last] === verts[0] ? verts.slice(0, last) : verts.slice();
+        const halo = board.create('polygon', trimmed, {
+          ...haloBase,
+          fillOpacity: 0.2,
+          borders: {
+            strokeColor: SEL_STROKE,
+            strokeWidth: 7,
+            strokeOpacity: 0.55,
+            highlight: false,
+          },
+        });
+        halos.push(halo);
+      } else if (isCircleLike && el.center && typeof el.Radius === 'function') {
+        // Bắt cả 'circle', 'circumcircle', 'incircle' (elementClass 3).
+        const halo = board.create('circle', [el.center, () => el.Radius?.() ?? 0], {
+          ...haloBase,
+          strokeWidth: 9,
+          fillOpacity: 0,
+        });
+        halos.push(halo);
+      } else if (isSegment && el.point1 && el.point2) {
+        const halo = board.create('segment', [el.point1, el.point2], {
+          ...haloBase,
+          strokeWidth: 9,
+          straightFirst: false,
+          straightLast: false,
+        });
+        halos.push(halo);
+      } else if (isLineLike && el.point1 && el.point2) {
+        const halo = board.create('line', [el.point1, el.point2], {
+          ...haloBase,
+          strokeWidth: 9,
+        });
+        halos.push(halo);
       }
+      // Các kind khác (curve/functiongraph, arc, sector, angle, slopetriangle,
+      // text...) — chưa hỗ trợ halo; chỉ vẽ tay trong editor, AI pipeline không emit.
     } catch (err) {
       console.warn('[scene/render/2d] halo create fail:', err);
     }
