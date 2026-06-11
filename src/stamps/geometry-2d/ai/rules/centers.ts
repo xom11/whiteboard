@@ -48,6 +48,12 @@ const DISTRIB_CENTERS = new RegExp(
     '(?:\\s+(?:của\\s+)?tam\\s*giác\\s+([A-Z])([A-Z])([A-Z])(?![A-Z]))?',
   'u',
 );
+// Incenter ĐẶT TÊN tường minh qua cụm "tâm (đường tròn)? nội tiếp": "I là tâm
+// đường tròn nội tiếp" / "tâm đường tròn nội tiếp (tam giác XYZ)? là I". Dùng
+// khi clause CŨNG có "nội tiếp" theo nghĩa tam-giác-nội-tiếp-(O) (INSCRIBE_KW
+// thường khớp nhầm occurrence đầu) — Bài 84.
+const INCENTER_NAMED = /(?:([A-Z])\s+là\s+tâm\s*(?:đường\s*tròn\s*)?nội\s*tiếp|tâm\s*(?:đường\s*tròn\s*)?nội\s*tiếp(?:\s+tam\s*giác\s+[A-Z]{3})?\s+là\s+([A-Z])(?!\p{L}))/u;
+
 function centerTypeToKind(t: string): 'circumcenter' | 'incenter' | 'orthocenter' | 'centroid' {
   if (/ngoại/u.test(t)) return 'circumcenter';
   if (/nội/u.test(t)) return 'incenter';
@@ -261,9 +267,12 @@ export const centersRule: LanguageRule = {
       // tiên ngoại tiếp, né nhập nhằng "tam giác nội tiếp").
       if (INSCRIBE_KW.test(c.text)) {
         const allow = CIRCUM_KW.test(c.text) ? TAM_INSCRIBE.test(c.text) : true;
-        const name = resolveCenterName(c.text, INSCRIBE_KW);
+        // Ưu tiên tên qua cụm "tâm … nội tiếp … là I"/"I là tâm … nội tiếp"
+        // (tường minh, không nhầm với "tam giác nội tiếp (O)") — Bài 84.
+        const namedM = INCENTER_NAMED.exec(c.text);
+        const name = (namedM && (namedM[1] ?? namedM[2])) ?? resolveCenterName(c.text, INSCRIBE_KW);
         const of = ofFor(c.text, INSCRIBE_KW);
-        if (allow && name && of && name !== circumName) {
+        if ((allow || namedM) && name && of && name !== circumName) {
           intents.push(addPoint(name, { kind: 'incenter', of }));
         }
       }

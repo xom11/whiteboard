@@ -19,7 +19,7 @@ import { addPoint } from './_shared';
 // prefilter rộng vô hại.
 // "đường kính AB" là 1 ĐOẠN (đường kính của đường tròn) → cho phép "trên đường
 // kính AB lấy điểm C" (phang:14). Thêm vào prefix đoạn-loại.
-const PREFILTER = /(?:thuộc\s+(?:cạnh|đoạn|bán\s*kính|đường\s*kính|dây|[A-Z]{2})|[Tt]rên\s+(?:cạnh|đoạn|bán\s*kính|đường\s*kính|đường\s*thẳng|dây|[A-Z]{2})|nằm\s+giữa)/u;
+const PREFILTER = /(?:thuộc\s+(?:các\s+|hai\s+|ba\s+)?(?:cạnh|đoạn|bán\s*kính|đường\s*kính|dây|[A-Z]{2})|[Tt]rên\s+(?:các\s+|hai\s+|ba\s+)?(?:cạnh|đoạn|bán\s*kính|đường\s*kính|đường\s*thẳng|dây|[A-Z]{2})|(?:di\s*chuyển|di\s*động)\s+trên|nằm\s+giữa)/u;
 
 // "Trên đường thẳng d (lấy)? (một)? (điểm)? M" — đường ĐẶT TÊN chữ thường (d, d1).
 // resolveSegmentRef thấy shape "d" (tangentLineNamedAtPoint dựng) → glider trên d.
