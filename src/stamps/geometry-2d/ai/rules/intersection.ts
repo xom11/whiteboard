@@ -78,6 +78,13 @@ const CAT_TWO_ONE_RAY = new RegExp(
   `${REF}\\s*(?:,|và)\\s*${REF}\\s+(?:lần\\s*lượt\\s+|theo\\s+thứ\\s+tự\\s+)?cắt\\s+(?:đường\\s*thẳng\\s+|tia\\s+)?([A-Z][a-z]|[a-z])(?![\\p{L}\\d])\\s+(?:lần\\s*lượt\\s+|theo\\s+thứ\\s+tự\\s+)?tại\\s+([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])`,
   'gu',
 );
+// B-ray đơn: "tia AF cắt (tia)? (tiếp tuyến)? Bx … tại D" (vao10:18 — mô tả
+// "của nửa đường tròn (O)" chen giữa ray và "tại", gap bounded không vượt ,;.).
+//   groups: 1=ref1 2=shape 3=name.
+const CAT_ONE_RAY = new RegExp(
+  `${REF}\\s+cắt\\s+(?:tia\\s+)?(?:tiếp\\s*tuyến\\s+)?(?:đường\\s*thẳng\\s+)?([A-Z][a-z]|[a-z])(?![\\p{L}\\d])[^.;,]{0,40}?(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])`,
+  'gu',
+);
 
 // F2: "giao điểm của R1 (,|và) R2 với R3 (lần lượt|theo thứ tự)? là M và N" →
 //     M=R1∩R3, N=R2∩R3 (2 đường giao 1 đường chung, tên SAU, dạng "giao điểm
@@ -237,6 +244,11 @@ export const intersectionRule: LanguageRule = {
       for (const m of c.text.matchAll(CAT_TWO_ONE_RAY)) {
         emitShape(m[4], m[1], m[3]);
         emitShape(m[5], m[2], m[3]);
+      }
+      // B-ray đơn: "tia AF cắt tia tiếp tuyến Bx … tại D".
+      CAT_ONE_RAY.lastIndex = 0;
+      for (const m of c.text.matchAll(CAT_ONE_RAY)) {
+        emitShape(m[3], m[1], m[2]);
       }
       // F2: "giao điểm của R1 (,|và) R2 với R3 lần lượt là M và N".
       GIAO_TWO_ONE_LA.lastIndex = 0;

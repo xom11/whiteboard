@@ -333,6 +333,108 @@ describe('circleDiameter — bare paren "(I) đường kính AH", 2 đầu mút 
   });
 });
 
+describe('lineCircleIntersection — "nửa đường tròn (O)" + "cắt R1 và (O) lần lượt tại H và I" (18/28)', () => {
+  it('"K là giao điểm thứ hai của DC với NỬA đường tròn (O)" (18)', () => {
+    const all = intentsOf(
+      lineCircleIntersectionRule,
+      'Cho nửa đường tròn tâm O đường kính BC. K là giao điểm thứ hai của DC với nửa đường tròn (O).',
+    );
+    expect(all).toContainEqual(
+      expect.objectContaining({
+        op: 'add-point',
+        name: 'K',
+        constraint: expect.objectContaining({ kind: 'secondIntersection', line: 'DC', circle: 'O' }),
+      }),
+    );
+  });
+
+  it('"OM cắt AB và (O) lần lượt tại H và I" → H=OM∩AB, I=OM∩(O) branch (28)', () => {
+    const all = intentsOf(
+      lineCircleIntersectionRule,
+      'Cho điểm M nằm ngoài đường tròn tâm O. Vẽ cát tuyến MCD, OM cắt AB và (O) lần lượt tại H và I.',
+    );
+    expect(all).toContainEqual(
+      expect.objectContaining({
+        op: 'add-point',
+        name: 'H',
+        constraint: { kind: 'intersection', of: ['OM', 'AB'] },
+      }),
+    );
+    expect(all).toContainEqual(
+      expect.objectContaining({
+        op: 'add-point',
+        name: 'I',
+        constraint: { kind: 'intersection', of: ['OM', 'O'], branch: 0 },
+      }),
+    );
+  });
+});
+
+describe('lineCircleIntersection — PREFILTER + đường tròn trần (28/254)', () => {
+  it('PREFILTER cho "cắt AB và (O)" — chạy qua registry-style patterns', () => {
+    const P = 'Cho điểm M nằm ngoài đường tròn tâm O. Vẽ cát tuyến MCD, OM cắt AB và (O) lần lượt tại H và I.';
+    expect(lineCircleIntersectionRule.patterns.some((re) => re.test(P))).toBe(true);
+  });
+
+  it('"I là giao điểm thứ hai của đường thẳng CE với đường tròn" (trần) → resolve (O) toàn đề (254)', () => {
+    const all = intentsOf(
+      lineCircleIntersectionRule,
+      'Cho đường tròn (O) và điểm A nằm ngoài. Gọi E là trung điểm của dây MN, I là giao điểm thứ hai của đường thẳng CE với đường tròn.',
+    );
+    expect(all).toContainEqual(
+      expect.objectContaining({
+        op: 'add-point',
+        name: 'I',
+        constraint: expect.objectContaining({ kind: 'secondIntersection', line: 'CE', circle: 'O' }),
+      }),
+    );
+  });
+});
+
+describe('midpoint — "trung điểm của DÂY MN" (254)', () => {
+  it('E = midpoint(MN)', () => {
+    const { midpointRule } = require('../midpoint');
+    const all = intentsOf(
+      midpointRule,
+      'Cho đường tròn (O). Gọi E là trung điểm của dây MN.',
+    );
+    expect(all).toContainEqual(
+      expect.objectContaining({
+        op: 'add-point',
+        name: 'E',
+        constraint: { kind: 'midpoint', of: 'MN' },
+      }),
+    );
+  });
+});
+
+describe('intersection — "tia AF cắt tia tiếp tuyến Bx … tại D" gap giữa ray và tại (18)', () => {
+  it('D = AF∩Bx', () => {
+    const all = intentsOf(
+      intersectionRule,
+      'Cho nửa đường tròn tâm O đường kính BC. Kẻ tiếp tuyến AF, tia AF cắt tia tiếp tuyến Bx của nửa đường tròn (O) tại D.',
+    );
+    expect(all).toContainEqual(
+      expect.objectContaining({
+        op: 'add-point',
+        name: 'D',
+        constraint: { kind: 'intersection', of: ['AF', 'Bx'] },
+      }),
+    );
+  });
+});
+
+describe('coverage — "C/m:" là proof marker (254)', () => {
+  it('clause "C/m: Bốn điểm A, O, E, C cùng thuộc một đường tròn" có hasGeometry=false', () => {
+    const clauses = segmentClauses(
+      'Cho đường tròn O và điểm A nằm ngoài đường tròn. C/m: Bốn điểm A, O, E, C cùng thuộc một đường tròn.',
+    );
+    const cl = clauses.find((c) => c.text.includes('Bốn điểm'));
+    expect(cl).toBeDefined();
+    expect(cl!.hasGeometry).toBe(false);
+  });
+});
+
 describe('vocabulary — "nằm trên" là geo-keyword (12)', () => {
   it('clause "Gọi C,D là các điểm nằm trên (O)" có hasGeometry=true', () => {
     const clauses = segmentClauses(

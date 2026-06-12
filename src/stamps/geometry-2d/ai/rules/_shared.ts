@@ -87,7 +87,8 @@ export function pairFromToken(token: string): string[] {
 // "cạnh thẳng"/"đoạn huyền" (sai cặp) KHÔNG khớp vì bổ ngữ bị buộc đúng loại.
 // Là FRAGMENT regex (string, không cờ) để nhúng vào pattern lớn hơn — bổ ngữ là
 // optional nên prefix vẫn khớp dạng trần "cạnh BC".
-export const SIDE_PREFIX = '(?:cạnh(?:\\s+huyền)?\\s+|đoạn(?:\\s+thẳng)?\\s+)?';
+// "dây (cung)" cũng là đoạn thẳng — "trung điểm của dây MN" (vao10:254).
+export const SIDE_PREFIX = '(?:cạnh(?:\\s+huyền)?\\s+|đoạn(?:\\s+thẳng)?\\s+|dây(?:\\s+cung)?\\s+)?';
 
 /** "đường" và typo "đương" (thiếu dấu huyền). */
 export const DUONG_KW = '[Đđ]ư[ờơ]ng';

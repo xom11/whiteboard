@@ -11,9 +11,13 @@
 import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint, CIRCLE_KW } from './_shared';
 
-const PREFILTER = /cắt\s+(?:lại\s+)?(?:(?:nửa\s+)?đường\s*tròn\s*)?\(|giao\s*điểm\s+(?:thứ\s+hai\s+)?(?:của\s+|khác\s+[A-Z]\s+của\s+)?[A-Z]{2}\s+(?:và|với)\s+(?:(?:nửa\s+)?đường\s*tròn\s*)?(?:\(|ngoại\s*tiếp\s+tam\s*giác)/u;
+// 3 nhánh: cắt-rồi-paren | giao điểm thứ hai | "cắt AB và (O)" (LINE_AND_CIRCLE
+// vao10:28 — paren đứng sau "và", nhánh 1 không khớp) | "giao điểm thứ hai …
+// với đường tròn" TRẦN không paren (vao10:254).
+const PREFILTER = /cắt\s+(?:lại\s+)?(?:(?:nửa\s+)?đường\s*tròn\s*)?\(|cắt\s+[A-Z]{2}\s+và\s+\(|giao\s*điểm\s+(?:thứ\s+hai\s+)?(?:của\s+|khác\s+[A-Z]\s+của\s+)?(?:đường\s*thẳng\s+)?[A-Z]{2}\s+(?:và|với)\s+(?:(?:nửa\s+)?đường\s*tròn|\(|ngoại\s*tiếp\s+tam\s*giác)/u;
 // "(O)" + compact "(O;R)"/"(O,R)" — vao10:127 "Tia CI cắt đường tròn (O;R) tại E".
-const CIRCLE = String.raw`(?:đường\s*tròn\s*)?\(\s*([A-Z])(?:['′]?)\s*(?:[;,]\s*[Rr]\s*)?\)`;
+// "nửa" optional — vao10:18 "giao điểm thứ hai của DC với NỬA đường tròn (O)".
+const CIRCLE = String.raw`(?:(?:nửa\s+)?đường\s*tròn\s*)?\(\s*([A-Z])(?:['′]?)\s*(?:[;,]\s*[Rr]\s*)?\)`;
 // Circle GIỮ prime trong tên tâm (O'): cần cho "(O')" — đường tròn đường kính
 // đặt tên "O'_c" (circleDiameter). emit raw "O'" → resolveCircleNames map "O'_c".
 const CIRCLE_P = String.raw`(?:(?:nửa\s+)?đường\s*tròn\s*)?\(\s*([A-Z](?:['′])?)\s*(?:[;,]\s*[Rr]\s*)?\)`;
@@ -52,6 +56,17 @@ const BOTH = new RegExp(
   'gu',
 );
 
+// "XY cắt AB và (O) lần lượt tại H và I" (vao10:28 "OM cắt AB và (O) lần lượt
+// tại H và I") — 1 đường cắt 1 ĐƯỜNG + 1 ĐƯỜNG TRÒN phân phối: H=XY∩AB
+// (intersection thường), I=XY∩(O) (intersection lineCircle branch 0 — cả 2 đầu
+// mút XY đều không trên đường tròn nên không dùng secondIntersection).
+//   groups: 1=line 2=line2 3=circle 4=name1 5=name2.
+const LINE_AND_CIRCLE = new RegExp(
+  String.raw`([A-Z]{2})(?![A-Z])\s+cắt\s+([A-Z]{2})(?![A-Z])\s+và\s+` + CIRCLE +
+    String.raw`\s+(?:lần\s*lượt\s+|theo\s+thứ\s+tự\s+)?(?:tại|ở)\s+([A-Z])\s*(?:,|và)\s*([A-Z])(?![A-Z])`,
+  'gu',
+);
+
 // "giao điểm của XY và (O) là R (khác W)?" — dạng "Gọi giao điểm của NQ và (O)
 // là R khác N". Ref đầu = line (cặp đỉnh), ref sau = circle "(O)".
 const GIAO_CIRCLE = new RegExp(
@@ -68,6 +83,17 @@ const NAME_2ND_CUA = new RegExp(
   String.raw`([A-Z])(?![A-Z])\s+là\s+giao\s*điểm\s+thứ\s+hai\s+của\s+([A-Z]{2})(?![A-Z])\s+(?:và|với)\s+` + CIRCLE,
   'gu',
 );
+
+// "I là giao điểm thứ hai của (đường thẳng)? CE với đường tròn" — đường tròn
+// TRẦN không paren (vao10:254); circle resolve từ toàn đề. other = line[0]
+// (dạng này đầu mút TRÊN đường tròn thường đứng trước: "CE" với C tiếp điểm).
+const NAME_2ND_BARE = new RegExp(
+  String.raw`([A-Z])(?![A-Z])\s+là\s+giao\s*điểm\s+thứ\s+hai\s+của\s+(?:đường\s*thẳng\s+)?([A-Z]{2})(?![A-Z])\s+(?:và|với)\s+(?:nửa\s+)?đường\s*tròn(?!\s*\()`,
+  'gu',
+);
+// Resolve circle toàn đề cho NAME_2ND_BARE: "(O)"/"(O;R)" hoặc "đường tròn (tâm)? O".
+const RESOLVE_CIRCLE_BARE =
+  /\(\s*([A-Z])(?:['′]?)\s*(?:[;,]\s*[Rr]\s*)?\)|đường\s*tròn\s+(?:tâm\s+)?([A-Z])(?![A-Za-z])/u;
 
 // Distributive "E,F lần lượt là giao điểm thứ hai của AM,AN với (O)" → E=2nd(AM,O),
 // F=2nd(AN,O). 2 line cùng circle. groups: 1=n1 2=n2 3=line1 4=line2 5=circle.
@@ -133,6 +159,16 @@ export const lineCircleIntersectionRule: LanguageRule = {
         if (valid(name, line)) intents.push(secondIntersection(name, line, circle, other));
       }
 
+      LINE_AND_CIRCLE.lastIndex = 0;
+      for (const m of c.text.matchAll(LINE_AND_CIRCLE)) {
+        const [line, line2, circle, n1, n2] = [m[1], m[2], m[3], m[4], m[5]];
+        if (n1 === n2 || line.includes(n1) || line2.includes(n1) || line.includes(n2)) continue;
+        intents.push(
+          addPoint(n1, { kind: 'intersection', of: [line, line2] }),
+          addPoint(n2, { kind: 'intersection', of: [line, circle], branch: 0 }),
+        );
+      }
+
       BOTH.lastIndex = 0;
       for (const m of c.text.matchAll(BOTH)) {
         const line = m[1];
@@ -143,6 +179,15 @@ export const lineCircleIntersectionRule: LanguageRule = {
           addPoint(x, { kind: 'intersection', of: [line, circle], branch: 0 }),
           addPoint(y, { kind: 'intersection', of: [line, circle], branch: 1 }),
         );
+      }
+
+      // "I là giao điểm thứ hai của CE với đường tròn" TRẦN — circle toàn đề.
+      NAME_2ND_BARE.lastIndex = 0;
+      for (const m of c.text.matchAll(NAME_2ND_BARE)) {
+        const rc = RESOLVE_CIRCLE_BARE.exec(ctx.problem);
+        const circle = rc?.[1] ?? rc?.[2];
+        if (!circle || !valid(m[1], m[2])) continue;
+        intents.push(secondIntersection(m[1], m[2], circle, m[2][0]));
       }
 
       // "X là giao điểm thứ hai của XY (và|với) (O)" — name trước, other=line[1].

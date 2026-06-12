@@ -96,8 +96,10 @@ const ENUM_PREFIX = '(?:[0-9]+\\s*[.)]?\\s*|[a-zA-Z]\\s*[.)]\\s*)*';
 // dựng để các construct sau (BP, …) có ref hợp lệ → KHÔNG coi là locus.
 const LOCUS_CLAUSE = /(?:di\s*chuyển|di\s*động)\s+trên\s+(?:\(|đường\s*tròn|đương\s*tròn|cung|nửa)/u;
 
+// "C/m"/"CMR" — viết tắt "Chứng minh (rằng)" phổ biến trong đề OCR (vao10:254
+// "a.C/m: Bốn điểm…"); thiếu nó clause proof bị coi geo-clause → escalate oan.
 const PROOF_SECTION_START = new RegExp(
-  `^${ENUM_PREFIX}(?:[Cc]hứng\\s*minh|[Tt]ính|[Tt]ìm|[Xx]ác\\s*định|[Hh]ãy\\s+xác\\s*định)(?!\\p{L})`,
+  `^${ENUM_PREFIX}(?:[Cc]hứng\\s*minh|C/m|CMR|[Tt]ính|[Tt]ìm|[Xx]ác\\s*định|[Hh]ãy\\s+xác\\s*định)(?!\\p{L})`,
   'u',
 );
 
