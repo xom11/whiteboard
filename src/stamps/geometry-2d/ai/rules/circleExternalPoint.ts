@@ -21,10 +21,25 @@ import { SYMBOLIC_RADIUS } from './circleRadius';
 // "đường tròn (O) ... và (có)? điểm A (nằm/ở)? ngoài". group1=tâm O, group2=A.
 // [^.A-Z]{0,8}? giữa "(O)" và "và/điểm" cho phép "; R)" hoặc khoảng trắng; chặn
 // nhảy dấu chấm / nhãn HOA khác.
+// "đường tròn" optional — vao10 259/268 "Cho (O) và điểm A nằm ngoài (O)" viết
+// paren trần; "một điểm" cũng gặp.
 const VN_FORM = new RegExp(
-  String.raw`đường\s*tròn\s*\(\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)[^.A-Z]{0,8}?(?:và\s+)?(?:có\s+)?điểm\s+([A-Z])(?:['′]?)[^.A-Z]{0,14}?(?:nằm\s+|ở\s+)?ngoài`,
+  String.raw`(?:đường\s*tròn\s*)?\(\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)[^.A-Z]{0,8}?(?:và\s+)?(?:có\s+)?(?:một\s+)?điểm\s+([A-Z])(?:['′]?)[^.A-Z]{0,14}?(?:nằm\s+|ở\s+)?ngoài`,
   'u',
 );
+
+// Dạng ĐẢO — điểm trước, đường tròn sau (vao10:28 "Cho điểm M nằm ngoài đường
+// tròn tâm O"; vao10:31 "một điểm A nằm ngoài đường tròn" — tâm vắng, resolve
+// từ đề). group1=điểm, group2=tâm (optional — '.' chặn \s* nên không nuốt chữ
+// HOA mở câu sau).
+const VN_REV = new RegExp(
+  String.raw`điểm\s+([A-Z])(?:['′]?)\s+(?:nằm\s+|ở\s+)?ngoài\s+đường\s*tròn\s*(?:tâm\s+)?\(?\s*([A-Z])?`,
+  'u',
+);
+// Resolve tâm từ toàn đề khi VN_REV không có tâm sau "ngoài đường tròn":
+// "đường tròn (tâm)? O" / "(O)" / "(O;R)".
+const RESOLVE_CENTER =
+  /đường\s*tròn\s*(?:\(\s*)?(?:tâm\s+)?([A-Z])(?![A-Za-z])|\(\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)/u;
 
 // EN mirror: "circle (O) and (a)? point A (lies|lying)? outside".
 const EN_FORM = new RegExp(
@@ -41,9 +56,19 @@ export const circleExternalPointRule: LanguageRule = {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
       const m = VN_FORM.exec(c.text) ?? EN_FORM.exec(c.text);
-      if (!m) continue;
-      const center = m[1];
-      const ext = m[2];
+      let center: string | undefined;
+      let ext: string | undefined;
+      if (m) {
+        center = m[1];
+        ext = m[2];
+      } else {
+        const rv = VN_REV.exec(c.text);
+        if (!rv) continue;
+        ext = rv[1];
+        // Tâm sau "ngoài đường tròn" nếu có, else resolve từ toàn đề.
+        const rc = rv[2] ? undefined : RESOLVE_CENTER.exec(ctx.problem);
+        center = rv[2] ?? rc?.[1] ?? rc?.[2];
+      }
       if (!center || !ext || center === ext) continue;
       out.push({
         ruleId: 'circleExternalPoint',

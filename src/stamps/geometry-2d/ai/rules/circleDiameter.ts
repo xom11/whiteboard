@@ -32,9 +32,16 @@ const WORDS = new RegExp(
   CIRCLE_NAME + String.raw`[^.;\n]{0,40}?` + DUONG_KW + String.raw`\s*kính\s+([A-Z])([A-Z])(?![A-Z])`,
   'gu',
 );
-// "(O;R) đường kính AB" / "(O,R) có đường kính BC" — "có" xen giữa (vao10).
+// "(O;R) đường kính AB" / "(O,R) có đường kính BC" / "(O;R), đường kính AB" —
+// "có"/phẩy xen giữa (vao10).
 const COMPACT = new RegExp(
-  String.raw`\(\s*(${CTR})\s*[;,]\s*[Rr]\s*\)\s*(?:có\s+)?` + DUONG_KW + String.raw`\s*kính\s+([A-Z])([A-Z])(?![A-Z])`,
+  String.raw`\(\s*(${CTR})\s*[;,]\s*[Rr]\s*\)\s*,?\s*(?:có\s+)?` + DUONG_KW + String.raw`\s*kính\s+([A-Z])([A-Z])(?![A-Z])`,
+  'gu',
+);
+// "Cho (O) đường kính AC" — paren bare KHÔNG chữ "đường tròn", mở đầu bằng
+// "Cho" (đường tròn nền GIVEN — vao10 139/180). Full construction như WORDS.
+const GIVEN_BARE = new RegExp(
+  String.raw`[Cc]ho\s+\(\s*(${CTR})\s*\)\s*,?\s*(?:có\s+)?` + DUONG_KW + String.raw`\s*kính\s+([A-Z])([A-Z])(?![A-Z])`,
   'gu',
 );
 // Bare paren "(I) đường kính AH" — KHÔNG chữ "đường tròn" đứng trước (vao10:61
@@ -131,6 +138,24 @@ export const circleDiameterRule: LanguageRule = {
           intents: intentsFor(p),
         });
       }
+    }
+
+    // "Cho (O) đường kính AC" — đường tròn nền GIVEN, full construction.
+    GIVEN_BARE.lastIndex = 0;
+    let gm: RegExpExecArray | null;
+    while ((gm = GIVEN_BARE.exec(ctx.problem)) !== null) {
+      const p = { center: gm[1], a: gm[2], b: gm[3] };
+      if (!p.center || p.center === p.a || p.center === p.b || p.a === p.b) continue;
+      const key = `${p.center}|${p.a}${p.b}`;
+      if (emitted.has(key)) continue;
+      emitted.add(key);
+      const matched = gm[0];
+      const claim = ctx.clauses.filter((c) => c.text.includes(matched.replace(/^[Cc]ho\s+/u, ''))).map((c) => c.id);
+      out.push({
+        ruleId: 'circle-diameter',
+        clauseIds: claim.length > 0 ? claim : [ctx.clauses[0]?.id ?? 0],
+        intents: intentsFor(p),
+      });
     }
 
     // Bare paren "(I) đường kính AH" — đầu mút phải ĐÃ xuất hiện trước match

@@ -9,6 +9,7 @@ import { givenDiameterCircleRule } from '../givenDiameterCircle';
 import { onCirclePointRule } from '../onCirclePoint';
 import { intersectionRule } from '../intersection';
 import { diameterEndpointRule } from '../diameterEndpoint';
+import { circleExternalPointRule } from '../circleExternalPoint';
 import { lineCircleIntersectionRule } from '../lineCircleIntersection';
 import { circleDiameterRule } from '../circleDiameter';
 import { segmentClauses } from '../../deterministic/coverage';
@@ -191,6 +192,71 @@ describe('onCirclePoint — "Gọi C,D là các điểm nằm trên (O)" (12)', 
     const onCircle = all.filter((i) => i.constraint?.kind === 'onCircle');
     expect(onCircle.map((i) => i.name).sort()).toEqual(['C', 'D']);
     expect(onCircle[0].constraint.theta).not.toBeCloseTo(onCircle[1].constraint.theta);
+  });
+});
+
+describe('perpDiameters — separator ";" + claim clause đuôi bị split (73/169/188)', () => {
+  const P = 'Cho (O;R) có hai đường kính AB;CD vuông góc với nhau. Trên đoạn AB lấy điểm M.';
+
+  it('"AB;CD vuông góc với nhau" → 4 onCircle', () => {
+    const all = perpDiametersRule
+      .match({ problem: P, clauses: segmentClauses(P) })
+      .flatMap((m) => m.intents as any[]);
+    const onCircle = all.filter((i) => i.constraint?.kind === 'onCircle');
+    expect(onCircle.map((i) => i.name).sort()).toEqual(['A', 'B', 'C', 'D']);
+  });
+
+  it('claim CẢ clause đuôi "CD vuông góc với nhau" (split tại ";")', () => {
+    const clauses = segmentClauses(P);
+    const tail = clauses.find((c) => /^CD\s+vuông/u.test(c.text.trim()));
+    expect(tail).toBeDefined();
+    const m = perpDiametersRule.match({ problem: P, clauses });
+    expect(m[0].clauseIds).toContain(tail!.id);
+  });
+});
+
+describe('circleDiameter — "Cho (O) đường kính AC" bare-given (139/180) + "(O;R), đường kính AB" (16)', () => {
+  it('"Cho (O) đường kính AC" → A,C free + O midpoint + circle O_c', () => {
+    const all = intentsOf(circleDiameterRule, 'Cho (O) đường kính AC. Trên đoạn OC lấy điểm B.');
+    expect(all).toContainEqual(
+      expect.objectContaining({ op: 'add-point', name: 'O', constraint: { kind: 'midpoint', of: 'AC' } }),
+    );
+    expect(all).toContainEqual(
+      expect.objectContaining({ op: 'draw-circle', name: 'O_c', spec: 'diameter', endpoints: ['A', 'C'] }),
+    );
+    expect(all.filter((i) => i.constraint?.kind === 'free').map((i) => i.name).sort()).toEqual(['A', 'C']);
+  });
+
+  it('"Cho (O;R), đường kính AB" (phẩy giữa paren và đường kính)', () => {
+    const all = intentsOf(circleDiameterRule, 'Cho (O;R), đường kính AB. Lấy điểm M thuộc cung AB.');
+    expect(all).toContainEqual(
+      expect.objectContaining({ op: 'draw-circle', name: 'O_c', spec: 'diameter', endpoints: ['A', 'B'] }),
+    );
+  });
+});
+
+describe('circleExternalPoint — biến thể vao10 (28/31/259/268)', () => {
+  function expectExternal(problem: string, center: string, ext: string) {
+    const all = intentsOf(circleExternalPointRule, problem);
+    expect(all).toContainEqual(
+      expect.objectContaining({
+        op: 'add-point',
+        name: ext,
+        constraint: { kind: 'externalToCircle', circle: center },
+      }),
+    );
+  }
+
+  it('paren bare: "Cho (O) và điểm A nằm ngoài (O)" (259/268)', () => {
+    expectExternal('Cho (O) và điểm A nằm ngoài (O). Kẻ các tiếp tuyến AB, AC.', 'O', 'A');
+  });
+
+  it('đảo: "Cho điểm M nằm ngoài đường tròn tâm O" (28)', () => {
+    expectExternal('Cho điểm M nằm ngoài đường tròn tâm O. Vẽ tiếp tuyến MA, MB với đường tròn.', 'O', 'M');
+  });
+
+  it('đảo không tâm sau "ngoài": resolve tâm từ đề "đường tròn O" (31)', () => {
+    expectExternal('Cho đường tròn O và một điểm A nằm ngoài đường tròn. Kẻ các tiếp tuyến AB, AC với đường tròn.', 'O', 'A');
   });
 });
 

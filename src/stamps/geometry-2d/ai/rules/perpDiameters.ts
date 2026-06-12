@@ -24,9 +24,10 @@ import { SYMBOLIC_RADIUS } from './circleRadius';
 const CIRC =
   '(?:' + CIRCLE_KW + '\\s*)?\\(\\s*([A-Z])(?:\\s*[;,]\\s*[Rr])?\\s*\\)' +
   '|' + CIRCLE_KW + '\\s+tâm\\s+([A-Z])(?![A-Za-z])';
-// Cặp đường kính: "AB và CD" / "AB, CD".
+// Cặp đường kính: "AB và CD" / "AB, CD" / "AB;CD" (vao10:73 — ';' giữa cặp làm
+// segmentClauses tách clause, nhưng RE chạy trên ctx.problem nên vẫn khớp).
 const PAIR =
-  '([A-Z])([A-Z])(?![A-Z])\\s*(?:,\\s*|và\\s+)([A-Z])([A-Z])(?![A-Z])';
+  '([A-Z])([A-Z])(?![A-Z])\\s*(?:[,;]\\s*|và\\s+)([A-Z])([A-Z])(?![A-Z])';
 
 // Thứ tự 1 — tên TRƯỚC tính từ: "(O) … hai đường kính AB và CD … vuông góc".
 const RE_NAMES_FIRST = new RegExp(
@@ -68,9 +69,16 @@ export const perpDiametersRule: LanguageRule = {
     const names = [center, a, b, cc, d];
     if (new Set(names).size !== names.length) return [];
 
-    // Claim clause chứa "đường kính ... vuông góc".
+    // Claim clause chứa "đường kính ... vuông góc". Thêm clause ĐUÔI khi cặp 2
+    // bị split tại ';' ("…AB" | "CD vuông góc với nhau" — vao10:73): đuôi chứa
+    // đúng cặp thứ hai + "vuông góc".
     const claim = ctx.clauses
-      .filter((c) => PREFILTER.test(c.text) || /hai\s+đư[ờơ]ng\s*kính/u.test(c.text))
+      .filter(
+        (c) =>
+          PREFILTER.test(c.text) ||
+          /hai\s+đư[ờơ]ng\s*kính/u.test(c.text) ||
+          (c.text.includes(cc + d) && /vuông\s*góc/u.test(c.text)),
+      )
       .map((c) => c.id);
 
     return [
