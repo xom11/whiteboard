@@ -12,6 +12,18 @@ function matches(problem: string) {
 }
 
 describe('circleDiameterRule', () => {
+  // vao10: tâm BARE không ngoặc — "nửa đường tròn O đường kính AB".
+  it('"Cho nửa đường tròn O đường kính AB" → circle O_c diameter AB', () => {
+    const all = intents('Cho nửa đường tròn O đường kính AB.');
+    expect(all).toContainEqual({
+      op: 'draw-circle',
+      name: 'O_c',
+      spec: 'diameter',
+      endpoints: ['A', 'B'],
+    });
+    expect(all).toContainEqual({ op: 'add-point', name: 'O', constraint: { kind: 'midpoint', of: 'AB' } });
+  });
+
   it('"Cho đường tròn (O) đường kính AB" → endpoints + center midpoint + diameter circle', () => {
     const all = intents('Cho đường tròn (O) đường kính AB cố định.');
     expect(all).toEqual([

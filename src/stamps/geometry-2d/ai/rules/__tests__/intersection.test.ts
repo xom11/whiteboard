@@ -12,6 +12,19 @@ function only(problem: string) {
 }
 
 describe('intersectionRule', () => {
+  // vao10: "kéo dài" xen giữa + locative "ở".
+  it('"BE kéo dài cắt AD ở M" → M = giao(BE, AD)', () => {
+    const i = only('BE kéo dài cắt AD ở M');
+    expect(i.name).toBe('M');
+    expect(i.constraint).toMatchObject({ kind: 'intersection' });
+  });
+
+  it('"AE và BC kéo dài cắt nhau tại D"', () => {
+    const i = only('AE và BC kéo dài cắt nhau tại D');
+    expect(i.name).toBe('D');
+    expect(i.constraint).toMatchObject({ kind: 'intersection' });
+  });
+
   it('"D là giao điểm của AB và CE" → intersection D of=[AB,CE]', () => {
     const i = only('Cho tam giác ABC. Lấy E trên BC. Gọi D là giao điểm của AB và CE.');
     expect(i.op).toBe('add-point');

@@ -19,6 +19,12 @@ const RE = new RegExp(
 );
 
 // Khoảng cách canonical (board units) — vị trí C trên tia đối không nêu metric.
+// Dạng tên-TRƯỚC (vao10): "Lấy điểm A trên tia đối của tia CB" — g1=tên, g2g3=tia.
+const RE_NAME_FIRST = new RegExp(
+  String.raw`[Ll]ấy\s+(?:điểm\s+)?([A-Z])(?![A-Z])\s+trên\s+tia\s+đối\s+(?:của\s+)?tia\s+([A-Z])([A-Z])(?![A-Z])`,
+  'gu',
+);
+
 const CANON = 2.5;
 
 export const oppositeRayPointRule: LanguageRule = {
@@ -40,6 +46,25 @@ export const oppositeRayPointRule: LanguageRule = {
           clauseIds: [c.id],
           // tia AB gốc A → tia đối gốc A ngược B → C vượt A so với B:
           // pointAtDistance(from=B, through=A) đặt C sau A trên tia B→A.
+          intents: [
+            addPoint(name, {
+              kind: 'pointAtDistance',
+              from: b,
+              through: a,
+              distance: { kind: 'literal', value: CANON },
+            }),
+          ],
+        });
+      }
+      RE_NAME_FIRST.lastIndex = 0;
+      for (const m of c.text.matchAll(RE_NAME_FIRST)) {
+        const name = m[1];
+        const a = m[2]; // gốc tia
+        const b = m[3]; // hướng tia
+        if (new Set([a, b, name]).size !== 3) continue;
+        out.push({
+          ruleId: 'oppositeRayPoint',
+          clauseIds: [c.id],
           intents: [
             addPoint(name, {
               kind: 'pointAtDistance',

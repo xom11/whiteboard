@@ -80,6 +80,9 @@ function clean(s) {
       /\bCho\s+([A-Z]{3})(?=\s+(?:vuông|cân|đều|nhọn|tù|có|nội tiếp|ngoại tiếp))/g,
       'Cho tam giác $1'
     )
+    // ngoặc dính chữ: "(O)tại" → "(O) tại"; "tròn(B" → "tròn (B"
+    .replace(/\)(?=\p{L})/gu, ') ')
+    .replace(/(\p{L})\(/gu, '$1 (')
     .replace(/\s+([,.;:])/g, '$1')
     .replace(/\s+/g, ' ')
     .trim();

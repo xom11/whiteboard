@@ -24,7 +24,9 @@ const TWO_PERP_DIAMETERS = new RegExp(
 // không "(O') đường kính BC" không khớp (paren branch kẹt ở ký tự ') → bỏ sót
 // đường tròn thứ hai (phang:6). circleDiameter dựng circle "O'_c" + center "O'".
 const CTR = String.raw`[A-Z](?:['′]|\d{1,2})?`;
-const CIRCLE_NAME = String.raw`(?:${CIRCLE_KW}|nửa\s+${CIRCLE_KW})\s*(?:\(\s*(${CTR})(?:\s*[;,]\s*[Rr])?\s*\)|tâm\s+(${CTR}))?`;
+// Tên tâm: "(O)"/"(O;R)" | "tâm O" | BARE "nửa đường tròn O đường kính AB"
+// (vao10 — paren rơi vào ô bảng; lookahead "đường kính" để không nuốt HOA khác).
+const CIRCLE_NAME = String.raw`(?:${CIRCLE_KW}|nửa\s+${CIRCLE_KW})\s*(?:\(\s*(${CTR})(?:\s*[;,]\s*[Rr])?\s*\)|tâm\s+(${CTR})|([A-Z])(?=\s+[đĐ]ư[ờơ]ng\s*kính))?`;
 
 const WORDS = new RegExp(
   CIRCLE_NAME + String.raw`[^.;\n]{0,40}?` + DUONG_KW + String.raw`\s*kính\s+([A-Z])([A-Z])(?![A-Z])`,
@@ -47,9 +49,9 @@ function parseAll(text: string): Parsed[] {
   WORDS.lastIndex = 0;
   let m: RegExpExecArray | null;
   while ((m = WORDS.exec(text)) !== null) {
-    const center = m[1] ?? m[2];
-    const a = m[3];
-    const b = m[4];
+    const center = m[1] ?? m[2] ?? m[3];
+    const a = m[4];
+    const b = m[5];
     if (!center || center === a || center === b || a === b) continue;
     out.push({ center, a, b });
   }

@@ -7,6 +7,14 @@ function run(rule: any, problem: string) {
 }
 
 describe('oppositeRayPointRule', () => {
+  // vao10: tên đứng TRƯỚC — "Lấy điểm A trên tia đối của tia CB".
+  it('"Lấy điểm A trên tia đối của tia CB" → A = pointAtDistance(from B, through C)', () => {
+    const all = run(oppositeRayPointRule, 'Lấy điểm A trên tia đối của tia CB');
+    const i = all[0] as any;
+    expect(i.name).toBe('A');
+    expect(i.constraint).toMatchObject({ kind: 'pointAtDistance', from: 'B', through: 'C' });
+  });
+
   it('"Trên tia đối của tia AB lấy điểm C" → C = pointAtDistance(from B, through A)', () => {
     const all = run(oppositeRayPointRule, 'Trên tia đối của tia AB lấy điểm C');
     expect(all).toHaveLength(1);
