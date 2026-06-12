@@ -20,6 +20,11 @@ export const circle3Module = defineModule<'circle3', Input>({
     p3: NameZ,
   }),
   collectRefs: (e) => [e.p1, e.p2, e.p3],
+  refSpecs: [
+    { field: 'p1', role: 'point' },
+    { field: 'p2', role: 'point' },
+    { field: 'p3', role: 'point' },
+  ],
   emit: (e, ctx) => [{
     role: 'primary',
     object: {

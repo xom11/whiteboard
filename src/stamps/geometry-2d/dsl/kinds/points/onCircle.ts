@@ -19,6 +19,7 @@ export const onCircleModule = defineModule<'onCircle', Input>({
     theta: z.number().finite(),
   }),
   collectRefs: (e) => [e.circleId],
+  refSpecs: [{ field: 'circleId', role: 'circle' }],
   emit: (e, ctx) => [{
     role: 'primary',
     object: emitPointObject(

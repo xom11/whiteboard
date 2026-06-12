@@ -19,6 +19,7 @@ export const freeModule = defineModule<'free', Input>({
     y: z.number().finite(),
   }),
   collectRefs: () => [],
+  refSpecs: [], // không có ref — khai rỗng để registry-handled tường minh
   emit: (e, ctx) => [{
     role: 'primary',
     object: emitPointObject(ctx.resolveId(e.name), e.name, { kind: 'free', x: e.x, y: e.y }),

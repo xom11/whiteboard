@@ -28,6 +28,7 @@ const ROLE_PREDICATE: Record<RefRole, (s: Symbol | undefined) => boolean> = {
   'line-like': isLineLike,
   circle: isCircleLike,
   segment: isSegmentExact,
+  'line-or-circle': (s) => isLineLike(s) || isCircleLike(s),
   shape: (s) => !!s && s.role === 'shape',
   'any-existing': (s) => !!s,
 };
@@ -36,6 +37,7 @@ const ROLE_EXPECTED: Record<RefRole, string> = {
   'line-like': 'line-like',
   circle: 'circle',
   segment: 'segment',
+  'line-or-circle': 'line-like hoặc circle',
   shape: 'shape',
   'any-existing': 'tồn tại',
 };
@@ -68,12 +70,15 @@ export function validateRefs(dsl: DslInputT, symbols: Map<string, Symbol>): Refs
     }
   };
 
-  // Registry-driven pass: kind nào khai refSpecs thì validate ở đây, switch bỏ qua.
-  const handledByRegistry = new Set<string>();
-  const runSpecs = (owner: string, entity: DslPointT | DslShapeT): boolean => {
+  // Registry-driven DUY NHẤT (switch legacy đã xoá 2026-06-12): mọi kind khai
+  // refSpecs trong module của nó — mảng tĩnh, hàm theo entity cho discriminated
+  // union (arcMidpoint/pointAtDistance), dotted path cho ref nested. Kind không
+  // khai refSpecs → không validate (parity switch cũ: circleDiameter/
+  // mixtilinearPoint/onPerpBisector vốn không có case).
+  const runSpecs = (owner: string, entity: DslPointT | DslShapeT): void => {
     const mod = KIND_REGISTRY.get(entity.kind);
     const raw = mod?.refSpecs;
-    if (!raw) return false;
+    if (!raw) return;
     const specs: readonly RefSpec[] =
       typeof raw === 'function' ? raw(entity as never) : raw;
     for (const spec of specs) {
@@ -92,120 +97,9 @@ export function validateRefs(dsl: DslInputT, symbols: Map<string, Symbol>): Refs
         check(owner, field, refName, ROLE_PREDICATE[spec.role], ROLE_EXPECTED[spec.role]);
       });
     }
-    handledByRegistry.add(owner);
-    return true;
   };
   for (const p of dsl.points) runSpecs(p.name, p);
   for (const s of dsl.shapes) runSpecs(s.name, s);
-
-  for (const p of dsl.points) {
-    if (handledByRegistry.has(p.name)) continue;
-    switch (p.kind) {
-      case 'free': break;
-      case 'midpoint':
-        check(p.name, 'p1', p.p1, isPointLike, 'point');
-        check(p.name, 'p2', p.p2, isPointLike, 'point');
-        break;
-      case 'onSegment':
-        check(p.name, 'segmentId', p.segmentId, isSegmentExact, 'segment');
-        break;
-      case 'onLine':
-        check(p.name, 'lineId', p.lineId, isLineLike, 'line-like');
-        break;
-      case 'onCircle':
-        check(p.name, 'circleId', p.circleId, isCircleLike, 'circle');
-        break;
-      case 'perpFoot':
-        check(p.name, 'from', p.from, isPointLike, 'point');
-        check(p.name, 'onLine', p.onLine, isLineLike, 'line-like');
-        break;
-      case 'circumcenter':
-      case 'incenter':
-      case 'centroid':
-      case 'orthocenter':
-        for (let i = 0; i < 3; i++) {
-          check(p.name, `vertices[${i}]`, p.vertices[i], isPointLike, 'point');
-        }
-        break;
-      case 'intersection': {
-        const refPredicate = (s: Symbol | undefined) => isLineLike(s) || isCircleLike(s);
-        check(p.name, 'ref1', p.ref1, refPredicate, 'line-like hoặc circle');
-        check(p.name, 'ref2', p.ref2, refPredicate, 'line-like hoặc circle');
-        break;
-      }
-      case 'arcMidpoint': {
-        check(p.name, 'circle', p.circle, isCircleLike, 'circle');
-        check(p.name, 'a', p.a, isPointLike, 'point');
-        check(p.name, 'b', p.b, isPointLike, 'point');
-        // notContaining/containing TỐI ĐA 1 — có thể không có (cung không mơ hồ).
-        const containment = p.containing ?? p.notContaining;
-        if (containment) {
-          check(p.name, p.containing ? 'containing' : 'notContaining', containment, isPointLike, 'point');
-        }
-        break;
-      }
-      case 'excenter':
-        for (let i = 0; i < 3; i++) {
-          check(p.name, `vertices[${i}]`, p.vertices[i], isPointLike, 'point');
-        }
-        check(p.name, 'opposite', p.opposite, isPointLike, 'point');
-        break;
-      case 'reflectPoint':
-        check(p.name, 'of', p.of, isPointLike, 'point');
-        check(p.name, 'through', p.through, isPointLike, 'point');
-        break;
-      case 'reflectLine':
-        check(p.name, 'of', p.of, isPointLike, 'point');
-        check(p.name, 'through', p.through, isLineLike, 'line-like');
-        break;
-    }
-  }
-
-  for (const s of dsl.shapes) {
-    if (handledByRegistry.has(s.name)) continue;
-    switch (s.kind) {
-      case 'segment':
-      case 'line':
-        check(s.name, 'p1', s.p1, isPointLike, 'point');
-        check(s.name, 'p2', s.p2, isPointLike, 'point');
-        break;
-      case 'ray':
-        check(s.name, 'origin', s.origin, isPointLike, 'point');
-        check(s.name, 'through', s.through, isPointLike, 'point');
-        break;
-      case 'polygon':
-        s.vertices.forEach((v, i) =>
-          check(s.name, `vertices[${i}]`, v, isPointLike, 'point'));
-        break;
-      case 'perpendicular':
-      case 'parallel':
-        check(s.name, 'throughPoint', s.throughPoint, isPointLike, 'point');
-        check(s.name, 'toLine', s.toLine, isLineLike, 'line-like');
-        break;
-      case 'perpBisector':
-        check(s.name, 'p1', s.p1, isPointLike, 'point');
-        check(s.name, 'p2', s.p2, isPointLike, 'point');
-        break;
-      case 'angleBisector':
-        check(s.name, 'p1', s.p1, isPointLike, 'point');
-        check(s.name, 'vertex', s.vertex, isPointLike, 'point');
-        check(s.name, 'p2', s.p2, isPointLike, 'point');
-        break;
-      case 'tangent':
-        check(s.name, 'throughPoint', s.throughPoint, isPointLike, 'point');
-        check(s.name, 'toCircle', s.toCircle, isCircleLike, 'circle');
-        break;
-      case 'circleCP':
-        check(s.name, 'center', s.center, isPointLike, 'point');
-        check(s.name, 'surfacePoint', s.surfacePoint, isPointLike, 'point');
-        break;
-      case 'circle3':
-        check(s.name, 'p1', s.p1, isPointLike, 'point');
-        check(s.name, 'p2', s.p2, isPointLike, 'point');
-        check(s.name, 'p3', s.p3, isPointLike, 'point');
-        break;
-    }
-  }
 
   return { errors };
 }

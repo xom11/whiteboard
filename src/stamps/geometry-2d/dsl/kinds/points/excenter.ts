@@ -19,6 +19,10 @@ export const excenterModule = defineModule<'excenter', Input>({
     opposite: NameZ,
   }),
   collectRefs: (e) => [...e.vertices],
+  refSpecs: [
+    { field: 'vertices', role: 'point', many: true },
+    { field: 'opposite', role: 'point' },
+  ],
   emit: (e, ctx) => [{
     role: 'primary',
     object: emitPointObject(ctx.resolveId(e.name), e.name, {

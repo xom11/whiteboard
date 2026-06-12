@@ -19,6 +19,7 @@ export const onLineModule = defineModule<'onLine', Input>({
     t: z.number().finite(),
   }),
   collectRefs: (e) => [e.lineId],
+  refSpecs: [{ field: 'lineId', role: 'line-like' }],
   emit: (e, ctx) => [{
     role: 'primary',
     object: emitPointObject(

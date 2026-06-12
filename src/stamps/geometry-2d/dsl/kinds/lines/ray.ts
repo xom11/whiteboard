@@ -19,6 +19,10 @@ export const rayModule = defineModule<'ray', Input>({
     through: NameZ,
   }),
   collectRefs: (e) => [e.origin, e.through],
+  refSpecs: [
+    { field: 'origin', role: 'point' },
+    { field: 'through', role: 'point' },
+  ],
   emit: (e, ctx) => [{
     role: 'primary',
     object: {

@@ -19,6 +19,10 @@ export const segmentModule = defineModule<'segment', Input>({
     p2: NameZ,
   }),
   collectRefs: (e) => [e.p1, e.p2],
+  refSpecs: [
+    { field: 'p1', role: 'point' },
+    { field: 'p2', role: 'point' },
+  ],
   emit: (e, ctx) => [{
     role: 'primary',
     object: {

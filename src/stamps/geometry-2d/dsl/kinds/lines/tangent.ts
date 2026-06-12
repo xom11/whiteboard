@@ -20,6 +20,10 @@ export const tangentModule = defineModule<'tangent', Input>({
     branch: z.union([z.literal(0), z.literal(1), z.literal('on')]).optional(),
   }),
   collectRefs: (e) => [e.throughPoint, e.toCircle],
+  refSpecs: [
+    { field: 'throughPoint', role: 'point' },
+    { field: 'toCircle', role: 'circle' },
+  ],
   emit: (e, ctx) => {
     const construction: Record<string, unknown> = {
       kind: 'tangent',

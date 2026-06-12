@@ -18,6 +18,7 @@ export const incenterModule = defineModule<'incenter', Input>({
     vertices: z.tuple([NameZ, NameZ, NameZ]),
   }),
   collectRefs: (e) => [...e.vertices],
+  refSpecs: [{ field: 'vertices', role: 'point', many: true }],
   emit: (e, ctx) => [{
     role: 'primary',
     object: emitPointObject(

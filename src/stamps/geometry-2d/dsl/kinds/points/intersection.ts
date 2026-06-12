@@ -20,6 +20,10 @@ export const intersectionModule = defineModule<'intersection', Input>({
     branch: z.union([z.literal(0), z.literal(1)]).optional(),
   }),
   collectRefs: (e) => [e.ref1, e.ref2],
+  refSpecs: [
+    { field: 'ref1', role: 'line-or-circle' },
+    { field: 'ref2', role: 'line-or-circle' },
+  ],
   emit: (e, ctx) => {
     const r1IsCircle = ctx.hintOf(e.ref1) === 'circle';
     const r2IsCircle = ctx.hintOf(e.ref2) === 'circle';

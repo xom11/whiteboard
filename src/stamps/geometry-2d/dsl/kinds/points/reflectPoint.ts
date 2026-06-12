@@ -14,6 +14,10 @@ export const reflectPointModule = defineModule<'reflectPoint', Input>({
   prefix: 'p',
   schema: z.object({ name: NameZ, kind: z.literal('reflectPoint'), of: NameZ, through: NameZ }),
   collectRefs: (e) => [e.of, e.through],
+  refSpecs: [
+    { field: 'of', role: 'point' },
+    { field: 'through', role: 'point' },
+  ],
   emit: (e, ctx) => [{
     role: 'primary',
     object: emitPointObject(ctx.resolveId(e.name), e.name, {

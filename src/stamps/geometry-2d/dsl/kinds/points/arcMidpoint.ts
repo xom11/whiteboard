@@ -2,7 +2,7 @@
 import { z } from 'zod';
 import { NameZ } from '../../names';
 import type { DslPointT } from '../../schema';
-import { defineModule } from '../_types';
+import { defineModule, type RefSpec } from '../_types';
 import { emitPointObject } from '../_shared';
 
 type Input = Extract<DslPointT, { kind: 'arcMidpoint' }>;
@@ -29,6 +29,18 @@ export const arcMidpointModule = defineModule<'arcMidpoint', Input>({
     const containment = e.notContaining ?? e.containing;
     if (containment) refs.push(containment);
     return refs;
+  },
+  // refSpecs động: notContaining/containing TỐI ĐA 1 — có thể không có (cung không mơ hồ).
+  refSpecs: (e) => {
+    const specs: RefSpec[] = [
+      { field: 'circle', role: 'circle' },
+      { field: 'a', role: 'point' },
+      { field: 'b', role: 'point' },
+    ];
+    if (e.containing ?? e.notContaining) {
+      specs.push({ field: e.containing ? 'containing' : 'notContaining', role: 'point' });
+    }
+    return specs;
   },
   emit: (e, ctx) => [{
     role: 'primary',

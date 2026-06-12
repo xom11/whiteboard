@@ -20,6 +20,10 @@ export const circleCPModule = defineModule<'circleCP', Input>({
     visible: z.boolean().optional(),
   }),
   collectRefs: (e) => [e.center, e.surfacePoint],
+  refSpecs: [
+    { field: 'center', role: 'point' },
+    { field: 'surfacePoint', role: 'point' },
+  ],
   emit: (e, ctx) => [{
     role: 'primary',
     object: {

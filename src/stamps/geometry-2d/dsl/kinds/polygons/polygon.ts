@@ -18,6 +18,7 @@ export const polygonModule = defineModule<'polygon', Input>({
     vertices: z.array(NameZ).min(3),
   }),
   collectRefs: (e) => [...e.vertices],
+  refSpecs: [{ field: 'vertices', role: 'point', many: true }],
   emit: (e, ctx) => [{
     role: 'primary',
     object: {

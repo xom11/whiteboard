@@ -19,6 +19,7 @@ export type RefRole =
   | 'line-like'
   | 'circle'
   | 'segment'
+  | 'line-or-circle'
   | 'shape'
   | 'any-existing';
 
@@ -55,7 +56,8 @@ export interface DslKindModule<TKind extends string = string, TInput = unknown> 
   /**
    * Khai báo ref requirements để validateRefs kiểm tra unknown/mismatch mà không
    * cần switch theo kind. Dạng hàm cho kind có ref phụ thuộc discriminated union
-   * (vd pointAtDistance.distance). Kind chưa khai → validateRefs dùng legacy switch.
+   * (vd pointAtDistance.distance). Kind không có ref khai mảng rỗng [] cho tường
+   * minh; kind không khai → validateRefs bỏ qua (không validate gì).
    */
   refSpecs?: readonly RefSpec[] | ((entity: TInput) => readonly RefSpec[]);
   emit: (entity: TInput, ctx: EmitContext) => EmittedEntity[];

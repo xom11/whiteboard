@@ -19,6 +19,10 @@ export const parallelModule = defineModule<'parallel', Input>({
     toLine: NameZ,
   }),
   collectRefs: (e) => [e.throughPoint, e.toLine],
+  refSpecs: [
+    { field: 'throughPoint', role: 'point' },
+    { field: 'toLine', role: 'line-like' },
+  ],
   emit: (e, ctx) => [{
     role: 'primary',
     object: {

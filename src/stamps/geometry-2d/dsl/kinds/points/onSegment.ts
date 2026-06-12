@@ -19,6 +19,7 @@ export const onSegmentModule = defineModule<'onSegment', Input>({
     t: z.number().min(0).max(1),
   }),
   collectRefs: (e) => [e.segmentId],
+  refSpecs: [{ field: 'segmentId', role: 'segment' }],
   emit: (e, ctx) => [{
     role: 'primary',
     object: emitPointObject(

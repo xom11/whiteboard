@@ -19,6 +19,10 @@ export const perpFootModule = defineModule<'perpFoot', Input>({
     onLine: NameZ,
   }),
   collectRefs: (e) => [e.from, e.onLine],
+  refSpecs: [
+    { field: 'from', role: 'point' },
+    { field: 'onLine', role: 'line-like' },
+  ],
   emit: (e, ctx) => [{
     role: 'primary',
     object: emitPointObject(
