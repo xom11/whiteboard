@@ -20,6 +20,10 @@ import { addPoint, connect } from './_shared';
 const UNNAMED_DIAMETER = /(?:nửa\s+)?đường\s*tròn\s+đường\s*kính\s+([A-Z])([A-Z])(?![A-Z])/u;
 const HAS_NAMED_CENTER = /đường\s*tròn\s*(?:\(\s*[A-Z]|tâm\s+[A-Z])/u;
 const HAS_POLYGON = /tam\s*giác|tứ\s*giác|hình\s+(?:vuông|chữ|bình|thoi|thang)/u;
+// Đề dùng O như điểm ("đoạn OD", "tia OA") dù đường tròn KHÔNG nêu tâm (vao10:94)
+// → tâm ngầm của đường tròn đường kính = O, emit midpoint cho ref O sống.
+// HAS_NAMED_CENTER đã loại "(O)"/"tâm O" nên O ở đây chắc chắn là tâm ngầm.
+const USES_O = /(?<![A-Za-z])O[A-Z]?(?![a-z])/u;
 
 export const givenDiameterCircleRule: LanguageRule = {
   id: 'givenDiameterCircle',
@@ -34,15 +38,19 @@ export const givenDiameterCircleRule: LanguageRule = {
       if (!m) continue;
       const [a, b] = [m[1], m[2]];
       if (a === b) continue;
+      const intents = [
+        addPoint(a, { kind: 'free' }),
+        addPoint(b, { kind: 'free' }),
+        connect(a, b, 'segment'),
+      ];
+      if (a !== 'O' && b !== 'O' && USES_O.test(ctx.problem)) {
+        intents.push(addPoint('O', { kind: 'midpoint', of: `${a}${b}` }));
+      }
       return [
         {
           ruleId: 'givenDiameterCircle',
           clauseIds: [c.id],
-          intents: [
-            addPoint(a, { kind: 'free' }),
-            addPoint(b, { kind: 'free' }),
-            connect(a, b, 'segment'),
-          ],
+          intents,
         },
       ];
     }

@@ -23,7 +23,7 @@ const RE = new RegExp(
 
 // Dạng động từ: groups 1=đầu mút cũ 2=đầu mút mới (có thể prime "CC'").
 const RE_VERB = new RegExp(
-  "(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\\s+đường\\s*kính\\s+([A-Z])([A-Z]['′]?)(?![A-Za-z'′])",
+  "(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\\s+(?:[^.;,]{0,24}?và\\s+)?đường\\s*kính\\s+([A-Z])([A-Z]['′]?)(?![A-Za-z'′])",
   'gu',
 );
 // Tâm từ đề: "(O)" / "(O;R)" / "(O,R)" / "tâm O" — match ĐẦU TIÊN (đường tròn
@@ -31,7 +31,7 @@ const RE_VERB = new RegExp(
 // point cho circumcenter/midpoint nên tên tâm là điểm thật).
 const RESOLVE_CENTER = /\(\s*([A-Z])(?:\s*[;,]\s*[Rr0-9][^)]*)?\s*\)|tâm\s+([A-Z])(?![A-Za-z])/u;
 
-const PREFILTER = /[A-Z]{2}\s+là\s+đường\s*kính|(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\s+đường\s*kính/u;
+const PREFILTER = /[A-Z]{2}\s+là\s+đường\s*kính|(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\s+(?:[^.;,]{0,24}?và\s+)?đường\s*kính/u;
 
 export const diameterEndpointRule: LanguageRule = {
   id: 'diameterEndpoint',

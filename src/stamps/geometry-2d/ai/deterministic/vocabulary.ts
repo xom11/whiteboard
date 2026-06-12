@@ -18,6 +18,11 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   'cung', 'chính giữa',
   // Segments / on-segment
   'đoạn', 'cạnh', 'thuộc', 'nằm giữa', 'nằm ngoài',
+  // "nằm trên" — "Gọi C,D là các điểm nằm trên (O)" (vao10:12): clause chỉ có
+  // "nằm trên (O)" (không "thuộc"/"đường tròn") bị coi văn xuôi → rule không
+  // thấy clause (runDeterministicIntents chỉ feed clause hasGeometry) → điểm
+  // không dựng dù onCirclePoint khớp.
+  'nằm trên',
   // Tia đối (opposite ray): "Trên tia đối của tia AB lấy điểm C" — điểm trên tia
   // đối. Thiếu "tia đối" thì clause này bị coi văn xuôi (hasGeometry=false).
   'tia đối', 'tia',

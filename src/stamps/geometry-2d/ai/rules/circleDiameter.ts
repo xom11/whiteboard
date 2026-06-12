@@ -37,6 +37,14 @@ const COMPACT = new RegExp(
   String.raw`\(\s*(${CTR})\s*[;,]\s*[Rr]\s*\)\s*(?:có\s+)?` + DUONG_KW + String.raw`\s*kính\s+([A-Z])([A-Z])(?![A-Z])`,
   'gu',
 );
+// Bare paren "(I) đường kính AH" — KHÔNG chữ "đường tròn" đứng trước (vao10:61
+// "Vẽ (I) đường kính AH và (K) đường kính BH"). CHỈ nhận khi CẢ 2 đầu mút đã
+// xuất hiện TRƯỚC match (đường tròn phụ dựng trên đoạn có sẵn) → emit tâm
+// midpoint + đường tròn, KHÔNG free/connect (đầu mút thuộc hình đã dựng).
+const BARE_PAREN = new RegExp(
+  String.raw`\(\s*(${CTR})\s*\)\s*(?:có\s+)?` + DUONG_KW + String.raw`\s*kính\s+([A-Z])([A-Z])(?![A-Z])`,
+  'gu',
+);
 
 interface Parsed {
   center: string;
@@ -123,6 +131,33 @@ export const circleDiameterRule: LanguageRule = {
           intents: intentsFor(p),
         });
       }
+    }
+
+    // Bare paren "(I) đường kính AH" — đầu mút phải ĐÃ xuất hiện trước match
+    // (lookbehind chỉ loại chữ thường, đồng quy ước với diameterEndpoint).
+    BARE_PAREN.lastIndex = 0;
+    let bm: RegExpExecArray | null;
+    while ((bm = BARE_PAREN.exec(ctx.problem)) !== null) {
+      const center = bm[1];
+      const a = bm[2];
+      const b = bm[3];
+      if (!center || center === a || center === b || a === b) continue;
+      const key = `${center}|${a}${b}`;
+      if (emitted.has(key)) continue;
+      const before = ctx.problem.slice(0, bm.index);
+      const known = (p: string) => new RegExp(`(?<![a-z])${p}(?![a-z])`, 'u').test(before);
+      if (!known(a) || !known(b)) continue;
+      emitted.add(key);
+      const matched = bm[0];
+      const claim = ctx.clauses.filter((c) => c.text.includes(matched)).map((c) => c.id);
+      out.push({
+        ruleId: 'circle-diameter',
+        clauseIds: claim.length > 0 ? claim : [ctx.clauses[0]?.id ?? 0],
+        intents: [
+          addPoint(center, { kind: 'midpoint', of: `${a}${b}` }),
+          drawCircle(`${center}_c`, 'diameter', { endpoints: [a, b] }),
+        ],
+      });
     }
     return out;
   },

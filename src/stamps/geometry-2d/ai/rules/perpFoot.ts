@@ -114,6 +114,14 @@ const PERP_DRAW_DISTRIB = new RegExp(
   'gu',
 );
 
+// "Hạ/Kẻ XY và ZW cùng vuông góc (với)? L" — 2 cặp from+foot KHÁC chữ đầu,
+// CÙNG một đường L (vao10 51/76/84: "Hạ BE và CF cùng vuông góc với AK").
+//   groups: 1=from1 2=foot1 3=from2 4=foot2 5=line
+const PERP_SHARED_CUNG = new RegExp(
+  '(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng|[Hh]ạ)\\s+([A-Z])([A-Z])(?![A-Z])\\s+và\\s+([A-Z])([A-Z])(?![A-Z])\\s+cùng\\s+vuông\\s*góc\\s+(?:với\\s+)?(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{1,2})(?![A-Z])',
+  'gu',
+);
+
 // "từ M kẻ MP, MQ vuông góc với các cạnh AB, AC" → P=foot(M,AB), Q=foot(M,AC).
 // Cặp MP/MQ phải cùng chữ đầu với điểm from. Số pair/line cố định 2 vì đây là
 // dạng đề lớp 9 phổ biến; zip nhiều hơn đã có DISTRIB_PROJ/FOOT theo tên điểm.
@@ -407,6 +415,16 @@ function parseFeet(text: string, fallbackTri?: string[]): Foot[] {
     out.push({ name: foot1, from: from1, onLine: line1, withSegment: true });
     out.push({ name: foot2, from: from2, onLine: line2, withSegment: true });
     consumed.push([ddm.index ?? 0, (ddm.index ?? 0) + ddm[0].length]);
+  }
+
+  // 2c) "Hạ XY và ZW cùng vuông góc (với)? L" — 2 chân khác gốc, CÙNG đường L.
+  PERP_SHARED_CUNG.lastIndex = 0;
+  for (const sm of text.matchAll(PERP_SHARED_CUNG)) {
+    const [f1, t1, f2, t2, line] = [sm[1], sm[2], sm[3], sm[4], sm[5]];
+    if (t1 === t2 || line.includes(t1) || line.includes(t2)) continue;
+    out.push({ name: t1, from: f1, onLine: line, withSegment: true });
+    out.push({ name: t2, from: f2, onLine: line, withSegment: true });
+    consumed.push([sm.index ?? 0, (sm.index ?? 0) + sm[0].length]);
   }
 
   // 3) "Kẻ XY ⊥ LINE (tại Z)" — tên foot lấy từ cặp XY (không cần "X là").

@@ -54,7 +54,9 @@ const TRI = /tam giác\s+([A-Z])([A-Z])([A-Z])/u;
 //   - "đường tròn tâm O" / "đường tròn O"  → O
 //   - "(O)" đứng riêng (1 ký tự HOA trong ngoặc, không phải cặp đỉnh / số)
 const CIRCLE_WORDS = /đường\s*tròn\s*(?:\(\s*)?(?:tâm\s+)?([A-Z])(?![A-Z])/u;
-const CIRCLE_PAREN = /\(\s*([A-Z])\s*\)/u;
+// "(O)" bare HOẶC compact "(O;R)"/"(O,R)" — vao10:35 "Cho nửa (O;R) đường kính
+// AB" không có chữ "đường tròn" → CIRCLE_WORDS fail, fallback paren phải nhận ;R.
+const CIRCLE_PAREN = /\(\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)/u;
 
 // === EN patterns (issue #46 group B) =========================================
 // First-letter case-flex [Mm]/[Tt]; KHÔNG cờ 'i' (phá nhãn [A-Z]). Nhãn STRICT

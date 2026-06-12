@@ -53,9 +53,11 @@ const TWO_ON =
 // "(Các)? điểm E, F thuộc cung BC …" — 2 điểm phân phối ngăn bởi dấu phẩy.
 const TWO_ON_COMMA =
   /(?:[CcNn]ác\s+|[Nn]hững\s+)?điểm\s+([A-Z])(?![A-Za-z])\s*,\s*([A-Z])(?![A-Za-z])\s+thuộc\s+(?:nửa\s+)?(?:đường\s*tròn|cung)/u;
-// "M, N là hai điểm thuộc cung nhỏ BC …" — tên ĐỨNG TRƯỚC "là hai điểm thuộc".
+// "M, N là hai điểm thuộc cung nhỏ BC …" / "C,D là các điểm nằm trên (O)"
+// (vao10:12) — tên ĐỨNG TRƯỚC "là (hai|các) điểm thuộc/nằm trên". Hậu tố nhận
+// thêm "(X)" paren bare vì đề hay viết "nằm trên (O)" không chữ "đường tròn".
 const TWO_ON_NAMES =
-  /([A-Z])(?![A-Za-z])\s*,\s*([A-Z])(?![A-Za-z])\s+là\s+hai\s+điểm\s+(?:thuộc|nằm\s+trên|trên)\s+(?:nửa\s+)?(?:đường\s*tròn|cung)/u;
+  /([A-Z])(?![A-Za-z])\s*,\s*([A-Z])(?![A-Za-z])\s+là\s+(?:hai|các)\s+điểm\s+(?:thuộc|nằm\s+trên|trên)\s+(?:(?:nửa\s+)?(?:đường\s*tròn|cung)|\(\s*[A-Z]\s*\))/u;
 
 // Bare "(O)" (1 ký tự HOA trong ngoặc) — fallback khi không có tiền tố "đường
 // tròn". Dùng cuối cùng vì rộng (mọi "(X)").

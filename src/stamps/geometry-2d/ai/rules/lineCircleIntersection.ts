@@ -12,10 +12,11 @@ import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint, CIRCLE_KW } from './_shared';
 
 const PREFILTER = /cắt\s+(?:lại\s+)?(?:(?:nửa\s+)?đường\s*tròn\s*)?\(|giao\s*điểm\s+(?:thứ\s+hai\s+)?(?:của\s+|khác\s+[A-Z]\s+của\s+)?[A-Z]{2}\s+(?:và|với)\s+(?:(?:nửa\s+)?đường\s*tròn\s*)?(?:\(|ngoại\s*tiếp\s+tam\s*giác)/u;
-const CIRCLE = String.raw`(?:đường\s*tròn\s*)?\(\s*([A-Z])(?:['′]?)\s*\)`;
+// "(O)" + compact "(O;R)"/"(O,R)" — vao10:127 "Tia CI cắt đường tròn (O;R) tại E".
+const CIRCLE = String.raw`(?:đường\s*tròn\s*)?\(\s*([A-Z])(?:['′]?)\s*(?:[;,]\s*[Rr]\s*)?\)`;
 // Circle GIỮ prime trong tên tâm (O'): cần cho "(O')" — đường tròn đường kính
 // đặt tên "O'_c" (circleDiameter). emit raw "O'" → resolveCircleNames map "O'_c".
-const CIRCLE_P = String.raw`(?:(?:nửa\s+)?đường\s*tròn\s*)?\(\s*([A-Z](?:['′])?)\s*\)`;
+const CIRCLE_P = String.raw`(?:(?:nửa\s+)?đường\s*tròn\s*)?\(\s*([A-Z](?:['′])?)\s*(?:[;,]\s*[Rr]\s*)?\)`;
 
 // "<XY> vuông góc <L> (tại I)? … cắt (nửa)? đường tròn (O') (ở|tại) F" → đường
 // vuông góc XY cắt đường tròn (O') tại F (2 nhánh, lấy branch 0). XY có thể là

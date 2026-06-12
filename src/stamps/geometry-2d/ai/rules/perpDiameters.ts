@@ -19,14 +19,26 @@ import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint, drawCircle, CIRCLE_KW, DUONG_KW } from './_shared';
 import { SYMBOLIC_RADIUS } from './circleRadius';
 
-// "(đường tròn) (O) ... hai đường kính AB và CD ... vuông góc"
-const RE = new RegExp(
-  CIRCLE_KW +
-    '\\s*\\(\\s*([A-Z])(?:\\s*[;,]\\s*[Rr])?\\s*\\)' +
-    '[^.]{0,40}?hai\\s+' +
-    DUONG_KW +
-    '\\s*kính\\s+([A-Z])([A-Z])(?![A-Z])\\s+và\\s+([A-Z])([A-Z])(?![A-Z])' +
-    '[^.]{0,20}?vuông\\s*góc',
+// Tên đường tròn: "đường tròn (O)" / "(O;R)" bare (vao10:72 "Cho (O), hai đường
+// kính…") / "đường tròn tâm O". 2 group: paren-center | tâm-center.
+const CIRC =
+  '(?:' + CIRCLE_KW + '\\s*)?\\(\\s*([A-Z])(?:\\s*[;,]\\s*[Rr])?\\s*\\)' +
+  '|' + CIRCLE_KW + '\\s+tâm\\s+([A-Z])(?![A-Za-z])';
+// Cặp đường kính: "AB và CD" / "AB, CD".
+const PAIR =
+  '([A-Z])([A-Z])(?![A-Z])\\s*(?:,\\s*|và\\s+)([A-Z])([A-Z])(?![A-Z])';
+
+// Thứ tự 1 — tên TRƯỚC tính từ: "(O) … hai đường kính AB và CD … vuông góc".
+const RE_NAMES_FIRST = new RegExp(
+  '(?:' + CIRC + ')[^.]{0,40}?hai\\s+' + DUONG_KW + '\\s*kính\\s+(?:là\\s+)?' +
+    PAIR + '[^.]{0,20}?vuông\\s*góc',
+  'u',
+);
+// Thứ tự 2 — tính từ TRƯỚC tên (vao10:127): "(O;R) có hai đường kính vuông góc
+// (với nhau)? (là)? AB và CD".
+const RE_ADJ_FIRST = new RegExp(
+  '(?:' + CIRC + ')[^.]{0,40}?hai\\s+' + DUONG_KW +
+    '\\s*kính\\s+vuông\\s*góc(?:\\s+với\\s+nhau)?\\s*(?:là\\s+)?\\s*' + PAIR,
   'u',
 );
 
@@ -45,13 +57,13 @@ export const perpDiametersRule: LanguageRule = {
   languages: ['vi'],
   patterns: [PREFILTER],
   match(ctx) {
-    const m = RE.exec(ctx.problem);
+    const m = RE_NAMES_FIRST.exec(ctx.problem) ?? RE_ADJ_FIRST.exec(ctx.problem);
     if (!m) return [];
-    const center = m[1];
-    const a = m[2];
-    const b = m[3];
-    const cc = m[4];
-    const d = m[5];
+    const center = m[1] ?? m[2];
+    const a = m[3];
+    const b = m[4];
+    const cc = m[5];
+    const d = m[6];
     // 5 tên phải phân biệt nhau.
     const names = [center, a, b, cc, d];
     if (new Set(names).size !== names.length) return [];
