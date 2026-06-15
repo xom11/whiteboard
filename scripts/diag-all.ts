@@ -112,6 +112,14 @@ const DATASETS: DS[] = [
     intro: introBeforeProof,
   },
   {
+    name: 'chuyen2026',
+    file: 'docs/datasets/hinh-phang-chuyen-2026.txt',
+    // Trích bởi scripts/extract-chuyen2026.mjs từ md markitdown (toanmath, đề chuyên
+    // 2026-2027 các tỉnh). intro = lead "Cho ..." (extractor đã cắt sub-question).
+    parse: blockParse(/^Câu\s+(\d+):/, (m) => m[1]),
+    intro: introBeforeProof,
+  },
+  {
     name: 'julielltv',
     file: 'docs/datasets/julielltv-hinh-hoc-phang.json',
     // JSON {problems:[{id, statement}]} — statement chứa LaTeX inline $...$.
