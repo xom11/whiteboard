@@ -41,6 +41,14 @@ const VN_REV = new RegExp(
 const RESOLVE_CENTER =
   /đường\s*tròn\s*(?:\(\s*)?(?:tâm\s+)?([A-Z])(?![A-Za-z])|\(\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)/u;
 
+// Điểm ngoài qua METRIC (không chữ "ngoài"): "(O; 3cm) và điểm A có OA = 6 cm"
+// → 6 > 3 ⇒ A ngoài (O). group1=tâm, group2=R, group3=điểm, group4=cặp đo (OA),
+// group5=khoảng cách d. Chỉ external khi cặp-đo = {tâm, điểm} và d > R.
+const VN_METRIC = new RegExp(
+  String.raw`\(\s*([A-Z])\s*[;,]\s*(\d+(?:[.,]\d+)?)\s*cm\s*\)[^.A-Z]{0,12}?(?:và\s+)?(?:có\s+)?điểm\s+([A-Z])(?:['′]?)[^.]{0,12}?([A-Z]{2})\s*=\s*(\d+(?:[.,]\d+)?)`,
+  'u',
+);
+
 // EN mirror: "circle (O) and (a)? point A (lies|lying)? outside".
 const EN_FORM = new RegExp(
   String.raw`(?:[Cc]ircle\s*)?\(\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)[^.A-Z]{0,8}?and\s+(?:a\s+)?point\s+([A-Z])(?:['′]?)[^.A-Z]{0,18}?outside`,
@@ -51,7 +59,7 @@ export const circleExternalPointRule: LanguageRule = {
   id: 'circleExternalPoint',
   priority: 70,
   languages: ['vi', 'en'],
-  patterns: [/ngoài/u, /[Oo]utside/u],
+  patterns: [/ngoài/u, /[Oo]utside/u, /điểm\s+[A-Z][^.]{0,12}?[A-Z]{2}\s*=\s*\d/u],
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
@@ -61,6 +69,15 @@ export const circleExternalPointRule: LanguageRule = {
       if (m) {
         center = m[1];
         ext = m[2];
+      } else if (VN_METRIC.test(c.text)) {
+        const mm = VN_METRIC.exec(c.text)!;
+        const [ctr, r, pt, pair, d] = [mm[1], mm[2], mm[3], mm[4], mm[5]];
+        // cặp đo phải gồm tâm + điểm; d > R ⇒ ngoài.
+        const norm = (s: string) => parseFloat(s.replace(',', '.'));
+        if (pair.includes(ctr) && pair.includes(pt) && norm(d) > norm(r)) {
+          center = ctr;
+          ext = pt;
+        }
       } else {
         const rv = VN_REV.exec(c.text);
         if (!rv) continue;

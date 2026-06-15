@@ -20,6 +20,18 @@ describe('circleExternalPointRule', () => {
     // circle PHẢI emit trước external point (build-order dependency).
     expect(all[0].op).toBe('draw-circle');
   });
+
+  // httcd:59 — điểm ngoài qua METRIC (không chữ "ngoài"): "(O;3cm) và điểm A có
+  // OA=6cm" → 6 > 3 ⇒ A ngoài (O).
+  it('"Cho đường tròn (O ; 3cm) và điểm A có OA = 6 cm" → circle O + external A (metric)', () => {
+    const all = run(circleExternalPointRule, 'Cho đường tròn (O ; 3cm) và điểm A có OA = 6 cm');
+    expect(all).toContainEqual({ op: 'add-point', name: 'A', constraint: { kind: 'externalToCircle', circle: 'O' } });
+  });
+
+  it('KHÔNG external khi OA < R (điểm trong)', () => {
+    const all = run(circleExternalPointRule, 'Cho đường tròn (O ; 5cm) và điểm A có OA = 2 cm');
+    expect(all.find((i: any) => i.name === 'A' && i.constraint?.kind === 'externalToCircle')).toBeUndefined();
+  });
 });
 
 describe('tangentNamedFromExtRule (vao10 variants)', () => {
