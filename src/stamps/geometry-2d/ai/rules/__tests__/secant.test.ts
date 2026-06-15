@@ -16,6 +16,13 @@ describe('secantRule', () => {
     });
   });
 
+  // vao10:100/httcd:208 — "tại HAI ĐIỂM B và C" (cụm "hai điểm" giữa "tại" và tên).
+  it('"đi qua A cắt (O) tại hai điểm B và C" → B onCircle, C secondIntersection(AB)', () => {
+    const all = run('Cho (O) và điểm A nằm ngoài. Một đường thẳng d đi qua A cắt đường tròn (O) tại hai điểm B và C');
+    expect(all.find((i) => i.name === 'B')?.constraint).toEqual(expect.objectContaining({ kind: 'onCircle' }));
+    expect(all.find((i) => i.name === 'C')?.constraint).toEqual({ kind: 'secondIntersection', line: 'AB', circle: 'O', other: 'B' });
+  });
+
   it('"cát tuyến ADE" → A ngoài, D gần (onCircle), E xa (secondIntersection AD)', () => {
     const all = run('Cho đường tròn (O). Từ A kẻ cát tuyến ADE');
     expect(all).toContainEqual(expect.objectContaining({ op: 'add-point', name: 'D', constraint: expect.objectContaining({ kind: 'onCircle' }) }));
