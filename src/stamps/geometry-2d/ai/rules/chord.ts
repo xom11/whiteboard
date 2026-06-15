@@ -55,9 +55,14 @@ const THETA_STEP = 0.9;
 // Prefilter toàn đề ("Dây" HOA đầu câu cũng khớp).
 const PREFILTER = /[Dd]ây/u;
 
+/** Escape regex metachar — tên đường tròn từ OCR bẩn có thể chứa "(", "*"… */
+function escapeRe(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /** Clause id chứa khai báo đường tròn (CIRCLE_WORDS hoặc "(O)"). */
 function findCircleClauseId(clauses: readonly Clause[], circle: string): number | undefined {
-  const frag = new RegExp(CIRCLE_KW + `|\\(\\s*${circle}\\s*\\)`, 'u');
+  const frag = new RegExp(CIRCLE_KW + `|\\(\\s*${escapeRe(circle)}\\s*\\)`, 'u');
   for (const c of clauses) if (frag.test(c.text)) return c.id;
   return undefined;
 }

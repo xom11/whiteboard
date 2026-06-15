@@ -112,6 +112,14 @@ const DATASETS: DS[] = [
     intro: introBeforeProof,
   },
   {
+    name: 'mohinh',
+    file: 'docs/datasets/mo-hinh-hinh-hoc-vao10.txt',
+    // Trích bởi scripts/extract-mohinh.mjs từ md markitdown ("Chuyên đề các mô hình
+    // thường gặp ... ôn thi vào 10", toanmath). 39 bài mô hình hình học lớp 9.
+    parse: blockParse(/^Câu\s+(\d+):/, (m) => m[1]),
+    intro: introBeforeProof,
+  },
+  {
     name: 'chuyen2026',
     file: 'docs/datasets/hinh-phang-chuyen-2026.txt',
     // Trích bởi scripts/extract-chuyen2026.mjs từ md markitdown (toanmath, đề chuyên

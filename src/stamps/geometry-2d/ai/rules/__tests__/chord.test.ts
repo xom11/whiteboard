@@ -13,6 +13,13 @@ function ctxOf(text: string) {
   return { problem, clauses };
 }
 
+// OCR bẩn: tên đường tròn dính ký tự regex-meta "(" → findCircleClauseId KHÔNG
+// được throw (escape tên trước RegExp).
+it('không throw khi tên đường tròn chứa ký tự regex-meta (OCR bẩn)', () => {
+  expect(() => ints('Cho đường tròn (O*) dây AB. Dây CD vuông góc.')).not.toThrow();
+  expect(() => ints('Tứ giác nội tiếp đường tròn ( dây MN.')).not.toThrow();
+});
+
 function summary(problem: string) {
   const all = ints(problem);
   return {
