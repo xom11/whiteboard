@@ -35,6 +35,13 @@ describe('circleDiameterRule', () => {
     ]);
   });
 
+  // mohinh:26 — "tâm (O)": tâm + tên trong ngoặc (KHÁC "tâm O" bare / "(O)" liền).
+  it('"Cho đường tròn tâm (O), đường kính AB=2R" → A,B free + O midpoint + circle', () => {
+    const all = intents('Cho đường tròn tâm (O), đường kính AB=2R.');
+    expect(all).toContainEqual({ op: 'add-point', name: 'O', constraint: { kind: 'midpoint', of: 'AB' } });
+    expect(all).toContainEqual({ op: 'draw-circle', name: 'O_c', spec: 'diameter', endpoints: ['A', 'B'] });
+  });
+
   it('"Cho (O;R) đường kính AB" compact notation', () => {
     const all = intents('Cho (O;R) đường kính AB cố định.');
     expect(all).toContainEqual({
