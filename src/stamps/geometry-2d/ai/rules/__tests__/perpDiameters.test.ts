@@ -45,4 +45,11 @@ describe('perpDiametersRule', () => {
   it('fail-safe: chỉ một đường kính → không khớp', () => {
     expect(intents('Cho đường tròn (O) đường kính AB.')).toEqual([]);
   });
+
+  // vao10:71 — ký hiệu ⊥ vừa là separator vừa là khẳng định vuông góc.
+  it('"Cho (O;R) có hai đường kính AB ⊥ CD" (⊥ giữa 2 đường kính)', () => {
+    const all = intents('Cho (O;R) có hai đường kính AB ⊥ CD.');
+    const oncircle = all.filter((i) => i.constraint?.kind === 'onCircle').map((i) => i.name).sort();
+    expect(oncircle).toEqual(['A', 'B', 'C', 'D']);
+  });
 });

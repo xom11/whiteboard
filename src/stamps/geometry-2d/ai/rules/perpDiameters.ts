@@ -43,7 +43,14 @@ const RE_ADJ_FIRST = new RegExp(
   'u',
 );
 
-const PREFILTER = new RegExp('hai\\s+' + DUONG_KW + '\\s*kính[^.]{0,40}?vuông\\s*góc', 'u');
+// Ký hiệu ⊥ vừa là separator vừa là khẳng định ⊥: "hai đường kính AB ⊥ CD" (vao10:71).
+const RE_PERP_SYM = new RegExp(
+  '(?:' + CIRC + ')[^.]{0,40}?hai\\s+' + DUONG_KW +
+    '\\s*kính\\s+(?:là\\s+)?([A-Z])([A-Z])(?![A-Z])\\s*⊥\\s*([A-Z])([A-Z])(?![A-Z])',
+  'u',
+);
+
+const PREFILTER = new RegExp('hai\\s+' + DUONG_KW + '\\s*kính[^.]{0,40}?(?:vuông\\s*góc|⊥)', 'u');
 
 // Góc đặt 4 đầu mút: AB trục ngang (0,π), CD trục dọc (π/2, 3π/2) ⇒ AB⊥CD.
 const THETA_A = 0;
@@ -58,7 +65,7 @@ export const perpDiametersRule: LanguageRule = {
   languages: ['vi'],
   patterns: [PREFILTER],
   match(ctx) {
-    const m = RE_NAMES_FIRST.exec(ctx.problem) ?? RE_ADJ_FIRST.exec(ctx.problem);
+    const m = RE_NAMES_FIRST.exec(ctx.problem) ?? RE_ADJ_FIRST.exec(ctx.problem) ?? RE_PERP_SYM.exec(ctx.problem);
     if (!m) return [];
     const center = m[1] ?? m[2];
     const a = m[3];
