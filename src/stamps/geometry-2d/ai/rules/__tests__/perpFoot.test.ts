@@ -501,4 +501,10 @@ describe('perpFoot — "X và Y lần lượt là chân đường vuông góc k�
     expect(feet('Gọi E và F lần lượt là chân các đường vuông góc kẻ từ M đến BC và AC.'))
       .toEqual(['E:M->BC', 'F:M->AC']);
   });
+
+  // vao10:58/httcd:220 — 2 chân từ 2 GỐC khác nhau, CÙNG 1 đường (AA' có prime).
+  it('vao10:58: "Hai điểm E, F lần lượt là chân đường vuông góc kẻ từ B, C đến AA\'"', () => {
+    expect(feet("Hai điểm E, F lần lượt là chân đường vuông góc kẻ từ B, C đến AA'."))
+      .toEqual(["E:B->AA'", "F:C->AA'"]);
+  });
 });

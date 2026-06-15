@@ -103,6 +103,19 @@ const SHARED_FROM_TWO = new RegExp(
   'gu',
 );
 
+// 2 chân từ 2 GỐC khác nhau, CÙNG 1 đường: "(Hai/Các điểm)? E, F lần lượt là
+// chân (đường)? vuông góc (kẻ)? từ B, C (đến|xuống) AA'" → E=foot(B,AA'),
+// F=foot(C,AA'). KHÁC SHARED_FROM_TWO (1 from, 2 đường) + ALTITUDE_FEET_FROM
+// (đường cao suy từ tam giác). Đường chung 1-2 ký tự + prime (vao10:58 "AA'").
+//   groups: 1=name1 2=from1... thực ra 1=n1 2=n2 3=from1 4=from2 5=line
+const FEET_FROM_SHARED_LINE = new RegExp(
+  "(?:[Hh]ai\\s+điểm\\s+|[Cc]ác\\s+điểm\\s+)?([A-Z])(?:['′])?\\s*,\\s*([A-Z])(?:['′])?\\s+" +
+    'lần\\s*lượt\\s+là\\s+chân\\s+(?:các\\s+)?(?:đường\\s+)?(?:vuông\\s*góc|cao)\\s+' +
+    "(?:kẻ\\s+|hạ\\s+|vẽ\\s+|dựng\\s+)?(?:từ\\s+)?([A-Z](?:['′])?)\\s*,\\s*([A-Z](?:['′])?)\\s+" +
+    "(?:đến|xuống|trên|tới)\\s+(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{1,2}(?:['′])?)(?![A-Z])",
+  'gu',
+);
+
 // "Kẻ/Vẽ/Dựng XY,XZ (lần lượt)? (⊥|vuông góc với?) L1,L2 (tại Z1,Z2)?" — phân
 // phối: cặp XY,XZ CÙNG chữ đầu (from), chân = chữ thứ 2, zip với L1,L2. Bài 4
 // ("Kẻ HE,HF ⊥ AB,AC"), Bài 35 ("Vẽ ME,MF ⊥ AC,AB tại E,F").
@@ -380,6 +393,20 @@ function parseFeet(text: string, fallbackTri?: string[]): Foot[] {
     out.push({ name: n1, from, onLine: l1, withSegment: true });
     out.push({ name: n2, from, onLine: l2, withSegment: true });
     consumed.push([sm.index ?? 0, (sm.index ?? 0) + sm[0].length]);
+  }
+
+  // 0c) 2 GỐC khác nhau, CÙNG 1 đường: "E, F lần lượt là chân ⊥ từ B, C đến AA'"
+  //     → E↔B, F↔C, onLine=AA' chung. Normalize prime ′→' cho từ/đường.
+  FEET_FROM_SHARED_LINE.lastIndex = 0;
+  for (const fm of text.matchAll(FEET_FROM_SHARED_LINE)) {
+    const start = fm.index ?? 0;
+    if (consumed.some(([a, b]) => start >= a && start < b)) continue;
+    const norm = (s: string) => s.replace(/′/g, "'");
+    const [n1, n2, f1, f2, line] = [fm[1], fm[2], norm(fm[3]), norm(fm[4]), norm(fm[5])];
+    if (n1 === n2 || f1 === f2 || line.includes(n1) || line.includes(n2)) continue;
+    out.push({ name: n1, from: f1, onLine: line, withSegment: true });
+    out.push({ name: n2, from: f2, onLine: line, withSegment: true });
+    consumed.push([start, start + fm[0].length]);
   }
 
   // 1) "X, Y lần lượt là … và …" → 2 foot (name bind sẵn trong cú pháp).
