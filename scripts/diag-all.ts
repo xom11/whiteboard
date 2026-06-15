@@ -112,6 +112,14 @@ const DATASETS: DS[] = [
     intro: introBeforeProof,
   },
   {
+    name: 'httcd',
+    file: 'docs/datasets/hinh-hoc-9-chu-de.txt',
+    // Trích bởi scripts/extract-httcd.mjs từ md markitdown ("Bài tập Hình học 9
+    // theo chủ đề", toanmath). 255 bài dựng hình lớp 9 (lọc bài có đường tròn).
+    parse: blockParse(/^Câu\s+(\d+):/, (m) => m[1]),
+    intro: introBeforeProof,
+  },
+  {
     name: 'mohinh',
     file: 'docs/datasets/mo-hinh-hinh-hoc-vao10.txt',
     // Trích bởi scripts/extract-mohinh.mjs từ md markitdown ("Chuyên đề các mô hình

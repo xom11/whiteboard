@@ -1,0 +1,509 @@
+Câu 1: Cho tam giác ABC cân (AB = AC) và đường tròn tâm O tiếp xúc với hai cạnh AB và AC lần lượt ở B và C. Từ điểm M trên cung nhỏ BC (M khác B và C) kẻ MD, ME, MF lần lượt vuông góc với các đường thẳng BC, CA, AB.
+
+Câu 2: Cho tam giác ABC có 3 góc nhọn. Vẽ (O) đường kính BC, nó cắt các cạnh AB, AC theo thứ tự ở D và E.
+
+Câu 3: Cho đường tròn (O) đường kính AB. Điểm C thuộc đường (O). Đường tròn (I) đường kính OA cắt OC tại D. Vẽ CH ⊥ AB.
+
+Câu 4: Cho (O) đường kính MN, I thuôc OM, K thuộc ON. Qua I, K vẽ các dây AB và CD vuông góc với MN
+
+Câu 5: Cho đường tròn (O; R) đường kính AB. Gọi M là một điểm nằm trên AB (điểm M khác O). Qua M vẽ dây CD vuông góc với AB. Lấy điểm E đối xứng với A qua M.
+
+Câu 6: Cho đường tròn (O; R). Vẽ hai bán kính OA, OB. Trên các bán kính OA, OB lần lượt lấy các điểm M, N sao cho OM = ON. Vẽ dây CD đi qua M, N (M ở giữa C và N).
+
+Câu 7: Cho đường tròn (O; R) đường kính AB. Gọi M, N lần lượt là trung điểm của OA, OB. Qua M, N lần lượt vẽ các dây CD và EF song song với nhau (C và E cùng nằm trên một nửa đường tròn đường kính AB).
+
+Câu 8: Cho đường tròn (O) và điểm A ở ngoài đường tròn. Vẽ tia Ax cắt (O) tại B, c và tia Ay cắt (O) tại D, E sao cho xÂO > yÂO. So sánh các dây DE và BC.
+
+Câu 9: Cho đường tròn (O), điểm A nằm bên trong đường tròn. Vẽ dây BC vuông góc với OA tại A. Vẽ dây EF bất kì đi qua A và không vuông góc với OA. Hãy so sánh độ dài hai dây BC và EF ?
+
+Câu 10: Cho (O), hai dây AB và CD bằng nhau, các tia AB và CD cắt nhau tại E nằm bên ngoài đường tròn. Gọi H và K theo thứ tự là trung điểm của AB và CD.
+
+Câu 11: Cho (O), hai dây AB, CD (AB < CD), các tia AB và CD cắt nhau tại K nằm bên ngoài đường tròn. Đường tròn (O; OK) cắt KA và KC tại M và N.
+
+Câu 12: Cho (O), các bán kính OA, OB. Trên cung nhỏ AB lấy các điểm M và N sao cho AM = BN. Gọi C là giao điểm của AM và BN.
+
+Câu 13: Cho đường tròn (O; R). Vẽ hai bán kính OA, OB. Trên các bán kính OA, OB lần lượt lấy các điểm M, N sao cho OM = ON. Vẽ dây CD đi qua M, N (M ở giữa C và N).
+
+Câu 14: Cho đường tròn (O) đường kính AB. C là một điểm thay đổi trên đường tròn (O) . Tiếp tuyến của (O) tại C cắt AB tại D.Qua O vẽ đường thẳng vuông góc với phân giác góc ODC, đường này cắt CD tại M.
+
+Câu 15: Cho tam giác ABC nhọn. Vẽ đường tròn tâm O đường kính BC cắt AB, AC lần lượt tại E và F. BF và CE cắt nhau tại I. Gọi M là trung điểm AI.
+
+Câu 16: Cho đường tròn (O;R) có đường kính BC, lấy điểm A thuộc (O) sao cho AB = R a.
+
+Câu 17: Cho tam giác ABC đều nội tiếp đường tròn (O), AB = 4 3. Đường kính AD cắt BC tại H. Đường thẳng BO cắt tiếp tuyến tại A của đường tròn (O) ở điểm E. a.
+
+Câu 18: Cho nửa đường tròn tâm O đường kính AB = 2R. Trên nửa đường tròn lấy điểm C (C khác A và B). Gọi D là giao điểm của đường thẳng BC với tiếp tuyến tại A của nửa đường tròn tâm O và I là trung điểm AD. a.
+
+Câu 19: Cho đường tròn (O) đường kính AB. Ax, By là 2 tia tiếp tuyến của (O) (Ax, By cùng nửa mặt phẳng bở là đường thẳng AB). Trên Ax lấy điểm C, trên By lấy điểm D sao cho góc COD bằng 90^0 .
+
+Câu 20: Cho đường tròn tâm O đường kính AB. Một nửa đường thẳng qua A cắt đường kính CD vuông góc với AB tại M và cắt (O) tại N. a.
+
+Câu 21: Cho đường tròn tâm O, bán kính R. Lấy điểm A tùy ý trên (O). Vẽ đường tròn đường kính OA. Xác định vị trí tương đối của hai đường tròn.
+
+Câu 22: Cho hai đường tròn (O;R) và (O’; R) cắt nhau tại M và N. Biết OO’=24cm, MN =10cm.
+
+Câu 23: Cho hai đường tròn (O;R) và (O’;R’) tiếp xúc ngoài tại A. Kẻ tiếp tuyến chung ngoài MN với M thuộc (O), N thuộc (O’). Biết R = 9cm, R’ = 4cm.
+
+Câu 24: Cho hai đường tròn (O;R) và (O';R') tiếp xúc ngoài tại Avới (R>R'). Đường nối tâm OO'cắt (O),(O') lần lượt tại B,C. Dây DE của (O) vuông góc với BC tại trung điểm K của BC
+
+Câu 25: Cho hai đường tròn (O) và (O’) tiếp xúc ngoài tại A. Gọi CD là tiếp tuyến chung ngoài của hai đường tròn ( với C∈ (O) và D ∈ (O’) ).
+
+Câu 26: Cho hai đường tròn (O) và (O’) tiếp xúc ngoài tại A. Kẻ tiếp tuyến chung ngoài MN với M thuộc (O) và N thuộc (O’). Gọi P là điểm đối xứng với M qua OO’, Q là điểm đối xứng với N qua OO’.
+
+Câu 27: Cho đường tròn tâm O, bán kính R và điểm A cố định bên trong đường tròn (O). Gọi M là điểm di động trên đường tròn (O), đường trung trực của dây AM cắt (O) tại P và P’.
+
+Câu 28: Cho tam giác ABC vuông tại A có AB = 5cm, AC = 12cm. Xét vị trí tương đối của hai đường tròn (B, 6cm) và (C, a cm), (a ϵ R) theo a.
+
+Câu 29: Cho đường tròn (O) có đường kính BC, dây AD vuông góc với BC tại H. Gọi E, F là chân các đường vuông góc kẻ từ H đến AB, AC. Gọi (I), (K) theo thứ tự là các đường tròn ngoại tiếp tam giác HBE, HCF. Xác định vị trí tương đối giữa các đường tròn: (I) và (O), (K) và (O), (I) và (K).
+
+Câu 30: Cho hai đường tròn (O, R) và (O’, R’) tiếp xúc ngoài nhau cố định. Bán kính OA quay quanh O, bán kính OA’ quay quanh O’ sao cho OA luôn song song với O’A’. Gọi M là trung điểm của AA’.
+
+Câu 31: Cho tam giác ABC vuông tại A có AB = a và AC = 2a/3. Xác định bán kính của đường tròn tâm △ C để đường tròn này tiếp xúc với đường tròn (O’) tại M’.
+
+Câu 32: Cho tam giác ABC có ba góc nhọn nội tiếp đường tròn (O). Các đường cao AD, BE, CF cắt nhau tại H.
+
+Câu 33: Cho tam giác cân ABC (AB = AC), các đường cao AD, BE, cắt nhau tại H. Gọi O là tâm đường tròn ngoại tiếp tam giác AHE. 1/ Bốn điểm A, E, D, B cùng nằm trên một đường tròn. A 1 1 2/
+
+Câu 34: Cho nửa đường tròn đường kính AB = 2R. Từ A và B kẻ hai tiếp tuyến Ax, By. Qua điểm M thuộc nửa đường tròn kẻ tiếp tuyến thứ ba cắt các tiếp tuyến Ax , By lần lượt ở C và D. Các đường thẳng AD và BC cắt nhau tại N. 1/
+
+Câu 35: Cho tam giác cân ABC (AB = AC), I là tâm đường tròn nội tiếp, K là tâm đường tròn bàng tiếp góc A , O là trung điểm của IK. 1/
+
+Câu 36: Cho đường tròn (O; R), từ một điểm A trên (O) kẻ tiếp tuyến d với (O). Trên đường thẳng d lấy điểm M bất kì ( M khác A) kẻ cát tuyến MNP và gọi K là trung điểm của NP, kẻ tiếp tuyến MB (B là tiếp điểm). Kẻ AC ⊥ MB, BD ⊥ MA, gọi H là giao điểm của AC và BD, I là giao điểm của OM và AB. 1/
+
+Câu 37: Cho tam giác ABC vuông ở A, đường cao AH. Vẽ đường tròn tâm A bán kính AH. Gọi HD là đường kính của đường tròn (A; AH). Tiếp tuyến của đường tròn tại D cắt CA ở E. 1/
+
+Câu 38: Cho đường tròn (O; R) đường kính AB. Kẻ tiếp tuyến Ax và lấy trên tiếp tuyến đó một điểm P sao cho AP > R, từ P kẻ tiếp tuyến tiếp xúc với (O) tại M. 1/
+
+Câu 39: Cho nửa đường tròn tâm O đường kớnh AB và điểm M bất kì trên nửa đường tròn ( M khác A,B). Trên nửa mặt phẳng bờ AB chứa nửa đường tròn kẻ tiếp tuyến Ax. Tia BM cắt Ax tại I; tia phân giác của góc IAM cắt nửa đường tròn tại E; cắt tia BM tại F, tia BE cắt AM tại K.
+
+Câu 40: Cho đoạn thẳng AB, điểm C nằm giữa A và B. Vẽ về một phía của AB các nửa đường tròn có đường kính theo thứ tự là AB, AC, CB. Đường vuông góc với AB tại C cắt nửa đường tròn lớn tại D. DA,DB cắt các nửa đường tròn có đường kính AC, CB theo thứ tự tại M, N.
+
+Câu 41: Cho hai đường tròn (O) và (O’) tiếp xúc ngoài tại A. Kẻ tiếp tuyến chung DE, D thuộc đường tròn tâm O, E thuộc đường tròn tâm O’. Kẻ tiếp tuyến chung trong tại A, cắt DE ở I. Gọi M là giao điểm của OI và AD, N là giao điểm của O’I và AE. a, Tứ giác AMIN là hình gì? Vì sao? b,
+
+Câu 42: Cho đường tròn (O), đường kính AB, đểm M thuộc đường tròn. Vẽ điểm N đối xứng với A qua M.BN cắt đường tròn ở C.Gọi E là giao điểm của AC và BM. a,
+
+Câu 43: Cho tam giác vuông tại A( AB < AC) nội tiếp đường tròn (O) có đường kính BC. Kẻ dây AD vuông góc với BC. Gọi E là giao điểm của DB và CA. Qua E kẻ đường thẳng vuông góc với BC, cắt BC ở H, cắt AB ở F.
+
+Câu 44: Từ điểm M ở ngoài đường tròn (O) vẽ hai tiếp tuyến MA và MB ( A, B là tiếp điểm). Cho biết góc AMB bằng 400. a/
+
+Câu 45: Cho nửa đường tròn tâm O, đường kính AB. Kẽ các tiếp tuyến Ax, By cùng phía với nửa đường tròn đối với AB. Từ điểm M trên nửa đường tròn kẽ tiếp tuyến thứ ba với đường tròn, nó cắt Ax và By lần lượt tại C và D. a/
+
+Câu 46: Cho hai đường tròn (O) và (O’) tiếp xúc ngoài với nhau tại B. Vẽ đường kính AB của đường tròn (O) và đường kính BC của đường tròn (O’). Đường tròn đường kính OC cắt (O) tại M và N. a/ Đường thẳng CM cắt (O’) tại P. Chúng minh: OM//BP. b/ Từ C kẽ đường thẳng vuông góc với CM cắt tia ON tại D.
+
+Câu 47: Cho hai đường tròn (O,R) và (O/,R/) cắt nhau tại A và B sao cho đường thẳng OA là tiếp tuyến của đường tròn (O/,R/). Biết R=12cm, R/=5cm. a/
+
+Câu 48: Cho đường tròn tâm O bán kính R=6cm và một điểm A cách O một khoảng 10cm. Từ A vẽ tiếp tuyến AB (B là tiếp điểm).
+
+Câu 49: Cho hai đường tròn đồng tâm (O,R) và (O,r). Dây AB của (O,R) tiếp xúc với (O,r). Trên tia AB lấy điểm E sao cho B là trung điểm của đoạn AE. Từ E vẽ tiếp tuyến thứ hai của (O,r) cắt (O,R) tại C và D (D ở giữa E và C). a/
+
+Câu 50: Cho nửa đường tròn (O) đường kính AB và một điểm M nằm trên nửa đường tròn đó. H là chân đường vuông góc hạ từ M xuống AB. Khi AH=2cm, MH=4cm. Hãy tính độ dài các đoạn thẳng: AB, MA, MB.
+
+Câu 51: Cho tam giác ABC nhọn nội tiếp đường tròn (O) đường kính AD. Gọi H là trực tâm của tam giác .
+
+Câu 52: Cho tam giác ABC cân tại A nội tiếp đường tròn (O). Đường cao AH cắt đường tròn ở điểm D. - 1 -
+
+Câu 53: Cho đường tròn tâm O đường kính AB. Gọi H là trung điểm OA. Dây CD vuông góc với OA tại H.
+
+Câu 54: Cho tam giác ABC nhọn, đường tròn đường kính BC cắt AB ở N và cắt AC ở M. Gọi H là giao điểm của BM và CN.
+
+Câu 55: Cho đường tròn tâm (O;R) đường kính AB và điểm M trên đường tròn sao cho M  AB=600. Kẻ dây MN vuông góc với AB tại H.
+
+Câu 56: Cho đường tròn (O) và điểm A cách O một khoảng bằng 2R, kẻ tiếp tuyến AB tới đường tròn (B là tiếp điểm).
+
+Câu 57: Từ điểm A ở ngoài đường tròn (O;R) kẻ hai tiếp tuyến AB, AC (với B và C là hai tiếp điểm). Gọi H là giao - 2 - điểm của OA và BC.
+
+Câu 58: Từ điểm A ở ngoài đường tròn (O; R) kẻ hai tiếp tuyến AB, AC (với B và C là các tiếp điểm). Kẻ BE ⊥ AC và CF ⊥ AB ( E ∈AC,F∈AB), BE và CF cắt nhau tại H.
+
+Câu 59: Cho đường tròn (O ; 3cm) và điểm A có OA = 6 cm. Kẻ các tiếp tuyến AB và AC với đường tròn (B, C là các tiếp điểm). Gọi H là giao điểm của OA và BC
+
+Câu 60: Cho nửa đường tròn tâm O đường kính AB. Gọi Ax , By là các tia vuông góc với AB( Ax , By và nửa đường tròn thuộc cùng một nửa mặt phẳng bờ AB). Qua điểm M bất kì thuộc tia Ax kẻ tiếp tuyến với nửa đường tròn, cắt By ở N.
+
+Câu 61: Cho hai đường tròn (O) và (O’) tiếp xúc ngoài tại A. Gọi CD là tiếp tuyến chung ngoài của hai đường tròn ( với C∈ (O) và D ∈ (O’) ).
+
+Câu 62: Cho hai đường tròn (O) và (O’) tiếp xúc ngoài tại A. Kẻ tiếp tuyến chung ngoài MN với M thuộc (O) và N thuộc (O’). Gọi P là điểm đối xứng với M qua OO’, Q là điểm đối xứng với N qua OO’.
+
+Câu 63: Cho đường tròn (O) đường kính AB. Vẽ đường tròn (I) đường kính OA. Bán kính OC của đường tròn (O) cắt đường tròn (I) tại D. Vẽ CH ⊥ AB.
+
+Câu 64: Cho đường tròn (O; R) và ba dây AB, AC, AD. Gọi M, N lần lượt là hình chiếu của B trên các đường thẳng AC, AD.
+
+Câu 65: Cho đường tròn (O; R). Vẽ hai dây AB và CD vuông góc với nhau. ≤2R2
+
+Câu 66: Cho đường tròn (O; R) và dây AB không đi qua tâm. Gọi M là trung điểm của AB. Qua M vẽ dây CD không trùng với AB.
+
+Câu 67: Cho đường tròn (O; R) đường kính AB. Gọi M là một điểm nằm giữa A và B. Qua M vẽ dây CD vuông góc với AB. Lấy điểm E đối xứng với A qua M.
+
+Câu 68: Cho đường tròn (O; R) và hai dây AB, CD bằng nhau và vuông góc với nhau tại I. Giả sử IA=2cm,IB=4cm.
+
+Câu 69: Cho đường tròn (O; R). Vẽ hai bán kính OA, OB. Trên các bán kính OA, OB lần lượt lấy các điểm M, N sao cho OM = ON. Vẽ dây CD đi qua M, N (M ở giữa C và N).
+
+Câu 70: Cho đường tròn (O; R) đường kính AB. Gọi M, N lần lượt là trung điểm của OA, OB. Qua M, N lần lượt vẽ các dây CD và EF song song với nhau (C và E cùng nằm trên một nửa đường tròn đường kính AB).
+
+Câu 71: Cho đường tròn (O) và một dây CD. Từ O kẻ tia vuông góc với CD tại M, cắt (O) tại H.
+
+Câu 72: Cho đường tròn (O; 12cm) có đường kính CD. Vẽ dây MN qua trung điểm I của OC sao cho 0 góc NID bằng 30 .
+
+Câu 73: Cho đường tròn (O; R) đường kính AB. Vẽ dây AC sao cho  CAB=30 0 . Trên tia đối của tia BA, lấy điểm M sao cho BM = R.
+
+Câu 74: Cho tam giác ABC vuông ở A có AB = 8, AC = 15. Vẽ đường cao AH. Gọi D là điểm đối xứng với B qua H. Vẽ đường tròn đường kính CD, cắt AC ở E.
+
+Câu 75: Từ một điểm M ở ngoài đường tròn (O), vẽ hai tiếp tuyến MA, MB với đường tròn. Trên tia 1   OB lấy điểm C sao cho BC = BO.
+
+Câu 76: Cho đường tròn (O; R) và một điểm A ở ngoài đường tròn. Vẽ các tiếp tuyến AB, AC.
+
+Câu 77: Từ một điểm A ở ngoài đường tròn (O; R), vẽ hai tiếp tuyến AB, AC với đường tròn. Đường thẳng vuông góc với OB tại O cắt AC tại N. Đường thẳng vuông góc với OC tại O cắt AB tại M.
+
+Câu 78: Cho tam giác ABC cân tại A nội tiếp đường tròn (O). Các tiếp tuyến của đường tròn vẽ từ A và C cắt nhau tại M. Trên tia AM lấy điểm D sao cho AD = BC.
+
+Câu 79: Cho đường tròn (O), dây cung CD. Qua O vẽ OH ⊥ CD tại H, cắt tiếp tuyến tại C của đường tròn (O) tại M.
+
+Câu 80: Cho nửa đường tròn tâm O, đường kính AB. Vẽ các tia Ax ⊥ AB và By ⊥ AB ở cùng phía nửa đường tròn. Gọi I là một điểm trên nửa đường tròn. Tiếp tuyến tại I cắt Ax tại C và By tại D.
+
+Câu 81: Cho đường tròn (O; 5cm). Từ một điểm M ở ngoài (O), vẽ hai tiếp tuyến MA và MB sao cho MA ⊥ MB tại M.
+
+Câu 82: Cho đường tròn (O). Từ một điểm M ở ngoài (O), vẽ hai tiếp tuyến MA và MB sao cho góc  AMB =60 0 . Biết chu vi tam giác MAB là 18cm, tính độ dài dây AB. HD: AB=6(cm).
+
+Câu 83: Cho hai đường tròn (A; R 1 ), (B; R 2 ) và (C; R 3 ) đôi một tiếp xúc ngoài nhau.
+
+Câu 84: Cho hai đường tròn (O; 5cm) và (O′; 5cm) cắt nhau tại A và B.
+
+Câu 85: Cho hai đường tròn (O; R) và (O′; R′) cắt nhau tại A và B với R > R′. Vẽ các đường kính AOC và AO′D.
+
+Câu 86: Cho hai đường tròn (O) và (O′) cắt nhau tại A và B. Vẽ cát tuyến chung MAN sao cho MA = AN. Đường vuông góc với MN tại A cắt OO′ tại I.
+
+Câu 87: Cho hai đường tròn (O) và (O′) tiếp xúc ngoài nhau tại A. Gọi M là giao điểm một trong hai tiếp tuyến chung ngoài BC và tiếp tuyến chung trong.
+
+Câu 88: Cho hai đường tròn (O; R) và (O′; R) tiếp xúc ngoài nhau tại M. Hai đường tròn (O) và (O′) cùng tiếp xúc trong với đường tròn lớn (O′′; R′′) lần lượt tại E và F.
+
+Câu 89: Cho đường tròn (O; 9cm). Vẽ 6 đường tròn bằng nhau bán kính R đều tiếp xúc trong với (O) và mỗi đường tròn đều tiếp xúc với hai đường khác bên cạnh nó.
+
+Câu 90: Cho hai đường tròn đồng tâm. Trong đường tròn lớn vẽ hai dây bằng nhau AB = CD và cùng tiếp xúc với đường tròn nhỏ tại M và N sao cho AB ⊥ CD tại I.
+
+Câu 91: Cho ba đường tròn (O ),(O ),(O ) cùng có bán kính R và tiếp xúc ngoài nhau từng đôi một. 1 2 3
+
+Câu 92: Cho hai đường tròn (O) và (O′) tiếp xúc nhau tại A. Qua A vẽ một cát tuyến cắt đường tròn (O) tại B và cắt đường tròn (O′) tại C. Từ B vẽ tiếp tuyến xy với đường tròn (O). Từ C vẽ đường thẳng uv song song với xy.
+
+Câu 93: Cho hình vuông ABCD. Vẽ đường tròn (D; DC) và đường tròn (O) đường kính BC, chúng cắt nhau tại một điểm thứ hai là E. Tia CE cắt AB tại M, tia BE cắt AD tại N.
+
+Câu 94: Cho góc vuông xOy. Lấy các điểm I và K lần lượt trên các tia Ox và Oy. Vẽ đường tròn (I; OK) cắt tia Ox tại M (I nằm giữa O và M). Vẽ đường tròn (K; OI) cắt tia Oy tại N (K nằm giữa O và N).
+
+Câu 95: Cho đường tròn (O; R) và một điểm A cố định trên đường tròn đó. Qua A vẽ tiếp tuyến xy. Từ một điểm M trên xy vẽ tiếp tuyến MB với đường tròn (O). Hai đường cao AD và BE của tam giác MAB cắt nhau tại H.
+
+Câu 96: Cho nửa đường tròn tâm O đường kính AB. Từ một điểm M trên nửa đường tròn ta vẽ tiếp tuyến xy. Vẽ AD và BC vuông góc với xy.
+
+Câu 97: Cho nửa đường tròn (O; R) đường kính AB và một điểm E di động trên nửa đường tròn đó (E không trùng với A và B). Vẽ các tia tiếp tuyến Ax, By với nửa đường tròn. Tia AE cắt By tại C, tia BE cắt Ax tại D.
+
+Câu 98: Cho đoạn thẳng AB cố định. Vẽ đường tròn (O) tiếp xúc với AB tại A, đường tròn (O′) tiếp xúc với AB tại B. Hai đường tròn này luôn thuộc cùng một nửa mặt phẳng bờ AB và luôn tiếp xúc ngoài với nhau. Hỏi tiếp điểm M của hai đường tròn di động trên đường nào? HD: Từ M vẽ tiếp tuyến chung của hai đường tròn, cắt AB tại I.
+
+Câu 99: Cho đường tròn (O; R) nội tiếp ∆ABC. Gọi M, N, P lần lượt là tiếp điểm của AB, AC, BC với (O).
+
+Câu 100: Cho đường tròn (O) đường kính AB. Dây CD cắt đường kính AB tại I. Gọi H và K lần lượt là chân các đường vuông góc kẻ từ A và B đến CD.
+
+Câu 101: Từ điểm M ở ngoài đường tròn (O) vẽ hai tiếp tuyến MA và MB (A, B là tiếp điểm). Cho biết góc  AMB=40 0 . 
+
+Câu 102: Cho nửa đường tròn tâm O, đường kính AB. Vẽ các tiếp tuyến Ax, By với nửa đường tròn cùng phía đối với AB. Từ điểm M trên nửa đường tròn (M khác A, B) vẽ tiếp tuyến với nửa đường tròn, cắt Ax và By lần lượt tại C và D.
+
+Câu 103: Cho hai đường tròn (O) và (O′) tiếp xúc ngoài với nhau tại B. Vẽ đường kính AB của đường tròn (O) và đường kính BC của đường tròn (O′). Đường tròn đường kính OC cắt (O) tại M và N.
+
+Câu 104: Cho hai đường tròn (O; R) và (O′; R′) cắt nhau tại A và B sao cho đường thẳng OA là tiếp tuyến của đường tròn (O′; R′/). Biết R = 12cm, R′ = 5cm.
+
+Câu 105: Cho đường tròn tâm O bán kính R = 6cm và một điểm A cách O một khoảng 10cm. Từ A vẽ tiếp tuyến AB (B là tiếp điểm).
+
+Câu 106: Cho hai đường tròn đồng tâm (O; R) và (O; r). Dây AB của (O; R) tiếp xúc với (O; r). Trên tia AB lấy điểm E sao cho B là trung điểm của đoạn AE. Từ E vẽ tiếp tuyến thứ hai của (O; r) cắt (O; R) tại C và D (D ở giữa E và C).
+
+Câu 107: Cho nửa đường tròn (O) đường kính AB và một điểm M nằm trên nửa đường tròn đó. H là chân đường vuông góc hạ từ M xuống AB.
+
+Câu 108: Cho tam giác ABC nhọn nội tiếp đường tròn (O) đường kính AD. Gọi H là trực tâm của tam giác. 
+
+Câu 109: Cho tam giác ABC cân tại A nội tiếp đường tròn (O). Đường cao AH cắt đường tròn (O) ở D.
+
+Câu 110: Cho đường tròn tâm O đường kính AB. Gọi H là trung điểm OA. Dây CD vuông góc với OA tại H.
+
+Câu 111: Cho tam giác ABC nhọn. Đường tròn đường kính BC cắt AB ở N và cắt AC ở M. Gọi H là giao điểm của BM và CN.
+
+Câu 112: Cho đường tròn tâm (O; R) đường kính AB và điểm M trên đường tròn sao cho góc  MAB=60 0 . Kẻ dây MN vuông góc với AB tại H.
+
+Câu 113: Cho đường tròn (O; R) và điểm A cách O một khoảng bằng 2R, kẻ tiếp tuyến AB tới đường tròn (B là tiếp điểm).
+
+Câu 114: Từ điểm A ở ngoài đường tròn (O; R) kẻ hai tiếp tuyến AB, AC (với B và C là hai tiếp điểm). Gọi H là giao điểm của OA và BC.
+
+Câu 115: Từ điểm A ở ngoài đường tròn (O; R) kẻ hai tiếp tuyến AB, AC (với B và C là các tiếp điểm). Kẻ BE ⊥ AC và CF ⊥ AB (E∈AC,F∈AB), BE và CF cắt nhau tại H.
+
+Câu 116: Cho đường tròn (O; 3cm) và điểm A có OA = 6 cm. Kẻ các tiếp tuyến AB và AC với đường tròn (B, C là các tiếp điểm). Gọi H là giao điểm của OA và BC.
+
+Câu 117: Cho nửa đường tròn tâm O đường kính AB. Gọi Ax , By là các tia vuông góc với AB (Ax, By và nửa đường tròn thuộc cùng một nửa mặt phẳng bờ AB). Qua điểm M bất kì thuộc tia Ax kẻ tiếp tuyến với nửa đường tròn, cắt By ở N.
+
+Câu 118: Cho hai đường tròn (O) và (O′) tiếp xúc ngoài tại A. Kẻ tiếp tuyến chung ngoài MN với M thuộc (O) và N thuộc (O′). Gọi P là điểm đối xứng với M qua OO′, Q là điểm đối xứng với N qua OO′.
+
+Câu 119: Cho đường tròn (O, R) và điểm M nằm ngoài đường tròn đó. Gọi MA, MB là hai tiếp tuyến với đường tròn tại A và B.
+
+Câu 120: Cho đường tròn (O; R) và dây AB không đi qua O. Trên dây AB lấy các điểm M, N sao cho AM = MN = NB. Tia ∠ ∠ OM, ON cắt (O) lần lượt tại C và D. So sánh cung AC, CD, DB.
+
+Câu 121: Cho hai đường tròn bằng nhau (O) và (O’) cắt nhau tại A và B. Kẻ dây AM của đường tròn (O) và dây BN của ∠ ∠   đường tròn (O’) sao cho AM // BN.
+
+Câu 122: Cho hai đường tròn (O; R) và (O’; R’) cắt nhau tại hai điểm A và B (R < R'). Kẻ đường kính BOC và BO’D.
+
+Câu 123: Cho đường tròn (O) đường kính AB. Điểm C thuộc đường tròn (O) sao cho SđBC = 30o, điểm M thuộc cung AC nhỏ. Gọi D và E là các điểm đối xứng với M qua AB và OC.
+
+Câu 124: Cho điểm M chuyển động trên nửa đường tròn (O) đường kính AB. Vẽ hai tiếp tuyến Ax và By với đường tròn (O). Tiếp tuyến tại M với (O) cắt Ax tại C và cắt By tại D; các đường thẳng CO và OD cắt (O) lần lượt tại E và F. 
+
+Câu 125: Cho AB là dây cung của đường tròn (O), I là trung điểm của AB. Trên cung nhỏ AB lấy điểm M tùy ý. Gọi giao   điểm OI và MI với (O) lần lượt C và N. So sánh MCN và ACB.
+
+Câu 126: Cho hai đường tròn (O; R) và (O’; R’) cắt nhau tại A và B . Vẽ cát tuyến CAD vuông góc với AB . Tia CB cắt (O’) tại E, tia BD cắt (O) tại F.
+
+Câu 127: Cho đường tròn (O; R) và một điểm M bên trong đường tròn đó. Qua M kẻ hai dây cung AB và ⇔ CD vuông góc với nhau (C thuộc cung nhỏ AB). Vẽ đường kính DE.
+
+Câu 128: Cho nửa đường tròn (O) đường kính AB và C là điểm chính giữa của cung AB. Lấy điểm M thuộc cung BC và điểm N thuộc tia AM sao cho AN = BM. Kẻ dây CD song song với AM.
+
+Câu 129: Cho ΔABC cân tại A nội tiếp đường tròn (O). M là một điểm bất kỳ thuộc cung nhỏ AC. Tia AM cắt BC tại N.
+
+Câu 130: Cho hai đường tròn (O; R) và (O’; R’) tiếp xúc trong với nhau tại A, (R > R'). Qua điểm B bất kỳ ⊥ trên (O’) vẽ tiếp tuyến với (O’) cắt (O) tại hai điểm M và N, AB cắt (O) tại C.
+
+Câu 131: Cho nửa đường tròn (O) đường kính AB và C là điểm chính giữa cung AB. M là điểm bất kỳ trên ∠ ∠ ∠ cung BC, kẻ CH AM.
+
+Câu 132: Cho AB và CD là hai đường kính vuông góc với nhau của đường tròn (O; R). Qua điểm M thuộc cung nhỏ AC (M ≠ A, M ≠ E)kẻ tiếp tuyến với đường tròn cắt AB, CD lần lượt tại E, F.
+
+Câu 133: Cho tam giác ABC nội tiếp đường tròn (O) . Tia phân giác của góc A cắt đường tròn tại M . Tia phân giác của góc ngoài tại đỉnh A cắt đường tròn tại N .
+
+Câu 134: Cho nửa đường tròn (O) đường kính AB . M là điểm tuỳ ý trên nửa đường tròn ( M khác A và B ) . Kẻ MH ⊥ AB ( H ∈AB ) . Trên cùng nửa mặt phẳng bờ AB chứa nửa đường tròn (O) vẽ hai nửa đường tròn tâm O đường kính AH và tâm O đường kính BH . MA và MB cắt hai nửa đường tròn (O ) 1 2 1 và (O ) lần lượt tại P và Q . 2
+
+Câu 135: Cho đường tròn (O) đường kính AB . Lấy điểm M trên đường tròn (M khác A và B ) sao cho MA < MB . Lấy MA làm cạnh vẽ hình vuông MADE ( E thuộc đoạn thẳng MB ) . Gọi F là giao điểm của DE và AB .
+
+Câu 136: Cho nửa đường tròn (O) đường kính AB = 2R và điểm C nằm ngoài nửa đường tròn . CA cắt nửa đường tròn ở M , CB cắt nửa đường tròn ở N . Gọi H là giao điểm của AN và BM .
+
+Câu 137: Trên cung nhỏ BC của đường tròn ngoại tiếp tam giác đều ABC lấy một điểm P tuỳ ý . Gọi Q là giao điểm của AP và BC
+
+Câu 138: Cho (O), đường kính AB, điểm D thuộc đường tròn. Gọi E là điểm đối xứng với A qua D.
+
+Câu 139: Cho hai đường tròn (O) và (O’) cắt nhau ở A, B, O nằm trên (O’). Dây AC của (O) cắt (O’) ở D, dây OE của (O’) cắt (O) ở F.
+
+Câu 140: Cho hai đường thẳng song song. Một đường tròn tiếp xúc với một đường thẳng tại A và cắt đường thẳng kia tại B, C. Trên đường tròn lấy một điểm D ( không trùng A, B, C ).
+
+Câu 141: MA và MB là hai tiếp tuyến của (O). Vẽ (M;MA), C là một điểm nằm trên cung AB của (M) ( cung AB nằm trong đường tròn (O) ). Tia AC, BC cắt (O) ở P, Q.
+
+Câu 142: Trên cạnh CD của hình vuông ABCD ta lấy một điểm M khác C, D. Các đường tròn đường kính CD và AM cắt nhau tại điểm thứ hai N ( khác D ). Tia DN cắt BC tại P.
+
+Câu 143: Từ điểm M nằm ngoài đường tròn (O) vẽ hai tiếp tuyến MA, MB với (O) tại A và B. Qua A vẽ ∈ đường thẳng song song với MB cắt đường tròn tại C. Nối C với M cắt đường tròn (O) tại D. Nối A với D cắt MB tại E.
+
+Câu 144: Cho điểm C thuộc nửa đường tròn (O) đường kính AB. Từ điểm D thuộc đọan AO kẻ đường thẳng vuông góc với AO cắt AC và BC lần lượt lại E và F. Tiếp tuyến C với nửa đường tròn cắt EF tại M và cắt AB tại N.
+
+Câu 145: Cho nửa đường tròn (O) đường kính AB = 2R. Gọi M là một điểm thay đổi trên tiếp tuyến Bx của (O). Nối AM cắt (O) tại N. Gọi I là trung điểm của AN.
+
+Câu 146: Cho đường tròn (O; R) và dây AB, gọi I là trung điểm của dây AB. Trên tia dối của tia BA lấy điểm M. Kẻ hai tiếp tuyến MC, MD với đường tròn, (C,D ≠ (O)) .
+
+Câu 147: Từ một điểm M cố định ở bên ngoài đường tròn (O) , kẻ một tiếp tuyến MT ( T là tiếp điểm ) và một cát tuyến MAB của đường tròn đó .
+
+Câu 148: Cho nửa đường tròn (O) đường kính AB. Trên tia đối của tia AB lấy một điểm M . Vẽ tiếp tuyến MC với nửa đường tròn . Gọi H là hình chiếu của C trên AB .
+
+Câu 149: Cho đường tròn (O ) tiếp xúc trong với đường tròn (O) tại A . Đường kính AB của đường tròn 1 (O) cắt đường tròn (O ) tại điểm thứ hai C khác A . Từ B vẽ tiếp tuyến BP với đường tròn (O ) cắt 1 1 đường tròn (O) tại Q .
+
+Câu 150: Cho hai đường tròn tâm O , O tiếp xúc ngoài nhau tại A . Trên đường tròn (O) lấy hai điểm 1 phân biệt B , C khác A. Các đường thẳng BA , CA cắt đường tròn (O ) tại P và Q .
+
+Câu 151: Cho tam giác ABC nội tiếp đường tròn (O) và ( AB < AC ) . Đường tròn (I) đi qua B và C , tiếp xúc với AB tại B cắt đường thẳng AC tại D .
+
+Câu 152: Cho nửa đường tròn (O) đường kính AB= 2R, dây AC và tia tiếp tuyến Bx nằm trên cùng nửa mặt phẳng bờ AB chứa nửa đường tròn . Tia phân giác của góc CAB cắt dây BC tại F , cắt nửa đường tròn tại H , cắt Bx ở D.
+
+Câu 153: Cho tam giác ABC nội tiếp đường tròn tâm O . Phân giác góc BAC cắt đường tròn (O) ở M . Tiếp tuyến kẻ từ M với đường tròn cắt các tia AB và AC lần lượt ở D và E .
+
+Câu 154: Cho hai đường tròn (O) và (O ) ở ngoài nhau . Đường nối tâm OO cắt các đường tròn (O) và 1 1 (O ) tại các điểm A , B , C , D theo thứ tự trên đường thẳng . Kẻ tiếp tuyến tuyến chung ngoài EF ( E ∈ 1 (O) , F ∈ (O ) ) . Gọi M là giao điểm của AE và DF , N là giao điểm của EB và FC .
+
+Câu 155: Cho tam giác ABC vuông ở A nội tiếp đường tròn tâm O đường kính 5cm . Tiếp tuyến với đường tròn tại C cắt tia phân giác của góc ABC tại K . BK cắt AC tại D và BD = 4cm .
+
+Câu 156: Cho ΔABC nhọn nội tiếp đường tròn (O). Vẽ phân giác trong AD của góc A (D ≠ (O)). Lấy điểm E thuộc cung nhỏ AC. Nối BE cắt AD và AC lần lượt tại I và tại K, nối DE cắt AC tại J.
+
+Câu 157: Cho hai đường tròn (O) và (O’) cắt nhau tại 2 điểm A, B sao cho O ≠ (O'). Lấy điểm M thuộc đường tròn (O’), M ở trong đường tròn (O). Tia AM và BM cắt đường tròn (O) lần lượt tại C và D.
+
+Câu 158: Cho ΔABC đều nội tiếp đường tròn (O). Điểm I chuyển động trên cung nhỏ BC. AB cắt CI tại M, AC cắt BI tại N.
+
+Câu 159: Qua điểm A nằm ngoài đường tròn (O) vẽ tiếp tuyến AB và cát tuyến ACD với đường tròn (C ∠ ∠ nằm giữa A và D). Vẽ dây BM vuông góc với tia phân giác của BAC, BM cắt CD tại I.
+
+Câu 160: Cho đường tròn (O) và dây cung AB, CD cắt nhau tại điểm E nằm ngoài đường tròn. Đường thẳng kẻ từ E song song với AD cắt BC tại F. Kẻ tiếp tuyến FG với đường tròn (O).
+
+Câu 161: Cho hai đường tròn (O) và (O’) ở ngoài nhau. Đường thẳng OO’ cắt (O) và (O’) lần lượt lại các ∼ điểm A, B, C, D. Kẻ tiếp tuyến chung ngoài EF của hai đường tròn (E ≠ (O), F ≠ (O')) . Gọi M là giao điểm của AE và DF, N là giao điểm của EB và DC.
+
+Câu 162: Trên đường tròn (O; R) đặt liên tiếp các dây cung: AB = BC = CD < R. AB cắt CD tại E. Tiếp tuyến tại B và D với đường tròn (O) cắt nhau tại F.
+
+Câu 163: Cho tứ giác ABCD có A, B, C, D nằm trên đường tròn (O); AB và CD cắt nhau tại M; AD và BC cắt nhau tại N.
+
+Câu 164: Cho đường tròn tâm O và điểm M ngoài đường tròn đó . Từ M kẻ tiếp tuyến MA và cát tuyến ⊥ MBC đến đường tròn ( B nằm giữa M và C ) . Phân giác của góc B  AC cắt BC ở D , cắt đường tròn ở E .
+
+Câu 165: Cho tam giác ABC nội tiếp đường tròn tâm O . Các tia phân giác của các góc A và B cắt nhau ở I và cắt đường tròn theo thứ tự ở D và E .
+
+Câu 166: Cho đường tròn tâm O và điểm S ở ngoài đường tròn . Từ S kẻ hai tiếp tuyến SA và SD và cát tuyến SBC tới đường tròn ( B ở giữa S và C ).
+
+Câu 167: Từ điểm M ở ngoài đường tròn (I) kẻ hai tiếp tuyến ME và MF ( E và F là hai tiếp điểm ) . Kẻ dây EG của đường tròn (I) song song MF. Gọi H là giao điểm của MG với (I) và K là giao điểm của EH với MF .
+
+Câu 168: Cho đường tròn (O) đường kính EF và điểm G nằm trên nằm trên đường tròn (O) sao cho EG > GF. Trên tia GF lấy điểm H sao cho GH =GE . Vẽ hình vuông EGHI có đường chéo GI cắt (O) tại K .
+
+Câu 169: Cho tứ giác ABCD có A, B, C , D nằm trên đường tròn (O) . Các tia AB và DC cắt nhau tại E , các tia CB và DA cắt nhau tại F . Hai phân giác của các góc E  và F  cắt nhau tại K .
+
+Câu 170: Cho tam giác đều ABC nội tiếp đường tròn tâm O . điểm D di chuyển trên cung AC . Gọi E là giao điểm của AC và BD .
+
+Câu 171: Trên đường tròn (O) lấy ba điểm A,B và C . Gọi M,N và P theo thứ tự là điểm chính giữa của các cung AB,BC và AC. BP cắt AN tại I , NM cắt AB tại E . Gọi D là giao điểm của AN và BC .
+
+Câu 172: Cho ΔABC có cạnh BC cố định và A = α không đổi (0o < α < 180o). Tìm quỹ tích tâm I của đường tròn nội tiếp ΔABC ∠
+
+Câu 173: Cho đường tròn (O) và điểm A cố định nằm trong đường tròn . Một đường thẳng d quay quanh điểm A cắt đường tròn (O) tại hai điểm M và N. Tìm quỹ tích trung điểm I của MN.
+
+Câu 174: Cho nửa đường tròn (O) đường kính AB, có C là điểm chính giữa của cung AB. M là một điểm chuyển động trên cung BC . Lấy điểm N thuộc đoạn AM sao cho AN = MB. Vẽ tiếp tuyến Ax với nửa đường tròn; D là điểm thuộc Ax sao cho AD = AB .
+
+Câu 175: Cho nửa đường tròn đường kính AB = 2R và dây MN có độ dài bằng bán kính ( M thuộc cung AN ) . Các tia AM và BN cắt nhau ở I . Các dây AN và BM cắt nhau ở K .
+
+Câu 176: Cho nửa đường tròn (O) đường kính AB , C là điểm chính giữa của cung AB . M là một điểm chuyển động trên cung CB . Gọi H là hình chiếu của C trên AM . Các tia OH và BM cắt nhau tại I . Tìm quỹ tích các điểm I .
+
+Câu 177: Cho đường tròn (O) có đường kính AB cố định . Một điểm C chạy trên đường tròn . Kẻ CD vuông góc với AB . Trên OC đặt một đoạn OM = CD . Tìm quỹ tích các điểm M .
+
+Câu 178: Cho nửa đường tròn (O) đường kính AB , M là một điểm chuyển động trên nửa đường tròn đó .Vẽ hình vuông BMDC ở ngoài tam giác AMB .Tiếp tuyến tại B của nửa đường tròn cắt CD ở E . 4
+
+Câu 179: Cho tam giác ABC vuông tại A . Gọi (I) là đường tròn nội tiếp tam giác . M ,N là các tiếp điểm trên các cạnh AC , BC . Gọi H là giao điểm của AI và MN .
+
+Câu 180: Cho hình bình hành ABCD . Tia phân giác của góc D cắt các đường thẳng AB , BC theo thứ tự ở I , K . Gọi O là tâm đường tròn ngoại tiếp tam giác BIK .
+
+Câu 181: Cho tam giác ABC có góc. Các điểm O, I lần lượt là tâm đường tròn ngoại tiếp, nội tiếp tam giác.
+
+Câu 182: Cho nửa đường tròn (O) đường kính AB. Trên nửa mặt phẳng bờ AB chứa nửa đường tròn kẻ tiếp tuyến Ax và dây AC bất kỳ. Tia phân giác của góc xAC cắt nửa đường tròn tại D, các tia AD và BC cắt nhau tại E.
+
+Câu 183: Từ điểm A ở ngoài đường tròn (O) vẽ hai tiếp tuyến AB; AC và cát tuyến AMN không đi qua tâm O . Gọi I là trung điểm MN.
+
+Câu 184: Cho tam giác ABC nội tiếp đường tròn (O). Phân giác trong của B  AC cắt BC tại D và cắt đường tròn tại M. Phân giác ngoài tại Acắt đường thẳng BC tại E và cắt đường tròn tại N. Gọi K là trung điểm của DE.
+
+Câu 185: Cho ba điểm A, B,C nằm trên đường thẳng xy theo thứ tự đó. Vẽ đường tròn (O) đi qua B và C. Từ A vẽ hai tiếp tuyến AM và AN . Gọi E và F lần lượt là trung điểm của BC và MN.
+
+Câu 186: Cho đường tròn (O) đường kính AB = 2R . Điểm C nằm trên (O) mà AC > BC. Kẻ CD ⊥ AB ( D ∈ AB ) . Tiếp tuyến tại A của đường tròn (O) cắt BC tại E. Tiếp tuyến tại C của đường tròn (O) cắt AE tại M. OM cắt AC tại I . MB cắt CD tại K.
+
+Câu 187: Cho tam giác ABC có ba góc nhọn. Đường tròn đường kính BC cắt cạnh AB, AC lần lượt tại E và F ; BF cắt EC tại H. Tia AH cắt đường thẳng BC tại N .
+
+Câu 188: Cho đường tròn (O) đường kính AB. Trên tia AB lấy điểm D nằm ngoài đoạn AB và kẻ tiếp tuyến DC với đường tròn (O) ( C là tiếp điểm ). Gọi E là chân đường vuông góc hạ từ A xuống đường thẳng CD và F là chân đường vuông góc hạ từ D xuống đường thẳng AC.
+
+Câu 189: Cho hai đường tròn đồng tâm O có bán kính lần lượt là R = 3cm; R = 6cm. Một dây AB của 1 2 đường tròn (O;R ) tiếp xúc với đường tròn (O;R ) tại C. 1 2
+
+Câu 190: Cho tam giác ABC đều có tâm O, cạnh 6cm. Vẽ đường tròn (O;2cm).
+
+Câu 191: Cho đường tròn (O) và haiđiểm M và N bất kì thuộc đường tròn sao cho góc MON =150o .
+
+Câu 192: Cho tam giác ABC nội tiếp đường tròn tâm O bán kính R. Biết góc A bằng 60°, tính diện tích hình viên phân tạo bởi cung nhỏ BC và dây BC.
+
+Câu 193: Từ điểm c ở ngoài (O ; R) sao cho OC = 2R, kẻ tiếp tuyến CA, CB của đường tròn (O) (B, A là tiếp điểm). Tia oc cắt (O) tại D.
+
+Câu 194: Cho hình chữ nhật ABCD nội tiếp đường tròn (O). Tiếp tuyến tại c với đường tròn cắt AB, AD kéo dài lần lượt tại E và F.
+
+Câu 195: Cho đường tròn tâm O, bán kính R và một điểm A nằm ngoài đường tròn. Từ một điểm M chuyển động trên đường thẳng d vuông góc với OA tại A, vẽ các tiếp tuyến MP, MP’ với đường tròn. Dây PP’ cắt OM tại N và cắt OA tại B.
+
+Câu 196: Cho đường tròn (O) và dây BC cố định không qua tâm, điểm A chuyển động trên cung lớn BC sao cho tam giác ABC nhọn. Đường cao BE và CF của tam giác ABC cắt nhau tại H và cắt (O) lần lượt tại M và N.
+
+Câu 197: Cho đường tròn (O; R), đường kính AB vuông góc với dây MN tại điểm H (H nằm giữa O và B). Trên tia đối của tian NM lấy điểm C nằm ngoài đường tròn (O ; R) sao cho đoạn AC cắt (O) tại điểm K khác A. Hai dây MN và BK cắt nhau ở E. Qua N kẻ đường vuông góc với AC cắt MK tại F.
+
+Câu 198: Cho nửa đường tròn tâm O đường kính AB và điểm M bất kì trên nửa đường tròn ( M khác A,B). Trên nửa mặt phẳng bờ AB chứa nửa đường tròn kẻ tiếp tuyến Ax. Tia BM cắt Ax tại I; tia phân giác của góc IAM cắt nửa đường tròn tại E; cắt tia BM tại F tia BE cắt Ax tại H, cắt AM tại K.
+
+Câu 199: Cho đường tròn (O), một dây AB và một điểm C ở ngoài tròn nằm trên tia AB. Từ điểm chính giữa của cung lớn AB kẻ đường kính PQ của đường tròn , cắt dây AB tại D.Tia CP cắt đường tròn tại điểm thứ hai I.Các dây AB và QI cắt nhau tại K. a/
+
+Câu 200: Cho đoạn thẳng AB và một điểm C nằm giữa A,B. Người ta kẻ trên nửa mặt phẳng bờ AB hai tia Ax và By vuông góc với AB và trên tia Ax lấy một điểm I. Tia vuông góc với CI tại C cắt tia By tại K. Đường tròn đường kính IC cắt IK tại P.
+
+Câu 201: Cho đường tròn tâm O đường kính AB. Trên đường tròn lấy điểm C sao cho AC < BC (CA). Tiếp tuyến Bx của đường tròn (O) cắt đường trung trực của BC tại D. Gọi F là giao điểm của DO và BC.
+
+Câu 202: Cho đường tròn (O) có đường kính AB = 2R và E là điểm bất kì trên đường tròn đó ( E khác A và B ). Đường phân giác góc AEB cắt đoạn thẳng AB tại F và cắt đường tròn (O) tại điểm thứ hai là K. 1/
+
+Câu 203: Cho tứ giác ABCD nội tiếp trong một đường tròn và P là trung điểm của cung AB không chứa C và D. Hai dây PC và PD lần lượt cắt AB tại E và F. Các dây AD và PC kéo dài cắt nhau tại I: các dây BC và PD kéo dài cắt nhau tại K.
+
+Câu 204: Cho nửa đường tròn tâm O đường kính AB. Trên đoạn OA lấy điểm H (H khác A và O), đường thẳng kẻ qua H vuông góc với AO cắt nửa đường tròn tại C. kẻ HE vuông góc với AC tại E, HF vuông góc với BC tại F.
+
+Câu 205: Cho đường tròn tâm O có hai đường kính AB và MN. Vẽ tiếp tuyến d của đường tròn (O) tại B. Đường thẳng AM, AN lần lượt cắt đường thẳng d tại E và F.
+
+Câu 206: Cho đường tròn (O; R), từ một điểm A trên (O) kẻ tiếp tuyến d với (O). Trên đường thẳng d lấy điểm M bất kì ( M khác A) kẻ cát tuyến MNP và gọi K là trung điểm của NP, kẻ tiếp tuyến MB (B là tiếp điểm). Kẻ AC ⊥ MB, BD ⊥ MA, gọi H là giao điểm của AC và BD, I là giao điểm của OM và AB.
+
+Câu 207: Cho đường tròn (O; R) có đường kính AB cố định. Vẽ đường kính MN của đường tròn (O; R) (M khác A, M khác B). Tiếp tuyến của đường tròn (O; R) tại B cắt các đường thẳng AM, AN lần lượt tại các điểm Q, P.
+
+Câu 208: Cho đường tròn ( O) và điểm A nằm bên ngoài (O). Kẻ hai tiếp tuyến AM, AN với đường tròn (O). Một đường thẳng d đi qua A cắt đường tròn (O) tại hai điểm B và C ( AB < AC, d không đi qua tâm O).
+
+Câu 209: Cho tam giác ABC có ba góc nhọn nội tiếp đường tròn tâm O (AB < AC). Hai tiếp tuyến tại B và C cắt nhau tại M. AM cắt đường tròn (O) tại điểm thứ hai D. E là trung điểm đoạn AD. EC cắt đường tròn (O) tại điểm thứ hai F.
+
+Câu 210: Cho tam gíac ABC cân tại A,  A < 900, một cung tròn BC nằm trong tam giác ABC và tiếp xúc với AB,AC tại B và C. Trên cung BC lấy một điểm M rồi hạ đường vuông góc MI,MH,MK xuống các cạnh tương ứng BC ,CA, BA. Gọi P là giao điểm của MB,IK và Q là giao điểm của MC,IH.
+
+Câu 211: Từ điểm A ở bên ngoài đường tròn (O), kẻ các tiếp tuyến Am, AN với đường tròn (M, N là các tiếp điểm). Đường thẳng d đi qua A cắt đường tròn (O) tại hai điểm phân biệt B,C (O không thuộc (
+
+Câu 212: Cho tứ giác ABCD nội tiếp trong một đường tròn và P là trung điểm của cung AB không chứa C và D. Hai dây PC và PD lần lượt cắt AB tại E và F. Các dây AD và PC kéo dài cắt nhau tại I: các dây BC và PD kéo dài cắt nhau tại K.
+
+Câu 213: Cho (O;R) đường kính AB =2R và điểm C thuộc đường tròn đó( C khác A,B). D thuộc dây BC (D khác B,C). Tia AD cắt cung nhỏ BC tại E,tia AC cắt BE tại F.
+
+Câu 214: Cho đường tròn (O) đường kính AB. Vẽ tiếp tuyến Ax với đường tròn (O). Trên Ax lấy điểm M sao cho AM > AB, MB cắt (O) tại N (N khác B). Qua trung điểm P của đoạn AM, dựng đường thẳng vuông góc với AM cắt BM tại Q.
+
+Câu 215: Cho nửa đường tròn tâm O đường kính AB. Từ A, B vẽ các tiếp tuyến Ax, By về phía có chứa nửa đường tròn (O). Lấy điểm M thuộc đoạn thẳng OA; điểm N thuộc nửa đường tròn (O). Đường tròn (O’) ngoại tiếp tam giác AMN cắt Ax tại C; đường thẳng CN cắt By tại D.
+
+Câu 216: Cho đường tròn O , từ điểm Aở ngoài đường tròn vẽ hai tiếp tuyến ABvàAC(B, Clà các tiếp điểm). OAcắtBC tại E.
+
+Câu 217: Cho đường tròn tâm O, đường kính AB. Trên tiếp tuyến của đường tròn (O) tại A lấy điểm M ( M khác A). Từ M vẽ tiếp tuyến thứ hai MC với (O) (C là tiếp điểm). Kẻ CH vuông góc với AB ( H∈AB), MB cắt (O) tại điểm thứ hai là K và cắt CH tại N.
+
+Câu 218: Cho đường tròn (O;R)đường kính AB. Bán kính CO vuông góc với AB, M là điểm bất kỳ trên cung nhỏ AC (M khác A và C ), BM cắt AC tại H . Gọi K là hình chiếu của H trên AB.
+
+Câu 219: Cho tam giác ABC nhọn nội tiếp đường tròn tâm O, đường cao BE và CF. Tiếp tuyến tại B và C cắt nhau tại S, gọi BC và OS cắt nhau tại M
+
+Câu 220: Cho đường tròn (O), dây cung BC (BC không là đường kính). Điểm A di động trên cung nhỏ BC (A khác B và C; độ dài đoạn AB khác AC). Kẻ đường kính AA’ của đường tròn (O), D là chân đường vuông góc kẻ từ A đến BC. Hai điểm E, F lần lượt là chân đường vuông góc kẻ từ B, C đến AA’.
+
+Câu 221: Cho đường tròn (O) và điểm M ở ngoài đường tròn. Qua M kẻ các tiếp tuyến MA, MB và cát tuyến MPQ (MP < MQ). Gọi I là trung điểm của dây PQ, E là giao điểm thứ 2 giữa đường thẳng BI và đường tròn (O).
+
+Câu 222: Cho đường tròn (O) ngoại tiếp tam giác ABC. Gọi M và N lần lượt là điểm chính giữa của cung nhỏ AB và cung nhỏ BC. Hai dây AN và CM cắt nhau tại I. Dây MN cắt cạnh AB, BC lần lượt tại H và K.
+
+Câu 223: Cho đường tròn (O) có tâm O và điểm M nằm ngoài đường tròn (O). Đường thẳng MO cắt (O) tại E và F (ME<MF). Vẽ cát tuyến MAB và tiếp tuyến MC của (O) (C là tiếp điểm, A nằm giữa hai điểm M và B, A và C nằm khác phía đối với đường thẳng MO).
+
+Câu 224: Cho tam giác ABC vuông tại A. Lấy B làm tâm vẽ đường tròn tâm B bán kính AB.Lấy C làm tâm vẽ đường tròn tâm C bán kính AC, hai đường tròn này cắt nhau tại điểm thứ 2 là D.Vẽ AM, AN lần lượt là các dây cung của đường tròn (B) và (C) sao cho AM vuông góc với AN và D nằm giữa M; N.
+
+Câu 225: Cho hai đường tròn (O) và (O’) tiếp xúc ngoài tại A. Kẻ tiếp tuyến chung ngoài BC,B ∈ (O),C∈(O’). Đường thẳng BO cắt (O) tại điểm thứ hai là D.
+
+Câu 226: Cho tam giác ABC vuông tại A. Lấy điểm M tùy ý giữa A và B. Đường tròn đường kính BM cắt đường thẳng BC tại điểm thứ hai là E. Các đường thẳng CM, AE lần lượt cắt đường tròn tại các điêmt thứ 2 là H và K.
+
+Câu 227: Cho điểm M nằm ngoài đường tròn tâm O. Vẽ tiếp tuyến MA, MB với đường tròn (A, B là các tiếp điểm). Vẽ cát tuyến MCD không đI qua tâm O ( C nằm giữa M và D), OM cắt AB và (O) lần lượt tại H và I.
+
+Câu 228: Cho đường tròn (O) và một điểm A và OA = 3R. Qua A kẻ 2 tiếp tuyến AP và AQ của đường tròn (O), với P và Q là 2 tiếp điểm. Lấy M thuộc đường tròn (O) sao cho PM song song với AQ. Gọi N là giao điểm thứ 2 của đường thẳng AM và đường tròn (O). Tia PN cắt đường thẳng AQ tại K.
+
+Câu 229: Cho đường tròn ( O) bán kính R = 3 cm và một điểm I nằm ngoài đường tròn, biết rằng OI = 4cm.Từ I kẻ hai tiếp tuyến IA và IB với đường tròn (A,B là tiếp điểm).
+
+Câu 230: Cho (O; R) và một điểm A cố định ở ngoài đường tròn sao cho OA = 2R. Qua A kẻ một cát tuyến d cắt đường tròn tại 2 điểm B và C (B nằm giữa A và C). Tiếp tuyến AM, AN tiếp xúc với đường tròn (O) tại M và N. Gọi I là trung điểm của BC.
+
+Câu 231: Cho (O; R) và dây AB cố định. C là điểm chính giữa của cung AB, từ C kẻ đường kính CD. N là một điểm bất kì trên cung nhỏ AD. CN cắt AB tại M.
+
+Câu 232: Cho (O; R) và dây AB cố định (AB < 2R) và một điểm M tùy ý trên cung lớn AB (M khác A và B). Gọi I là trung điểm của dây AB và (O’) là đương tròn qua M và tiếp xúc với AB tại A. Đường thẳng MI cắt (O), (O’) lần lượt tại các điểm thứ hai là N và P.
+
+Câu 233: Cho ba điểm A, B, C trên một đường thẳng theo thứ tự ấy và một đường thẳng d vuông góc với AC tại A. Vẽ đường tròn đường kính BC và trên đó lấy một điểm M bất kì. Tia CM cắt 1 đường thẳng d tại D, tia AM cắt đường tròn tại điểm thứ hai N, tia DB cắt đường tròn tại điểm thứ hai P.
+
+Câu 234: Cho (O; R) và (O ; R’) (R > R’) tiếp xúc ngoài tại A và một dây cung AB cố định của ∆ (O). Một cát tuyến di động qua A cắt (O) tại M và cắt (O’) tại N. Đường thẳng qua N và song song với AB cắt MB tại Q và cắt (O’) tại điểm thứ hai P.
+
+Câu 235: Cho (O; R) đường kính AB, dây CD vuông góc với AB tại H. Điểm M di động trên đoạn ∆ CD, tia AM cắt (O) tại N.
+
+Câu 236: Cho điểm M cố định nằm ngoài (O; R). Qua M vẽ các tiếp tuyến MA, MB với (O) (A, B ∆ là các tiếp điểm). Gọi C là điểm bất kì trên cung nhỏ AB của (O). Gọi D, E, F lần lượt là chân đường vuông góc kẻ từ C đến AB, MA, MB.
+
+Câu 237: Cho nửa đường tròn (O;R) đường kính AB. Điểm M tùy ý trên nửa đường tròn. Gọi N và P lần lượt là điểm chính giữa của cung AM và cung MB.
+
+Câu 238: Cho nửa đường tròn (O;R) đường kính AB. Điểm M tùy ý trên nửa đường tròn. Kẻ hai ∆ tiếp tuyến Ax và By với nửa đường tròn. Qua M kẻ tiếp tuyến thứ ba lần lượt cắt Ax, By tại C và D.
+
+Câu 239: Cho (O) trên đó có điểm A cố định. Kẻ tia Ax tiếp xúc với (O) tại A. Lấy ddiemr M trên tia Ax, kẻ tiếp tuyến MB với đường tròn. Gọi I là trung điểm của MA và K là gia điểm thứ hai của BI với (O). Tia MK cắt (O) tại điểm thứ hai C.
+
+Câu 240: Cho (O) đường kính AB cố định. Hai tia Ax và Ay thay đổi cắt đường tròn (O) tại M và N sao cho góc xAy bằng 45o. BM cắt Ay tại E, BN cắt Ax tại F.
+
+Câu 241: Cho hai đường tròn (O ; R) và (O ; R ) cắt nhau tại A và B, đường thẳng đi qua B và 1 1 vuông góc với AB cắt (O) , (O ) lần lượt tại C và D. Gọi E là một điểm thuộc cung nhỏ BC của 1 (O), đường thẳng BE cắt (O ) tại điểm thứ hai là F. Hai đường thẳng CE và DF cắt nhau tại M. 1 Gọi N là giao điểm của AM và (O ). 1
+
+Câu 242: Cho nửa đường tròn (O ; R) và hai đường kính MN và PQ vuông góc với nhau. Lấy điểm A trên cung nhỏ PN, PA cắt MN tại B, AQ cắt MN tại E
+
+Câu 243: Cho tam giác ABC nội tiếp đường tròn (O). Các đường cao BE và CF cắt nhau tại H.
+
+Câu 244: Cho (O;R) đường kính AB cố định. Dây CD di động vuông góc với AB tại điểm H nằm giữa hai điểm A và O. Lấy điểm F thuộc cung AC nhỏ; BF cắt CD tại E; AF cắt tia DC tại I.
+
+Câu 245: Cho đường tròn (O; R). Một đường thẳng d không qua O cắt đường tròn (O) tại 2 điểm A và B. Trên đường thẳng d lấy điểm C sao cho CA < CB. Từ C kẻ hai tiếp tuyến CM và CN với đường tròn (M, N là các tiếp điểm). Đường thẳng qua O vuông góc với AB tại H cắt CN tại K
+
+Câu 246: Cho đường tròn tâm O bán kính R , dây BC cố định . Gọi A là điểm chính giữa cung nhỏ BC . E thuộc cung lớn BC . Nối AE cắt BC tại D . Gọi I Là trung điểm của BC , hạ CH vuông góc với AE tại H . Đường thẳng BE cắt CH tại M
+
+Câu 247: Cho đường tròn tâm O bán kính R. Dây cung BC thuộc đường tròn sao cho BC < 2R. Điểm A di động trên cung lớn BC. Gọi AD, BE, CF là 3 đường cao của tam giác ABC, H là trực tâm.
+
+Câu 248: Cho (O;R) và dây BC cố định không đi qua O. Từ A thuộc tia đối của tia BC vẽ các tiếp tuyến AM,AN với (O) (M, N là tiếp điểm,M thuộc cung nhỏ BC). Gọi I là trung điểm của BC,MI cắt (O) tại điểm thứ hai là P. Gọi giao của MN với OI là K. Tìm vị trí của A để diện tích tam giác ONK lớn nhất
+
+Câu 249: Cho nửa đường tròn (O;R), đường kính AB. Vẽ các tiếp tuyến Ax, By với nửa đường tròn (Ax, By và nửa đường tròn cùng thuộc một nửa mặt phẳng bờ AB). Gọi M là một điểm bất kì trên nửa đường tròn. Tiếp tuyến tại M với nửa đgờng tròn Ax, By lần lượt ở C, D.
+
+Câu 250: Cho nửa đường tròn đường kính BC = 2R. Từ điểm A trên nửa đường tròn vẽ AH ⊥ BC. Nửa đường tròn đường kính BH, CH lần lượt có tâm O ; O cắt AB, AC thứ tự tại D và E. 1 2
+
+Câu 251: Cho đường tròn (O), đường kính AB, d , d là các các đường thẳng lần lượt qua A, B và 1 2 cùng vuông góc với đường thẳng AB. M, N là các điểm lần lượt thuộc d , d sao cho M  ON = 1 2 900.
+
+Câu 252: Cho đường tròn cố định tâm O, bán kính R. Tam giác ABC thay đổi và luôn ngoại tiếp đường tròn (O). Một đường thẳng đi qua tâm O cắt các đoạn AB, AC lần lượt tại M và N. Xác định giá trị nhỏ nhất của diện tích tam giác AMN.
+
+Câu 253: Cho AB là đường kính của đường tròn (O;R). C là một điểm thay đổi trên đường tròn. Kẻ CH vuông góc với AB. Gọi I là trung điểm của AC,OI cắt tiếp tuyến tại A của đường tròn tại M,MB cắt CH tại K. Xác định vị trí của C để chu vi tam giác ACB đạt GTLN? Tìm GTLN đó theo R
+
+Câu 254: Cho đường tròn (O;R) và đường thẳng d không có điểm chung với đường tròn. M là một điểm thuộc đường thẳng d . Qua M kẻ tiếp tuyến MA,MB với đường tròn. Hạ OH vuông góc với d tại H. Nối AB cắt OM tại I, OH tại K. Tia OM cắt đường tròn (O;R) tại E
+
+Câu 255: Cho đường tròn (O;R) đường kính CD = 2R. M là 1 điểm thay đổi trên OC . Vẽ đường tròn (O') đường kính MD. Gọi I là trung điểm của MC,đường thẳng qua I vuông góc với CD cắt (O) tại E,F. đường thẳng ED cắt (O') tại P
