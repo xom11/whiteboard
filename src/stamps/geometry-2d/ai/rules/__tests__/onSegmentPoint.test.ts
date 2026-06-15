@@ -103,4 +103,12 @@ describe('onSegmentPoint — Wave hinh9 (coordinated / là-điểm / bất-kì /
   it('GIỮ NGUYÊN: đơn lẻ "Trên cạnh AB lấy điểm D sao cho AD=2DB" vẫn escalate ([])', () => {
     expect(intents('Trên cạnh AB lấy điểm D sao cho AD = 2DB')).toEqual([]);
   });
+
+  // httcd:6 — distributive trên BÁN KÍNH: "Trên các bán kính OA, OB lần lượt lấy
+  // các điểm M, N sao cho OM=ON".
+  it('"Trên các bán kính OA, OB lần lượt lấy các điểm M, N" → M∈OA, N∈OB', () => {
+    const i = intents('Trên các bán kính OA, OB lần lượt lấy các điểm M, N sao cho OM = ON');
+    expect(i).toContainEqual({ op: 'add-point', name: 'M', constraint: { kind: 'onSegment', of: 'OA' } });
+    expect(i).toContainEqual({ op: 'add-point', name: 'N', constraint: { kind: 'onSegment', of: 'OB' } });
+  });
 });

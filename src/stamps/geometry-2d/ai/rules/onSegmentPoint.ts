@@ -87,7 +87,7 @@ const ZIP_SEG = new RegExp(
 // CHẠY kể cả khi clause có "sao cho …=…" (metric chỉ TINH CHỈNH vị trí; đặt điểm
 // free trên cạnh là đủ cho hình). group1 = blob đoạn, group2 = blob tên điểm.
 const SEGS_THEN_POINTS = new RegExp(
-  String.raw`[Tt]rên\s+(?:các\s+)?(?:cạnh\s+|đoạn(?:\s+thẳng)?\s+|đáy\s+)?((?:[A-Z]{2}\s*,\s*)+[A-Z]{2})(?![A-Z])(?:\s+của\s+(?:tam\s*giác\s+|tứ\s*giác\s+)?[A-Z]{2,4})?\s+(?:(?:theo\s+)?thứ\s+tự\s+|lần\s*lượt\s+)?lấy\s+(?:các\s+)?điểm\s+((?:[A-Z]\s*,\s*)+[A-Z])(?![A-Z])`,
+  String.raw`[Tt]rên\s+(?:các\s+)?(?:cạnh\s+|đoạn(?:\s+thẳng)?\s+|đáy\s+|bán\s*kính\s+)?((?:[A-Z]{2}\s*,\s*)+[A-Z]{2})(?![A-Z])(?:\s+của\s+(?:tam\s*giác\s+|tứ\s*giác\s+)?[A-Z]{2,4})?\s+(?:(?:theo\s+)?thứ\s+tự\s+|lần\s*lượt\s+)?lấy\s+(?:các\s+)?điểm\s+((?:[A-Z]\s*,\s*)+[A-Z])(?![A-Z])`,
   'gu',
 );
 
