@@ -26,12 +26,12 @@ const INCIRCLE_IN_CLAUSE = /đường\s*tròn\s*(?:\(\s*([A-Z])\s*\)|tâm\s+([A-
 // tại D và E" — VD12, tiếp xúc 2 cạnh). splitCsv tách cả "và".
 // Tiền tố đếm "các|ba|hai|bốn" trước "cạnh"/"điểm" ("ba cạnh BC,CA và AB",
 // "tại ba điểm D,E và F" — Bài 57).
-const SIDE_POINT_LIST = /tiếp\s*xúc\s+(?:với\s+)?(?:các\s+|ba\s+|hai\s+|bốn\s+)?(?:(?:cạnh|đoạn)\s+)?([A-Z]{2}(?:\s*(?:,|và)\s*[A-Z]{2})*)\s+(?:lần\s*lượt\s+|tương\s*ứng\s+)?tại\s+(?:các\s+|ba\s+|hai\s+|bốn\s+)?(?:điểm\s+)?([A-Z](?:\s*(?:,|và)\s*[A-Z])*)(?![A-Za-z])/iu;
+const SIDE_POINT_LIST = /tiếp\s*xúc\s+(?:với\s+)?(?:các\s+|ba\s+|hai\s+|bốn\s+)?(?:(?:cạnh|đoạn)\s+)?([A-Z]{2}(?:\s*(?:,|và)\s*[A-Z]{2})*)\s+(?:lần\s*lượt\s+|tương\s*ứng\s+)?tại\s+(?:các\s+|ba\s+|hai\s+|bốn\s+)?(?:điểm\s+)?([A-Z]'?(?:\s*(?:,|và)\s*[A-Z]'?)*)(?![A-Za-z])/iu;
 
 // Dạng ĐẢO (Bài 11): "Cạnh AB, BC, CA tiếp xúc với đường tròn (O) tại D, E, F".
 // Cạnh đứng TRƯỚC "tiếp xúc"; đường tròn (O) là đường tròn NỘI TIẾP (tiếp xúc cả
 // 3 cạnh) — không rule nào khác dựng nên rule này tự emit circle inscribedIn.
-const REVERSED_SIDE_POINT = /(?:các\s+)?(?:cạnh|đoạn)\s+([A-Z]{2}(?:\s*,\s*[A-Z]{2})*)\s+tiếp\s*xúc\s+(?:với\s+)?đường\s*tròn\s*\(\s*([A-Z])\s*\)\s+(?:lần\s*lượt\s+|tương\s*ứng\s+)?tại\s+(?:các\s+)?(?:điểm\s+)?([A-Z](?:\s*,\s*[A-Z])*)(?![A-Za-z])/iu;
+const REVERSED_SIDE_POINT = /(?:các\s+)?(?:cạnh|đoạn)\s+([A-Z]{2}(?:\s*(?:,|và)\s*[A-Z]{2})*)\s+tiếp\s*xúc\s+(?:với\s+)?(?:đường\s*tròn\s*)?\(\s*([A-Z])\s*\)\s+(?:lần\s*lượt\s+|tương\s*ứng\s+)?tại\s+(?:các\s+)?(?:điểm\s+)?([A-Z]'?(?:\s*(?:,|và)\s*[A-Z]'?)*)(?![A-Za-z])/iu;
 
 function splitCsv(blob: string): string[] {
   // Blob do capture đảm bảo chỉ gồm tên HOA + separator (,/và) → split thẳng.

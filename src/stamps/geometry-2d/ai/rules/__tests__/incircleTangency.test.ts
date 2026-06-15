@@ -86,4 +86,27 @@ describe('incircle tangency rule', () => {
       ['G', 'I', 'AB'],
     ]);
   });
+
+  // t02:BT11 — dạng ĐẢO, đường tròn BARE "(I)" (không chữ "đường tròn" trước).
+  it('"Các cạnh AB, BC, CA tiếp xúc với (I) lần lượt tại F, D, E" (bare (I))', () => {
+    const tg = intents('Cho tam giác ABC. Các cạnh AB, BC, CA tiếp xúc với (I) lần lượt tại F, D, E.')
+      .filter((i) => i.op === 'add-point' && i.constraint?.kind === 'tangencyPoint');
+    expect(tg.map((i) => [i.name, i.constraint.circle, i.constraint.onLine])).toEqual([
+      ['F', 'I', 'AB'],
+      ['D', 'I', 'BC'],
+      ['E', 'I', 'CA'],
+    ]);
+  });
+
+  // t02:BT16 — tiếp điểm đặt tên có PRIME (A', B', C'). normalizeText quy ′→'
+  // trước khi rule chạy nên test dùng ASCII '.
+  it("\"tiếp xúc với BC, CA, AB lần lượt tại A', B', C'\" (tên prime)", () => {
+    const tg = intents("Cho đường tròn (I) nội tiếp tam giác ABC tiếp xúc với BC, CA, AB lần lượt tại A', B', C'.")
+      .filter((i) => i.op === 'add-point' && i.constraint?.kind === 'tangencyPoint');
+    expect(tg.map((i) => [i.name, i.constraint.onLine])).toEqual([
+      ["A'", 'BC'],
+      ["B'", 'CA'],
+      ["C'", 'AB'],
+    ]);
+  });
 });
