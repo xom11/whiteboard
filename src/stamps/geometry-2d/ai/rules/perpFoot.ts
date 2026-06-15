@@ -147,8 +147,10 @@ function splitNames(blob: string): string[] {
 // có PHẢI trùng foot (else xung đột → skip). connect.ts (SEG_KW "Kẻ AH") đã lo
 // đoạn AH → rule này CHỈ emit add-point, KHÔNG connect (tránh double).
 //   groups: 1=from 2=foot 3=onLine 4=tại-point(optional)
+// `⊥\\s*` (KHÔNG `\\s+`): OCR hay dính ký hiệu vào cạnh ("AK ⊥BC"). Dạng chữ
+// "vuông góc" giữ `\\s+` (không bao giờ dính "vuông gócBC").
 const PERP_DRAW = new RegExp(
-  `(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng|[Hh]ạ)\\s+([A-Z])([A-Z])(?![A-Z])\\s+(?:⊥|vuông\\s*góc(?:\\s+với)?)\\s+(?:với\\s+)?(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{1,2})(?![A-Z])(?:\\s+tại\\s+([A-Z]))?`,
+  `(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng|[Hh]ạ)\\s+([A-Z])([A-Z])(?![A-Z])\\s+(?:⊥\\s*|vuông\\s*góc(?:\\s+với)?\\s+)(?:với\\s+)?(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{1,2})(?![A-Z])(?:\\s+tại\\s+([A-Z]))?`,
   'gu',
 );
 
@@ -156,7 +158,7 @@ const PERP_DRAW = new RegExp(
 // "Kẻ AC ⊥ MB, BD ⊥ MA" (PERP_DRAW chỉ bắt cặp đầu có verb). CHỈ chạy khi clause
 // có verb dựng (Kẻ/Vẽ/Dựng) → tránh nuốt quan hệ ⊥ trong câu chứng minh.
 const PERP_BARE = new RegExp(
-  `([A-Z])([A-Z])(?![A-Z])\\s+(?:⊥|vuông\\s*góc(?:\\s+với)?)\\s+(?:với\\s+)?(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{1,2})(?![A-Z])(?:\\s+tại\\s+([A-Z]))?`,
+  `([A-Z])([A-Z])(?![A-Z])\\s+(?:⊥\\s*|vuông\\s*góc(?:\\s+với)?\\s+)(?:với\\s+)?(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{1,2})(?![A-Z])(?:\\s+tại\\s+([A-Z]))?`,
   'gu',
 );
 const DRAW_VERB = /[Kk]ẻ|[Vv]ẽ|[Dd]ựng/u;

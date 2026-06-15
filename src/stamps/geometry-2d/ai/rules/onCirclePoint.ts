@@ -58,6 +58,11 @@ const TWO_ON_COMMA =
 // thêm "(X)" paren bare vì đề hay viết "nằm trên (O)" không chữ "đường tròn".
 const TWO_ON_NAMES =
   /([A-Z])(?![A-Za-z])\s*,\s*([A-Z])(?![A-Za-z])\s+là\s+(?:hai|các)\s+điểm\s+(?:thuộc|nằm\s+trên|trên)\s+(?:(?:nửa\s+)?(?:đường\s*tròn|cung)|\(\s*[A-Z]\s*\))/u;
+// ĐẢO 2 điểm trên CUNG: "Trên cung (lớn|nhỏ)? AB lấy hai điểm C, D" / "C và D"
+// (hinh9:19, vao10:202). Cung nêu bằng cặp đỉnh; circle = toàn đề. group1, group2
+// = 2 điểm.
+const TWO_ON_CUNG_REV =
+  /[Tt]rên\s+cung\s+(?:nhỏ\s+|lớn\s+)?[A-Z]{2}(?:\s*(?:nhỏ|lớn))?\s+lấy\s+hai\s+điểm\s+([A-Z])(?![A-Za-z])\s*(?:,|và)\s*([A-Z])(?![A-Za-z])/u;
 
 // Bare "(O)" (1 ký tự HOA trong ngoặc) — fallback khi không có tiền tố "đường
 // tròn". Dùng cuối cùng vì rộng (mọi "(X)").
@@ -116,7 +121,11 @@ export const onCirclePointRule: LanguageRule = {
       if (!circle) continue; // forward patterns cần circle toàn-đề
       // Distributive 2 điểm: "lấy hai điểm C và D thuộc nửa đường tròn" — 2 điểm
       // onCircle theta khác nhau trên circle toàn-đề.
-      const two = TWO_ON.exec(c.text) ?? TWO_ON_COMMA.exec(c.text) ?? TWO_ON_NAMES.exec(c.text);
+      const two =
+        TWO_ON.exec(c.text) ??
+        TWO_ON_COMMA.exec(c.text) ??
+        TWO_ON_NAMES.exec(c.text) ??
+        TWO_ON_CUNG_REV.exec(c.text);
       if (two && two[1].length === 1 && two[2].length === 1) {
         out.push({
           ruleId: 'on-circle-point',

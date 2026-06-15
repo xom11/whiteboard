@@ -62,6 +62,23 @@ describe('onCirclePointRule', () => {
     expect(c.constraint.theta).not.toBe(d.constraint.theta);
   });
 
+  // hinh9:19 / vao10:202 — ĐẢO 2 điểm trên cung: "Trên cung lớn AB lấy hai điểm C, D".
+  it('"Trên cung lớn AB lấy hai điểm C, D" → C, D onCircle theta khác nhau', () => {
+    const all = intents('Cho đường tròn (O) đường kính AB. Trên cung lớn AB lấy hai điểm C, D sao cho AD // BC.');
+    const c = all.find((i) => i.name === 'C');
+    const d = all.find((i) => i.name === 'D');
+    expect(c?.constraint.kind).toBe('onCircle');
+    expect(d?.constraint.kind).toBe('onCircle');
+    expect(c.constraint.circle).toBe('O_c');
+    expect(c.constraint.theta).not.toBe(d.constraint.theta);
+  });
+
+  it('"Trên cung nhỏ AB lấy hai điểm C và E" → C, E onCircle', () => {
+    const all = intents('Cho đường tròn (O). Trên cung nhỏ AB lấy hai điểm C và E.');
+    expect(all.find((i) => i.name === 'C')?.constraint.kind).toBe('onCircle');
+    expect(all.find((i) => i.name === 'E')?.constraint.kind).toBe('onCircle');
+  });
+
   it('không có circle rõ ràng → không claim', () => {
     expect(intents('Lấy điểm F thuộc cung AC nhỏ')).toEqual([]);
   });

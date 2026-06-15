@@ -26,6 +26,30 @@ describe('pointOnTangentRayRule', () => {
     });
   });
 
+  // vao10:235 — dạng ĐẢO "Trên tia Bx lấy điểm M" (Bx do tangentRay dựng trước).
+  it('"Vẽ tiếp tuyến Bx ... Trên tia Bx lấy điểm M" → M onSegment Bx', () => {
+    const problem = 'Cho (O) đường kính AB. Vẽ tiếp tuyến Bx với đường tròn (O). Trên tia Bx lấy điểm M.';
+    expect(intents(problem)).toContainEqual({
+      op: 'add-point',
+      name: 'M',
+      constraint: { kind: 'onSegment', of: 'Bx' },
+    });
+  });
+
+  // vao10:19 — "Từ điểm M trên Ax kẻ tiếp tuyến thứ hai".
+  it('"tiếp tuyến Ax ... điểm M trên Ax" → M onSegment Ax', () => {
+    const problem = 'Cho nửa đường tròn (O) đường kính AB và tiếp tuyến Ax. Từ điểm M trên Ax kẻ tiếp tuyến thứ hai MC.';
+    expect(intents(problem)).toContainEqual({
+      op: 'add-point',
+      name: 'M',
+      constraint: { kind: 'onSegment', of: 'Ax' },
+    });
+  });
+
+  it('không match "Trên tia Bx lấy điểm M" nếu Bx KHÔNG phải tiếp tuyến đặt tên', () => {
+    expect(intents('Cho tam giác ABC. Trên tia Bx lấy điểm M.')).toEqual([]);
+  });
+
   it('không match nếu không có tiếp tuyến đặt tên trước đó', () => {
     expect(intents('Cho tam giác ABC, lấy trên tiếp tuyến đó một điểm P.')).toEqual([]);
   });

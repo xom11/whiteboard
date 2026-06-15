@@ -41,6 +41,7 @@ import { incenterNamedTriangleRule } from './incenterNamedTriangle';
 import { perpThroughCutsLinesRule } from './perpThroughCutsLines';
 import { tangentRayRule } from './tangentRay';
 import { pointOnTangentRayRule } from './pointOnTangentRay';
+import { pointOnTangentAtRule } from './pointOnTangentAt';
 import { intersectRayRule } from './intersectRay';
 import { tangentFromPointAtRule } from './tangentFromPointAt';
 import { perpLineTakePointRule } from './perpLineTakePoint';
@@ -129,6 +130,7 @@ const RULES: readonly LanguageRule[] = [
   perpThroughCutsLinesRule,
   tangentRayRule,
   pointOnTangentRayRule,
+  pointOnTangentAtRule,
   intersectRayRule,
   tangentFromPointAtRule,
   perpLineTakePointRule,

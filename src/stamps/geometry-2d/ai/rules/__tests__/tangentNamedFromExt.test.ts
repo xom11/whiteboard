@@ -109,4 +109,14 @@ describe('tangentNamedFromExtRule', () => {
     const all = run(tangentNamedFromExtRule, 'Cho đường tròn (O). Kẻ tiếp tuyến tại A của (O)');
     expect(all).toHaveLength(0);
   });
+
+  // vao10:17 — "Từ M vẽ tiếp tuyến thứ hai MC với (O)" (qualifier "thứ hai" giữa
+  // "tiếp tuyến" và cặp đỉnh). M ngoài, C tiếp điểm.
+  it('"Từ M vẽ tiếp tuyến thứ hai MC với (O)" → C tangentPoint from M', () => {
+    const all = run(tangentNamedFromExtRule, 'Cho đường tròn (O). Từ M vẽ tiếp tuyến thứ hai MC với (O).');
+    const c = all.find((i: any) => i.op === 'add-point' && i.name === 'C');
+    expect(c).toBeDefined();
+    expect(c.constraint.kind).toBe('tangentPoint');
+    expect(c.constraint.from).toBe('M');
+  });
 });

@@ -150,6 +150,12 @@ describe('perpFootRule', () => {
     expect(intent.constraint).toEqual({ kind: 'perpFoot', from: 'A', onLine: 'BC' });
   });
 
+  // vao10:37 — OCR dính ký hiệu ⊥ vào cạnh: "Vẽ AK ⊥BC tại K" (không space sau ⊥).
+  it('"Vẽ AK ⊥BC tại K" (OCR không space sau ⊥) → perpFoot K from A onLine BC', () => {
+    const intent = firstPoint('Vẽ AK ⊥BC tại K');
+    expect(intent).toEqual({ op: 'add-point', name: 'K', constraint: { kind: 'perpFoot', from: 'A', onLine: 'BC' } });
+  });
+
   it('"Kẻ AH ⊥ BC tại H" (ký hiệu ⊥) → perpFoot H from A', () => {
     const intent = firstPoint('Kẻ AH ⊥ BC tại H');
     expect(intent.name).toBe('H');
