@@ -30,7 +30,7 @@ import { addPoint, connect, drawLine } from './_shared';
 // "(Kẻ)? dây (cung)? DE (⊥|vuông góc với) AB (tại H)?" — g1g2=dây DE, g3=đường
 // AB (1-2 ký tự), g4=H (optional, chân).
 const RE = new RegExp(
-  String.raw`(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)?\s*dây\s*(?:cung\s+)?([A-Z])([A-Z])(?![A-Z])\s*(?:⊥|vuông\s*góc(?:\s+với)?)\s+(?:đường\s*thẳng\s+|cạnh\s+|đoạn\s+)?([A-Z]{1,2})(?![A-Z])(?:\s+tại\s+(?:điểm\s+)?([A-Z])(?![A-Z]))?`,
+  String.raw`(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)?\s*[Dd]ây\s*(?:cung\s+)?([A-Z])([A-Z])(?![A-Z])\s*(?:⊥|vuông\s*góc(?:\s+với)?)\s+(?:đường\s*thẳng\s+|cạnh\s+|đoạn\s+)?([A-Z]{1,2})(?![A-Z])(?:\s+tại\s+(?:điểm\s+)?([A-Z])(?![A-Z]))?`,
   'gu',
 );
 
@@ -50,7 +50,7 @@ export const perpChordAtFootRule: LanguageRule = {
   id: 'perpChordAtFoot',
   priority: 49,
   languages: ['vi'],
-  patterns: [/dây[^.]{0,12}?(?:⊥|vuông\s*góc)/u],
+  patterns: [/[Dd]ây[^.]{0,12}?(?:⊥|vuông\s*góc)/u],
   match(ctx) {
     const out: RuleMatch[] = [];
     const diam = DIAMETER.exec(ctx.problem);
