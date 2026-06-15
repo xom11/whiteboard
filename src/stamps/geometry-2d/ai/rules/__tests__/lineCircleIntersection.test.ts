@@ -36,6 +36,12 @@ describe('lineCircleIntersectionRule', () => {
     expect(run('AB cắt (O) tại A')).toEqual([]);
   });
 
+  // vao10:157/166 — đường tròn LÀM CHỦ NGỮ: "(O) cắt AC tại E".
+  it('"(O) cắt AC tại E" (circle subject) → E=2nd(AC,O) other A', () => {
+    const intents = run('Đường tròn (O) cắt AC tại E').flatMap((x) => x.intents) as any[];
+    expect(intents).toContainEqual({ op: 'add-point', name: 'E', constraint: { kind: 'secondIntersection', line: 'AC', circle: 'O', other: 'A' } });
+  });
+
   // vao10:174 / son123:107 — 1 đường cắt HAI đường tròn (giao 2 circle tự do).
   it('"Đường thẳng AO cắt (O), (O′) lần lượt ở C và D" → C=2nd(AO,O), D=2nd(AO,O′)', () => {
     const intents = run('Đường thẳng AO cắt (O), (O′) lần lượt ở C và D').flatMap((x) => x.intents) as any[];

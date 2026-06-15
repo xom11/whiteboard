@@ -79,6 +79,14 @@ const LINE_TWO_CIRCLES = new RegExp(
   'gu',
 );
 
+// Đường tròn LÀM CHỦ NGỮ: "(O) cắt XY (ở|tại) Z" (vao10:157 "(O) cắt AC tại E").
+// Đảo của SINGLE (line chủ ngữ). 1 đầu mút XY nằm trên (O) → Z = giao thứ hai,
+// other = đầu line (mặc định line[0]). groups: 1=circle 2=line 3=name.
+const CIRCLE_SUBJECT = new RegExp(
+  CIRCLE + String.raw`\s+cắt\s+(?:lại\s+)?([A-Z]{2})(?![A-Z])\s+(?:ở|tại)\s+(?:điểm\s+(?:thứ\s+hai\s+)?)?(?:là\s+)?([A-Z])(?![A-Z])`,
+  'gu',
+);
+
 // "giao điểm của XY và (O) là R (khác W)?" — dạng "Gọi giao điểm của NQ và (O)
 // là R khác N". Ref đầu = line (cặp đỉnh), ref sau = circle "(O)".
 const GIAO_CIRCLE = new RegExp(
@@ -229,6 +237,13 @@ export const lineCircleIntersectionRule: LanguageRule = {
           addPoint(n1, { kind: 'secondIntersection', line, circle: circle1, other }),
           addPoint(n2, { kind: 'secondIntersection', line, circle: circle2, other }),
         );
+      }
+
+      // "(O) cắt XY tại Z" — đường tròn chủ ngữ (đảo SINGLE).
+      CIRCLE_SUBJECT.lastIndex = 0;
+      for (const m of c.text.matchAll(CIRCLE_SUBJECT)) {
+        const [circle, line, name] = [m[1], m[2], m[3]];
+        if (valid(name, line)) intents.push(secondIntersection(name, line, circle));
       }
 
       GIAO_CIRCLE.lastIndex = 0;
