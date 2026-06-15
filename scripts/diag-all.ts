@@ -38,6 +38,22 @@ function introBeforeNumbered(text: string): string {
   head = head.replace(/Chứng minh\s*:?\s*$/i, '').trim();
   return head;
 }
+/** Strip LaTeX inline ($...$) về text thuần cho dataset julielltv. Giữ ký hiệu
+ *  hình học mà rule engine hiểu (∩, ⊥, song song, góc). */
+function stripLatex(s: string): string {
+  return s
+    .replace(/\$/g, '')
+    .replace(/\\cap/g, '∩')
+    .replace(/\\perp/g, '⊥')
+    .replace(/\\parallel/g, ' song song ')
+    .replace(/\\(?:widehat|angle)/g, ' góc ')
+    .replace(/\^\{?\\?circ\}?/g, '°')
+    .replace(/\\[a-zA-Z]+/g, ' ') // các lệnh LaTeX còn lại → space
+    .replace(/[{}]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function introBeforeProof(text: string): string {
   // cắt trước "Chứng minh" / "Tính" / "a)" / "CMR" đầu tiên (phần dựng hình)
   const idx = text.search(/(Chứng minh|Chứng tỏ|CMR|Tính|Gọi[^.]*\?|\n?\s*a\))/i);
@@ -93,6 +109,16 @@ const DATASETS: DS[] = [
     name: 'son123',
     file: 'docs/datasets/son_123_problems_cleaned.txt',
     parse: blockParse(/^Bài\s+(\d+):/, (m) => m[1]),
+    intro: introBeforeProof,
+  },
+  {
+    name: 'julielltv',
+    file: 'docs/datasets/julielltv-hinh-hoc-phang.json',
+    // JSON {problems:[{id, statement}]} — statement chứa LaTeX inline $...$.
+    parse: (raw: string): Bai[] => {
+      const data = JSON.parse(raw) as { problems: Array<{ id: number; statement: string }> };
+      return data.problems.map((p) => ({ id: String(p.id), text: stripLatex(p.statement) }));
+    },
     intro: introBeforeProof,
   },
   {
