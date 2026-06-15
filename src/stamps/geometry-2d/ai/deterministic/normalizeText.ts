@@ -18,11 +18,17 @@ const QUAD_SYMBOL = /[◊▱□]\s*(?=[A-Z])/gu;
 // dài). Thay bằng ' ' (không '') để không dính chữ ("lên√AB"→"lên AB"); rule dùng
 // \s+ nên khoảng trắng dư vô hại; không tạo/huỷ ranh giới câu.
 const SQRT_NOISE = /√/gu;
+// Prime cong ’ (U+2019) / ′ (U+2032) / ´ (U+00B4) SAU chữ-cái-số → ASCII ' —
+// canonical hoá nhãn phái sinh (O'/A'/d') để mọi rule dùng `['′]` (hoặc ') khớp
+// đồng nhất. Chỉ thay khi đứng sau [A-Za-z0-9] (ngữ cảnh prime), không nuốt dấu
+// nháy mở đầu cụm.
+const PRIME_VARIANT = /([A-Za-z0-9])[’′´]/gu;
 
 export function normalizeProblemText(problem: string): string {
   return problem
     .replace(TRIANGLE_SYMBOL, 'tam giác ')
     .replace(QUAD_SYMBOL, 'tứ giác ')
     .replace(CIRCLE_SYNONYM, 'đường tròn')
-    .replace(SQRT_NOISE, ' ');
+    .replace(SQRT_NOISE, ' ')
+    .replace(PRIME_VARIANT, "$1'");
 }

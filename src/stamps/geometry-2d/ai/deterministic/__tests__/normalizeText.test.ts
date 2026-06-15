@@ -19,4 +19,12 @@ describe('normalizeProblemText', () => {
     );
     expect(normalizeProblemText('√3')).not.toContain('√');
   });
+
+  it('prime cong ’ / ′ / ´ sau chữ-số → ASCII apostrophe (canonical)', () => {
+    expect(normalizeProblemText('(O’) và (O′)')).toBe("(O') và (O')");
+    expect(normalizeProblemText('đường thẳng AO’ cắt (O)')).toBe("đường thẳng AO' cắt (O)");
+    expect(normalizeProblemText('điểm A´')).toBe("điểm A'");
+    // KHÔNG đổi dấu nháy không đứng sau chữ-số (tránh nuốt dấu câu khác).
+    expect(normalizeProblemText('’abc')).toBe('’abc');
+  });
 });

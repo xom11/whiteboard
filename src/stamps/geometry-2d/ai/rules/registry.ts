@@ -82,6 +82,7 @@ import { givenNamedCircleRule } from './givenNamedCircle';
 import { twoPerpLinesMeetRule } from './twoPerpLinesMeet';
 import { circumcircleCutsLineRule } from './circumcircleCutsLine';
 import { lineConcurrencyRule } from './lineConcurrency';
+import { twoCirclesMeetRule } from './twoCirclesMeet';
 import { parallelThroughCutsCircleRule } from './parallelThroughCutsCircle';
 import { lineThroughCutsTwoLinesRule } from './lineThroughCutsTwoLines';
 import { rightAngleViewingRule } from './rightAngleViewing';
@@ -169,6 +170,7 @@ const RULES: readonly LanguageRule[] = [
   cutCirclesDistribRule,
   givenNamedCircleRule,
   twoPerpLinesMeetRule,
+  twoCirclesMeetRule,
 ];
 
 /** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */

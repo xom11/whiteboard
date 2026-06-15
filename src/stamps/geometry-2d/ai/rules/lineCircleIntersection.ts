@@ -67,6 +67,18 @@ const LINE_AND_CIRCLE = new RegExp(
   'gu',
 );
 
+// "(đường thẳng)? AO cắt (O), (O′) lần lượt (ở|tại) C và D" (vao10:174,
+// son123:107) — 1 đường cắt HAI đường tròn (giao của 2 circle tự do). A (đầu line)
+// nằm trên CẢ 2 đường tròn (là 1 giao điểm) → C,D đều là secondIntersection, mỗi
+// điểm với circle tương ứng, other = đầu line. Line giữ prime ("AO′").
+//   groups: 1=line(prime optional) 2=circle1 3=circle2 4=name1 5=name2.
+const LINE_TWO_CIRCLES = new RegExp(
+  String.raw`(?:đường\s*thẳng\s+)?([A-Z][A-Z](?:['′])?)(?![A-Z])\s+cắt\s+` +
+    CIRCLE_P + String.raw`\s*(?:,|và)\s*` + CIRCLE_P +
+    String.raw`\s+(?:lần\s*lượt\s+|theo\s+thứ\s+tự\s+)?(?:ở|tại)\s+([A-Z])(?![A-Z])\s*(?:,|và)\s*([A-Z])(?![A-Z])`,
+  'gu',
+);
+
 // "giao điểm của XY và (O) là R (khác W)?" — dạng "Gọi giao điểm của NQ và (O)
 // là R khác N". Ref đầu = line (cặp đỉnh), ref sau = circle "(O)".
 const GIAO_CIRCLE = new RegExp(
@@ -203,6 +215,20 @@ export const lineCircleIntersectionRule: LanguageRule = {
         const [n1, n2, l1, l2, circle] = [m[1], m[2], m[3], m[4], m[5]];
         if (valid(n1, l1)) intents.push(secondIntersection(n1, l1, circle));
         if (valid(n2, l2)) intents.push(secondIntersection(n2, l2, circle));
+      }
+
+      // "AO cắt (O), (O′) lần lượt ở C và D" — 1 đường, 2 đường tròn.
+      LINE_TWO_CIRCLES.lastIndex = 0;
+      for (const m of c.text.matchAll(LINE_TWO_CIRCLES)) {
+        const line = m[1].replace(/′/g, "'");
+        const [circle1, circle2, n1, n2] = [m[2].replace(/′/g, "'"), m[3].replace(/′/g, "'"), m[4], m[5]];
+        const other = line[0]; // đầu line nằm trên cả 2 đường tròn (1 giao điểm)
+        if (n1 === n2 || line.includes(n1) || line.includes(n2)) continue;
+        if (circle1 === circle2) continue;
+        intents.push(
+          addPoint(n1, { kind: 'secondIntersection', line, circle: circle1, other }),
+          addPoint(n2, { kind: 'secondIntersection', line, circle: circle2, other }),
+        );
       }
 
       GIAO_CIRCLE.lastIndex = 0;
