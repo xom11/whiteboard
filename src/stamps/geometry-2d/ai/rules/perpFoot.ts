@@ -97,7 +97,7 @@ const TWO_LINES_LINE = '(?:các\\s+)?(?:đường\\s*thẳng\\s+|cạnh\\s+|đo�
 // cho phép verb dựng "(kẻ|hạ|vẽ|dựng)" giữa "vuông góc" và "(từ|của)".
 const SHARED_FROM_TWO = new RegExp(
   "([A-Z])(?:['′])?\\s*(?:,|và)\\s*([A-Z])(?:['′])?\\s+(?:lần\\s+lượt\\s+)?(?:là\\s+)?(?:các\\s+)?" +
-    '(?:hình\\s*chiếu\\s+(?:vuông\\s*góc\\s+)?|chân\\s+(?:của\\s+)?đường\\s+(?:vuông\\s*góc|cao)\\s+)' +
+    '(?:hình\\s*chiếu\\s+(?:vuông\\s*góc\\s+)?|chân\\s+(?:của\\s+)?(?:các\\s+)?đường\\s+(?:vuông\\s*góc|cao)\\s+)' +
     '(?:kẻ\\s+|hạ\\s+|vẽ\\s+|dựng\\s+)?(?:của\\s+|từ\\s+)?(?:điểm\\s+)?([A-Z])\\s+' +
     TWO_LINES_PREP + '\\s+' + TWO_LINES_LINE + '\\s+và\\s+' + TWO_LINES_LINE,
   'gu',

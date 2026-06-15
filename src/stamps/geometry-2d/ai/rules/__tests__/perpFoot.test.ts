@@ -495,4 +495,10 @@ describe('perpFoot — "X và Y lần lượt là chân đường vuông góc k�
     expect(feet('Gọi D,E,F lần lượt là hình chiếu vuông góc của điểm I trên các đường thẳng BC,CN và NB.'))
       .toEqual(['D:I->BC', 'E:I->CN', 'F:I->NB']);
   });
+
+  // vao10:142 — "chân CÁC đường vuông góc kẻ từ M đến BC và AC" (có "các" + "đến").
+  it('vao10:142: "E và F lần lượt là chân các đường vuông góc kẻ từ M đến BC và AC"', () => {
+    expect(feet('Gọi E và F lần lượt là chân các đường vuông góc kẻ từ M đến BC và AC.'))
+      .toEqual(['E:M->BC', 'F:M->AC']);
+  });
 });
