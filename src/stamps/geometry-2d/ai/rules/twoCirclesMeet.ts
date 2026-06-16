@@ -25,7 +25,8 @@ import { SYMBOLIC_RADIUS } from './circleRadius';
 const PREFILTER = /hai\s+đường\s*tròn[^.]{0,70}?cắt\s+nhau/u;
 
 // "(X)" / "(X;R)" với X = 1 ký tự HOA + prime optional.
-const CIRCLE = "\\(\\s*([A-Z]['′]?)(?:\\s*[;,]\\s*[Rr]['′]?)?\\s*\\)";
+// Bán kính ký hiệu "R"/"R′" HOẶC số có đơn vị "5cm" (httcd:84 "(O; 5cm)").
+const CIRCLE = "\\(\\s*([A-Z]['′]?)(?:\\s*[;,]\\s*(?:[Rr]['′]?|\\d+(?:[.,]\\d+)?\\s*[a-z]*))?\\s*\\)";
 const TWO_MEET = new RegExp(
   'hai\\s+đường\\s*tròn\\s*' +
     CIRCLE +

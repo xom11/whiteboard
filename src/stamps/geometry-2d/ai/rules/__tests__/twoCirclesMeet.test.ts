@@ -25,6 +25,13 @@ describe('twoCirclesMeetRule', () => {
     expect(all.find((i) => i.name === 'B')?.constraint.kind).toBe('circleIntersection');
   });
 
+  // httcd:84 — bán kính số + đơn vị "(O; 5cm)".
+  it('biến thể "(O; 5cm) và (O′; 5cm) cắt nhau tại A và B"', () => {
+    const all = intents('Cho hai đường tròn (O; 5cm) và (O′; 5cm) cắt nhau tại A và B.');
+    expect(all.find((i) => i.name === 'A')?.constraint.kind).toBe('circleIntersection');
+    expect(all.find((i) => i.name === 'B')?.constraint.kind).toBe('circleIntersection');
+  });
+
   it('end-to-end: hình hợp lệ, A và B có toạ độ hữu hạn', () => {
     const r = tryDeterministicFigure('Cho hai đường tròn (O) và (O′) cắt nhau tại hai điểm A, B.');
     expect(r.ok).toBe(true);
