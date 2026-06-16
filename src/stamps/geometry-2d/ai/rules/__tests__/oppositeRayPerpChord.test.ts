@@ -24,6 +24,17 @@ describe('oppositeRayPointRule', () => {
       constraint: { kind: 'pointAtDistance', from: 'B', through: 'A', distance: { kind: 'literal' } },
     });
   });
+
+  // httcd:148 "Trên tia đối của tia AB lấy một điểm M" — "một điểm" xen giữa.
+  it('"Trên tia đối của tia AB lấy một điểm M" → M = pointAtDistance(from B, through A)', () => {
+    const all = run(oppositeRayPointRule, 'Trên tia đối của tia AB lấy một điểm M');
+    expect(all).toHaveLength(1);
+    expect(all[0]).toMatchObject({
+      op: 'add-point',
+      name: 'M',
+      constraint: { kind: 'pointAtDistance', from: 'B', through: 'A' },
+    });
+  });
 });
 
 describe('perpChordAtFootRule', () => {

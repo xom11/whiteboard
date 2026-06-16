@@ -14,7 +14,7 @@ import { addPoint } from './_shared';
 
 // "Trên tia đối của tia AB lấy điểm C" — g1g2 = tia AB (A gốc, B hướng), g3 = C.
 const RE = new RegExp(
-  String.raw`[Tt]rên\s+tia\s+đối\s+(?:của\s+)?tia\s+([A-Z])([A-Z])(?![A-Z])[^.]{0,20}?lấy\s+(?:điểm\s+)?([A-Z])(?![A-Z])`,
+  String.raw`[Tt]rên\s+tia\s+đối\s+(?:của\s+)?tia\s+([A-Z])([A-Z])(?![A-Z])[^.]{0,20}?lấy\s+(?:một\s+)?(?:điểm\s+)?([A-Z])(?![A-Z])`,
   'gu',
 );
 
