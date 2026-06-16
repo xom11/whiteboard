@@ -24,12 +24,12 @@ import { addPoint, connect } from './_shared';
 const CAT_TUYEN = /cát\s*tuyến\s+([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
 // "qua A cắt (đường tròn|(O)) (tại|ở) D (và|,) E".
 const LINE_THROUGH = new RegExp(
-  String.raw`qua\s+([A-Z])(?!\p{L})[^.]{0,30}?cắt\s+(?:đường\s*tròn\s*)?(?:\(\s*([A-Z])\s*\)\s*)?(?:tại|ở)\s+(?:hai\s+|2\s+)?(?:điểm\s+)?([A-Z])\s*(?:và|,)\s*([A-Z])(?![A-Z])`,
+  String.raw`[Qq]ua\s+(?:điểm\s+)?([A-Z])(?!\p{L})[^.]{0,30}?cắt\s+(?:đường\s*tròn\s*)?(?:\(\s*([A-Z])\s*\)\s*)?(?:tại|ở)\s+(?:hai\s+|2\s+)?(?:điểm\s+)?([A-Z])\s*(?:và|,)\s*([A-Z])(?![A-Z])`,
   'gu',
 );
 const PAREN_CIRCLE = /\(\s*([A-Z])\s*\)/u;
 
-const PREFILTER = /cát\s*tuyến|qua\s+[A-Z][^.]{0,30}?cắt/u;
+const PREFILTER = /cát\s*tuyến|[Qq]ua\s+(?:điểm\s+)?[A-Z][^.]{0,30}?cắt/u;
 
 function secantIntents(ext: string, near: string, far: string, circle: string, theta: number) {
   // đầu mút phân biệt + không trùng điểm ngoài.

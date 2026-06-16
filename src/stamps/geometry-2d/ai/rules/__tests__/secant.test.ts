@@ -23,6 +23,13 @@ describe('secantRule', () => {
     expect(all.find((i) => i.name === 'C')?.constraint).toEqual({ kind: 'secondIntersection', line: 'AB', circle: 'O', other: 'B' });
   });
 
+  // "Qua điểm S vẽ đường thẳng cắt (O) tại hai điểm E, F" — chữ "điểm" sau "qua".
+  it('"Qua điểm S vẽ đường thẳng cắt (O) tại hai điểm E, F" → E onCircle, F 2nd(SE)', () => {
+    const all = run('Cho (O) và điểm S nằm ngoài. Qua điểm S vẽ một đường thẳng cắt đường tròn (O) tại hai điểm E, F');
+    expect(all.find((i) => i.name === 'E')?.constraint).toEqual(expect.objectContaining({ kind: 'onCircle' }));
+    expect(all.find((i) => i.name === 'F')?.constraint).toEqual({ kind: 'secondIntersection', line: 'SE', circle: 'O', other: 'E' });
+  });
+
   it('"cát tuyến ADE" → A ngoài, D gần (onCircle), E xa (secondIntersection AD)', () => {
     const all = run('Cho đường tròn (O). Từ A kẻ cát tuyến ADE');
     expect(all).toContainEqual(expect.objectContaining({ op: 'add-point', name: 'D', constraint: expect.objectContaining({ kind: 'onCircle' }) }));
