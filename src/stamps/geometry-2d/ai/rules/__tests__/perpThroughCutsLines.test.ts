@@ -42,4 +42,17 @@ describe('perpThroughCutsLinesRule', () => {
       expect.objectContaining({ op: 'add-point', name: 'M', constraint: { kind: 'intersection', of: ['parA', 'AB'] } }),
     );
   });
+
+  // vao10:119 — chân "tại E" trên đường ⊥ (AD) PHẢI được dựng.
+  it('RE_SINGLE: "qua B vuông góc với AD tại E và cắt AC tại F" → E (chân) + F', () => {
+    const intents = perpThroughCutsLinesRule
+      .match(ctx('Đường thẳng đi qua B vuông góc với AD tại E và cắt AC tại F.'))
+      .flatMap((m) => m.intents);
+    expect(intents).toContainEqual(
+      expect.objectContaining({ op: 'add-point', name: 'E', constraint: { kind: 'intersection', of: ['prpB', 'AD'] } }),
+    );
+    expect(intents).toContainEqual(
+      expect.objectContaining({ op: 'add-point', name: 'F', constraint: { kind: 'intersection', of: ['prpB', 'AC'] } }),
+    );
+  });
 });

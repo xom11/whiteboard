@@ -35,10 +35,14 @@ const PREFILTER =
 // ("Kẻ đường thẳng qua D vuông góc OD, cắt AB ở K"), Bài 33 ("Một đường thẳng đi
 // qua điểm D, vuông góc với OD và cắt BC tại E").
 //   groups: 1=qua P, 2=kind, 3+4=L1, 5+6=L2, 7=giao Q.
+// group 5 = chân TÙY CHỌN trên đường ⊥ ("tại E" giữa L1 và "cắt"); group6+7=L2;
+// group8=giao. Chân chỉ khớp khi tên đứng RIÊNG (?![A-Za-z]) → KHÔNG bắt "Evà"
+// dính (giữ nguyên hành vi cũ với OCR-glue, tránh regress).
 const RE_SINGLE = new RegExp(
   '(?:Qua|qua|Từ|từ)\\s+(?:điểm\\s+)?([A-Z])(?:[\'′]?)(?!\\p{L})' +
     '[^.]{0,30}?(song\\s*song|vuông\\s*góc)\\s+(?:với\\s+)?(?:cạnh\\s+|đoạn(?:\\s+thẳng)?\\s+|đường\\s*thẳng\\s+)?' +
     '([A-Z])([A-Z])(?!\\p{L})' +
+    '(?:\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Za-z]))?' +
     '[^.]{0,30}?cắt\\s+(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z])([A-Z])(?!\\p{L})\\s+(?:ở|tại)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])',
   'gu',
 );
@@ -84,20 +88,20 @@ export const perpThroughCutsLinesRule: LanguageRule = {
         const through = m[1];
         const isParallel = /song/.test(m[2]);
         const to = m[3] + m[4];
-        const l2 = m[5] + m[6];
-        const q = m[7];
+        const foot = m[5]; // chân trên đường ⊥ (tùy chọn)
+        const l2 = m[6] + m[7];
+        const q = m[8];
         if (isParallel && to.includes(through)) continue;
         if (l2.includes(q) || through === q) continue;
         const kind = isParallel ? 'parallelThrough' : 'perpThrough';
         const name = (isParallel ? 'par' : 'prp') + through;
-        out.push({
-          ruleId: 'perpThroughCutsLines',
-          clauseIds: [c.id],
-          intents: [
-            drawLine(name, kind, { through, to }),
-            addPoint(q, { kind: 'intersection', of: [name, l2] }),
-          ],
-        });
+        const intents = [drawLine(name, kind, { through, to })];
+        // Chân E = giao đường ⊥ với đường-tham-chiếu (to). Bỏ nếu trùng q/đầu mút.
+        if (foot && foot !== q && !to.includes(foot) && foot !== through) {
+          intents.push(addPoint(foot, { kind: 'intersection', of: [name, to] }));
+        }
+        intents.push(addPoint(q, { kind: 'intersection', of: [name, l2] }));
+        out.push({ ruleId: 'perpThroughCutsLines', clauseIds: [c.id], intents });
       }
     }
     return out;
