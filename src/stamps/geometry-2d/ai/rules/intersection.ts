@@ -59,7 +59,7 @@ const DISTRIB_TWO = new RegExp(
 // E: 1 đường ∩ 2 đường — "MA cắt DB, DC (theo thứ tự|lần lượt)? tại X, Z"
 //    → X=MA∩DB, Z=MA∩DC. groups: 1=line, 2=ref1, 3=ref2, 4=name1, 5=name2.
 const CAT_ONE_TWO = new RegExp(
-  `${REF}\\s+cắt\\s+${REF}\\s*,\\s*${REF}\\s+(?:theo\\s+thứ\\s+tự\\s+|lần\\s*lượt\\s+)?tại\\s+([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])`,
+  `${REF}\\s+cắt\\s+${REF}\\s*(?:,|và)\\s*${REF}\\s+(?:theo\\s+thứ\\s+tự\\s+|lần\\s*lượt\\s+)?tại\\s+([A-Z])\\s*(?:,|và)\\s*(?:tại\\s+)?([A-Z])(?![A-Z])`,
   'gu',
 );
 // F: 2 đường ∩ 1 đường — "TC, TB (lần lượt|theo thứ tự)? cắt EF tại P, Q"

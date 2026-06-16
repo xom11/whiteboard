@@ -102,6 +102,11 @@ describe('intersectionRule', () => {
     it('"TC, TB lần lượt cắt EF tại P, Q" → P=TC∩EF, Q=TB∩EF', () => {
       expect(pairs('TC, TB lần lượt cắt EF tại P, Q')).toEqual(['P:TC∩EF', 'Q:TB∩EF']);
     });
+
+    // httcd:156 — 2 cạnh nối "và" + điểm lặp "tại": "BE cắt AD và AC lần lượt tại I và tại K".
+    it('"BE cắt AD và AC lần lượt tại I và tại K" → I=BE∩AD, K=BE∩AC', () => {
+      expect(pairs('Nối BE cắt AD và AC lần lượt tại I và tại K')).toEqual(['I:BE∩AD', 'K:BE∩AC']);
+    });
   });
 });
 
