@@ -9,7 +9,7 @@ import { tryDeterministicFigure } from '../src/stamps/geometry-2d/ai/determinist
 
 const [ds, id] = [process.argv[2], process.argv[3]];
 const rows = JSON.parse(readFileSync('.work/escalations.json', 'utf8'));
-const row = rows.find((r: any) => r.dataset === ds && r.id === id);
+const row = rows.find((r: any) => r.dataset === ds && String(r.id) === id);
 if (!row) { console.log('not found'); process.exit(1); }
 const raw = row.intro as string;
 console.log('INTRO:', raw, '\n');

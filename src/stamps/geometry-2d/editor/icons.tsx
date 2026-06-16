@@ -445,52 +445,65 @@ export const Icon = {
   ),
 
   // ===== Nâng cao / kind chưa có icon =====
+  // Hệ màu đồng bộ: XANH = input click sẵn, ĐỎ = output suy ra. Toạ độ tính để
+  // điểm nằm ĐÚNG trên đường tròn/cung/tiếp tuyến (không trôi nổi).
   excenter: (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-      <path d="M5 16 L12 5 L19 16 Z" stroke="currentColor" strokeWidth="1.3"/>
-      <circle cx="12" cy="20" r="3" fill="none" stroke={C_CONSTRUCT} strokeWidth="1.3"/>
-      <circle cx="12" cy="20" r="1.4" fill={C_CONSTRUCT}/>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      {/* Tam giác (3 đỉnh xanh) + 2 cạnh kéo dài (xám đứt) tiếp xúc đường tròn bàng tiếp + TÂM đỏ */}
+      <polygon points="12,3 15,15 9,15" stroke="currentColor" strokeWidth="1.4" fill="none"/>
+      <line x1="9" y1="15" x2="8" y2="18.9" stroke="#94a3b8" strokeWidth="1" strokeDasharray="1.6 1.6"/>
+      <line x1="15" y1="15" x2="16" y2="18.9" stroke="#94a3b8" strokeWidth="1" strokeDasharray="1.6 1.6"/>
+      <circle cx="12" cy="18.9" r="3.8" stroke="currentColor" strokeWidth="1.3"/>
+      <circle cx="12" cy="3" r="1.6" fill={C_POINT}/>
+      <circle cx="9" cy="15" r="1.6" fill={C_POINT}/>
+      <circle cx="15" cy="15" r="1.6" fill={C_POINT}/>
+      <circle cx="12" cy="18.9" r="2.2" fill={C_CONSTRUCT}/>
     </svg>
   ),
   tangencyPoint: (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-      <circle cx="10" cy="12" r="6.5" stroke="currentColor" strokeWidth="1.3"/>
-      <line x1="16.5" y1="3" x2="16.5" y2="21" stroke="currentColor" strokeWidth="1.3"/>
-      <circle cx="16.5" cy="12" r="2.2" fill={C_CONSTRUCT}/>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
+      {/* Đường tròn + tiếp tuyến đứng chạm tại đúng 1 điểm → TIẾP ĐIỂM đỏ (x=cx+r) */}
+      <circle cx="9.5" cy="12" r="7" stroke="currentColor" strokeWidth="1.4"/>
+      <line x1="16.5" y1="3.5" x2="16.5" y2="20.5" stroke="currentColor" strokeWidth="1.4"/>
+      <circle cx="16.5" cy="12" r="2.3" fill={C_CONSTRUCT}/>
     </svg>
   ),
   secondIntersection: (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-      <circle cx="11" cy="12" r="6.5" stroke="currentColor" strokeWidth="1.3"/>
-      <line x1="2" y1="8" x2="22" y2="16" stroke="currentColor" strokeWidth="1.3"/>
-      <circle cx="6.2" cy="9.6" r="1.6" fill="currentColor"/>
-      <circle cx="15.8" cy="14.4" r="2.4" fill={C_CONSTRUCT}/>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
+      {/* Cát tuyến cắt đường tròn tại 2 điểm NẰM TRÊN tròn: giao đã biết XANH → giao THỨ HAI đỏ */}
+      <circle cx="11" cy="12" r="6.5" stroke="currentColor" strokeWidth="1.4"/>
+      <line x1="2.4" y1="8.2" x2="20.4" y2="11.4" stroke="currentColor" strokeWidth="1.4"/>
+      <circle cx="5.37" cy="8.75" r="1.8" fill={C_POINT}/>
+      <circle cx="17.4" cy="10.87" r="2.4" fill={C_CONSTRUCT}/>
     </svg>
   ),
   arcMidpoint: (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
-      <path d="M4 17 A 9 9 0 0 1 20 17" stroke="currentColor" strokeWidth="1.4"/>
-      <circle cx="4" cy="17" r="1.6" fill="currentColor"/>
-      <circle cx="20" cy="17" r="1.6" fill="currentColor"/>
-      <circle cx="12" cy="8.2" r="2.4" fill={C_CONSTRUCT}/>
+      {/* Cung currentColor (active=trắng, không trùng nền emerald) + 2 đầu cung XANH → ĐIỂM GIỮA đỏ đúng đỉnh cung (12, 11.4) */}
+      <path d="M4 17 A 8.5 8.5 0 0 1 20 17" stroke="currentColor" strokeWidth="1.6" fill="none"/>
+      <circle cx="4" cy="17" r="1.8" fill={C_POINT}/>
+      <circle cx="20" cy="17" r="1.8" fill={C_POINT}/>
+      <circle cx="12" cy="11.4" r="2.3" fill={C_CONSTRUCT}/>
     </svg>
   ),
   circleIntersection: (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-      <circle cx="9" cy="12" r="6" stroke="currentColor" strokeWidth="1.3"/>
-      <circle cx="15" cy="12" r="6" stroke="currentColor" strokeWidth="1.3"/>
-      <circle cx="12" cy="7.6" r="2" fill={C_CONSTRUCT}/>
-      <circle cx="12" cy="16.4" r="2" fill={C_CONSTRUCT}/>
+      {/* Hai đường tròn cắt nhau → 2 giao điểm đỏ nằm đúng giao (12, 6.8) & (12, 17.2) */}
+      <circle cx="9" cy="12" r="6" stroke="currentColor" strokeWidth="1.4"/>
+      <circle cx="15" cy="12" r="6" stroke="currentColor" strokeWidth="1.4"/>
+      <circle cx="12" cy="6.8" r="2" fill={C_CONSTRUCT}/>
+      <circle cx="12" cy="17.2" r="2" fill={C_CONSTRUCT}/>
     </svg>
   ),
   tangentPointExt: (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" strokeLinecap="round">
-      <circle cx="14" cy="12" r="6" stroke="currentColor" strokeWidth="1.3"/>
-      <circle cx="3.5" cy="12" r="1.8" fill={C_POINT}/>
-      <line x1="3.5" y1="12" x2="17.5" y2="7.5" stroke="currentColor" strokeWidth="1.2"/>
-      <line x1="3.5" y1="12" x2="17.5" y2="16.5" stroke="currentColor" strokeWidth="1.2"/>
-      <circle cx="17.5" cy="7.5" r="1.8" fill={C_CONSTRUCT}/>
-      <circle cx="17.5" cy="16.5" r="1.8" fill={C_CONSTRUCT}/>
+      {/* Điểm ngoài XANH → 2 tiếp tuyến tiếp xúc thật (PT⊥CT) → 2 TIẾP ĐIỂM đỏ trên tròn */}
+      <circle cx="13" cy="12" r="6" stroke="currentColor" strokeWidth="1.4"/>
+      <line x1="3" y1="12" x2="11.8" y2="18.6" stroke="currentColor" strokeWidth="1.3"/>
+      <line x1="3" y1="12" x2="11.8" y2="5.4" stroke="currentColor" strokeWidth="1.3"/>
+      <circle cx="3" cy="12" r="2" fill={C_POINT}/>
+      <circle cx="9.4" cy="16.8" r="1.8" fill={C_CONSTRUCT}/>
+      <circle cx="9.4" cy="7.2" r="1.8" fill={C_CONSTRUCT}/>
     </svg>
   ),
   circleCR: (
@@ -507,9 +520,12 @@ export const Icon = {
     </svg>
   ),
   excircle: (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-      <path d="M6 9 L14 4 L18 13 Z" stroke="currentColor" strokeWidth="1.2"/>
-      <circle cx="9" cy="17" r="4.6" fill="none" stroke={C_CONSTRUCT} strokeWidth="1.3"/>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      {/* Tam giác + 2 cạnh kéo dài (xám đứt) + đường tròn bàng tiếp ĐỎ nổi bật, tiếp xúc đáy */}
+      <polygon points="12,3 15,15 9,15" stroke="currentColor" strokeWidth="1.4" fill="none"/>
+      <line x1="9" y1="15" x2="8" y2="18.9" stroke="#94a3b8" strokeWidth="1" strokeDasharray="1.6 1.6"/>
+      <line x1="15" y1="15" x2="16" y2="18.9" stroke="#94a3b8" strokeWidth="1" strokeDasharray="1.6 1.6"/>
+      <circle cx="12" cy="18.9" r="3.8" stroke={C_CONSTRUCT} strokeWidth="1.5" fill={C_CONSTRUCT} fillOpacity="0.12"/>
     </svg>
   ),
   pointOn: (

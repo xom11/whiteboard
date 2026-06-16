@@ -65,9 +65,10 @@ const POINT_MOVE_SEG = new RegExp(
   'gu',
 );
 
-// "D nằm giữa A và B" / "một điểm D nằm giữa A và B".
+// "D nằm giữa A và B" / "một điểm D nằm giữa A và B" / "M là (một)? điểm nằm
+// giữa A và B" (tên đứng TRƯỚC "là điểm" — httcd:67, vao10:219).
 const BETWEEN = new RegExp(
-  String.raw`(?:một\s+)?(?:điểm\s+)?${POINT}\s+nằm\s+giữa\s+(?:hai\s+điểm\s+)?([A-Z])\s+và\s+([A-Z])(?![A-Z])`,
+  String.raw`(?:một\s+)?(?:điểm\s+)?${POINT}\s+(?:là\s+(?:một\s+)?điểm\s+)?nằm\s+giữa\s+(?:hai\s+điểm\s+)?([A-Z])\s+và\s+([A-Z])(?![A-Z])`,
   'gu',
 );
 

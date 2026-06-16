@@ -34,6 +34,23 @@ describe('onSegmentPointRule', () => {
     });
   });
 
+  // httcd:67 "Gọi M là một điểm nằm giữa A và B"; vao10:219 "H là điểm nằm giữa O và B".
+  it('"M là một điểm nằm giữa A và B" → M onSegment AB', () => {
+    expect(intents('Cho đoạn AB. Gọi M là một điểm nằm giữa A và B')).toContainEqual({
+      op: 'add-point',
+      name: 'M',
+      constraint: { kind: 'onSegment', of: 'AB' },
+    });
+  });
+
+  it('"H là điểm nằm giữa O và B" → H onSegment OB', () => {
+    expect(intents('Gọi H là điểm nằm giữa O và B')).toContainEqual({
+      op: 'add-point',
+      name: 'H',
+      constraint: { kind: 'onSegment', of: 'OB' },
+    });
+  });
+
   it('"Trên bán kính OC lấy điểm B" → B onSegment OC', () => {
     expect(intents('Trên bán kính OC lấy điểm B tùy ý')).toContainEqual({
       op: 'add-point',
