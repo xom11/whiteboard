@@ -65,6 +65,15 @@ const POINT_THUOC_TIA = new RegExp(
   'gu',
 );
 
+// "M là (một)? điểm (bất kì)? trên (cạnh|đoạn|đáy)? AD" — tên ĐỨNG TRƯỚC + "là
+// điểm trên" (KHÔNG "thuộc", KHÔNG động từ chuyển động — son123:9). CHẠY TRƯỚC
+// metric-skip ("sao cho ∠=30°"). SEG=[A-Z]{2} + prefix loại "tia/cung/đường tròn"
+// (onCirclePoint/oppositeRay lo).
+const POINT_ON_SEG_DECL = new RegExp(
+  String.raw`${POINT}\s+là\s+(?:một\s+)?điểm\s+(?:bất\s*k[iìyỳ]\s+)?trên\s+(?:cạnh\s+|đáy\s+|đoạn(?:\s+thẳng)?\s+)?${SEG}`,
+  'gu',
+);
+
 // "Điểm P di chuyển trên cạnh AC" / "P di động trên đoạn BC" / "Lấy P trên cạnh
 // AC" — điểm ĐỨNG TRƯỚC + động từ chuyển động (di chuyển/thay đổi/di động/nằm)
 // optional + "trên (cạnh) SEG". Điểm 1-DOF (di động) vẫn dựng 1 vị trí đại diện.
@@ -187,6 +196,16 @@ export const onSegmentPointRule: LanguageRule = {
       // "… sao cho AN=BM" — đặt N free; metric chỉ tinh chỉnh).
       POINT_THUOC_TIA.lastIndex = 0;
       for (const m of c.text.matchAll(POINT_THUOC_TIA)) {
+        const name = normalizePoint(m[1]);
+        const segment = m[2];
+        if (validOnSegment(name, segment)) {
+          intents.push(addPoint(name, { kind: 'onSegment', of: segment }));
+        }
+      }
+
+      // "M là (một)? điểm trên cạnh AD" — pre-metric (son123:9 "sao cho ∠=30°").
+      POINT_ON_SEG_DECL.lastIndex = 0;
+      for (const m of c.text.matchAll(POINT_ON_SEG_DECL)) {
         const name = normalizePoint(m[1]);
         const segment = m[2];
         if (validOnSegment(name, segment)) {

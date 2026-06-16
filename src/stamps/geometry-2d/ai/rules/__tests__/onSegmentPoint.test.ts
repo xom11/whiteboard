@@ -51,6 +51,15 @@ describe('onSegmentPointRule', () => {
     });
   });
 
+  // son123:9 "M là một điểm trên cạnh AD" (tên trước "là một điểm trên cạnh", có metric).
+  it('"M là một điểm trên cạnh AD sao cho ∠ABM=30°" → M onSegment AD (pre-metric)', () => {
+    expect(intents('Cho hình vuông ABCD. M là một điểm trên cạnh AD sao cho ABM = 30 độ')).toContainEqual({
+      op: 'add-point',
+      name: 'M',
+      constraint: { kind: 'onSegment', of: 'AD' },
+    });
+  });
+
   // httcd:128 "điểm N thuộc tia AM" → N onSegment AM (tia 2 đầu mút HOA).
   it('"điểm N thuộc tia AM" → N onSegment AM', () => {
     expect(intents('Lấy điểm M thuộc cung BC và điểm N thuộc tia AM sao cho AN = BM')).toContainEqual({
