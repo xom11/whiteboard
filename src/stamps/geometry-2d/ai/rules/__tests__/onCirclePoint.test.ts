@@ -62,6 +62,16 @@ describe('onCirclePointRule', () => {
     expect(c.constraint.theta).not.toBe(d.constraint.theta);
   });
 
+  // httcd:191 — glue OCR "haiđiểm" + "bất kì" xen giữa: "hai điểm M và N bất kì thuộc đường tròn".
+  it('"haiđiểm M và N bất kì thuộc đường tròn" (glue + "bất kì") → M, N onCircle', () => {
+    const all = intents('Cho đường tròn (O) và haiđiểm M và N bất kì thuộc đường tròn sao cho góc MON = 150.');
+    const m = all.find((i) => i.name === 'M');
+    const n = all.find((i) => i.name === 'N');
+    expect(m?.constraint.kind).toBe('onCircle');
+    expect(n?.constraint.kind).toBe('onCircle');
+    expect(m.constraint.theta).not.toBe(n.constraint.theta);
+  });
+
   // hinh9:19 / vao10:202 — ĐẢO 2 điểm trên cung: "Trên cung lớn AB lấy hai điểm C, D".
   it('"Trên cung lớn AB lấy hai điểm C, D" → C, D onCircle theta khác nhau', () => {
     const all = intents('Cho đường tròn (O) đường kính AB. Trên cung lớn AB lấy hai điểm C, D sao cho AD // BC.');

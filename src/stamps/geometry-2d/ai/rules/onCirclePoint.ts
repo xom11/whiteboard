@@ -48,8 +48,10 @@ const TAKE_ON_REV =
   /[Tt]rên\s+(?:nửa\s+)?(?:đường\s*tròn|cung)\s*\(\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)[^.]{0,16}?lấy\s+điểm\s+([A-Z])(?![A-Z])/u;
 // Distributive 2 điểm (Bài 9): "(lấy)? hai điểm C và D thuộc (nửa)? đường tròn"
 // → 2 điểm onCircle với theta KHÁC nhau. group1=điểm 1 (C), group2=điểm 2 (D).
+// `hai\s*điểm`: OCR hay dính "haiđiểm" (httcd:191). "bất kì/kỳ" optional xen giữa
+// tên thứ hai và "thuộc".
 const TWO_ON =
-  /(?:lấy\s+)?hai\s+điểm\s+([A-Z])(?![A-Za-z])\s+và\s+([A-Z])(?![A-Za-z])\s+thuộc\s+(?:nửa\s+)?(?:đường\s*tròn|cung)/u;
+  /(?:lấy\s+)?hai\s*điểm\s+([A-Z])(?![A-Za-z])\s+và\s+([A-Z])(?![A-Za-z])(?:\s+bất\s*k[ìiyỳ])?\s+thuộc\s+(?:nửa\s+)?(?:đường\s*tròn|cung)/u;
 // "(Các)? điểm E, F thuộc cung BC …" — 2 điểm phân phối ngăn bởi dấu phẩy.
 const TWO_ON_COMMA =
   /(?:[CcNn]ác\s+|[Nn]hững\s+)?điểm\s+([A-Z])(?![A-Za-z])\s*,\s*([A-Z])(?![A-Za-z])\s+thuộc\s+(?:nửa\s+)?(?:đường\s*tròn|cung)/u;
