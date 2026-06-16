@@ -42,8 +42,11 @@ const CHORD_REV = /([A-Z])([A-Z])(?![A-Z])\s+là\s+(?:một\s+)?dây(?:\s+cung)?
 // "hai dây". CHORD_FWD chỉ bắt cặp NGAY sau "dây" (CD) nên bỏ sót cặp thứ hai (EF
 // sau dấu phẩy). Bắt riêng để cả 4 đầu mút thành glider onCircle. Bỏ qua phần
 // "cùng đi qua I" (I là điểm trên dây AB, rule khác xử lý).
+// Guard `(?!\s+cắt\s+nhau)`: "hai dây MN và BK CẮT NHAU ở E" mô tả GIAO của 2 dây
+// ĐÃ CÓ (M,N,B,K dựng trước) — KHÔNG khai báo dây mới (vao10:226: B=đầu đường kính
+// → onCircle gây CYCLE). Chỉ khớp khi 2 dây là MỚI ("vẽ … song song", "cùng đi qua").
 const CHORD_TWO =
-  /(?:vẽ\s+)?hai\s+dây\s+(?:cung\s+)?([A-Z])([A-Z])(?![A-Z])\s*,\s*([A-Z])([A-Z])(?![A-Z])/gu;
+  /(?:vẽ\s+)?(?:hai|các)\s+dây\s+(?:cung\s+)?([A-Z])([A-Z])(?![A-Z])\s*(?:,|và)\s*([A-Z])([A-Z])(?![A-Z])(?!\s+cắt\s+nhau)/gu;
 
 // Glider angle cho 2 đầu mút dây ĐẦU TIÊN (radian) — phân biệt để A≠B, dây trải
 // phần trên. Dây thứ k (k≥1) tịnh tiến theta thêm k·THETA_STEP để KHÔNG trùng

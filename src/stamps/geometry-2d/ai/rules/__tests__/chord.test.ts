@@ -122,6 +122,20 @@ describe('chordRule', () => {
     expect(connPairs).toEqual(['AB', 'CD', 'EF']);
   });
 
+  // httcd:7/70 — "các dây CD và EF" (các + "và"): cả 4 đầu mút onCircle.
+  it('"vẽ các dây CD và EF song song" → C,D,E,F onCircle', () => {
+    const { problem, clauses } = ctxOf(
+      'Cho đường tròn (O;R) đường kính AB. Qua M, N lần lượt vẽ các dây CD và EF song song với nhau.',
+    );
+    const names = chordRule
+      .match({ problem, clauses })
+      .flatMap((m) => m.intents)
+      .filter((i: any) => i.op === 'add-point' && i.constraint.kind === 'onCircle')
+      .map((i: any) => i.name)
+      .sort();
+    expect(names).toEqual(['C', 'D', 'E', 'F']);
+  });
+
   it('không có "dây" → không match (prefilter)', () => {
     expect(
       chordRule.match({
