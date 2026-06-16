@@ -107,6 +107,17 @@ const DISTRIB_VN = new RegExp(
   'u',
 );
 
+// Phân phối 2 CUNG: "N và P lần lượt là (điểm)? chính giữa (của)? cung AM và cung
+// MB" → zip N↔cung AM, P↔cung MB (httcd:237; tên nối "và"/phẩy, mỗi cung nêu
+// "cung XY" riêng). KHÁC DISTRIB_VN (1 cung + nhiều containment). Không containment
+// (nửa đường tròn / cung nêu tường minh từng cặp). groups: 1=n1 2=n2 3=a1 4=b1 5=a2 6=b2.
+const DISTRIB_TWO_ARCS = new RegExp(
+  "([A-Z])(?:['′]?)\\s*(?:,|và)\\s*([A-Z])(?:['′]?)\\s+lần\\s*lượt\\s+(?:là\\s+)?(?:điểm\\s+)?" +
+    '(?:chính\\s+giữa|trung\\s*điểm)\\s+(?:của\\s+)?cung\\s+(?:nhỏ\\s+|lớn\\s+)?([A-Z])([A-Z])(?![A-Z])' +
+    '\\s+và\\s+(?:điểm\\s+)?(?:(?:chính\\s+giữa|trung\\s*điểm)\\s+)?(?:của\\s+)?cung\\s+(?:nhỏ\\s+|lớn\\s+)?([A-Z])([A-Z])(?![A-Z])',
+  'u',
+);
+
 /** Tên đường tròn từ toàn đề; undefined nếu không tìm thấy. */
 function resolveCircle(problem: string): string | undefined {
   const w = CIRCLE_WORDS.exec(problem);
@@ -186,6 +197,30 @@ export const arcMidpointRule: LanguageRule = {
 
     for (const c of ctx.clauses) {
       if (!ARC_MID.test(c.text)) continue;
+
+      // Phân phối 2 cung "N và P … cung AM và cung MB" → zip (chạy TRƯỚC dạng đơn
+      // vì ARC_PAIR chỉ bắt cung ĐẦU, bỏ sót điểm thứ hai).
+      const twoArcs = DISTRIB_TWO_ARCS.exec(c.text);
+      if (twoArcs) {
+        const [, n1, n2, a1, b1, a2, b2] = twoArcs;
+        const pairs: Array<[string, string, string]> = [
+          [n1, a1, b1],
+          [n2, a2, b2],
+        ];
+        const ok = pairs.every(
+          ([n, a, b]) => arcOnCircum(a, b) && n !== a && n !== b,
+        );
+        if (ok) {
+          for (const [n, a, b] of pairs) {
+            out.push({
+              ruleId: 'arcMidpoint',
+              clauseIds: [c.id],
+              intents: withCircum(addPoint(n, { kind: 'arcMidpoint', circle, a, b })),
+            });
+          }
+        }
+        continue;
+      }
 
       const pairM = ARC_PAIR.exec(c.text);
       if (!pairM) continue;

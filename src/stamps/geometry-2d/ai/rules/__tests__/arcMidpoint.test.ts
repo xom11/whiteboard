@@ -220,6 +220,19 @@ describe('arcMidpointRule — phân phối 2-tên "lần lượt"', () => {
     expect(T.constraint.notContaining).toBeUndefined();
   });
 
+  // httcd:237: "N và P lần lượt là điểm chính giữa của cung AM và cung MB" (nửa
+  // đường tròn (O); 2 cung nêu riêng nối "và") → N↔AM, P↔MB, không containment.
+  it('phân phối 2 CUNG riêng: "N và P … cung AM và cung MB" → N=arc(A,M), P=arc(M,B)', () => {
+    const intents = run(
+      'Cho nửa đường tròn (O;R) đường kính AB. Điểm M tùy ý trên nửa đường tròn. Gọi N và P lần lượt là điểm chính giữa của cung AM và cung MB.',
+    ).flatMap((x) => x.intents) as any[];
+    const arcs = intents.filter((i) => i.op === 'add-point' && i.constraint.kind === 'arcMidpoint');
+    const N = arcs.find((i) => i.name === 'N');
+    const P = arcs.find((i) => i.name === 'P');
+    expect(N.constraint).toMatchObject({ circle: 'O', a: 'A', b: 'M' });
+    expect(P.constraint).toMatchObject({ circle: 'O', a: 'M', b: 'B' });
+  });
+
   it('phân phối: số tên ≠ số mệnh đề chứa → bỏ qua (escalate fail-safe)', () => {
     const m = run(
       'Cho tam giác ABC nội tiếp (O). M, N, P lần lượt là trung điểm của cung BC không chứa A và chứa A',
