@@ -136,6 +136,19 @@ describe('chordRule', () => {
     expect(names).toEqual(['C', 'D', 'E', 'F']);
   });
 
+  // httcd:65/68 — "hai dây AB và CD vuông góc với nhau" (2 dây ⊥ NHAU, KHÔNG phải
+  // perpChordThroughPoint): CHORD_TWO vẫn dựng 4 đầu mút.
+  it('"Vẽ hai dây AB và CD vuông góc với nhau" → A,B,C,D onCircle', () => {
+    const { problem, clauses } = ctxOf('Cho đường tròn (O;R). Vẽ hai dây AB và CD vuông góc với nhau.');
+    const names = chordRule
+      .match({ problem, clauses })
+      .flatMap((m) => m.intents)
+      .filter((i: any) => i.op === 'add-point' && i.constraint.kind === 'onCircle')
+      .map((i: any) => i.name)
+      .sort();
+    expect(names).toEqual(['A', 'B', 'C', 'D']);
+  });
+
   it('không có "dây" → không match (prefilter)', () => {
     expect(
       chordRule.match({

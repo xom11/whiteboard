@@ -104,10 +104,6 @@ export const chordRule: LanguageRule = {
     const chords: Chord[] = [];
     const seen = new Set<string>(); // "a|b" (chuẩn hoá thứ tự) tránh trùng
     for (const c of ctx.clauses) {
-      // GUARD: dây cung VUÔNG GÓC (qua điểm, ⊥ đoạn) → perpChordThroughPoint sở hữu
-      // (D,E là giao của đường ⊥ với đường tròn SẴN CÓ). chord không được dựng đường
-      // tròn lạ + glider rời cho clause này (sẽ chồng + sai hình).
-      if (/vuông\s*góc|⊥/u.test(c.text)) continue;
       const pushChord = (clauseId: number, a: string, b: string) => {
         if (a === b) return; // cặp trùng → degenerate
         if (a === circle || b === circle) return; // đầu mút trùng tâm → degenerate
@@ -116,12 +112,17 @@ export const chordRule: LanguageRule = {
         seen.add(key);
         chords.push({ clauseId, a, b });
       };
-      // "hai dây CD,EF" — bắt TRƯỚC để cả 2 cặp vào (CHORD_FWD chỉ lấy cặp đầu).
+      // "hai dây CD,EF" / "hai dây AB và CD vuông góc với nhau" — khai báo TƯỜNG
+      // MINH 2 dây ("hai|các dây X,Y") → 4 đầu mút glider. Chạy KỂ CẢ khi clause có
+      // "vuông góc" (2 dây ⊥ NHAU ≠ perpChordThroughPoint — httcd:65/68).
       CHORD_TWO.lastIndex = 0;
       for (const m of c.text.matchAll(CHORD_TWO)) {
         pushChord(c.id, m[1], m[2]);
         pushChord(c.id, m[3], m[4]);
       }
+      // GUARD (chỉ dây ĐƠN fwd/rev): dây cung VUÔNG GÓC (qua điểm, ⊥ đoạn) →
+      // perpChordThroughPoint sở hữu (D,E là giao của đường ⊥ với đường tròn SẴN CÓ).
+      if (/vuông\s*góc|⊥/u.test(c.text)) continue;
       const collect = (re: RegExp) => {
         re.lastIndex = 0;
         for (const m of c.text.matchAll(re)) pushChord(c.id, m[1], m[2]);
