@@ -51,6 +51,14 @@ const CAT_NHAU = new RegExp(
   `${REF}\\s*(?:,|và|với)\\s*${REF}\\s+(?:của\\s+tam\\s*giác\\s+[A-Z]{3}\\s+)?(?:kéo\\s+dài\\s+)?(?:cắt|giao)\\s+nhau\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])`,
   'gu',
 );
+// C2: "AB, CD … vuông góc với nhau (tại|ở) I" → I = AB ∩ CD (hai dây ⊥ NHAU gặp
+//     ở I — httcd:68 "hai dây AB, CD bằng nhau và vuông góc với nhau tại I"). Blob
+//     `[^.]{0,30}?` cho "bằng nhau và" xen. CHỈ áp cho clause có "dây" (tránh
+//     "đường kính … vuông góc tại O" — O=tâm, perpDiameters lo).
+const CAT_PERP_NHAU = new RegExp(
+  `${REF}\\s*(?:,|và)\\s*${REF}(?![A-Z])[^.]{0,30}?vuông\\s*góc\\s+với\\s+nhau\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])`,
+  'gu',
+);
 // D: "E, F lần lượt là giao điểm của AB và CD, của AD và BC" → zip 2 tên với 2 cặp.
 const DISTRIB_TWO = new RegExp(
   `([A-Z])\\s*,\\s*([A-Z])\\s+lần\\s*lượt\\s+là\\s+giao\\s*điểm\\s+của\\s+${REF}\\s*${CONN}\\s*${REF}\\s*,\\s*của\\s+${REF}\\s*${CONN}\\s*${REF}`,
@@ -152,7 +160,7 @@ function splitPrimedPair(tok: string): [string, string] {
 }
 
 // Prefilter toàn đề.
-const PREFILTER = /giao\s*điểm|cắt|giao\s+nhau|giao\s+của|∩/u;
+const PREFILTER = /giao\s*điểm|cắt|giao\s+nhau|giao\s+của|∩|vuông\s*góc\s+với\s+nhau/u;
 
 /**
  * Build intent intersection nếu hợp lệ: 4 đầu mút phân biệt (không chia sẻ đỉnh)
@@ -279,6 +287,12 @@ export const intersectionRule: LanguageRule = {
       // C: "REF1 và REF2 cắt nhau tại D".
       CAT_NHAU.lastIndex = 0;
       for (const m of c.text.matchAll(CAT_NHAU)) emit(m[3], m[1], m[2]);
+
+      // C2: "hai dây AB, CD … vuông góc với nhau tại I" → I=AB∩CD (chỉ clause "dây").
+      if (/dây/u.test(c.text)) {
+        CAT_PERP_NHAU.lastIndex = 0;
+        for (const m of c.text.matchAll(CAT_PERP_NHAU)) emit(m[3], m[1], m[2]);
+      }
 
       // I (fallback): primed/comma — "Z là giao điểm của hai tia BM, M'A". Tên
       //   ĐỨNG TRƯỚC. Chỉ điểm chưa được pattern trên claim (seen-dedup).
