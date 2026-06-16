@@ -358,6 +358,23 @@ describe('perpFootRule — distributive shared-from "X,Y,Z lần lượt là hì
     expect(feet('X, Y lần lượt là hình chiếu của D trên BC, CA, AB')).toHaveLength(0);
   });
 
+  // vao10:218 "M, N thứ tự là hình chiếu của H trên AB, AC" — "thứ tự" = "lần lượt".
+  it('biến thể "thứ tự" (không "lần lượt"): M, N thứ tự là hình chiếu của H trên AB, AC', () => {
+    const f = feet('Gọi M, N thứ tự là hình chiếu của H trên AB, AC');
+    expect(f).toEqual([
+      { name: 'M', from: 'H', onLine: 'AB' },
+      { name: 'N', from: 'H', onLine: 'AC' },
+    ]);
+  });
+
+  it('biến thể "theo thứ tự": M, N theo thứ tự là hình chiếu của H trên AB, AC', () => {
+    const f = feet('Gọi M, N theo thứ tự là hình chiếu của H trên AB, AC');
+    expect(f).toEqual([
+      { name: 'M', from: 'H', onLine: 'AB' },
+      { name: 'N', from: 'H', onLine: 'AC' },
+    ]);
+  });
+
   it('regression: LANLUOT 2-chân "của B trên AC và của C trên AB" vẫn chạy', () => {
     const f = feet('H, K lần lượt là hình chiếu của B trên AC và của C trên AB');
     expect(f).toEqual([

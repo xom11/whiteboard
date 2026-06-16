@@ -41,6 +41,9 @@ const PREFILTER_EN = /projection|perpendicular|foot\s+of/i;
 // nhận tiền tố "đường thẳng" / "cạnh" / "đoạn" trước token.
 const LINE = '(?:' + DUONG_KW + '\\s*thẳng\\s+|cạnh\\s+|đoạn(?:\\s+thẳng)?\\s+)?([A-Z]{1,2})(?![A-Z])';
 const PREP = '(?:trên|lên|xuống|đến|tới)';
+// "lần lượt" và các biến thể đồng nghĩa "(theo)? thứ tự" (vao10:218 "M, N thứ tự
+// là hình chiếu …"). Optional — chỉ THÊM match, không đổi ngữ nghĩa.
+const LANLUOT_OPT = '(?:(?:lần\\s*lượt|theo\\s+thứ\\s+tự|thứ\\s+tự)\\s+)?';
 
 // "hình chiếu (vuông góc)? (của)? (điểm)? X PREP [cạnh|đường thẳng] LINE"
 const PROJ_CORE = `hình\\s*chiếu\\s+(?:vuông\\s*góc\\s+)?(?:của\\s+)?(?:điểm\\s+)?([A-Z])\\s+${PREP}\\s+${LINE}`;
@@ -71,7 +74,7 @@ const LINES_PREFIX = '(?:các\\s+)?(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạ
 // "lần lượt" optional → bắt cả "X, Y là các hình chiếu của F trên L1, L2".
 const DISTRIB_PROJ = new RegExp(
   NAMES_BLOB +
-    '\\s+(?:lần\\s*lượt\\s+)?(?:là\\s+)?(?:các\\s+)?hình\\s*chiếu\\s+(?:vuông\\s*góc\\s+)?(?:của\\s+)?(?:điểm\\s+)?([A-Z])(?!\\p{L})' +
+    '\\s+' + LANLUOT_OPT + '(?:là\\s+)?(?:các\\s+)?hình\\s*chiếu\\s+(?:vuông\\s*góc\\s+)?(?:của\\s+)?(?:điểm\\s+)?([A-Z])(?!\\p{L})' +
     '\\s+(?:trên|lên|xuống|đến)\\s+' +
     LINES_PREFIX +
     LINES_BLOB,
@@ -79,7 +82,7 @@ const DISTRIB_PROJ = new RegExp(
 );
 const DISTRIB_FOOT = new RegExp(
   NAMES_BLOB +
-    '\\s+(?:lần\\s*lượt\\s+)?(?:là\\s+)?(?:các\\s+)?chân\\s+(?:của\\s+)?(?:các\\s+)?đường\\s+(?:vuông\\s*góc|cao)\\s*(?:hạ\\s+|kẻ\\s+|vẽ\\s+|dựng\\s+)?(?:từ\\s+)?(?:điểm\\s+)?([A-Z])(?!\\p{L})' +
+    '\\s+' + LANLUOT_OPT + '(?:là\\s+)?(?:các\\s+)?chân\\s+(?:của\\s+)?(?:các\\s+)?đường\\s+(?:vuông\\s*góc|cao)\\s*(?:hạ\\s+|kẻ\\s+|vẽ\\s+|dựng\\s+)?(?:từ\\s+)?(?:điểm\\s+)?([A-Z])(?!\\p{L})' +
     '\\s+(?:đến|xuống|trên|tới)\\s+' +
     LINES_PREFIX +
     LINES_BLOB,
