@@ -14,7 +14,7 @@ import { addPoint, CIRCLE_KW } from './_shared';
 // 3 nhánh: cắt-rồi-paren | giao điểm thứ hai | "cắt AB và (O)" (LINE_AND_CIRCLE
 // vao10:28 — paren đứng sau "và", nhánh 1 không khớp) | "giao điểm thứ hai …
 // với đường tròn" TRẦN không paren (vao10:254).
-const PREFILTER = /cắt\s+(?:lại\s+)?(?:(?:nửa\s+)?đường\s*tròn\s*)?\(|cắt\s+[A-Z]{2}\s+và\s+\(|giao\s*điểm\s+(?:thứ\s+hai\s+)?(?:của\s+|khác\s+[A-Z]\s+của\s+)?(?:đường\s*thẳng\s+)?[A-Z]{2}\s+(?:và|với)\s+(?:(?:nửa\s+)?đường\s*tròn|\(|ngoại\s*tiếp\s+tam\s*giác)/u;
+const PREFILTER = /cắt\s+(?:lại\s+)?(?:(?:nửa\s+)?đường\s*tròn\s*)?\(|cắt\s+(?:lại\s+)?(?:nửa\s+)?đường\s*tròn\s+(?:ở|tại)|cắt\s+[A-Z]{2}\s+và\s+\(|giao\s*điểm\s+(?:thứ\s+hai\s+)?(?:của\s+|khác\s+[A-Z]\s+của\s+)?(?:đường\s*thẳng\s+)?[A-Z]{2}\s+(?:và|với)\s+(?:(?:nửa\s+)?đường\s*tròn|\(|ngoại\s*tiếp\s+tam\s*giác)/u;
 // "(O)" + compact "(O;R)"/"(O,R)" — vao10:127 "Tia CI cắt đường tròn (O;R) tại E".
 // "nửa" optional — vao10:18 "giao điểm thứ hai của DC với NỬA đường tròn (O)".
 const CIRCLE = String.raw`(?:(?:nửa\s+)?đường\s*tròn\s*)?\(\s*([A-Z])(?:['′]?)\s*(?:[;,]\s*[Rr]\s*)?\)`;
@@ -64,6 +64,14 @@ const BOTH = new RegExp(
 const LINE_AND_CIRCLE = new RegExp(
   String.raw`([A-Z]{2})(?![A-Z])\s+cắt\s+([A-Z]{2})(?![A-Z])\s+và\s+` + CIRCLE +
     String.raw`\s+(?:lần\s*lượt\s+|theo\s+thứ\s+tự\s+)?(?:tại|ở)\s+([A-Z])\s*(?:,|và)\s*([A-Z])(?![A-Z])`,
+  'gu',
+);
+
+// "XY (kéo dài)? cắt (lại)? (nửa)? đường tròn (ở|tại) (điểm (thứ hai)?)? Z" —
+// đường tròn TRẦN (không paren, httcd:42 "BN cắt đường tròn ở C"). 1 đầu mút XY
+// trên đường tròn (đầu line) → Z = giao thứ hai. circle resolve toàn đề.
+const SINGLE_BARE = new RegExp(
+  String.raw`([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?(?:nửa\s+)?đường\s*tròn(?!\s*\()\s+(?:ở|tại)\s+(?:điểm\s+(?:thứ\s+hai\s+)?)?(?:là\s+)?([A-Z])(?![A-Z])`,
   'gu',
 );
 
@@ -237,6 +245,15 @@ export const lineCircleIntersectionRule: LanguageRule = {
           addPoint(n1, { kind: 'secondIntersection', line, circle: circle1, other }),
           addPoint(n2, { kind: 'secondIntersection', line, circle: circle2, other }),
         );
+      }
+
+      // "XY cắt đường tròn TRẦN (ở|tại) Z" — circle resolve toàn đề.
+      SINGLE_BARE.lastIndex = 0;
+      for (const m of c.text.matchAll(SINGLE_BARE)) {
+        const rc = RESOLVE_CIRCLE_BARE.exec(ctx.problem);
+        const circle = rc?.[1] ?? rc?.[2];
+        const [line, name] = [m[1], m[2]];
+        if (circle && valid(name, line)) intents.push(secondIntersection(name, line, circle, line[0]));
       }
 
       // "(O) cắt XY tại Z" — đường tròn chủ ngữ (đảo SINGLE).
