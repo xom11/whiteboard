@@ -56,6 +56,15 @@ const POINT_THUOC_SEG = new RegExp(
   'gu',
 );
 
+// "điểm N thuộc tia AM" — điểm trên TIA (2 đầu mút HOA). CHẠY TRƯỚC metric-skip
+// (đặt free dù "sao cho AN=BM" — metric chỉ tinh chỉnh; httcd:128). Tách khỏi
+// POINT_THUOC_SEG vì cần né "tia đối của tia AB" (oppositeRayPoint lo): SEG sau
+// "tia " phải là cặp HOA NGAY (≠ "đối").
+const POINT_THUOC_TIA = new RegExp(
+  String.raw`(?:điểm\s+)?${POINT}\s+(?:là\s+(?:một\s+)?điểm\s+(?:bất\s*k[iìyỳ]\s+)?)?thuộc\s+tia\s+${SEG}`,
+  'gu',
+);
+
 // "Điểm P di chuyển trên cạnh AC" / "P di động trên đoạn BC" / "Lấy P trên cạnh
 // AC" — điểm ĐỨNG TRƯỚC + động từ chuyển động (di chuyển/thay đổi/di động/nằm)
 // optional + "trên (cạnh) SEG". Điểm 1-DOF (di động) vẫn dựng 1 vị trí đại diện.
@@ -171,6 +180,17 @@ export const onSegmentPointRule: LanguageRule = {
           intents.push(addPoint(n1, { kind: 'onSegment', of: s1 }));
           intents.push(addPoint(n2, { kind: 'onSegment', of: s2 }));
           zipConsumed.push([m.index ?? 0, (m.index ?? 0) + m[0].length]);
+        }
+      }
+
+      // "điểm N thuộc tia AM" → onSegment AM, CHẠY TRƯỚC metric-skip (httcd:128
+      // "… sao cho AN=BM" — đặt N free; metric chỉ tinh chỉnh).
+      POINT_THUOC_TIA.lastIndex = 0;
+      for (const m of c.text.matchAll(POINT_THUOC_TIA)) {
+        const name = normalizePoint(m[1]);
+        const segment = m[2];
+        if (validOnSegment(name, segment)) {
+          intents.push(addPoint(name, { kind: 'onSegment', of: segment }));
         }
       }
 

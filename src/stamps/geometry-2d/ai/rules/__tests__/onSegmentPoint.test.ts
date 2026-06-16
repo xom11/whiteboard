@@ -51,6 +51,15 @@ describe('onSegmentPointRule', () => {
     });
   });
 
+  // httcd:128 "điểm N thuộc tia AM" → N onSegment AM (tia 2 đầu mút HOA).
+  it('"điểm N thuộc tia AM" → N onSegment AM', () => {
+    expect(intents('Lấy điểm M thuộc cung BC và điểm N thuộc tia AM sao cho AN = BM')).toContainEqual({
+      op: 'add-point',
+      name: 'N',
+      constraint: { kind: 'onSegment', of: 'AM' },
+    });
+  });
+
   it('"Trên bán kính OC lấy điểm B" → B onSegment OC', () => {
     expect(intents('Trên bán kính OC lấy điểm B tùy ý')).toContainEqual({
       op: 'add-point',
