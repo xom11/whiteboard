@@ -79,7 +79,7 @@ const DISTRIB_PROJ = new RegExp(
 );
 const DISTRIB_FOOT = new RegExp(
   NAMES_BLOB +
-    '\\s+(?:lần\\s*lượt\\s+)?(?:là\\s+)?(?:các\\s+)?chân\\s+(?:của\\s+)?đường\\s+(?:vuông\\s*góc|cao)\\s*(?:hạ\\s+|kẻ\\s+|vẽ\\s+|dựng\\s+)?(?:từ\\s+)?(?:điểm\\s+)?([A-Z])(?!\\p{L})' +
+    '\\s+(?:lần\\s*lượt\\s+)?(?:là\\s+)?(?:các\\s+)?chân\\s+(?:của\\s+)?(?:các\\s+)?đường\\s+(?:vuông\\s*góc|cao)\\s*(?:hạ\\s+|kẻ\\s+|vẽ\\s+|dựng\\s+)?(?:từ\\s+)?(?:điểm\\s+)?([A-Z])(?!\\p{L})' +
     '\\s+(?:đến|xuống|trên|tới)\\s+' +
     LINES_PREFIX +
     LINES_BLOB,
@@ -109,9 +109,9 @@ const SHARED_FROM_TWO = new RegExp(
 // (đường cao suy từ tam giác). Đường chung 1-2 ký tự + prime (vao10:58 "AA'").
 //   groups: 1=name1 2=from1... thực ra 1=n1 2=n2 3=from1 4=from2 5=line
 const FEET_FROM_SHARED_LINE = new RegExp(
-  "(?:[Hh]ai\\s+điểm\\s+|[Cc]ác\\s+điểm\\s+)?([A-Z])(?:['′])?\\s*,\\s*([A-Z])(?:['′])?\\s+" +
+  "(?:[Hh]ai\\s+điểm\\s+|[Cc]ác\\s+điểm\\s+)?([A-Z])(?:['′])?\\s*(?:,|và)\\s*([A-Z])(?:['′])?\\s+" +
     'lần\\s*lượt\\s+là\\s+chân\\s+(?:các\\s+)?(?:đường\\s+)?(?:vuông\\s*góc|cao)\\s+' +
-    "(?:kẻ\\s+|hạ\\s+|vẽ\\s+|dựng\\s+)?(?:từ\\s+)?([A-Z](?:['′])?)\\s*,\\s*([A-Z](?:['′])?)\\s+" +
+    "(?:kẻ\\s+|hạ\\s+|vẽ\\s+|dựng\\s+)?(?:từ\\s+)?([A-Z](?:['′])?)\\s*(?:,|và)\\s*([A-Z](?:['′])?)\\s+" +
     "(?:đến|xuống|trên|tới)\\s+(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{1,2}(?:['′])?)(?![A-Z])",
   'gu',
 );

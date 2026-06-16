@@ -507,4 +507,16 @@ describe('perpFoot — "X và Y lần lượt là chân đường vuông góc k�
     expect(feet("Hai điểm E, F lần lượt là chân đường vuông góc kẻ từ B, C đến AA'."))
       .toEqual(["E:B->AA'", "F:C->AA'"]);
   });
+
+  // httcd:100 — 2 gốc CÙNG đường, separator "và": "H và K ... kẻ từ A và B đến CD".
+  it('httcd:100: "H và K lần lượt là chân các đường vuông góc kẻ từ A và B đến CD"', () => {
+    expect(feet('Gọi H và K lần lượt là chân các đường vuông góc kẻ từ A và B đến CD.'))
+      .toEqual(['H:A->CD', 'K:B->CD']);
+  });
+
+  // httcd:29 — 1 gốc H, 2 cạnh comma "AB, AC" + "chân CÁC đường".
+  it('httcd:29: "E, F là chân các đường vuông góc kẻ từ H đến AB, AC"', () => {
+    expect(feet('Gọi E, F là chân các đường vuông góc kẻ từ H đến AB, AC.'))
+      .toEqual(['E:H->AB', 'F:H->AC']);
+  });
 });
