@@ -42,6 +42,15 @@ const PATTERN = new RegExp(
   'gu',
 );
 
+// Dạng XEN KẼ: "đường tròn đường kính BC cắt AB ở N và cắt AC ở M" (lặp "cắt L
+// ở/tại P", KHÔNG phải "cắt L1,L2 tại P1,P2"). groups: d0 d1 | L1 P1 | L2 P2.
+const PATTERN_INTERLEAVED = new RegExp(
+  CIRCLE_KW + '\\s+(?:(?:\\(\\s*[A-Z]\\s*\\)|tâm\\s+[A-Z])\\s+)?' + DUONG_KW +
+    '\\s*kính\\s+([A-Z])([A-Z])(?![A-Z])\\s+cắt\\s+([A-Z]{2})(?![A-Z])\\s+(?:ở|tại)\\s+([A-Z])(?![A-Z])' +
+    '\\s+và\\s+cắt\\s+([A-Z]{2})(?![A-Z])\\s+(?:ở|tại)\\s+([A-Z])(?![A-Z])',
+  'gu',
+);
+
 const PREFILTER = new RegExp(DUONG_KW + '\\s*kính', 'u');
 
 /** Đỉnh chung DUY NHẤT giữa cạnh "AB" và đường kính "BC" (vd "B"). */
@@ -92,6 +101,24 @@ export const diameterCircleCutsSidesRule: LanguageRule = {
       if (!ok) continue;
 
       out.push({ ruleId: 'diameter-circle-cuts-sides', clauseIds: [c.id], intents });
+      }
+
+      // Dạng xen kẽ "cắt L1 ở P1 và cắt L2 ở P2".
+      PATTERN_INTERLEAVED.lastIndex = 0;
+      for (const m of c.text.matchAll(PATTERN_INTERLEAVED)) {
+        const dia = m[1] + m[2];
+        const circle = `k${dia}`;
+        const pairs: Array<[string, string]> = [[m[3], m[4]], [m[5], m[6]]];
+        const intents: IntentT[] = [drawCircle(circle, 'diameter', { endpoints: [m[1], m[2]] })];
+        let ok = true;
+        const seen = new Set<string>();
+        for (const [line, pt] of pairs) {
+          const other = sharedVertex(line, dia);
+          if (!other || line.includes(pt) || dia.includes(pt) || seen.has(pt)) { ok = false; break; }
+          seen.add(pt);
+          intents.push(addPoint(pt, { kind: 'secondIntersection', line, circle, other }));
+        }
+        if (ok) out.push({ ruleId: 'diameter-circle-cuts-sides', clauseIds: [c.id], intents });
       }
     }
     return out;

@@ -8,6 +8,13 @@ function intents(problem: string) {
 }
 
 describe('diameterCircleCutsSidesRule', () => {
+  // httcd:111 — dạng XEN KẼ "cắt AB ở N và cắt AC ở M" (lặp "cắt … ở").
+  it('"Đường tròn đường kính BC cắt AB ở N và cắt AC ở M" → N=2nd(AB), M=2nd(AC)', () => {
+    const all = intents('Cho tam giác ABC nhọn. Đường tròn đường kính BC cắt AB ở N và cắt AC ở M.');
+    expect(all).toContainEqual({ op: 'add-point', name: 'N', constraint: { kind: 'secondIntersection', line: 'AB', circle: 'kBC', other: 'B' } });
+    expect(all).toContainEqual({ op: 'add-point', name: 'M', constraint: { kind: 'secondIntersection', line: 'AC', circle: 'kBC', other: 'C' } });
+  });
+
   it('đường tròn đường kính BC cắt AB, AC tại M và N → circle + 2 giao điểm thứ hai', () => {
     const problem =
       'Cho tam giác ABC nhọn, không cân (AB < AC), đường tròn đường kính BC cắt AB, AC tại M và N. Gọi O là trung điểm của BC.';
