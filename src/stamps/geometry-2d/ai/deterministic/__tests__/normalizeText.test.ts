@@ -27,4 +27,18 @@ describe('normalizeProblemText', () => {
     // KHÔNG đổi dấu nháy không đứng sau chữ-số (tránh nuốt dấu câu khác).
     expect(normalizeProblemText('’abc')).toBe('’abc');
   });
+
+  it('OCR glue: tách từ-vựng hình học dính nhãn HOA + nhãn HOA dính từ-khoá', () => {
+    expect(normalizeProblemText('cắtBC')).toBe('cắt BC');
+    expect(normalizeProblemText('tâmF bán kính')).toBe('tâm F bán kính');
+    expect(normalizeProblemText('điểm Asao cho')).toBe('điểm A sao cho');
+    expect(normalizeProblemText('điểm Anằm ngoài')).toBe('điểm A nằm ngoài');
+    expect(normalizeProblemText('P,Qlần lượt')).toBe('P,Q lần lượt');
+    // KHÔNG tách chữ thường HOA-đầu-câu ("Cho", "Trên", "Gọi", "Đường").
+    expect(normalizeProblemText('Cho tam giác')).toBe('Cho tam giác');
+    expect(normalizeProblemText('Trên cạnh AB')).toBe('Trên cạnh AB');
+    expect(normalizeProblemText('Đường tròn (O)')).toBe('Đường tròn (O)');
+    // KHÔNG tách cặp đỉnh "AB" (nhãn + nhãn).
+    expect(normalizeProblemText('đoạn AB')).toBe('đoạn AB');
+  });
 });

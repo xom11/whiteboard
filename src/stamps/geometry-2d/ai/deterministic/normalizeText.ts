@@ -24,11 +24,23 @@ const SQRT_NOISE = /√/gu;
 // nháy mở đầu cụm.
 const PRIME_VARIANT = /([A-Za-z0-9])[’′´]/gu;
 
+// OCR glue (mất space): tách ở ranh giới TIN CẬY để không phá chữ thường.
+//  (a) từ-vựng-hình-học THƯỜNG dính nhãn HOA: "cắtBC"→"cắt BC", "tâmF"→"tâm F".
+//      Từ phải lowercase (không khớp "Cho"/"Trên" HOA đầu câu) + theo NGAY bởi HOA.
+//  (b) nhãn HOA dính TỪ-KHOÁ lowercase: "Asao"→"A sao", "Qlần"→"Q lần", "Bvà"→"B và".
+//      Danh sách từ-khoá cụ thể nên KHÔNG tách "Cho"(C+ho)/"Đường"(Đ+ường).
+// "và"/"là" CỐ Ý loại: quá phổ biến + tách "Evà"→"E và" làm xê dịch parse rule
+// khác (regress vao10:119). Chỉ giữ từ-vựng hình học đặc thù (an toàn).
+const GLUE_WORD_LABEL = /(cắt|tâm|điểm|cạnh|tia|dây|cung|qua|của|tại|trên|đến)([A-Z])/gu;
+const GLUE_LABEL_WORD = /([A-Z])(sao|nằm|lần|thuộc|cắt|của|đến|trên|tại)/gu;
+
 export function normalizeProblemText(problem: string): string {
   return problem
     .replace(TRIANGLE_SYMBOL, 'tam giác ')
     .replace(QUAD_SYMBOL, 'tứ giác ')
     .replace(CIRCLE_SYNONYM, 'đường tròn')
     .replace(SQRT_NOISE, ' ')
-    .replace(PRIME_VARIANT, "$1'");
+    .replace(PRIME_VARIANT, "$1'")
+    .replace(GLUE_WORD_LABEL, '$1 $2')
+    .replace(GLUE_LABEL_WORD, '$1 $2');
 }
