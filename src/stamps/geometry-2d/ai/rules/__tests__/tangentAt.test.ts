@@ -49,4 +49,13 @@ describe('tangentAt — hai tiếp tuyến cắt nhau', () => {
     expect(t.name).toBe('T');
     expect(t.constraint).toEqual({ kind: 'intersection', of: ['tB', 'tC'] });
   });
+
+  // vao10:122 — "với (O)" xen giữa + separator "và": "Các tiếp tuyến với (O) tại
+  // B và C cắt nhau tại D".
+  it('"Các tiếp tuyến với (O) tại B và C cắt nhau tại D" → D=tB∩tC', () => {
+    const all = intents('Cho tam giác ABC nội tiếp (O). Các tiếp tuyến với (O) tại B và C cắt nhau tại D.');
+    expect(all.filter((i) => i.op === 'draw-line').map((i) => i.through).sort()).toEqual(['B', 'C']);
+    const d = all.find((i) => i.op === 'add-point' && i.name === 'D');
+    expect(d.constraint).toEqual({ kind: 'intersection', of: ['tB', 'tC'] });
+  });
 });
