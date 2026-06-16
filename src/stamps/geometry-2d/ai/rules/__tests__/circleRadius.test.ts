@@ -6,6 +6,24 @@ function run(problem: string) {
 }
 
 describe('circleRadiusRule', () => {
+  // httcd:82/mohinh:12 — KHAI BÁO ĐỘC LẬP bare "(O)" (cả clause CHỈ là khai báo)
+  // → vẽ canonical (đường tròn nền cho tiếp tuyến/cát tuyến tham chiếu).
+  it('"Cho đường tròn (O)" độc lập → centerRadius canonical', () => {
+    const all = run('Cho đường tròn (O).').flatMap((m) => m.intents) as any[];
+    expect(all).toContainEqual(expect.objectContaining({ op: 'draw-circle', name: 'O', spec: 'centerRadius', center: 'O' }));
+  });
+  it('"Cho đường tròn O" độc lập (bare letter, OCR split) → centerRadius', () => {
+    const all = run('Cho đường tròn O').flatMap((m) => m.intents) as any[];
+    expect(all).toContainEqual(expect.objectContaining({ op: 'draw-circle', name: 'O', spec: 'centerRadius' }));
+  });
+  it('KHÔNG vẽ bare khi "(O)" giữa câu (chỉ tham chiếu)', () => {
+    expect(run('Điểm M thuộc đường tròn (O)').flatMap((m) => m.intents)).toEqual([]);
+  });
+  it('KHÔNG vẽ bare khi là đường kính ("Cho đường tròn (O) đường kính AB")', () => {
+    const all = run('Cho đường tròn (O) đường kính AB.').flatMap((m) => m.intents) as any[];
+    expect(all.find((i: any) => i.spec === 'centerRadius')).toBeUndefined();
+  });
+
   // httcd:81/89 — ký hiệu gọn có ĐƠN VỊ "(O; 5cm)" (cm chặn \d\s*\) cũ).
   it('"Cho đường tròn (O; 5cm)" (đơn vị cm) → centerRadius radius:5', () => {
     const all = run('Cho đường tròn (O; 5cm).').flatMap((m) => m.intents) as any[];
@@ -73,8 +91,10 @@ describe('circleRadiusRule', () => {
     expect(intent.through).toBe('A');
   });
 
-  it('"(O)" trơ (không số, không "đi qua") → BỎ QUA (0 match)', () => {
-    const m = run('Cho đường tròn (O)');
+  // "(O)" trơ THAM CHIẾU giữa câu (không phải khai báo độc lập) → BỎ QUA.
+  // (Khai báo ĐỘC LẬP "Cho đường tròn (O)" nay ĐƯỢC vẽ — xem test STANDALONE ở trên.)
+  it('"(O)" trơ tham chiếu giữa câu → BỎ QUA (0 match)', () => {
+    const m = run('Trên đường tròn (O) lấy điểm M');
     expect(m.length).toBe(0);
   });
 

@@ -59,6 +59,13 @@ const THROUGH_MULTI = /đi\s+qua\s+[A-Z]\s*(?:và|,)\s*[A-Z]/u;
 // Ký hiệu gọn "(O; 3)" / "(O, 3)" — quét toàn đề (global) vì có thể nhiều.
 const CENTER_RADIUS_PAREN_G = /\(\s*([A-Z])\s*[;,]\s*(\d+(?:[.,]\d+)?)\s*(?:cm|dm|mm|m)?\s*\)/gu;
 
+// KHAI BÁO ĐỘC LẬP: cả CLAUSE chỉ là "(Cho)? (nửa)? đường tròn (tâm)? (O)
+// (cố định)?" — KHÔNG quan hệ nào khác. Bare "(O)"/"O" nhưng standalone ⇒ chắc
+// chắn là đường tròn nền PHẢI vẽ (httcd:82, mohinh:12 OCR-split "O;R"). KHÁC
+// "(O)" giữa câu (chỉ tham chiếu — full-match $ loại). Guard isInscribed/Diameter
+// (circleTriangle/circleDiameter sở hữu) vẫn áp dụng ở caller.
+const STANDALONE_BARE = /^(?:[Cc]ho\s+)?(?:nửa\s+)?đường\s*tròn\s*(?:tâm\s+)?\(?\s*([A-Z])(?:['′]?)\s*\)?\s*(?:cố\s*định)?\s*$/u;
+
 /**
  * Bán kính CANONICAL (board units) khi đề cho bán kính KÝ HIỆU CHỮ ("(O; R)",
  * "bán kính R"). Giá trị thực là ký hiệu → vẽ minh hoạ; khớp scale với bán kính
@@ -238,6 +245,21 @@ export const circleRadiusRule: LanguageRule = {
         while ((clw = CENTER_RADIUS_LETTER_WORDS_G.exec(c.text)) !== null) {
           const center = clw[1];
           if (isInscribedCircumscribed(ctx.problem, center) || isDiameterCircle(ctx.problem, center)) continue;
+          out.push({
+            ruleId: 'circleRadius',
+            clauseIds: [c.id],
+            intents: [drawCircle(center, 'centerRadius', { center, radius: SYMBOLIC_RADIUS })],
+          });
+        }
+      }
+
+      // 4) KHAI BÁO ĐỘC LẬP bare "(O)"/"O" — cả clause chỉ là khai báo đường tròn.
+      //    Vẽ canonical (nền cho tiếp tuyến/cát tuyến). Guard: KHÔNG nội/ngoại tiếp,
+      //    KHÔNG đường kính (circleTriangle/circleDiameter sở hữu).
+      const sb = STANDALONE_BARE.exec(c.text.trim());
+      if (sb) {
+        const center = sb[1];
+        if (!isInscribedCircumscribed(ctx.problem, center) && !isDiameterCircle(ctx.problem, center)) {
           out.push({
             ruleId: 'circleRadius',
             clauseIds: [c.id],
