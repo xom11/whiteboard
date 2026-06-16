@@ -38,6 +38,17 @@ const TRIPLE_DISTRIB = new RegExp(
   'gu',
 );
 
+// 2 đường ∩ đường tròn, phân phối: "BE,CF … cắt (O) lần lượt tại M và N" (vao10:77
+// "Các đường cao BE,CF cắt nhau tại H, cắt đường tròn (O;R) lần lượt tại M và N" —
+// "cắt nhau tại H," xen giữa; lazy-region + CIRCLE-paren tự bỏ qua "cắt nhau").
+// Guard CHỈ 2 đường + CHỈ 2 điểm (lookahead phủ định ngăn nuốt dạng 3 của TRIPLE).
+const DOUBLE_DISTRIB = new RegExp(
+  String.raw`([A-Z]{2})\s*(?:,|và)\s*([A-Z]{2})(?![A-Z])(?!\s*(?:,|và)\s*[A-Z]{2})[^.]{0,80}?cắt\s+` +
+    CIRCLE +
+    String.raw`[^.]{0,40}?lần\s*lượt\s+(?:ở|tại)\s+([A-Z])\s*(?:,|và)\s*([A-Z])(?![A-Z])(?!\s*(?:,|và)\s*[A-Z])`,
+  'gu',
+);
+
 // "XY cắt (O) (ở|tại) (điểm (thứ hai)?)? Z (khác W)?" — "điểm thứ hai" + "khác W"
 // optional. `khác W` (nếu có) là điểm chung cần loại (other); else mặc định
 // chữ đầu của line (đầu mút nằm trên đường tròn).
@@ -173,6 +184,15 @@ export const lineCircleIntersectionRule: LanguageRule = {
       for (const m of c.text.matchAll(TRIPLE_DISTRIB)) {
         const circle = m[4];
         const pairs: Array<[string, string]> = [[m[1], m[5]], [m[2], m[6]], [m[3], m[7]]];
+        if (pairs.every(([line, name]) => valid(name, line))) {
+          intents.push(...pairs.map(([line, name]) => secondIntersection(name, line, circle)));
+        }
+      }
+
+      DOUBLE_DISTRIB.lastIndex = 0;
+      for (const m of c.text.matchAll(DOUBLE_DISTRIB)) {
+        const circle = m[3];
+        const pairs: Array<[string, string]> = [[m[1], m[4]], [m[2], m[5]]];
         if (pairs.every(([line, name]) => valid(name, line))) {
           intents.push(...pairs.map(([line, name]) => secondIntersection(name, line, circle)));
         }

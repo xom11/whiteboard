@@ -25,6 +25,15 @@ describe('lineCircleIntersectionRule', () => {
     ]);
   });
 
+  // vao10:77 — 2 đường cắt đường tròn, "cắt nhau tại H," xen giữa: "BE,CF cắt nhau
+  // tại H, cắt đường tròn (O;R) lần lượt tại M và N".
+  it('DOUBLE: "BE,CF cắt nhau tại H, cắt đường tròn (O;R) lần lượt tại M và N"', () => {
+    const m = run('Các đường cao BE,CF cắt nhau tại H, cắt đường tròn (O;R) lần lượt tại M và N');
+    const intents = m.flatMap((x) => x.intents) as any[];
+    expect(intents).toContainEqual({ op: 'add-point', name: 'M', constraint: { kind: 'secondIntersection', line: 'BE', circle: 'O', other: 'B' } });
+    expect(intents).toContainEqual({ op: 'add-point', name: 'N', constraint: { kind: 'secondIntersection', line: 'CF', circle: 'O', other: 'C' } });
+  });
+
   it('single: CM cắt (O) tại N → secondIntersection line CM circle O other C', () => {
     const m = run('CM cắt (O) tại N');
     expect(m.flatMap((x) => x.intents)).toEqual([
