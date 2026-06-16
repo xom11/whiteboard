@@ -33,12 +33,31 @@ import { addPoint, drawCircle, CIRCLE_KW, DUONG_KW } from './_shared';
 // (vd Bài 13: hai nửa đường tròn). pointRegion bắt CHẶT (chỉ HOA + ,/và) để
 // không nuốt sang construct kế trong cùng clause.
 const PATTERN = new RegExp(
-  CIRCLE_KW +
-    '\\s+' +
-    // tên tâm xen giữa: "đường tròn (I) đường kính AH" / "đường tròn tâm I đường kính AH".
-    '(?:(?:\\(\\s*[A-Z]\\s*\\)|tâm\\s+[A-Z])\\s+)?' +
+  // Chỉ-báo đường tròn: "đường tròn (tâm X|(X))?" HOẶC "(X)" trần (httcd:2 "(O)
+  // đường kính BC" — KHÔNG có chữ "đường tròn"). Bắt buộc có 1 trong 2.
+  '(?:' +
+    CIRCLE_KW + '\\s+(?:(?:\\(\\s*[A-Z]\\s*\\)|tâm\\s+[A-Z])\\s+)?' +
+    '|\\(\\s*[A-Z]\\s*\\)\\s+' +
+    ')' +
     DUONG_KW +
-    '\\s*kính\\s+([A-Z])([A-Z])(?![A-Z])\\s+cắt\\s+([^.;\\n]*?)\\s+(?:lần\\s*lượt\\s+)?tại\\s+([A-Z](?!\\p{L})(?:\\s*(?:,|và)\\s*[A-Z](?!\\p{L}))*)',
+    // optional phẩy + đại từ "nó" giữa diameter và "cắt" (vao10:81 "AH, cắt…").
+    // "theo thứ tự" = "lần lượt". Anchor điểm = "tại" (dạng "ở" tách sang
+    // PATTERN_O vì lazy-region dừng ở "ở" đầu tiên có thể nuốt thiếu — vao10:155).
+    '\\s*kính\\s+([A-Z])([A-Z])(?![A-Z])\\s*,?\\s*(?:nó\\s+)?\\s*cắt\\s+([^.;\\n]*?)\\s+(?:(?:lần\\s*lượt|theo\\s+thứ\\s+tự)\\s+)?tại\\s+([A-Z](?!\\p{L})(?:\\s*(?:,|và)\\s*[A-Z](?!\\p{L}))*)',
+  'gu',
+);
+
+// Phân phối anchor "ở" — YÊU CẦU ≥2 điểm ("ở D và E") để KHÔNG nuốt dạng xen
+// "cắt BC ở N và cắt (O) tại D" (1 điểm sau "ở", phần "cắt (O)" là giao 2 đường
+// tròn — rule khác/escalate lo). httcd:2 "(O) đường kính BC, nó cắt các cạnh
+// AB, AC theo thứ tự ở D và E". groups: 1=d0 2=d1 3=lineRegion 4=points(≥2).
+const PATTERN_O = new RegExp(
+  '(?:' +
+    CIRCLE_KW + '\\s+(?:(?:\\(\\s*[A-Z]\\s*\\)|tâm\\s+[A-Z])\\s+)?' +
+    '|\\(\\s*[A-Z]\\s*\\)\\s+' +
+    ')' +
+    DUONG_KW +
+    '\\s*kính\\s+([A-Z])([A-Z])(?![A-Z])\\s*,?\\s*(?:nó\\s+)?\\s*cắt\\s+([^.;\\n]*?)\\s+(?:(?:lần\\s*lượt|theo\\s+thứ\\s+tự)\\s+)?ở\\s+([A-Z](?!\\p{L})(?:\\s*(?:,|và)\\s*[A-Z](?!\\p{L}))+)',
   'gu',
 );
 
@@ -70,7 +89,8 @@ export const diameterCircleCutsSidesRule: LanguageRule = {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
       PATTERN.lastIndex = 0;
-      for (const m of c.text.matchAll(PATTERN)) {
+      PATTERN_O.lastIndex = 0;
+      for (const m of [...c.text.matchAll(PATTERN), ...c.text.matchAll(PATTERN_O)]) {
       const d0 = m[1];
       const d1 = m[2];
       const dia = d0 + d1; // "BC"

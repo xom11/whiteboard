@@ -58,6 +58,24 @@ describe('diameterCircleCutsSidesRule', () => {
     });
   });
 
+  // vao10:81 — dấu phẩy giữa "đường kính AH" và "cắt": "đường kính AH, cắt AB, AC …".
+  it('phẩy xen giữa: "đường tròn tâm O đường kính AH, cắt AB, AC lần lượt tại M và N"', () => {
+    const all = intents(
+      'Cho tam giác ABC vuông tại A, đường cao AH. Vẽ đường tròn tâm O đường kính AH, cắt AB, AC lần lượt tại M và N.',
+    );
+    expect(all).toContainEqual({ op: 'add-point', name: 'M', constraint: { kind: 'secondIntersection', line: 'AB', circle: 'kAH', other: 'A' } });
+    expect(all).toContainEqual({ op: 'add-point', name: 'N', constraint: { kind: 'secondIntersection', line: 'AC', circle: 'kAH', other: 'A' } });
+  });
+
+  // httcd:2 — đại từ "nó" + "theo thứ tự" + "ở": "(O) đường kính BC, nó cắt các cạnh AB, AC theo thứ tự ở D và E".
+  it('"nó" + "theo thứ tự" + "ở": "(O) đường kính BC, nó cắt các cạnh AB, AC theo thứ tự ở D và E"', () => {
+    const all = intents(
+      'Cho tam giác ABC có 3 góc nhọn. Vẽ (O) đường kính BC, nó cắt các cạnh AB, AC theo thứ tự ở D và E.',
+    );
+    expect(all).toContainEqual({ op: 'add-point', name: 'D', constraint: { kind: 'secondIntersection', line: 'AB', circle: 'kBC', other: 'B' } });
+    expect(all).toContainEqual({ op: 'add-point', name: 'E', constraint: { kind: 'secondIntersection', line: 'AC', circle: 'kBC', other: 'C' } });
+  });
+
   it('một cạnh một điểm: "cắt AB tại M"', () => {
     const all = intents('Cho tam giác ABC. Đường tròn đường kính BC cắt cạnh AB tại M.');
     expect(all).toContainEqual({
