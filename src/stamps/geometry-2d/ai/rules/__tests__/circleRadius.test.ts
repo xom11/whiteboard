@@ -6,6 +6,12 @@ function run(problem: string) {
 }
 
 describe('circleRadiusRule', () => {
+  // httcd:81/89 — ký hiệu gọn có ĐƠN VỊ "(O; 5cm)" (cm chặn \d\s*\) cũ).
+  it('"Cho đường tròn (O; 5cm)" (đơn vị cm) → centerRadius radius:5', () => {
+    const all = run('Cho đường tròn (O; 5cm).').flatMap((m) => m.intents) as any[];
+    expect(all).toContainEqual(expect.objectContaining({ op: 'draw-circle', name: 'O', spec: 'centerRadius', center: 'O', radius: 5 }));
+  });
+
   it('"đường tròn tâm O bán kính 3" → centerRadius {center:O, radius:3}', () => {
     const m = run('Cho đường tròn tâm O bán kính 3');
     expect(m.length).toBe(1);

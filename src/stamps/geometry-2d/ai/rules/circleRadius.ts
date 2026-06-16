@@ -57,7 +57,7 @@ const CENTER_THROUGH_G = new RegExp(
 const THROUGH_MULTI = /đi\s+qua\s+[A-Z]\s*(?:và|,)\s*[A-Z]/u;
 
 // Ký hiệu gọn "(O; 3)" / "(O, 3)" — quét toàn đề (global) vì có thể nhiều.
-const CENTER_RADIUS_PAREN_G = /\(\s*([A-Z])\s*[;,]\s*(\d+(?:[.,]\d+)?)\s*\)/gu;
+const CENTER_RADIUS_PAREN_G = /\(\s*([A-Z])\s*[;,]\s*(\d+(?:[.,]\d+)?)\s*(?:cm|dm|mm|m)?\s*\)/gu;
 
 /**
  * Bán kính CANONICAL (board units) khi đề cho bán kính KÝ HIỆU CHỮ ("(O; R)",
