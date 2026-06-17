@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.31.0 — 2026-06-17
+
+Massive AI rule engine expansion + dataset coverage.
+
+This release focuses on significantly increasing the coverage and accuracy of the AI geometry rule engine, enabling the platform to understand and draw a much wider variety of complex geometry problems from various Vietnamese datasets.
+
+### AI Rule Engine Expansion
+- **New Geometry Rules**: Added and expanded dozens of rules covering:
+  - Complex intersections (`intersection`, `CAT_ONE_TWO`, `twoPerpLinesMeet`, etc.).
+  - Advanced circle constructs (`twoCirclesMeet`, `circleExternalPoint`, `diameterCircleCutsSides`, `incircleTangency`, `circumcirclePairMeet`).
+  - Line and segment properties (`onSegment BETWEEN`, `oppositeRayPoint`, `parallelSidePoints`).
+  - Tangents and perpendiculars (`tangentAt TWO_MEET`, `perpFoot SHARED_FROM_TWO`, `perpNamedLine`).
+- **Improved Normalization**: Enhanced OCR-glue splitting for Vietnamese geometry vocabulary and label normalization (handling primes like $A'$, $B'$, etc.).
+- **Engine Optimization**: Implemented topo-retry logic for intent ordering and moved `RefSpec` validation to a registry-driven approach.
+
+### Datasets & Evaluation
+- **Expanded Coverage**: Integrated and evaluated several new datasets including `vao10` (268 problems), `httcd` (255 problems), `mohinh` (39 problems), `julielltv` (29 Olympiad problems), and `hinh-phang-chuyen-2026` (25 specialized problems).
+- **Improved Diagnostics**: Enhanced diagnostic scripts and introduced `dbg-bai.ts` for granular problem debugging.
+
+### UI & Core
+- **Label Dragging**: Points, lines, segments, and circles now support draggable labels with persistence across sessions and undo/redo support.
+- **Editor Improvements**: Better auto-fit behavior when re-editing stamps and improved halo highlighting for various geometry elements.
+
+---
+
 ## v0.18.0 — 2026-05-21
 
 Tier B½ — stamp catalog + contract test + add-stamp howto. (closes #29)
