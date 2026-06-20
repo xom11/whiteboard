@@ -1,0 +1,65 @@
+Câu 1: Cho tam giác ABCnhọn nội tiếp trong đường tròn(O;R). Gọi H là trực tâm tam giác ABC. Kẻ OK OK ⊥ BC (K∈BC).
+
+Câu 2: Cho đường tròn (I) có các dây cung AB,CD,EF. Cho biết AB E và CD đi qua tâm I,EF không đi qua I (Hình vẽ).
+
+Câu 3: Cho đường tròn tâm O, hai dây AB và CD vuông góc với nhau ở M . Biết AB=18cm, CD=14cm ,MC =4cm.
+
+Câu 4: Cho nửa đường tròn (O), đường kính AB và một dây cung CD. Kẻ AE và BF vuông góc với CD lần lượt tại E và F .
+
+Câu 5: Cho đường tròn (O) và dây CD. Từ O kẻ tia vuông góc với CD tại M , cắt (O) tại H .
+
+Câu 6: Cho đường tròn (O) bán kính OA=11cm. Điểm M thộc bán kính AO và cách O khoảng 7cm. Qua M kẻ dây CD có độ dài 18cm.
+
+Câu 7: Cho đường tròn (O;R) có hai dây AB,CD bằng nhau và vuông góc với nhau tại I . Giả sử IA=2cm,IB=4cm.
+
+Câu 8: Cho đường tròn tâm O, đường kính AB. Dây CD cắt AB tại M , biết MC =4cm,MD=12cm. MD=300.
+
+Câu 9: Cho đường tròn tâm O;R , A và B di động trên đường tròn O thỏa mãn AOB =1200. Vẽ OH ⊥ AB= H 9
+
+Câu 10: Cho tam giác ABC có trực tâm H và nội tiếp đường tròn (O) đường kính AD
+
+Câu 11: Cho đường tròn (O) đường kính AB, dây CD cắt AB tại I . Gọi H,K theo thứ tự là chân đường vuông góc kẻ từ A và B đến CD.
+
+Câu 12: Cho nửa đường tròn tâm O đường kính AB. Trên đoạn thẳng OA lấy điểm C và trên đoạn thẳng OB lấy điểm D sao cho OC =OD. Từ C và D kẻ hai tia song song cắt nửa đường tròn ở E và F . Gọi I là trung điểm của EF .
+
+Câu 13: Cho đường tròn (O;R). Các điểm A,B,C,D thuộc (O;R).
+
+Câu 14: Cho đường tròn O;R và O';R' cắt nhau tại A,B.
+
+Câu 15: Cho hai đường tròn O;13cm và O';15cm cắt nhau tại A,B sao cho AB=24 cm .
+
+Câu 16: Cho hai đường tròn O và O' cắt nhau tại A,B. Gọi I là trung điểm của OO'. Qua A vẽ đường thẳng vuông góc với IA cắt ( O ) tại C và cắt ( O' ) tại
+
+Câu 17: Cho đường tròn (O), đường kính AD= R. Vẽ cung tròn tâm D bán kính R cắt (O) ở B và C
+
+Câu 18: Cho hình vuông ABCDcạnh 4cm. Gọi M,N lần lượt là trung điểm của AB,BC. Gọi E là giao điểm của CM và DN. Bán kính của đường tròn đi qua bốn điểm A,D,E,M là:
+
+Câu 19: Cho tam giác đều ABCcạnh bằng a, các đường cao làBM và CN . Gọi Dlà trung điểm của BC.Đường tròn đi qua bốn điềm B,N,M,Clà: BC
+
+Câu 20: Cho đường tròn (I) có các dây cung AB, CD, EF. Cho biết AB và CD đi qua tâm I, EF không đi qua I (Hình vẽ).
+
+Câu 21: Cho đường tròn tâm O;R và một dây cung AB. Gọi I là trung điểm của AB Tia OI cắt cung AB tại M
+
+Câu 22: Cho đường tròn (O) có các dây AB=24cm,AC=20cm,B AC <900 và O nằm trong góc BAC . Gọi M là trung điểm của AC. Khoảng cách từ điểm M đến AB bằng 8cm
+
+Câu 23: Cho đường tròn tâm ( O;R ) , A và B di động trên đường tròn ( O ) thỏa mãn AOB =1200. Vẽ OH ⊥ AB
+
+Câu 24: Cho đường tròn (O), dây MN khác đường kính. Qua Okẻ đường thẳng vuông góc với MN , cắt tiếp tuyến tại M của đường tròn ở điểm P. Cho bán kính của đường tròn bằng 10cm, MN =12cm.
+
+Câu 25: Cho đường tròn tâm O, đường kính AB. Kẻ tiếp tuyến tại B với đường tròn O , trên tiếp tuyến ( ) lấy điểm . Qua A kẻ đường thẳng song song với OP cắt O tại Q.
+
+Câu 26: Cho đường tròn ( O ) và điểm A bên ngoài đường tròn kẻ các tiếp tuyến AB,AC với đường tròn (B,Clà các tiếp điểm)
+
+Câu 27: Cho đường tròn O và điểm Anằm bên ngoài đường tròn, kẻ các tiếp tuyến AB,ACvới đường tròn (B,C là các tiếp điểm). Kẻ đường kínhBD. Tiếp tuyến của đường tròn tại D cắt đường thẳng BCtạiE.
+
+Câu 28: Cho B,C là hai điểm trên đường tròn ( O;R ) . Từ B kẻ đường thẳng vuông góc với OBcắt đường phân giác BOC tạiA. H là giao điểm của AO vàBC.
+
+Câu 29: Cho nửa đường tròn O đường kính AB. Từ A và B kẻ hai tiếp tuyến Ax và By. Qua một điểm M thuộc nửa đường tròn này, kẻ tiếp tuyến thứ ba cắt các tiếp tuyến Ax và By lần lượt ở C và
+
+Câu 30: Cho đường tròn O;6cm . Điểm M nằm ngoài đường tròn sao cho OM =10cm. Từ M kẻ hai tiếp tuyến MA,MB đến đường tròn (A,B là các tiếp điểm).
+
+Câu 31: Cho điểm A nằm ngoài đường tròn ( O;R ) với OA= R. Vẽ hai tiếp tuyến AB, AC đến đường tròn (với B, C là các tiếp điểm).
+
+Câu 32: Cho đường tròn O;R và điểm M nằm ngoài đường tròn. Hai đường thẳng c, d qua M lần lượt tiếp xúc với (O) tại A
+
+Câu 33: Cho điểm M nằm ngoài đường tròn I;6cm và ME, MF là hai tiếp tuyến của đường tròn này tại E MF=600 và F. Cho biết E
