@@ -21,7 +21,7 @@ const UNNAMED_DIAMETER = /(?:nửa\s+)?đường\s*tròn\s+đường\s*kính\s+(
 const QUA_RE = new RegExp(
   'Qua\\s+(?:điểm\\s+)?([A-Z])(?!\\p{L})[^.]{0,40}?tiếp\\s*tuyến\\s+(?:thứ\\s+(?:ba|3|hai|2)\\s+)?cắt\\s+' +
     '(?:các\\s+)?(?:(?:các\\s+)?tiếp\\s*tuyến\\s+|đường\\s*thẳng\\s+|cạnh\\s+)?' +
-    '([A-Z](?:[A-Z]|[xyzt]))\\s*(?:,|và)\\s*([A-Z](?:[A-Z]|[xyzt]))(?!\\p{L})\\s+(?:lần\\s*lượt\\s+)?(?:ở|tại)\\s+([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])',
+    '([A-Z](?:[A-Z]|[xyzt]))\\s*(?:,|và)\\s*([A-Z](?:[A-Z]|[xyzt]))(?!\\p{L})(?:\\s+kéo\\s+dài)?\\s+(?:lần\\s*lượt\\s+)?(?:ở|tại)\\s+([A-Z])\\s*(?:,|và)\\s*(?:(?:tại|ở)\\s+)?([A-Z])(?![A-Z])',
   'gu',
 );
 
@@ -35,12 +35,15 @@ const SINGLE_RE = new RegExp(
 );
 
 // group1 = tangent point, 2+3 = 2 đường bị cắt, 4+5 = 2 giao điểm.
+// - "của|với" cho cụm circle SAU tiếp điểm ("tiếp tuyến tại C với đường tròn cắt …").
+// - "kéo dài" optional sau cặp đường ("AD kéo dài lần lượt tại …").
+// - cho phép "tại|ở" lặp lại trước giao-điểm thứ hai ("tại E và tại F").
 const RE = new RegExp(
-  '[Tt]iếp\\s*tuyến\\s+(?:của\\s+[^.]{0,14}?\\s+)?tại\\s+(?:điểm\\s+)?([A-Z])(?!\\p{L})' +
-    '(?:\\s+của\\s+[^.]{0,14}?)?\\s+cắt\\s+(?:các\\s+)?(?:(?:các\\s+)?tiếp\\s*tuyến\\s+|đường\\s*thẳng\\s+|cạnh\\s+)?' +
+  '[Tt]iếp\\s*tuyến\\s+(?:(?:của|với)\\s+[^.]{0,14}?\\s+)?tại\\s+(?:điểm\\s+)?([A-Z])(?!\\p{L})' +
+    '(?:\\s+(?:của|với)\\s+[^.]{0,14}?)?\\s+cắt\\s+(?:các\\s+)?(?:(?:các\\s+)?tiếp\\s*tuyến\\s+|đường\\s*thẳng\\s+|cạnh\\s+)?' +
     // Đường bị cắt: cặp đỉnh "AD" HOẶC token tia đã đặt tên "Ax"/"By" (1 HOA +
     // x/y/z/t). tangentRay dựng tia Ax,By (priority 63>62) trước → giao hợp lệ.
-    '([A-Z](?:[A-Z]|[xyzt]))\\s*(?:,|và)\\s*([A-Z](?:[A-Z]|[xyzt]))(?!\\p{L})\\s+(?:lần\\s*lượt\\s+)?(?:tại|ở)\\s+([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])',
+    '([A-Z](?:[A-Z]|[xyzt]))\\s*(?:,|và)\\s*([A-Z](?:[A-Z]|[xyzt]))(?!\\p{L})(?:\\s+kéo\\s+dài)?\\s+(?:lần\\s*lượt\\s+)?(?:tại|ở)\\s+([A-Z])\\s*(?:,|và)\\s*(?:(?:tại|ở)\\s+)?([A-Z])(?![A-Z])',
   'gu',
 );
 

@@ -43,7 +43,38 @@ describe('tangentRayRule', () => {
     expect(intents(problem)).toEqual([]);
   });
 
-  it('không match khi không có đường tròn đường kính', () => {
+  it('không match khi không có đường tròn đường kính (tiếp điểm là đỉnh hình cho-sẵn)', () => {
     expect(intents('Cho tam giác ABC. Kẻ tiếp tuyến Ax.')).toEqual([]);
+  });
+
+  it('tiếp tuyến Ax với A là TIẾP ĐIỂM TỰ DO trên (O) trần → A onCircle + tia (vao10:168)', () => {
+    const problem = 'Cho (O) và tiếp tuyến Ax. Trên Ax lấy hai điểm B và C sao cho AB=BC.';
+    const out = intents(problem);
+    expect(out).toContainEqual({
+      op: 'add-point',
+      name: 'A',
+      constraint: { kind: 'onCircle', circle: 'O', theta: 0.7 },
+    });
+    expect(out).toContainEqual({
+      op: 'draw-line',
+      name: 'Ax',
+      kind: 'tangentAt',
+      through: 'A',
+      circle: 'O',
+    });
+  });
+
+  it('"Dựng hình bình hành AECD" KHÔNG loại tiếp điểm A (dựng, không cho-sẵn)', () => {
+    // A là tiếp điểm tự do dù xuất hiện làm đỉnh hình bình hành được DỰNG sau.
+    const problem = 'Cho (O) và tiếp tuyến Ax. Dựng hình bình hành AECD.';
+    expect(intents(problem)).toContainEqual({
+      op: 'add-point',
+      name: 'A',
+      constraint: { kind: 'onCircle', circle: 'O', theta: 0.7 },
+    });
+  });
+
+  it('không match free-tangent khi không có đường tròn trần', () => {
+    expect(intents('Cho điểm A và tiếp tuyến Ax.')).toEqual([]);
   });
 });
