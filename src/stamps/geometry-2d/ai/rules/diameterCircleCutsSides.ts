@@ -33,17 +33,18 @@ import { addPoint, drawCircle, CIRCLE_KW, DUONG_KW } from './_shared';
 // (vd Bài 13: hai nửa đường tròn). pointRegion bắt CHẶT (chỉ HOA + ,/và) để
 // không nuốt sang construct kế trong cùng clause.
 const PATTERN = new RegExp(
-  // Chỉ-báo đường tròn: "đường tròn (tâm X|(X))?" HOẶC "(X)" trần (httcd:2 "(O)
-  // đường kính BC" — KHÔNG có chữ "đường tròn"). Bắt buộc có 1 trong 2.
+  // Chỉ-báo đường tròn: "đường tròn ((X)|tâm X|X-trần)?" HOẶC "(X)" trần (httcd:2
+  // "(O) đường kính BC"). "X-trần" = tâm 1-HOA không ngoặc ("đường tròn O đường
+  // kính BC" — vxhung:14). Bắt buộc có 1 trong 2 nhánh.
   '(?:' +
-    CIRCLE_KW + '\\s+(?:(?:\\(\\s*[A-Z]\\s*\\)|tâm\\s+[A-Z])\\s+)?' +
+    CIRCLE_KW + '\\s+(?:(?:\\(\\s*[A-Z]\\s*\\)|tâm\\s+[A-Z]|[A-Z])\\s+)?' +
     '|\\(\\s*[A-Z]\\s*\\)\\s+' +
     ')' +
     DUONG_KW +
     // optional phẩy + đại từ "nó" giữa diameter và "cắt" (vao10:81 "AH, cắt…").
-    // "theo thứ tự" = "lần lượt". Anchor điểm = "tại" (dạng "ở" tách sang
-    // PATTERN_O vì lazy-region dừng ở "ở" đầu tiên có thể nuốt thiếu — vao10:155).
-    '\\s*kính\\s+([A-Z])([A-Z])(?![A-Z])\\s*,?\\s*(?:nó\\s+)?\\s*cắt\\s+([^.;\\n]*?)\\s+(?:(?:lần\\s*lượt|theo\\s+thứ\\s+tự)\\s+)?tại\\s+([A-Z](?!\\p{L})(?:\\s*(?:,|và)\\s*[A-Z](?!\\p{L}))*)',
+    // "theo thứ tự" = "lần lượt". Anchor điểm = "tại"; "(các)? (điểm)?" trước danh
+    // sách tên ("tại các điểm D và E" — vxhung:6).
+    '\\s*kính\\s+([A-Z])([A-Z])(?![A-Z])\\s*,?\\s*(?:nó\\s+)?\\s*cắt\\s+([^.;\\n]*?)\\s+(?:(?:lần\\s*lượt|theo\\s+thứ\\s+tự)\\s+)?tại\\s+(?:các\\s+)?(?:điểm\\s+)?([A-Z](?!\\p{L})(?:\\s*(?:,|và)\\s*[A-Z](?!\\p{L}))*)',
   'gu',
 );
 
@@ -53,11 +54,11 @@ const PATTERN = new RegExp(
 // AB, AC theo thứ tự ở D và E". groups: 1=d0 2=d1 3=lineRegion 4=points(≥2).
 const PATTERN_O = new RegExp(
   '(?:' +
-    CIRCLE_KW + '\\s+(?:(?:\\(\\s*[A-Z]\\s*\\)|tâm\\s+[A-Z])\\s+)?' +
+    CIRCLE_KW + '\\s+(?:(?:\\(\\s*[A-Z]\\s*\\)|tâm\\s+[A-Z]|[A-Z])\\s+)?' +
     '|\\(\\s*[A-Z]\\s*\\)\\s+' +
     ')' +
     DUONG_KW +
-    '\\s*kính\\s+([A-Z])([A-Z])(?![A-Z])\\s*,?\\s*(?:nó\\s+)?\\s*cắt\\s+([^.;\\n]*?)\\s+(?:(?:lần\\s*lượt|theo\\s+thứ\\s+tự)\\s+)?ở\\s+([A-Z](?!\\p{L})(?:\\s*(?:,|và)\\s*[A-Z](?!\\p{L}))+)',
+    '\\s*kính\\s+([A-Z])([A-Z])(?![A-Z])\\s*,?\\s*(?:nó\\s+)?\\s*cắt\\s+([^.;\\n]*?)\\s+(?:(?:lần\\s*lượt|theo\\s+thứ\\s+tự)\\s+)?ở\\s+(?:các\\s+)?(?:điểm\\s+)?([A-Z](?!\\p{L})(?:\\s*(?:,|và)\\s*[A-Z](?!\\p{L}))+)',
   'gu',
 );
 

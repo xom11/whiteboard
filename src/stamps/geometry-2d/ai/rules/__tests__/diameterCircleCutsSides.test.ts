@@ -42,6 +42,20 @@ describe('diameterCircleCutsSidesRule', () => {
     expect(all.some((i) => i.op === 'draw-shape')).toBe(false);
   });
 
+  // vxhung:6 — circle CÓ TÊN "(O)" + "đường kính BC" xen + "tại CÁC ĐIỂM D và E".
+  it('named (O) + "đường kính" xen + "các điểm": "(O) đường kính BC cắt các cạnh AB, AC lần lượt tại các điểm D và E"', () => {
+    const all = intents('Cho tam giác ABC. Đường tròn (O) đường kính BC cắt các cạnh AB, AC lần lượt tại các điểm D và E.');
+    expect(all).toContainEqual({ op: 'add-point', name: 'D', constraint: { kind: 'secondIntersection', line: 'AB', circle: 'kBC', other: 'B' } });
+    expect(all).toContainEqual({ op: 'add-point', name: 'E', constraint: { kind: 'secondIntersection', line: 'AC', circle: 'kBC', other: 'C' } });
+  });
+
+  // vxhung:14 — circle tên TRẦN "đường tròn O" (không ngoặc).
+  it('bare center: "Đường tròn O đường kính BC cắt cạnh AB, AC lần lượt tại D và E"', () => {
+    const all = intents('Cho tam giác ABC. Đường tròn O đường kính BC cắt cạnh AB, AC lần lượt tại D và E.');
+    expect(all).toContainEqual({ op: 'add-point', name: 'D', constraint: { kind: 'secondIntersection', line: 'AB', circle: 'kBC', other: 'B' } });
+    expect(all).toContainEqual({ op: 'add-point', name: 'E', constraint: { kind: 'secondIntersection', line: 'AC', circle: 'kBC', other: 'C' } });
+  });
+
   it('biến thể "lần lượt" + danh sách dùng "và" giữa cạnh', () => {
     const all = intents(
       'Cho tam giác ABC. Đường tròn đường kính BC cắt AB và AC lần lượt tại M, N.',
