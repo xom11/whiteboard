@@ -58,4 +58,12 @@ describe('tangentAt — hai tiếp tuyến cắt nhau', () => {
     const d = all.find((i) => i.op === 'add-point' && i.name === 'D');
     expect(d.constraint).toEqual({ kind: 'intersection', of: ['tB', 'tC'] });
   });
+
+  it('"Hai tiếp tuyến qua B và C của (O) cắt nhau tại E" → tB,tC,E (vao10:228)', () => {
+    const all = intents('Cho đường tròn (O), dây BC. Hai tiếp tuyến qua B và C của (O) cắt nhau tại E.');
+    expect(all).toContainEqual({ op: 'draw-line', name: 'tB', kind: 'tangentAt', through: 'B', circle: 'O' });
+    expect(all).toContainEqual({ op: 'draw-line', name: 'tC', kind: 'tangentAt', through: 'C', circle: 'O' });
+    const e = all.find((i) => i.op === 'add-point' && i.name === 'E');
+    expect(e.constraint).toEqual({ kind: 'intersection', of: ['tB', 'tC'] });
+  });
 });

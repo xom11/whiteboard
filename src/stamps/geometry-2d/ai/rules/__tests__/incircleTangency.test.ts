@@ -109,4 +109,28 @@ describe('incircle tangency rule', () => {
       ["C'", 'AB'],
     ]);
   });
+
+  it('tên ĐẶT TRƯỚC: "Gọi M,N,P lần lượt là tiếp điểm của AB,AC,BC với (O)" (httcd:99)', () => {
+    const all = intents(
+      'Cho đường tròn (O) nội tiếp tam giác ABC. Gọi M, N, P lần lượt là tiếp điểm của AB, AC, BC với (O).',
+    );
+    const tg = all.filter((i) => i.op === 'add-point' && i.constraint?.kind === 'tangencyPoint');
+    expect(tg).toEqual([
+      { op: 'add-point', name: 'M', constraint: { kind: 'tangencyPoint', circle: 'O', onLine: 'AB' } },
+      { op: 'add-point', name: 'N', constraint: { kind: 'tangencyPoint', circle: 'O', onLine: 'AC' } },
+      { op: 'add-point', name: 'P', constraint: { kind: 'tangencyPoint', circle: 'O', onLine: 'BC' } },
+    ]);
+  });
+
+  it('tên ĐẶT TRƯỚC + "đường tròn (I)": "D,E,F … tiếp điểm của BC,CA,AB với đường tròn (I)" (hinh9:102)', () => {
+    const all = intents(
+      'Cho tam giác ABC ngoại tiếp đường tròn (I). Gọi D,E,F lần lượt là tiếp điểm của BC,CA,AB với đường tròn (I).',
+    );
+    const tg = all.filter((i) => i.op === 'add-point' && i.constraint?.kind === 'tangencyPoint');
+    expect(tg.map((i) => [i.name, i.constraint.onLine, i.constraint.circle])).toEqual([
+      ['D', 'BC', 'I'],
+      ['E', 'CA', 'I'],
+      ['F', 'AB', 'I'],
+    ]);
+  });
 });

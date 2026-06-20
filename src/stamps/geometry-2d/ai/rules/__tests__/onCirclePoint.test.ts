@@ -188,4 +188,18 @@ describe('onCirclePointRule — điểm tự do trên cung (di chuyển / thay �
     const all = geoIntents('Cho tam giác ABC nội tiếp đường tròn (O). Điểm E thuộc cạnh BC.');
     expect(all.find((i) => i.name === 'E')).toBeUndefined();
   });
+
+  it('"Điểm C thuộc đường (O)" (OCR rớt "tròn") → C on O (httcd:3)', () => {
+    const all = intents('Cho đường tròn (O) đường kính AB. Điểm C thuộc đường (O).');
+    expect(all.find((i) => i.name === 'C' && i.constraint.kind === 'onCircle')).toBeTruthy();
+  });
+
+  it('tâm TRẦN "Cho O đường kính AB … Trên cung BC lấy điểm M" → M on O_c (vao10:147)', () => {
+    const all = intents('Cho O đường kính AB và dây CD vuông góc với AB. Trên cung BC lấy điểm M.');
+    expect(all).toContainEqual({
+      op: 'add-point',
+      name: 'M',
+      constraint: { kind: 'onCircle', circle: 'O_c', theta: 1.2 },
+    });
+  });
 });

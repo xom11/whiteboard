@@ -16,8 +16,10 @@ const COMPACT_CIRCLE = /\(\s*([A-Z])\s*[;,]\s*[Rr]\s*\)/u;
 // tính từ cung ĐỨNG TRƯỚC cặp đỉnh ("cung lớn AB") lẫn sau ("cung AB nhỏ").
 // Hậu tố circle/cung: "cung (nhỏ|lớn)? AB" | "(nửa)? đường tròn" | "(O)" bare
 // paren (1 ký tự HOA — "thuộc (O)" cực phổ biến khi đề đã đặt tên đường tròn).
+// Hậu tố bare paren chấp nhận tiền tố "đường " optional ("thuộc đường (O)" — OCR
+// rớt chữ "tròn", httcd:3) ngoài "thuộc (O)" trần.
 const ON_SUFFIX =
-  '(?:cung\\s+(?:nhỏ\\s+|lớn\\s+)?[A-Z]{2}(?:\\s*(?:nhỏ|lớn))?|(?:nửa\\s+)?đường\\s*tròn|\\(\\s*[A-Z]\\s*\\))';
+  '(?:cung\\s+(?:nhỏ\\s+|lớn\\s+)?[A-Z]{2}(?:\\s*(?:nhỏ|lớn))?|(?:nửa\\s+)?đường\\s*tròn|(?:đường\\s+)?\\(\\s*[A-Z]\\s*\\))';
 const POINT_ON = new RegExp(
   // "nằm" optional → bắt "M (bất kì)? trên (nửa)? đường tròn" / "điểm A trên (O)"
   // (chỉ "trên" trần, không "nằm trên"). ON_SUFFIX neo circle/cung nên "trên"
@@ -73,13 +75,20 @@ const BARE_CIRCLE = /\(\s*([A-Z])\s*\)/u;
 // Đường tròn đường kính KHÔNG tên tâm: "(nửa)? đường tròn đường kính XY" →
 // diameterCircleSecant đặt tên "kXY". Dùng làm fallback khi không có tâm nêu tên.
 const UNNAMED_DIAMETER = /(?:nửa\s+)?đường\s*tròn\s+đường\s*kính\s+([A-Z])([A-Z])(?![A-Z])/u;
+// Tâm TRẦN (không ngoặc) đứng ngay trước "đường kính": "Cho O đường kính AB" →
+// circleDiameter dựng đường tròn tên "O_c" (vao10:147). Lookbehind loại chữ/số/(
+// để KHÔNG bắt chữ cuối của cặp đỉnh ("AB đường kính" → B sai).
+const BARE_CENTER_DIAMETER = /(?<![\p{L}\d(])([A-Z])\s+đường\s*kính/u;
 
 function resolveCircle(problem: string): string | undefined {
   const m = NAMED_CIRCLE.exec(problem) ?? COMPACT_CIRCLE.exec(problem) ?? BARE_CIRCLE.exec(problem);
   if (!m) {
     // Không có tâm đặt tên → thử đường tròn đường kính vô danh duy nhất ("kXY").
     const dm = UNNAMED_DIAMETER.exec(problem);
-    return dm ? `k${dm[1]}${dm[2]}` : undefined;
+    if (dm) return `k${dm[1]}${dm[2]}`;
+    // Tâm trần "O đường kính …" → circleDiameter đặt tên "O_c".
+    const bd = BARE_CENTER_DIAMETER.exec(problem);
+    return bd ? `${bd[1]}_c` : undefined;
   }
   const center = m[1];
   // circleDiameterRule names its support circle "<center>_c" (đường tròn ĐƯỜNG

@@ -23,7 +23,7 @@ import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint, connect } from './_shared';
 
 const PREFILTER =
-  /(?:[Kk]ẻ|[Vv]ẽ)\s+(?:các\s+|hai\s+|2\s+)?tiếp\s*tuyến\s+(?:thứ\s+\S+\s+)?[A-Z]{2}|[Cc]ác\s+tiếp\s*tuyến\s+với/u;
+  /(?:[Kk]ẻ|[Vv]ẽ)\s+(?:các\s+|hai\s+|2\s+)?tiếp\s*tuyến\s+(?:thứ\s+\S+\s+)?[A-Z]{2}|[Cc]ác\s+tiếp\s*tuyến\s+với|[Tt]iếp\s*tuyến\s+[A-Z]{2}\s*(?:,|và)\s*[A-Z]{2}|[Tt]ừ\s+[A-Z][^.;]{0,20}?(?:kẻ|vẽ)\s+(?:hai|2|các)\s+tiếp\s*tuyến|[A-Z]{2}\s*(?:,|và)\s*[A-Z]{2}\s+là\s+(?:hai\s+|2\s+|các\s+)?tiếp\s*tuyến/u;
 
 // 2 tiếp tuyến: "Kẻ (các/hai/2)? tiếp tuyến XY, XZ" / "XY và XZ" (vao10).
 // g1g2 = cặp 1, g3g4 = cặp 2.
@@ -43,6 +43,25 @@ const ONE = new RegExp(
 const FROM_TOUCH = new RegExp(
   '[Cc]ác\\s+tiếp\\s*tuyến\\s+với\\s+đường\\s*tròn\\s+kẻ\\s+từ\\s+([A-Z])(?!\\p{L})' +
     '[^.;]{0,40}?tại\\s+([A-Z])\\s*(?:,\\s*|và\\s+)([A-Z])(?!\\p{L})',
+  'gu',
+);
+// "Từ C kẻ hai tiếp tuyến (với đường tròn/(O))? tại P, K" — điểm ngoài sau "Từ",
+// tiếp điểm sau "tại". Lines KHÔNG đặt tên (≠ TWO "CP,CK"). vao10:264, httcd:264.
+const FROM_DRAW_TOUCH = new RegExp(
+  '[Tt]ừ\\s+([A-Z])(?!\\p{L})[^.;]{0,20}?(?:kẻ|vẽ)\\s+(?:hai|2|các)\\s+tiếp\\s*tuyến' +
+    '[^.;]{0,40}?tại\\s+([A-Z])\\s*(?:,\\s*|và\\s+)([A-Z])(?!\\p{L})',
+  'gu',
+);
+// Verb-less 2 tiếp tuyến ĐẶT TÊN: "Tiếp tuyến AM, AN (tiếp xúc …)" — ext = chữ
+// đầu CHUNG của 2 cặp, tiếp điểm = chữ sau. httcd:230. g1g2 cặp1, g3g4 cặp2.
+const TWO_BARE = new RegExp(
+  '[Tt]iếp\\s*tuyến\\s+([A-Z])([A-Z])\\s*(?:,\\s*|và\\s+)([A-Z])([A-Z])(?!\\p{L})',
+  'gu',
+);
+// Tên ĐẶT TRƯỚC: "MA, MB là (hai)? tiếp tuyến …" — ext = chữ đầu CHUNG, tiếp điểm
+// = chữ sau. httcd:119. g1g2 cặp1, g3g4 cặp2.
+const NAME_BEFORE_TWO = new RegExp(
+  '([A-Z])([A-Z])\\s*(?:,\\s*|và\\s+)([A-Z])([A-Z])(?!\\p{L})\\s+là\\s+(?:hai\\s+|2\\s+|các\\s+)?tiếp\\s*tuyến',
   'gu',
 );
 
@@ -92,15 +111,48 @@ export const tangentNamedFromExtRule: LanguageRule = {
       }
     }
 
-    // --- "Các tiếp tuyến với đường tròn kẻ từ A … tại B,C" (vao10) ---
+    // --- Verb-less "Tiếp tuyến AM, AN" / tên-trước "MA, MB là … tiếp tuyến"
+    //     (ext chung = chữ đầu) ---
+    for (const c of ctx.clauses) {
+      if (twoClauses.has(c.id)) continue;
+      TWO_BARE.lastIndex = 0;
+      NAME_BEFORE_TWO.lastIndex = 0;
+      const hits = [...c.text.matchAll(TWO_BARE), ...c.text.matchAll(NAME_BEFORE_TWO)];
+      for (const m of hits) {
+        if (twoClauses.has(c.id)) continue; // 1 clause emit 1 lần
+        const ext = m[1];
+        if (m[3] !== ext) continue; // 2 cặp phải cùng điểm ngoài
+        const p = m[2];
+        const q = m[4];
+        if (p === q || p === ext || q === ext) continue;
+        twoClauses.add(c.id);
+        whichOf.set(ext, 1);
+        out.push({
+          ruleId: 'tangentNamedFromExt',
+          clauseIds: [c.id],
+          intents: [
+            addPoint(p, { kind: 'tangentPoint', from: ext, circle, which: 0 }),
+            addPoint(q, { kind: 'tangentPoint', from: ext, circle, which: 1 }),
+            connect(ext, p, 'segment'),
+            connect(ext, q, 'segment'),
+          ],
+        });
+      }
+    }
+
+    // --- "Các tiếp tuyến với đường tròn kẻ từ A … tại B,C" (vao10) + "Từ C kẻ
+    //     hai tiếp tuyến … tại P,K" (FROM_DRAW_TOUCH) ---
     for (const c of ctx.clauses) {
       if (twoClauses.has(c.id)) continue;
       FROM_TOUCH.lastIndex = 0;
-      for (const m of c.text.matchAll(FROM_TOUCH)) {
+      FROM_DRAW_TOUCH.lastIndex = 0;
+      const hits = [...c.text.matchAll(FROM_TOUCH), ...c.text.matchAll(FROM_DRAW_TOUCH)];
+      for (const m of hits) {
         const ext = m[1];
         const p = m[2];
         const q = m[3];
         if (p === q || p === ext || q === ext) continue;
+        if (twoClauses.has(c.id)) continue; // 1 clause chỉ emit 1 lần
         twoClauses.add(c.id);
         whichOf.set(ext, 1);
         out.push({

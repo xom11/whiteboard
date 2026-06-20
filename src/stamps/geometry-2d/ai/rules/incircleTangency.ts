@@ -16,6 +16,9 @@ const PREFILTER = /tiếp\s*xúc|tiếp\s*điểm/u;
 // lần lượt là D,E,F". circle = tâm trong ngoặc. Bài 76, 91.
 const TANGENT_NAMED_FWD = /tiếp\s*điểm\s+(?:của\s+)?(?:đường\s*tròn\s*)?\(\s*([A-Z])\s*\)\s+với\s+(?:các\s+)?(?:(?:cạnh|đoạn)\s+)?([A-Z]{2}(?:\s*(?:,|và)\s*[A-Z]{2})*)\s+(?:lần\s*lượt\s+|theo\s+thứ\s+tự\s+)?là\s+(?:các\s+)?(?:điểm\s+)?([A-Z](?:\s*(?:,|và)\s*[A-Z])*)(?![A-Za-z])/iu;
 const TANGENT_NAMED_REV = /tiếp\s*điểm\s+(?:của\s+)?(?:các\s+)?(?:(?:cạnh|đoạn)\s+)?([A-Z]{2}(?:\s*(?:,|và)\s*[A-Z]{2})*)\s+với\s+(?:đường\s*tròn\s*)?\(\s*([A-Z])\s*\)\s+(?:lần\s*lượt\s+|theo\s+thứ\s+tự\s+)?là\s+(?:các\s+)?(?:điểm\s+)?([A-Z](?:\s*(?:,|và)\s*[A-Z])*)(?![A-Za-z])/iu;
+// Tên ĐẶT TRƯỚC: "Gọi D,E,F lần lượt là tiếp điểm của BC,CA,AB với (đường tròn)?
+// (I)" (httcd:99, hinh9:102). group1=tên điểm, group2=cạnh, group3=tâm.
+const TANGENT_NAMED_BEFORE = /([A-Z](?:\s*(?:,|và)\s*[A-Z])*)\s+(?:lần\s*lượt\s+|theo\s+thứ\s+tự\s+)?là\s+(?:các\s+)?(?:điểm\s+)?tiếp\s*điểm\s+(?:của\s+)?(?:các\s+)?(?:(?:cạnh|đoạn)\s+)?([A-Z]{2}(?:\s*(?:,|và)\s*[A-Z]{2})*)\s+với\s+(?:đường\s*tròn\s*)?\(\s*([A-Z])\s*\)/iu;
 
 // Vertices SAU "tam giác" optional — "(I) nội tiếp tam giác tiếp xúc …" (đỉnh suy
 // từ các cạnh tiếp xúc) cũng hợp lệ.
@@ -102,6 +105,25 @@ export const incircleTangencyRule: LanguageRule = {
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const chunk of logicalChunks(ctx.problem, ctx.clauses)) {
+      // Tên ĐẶT TRƯỚC: "Gọi D,E,F lần lượt là tiếp điểm của BC,CA,AB với (I)".
+      // Thử TRƯỚC FWD/REV (cùng prefix "tiếp điểm" nên tránh nhầm capture).
+      const tb = TANGENT_NAMED_BEFORE.exec(chunk.text);
+      if (tb) {
+        const names = splitCsv(tb[1]);
+        const sides = splitCsv(tb[2]);
+        const circle = tb[3];
+        if (sides.length >= 1 && sides.length === names.length) {
+          const verts = [...new Set(sides.join('').split(''))];
+          const intents: IntentT[] = [];
+          if (verts.length === 3) intents.push(drawCircle(circle, 'inscribedIn', { triangle: verts }));
+          for (let i = 0; i < names.length; i++) {
+            intents.push(addPoint(names[i], { kind: 'tangencyPoint', circle, onLine: sides[i] }));
+          }
+          out.push({ ruleId: 'incircleTangency', clauseIds: chunk.clauseIds, intents });
+          continue;
+        }
+      }
+
       // "tiếp điểm của (I) với BC,CA,AB lần lượt là D,E,F" (tên SAU "là") + đảo.
       const tn = TANGENT_NAMED_FWD.exec(chunk.text) ?? TANGENT_NAMED_REV.exec(chunk.text);
       if (tn) {

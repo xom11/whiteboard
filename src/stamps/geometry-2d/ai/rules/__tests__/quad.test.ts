@@ -220,6 +220,25 @@ describe('quadRule', () => {
     expect(cyclicParts(m[0].intents as any[]).circle.name).toBe('K');
   });
 
+  // --- "tứ giác nội tiếp ABCD" — ĐỈNH ĐỨNG SAU "nội tiếp" (t02:BT9) ----------
+  it('"tứ giác nội tiếp ABCD" → cyclic quad (circle O + 4 glider + mark-shape)', () => {
+    const m = run('Cho tứ giác nội tiếp ABCD');
+    const match = cyclicMatch(m, 'ABCD');
+    expect(match).toBeDefined();
+    const { circle, gliders, poly } = cyclicParts(match!.intents as any[]);
+    expect(circle.name).toBe('O');
+    expect(circle.spec).toBe('centerRadius');
+    expect(gliders.map((g) => g.name)).toEqual(['A', 'B', 'C', 'D']);
+    expect(poly.labels).toEqual(['A', 'B', 'C', 'D']);
+  });
+
+  it('"tứ giác nội tiếp (I) ABCD" → cyclic quad với tâm I', () => {
+    const m = run('Cho tứ giác nội tiếp (I) ABCD');
+    const match = cyclicMatch(m, 'ABCD');
+    expect(match).toBeDefined();
+    expect(cyclicParts(match!.intents as any[]).circle.name).toBe('I');
+  });
+
   // --- Fail-safe: đỉnh dùng chung với tam giác → quad-only (no circle) -------
   it('ESCALATE-SAFE: "tam giác ABC ... tứ giác BCEF nội tiếp" → BCEF chỉ 1 intent (no circle)', () => {
     const m = run('Cho tam giác ABC. Vẽ đường tròn ngoại tiếp tứ giác BCEF');

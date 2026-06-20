@@ -131,4 +131,28 @@ describe('tangentNamedFromExtRule', () => {
     expect(c.constraint.kind).toBe('tangentPoint');
     expect(c.constraint.from).toBe('M');
   });
+
+  it('verb-less "Tiếp tuyến AM, AN tiếp xúc với (O) tại M và N" → tangentPoint M,N from A (httcd:230)', () => {
+    const all = run(tangentNamedFromExtRule, 'Tiếp tuyến AM, AN tiếp xúc với đường tròn (O) tại M và N.');
+    const m = all.find((i) => i.op === 'add-point' && i.name === 'M');
+    const n = all.find((i) => i.op === 'add-point' && i.name === 'N');
+    expect(m.constraint).toEqual({ kind: 'tangentPoint', from: 'A', circle: 'O', which: 0 });
+    expect(n.constraint).toEqual({ kind: 'tangentPoint', from: 'A', circle: 'O', which: 1 });
+  });
+
+  it('tên-trước "MA, MB là hai tiếp tuyến … tại A và B" → tangentPoint A,B from M (httcd:119)', () => {
+    const all = run(tangentNamedFromExtRule, 'Gọi MA, MB là hai tiếp tuyến với đường tròn (O) tại A và B.');
+    const a = all.find((i) => i.op === 'add-point' && i.name === 'A');
+    const b = all.find((i) => i.op === 'add-point' && i.name === 'B');
+    expect(a.constraint).toEqual({ kind: 'tangentPoint', from: 'M', circle: 'O', which: 0 });
+    expect(b.constraint).toEqual({ kind: 'tangentPoint', from: 'M', circle: 'O', which: 1 });
+  });
+
+  it('"Từ C kẻ hai tiếp tuyến với đường tròn tại P, K" → tangentPoint P,K from C (vao10:264)', () => {
+    const all = run(tangentNamedFromExtRule, 'Từ C kẻ hai tiếp tuyến với đường tròn (O) tại P, K.');
+    const p = all.find((i) => i.op === 'add-point' && i.name === 'P');
+    const k = all.find((i) => i.op === 'add-point' && i.name === 'K');
+    expect(p.constraint).toEqual({ kind: 'tangentPoint', from: 'C', circle: 'O', which: 0 });
+    expect(k.constraint).toEqual({ kind: 'tangentPoint', from: 'C', circle: 'O', which: 1 });
+  });
 });

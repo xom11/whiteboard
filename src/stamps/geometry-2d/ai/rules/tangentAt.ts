@@ -8,13 +8,14 @@
 import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint, drawLine } from './_shared';
 
-const PREFILTER = /[Tt]iếp\s*tuyến\s+(?:với\s+|của\s+)?(?:đường\s*tròn\s*)?(?:\([^)]*\)\s*)?tại/u;
+const PREFILTER = /[Tt]iếp\s*tuyến\s+(?:với\s+|của\s+)?(?:đường\s*tròn\s*)?(?:\([^)]*\)\s*)?(?:tại|qua)/u;
 const CIRCLE_REF = /đường\s*tròn\s*\(\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)|\(\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)/u;
 
 const DISTRIB = /[Tt]iếp\s*tuyến\s+tại\s+([A-Z])\s+cắt\s+tiếp\s*tuyến\s+tại\s+([A-Z])\s+và\s+([A-Z])[^.]{0,60}?lần\s*lượt\s+tại\s+([A-Z])\s+và\s+([A-Z])/u;
-// "Tiếp tuyến tại B, C (của (O))? cắt nhau tại T" → tB, tC, T = tB∩tC.
+// "Tiếp tuyến (tại|qua) B, C (của (O))? cắt nhau tại T" → tB, tC, T = tB∩tC.
+// "qua B và C" = tiếp tuyến đi qua tiếp điểm B,C (vao10:228) — tương đương "tại".
 const TWO_MEET =
-  /[Tt]iếp\s*tuyến\s+(?:với\s+|của\s+)?(?:đường\s*tròn\s*)?(?:\(\s*[A-Z]['′]?\s*\)\s*)?tại\s+([A-Z])\s*(?:,|và)\s*([A-Z])(?![A-Z])[^.]{0,30}?cắt\s+nhau\s+(?:ở|tại)\s+([A-Z])(?![A-Z])/u;
+  /[Tt]iếp\s*tuyến\s+(?:với\s+|của\s+)?(?:đường\s*tròn\s*)?(?:\(\s*[A-Z]['′]?\s*\)\s*)?(?:tại|qua)\s+([A-Z])\s*(?:,|và)\s*([A-Z])(?![A-Z])[^.]{0,30}?cắt\s+nhau\s+(?:ở|tại)\s+([A-Z])(?![A-Z])/u;
 const SINGLE = /[Tt]iếp\s*tuyến\s+tại\s+(?:điểm\s+)?([A-Z])(?:\s+với|\s+của|\s+đường|\s*$)/u;
 
 function circleName(problem: string): string | undefined {

@@ -244,6 +244,15 @@ const CIRCLE_CIRCUMSCRIBES_QUAD = new RegExp(
   'iu',
 );
 
+// "tứ giác (nội tiếp) (O)? ABCD" — ĐỈNH ĐỨNG SAU "nội tiếp" (KHÁC KINDS quét đỉnh
+// ngay sau "tứ giác"). Cyclic quad: 4 đỉnh đồng viên + đường tròn ngoại tiếp. Tâm
+// optional "(O)" trước/sau "nội tiếp". t02:BT9 "Cho tứ giác nội tiếp ABCD".
+const TUGIAC_NOITIEP = new RegExp(
+  '[Tt]ứ\\s+giác(?:\\s+lồi)?\\s+nội\\s*tiếp\\s+(?:(?:trong\\s+)?(?:một\\s+)?đường\\s*tròn\\s+)?' +
+    '(?:\\(\\s*([A-Z])\\s*\\)\\s+)?' + QUAD,
+  'gu',
+);
+
 // Khai báo tam giác bất kỳ trong đề — 3 đỉnh HOA của nó "thuộc" tam giác (không
 // được dời sang toạ độ đồng viên của tứ giác). Cờ 'g' để quét mọi khai báo.
 const TRIANGLE_DECL = /(?:tam\s*giác|[Tt]riangle)\s+([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
@@ -308,7 +317,29 @@ export const quadRule: LanguageRule = {
   patterns: [PREFILTER],
   match(ctx) {
     const out: RuleMatch[] = [];
+    // Theo dõi vùng đã claim bởi nhánh "tứ giác nội tiếp ABCD" để scanClause
+    // KHÔNG quét lại (scanClause không bắt dạng này vì đỉnh đứng sau "nội tiếp",
+    // nên thực tế không trùng — pass riêng dưới).
     for (const c of ctx.clauses) {
+      // --- "tứ giác (nội tiếp) (O)? ABCD" — đỉnh SAU "nội tiếp" → cyclic quad ---
+      TUGIAC_NOITIEP.lastIndex = 0;
+      for (const m of c.text.matchAll(TUGIAC_NOITIEP)) {
+        const labels = [m[2], m[3], m[4], m[5]];
+        const owned = ownedByOthers(ctx, labels);
+        if (labels.some((lbl) => owned.has(lbl))) continue; // đỉnh dùng chung → bỏ
+        const centerName = m[1] || 'O';
+        out.push({
+          ruleId: 'quad',
+          clauseIds: [c.id],
+          intents: [
+            drawCircle(centerName, 'centerRadius', { center: centerName, radius: CYCLIC_RADIUS }),
+            ...labels.map((lbl, i) =>
+              addPoint(lbl, { kind: 'onCircle', circle: centerName, theta: CYCLIC_QUAD_THETAS[i] }),
+            ),
+            markShape('quadrilateral', labels),
+          ],
+        });
+      }
       for (const hit of scanClause(c.text)) {
         let intents = [drawShape(hit.shape, hit.labels, hit.variant)];
         // Chỉ tứ giác CHUNG: thử phát hiện đường tròn ngoại tiếp.
