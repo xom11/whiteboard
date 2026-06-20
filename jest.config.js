@@ -1,8 +1,10 @@
-// Ignore '/.claude/worktrees/' CHỈ khi chạy từ repo chính (để khỏi quét worktree
-// con). Khi rootDir CHÍNH LÀ một worktree, path mọi test đều chứa chuỗi đó →
-// giữ ignore sẽ ra "No tests found" (gotcha đã gặp 2026-06).
-const inWorktree = __dirname.includes('/.claude/worktrees/');
-const worktreeIgnores = inWorktree ? [] : ['/.claude/worktrees/'];
+// Ignore bản sao worktree ('/.claude/worktrees/' VÀ '/.worktrees/') CHỈ khi chạy
+// từ repo chính — nếu không jest quét worktree con (chạy code CŨ → làm chậm + sai
+// số test/regression). Khi rootDir CHÍNH LÀ một worktree, path mọi test đều chứa
+// chuỗi đó → giữ ignore sẽ ra "No tests found" (gotcha đã gặp 2026-06).
+const WORKTREE_DIRS = ['/.claude/worktrees/', '/.worktrees/'];
+const inWorktree = WORKTREE_DIRS.some((d) => __dirname.includes(d));
+const worktreeIgnores = inWorktree ? [] : WORKTREE_DIRS;
 
 /** @type {import('jest').Config} */
 module.exports = {
