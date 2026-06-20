@@ -90,3 +90,40 @@ export function classifyToken(token: string): TokenClass {
   if (UPPER_LABEL.test(token)) return 'protected';
   return HAS_UPPER.test(token) ? 'upper' : 'lower';
 }
+
+export interface CorrectConfig {
+  /** Tầng 1: whitespace/newline + bảng ký hiệu. Luôn an toàn. */
+  structure: boolean;
+  /** Tầng 2: phục-hồi-dấu qua fold-khớp-chính-xác vocab. */
+  accents: boolean;
+  /** Tầng 3: typo fuzzy Levenshtein. */
+  typo: boolean;
+  /** Tầng 3: ngưỡng edit-distance tối đa (trên dạng fold). */
+  maxTypoDistance: number;
+  /** Tầng 3: độ dài fold tối thiểu mới fuzzy (tránh phá từ ngắn mơ hồ). */
+  minTypoLen: number;
+}
+
+export const DEFAULT_CORRECT_CONFIG: CorrectConfig = {
+  structure: true,
+  accents: true,
+  typo: true,
+  maxTypoDistance: 1,
+  minTypoLen: 4,
+};
+
+// Bảng ký hiệu/cụm → dạng rule engine hiểu. Giữ TỐI THIỂU + high-confidence;
+// thêm entry phải qua gate diag-all (xem Task 9). "//" → "song song" (rule +
+// vocab dùng "song song"). "<số> do|độ" → "<số>°".
+const SYMBOL_MAP: ReadonlyArray<readonly [RegExp, string]> = [
+  [/\/\//g, ' song song '],
+  [/(\d+)\s*(?:độ|do)(?!\p{L})/giu, '$1°'],
+];
+
+/** Tầng 1: gộp xuống dòng + khoảng trắng dư về 1 space; áp bảng ký hiệu. */
+function applyStructure(s: string): string {
+  let out = s;
+  for (const [re, to] of SYMBOL_MAP) out = out.replace(re, to);
+  return out.replace(/\s+/g, ' ').trim();
+}
+export { applyStructure };

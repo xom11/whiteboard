@@ -1,4 +1,22 @@
-import { foldVietnamese, FOLDED_VOCAB, classifyToken } from '../correctUserInput';
+import { foldVietnamese, FOLDED_VOCAB, classifyToken, applyStructure, DEFAULT_CORRECT_CONFIG } from '../correctUserInput';
+
+describe('applyStructure (tầng 1)', () => {
+  it('gộp xuống dòng + space thừa', () => {
+    expect(applyStructure('Cho tam giác\n  ABC   nội  tiếp')).toBe('Cho tam giác ABC nội tiếp');
+  });
+  it('ký hiệu // → song song', () => {
+    expect(applyStructure('AB // CD')).toBe('AB song song CD');
+  });
+  it('độ: "90 do" / "90 độ" → 90°', () => {
+    expect(applyStructure('góc bằng 90 do')).toBe('góc bằng 90°');
+    expect(applyStructure('góc bằng 90 độ')).toBe('góc bằng 90°');
+  });
+  it('config mặc định bật cả 3 tầng', () => {
+    expect(DEFAULT_CORRECT_CONFIG).toEqual({
+      structure: true, accents: true, typo: true, maxTypoDistance: 1, minTypoLen: 4,
+    });
+  });
+});
 
 describe('foldVietnamese', () => {
   it('bỏ dấu thanh + mũ + móc', () => {
