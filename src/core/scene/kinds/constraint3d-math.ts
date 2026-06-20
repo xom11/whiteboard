@@ -49,6 +49,46 @@ function getPlaneBasis(
   return { origin: p1, basis1, basis2, normal };
 }
 
+// 2 id điểm xác định một đường: line3d/segment3d (p1,p2), ray3d (origin,through),
+// vector3d (from,to). null nếu object không phải đường.
+function lineDefiningPointIds(line: SceneObject): [string, string] | null {
+  if (line.kind === 'line3d' || line.kind === 'segment3d') {
+    const a = line.attrs as Segment3DAttrs | Line3DAttrs;
+    return [a.p1, a.p2];
+  }
+  if (line.kind === 'ray3d') {
+    const a = line.attrs as Ray3DAttrs;
+    return [a.origin, a.through];
+  }
+  if (line.kind === 'vector3d') {
+    const a = line.attrs as Vector3DAttrs;
+    return [a.from, a.to];
+  }
+  return null;
+}
+
+// Toạ độ world của 2 điểm xác định đường `lineId`.
+function lineEndpointsWorld(lineId: string, state: State, ctx: string): { a: Vec3; b: Vec3 } {
+  const line = state.objects[lineId];
+  if (!line) throw new Error(`${ctx}: đường ${lineId} không tồn tại`);
+  const ids = lineDefiningPointIds(line);
+  if (!ids) throw new Error(`${ctx}: kind ${line.kind} không phải đường`);
+  return { a: getPointWorld(ids[0], state), b: getPointWorld(ids[1], state) };
+}
+
+// Trung điểm đoạn vuông góc chung của 2 đường (A,B) & (C,D): đồng phẳng cắt nhau →
+// chính giao điểm; chéo nhau → trung điểm đoạn nối 2 điểm gần nhất. Song song/trùng
+// (denom≈0) → vô định, trả trung điểm A,C (hiếm; UI nên chặn chọn 2 đường song song).
+function lineLineClosestMidpoint(A: Vec3, B: Vec3, C: Vec3, D: Vec3): Vec3 {
+  const u = sub(B, A), v = sub(D, C), w0 = sub(A, C);
+  const a = dot(u, u), b = dot(u, v), cc = dot(v, v), d = dot(u, w0), e = dot(v, w0);
+  const denom = a * cc - b * b;
+  if (Math.abs(denom) < 1e-12) return scale(add(A, C), 0.5);
+  const sc = (b * e - cc * d) / denom;
+  const tc = (a * e - b * d) / denom;
+  return scale(add(add(A, scale(u, sc)), add(C, scale(v, tc))), 0.5);
+}
+
 export function constraintToWorld(c: Constraint3D, state: State): Vec3 {
   switch (c.kind) {
     case 'free': return [c.x, c.y, c.z];
@@ -65,26 +105,8 @@ export function constraintToWorld(c: Constraint3D, state: State): Vec3 {
       return add(add(origin, scale(basis1, c.u)), scale(basis2, c.v));
     }
     case 'onLine': {
-      const line = state.objects[c.lineId];
-      if (!line) throw new Error('onLine: parent missing');
-      let p1Id: string;
-      let p2Id: string;
-      if (line.kind === 'line3d' || line.kind === 'segment3d') {
-        const a = line.attrs as Segment3DAttrs | Line3DAttrs;
-        p1Id = a.p1; p2Id = a.p2;
-      } else if (line.kind === 'ray3d') {
-        const a = line.attrs as Ray3DAttrs;
-        p1Id = a.origin; p2Id = a.through;
-      } else if (line.kind === 'vector3d') {
-        const a = line.attrs as Vector3DAttrs;
-        p1Id = a.from; p2Id = a.to;
-      } else {
-        throw new Error('onLine: parent kind not supported');
-      }
-      const p1 = getPointWorld(p1Id, state);
-      const p2 = getPointWorld(p2Id, state);
-      const dir = sub(p2, p1);
-      return add(p1, scale(dir, c.t));
+      const { a, b } = lineEndpointsWorld(c.lineId, state, 'onLine');
+      return add(a, scale(sub(b, a), c.t));
     }
     case 'onPolygon': {
       const pg = state.objects[c.polygonId];
@@ -124,6 +146,40 @@ export function constraintToWorld(c: Constraint3D, state: State): Vec3 {
       let acc: Vec3 = [0, 0, 0];
       for (const id of c.vertices) acc = add(acc, getPointWorld(id, state));
       return scale(acc, 1 / n);
+    }
+    case 'intersectionLines': {
+      const A = getPointWorld(c.a1, state), B = getPointWorld(c.b1, state);
+      const C = getPointWorld(c.a2, state), D = getPointWorld(c.b2, state);
+      return lineLineClosestMidpoint(A, B, C, D);
+    }
+    case 'intersectionLinePlane': {
+      const A = getPointWorld(c.a, state), B = getPointWorld(c.b, state);
+      const plane = state.objects[c.plane];
+      if (!plane || plane.kind !== 'plane3d') throw new Error('intersectionLinePlane: mặt phẳng thiếu');
+      const { origin, normal } = getPlaneBasis(plane as SceneObject<Plane3DAttrs>, state);
+      const dir = sub(B, A);
+      const dn = dot(dir, normal);
+      if (Math.abs(dn) < 1e-12) return A; // đường song song mặt phẳng → vô định
+      const t = dot(sub(origin, A), normal) / dn;
+      return add(A, scale(dir, t));
+    }
+    case 'perpFootLine': {
+      // Hình chiếu vuông góc của `from` lên đường (a,b).
+      const P = getPointWorld(c.from, state);
+      const A = getPointWorld(c.a, state), B = getPointWorld(c.b, state);
+      const u = sub(B, A);
+      const uu = dot(u, u);
+      const t = uu === 0 ? 0 : dot(sub(P, A), u) / uu;
+      return add(A, scale(u, t));
+    }
+    case 'perpFootPlane': {
+      // Chân ⊥ xuống mặt: P − ((P−origin)·n) n.
+      const P = getPointWorld(c.from, state);
+      const plane = state.objects[c.plane];
+      if (!plane || plane.kind !== 'plane3d') throw new Error('perpFootPlane: mặt phẳng thiếu');
+      const { origin, normal } = getPlaneBasis(plane as SceneObject<Plane3DAttrs>, state);
+      const dist = dot(sub(P, origin), normal);
+      return sub(P, scale(normal, dist));
     }
   }
 }
