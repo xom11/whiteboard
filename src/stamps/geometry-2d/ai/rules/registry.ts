@@ -93,6 +93,8 @@ import { rightAngleViewingRule } from './rightAngleViewing';
 import { collinearPointsRule } from './collinearPoints';
 import { quadDiagonalsRule } from './quadDiagonals';
 import { twoCirclesTangentRule } from './twoCirclesTangent';
+import { commonTangentRule } from './commonTangent';
+import { twoCirclesCenterRadiusMeetRule } from './twoCirclesCenterRadiusMeet';
 import { rightAngleVertexCirclesRule } from './rightAngleVertexCircles';
 import { namedLineRule } from './namedLine';
 
@@ -101,6 +103,8 @@ const RULES: readonly LanguageRule[] = [
   collinearPointsRule,
   quadDiagonalsRule,
   twoCirclesTangentRule,
+  commonTangentRule,
+  twoCirclesCenterRadiusMeetRule,
   rightAngleVertexCirclesRule,
   circumcircleCutsLineRule,
   lineConcurrencyRule,
