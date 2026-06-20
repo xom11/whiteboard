@@ -22,12 +22,22 @@ import { addPoint, connect } from './_shared';
 
 // Token "cát tuyến AXY" — A ngoài, X gần, Y xa.
 const CAT_TUYEN = /cát\s*tuyến\s+([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
-// "qua A cắt (đường tròn|(O)) (tại|ở) D (và|,) E".
+// "qua A cắt (nửa)? (đường tròn|(O)|O-trần) (tại|ở) D (và|,) E". Nhánh circle:
+// "(O)" (capture m[2]) | tâm-trần "O " (consume, KHÔNG capture → fallbackCircle).
 const LINE_THROUGH = new RegExp(
-  String.raw`[Qq]ua\s+(?:điểm\s+)?([A-Z])(?!\p{L})[^.]{0,30}?cắt\s+(?:đường\s*tròn\s*)?(?:\(\s*([A-Z])\s*\)\s*)?(?:tại|ở)\s+(?:hai\s+|2\s+)?(?:điểm\s+)?([A-Z])\s*(?:và|,)\s*([A-Z])(?![A-Z])`,
+  String.raw`[Qq]ua\s+(?:điểm\s+)?([A-Z])(?!\p{L})[^.]{0,30}?cắt\s+(?:lại\s+)?(?:nửa\s+)?(?:đường\s*tròn\s*)?(?:\(\s*([A-Z])\s*\)\s*|[A-Z]\s+)?(?:tại|ở)\s+(?:hai\s+|2\s+)?(?:điểm\s+)?([A-Z])\s*(?:và|,)\s*([A-Z])(?![A-Z])`,
+  'gu',
+);
+// "cát tuyến (<đường-thẳng-tên>)? cắt (nửa)? (đường tròn|(O)|O-trần) (tại|ở) P,Q"
+// — KHÔNG có "qua X" (LINE_THROUGH lo dạng đó); điểm ngoài resolve từ context.
+const CAT_CUTS = new RegExp(
+  String.raw`cát\s*tuyến\s+(?:[a-z][a-z0-9]?\s+)?cắt\s+(?:lại\s+)?(?:nửa\s+)?(?:đường\s*tròn\s*)?(?:\(\s*([A-Z])\s*\)\s*|[A-Z]\s+)?(?:tại|ở)\s+(?:hai\s+|2\s+)?(?:điểm\s+)?([A-Z])\s*(?:và|,)\s*([A-Z])(?![A-Z])`,
   'gu',
 );
 const PAREN_CIRCLE = /\(\s*([A-Z])\s*\)/u;
+// Điểm NGOÀI toàn đề: "<HOA> (ở|nằm)? ngoài (đường tròn|nửa|()" — resolve ext cho
+// CAT_CUTS (cát tuyến không nêu điểm ngoài trong clause). Lấy HOA NGAY trước "ngoài".
+const EXT_RESOLVE = /([A-Z])(?!\p{L})[^.A-Z]{0,25}?(?:ở\s+|nằm\s+)?ngoài\s+(?:\(|nửa|đường\s*tròn)/u;
 
 const PREFILTER = /cát\s*tuyến|[Qq]ua\s+(?:điểm\s+)?[A-Z][^.]{0,30}?cắt/u;
 
@@ -50,9 +60,23 @@ export const secantRule: LanguageRule = {
   match(ctx) {
     const par = PAREN_CIRCLE.exec(ctx.problem);
     const fallbackCircle = par ? par[1] : 'O';
+    const extM = EXT_RESOLVE.exec(ctx.problem);
+    const resolvedExt = extM ? extM[1] : undefined;
     const out: RuleMatch[] = [];
     let theta = 2.4;
     for (const c of ctx.clauses) {
+      // "cát tuyến (d)? cắt (O) tại P,Q" — điểm ngoài từ context (resolvedExt).
+      if (resolvedExt) {
+        CAT_CUTS.lastIndex = 0;
+        for (const m of c.text.matchAll(CAT_CUTS)) {
+          const circle = m[1] ?? fallbackCircle;
+          const intents = secantIntents(resolvedExt, m[2], m[3], circle, theta);
+          if (intents) {
+            out.push({ ruleId: 'secant', clauseIds: [c.id], intents });
+            theta += 0.7;
+          }
+        }
+      }
       CAT_TUYEN.lastIndex = 0;
       for (const m of c.text.matchAll(CAT_TUYEN)) {
         const intents = secantIntents(m[1], m[2], m[3], fallbackCircle, theta);

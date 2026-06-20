@@ -50,4 +50,26 @@ describe('secantRule', () => {
       other: 'C',
     });
   });
+
+  // vxhung:39 — "cát tuyến cắt đường tròn tại 2 điểm C, D" (KHÔNG token 3-chữ,
+  // KHÔNG "qua X"); điểm ngoài M resolve từ "Từ điểm M ở ngoài".
+  it('CAT_CUTS: "cát tuyến cắt đường tròn tại 2 điểm C và D" (ext M từ context)', () => {
+    const all = run('Từ điểm M ở ngoài đường tròn (O;R) vẽ cát tuyến cắt đường tròn tại 2 điểm C và D');
+    expect(all.find((i) => i.name === 'C')?.constraint).toEqual(expect.objectContaining({ kind: 'onCircle', circle: 'O' }));
+    expect(all.find((i) => i.name === 'D')?.constraint).toEqual({ kind: 'secondIntersection', line: 'MC', circle: 'O', other: 'C' });
+  });
+
+  // httcd:230 — "cát tuyến d cắt đường tròn tại 2 điểm B và C" (named line "d", ext A).
+  it('CAT_CUTS named-line: "cát tuyến d cắt đường tròn tại 2 điểm B và C" (ext A)', () => {
+    const all = run('Cho điểm A ở ngoài đường tròn (O). Từ A kẻ cát tuyến d cắt đường tròn tại 2 điểm B và C');
+    expect(all.find((i) => i.name === 'B')?.constraint.kind).toBe('onCircle');
+    expect(all.find((i) => i.name === 'C')?.constraint).toEqual({ kind: 'secondIntersection', line: 'AB', circle: 'O', other: 'B' });
+  });
+
+  // julielltv:13 — "qua M cắt NỬA đường tròn tại C, D" (nửa + LINE_THROUGH).
+  it('LINE_THROUGH nửa: "qua M cắt nửa đường tròn tại C, D"', () => {
+    const all = run('Cho nửa đường tròn (O) và điểm M ngoài. Một cát tuyến qua M cắt nửa đường tròn tại C, D');
+    expect(all.find((i) => i.name === 'C')?.constraint.kind).toBe('onCircle');
+    expect(all.find((i) => i.name === 'D')?.constraint).toEqual({ kind: 'secondIntersection', line: 'MC', circle: 'O', other: 'C' });
+  });
 });
