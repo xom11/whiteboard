@@ -60,7 +60,18 @@ function parseArticle(block) {
   const url = linkM ? linkM[1] : null;
   const cm = block.match(/<div class="entry-content"[^>]*>([\s\S]*?)<footer|<div class="entry-content"[^>]*>([\s\S]*?)<\/article/i);
   if (!url || !cm) return null;
-  const text = decode(cm[1] ?? cm[2]);
+  const rawContent = cm[1] ?? cm[2];
+  const text = decode(rawContent);
+
+  // ảnh HÌNH tác giả vẽ = <img> upload (wp-content/uploads | files.wordpress.com), KHÔNG phải latex.php
+  const figures = [
+    ...new Set(
+      [...rawContent.matchAll(/<img[^>]*src="([^"]+)"/gi)]
+        .map((m) => m[1].replace(/&#0?38;|&amp;/g, '&'))
+        .filter((s) => !/latex\.php/.test(s) && /(wp-content\/uploads|files\.wordpress\.com)/.test(s))
+        .map((s) => s.split('?')[0]) // bỏ query w/h
+    ),
+  ];
 
   // competition: "Bài toán (....)" hoặc "(....)" ngay đầu
   let competition = null;
@@ -78,40 +89,53 @@ function parseArticle(block) {
     statement = body.slice(0, solM.index).trim();
     solution = body.slice(solM.index + solM[0].length).trim();
   }
-  return { url, competition, statement: statement.trim(), solution: solution.trim() };
+  return { url, competition, figures, statement: statement.trim(), solution: solution.trim() };
 }
 
-async function crawl(fromPage, toPage) {
+// Duyệt 1 category qua mọi page. requireFigure=true → chỉ giữ bài có ảnh hình.
+async function crawlCategory(slug, { requireFigure = false } = {}) {
+  const base = `https://julielltv.wordpress.com/category/${slug}/page/`;
   const out = [];
-  for (let p = fromPage; p <= toPage; p++) {
-    const r = await get(CATEGORY + p + '/');
-    if (r.status !== 200) {
-      console.error(`page ${p}: status ${r.status} — dừng`);
-      break;
-    }
+  for (let p = 1; p <= 30; p++) {
+    const r = await get(base + p + '/');
+    if (r.status !== 200) break;
     const blocks = r.body.split(/<article/).slice(1);
-    let n = 0;
+    if (!blocks.length) break;
+    let kept = 0;
+    let urlsThisPage = 0;
     for (const b of blocks) {
       const a = parseArticle('<article' + b);
-      if (a && a.statement && a.statement.length > 15) {
-        out.push(a);
-        n++;
-      }
+      if (!a) continue;
+      urlsThisPage++;
+      if (a.statement.length <= 15) continue;
+      if (requireFigure && a.figures.length === 0) continue;
+      out.push(a);
+      kept++;
     }
-    console.error(`page ${p}: ${n} bài`);
+    console.error(`  ${slug} p${p}: giữ ${kept}/${urlsThisPage}`);
+    if (urlsThisPage === 0) break;
   }
   return out;
 }
 
 const args = process.argv.slice(2);
 const WRITE = args.includes('--write');
-const FROM = Number(args.find((a) => a.startsWith('--from='))?.split('=')[1] ?? 4);
-const TO = Number(args.find((a) => a.startsWith('--to='))?.split('=')[1] ?? 10);
+const REQUIRE_FIGURE = !args.includes('--no-figure'); // mặc định chỉ lấy bài CÓ hình
+// các category hình học phẳng liên quan pipeline vẽ hình (ngoài hinh-hoc-phang đã thu)
+const DEFAULT_CATS = [
+  'cac-dinh-li-hinh-hoc',
+  'su-thang-hang-cac-duong-dong-quy',
+  'ti-so-kep-hang-diem-dieu-hoa',
+  'he-thuc-luong-trong-tam-giac',
+];
+const CATS = (args.find((a) => a.startsWith('--cats='))?.split('=')[1]?.split(',') ?? DEFAULT_CATS);
 
 const existing = JSON.parse(fs.readFileSync(JSON_PATH, 'utf8'));
 const seen = new Set(existing.problems.map((p) => p.url));
 
-const crawled = await crawl(FROM, TO);
+let crawled = [];
+for (const c of CATS) crawled.push(...(await crawlCategory(c, { requireFigure: REQUIRE_FIGURE })));
+
 const fresh = crawled.filter((c) => !seen.has(c.url));
 // dedup nội bộ theo url
 const dedup = [];
@@ -122,13 +146,16 @@ for (const c of fresh) {
   dedup.push(c);
 }
 
-console.error(`\ncrawled=${crawled.length} fresh(new url)=${fresh.length} dedup=${dedup.length}`);
+console.error(
+  `\ncats=[${CATS.join(',')}] requireFigure=${REQUIRE_FIGURE} crawled=${crawled.length} fresh(new url)=${fresh.length} dedup=${dedup.length}`
+);
 
 let nextId = Math.max(...existing.problems.map((p) => p.id)) + 1;
 const appended = dedup.map((c) => ({
   id: nextId++,
   url: c.url,
   competition: c.competition,
+  figures: c.figures,
   statement: c.statement,
   solution: c.solution,
 }));
@@ -147,7 +174,7 @@ if (!WRITE) {
 
 const merged = {
   ...existing,
-  note: existing.note.replace(/Crawl từ category page[^.]*\./, '') + ` Mở rộng crawl page ${FROM}–${TO} (2026-06-20).`,
+  note: existing.note + ` Bổ sung category [${CATS.join(', ')}] (chỉ bài có hình) 2026-06-20.`,
   count: existing.problems.length + appended.length,
   problems: [...existing.problems, ...appended],
 };
@@ -166,7 +193,8 @@ const body = merged.problems
     const sol = p.solution
       ? `\n\n<details><summary>Lời giải</summary>\n\n${p.solution}\n\n</details>`
       : '';
-    return `## ${p.id}. ${title}\n\n**Đề:** ${p.statement}${sol}\n\nNguồn: ${p.url}`;
+    const fig = p.figures?.length ? `\n\nHình: ${p.figures.map((f) => `![](${f})`).join(' ')}` : '';
+    return `## ${p.id}. ${title}\n\n**Đề:** ${p.statement}${fig}${sol}\n\nNguồn: ${p.url}`;
   })
   .join('\n\n---\n\n');
 fs.writeFileSync(MD_PATH, head + '\n' + body + '\n', 'utf8');

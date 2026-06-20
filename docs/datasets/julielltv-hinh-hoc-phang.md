@@ -1,6 +1,6 @@
 # Hình học phẳng — Huy Cao's Blog (julielltv.wordpress.com)
 
-> Nguồn: Huy Cao's Blog — julielltv.wordpress.com · Chuyên mục: Hình học phẳng (plane geometry) · Thu thập: 2026-06-06 · 96 bài (đề Olympic/đội tuyển).
+> Nguồn: Huy Cao's Blog — julielltv.wordpress.com · Chuyên mục: Hình học phẳng (plane geometry) · Thu thập: 2026-06-06 · 152 bài (đề Olympic/đội tuyển).
 >
 > LaTeX viết inline trong `$...$`. Dùng làm dữ liệu cho pipeline sinh hình (intent → DSL).
 
@@ -1339,3 +1339,833 @@ $\bullet$ Trước tiên, ta sẽ chứng minh $JG\perp AT$ bằng cách chứng
 </details>
 
 Nguồn: https://julielltv.wordpress.com/2013/08/20/bai-toan-chung-minh-trung-diem/
+
+---
+
+## 97. (không rõ nguồn thi)
+
+**Đề:** ĐƯỜNG TRÒN MIXTILINEAR Định nghĩa : Cho tam giác $ABC$ nội tiếp $(O)$ và ngoại tiếp $(I)$ . Khi đó đường tròn $(w_a)$ tiếp xúc trong với $(O)$ và tiếp xúc với hai cạnh $AB,AC$ của tam giác $ABC$ được gọi là đường tròn Mixtilinear ứng với góc $A$ của tam giác $ABC$ . Xét tam giác $ABC$ nội tiếp $(O)$ và ngoại tiếp $(I)$ . Kí hiệu $(w_a),(w_b),(w_c)$ theo thứ tự là đường tròn Mixtilinear ứng với góc $A,B,C$ của tam giác. Ta sẽ điểm qua một số tính chất đặc biệt của đường tròn này : 1. Tính chất 1 (Định lí Lyness) Gọi $E,F$ theo thứ tự là tiếp điểm của $(w_a)$ trên $AB,AC$ . Khi đó ta có $I$ là trung điểm của $EF$ . Xem chứng minh tại đây . 2. Tính chất 2 : Gọi $X$ là tiếp điểm của $(w_a)$ với $(O)$ . Khi đó $XI$ đi qua trung điểm cung tròn $BC$ chứa $A$ của đường tròn $(O)$ . Chứng minh : Gọi $B_0,C_0$ là tiếp điểm của $(w_a)$ lên $AB,AC$ . Sử dụng bổ đề của bài toán này . Ta dễ dàng thấy $XB_0$ đi qua trung điểm $U$ của cung $AB$ và $XC_0$ đi qua trung điểm $V$ của cung $AC$ . Ta để ý thấy tam giác $XB_0C_0$ có $XI$ trung tuyến và $XA$ đối trung. Như vậy $\angle B_0XI=\angle AXC_0=\angle AXV=\angle ABI$ . Từ đó $B_0IXB$ là tứ giác n��i tiếp. Kéo theo $\angle BXI= \angle AB_0I$ . Tương tự $\angle CXI=\angle AC_0B_0$ . Suy ra $\angle BXI=\angle CXI$ . Ta hoàn tất tính chất 2. 3. Tính chất 3 : Gọi $O_b,O_c$ theo thứ tự là tâm $(w_b),(w_c)$ và tiếp điểm của $(O)$ với $(w_b),(w_c)$ lần lượt là $Y,Z$ . $B_0,C_0$ là tiếp điểm trên $AB,AC$ của $(w_a)$ . $D$ là điểm chính giữa cung $BC$ không chứa $A$ . $X$ là tiếp điểm với $(O)$ của $(w_a)$ . Khi đó ta có $BC,B_0C_0,O_bO_c,YZ,XD$ đồng quy tại một điểm. Chứng minh : Gọi $W$ là giao của $BC,B_0C_0$ . Theo phần chứng minh tính chất 2 ta có $B_0BXI$ nội tiếp, suy ra : $\angle B_0IB=\angle B_0XB=\dfrac{1}{2}\angle AXB=\dfrac{1}{2}\angle ACB=\angle ICB$ Suy ra hai tam giác $WIB,WCI$ đồng dạng, nên $WI^2=WB.WC$ . Điều này đồng nghĩa $W$ nằm trên trục đẳng phương của $(I,0)$ và $(O)$ . Gọi $C',B'$ là tiếp điểm trên $BC$ của $(w_c),(w_b)$ . Dễ dàng nhận ra $(D,Z,C'),(D,Y,B')$ là hai bộ điểm thẳng hàng. Ta có : $\angle C'BD=\angle CBD=\angle DZB\Rightarrow \Delta DZB \sim \Delta DBC'\Rightarrow DB^2=DC'.DZ$ Tương tự thì $DC^2=DB'.DY$ mà $DC=BD$ nên $DB'.DY=DC'.DZ$ . Kéo theo $B'C'ZY$ nội tiếp. Như vậy $P_{W/(B'C'ZY)}=WB'.WC'=WY.WZ=WB.WC=P_{W/(O)}$ . Suy ra $W$ nằm trên trục đẳng phương của $(O)$ và $B'C'ZY$ . Tức $W$ thuộc $YZ$ Ta đã chứng minh xong $(YZ,BC,B_0C_0)$ đồng quy. Gọi $W'$ là giao của $O_bO_c$ với $BC$ , ta có $W'$ là tâm vị tự ngoài của $(w_b),(w_c)$ . Chú ý thêm $Y,Z$ lần lượt là tâm vị tự trong của $(O)$ với $(w_b),(w_c)$ . Vậy theo định lí Monge &#8211; D' Alembert, ta có $Y,Z,W'$ thẳng hàng. Tức ta đã chứng minh $BC,O_bO_c,YZ$ đồng quy. Chú ý $W$ là giao của $B_0C_0,BC$ . Áp dụng định lí Menelaus cho tam giác $ABC$ và cát tuyến $WB_0C_0$ : $\dfrac{WB}{WC}.\dfrac{C_0C}{C_0A}.\dfrac{B_0A}{B_0B}=1\Rightarrow \dfrac{WB}{WC}=\dfrac{B_0B}{C_0C}$ Lại có : $\dfrac{B_0B}{B_0A}=\dfrac{XB}{XA},\dfrac{C_0C}{C_0A}=\dfrac{XC}{AA}\Rightarrow \dfrac{B_0B}{C_0C}=\dfrac{XB}{XC}\Rightarrow \dfrac{WB}{WC}=\dfrac{XB}{XC}$ Như vậy $W$ chính là chân phân giác ngoài góc $X$ của tam giác $XBC$ . Hơn nữa cũng dễ thấy $XD$ chính là phân giác ngoài góc $X$ tam giác $XBC$ , nên $W$ thuộc $XD$ . Vậy ta cũng có $(XD,B_0C_0,BC)$ đồng quy. Ta hoàn thành tính chất 3. 4. Tính chất 4 : Gọi $X$ là tiếp điểm của $(O)$ với $(w_a)$ , $Y$ là tiếp điểm của đường tròn $(I)$ nội tiếp tam giác $ABC$ trên $BC$ . $XY$ cắt $(O)$ lần nữa tại $L$ . Khi đó ta có $AL$ song song $BC$ . Chứng minh : Gọi tiếp điểm với $AB,AC$ của $(w_a)$ là $B_0,C_0$ . $XI$ giao $(O)$ tại $J$ và $B_0C_0$ giao $BC$ tại $D$ . Theo tính chất 2 th�� $J$ là trung điểm cung $BC$ nên tính chất này sẽ được chứng minh nếu ta chỉ ra rằng $J$ là trung điểm cung $AL$ . Theo phần chứng minh tính chất 3 ta có $\angle DXJ=90^0$ ( $XD,XJ$ lần lượt là phân giác ngoài, trong góc $BXC$ ) Kết hợp với $\angle DYI=90^0$ ta suy ra tứ giác $DXYI$ nội tiếp. Kéo theo $\angle DYX=\angle DIX$ . Do vậy mà $\angle AIX=90^0+\angle DIX=90^0+\angle DYX =\angle IYX\;\;\;\;(1)$ . Mặt khác, gọi $M$ là giao của $AI$ với $BC$ . Dễ thấy $DX,AM,JO$ đồng quy tại $S$ là điểm chính giữa cung $BC$ không chứa $A$ của $(O)$ . Gọi $R$ là trung điểm của $BC$ . Chú ý dễ thấy $AMRI,DXRJ$ nội tiếp. Do vậy $SM.SA=SR.SJ=SX.SD$ . Suy ra tứ giác $AMXD$ cũng nội tiếp. Kéo theo $\angle XAI=\angle XDY=\angle XIY\;\;\;(2)$ Từ $(1)(2)$ suy ra đuợc hai tam giác $AIX,IYX$ đồng dạng. Dẫn đến $\angle AXJ=\angle JXL$ hay $L$ là trung điểm cung $AL$ . Ta hoàn thành tính chất 4. 5. Tính chất 5 : Gọi $X$ là tiếp điểm của $(w_a)$ với $(O)$ . $B_0,C_0$ là tiếp điểm của $(w_a)$ trên $AB,AC$ . $XB_0,XC_0$ lần lượt cắt $(O)$ tại $P,Q$ và gọi $K$ là giao của $(APB_0),(AQC_0)$ . Khi đó thì $APKQ$ là hình bình hành. Chứng minh : Tính chất này chứng minh đơn giản chỉ bằng biến đổi góc. Chú ý là $P,Q$ theo thứ tự là điểm chính giữa cung $AB,AC$ . Ta có : $\angle AQK=\angle AC_0B_0=\angle AB_0C_0=\angle APK \;\;(1) \angle QKP=\angle QKA+\angle AKP=\angle QC_0A+\angle AB_0P=\left ( \angle CAX+\angle AXC_0 \right )+\left ( \angle BAX+\angle AXB_0 \right )=\left ( \angle PAB+\angle CAQ \right )+\angle BAC=\angle PAQ\;\;(2)$ Từ $(1)(2)$ suy ra $APKQ$ là hình bình hành. 6. Tính chất 6 : Gọi $X$ là tiếp điểm của $(O)$ với $(w_a)$ . Gọi $(I_1),(I_2)$ theo thứ tự là tâm nội tiếp các tam giác $ABX,ACX$ . $XI_1,XI_2$ theo thứ tự cắt $(O)$ tại $E,F$ . a) Ta có $AEXF$ là tứ giác điều hoà. b) Hai đường tròn mixtilinear ứng với góc $A$ của tam giác $ABX,ACX$ tiếp xúc nhau. Chứng minh : a) Gọi $U,V$ theo thứ tự là tiếp điểm trên $AB,AC$ của $(w_a)$ . Dễ thấy $\overline{X,U,E},\overline{X,V,F}$ . Chú ý theo một bổ đề quen thuộc, ta có $EA^2=EU.EX$ và $AF^2=FV.FX$ . Việc tứ giác $AEXF$ điều hoà tương đương với : $AE.XF=AF.EX\Leftrightarrow \sqrt{EU.EX}.FX=\sqrt{FV.FX}.EX\Leftrightarrow EU.FX=FV.EX\Leftrightarrow \dfrac{EU}{FV}=\dfrac{EX}{FX}$ Điều này đúng vì áp dụng định lí Thales với $UV$ song song $EF$ vì cùng vuông góc $AI$ . b) Gọi $M,N$ theo thứ tự là giao điểm của $(O)$ với $BI_1,CI_2$ . $P$ là giao của đường thẳng qua $I_1$ vuông góc $AI_1$ và qua $I_2$ vuông góc $AI_2$ . $L$ là giao của $ME,NF$ . $K,J$ theo thứ tự là giao của $(AI_2,NF),(AI_1,ME)$ . Rõ ràng $I_1P$ đi qua tiếp điểm của đường tròn mixtilinear của tam giác $ABX$ với $AX$ và nếu chỉ ra được $P$ thuộc $AX$ thì đường tròn mix góc $A$ của tam giác $ABX$ tiếp xúc $AX$ tại $P$ . Tương tự với đường tròn mix góc $A$ của tam giác $ACX$ và từ đó suy ra được chúng tiếp xúc nhau. Vấn đề còn lại là chỉ ra đuợc $A,P,X$ thẳng hàng. Theo câu a ta có $AEXF$ điều hoà, suy ra : $\dfrac{EI_1}{EX}=\dfrac{EA}{EX}=\dfrac{FA}{FX}=\dfrac{FI_2}{FX}$ Suy ra được $EF\parallel I_1I_2$ . Hơn nữa dễ thấy $I_2P \parallel LF$ do cùng vuông góc $AI_2$ . Tương tự $I_1P\parallel LE$ . Hai tam giác $LEF,PI_1I_2$ có các cạnh tương ứng song song $LP,EI_1,FI_2$ đồng quy. Suy ra $X$ thuộc $AL$ . Dễ thấy tam giác $AFI_2$ cân tại $F$ có đường cao $FK$ nên cũng là trung tuyến. Từ đó thấy đuợc $JK$ là đường trung bình của tam giác $AI_1I_2$ . Như vậy hai tam giác $LJK,PI_1I_2$ cũng có các cạnh tương ứng song song và do đó $LP,I_1J,I_2K$ đồng quy. Tức $A$ thuộc $LP$ . Ta suy ra $A,P,X$ thẳng hàng. Điều phải chứng minh. 7. Tính chất 7 : Gọi $X$ là tiếp điểm của $(O)$ và $(w_a)$ . $U,V$ là tiếp điểm trên $AB,AC$ của $(w_a)$ . $AX$ giao $UV$ tại $N$ . $XI$ giao $BC$ tại $M$ . Khi đó $MN$ song song $AI$ và $(O)$ tiếp xúc trong với $(XNI)$ . Chứng minh : Trung trực $BC$ cắt $(O)$ tại $T,W$ như trên hình vẽ. Ta có : $BC,XW,UV$ đồng quy tại $S$ . Khi đó chú ý $SIZW$ là tứ giác n��i tiếp với $Z$ là trung điểm $BC$ . Từ đó có $\angle ZWI=\angle ISZ$ mà $\angle IWZ=\angle IXN$ nên $\angle IXN=\angle ISZ$ suy ra tứ giác $NMXZ$ nội tiếp. Từ đó chú ý $\angle MXS=90^0$ , ta có $\angle SNM=90^0$ hay $UV \perp MN$ . Mà $UV\perp AI$ nên có $MN \parallel AI$ . Dễ thấy $NI$ song song $AT$ nên tồn tại một phép vị tự tâm $X$ biến tam giác $ATX$ thành tam giác $NIX$ , nên biến đường tròn $(ATX)$ thành đường tròn $(NIX)$ . Như vậy tâm $O$ của $(ATX)$ , tâm $O'$ của $NIX$ và $X$ phải thẳng hàng. Suy ra đuợc $(NIX)$ và $(O)$ tiếp xúc nhau. 8. Tính chất 8 : Gọi $X,Y,Z$ theo thứ tự là tiếp điểm của $(O)$ và $(w_a),(w_b),(w_c)$ . Khi đó $AX,BY,CZ$ đồng quy tại tâm vị tự ngoài của $(O)$ và $(I)$ . Chứng minh : Ta thấy $X$ là tâm vị tự ngoài của $(O)$ và $(w_a)$ . $I$ là tâm vị tự ngoài của $(O),(I)$ và gọi $G$ là tâm vị tự ngoài của $(O)$ và $I$ thì theo định lí Monge &#8211; D' Alembert ta có $A,X,G$ thẳng hàng. Tương tự $B,Y,G$ và $C,Z,G$ thẳng hàng. Ta hoàn thành tính chất 8. 9. Tính chất 9 : Gọi $X$ là tiếp điểm của $(O)$ và $(w_a)$ . Khi đó thì $(AIX)$ và $(O)$ trực giao. Chứng minh : Ta chỉ cần chứng minh $OA$ tiếp xúc $(AIX)$ là được. Thực vậy, gọi $G,H,K$ theo thứ tự là giao của $XI,AO,AI$ với $(O)$ . Dễ thấy $AGHK$ là hình chữ nhật nên $\angle IAO=\angle AXI$ . Từ đó có điều phải chứng minh. 10. Tính chất 10 : Gọi $X,Y,Z$ theo thứ tự là tiếp điểm của $(O)$ với $(w_a),(w_b),(w_c)$ thì các đường tròn $(IAX),(IBY),(ICZ)$ đồng trục. Chứng minh : Gọi $G$ là điểm đồng quy của $AX,BY,CZ$ . Dễ thấy $G$ chính là điểm có cùng phương tích với cả ba đường tròn $(IAX),(IBY),(ICZ)$ . Như vậy ba đường tròn trên có chung một trục đẳng phương là $IG$ . Ta có điều phải chứng minh. Tham khảo : [1] : Đường tròn mixtilinear &#8211; Nguyễn Văn Linh [2] : Đường tròn mixtilinear &#8211; Cấn Trần Thành Trung (Kỷ yếu Gặp gỡ Toán học 2014) Mình tạo ra bài viết này mục đích chỉ là để ghi nhớ và học tập chứ không nhằm tạo ra một tài liệu mới vì nội dung được lấy ra hoàn toàn từ [1] và [2], tuy nhiên có một số tính chất mình tự chứng minh nên sẽ khác với cách chứng minh từ hai tài liệu tham khảo. Mong sẽ không đụng chạm gì tới bất cứ ai về bản quyền bài viết :).
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/10/t-c-2-1.jpg) ![](https://julielltv.wordpress.com/wp-content/uploads/2014/10/t-c-3.jpg) ![](https://julielltv.wordpress.com/wp-content/uploads/2014/10/t-c-4.jpg) ![](https://julielltv.wordpress.com/wp-content/uploads/2014/10/5.jpg) ![](https://julielltv.wordpress.com/wp-content/uploads/2014/10/t-c-5.jpg) ![](https://julielltv.wordpress.com/wp-content/uploads/2014/10/t-c-7.jpg) ![](https://julielltv.wordpress.com/wp-content/uploads/2014/10/t-c-9.jpg) ![](https://julielltv.wordpress.com/wp-content/uploads/2014/10/t-c-11.jpg)
+
+Nguồn: https://julielltv.wordpress.com/2014/10/31/duong-tron-mixtilinear/
+
+---
+
+## 98. (không rõ nguồn thi)
+
+**Đề:** Đường thẳng Simson, Đường thẳng Steiner 1. Định lí về đường thẳng Simson : Cho tam giác $ABC$ nội tiếp trong đường tròn tâm $O$ . Gỉa sử $S$ là một điểm nằm trên $(O)$ sao cho $S$ không trùng với ba đỉnh của tam giác. Khi đó hình chiều vuông góc $A_0,B_0,C_0$ của $S$ lần lượt trên $BC,CA,AB$ cùng nằm trên một đường thẳng. (Đường thẳng này gọi là đường thẳng $Simson$ của điểm $S$ đối với tam giác $ABC$ ) Chứng minh : Ta có $\widehat{CB_0S}=\widehat{CA_0S}=90^{0}$ , suy ra tứ giác $A_0B_0CS$ nội tiếp, suy ra $\widehat{B_0A_0C}=\widehat{B_0SC}$ . Mặt khác vì $ABSC$ nội tiếp nên $\widehat{C_0BS}=\widehat{ACS}=\widehat{B_0CS}\Rightarrow \Delta SC_0B\sim \Delta SB_0S\;(g.g)\Rightarrow \widehat{BSC_0}=\widehat{CSB_0}\Rightarrow \widehat{BSC_0}=\widehat{B_0A_0C}$ . Nhưng vì $A_0BC_0S$ là tứ giác nội tiếp ( $\widehat{BA_0S}=\widehat{BC_0S}=90^{0}$ ) nên $\widehat{BSC_0}=\widehat{BA_0C_0}\Rightarrow \widehat{B_0A_0C}=\widehat{BA_0C_0}$ . Vậy $A_0,B_0,C_0$ cùng thuộc một đường thẳng. 2. Định lí về đường thẳng Steiner : Cho tam giác $ABC$ nội tiếp đường tròn tâm $O$ , điểm $S$ bất kì thuộc đường tròn sao cho $S$ không trùng với các đỉnh của tam giác. Gọi $A_1,B_1,C_1$ lần lượt là điểm đối xứng với $S$ qua các đường thẳng $BC,CA,AB$ . Khi đó ba điểm $A_1,B_1,C_1$ và trực tâm $H$ của tam giác $ABC$ cùng nằm trên một đường thẳng (Đường thẳng này là đường thẳng $Steiner$ của điểm $S$ đối với tam giác $ABC$ Chứng minh : Dễ dàng thấy $A_1,B_1,C_1$ cùng nằm trên một đường thẳng song song với đường thẳng $Simson$ của điểm $S$ đối với tam giác $ABC$ . Ta có $\widehat{AC_1B}+\widehat{AHB}=\widehat{ASB}+(180^{0}-\widehat{ACB})$ mà $\widehat{ASB}=\widehat{ACB}$ nên $\widehat{AC_1B}+\widehat{AHB}=180^{0}$ , suy ra $AHBC_1$ là tứ giác nội tiếp. Từ đó $\widehat{AHC_1}=\widehat{ABC_1}=\widehat{ABS}$ Hoàn toàn tương tự, tứ giác $AHCB_1$ nội tiếp nên $\widehat{AHB_1}=\widehat{ACB_1}=\widehat{ACS}$ Lại có $\widehat{ACS}+\widehat{ABS}=180^{0}$ (tứ giác $ABSC$ nội tiếp) Do đó $\widehat{AHB_1}+\widehat{AHC_1}=180^{0}$ , suy ra $H,B_1,C_1$ thẳng hàng. Vậy : $A_1,B_1,C_1,H$ cùng thuộc một đường thẳng.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/simsonlines.jpg) ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/untitled5.jpg)
+
+Nguồn: https://julielltv.wordpress.com/2013/11/28/duong-thang-simson-duong-thang-steiner/
+
+---
+
+## 99. (không rõ nguồn thi)
+
+**Đề:** Định lí Kirkman Cho lục giác $ABCDEF$ nội tiếp đường tròn. Chứng minh rằng các đường thẳng $Pascal$ của các lục giác $ABCDEF, ADBECF, ADCFBE$ đồng quy tại một điểm. Chứng minh : Gọi $Y,Y',X,X',Z,Z'$ lần lượt là giao điểm của các bộ đường thẳng $(AF,CD),(AB,DE),(BE,CD),(AB,CF),(AF,BE),(CF,ED)$ . Khi đó dễ thấy $XX',YY',ZZ'$ lần lượt là các đường thẳng $Pascal$ của các lục giác $ADCFBE,ABCDEF,ADBECF$ . Cần chứng minh $XX',YY',ZZ'$ đồng quy. Gọi $P,Q,R$ lần lượt là giao điểm của các bộ đường thẳng $(AB,CD),(BE,CF),(AF,ED)$ . Khi đó theo định lí $Pascal$ cho lục giác nội tiếp $ABEDCF$ , ta có $P,Q,R$ thẳng hàng. Xét hai tam giác $XYZ$ và $X'Y'Z'$ với $\left \{ P \right \}=AB\cap CD=XY\cap X'Y',\;\;\left \{ Q \right \}=BE\cap CF=ZX\cap Z'X',\;\;\left \{ R \right \}=AF\cap ED=YZ\cap Y'Z'$ Lại có $P,Q,R$ theo chứng minh trên. Áp dụng định lí $Desargues$ ta có $XX',YY',ZZ'$ đồng quy. Như vậy định lí $Kirkman$ được chứng minh.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/steinertheorem.jpg)
+
+Nguồn: https://julielltv.wordpress.com/2013/11/17/dinh-li-steiner/
+
+---
+
+## 100. (không rõ nguồn thi)
+
+**Đề:** Bổ đề ERIQ Cho hai bộ ba điểm thẳng hàng $(A,B,C),(A',B',C')$ sao cho $\dfrac{AB}{AC}=\dfrac{A'B'}{A'C'}=k$ . Gọi $X,Y,Z$ lần lượt là các điểm thuộc $AA',BB',CC'$ sao cho $\dfrac{AX}{A'X}=\dfrac{BY}{B'Y}=\dfrac{CZ}{C'Z}=h$ . Chứng minh rằng $X,Y,Z$ thẳng hàng và $\dfrac{XY}{XZ}=k$ Chứng minh : Dựng các hình bình hành $AXNC$ và $A'XN'C'$ . Kẻ các đường thẳng $BM,B'M'$ lần lượt song song với $AA'$ với $M\in XN,\;M'\in XN'$ . Xét tam giác $BMY$ và $B'M'Y$ có $\widehat{MBY}=\widehat{M'B'Y}$ (so le trong, $BM\parallel B'M'$ do cùng song song với $AA'$ ) , $\dfrac{BM}{B'M'}=\dfrac{AX}{A'X}=\dfrac{BY}{B'Y}=h$ . Suy ra $\Delta BMY\sim \Delta B'M'Y\Rightarrow \widehat{MYB}=\widehat{M'YB}\Rightarrow M,Y,M'$ thẳng hàng. Tương tự ta có $N,Z,N'$ thẳng hàng. Theo định lí $Thales$ , ta có : $\dfrac{XM}{XN}=\dfrac{AB}{AC}=\dfrac{A'B'}{A'C'}=\dfrac{XM'}{XN'}\Rightarrow MXM'\parallel NZN'$ Mặt khác lại có $\dfrac{MY}{M'Y}=\dfrac{BY}{B'Y}=h=\dfrac{CZ}{C'Z}=\dfrac{NZ}{N'Z}$ Như vậy $X,Y,Z$ thẳng hàng. Từ đó cũng dễ dàng thấy được $\dfrac{XY}{XZ}=k$ . Bổ đề $ERIQ$ được chứng minh. * Trường hợp đặc biệt : Cho tam giác $ABC$ . $B_1,C_1$ lần lượt thuộc $AB,AC$ sao cho $B_1C_1\parallel BC$ . $A_1,A_2$ lần lượt thuộc $B_1C_1,BC$ sao cho $\dfrac{A_1B_1}{A_1C_1}=\dfrac{A_2B}{A_2C}$ . Khi đó $A,A_1,A_2$ thẳng hàng.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/eriq.jpg)
+
+Nguồn: https://julielltv.wordpress.com/2013/11/15/bo-de-eriq/
+
+---
+
+## 101. (không rõ nguồn thi)
+
+**Đề:** Định lí Brianchon Cho lục giác $ABCDEF$ ngoại tiếp được đường tròn. Chứng minh rằng $AD,BE,CF$ đồng quy. Chứng minh : Gọi $G,H,I,J,K,L$ lần lượt là tiếp điểm trên các cạnh $AB,BC,CD,DE,EF,FA$ . Ta sẽ chứng minh $GH,AC,LI$ đồng quy. Thật vậy, gọi $\left \{ S \right \}=LI\cap GH,\;\;\left \{ R \right \}=GI\cap LH$ Áp dụng định lí $Pascal$ cho lục giác nội tiếp $GGILLH$ với $\left \{ R \right \}=GI\cap LH,\left \{ S \right \}=LI\cap GH,\left \{ A \right \}=LL\cap GG$ ta có $S,A,R$ thẳng hàng. Tương tự thì $S,C,R$ thẳng hàng. Suy ra $S,A,R,C$ thẳng hàng hay $LI,AC,GH$ đồng quy. Chứng minh hoàn toàn tương tự như trên thì ta được $AD,GJ,LI$ đồng quy, gọi điểm đồng quy đó là $A'$ . Tương tự gọi $B',C'$ là điểm đồng quy của $(BE,GJ,HK)$ , $(CF,HK,LI)$ . Xét hai tam giác $ABC,A'B'C'$ có : $\left \{ G \right \}=A'B'\cap AB,\left \{ S \right \}=A'C'\cap AC,\left \{ H \right \}=B'C'\cap BC$ Lại có $S,G,H$ thẳng hàng nên theo định lí $Desargues$ ta có $AA',BB',CC'$ đồng quy hay $AD,BE,CF$ đồng quy.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/brianchon-theorem.jpg)
+
+Nguồn: https://julielltv.wordpress.com/2013/11/14/dinh-li-brianchon/
+
+---
+
+## 102. (không rõ nguồn thi)
+
+**Đề:** Đường thẳng Gauss Cho tứ giác lồi $ABCD$ . Gọi $E,F$ lần lượt là giao điểm của $AB$ và $CD$ , của $AD$ và $BC$ . Chứng minh rằng trung điểm $M,N,L$ lần lượt của $AC,EF,BD$ cùng thuộc một đường thẳng (đường thẳng $Gauss$ ) Chứng minh : Gọi $X,Y,Z$ lần lượt là trung điểm của $BE,EC,BC$ . Khi đó dễ thấy $(N,Y,X),(X,L,Z),(Z,M,Y)$ là các bộ điểm thẳng hàng. Theo định lí $Thales \left ( NY\parallel FC \right )$ : $\dfrac{NX}{NY}=\dfrac{FB}{FC}$ Tương tự : $\dfrac{MY}{MZ}=\dfrac{AE}{AB},\;\;\dfrac{LZ}{LX}=\dfrac{DC}{DE}$ Suy ra $\dfrac{NX}{NY}.\dfrac{MY}{MZ}.\dfrac{LZ}{LX}=\dfrac{FB}{FC}.\dfrac{AE}{AB}.\dfrac{DC}{DE}=1$ (theo định lí $Menelaus$ cho tam giác $BCE$ với sự thẳng hàng của $F,A,D$ ) Theo định lí $Menelaus$ ta có $M,N,L$ thẳng hàng.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/gaussline.jpg)
+
+Nguồn: https://julielltv.wordpress.com/2013/11/11/duong-thang-gauss/
+
+---
+
+## 103. (không rõ nguồn thi)
+
+**Đề:** Định lí Pappus Cho ba điểm $A,B,C$ thuộc đường thẳng $l$ , ba điểm $A',B',C'$ thuộc đường thẳng $l'$ . Gọi $\left \{M \right \}=AB'\cap BA',\left \{ N \right \}=AC'\cap CA',\left \{ P \right \}=BC'\cap B'C$ . Chứng minh rằng $M,N,P$ thẳng hàng. Chứng minh : Gọi $X,Y,Z$ lần lượt là giao điểm của $AB'$ với $BC'$ , $AB'$ với $A'C$ , $A'C$ với $BC'$ . Theo định lí $Menelaus$ cho tam giác $XYZ$ với sự thẳng hàng của $A',M,B$ : $\dfrac{MX}{MY}.\dfrac{BZ}{BX}.\dfrac{A'Z}{A'Y}=1\Rightarrow \dfrac{MX}{MY}=\dfrac{BX}{BZ}.\dfrac{A'Y}{A'Z}\qquad(1)$ Theo định lí $Menelaus$ cho tam giác $XYZ$ với sự thẳng hàng của $A,N,C'$ : $\dfrac{NY}{NZ}.\dfrac{C'x}{C'Z}.\dfrac{AX}{AY}=1\Rightarrow \dfrac{NY}{NZ}=\dfrac{C'Z}{C'X}.\dfrac{AY}{AX}\qquad(2)$ Theo định lí $Menelaus$ cho tam giác $XYZ$ với sự thẳng hàng của $B',P,C$ : $\dfrac{PZ}{PX}.\dfrac{B'X}{B'Y}.\dfrac{CY}{CZ}=1\Rightarrow \dfrac{PZ}{PX}=\dfrac{B'Y}{B'X}.\dfrac{CZ}{CY}\qquad(3)$ Từ $(1)(2)(3)$ ta có : $\dfrac{MX}{MY}.\dfrac{NY}{NZ}.\dfrac{PZ}{PX}=\dfrac{BX}{BZ}.\dfrac{AY}{AX}.\dfrac{CZ}{CY}.\dfrac{A'Y}{A'Z}.\dfrac{C'X}{C'Z}.\dfrac{B'Y}{B'X}$ Lại áp dụng định lí $Menelaus$ cho tam giác $XYZ$ với sự thẳng hàng của $A,B,C$ và $A',B',C'$ : $\dfrac{BZ}{BX}.\dfrac{AX}{AY}.\dfrac{CY}{CZ}=1,\;\;\dfrac{A'Y}{A'Z}.\dfrac{C'Z}{C'X}.\dfrac{B'X}{B'Y}=1$ Từ đó suy ra $\dfrac{MX}{MY}.\dfrac{NY}{NZ}.\dfrac{PZ}{PX}=1$ . Theo định lí $Menelaus$ ta có $M,N,P$ thẳng hàng.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/pappus-theorum.jpg)
+
+Nguồn: https://julielltv.wordpress.com/2013/11/08/dinh-li-pappus/
+
+---
+
+## 104. (không rõ nguồn thi)
+
+**Đề:** Định lí Pascal : Cho lục giác $ABCDEF$ nội tiếp đường tròn, $H,K,I$ lần lượt là giao điểm của $AB$ và $ED$ , $BC$ và $EF$ , $AF$ và $CD$ . Chứng minh rằng : $I,H,K$ thẳng hàng. Chứng minh : Gọi $X$ là giao điểm của $AB$ và $CD$ , $Y$ là giao điểm của $EF$ và $CD$ , $Z$ là giao điểm của $AB$ và $EF$ . Áp dụng định lí $Menelaus$ cho tam giác $XYZ$ với sự thẳng hàng của $I,F,A$ : $\dfrac{IY}{IX}.\dfrac{AX}{AZ}.\dfrac{FZ}{FY}=1\qquad(1)$ Áp dụng định lí $Menelaus$ cho tam giác $XYZ$ với sự thẳng hàng của $H,E,D$ : $\dfrac{HX}{HZ}.\dfrac{EZ}{EY}.\dfrac{DY}{DX}=1\qquad(2)$ Áp dụng định lí $Menelaus$ cho tam giác $XYZ$ với sự thẳng hàng của $K,B,C$ : $\dfrac{KZ}{KY}.\dfrac{CY}{CX}.\dfrac{BX}{BZ}=1\qquad(3)$ Nhân $(1)(2)(3)$ theo vế : $\dfrac{IY}{IX}.\dfrac{HX}{HZ}.\dfrac{KZ}{KY}.\dfrac{XA.XB}{XC.XD}.\dfrac{ZE.ZF}{ZA.ZB}.\dfrac{YC.YD}{YE.YF}=1$ Theo hệ thức lượng trong đường tròn $XA.XB=XC.XD,ZE.ZF=ZA.ZB,YC.YD=YE.YF$ Suy ra $\dfrac{IY}{IX}.\dfrac{HX}{HZ}.\dfrac{KZ}{KY}=1$ Theo định lí $Menelaus$ cho tam giác $XYZ$ ta có $H,I,K$ thẳng hàng. (Đường thẳng chứa ba điểm $H,I,K$ gọi là đường thẳng $Pascal$ )
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/dl-pascal.jpg)
+
+Nguồn: https://julielltv.wordpress.com/2013/11/04/dinh-li-pascal/
+
+---
+
+## 105. (không rõ nguồn thi)
+
+**Đề:** Định lí Carnot Cho tam giác $ABC$ và các điểm $M,N,P$ . Các đường thẳng $a,b,c$ theo thứ tự qua $M,N,P$ và vuông góc với các cạnh $BC,CA,AB$ của tam giác. Chứng minh rằng $a,b,c$ đồng quy khi và chỉ khi $\left ( MB^{2}-MC^{2} \right )+\left ( NC^{2} -NA^{2}\right )+\left ( PA^{2}-PB^{2} \right )=0$ Chứng minh : Bổ đề 1 : Cho hai điểm $A,B$ phân biệt và một số thực $k$ . Khi đó tồn tại duy nhất một điểm $H$ thuộc đường thẳng $AB$ sao cho $HA^2-HB^2=k$ . Chứng minh bổ đề 1 : Gọi $I$ là trung điểm của $AB$ , ta có : $HA^{2}-HB^{2}=k\Leftrightarrow \left ( \overline{HA}+\overline{HB} \right )\left ( \overline{HA}-\overline{HB} \right )=k\Leftrightarrow 2\overline{HI}.\overline{BA}=k$ Ta có $A,B,I$ đều là những điểm cố định, từ đẳng thức này ta suy ra sự tồn tại duy nhất của điểm $H$ . Bổ đề 2 : $CD\perp AB\Leftrightarrow CA^{2}-CB^{2}=DA^{2}-DB^{2}$ Chứng minh bổ đề 2 : Gọi $H,K$ theo thự tự là hình chiếu của $C,D$ lên $AB$ . Theo định lí $Pythagoras$ : $CA^{2}-CB^{2}=DA^{2}-DB^{2}\Leftrightarrow (AH^{2}+HC^{2})-(CH^{2}+HB^{2})=\left ( AK^{2}+KD^{2} \right )-(KB^{2}+KD^{2})\Leftrightarrow AH^{2}-BH^{2}=AK^{2}-BK^{2}\Leftrightarrow H\equiv K\Leftrightarrow CD\perp AB$ Quay trở lại việc chứng minh định lí : Gọi $O$ là giao điểm của $a$ và $b$ . Khi đó : $a,b,c$ đồng quy $\Leftrightarrow O\in c\Leftrightarrow PO\equiv c\Leftrightarrow PO\perp AB\Leftrightarrow PA^{2}-PB^{2}=OA^{2}-OB^{2}\Leftrightarrow (OB^{2}-OA^{2})+(PA^{2}-PB^{2})=0\Leftrightarrow (OB^{2}-OC^{2})+(OC^{2}-OA^{2})+(PA^{2}-PB^{2})=0\Leftrightarrow (MB^{2}-MC^{2})+(NC^{2}-NA^{2})+(PA^{2}-PB^{2})=0$ Như vậy định lí $Carnot$ được chứng minh.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/09/untitled.jpg)
+
+Nguồn: https://julielltv.wordpress.com/2013/09/22/dinh-li-carnot/
+
+---
+
+## 106. (không rõ nguồn thi)
+
+**Đề:** Định lí Blanchet Cho tam giác $ABC$ , đường cao $AK$ , $H$ là điểm bất kì thuộc đoạn $AK$ . Các tia $BH,CH$ lần lượt cắt các cạnh $AC,AB$ tại $E,F$ . Chứng minh rằng $KA$ là phân giác của góc $FKE$ . Chứng minh : Gọi $I$ là giao điểm của đường thẳng $EF$ với đường thẳng $BC$ , $J$ là giao điểm của $AK$ với $EF$ . Đầu tiên ta sẽ chứng minh $\left ( BCKI \right )=-1$ (đây là một hàng điểm điều hòa cơ bản) Áp dụng định lí $Ceva$ cho tam giác $ABC$ với sự đồng quy của ba đường $AK,BE,CF$ : $\dfrac{\overline{FA}}{FB}.\dfrac{\overline{KB}}{\overline{KC}}.\dfrac{\overline{EC}}{EA}=-1\qquad(1)$ Áp dụng định lí $Menelaus$ cho tam giác $ABC$ với sự thẳng hàng của ba điểm $F,E,I$ ta có : $\dfrac{\overline{FA}}{\overline{FB}}.\dfrac{\overline{IB}}{\overline{IC}}.\dfrac{\overline{EC}}{\overline{EA}}=1\qquad(2)$ Từ $(1)(2)$ , ta có : $\dfrac{\overline{KB}}{\overline{KC}}=-\dfrac{\overline{IB}}{\overline{IC}}\Rightarrow (BCKI)=-1$ Theo định lí về chùm điều hòa ta có : $\left ( AB,AC,AK,AI \right )=-1\Rightarrow \left ( FEJI \right )=-1\Rightarrow \left ( KF,KE,KJ,KI \right )=-1$ Mà $KJ\perp KI$ ( $AK$ là đường cao của tam giác $ABC$ ) Do đó theo định lí về chùm điều hòa ta có $KJ$ là phân giác của góc $FKE$ . Vậy : $KA$ là phân giác của góc $FKE$ .
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/09/412.jpg)
+
+Nguồn: https://julielltv.wordpress.com/2013/09/04/dinh-li-blanchet/
+
+---
+
+## 107. (không rõ nguồn thi)
+
+**Đề:** Định lí Desargues Cho hai tam giác $ABC$ và $A'B'C'$ . Gọi $A_{1},B_{1},C_{1}$ lần lượt là giao điểm của $BC$ và $B'C'$ , $CA$ và $C'A'$ , $AB$ và $A'B'$ . Chứng minh rằng nếu các đường thẳng $AA',BB',CC'$ đồng quy tại một điểm thì ba điểm $A_{1},B_{1},C_{1}$ thẳng hàng. Chứng minh Gọi $Q$ là điểm đồng quy của ba đường thẳng $AA',BB',CC'$ Xét tam giác $ACQ$ với ba điểm $B_{1},A',B'$ thẳng hàng lần lượt thuộc các đường thẳng $AC,AQ,CQ$ . Theo định lí $Menelaus$ : $\dfrac{AB_{1}}{B_{1}C}.\dfrac{C'C}{C'Q}.\dfrac{A'Q}{A'A}=1\Rightarrow \dfrac{AB_{1}}{B_{1}C}=\dfrac{A'A.C'Q}{C'C.A'Q}\qquad(1)$ Tương tự $\dfrac{CA_{1}}{A_{1}B}=\dfrac{C'C.B'Q}{B'B.C'Q}\qquad(2)$ Và $\dfrac{BC_{1}}{C_{1}A}=\dfrac{B'B.A'Q}{A'A.B'Q}\qquad(3)$ Nhân $(1)(2)(3)$ vế theo vế, ta được : $\dfrac{AB_{1}}{B_{1}C}.\dfrac{CA_{1}}{A_{1}B}.\dfrac{BC_{1}}{C_{1}A}=\dfrac{A'A.C'Q}{C'C.A'Q}.\dfrac{C'C.B'Q}{B'B.C'Q}.\dfrac{B'B.A'Q}{A'A.B'Q}=1$ Theo định lí $Menelaus$ , ta có $A_{1},B_{1},C_{1}$ thẳng hàng. Chú ý : Định lí này được phát biểu đầy đủ : Cho hai tam giác $ABC$ và $A'B'C'$ . Gọi $A_{1},B_{1},C_{1}$ lần lượt là giao điểm của $BC$ và $B'C'$ , $CA$ và $C'A'$ , $AB$ và $A'B'$ . Chứng minh rằng các đường thẳng $AA',BB',CC'$ đồng quy tại một điểm hoặc đôi một song song khi và chỉ khi ba điểm $A_{1},B_{1},C_{1}$ thẳng hàng.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/08/banve3.jpg)
+
+Nguồn: https://julielltv.wordpress.com/2013/08/25/bai-toan-ba-diem-thang-hang/
+
+---
+
+## 108. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ có $O$ là tâm ngoại tiếp. Gọi $O_a,O_b,O_c$ theo thứ tự là tâm ngoại tiếp các tam giác $BOC,COA,AOB$ . Chứng minh rằng $AO_a,BO_b,CO_c$ đồng quy tại $K_0$ . Điểm $K_0$ nói trên là điểm Kosnita. Trong một tam giác, điểm Kosnita đẳng giác với tâm Euler của tam giác đó.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/06/kosnita.jpg)
+
+<details><summary>Lời giải</summary>
+
+Gọi $H,N$ lần lượt là trực tâm và tâm Euler của tam giác $ABC$ . Gọi $M$ là trung điểm của $BC$ , $AN$ cắt $OO_a$ tại $L$ . Dễ thấy tứ giác $AHLO$ là hình bình hành nên $OL=AH=2OM$ . Từ đó suy ra tam giác $OCL$ cân tại $C$ . Ta được $\angle CLO=\angle COL=\angle OCO_a$ . Từ đây ta suy ra : $\Delta OCL\sim \Delta OO_aC\Rightarrow OC^2=OL.OO_a\Rightarrow OA^2=OL.OO_a\Rightarrow \Delta OAL\sim \Delta OO_aA\Rightarrow \angle OAN=\angle OAL=\angle OO_aA=\angle HAO_a$ Điều này chứng tỏ $AN,AO_a$ đẳng giác trong góc $HAO$ . Mà $AH,AO$ đẳng giác trong góc $BAC$ nên $AN,AO_a$ đẳng giác trong góc $BAC$ . Ta có các cặp đường đẳng giác $(AN,AO_a),(BN,BO_b),(CN,CO_c)$ . Do $AN,BN,CN$ đồng quy tại $N$ nên $AO_a,BO_b,CO_c$ đồng quy.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/06/17/geometry-34/
+
+---
+
+## 109. (Đề thi chính thức Olympic duyên hải Bắc bộ toán 10 năm 2012)
+
+**Đề:** Cho tam giác $ABC$ . Bên ngoài tam giác ta dựng các hình vuông $ABEF,BCMN,ACPQ$ . Gọi $G$ là trọng tâm tam giác và gọi $A_1,B_1,C_1$ lần lượt là giao điểm của $GA$ với $FQ$ , của $GB$ với $EN$ , của $GC$ với $MP$ . Vẽ các hình bình hành $AGC_2F,BGA_2N,CGB_2P$ . Chứng minh rằng các đường thẳng qua $A_2,B_2,C_2$ tương ứng vuông góc với $B_1C_1,C_1A_1,A_1B_1$ đồng quy.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/12/untitled5.jpg)
+
+<details><summary>Lời giải</summary>
+
+Gọi $I$ là trung điểm của $BC$ Ta có $\overrightarrow{AG}.\overrightarrow{B_2C_2}=\dfrac{2}{3}\overrightarrow{AI}.\left ( \overrightarrow{GC_2}-\overrightarrow{GB_2} \right )=\dfrac{1}{3}\left ( \overrightarrow{AB}+\overrightarrow{AC} \right )\left ( \overrightarrow{AF}-\overrightarrow{AQ} \right )=\dfrac{1}{3}(\overrightarrow{AB}.\overrightarrow{AF}-\overrightarrow{AC}.\overrightarrow{AQ})+\dfrac{1}{3}\left ( \overrightarrow{AC}.\overrightarrow{AF}-\overrightarrow{AB}.\overrightarrow{AQ} \right )=\dfrac{1}{3}\left ( AC.AF.cos\widehat{FAC}-AB.AQ.cos\widehat{QAB} \right )=\dfrac{1}{3}\left ( AC.AB.cos\left ( \dfrac{\pi }{2}+\widehat{BAC} \right )-AB.AC.cos\left ( \dfrac{\pi }{2} +\widehat{BAC}\right ) \right )=0$ Như vậy ta có $AG\perp B_2C_2$ hay $A_1G\perp B_2C_2$ Hoàn toàn tương tự, ta được $B_1G\perp C_2A_2,C_1G\perp A_2B_2$ Xét tam giác $A_2B_2C_2$ có các đường thẳng $A_1G,B_1G,C_1G$ đồng quy tại $G$ và tương ứng vuông góc với các cạnh Từ đó áp dụng định lí $Carnot$ ta có : $\left ( A_1C_2^2-A_1B_2^2 \right )+\left ( C_1B_2^2-C_1A_2^2 \right )+\left ( B_1A_2^2-B_1C_2^2 \right )=0\Leftrightarrow \left ( C_2A_1^2-C_2B_1^2 \right )+\left ( A_2B_1^2-A_2C_1^2 \right )+\left ( B_2C_1^2-B_2A_1^2 \right )=0$ Từ đó theo định lí $Carnot$ cho tam giác $A_1B_1C_1$ ta có các đường thẳng qua $A_2,B_2,C_2$ tương ứng vuông góc với $B_1C_1,C_1A_1,A_1B_1$ đồng quy.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/12/30/bai-toan-ung-dung-dinh-li-carnot-2/
+
+---
+
+## 110. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ và một điểm $M$ nằm trong tam giác. Các tia $AM,BM,CM$ lần lượt cắt các cạnh của tam giác $ABC$ tại các điểm $A_1,B_1,C_1$ . Gọi $A_2,B_2,C_2$ lần lượt là giao điểm của các cặp đường thẳng $B_1C_1$ và $BC$ , $C_1A_1$ và $CA$ , $A_1B_1$ và $AB$ . a) Chứng minh rằng các trung điểm $A_3,B_3,C_3$ lần lượt của $AA_2,BB_2,CC_2$ cùng nằm trên một đường thẳng. b) Gọi $A',B',C'$ lần lượt là trung điểm của các đoạn thẳng $Ceva AA_1,BB_1,CC_1$ . Chứng minh hệ thức $\overline{B_3C'}.\overline{C_3A'}.\overline{A_3B'}=\overline{C_3B'}.\overline{A_3C'}.\overline{B_3A'}$
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/12/untitled4.jpg)
+
+<details><summary>Lời giải</summary>
+
+a) Xét hai tam giác $ABC$ và $A_1B_1C_1$ với $\left \{ A_2 \right \}=B_1C_1\cap BC,\left \{ B_2 \right \}=C_1A_1\cap CA,\left \{ C_2 \right \}=A_1B_1\cap AB$ Mặt khác lại có $AA_1,BB_1,CC_1$ đồng quy nên theo định lí $Desargues$ ta có $A_2,B_2,C_2$ thẳng hàng. Từ đó theo định lí $Gauss$ cho tứ giác $A_2BAB_2$ với $\left \{ C \right \}=A_2B\cap B_2A,\left \{ C_2 \right \}=A_2B_2\cap AB$ ta có trung điểm của các đoạn thẳng $AA_2,BB_2,CC_2$ thẳng hàng. Tức là $A_3,B_3,C_3$ thẳng hàng. b) Theo định lí $Gauss$ ta có các bộ điểm sau thẳng hàng $(B_3,A',C'),(C_3,B',A'),(A_3,B',C')$ Từ đó áp dụng định lí $Menelaus$ cho tam giác $A'B'C'$ với đường thẳng $A_3B_3C_3$ ta có : $\dfrac{\overline{B_3A'}}{\overline{B_3C'}}.\dfrac{\overline{A_3C'}}{\overline{A_3B'}}.\dfrac{\overline{C_3B'}}{\overline{C_3A'}}=1$ Từ đó suy ra $\overline{B_3C'}.\overline{C_3A'}.\overline{A_3B'}=\overline{C_3B'}.\overline{A_3C'}.\overline{B_3A'}$
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/12/26/bai-toan-thang-hang/
+
+---
+
+## 111. (không rõ nguồn thi)
+
+**Đề:** Cho ngũ giác $AXYZB$ nội tiếp đường tròn. Gọi $P,Q,R,S$ lần lượt là hình chiếu của điểm $Y$ lên các đường thẳng $AX,AZ,BX,BZ$ . Chứng minh rằng các đường thẳng $PR,SQ,AB$ đồng quy.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/untitledjjjj.jpg)
+
+<details><summary>Lời giải</summary>
+
+Gọi $H$ là hình chiếu của $Y$ trên $AB$ . Xét tam giác $AXB$ có điểm $Y$ thuộc $(AXB)$ với các hình chiếu $P,R,H$ lần lượt lên $AX,XB,BA$ . Theo định lí $Simson$ ta có $P,R,H$ thẳng hàng. Tương tự $S,Q,H$ thẳng hàng. Vậy : Các đường thẳng $PR,SQ,AB$ đồng quy.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/11/28/bai-toan-dong-quy-dinh-li-simson/
+
+---
+
+## 112. (không rõ nguồn thi)
+
+**Đề:** Cho bốn điểm $A,B,C,D$ theo thứ tự đó nằm trên một đường thẳng. Gọi $E,F$ là các giao điểm của hai đường tròn : đường tròn $(O_1)$ đường kính $AC$ và đường tròn $(O_2)$ đường kính $BD$ . Lấy $P$ là một điểm thuộc đường thẳng $EF$ , $CP$ cắt $(O_1)$ tại $M$ và $BP$ cắt $(O_2)$ tại $N$ . Chứng minh rằng $AM,DN,EF$ đồng quy.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/dd.jpg)
+
+<details><summary>Lời giải</summary>
+
+Gọi $L$ là giao điểm của $AM$ và $DN$ . Dễ thấy $\widehat{LMB}=\widehat{LNP}=90^{0}$ ( $\widehat{LMB}$ là góc nội tiếp chắn nửa đường tròn) $\widehat{LNM}+\widehat{MNP}=\widehat{LNP}=90^{0}\qquad(1)$ Mặt khác $P$ thuộc $EF$ là trục đẳng phương của hai đường tròn nên : $P_{P/(O_1)}=P_{P/(O_2)}\Rightarrow \overline{PN}.\overline{PB}=\overline{PM}.\overline{PC}$ Do đó tứ giác $MNBC$ nội tiếp, suy ra $\widehat{MNP}=\widehat{BCM}$ Nhưng $\widehat{BCM}+\widehat{DAM}=180^{0}-\widehat{AMC}=90^{0}\Rightarrow \widehat{MNP}+\widehat{DAM}=180^{0}\qquad(2)$ Từ $(1)(2)$ ta suy ra $\widehat{LNM}=\widehat{DAM}$ . Do đó tứ giác $MNAC$ nội tiếp. Suy ra : $\overline{LM}.\overline{LA}=\overline{LN}.\overline{LC}\Rightarrow P_{L/(O_1)}=P_{L/(O_2)}\Rightarrow L$ thuộc trục đẳng phương $EF$ của hai đường tròn. Vậy : Các đường thẳng $EF,AM,BN$ đồng quy
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/11/28/bai-toan-cac-duong-dong-quy-phuong-tich-truc-dang-phuong/
+
+---
+
+## 113. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ , $I$ là tâm đường tròn nội tiếp. Các đường tròn bàng tiếp góc $A,B,C$ theo thứ tự tiếp xúc với $BC,CA,AB$ tại $M,N,P$ . Các đường thẳng $d_a,d_b,d_c$ lần lượt qua $M,N,P$ và lần lượt song song với $IA,IB,IC$ . Chứng minh rằng $d_a,d_b,d_c$ đồng quy.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/dadadasdasdasdasdasdas.jpg)
+
+<details><summary>Lời giải</summary>
+
+Gọi $I_A,I_B,I_C$ lần lượt là tâm đường tròn bàng tiếp góc $A,B,C$ của tam giác $ABC$ . Gọi tiếp điểm của $(I_C),(I_B)$ lần lượt trên $BC$ là $L,J$ . Dễ dàng thấy rằng tam giác $I_AI_BI_C$ có các điểm $A,B,C$ lần lượt thuộc $I_BI_C,I_CI_A,I_AI_B$ và $IA\perp I_BI_C,IB\perp I_AI_C,IC\perp I_AI_B$ . Dễ dàng tính được $ML=BM+BL=p-c+p-a=b$ và $MJ = MC + CJ = p-b+p-a=c$ . Do đó theo định lí $Pythagoras$ : $MI_C^2-MI_B^2=\left ( LI_C^2+ML^2 \right )-\left ( MI_B^2+MJ^2 \right )=r_c^2+b^2-r_b^2-c^2$ Hoàn toàn tương tự, ta được $PI_B^2-PI_A^2=r_b^2+a^2-r_a^2-b^2,\;\;NI_A^2-NI_c^2=r_a^2+c^2-r_c^2-a^2$ Từ đó suy ra : $(MI_C^2-MI_B^2)+(PI_B^2-PI_A^2)+(NI_A^2-NI_C^2)=0$ Theo định lí $Carnot$ ta có $d_a,d_b,d_c$ đồng quy. * Ta có bài toán tương đương sau : Cho tam giác $ABC$ có ba đường cao $AD,BE,CF$ đồng quy tại $H$ . Gọi $A',B',C'$ lần lượt là chân đường vuông góc hạ từ $A,B,C$ xuống các cạnh $EF,FD,DE$ . Gọi $d_a,d_b,d_c$ lần lượt là đường thẳng đi qua $A',B',C'$ và song song với $HA,HB,HC$ . Chứng minh rằng $d_a,d_b,d_c$ đồng quy
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/11/20/bai-toan-ung-dung-dinh-li-carnot/
+
+---
+
+## 114. (CĐT VMO Thái Bình 2013-2014)
+
+**Đề:** Cho tam giác $ABC$ có $I$ là tâm đường tròn nội tiếp. Các tiếp điểm của $(I)$ trên $BC,CA,AB$ lần lượt là $A',B',C'$ . Gọi $D,E,F$ lần lượt là các điểm đối xứng với $A',B',C'$ qua $I$ . Chứng minh $AD,BE,CF$ đồng quy.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/untitled2.jpg)
+
+<details><summary>Lời giải</summary>
+
+Theo định lí hàm sin trong tam giác $BC'E,BEA'$ : $\dfrac{C'E}{sin\widehat{C'BE}}=\dfrac{BE}{sin\widehat{BC'E}},\dfrac{A'E}{sin\widehat{A'BE}}=\dfrac{BE}{sin\widehat{BA'E}}\Rightarrow \dfrac{sin\widehat{C'BE}}{sin\widehat{A'BE}}=\dfrac{C'E}{A'E}.\dfrac{sin\widehat{BC'E}}{sin\widehat{BA'E}}$ Hoàn toàn tương tự thì : $\dfrac{sin\widehat{A'CF}}{sin\widehat{B'CF}}=\dfrac{A'F}{B'F}.\dfrac{sin\widehat{A'DF}}{sin\widehat{B'EF}},\;\;\dfrac{sin\widehat{B'AD}}{sin{C'AD}}=\dfrac{B'D}{C'D}.\dfrac{sin\widehat{B'ED}}{sin\widehat{C'FD}}$ Do đó : $\dfrac{sin\widehat{A'CF}}{sin\widehat{B'CF}}.\dfrac{sin\widehat{B'AD}}{sin{C'AD}}.\dfrac{sin\widehat{C'BE}}{sin\widehat{A'BE}}=\dfrac{A'F}{B'F}.\dfrac{B'D}{C'D}.\dfrac{C'E}{A'E}.\dfrac{sin\widehat{A'DF}}{sin\widehat{B'EF}}.\dfrac{sin\widehat{B'ED}}{sin\widehat{C'FD}}.\dfrac{sin\widehat{BC'E}}{sin\widehat{BA'E}}$ Dễ thấy $C'E=B'F,C'D=A'F,B'D=A'E$ và theo định lí $Ceva-sin$ trong tam giác $DEF$ với $DA',EB',FC'$ đồng quy tại $I$ : $\dfrac{sin\widehat{A'DF}}{sin\widehat{B'EF}}.\dfrac{sin\widehat{B'ED}}{sin\widehat{C'FD}}.\dfrac{sin\widehat{BC'E}}{sin\widehat{BA'E}}=1$ Suy ra $\dfrac{sin\widehat{A'CF}}{sin\widehat{B'CF}}.\dfrac{sin\widehat{B'AD}}{sin{C'AD}}.\dfrac{sin\widehat{C'BE}}{sin\widehat{A'BE}}=1$ Theo định lí $Ceva-sin$ ta có $AD,BE,CF$ đồng quy.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/11/16/bai-toan-ceva-sin-dong-quy/
+
+---
+
+## 115. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ , dựng ra phía ngoài tam giác đó ba tam giác cân $AC_1B,BA_1C,CB_1A$ có các đáy $AB,BC,CA$ và góc ở đáy $\alpha$ . Chứng minh rằng ba đường thẳng $AA_1,BB_1,CC_1$ đồng quy.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/ceva-sin.jpg)
+
+<details><summary>Lời giải</summary>
+
+Theo định lí hàm sin trong tam giác $ABA_1$ và $ACA_1$ : $\dfrac{A_1B}{sin\widehat{BAA_1}}=\dfrac{AA_1}{sin\widehat{ABA_1}},\dfrac{A_1C}{sin\widehat{CAA_1}}=\dfrac{AA_1}{sin\widehat{ACA_1}}$ , chú ý rằng ta có $A_1B=A_1C$ nên : $\dfrac{sin\widehat{BAA_1}}{sin\widehat{CAA_1}}=\dfrac{sin\widehat{ABA_1}}{sin\widehat{ACA_1}}=\dfrac{sin(B+\alpha )}{sin(C+\alpha )}$ Hoàn toàn tương tự, ta ��ược : $\dfrac{sin\widehat{CBB_1}}{sin\widehat{ABB_1}}=\dfrac{sin(C+\alpha )}{sin(A+\alpha )}$ và $\dfrac{sin\widehat{ACC_1}}{sin\widehat{BCC_1}}=\dfrac{sin(A+\alpha )}{sin(B+\alpha )}$ Do đó : $\dfrac{sin\widehat{BAA_1}}{sin\widehat{CAA_1}}.\dfrac{sin\widehat{ACC_1}}{sin\widehat{BCC_1}}.\dfrac{sin\widehat{CBB_1}}{sin\widehat{ABB_1}}=1$ Theo định lí $Ceva-sin$ ta có $AA_1,BB_1,CC_1$ đồng quy.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/11/16/bai-toan-ba-duong-dong-quy-ceva-sin/
+
+---
+
+## 116. (China 2005)
+
+**Đề:** Cho tam giác $ABC$ , một đường tròn cắt các cạnh của tam giác lần lượt tại $D_1,D_2,E_1,E_2,F_1,F_2$ .Gọi $A'',B'',C''$ lần lượt là các giao điểm của $E_1F_2$ với $E_2D_2$ , $E_2F_2$ với $D_1F_1$ , $E_1D_1$ với $D_2F_2$ . Chứng minh rằng $AA'',BB'',CC''$ đồng quy.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/china2005.jpg)
+
+<details><summary>Lời giải</summary>
+
+Gọi $\left \{ A' \right \}=E_1D_1\cap E_2F_2,\;\;\left \{ B' \right \}=D_2F_2\cap E_1F_1,\;\;\left \{ C' \right \}=D_1F_1\cap D_2E_2$ Xét lục giác nội tiếp $E_1D_1D_2E_2F_2F_1$ có $\left \{ A \right \}=D_1D_2\cap F_1F_2,\;\;\left \{ A' \right \}=E_1D_1\cap E_2F_2,\;\;\left \{ A'' \right \}=E_2D_2\cap E_1F_1$ . Theo định lí $Pascal$ thì $A,A',A''$ thẳng hàng. Tương tự thì $(B,B',B''),(C,C',C'')$ là các bộ điểm thẳng hàng. Do đó ta đi chứng minh $AA',BB',CC'$ đồng quy. Gọi $\left \{ X \right \}=D_1F_2\cap BC,\;\left \{ Y \right \}=E_1D_2\cap CA,\;\;\left \{ Z \right \}=F_1E_2\cap AB$ Xét lục giác nội tiếp $F_2D_1F_1E_1E_2D_2$ có $\left \{ X \right \}=D_1F_2\cap E_1E_2,\;\left \{ B' \right \}=D_2F_2\cap E_1F_1,\;\;\left \{ C' \right \}=D_1F_1\cap D_2E_2$ Theo định lí $Pascal$ ta có $X,B',C'$ thẳng hàng hay $D_1F_2,BC,B'C'$ đồng quy tại $X$ . Tương tự thì $E_1D_2,CA,C'A'$ đồng quy tại $Y$ và $F_1E_2,AB,A'B'$ đồng quy tại $Z$ . Lại áp dụng định lí $Pascal$ cho lục giác $F_1E_2E_1D_2D_1F_2$ có $\left \{ X \right \}=D_1F_2\cap E_1E_2,\left \{ Y \right \}=E_1D_2\cap F_2F_1,\left \{ Z \right \}=F_1E_2\cap D_1D_2$ thì $X,Y,Z$ thẳng hàng. Xét hai tam giác $ABC$ và $A'B'C'$ có : $\left \{ X \right \}=BC\cap B'C',\left \{ Y \right \}=CA\cap C'A',\left \{ Z \right \}=AB\cap A'B'$ Theo định lí $Dersargues$ ta có $AA',BB',CC'$ đồng quy. Từ đó có điều phải chứng minh.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/11/16/bai-toan-ap-dung-dinh-li-pascal-desargues/
+
+---
+
+## 117. (không rõ nguồn thi)
+
+**Đề:** Cho tứ giác $ABCD$ nội tiếp được đường tròn. Gọi $E,F$ lần lượt là các giao điểm của $AD$ và $BC$ , $AB$ và $CD$ . Gọi $I$ là giao điểm của phân giác hai góc $BFC,DEC$ . $G,H$ lần lượt là trung điểm của $BD,AC$ . Chứng minh rằng $G,H,I$ thẳng hàng.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/eriqproblem.jpg)
+
+<details><summary>Lời giải</summary>
+
+Gọi $M,N$ lần lượt là giao điểm của $EI$ với $AB,CD$ . Ta sẽ chứng minh $MI=IN$ . Thật vậy, ta có $\widehat{FMI}+\widehat{MFI}=\widehat{EMB}+\dfrac{1}{2}\widehat{BFC}+=180^{0}-\dfrac{1}{2}\widehat{MEB}-\widehat{EBA}+\dfrac{1}{2}(180^{0}-\widehat{B}-\widehat{C})=180^{0}-\dfrac{1}{2}(180^{0}-\widehat{D}-\widehat{C})-\widehat{D}+\dfrac{1}{2}\left ( 180^{0}-\widehat{B}-\widehat{C} \right )=180^0-\dfrac{1}{2}(\widehat{B}+\widehat{D})=90^0\Rightarrow FI\perp MN$ Mà trong tam giác $FMN$ thì $FI$ cũng là phân giác, do đó nó cũng là trung tuyến, hay $MI=IN$ . Theo tính chất phân giác : $\dfrac{AM}{MB}=\dfrac{EA}{EB},\;\dfrac{DN}{NC}=\dfrac{ED}{EC}$ Mà theo hệ thức lượng trong đường tròn thì $EA.ED=EB.EC\Rightarrow \dfrac{EA}{EB}=\dfrac{ED}{ED}$ Suy ra $\dfrac{AM}{MB}=\dfrac{DN}{NC}$ Xét hai bộ ba điểm thẳng hàng $(A,M,B),(D,N,C)$ các điểm $M,N$ lần lượt thuộc $AB,CD$ và thỏa mãn $\dfrac{AM}{MB}=\dfrac{DN}{NC}$ (chứng minh trên) Các điểm $G,H,I$ lần lượt thuộc $AC,BD,MN$ và thỏa $\dfrac{GC}{GA}=\dfrac{IN}{IM}=\dfrac{HD}{HB}=1$ Như vậy theo bổ đề $ERIQ$ ta có $G,H,I$ thẳng hàng. Đây là điều phải chứng minh.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/11/15/bai-toan-ung-dung-bo-de-eriq/
+
+---
+
+## 118. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ có $I$ là đường tròn nội tiếp, lần lượt tiếp xúc với các cạnh $BC,CA,AB$ tại $A_1,B_1,C_1$ . Gọi $X$ là một điểm trong tam giác $ABC$ . Các tia $A_1X,B_1X,C_1X$ lần lượt cắt $B_1C_1,C_1A_1,A_1B_1$ tại $A_2,B_2,C_2$ . Các tia $A_1X,B_1X,C_1X$ lần lượt cắt $(O)$ tại $A_3,B_3,C_3$ . a) Chứng minh rằng $AA_2,BB_2,CC_2$ đồng quy tại $P$ b) Chứng minh rằng $AA_3,BB_3,CC_3$ đồng quy tại $Q$ c) Chứng minh rằng $P,X,Q$ thẳng hàng.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/untitled1.jpg)
+
+<details><summary>Lời giải</summary>
+
+a) Bằng định lí $Ceva$ ta dễ dàng chứng minh được $AA_1,BB_1,CC_1$ đồng quy, do đó theo bài toán này , ta có ngay $AA_2,BB_2,CC_2$ đồng quy. b) Dễ thấy rằng $\widehat{AB_1A_3}=\widehat{B_1A_1A_3}$ (cùng chắn cung nhỏ $A_3B_1$ ) Theo định lí hàm sin trong tam giác $AB_1A_3$ : $\dfrac{AA_3}{sin\widehat{B_1A_1A_3}}=\dfrac{AA_3}{sin\widehat{AB_1A_3}}=\dfrac{A_3B_1}{sin\widehat{B_1AA_3}}\Rightarrow \dfrac{sin\widehat{B_1AA_3}}{sin\widehat{B_1A_1A_3}}=\dfrac{A_3B_1}{AA_3}$ Tương tự, ta được $\dfrac{sin\widehat{C_1AA_3}}{sin\widehat{C_1A_1A_3}}=\dfrac{A_3C_1}{AA_3}$ Từ đó suy ra : $\dfrac{sin\widehat{B_1AA_3}}{sin\widehat{C_1AA_3}}=\dfrac{sin\widehat{B_1A_1A_3}}{sin\widehat{C_1A_1A_3}}.\dfrac{A_3B_1}{A_3C_1}\qquad(*)$ Hoàn toàn tương tự, ta thiết lập được các tỉ số : $\dfrac{sin\widehat{C_1BB_3}}{sin\widehat{A_1BB_3}}=\dfrac{sin\widehat{C_1B_1B_3}}{sin\widehat{A_1B_1B_3}}.\dfrac{B_3C_1}{B_3A_1},\qquad(**)\;\;\;\;\; \dfrac{sin\widehat{A_1CC_3}}{sin\widehat{B_1CC_3}}=\dfrac{sin\widehat{A_1C_1C_3}}{sin\widehat{B_1C_1C_3}}.\dfrac{C_3A_1}{C_3B_1}\qquad(***)$ Theo định lí $Ceva-sin$ trong tam giác $A_1B_1C_1$ với $A_1A_2,B_1B_2,C_1C_2$ đồng quy tại $X$ : $\dfrac{sin\widehat{B_1A_1A_3}}{sin\widehat{C_1A_1A_3}}.\dfrac{sin\widehat{C_1B_1B_3}}{sin\widehat{A_1B_1B_3}}.\dfrac{sin\widehat{A_1C_1C_3}}{sin\widehat{B_1C_1C_3}}=1\qquad(2)$ Dễ thấy rằng $\dfrac{A_2C_1}{A_2B_1}=\dfrac{S_{A_3A_2C_1}}{S_{A_3A_2B_1}}=\dfrac{A_3A_2.A_3C_1.sin\widehat{B_1A_3A_2}}{A_3A_2.A_3B_1.sin\widehat{C_1A_1A_2}}=\dfrac{A_3C_1.sin\widehat{C_1A_3A_1}}{A_3B_1.sin\widehat{B_1C_1A_3}}$ Tương tự thì $\dfrac{B_2C_1}{B_2A_1}=\dfrac{B_3C_1.sin\widehat{C_1B_3B_2}}{B_3A_1.sin\widehat{A_1B_3B_2}},\;\;\dfrac{C_2A_1}{C_2B_1}=\dfrac{C_3A_1.sin\widehat{A_1B_3B_2}}{C_3B_1.sin\widehat{B_1}C_3C_2}$ Nhân vế các đẳng thức trên với chú ý rằng $\dfrac{A_2B_1}{A_2C_1}.\dfrac{B_2C_1}{B_2A_1}.\dfrac{C_2A_1}{C_2B_1}=1$ (định lí $Ceva$ trong tam giác $A_1B_1C_1$ ) và $\widehat{B_1A_3A_2}=\widehat{A_1B_3B_2},\widehat{C_1A_3A_2}=\widehat{A_1C_3C_2},\widehat{B_1C_3C_2}=\widehat{A_1B_3B_2}$ Ta thu được : $\dfrac{A_3B_1}{A_3C_1}.\dfrac{B_3C_1}{B_3A_1}.\dfrac{C_3A_1}{C_3B_1}=1\qquad(3)$ Nhân các đẳng thức ở $(*)(**)(***)$ vế theo vế và áp dụng $(1),(2)$ thì ta được : $\dfrac{sin\widehat{B_1AA_3}}{sin\widehat{C_1AA_3}}.\dfrac{sin\widehat{C_1BB_3}}{sin\widehat{A_1BB_3}}.\dfrac{sin\widehat{A_1CC_3}}{sin\widehat{B_1CC_3}}=1$ Từ đó theo định lí $Ceva-sin$ trong tam giác $ABC$ ta có $AA_2,BB_2,CC_2$ đồng quy. c) Trước hết ta chứng minh $AB,A_2B_2,A_3B_3$ đồng quy. Gọi $R$ là giao điểm của $AB$ và $A_3B_3$ . Xét lục giác nội tiếp $A_3A_1C_1C_1B_1B_3$ với $\left \{ R \right \}=C_1C_1\cap A_3B_3,\;\;\left \{ B_2 \right \}=A_1C_1\cap B_1B_3,\;\;\left \{ A_2 \right \}=A_1A_3\cap B_1C_1$ . Theo định lí $Pascal$ ta có $A_2,B_2,R$ thẳng hàng hay $A_2B_2,A_3B_3,AB$ đồng quy. Xét hai tam giác $AA_2A_3$ và $BB_2B_3$ có : $\left \{ X \right \}=A_2A_3\cap B_2B_3,\;\left \{ P \right \}=AA_2\cap BB_2,\;\;\left \{ Q \right \}=AA_3\cap BB_3$ Mà $A_2B_2,A_3B_3,AB$ đồng quy Do đó theo định lí $Desargues$ ta có $P,Q,X$ thẳng hàng (điều phải chứng minh)
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/11/13/bai-toan-dong-quy-thang-hang/
+
+---
+
+## 119. (không rõ nguồn thi)
+
+**Đề:** Cho $\Delta ABC$ có $O$ là điểm bất kỳ nằm trong $\Delta$ . Nối $AO,BO,CO$ giao $BC,CA,AB$ ở $M,N,P$ . Gọi $I$ là điểm bất kỳ nằm trong $\Delta MNP$ .Nối $MI,NI,PI$ giao $PN,PM,MN$ ở $D,E,F$ . Chứng minh rằng $AD,BE,CF$ đồng quy.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/cevasin.jpg)
+
+<details><summary>Lời giải</summary>
+
+Ta có : $\dfrac{S_{ADN}}{S_{ADP}}=\dfrac{AD.DN.sin\widehat{ADN}}{AD.DP.sin\widehat{ADP}}=\dfrac{DN}{DP},\dfrac{S_{ADN}}{S_{ADP}}=\dfrac{AN.AD.sin\widehat{DAC}}{AD.AP.sin\widehat{DAB}}=\dfrac{AN.sin\widehat{DAC}}{AP.sin\widehat{DAB}} Do đó : $\dfrac{AD.sin\widehat{DAC}}{AP.sin\widehat{DAB}}=\dfrac{DN}{DP}\Rightarrow \dfrac{sin\widehat{DAC}}{sin\widehat{DAB}}=\dfrac{DN}{DP}.\dfrac{AP}{AN}$ Hoàn toàn tương tự : $\dfrac{sin\widehat{EBA}}{sin\widehat{EBC}}=\dfrac{EP}{EM}.\dfrac{BM}{BP},\;\;\dfrac{sin\widehat{FCB}}{sin\widehat{FCA}}=\dfrac{FM}{FN}.\dfrac{CN}{CM}$ Suy ra : $\dfrac{sin\widehat{DAC}}{sin\widehat{DAB}}.\dfrac{sin\widehat{EBA}}{sin\widehat{EBC}}.\dfrac{sin\widehat{FCB}}{sin\widehat{FCA}}=\dfrac{DN}{DP}.\dfrac{EP}{EM}.\dfrac{FM}{FN}.\dfrac{AP}{AN}.\dfrac{BM}{BP}.\dfrac{CN}{CM}$ Theo định lí $Ceva$ trong tam giác $ABC$ và $MNP$ thì : $\dfrac{DN}{DP}.\dfrac{EP}{EM}.\dfrac{FM}{FN}=1,\;\;\dfrac{AP}{AN}.\dfrac{BM}{BP}.\dfrac{CN}{CM}=1$ Suy ra $\dfrac{sin\widehat{DAC}}{sin\widehat{DAB}}.\dfrac{sin\widehat{EBA}}{sin\widehat{EBC}}.\dfrac{sin\widehat{FCB}}{sin\widehat{FCA}}=1$ Theo định lí $Ceva-sin$ ta có $AD,BE,CF$ đồng quy.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/11/12/bai-toan-ung-dung-dinh-li-ceva-sin/
+
+---
+
+## 120. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ . $I$ là điểm bất kì bên trong mặt phẳng. Gọi $M, N, P$ lần lượt là trung điểm của $BC$ , $CA$ , $AB$ . Qua $M, N ,P$ lần lượt vẽ các đường thẳng $\Delta _M$ , $\Delta _N$ , $\Delta _P$ song song với $AI$ , $BI$ , $CI$ . Chứng minh $\Delta _M,\Delta _N, \Delta _P$ đồng quy
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/dfafasfa.jpg) ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/dada.jpg)
+
+<details><summary>Lời giải</summary>
+
+Bổ đề : Cho tam giác $ABC$ và $I$ là một điểm bất kì trên mặt phẳng. $X,Y,Z$ lần lượt là hình chiếu của $I$ trên $BC,CA,AB$ . $D,E,F$ lần lượt là trung điểm của $ZX,XY,YZ$ . Chứng minh rằng các đường thẳng $\Delta _{D},\Delta _{E},\Delta _{F}$ lần lượt qua $D,E,F$ và vuông góc với $CA,AB,BC$ đồng quy. Chứng minh bổ đề : Gọi $H,L,K$ lần lượt là trung điểm của $BC,CA,AB$ . Ta có : $FB^2-FC^2=(\overrightarrow{FB}-\overrightarrow{FC})(\overrightarrow{FB}+\overrightarrow{FC})=2\overrightarrow{CB}.\overrightarrow{FH}=2\overrightarrow{CB}\left ( \overrightarrow{AH}-\overrightarrow{AF} \right )=\overrightarrow{CB}\left ( \overrightarrow{AB}+\overrightarrow{AC}-\overrightarrow{AY}-\overrightarrow{AZ} \right )=\overrightarrow{CB}\left ( \overrightarrow{ZB}-\overrightarrow{CY} \right )=\dfrac{1}{2}\left ( CB^2+ZB^2-CZ^2 \right )-\dfrac{1}{2}(CB^2+CY^2-YB^2)=\dfrac{1}{2}(ZB^2-ZC^2+YB^2-YC^2)$ Hoàn toàn tương tự thì : $DC^2-DA^2=\dfrac{1}{2}\left ( ZC^2-ZA^2+XC^2-XA^2\right ),\;\;\;EA^2-EB^2=\dfrac{1}{2}\left ( XA^2-XB^2+YA^2-YB^2 \right )$ Suy ra $\left ( FB^2-FC^2 \right )+(DC^2-DA^2)+(EA^2-EB^2)=0$ Theo định lí $Carnot$ thì $\Delta _{D},\Delta _{E},\Delta _{F}$ đồng quy. TRỞ LẠI BÀI TOÁN : Qua các điểm $A,B,C$ lần lượt kẻ các đường thẳng vuông góc với $AI,BI,CI$ . Chúng đôi một cắt nhau tạo thành tam giác $A'B'C'$ như hình vẽ. Khi đó ta thấy điểm $I$ có hình chiếu $A,B,C$ lần lượt trên ba cạnh $B'C',C'A',A'B'$ của tam giác $ABC$ , $M,N,P$ lần lượt là trung điểm của $BC,CA,AB$ . Lại có $\Delta _{M}\parallel IA,IA\perp B'C'\Rightarrow \Delta _{M}\perp B'C'$ Tương tự $\Delta _{N}\perp C'A',\Delta _{P}\perp A'B'$ Theo bổ đề ta có $\Delta _{M},\Delta _{N},\Delta _{P}$ đồng quy.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/11/10/bai-toan-dinh-li-carnot-dong-quy/
+
+---
+
+## 121. (không rõ nguồn thi)
+
+**Đề:** 1 : Cho tam giác $ABC$ nội tiếp $(O)$ . Hai đường cao $CC',BB'$ . $G$ là trọng tâm tam giác. $C'G,B'G$ lần lượt cắt $(O)$ tại $C_1,B_1$ . Chứng minh rằng giao điểm $I$ của $BC_1$ và $B_1C$ nằm trên đường thẳng $Euler$ của tam giác $ABC$ .
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/ddd.jpg) ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/pascal.jpg) ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/d.jpg)
+
+<details><summary>Lời giải</summary>
+
+Bổ đề : Cho tam giác $ABC$ nội tiếp $(O)$ , trực tâm $H$ , trọng tâm $G$ . Đường cao $AA'$ cắt $(O)$ tại $A''$ , tia $A'G$ cắt $(O)$ tại $A_1$ . Khi đó ta có $A_1,O,A''$ thẳng hàng. Chứng minh bổ đề : Dễ thấy rằng $A'$ là trung điểm của $HA''$ . Gọi $K$ là giao điểm của $A'G$ với $A''O$ . Ta sẽ chứng minh $K\equiv A_1$ Theo định lí $Menelaus$ cho tam giác $HOA''$ : $\dfrac{A'H}{A'A''}.\dfrac{KA''}{KO}.\dfrac{GO}{GH}=1\Rightarrow \dfrac{KA''}{KO}=\dfrac{GH}{GO}.\dfrac{A'A''}{A'H}=2$ Hiển nhiên $K,A'',O$ thẳng hàng theo cách gọi điểm $K$ nên $O$ là trung điểm của $A''O$ , suy ra $K\in \left ( O \right )\Rightarrow K\equiv A_1$ . Như vậy bổ đề được chứng minh. Quay trở lại bài toán : Gọi $H$ là trực tâm tam giác. Vẽ giao điểm của $BB',CC'$ lần lượt với $(O)$ là $B'',C''$ . Theo bổ đề trên thì $B_1,O,B''$ và $C_1,O,C''$ là các bộ điểm thẳng hàng. Áp dụng định lí $Pascal$ cho lục giác nội tiếp $BB''B_1CC''C_1$ : với $\left \{ H \right \}=CC''\cap BB''\;\;\;,\left \{ O \right \}=C''C_1\cap B''B_1,\;\;\;\left \{ I \right \}=BC_1\cap B_1C$ Ta có $H,I,O$ thẳng hàng. Vậy $I$ thuộc đường thẳng $Euler$ của tam giác $ABC$ . ____________________________________________________ Bài toán 2 : Cho tam giác $ABC$ nội tiếp $(O)$ , trọng tâm $G$ . Các đường cao $AA',BB',CC'$ . Gọi $A_1,B_1,C_1$ lần lượt là giao điểm của $A'G,B'G,C'G$ với $(O)$ , $A_2,B_2,C_2$ lần lượt là các điểm đối xứng của $A,B,C$ qua $O$ . Chứng minh rằng $A_1A_2,B_1B_2,C_1C_2$ đồng quy. Chứng minh 1 : Gọi $\left \{ P \right \}=B_1C\cap BC_1$ , $\left \{ W \right \}=B_1B_2\cap C_1C_2$ Xét lục giác nội tiếp $B_1B_2BC_1C_2C$ với $\left \{ P \right \}=B_1C\cap BC_1$ , $\left \{ W \right \}=B_1B_2\cap C_1C_2$ , $\left \{ O \right \}=CC_2\cap BB_2$ Do đó theo định lí $Pascal$ ta có $P,W,O$ thẳng hàng. Mà theo bài toán 1 thì $PO$ chính là đường thẳng $Euler$ của tam giác $ABC$ nên giao điểm $W$ của $B_1B_2,C_1C_2$ nằm trên đường thẳng $Euler$ của tam giác. Hoàn toàn tương tự, ta chứng minh được giao điểm của $A_1A_2,C_1C_2$ và $B_1B_2,A_1A_2$ cũng thuộc đường thẳng $Euler$ của tam giác $ABC$ . Vậy : $A_1A_2,B_1B_2,C_1C_2$ đồng quy (tại một điểm thuộc đường thẳng $Euler$ của tam giác $ABC$ ) Chứng minh 2 : Gọi $T$ là giao của tia $AA'$ với $(O)$ , theo bổ đề trong chứng minh bài toán 1, ta có $T,O,A_1$ thẳng hàng. Từ đó có $AA_1A_2T$ là hình chữ nhật, suy ra $AT\parallel A_1A_2\Rightarrow A_1A_2\perp BC\qquad(AT\perp BC)$ Tương tự ta có $B_1B_2\perp AC,\;\;C_1C_2\perp BA$ Dễ dàng chứng minh được $BHCA_2$ là hình bình hành nên $A_2C=BH,A_2B=CH$ Tương tự : $B_2C=AH,B_2A=CH,C_2A=BH,C_2B=AH$ Suy ra $\left ( A_2C^2-A_2B^2 \right )+(C_2B^2-C_2A^2)+(B_2A^2-B_2C^2)=(BH^2-CH^2)+(AH^2-BH^2)+(CH^2-AH^2)=0$ Theo định lí $Carnot$ , ta có $A_1A_2,B_1B_2,C_1C_2$ đồng quy.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/11/09/bai-toan-dinh-li-pascal-carnot-ba-diem-thang-hang-cac-duong-dong-quy/
+
+---
+
+## 122. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ , các điểm $X,Y,Z$ lần lượt thuộc $BC,CA,AB$ sao cho $AX,BY,CZ$ đồng quy tại $N$ . Gọi $T$ là giao của $AX$ với $YZ$ . $M,P$ lần lượt là giao điểm của $ZX$ với $TB$ , $XY$ với $TC$ . $Q$ là giao điểm của $YZ$ với $BC$ . Chứng minh rằng $M,N,P,Q$ cùng thuộc một đường thẳng.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/untitl1111111edc.jpg)
+
+<details><summary>Lời giải</summary>
+
+Ta có $Y,Z,T$ thẳng hàng và $B,X,C$ thẳng hàng. Có $\left \{ M \right \}=XZ\cap TB,\;\;\left \{ N \right \}=ZC\cap YB,\;\;\left \{ P \right \}=TC\cap XY$ . Do đó theo định lí $Pappus$ ta có $M,N,P$ thẳng hàng. Xét hai tam giác $XYZ$ và $TBC$ có $XT,ZC,YB$ đồng quy. Mà $\left \{ M \right \}=XZ\cap TB,\;\;\left \{ P \right \}=XY\cap TC,\;\;\left \{ Q \right \}=YZ\cap BC$ . Do đó theo định lí $Desargues$ , ta có $M,P,Q$ thẳng hàng. Vậy : $M,N,P,Q$ cùng thuộc một đường thẳng.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/11/08/bai-toan-ung-dung-dinh-li-pappus-dinh-li-desargues/
+
+---
+
+## 123. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ nội tiếp đường tròn tâm $O$ . Gọi $A',B',C'$ lần lượt là trung điểm của $BC,CA,AB$ . Chứng minh rằng tâm các đường tròn $(AOA'),(BOB'),(COC')$ thẳng hàng.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/lemma-geometry.jpg) ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/fdfsd.jpg)
+
+<details><summary>Lời giải</summary>
+
+Bổ đề : Cho tam giác $ABC$ nội tiếp đường tròn $(O)$ . Gọi $I$ là giao điểm của tiếp tuyến tại $A$ với $BC$ , $J$ là giao điểm của tiếp tuyến tại $B$ với $CA$ , $K$ là giao điểm của tiếp tuyến tại $C$ với $AB$ . Chứng minh rằng $I,J,K$ thẳng hàng. Chứng minh bổ đề : Chứng minh 1 : Dễ thấy $\Delta JAB\sim \Delta JBC\Rightarrow \dfrac{JA}{JB}=\dfrac{JB}{JC}=\dfrac{AB}{BC}\Rightarrow \dfrac{JA}{JC}=\dfrac{AB^2}{BC^2}$ Hoàn toàn tương tự, ta được : $\dfrac{IC}{IB}=\dfrac{CA^2}{CB^2},\;\;\dfrac{KB}{KA}=\dfrac{BC^2}{AC^2}$ Suy ra $\dfrac{JA}{JC}.\dfrac{IC}{IB}.\dfrac{KB}{KA}=1$ Theo định lí $Menelaus$ ta có $I,J,K$ thẳng hàng. Chứng minh 2 : Hiển nhiên rằng $AA$ là tiếp tuyến tại $A$ của $(O)$ , $BB$ là tiếp tuyến tại $B$ của $(O)$ , $CC$ là tiếp tuyến tại $C$ của $(O)$ . Xét lục giác nội tiếp $AABBCC$ với : $\left \{ J \right \}=AC\cap BB,\;\;\left \{ I \right \}=AA\cap BC,\;\;\left \{ K \right \}=AB\cap CC$ Theo định lí $Pascal$ ta có $I,J,K$ thẳng hàng. Trở lại bài toán : Gọi $P,Q,R$ lần lượt là tâm các đường tròn $(AOA'),(BOB'),(COC')$ . $H,I,J$ lần lượt là trung điểm của $OA,OB,OC$ . Theo liên hệ giữa đường kính và dây trong đường tròn : $OH\perp OA\Rightarrow HQ$ là tiếp tuyến tại $H$ của $(HIJ)$ Mặt khác nếu gọi $T$ là trung điểm của $OA'$ thì $ITJ\parallel BC$ ( $ITJ$ là đường trung bình của tam giác $OBC$ ) Và $QT\parallel BC$ (cùng vuông góc với $OA'$ ). Do đó $I,J,Q$ thẳng hàng. Hay nói cách khác là $Q$ là giao điểm của $IJ$ với tiếp tuyến tại $H$ của $(HJI)$ . Hoàn toàn tương tự : $P$ là giao điểm của $HJ$ với tiếp tuyến tại $I$ của $(HIJ) R$ là giao điểm của $HI$ với tiếp tuyến tại $J$ của $(HIJ)$ Từ đó theo bổ đề trên, ta có ngay $P,Q,R$ thẳng hàng. Điều phải chứng minh.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/11/07/bai-toan-ba-diem-thang-hang-2/
+
+---
+
+## 124. (Australia 2001)
+
+**Đề:** Cho tam giác $ABC$ nội tiếp một đường tròn. $A',B',C'$ lần lượt là giao điểm của ba đường cao của tam giác với đường tròn ngoại tiếp tam giác. $D$ là một điểm bất kì trên đường tròn. $A",B",C"$ lần lượt là giao điểm của $DA'$ với $BC$ , $DB'$ với $CA$ , $DC'$ với $AB$ . Chứng minh rằng bốn điểm $A",B",C"$ và trực tâm $H$ của tam giác $ABC$ thẳng hàng.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/untitlefd.jpg)
+
+<details><summary>Lời giải</summary>
+
+Theo định lí $Pascal$ cho lục giác nội tiếp $BB'DC'CA$ với : $\left \{ H \right \}=CC'\cap BB'\;\;\;\;,\left \{ C'' \right \}=AB\cap C'D\;\;\;\;,\left \{ B'' \right \}=B'D\cap AC$ Ta có $H,C",B"$ thẳng hàng. Hoàn toàn tương tự, khi xét lục giác $AA'DC'CB$ ta có $H,A",C"$ thẳng hàng. Vậy : Bốn điểm $H,A",B",C"$ thẳng hàng.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/11/04/bai-toan-ap-dung-dinh-li-pascal/
+
+---
+
+## 125. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ với $A_1,B_1,C_1$ lần lượt là trung điểm của $BC,CA,AB$ . Gọi $M$ là một điểm bất kì, trên các đường thẳng qua $M$ lần lượt vuông góc với $BC,CA,AB$ lấy các điểm $A_2,B_2,C_2$ tương ứng không thẳng hàng. Chứng minh rằng ba đường thẳng qua $B_1$ vuông góc với $A_2B_2$ , qua $C_1$ vuông góc với $B_2C_2$ , qua $A_2$ vuông góc với $A_2B_2$ đồng quy.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/09/untitledg.jpg)
+
+<details><summary>Lời giải</summary>
+
+Bổ đề : $CD\perp AB\Leftrightarrow CA^{2}-CB^{2}=DA^{2}-DB^{2}$ Trở lại bài toán : Ta có $MC_{2}\perp AB$ và $AB\parallel A_{1}B_{1}$ (tính chất đường trung bình) Do đó $MC_{2}\perp A_{1}B_{1}\Rightarrow B_{1}C_{2}^{2}-B_{1}M^{2}=A_{1}C_{2}^{2}-A_{1}M^{2}\Rightarrow B_{1}C_{2}^{2}-A_{1}C_{2}^{2}=B_{1}M^{2}-A_{1}M^{2}\qquad(1)$ Tương tự, ta được : $B_{1}M^{2}-B_{1}A_{2}^{2}=C_{1}M^{2}-C_{1}A_{2}^{2}\Rightarrow C_{1}A_{2}^{2}-B_{1}A_{2}^{2}=C_{1}M^{2}-B_{1}M^{2}\qquad(2) C_{1}M^{2}-C_{1}B_{2}^{2}=A_{1}M^{2}-A_{1}B_{2}^{2}\Rightarrow A_{1}B_{2}^{2}-C_{1}B_{2}^{2}=A_{1}M^{2}-C_{1}M^{2}\qquad(3)$ Từ $(1)(2)(3)$ suy ra : $\left ( B_{1}C_{2}^{2} -B_{1}A_{2}^{2}\right )+\left ( C_{1}A_{2}^{2}-B_{1}A_{2}^{2} \right )+\left ( A_{1}B_{2}^{2} -C_{1}B_{2}^{2}\right )=\left ( B_{1}M^{2}-A_{1}M^{2} \right )+\left ( C_{1}M^{2}-B_{1}M^{2} \right )+\left ( A_{1}M^{2}-C_{1}M^{2} \right )=0$ Theo định lí $Carnot$ , ta có $MA_2,MB_2,MC_2$ đồng quy. Đây là điều phải chứng minh.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/09/23/bai-toan-cac-duong-dong-quy-2/
+
+---
+
+## 126. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ . Dựng các tam giác $BCA_1,CAB_1,ABC_1$ theo thứ tự cân tại $A_1,B_1,C_1$ . Các điểm $X,Y,Z$ theo thứ tự là trung điểm của $BC,CA,AB$ Gọi $x,y,z$ lần lượt là các đường thẳng qua $X,Y,Z$ và lần lượt vuông góc với $B_1C_1,C_1A_1,A_1B_1$ . Chứng minh rằng ba đường thẳng $x,y,z$ đồng quy.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/09/untitleddsaemf.jpg)
+
+<details><summary>Lời giải</summary>
+
+Ta có bổ đề quen thuộc sau : $CD\perp AB\Leftrightarrow CA^{2}-CB^{2}=DA^{2}-DB^{2}$ Trở lại bài toán : Vì các tam giác $AB_1C,BA_1C,ABC_1$ cân nên $A_{1}X\perp BC,B_{1}Y\perp AC,C_{1}Z\perp AB$ Mặt khác theo tính chất đường trung bình $AB\parallel XY,BC\parallel YZ,CA\parallel ZX$ Do đó : $A_{1}X\perp YZ,B_{1}Y\perp ZX,C_{1}Z\perp XY$ Áp dụng bổ đề ta có $A_{1}Z^{2}-A_{1}Y^{2}=XZ^{2}-XY^{2},B_{1}X^{2}-B_{1}Z^{2}=YX^{2}-YZ^{2},C_{1}Y^{2}-C_{1}X^{2}=ZY^{2}-ZX^{2}$ Khi đó $(XB_{1}^{2}-XC_{1}^{2})+\left ( YC_{1}^{2}-YA_{1} ^{2}\right )+\left (ZA_{1}^{2}-ZB_{1}^{2} \right )=\left ( A_{1}Z^{2}-A_{1}Y^{2} \right )+\left ( C_{1}Y^{2}- C_{1}X^{2}\right )+\left ( B_{1}X^{2}-B_{1}Z^{2} \right )=\left ( XZ^{2}-XY^{2} \right )+\left ( ZY^{2}-ZX^{2} \right )+\left ( ZX^{2}-ZY^{2} \right )=0$ Theo định lí $Carnot$ ta có $x,y,z$ đồng quy.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/09/22/bai-toan-cac-duong-dong-quy-ung-dung-dinh-li-carnot/
+
+---
+
+## 127. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ , các điểm $A',B',C'$ lần lượt thuộc các cạnh $BC,CA,AB$ sao cho $AA',BB',CC'$ đồng quy. Gọi $A_{1},B_{1},C_{1}$ lần lượt là giao điểm của đường tròn ngoại tiếp tam giác $A'B'C'$ với các cạnh $BC,CA,AB$ . Chứng minh rằng $AA_{1},BB_{1},CC_{1}$ đồng quy.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/08/banve-1.jpg)
+
+<details><summary>Lời giải</summary>
+
+Vì $AA',BB',CC'$ đồng quy nên theo định lí $Ceva$ ta có : $\dfrac{A'B}{A'C}.\dfrac{B'C}{B'A}.\dfrac{C'A}{C'B}=1$ Ta có $A'A_{1}B'B_{1}$ là tứ giác nội tiếp nên ta có : $CA_{1}.CA'=CB'.CB_{1}\Rightarrow \dfrac{CA_{1}}{CB_{1}}=\dfrac{CB'}{CA'}$ Tương tự, ta có : $\dfrac{AB_{1}}{AC_{1}}=\dfrac{AC'}{AB'}$ và $\dfrac{BC_{1}}{BA_{1}}=\dfrac{BA'}{BC'}$ Nhân các kết quả trên vế theo vế : $\dfrac{CA_{1}}{CB_{1}}.\dfrac{AB_{1}}{AC_{1}}.\dfrac{BC_{1}}{BA_{1}}=\dfrac{CB'}{CA'}.\dfrac{AC'}{AB'}.\dfrac{BA'}{BC'}=\dfrac{A'B}{A'C}.\dfrac{B'C}{B'A}.\dfrac{C'A}{C'B}=1\Leftrightarrow \dfrac{A_{1}C}{A_{1}B}.\dfrac{C_{1}B}{C_{1}A}.\dfrac{B_{1}A}{B_{1}C}=1$ Theo định lí $Ceva$ ta có $AA_{1},BB_{1},CC_{1}$ đồng quy. Đây là điều phải chứng minh
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/08/27/bai-toan-cac-duong-dong-quy/
+
+---
+
+## 128. (không rõ nguồn thi)
+
+**Đề:** Cho tứ giác $ABCD$ nội tiếp đường tròn $(O)$ . Gọi $P,Q,R,S$ lần lượt là trung điểm của $AB,BC,CD,DA$ . Gọi $P_{1},Q_{1},R_{1},S_{1}$ là hình chiếu vuông góc của các điểm $P,Q,R,S$ lên các cạnh đối của nó. Gọi $I$ là giao điểm của $PP_{1}$ và $QQ_{1}$ . Chứng minh rằng : a) $\overrightarrow{OI}=\dfrac{1}{2}\left ( \overrightarrow{OA}+\overrightarrow{OB}+\overrightarrow{OC}+\overrightarrow{OD} \right )$ b) $\large PP_{1},QQ_{1},RR_{1},SS_{1}$ đồng quy
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/08/banve1.jpg)
+
+<details><summary>Lời giải</summary>
+
+a) Gọi $E,F$ theo thứ tự là trung điểm của $BD,AC$ Ta sẽ chứng minh rằng $OEIF$ là hình bình hành. Thật vậy, Ta có $QE//CD$ (tính chất đường trung bình) mà $CD\perp PP_{1}\Rightarrow PP_{1}\perp QE\Rightarrow PP_{1}$ là đường cao của tam giác $PQE$ . Tương tự thì $QQ_{1}\perp PE\Rightarrow QQ_{1}$ là đường cao của tam giác $PQE$ Mà $I=PP_{1}\cap QQ_{1}$ nên $I$ là trực tâm tam giác $PQE$ Do đó $EI\perp PQ$ Lại có $PQ//AC$ (tính chất đường trung bình) nên $EI\perp AC$ . Nhưng $OF\perp AC$ ( $F$ là trung điểm của $AC$ ) Suy ra $EI//OF$ . Tương tự $IF//EO$ . Vậy : $OEIF$ là hình bình hành. Theo quy tắc trung điểm và quy tắc hình bình hành : $(\overrightarrow{OA}+\overrightarrow{OC})+(\overrightarrow{OB}+\overrightarrow{OD})=2(\overrightarrow{OE}+\overrightarrow{OF})=2\overrightarrow{OI}\Rightarrow \overrightarrow{OI}=\dfrac{1}{2}\left ( \overrightarrow{OA}+\overrightarrow{OB}+\overrightarrow{OC}+\overrightarrow{OD} \right )$ b) Gọi $I'$ là giao điểm của $RR_{1},SS_{1}$ thì tương tự ta được $\overrightarrow{OI'}=\dfrac{1}{2}(\overrightarrow{OA}+\overrightarrow{OB}+\overrightarrow{OC}+\overrightarrow{OD})$ Suy ra $\overrightarrow{OI}=\overrightarrow{OI'}\Leftrightarrow I\equiv I'$ Vậy : $PP_{1},QQ_{1},RR_{1},SS_{1}$ đồng quy
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/08/14/bai-toan-hinh-hoc/
+
+---
+
+## 129. (ELMO Shortlist 2012)
+
+**Đề:** Cho tam giác $ABC$ và tâm nội tiếp $(I)$ , $D$ là chân vuông góc của $I$ xuống $BC$ , $P$ là chân vuông góc của $I$ xuống $AD$ . Chứng minh $\angle BPD = \angle CPD$ .
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/09/elmosl2012.jpg)
+
+<details><summary>Lời giải</summary>
+
+Gọi $(c)$ là đường tròn đường kính $ID$ . Dễ dàng thấy rằng $BC,IP,EF$ theo thứ tự là trục đẳng phương của các cặp đường tròn $(c)$ và $(I)$ , $(c)$ và $(AFPIE)$ , $(AFPIE)$ và $(I)$ . Như vậy $BC,IP,EF$ đồng quy tại $J$ . Từ đó dễ thấy $(JD,BC)=-1$ mà $PI$ vuông góc $PD$ nên theo định lý về chùm điều hòa ta được $\angle BPD = \angle CPD$
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/09/05/geometry-88/
+
+---
+
+## 130. (không rõ nguồn thi)
+
+**Đề:** Cho tứ giác $ABCD$ nội tiếp $(O)$ có $AD,BC$ giao nhau tại $E$ và $AC,BD$ giao nhau tại $P$ . Gọi $M,N$ là trung điểm của $AC,BD$ . Gọi $I$ là tâm ngoại tiếp tam giác $EMN$ . Chứng minh $OP$ song song $EI$ .
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/09/fffff.jpg)
+
+<details><summary>Lời giải</summary>
+
+Gọi $S$ là trung điểm của $EF$ , $X$ theo thứ tự là giao của $EF$ với $BD,AC$ . Dễ thấy $(AC,YP)=-1$ mà $M$ là trung điểm của $AC$ nên theo hệ thức Macraulin : $PM.PY=PA.PC$ Hoàn toàn tương tự thì $PN.PX=PD.PB$ . Hơn nữa lại có $PA.PC=PB.PD=P_{P/(O)}$ nên có $PN.PX=PM.PY$ Suy ra $M,N,X,Y$ đồng viên. Mà dễ dàng thấy $S,M,N$ thẳng hàng theo định lí về đường thẳng Gauss. Do vậy ta được $SM.SN=SX.SY$ . Cũng dễ thấy $(EF,XY)=-1$ và $S$ là trung điểm của $EF$ nên theo hệ thức Newton : $SE^2=SX.SY$ Ta thu được $SE^2=SM.SN$ . Suy ra $SE$ là tiếp tuyến của $(EMN)$ . Từ đó $IE$ vu��ng góc $EF$ . Lại theo định lý Brocard thì $O$ là trực tâm tam giác $PEF$ , kéo theo $OP$ vuông góc $EF$ . Như vậy $IE$ song song $OP$ .
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/09/04/geometry-86/
+
+---
+
+## 131. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ . $I_A,I_B,I_C$ lần lượt là tâm các đường tròn bàng tiếp góc $A,B,C$ . $(I_A)$ tiếp xúc $BC,CA,AB$ tại $A_1,B_1,C_1$ . $(I_B)$ tiếp xúc $BC,CA,AB$ tại $A_2,B_2,C_2$ . $(I_C)$ tiếp xúc $BC,CA,AB$ tại $A_3,B_3,C_3$ . Gọi $D,E,F$ theo thứ tự là giao của các cặp đường thẳng $(I_AA_1,B_1C_1),(I_BA_2,B_2C_2),(I_CA_3,B_3C_3)$ . Chứng minh $AD,BE,CF$ đồng quy.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/08/dfdarlemma.jpg) ![](https://julielltv.wordpress.com/wp-content/uploads/2014/08/geo.jpg)
+
+<details><summary>Lời giải</summary>
+
+Qua $A$ kẻ đường thẳng $d$ song song với $BC$ . $I_AA_1$ cắt $d$ tại $T$ . $B_1C_1$ cắt $d$ tại $U$ . Dễ thấy các điểm $A,T,B_1,C_1,I_A$ cùng thuộc đường tròn đường kính $AI_A$ , suy ra : $\angle C_1TI_A=\angle C_1AI_A=\dfrac{\angle A}{2}=\angle B_1AI_A=\angle B_1TI_A$ Tức $TI_A$ là phân giác góc $B_1TC_1$ , hơn nữa $TI_A$ vuông góc $TU$ . Do đó $T(B_1C_1,UI_A)=-1$ . Kéo theo $(B_1C_1,UD)=-1$ . Lại kéo theo $A(CB,UD)=-1$ mà ta có $AU$ song song $BC$ nên theo định lý về chùm điều hòa, ta được $AD$ đi qua trung điểm của $BC$ hay $AD$ là trung tuyến của tam giác $ABC$ . Một cách tương tự $BE,CF$ là trung tuyến của tam giác $ABC$ . Như vậy $AD,BE,CF$ đồng quy.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/08/24/geometry-80/
+
+---
+
+## 132. (Đề thi Olympic Duyên Hải Bắc Bộ 2012-2013 môn toán lớp 11)
+
+**Đề:** Cho tam giác $ABC$ ngoại tiếp $(I)$ và nội tiếp $(O)$ . Tiếp điểm với $(I)$ trên $BC,CA,AB$ theo thứ tự là $D,E,F$ . $H$ là chân vuông góc hạ từ $D$ xuống $EF$ . $AH$ cắt $(O)$ tại $G$ . Tiếp tuyến tại $G$ của $(O)$ cắt $BC$ tại $T$ . Chứng minh tam giác $TDG$ cân.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/06/olpdhb2b.jpg)
+
+<details><summary>Lời giải</summary>
+
+Theo định lí sin trong tam giác $BGC$ : $\dfrac{BG}{GC}=\dfrac{sin\angle GBC}{sin\angle GCB}=\dfrac{sin\angle HAE}{sin\angle HAF}$ Lại theo định lí sin trong các tam giác $AFH,AEH$ : $\dfrac{HF}{sin\angle HAF}=\dfrac{HA}{sin\angle AFH}=\dfrac{HA}{sin\angle AEH}=\dfrac{HE}{sin\angle HAE}\Rightarrow \dfrac{sin\angle HAF}{sin\angle HAE}=\dfrac{HF}{HE}$ Lại có : $\dfrac{HF}{HE}=\dfrac{FD.cos\angle EFD}{DE.cos\angle FED}=\dfrac{\dfrac{BD.sin\angle B}{sin\angle BDF}.cos\left ( \pi -\angle AFE-\angle BFD \right )}{\dfrac{DC.sin\angle C}{sin\angle EDC}.cos\left ( \pi -\angle DEC-\angle FEA \right )}=\dfrac{BD}{DC}$ Từ đó ta có : $\dfrac{BG}{GC}=\dfrac{BD}{DC}$ Suy ra $GD$ là phân giác trong tam giác $BGC$ . Kẻ phân giác ngoài $GS$ ta có hàng điều hòa phân giác : $(SDBC)=-1$ Do đó nếu ta gọi trung điểm của $SD$ là $T'$ thì theo hệ thức Maclaurin : $\overline{BT'}.\overline{BD}=\overline{BC}.\overline{BS} \overline{CT'}.\overline{CD}=\overline{CB}.\overline{CS}$ Lần lượt chia hai đẳng thức trên theo vế : $\dfrac{\overline{BT'}}{\overline{CT'}}=-\dfrac{\overline{BS}}{\overline{CS}}.\dfrac{\overline{BD}}{\overline{CD}}$ Chú ý theo tính chất phân giác trong và phân giác ngoài ta có : $\dfrac{BS}{CS}=\dfrac{BG}{GC}=\dfrac{BD}{DC}$ Do đó mà $\dfrac{\overline{BT'}}{\overline{CT'}}=\dfrac{BG^2}{CG^2}$ Hơn nữa vì hai tam giác $TGB$ và $TCG$ đồng dạng nên ta có : $\dfrac{BG^2}{CG^2}=\dfrac{TB^2}{TG^2}=\dfrac{TB^2}{\overline{TC}.\overline{TB}}=\dfrac{\overline{BT}}{\overline{CT}}$ Suy ra : $\dfrac{\overline{BT}}{\overline{CT}}=\dfrac{\overline{BT'}}{\overline{CT'}}\Rightarrow T\equiv T'$ Từ đó để ý rằng $T$ chính là tâm ngoại tiếp tam giác $SGD$ nên $TG=TD$ . Vậy tam giác $TGD$ cân.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/06/02/geometry-14/
+
+---
+
+## 133. (Kiểm tra đội tuyển lớp 10 THPT Chuyên Lương Thế Vinh, Đồng Nai 2012-2013)
+
+**Đề:** Cho đường tròn $(I)$ nội tiếp tam giác $ABC$ và tiếp xúc $BC,CA,AB$ lần lượt tại $D,E,F$ . Đường thẳng qua $A$ song song với $BC$ cắt $EF$ tại $K$ . Gọi $M$ là trung điểm của $BC$ . Chứng minh rằng : $IM$ vuông góc với $DK$ .
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/02/untitled2.jpg)
+
+<details><summary>Lời giải</summary>
+
+Bổ đề : Cho tam giác $ABC$ ngoại tiếp $(I)$ , các tiếp điểm trên $BC,CA,AB$ lần lượt là $D,E,F$ . $M$ là trung điểm của $BC$ . Khi đó ta có $ID,EF,AM$ đồng quy. Chứng minh tại đây Quay trở lại bài toán : Theo bổ đề ta có $AM,EF,ID$ đồng quy tại $G$ . Ta có $AK\parallel BC,BM=CM$ nên $A(BCMK)=-1$ . Kéo theo $A(EFKG)=D(EFKG)=-1$ Qua $I$ kẻ tia $Ix$ song song với $BC$ . Tương tự trên ta có $(Ix,IM,IC,IB)=-1$ Suy ra $(Ix,IM,IC,IB)=(DG,DK,DE,DF)=-1$ . Kết hợp với $DI\perp Ix,DF\perp IB,DE\perp IC$ ta suy ra $DK\perp IM$
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/02/16/geometry-8/
+
+---
+
+## 134. (không rõ nguồn thi)
+
+**Đề:** (Gặp gỡ Toán học lần IV) Cho điểm $P$ nằm ngoài đường tròn $(O)$ . $PC$ là tiếp tuyến của $(O)$ kẻ từ $P$ , $PAB$ là cát tuyến. $CD$ là đường kính của $(O)$ . Gọi $E$ là giao điểm của $PO$ với $BD$ . Chứng minh rằng $CE$ vuông góc với $CA$ .
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/02/fsaeawq.jpg)
+
+<details><summary>Lời giải</summary>
+
+Kẻ tiếp tuyến $PG$ đến $(O)$ ( $G$ là tiếp điểm) Gọi $I$ là giao điểm của $PO$ với $AD$ . Dễ thấy $DG\parallel IE$ (cùng vuông góc với $GC$ ) Dễ thấy $ACBG$ là tứ giác điều hòa nên $D\left ( BACG \right )=-1$ mà đường thẳng $PO$ cắt $DA,DB,DC$ lần lượt tại $I,E,O$ và $DG\parallel IE$ nên $O$ là trung điểm của $IE$ . Kết hợp với $O$ là trung điểm của $CD$ ta có $CIDE$ là hình bình hành. Suy ra $CE\parallel AD$ mà $CA\perp AD$ nên $CE\perp AC$ (điều phải chứng minh)
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/02/02/1870/
+
+---
+
+## 135. (không rõ nguồn thi)
+
+**Đề:** Cho tứ giác $ABCD$ nội tiếp. $E,F$ lần lượt là giao điểm của các cặp $(AB,CD),(AD,BC)$ . $M,N$ lần lượt là trung điểm của $AC,BD$ . Gọi $P,Q$ lần lượt là giao của $AC,BD$ với $EF$ . Chứng minh rằng $M,N,P,Q$ đồng viên.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/01/untitled10.jpg)
+
+<details><summary>Lời giải</summary>
+
+Gọi $I$ là giao điểm của $AC,BD$ . Gọi $L$ là giao điểm của $FI$ với $DC$ . Ta có $(ELDC)=-1$ (hàng điều hòa tứ giác toàn phần) Qua phép chiếu xuyên tâm $F$ ta được $(PIAC)=-1$ . Vì $M$ là trung điểm của $AC$ nên theo hệ thức $Maclaurin$ : $\overline{IP}.\overline{IM}=\overline{IA}.\overline{IC}$ Hoàn toàn tương tự : $\overline{IQ}.\overline{IN}=\overline{IB}.\overline{ID}$ Mà $\overline{IA}.\overline{IC}=P_{I/{ABCD}}=\overline{IB}.\overline{ID}$ Dẫn đến $\overline{IN}.\overline{IQ}=\overline{IP}.\overline{IM}$ Điều này chứng tỏ $M,N,P,Q$ đồng viên.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/01/31/geometry-7/
+
+---
+
+## 136. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ nhọn có $AD,BE,CF$ là các đường cao. Gọi $P$ là giao điểm của $BC,EF$ . Đường thẳng qua $D$ song song với $EF$ cắt $AB,AC$ tại $Q,R$ . Gọi $M$ là trung điểm của $BC$ . Chứng minh rằng $P,Q,R,M$ đồng viên.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/01/fd.jpg)
+
+<details><summary>Lời giải</summary>
+
+Ta có $AD,BE,CF$ đồng quy nên $(PDBC)=-1$ (hàng điều hòa tứ giác toàn phần) Nên theo hệ thức $Maclaurin$ : $\overline{DM}.\overline{DP}=\overline{DB}.\overline{DC}$ Mặt khác vì $QR\parallel EF\Rightarrow \widehat{RQB}=\widehat{EFA}=\widehat{ECB}$ Suy ra $B,Q,C,R$ đồng viên, từ đó $\overline{DB}.\overline{DC}=\overline{DQ}.\overline{DR}$ Như vậy $\overline{DQ}.\overline{DR}=\overline{DM}.\overline{DP}$ Dẫn đến $P,Q,R,M$ đồng viên.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/01/28/geometry-5/
+
+---
+
+## 137. (không rõ nguồn thi)
+
+**Đề:** Cho tứ giác $ABCD$ nội tiếp. $M,N$ lần lượt là trung điểm của $AB,CD$ . Đường tròn ngoại tiếp tam giác $ABN$ cắt $CD$ tại $P$ . Đường tròn ngoại tiếp tam giác $CDM$ cắt $AB$ tại $Q$ . Chứng minh rằng $AC,BD,PQ$ đồng quy.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/01/d.jpg)
+
+<details><summary>Lời giải</summary>
+
+Khi $AB\parallel CD$ thì kết quả là hiển nhiên. Xét $AB,CD$ không song song. Gọi $W=AB\cap CD$ . Ta có $A,B,C,D$ đồng viên nên $\overline{WA}.\overline{WB}=\overline{WD}.\overline{WC}$ Ta có $A,B,P,N$ đồng viên nên $\overline{WA}.\overline{WB}=\overline{WP}.\overline{WN}$ Suy ra $\overline{WP}.\overline{WN}=\overline{WC}.\overline{WD}$ mà $N$ là trung điểm của $CD$ nên theo hệ thức $Maclaurin$ ta có $(WPCD)=-1$ . Tương tự $(WQAB)=-1$ Suy ra $\left ( WPCD \right )=\left ( WQAB \right )$ , như vậy $PQ,AC,BD$ đồng quy.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/01/27/geometry-4/
+
+---
+
+## 138. (IMO Shortlist 1994)
+
+**Đề:** Cho tam giác $ABC$ có $D,E,F$ lần lượt là tiếp điểm trên $BC,CA,AB$ của đường tròn nội tiếp tam giác. Gọi $X$ là một điểm bên trong tam giác $ABC$ sao cho đường tròn nội tiếp tam giác $XBC$ tiếp xúc với $BC$ tại $D$ , tiếp xúc với $XB,XC$ theo thứ tự tại $Y,Z$ . Chứng minh $E,F,Y,Z$ đồng viên.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/01/untitled8.jpg)
+
+<details><summary>Lời giải</summary>
+
+Gọi $J,J'$ lần lượt là giao điểm của $EF,YZ$ với $BC$ . Ta chứng minh $J\equiv J'$ . Dễ thấy $AD,BE,CF$ đồng quy (tại điểm $Gergonne$ của tam giác $ABC$ ) nên $(JDBC)=-1$ (hàng điều hòa tứ giác toàn phần) Tương tự $(J'DBC)=-1$ , suy ra $(JDBC)=(J'DBC)$ . Suy ra $J\equiv J'$ . Từ đó, $JD$ là tiếp tuyến chung của hai đường tròn nội tiếp tam giác $ABC,XBC$ nên : $JE.JF=JD^2=JY.JZ$ Suy ra các điểm $E,F,Y,Z$ đồng viên.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/01/27/1834/
+
+---
+
+## 139. (không rõ nguồn thi)
+
+**Đề:** Cho đường tròn nội tiếp $(O)$ của tam giác $ABC$ . Gọi $M$ là trung điểm của $BC$ . $AM$ cắt $(O)$ tại hai điểm $K,L$ ( $K$ nằm giữa $A,L$ ). Qua $K$ kẻ đường thẳng song song với $BC$ cắt $(O)$ tại điểm thứ hai là $X$ . Qua $L$ , kẻ đường thẳng song song với $BC$ cắt $(O)$ tại điểm thứ hai là $Y$ . $AX,AY$ cắt $BC$ tại $Q,P$ . Chứng minh $M$ là trung điểm của $PQ$ .
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/01/fsdfsdfsdatyu.jpg) ![](https://julielltv.wordpress.com/wp-content/uploads/2014/01/hc491c491h.jpg)
+
+<details><summary>Lời giải</summary>
+
+Bổ đề : Cho tam giác $ABC$ ngoại tiếp $(O)$ , tiếp điểm của $(O)$ trên $BC,CA,AB$ lần lượt là $D,E,F$ . Gọi $M$ là trung điểm của $BC$ . Chứng minh $AM,EF,OD$ đồng quy. Chứng minh bổ đề : Gọi $I$ là giao của $OD$ với $EF$ . Ta chứng minh $AI$ đi qua trung điểm $M$ của $BC$ . Ta sẽ xây dựng nên chùm điều hòa. Qua $A$ kẻ đường thẳng song song với $BC$ cắt $OD$ tại $J$ , cắt $EF$ tại $S$ . Ta có $\widehat{EJI}=\widehat{EAO}=\widehat{OAF}=\widehat{FJI}$ (các điểm $A,F,O,E,J$ đồng viên) Tức là $JI$ là phân giác góc $FJE$ . Mặt khác $JI \perp JS \left ( JI \perp BC,BC\parallel JS \right )$ Do đó chùm $J(FEIS)=-1$ , tức $A\left ( BCIS \right )=-1$ . Mặt khác chùm $A(BCIS)$ có $BC\parallel AS$ nên $AI$ đi qua trung điểm $M$ của $BC$ . Bổ đề được chứng minh. Quay trở lại bài toán : Gọi $R$ là giao của $YL$ với $AQ$ Theo bổ đề trên ta có $AM,OD,EF$ đồng quy tại $W$ hay $KL,OD,EF$ đồng quy tại $W$ . Mà $XKYL$ là hình thang cân có $OD$ là trục đối xứng, lại có $OD$ cắt $KL$ ở $W$ nên $W$ cũng thuộc $XY$ . Ta có $(AWKL)=-1$ (hàng điều hòa về đường tròn) nên $X(AWKL)=X(RYKL)=-1$ , mà $XK\parallel RY$ nên $L$ là trung điểm của $RY$ , tức $YL=LR$ Theo định lí $Thales \dfrac{YL}{PM}=\dfrac{AL}{AM}=\dfrac{LR}{MQ}\Rightarrow MP=MQ$ , tức $M$ là trung điểm của $PQ$ . Ta có điều phải chứng minh.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/01/27/geometry-3/
+
+---
+
+## 140. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ ngoại tiếp đường tròn $(I)$ , $D,E,F$ lần lượt là tiếp điểm của $(I)$ với $BC,CA,AB$ . $AD$ cắt $(I)$ tại $X$ , $BX,CX$ theo thứ tự cắt $(I)$ tại $Y,Z$ . $AY,AZ$ lần lượt cắt $I$ tại $R,S$ . Chứng minh rằng $AD,ES,FR$ đồng quy.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/01/g.jpg)
+
+<details><summary>Lời giải</summary>
+
+Gọi $K$ là giao điểm của $ES$ với $AD$ . Ta có $(AXKD)=S(AXKD)=S(ZXED)$ Mặt khác ta thấy $ZXED$ là một tứ giác điều hòa và $S$ là điểm thuộc đường tròn ngoại tiếp tứ giác $ZXED$ , suy ra $S(ZXED)=-1\Rightarrow (AXKD)=-1$ Tương tự, nếu gọi $K'$ là giao điểm của $FR$ với $AD$ thì $\left ( AXK'D \right )=-1$ . Như vậy $\left ( AXK'D \right )=(AXKD)\Rightarrow K\equiv K'$ . Hay $AD,ES,FR$ đồng quy.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/01/23/geometry-2/
+
+---
+
+## 141. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ ngoại tiếp $(I)$ , $D$ là điểm tiếp xúc của $(I)$ với $BC$ . Gọi $M$ là một điểm thuộc đoạn $AD$ . Đường thẳng $BM,CM$ theo thứ tự cắt $(I)$ tại $B_1,B_2;C_1,C_2$ sao cho $BB_1
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/01/untitled7.jpg)
+
+<details><summary>Lời giải</summary>
+
+Gọi $E,F$ là hai tiếp điểm với $(I)$ của $CA,AB$ . Gọi $L$ là giao điểm của $EF,BC$ . Gọi $W$ là giao điểm của $AD$ với $(I)$ . Dễ thấy $WFDE$ là một tứ giác điều hòa nên $LW$ là tiếp tuyến của $(I)$ . Gọi giao điểm của đường thẳng $LB_1$ với $AD,(I)$ lần lượt là $X,C_0$ . Ta có $(LXB_1C_0)=-1$ (hàng điều hòa về đường tròn) $\Rightarrow M(LDBC_0)=-1\;\;\;(1)$ Mặt khác dễ thấy $AD,BE,CF$ đồng quy tại điểm $Gergonne$ của tam giác $ABC$ nên $(LDBC)=-1$ (hàng điều hòa tứ giác toàn phần), do đó $\Rightarrow M(LDBC_1)=-1\;\;\;(1)$ Từ $(1)(2)$ suy ra $M(LDBC_0)=M(LDBC_1)\Rightarrow MC_0\equiv MC_1$ Mà $C_0\in \left ( I \right ),C_1\in \left ( I \right )\Rightarrow C_0\equiv C_1$ , tức là $B_1C_1$ đi qua $L$ . Tương tự $B_2C_2$ đi qua $L$ Kết luận : $BC,B_1C_1,B_2C_2$ đồng quy.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/01/23/geometry/
+
+---
+
+## 142. (không rõ nguồn thi)
+
+**Đề:** Trên cạnh $BC$ của tam giác $ABC$ , lấy một điểm $N$ thỏa mãn đồng thời $BN=2NC$ và $\widehat{NAB}=\widehat{NAC}$ . Gọi $L$ là chân đường vuông góc hạ từ $B$ xuống $AK$ . Gọi $M$ là trung điểm của $BC$ và $H$ là giao điểm của tia $ML$ với $AC$ . a) Chứng minh $FH \perp AC$ b) Chứng minh rằng $HM$ là phân giác góc $BHN$ .
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/01/untitled5.jpg)
+
+<details><summary>Lời giải</summary>
+
+Bổ đề 1 : Cho hai điểm $A,B$ phân biệt và một số thực $k$ . Khi đó tồn tại duy nhất một điểm $H$ thuộc đường $AB$ và thỏa mãn $HA^{2}-HB^{2}=k$ Bổ đề 2 : Cho hai đường thẳng $a,b$ . Các điểm $A,B$ lần lượt thuộc $a$ và $C,D$ lần lượt thuộc $b$ . Khi đó $a \perp b\Leftrightarrow AC^2-BC^2=AD^2-BD^2$ Xem chứng minh hai bổ đề tại đây . Trở lại bài toán : a) Đặt $AB=c,CA=b,BC=a,\widehat{NAC}=\alpha$ thì $AL=AB.cos\widehat{NAB}=c.cos2\alpha$ Theo định lí hàm số cos trong tam giác $ALC$ : $LC^2=AC^2+LA^2-2AC.LA.cos\widehat{NAC}\Leftrightarrow LC^2-LA^2=AC^2-2AC.LA.cos\widehat{NAC}=b^2-2bc.cos\alpha .cos2\alpha$ Ta có $MC^2-MA^2=\dfrac{a^{2}}{4}-\dfrac{1}{4}\left ( 2b^2+2c^2-a^{2} \right )=\dfrac{a^2-b^2-c^2}{2}=-bc.cosA=-bc.cos \alpha$ Như vậy theo bổ đề 2, ta có $MH \perp AC\Leftrightarrow ML \perp AC\Leftrightarrow LC^2-LA^2=MC^2-MA^2\Leftrightarrow b^2-2bc.cos\alpha .sin2\alpha =-bc.cos3\alpha \Leftrightarrow b^2+bc.cos3\alpha =2bc.cos\alpha .sin2\alpha \Leftrightarrow \dfrac{b}{c}+cos3\alpha =2cos\alpha .sin2\alpha \;\;\;(*)$ Mặt khác theo định lí hàm số sin trong các tam giác $NAB,NAC$ : $\dfrac{BN}{sin\widehat{NAB}}=\dfrac{AB}{sin\widehat{ANB}}\Rightarrow sin\widehat{ANB}=\dfrac{AB.sin\widehat{NAB}}{BN}=\dfrac{3c.sin2\alpha }{2a}$ và $\dfrac{NC}{sin\widehat{NAC}}=\dfrac{AC}{sin\widehat{ANC}}\Rightarrow sin\widehat{ANC}=\dfrac{AC.sin\widehat{NAC}}{NC}=\dfrac{3b.sin\alpha }{a}$ Chú ý rằng vì $\widehat{ANB}+\widehat{ANC}=\pi \Rightarrow sin\widehat{ANB}=sin\widehat{ANC}\Rightarrow \dfrac{3c.sin2\alpha }{2a}=\dfrac{3b.sin\alpha }{a}\Rightarrow c=\dfrac{2bsin\alpha }{sin2\alpha }=\dfrac{b}{cos\alpha }$ Thay $\dfrac{b}{c}=cos\alpha$ vào $(*)$ thì ta được : $\left ( * \right )\Leftrightarrow cos\alpha +cos3a=2cos\alpha .cos2\alpha$ . Hiển nhiên đúng. Như vậy ta có $MH \perp AC$ . b) Ta có $\dfrac{CB}{CN}=3$ và $4MB=2BC=3NB=3(MN+MB)\Rightarrow \dfrac{MB}{MN}=3$ Suy ra $\dfrac{\overline{MB}}{\overline{MN}}=-\dfrac{\overline{CB}}{\overline{CN}}\Rightarrow (BNMC)=-1$ Như vậy ta có $H\left ( BNMC \right )=-1$ mà $HM \perp HC$ (câu a) nên theo định lí về chùm điều hòa ta có $HM$ là phân giác góc $BHN$ .
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/01/14/bai-toan-hang-diem-dieu-hoa-he-thuc-luong-trong-tam-giac/
+
+---
+
+## 143. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ ngoại tiếp đường tròn $(O)$ . Các tiếp điểm với $(O)$ trên $BC,CA,AB$ lần lượt là $D,E,F$ . Gọi $S$ là giao điểm của $EF$ với $BC$ . Gọi $I,J$ lần lượt là giao điểm của đường thẳng $SO$ với $(O)$ . Chứng minh rằng $BI,CJ,AD$ đồng quy.
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/01/untitled4.jpg)
+
+<details><summary>Lời giải</summary>
+
+Gọi $X$ là giao điểm của $AD$ với $(O)$ và $Y$ là giao điểm của $SO$ với $AD$ . Dễ dàng thấy rằng $XFDE$ là một tứ giác điều hòa, từ đó dễ dàng thấy ngay $SX$ là tiếp tuyến tại $X$ của $(O)$ . Ta thấy $SX,SD$ tiếp xúc với $(O)$ tại $X,D$ nên $(SYIJ)=-1$ (hàng điều hòa về đường tròn) Mặt khác thì $AD,BE,CF$ đồng quy tại điểm $Gergonne$ của tam giác $ABC$ từ đó có $(SDBC)=-1$ (hàng điều hòa tứ giác toàn phần) Suy ra $(SYIJ)=(SDBC)$ . Vậy nên $YD,BI,CJ$ đồng quy hay $AD,BI,CJ$ đồng quy.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/01/12/bai-toan-tu-giac-dieu-hoa-hang-diem-dieu-hoa/
+
+---
+
+## 144. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ và điểm $O$ nằm trong tam giác. Các tia $BO,CO$ lần lượt cắt $AC,AB$ tại $E,F$ . Gọi $I$ là giao điểm của $AO,EF$ . Gọi $H$ là hình chiếu của $I$ trên $BC$ . Chứng minh rằng $\widehat{AHE}=\widehat{OHF}$
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/01/ser.jpg)
+
+<details><summary>Lời giải</summary>
+
+Gọi $J$ là giao điểm của tia $AO$ với $BC$ . $S$ là giao điểm của $EF$ với $BC$ Ta có $\left ( BCJS \right )=-1$ (hàng điều hòa tứ giác toàn phần) $\Rightarrow H \left ( EFIS \right )=-1$ mà $HI \perp HS$ nên theo định lí về chùm điều hòa ta có $HI$ là phân giác của góc $EHF$ Tức là $\widehat{EHI}=\widehat{FHI}$ Cũng vì $\left ( BCJS \right )=-1$ ta có $\left ( FB,FC,FJ,FS \right )=-1\Rightarrow \left ( FO,FA,FJ,FI\right )=-1\Rightarrow H(OAJI)=-1$ mà $HI \perp HS$ nên theo định lí về chùm điều hòa ta có $HI$ là phân giác của góc $AHO$ . Tức là $\widehat{AHI}=\widehat{OHI}$ Do đó $\widehat{AHE}=\widehat{EHI}-\widehat{AHI}=\widehat{FHI}-\widehat{OHI}=\widehat{OHF}$ Đây là điều phải chứng minh
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/01/05/bai-toan-hang-diem-dieu-hoa-2/
+
+---
+
+## 145. (China TST 2002)
+
+**Đề:** Cho tứ giác lồi $ABCD$ , gọi $E,F,P$ lần lượt là giao điểm của $AD$ và $BC$ , $AB$ và $CD$ , $AC$ và $BD$ . Gọi $O$ là chân đường vuông góc hạ từ $P$ xuống $EF$ . Chứng minh rằng $\widehat{AOD}=\widehat{BOC}$
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/01/chinatst2002.jpg)
+
+<details><summary>Lời giải</summary>
+
+Gọi $I$ là giao điểm của $BD$ và $EF$ và $J$ là giao điểm của $EP$ với $CD$ . Ta có $\left ( DCJF \right )=-1$ (hàng điều hòa tứ giác toàn phần) nên $E\left ( DCJF \right )=-1\Rightarrow E\left ( DBPI \right )=-1\Rightarrow O\left ( DBPI \right )=-1$ Mà $OP \perp OI$ nên theo định lí về chùm điều hòa, ta có $OP$ là phân giác $\widehat{DOC}\Rightarrow \widehat{DOP}=\widehat{BOP}$ Hoàn toàn tương tự ta có $\widehat{AOP}=\widehat{COP}$ Từ đó $\widehat{AOD}=\widehat{AOP}-\widehat{DOP}=\widehat{COP}-\widehat{BOP}=\widehat{BOC}$ Đây là điều phải chứng minh.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/01/05/bai-toan-hang-diem-dieu-hoa/
+
+---
+
+## 146. (không rõ nguồn thi)
+
+**Đề:** Cho tứ giác $ABCD$ ngoại tiếp đường tròn tâm $O$ . Gọi $E,F$ lần lượt là giao điểm của $AC$ với $(O)$ . Hạ $OH$ vuông góc với $BD$ . Chứng minh rằng $\widehat{AHE}=\widehat{CHF}$
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2014/01/fsdfsdfs.jpg) ![](https://julielltv.wordpress.com/wp-content/uploads/2014/01/ddddd.jpg)
+
+<details><summary>Lời giải</summary>
+
+Bổ đề : Cho tứ giác $ABCD$ ngoại tiếp đường tròn $(O)$ với các tiếp điểm trên $AB,BC,CD,DA$ lần lượt là $M,N,P,Q$ . Gọi $K$ là giao của $MN,PQ$ và $I$ là giao của $AC,BD$ . Khi đó ta có $KO \perp BD$ , $K,A,C$ thẳng hàng, từ đó có $(KIAC)=-1$ Chứng minh bổ đề : $\bullet$ Kẻ hai tiếp tuyến $KE,KF$ với $(O)$ . Khi đó tứ giác $MENF$ điều hòa nên $EF$ và các tiếp tuyến tại $M,N$ của $(O)$ đồng quy.Tức là $MB,NN,EF$ đồng quy hay $E,F,B$ thẳng hàng. Tương tự ta có $E,F,D$ thẳng hàng. Suy ra $E,F,B,D$ thẳng hàng. Mà dễ thấy $OK\perp EF\Rightarrow OK\perp BD\;\;\;(1) \bullet$ Gọi $K'$ là giao điểm của $MN,AC$ . Khi đó ta có $\dfrac{K'A}{K'C}.\dfrac{PC}{PD}.\dfrac{QD}{QA}=\dfrac{K'A}{K'C}.\dfrac{PC}{QA}=\dfrac{K'A}{K'C}.\dfrac{NC}{MA}=\dfrac{K'A}{K'C}.\dfrac{MB}{MA}.\dfrac{NC}{NB}=1$ (Chú ý theo tính chất tiếp tuyến mà một số đoạn thẳng bằng nhau $AQ=MA,MB=NB,CN=CP,DP=DQ$ và áp dụng định lí $Menelaus$ cho tam giác $ABC$ với sự thẳng hàng của $K',M,N$ ) Do đó theo định lí $Menelaus$ cho tam giác $ADC$ ta có $P,Q,K'$ thẳng hàng. Suy ra $K\equiv K'$ Điều này chứng tỏ $A,K,C$ thẳng hàng $(2) \bullet$ Bằng định lí $Pascal$ ta dễ dàng chứng minh được $MP,NQ,BD,AC$ đồng quy tại điểm $I$ . Qua $C$ ta kẻ đường thẳng song song với $AB$ cắt đường $MP$ tại $W$ . Dễ dàng chứng minh được tam giác $CPW$ cân tại $C$ nên $CP=CW$ . Từ đó theo định lí $Thales$ : $\dfrac{IA}{IC}=\dfrac{MA}{CW}=\dfrac{MA}{CP}=\dfrac{MA}{CN}$ Theo định lí $Menelaus$ cho tam giác $ABC$ với sự thẳng hàng của $K,M,N$ ta có : $\dfrac{KA}{KC}.\dfrac{NC}{NB}.\dfrac{MB}{MA}=1\Rightarrow \dfrac{KA}{KC}=\dfrac{MA}{CN}$ Vậy suy ra $\dfrac{KA}{KC}=\dfrac{IA}{IC}\Rightarrow \dfrac{\overline{KA}}{\overline{KC}}=\dfrac{-\overline{IA}}{\overline{IC}}\Rightarrow (KIAC)=-1\;\;\;(3)$ (chú ý rằng $K$ nằm ngoài và $I$ nằm trong đoạn $AC$ ) Từ $(1)(2)(3)$ thì bổ đề chứng minh hoàn tất. Trở lại bài toán : Gọi $M,N,P,Q$ lần lượt là các tiếp điểm trên $AB,BC,CD,DA$ của $(O)$ . Gọi $X$ là giao điểm của $PQ,MN$ . Gọi $J$ là giao điểm của $AC,BD$ . Theo bổ đề thì $OX \perp BD$ mà $OH \perp BD$ nên $O,H,X$ thẳng hàng. Cũng theo bổ đề ta có $(ACJX)=-1$ kéo theo $H(ACJX)=-1$ . Nhưng vì $OH \perp BD\Rightarrow HJ \perp HX$ . Theo định lí về chùm điều hòa ta có $HJ$ là phân giác của góc $AHC$ . Từ đó dễ dàng thấy được điều cần chứng minh $\widehat{AHE}=\widehat{CHF}$
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2014/01/04/bai-toan-chum-dieu-hoa-hang-diem-dieu-hoa/
+
+---
+
+## 147. (không rõ nguồn thi)
+
+**Đề:** Từ một điểm $A$ nằm ngoài đường tròn tâm $O$ , kẻ tiếp tuyến $AB$ và cát tuyến $AIK$ đến $(O)$ với $B$ là tiếp điểm, $I$ nằm giữa $A$ và $K$ . Đường thẳng qua $K$ vuông góc với $OA$ cắt tia $AB,IB$ lần lượt tại $C,E$ . Chứng minh rằng $C$ là trung điểm của $AE$ .
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/12/untitled3.jpg)
+
+<details><summary>Lời giải</summary>
+
+Vẽ tiếp tuyến $AD$ với đường tròn với $D$ là tiếp điểm và $D$ khác $B$ . Gọi $J$ là giao điểm của $BD$ với $AK$ . Dễ thấy rằng $BD\parallel KE$ (cùng vuông góc với $OA$ ), khi đó theo định lí $Thales$ trong tam giác $AKC$ : $\dfrac{\overline{JB}}{\overline{KC}}=\dfrac{\overline{AJ}}{\overline{AK}}\Rightarrow \overline{KC}=\dfrac{\overline{JB}.\overline{AK}}{\overline{AJ}}$ Tương tự, theo định lí $Thales$ trong tam giác $IKE$ : $\dfrac{\overline{JB}}{\overline{KE}}=\dfrac{\overline{IJ}}{\overline{IK}}\Rightarrow \overline{KE}=\dfrac{\overline{JB}.\overline{IK}}{\overline{IJ}}$ Mặt khác ta có $(AJIK)=-1$ (hàng điều hòa về đường tròn) Suy ra $(JKAI)=(AIJK)=1-(AJIK)=2\Rightarrow \dfrac{\overline{AJ}}{\overline{AK}}:\dfrac{\overline{IJ}}{\overline{IK}}=2\Rightarrow \dfrac{\overline{IK}}{\overline{IJ}}=2\dfrac{\overline{AK}}{\overline{AJ}}\Rightarrow \dfrac{\overline{IK}}{\overline{IJ}}.\overline{JB}=2.\dfrac{\overline{AK}}{\overline{AJ}}.\overline{JB}\Rightarrow \overline{KE}=2\overline{KC}$ . Điều này chứng tỏ $C$ là trung điểm của $KE$ .
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/12/22/bai-toan-chung-minh-trung-diem-hang-dieu-hoa/
+
+---
+
+## 148. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ , ba đường cao $AD,BE,CF$ đồng quy tại $H$ . Gọi $I,K$ lần lượt là chân đường vuông góc hạ từ $D,A$ xuống $EF$ . Chứng minh rằng $KH$ đi qua trung điểm $M$ của $ID$ .
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/09/banve2.jpg)
+
+<details><summary>Lời giải</summary>
+
+Gọi $N$ là giao điểm của $AD$ và $EF$ Do các tứ giác $FECB$ và $FHDB$ nội tiếp nên ta có $\widehat{EFC}=\widehat{EBC}=\widehat{DFC}$ . Nên $FH$ là phân giác trong của tam giác $FND$ , mà $FH\perp AB$ nên $FA$ là phân giác ngoài của tam giác $FND$ . Từ đó $(AHND)=-1$ (hàng điều hòa tia phân giác) $\Rightarrow K(AHND)=-1$ . Lại có $KA\parallel ID$ (cùng vuông góc với $EF$ ). Do đó theo định lí về chùm điều hòa ta có $KH$ đi qua trung điểm $M$ của $ID$ .
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/09/30/bai-toan-chum-dieu-hoa/
+
+---
+
+## 149. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ có $I,J$ lần lượt là tâm đường tròn nội tiếp và bàng tiếp góc $A$ . Qua $I,J$ lần lượt kẻ các đường thẳng $DE,FG$ song song với $BC$ với $D,F$ thuộc đường thẳng $AB$ và $E,G$ thuộc đường thẳng $AC$ . Chứng minh rằng : $\dfrac{1}{\overline{DE}}+\dfrac{1}{\overline{FC}}=\dfrac{2}{\overline{BC}}$
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/09/banve1.jpg)
+
+<details><summary>Lời giải</summary>
+
+Gọi $K$ là giao điểm của $AJ$ với $BC$ Ta sẽ chứng minh rằng $(ABDF)=-1$ . Thật vậy, ta có $(AKIJ)=-1$ (hàng điều hòa tia phân giác) Do đó $\dfrac{\overline{IA}}{\overline{IK}}=-\dfrac{\overline{JA}}{\overline{JK}}$ Mà theo định lí $Thales$ : $\dfrac{\overline{IA}}{\overline{IK}}=\dfrac{\overline{DA}}{\overline{\overline{DB}}},\dfrac{\overline{JA}}{\overline{JK}}=\dfrac{\overline{FA}}{\overline{FB}}\Rightarrow \dfrac{\overline{DA}}{\overline{DB}}=-\dfrac{\overline{FA}}{\overline{FB}}\Rightarrow (ABDF)=-1$ Theo hệ thức $Decartes$ , ta có : $\dfrac{2}{\overline{AB}}=\dfrac{1}{\overline{AD}}+\dfrac{1}{\overline{AF}}\Leftrightarrow \dfrac{\overline{AB}}{\overline{AD}}+\dfrac{\overline{AB}}{\overline{AF}}=2$ Mà cũng theo định lí $Thales$ : $\dfrac{\overline{AB}}{\overline{AD}}=\dfrac{\overline{BC}}{\overline{DE}},\dfrac{\overline{AB}}{\overline{AF}}=\dfrac{\overline{BC}}{\overline{FC}}\Rightarrow \dfrac{\overline{BC}}{\overline{DE}}+\dfrac{\overline{BC}}{\overline{FG}}=2\Rightarrow \dfrac{1}{\overline{DE}}+\dfrac{1}{\overline{FG}}=\dfrac{2}{\overline{BC}}$ Đây là điều phải chứng minh.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/09/08/bai-toan-he-thuc-hinh-hoc-hang-dieu-hoa/
+
+---
+
+## 150. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ . Gọi $P,Q$ lần lượt là giao điểm của $CB,CA$ với đường thẳng $Euler$ của tam giác. Chứng minh rằng điều kiện cần và đủ để tứ giác $ABPQ$ nội tiếp là $a^{2}+b^2=6R^2$
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/untitled22d.jpg)
+
+<details><summary>Lời giải</summary>
+
+Gọi $O,H$ lần lượt là tâm đường tròn ngoại tiếp và trực tâm tam giác Bổ đề 1 : $HC=2R.cosC$ . Xem chứng minh tại đây Bổ đề 2 : Tứ giác $ABPQ$ nội tiếp $\Leftrightarrow OC\perp OH$ Chứng minh : Kẻ tiếp tuyến tại $C$ của $(ABC)$ như hình vẽ. Ta có $ABPQ$ nội tiếp $\Leftrightarrow \widehat{ABP}=\widehat{PQC\Leftrightarrow }\widehat{C_{1}}=\widehat{PQC}\Leftrightarrow Cx\parallel PQ\Leftrightarrow CO\perp OH$ Bổ đề 2 được chứng minh. Quay trở lại bài toán : Dễ chứng minh được $OH^2=9R^2-a^2-b^2-c^2$ (phương tích trực tâm) Theo bổ đề 2 : $ABPQ$ là tứ giác nội tiếp $\Leftrightarrow CO\perp OH\Leftrightarrow CO^2+OH^2=HC^2\Leftrightarrow R^2+9R^2-a^2-b^2-c^2=4R^2.cos^2C=4R^2(1-sin^2C)=4R^2.\left ( 1-\dfrac{c^2}{4R^2} \right )\Leftrightarrow a^2+b^2=6R^2$ Ta có điều phải chứng minh.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/11/02/bai-toan-he-thuc-hinh-hoc-3/
+
+---
+
+## 151. (không rõ nguồn thi)
+
+**Đề:** Cho tam gi��c $ABC$ nhọn có trực tâm $H$ . Xác định dạng tam giác biết rằng : $\dfrac{(S_1+S_2+S_3)^3}{27S_1S_2S_3}=\dfrac{R}{2r}$ Trong đó $S_{1}=S_{HBC},S_2=S_{HCA},S_3=S_{HAB}$
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/11/untitled.jpg)
+
+<details><summary>Lời giải</summary>
+
+Bổ đề 1 : $HA=2R.cosA,HB=2R.cosB,HC=2R.cosC$ Chứng minh bổ đề 1: Gọi $O$ tâm đường tròn $(ABC)$ , $I$ là trung điểm của $BC$ , tia $CO$ cắt $(O)$ tại $K$ . Ta có $BK=2OI$ (tính chất đường trung bình), $OI=OC.cos\widehat{IOC}=R.cos\dfrac{\widehat{BOC}}{2}=R.cosA$ Mặt khác dễ thấy $AHBK$ là hình bình hành nên $HA=BK=2OI=2R.cosA$ Hoàn toàn tương tự với $HB,HC$ Bổ đề 2 : Với $a,b,c$ là ba số thực tùy ý thì ta có bất đẳng thức : $(a+b-c)^2(b+c-a)^2(c+a-b)^2\geq (a^2+b^2-c^2)(b^2+c^2-a^2)(c^2+a^2-b^2)$ Chứng minh bổ đề 2 : Nếu $a^2,b^2,c^2$ không là độ dài ba cạnh của một tam giác thì hiển nhiên $VT Quay trở lại bài toán : Ta có $S_{1}=\dfrac{1}{2}HB.HC.sin\widehat{BHC}=\dfrac{1}{2}.2R.cosB.2R.cosC.sin\left ( \pi -A \right )=2R^2sinAcosBcosC$ Tương tự ta được $S_{2}=2R^2sinBcosAcosC,S_3=2R^2sinCcosAcosB$ Đẳng thức đề bài cho được viết lại thành : $2rS^{3}=27R.S_1S_2S_3\Leftrightarrow 2r.(2R^2.sinA.sinB.sinC)^3=27R.(2R^2)^3.sinAsinBsinC.cos^2Acos^2Bcos^2C\Leftrightarrow 2r.sin^2Asin^2Bsin^2C=27R.cos^2Acos^2Bcos^2C\Leftrightarrow cot^{2}Acot^2Bcot^2C=\dfrac{2r}{27R}$ Sử dụng định lí hàm số cot: $cotA=\dfrac{b^2+c^2-a^2}{4S}$ Ta có : $\dfrac{(b^2+c^2-a^2)^2(c^2+a^2-b^2)^2(a^2+b^2-c^2)^2}{4^{6}S^{6}}=\dfrac{2r}{27R}=\dfrac{2.\dfrac{S}{p}}{27.\dfrac{abc}{4S}}=\dfrac{8S^{2}}{27pabc}\Leftrightarrow (b^2+c^2-a^2)^2(c^2+a^2-b^2)^2(a^2+b^2-c^2)^2=\dfrac{2^{15}S^{8}}{27pabc}\Leftrightarrow (b^2+c^2-a^2)(c^2+a^2-b^2)(a^2+b^2-c^2)=\dfrac{128\sqrt{2}S^{4}}{3\sqrt{3pabc}}$ Theo bổ đề 2 thì ta có : $\dfrac{128\sqrt{2}S^{4}}{3\sqrt{3pabc}}\leq (a+b-c)^2(b+c-a)^2(c+a-b)^2\Leftrightarrow 128\sqrt{2}.\left [ \dfrac{(a+b+c)(a+b-c)(b+c-a)(c+a-b)}{16} \right ]^2\leq 3\sqrt{3pabc}(a+b-c)^2(b+c-a)^2(c+a-b)^2\Leftrightarrow \dfrac{1}{\sqrt{2}}(a+b+c)^2\leq 3\sqrt{3pabc}\Leftrightarrow \dfrac{1}{2}(a+b+c)^4\leq 27abc.\dfrac{a+b+c}{2}\Leftrightarrow (a+b+c)^3\leq 27abc\Leftrightarrow a=b=c$ Kết luận : Tam giác đã cho là tam giác đều.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/11/01/bai-toan-nhan-dang-tam-giac/
+
+---
+
+## 152. (không rõ nguồn thi)
+
+**Đề:** Cho tam giác $ABC$ có $I$ là tâm đường tròn nội tiếp. Gọi $D,E,F$ lần lượt là tiếp điểm của $(I)$ với $BC,CA,AB$ . Đặt $a'=EF, c'=DE, b' = FD$ và gọi $S',S$ lần lượt là diện tích các tam giác $DEF,ABC$ . a) Chứng minh rằng $\dfrac{a'}{a}+\dfrac{b'}{b}=2sin\dfrac{C}{2}\left ( sin\dfrac{A}{2}+sin\dfrac{B}{2} \right )$ b) Chứng minh rằng $\dfrac{S'}{S}=2sin\dfrac{A}{2}sin\dfrac{B}{2}sin\dfrac{C}{2}$
+
+Hình: ![](https://julielltv.wordpress.com/wp-content/uploads/2013/10/banve.jpg)
+
+<details><summary>Lời giải</summary>
+
+a) Với chú ý rằng $IA,IB$ lần lượt là đường kính của các đường tròn $(AEF),(BFD)$ nên theo định lí hàm số sin : $\dfrac{a'}{a}+\dfrac{b'}{b}=\dfrac{2R_{AEF}.sinA}{2R.sinA}+\dfrac{2R_{BFD}.sinB}{2R.sinB}=\dfrac{IA+IB}{2R}=\dfrac{2R_{IAB}.sin\dfrac{B}{2}+2R_{IAB}sin\dfrac{a}{2}}{2R}=\dfrac{R_{IAB}}{R}.\left ( sin\dfrac{a}{2}+sin\dfrac{B}{2} \right )$ Ta cần chứng minh : $\dfrac{R_{IAB}}{R}=2sin\dfrac{C}{2}$ Thật vậy, nếu ta gọi $I'$ là giao điểm của tia $CI$ với $(ABC)$ thì dễ dàng chứng minh được $I'$ chính là tâm đường tròn $(IAB)$ . Khi đó áp dụng định lí hàm số sin vào tam giác $I'BC$ , ta có : $\dfrac{I'B}{sin\dfrac{C}{2}}=2R\Leftrightarrow \dfrac{R_{IAB}}{R}=2sin\dfrac{C}{2}$ . Như vậy ta có đpcm. b) Ta có bổ đề quen thuộc sau $\dfrac{r}{4R}=sin\dfrac{A}{2}sin\dfrac{B}{2}sin\dfrac{C}{2} S'=S_{EIF}+S_{IFD}+S_{IDE}=\dfrac{1}{2}\left ( IE.IF.sin\widehat{IEF}+IF.IF.sin\widehat{FID} +ID.IE.sin\widehat{EID}\right )=\dfrac{1}{2}r^{2}\left ( sinA+sinB+sinC \right ) S=pr=\dfrac{1}{2}(a+b+c)r=Rr(sinA+sinB+sinC)$ Do đó : $\dfrac{S'}{S}=\dfrac{r^{2}/2.(sinA+sinB+sinC)}{rR(sinA+sinB+sinC)}=\dfrac{r}{2R}=2sin\dfrac{A}{2}sin\dfrac{B}{2}sin\dfrac{C}{2}$ Đây là đpcm.
+
+</details>
+
+Nguồn: https://julielltv.wordpress.com/2013/10/03/bai-toan-he-thuc-hinh-hoc-2/
