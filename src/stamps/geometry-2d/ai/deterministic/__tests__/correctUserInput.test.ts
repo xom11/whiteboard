@@ -9,6 +9,10 @@ describe('applyStructure (tầng 1)', () => {
     expect(applyStructure('góc bằng 90 do')).toBe('góc bằng 90°');
     expect(applyStructure('góc bằng 90 độ')).toBe('góc bằng 90°');
   });
+  it('"do" trần KHÔNG đổi khi theo sau là từ-chữ (do dai/do đó)', () => {
+    expect(applyStructure('2 do dai')).toBe('2 do dai');
+    expect(applyStructure('5 do do bằng nhau')).toBe('5 do do bằng nhau');
+  });
   it('"//" CỐ Ý không đổi (đã gỡ khỏi SYMBOL_MAP vì regress diag-all)', () => {
     expect(applyStructure('AB // CD')).toBe('AB // CD');
   });

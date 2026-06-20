@@ -128,7 +128,11 @@ export const DEFAULT_CORRECT_CONFIG: CorrectConfig = {
 // thành clause-hình-học KHÔNG phủ được (ràng buộc song song khó dựng) → coverage
 // gate đánh rớt cả bài (regress t02:BT25). Lợi ích ≈0 trên corpus, hại thật → bỏ.
 const SYMBOL_MAP: ReadonlyArray<readonly [RegExp, string]> = [
-  [/(\d+)\s*(?:độ|do)(?!\p{L})/giu, '$1°'],
+  // "độ" có dấu = độ-góc rõ ràng → luôn đổi. "do" trần mơ hồ (do đó/do dai/lý do)
+  // → CHỈ đổi khi KHÔNG theo sau bởi một từ-chữ (cuối cụm / trước dấu câu), tránh
+  // băm "2 do dai"→"2° dai". "90 do"/"90 do." vẫn đổi.
+  [/(\d+)\s*độ(?!\p{L})/giu, '$1°'],
+  [/(\d+)\s*do(?!\s*\p{L})/giu, '$1°'],
 ];
 
 /** Tầng 1: gộp xuống dòng + khoảng trắng dư về 1 space; áp bảng ký hiệu. */
