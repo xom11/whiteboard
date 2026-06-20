@@ -16,6 +16,8 @@ import {
   buildCentroid,
   buildIntersectionLines,
   buildPerpFootLine,
+  buildIntersectionLinePlane,
+  buildPerpFootPlane,
 } from './handlers/derived';
 
 export type ToolKey =
@@ -25,7 +27,8 @@ export type ToolKey =
   | 'sphere' | 'cylinder' | 'cone'
   // ───── Dựng hình: điểm phái sinh (v1) ─────
   | 'midpoint' | 'centroid'
-  | 'intersectionLines' | 'perpFootLine';
+  | 'intersectionLines' | 'perpFootLine'
+  | 'intersectionLinePlane' | 'perpFootPlane';
 
 export type ToolStep =
   | {
@@ -287,6 +290,27 @@ export const TOOLS: ToolSpec[] = [
     ],
     build: buildPerpFootLine,
   },
+  {
+    key: 'intersectionLinePlane',
+    label: 'Giao đường ∩ mặt',
+    hintIdle: 'Chọn 2 điểm xác định đường, rồi chọn mặt phẳng',
+    steps: [
+      { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Đường: điểm thứ nhất' },
+      { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Đường: điểm thứ hai' },
+      { type: 'object', kinds: ['plane'], hint: 'Chọn mặt phẳng' },
+    ],
+    build: buildIntersectionLinePlane,
+  },
+  {
+    key: 'perpFootPlane',
+    label: 'Chân ⊥ xuống mặt',
+    hintIdle: 'Chọn điểm cần hạ, rồi chọn mặt phẳng',
+    steps: [
+      { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Điểm cần hạ vuông góc' },
+      { type: 'object', kinds: ['plane'], hint: 'Chọn mặt phẳng' },
+    ],
+    build: buildPerpFootPlane,
+  },
 ];
 
 export const TOOL_GROUPS: Record<string, ToolKey[]> = {
@@ -294,7 +318,7 @@ export const TOOL_GROUPS: Record<string, ToolKey[]> = {
   'Điểm': ['point', 'pointOnObject'],
   'Đường thẳng': ['segment', 'line', 'ray', 'vector', 'polygon'],
   'Mặt phẳng': ['plane'],
-  'Dựng hình': ['midpoint', 'centroid', 'intersectionLines', 'perpFootLine'],
+  'Dựng hình': ['midpoint', 'centroid', 'intersectionLines', 'perpFootLine', 'intersectionLinePlane', 'perpFootPlane'],
   'Khối đa diện': ['pyramid', 'prism', 'tetrahedron', 'cube'],
   'Khối cong': ['sphere', 'cylinder', 'cone'],
 };

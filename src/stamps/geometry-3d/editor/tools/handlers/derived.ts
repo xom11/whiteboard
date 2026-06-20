@@ -3,7 +3,7 @@
 // ensurePoint → addPoint(store, constraint phái sinh).
 import type { Store } from '../../../../../core/scene';
 import type { CollectedArg } from '../spec';
-import { addPoint, ensurePoint } from './_ensurePoint';
+import { addPoint, ensurePoint, hitObjectId } from './_ensurePoint';
 
 // Resolve id các điểm từ những bước 'point' (theo thứ tự chọn). null nếu một
 // hit không phân giải được điểm (empty / surface không hợp lệ).
@@ -55,4 +55,38 @@ export function buildPerpFootLine(args: CollectedArg[], store: Store): string | 
   const [from, a, b] = ids as string[];
   if (a === b) return null; // đường suy biến
   return addPoint(store, { kind: 'perpFootLine', from, a, b });
+}
+
+// Id mặt phẳng từ bước 'object' đầu tiên (null nếu thiếu / không phải object).
+function objectPlaneId(args: CollectedArg[]): string | null {
+  const objArg = args.find((a) => a.step.type === 'object' && a.hit);
+  return objArg ? hitObjectId(objArg.hit!) : null;
+}
+
+/**
+ * Giao điểm đường (qua 2 điểm a,b) ∩ mặt phẳng (object).
+ * Bước: point(a), point(b), object(plane). Kiểm object TRƯỚC khi resolve điểm
+ * để không tạo điểm mồ côi nếu thiếu mặt phẳng.
+ */
+export function buildIntersectionLinePlane(args: CollectedArg[], store: Store): string | null {
+  const plane = objectPlaneId(args);
+  if (!plane) return null;
+  const ids = pointIds(args, store);
+  if (ids.length < 2 || ids[0] == null || ids[1] == null) return null;
+  const [a, b] = ids as string[];
+  if (a === b) return null; // đường suy biến
+  return addPoint(store, { kind: 'intersectionLinePlane', a, b, plane });
+}
+
+/**
+ * Chân vuông góc từ điểm `from` xuống mặt phẳng (object).
+ * Bước: point(from), object(plane).
+ */
+export function buildPerpFootPlane(args: CollectedArg[], store: Store): string | null {
+  const plane = objectPlaneId(args);
+  if (!plane) return null;
+  const ids = pointIds(args, store);
+  if (ids.length < 1 || ids[0] == null) return null;
+  const from = ids[0] as string;
+  return addPoint(store, { kind: 'perpFootPlane', from, plane });
 }

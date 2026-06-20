@@ -96,8 +96,17 @@ export class ToolController {
   }
 
   private hitMatchesStep(hit: SceneHit, step: ToolStep): boolean {
-    if (step.type !== 'point' && step.type !== 'closingPoint') return false;
     if (hit.kind === 'empty') return false;
+    // Bước 'object': chọn cả đối tượng (mặt/đường/đa giác/cầu) — KHÔNG đặt điểm.
+    // Khớp khi kind của hit ánh xạ về một loại object nằm trong step.kinds.
+    if (step.type === 'object') {
+      const objKind: Partial<Record<SceneHit['kind'], 'plane' | 'polygon' | 'line' | 'sphere'>> = {
+        onPlane: 'plane', onPolygon: 'polygon', onLine: 'line', onSphere: 'sphere',
+      };
+      const k = objKind[hit.kind];
+      return k != null && step.kinds.includes(k);
+    }
+    if (step.type !== 'point' && step.type !== 'closingPoint') return false;
     if (step.type === 'closingPoint') return hit.kind === 'existingPoint';
     if (hit.kind === 'existingPoint') return step.allowExisting;
     const surfaceMap: Record<string, 'ground' | 'axis' | 'plane' | 'line' | 'polygon' | 'sphere'> = {

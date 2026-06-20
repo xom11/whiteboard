@@ -161,4 +161,22 @@ export const ToolIcons: Record<ToolKey, React.ReactElement> = {
       <circle cx="12" cy="17" r="2" fill="currentColor" stroke="none" />
     </>,
   ),
+  // Giao đường ∩ mặt: mặt phẳng (hình bình hành) + đường xuyên qua + chấm giao.
+  intersectionLinePlane: wrap(
+    <>
+      <polygon points="3,11 13,7 21,12 11,16" />
+      <line x1="12" y1="3" x2="12" y2="20" />
+      <circle cx="12" cy="11.5" r="2" fill="currentColor" stroke="none" />
+    </>,
+  ),
+  // Chân ⊥ xuống mặt: điểm P + mặt phẳng + đoạn ⊥ + chấm chân.
+  perpFootPlane: wrap(
+    <>
+      <polygon points="3,14 13,10 21,15 11,19" />
+      <line x1="12" y1="3" x2="12" y2="14.5" />
+      <path d="M12 12 L14 11.4 L14.4 13" />
+      {dot(12, 3, 1.6)}
+      <circle cx="12" cy="14.5" r="1.8" fill="currentColor" stroke="none" />
+    </>,
+  ),
 };

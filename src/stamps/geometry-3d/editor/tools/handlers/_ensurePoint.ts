@@ -69,3 +69,18 @@ export function ensurePoint(hit: SceneHit, store: Store): string | null {
   if (!c) return null;
   return addPoint(store, c);
 }
+
+/**
+ * Id của ĐỐI TƯỢNG mà hit chạm vào (mặt phẳng/đường/đa giác/mặt cầu) — dùng cho
+ * bước 'object' của tool (chọn cả đối tượng, không phải đặt điểm). null nếu hit
+ * không gắn với một object (ground/axis/existingPoint/empty).
+ */
+export function hitObjectId(hit: SceneHit): string | null {
+  switch (hit.kind) {
+    case 'onPlane':   return hit.planeId;
+    case 'onLine':    return hit.lineId;
+    case 'onPolygon': return hit.polygonId;
+    case 'onSphere':  return hit.sphereId;
+    default:          return null;
+  }
+}

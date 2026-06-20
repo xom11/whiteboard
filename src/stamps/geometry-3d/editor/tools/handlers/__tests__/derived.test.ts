@@ -7,6 +7,8 @@ import {
   buildCentroid,
   buildIntersectionLines,
   buildPerpFootLine,
+  buildIntersectionLinePlane,
+  buildPerpFootPlane,
 } from '../derived';
 import type { CollectedArg } from '../../spec';
 import type { Point3DAttrs } from '../../../../../../core/scene/kinds/point3d';
@@ -14,6 +16,9 @@ import type { Point3DAttrs } from '../../../../../../core/scene/kinds/point3d';
 const pointStep = { type: 'point', allowExisting: true, allowNewOn: [], hint: '' } as const;
 const existing = (pointId: string): CollectedArg =>
   ({ step: pointStep as never, hit: { kind: 'existingPoint', pointId } });
+const objectStep = { type: 'object', kinds: ['plane'], hint: '' } as const;
+const planeHit = (planeId: string): CollectedArg =>
+  ({ step: objectStep as never, hit: { kind: 'onPlane', planeId, u: 0, v: 0, world: [0, 0, 0] } });
 
 describe('buildMidpoint', () => {
   it('tạo point3d midpoint{p1,p2} từ 2 điểm có sẵn', () => {
@@ -116,5 +121,47 @@ describe('buildPerpFootLine', () => {
     const p = addPoint(store, { kind: 'free', x: 0, y: 2, z: 0 });
     const a = addPoint(store, { kind: 'free', x: 0, y: 0, z: 0 });
     expect(buildPerpFootLine([existing(p), existing(a), existing(a)], store)).toBeNull();
+  });
+});
+
+describe('buildIntersectionLinePlane', () => {
+  it('tạo point3d intersectionLinePlane{a,b,plane} từ 2 điểm + mặt phẳng', () => {
+    const store = createStore(createEmptyState('3d'));
+    const a = addPoint(store, { kind: 'free', x: 0, y: 0, z: -1 });
+    const b = addPoint(store, { kind: 'free', x: 0, y: 0, z: 1 });
+    const id = buildIntersectionLinePlane([existing(a), existing(b), planeHit('pl')], store);
+    expect(id).toBeTruthy();
+    expect((store.getState().objects[id!].attrs as Point3DAttrs).constraint)
+      .toEqual({ kind: 'intersectionLinePlane', a, b, plane: 'pl' });
+  });
+
+  it('trả null nếu thiếu mặt phẳng', () => {
+    const store = createStore(createEmptyState('3d'));
+    const a = addPoint(store, { kind: 'free', x: 0, y: 0, z: -1 });
+    const b = addPoint(store, { kind: 'free', x: 0, y: 0, z: 1 });
+    expect(buildIntersectionLinePlane([existing(a), existing(b)], store)).toBeNull();
+  });
+
+  it('trả null nếu đường suy biến (a ≡ b)', () => {
+    const store = createStore(createEmptyState('3d'));
+    const a = addPoint(store, { kind: 'free', x: 0, y: 0, z: -1 });
+    expect(buildIntersectionLinePlane([existing(a), existing(a), planeHit('pl')], store)).toBeNull();
+  });
+});
+
+describe('buildPerpFootPlane', () => {
+  it('tạo point3d perpFootPlane{from,plane} từ điểm + mặt phẳng', () => {
+    const store = createStore(createEmptyState('3d'));
+    const p = addPoint(store, { kind: 'free', x: 1, y: 2, z: 3 });
+    const id = buildPerpFootPlane([existing(p), planeHit('pl')], store);
+    expect(id).toBeTruthy();
+    expect((store.getState().objects[id!].attrs as Point3DAttrs).constraint)
+      .toEqual({ kind: 'perpFootPlane', from: p, plane: 'pl' });
+  });
+
+  it('trả null nếu thiếu mặt phẳng', () => {
+    const store = createStore(createEmptyState('3d'));
+    const p = addPoint(store, { kind: 'free', x: 1, y: 2, z: 3 });
+    expect(buildPerpFootPlane([existing(p)], store)).toBeNull();
   });
 });
