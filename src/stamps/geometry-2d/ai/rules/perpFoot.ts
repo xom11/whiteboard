@@ -113,8 +113,8 @@ const SHARED_FROM_TWO = new RegExp(
 //   groups: 1=name1 2=from1... thực ra 1=n1 2=n2 3=from1 4=from2 5=line
 const FEET_FROM_SHARED_LINE = new RegExp(
   "(?:[Hh]ai\\s+điểm\\s+|[Cc]ác\\s+điểm\\s+)?([A-Z])(?:['′])?\\s*(?:,|và)\\s*([A-Z])(?:['′])?\\s+" +
-    // "lần lượt" / "theo thứ tự" / "thứ tự" = phân phối 1-1 (LANLUOT_OPT).
-    '(?:lần\\s*lượt|(?:theo\\s+)?thứ\\s*tự)\\s+là\\s+chân\\s+(?:các\\s+)?(?:đường\\s+)?(?:vuông\\s*góc|cao)\\s+' +
+    // "lần lượt"/"theo thứ tự"/"thứ tự" = phân phối 1-1, OPTIONAL (LANLUOT_OPT).
+    LANLUOT_OPT + 'là\\s+chân\\s+(?:các\\s+)?(?:đường\\s+)?(?:vuông\\s*góc|cao)\\s+' +
     "(?:kẻ\\s+|hạ\\s+|vẽ\\s+|dựng\\s+)?(?:từ\\s+)?([A-Z](?:['′])?)\\s*(?:,|và)\\s*([A-Z](?:['′])?)\\s+" +
     // line ref có thể đứng sau "đường kính" (vd "xuống đường kính AA'") — đoạn AA'
     // được resolveSegmentRef tự dựng vì A, A' đã tồn tại.

@@ -543,4 +543,11 @@ describe('perpFoot — "X và Y lần lượt là chân đường vuông góc k�
     expect(feet('Gọi E, F là chân các đường vuông góc kẻ từ H đến AB, AC.'))
       .toEqual(['E:H->AB', 'F:H->AC']);
   });
+
+  // vao10:141 — "theo thứ tự" thay "lần lượt" + đích "xuống đường kính AA'"
+  // (tiền tố "đường kính" trước token đường).
+  it('vao10:141: "E, F theo thứ tự là chân đường vuông góc kẻ từ B và C xuống đường kính AA\'"', () => {
+    expect(feet("Gọi E, F theo thứ tự là chân đường vuông góc kẻ từ B và C xuống đường kính AA'."))
+      .toEqual(["E:B->AA'", "F:C->AA'"]);
+  });
 });

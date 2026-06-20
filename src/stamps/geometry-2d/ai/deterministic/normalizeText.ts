@@ -33,6 +33,10 @@ const PRIME_VARIANT = /([A-Za-z0-9])[’′´]/gu;
 // đó tách "Evà"→"E và" làm lộ E thiếu → regress vao10:119, nay đã vá).
 const GLUE_WORD_LABEL = /(cắt|tâm|điểm|cạnh|tia|dây|cung|qua|của|và|tại|trên|đến)([A-Z])/gu;
 const GLUE_LABEL_WORD = /([A-Z])(sao|nằm|lần|thuộc|cắt|của|đến|trên|tại|và)/gu;
+// Token tia ĐẶT TÊN (HOA+thường: Ax, By, Od) dính từ-khoá: "Axtại"→"Ax tại",
+// "Bycắt"→"By cắt". Tách khi sau "<HOA><thường>" là MỘT từ-khoá hình-học đầy đủ
+// (đa-ký-tự) → KHÔNG phá tên-tia đứng riêng (vd "Ax." không có đuôi từ-khoá).
+const GLUE_RAYTOKEN_WORD = /([A-Z][a-z])(tại|cắt|và|của|đến|trên|thuộc)(?![\p{L}])/gu;
 
 // OCR multi-word-glue (mất space HÀNG LOẠT): nhiều từ-vựng hình-học dính liền
 // ("Chođườngtròn", "ChotamgiácABC", "vàbadâycung", "điquaA,Cvàcắtlạicáccạnh").
@@ -52,6 +56,10 @@ const GLUE_VOCAB = [
   'nửa', 'đoạn', 'hình', 'qua', 'cắt', 'lại', 'các', 'và', 'tại', 'một',
   'ba', 'bất', 'kì', 'kỳ', 'có', 'đi', 'với', 'lấy', 'của', 'lần', 'lượt',
   'thứ', 'hai', 'gọi', 'kẻ', 'vẽ', 'cho', 'tâm', 'bán',
+  // 'là' (hệ từ) + từ-vựng hình-chiếu/⊥ — tách glue "làtrung"/"làhình"/
+  // "chiếucủa"/"xuốngđường" (OCR HHP dày). Whitelist↔whitelist nên 'là' chỉ tách
+  // khi theo NGAY bởi một từ-khoá hình-học khác (an toàn, regression-gated).
+  'là', 'chiếu', 'xuống', 'lên', 'đối', 'xứng', 'song', 'thẳng',
 ];
 // Đặt từ DÀI trước trong alternation (regex alternation = first-match, không
 // longest-match) để không khớp tiền tố ngắn rồi bỏ lại đuôi.
@@ -62,7 +70,7 @@ const GLUE_VOCAB_RE = new RegExp(`(${GLUE_ALT})(?=${GLUE_ALT})`, 'gu');
 // Từ-khoá whitelist (chữ thường) dính NGAY nhãn HOA: "giácABC"→"giác ABC",
 // "tròn(O)" xử lý ở nhánh paren. Chỉ các từ-khoá hay đứng trước nhãn.
 const GLUE_VOCAB_LABEL = new RegExp(
-  `(giác|tròn|tiếp|xúc|kính|điểm|đoạn|cạnh|dây|cung|tại|qua|đi|với|có|tâm)([A-Z])`,
+  `(giác|tròn|tiếp|xúc|kính|điểm|đoạn|cạnh|dây|cung|tại|qua|đi|với|có|tâm|thẳng|lên|xuống)([A-Z])`,
   'gu',
 );
 // "Cho"/"Đường" HOA-đầu-cụm dính từ-khoá whitelist: "Chođường"→"Cho đường",
@@ -101,6 +109,7 @@ export function normalizeProblemText(problem: string): string {
       .replace(SQRT_NOISE, ' ')
       .replace(PRIME_VARIANT, "$1'")
       .replace(GLUE_WORD_LABEL, '$1 $2')
-      .replace(GLUE_LABEL_WORD, '$1 $2'),
+      .replace(GLUE_LABEL_WORD, '$1 $2')
+      .replace(GLUE_RAYTOKEN_WORD, '$1 $2'),
   );
 }

@@ -35,4 +35,12 @@ describe('perpNamedLineRule', () => {
   it('không match khi token không phải dạng <HOA><thường> (vd "AB ⊥ MN")', () => {
     expect(intents('Kẻ AB ⊥ MN tại K')).toEqual([]);
   });
+
+  // vao10:206 — "Từ A kẻ tia Ax ⊥ MN, cắt MN tại K": tiền tố "tia" + "cắt MN" xen
+  // giữa ⊥ và "tại K" (chân K nằm trên MN, không phải đầu mút).
+  it('"Từ A kẻ tia Ax ⊥ MN, cắt MN tại K" → line Ax + K perpFoot(A,MN)', () => {
+    const all = intents('Cho (O) đường kính AB. Từ A kẻ tia Ax ⊥ MN, cắt MN tại K.');
+    expect(all).toContainEqual({ op: 'draw-line', name: 'Ax', kind: 'perpThrough', through: 'A', to: 'MN' });
+    expect(all).toContainEqual({ op: 'add-point', name: 'K', constraint: { kind: 'perpFoot', from: 'A', onLine: 'MN' } });
+  });
 });

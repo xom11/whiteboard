@@ -16,15 +16,17 @@ import type { LanguageRule, RuleMatch } from './_types';
 import type { IntentT } from '../intent';
 import { addPoint, drawLine } from './_shared';
 
-const PREFILTER = /(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\s+(?:đường\s*thẳng\s+)?[A-Z][a-z]\s*(?:⊥|vuông\s*góc)/u;
+const PREFILTER = /(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\s+(?:đường\s*thẳng\s+|tia\s+)?[A-Z][a-z]\s*(?:⊥|vuông\s*góc)/u;
 
-// "(Từ/Qua <X>)? (kẻ|vẽ|dựng) (đường thẳng)? <Token><thường> (⊥|vuông góc với)
-//  <LINE> (tại <K>)?". group1=token(2 ký tự Ax), group2=LINE(1-2 HOA), group3=K.
+// "(Từ/Qua <X>)? (kẻ|vẽ|dựng) (đường thẳng|tia)? <Token><thường> (⊥|vuông góc với)
+//  <LINE> (, cắt <LINE>)? (tại <K>)?". group1=token(2 ký tự Ax), group2=LINE,
+//  group3=K. Cho phép "(, cắt LINE2)?" xen giữa ⊥ và "tại K" (vao10:206 "Ax ⊥ MN,
+//  cắt MN tại K" — chân K nằm trên LINE chứ không phải đầu mút).
 const RE = new RegExp(
   // `⊥\\s*` (KHÔNG `\\s+`): OCR hay dính "Ax⊥MN" (vao10:11). Dạng chữ giữ `\\s+`.
-  '(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\\s+(?:đường\\s*thẳng\\s+)?([A-Z][a-z])(?![A-Za-z])\\s*' +
+  '(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\\s+(?:đường\\s*thẳng\\s+|tia\\s+)?([A-Z][a-z])(?![A-Za-z])\\s*' +
     '(?:⊥\\s*|vuông\\s*góc(?:\\s+với)?\\s+)(?:với\\s+)?(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?' +
-    '([A-Z]{1,2})(?![A-Z])(?:\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Za-z]))?',
+    '([A-Z]{1,2})(?![A-Z])(?:\\s*,?\\s*cắt\\s+[A-Z]{1,2})?(?:\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Za-z]))?',
   'gu',
 );
 

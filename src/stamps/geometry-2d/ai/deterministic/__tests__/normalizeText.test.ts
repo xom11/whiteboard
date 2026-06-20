@@ -69,4 +69,21 @@ describe('normalizeProblemText', () => {
     // KHÔNG tách cặp đỉnh (HOA+HOA) — "AB" không có từ-khoá whitelist sau.
     expect(normalizeProblemText('dây AB và dây CD')).toBe('dây AB và dây CD');
   });
+
+  it('glue "là"+từ-khoá: "làtrung"/"làhình" → "là trung"/"là hình"', () => {
+    expect(normalizeProblemText('Gọi M làtrung điểm của BC')).toBe('Gọi M là trung điểm của BC');
+    expect(normalizeProblemText('Gọi H làhình chiếu của D')).toBe('Gọi H là hình chiếu của D');
+  });
+
+  it('glue hình-chiếu hàng loạt (son123:62): "lầnlượtlàhìnhchiếucủa" + "đườngthẳngBC"', () => {
+    expect(
+      normalizeProblemText('X,Y,Z lầnlượtlàhìnhchiếucủa N lêncácđườngthẳng BC,CP,PB').replace(/\s+/g, ' '),
+    ).toBe('X,Y,Z lần lượt là hình chiếu của N lên các đường thẳng BC,CP,PB');
+    expect(normalizeProblemText('các đườngthẳngBC')).toBe('các đường thẳng BC');
+  });
+
+  it('glue token-tia (vao10:206): "Axtại C" → "Ax tại C" (KHÔNG phá "Ax." đứng riêng)', () => {
+    expect(normalizeProblemText('Tia BI cắt Axtại C')).toBe('Tia BI cắt Ax tại C');
+    expect(normalizeProblemText('cắt Ax tại C')).toBe('cắt Ax tại C');
+  });
 });
