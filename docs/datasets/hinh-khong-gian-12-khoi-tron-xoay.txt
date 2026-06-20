@@ -1,0 +1,177 @@
+Câu 1: Cho hình chóp S.ABCD có chiều cao SA=a, đáy ABCD là hình thang vuông tại A và B với AB=BC=a, AD=2a. Gọi E là trung điểm AD.Xác định tâm và tính bán kính mặt cầu ngoại tiếp SCDE theo a.
+
+Câu 2: Cho hình chóp S.ABC có SA vuông góc mặt phẳng (ABC). AC=b, AB=c, góc BAC . Gọi B’, C’ lần lượt là hình chiếu vuông góc của A lên SB,SC. Xác định tâm và tính bán kính mặt cầu đó theo b,c và .
+
+Câu 3: Cho hình chóp SABCD có đáy là hình vuông cạnh a, SA=SB=a. mặt phẳng (SAB) vuông góc (ABCD). Tính diện tích mặt cầu ngoại tiếp SABCD.
+
+Câu 4: Cho tứ diện ABCD biết AB=BC=AC=BD=a và AD=b, hai mặt phẳng (ACD) và (BCD) vuông góc với nhau. Tính diện tích mặt cầu ngoại tiếp tứ diện ABCD.
+
+Câu 5: Hình cầu ngoại tiếp hình lăng trụ đều tam giác có cạnh đáy bằng a, cạnh bên bằng 2a là
+
+Câu 6: Thể tích của hình cầu nội tiếp hình lập phương cạnh bằng a là
+
+Câu 7: Thể tích hình cầu ngoại tiếp hình chóp tứ giác đều có tất cả các cạnh đều bằng a là
+
+Câu 8: Thể tích hình cầu ngoại tiếp hình tứ diện đều có cạnh bằng a là
+
+Câu 9: Cho hình lăng trụ tam giác đều ABC.A'B'C' có AB a, góc giữa hai mặt phẳng (A'BC) và (ABC) bằng 600. Gọi G là trọng tâm tam giác A'BC . Thể tích của hình cầu ngoại tiếp tứ diện GABC là
+
+Câu 10: Mặt cầu nội tiếp hình lập phương cạnh a (mặt cầu tiếp xúc với tất cả các mặt của hình lập phương) có thể tích bằng:
+
+Câu 11: Cho hình lăng trụ tam giác đều có tất cả các cạnh đều bằng a. Thể tích khối cầu ngoại tiếp ngoại tiếp khối lăng trụ đã cho là:
+
+Câu 12: Cho hình chóp S.ABC có tam giác ABC vuông tại A, tam giác SBC vuông tại S, AB=SC=a, AC=SB = a 3 . Thể tích của khối cầu ngoại tiếp hình chóp là:
+
+Câu 13: Cho hình chóp S.ABC có đáy ABC là tam giác vuông tại B, AC = a 2, SA(ABC), SC tạo với đáy một góc 450. Bán kính mặt cầu ngoại tiếp hình chóp bằng:
+
+Câu 14: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh 2a, SA(ABCD), SA =AC. Bán kính mặt cầu ngoại tiếp hình chóp bằng: A.
+
+Câu 15: Cho hình lăng trụ tam giác đều ABC.A’B’C’ có cạnh đáy bằng a , cạnh bên bằng 2a. Thể tích của khối cầu ngoại tiếp hình lăng trụ ABC.A’B’C’ bằng:
+
+Câu 16: Cho hình chóp S.ABC có đáy ABC là tam giác vuông cân tại B, AB = BC = a 3 , SAB SCB 900 và khoảng cách từ A đến mặt phẳng (SBC) bằng a 2. Tính diện tích mặt cầu ngoại tiếp hình chóp S.ABC theo a.
+
+Câu 17: Cho hình chóp S.ABCD đáy ABCD là hình vuông cạnh a, tam giác SAB là tam giác đều và nằm trong mặt phẳng vuông góc với mặt đáy. Bán kính mặt cầu ngoại tiếp hình chóp bằng:
+
+Câu 18: Cho hình chóp S.ABCD có đáy là hình chữ nhật, SA ABCD . Tâm mặt cầu ngoại tiếp hình chóp S.ABCD là: A.Trung điểm cạnh SD. B.Trung điểm cạnh SC. C.Giao điểm của hai đường chéo AC và BD.
+
+Câu 19: Cho hình chóp S.ABC có đáy là tam giác vuông tại B, AB 1cm,BC 3cm, SA (ABC), SA 4cm. Bán kính mặt cầu ngoại tiếp hình chóp S.ABC bằng: 19
+
+Câu 20: Cho hình chóp tứ giác đều S.ABCD có tất cả các cạnh đều bằng a. Diện tích mặt cầu ngoại tiếp hình chóp S.ABCD là:
+
+Câu 21: Bán kính của mặt cầu nội tiếp hình chóp tứ giác đều S.ABCD có cạnh đáy và cạnh bên cùng bằng a là:
+
+Câu 22: Cho hình chóp S.ABCD có đáy là hình thang vuông với đường cao AB = a, BC = a, AD = 2a, SA ABCD và SA a 2. Gọi E là trung điểm của AD. Kẻ EK SD tại K.Bán kính mặt cầu đi qua sáu điểm S, A, B, C, E, K theo a bằng: 3 1 6 A.
+
+Câu 23: Cho hình chóp tứ giác đều S.ABCD có cạnh đáy bằng a và góc giữa mặt bên và đáy bằng 450. Diện tích của mặt cầu ngoại tiếp hình chóp S.ABCD là:
+
+Câu 24: Cho tứ diện DABC, đáy ABC là tam giác vuông tại B, SA vuông góc với mặt đáy. Biết AB = 3a, BC = 4a, DA = 5a. Bán kính mặt cầu ngoại tiếp hình chóp DABC có bán kính bằng:
+
+Câu 25: Cho hình chóp tứ giác đều S.ABCD có cạnh đáy bằng a và cạnh bên bằng a. Diện tích của mặt cầu ngoại tiếp hình chóp S.ABCD là:
+
+Câu 26: Cho tứ diện đều ABCD cạnh a. Thể tích của khối cầu ngoại tiếp tứ diện ABCD bằng:
+
+Câu 27: Cho hình chóp S.ABC có SA vuông góc với đáy, SA2a, ABC cân tại  A, BAC1200, AB ACa. Tính bán kính mặt cầu ngoại tiếp hình chóp S.ABC.
+
+Câu 28: Cho hình chóp S.ABC có SA vuông góc với mặt đáy, ABC vuông cân tại C, AC2 2 ,     góc giữa hai mặt phẳng SBC và ABC bằng 600. Tính diện tích mặt cầu ngoại tiếp hình chóp S.ABC.
+
+Câu 29: (Đề minh họa Bộ GD và ĐT) Cho hình chóp S.ABC có đáy là tam giác đều cạnh bằng 1, mặt bên SAB là tam giác đều và nằm trong mặt phẳng vuông góc với đáy. Tính thể tích khối cầu ngoại tiếp hình chóp S.ABC.
+
+Câu 30: Cho hình chóp S.ABC có SA vuông góc với đáy, tam giác ABC có AB2; AC2 và      B AC1200. Biết góc giữa SBC và ABC bằng  với tan2. Tính bán kính mặt cầu ngoại tiếp hình chóp S.ABC.
+
+Câu 31: (Đề thử nghiệm Bộ GD và ĐT) Cho hình hộp chữ nhật ABCD.A'B'C'D' có ABa, AD2a, AA'2a. Tính bán kính mặt cầu ngoại tiếp tứ diện ABB'C'.
+
+Câu 32: Cho hình hộp chữ nhật có các kích thước a, b, c. Gọi T là một tứ diện có sáu cạnh là sáu đường chéo của sáu mặt bên của hình hộp đã cho. Tính diện tích mặt cầu ngoại tiếp tứ diện đó.
+
+Câu 33: Cho hình lập phương cạnh a. Gọi R , R , R lần lượt là bán kính mặt cầu ngoại tiếp hình 1 2 3 lập phương, bán kính mặt cầu nội tiếp hình lập phương và bán kính mặt cầu tiếp xúc với tất cả các cạnh của hình lập phương. Khẳng định nào sau đây đúng?
+
+Câu 34: Cho hình chóp tứ giác đều S.ABCD có cạnh đáy bằng 1, chiều cao h2. Tính bán kính mặt cầu ngoại tiếp hình chóp S.ABCD.
+
+Câu 35: Cho hình chóp tứ giác đều S.ABCD có cạnh đáy bằng 1, chiều cao h . Tính bán kính 2 mặt cầu nội tiếp hình chóp S.ABCD.
+
+Câu 36: Cho hình chóp S.ABCD có đáy ABCD là hình thoi cạnh bằng 1, BAD600. Biết hai mặt       phẳng SDC và SAD cùng vuông góc với mặt phẳng ABCD , góc giữa SC và mặt đáy bằng 450. Tính diện tích mặt cầu ngoại tiếp tứ diện S.BCD.
+
+Câu 37: Cho hình chóp S.ABC với ABC có AB1, AC2 và BAC600, SA vuông góc với đáy. Gọi B , C lần lượt là hình chiếu vuông góc của A trên SB, SC. Tính diện tích mặt cầu qua 1 1 các đỉnh A, B, C, B , C .
+
+Câu 38: Ba tia Ox, Oy, Oz đôi một vuông góc, C là một điểm cố định trên Oz, đặt OC1, A, B thay đổi trên Ox, Oy sao cho OAOBOC. Tìm giá trị nhỏ nhất của bán kính mặt cầu ngoại tiếp tứ diện OABC.
+
+Câu 39: Cho hình lăng trụ đứng ABC.A'B'C' có đáy ABC là tam giác vuông cân tại A, AB1, góc giữa A'C và  ABC  bằng 600. Tính diện tích mặt cầu ngoại tiếp hình chóp C'.ABB'A'.
+
+Câu 40: Cho hình lăng trụ đứng ABC.A'B'C' có đáy ABC là tam giác vuông tại   A, AB3, BC5, hình chiếu vuông góc của B' trên ABC là tâm đường tròn ngoại tiếp tam     bằng 600. Tính bán kính mặt cầu giác ABC. Biết góc giữa hai mặt phẳng ABC và ABB'A' ngoại tiếp hình chóp B'.ABC.
+
+Câu 41: Cho tứ diện ABCD có hai mặt phẳng  ABC  và  BCD  vuông góc với nhau. Biết tam giác ABC đều cạnh a, tam giác BCD vuông cân tại
+
+Câu 42: Cho hình chóp S.ABCD với ABCD là hình vuông cạnh 2a. Gọi H là trung điểm AB và SH a 3 là độ dài đường cao của hình chóp. Xác định tâm và bán kính mặt cầu ngoại tiếp hình chóp đó.
+
+Câu 43: Cho hình chóp S.ABCD có đáy là hình thang vuông tại A, D, ABADa, CD2a. Cạnh bên SD   và SDa. Gọi E là trung điểm của DC. Xác định tâm và tính ABCD bán kính mặt cầu ngoại tiếp hình chóp S.BCE.
+
+Câu 44: Hình chóp S.ABC có đáy ABC là tam giác cân AB ACa, SBC  ABC và SASBa. Tính bán kính mặt cầu ngoại tiếp hình chóp S.ABC, biết SCx.
+
+Câu 45: Cho tứ diện đều ABCD có cạnh bằng 1. Xét điểm M trong không gian mà MA2 MB2 MC2 MD2 2. Trong các câu sau, tìm câu đúng.
+
+Câu 46: Ba tia Ox,Oy,Oz đôi một vuông góc. C là điểm cố định trên Oz,CO; A,B là hai điểm thay đổi trên Ox,Oy sao cho OA2 OB2 k2 (k cho trước). Kí hiệu (S) là tập hợp tâm các mặt cầu ngoại tiếp tứ diện OABC. Trong các câu sau, tìm câu đúng.
+
+Câu 47: Cho hình chóp S.ABC có đáy ABC là tam giác đều cạnh a, SAa. Hình chiếu của S   trên ABC là trung điểm H của BC. Khẳng định nào sau đây là đúng?
+
+Câu 48: Xét các hình hộp nội tiếp một mặt cầu bán kính R. Trong các mệnh đề sau đây, tìm mệnh đề đúng: tổng độ dài các cạnh của hình hộp lớn nhất.
+
+Câu 49: Cho hình chóp tứ giác đều S.ABCD có tất cả các cạnh đều bằng a. Khẳng định nào sau đây là đúng?
+
+Câu 50: Hình chóp D.ABC có DA vuông góc với ABC , BCvuông góc với DB, ABc, BCa ADh. Tính bán kính mặt cầu ngoại tiếp hình chóp.
+
+Câu 51: Gọi O ,O ,O lần lượt là tâm các mặt cầu ngoại tiếp, nội tiếp tiếp xúc với các cạnh của 1 2 3 hình lập phương. Trong các mệnh đề sau, tìm mệnh đề đúng.
+
+Câu 52: Cho tứ diện đều ABCD có cạnh bằng 1. Gọi B, C, D lần lượt là trung điểm các cạnh AB, AC, AD. Tính bán kính mặt cầu đi qua các điểm B, C, D, B, C, D.
+
+Câu 53: Hình chóp tứ giác đều S.ABCD có cạnh đáy bằng 1, chiều cao h . Tính tỉ số thể tích 2 khối cầu nội tiếp hình chóp và thể tích khối chóp đã cho.
+
+Câu 54: Hình chóp đều S.ABCD có cạnh đáy bằng 1, chiều cao bằng 1. Tính tỉ số thể tích khối cầu ngoại tiếp hình chóp và thể tích khối chóp đã cho.
+
+Câu 55: Hình chóp S.ABCD có ABCD là hình thoi cạnh 1, BCD1200, SD vuông góc với mặt phẳng (ABCD), góc giữa SB và mặt đáy bằng 600. Tính bán kính mặt cầu ngoại tiếp
+
+Câu 56: Cho tam giác vuông cân ABC có cạnh huyền AB2a. Trên đường thẳng đi qua A và vuông góc với mặt phẳng  ABC  , lấy điểm S sao cho SC tạo với mặt phẳng  ABC  một góc 600. Tính theo a đường kính mặt cầu ngoại tiếp hình chóp S.ABC.
+
+Câu 57: Cho hình chóp S.ABCD có đáy là hình chữ nhật với ABa, BC2a. Mặt bên SCD là tam giác đều và nằm trong mặt phẳng vuông góc với đáy. Diện tích mặt cầu ngoại tiếp hình chóp S.ABCD là 50a2 16a2 32a2 14a2 A.S . B.S . C.S . D.S .
+
+Câu 58: Hình chóp S.ABCD có đáy ABCD là hình chữ nhật mà AD3, AC5; SA vuông góc       bằng 450. Tính thể tích với mặt phẳng ABCD , góc giữa SCD và mặt phẳng ABCD của khối cầu ngoại tiếp hình chóp S.ABCD.
+
+Câu 59: Hình chóp S.ABCD có đáy ABCD là hình thang vuông tại A, B, ABBC1 ; AD2 ;     mặt phẳng SAD vuông góc với ABCD và tam giác SAD đều. Tính bán kính mặt cầu ngoại tiếp tứ diện SABC.
+
+Câu 60: Cho tứ diện ABCD có ABC là tam giác vuông cân tại A, ABa. Tam giác BCD là tam giác đều và nằm trong mặt phẳng vuông góc với mặt phẳng  ABC  . Thể tích khối cầu ngoại tiếp tứ diện ABCD là
+
+Câu 61: Hình chóp S.ABCD có đáy ABCD là hình thoi cạnh 1, A600,SA , tam giác SAB 2 vuông tại S và mặt phẳng (SAB) vuông góc với mặt phẳng (ABCD). Tính diện tích mặt cầu ngoại tiếp SABD.
+
+Câu 62: Cho tứ diện ABCD có ABC và BCD là các tam giác đều cạnh a, AD . Tính bán 2 kính mặt cầu ngoại tiếp tứ diện ABCD.
+
+Câu 63: Hình chóp S.ABC có đáy ABC là tam giác vuông cân tại A và AB1; các cạnh bên cùng tạo với đáy góc 600. Tính diện tích mặt cầu ngoại tiếp hình chóp S.ABC.
+
+Câu 64: Cho hình chóp S.ABC có SA2a và vuông góc với mặt phẳng   ABC , BC2AB2a, ACa 5. Tính theo a diện tích mặt cầu ngoại tiếp hình chóp S.ABC.
+
+Câu 65: Hình chóp S.ABC có SA vuông góc với (ABC), AB1,AC2,BAC,. Gọi B ,C là 1 1 hình chiếu của A trên SB,SC. Tính bán kính mặt cầu đi qua A,B,C,B ,C .
+
+Câu 66: Hình lăng trụ ABC.A'B'C' có đáy ABC vuông cân tại A,AB1, chiều cao bằng , 2 điểm A' cách đều ba điểm A,B,C. Tính diện tích mặt cầu ngoại tiếp A'ABC.
+
+Câu 67: Tính diện tích toàn phần S của hình nón (N) biết thiết diện qua trục của nó là một tam giác vuông có cạnh huyền bằng2 2a.
+
+Câu 68: Cắt hình nón đỉnh S bởi mặt phẳng đi qua trục ta được một tam giác vuông cân có cạnh huyền bằng a 2. Thể tích của khối nón bằng a3.
+
+Câu 69: Cho hình nón có chiều cao bằng 2 5. Một mặt phẳng đi qua đỉnh hình nón và cắt hình nón theo một thiết diện là tam giác đều có diện tích bằng 9 3. Thể tích của khối nón được giới hạn bởi hình nón đã cho bằng 32 5
+
+Câu 70: Cho hình chóp tứ giác đều S.ABCD có cạnh đáy bằng a. Tam giác SAB có diện tích bằng 2a2. Thể tích của khối nón có đỉnh S và đường tròn đáy nội tiếp tứ giác ABCD.
+
+Câu 71: Cho hình trụ có thiết diện qua trục là một hình vuông, diện tích mỗi mặt đáy bằng S =9 ( cm2) . Tính diện tích xung quanh hình trụ đó.
+
+Câu 72: Một hình trụ có diện tích xung quanh bằng 4, thiết diện qua trục là hình vuông. Một mặt N Ô phẳng () song song với trục, cắt hình trụ theo thiết diện là tứ giác ABBA, biết một cạnh của H K Ể thiết diện là một dây cung của đường tròn đáy của hình trụ và căng một cung 120. Tính diện tích Đ thiết diện ABBA.
+
+Câu 73: Cho tứ diện đều ABCD có cạnh bằng 4. Tính diện tích xung quanh S của hình trụ có xq một đường tròn đáy là đường tròn nội tiếp tam giác BCD và chiều cao bằng chiều cao của tứ diện ABCD.
+
+Câu 74: Một hình trụ có thiết diện qua trục là hình vuông, diện tích xung quanh bằng 36a2. Tính thể tích V của lăng trụ lục giác đều nội tiếp hình trụ.
+
+Câu 75: Cho hình lăng trụ đều ABC.ABC có cạnh đáy bằng a 3, cạnh bên bằng 4a. Thể tích của hình trụ có hai đáy nội tiếp hình lăng trụ bằng a3
+
+Câu 76: Cho hình trụ có thiết diện qua trục là hình vuông ABCD cạnh bằng 2 đường kính của đường tròn đáy tâm O. Gọi M là điểm thuộc cung AB của đường tròn đáy sao cho ABM =60. Thể tích của khối tứ diện ACDM là: ( cm3) ( cm3)
+
+Câu 77: Mặt phẳng (P) cắt mặt cầu tâm O theo đường tròn có diện tích bằng 9. Biết rằng chu vi hình tròn lớn nhất của hình cầu bằng 10. Khoảng cách từ điểm O đến (P) bằng
+
+Câu 78: Cho hình lăng trụ đứng ABC.ABC có đáy ABC là tam giác vuông tại A, AB =a 3 , =2a, đường thẳng AC tạo với mặt phẳng (BCCB) một góc 30. Tính diện tích Scủa mặt BC cầu ngoại tiếp hình lăng trụ đã cho?
+
+Câu 79: Cho hình chóp S.ABC có tam giác ABC vuông tại B, SA vuông góc với mặt phẳng (ABC). SA=5, AB=3, BC=4. Tính bán kính mặt cầu ngoại tiếp hình chóp S.
+
+Câu 80: Cho hình chóp S.ABCDcó đáy là hình vuông cạnh a, SAB là tam giác đều và nằm trong mặt phẳng vuông góc với đáy. Tính diện tích S của mặt cầu ngoại tiếp hình chóp S.ABCD 4a2
+
+Câu 81: Trong các hình nón nội tiếp hình cầu có bán kính bằng 9, tính bán kính đường tròn đáy r của hình nón có thể tích lớn nhất ?
+
+Câu 82: Cho mặt cầu (S) bán kính R=4. Một hình trụ có chiều cao h và bán kính đáy r thay đổi nội tiếp mặt cầu. Diện tích xung quanh lớn nhất của khối trụ bằng
+
+Câu 83: a) Một hình nón có đường kính đáy bằng 2 và chiều cao bằng . Kí hiệu góc ở đỉnh của hình 3 nón là 2. Tính . b) Cho hình nón có thiết diện qua trục là tam giác đều và có diện tích xung quanh bằng 8. Tính chiều cao của hình nón này. c) Cho hình nón có diện tích xung quanh bằng 3a2 và bán kính bằng a. Tính độ dài đường sinh của hình nón đã cho. d) Tính thể tích của một khối nón có góc ở đỉnh là 90, bán kính hình tròn đáy là a? e) Một hình nón có đường sinh bằng đường kính đáy. Diện tích của hình nón bằng 9. Tính đường cao h của hình nón.
+
+Câu 84: Cho hình nón N có bán kính đáy R, đường cao SO. Gọi Plà mặt phẳng vuông góc với SO 1 tại O sao cho SO  SO. Một mặt phẳng qua trục của hình nón cắt phần khối nón N nằm 1 1 3 giữa Pvà đáy nón theo thiết diện là hình tứ giác có hai đường chéo vuông góc. Tính thể tích phần hình nónN nằm giữa mặt phẳng Pvà mặt phẳng chứa đáy hình nón N .
+
+Câu 85: Cho tứ diện đều ABCD có cạnh bằng a. Tính diện tích xung quanh của hình trụ có đáy là đường tròn ngoại tiếp tam giác BCD và có chiều cao bằng chiều cao của tứ diện.
+
+Câu 86: Cho hình chóp tứ giác đều S.ABCD có góc giữa cạnh bên và mặt đáy bằng 60 và cạnh đáy bằng a. Tính thể tích khối cầu ngoại tiếp hình chóp S.ABCD theo a.
+
+Câu 87: Cho hình chóp S.ABC có đáy là tam giác vuông tạiA, SB ABC. a) Xác định tâm và bán kính mặt cầu S ngoại tiếp hình chóp. b) Cho ABa 3, AC 2a, SB a 2. Tính bán kính của mặt cầu S ở trên.
+
+Câu 88: Tứ diện OABC có OA, OB, OC đội một vuông góc. BIết OAa, OB2a, OC 3a a) Tính diệm tích mặt cầu ngoại tiếp tứ diện. b) Tính diện tích xung quanh của lăng trụ có đường sinh OC và có đường tròn đáy ngoại tiếp tam giác OAB. c) Tính diện tích xung quanh của hình nón đỉnh O và đáy là đường tròn ngoại tiếp tam giác ABC
+
+Câu 89: Một xưởng sản xuất muốn tạo ra những chiếc đồng hồ cát thủy tinh có dạng hình trụ, phần chứa cát là hai nửa hình cầu bằng nhau. Hình vẽ bên với kích thước đã cho là bản thiết kế thiết diện qua trục của chiếc đồng hồ này (phần giới hạn bởi hình trụ và phần hai nữa hình cầu chứa cát). Khi đó, lượng thủy tinh làm chiếc đồng hồ cát gần nhất với giá trị nào trong các giá trị sau 13,2cm 1cm 13,2cm

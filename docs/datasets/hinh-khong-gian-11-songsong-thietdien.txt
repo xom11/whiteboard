@@ -1,0 +1,481 @@
+Câu 1: Cho tứ diện ABCD. Lấy điểm M ∈AB,N∈AC sao cho đường thẳng MN cắt BC tạiI. a) Điểm N thuộc 3 mặt phẳng nào ? Tại sao ? b) Tìm hai điểm chung của (BCD) và (DMN). c) Chứng minh: MN ⊂(ABC).
+
+Câu 2: Cho hình chóp S.ABC. Gọi M là trung điểm củaBC. Gọi G và G′ lần lượt là trọng tâm của các tam giác SBC và ABC. Chứng minh: a) G∈(SBC)∩(SAM) b) GG′⊂(SAM).
+
+Câu 3: Cho hình chóp S.ABCD trong đó mặt đáy ABCD có các cặp cạnh đối không song song, lấy điểm M thuộc SA. Tìm các giao tuyến: a) (SAC)∩(SBD) b) (SAC)∩(MBD) c) (SAB)∩(SCD) d) (MBC)∩(SAD).
+
+Câu 4: Cho tứ diện ABCD. Gọi H,K lần lượt là trung điểm của các cạnh AD và BC. a) Tìm giao tuyến của hai mặt phẳng (HBC) và (KAD). b) Gọi M là điểm nằm trên đoạn AB,N là một điểm nằm trên đoạn ACsao cho MN không song song với BC. Tìm giao tuyến của hai mặt phẳng (HBC) và (DMN).
+
+Câu 5: Cho hình thang ABCD có đáy lớn AB và điểm S không thuộc mặt phẳng (ABCD). Trên cạnh SD lấy điểm M. a) Tìm các giao tuyến: (SAC)∩(SDB)và (SAD)∩(SBC). b) Tìm các giao tuyến: (SAD)∩(BCM)và (SAC)∩(BCM).
+
+Câu 6: Cho tứ diện ABCD. Gọi I,J lần lượt là trung điểm của AD và BC. a) Tìm (IBC)∩(JAD). b) Lấy M ∈AB,N∈AC sao cho: 3AM =2AB và 4AN = AC. Tìm (IBC)∩(DMN).
+
+Câu 7: Cho hình chóp S.ABCD đáy là hình bình hành tâm O. Gọi M,N,P lần lượt là trung điểm của các cạnh BC,CD,SO. Tìm giao tuyến của hai mặt phẳng: a) (MNP)∩(SAB) b) (MNP)∩(SAD) c) (MNP)∩(SBC) d) (MNP)∩(SCD).
+
+Câu 8: Cho tứ diệnABCD. Lấy các điểm M ∈AB,N∈AC sao cho đường thẳng MN cắtBC. Gọi I là một điểm ở bên trong tam giácBCD. Tìm: a) (MNI)∩(BCD) b) (MNI)∩(ABD) c) (MNI)∩(ACD).
+
+Câu 9: Cho hình chóp S.ABCD đáy là hình thang (AB//CD). GọiI = AD∩BC. Lấy điểm M thuộc cạnh SC sao cho M ≠S và M ≠C. Tìm: a) (SAC)∩(SBD) b) (SAD)∩(SBC) c) (ADM)∩(SBC).
+
+Câu 10: Cho hình chóp S.ABCD có đáy là hình thang (AB//CD). Gọi I,J,K lần lượt là các điểm nằm trên các cạnh SA,DC,CB. Tìm giao tuyến của hai mặt phẳng (SAB) và (IJK).
+
+Câu 11: Cho tứ diện ABCD, lấy M, N là hai điểm lần lượt thuộc AB và AC(sao cho MN không song song BC). H là một điểm tùy ý thuộc miền trong ∆BCD. Tìm: BC∩(ADH) MN∩(BCD) ∩(ADH) ∩(DMN) a) b) c) MN b) AH.
+
+Câu 12: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành tâm O. Gọi M là trung điểm của SB và G là trọng tâm của ∆SAD. HO a) Tìm H =DM ∩(SAC).Tính. HS b) Tìm K =GM ∩(ABCD). Chứng minh K∈CD và KC=2KD.
+
+Câu 13: Cho hình chóp S.ABCD cóAB∩CD = N,M ∈SA. Tìm thiết diện của mặt phẳng (MCD) với hình chóp S.ABCD.
+
+Câu 14: Cho hình chóp S.ABCD có AB∩CD= E,M là một điểm nằm trong ∆SCD. Tìm thiết diện của mặt phẳng (MBA) với hình chóp.
+
+Câu 15: Cho tứ diện ABCD. Gọi M,N là hai điểm lần lượt trên AB và AC sao cho MN và CD cắt nhau. Tìm giao điểm của đường thẳng MN với mặt phẳng (BCD).
+
+Câu 16: Cho tứ diện ABCD. Gọi M,N lần lượt là trung điểm của các cạnh AC,BC. Trên cạnh BD lấy điểm P sao cho 2BP=PD. Lấy Q∈AB sao cho QM cắt BC. Tìm: a) CD∩(MNP) b) AD∩(MNP) c) (MPQ)∩(BCD) d) (MNP)∩(ACD) e) CD∩(MPQ) f) AD∩(MPQ).
+
+Câu 17: Cho tứ diện ABCD. Gọi M,N là hai điểm trên AC và AD,O là điểm nằm trong∆BCD. Tìm: a)MN∩(ABO) b) AO∩(BMN).
+
+Câu 18: Cho tứ diệnABCD. Trên AB và AC lấy các điểm M và N sao cho MN không song song vớiBC. Gọi O là một điểm trong∆BCD. a) Tìm giao tuyến của mặt phẳng (OMN) với mặt phẳng (BCD). b) Mặt phẳng (OMN) cắt BD và CD lần lượt tại H và K. Tìm H và K.
+
+Câu 19: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành. Gọi M là trung điểm củaSC. ∩(SBD). Chứng minh: IA=2IM a) Tìm I = AM. b) Tìm F =SD∩(ABM). Chứng minh: F là trung điểm SD. c) Gọi N là 1 điểm tùy ý trên cạnhAB. Tìm MN∩(SBD).
+
+Câu 20: Cho hình chóp S.ABC. Gọi I,H lần lượt là trung điểm của SA,AB. Trên cạnh SC lấy điểm K sao choCK =3KS. a) TìmBC∩(IHK) ∩(ABC). b) Gọi M là trung điểm của IH. Tìm KM.
+
+Câu 21: Cho hình chóp S.ABCD. Gọi I,J,K là 3 điểm lần lượt trên SA,AB,BC. Giả sử JK cắt CD AD. Tìm giao điểm của SD,SC với mặt phẳng (IJK). và.
+
+Câu 22: Cho hình chóp S.ABCD với AB không song song với CD. M và N là hai điểm lần lượt trên SA và SB. Tìm giao điểm của đường thẳng MN với mặt phẳng (SCD).
+
+Câu 23: Cho hai hình thang (không là hình bình hành) ABCD và ABEF có chung đáy lớn AB và không cùng nằm trong một mặt phẳng. a) Xác định giao tuyến của các cặp mặt phẳng: (ACE) và (BDF),(BCE) và (ADF). b) Lấy một điểm M trên DF. Tìm AM ∩(BCE). c) Chứng minh: 2 đường thẳng AC và BF không cắt nhau.
+
+Câu 24: Cho hình chóp S.ABCD có đáy là hình bình hành tâm O. Gọi M là trung điểm củaSB, G là trọng tâm của tam giácSAD. a) Tìm I =GM ∩(ABCD). Chứng minh: I 2ID. ⊂CD, IC = AD∩(OMG). Tính tỉ số giữa hai cạnh JA và JD. b) Tìm J = c) Tìm K =SA∩(OMG). Tính tỉ số giữa hai cạnh KA và KS.
+
+Câu 25: Cho tứ diện đều ABCD có cạnh bằng a. Gọi I là trung điểm củaAD, J là điểm đối xứng với D qua C,K là điểm đối xứng với D qua B. a) Xác định thiết diện của tứ diện khi cắt bởi mặt phẳng (IJK). b) Tính diện tích của thiết diện.
+
+Câu 26: Cho tứ diện ABCD. Gọi I,J lần lượt là trung điểm của AC,BC. Trên cạnh BD ta lấy điểm K sao cho BK =2KD. a) Tìm E =CD∩(IJK). Chứng minh DE =DC. AD∩(IJK). Chứng minh FA=2FD. b) Tìm F = c) Chứng minh:FK //IJ. d) Gọi M,N lần lượt là 2 điểm bất kì trên 2 cạnh AB,CD. Tìm MN ∩(IJK).
+
+Câu 27: Cho hình chóp S.ABCD có đáy ABCD là hình thang đáy lớn là AB,I là trung điểm của SC. Một mặt phẳng (P) qua AI và cắt SB,SD lần lượt tại M,N;IM cắt CD tạiQ. a) Chứng minh A,P,Q thẳng hàng. b) Tìm thiết diện của hình chóp với mặt phẳng (P).
+
+Câu 28: Cho hình chóp S.ABCD. Gọi O= AC∩BD. Một mặt phẳng cắt các cạnh bên SA, SB, SC, SD lần lượt tại M,N,P,Q. Giả sử AB∩CD = E, MN ∩PQ = F. Chứng minh: a) Các điểm S,E,F thẳng hàng. b) Các đường thẳng MP,NQ,SO đồng qui.
+
+Câu 29: Cho tứ diện ABCD, G là trọng tâm của tam giác ACD. Các điểm M,N,P lần lượt thuộc các MA NC PD 1 đường thẳng AB,AC,AD sao cho: = = =. Gọi I =MN∩BC và MB NA PA 2 J =MP∩BD. a) Chứng minh các đường thẳng MG, PI, NJ đồng phẳng. b) Gọi E,F lần lượt là trung điểm của CD, NI; H =MG∩BE, K =GF∩(BCD). Chứng minh các điểm H,K,I,J thẳng hàng.
+
+Câu 30: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành. Gọi E,F lần lượt là trung điểm của SB,SD. a) Tìm K =SC∩(AMN). b) Tìm thiết diện của (AMN) với hình chóp. c) GọiI =CD∩NK;J = BC∩MK. Chứng minh các điểm A,I,J thẳng hàng.
+
+Câu 31: Cho tứ diện S.ABC. Trên SA,SB,SC lần lượt lấy các điểm D,E,F sao cho DE cắt AB tại E,EF cắt BC tại J,FD cắt CA tạiK. a) Tìm giao tuyến của hai mặt phẳng (ABC) và (DEF). b) Chứng minh rằng: I,J,K thẳng hàng.
+
+Câu 32: Cho hình chóp tức giác S.ABCD trong đó AD và BC không song song. Lấy điểm M trên SB và O là giao điểm của 2 đường chéo AC và BD. của SC với mặt phẳng (ADM). a) Tìm giao điểm N b) AN cắt DM tại I. Chứng minh: 3 điểm S,I,O thẳng hàng.
+
+Câu 33: Cho hình chóp S.ABCD. Gọi E= AB∩CD và M là trung điểm của SC. a) Tìm N =SD∩(MAB) b) Gọi O= AC∩BD. CMR: SO,AM,BN đồng quy.
+
+Câu 34: Cho hình chóp S.ABCD có đáy là hình bình hành tâm O. Gọi M,N là trung điểm của AB,SC. a) Tìm I = AN ∩(SBD) b) Tìm K =MN∩(SBD) KM IB c) Tính tỉ số d) Cm: B,I,K thẳng hàng và tính KN IK.
+
+Câu 35: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành tâm O. Gọi M,N lần lượt là trung điểm của các cạnh SA,SC. Gọi (P) là mặt phẳng qua M,N và B. a) Tìm giao tuyến của (P) với các mặt (SAB),(SBC). của SO với (P) và giao điểm K của SD với (P). b) Tìm giao điểm I c) Tìm gao tuyến của (P) với các mặt (SAD),(SDC). d) Xác định giao điểm E,F của mặt phẳng (P) với các đường thẳng DA,DC và chứng minh ba điểm E,B,F thẳng hàng.
+
+Câu 36: Cho hình chóp S.ABCD với AB,CD không song song, M là điểm di động trên SA, mặt phẳng (CDM) cắt SB tại N. Chứng minh MN đi qua một điểm cố định.
+
+Câu 37: Cho tứ diện ABCD. Gọi I,J lần lượt là trung điểm của BC,BD. Một mặt phẳng (a) quay quanh IJ cắt cạnh AD và AC tại K và L. a) Giả sử M = IL∩JK. Tìm tập hợp giao điểm M của IL và JK. b) Tìm tập hợp giao điểm N của IK và JL.
+
+Câu 38: Cho tứ diện ABCD, I là trung điểm của của SA,J là trung điểm của BC. Gọi M là một điểm di động trên cạnh IJ,N là điểm di động trên cạnhSC. a) Tìm P=MC∩(SAB) b) Tìm (SMP)∩(ABC) c) Tìm E = MN ∩(ABC) d) Gọi F =IN∩AC. Chứng minh: EF luôn đi qua một điểm cố định khi M,N di động.
+
+Câu 39: Cho hình chóp S.ABCD với ABCD là hình thang (AB//CD). Một mặt phẳng di động (α) chứa AB và cắt các cạnh SC,SD lần lượt tại C′,D′. a) Hãy xác định giao tuyến của (SAD) và (SBC). b) Gọi I là giao điểm của AD′ và BC′. Tìm tập hợp điểm I.
+
+Câu 40: Cho hình chóp S.ABCD có đáy là hình bình hành ABCD. Trong mặt phẳng đáy vẽ đường thẳng d đi qua A và không song song với các cạnh của hình bình hành, d cắt đoạn BC tại E. Gọi C′ là một điểm nằm trên cạnh SC. a) Tìm giao điểm M của đường thẳng CD và mặt phẳng (C′AE) b) Tìm thiết diện của hình chóp cắt bởi mặt phẳng (C′AE).
+
+Câu 41: Cho hình chóp S.ABCD với ABCD là tứ giác có hai cạnh đối không song song. Gọi G là trọng tâm∆SAD. Xác định giao tuyến của hai mặt phẳng (SAB) và (GCD).
+
+Câu 42: Cho tứ diện ABCD. Gọi M,N lần lượt là trung điểm của các cạnh AB và CD, trên cạnh AD lấy điểm P không trùng với trung điểm của AD. a) Gọi E là giao điểm của đường thẳng MP với đường thẳng BD. Tìm giao tuyến của hai mặt phẳng (PMN) và (BCD). b) Tìm giao điểm của đường thẳng BC và mặt phẳng (PMN).
+
+Câu 43: Cho hình chóp S.ABCD có AB và CD không song song. Gọi M là điểm thuộc miền trong của∆SCD. a) Tìm giao điểm N của đường thẳng CD và mặt phẳng (SBM) b) Tìm giao tuyến của hai mặt phẳng (SBM) và (SAC) c) Tìm giao điểm I của đường thẳng BM và mặt phẳng (SAC) d) Tìm giao điểm P của SC và mặt phẳng (ABM), từ đó suy ra giao tuyến của hai mp(SCD) và (ABM). e) Xác định thiết diện của hình chóp cắt bởi mp(ABM).
+
+Câu 44: Cho hình chóp S.ABCD. Trong tam giác SBC lấy điểm M, trong tam giác SCD lấy điểm N a) Tìm giao điểm của đường thẳng MN với mặt phẳng (SAC); b) Tìm giao điểm của cạnh SC với mặt phẳng (AMN); ABCD nằm trên mặt phẳng (P) và một điểm.
+
+Câu 45: Cho hình chóp S.ABCD. Gọi M là điểm nằm trong ∆SCD. a) Tìm giao tuyến của hai mặt phẳng (SBM) và (SAC). b) Tìm giao điểm của đường thẳng BM và mặt phẳng (SAC). c) Xác định thiết diện của hình chóp khi cắt bởi mp(ABM).
+
+Câu 46: Cho tứ diện ABCD. Gọi M,N lần lượt là trung điểm của AB,CD. Gọi E là điểm thuộc đoạn AN không là trung điểm AN và Q là điểm thuộc đoạnBC. a) Tìm giao điểm của EM với mặt phẳng (BCD); b) Tìm giao tuyến của hai mặt phẳng (EMQ) và (BCD);(EMQ) và (ABD); c) Tìm thiết diện cắt tứ diện bởi mp(EMQ).
+
+Câu 47: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành. Gọi M,N lần lượt là trung điểm cắt CD tại I của SB,AD. Đường thẳng BN a) Chứng minh M,I và trọng tâm G của ∆SAD thẳng hàng. b) Tìm thiết diện của hình chóp cắt bởi mặt phẳng (CMG). Chứng minh trung điểm của SA thuộc thiết diện này.
+
+Câu 48: Cho hình chóp tứ giác S.ABCD. Trên SA,SB lần lượt lấy các điểm M,N và trong tứ giác ABCD lấy điểm P. Xác định các giao tuyến: a) (MNP)∩(ABCD) b) (MNP)∩(SBC).
+
+Câu 49: Cho tứ diện ABCD. Gọi M,N,P,Q lần lượt là các trung điểm của các cạnh AB, BC, CD, DA. Chứng minh rằng tứ giác MNPQ là hình bình hành.
+
+Câu 50: Cho hình chóp S.ABCD có đáy ABCD là hình thang với đáy lớn AB. Gọi M,N lần lượt là trung điểm của SA, SB. a) Chứng minh MM//CD b) Tìm giao điểm Q của SC với (AND). c) Gọi I = AN ∩DQ. Chứng minh SI//AB, SI//CD. Tứ giác SABI là hình gì ? Vì sao ?
+
+Câu 51: Cho tứ diện ABCD. Trên AB và AC lần lượt lấy hai điểm M và N sao cho: =. AB AC Chứng minh: a) MN song song với BC. b) Giao tuyến của (MND) và (BCD) song song với BC.
+
+Câu 52: Cho hình chóp S.ABCD có đáy ABCD là hình vuông. Trên các cạnh BC,AD,SD lần lượt lấy BM AN SP các điểm M,N,P di động sao cho = =. BC AD SD a) Tìm giao tuyến của (MNP) và (SCD). b) Gọi Q =SC∩(MNP). Xét hình tính của tứ giác MNPQ. c) Tìm tập hợp giao điểm R của MQ và NP, khi M di động trên BC. d) Chứng minh: SB song song với MQ.
+
+Câu 53: Cho hình chóp S.ABCD có đáy ABCD là hình thang (AB//CD).Xác định giao tuyến sau (SAB)∩(SCD),(SBC)∩(SAD).
+
+Câu 54: Cho tứ diện ABCD và ba điểm P,Q,R lần lượt lấy trên ba cạnh AB,CD,BC. Tìm giao điểm S của AD và mặt phẳng (PQR) trong hai trường hợp sau đây: a) PR song song AC. b) PR cắt AC.
+
+Câu 55: Cho hình chóp S.ABCD có đáy là hình thang, các cạnh đáy là AB và CD. Gọi I,J lần lượt là trung điểm AD,BC. Gọi G là trọng tâm tam giác SAB. Tìm giao tuyến của hai mặt phẳng (SAB) và (IJG).
+
+Câu 56: Cho tứ diện ABCD. Gọi M và N lần lượt là trọng tâm của các tam giác ABD vàBCD. a) Chứng minh:MN //(ACD),MN //(ABC). b) Xác định giao tuyến của (DMN) và (ABC). C/m giao tuyến này song song với MN.
+
+Câu 57: Cho hình chóp S.ABCD đáy là hình thang (AD// BC). Gọi E,F lần lượt là trọng tâm ∆SAB và∆SDC. Chứng minh EF song song cả ba mặt phẳng (ABCD),(SBC),(SAD).
+
+Câu 58: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành. Trên các cạnh SA,SB,AD lần lượt SM SN PD lấy M,N,P thỏa = =. Chứng minh: SA SB AD MN // (ABCD) b) SD//(MNP) NP//(SCD) a) c) Dạng.
+
+Câu 59: Cho tứ diện ABCD. Trên cạnh AD lấy trung điểm M và trên cạnh BC lấy một điểm N bấy kì. Một mặt phẳng (α) đi qua MN và song song với CD. a) Tìm thiết diện của tứ diện với (α). b) Tìm vị trí của N để thiết diện là hình bình hành.
+
+Câu 60: Cho hình thang ABCD, đáy lớn AB và một điểm S ở ngoài mặt phẳng (ABCD). Gọi M là một điểm trên đoạn CD (M khác C và D), (P) là mặt phẳng qua M và song song với SA và BC. a) Tìm thiết diện của hình chóp S.ABCD với (P). Thiết diện là hình gì ? b) Tìm giao tuyến của (P) và (SAD).
+
+Câu 61: Cho hình chóp S.ABCD có đáy ABCD là hình chữ nhật và ∆SAD vuông tai A. Qua M trên cạnh BC dựng mặt phẳng (α) song song với (SAD), cắt CD,SC,SB tại N,P,Q. a) Xét hình tính thiết diện MNPQ. b) Gọi I = NP∩MQ. Tìm tập điểm I khi M di động trên BC.
+
+Câu 62: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành. a) Tìm giao tuyến của (SAB) và (SCD). b) Lấy M∈SC(S ≠M ≠C). Tìm (ABM)∩(SCD). c) Xác định thiết diện của hình chóp với (ABM), thiết diện là hình gì ?
+
+Câu 63: Cho hình chóp S.ABCD có đáy ABCD là hình thang với đáy lớn AB. Gọi M,N lần lượt là trọng tâm của ∆SCD và ∆SAB. a) Tìm (ABM)∩(SCD),(SAB)∩(SCD) và (SMN)∩(ABC). b) Chứng minh MN //(ABC). c) Giao tuyến của (ABM) với (SCD) cắt SD,SC lần lượt tại I và J. C/minh IN//(ABC). d) Tìm P=MC∩(SAB) và Q= AN∩(SCD). Chứng minh ba điểm S,P,Q thẳng hàng. e) Tìm thiết diện của hình chóp với mặt phẳng (INJ). Dạng.
+
+Câu 64: Cho hình chóp S.ABCD có đáy là hình bình hành ABCD tâm O. Gọi M,N,P,Q,R lần lượt là trung điểm của các đoạn SA,SD,AB,ON,SB. Chứng minh: a)(OMN)//(SBC); b)PQ//(SBC); c)(MOR)//(SCD).
+
+Câu 65: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành tâm O. Gọi M,N lần lượt là trung điểm của SA,SD. Gọi H là trung điểm của OM. Chứng minh: a) (OMN) // (SBC). b) HN // (SBC).
+
+Câu 66: Cho tứ diệnABCD. Gọi G,G,G lần lượt là trọng tâm của các tam giác ABC,ACD vàABD. 1 2 3 a) Chứng minh: (G ) // (BCD). 1 2 3 b) Tìm thiết diện của tứ diện với (G ). Tính diện tích của thiết diện theo diện tích 1 2 3 của∆ABC.
+
+Câu 67: Cho hai hình vuông ABCD và ABEF không đồng phẳng. Trên các đường chéo AC và BF lần lượt lấy M,N sao cho AM =BN. Các đường thẳng song song với AB vẽ từ M,N lần lượt cắt AD,AF tại M′,N′. Chứng minh: a) (CBE) // (ADF). b) (DEF) // (MNN′M′).
+
+Câu 68: Cho hình lăng trụ tam giác ABC.A′B′C′. Gọi I,K,G lần lượt là trọng tâm của các tam giác ABC, A′B′C′,A′CC′.Chứng minh: a) (IKG) song song với (BB′C′C). b) Xác định thiết diện của lăng trụ với mặt phẳng (IKG). Thiết diện là hình gì? c) Gọi H là trung điểm của BB′, chứng minh (AHI) // (A′KG).
+
+Câu 69: Cho hình hộp ABCD.A′B′C′D′. Chứng minh rằng: a)(AB′D′) //(C′BD). b) Bốn tâm đối xứng của bốn mặt bên là bốn đỉnh của một hình bình hành.
+
+Câu 70: Cho hình chóp cụt ABC.A′B′C′ có đáy lớn là ABC và các cạnh bên AA′,BB′,CC′. Gọi M,N,P lần lượt là trung điểm của các cạnh A′B′,B′C′,C′A′. Chứng minh MNP.M′N′P′ là hình chóp cụt.
+
+Câu 71: Cho hình chóp cụt ABCD.A′B′C′D′ có đáy lớn ABCD là hình bình hành và các cạnh AA′,BB′,CC′, DD′. Gọi M,N,P,Q lần lượt là giao điểm của các cặp đường thẳng CB′ và DA′,AB′ và DC′,AD′ và BC′,BA′ và CD′. Chứng minh bốn điểm M,N,P,Q đồng phẳng.
+
+Câu 72: Cho hình lăng trụ tam giác ABC.A′B′C′ có AA′C′C,BB′C′C là hai hình chữ nhật bằng nhau. Gọi D,E lần lượt nằm trên AC′ và B′C sao choAD=B′E. Từ D,E thứ tự kẻ các đường thẳng song song với AA′ và BB′ cắt AC,BC tại F,G. a)DF // EG; b)FG // AB; c) DE // (ABB′A′).
+
+Câu 73: Cho tứ diện ABCD. Gọi G là trọng tâm của tam giác ABC. a) Chứng minh hình chiếu song song G′ của điểm G trên mặt phẳng (BCD) theo phương chiếu AD là trọng tâm của tam giác BCD. b) Gọi M, N, P lần lượt là trung điểm của cạnh AB, AC, AD. Tìm hình chiếu song song của các điểm M, N, P trong phép chiếu song song ở câu a) nói trên.
+
+Câu 74: Cho tứ diện ABCD. Gọi M,N lần lượt là trung điểm của các cạnh AB,CD;G là trung điểm đoạnMN. a) Tìm giao điểm A′ của đường thẳng AG và mặt phẳng (BCD). b) Qua M kẻ đường thẳng Mx song song AA′ và Mx cắt (BCD) tại M′. Chứng minh B,M′,A′ thẳng hàng và BM′=M′A′= A′N. c) Chứng minh GA=3GA′.
+
+Câu 75: Cho tứ diện ABCD. Các điểm P,Q lần lượt là trung điểm của AB,CD điểm R nằm trên cạnh BC sao cho BR=2RC. Gọi S là giao điểm của mặt phẳng (PQR) và cạnh AD. Chứng minh rằng AS =2SD.
+
+Câu 76: Cho tứ diện ABCD. Gọi M,N,Q lần lượt là trung điểm của AB,BC,CD. a) Tìm P là giao điểm của đường thẳng AD với mặt phẳng (MNQ). Tìm thiết diện cắt tứ diện bởi mp(MNQ). Thiết diện là hình gì? b) Tìm giao tuyến của hai mặt phẳng (AND) và (PBC).
+
+Câu 77: Cho tứ diện ABCD. Gọi M,N lần lượt là trung điểm của AC,BC và P là điểm thuộc đoạn BD. a) Tìm giao tuyến của mặt phẳng (MNP) và (ABD) b) Gọi Q là giao điểm của AD với mặt phẳng (MNP). Xác định vị trí P để MNPQ là hình bình hành. c) Trong trường hợp MQ và NP cắt nhau tại I, hãy xác định giao tuyến của hai mp (MNP) và (ABI).
+
+Câu 78: Cho tứ diện ABCD. Gọi M là trung điểm AD,N là điểm bất kỳ trên cạnh BC,(α) là mặt phẳng chứa MN và song song với CD. a) Xác định thiết diện của (α) với tứ diện ABCD. b) Chỉ ra vị trí của N trên BC sao cho thiết diện là hình bình hành.
+
+Câu 79: Cho tứ diện ABCD. Một mp(α) di động luôn song song AB và CD lần lượt cắt các cạnh AC,AD, BD,BC tại M,N,P,Q. a) Chứng minh rằng tứ giác MNPQ là hình bình hành. b) Tìm tập hợp tâm I của hình bình hànhMNPQ.
+
+Câu 80: Cho hình chópS.ABCD, gọi M,N lần lượt nằm trên đoạn AB,CD và (α) qua MN song song SA. a) Tìm giao tuyến của (α) với mặt phẳng (SAB) và (SAC). b) Xác định thiết diện của hình chóp cắt bởi mặt phẳng (α). c) Tìm vị trí MN để thiết diện là hình thang.
+
+Câu 81: Cho hình chóp S.ABCD đáy là hình bình hành ABCD. Gọi M,N,P,Q là các điểm lần lượt nằm trên BC,SC,SD,AD sao cho MN // BS,NP // CD,MQ // CD a) Chứng minh PQ // SA; b) Gọi K = MN ∩PQ. Chứng minh K nằm trên một đường thẳng cố định khi M di động trên cạnh BC.
+
+Câu 82: Cho hai hình bình hành ABCD và ABEF không cùng nằm trên một mặt phẳng. a) Gọi O và O′ lần lượt là tâm của hình bình hành ABCD và ABEF. Chứng minh rằng đường thẳng OO′ song song với các mặt phẳng (ADF) và (BCE). b) Gọi M và N lần lượt là trọng tâm tam giác ABD và ABE. Chứng minh đường thẳng MN song song với mặt phẳng (CEF).
+
+Câu 83: Cho hình chóp S.ABCD đáy là hình bình hành tâm O vàAC =a,BD=b. ∆SBD là tam giác đều. Một mặt phẳng (α) di động song song mặt phẳng (SBD) và đi qua điểm I trên đoạn OC. a) Xác định thiết diện của hình chóp với mặt phẳng (α). b) Tính diện tích thiết diện theo a,b,x= AI.
+
+Câu 84: Cho hình lăng trụ tam giác ABC.A′B′C′. Gọi M,M′ lần lượt là trung điểm của các cạnh BC,B′C′. a) Chứng minh AM song song A′M′. b) Tìm giao điểm của đường thẳng A′M với mặt phẳng (AB′C′); c) Tìm giao tuyến d của hai mặt phẳng (AB′C′)và (BA′C′); d) Tìm giao điểm G của đường thẳng d với mặt phẳng (AM′M). Chứng minh G là trọng tâm ∆AB′C′.
+
+Câu 85: Cho hình hộp ABCD.A′B′C′D′. a) Chứng minh hai mặt phẳng (BDA′) và (B′D′C) song song với nhau. b) Chứng minh rằng đường chéo AC′ đi qua trọng tâm G và G của hai tam giác BDA′ và 1 2 B′D′C. c) Chứng minh G và G chia đoạn AC′ thành ba phần bằng nhau. Gọi O và I lần lượt là 1 2 tâm của các hình bình hành ABCD và AA′C′C. Xác định thiết diện của mặt phẳng (A′IO) với hình hộp đã cho.
+
+Câu 86: Cho hình lăng trụ tam giác ABC.A′B′C′. Gọi H là trung điểm của cạnh A′B′. a) Chứng minh rằng đường thẳng CB′ song song mp(AHC′); b) Tìm giao tuyến d của hai mặt phẳng (AB′C′) và (A′BC). Chứng minh rằng d song song mp(BB′C′C); c) Xác định thiết diện của hình lăng trụ ABC.A′B′C′ khi cắt bởi mp(H,d).
+
+Câu 87: Cho hai hình thang ABCD và ABEF có chung đáy lớn AB và không cùng nằm trong một mặt phẳng.
+
+Câu 88: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành. Gọi M,N,P theo thứ tự là trung điểm của các đoạn thẳng SA,BC,CD. Tìm thiết diện của hình chóp khi cắt bởi mặt phẳng (MNP). Gọi O là giao điểm hai đường chéo của hình bình hành ABCD, hãy tìm giao điểm của đường thẳng SO với (MNP).
+
+Câu 89: Cho hình chóp đỉnh S đáy là hình thang ABCD với AB là đáy lớn. Gọi M,N theo thứ tự là trung điểm của các cạnh SB,SC. a) Tìm giao tuyến của hai mặt phẳng (SAD) và (SBC); b) Tìm giao điểm của đường thẳng SD với mặt phẳng (AMN); c) Tìm thiết diện của hình chóp S.ABCD cắt bởi (AMN).
+
+Câu 90: Cho hình bình hành ABCD. Qua A,B,C,D lần lượt vẽ bốn nửa đường thẳng Ax,By,Cz,Dt ở (ABCD), song song với nhau và không cùng nằm trong mặt cùng phía đối với mặt phẳng phẳng (ABCD). Một mp(α) lần lượt cắt Ax,By,Cz,Dt tại A′,B′,C′,D′. a) Chứng minh mặt phẳng (Ax,By) song song mp(Cz,Dt) b) Gọi I = AC∩BD,J = A′C′∩B′D′.Chứng minh IJ // AA′. c) ChoAA′=a,BB′=b,CC′=c. Hãy tính DD′.
+
+Câu 91: Cho hai hình bình hành ABCD và ABEF nằm trong hai mặt phẳng khác nhau. Lấy các điểm M,N lần lượt thuộc các đường chéo AC,BF sao cho MC =2AM;NF =2BN. Qua M,N kẻ các đường thẳng song song với AB cắt các cạnh AD,AF lần lượt tại M,N. Chứng minh 1 1 rằng: // // (DEF); c) (MNN ) // (DEF). a)MN DE; b) M N M 1 1 1 1.
+
+Câu 92: Cho hình chóp S.ABCD có đáy ABCD là một tứ giác lồi. Gọi O là giao điểm của hai đường chéo AC và BD. Xác định thiết diện cắt hình chóp bởi mặt phẳng (α) qua O, song song với AB và SC. Thiết diện đó là hình gì ?
+
+Câu 93: Cho hình chóp S.ABCD có đáy là hình bình hành. Xác định thiết diện của hình chóp khi cắt bởi mặt phẳng đi qua trung điểm M của cạnh AB, song song BD và SA.
+
+Câu 94: Cho tứ diện ABCD. Gọi M,N,P,Q,R,S lần lượt là trung điểm của AB,CD,BD,AD và BC. Gọi A′,B′,C′,D′ lần lượt là trọng tâm của các tam giác BCD,ACD,ABD,ABC. Chứng minh: a) Các đoạn thẳng MN,PQ,RS,AA′,BB′,CC′,DD′ đồng qui tại G (G gọi là trọng tâm của tứ diện; các đoạn AA′,BB′,CC′,DD′ gọi là các trọng tuyến của tứ diện). b) GA=3GA′.
+
+Câu 95: Cho hình chóp S.ABC,O là một điểm nằm bên trong tam giácABC. Qua O dựng các đường thẳng lần lượt song song với SA,SB,SC và cắt các mp (SBC),(SCA) và (SAB) theo thứ tự tại các điểm A′,B′,C′. a) Nêu cách dựng các điểm A′,B′,C′.
+
+Câu 96: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành. Gọi M là trung điểm SC; mặt phẳng (P) qua AM và song song với BD. a) Xác định thiết diện của hình chóp với mặt phẳng (P). b) Gọi E,F lần lượt là giao điểm của (P) với các cạnh SB,SD. Tìm tỉ số diện tích của ∆SME với ∆SBC và tỉ số diện tích của ∆SMF với ∆SCD. c) Gọi K = ME∩CB,J = MF ∩CD. C/m:ba điểm K,A,J nằm trên một đường thẳng song song với EF và tìm tỉ số EF:KJ.
+
+Câu 97: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a và ∆SAB đều. Một điểm M di động trên BC với BM = x. Lấy K trên SA sao choAK =MB. a) Chứng minh: KM // (SDC). b) Tìm thiết diện của hình chóp với mặt phẳng (P) đi qua M và song song với SA,SB. Thiết diện là hình gì ? Tính diện tích của thiết diện theo a và x. c) Tìm x để KN // (ABCD).
+
+Câu 98: Cho hình hộp ABCD.A′B′C′D′ có các cạnh AA′,BB′,CC′,DD′ song song với nhau. // a) Chứng minh rằng (BDA′) (B′D′C). b) Chứng minh rằng AC′ đi qua trọng tâm G và G của hai tam giác BDA′ và B′D′C. 1 2 chia đoạn AC′ thành ba phần bằng nhau. c) Chứng minh rằng G và G 1 2 d) Các trung điểm của sáu cạnh BC,CD,DD′,D′A′,A′B′,BB′ cùng nằm trên một mặt phẳng.
+
+Câu 99: Cho hình lăng trụ ABC.A′B′C′. Gọi H là trung điểm của A′B′. // (AHC′). a) Chứng minh rằng: CB′ // b) Tìm giao tuyến d của hai mặt phẳng (AB′C′) và (A′BC).Chứng minh d (BB′C′C).
+
+Câu 100: Cho hình hộp ABCD.A′B′C′D′ có tất cả các mặt bên đều là các hình vuông cạnh a. Các điểm M và N lần lượt nằm trên AD′ và DB sao choAM =DN = x. Chứng minh rằng: a) Khi x biến thiên thì đường thẳng MN luôn luôn song song với một mặt phẳng cố định. a 3 b) Khi x = thì MN // A′C. 2.
+
+Câu 101: Cho hình chóp S.ABCD có đáy ABCD là hình thang AB là đáy lớn. Gọi E = AD∩BC,M là trung điểm của AB,G là trọng tâm ∆CDE. a) Chứng minh:S,E,M,G∈(α)và(α)∩(SAC)∩(SBD)=D. b) Gọi C và D là hai điểm lần lượt thuộc các cạnh SC,SD sao cho AD ∩BC = K. Chứng 1 1 1 1 minh các điểm S,K,E thẳng hàng và AC ∩BD =O ∈∆. 1 1 1.
+
+Câu 102: Cho tứ diện ABCD. Gọi (α) là mặt phẳng thay đổi nhưng luôn luôn đi qua trung điểm I,K của các cạnh AD và BD. (α) cắt AC,BC lần lượt lại M và N. a) Tứ giác MNKI có tính chất gì ? Khi nào nó là hình bình hành ? b) GọiO=IM∩NK. Chứng tỏ O luôn nằm trên một đường thẳng cố định. d là giao tuyến của (α) và (OAB). Chứng minh d luôn luôn nằm trong một mặt c) Gọi phẳng cố định và có phương không đổi.
+
+Câu 103: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành. Một mặt phẳng (P) lần lượt cắt các A′,B′,C′. Gọi O là giao điểm của AC và BD,I A′C′ cạnh SA,SB,SC tại là giao điểm của và SO. a) Tìm giao điểm D′ của (P) với cạnhSD. SA SC 2SO b) Chứng minh rằng + =. SA′ SC′ SI SA SC SB SD c) Chứng minh rằng + = +. SA′ SC′ SB′ SD′.
+
+Câu 104: Cho hình hộp ABCD.A′B′C′D′. Trên ba cạnh AB′,DD′,CB′ lần lượt lấy ba điểm M,N,P AM D′N B′P không trùng với các đỉnh sao cho = =. AB D′D B′C′ a) Chứng minh rằng (MNP)//(AB′D′). b) Xác định thiết diện của hình hộp khi cắt bởi mặt phẳng (MNP).
+
+Câu 105: Cho hình chóp cụt ABC.A′B′C′ có đáy lớn ABC và các cạnh bên AA′,BB′,CC′. Gọi M,N,P lần lượt là trung điểm của các cạnh AB,BC,CA và M′,N′,P′ lần lượt là trung điểm của các cạnh A′B′,B′C′,C′A′. Chứng minh rằng MNP.M′N′P′ là hình chóp cụt.
+
+Câu 106: Cho hình chóp S.ABCD có đáy ABCD là hình thang với AD // BC và AD =2BC. Gọi M, N lần lượt là trung điểm của SA và SB. Xác định giao điểm P của đường thẳng SC với mặt SP phẳng (DMN) và tính tỉ số. SC.
+
+Câu 107: Cho hình chóp S.ABCD có đáy ABCD là hình thang với AD // BC và AD =2BC. Gọi G là trọng tâm tam giác SCD. Xác định giao điểm H của đường thẳng BG với mặt phẳng (SAC) HB và tính tỉ số. HG.
+
+Câu 108: Cho hình chóp S.ABCD có đáy ABCD là hình thang với AB // CD và CD=2AB. Gọi M, N lần lượt là trọng tâm tam giác SCD và SBC. Xác định giao điểm K của SC với mặt SK phẳng AMN và tính tỉ số. SC.
+
+Câu 109: Cho hình chóp S.ABCD có đáy ABCD là một tứ giác lồi. Gọi M, N lần lượt là trung điểm của SA và SC. a) Xác định thiết diện của hình chóp khi cắt bởi mặt phẳng (α) qua M và song song với mặt phẳng (SBD). b) Xác định thiết diện của hình chóp khi cắt bởi mặt phẳng (β) qua N và song song với mặt phẳng (SBD). c) Gọi I, J lần lượt là giao điểm của AC với (α) và (β). Chứng minh AC =2IJ.
+
+Câu 110: Cho lăng trụ ABC.A′B′C′. Gọi M, N, P là các điểm lần lượt thuộc A′B′, AB, CC′ đồng MA′ NB PC′ 1 thời thỏa mãn = = =. Xác định giao điểm Q của đường thẳng B′C′ với mặt MB′ NA PC 2 C′Q phẳng (MNP) và tính tỉ số. C′B′.
+
+Câu 111: Cho lăng trụ ABC.A′B′C′. Chứng minh rằng các mặt phẳng (ABC′), (BCA′) và (CAB′) có một điểm chung I ở trên đoạn GG′ nối trọng tâm tam giác ABC và trọng tâm tam gác IG A′B′C′. Tính tỉ số. IG′.
+
+Câu 112: Cho lăng trụ tam giác ABC.A′B′C′. Trên đường thẳng BA lấy một điểm M sao cho A nằm giữa B và M đồng thời thỏa mãn AB=2AM. Gọi E là trung điểm AC. Xác định giao điểm BD D của đường thẳng BC với mặt phẳng (MB′E) và tính tỉ số. CD.
+
+Câu 113: Cho hình hộp ABCD.A′B′C′D′. Gọi Q, R lần lượt là tâm các mặt bên BCC′B′ và CDD′C′. MC Xác định giao điểm M của cạnh CC′ với mặt phẳng (AQR) và tính tỉ số. MC′.
+
+Câu 114: Cho hình tứ diện ABCD có tất cả các cạnh đều bằng 6a. Gọi M, N lần lượt là trung điểm của CA và CB; P là điểm trên cạnh BD sao cho BP=2PD. a) Tìm giao điểm Q của đường thẳng AD và mặt phẳng (MNP). QA b) Chứng tỏ rằng =2. Từ đó tính diện tích thiết diện khi cắt hình chóp bởi mặt phẳng (MNP). QD.
+
+Câu 115: Cho hình chóp S.ABC có G là trọng tâm của tam giác ABC. Gọi M, N là hai điểm trên cạnh SA sao cho SM =MN = NA, và K là trung điểm cạnh BC. a) Chứng minh GM // SK. Từ đó suy ra GM //(SBC). b) Gọi D là điểm đối xứng của A qua G. Chứng minh CD//(NBG). c) Gọi H là giao điểm của đường thẳng MD với (SBC). Chứng minh H là trọng tâm tam giác SBC.
+
+Câu 116: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành tâm O. Gọi M, N lần lượt là trung điểm của SA và CD. a) Tìm giao điểm E và giao điểm F của mặt phẳng (BMN) lần lượt với các đường thẳng AD và SD. Chứng minh FS =2FD. b) Gọi I là trung điểm ME; AN cắt BD tại G. Chứng minh FG//(SAB) và (CDI)//(SAB). c) Goị H là giao điểm của MN và SG. Chứng minh OH //GF.
+
+Câu 117: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành. Gọi M, N, P lần lượt là trung điểm của các cạnh AB, AD và SB. a) Chứng minh rằng: BD//(MNP). b) Tìm giao điểm của mặt phẳng (MNP) với BC. c) Tìm giao tuyến của hai mặt phẳng (MNP) và (SBD). d) Tìm thiết diện của hình chóp với mặt phẳng (MNP).
+
+Câu 118: Cho hình chóp S.ABCD có đáy là hình bình. Gọi M và N là trung điểm của SA và SC. Tìm SK giao điểm K của đường thẳng SD và mặt phẳng (BMN) và tính tỉ số. SD.
+
+Câu 119: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành. E, F lần lượt là trọng tâm các tam giác SAD, SCD. SI a) Xác định giao điểm I của đường thẳng SB và mặt phẳng (DEF). b) Tính tỉ số. SB.
+
+Câu 120: Cho hình chóp S.ABCD có đáy là hình bình hành. Gọi M là trung điểm của cạnh SC. Mặt phẳng (α) qua AM và song song với BD. a) Tìm E, F lần lượt là giao điểm của (α) với SB và SD. S S b) Tính tỉ số của ∆SME và ∆SMF. S S ∆SBC ∆SCD c) Gọi K là giao điểm của ME và CB, J là giao điểm của MF và CD. Chứng minh ba điểm EF K, A, J nằm trên một đường thẳng song song với EF và tính tỉ số. KJ.
+
+Câu 121: Cho hình chóp S.ABCD. Gọi I là trung điểm của SD, J là điểm trên SC và không trùng. Giao tuyến của hai mặt phẳng (ABCD) và (AIJ) là: trung điểm SC.
+
+Câu 122: Cho tứ diện ABCD. Gọi M, N lần lượt là trung điểm của AC và CD.Giao tuyến của hai mặt phẳng (MBD) và (ABN) là.
+
+Câu 123: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành. Gọi M, N lần lượt là trung điểm.Giao tuyến của hai mặt phẳng (SMN) và (SAC) là: AD và BC.
+
+Câu 124: Cho hình chóp S.ABCD có đáy là hình thang ABCD là trung điểm CD. Giao tuyến của hai mặt phẳng (MSB) và (SAC) là.
+
+Câu 125: Cho tứ diện ABCD I và J theo thứ tự là trung điểm của AD và AC, G là trọng tâm tam giác BCD. Giao tuyến của hai mặt phẳng (GIJ) và (BCD) là đường thẳng.
+
+Câu 126: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành. Gọi I là trung điểm SA. Thiết diện của hình chóp S.ABCD cắt bởi mặt phẳng (IBC) là.
+
+Câu 127: Cho hình chóp S.ABCD có đáy là hình bình hành. M là trung điểm của SC. Tìm giao tuyến của của (MAB) với (SCD).
+
+Câu 128: Cho hình chóp S.ABCD có đáy là hình thang với các cạnh đáy là AB, CD. Gọi I, J lần lượt là trung điểm của AD, BC và G là trọng tâm tam giác SAB. Tìm thiết diện của hình chóp S.ABCD cắt bởi (IJG).
+
+Câu 129: Cho hình chóp S.ABCD có đáy là hình bình hành. M là trung điểm SC. Thiết diện của (MAB) với hình chóp.
+
+Câu 130: Cho hình chóp S.ABCD có đáy là hình thang với các cạnh đáy là AB, CD. Gọi I, J lần lượt là là trọng tâm tam giác SAB. Tìm giao tuyến của (SAB) và (IJG). trung điểm của AD, BC và G.
+
+Câu 131: Cho hình chóp S.ABCD có đáy là hình thang với các cạnh đáy là AB, CD. Gọi I, J lần lượt là trung điểm AD, BC và G là trọng tâm tam giác SAB. Tìm điều kiện của AB và CD để thiết diện của (GIJ) với hình chóp S.ABCD là hình bình hành.
+
+Câu 132: Cho hình chóp S.ABCD cóđáy ABCD là hình bình hành. M là mộtđiểm lấy trên cạnh SA ( A ). Mp(α) qua ba điểm M, B, C M không trùng với S và cắt hình chóp S.ABCD theo thiết diện là.
+
+Câu 133: Cho tứ diện ABCD. Giả sử M thuộc đoạn BC. Một mặt phẳng (α) qua M song song với AB và CD. Thiết diện của (α) và hình tứ diện ABCD là hình gì?
+
+Câu 134: Cho tứ diện đều ABCD cạnh a. Gọi I, J lần lượt là trung điểm của AC và BC; K là một điểm trên cạnh BD với KB=2KD. Thiết diện của tứ diện với mặt phẳng (IJK) là hình gì?
+
+Câu 135: Cho hình chóp S.ABCD đáy ABCD là hình bình hành tâm O. Gọi M, N lần lượt là trung điểm của SA và SB. Giao tuyến của hai mặt phẳng (MNA) và (ABD) là đường nào trong các đường thẳng sau đây? Α. ΟA. B. OM. C. ON. D. CD.
+
+Câu 136: Cho tứ diện ABCD. Lấy M là một điểm thuộc miền trong của tam giác ABC. Gọi (α) là mặt AB và CD. Thiết diện tạo bởi (α) và tứ phẳng qua M và song song với các đường thẳng diện ABCD là hình gì?
+
+Câu 137: Cho hình chóp S.ABCD, đáy ABCD là hình bình hành. Gọi M là trung điểm của SA. Thiết diện của mặt phẳng (MCD) với hình chóp S.ABCD là hình gì?
+
+Câu 138: Cho tứ diện ABCD. Hai điểm M, N lần lượt là trung điểm của AC, AD. Mặt phẳng (α) chứa MN và song song với AB. Thiết diện cua (α) với tứ diện ABCD là.
+
+Câu 139: Cho tứ diện ABCD. M, N lần lượt là trọng tâm các tam giác ABC, ABD. Thiết diện của tứ diện với mặt phẳng (α) chứa MN và song song với AB là hình gì?
+
+Câu 140: Cho hình chóp S.ABCD có đáy là hình bình hành ABCD. Giả sử M thuộc đoạn thẳng SB. Mặt phẳng (ADM) cắt hình chóp S.ABCD theo thiết diện là hình.
+
+Câu 141: Cho hình bình hành ABCD, qua các đỉnh A, B, C, D ta dựng các nửa đường thẳng song song với nhau và nằm về một phía đôi với mặt phẳng (ABCD). Một mặt phăng (P) cắt bốn đường thẳng nói trên tại A′, B′, C′, D′. Hỏi A′B′C′D′ là hình gì?
+
+Câu 142: Cho tứ diện đều S.ABC. Gọi I là trung điểm của AB, M là một điểm lưu động trên đoạn AI Qua M vẽ mặt phẳn ((α) // (SIC). Khi đó thiết diện của mặt phẳng (α) và tứ diện S.ABC là.
+
+Câu 143: Cho tứ diệnABCD vàM là điểm ở trên cạnhAC. Mặt phẳng (α) qua và M song song với AB và CD. Thiết diện của tứ diện cắt bởi (α) là.
+
+Câu 144: Cho hình chóp S.ABCDcó đáy ABCDlà hình thang, AD//BC, AD=2.BC, M là trung điểm SA. Mặt phẳng (MBC) cắt hình chóp theo thiết diện là.
+
+Câu 145: Cho hình chóp S.ABCD có đáy ABCD là hình chữ nhật tâm O. M là trung điểm của OC, (α) qua Mặt phẳng M song song với SA và BD. Thiết diện của hình chóp với mặt phẳng(α)là.
+
+Câu 146: Cho hình hộp ABCD.A′B′C′D′. Gọi M là trung điểm của AB. Mặt phẳng (MA′C′)cắt hình hộp ABCD.A′B′C′D′ theo thiết diện là hình gì?
+
+Câu 147: Cho tứ diện ABCD. Gọi O là một điểm bên trong ∆BCD và M là một điểm trên đoạn AO. Gọi I, J là hai điểm trên cạnh BC, BD. Giả sử IJ cắt CD tại K, BO cắt IJ tại E và cắt CD tại H, ME cắt AH tại F. Giao tuyến của hai mặt phẳng (MIJ) và (ACD) là đường thẳng.
+
+Câu 148: Cho tứ diệnABCD.M, N, P, Q lần lượt là trung điểm AC, BC, BD, AD. Tìm điều kiện để MNPQ là hình thoi.
+
+Câu 149: Cho hình chóp S.ABCD có đáy ABCD là hình thang, đáy lớn là AB. M là trung điểm CD. Mặt phẳng (α) qua M song song với BC và SA.(α) cắt AB,SB lần lượt tại N và P. Nói gì về thiết diện của mặt phẳng (α) với khối chóp S.ABCD ?
+
+Câu 150: Cho hình chóp S.ABCD có AC∩BD =M và AB∩CD = N. Giao tuyến của mặt phẳng (SAC) và mặt phẳng (SBD) là đường thẳng.
+
+Câu 151: Cho tứ diện ABC, (α) là mặt phẳng đi qua M ABCD. Gọi M là điểm nằm trong tam giác và song song với các đường thẳng AB và CD. Thiết diện của tứ diện và mp (α) là hình gì ?
+
+Câu 152: Cho hình chóp S.ABCD, với ABCD là tứ giác lồi. Cắt hình chóp bằng một mặt phẳng (P) tuỳ ý. Thiết diện nhận được không bao giờ có thể là.
+
+Câu 153: Cho tứ diện ABCD, điểm M thuộc AC. Mặt phẳng (α) đi qua M và song song với AB và AD. Thiết diện của (CI) với tứ diện ABCD là hình gì?
+
+Câu 154: Cho hình chóp S.ABCD có đáy là hình bình hành. Gọi I, J lần lượt là trung điểm của AB và là điểm thuộc cạnh SD. Tìm thiêt diện của (MIJ) với hình chóp S.ABCD. CB. M.
+
+Câu 155: Cho tứ diện đều ABCD cạnh a. Gọi G là trọng tâm của tam giác ABC. Qua G dựng mặt phẳng (P), song song với mặt phẳng (BCD). Tìm diện tích thiết diện của (P) và tứ diện ABCD. a2 3 a2 3 a2 3 a2 3.
+
+Câu 156: Cho hình chóp S.ABCD đáy ABCD là hình bình hành, tâm O. K là trung điểm của SA. Xác định vị trí của H trên AC để thiết diện của hình chóp S.ABCD với mặt phẳng (α) chứa KH và song song với BD là ngũ giác.
+
+Câu 157: Cho G là trọng tâm tứ diện ABCD. Giao tuyến của mp(ABG) và mp(CDG) là.
+
+Câu 158: Cho tứ diện ACD. Gọi (P) là mặt ABCD, I là trung điểm AB,G là trọng tâm tam giác. Khi đó giao tuyến của (P) và mp(BCD) là phẳng đi qua I, G và song song với BC.
+
+Câu 159: Cho tứ diệnABCD. Mặt phẳng đi qua trung điểm các cạnh AB,BC,CD cắt tứ diện theo một thiết diện là.
+
+Câu 160: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành. Gọi I là trung điểm SA. Thiết diện của hình chóp S.ABCD cắt bởi mp (IBC) là.
+
+Câu 161: Cho hình chóp S.ABCD có đáy là tứ giác lồi, O là giao điểm của hai đường chéo AC và BC. Mặt phẳng (P) qua O, song song với AB và SC cắt hình chóp theo thiết diện là hình gì ?
+
+Câu 162: Cho lăng trụ tam giác ABC.A′B′C′. Gọi I là trọng tâm của tam giác ABC. Thiết diện tạo bởi mặt phẳng (A′B′I) với hình lăng trụ đã cho là.
+
+Câu 163: Cho hình hộp ABCD.A′B′C′D′. Trên ba cạnh AB, DD′, C′B′ lần lượt lấy ba điểm M,N, P D′N B′P AM không trùng với các đỉnh sao cho = =. Thiết diện của hình hộp khi cắt bởi mặt AB D′D B′C′ phẳng (MNP) là.
+
+Câu 164: Cho hình chóp S.ABCD với ABCD là hình thoi cạnh a, SAD là tam giác đều. GọiM là một x, (P) là mặt phẳng qua song song với (SAD). Tính diện điểm thuộc cạnh AB, AM = M tích thiết diện của hình chóp cắt bởi mặt phẳng (P). 3 ( −x2) 3 ( −x2) 3 ( +x2) 3.
+
+Câu 165: Cho hình chópS.ABCD, (α) là mặt M là điểm thuộc miền trong của tam giác SAB. Gọi phẳng đi qua M và song song với SA và BC. Thiết diện tạo bởi mp(α) và hình chóp là.
+
+Câu 166: Cho hình chóp S.ABCD có AD cắt BC tại E. Gọi M là trung điểm của SA, N là giao điểm của SD và (BCM). Khi đó ta có.
+
+Câu 167: Cho tứ diện ABCD và ba điểm P, Q, R lần lượt nằm trên cạnh AB, CD, BC biết PR cắt. Khi đó giao tuyến của hai mặt phẳng (PQR) và (ACD) là: AC tạiI.
+
+Câu 168: Cho hình chóp S.ABCD có đáy là một hình bình hành. Gọi C′ là trung điểm SC, M là một điểm di động trên SA. Mặt phẳng (P) di động luôn đi qua C′M và song song với BC. Tập hợp giao điểm của hai cạnh đối diện của thiết diện khi M di động trên SA là.
+
+Câu 169: Cho hình chóp S.ABCDcó đáy là hình thang, AB //CD. Gọi I, J lần lượt là trung điểm của là trọng tâm tâm giác SAB. Giao tuyến của (SAB) và (IJG) là: AD và BC, G.
+
+Câu 170: Cho hình chóp SABCD, mặt bên (SAB) là tam giác đều. Gọi M là điểm di động trên đoạn AB. Qua M vẽ mp(α) song song với (SBC). Thiết diện tạo bởi (α) và hình chóp SABCD là hình gì?
+
+Câu 171: Cho hình chóp S.ABCD có đáy là một hình bình hành. Gọi E là trung điểm SC, M là một điểm di động trên SA. Mặt phẳng (P) di động luôn đi qua EM và song song với BC. Tập hợp giao điểm của hai cạnh đối diện của thiết diện khi M di động trên SA là.
+
+Câu 172: Cho hình chóp S.ABCD, đáy là tứ giác lồi ABCD có các cạnh đối không song song với nhau. Gọi M là điểm trên cạnh SA. Tìm giao điểm của các cặp mặt phẳng: a. (SAC) và (SBD) b. (SAB) và (SCD) c. (SBC) và (SAD) d. (BCM) và (SAD) e. (CDM) và (SAB) f. (BDM) và (SAC).
+
+Câu 173: Cho tứ diện ABCD. Gọi M, N, P là ba điểm lần lượt nằm trên ba cạnh AB, CD, AD. Tìm giao tuyến của các cặp mặt phẳng: a. (ABN) và (CDM); b. (ABN) và (BCP).
+
+Câu 174: Cho tứ diện ABCD. Gọi M, N lần lượt là trung điểm của AC, CD. Giao tuyến của hai mặt phẳng (MBD) và (ABN) là.
+
+Câu 175: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành. Gọi M, N lần lượt là trung điểm AD và BC. Giao tuyến của hai mặt phẳng (SMN) và (SAC) là.
+
+Câu 176: Cho hình chóp S.ABCD có đáy là hình thang ABCD (ADBC). Gọi M là trung điểm CD. Giao tuyến của hai mặt phẳng (MSB) và (SAC) là.
+
+Câu 177: Cho hình chóp S.ABCD có đáy ABCD là hình thang với ABCD. Gọi I là giao điểm của AC và BD. Trên cạnh SB lấy điểm M. Tìm giao tuyến của hai mặt phẳng (ADM) và (SAC).
+
+Câu 178: Cho tứ diện ABCD và điểm M thuộc miền trong của tam giác ACD. Gọi I và J lần lượt là hai điểm trên cạnh BC và BD sao cho IJ không song song với CD. Gọi H, K lần lượt là giao điểm của IJ với CD của MH và AC. Giao tuyến của hai mặt phẳng (ACD) và (IJM) là.
+
+Câu 179: Cho tứ diện SABC. Trên cạnh SA lấy điểm M, trên cạnh SC lấy điểm N, sao cho MN không song song vói AC. Cho điểm O nằm trong tam giác ABC. Tìm giao điểm của mặt phẳng (OMN) với các đường thẳng AC, BC và AB.
+
+Câu 180: Cho hình chóp S.ABCD có đáy là hình thang ABCD. Gọi E và F là hai điểm lần lượt nằm trên hai cạnh SB và CD. a. Tìm giao điểm của EF với mặt phẳng (SAC). b. Tìm giao điểm của mặt phẳng (AEF) với các đường thẳng BC và SC.
+
+Câu 181: Cho tứ diện ABCD. Gọi E và F lần lượt là trung điểm của AB và CD; G là trọng tâm tam giác BCD. Giao điểm của đường thẳng EG và mặt phẳng (ACD) là.
+
+Câu 182: Cho hình chóp S.ABCD có đáy là hình bình hành tâm O. Gọi M, N, P là ba điểm nằm trên AB, BC, SO. Tìm thiết diện của hình chóp với mặt phẳng (MNP).
+
+Câu 183: Cho hình chóp S.ABCD có đáy là hình thang với đáy lớn AD. Gọi M là một điểm trên cạnh SB. Tìm thiết diện của hình chóp được cắt bởi mặt phẳng (AMD).
+
+Câu 184: Cho hình chóp S.ABCD, E là một điểm trên cạnh BC, F là một điểm trên cạnh SD. a. Tìm giao điểm K của BF và mp(SAC). b. Tìm giao điểm J của EF và mp(SAC). c. Chứng minh ba điểm C, K, J thẳng hàng. d. Xác định thiết diện của hình chóp được cắt bởi mặt phẳng (BCF).
+
+Câu 185: Cho hình chóp S.ABCD có đáy là hình bình hành ABCD. Gọi M và N lần lượt là trung điểm của các cạnh SB và AD; G là trọng tâm tam giác SAD. Đường thẳng BN cắt CD tại K. a. Chứng minh ba điểm M, G, K thẳng hàng. b. Tìm thiết diện của hình chóp cắt bởi mặt phẳng (MCG). Tính tỉ số mà thiết diện chia đoạn SA. Từ đó cho biết thiết diện là hình gì?
+
+Câu 186: Cho tứ diện ABCD. Gọi M, N lần lượt là trung điểm các cạnh AB và AC, E là điểm trên cạnh CD với ED=3EC. Thiết diện tạo bởi mặt phẳng (MNE) và tứ diện ABCD là.
+
+Câu 187: Cho tứ diện ABCD. Gọi H, K lần lượt là trung điểm các cạnh AB, BC. Trên đường thẳng CD lấy điểm M nằm ngoài đoạn CD. Thiết diện của tứ diện với mặt phẳng (HKM) là: A. Tứ giác HKMN với N ÎAD. B. Hình thang HKMN với N ÎAD và HK MN. C.Tam giác HKL với L=KM ÇBD. D. Tam giác HKL với L=HM ÇAD.
+
+Câu 188: Cho hình chóp tứ giác đều S.ABCD có cạnh đáy bằng a (a>0). Các điểm M, N, P lần lượt là trung điểm của SA,SB,SC. Mặt phẳng (MNP) cắt hình chóp theo một thiết diện có diện tích bằng: a2 a2 a2.
+
+Câu 189: Cho tứ diện đều ABCD có độ dài các cạnh bằng 2a. Gọi M, N lần lượt là trung điểm các cạnh AC, BC; P là trọng tâm tam giác BCD. Mặt phẳng (MNP) cắt tứ diện theo một thiết diện có diện tích là: a2 11 a2 2 a2 11 a2 3.
+
+Câu 190: Cho hình chóp S.ABCD, AC và BD cắt nhau tại O. Một mặt phẳng cắt các cạnh SA, SB, SC, SD lần lượt tại A’, B’, C’, D’. Giả sử AD cắt BC tại E; A’D’ cắt B’C’ tại E’. Chứng minh: a. S, E, E’ thẳng hàng. b. A’C’, B’D’, SO đồng quy.
+
+Câu 191: Cho tứ diện SABC. Gọi I, J và K lần lượt là các điểm nằm trên các cạnh SB, SC và AB, sao cho IJ không song song với BC, IK không song song với SA. a. Tìm giao điểm D của (IJK) và BC. b. Gọi E là giao điểm của DK và AC. Chứng minh ba đường thẳng SA, KI, EJ đồng quy.
+
+Câu 192: Cho hình chóp S.ABCD có đáy ABCD không là hình thang. Gọi O là giao điểm của AC và BD, K là một điểm trên cạnh SD. a. Tìm giao điểm E của mặt phẳng (ABK) với CD. b. Tìm giao điểm F của mặt phẳng (ABK) với SC. c. Chứng minh các đường thẳng AF, BK và SO đồng quy.
+
+Câu 193: Cho tứ diện aBCD. Gọi K là trung điểm của cạnh BC, H là một điểm cố định trên cạnh AC. Mặt phẳng (P) di động chứa HK, cắt các cạnh BD và AD lần lượt tại M và N. a. Giả sử cho trước điểm M không là trung điểm của BD, hãy xác định điểm N. b. Tìm tập hợp giao điểm I của hai đường HM và KN khi M di động trên canh BD.
+
+Câu 194: Cho tứ diện ABCD. Gọi M và N lần lượt là hai điểm trên hai cạnh AB và AC, sao cho MN không song song với BC. Mặt phẳng (P) thay đổi luôn chứa MN, cắt các cạnh CD và BD lần lượt tại E và F. a. Chứng minh EF luôn đi qua điểm cố định. b. Tìm tập hợp giao điểm của ME và NF. c. Tìm tập hợp giao điểm của MF và NE.
+
+Câu 195: Cho tứ diện ABCD. Gọi I và J theo thứ tự là trung điểm của AD và AC,G là trọng tâm tam giác BCD. Giao tuyến của hai mặt phẳng (GIJ) và (BCD)là đường thẳng.
+
+Câu 196: Cho hình chópS.ABCD có đáy là hình thang với các cạnh đáy là AB và CD. Gọi I,J lần lượt là trung điểm của AD và BC và G là trọng tâm của tam giác SAB. Giao tuyến của (SAB) và (IJG) là.
+
+Câu 197: Cho hai hình vuông ABCD và CDIS không thuộc một mặt phẳng và cạnh bằng 4. Biết tam giác SAC cân tại S, SB=8. Thiết diện của mặt phẳng (ACI) và hình chóp S.ABCD có diện tích bằng.
+
+Câu 198: Cho hình chóp S.ABCD có đáy ABCD là hình thang với đáy lớn AB đáy nhỏ CD. Gọi M, lần N lượt là trung điểm của SA và SB. Gọi P là giao điểm của SC và (AND). Gọi I là giao điểm của AN và DP. Hỏi tứ giác SABI là hình gì?
+
+Câu 199: Cho tứ diện ABCD. Các điểm P,Q lần lượt là trung điểm của AB và CD; điểm R nằm trên cạnh BC sao cho BR=2RC. Gọi S là giao điểm của mặt phẳng (PQR) và cạnh AD. Tính tỉ số SA. SD.
+
+Câu 200: Cho hai hình bình hành ABCD và ABEF không cùng nằm trong một mặt phẳng. Gọi O và O’ lần lượt là tâm của hai hình bình hành ABCD và ABEF. a. Chứng minh OO’ song song với các mặt phẳng (ADF) và (BCE). b. Gọi G và G’ lần lượt là trọng tâm các tam giác ABD và ABF. Chứng minh GGʹ∥ DCEF.
+
+Câu 201: Cho tứ diện ABCD, G là trọng tâm tam giác ABD. M là điểm trên cạnh BC sao cho MB2MC. Chứng minh MG∥ ACD. A.
+
+Câu 202: Cho tứ diện ABCD. Gọi M, N lần lượt là trọng tâm của các tam giác ABC và BCD. Chứng và MN∥. minh rằng MN∥ ABD ACD.
+
+Câu 203: Cho tứ diện ABCD. Gọi M là một điểm bất kì trên cạnh BC; là mặt phẳng qua M và song song với AB và CD, cắt các cạnh BD, AD, AC lần lượt tại N, P, Q. Chứng minh rằng MNPQ là hình bình hành.
+
+Câu 204: Cho hình chóp S.ABCD có đáy là ABCD là hình bình hành; F, G lần lượt là trung điểm của AB và CD. a. Chứng minh rằng FG song song với các mặt phẳng (SAD) và (SBC). b. Gọi E là trung điểm của SA. Chứng minh rằng SB, SC song song với mặt phẳng (FGE).
+
+Câu 205: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành. là mặt phẳng đi qua trung điểm M của cạnh SB, song song với cạnh AB, cắt các cạnh SA, SD, SC lần lượt tại Q, P và N. Hãy xác định hình tính của tứ giác MNPQ?
+
+Câu 206: Cho hình chóp S.ABCD có đáy là hình bình hành ABCD, tâm O. Gọi M và N lần lượt là trung điểm của SA và SD. a. Chứng minh MN∥. SBC,SB∥ OMN,SC∥ OMN b. Xác định thiết diện của hình chóp cắt bởi mặt phẳng (OMN). Thiết diện là hình gì?
+
+Câu 207: Cho tứ diện ABCD. Gọi I và J lần lượt là trung điểm của AB và CD, M là một điểm trên đoạn IJ. Gọi (P) là mặt phẳng qua M, song song với AB và CD. a. Tìm giao tuyến của mặt phẳng (P) và mặt phẳng (ICD). b. Xác định thiết diện của tứ diện với mặt phẳng (P). Thiết diện là hình gì?
+
+Câu 208: Cho hình chóp S.ABCD có ABCD là hình thang cân đáy lớn AD. lần lượt là hai M, N trung điểm của AB và CD. (P) là mặt phẳng qua MN và cắt mặt bên (SBC) theo một giao tuyến. Thiết diện của (P) và hình chóp là.
+
+Câu 209: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành tâm O. Gọi M là điểm thuộc cạnh SA (không trùng với S hoặc A). (P) là mặt phẳng qua OM và song song với AD. Thiết diện của (P) và hình chóp là.
+
+Câu 210: Cho tứ diện ABCD. Gọi I, lần lượt thuộc cạnh AD, BC sao cho IA=2ID và JB=2JC. J Gọi (P) là mặt phẳng qua IJ và song song với AB. Thiết diện của (P) và tứ diện ABCD là.
+
+Câu 211: Cho hình chóp S.ABCD có đáy là hình thang ABCD, AD∥BC,AD2BC. Gọi E, F, I lần lượt là trung điểm của các cạnh SA, AD, SD. Chứng minh. Từ đó chứng minh CI∥. a. EFB ∥ SCD EFB b. Tìm giao tuyến của (SBC) và (SAD). Tìm giao điểm K của FI với giao tuyến này, chứng minh ∥. SBF KCD.
+
+Câu 212: Cho hình chóp S.ABCD, đáy là hình bình hành tâm O. Gọi M và N lần lượt là trung điểm của SA và CD. a. Chứng minh mặt phẳng (OMN) và mặt phẳng (SBC) song song với nhau. b. Giả sử hai tam giác SAD và ABC đều là tam giác cân tại A. Gọi AE và AF lần lượt là các đường phân giác trong của các tam giác ACD và SAB. Chứng minh EF song song với mặt phẳng (SAD).
+
+Câu 213: Cho hình hộp ABCD.A’B’C’D’ có các cạnh AA’, BB’, CC’, DD’ song song với nhau. a. Chứng minh hai mặt phẳng (BDA’) và (B’D’C) song song với nhau. b. Chứng minh rằng đường chéo AC’ đi qua trọng tâm G và G’ lần lượt của hai tam giác BDA’ và B’D’C. c. Chứng minh G và G’ chia đoạn AC’ thành ba phần bằng nhau.
+
+Câu 214: Cho hình chóp S.ABCD. Gọi M là trung điểm của AD. Gọi và là mặt phẳng qua điểm M và lần lượt song song với mặt phẳng (SBD) và (SAC). Xác định thiết diện của hình chóp cắt bởi mp. a. b. Xác định thiết diện của hình chóp cắt bởi mp. Gọi H và K lần lượt là giao điểm của và với AC và BD. Chứng minh tứ giác OHMK là c. hình bình hành.
+
+Câu 215: Cho lăng trụ ABC.A’B’C’. Gọi M và N lần lượt là trung điểm của BC và CC’. a. Xác định thiết diện của lăng trụ với mặt phẳng (A’MN). Tính tỉ số mà thiết diện chia cạnh AB. b. Gọi P là điểm đối xứng của C qua A. Hãy xác định thiết diện của lăng trụ với mặt phẳng (MNP). Tính tỉ số các đoạn thẳng mà thiết diện chia các cạnh AA’ và AB.
+
+Câu 216: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành tâm O. Tam giác SBD đều. Một mặt phẳng (P) song song với (SBD) và qua điểm I thuộc cạnh AC (không trùng với A hoặc C ). Thiết diện của (P) và hình chóp là hình gì?
+
+Câu 217: Cho hình chóp S.ABC có đáy là tam giác ABC thỏa mãn AB=AC=4, B AC=30. Mặt phẳng (P) song song với (ABC) cắt đoạn SA tại M sao cho SM =2MA. Diện tích thiết diện của (P) và hình chóp S.ABC bằng bao nhiêu? 16 14 25.
+
+Câu 218: Cho hình chóp S.ABCD có đáy ABCD là hình thang cân với cạnh bên BC=2, hai đáy AB=6, CD=4. Mặt phẳng (P) song song với (ABCD) và cắt cạnh SA tại M sao cho SA=3SM. Diện tích thiết diện của (P) và hình chóp S.ABCD bằng bao nhiêu? 5 3 2 3 7 3.
+
+Câu 219: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành có tâm O, AB=8, SA=SB=6. Gọi (P) là mặt phẳng qua O và song song với (SAB). Thiết diện của (P) và hình chóp S.ABCD là.
+
+Câu 220: Cho hình hộp ABCD.A¢B¢C¢D¢. Gọi I là trung điểm của AB. Mặt phẳng (IB¢D¢) cắt hình hộp theo thiết diện là hình gì?
+
+Câu 221: Cho tứ diện ABCD. Gọi G là trọng tâm của tam giác ACD. a. Chứng minh hình chiếu G’ của điểm G trên mặt phẳng (BCD) theo phương chiếu AB là trọng tâm của tam giác BCD. b. Gọi M, N lần lượt là trung điểm của AD và AC. Tìm hình chiếu song song của các điểm M, N theo phép chiếu nói trên.
+
+Câu 222: Cho hai hình bình hành ABCD và BCC’B’ nằm trong hai mặt phẳng phân biệt. Tìm điểm M trên đoạn DB’, và điểm N trên đường chéo AC sao cho MN∥BCʹ.
+
+Câu 223: Cho hình chóp S.ABCD, có đáy là hình bình hành tâm O. Gọi M,N lần lượt là trung điểm của SA,SD. a) Chứng minh rằng OMN//SBC. b) Gọi P,Q lần lượt là trung điểm của AB,ON. Chứng minh PQ//SBC.
+
+Câu 224: Cho hình chóp S.ABCD, có đáy là hình bình hành tâm O. Gọi M,N lần lượt là trung điểm của SA và CD. a) Chứng minh rằng OMN SBC. b) Gọi I là trung điểm của SD,J là một điểm trên ABCD và cách đều AB,CD. Chứng minh rằng IJ SAB.
+
+Câu 225: Cho hình chóp S.ABCD có đáy là hình bình hành. Gọi M,N,P,Q là trung điểm của BC,AB,SB,AD. a) Chứng minh rằng: MNP SAC. b) Chứng minh rằng: PQ SCD. c) Gọi I là giao điểm của AM và BD; J là điểm thuộc SA sao cho AJ 2JS. Chứng minh IJ SBC.
+
+Câu 226: Cho hình chóp S.ABCD, có đáy là hình bình hành tâm O. Gọi M,N lần lượt là trung điểm của SB và SC, lấy điểm PSA. a) Tìm giao tuyến SAB và SCD. b) Tìm giao điểm SD và MNP. c) Tìm thiết diện hình chóp và mặt phẳng MNP. Thiết diện là hình gì? d) Gọi JMN. Chứng minh rằng OJ SAD.
+
+Câu 227: Cho hình chóp SABCD có đáy là hình bình hành. Gọi I,J,G,P,Q là trung điểm của DC,AB,SB,BG,BI. a) Chứng minh rằng IJG SAD. b) Chứng minh rằng PQ SAD. c) Tìm giao tuyến của hai mặt phẳng SAC và IJG. d) Tìm giao tuyến của hai mặt phẳng ACG và SAD.
+
+Câu 228: Cho hình chóp S.ABCD, có đáy là hình bình hành tâm O. Gọi M,N,P lần lượt là trung điểm của BC,CD,SC. a) Chứng minh rằng MNP SBD. b) Tìm giao tuyến SAB và SCD. c) Tìm giao tuyến của MNP và SAD. Suy ra giao điểm của SA và MNP. MNP. d) Gọi I APSO,J AM BD. Chứng minh rằng IJ.
+
+Câu 229: Cho hình chóp SABCD, có đáy là hình vuông cạnh a, tam giác SAB đều. Gọi M là điểm trên cạnh AD sao cho AM x,x0;a. Mặt phẳng đi qua M và song song với SAB lần lượt cắt các cạnh CB,CS,SD tại N,P,Q. Tìm x để diện tích MNPQ 2a2 3 bằng. 9 2a a a a.
+
+Câu 230: Cho hình lập phương ABCD.ABCD cạnh a. Gọi M là trung điểm của AB,N là tâm hình vuông AADD. Tính diện tích thiết diện của hình lập phương ABCD.ABCD tạo bởi mặt phẳng CMN. a2 3a2 3a2 a2 14 14 14.
+
+Câu 231: Cho hình chóp SABCD đáy là hình thang, đáy lớn BC 2a,ADa,ABb. Mặt bên SAD là tam giác đều. Mặt phẳng qua điểm M trên cạnh AB và song song với các cạnh SA và BC. Mặt phẳng cắt CD,SC,SB lần lượt tại N,P,Q. Đặt x AM0 xb. Giá trị lớn nhất của diện tích thiết diện tạo bởi và hình chóp S.ABCD là a2 3 a2 3 a2 3 a2 3.
+
+Câu 232: Cho hình hộp ABCD.ABCD. Trên cạnh AB lấy điểm M khác A và B. Gọi AM P là mặt phẳng đi qua M và song song với mặt phẳng ACD. Đặt k,0k 1. AB Tìm k để thiết diện của hình hộp và mặt phẳng P có diện tích lớn nhất. 1 3 1 2.
+
+Câu 233: Cho tứ diện ABCD. Trên các cạnh AD,BC theo thứ tự các điểm M,N sao cho MA NC 1. Gọi P là mặt phẳng chứa đường thẳng MN và song song với CD. Khi đó AD CB 3 thiết diện của tứ diện ABCD cắt bới mặt phẳng P là.
+
+Câu 234: Cho tứ diện đều SABC. Gọi I là trung điểm của AB, M là điểm di động trên AI. Qua M vẽ mặt phẳng song song với SIC. Thiết diện tạo bởi và tứ diện SABC là.
+
+Câu 235: Cho hình hộp ABCD.ABCD và điểm M nằm giữa hai điểm A và B. Gọi P cắt hình hộp theo thiết diện là hình gì?
+
+Câu 236: Cho hình lập phương ABCD.ABCD, ACBDO,ACBDO.M,N,P lần lượt là trung điểm của các cạnh AB, BC, CC. Khi đó thiết diện do mặt phẳng MNP cắt hình lập phương là hình gì.
+
+Câu 237: Cho hình hộp ABCD.ABCD. Gọi M,N theo thứ tự là trung điểm AB, BC. Mặt phẳng DMNcắt hình hộp theo một thiết diện hình.
+
+Câu 238: Cho hình hộp ABCD.ABCD. Gọi M là trung điểm AB, mặt phẳng MAC cắt MN cạnh BC tại N. Tính tỉ số. AC 1 1 2.
+
+Câu 239: Cho hình chóp S.ABCD có đáy là hình thang ABCD, AB CD, AB2CD. M là điểm thuộc cạnh AD, là mặt phẳng qua M và song song với mặt phẳng SAB. Biết 2 diện tích thiết diện của hình chóp cắt bởi mặt phẳng bằng diện tích tam giác SAB. 3 MA Tính tỉ số x. MD 1 3 2.
+
+Câu 240: Cho hình chóp S.ABC có đáy là tam giác ABC thỏa mãn AB 4, BAC 30. AC Mặt phẳng P song song với ABC cắt đoạn SA tại M sao cho SM 2MA. Diện tích thiết diện của P và hình chóp S.ABC bẳng bao nhiêu? 16 14 25.
+
+Câu 241: Cho tứ diện đều S.ABC cạnh bằng 1. Gọi I là trung điểm của AB, M là điểm di vẽ mặt phẳng song song với SIC. Tính chu vi của thiết động trên đoạn AI. Qua M diện tạo bởi với tứ diện S.ABC, biết AM x.

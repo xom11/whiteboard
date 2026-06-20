@@ -1,0 +1,735 @@
+Câu 1: Cho hình chóp S.ABCD có đáy là hình chữ nhật với B=a,AD=a 3. Tam giác SAB cân tại S và thuộc mặt phẳng vuông góc với đáy. Gọi H là trung tâm của AB. a) Tính khoảng cách từ A đến mặt phẳng (SHD). b) Tính khoảng cách từ D đến mặt phẳng SHC
+
+Câu 2: Cho hình chóp S.ABCD có đáy là hình thang vuông tại A và B có BC SA⊥(ABCD). a) Tính khoảng cách từ C đến mặt phẳng (SAD). b) Tính khoảng cách từ D đến mặt phẳng SAC
+
+Câu 3: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh 5a. Hình chiếu vuông góc của đỉnh S trên mặt phẳng (ABCD) trùng với trọng tâm H của tam giác ABD. a) Tính khoảng cách từ B đến mặt phẳng (SAC). b) Tính khoảng cách từ C đến mặt phẳng (SHD)
+
+Câu 4: Cho hình chóp S.ABCD có đáy ABCD nửa lục giác đều cạnh a, với AB=2a. Biết SA⊥(ABCD) và mặt phẳng (SBC) tạo với đáy một góc 60°. a) Tính khoảng cách từ C đến mặt phẳng (SAB). b) Tính khoảng cách từ D đến mặt phẳng (SAC)
+
+Câu 5: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành có diện tích bằng 2, AB= 2,BC =2. Gọi M là trung điểm của CD, hai mặt phẳng (SBD) và SAM cùng vuông góc với đáy. Tính khoảng cách từ B đến mặt phẳng SAM
+
+Câu 6: Cho hình lăng trụ ABCD.A'B'C'D' có đáy là hình chữ nhật ABCD có hai đường chéo AC = BD=2a. Tam giác A'BD vuông cân tại A' và nằm trong mặt phẳng vuông góc với đáy. Mặt phẳng (A'AB) tạo với đáy một góc 60°. Tính khoảng cách d ( B'; (A'BD))
+
+Câu 7: Cho hình chóp S.ABC có đáy là tam giác vuông tại B có AB=a,BC =a 3. Biết SA=2a và SA⊥(ABC). a) Tính khoảng cách từ A đến mặt phẳng (SBC). b) Gọi M là trung điểm của AC. Tính khoảng cách từ A đến mặt phẳng SBM
+
+Câu 8: Cho hình chóp S.ABC có đáy là tam giác đều cạnh 2a, SA⊥(ABC). Đường thẳng SB tạo với đáy một góc 60°. a) Tính khoảng cách từ A đến mặt phẳng (SBC). b) Tính khoảng cách từ A đến mặt phẳng (SCM), với M là trung điểm của cạnh AB
+
+Câu 9: Cho tứ diện OABC có OA, OB, OC đôi một vuông góc với nhau. Biết OA=a,OB=b,OC =c. Tính khoảng cách d từ O đến mặt phẳng ABC
+
+Câu 10: Cho hình chóp S.ABC có đáy ABC là tam giác vuông tại B và cạnh bên SB vuông góc với mặt phẳng đáy. Cho biết SB=3a,AB=4a,BC =2a. Tính khoảng cách từ B đến mặt phẳng (SAC).
+
+Câu 11: Cho hình chóp S.ABC có đáy là tam giác ABC vuông tại B và AB=a,BC =a 3. Hình chiếu vuông góc của đỉnh S trên mặt phẳng đáy là trung điểm H của cạnh AC. Biết SH =a, tính khoảng cách từ H đến các mặt phẳng (SAB) và SAC
+
+Câu 12: Cho hình chóp S.ABCD có đáy ABCD là hình chữ nhật có AB=a,AD=2a, SA vuông góc với đáy và SA=a. a) Tính khoảng cách từ A đến mặt phẳng (SCD) và (SBC). b) Tính khoảng cách từ A đến mặt phẳng SBD
+
+Câu 13: Cho hình chóp S.ABCD có đáy là hình vuông cạnh 2a. Hình chiếu vuông góc của đỉnh S lên mặt đáy trùng với trung điểm H của AB. Biết SD=3a. a) Tính khoảng cách từ H đến mặt phẳng (SCD). b) Tính khoảng cách từ điểm H đến mặt phẳng (SBD)
+
+Câu 14: Cho hình chóp S.ABCD có đáy ABCD là hình thoi có tam giác ABC đều cạnh a. Gọi H là trung điểm của AB. Biết SH vuông góc với mặt đáy, mặt phẳng (SCD) tạo với đáy một góc 60°. Tính a) Khoảng cách từ H đến mặt phẳng (SCD). b) Khoảng cách từ H đến mặt phẳng SBC
+
+Câu 15: Cho hình chóp S.ABCD có đáy ABCD là hình thang vuông tại A và B có AB= BC =. Mặt 2 phẳng (SAB) và (SAD) cùng vuông góc với mặt đáy. Biết SA=2a và đường thẳng SD tạo với mặt phẳng (SAC) một góc 30°. tính a) Khoảng cách từ A đến mặt phẳng (SCD). b) Khoảng cách từ A đến mặt phẳng SBC
+
+Câu 16: Cho hình chóp S.ABCD có đáy ABCD là hình chữ nhật, tam giác SAD là tam giác vuông cân tại S và thuộc mặt phẳng vuông góc với đáy. Biết SA=a 2 và SB tạo với đáy một góc 30°. Gọi H là trung điểm của AD. Tính các khoảng cách sau: ( ) a) d H; SBC ( ) b) d H; SAC
+
+Câu 17: Cho hình chóp S.ABCD có đáy ABCD là hình thang cân AD//BC có AB= BC =CD=a,AD=2a, SA vuông góc với đáy. Biết mặt phẳng (SCD) tạo với mặt phẳng (ABCD) một góc 60°. Tính cách các khoảng cách sau: ( ) a) d A; SCD ( ) b) d A; SBC
+
+Câu 18: Cho hình lăng trụ đứng ABC.A'B'C'có đáy là tam giác đều cạnh a, gọi I là trung điểm cạnh BC, đường thẳng A'C tạo với đáy một góc 60°. a) Tính khoảng cách từ A đến mặt phẳng (A'BC). b) Tính khoảng cách từ A đến mặt phẳng (α) chứa A'I và song song với AC
+
+Câu 19: Cho hình lăng trụ ABC.A'B'C'có đáy là tam giác vuông cân tại A với AB= AC =3a. Hình chiếu vuông góc của B' lên mặt đáy là điểm H thuộc BC sao cho HC =2HB. Biết cạnh bên của lăng trụ bằng 2a. a) Tính khoảng cách từ H đến mặt phẳng (B'AC). b) Tính khoảng cách từ H đến mặt phẳng BAA'B'
+
+Câu 20: Cho hình chóp S.ABC có đáy là tam giác vuông tại B có AB=a,BC =2a. Tam giác SAC cân tại 3a S và thuộc mặt phẳng vuông góc với đáy. Biết SB=, tính: 2 a) Khoảng cách từ điểm C đến mặt phẳng (SAB). b) Khoảng cách từ A đến mặt phẳng SBC
+
+Câu 21: Cho hình chóp S.ABC có SA⊥(ABC), đáy là tam giác đều cạnh a. Biết SB=a 5. a) Tính khoảng cách từ trung điểm K của SA đến mặt phẳng (SBC). b) Tính khoảng cách từ trung điểm I của SB đến mặt phẳng SAC
+
+Câu 22: Cho hình chóp S.ABC có đáy là tam giác đều cạnh 3a, hình chiếu vuông góc của đỉnh S trên mặt phẳng đáy và điểm H thuộc cạnh AB sao cho HB=2HA. Biết SC tạo với đáy một góc 45°. Tính các khoảng cách sau: ( ) a) d B; SAC ( ) b) d I; SBC
+
+Câu 23: Cho hình chóp tam giác đều S.ABC có đáy là tam giác đều cạnh. Cạnh bên tạo với đáy góc 60°. Tính khoảng cách từ A đến mặt phẳng SBC
+
+Câu 24: Cho hình chóp tứ giác đều S.ABCD có đáy ABCD là hình vuông cạnh 2a, tâm O, SO=a a) Tính khoảng cách từ A đến mặt phẳng (SCD). b) Tính khoảng cách từ trung điểm của SO đến mặt phẳng SCD
+
+Câu 25: Cho hình chóp S.ABCD có đáy ABCD là hình thoi tâm O cạnh a, biết B  AD=120° và SO⊥(ABCD). Biết SO=a 3, tính khoảng cách từ A đến mặt phẳng (SCD)
+
+Câu 26: Cho hình chóp S.ABCD có đáy ABCD là hình chữ nhật, AB=3AD=3. Hình chiếu vuông góc của đỉnh S lên mặt phẳng (ABCD) là điểm H∈AB sao cho HB=2HA. Biết SH= 3 a) Tính khoảng cách từ B đến mặt phẳng (SAD). b) Tính khoảng cách từ A đến mặt phẳng SCD
+
+Câu 27: Cho hình chóp S.ABCD có đáy ABCD là hình vuông tâm O cạnh a, hình chiếu của đỉnh S trên mặt phẳng đáy trùng với trung điểm của cạnh OA. Biết góc giữa mặt phẳng (SCD) và đáy bằng 60°. Tính khoảng cách: ( ) a) d B; SCD ) b) d A; ( SBD
+
+Câu 28: Cho hình chóp S.ABCD có đáy hình vuông ABCD tâm O, SA=2a 2. Hình chiếu vuông góc của S lên mặt phẳng (ABCD) trùng với trung điểm của cạnh OA, biết tam giác SBD vuông tại S. Tính khoảng cách từ điểm D đến mặt phẳng (SBC)
+
+Câu 29: Cho hình chóp S.ABCD có đáy ABCD là hình thang vuông tại A và D, AB là đáy lớn và tam giác ABC là tam giác đều. Các mặt phẳng (SAB) và (SAC) cùng vuông góc với đáy, cạnh bên SC=2a và khoảng cách từ C đến mặt phẳng (SAB) bằng a. Tính khoảng cách từ điểm A đến mặt phẳng (SBC)
+
+Câu 30: Cho hình chóp S.ABCD có đáy là lục giác đều cạnh a. Tam giác SAD vuông cân tại S và thuộc mặt phẳng vuông góc với đáy ABCD. a) Tính khoảng cách từ điểm A đến mặt phẳng (SCD). b) Tính khoảng cách từ điểm B đến mặt phẳng (SCD)
+
+Câu 31: Cho hình lăng trụ ABC.A'B'C' có đáy ABC là tam giác cân AC=BC=a,AB=a 3, hình chiếu vuông góc của A' lên mặt phẳng đáy trùng với trọng tâm G của tam giác ABC. Biết mặt phẳng (B'C'CB) tạo với đáy một góc 60°. Tính các khoảng cách: ( ) a) d A; A'BC. ) b) d C; ( ABB'A'
+
+Câu 32: Cho hình chóp S.ABCD có đáy ABCD là hình thang vuông tại A và B, AB=AD=2a,BC=a, tam giác SAB là tam giác cân tại S và nằm trong mặt phẳng vuông góc với mặt phẳng (ABCD), biết cạnh bên SD=3a, tính khoảng cách từ A đến mặt phẳng SCD
+
+Câu 33: Cho hình chóp S.ABCD có đáy ABCD là nửa lục giác đều cạnh a, AD=2a, tam giác SAB cân tại S và nằm trong mặt phẳng vuông góc với đáy, cạnh bên SD tạo với đáy một góc ϕ thỏa mãn 1 tanϕ=. Tính khoảng cách từ A đến mặt phẳng (SCD).
+
+Câu 34: Cho hình chóp S.ABC có đáy là tam giác đều cạnh a, mặt bên SBC vuông góc với đáy ABC, Gọi M, N, P lần lượt là trung điểm của AB, SA, AC. Tính khoảng cách giữa hai mặt phẳng (MNP) và SBC
+
+Câu 35: Cho hình lăng trụ ABC.A'B'C' có tất cả các cạnh bên và cạnh đáy bằng a. Hình chiếu vuông góc của A' trên (ABC) trùng với trung điểm của BC. a) Tính khoảng cách từ AA' đến các mặt bên BCC'B' b) Tính khoảng cách giữa hai mặt đáy của lăng trụ
+
+Câu 36: Cho hình lăng trụ tứ giác đều ABCD.A'B'C'D' có cạnh đáy bằng a. Gọi M, N, P lần lượt là trung điểm của AD, DC và A'D'. Tính khoảng cách giữa hai mặt phẳng (MNP) và ACC'
+
+Câu 37: Cho hình chóp S.ABCD có đáy là hình vuông cạnh a và SA⊥(ABCD). Biết rằng SC tạo với mặt đáy một góc 60° a) Tính khoảng cách giữa 2 đường thẳng AB và SD b) Tính khoảng cách giữa BD và SC
+
+Câu 38: Cho hình chóp S.ABC có đáy là tam giác đều cạnh a, gọi I là trung điểm của AB. Hình chiếu vuông =a góc của S trên mặt đáy là trung điểm CI. Biết chiều cao của khối chóp là h 3. Tính khoảng cách d giữa đường thẳng AB và SC
+
+Câu 39: Cho hình chóp S.ABCD có đáy là hình thang vuông ABCD cạnh a và SA⊥(ABCD). Biết mặt phẳng (SBC) tạo với đáy một góc 60° a) Tính khoảng cách giữa 2 đường thẳng SB và CD. b) Tính khoảng cách giữa 2 đường thẳng BD và SC
+
+Câu 40: Cho hình lăng trụ ABC.A'B'C' có đáy là tam giác vuông cân AB = BC = 3a, hình chiếu vuông góc của B' lên mặt phẳng đáy trùng với trọng tâm tam giác ABC, mặt phẳng (ABB'A') tạo với mặt phẳng (ABC) một góc 60. Tính khoảng cách giữa 2 đường thẳng AB và B'C
+
+Câu 41: Cho hình chóp S.ABC có SA vuông góc với mặt phẳng (ABC), đáy ABC tam giác vuông tại B có a AB = a, BC=a 3. Biết SA= 2 a) Tính khoảng cách giữa hai đường thẳng SB và AC b) Tính khoảng cách giữa hai đường thẳng SC và AB
+
+Câu 42: Cho hình lăng trụ ABC.A'B'C' có đáy là tam giác đều cạnh a, hình chiếu vuông góc của B' lên mặt phẳng đáy trùng với trung điểm H của cạnh AB, góc giữa mặt phẳng (BCC'B') và mặt phẳng đáy bằng 60. Tính khoảng cách giữa 2 đường thẳng AA' và BC
+
+Câu 43: Cho hình chóp S.ABC có đáy ABC là tam giác vuông cân tại A, AB = AC = 2a, hình chiếu vuông góc của đỉnh S lên mặt phẳng (ABCD) trùng với trung điểm của cạnh AB, biết SA=a 2. Tính khoảng cách d giữa 2 đường thẳng SA và BC
+
+Câu 44: Cho hình chóp S.ABC có đáy ABC là tam giác vuông tại A, AB=a 3, AC = a, tam giác SBC là tam giác vuông cân đỉnh S và nằm trong mặt phẳng vuông góc với mặt phẳng (ABC). Tính khoảng cách d giữa hai đường thẳng SB và AC
+
+Câu 45: Cho hình chóp S.ABCD có đáy là hình vuông cạnh 2a, SA⊥(ABCD). Gọi M là trung điểm của cạnh CD, biết SA=a 5. Tính khoảng cách giữa hai đường thẳng SD và BM
+
+Câu 46: Cho hình chóp S.ABC có đáy là tam giác vuông cân tại B, AB = BC = 2a và SA⊥(ABC). Gọi M là trung điểm của AC. Biết góc giữa 2 mặt phẳng (SBC) và (ABC) bằng 60. Tính khoảng cách d giữa 2 đường thẳng AB và SM theo a
+
+Câu 47: Cho hình chóp S.ABCD có đáy là hình vuông cạnh a, SA⊥(ABCD), đường thẳng SC tạo với đáy góc 45. Tính khoảng cách giữa 2 đường thẳng SB và AC
+
+Câu 48: Cho hình chóp S.ABCD có đáy ABCD là hình chữ nhật có AB = a, BC=a 3. Hình chiếu vuông   góc H của đỉnh S lên mặt phẳng (ABCD) là điểm H thỏa mãn HA=2HB. Góc giữa mặt phẳng (SCD) và mặt phẳng (ABCD) bằng 60. Tính khoảng cách giữa 2 đường thẳng SA và BD
+
+Câu 49: Cho hình chóp S.ABCD có đáy là hình vuông cạnh a, SA⊥(ABCD). Biết mặt phẳng (SBC) tạo với đáy một góc 60 và M là trung điểm của SD. Tính khoảng cách d giữa 2 đường thẳng AB và CM
+
+Câu 50: Cho hình lập phương ABCD.A'B'C'D' có cạnh bằng a. Tính d là khoảng cách giữa 2 đường thẳng AC và C'D
+
+Câu 51: Cho hình chóp S.ABCD có đáy ABCD là hình chữ nhật có AB = 2a, AD=a 3, cạnh bên SA vuông góc với đáy, gọi M là trung điểm của cạnh CD. Biết SM tạo với mặt phẳng (ABCD) một góc 60, tính khoảng cách d giữa 2 đường thẳng AM và SB
+
+Câu 52: Cho hình chóp S.ABCD có đáy ABCD là hình chữ nhật có AD=a 2, hình chiếu vuông góc của đỉnh S xuống mặt đáy là trung điểm của AB, biết tam giác SCD là tam giác vuông tại S và nằm trong mặt phẳng tạo với đáy một góc 45. Tính khoảng cách d giữa 2 đường thẳng SA và BD
+
+Câu 53: Cho hình chóp S.ABCD có đáy ABCD là hình thoi tâm O cạnh a, hình chiếu vuông góc của đỉnh S lên mặt phẳng đáy trùng với trọng tâm H của tam giác đều ABC, biết mặt phẳng (SCD) tạo với mặt phẳng (ABCD) một góc 60. Tính khoảng cách giữa 2 đường thẳng SA và BD
+
+Câu 54: Cho hình lăng trụ đứng ABC.A'B'C' có đáy ABC là tam giác vuông có AB = BC = a, A'B = a 3. Gọi M là trung điểm cạnh BC. Tính theo a khoảng cách giữa hai đường thẳng AM và B'C
+
+Câu 55: Cho hình lăng trụ ABC.A'B'C' có các mặt bên đều là hình vuông cạnh a. Gọi D, E lần lượt là trung điểm của BC, A'C'. Tính khoảng cách giữa các cặp đường thẳng. a) B'C' và A'B b) DE và AB'
+
+Câu 56: Cho hình chóp S.ABCD có đáy là hình chữ nhật có AB = a, AD = a 3, SA⊥(ABCD). Mặt phẳng (SBC) tạo với đáy một góc 60. Gọi M là trung điểm của SA. Tính khoảng cách giữa hai đường thẳng SC và DM
+
+Câu 57: Cho hình chóp S.ABCD có đáy là hình thang vuông tại A và B, SA⊥(ABCD). Biết AD = 2a, AB = BC = a và SD tạo với đáy một góc 30. Gọi K là trung điểm của SD. Tính khoảng cách giữa hai đường thẳng SB và AK
+
+Câu 58: Cho tứ diện ABCD có AB, AC, AD đôi một vuông góc với nhau và khoảng cách từ A đến mặt phẳng (BCD). Đẳng thức nào dưới đây đúng?
+
+Câu 59: Cho tứ diện ABCD. Gọi d là khoảng cách từ D đến mặt phẳng (ABC). Mệnh đề nào dưới đây sai?
+
+Câu 60: Cho tứ diện ABCD có AB, AC, AD đôi một vuông góc với nhau và AB=2, AC=3, AD=4. Tính khoảng cách từ A đến mặt phẳng (BCD)
+
+Câu 61: Cho hình lăng trụ đều ABC.A'B'C'. Gọi O là tâm đường tròn ngoại tiếp tam giác ABC, M là trung điểm CC' và d là khoảng cách từ A đến mặt phẳng (A'BC). Mệnh đề nào dưới đây sai?
+
+Câu 62: Cho hình chóp S.ABC có đáy ABC là tam giác đều cạnh a, SA vuông góc với đáy và SA=h. Tính khoảng cách từ A đến mặt phẳng (SBC) theo a và h? ah 3 ah 3 ah ah
+
+Câu 63: Cho hình lập phương ABCD.A'B'C'D' cạnh a. Khoảng cách từ A đến đường thẳng CC' là a
+
+Câu 64: Cho hình lập phương ABCD.A'B'C'D' cạnh a. Khoảng cách từ A đến đường thẳng B'D' là a 6 a
+
+Câu 65: Cho hình chóp tam giác đều S.ABC có SA=a 7,AB=3a. Khoảng cách từ S đến mặt phẳng (ABC) bằng a
+
+Câu 66: Cho hình chóp S.ABCD có đường cao SC, đáy là hình chữ nhật. Gọi H là trung điểm của SB. Khoảng cách từ A đến mặt phẳng (SBC) là đoạn thẳng
+
+Câu 67: Cho hình chóp S.ABCD có đường cao SC =2a, đáy là hình chữ nhật có AB=a 2,AD=a. Gọi K là trung điểm của SA. Khoảng cách từ A đến mặt phẳng (ABCD) bằng
+
+Câu 68: Cho hình lập phương ABCD.A'B'C'D' có AB=a. Tính khoảng cách h giữa hai mặt phẳng (BA'C)' và ACD'. a a a
+
+Câu 69: Cho hình chóp S.ABCD có đáy ABCD là hình thang vuông tại A và D. Biết SA=a 3,AD=a và (SA) vuông góc với đáy. Tính theo a khoảng cách từ B đến SCD. a 3 a a
+
+Câu 70: Cho hình lập phương ABCD.A'B'C'D' có cạnh a. Tính theo a khoảng cách từ điểm D đến mặt phẳng (A'BC). a a
+
+Câu 71: Cho hình chóp S.ABC, gọi M là trung điểm của AC và G là trọng tâm tam giác SAC. Biết khoảng a 6 cách từ điểm M đến mặt phẳng (SBC) bằng. Tính theo a khoảng cách từ điểm G đến mặt phẳng 6 (SBC). a
+
+Câu 72: Cho hình chóp đều S.ABCD có O là tâm của đáy. Biết cạnh đáy và đường cao bằng nhau và bằng a. Tính theo a khoảng cách từ điểm D đến mặt phẳng (SBC). a
+
+Câu 73: Cho hình chóp S.ABCD có đáy là hình vuông cạnh a, mặt bên SAB là tam giác đều và nằm trong mặt phẳng vuông góc với mặt phẳng đáy. Tính theo a khoảng cách từ điểm A đến mặt phẳng (SCD). a
+
+Câu 74: Cho hình chóp S.ABCD có đáy là hình chữ nhật, AB=a,AD=a 3, hai mặt phẳng (SAB) và (SAD) cùng vuông góc với mặt phẳng đáy. Góc giữa cạnh SC và mặt phẳng đáy bằng 60°. Gọi G là trọng tâm tam giác ABC. Tính theo a khoảng cách từ điểm G đến mặt phẳng (SBC).
+
+Câu 75: Cho hình chóp S.ABC có SA=a 3 và SA vuông góc với mặt phẳng đáy, tam giác ABC đều cạnh a. Vẽ AI vuông góc với SB. Tính theo a khoảng cách từ điểm I đến mặt phẳng (SAC). a
+
+Câu 76: Cho hình chóp S.ABCD có hai mặt phẳng (SAB), SAC cùng vuông góc với mặt phẳng đáy và đáy ABCD là nửa lục giác đều. Biết SA=a 3 và AB= BC =CD=a. Tính theo a khoảng cách từ điểm B đến mặt phẳng (SCD). a 6 a 6 a
+
+Câu 77: Cho hình chóp S.ABCD có đáy là hình thoi cạnh a 2, cạnh bên SA vuông góc vói mặt phẳng đáy,  B AD=120°, góc giữa mặt phẳng (SBC) và đáy bằng 30°. Tính theo a khoảng cách từ điểm B đến mặt phẳng (SBC).
+
+Câu 78: Cho hình chóp tam giác đều S.ABC có cạnh đáy bằng a 3 và cạnh bên bằng a 2. Gọi E là trung điểm của AB. Tính theo a khoảng cách từ điểm E đến mặt phẳng (SBC). a
+
+Câu 79: Cho hình chóp S.ABC có SA vuông góc với mặt phẳng đáy. Tam giác ABC vuông tại A có AB=a,AC=a 3. Góc giữa SB và mặt phẳng (SAC) bằng 45°. Lấy điểm M trên cạnh SA sao cho a (AM) =. Tính theo a khoảng cách từ điểm M đến mặt phẳng (SBC).
+
+Câu 80: Cho hình lăng trụ ABCD.A'B'C'D' có đáy ABCD là hình chữ nhật, 3. Hình chiếu vuông góc của điểm A' lên mặt phẳng (ABCD) trùng với giao điểm của AC và BD. Tính khoảng cách từ B' đến mặt phẳng (A'BD) theo a. a 2 a
+
+Câu 81: Cho hình chóp đều S.ABCD cạnh đáy bằng a, góc giữa mặt bên và mặt đáy bằng 60°. Gọi G là trọng tâm của tam giác ABD. Tính theo a khoảng cách từ điểm G đến mặt phẳng (SBC). a a 3 a 3 a
+
+Câu 82: Cho hình chóp S.ABC có đáy ABC là tam giác vuông tại B, AB=a,  ACB=30°. Mặt bên SAC là tam giác đều và nằm trong mặt phẳng vuông góc với đáy. Gọi G là trung điểm của SA. Tính theo a khoảng cách từ điểm G đến mặt phẳng (SBC). a
+
+Câu 83: Cho hình chóp S.ABCD có đáy là hình thang vuông tại A và B, BA= BC =a,AD=2a. Cạnh bên SA vuông góc với đáy và SA=a 2. Gọi H là hình chiếu vuông góc của A trên cạnh SB. Tính khoảng cách từ điểm H đến mặt phẳng (SCD) theo a. a a a
+
+Câu 84: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh 4a. Hình chiếu của S trên mặt phẳng (ABCD) là điểm H thuộc AB sao cho HB=3HA. Góc giữa cạnh bên SC và đáy bằng 45°. Tính theo a khoảng cách từ O đến mặt phẳng (SBC), với O là tâm của hình vuông ABCD.
+
+Câu 85: Cho hình chóp S.ABCD có đáy ABCD là hình chữ nhật, với mặt phẳng đáy và SA=a,SB=a 3. Góc giữa mặt phẳng (SBD) và đáy bằng 60°. Tính theo a khoảng cách từ điểm C đến mặt phẳng (SBD). a 3 a 3 3a
+
+Câu 86: Cho hình chóp S.ABC, đáy ABC là tam giác vuông tại B với AB=a,BC = 3,SA⊥(ABC) và SC tạo với ABC một góc 45°. Gọi G,G lần lượt là trọng tâm của tam giác SAB và SAC. Tính 1 2 ) d GG, ( SBC. 1 2 4a ( ) ( )
+
+Câu 87: Cho hình lăng trụ đứng ABC.A'B'C có đáy ABC là tam giác vuông tại B, BC =a 3, AB'=2a và đường thẳng AB' tạo với mặt phẳng đáy một góc 60°. Tính d ( ) BC, AB'C'. ) a ( )
+
+Câu 88: Cho hình lăng trụ đứng ABCD.A'B'C'D' có đáy ABCD là hình thoi cạnh a, ABC =120°, đường thẳng A'B tạo với mặt phẳng đáy một góc 60°. Tính d ( ) B'D', A'BD. ) ) a
+
+Câu 89: Cho hình chóp S.ABCD có ABCD là hình vuông cạnh a và SA vuông góc với đáy. Tính khoảng cách d giữa hai đường thẳng SA và BD. a a
+
+Câu 90: Cho hình chóp S.ABC có SA, AB, BC đôi một vuông góc, tam giác ABC cân và có AC =a 2. Tính khoảng cách d giữa hai đường thẳng SA và BC. a
+
+Câu 91: Cho tứ diện đều ABCD có I, J lần lượt là trung điểm các cạnh AB, CD. Khoảng cách giữa hai đường thẳng AB, CD bằng độ dài của đoạn thẳng nào dưới đây?
+
+Câu 92: Cho hình chóp tứ giác đều S.ABCD có tất cả các cạnh bằng a. Tính khoảng cách d giữa hai đường thẳng BD và SC. a a a
+
+Câu 93: Cho hình hộp chữ nhật ABCD.A'B'C'D' có AB=AA'=a,AC =2a. Tính khoảng cách d giữa hai đường thẳng AB' và CD'. a 3 a
+
+Câu 94: Cho hình chóp S.ABC có đáy ABC là tam giác vuông tại B, AB=a, cạnh bên SA vuông góc với đáy và SA=a 2. Gọi M là trung điểm của AB. Tính khoảng cách d giữa hai đường thẳng SM và BC. a 2 a a 3 a
+
+Câu 95: Cho hình hộp chữ nhật ABCD.A'B'C'D' có AA'=2a,AD=4a. Gọi M là trung điểm của AD. Tính khoảng cách d giữa hai đường thẳng A'B' và C'M
+
+Câu 96: Cho hình chóp S.ABCD có đáy là hình vuông cạnh a. Đường thẳng SA vuông góc với mặt phẳng đáy và SA=a. Khoảng cách giữa hai đường thẳng SB và CD nhận giá trị nào trong các giá trị sau?
+
+Câu 97: Cho tứ diện OABC, trong đó OA, OB, OC đôi một vuông góc với nhau và OA=OB=OC =a. Gọi I là trung điểm BC. Khoảng cách giữa hai đường thẳng AI và OC nhận giá trị nào trong các giá trị sau?
+
+Câu 98: Cho hình chóp S.ABCD có đáy ABCD là hình thoi tâm O. cạnh bằng a và B AC =60°. Biết a 6 SC = và vuông góc với đáy. Khoảng cách giữa hai đường thẳng SA và BD nhận giá trị nào trong các 2 giá trị sau?
+
+Câu 99: Cho hình lăng trụ đứng ABC.A'B'C' có tất cả các cạnh đều bằng a. Tính khoảng cách d giữa hai đường thẳng AB' và CC'. 2a a 3 3a
+
+Câu 100: Cho hình chóp S.ABCD có ABCD, đáy ABCD là hình chữ nhật với AC 5 và BC =a 2. Tính khoảng cách d giữa hai đường thẳng SD và BC. 2a a 3 3a = = = =a
+
+Câu 101: Cho hình lập phương ABCD.A'B'C'D' cạnh a. Tính khoảng cách d giữa hai đường thẳng AD' và BD. a 3 a 3 2a
+
+Câu 102: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a, cạnh bên SA vuông góc với mặt phẳng đáy ABCD và SA=a. Tính khoảng cách d giữa hai đường thẳng SB và AD. a 2 a 3 a
+
+Câu 103: Cho hình chóp S.ABC có đáy ABC là tam giác đều cạnh a,cạnh bên SA vuông góc với đáy. Biết khối chóp S.ABC có thể tích bằng a3. Tính khoảng cách từ điểm A đến mặt phẳng SBC
+
+Câu 104: Cho hình lăng trụ ABCD.A'B'C'D' có đáy là hình chữ nhật với ADa 3. Tam giác A'AC vuông cân tại A' và thuộc mặt phẳng vuông góc với đáy. Biết rằng A'Aa 2. Tính khoảng cách từ D' đến mặt phẳng A'ACC'
+
+Câu 105: Cho hình chóp S.ABC có SA vuông góc với mặt phẳng ABC, ABC là tam giác đều cạnh a, SA2a. Khoảng cách từ A đến mặt phẳng SBC bằng
+
+Câu 106: Cho hình chóp bằng a, SA2a. Khoảng cách từ C đến mặt phẳng SAB bằng 3a 3a
+
+Câu 107: Cho hình chóp S.ABC có SA vuông góc với mặt phẳng ABC,ABC là tam giác đều cạnh bằng a, SA2a. Gọi M là trung điểm BC. Khoảng cách từ M đến mặt phẳng SAB bằng
+
+Câu 108: Cho hình chóp S.ABCD có đáy ABCD là hình thang, ABC B a;AD2a. SAD bằng 30o. Khoảng cách từ A đến Cạnh bên SA vuông góc với đáy. Góc tạo bởi giữa SC và SCD bằng a
+
+Câu 109: Cho hình chóp S.ABC có SA vuông góc với mặt phẳng ABC,ABC là tam giác đều cạnh bằng a, SA2a. Gọi G là trọng tâm ABC. Khoảng cách từ G đến mặt phẳng SBC bằng
+
+Câu 110: Cho hình chóp S.ABCD có đáy là hình bình hành với BC a 2,ABC 60o. Tam giác SAB nằm trong mặt phẳng vuông góc với mặt phẳng đáy. Khoảng cách từ điểm D đến mặt phẳng SAB bằng
+
+Câu 111: Cho hình chóp S.ABC có SA vuông góc với mặt phẳng ABC,ABC là tam giác vuông tại B, 2a. Khoảng cách từ C đến mặt phẳng SAB bằng
+
+Câu 112: Cho hình chóp S.ABC có SA vuông góc với mặt phẳng ABC,ABC là tam giác vuông tại B, 2a. Biết góc giữa đường thẳng SB và mặt phẳng ABC bằng 45o. Khoảng cách từ A đến ABa,BC mặt phẳng SBC bằng
+
+Câu 113: Cho hình chóp S.ABC có SA vuông góc với mặt phẳng ABC,ABC là tam giác vuông tại B, ABa,BC 2a,SAa. Gọi G là trọng tâm tam giác SAB. Khoảng cách từ G đến mặt phẳng SAC bằng
+
+Câu 114: Cho tứ diện đều ABCD có cạnh bằng a. Khoảng cách từ A đến mặt phẳng BCD bằng
+
+Câu 115: Cho tứ diện đều ABCD, biết khoảng cách A đến mặt phẳng BCD bằng a 6. Diện tích tam giác ABC bằng
+
+Câu 116: Cho hình chóp S.ABCD có SA vuông góc với mặt phẳng ABCD, ABCD là hình vuông cạnh a. Biết góc giữa đường thẳng SB và mặt phẳng ABCD bằng 60o. Khoảng cách từ B đến mặt phẳng SCD bằng
+
+Câu 117: Cho hình chóp S.ABCD có SA vuông góc với mặt phẳng ABCD, ABCD là hình vuông cạnh 3. Khoảng cách từ A đến mặt phẳng SBD bằng a, SAa
+
+Câu 118: Cho hình chóp S.ABCD có SA vuông góc với mặt phẳng ABCD, ABCD là hình chữ nhật với AB = a, BC= 2a, SA=3a. Khoảng cách từ A đến mặt phẳng (SBD) bằng
+
+Câu 119: Cho hình chóp ABCD là hình vuông cạnh a, SAa 3. Khoảng cách từ C đến mặt phẳng SBD bằng
+
+Câu 120: Cho hình chóp S.ABCD có SA vuông góc với mặt phẳng ABCD, ABCD là hình vuông tâm O có cạnh a. Biết góc giữa hai mặt phẳng SBC và ABCD bằng 60o. Khoảng cách từ O đến mặt phẳng SBC bằng
+
+Câu 121: Cho hình chóp S.ABCD có SAB và SAD cùng vuông góc với mặt phẳng ABCD, ABCD là hình thoi cạnh a, B  AD120o, biết SC hợp với đáy một góc 45o. Khoảng cách từ B đến mặt phẳng SCD bằng
+
+Câu 122: Cho hình chóp S.ABCD có SA vuông góc với mặt phẳng ABCD,SAa,ABCD là hình thoi  cạnh a, ABC 60o. Gọi G là trọng tâm tam giác SBC. Khoảng cách từ G đến mặt phẳng SCD bằng
+
+Câu 123: Cho hình chóp S.ABCD có đáy ABCD là hình vuông tâm O, cạnh bằng a, SAABCD và 3. Khoảng cách từ điểm O đến mặt phẳng SBC bằng SAa
+
+Câu 124: Cho hình chóp S.ABCD có đáy ABCD là hình vuông tâm O, cạnh bằng a, SAABCD và SAa 3. Khoảng cách từ trong tâm G của SAB đến mặt phẳng SAC bằng
+
+Câu 125: Cho hình chóp S.ABC có đáy ABC là tam giác vuông tại C, SAABCD,AC a và ABa 3. Khoảng cách từ điểm C đến mặt phẳng SAB bằng
+
+Câu 126: Cho tứ diện ABCD có AB, AC, AD đôi một vuông góc với nhau, ABa,AC b,ADc. Khoảng cách từ điểm A đến mặt phẳng BCD bằng
+
+Câu 127: Cho hình chóp S.ABCDcó đáy ABCD là hình chữ nhật, ABa,BC a giữa SC và mặt đáy bằng 45o. Khoảng cách từ điểm A đến mặt phẳng SCD bằng
+
+Câu 128: Cho hình chóp S.ABC có đáy ABCD là tam giác đều cạnh a. Cạnh bên SB vuông góc mặt phẳng ABC và SB2a. Gọi M là trung điểm của cạnh BC. Khoảng cách từ điểm B đến mặt phẳng SAM bằng
+
+Câu 129: Cho lăng trụ ABC.A'B'C' có đáy là tam giác vuông cân tại A với AB AC 3a. Hình chiếu vuông góc của B' lên mặt đáy là điểm H thuộc BC sao cho HC 2HB. Biết cạnh bên của lăng trụ bằng 2a. Khoảng cách từ B đến mặt phẳng B'AC bằng
+
+Câu 130: Cho hình lập phương ABCD.A'B'C'có cạnh bằng a. Khoảng cách từ điểm B đến mặt phẳng A'CD bằng
+
+Câu 131: Cho hình hộp chữ nhật ABCD.A'B'C'D' có ABa,BC 2a,BB'a 3. Khoảng cách từ điểm B đến mặt phẳng ACC'A' bằng
+
+Câu 132: Cho hình chóp S.ABCDcó đáy ABCD là hình thoi tâm O, cạnh bằng  AD60o,SOABCD,SOa. Khoảng cách từ điểm O đến mặt phẳng SBC bằng
+
+Câu 133: Cho hình chóp S.ABCDcó đáy ABCD là hình thoi tâm O, cạnh bằng  a,B AD60o,SOABCD,SOa. Khoảng cách từ đường thẳng AD đến mặt phẳng SBC bằng
+
+Câu 134: Cho hình chóp S.ABCD đáy ABCD là hình vuông cạnh bằng a; cạnh bên SA vuông góc với đáy; SC hợp với đáy góc 45o. Tính khoảng cách giữa hai dường thẳng SC và BD
+
+Câu 135: Cho hình chóp S.ABC có đáy ABC là tam giác vuông cân tại A, mặt bên SBC là tam giác đều cạnh a và mặt phẳng SBC vuông góc với mặt đáy. Tính theo a khoảng cách hai đường thẳng SA,BC
+
+Câu 136: Cho hình chóp S.ABCD có đáy ABCD là hình chữ nhật, SAABCD và SA ABa,BC a 2. Tính khoảng cách giữa hai đường thẳng SB và CD
+
+Câu 137: Cho lăng trụ đứng ABC.A'B'C' có đáy ABC là tam giác vuông tại A,ABa,BC 2a, mặt bên ACC'A' là hình vuông. Gọi M, N, P lần lượt là trung điểm của AC,CC',A'B' và H là hình chiếu của A lên BC. Tính khoảng cách giữa hai đường thẳng MP và HN
+
+Câu 138: Cho tứ diện ABCD có cạnh bằng a. Khoảng cách giữa hai đường thẳng AB và CD bằng
+
+Câu 139: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a. Gọi M và N lần lượt là trung điểm của các cạnh AB và AD; H là giao điểm của CN và DM. Biết SH vuông góc với mặt phẳng ABCD và SH a 3. Khoảng cách giữa hai đường thẳng DM và SC bằng
+
+Câu 140: Hình hộp ABCD.A'B'C'D' có AB AA' ADa và A'AB A'ADB AD60o. Khoảng cách giữa hai đường thẳng chứa các cạnh đối diện của tứ diện A'ABD bằng
+
+Câu 141: Cho hình chóp S.ABCD có cạnh đáy SA vuông góc với đáy, ABCD là hình vuông cạnh a. Biết góc giữa SB và mặt đáy bằng 60o. Khoảng cách giữa hai đường thẳng BD và SC bằng
+
+Câu 142: Cho hình lăng trụ đứng ABC.ABC có tam giác ABC vuông cân tại A,ABa,CC'2a. 1 1 1 Khoảng cách giữa hai đường thẳng AA và BC bằng
+
+Câu 143: Cho hình lăng trụ đứng ABC.ABC có tam giác ABC vuông cân tại A,ABa,CC'2a. 1 1 1 Khoảng cách giữa hai đường thẳng AC và BC bằng
+
+Câu 144: Cho hình chóp tam giác đều S.ABC có tất cả các cạnh đều bằng a. Khoảng cách giữa hai dường thẳng SA và BC bằng
+
+Câu 145: Cho tứ diện OABC có OA,OB,OC đôi một vuông góc với nhau, OAa,OBa 2,OC 2a. Khoảng cách giữa hai đường thẳng OA và BC bằng
+
+Câu 146: Cho hình chóp S.ABCD có đáy ABCD là hình thang vuông tại A và D,SAABCD,ADDC SAa. Khoảng cách giữa hai đường thẳng AD và SB bằng
+
+Câu 147: Cho hình lập phương ABCD.A'B'C'D' có cạnh bằng a. Khoảng cách giữa hai đường thẳng BB' và CD bằng
+
+Câu 148: Cho hình lập phương ABCD.A'B'C'D' có cạnh bằng a. Khoảng cách giữa hai đường thẳng AA' và BD bằng
+
+Câu 149: Cho hình chóp S.ABC có đáy tam giác đều cạnh a. Hình chiếu vuông góc của S trên mặt phẳng ABC là điểm H thuộc cạnh AB sao cho HA2HB. Góc giữa hai đường thẳng SC và mặt phẳng ABC bằng 60o. Khoảng cách giữa hai đường thẳng SA và BC theo a bằng
+
+Câu 150: Cho hình lăng trụ đứng ABC.A'B'C' có đáy là tam giác ABC vuông tại A,ABa,BC a 3. Khoảng cách giữa hai đường thẳng AA' và BC' bằng a
+
+Câu 151: Cho hình chóp S.ABCD có mặt bên SAB là tam giác đều và nằm trong mặt phẳng vuông góc với đáy, ABCD là hình chữ nhật với ABa,BC 2a. Khoảng cách giữa hai đường thẳng AC và SD bằng
+
+Câu 152: Cho hình chóp S.ABCD có ABCD là hình thoi tam O, cạnh a, góc B CD60o, có SO vuông góc với mặt phẳng ABCD và SOa. Khoảng cách giữa hai đường thẳng AD và SB bằng
+
+Câu 153: Cho hình lăng trụ ABC.A'B'C' có đáy ABC là tam giác đều cạnh a. Hình chiếu vuông góc của A' trên mặt phẳng ABC là trọng tâm tam giác ABC và góc giữa cạnh bên và mặt đáy bằng 60o. Khoảng cách giữa hai đường thẳng BC và A'B' bằng
+
+Câu 154: Cho hình lăng trụ ABC.A'B'C' có đáy ABC là tam giác đều cạnh a. hình chiếu vuông góc của ABC là trọng tâm tam giác ABC và góc giữa cạnh bên và mặt đáy bằng A' trên mặt phẳng 60o. Khoảng cách giữa hai đường thẳng BC và AA' bằng
+
+Câu 155: Cho tứ diện ABCD có AB vuông góc với mặt phẳng (BCD). Biết tam giác BCD √ a 6 √ vuông tại C và AB =, AC = a 2, CD = a. Gọi E là trung điểm của AD (tham khảo 2 hình vẽ dưới đây).
+
+Câu 156: Cho hình lập phương ABCD.A'B'C'D'. Góc giữa A'C' và D'C là
+
+Câu 157: Cho hình chóp S.ABC có SA = SB = SC = AB = AC = 1, BC = 2. Tính góc giữa hai đường thẳng AB, SC
+
+Câu 158: Cho hình lập phương ABCD.A'B'C'D' cạnh a. Gọi M, N, P lần lượt là trung điểm các cạnh AB, BC, C'D'. Xác định góc giữa hai đường thẳng MN và AP
+
+Câu 159: Cho hình chóp S.ABC có tất cả các cạnh đều bằng a. Gọi I,J lần lượt là trung điểm của SA, BC. Tính số đo của góc hợp bởi IJ và SB
+
+Câu 160: Tứ diện đều ABCD cạnh a, M là trung điểm của cạnh CD. Cô-sin của góc giữa AM và√BD là
+
+Câu 161: Cho hình chóp S.ABCD có đáy là hình vuông cạnh a, cạnh bên SA vuông góc với đáy, SA = a. Gọi M là trung điểm của SB. Góc giữa AM và BD bằng
+
+Câu 162: Cho tứ diện ABCD. Gọi M,N lần lượt là trung điểm của các cạnh BC và AD. √ Biết AB = CD = 2a,MN = a 3. Tính góc giữa hai đường thẳng AB và CD
+
+Câu 163: Cho hình chóp S.ABCD có đáy ABCD là hình thoi tâm O, cạnh a, góc BAD = 60◦, có SO vuông góc với mặt đáy và SO = a. Khoảng cách từ O đến mặt phẳng (SBC) là
+
+Câu 164: Cho hình chóp tứ giác đều S.ABCD đáy ABCD là hình vuông, E là điểm đối xứng với D qua trung điểm SA. Gọi M, N lần lượt là trung điểm của AE và BC. Góc giữa hai đường thẳng MN và BD bằng
+
+Câu 165: Cho hình chóp S.ABCD có đáy ABCD là hình thang vuông tại A và S, SA vuông góc với mặt phẳng đáy. Tính cô-sin góc giữa 2 đường thẳng SD và BC biết AD = √ 2 3a DC = a,AB = 2a, SA =.
+
+Câu 166: Cho hình chóp S.ABCD có đáy là hình vuông cạnh a, SA = a và vuông góc với đáy. Gọi M là trung điểm của SB. Góc giữa hai đường thẳng AM và BD bằng
+
+Câu 167: Cho hình chóp S.ABC có đáy là tam giác vuông tại B, cạnh bên SA vuông góc √ với mặt phẳng đáy, AB = 2a,BAC = 60◦ và SA = a 2. Góc giữa đường thẳng SB và mặt phẳng (SAC) bằng 45◦. 30◦. 60◦. 90◦
+
+Câu 168: Cho hình chóp S.ABC có đáy ABC là tam giác đều cạnh a, SA ⊥(ABC),SA = √ a 2. Tính góc α giữa SC và mặt phẳng (SAB).
+
+Câu 169: Cho hình lăng trụ đứng ABC.A'B'C' có đáy ABC là tam giác vuông cân tại B. √ Biết AB = a,BC' = a 2. Tính góc hợp bởi đường thẳng BC' và mặt phẳng (ACC'A')
+
+Câu 170: Cho hình chóp S.ABC có SA vuông góc với đáy, SA = 2BC và BAC = 120◦. Hình chiếu của A trên các đoạn SB, SC lần lượt là M, N. Tính góc giữa hai mặt phẳng (ABC)và (AMN)
+
+Câu 171: Cho hình chóp S.ABCD có SA ⊥(ABC), đáy ABC là tam giác vuông tại C. 60◦,BSC 45◦, Cho ASC = = sin của góc giữa hai mặt phẳng (SAB) và (SBC) bằng
+
+Câu 172: Cho hình chóp S.ABCD có đáy ABCD là nửa lục giác đều nội tiếp đường tròn √ đường kính AB = 2a, SA = a 3 và vuông góc với mặt phẳng (ABCD). Côsin của góc giữa hai mặt phẳng (SAD) và (SBC) bằng
+
+Câu 173: Cho hình chóp S.ABC có đáy ABC là tam giác vuông tại B, cạnh bên SA vuông 2a góc với đáy và SA = 2a, AB = BC = a. Gọi M là điểm thuộc AB sao cho AM =. Tính 3 khoảng cách d từ S đến đường thẳng CM.
+
+Câu 174: Cho hình lập phương ABCD.A'B'C'D' có cạnh bằng a. Khoảng cách từ điểm A đến đường thẳng B'D bằng
+
+Câu 175: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh 1. Tam giác SAB đều và nằm trong mặt phẳng vuông góc với đáy (ABCD). Tính khoảng cách từ A đến (SCD).
+
+Câu 176: Cho hình chóp tam giác đều S.ABC có cạnh đáy bằng a, G là trọng tâm tam giác ABC. Góc giữa mặt bên với đáy bằng 60◦. Khoảng cách từ điểm G đến mặt phẳng (SBC) bằng
+
+Câu 177: Cho hình chóp S.ABC có đáy ABC là tam giác vuông tại B, SA vuông góc với √ mặt đáy và SA = AB = 3. Gọi G là trọng tâm của tam giác SAB. Khoảng cách từ G đến mặt phẳng (SBC) bằng
+
+Câu 178: Cho hình chóp S.ABC có đáy ABC là tam giác vuông, AB = AC = a. Biết tam giác SAB có ABS = 60◦ và nằm trong mặt phẳng vuông góc với mặt đáy. Tính khoảng cách d từ điểm A đến mặt phẳng (SBC) theo a.
+
+Câu 179: Cho hình chóp tứ giác S.ABCD có đáy ABCD là S √ hình chữ nhật cạnh AB = a, AD = a 2, cạnh bên SA vuông góc với mặt phẳng (ABCD), góc giữa SC và mặt phẳng (ABCD) bằng 60◦. Gọi M là trung điểm của cạnh SB. Tính M khoảngcáchtừđiểmM tớimặtphẳng(ABCD). a A
+
+Câu 180: Cho hình chóp đều S.ABCD, cạnh đáy bằng a, góc giữa mặt bên và mặt đáy là 60◦. Tính khoảng cách từ điểm B đến mặt phẳng (SCD). √ √ a a 3 a 3 a
+
+Câu 181: Cho hình lập phương ABCD.A'B'C'D' có cạnh bằng a. Khoảng cách từ điểm D đến mặt phẳng (AD'B') bằng
+
+Câu 182: Cho hình chóp S.ABCD có đáy là hình thoi tâm O cạnh AB = 2a 3, góc BAD bằng 120◦. Hai mặt phẳng (SAB) và SAD cùng vuông góc với đáy. Góc giữa mặt phẳng (SBC) và (ABCD) bằng 45◦. Tính khoảng cách h từ O đến mặt phẳng (SBC).
+
+Câu 183: Cho hình chóp S.ABCD với đáy là hình chữ nhật có AB = a, BC = a 2, √ SA ⊥(ABCD) và SA = a 3. Gọi M là trung điểm của SD và (P) là mặt phẳng đi qua B, M sao cho (P) cắt mặt phẳng (SAC) theo một đường thẳng vuông góc với BM. Khoảng
+
+Câu 184: Cho hình chóp tam giác đều S.ABC có cạnh đáy bằng a. Góc giữa mặt bên với mặt đáy bằng 60◦. Khoảng cách từ điểm A đến mặt phẳng (SBC) bằng
+
+Câu 185: Cho hình chóp S.ABC có SA = a 3, SA ⊥(ABC), tam giác ABC vuông tại B và AB = a. Tính khoảng cách từ điểm A đến mặt phẳng (SBC). 
+
+Câu 186: Cho hình chóp S.ABC có đáy ABC là tam giác vuông tại A, AB = 1,AC = 3. Tam giác SBC đều và nằm trong mặt phẳng vuông với đáy. Tính khoảng cách từ B đến mặt phẳng (SAC). 
+
+Câu 187: Cho hình hộp ABCD.A'B'C'D' có các cạnh đều bằng a và BAD = BAA' = DAA' = 60◦. Tính khoảng cách giữa hai mặt phẳng đáy (ABCD) và A'B'C'D'. 
+
+Câu 188: Cho hình chóp S.ABC có đáy ABC là tam giác đều cạnh bằng a, mặt bên (SBC) vuông góc với đáy. Gọi M,N,P theo thứ tự là trung điểm AB,SA,AC. Tính khoảng cách giữa hai mặt phẳng (MNP) và (SBC). Ta chứng minh được (MNP) (SBC). S Suy ra d((MNP);(SBC)) = d(P;(SBC)). AP AP ∩ (SBC) = C suy ra d(P;(SBC)) = d(A;(SBC)) = AC N 1 d(A;(SBC)). 2 Gọi K là trung điểm của BC. Tam giác ABC đều suy ra AK ⊥ P BC. A C Do (ABC) ⊥(SBC) theo giao t √ uyến BC nên AK ⊥(SBC). M K a 3 Do đó, d(A;(SBC)) = AK =. √ 2 B a 3 Vậy d((MNP);(SBC)) =. 4 √
+
+Câu 189: Cho tứ diện ABCD có AB = CD = a > 0, AC = BD = b > 0, AD = BC = c > 0. Các biểu thức a2 +b2 −c2, a2 +c2 −b2, c2 +b2 −a2 đều có giá trị dương. Khoảng cách d giữa hai đường thẳng AB và CD bằng … … b2 +c2 +a2 a2 +c2 −b2
+
+Câu 190: Cho hình chóp S.ABCD có đáy là hình vuông cạnh a. Đường thẳng SA vuông góc với mặt phẳng đáy và SA = a. Tính khoảng cách giữa hai đường thẳng SB và CD. √ √
+
+Câu 191: Cho hình chóp S.ABCD có đáy ABCD là hình vuông tâm O cạnh bằng 1, biết √ SO = 2 và vuông góc với mặt đáy. Tính khoảng cách giữa hai đường thẳng SC và AB.
+
+Câu 192: Cho hình lăng trụ đứng ABC.A'B'C' có đáy là tam giác vuông cân, AB = AC = a, AA' = 2a. Tính khoảng cách giữa hai đường thẳng AB' và BC'. 2a a a 2a
+
+Câu 193: Cho hình chóp S.ABCD có đáy là hình vuông cạnh 2a, tam giác SAB đều, góc giữa (SCD) và (ABCD) bằng 60◦. Gọi M là trung điểm của cạnh AB. Biết rằng hình chiếu vuông góc của đỉnh S trên mặt phẳng (ABCD) nằm trong hình vuông ABCD. Khoảng cách giữa hai đường thẳng SM và AC là
+
+Câu 194: Cho hình chóp S.ABCD có đáy ABCD là nửa lục giác đều với AB = BC = CD = a, AD = 2a. Đường thẳng SA vuông góc với mặt phẳng (ABCD) và SA = a. Tính góc tạo bởi hai mặt phẳng (SCD) và (ABCD)
+
+Câu 195: Cho hình chóp tứ giác đều S.ABCD có cạnh đáy bằng 2a, góc giữa mặt bên và mặt đáy bằng 60◦. Tính khoảng cách từ B đến mặt phẳng (SCD).
+
+Câu 196: Cho tứ diện OABC có OA, OB, OC đôi một vuông góc với nhau và OA = OB = OC. Gọi M là trung điểm của BC. Góc giữa hai đường thẳng OM và AB bằng
+
+Câu 197: Cho tứ diện ABCD có AB = CD = a. Gọi M và N lần lượt là trung điểm của AD và BC. Xác định độ dài đoạn thẳng MN để góc giữa hai đường thẳng AB và MN bằng 30◦. √ √ a a 3 a 3 a
+
+Câu 198: Cho hình lăng trụ tam giác đều ABC.MNP có tất cả các cạnh bằng nhau. Gọi I là trung điểm cạnh MP. Cô-sin của góc giữa hai đường thẳng BP và NI bằng
+
+Câu 199: Cho hình chóp S.ABC có đáy ABC là tam giác vuông tại B và SA vuông góc với mặt √ đáy. Biết SA = a, AB = a, BC = a 2. Gọi I là trung điểm của BC. Tính cosin của góc giữa hai đường thẳng AI và SC. √ … …
+
+Câu 200: Cho tứ diện ABCD có AB = CD = a. Gọi M, N lần lượt là trung điểm của AD và BC. √ Biết MN = 3a, góc giữa hai đường thẳng AB và CD bằng
+
+Câu 201: Cho hình lập phương ABCD.A'B'C'D'. Gọi M, N, P lần A' D' lượt là trung điểm các cạnh AB, AD và C'D'. Tính cosin P C' B' góc giữa √ hai đường thẳng √ MN và CP.
+
+Câu 202: Cho hình chóp tứ giác đều S.ABCD có đáy là hình vuông ABCD cạnh a, độ dài cạnh bên cũng bằng a. Gọi M, N lần lượt là trung điểm các cạnh SA và BC. Góc giữa MN và SC bằng
+
+Câu 203: Cho hình chóp S.ABCD có đáy ABCD là hình vuông tâm O, cạnh bằng a, SA = a vuông góc với mặt phẳng đáy. Tang của góc giữa đường thẳng SO và mặt phẳng (SAB) bằng
+
+Câu 204: Cho hình chóp tứ giác đều S.ABCD với tất cả các cạnh bằng a. Gọi S G là trọng tâm tam giác SCD. Tang góc giữa AG và (ABCD) bằng
+
+Câu 205: Cho hình chóp S.ABCD có đáy ABCD là hình vuông tâm O cạnh bằng a, SA = a và SA vuông góc với mặt phẳng đáy. Tan của góc giữa đường thẳng SO và mặt phẳng (SAB) bằng
+
+Câu 206: Cho hình chóp đều S.ABCD có cạnh đáy bằng a, cạnh bên bằng a 2. Góc giữa đường thẳng SB và mặt phẳng (ABCD) bằng bao nhiêu?
+
+Câu 207: Cho hình chóp S.ABCD có đáy ABCD là hình chữ nhật với AB = a, AD = a 3. Cạnh bên SA vuông góc với mặt phẳng đáy và SA = a. Gọi ϕ là góc giữa đường thẳng SD và mặt phẳng (SBC). Khẳng định nào dưới đây đúng?
+
+Câu 208: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a. Đường thẳng SA vuông góc với mặt phẳng đáy và SA = a. Góc giữa đường thẳng SC và mặt phẳng (ABCD) là α. Khi đó tanα bằng √ 1
+
+Câu 209: Cho hình chóp tứ giác đều S.ABCD có tất cả các cạnh bằng 2a. Gọi M là trung điểm của SD. Tính tan của góc giữa đường thẳng BM và mặt phẳng (ABCD).
+
+Câu 210: Cho hình chóp S.ABCD có mặt bên SAB là tam giác đều và nằm trong mặt phẳng vuông góc với đáy (ABCD). Gọi I là trung điểm của AB. Mệnh đề nào dưới đây sai?
+
+Câu 211: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a, cạnh bên SA vuông góc √ với mặt đáy và SA = a 2. Tìm số đo của góc giữa đường thẳng SC và mặt phẳng (SAD)
+
+Câu 212: Cho hình chóp S.ABCD có đáy là hình vuông ABCD cạnh a. Tam giác SAB đều và nằm trong mặt phẳng vuông góc với đáy. Gọi H, K lần lượt là trung điểm của các cạnh AB, AD. Tính sin của góc tạo bởi đường thẳng SA và (SHK).
+
+Câu 213: Cho hình lăng trụ đứng ABC.A'B'C' có đáy ABC là tam giác cân với AB = AC = a và BAC = 120◦, cạnh bên BB' = a, gọi I là trung điểm của CC'. Côsin của góc tạo bởi mặt phẳng (ABC) và (AB'I) bằng
+
+Câu 214: Cho hình chóp S.ABCD có đáy ABCD là hình thoi tâm I, cạnh a, góc BAD = 60◦. √ a 3 SA = SB = SD =. Gọi α là góc giữa đường thẳng SD và mặt phẳng (SBC). Giá trị sinα 2 bằng
+
+Câu 215: Cho hình chóp tứ giác đều S.ABCD có cạnh đáy và cạnh bên đều bằng a. Tính cosin của góc giữa hai mặt phẳng (SAB) và (SAD).
+
+Câu 216: Cho hình chóp tứ giác đều S.ABCD có cạnh đáy bằng a, chiều cao của hình chóp bằng √ a 3. Góc giữa mặt bên và mặt đáy bằng
+
+Câu 217: Cho hình lập phương ABCD.A'B'C'D' có cạnh bằng a. Số đo góc giữa hai mặt phẳng (BA'C) và (DA'C) bằng
+
+Câu 218: Cho hình hộp chữ nhật có BC = a, = a 3. Góc giữa hai mặt phẳng (A'B'C) và (ABC'D') bằng
+
+Câu 219: Cho hình lập phương ABCD.A'B'C'D' cạnh a. Các điểm M,N,P lần lượt thuộc các đường thẳng AA',BB',CC' thỏa mãn diện tích của tam giác MNP bằng a2. Góc giữa hai mặt phẳng (MNP) và (ABCD) là
+
+Câu 220: Cho lăng trụ đứng ABC.A'B'C' có diện tích tam giác ABC bằng 2 3. Gọi M, N, P lần AA', BB', CC', lượt thuộc các cạnh diện tích tam giác MNP bằng 4. Tính góc giữa hai mặt phẳng (ABC) và (MNP). 120◦. 45◦. 30◦. 90◦
+
+Câu 221: Cho hình lập phương ABCD.A'B'C'D'. Tính góc giữa hai mặt phẳng (A'BC) và (A'CD)
+
+Câu 222: Cho hình chóp tam giác đều S.ABC có cạnh bên bằng 2a, cạnh đáy bằng a. Gọi α là góc giữa hai mặt bên của hình chóp đó. Hãy tính cosα.
+
+Câu 223: Cho lăng trụ đứng ABCD.A'B'C'D' có đáy ABCD là hình thoi, AC = 2AA' = 2a 3. Góc giữa hai mặt phẳng (A'BD) và (C'BD) bằng
+
+Câu 224: Cho hình lập phương ABCD.A'B'C'D' có cạnh bằng 3. Mặt phẳng (α) song song với AB và cắt tất cả các cạnh bên của hình lập phương. Tính diện tích thiết diện của hình lập phương cắt bởi mặt phẳng (α) biết (α) tạo với mặt (ABB'A') một góc 60◦.
+
+Câu 225: Cho hình chóp S.ABC có đáy ABC là tam giác vuông cân tại đỉnh B, AB = a, SA = 2a và SA vuông góc với mặt phẳng đáy. Gọi H, K lần lượt là hình chiếu vuông góc của A lên SB, SC. Diện tích của tam giác AHK bằng
+
+Câu 226: Cho hình chóp S.ABCD, đáy là hình thang vuông tại A và B, biết AB = BC = a, √ AD = 2a, SA = a 3 và SA ⊥(ABCD). Gọi M, N lần lượt là trung điểm của SB và SA. Tính khoảng cách từ M đến (NCD) theo a.
+
+Câu 227: Cho hình chóp tứ giác đều S.ABCD có cạnh a. Góc giữa cạnh bên và mặt phẳng đáy bằng 60o. Khoảng cách từ đỉnh S đến mặt phẳng (ABCD) bằng
+
+Câu 228: Cho hình chóp tứ giác đều S.ABCD có cạnh đáy bằng a. Góc giữa cạnh bên và mặt phẳng đáy bằng 60◦. Khoảng cách từ đỉnh S đến mặt phẳng (ABCD) bằng
+
+Câu 229: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a, mặt bên SAB là tam giác đều và nằm trong mặt phẳng vuông góc với mặt phẳng đáy. Tính khoảng cách h từ điểm A đến mặt phẳng (SCD).
+
+Câu 230: Cho hình chóp S.ABC có đáy ABC là tam giác vuông tại B và SB ⊥(ABC). Biết SB = 3a, AB = 4a, BC = 2a. Tính khoảng cách từ B đến (SAC).
+
+Câu 231: Cho hình lăng trụ tam giác đều ABC.A'B'C' có AB = a, AA' = 2a. Tính khoảng cách giữa hai đường thẳng AB' và A'C.
+
+Câu 232: Cho tứ diện đều ABCD có tất cả các cạnh đều bằng 2a, gọi M là điểm thuộc cạnh AD sao cho DM = 2MA. Tính khoảng cách từ M đến mặt phẳng (BCD).
+
+Câu 233: Cho hình chóp tứ giác đều S.ABCD có cạnh đáy bằng cạnh bên bằng a. Khoảng cách từ AD đến mặt phẳng (SBC) bằng bao nhiêu?
+
+Câu 234: Cho hình chóp S.ABC có đáy là tam giác vuông tại A, AB = a, AC = a 3, SA vuông góc với mặt phẳng đáy và SA = 2a. Khoảng cách từ điểm A đến mặt phẳng (SBC) bằng
+
+Câu 235: Cho hình chóp S.ABC có đáy là tam giác vuông cân tại B, 2SA = AC = 2a và SA vuông góc với đáy. Khoảng cách từ A đến mặt phẳng (SBC) bằng
+
+Câu 236: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a, cạnh bên SA vuông góc √ với đáy và SA = a 3. Khoảng cách từ A đến mặt phẳng (SBC) bằng
+
+Câu 237: Cho hình chóp S.ABC có SA vuông góc với mặt phẳng đáy. Biết góc BAC = 30◦, SA = a và BA = BC = a. Gọi D là điểm đối xứng với B qua AC. Khoảng cách từ B đến mặt (SCD) bằng
+
+Câu 238: Cho hình chóp S.ABCD có đáy ABCD là nửa lục giác đều nội tiếp đường tròn đường √ kính AD = 2a, SA vuông góc với đáy và SA = a 3. Gọi H là hình chiếu của A trên SB. Khoảng cách từ H đến mặt phẳng (SCD) bằng
+
+Câu 239: Cho hình chóp S.ABCD có đáy ABCD là hình vuông tâm O cạnh a. Tính khoảng cách giữa SC và AB biết rằng SO = a và vuông góc với mặt đáy của hình chóp.
+
+Câu 240: Cho hình chóp S.ABCD có đáy ABCD là hình vuông tâm O cạnh a, SO vuông góc với mặt phẳng (ABCD) và SO = a. Khoảng cách giữa SC và AB bằng
+
+Câu 241: Cho hình chóp tam giác S.ABC có SA ⊥(ABC), AB = 6, BC = 8, AC = 10. Tính khoảng cách d giữa hai đường thẳng SA và BC
+
+Câu 242: Cho tứ diện OABC có OA, OB, OC đôi một vuông góc và đều bằng a. Khoảng cách giữa hai đường thẳng OA và BC bằng
+
+Câu 243: Cho hình chóp đều S.ABCD có độ dài cạnh đáy bằng a, độ dài cạnh bên bằng. 2 Tính khoảng cách giữa hai đường thẳng AB và SC.
+
+Câu 244: Cho tứ diện đều ABCD cạnh bằng 4. Khoảng cách giữa hai đường thẳng AB và CD bằng √ √
+
+Câu 245: Cho hình chóp tứ giác đều S.ABCD, có tất cả các cạnh đều bằng a. Tính khoảng cách giữa hai đường thẳng AD và SB.
+
+Câu 246: Cho hình chóp S.ABCD có đáy là hình vuông cạnh a. Cạnh bên SA vuông góc với đáy. Góc giữa SC và mặt đáy là 45◦. Gọi E là trung điểm của BC. Tính khoảng cách giữa hai đường thẳng DE và SC.
+
+Câu 247: Cho hình chóp S.ABCD đáy là hình thoi cạnh a, góc BAC = 60◦, tam giác SAB cân tại S và nằm trong mặt phẳng vuông góc với đáy. Mặt phẳng (SCD) tạo với đáy góc 30◦. Tính khoảng cách d giữa hai đường thẳng SB và AD.
+
+Câu 248: Cho hình hộp ABCD.A'B'C'D' có A.A'B'D' là hình chóp đều, A'B' = AA' = a. Tính theo a khoảng cách giữa hai đường thẳng AB' và A'C'.
+
+Câu 249: Cho hình lăng trụ đứng ABC.A'B'C' có cạnh bên AA' = a 2. Biết đáy ABC là tam giác vuông có BA = BC = a, gọi M là trung điểm của BC. Tính khoảng cách giữa hai đường thẳng AM và B'C.
+
+Câu 250: Cho lăng trụ ABC.A'B'C' có đáy là tam giác đều cạnh bằng 4. Hình chiếu vuông góc của A' lên mặt phẳng (ABC) trùng với tâm đường tròn ngoại tiếp tam giác ABC. Gọi M là trung điểm cạnh AC. Khoảng cách giữa hai đường thẳng BM và B'C bằng √ √
+
+Câu 251: Cho tứ diện đều ABCD có các cạnh bằng a. Khoảng cách giữa hai đường thẳng AB và CD bằng
+
+Câu 252: Cho tứ diện OABC có OA,OB,OC đôi một vuông góc với nhau và OC = 2a, OA = OB = a. Gọi M là trung điểm của √ AB. Tính khoảng cách √ giữa hai đường thẳng √ OM và AC.
+
+Câu 253: Cho hình chóp S.ABC có đáy là tam giác đều cạnh bằng 4, S góc giữa SC và mặt phẳng (ABC) là 45◦. Hình chiếu của S lên (ABC) là điểm H thuộc cạnh AB sao cho HA = 2HB. Tính khoảng cách d giữa hai đường thẳng SA và BC.
+
+Câu 254: Cho lăng trụ đứng ABC.A'B'C' có đáy ABC là tam giác vuông, BA = BC = a, cạnh √ bên AA' = a 2, M là trung điểm của BC. Khoảng cách giữa hai đường thẳng AM và B'C bằng
+
+Câu 255: Cho hình lăng trụ đứng ABC.A'B'C' có đáy ABC là tam giác vuông BA = BC = a, √ cạnh bên AA' = a 2, M là trung điểm của BC. Khoảng cách giữa hai đường thẳng AM và B'C là
+
+Câu 256: Cho hình chóp S.ABCD có đáy là hình vuông cạnh 2a. Biết các mặt bên của hình chóp √ 4 3a3 cùng tạo với đáy các góc bằng nhau và thể tích của khối chóp bằng. Tính khoảng cách giữa 3 hai đường thẳng SA và CD.
+
+Câu 257: Cho hình chóp S.ABCD có đáy ABCD là hình chữ nhật, AB = a, BC = 2a, SA vuông góc với mặt phẳng đáy và SA = a. Khoảng cách giữa hai đường AC và SB bằng. √ a 6a a 2a
+
+Câu 258: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a. Mặt bên (SAB) là tam giác đều nằm trong mặt phẳng vuông góc với đáy. Khoảng cách giữa hai đường thẳng AB và SC bằng
+
+Câu 259: Cho hình chóp S.ABCD đáy là hình vuông với đường chéo AC = 2a, SA ⊥(ABCD). Khoảng cách giữa hai đường thẳng SB và CD là a a √ √
+
+Câu 260: Cho hình chóp S.ABCD có ABCD là hình vuông cạnh a. Tam giác SAB đều và nằm trong mặt phẳng vuông góc với mặt phẳng (ABCD). Khoảng cách giữa hai đường thẳng BC và SD là
+
+Câu 261: Cho hình chóp đều S.ABCD có đáy là hình vuông ABCD tâm O cạnh 2a, cạnh bên √ SA = a 5. Khoảng cách giữa BD và SC là
+
+Câu 262: Cho tứ diện OABC có OA, OB, OC đôi một vuông góc với nhau, OA = a, OB = OC = 2a. Gọi M là trung điểm của BC. Khoảng cách giữa hai đường thẳng OM và AB bằng
+
+Câu 263: Cho lăng trụ đứng ABC.A'B'C' có AC = a, BC = 2a, ACB = 120◦. Gọi M là trung điểm của BB'. Tính khoảng cách giữa hai đường thẳng AM và CC' theo a. √ √ √ … 3 7
+
+Câu 264: Cho hình chóp S.ABC đáy ABC là tam giác đều cạnh a, SA vuông góc với đáy và SA = a. Gọi M, N lần lượt là trung điểm của các cạnh BC và CA. Khoảng cách giữa hai đường thẳng AM và SN bằng
+
+Câu 265: Cho hình chóp tứ giác đều S.ABCD với tất cả các cạnh bằng S a. Gọi G là trọng tâm tam giác SCD. Giá trị tan góc giữa AG và (ABCD) bằng
+
+Câu 266: Cho hình chóp S.ABCD có đáy là hình thoi cạnh a, SA = SB = SD = a, BAD = 60◦. Góc giữa đường thẳng SA và mặt phẳng (SCD) bằng
+
+Câu 267: Cho hình chóp S.ABCD có đáy ABCD là hình thang cân (AD BC), BC = 2a, AB = AD = DC = a với a > 0. Gọi O là giao điểm của AC và BD. Biết SD vuông góc AC. M là một điểm thuộc đoạn OD; MD = x với x > 0. M khác O và D. Mặt phẳng (α) qua M và song song với hai đường thẳng SD và AC cắt khối chóp S.ABCD theo một thiết diện. Tìm x để diện tích thiết diện là lớn nhất?
+
+Câu 268: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a, SAB là tam giác đều và (SAB) vuông góc với (ABCD). Tính cosϕ với ϕ là góc tạo bởi (SAC) và (SCD).
+
+Câu 269: Cho hình chóp S.ABC có SC ⊥(ABC) và tam giác ABC vuông tại B. Biết AB = a, √ √ AC = a 3, SC = 2a 6. Tính sin của góc giữa hai mặt phẳng (SAB) và (SAC). … … 2 2
+
+Câu 270: Cho hình lăng trụ tam giác đều ABC.A'B'C' có AB = 2 3 và AA' = 2. Gọi M, N, P lần lượt là trung điểm các cạnh A'B', A'C' và BC. Cô-sin của góc tạo bởi hai mặt phẳng (AB'C') và (MNP) bằng
+
+Câu 271: Cho tứ diện ABCD có AB = 3a, AC = a 15, BD = a 10, CD = 4a. Biết rằng góc giữa đường thẳng AD và mặt phẳng (BCD) bằng 45◦, khoảng cách giữa hai đường thẳng AD và 5a BC bằng và hình chiếu của A lên mặt phẳng (BCD) nằm trong tam giác BCD. Tính độ dài 4 đoạn thẳng AD biết rằng AD > a.
+
+Câu 272: Cho hình lăng trụ đứng ABC.A'B'C' có AB = 1, AC = 2, AA' = 3 và BAC = 120◦. Gọi M, N lần lượt là các điểm trên cạnh BB', CC' sao cho BM = 3B'M, CN = 2C'N. Tính khoảng cách từ điểm M đến mặt phẳng (A'BN).
+
+Câu 273: Cho hình lăng trụ đứng ABC.A'B'C' có AB = a, AC = 2a, AA' = 2a 5 và BAC = 120◦. Gọi K, I lần lượt là trung điểm của các cạnh CC', BB'. Khoảng cách từ điểm I đến mặt phẳng (A'BK) bằng
+
+Câu 274: Cho hình lập phương ABCD.A'B'C'D' cạnh a. Gọi M,N lần lượt là trung điểm của AC và B'C'. Khoảng cách giữa hai đường thẳng MN và B'D' bằng
+
+Câu 275: Cho hình chóp đều S.ABC có cạnh đáy bằng a 6, khoảng cách giữa hai đường thẳng 3a SA và BC bằng. Tính thể tích khối chóp S.ABC.
+
+Câu 276: Cho hình lập phương cạnh a. Gọi M, N lần lượt là trung điểm của BC và DD'. Tính theo a khoảng cách giữa hai đường thẳng MN và BD.
+
+Câu 277: Cho hình chóp S.ABCD có đáy ABCD là hình vuông, SAD là tam giác đều và nằm trong mặt phẳng vuông góc với mặt phẳng đáy. Biết rằng diện tích mặt cầu ngoại tiếp khối chóp S.ABCD là 4π. Khoảng cách giữa hai đường thẳng SD và AC gần với giá trị nào nhất sau đây?
+
+Câu 278: Cho hình lập phương ABCD.A'B'C'D' cạnh a. (tham khảo B C hình vẽ bên). Khoảng cách giữa hai đường thẳng AB' và BC' bằng
+
+Câu 279: Cho hình chóp S.ABCD có đáy là tam giác vuông đỉnh B, AB = a, SA vuông góc với đáy là SA = a. Tính tan của góc giữa SA và mặt phẳng (SBC)
+
+Câu 280: Cho hình chóp S.ABC có đáy là tam giác vuông tại B có AB = a, BC = 2a. Tam giác SAC cân tại S và thuộc mặt phẳng vuông góc với đáy. Biết SB = 1,5a, tính cosin của góc giữa đường thẳng SA và mặt phẳng (SBC).
+
+Câu 281: Cho khối lăng trụ đứng Tính sin của góc tạo bởi đường thẳng A'B và mặt phẳng (BCCB)
+
+Câu 282: Cho hình chóp đều S.ABCD có đáy ABCD là hình vuông tâm O cạnh a, cạnh bên tạo với đáy một góc 60o. Điểm M thuộc cạnh SB sao cho 3SM  SB. Khi đó sin của góc giữa OM và mặt phẳng (SCD) gần nhất giá trị nào sau đây ?
+
+Câu 283: Cho hình chóp S.ABCD có SA vuông góc với mặt phẳng đáy, ABCD là hình chữ nhật có 5a, góc giữa hai mặt phẳng SCD và ABCDbằng 450. Khi đó côsin của góc giữa đường AD3a;AC thẳng SD và mặt phẳng SBC bằng
+
+Câu 284: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh 2a. Tam giác SAB cân tại S và (SAB) vuông 4a3 góc với mặt phẳng (ABCD). Giả sử thể tích của khối chóp S.ABCD bằng. Tính cosin góc giữa đường 3 thẳng SC và mặt phẳng (ABCD).
+
+Câu 285: Cho hình chóp S.ABCD có cạnh đáy bằng a, tâm O. Gọi M, N lần lượt trung điểm của SA, BC. Biết rằng góc giữa MN và (ABCD) bằng 60o. Cosin của góc giữa MN và mặt phẳng (SBD) bằng
+
+Câu 286: Cho hình chóp S.ABCD có SAABCD, SAa 2, ABCD là hình thang vuông tại A,B và và SCD. 2AB2BC  AD2a. Gọi O ACBD, M là trung điểm SB. Tính singóc giữa OM
+
+Câu 287: Cho hình lăng trụ đứng ABC.A'B'C' có đáy là tam giác vuông cân tại A, AC  b, các cạnh bên có độ dài bằng b. Tính góc giữa đường thẳng ABvà mặt phẳng AB'C'.
+
+Câu 288: Cho hình chóp S.ABCD có đáy ABCD là hình thang vuông tại A và B; SAB là tam giác cân tại S; AD3BC 3AB3a. Gọi M là điểm thuộc đoạn AD sao cho AD3MD. Biết rằng SCM là tam giác đều. Gọi  là góc giữa đường thẳng SB và mặt phẳng SAD. Khi đó cos nhận giá trị là
+
+Câu 289: Cho hình chóp S.ABC có độ dài các cạnh SASBSC  AB AC a và BC a 2. Góc giữa hai đường thẳng AB và SC là?
+
+Câu 290: Cho hình chóp đều S.ABCD có tất cả các cạnh đều bằng a. Gọi M, N lần lượt là trung điểm của AD và SD. Số đo của góc giữa hai đường thẳng MN và SC là
+
+Câu 291: Cho hình chóp S.ABC có đáy ABC là tam giác vuông tại B, AB a, BC 2a, SA vuông góc với mặt phẳng đáy và SA 15a.Góc giữa đường thẳng SC và mặt phẳng đáy bằng
+
+Câu 292: Cho hình hộp chữ nhật ABCD.A'B'C'D' có ABa, AA' 3a (tham khảo hình bên). Góc giữa đường thẳng A'C và mặt phẳng ABCD bằng
+
+Câu 293: Cho hình chóp S.ABCD có đáy là hình vuông cạnh SA vuông góc với mặt phẳng đáy và SA 2a. Góc giữa đường thẳng SC và mặt phẳng đáy bằng
+
+Câu 294: Cho hình chóp tứ giác đều S.ABCD có tất cả các cạnh bằng 2a. Gọi M là trung điểm của SD Tính và mặt phẳng ABCD. tancủa góc giữa đường thẳng BM
+
+Câu 295: Cho hình chóp tứ giác đều S.ABCDcó ABa, O là trung điểm ACvà SOb. Gọi là đường a 14 thẳng đi qua C,  chứa trong mặt phẳng ABCD và khoảng cách từ O đến là. Giá trị lượng 6 giác cos SA, bằng
+
+Câu 296: Cho hình chóp S.ABCD có đáy ABCD là hình chữ nhật, ABa, BC a 3, SAa và SA vuông góc với đáy ABCD. Tính sin, với  là góc tạo bởi giữa đường thẳng BD và mặt phẳng SBC.
+
+Câu 297: Cho hình chóp S.ABCD có đáy là hình vuông ABCD tâm O cạnh a. Biết SA vuông góc với đáy (ABCD), tính độ dài cạnh SA theo a để góc giữa hai mặt phẳng (SBC) và (SCD) bằng 60o. B. SA = a 3 D. SA = 2a
+
+Câu 298: Cho hình chóp S.ABC có đáy ABC là tam giác vuông cân tại B, AC = 2a, tam giác SAB và tam giác SCB lần lượt vuông tại A và C. Khoảng cách từ C đến mặt phẳng (ABC) bằng a. Tính cosin của góc giữa hai mặt phẳng (SAB) và (SCB).
+
+Câu 299: Hình chóp S.ABC có đáy ABC là tam giác vuông tại B, AB = 2, BC  2 3, cạnh bên SA vuông góc với 3 đáy (ABC) và SA. Gọi M là trung điểm của AB, tính tan của góc giữa hai mặt phẳng (SMC), (ABC).
+
+Câu 300: Cho tứ diện ABCD có AC  AD  a 2;BC  BD a. Khoảng cách từ điểm B đến mặt phẳng (ACD) a3 a 3 15 bằng và thể tích tứ diện ABCD bằng. Góc giữa hai mặt phẳng (ACD) và (BCD) bằng 3
+
+Câu 301: Cho hình chóp S.ABC có đường cao SA, tam giác ABC cân tại A và AB  a;B AC 3 khối chóp là a3, góc giữa hai mặt phẳng (SBC) và (ABC) bằng
+
+Câu 302: Cho hình chóp S.ABCD có ABCD là hình vuông cạnh a, SA vuông góc với đáy (ABCD). Tính SA theo a để góc giữa hai mặt phẳng (SBC), (SCD) bằng 60o
+
+Câu 303: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a, cạnh bên SAB là tam giác đều và nằm trong mặt phẳng vuông góc với mặt phẳng (ABCD). Gọi G là trọng tâm của tam giác SAB và M, N lần lượt là trung điểm của SC, SD. Tính cosin của góc giữa hai mặt phẳng (GMN) và (ABCD).
+
+Câu 304: Cho lăng trụ đều ABC.A'B'C' có tất cả các cạnh đều bằng 2a. Gọi M, N lần lượt là trung điểm cạnh A'B', BB'. Tính cosin của góc hợp bởi hai mặt phẳng (MC'N), (ACC'A'). 2 6
+
+Câu 305: Cho lăng trụ ABC.A'B'C' có A'.ABC là hình chóp tam giác đều, AB a;AAa. Tính góc giữa 12 hai mặt phẳng (ABB'A'), (ABC)
+
+Câu 306: Cho hình chóp S.ABCD có đáy ABCD là hình thang vuông tại A và B, SA vuông góc với mặt phẳng ABCD, AB  BC  a,AD  2a. Biết góc giữa SC và mặt phẳng ABCD bằng 45. Tính góc giữa mặt phẳng SAD và SCD
+
+Câu 307: Cho hình lăng trụ đứng ABCD.ABCD có đáy ABCD là hình thoi, ABa, AA, BAD60. 2 Góc giữa hai mặt phẳng ABCD và ADBC bằng
+
+Câu 308: Cho hình lập phương ABCD.ABCD có cạnh a. Số đo góc giữa hai mặt BAC và DAC bằng?
+
+Câu 309: Cho hình chóp S.ABC có SA vuông góc với mặt phẳng ABC, SA, tam giác ABC đều cạnh 2 bằng a (minh họa như hình dưới). Góc tạo bởi giữa mặt phẳng SBC và ABC bằng
+
+Câu 310: Cho hình chóp S.ABC có SAa, SAABC, tam giác ABC vuông cân đỉnh A và BC a 2. Gọi. Côsin của góc tạo bởi hai mặt phẳng MNA và ABC bằng M, N lần lượt là trung điểm của
+
+Câu 311: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a, cạnh bên SA2a và vuông góc với là trung điểm cạnh SD. Tang của góc tạo bởi hai mặt phẳng AMC và SBC bằng mặt phẳng đáy. Gọi M
+
+Câu 312: Cho hình chóp S.ABCD có đáy ABCD là hình thang vuông tại A và D. Độ dài AB  AD  2a, CD  a; góc giữa hai mặt phẳng SBC và ABCD bằng 600. Gọi I là trung điểm AD, hai mặt phẳng SBI và SCI cùng vuông góc với mặt phẳng ABCD. Tính khoảng cách từ điểm A đến mặt phẳng SBC.
+
+Câu 313: Cho hình chóp S.ABCD có đáy là hình chữ nhật với diện tích đáy bằng 6a2, hình chiếu của đỉnh S trên mặt phẳng đáy trùng với điểm H thuộc cạnh AD với AH 2DH. Biết SH a và diện tích tam giác SAD bằng a2. Tính theo a khoảng cách từ trung điểm M của đoạn SB đến mp (SAD). 3a 3a B. a. A. 2a. C.. D.. 4 2 · 30. Góc giữa
+
+Câu 314: Cho hình chóp tứ giác S.ABCD có đáy ABCD là hình bình hành tâm O; mặt phẳng SAC vuông SBD. Biết khoảng cách từ SAB,SBC,SCD lần lượt là góc với mặt phẳng O đến các mặt phẳng từ O đến mặt phẳng SAD. 1;2; 5. Tính khoảng cách d 19 20
+
+Câu 315: Cho hình chóp S.ABCD đáy là hình vuông ABCD cạnh a, cạnh bên SAvuông góc với mặt phẳng (ABCD) và SD2a. Tính khoảng cách từ S đến mặt phẳng (ABCD). a
+
+Câu 316: Cho hình chóp tứ giác đều S.ABCDcó cạnh đáy bằng a và chiều cao bằng a 2. Tính khoảng cách d từ tâm O của đáy ABCD đến một mặt bên theo a. a 5 a 3 2a 5 a 2 A.d . B.d . C.d . D.d .
+
+Câu 317: Cho tứ diện đều S.ABCDcó tất cả các cạnh đều bằng 2a, gọi M là điểm thuộc cạnh AD sao choDM 2MA. Tính khoảng cách từ M đến mặt phẳng BCD.
+
+Câu 318: Cho hình chóp tứ giác đều S.ABCD có đáy là hình vuông cạnh a. Gọi M là trung điểm của SD. Khoảng cách từ M đến mặt phẳng SAC bằng
+
+Câu 319: Cho hình chóp S.ABCD có đáy là hình thoi cạnh 2a, góc B AD600,SABlà tam giác đều nằm trên mặt phẳng vuông góc với mặt phẳng đáy. Khoảng cách từ B đến mặt phẳng SCD là?
+
+Câu 320: Cho hình lăng trụ đứng ABC.ABCcó AB a;AC 2a;B AC 120o. Gọi M là trung điểm của · BMA cạnh CCthì B MA90o. Tính khoảng cách từ điểm A đến mặt phẳng. a
+
+Câu 321: Hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a, tam giác SAB đều và nằm trong mặt phẳng vuông góc với mặt đáy (ABCD); N là trung điểm cạnh AD. Tính khoảng cách từ điểm B đến mặt phẳng (SCN). a
+
+Câu 322: Cho hình chóp S.ABC có SA = a, tam giác ABC đều, tam giác SAB vuông cân tại S và nằm trong mặt phẳng vuông góc với mặt phẳng đáy. Tính khoảng cách từ B đến mặt phẳng (SAC). a
+
+Câu 323: Cho hình hộp ABCD.A'B'C'D' có đáy ABCD là hình vuông cạnh a, tâm O. Hình chiếu vuông góc của A' lên mặt phẳng (ABCD) trùng với O. Biết tam giác AA'C vuông cân tại A'. Tính khoảng cách từ D đến mặt phẳng (ABB'A'). a
+
+Câu 324: Cho hình lập phương ABCD.A'B'C'D' cạnh a, tính khoảng cách giữa hai mặt phẳng (AB'C) và (A'DC'). a a
+
+Câu 325: Cho hình chóp S.ABCD có đáy ABCD là hình thang vuông tại A, D và AB = AD = 2a, DC = a. Điểm I là trung điểm đoạn AD, hai mặt phẳng (SIB), (SIC) cùng vuông góc với mặt phẳng (ABCD). Mặt phẳng (SBC) tạo với mặt phẳng (ABCD) một góc 60o. Tính khoảng cách từ D đến (SBC). a
+
+Câu 326: Cho hình lăng trụ ABC.A'B'C' có đáy ABC là tam giác đều cạnh a. Hình chiếu vuông góc của A' lên (ABC) trùng với trung điểm của BC. Tính khoảng cách từ A' đến (BCC'B') biết góc giữa hai mặt phẳng (ABB'A') và (A'B'C') bằng 60o.
+
+Câu 327: Cho hình chóp S.ABCD có đáy là hình vuông tại A và D, AB = 2AD = 2CD = 2a. Cạnh bên SA vuông góc uur uuur với đáy và SA = a. Gọi M là trung điểm của SD, N là điểm thỏa mãn SB 3SN, tính khoảng cách từ C đến mặt phẳng (AMN). a 2 a 3 2a
+
+Câu 328: Cho hình chóp S.BACD có đáy ABCD là hình vuông, SA vuông góc với đáy, mặt bên (SCD) hợp với a3 3 đáy góc 60o, M là trung điểm của BC. Biết thể tích khối chóp S.ABCD bằng. Tính khoảng cách từ M đến 3 mặt phẳng (SCD). a 3 a 3 a
+
+Câu 329: Cho hình chóp S.ABCD có đáy là hình vuông cạnh a, tam giác SAB đều và nằm trong mặt phẳng vuông góc với đáy. Khoảng cách giữa hai đường thẳng SA và BC bằng
+
+Câu 330: Cho hình lăng trụ tam giác đều ABC.ABC có AB2 3 và AA2. Gọi M, N, P lần lượt là trung điểm các cạnh AB, AC và BC. Khoảng cách từ A đến MNP bằng
+
+Câu 331: Cho hình hộp chữ nhật EFGH.EFGH có EF 3a,EH. Khoảng cách giữa hai đường thẳng EF và GH bằng
+
+Câu 332: Cho lăng trụ tam giác đều ABC.ABCcó AB = a, A'A = 2a. Tính khoảng cách giữa hai đường thẳng AB' và A'C. a 3 2a 2a
+
+Câu 333: Cho hình chóp S.ABCD có đáy ABCD là hình thoi tâm O có góc của đỉnh S xuống mặt đáy trùng với trung điểm của OB. Biết tam giác SBD vuông tại S. Khoảng cách giữa hai đường thẳng AC và SB là a
+
+Câu 334: Hình chóp S.ABCD có đáy là hình thang, AB = 2a, AD = DC = CD = a, SA = 3a và SA vuông góc với mặt phẳng đáy. Gọi M là trung điểm của AB, khoảng cách giữa hai đường thẳng SB và DM bằng 3a 6a
+
+Câu 335: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a. Đường thẳng SA vuông góc với mặt phẳng ABCD và SAa. Tính khoảng cách d giữa hai đường thẳng SB và CD
+
+Câu 336: Cho hình chóp S.ABCD có đáy là hình vuông cạnh a, tam giác SAD đều và nằm trong mặt phẳng vuông góc với đáy.Tính khoảng cách d giữa hai đường thẳng SA và BD. a 21 a 2 a 21 A.d . B.d . C.d . D.d a. 14 2
+
+Câu 337: Cho hình chóp S.ABC có đáy ABC là tam giác vuông tại B, ABa, cạnh bên SA vuông góc với đáy và SAa 2. Gọi E là trung điểm của AB. Khoảng cách giữa đường thẳng SE và đường thẳng BC bằng bao nhiêu ?
+
+Câu 338: Cho lăng trụ đứng ABC.A'B'C' có đáy ABC là tam giác vuông, AB = AC = a, cạnh bên BBa 2. Gọi M là trung điểm AC, tính khoảng cách giữa hai đường thẳng A'C và BM. 4a a 3a 2a
+
+Câu 339: Hình chóp S.ABCD có đáy là hình vuông tâm O cạnh a, SO vuông góc với mặt phẳng (ABCD) và SO = a. Khoảng cách giữa SC và AB là a
+
+Câu 340: Cho hình chóp S.ABCD có đáy ABCD là hình chữ nhật, AB = 2a, BC = a. Các cạnh bên của hình chóp bằng nhau và bằng a 2. Gọi M, N lần lượt là trung điểm của các cạnh AB, CD. Gọi K là điểm trên cạnh AD sao cho KD = 2KA. Tính khoảng cách giữa hai đường MN và SK. a 21 a 3 a
+
+Câu 341: Cho hình chóp S.ABC có đáy ABC là tam giác đều cạnh bằng a. Mặt bên SAB là tam giác cân tại S, cạnh bên SC hợp với mặt đáy ABCmột góc 45, mặt bên SABvuông góc với mặt đáy ABCvà I là trung điểm của AB. Khoảng cách giữa hai đường thẳng SA và CI bằng
+
+Câu 342: Cho hình chóp S.ABCD đáy là hình thoi cạnh a, góc BAC60, tam giác SAB cân tại S nằm trong mặt phẳng vuông góc với đáy. Mặt phẳng (SCD) tạo với đáy góc 30. Tính khoảng cách d giữa hai đường thẳng SB và AD.
+
+Câu 343: Cho hình chóp thẳng SC tạo với mặt phẳng ABCD góc 60. Gọi M là trung điểm của cạnh BC, O là giao điểm của AC và SO bằng và BD. Khoảng cách giữa hai đường thẳng DM
+
+Câu 344: Cho hình chóp S.ABC có đáy là tam giác đều cạnh a, I là trung điểm của AB, hình chiếu S lên mặt đáy là trung điểm H của CI, góc giữa SA và đáy là 45. Khoảng cách giữa SA và CI bằng:
+
+Câu 345: Cho hình tứ diện OABC có đáy OBC là tam giác vuông tại O, OBa, OC a 3. Cạnh OA vuông góc với mặt phẳng (OBC), OAa 3, gọi M là trung điểm của BC. Tính khoảng cách h giữa hai đường thẳng AB và OM. a
+
+Câu 346: Cho hình chóp có đáy là hình thang vuông tại A và B có và SAABCD ABBCa, SA  a 2. Khoảng cách giữa hai đường phẳng SB và DC bằng
+
+Câu 347: Cho hình chóp S.ABCD có đáyABCDlà hình thoi cạnha. Tam giácABCđều, hình chiếu vuông gócHcủa đỉnhSlên mặt phẳng (ABCD) trùng với trọng tâm của tam giác ABC. Đường thẳngSDhợp 0 với mặt phẳng ABCDgóc 30. Tính khoảng cách từ Bđến mặt phẳng SCD theo a.
+
+Câu 348: Cho hình chóp S.ABCD có đáy là hình vuông cạnh a, mặt bên SAB là tam giác đều và nằm trong mặt phẳng vuông góc với mặt phẳng đáy. Khoảng cách từ A đến mặt phẳng SBD bằng
+
+Câu 349: Cho hình chóp S.ABCD có đáy ABCD là hình thang, AB2a, ADDCBC a. SA vuông góc ABCD và SA3a. Gọi M là trung điểmAB. Khoảng cách giữa hai đường thẳng SM và BC với mặt phẳng bằng:
+
+Câu 350: Cho hình chóp S.ABCD, đáy là hình thang vuông tại A và B, biết AB BC a, AD2a, SAa 3 và SAABCD. Khoảng cách giữa hai đường thẳng AC và SD bằng
+
+Câu 351: Cho hình chóp S.ABC có đáyABClà tam giác vuông tại B, BA a,BC a mặt phẳng 3 4 · SBC vuông góc với mặt phẳng  ABC .Biết SB a 3 và SBC= 300. Khoảng cách từ điểm Bđến  2 mặt phẳng  SAC bằng
+
+Câu 352: Cho hình chóp S.ABC, có SASBSC, đáy là tam giác đều cạnh. Biết thể tích khối chóp a3 3 S.ABC bằng. Khoảng cách giữa hai đường thẳng SA và BC bằng:
+
+Câu 353: Cho hình chóp S.ABC có đáy ABC là tam giác đều cạnh a, thẳng SB và mặt phẳng ABC bằng 60. Khoảng cách giữa hai đường thẳng AC và SB bằng
+
+Câu 354: Cho hình chóp tứ giác đều có cạnh đáy bằng 2a, cạnh bên bằng 3a. Gọi là góc giữa mặt bên và mặt đáy, mệnh đề nào dưới đây đúng?
+
+Câu 355: Cho hình chóp S.ABCcó đáy ABC là tam giác vuông cân tại B; ABC và SA ABC; AB  BC  a. Tính góc giữa hai mặt phẳng SAC và SBC.
+
+Câu 356: Cho hình chóp S.ABCD có đáy là hình thang vuông tại A và B. Biết AB  BC a,AD 2a và 53 vuông góc với mặt phẳng ABCDvà SAa SA 2. Gọi M là trung điểm AD. Khoảng cách giữa hai đường thẳng BM và SC bằng a 2a
+
+Câu 357: Cho hình chóp S.ABC có đáy ABC là tam giác vuông tại B, góc với đáy. Góc giữa đường thẳng SC và mặt phẳng đáy bằng 30o. Gọi M là trung điểm của AC khoảng cách giữa hai đường thẳng AB và SM bằng
+
+Câu 358: Cho hình chóp S.ABCD có đáy là hình thang vuông tại B và C với AB = 4a, BC = 2a, CD = a. Gọi M, N lần lượt là trung điểm của AB và BC. Hai mặt phẳng (SMN) và (SBD) cùng vuông góc với mặt phẳng đáy và cạnh bên SB hợp với đáy một góc 45o. Khoảng cách giữa SN và BD bằng
+
+Câu 359: Cho hình chóp S.ABCD có đáy là hình vuông cạnh 4a, hai mặt phẳng (SAB) và (SAC) cùng vuông góc với mặt phẳng đáy, góc giữa mặt phẳng (SCD) với mặt phẳng đáy bằng 45o. Gọi M là trung điểm của SB. Khoảng cách giữa hai đường thẳng AM và SD bằng
+
+Câu 360: Cho hình chóp S.ABC có đáy ABC là tam giác đều cạnh 6a, cạnh bên SA vuông góc với mặt phẳng đáy, SA = 2a. Gọi G là trọng tâm tam giác ABC. Tính khoảng cách giữa hai đường thẳng SG, BC. a 3 3a
+
+Câu 361: Cho hình chóp S.ABCD có đáy là hình thang, C BA B AD 90o;AB  BC 2a;AD a. Biết SA = · 90o. Cạnh bên SA tạo với mặt đáy 450. Tính khoảng cách giữa hai đường thẳng AB và SC bằng SB và
+
+Câu 362: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a. Hình chiếu vuông góc của S trên mặt phẳng (ABCD) là trung điểm của cạnh AB, góc giữa (SAC) và đáy bằng 45o. Gọi M là trung điểm của SD. Khoảng cách giữa hai đường thẳng AM và SC bằng
+
+Câu 363: Cho hình chóp S.ABCD có đáy ABCD là hình chữ nhật, AB = a, AD = 2a, SA vuông góc với (ABCD), SA = 2a. Gọi M là trung điểm của SB. Khoảng cách giữa hai đường thẳng AM và SC bằng
+
+Câu 364: Cho hình chóp S.ABCD có đáy ABCD là hình thang vuông tại A và B có AD = 2a, AB = BC = a và SA vuông góc với (ABCD), SAa 2. Tính khoảng cách giữa hai đường thẳng SB và DC. a
+
+Câu 365: Hình chóp S.ABCD có đáy ABCD là hình bình hành và SA = SB = SC = a, · · · S AB 30o;S BC 60o;S CA45o. Tính khoảng cách giữa hai đường thẳng AB và SD. 4a a a 22 2a
+
+Câu 366: Cho hình lăng trụ đều ABC.A'B'C' có tất cả các cạnh có độ dài bằng 2. Tính khoảng cách giữa hai đường thẳng AC' và A'B.
+
+Câu 367: Cho hình chóp S.ABC có đáy là tam giác vuông tại A, AB = 4a, AC = 3a. Biết SA 2a 3;S AB 30ovà hai mặt phẳng (SAB), (ABC) vuông góc. Tính khoảng cách từ A đến mặt phẳng (SBC).
+
+Câu 368: Cho hình chóp S.ABCD có đáy là hình chữ nhật, AB = a, AD = 2a, H là điểm thuộc AC sao cho 3AH = AC, SH vuông góc với (ABCD), SH = 2a. Gọi G là trọng tâm tam giác SAD. Khoảng cách giữa hai đường thẳng CG, SB khi đó bằng
