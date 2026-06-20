@@ -67,6 +67,10 @@ function describeEntity(e: DslPointT | DslShapeT): string {
       return `${e.name} = điểm trên tia ${e.from}${e.through} cách ${e.through} một khoảng ${distStr}`;
     }
     case 'onPerpBisector': return `${e.name} = điểm trên trung trực ${e.p1}${e.p2}`;
+    case 'commonTangentPoint': {
+      const v = e.variant === 'internal' ? 'trong' : 'ngoài';
+      return `${e.name} = tiếp điểm tiếp tuyến chung ${v} ${e.circles[0]},${e.circles[1]} (trên ${e.circles[e.on]})`;
+    }
     default: {
       const _exhaust: never = e;
       void _exhaust;

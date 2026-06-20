@@ -160,6 +160,16 @@ export const AddPointIntentZ = z.object({
         z.object({ kind: z.literal('literal'), value: z.number().positive(), scale: z.number().positive().optional(), offset: z.number().optional() }),
       ]),
     }),
+    // Tiếp điểm tiếp tuyến CHUNG 2 đường tròn (spec mục A). circles = 2 tên đtròn;
+    // on = tiếp điểm trên đtròn 0 hay 1; variant = ngoài/trong; side = chọn 1 trong
+    // 2 tiếp tuyến cùng loại.
+    z.object({
+      kind: z.literal('commonTangentPoint'),
+      circles: z.tuple([LabelZ, LabelZ]),
+      on: z.union([z.literal(0), z.literal(1)]),
+      variant: z.enum(['external', 'internal']),
+      side: z.union([z.literal(0), z.literal(1)]),
+    }),
   ]),
 });
 

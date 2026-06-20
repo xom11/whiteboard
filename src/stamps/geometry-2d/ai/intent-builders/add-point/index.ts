@@ -18,6 +18,7 @@ import { buildRightAngleViewing } from './rightAngleViewing';
 import { buildArcMidpoint } from './arcMidpoint';
 import { buildReflectPoint, buildReflectLine } from './reflect';
 import { buildPointAtDistance } from './pointAtDistance';
+import { buildCommonTangentPoint } from './commonTangentPoint';
 import { buildExternalToCircle } from './externalToCircle';
 import { buildOnCircle } from './onCircle';
 import { buildMixtilinearPoint } from './mixtilinear';
@@ -34,6 +35,7 @@ export const ADD_POINT_BUILDERS: Record<string, (s: BuildState, intent: AddPoint
   rightAngleViewing: buildRightAngleViewing,
   arcMidpoint: buildArcMidpoint, reflectPoint: buildReflectPoint, reflectLine: buildReflectLine,
   pointAtDistance: buildPointAtDistance,
+  commonTangentPoint: buildCommonTangentPoint,
   externalToCircle: buildExternalToCircle,
   onCircle: buildOnCircle,
   mixtilinearPoint: buildMixtilinearPoint,

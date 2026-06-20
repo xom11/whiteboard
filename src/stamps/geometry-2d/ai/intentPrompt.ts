@@ -298,7 +298,7 @@ hoặc
 - quadrilateral: any
 
 ## Constraint kinds (cho add-point)
-midpoint, perpFoot, centroid, circumcenter, incenter, orthocenter, intersection, onSegment, free, secondIntersection, circleIntersection, tangencyPoint, tangentPoint, angleBisectorFoot, externalAngleBisectorFoot, arcMidpoint, reflectPoint, reflectLine, excenter, rightAngleViewing, pointAtDistance
+midpoint, perpFoot, centroid, circumcenter, incenter, orthocenter, intersection, onSegment, free, secondIntersection, circleIntersection, tangencyPoint, tangentPoint, angleBisectorFoot, externalAngleBisectorFoot, arcMidpoint, reflectPoint, reflectLine, excenter, rightAngleViewing, pointAtDistance, commonTangentPoint
 
 ## Style enum (cho connect)
 segment, line, ray, perpBisector

@@ -41,6 +41,7 @@ import { mixtilinearPointModule } from './kinds/points/mixtilinearPoint';
 import { reflectPointModule } from './kinds/points/reflectPoint';
 import { reflectLineModule } from './kinds/points/reflectLine';
 import { pointAtDistanceModule } from './kinds/points/pointAtDistance';
+import { commonTangentPointModule } from './kinds/points/commonTangentPoint';
 
 const ALL_MODULES: ReadonlyArray<DslKindModule> = [
   freeModule, midpointModule, onPerpBisectorModule, onSegmentModule, onLineModule, onCircleModule,
@@ -60,6 +61,8 @@ const ALL_MODULES: ReadonlyArray<DslKindModule> = [
   arcMidpointModule, excenterModule, mixtilinearPointModule, reflectPointModule, reflectLineModule,
   // Cụm B points
   pointAtDistanceModule,
+  // 2-circle relations (spec mục A)
+  commonTangentPointModule,
 ];
 
 export const KIND_REGISTRY: ReadonlyMap<string, DslKindModule> =

@@ -150,6 +150,7 @@ function constraintKey(c: AddPointIntentT['constraint']): string {
     }
     case 'externalToCircle': return `externalToCircle:${c.circle}`;
     case 'onCircle': return `onCircle:${c.circle}:${c.theta ?? ''}`;
+    case 'commonTangentPoint': return `commonTangentPoint:${c.circles.join(',')}:${c.on}:${c.variant}:${c.side}`;
   }
 }
 

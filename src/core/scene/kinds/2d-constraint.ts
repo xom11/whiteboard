@@ -86,7 +86,11 @@ export type Constraint2D =
   | { kind: 'excenter'; vertices: [string, string, string]; opposite: string }
   // Mixtilinear: tâm (which='center') hoặc tiếp điểm với (O) (which='touch') của
   // đường tròn tiếp xúc 2 cạnh từ `vertices[0]` + tiếp xúc trong đường tròn ngoại tiếp.
-  | { kind: 'mixtilinearPoint'; vertices: [string, string, string]; which: 'center' | 'touch' };
+  | { kind: 'mixtilinearPoint'; vertices: [string, string, string]; which: 'center' | 'touch' }
+  // Tiếp điểm của tiếp tuyến CHUNG 2 đường tròn `circles` (external/internal).
+  // `on` = tiếp điểm trên đtròn 0 hay 1; `variant` = ngoài/trong; `side` = chọn 1
+  // trong 2 tiếp tuyến cùng loại. Render functional (đọc tâm+R sống của 2 đtròn).
+  | { kind: 'commonTangentPoint'; circles: [string, string]; on: 0 | 1; variant: 'external' | 'internal'; side: 0 | 1 };
 
 export function constraintRefs2D(c: Constraint2D): string[] {
   switch (c.kind) {
@@ -121,6 +125,7 @@ export function constraintRefs2D(c: Constraint2D): string[] {
       return [c.from, c.through, ...extra];
     }
     case 'excenter': return [c.vertices[0], c.vertices[1], c.vertices[2]];
+    case 'commonTangentPoint': return [c.circles[0], c.circles[1]];
     default: return [];
   }
 }

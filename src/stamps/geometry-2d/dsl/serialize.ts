@@ -238,6 +238,22 @@ function serializePoint(obj: SceneObject<PointAttrs>, state: State): SerializedE
       };
     }
 
+    case 'commonTangentPoint': {
+      const refs = resolveRefs([c.circles[0], c.circles[1]], state);
+      if (!refs) return fail('unresolved-ref', `${c.circles[0]},${c.circles[1]}`);
+      return {
+        ok: true,
+        entity: {
+          name: obj.label,
+          kind: 'commonTangentPoint',
+          circles: [refs[0], refs[1]],
+          on: c.on,
+          variant: c.variant,
+          side: c.side,
+        },
+      };
+    }
+
     // Out of DSL v1:
     case 'onAxis':
     case 'onPolygon':
