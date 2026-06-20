@@ -1,8 +1,10 @@
 name: Release
 
+# Release CHỈ chạy khi gọi tay (nút "Run workflow" ở tab Actions, hoặc
+# `gh workflow run release.yml`). Push hằng ngày KHÔNG publish — semantic-release
+# gom mọi feat:/fix: kể từ tag trước thành MỘT bản khi bạn bấm chạy.
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 # semantic-release cần quyền ghi để push commit bump version + tạo GitHub Release.
 permissions:

@@ -144,18 +144,23 @@ npm run dev         # tsup --watch (auto rebuild + inject)
 
 Package publish lên npm (`@xom11/whiteboard`). `dist/` không track git — `prepublishOnly` tự clean + build trước `npm publish`.
 
-**Phát hành giờ TỰ ĐỘNG qua semantic-release** (`.github/workflows/release.yml` + `.releaserc.json`). KHÔNG còn `npm version` / `npm publish` thủ công.
+**Phát hành qua semantic-release, kích hoạt THỦ CÔNG** (`.github/workflows/release.yml` + `.releaserc.json`). Push hằng ngày KHÔNG publish — chỉ release khi bạn gọi tay → tránh version nhảy nhanh + npm churn khi sửa code liên tục.
 
 ```bash
-# Chỉ cần commit theo conventional commits rồi push main:
-#   fix: ...            → bump patch  (0.31.0 → 0.31.1)
-#   feat: ...           → bump minor  (0.31.0 → 0.32.0)
-#   feat!: / BREAKING CHANGE: → bump major
-#   docs:/chore:/refactor:/ci: → KHÔNG release
-git push   # → CI tự: typecheck + test → bump version → publish npm
-           #         → tag vX.Y.Z + GitHub Release (notes tự sinh từ commit)
+# 1) Commit/push thoải mái theo conventional commits — KHÔNG publish gì:
+#   fix: ...            → (sẽ) bump patch  (0.31.0 → 0.31.1)
+#   feat: ...           → (sẽ) bump minor  (0.31.0 → 0.32.0)
+#   feat!: / BREAKING CHANGE: → (sẽ) bump major
+#   docs:/chore:/refactor:/ci: → KHÔNG ảnh hưởng release
+git push
+
+# 2) Khi sẵn sàng ship → gọi tay 1 lần (gom MỌI feat/fix từ tag trước thành 1 bản):
+gh workflow run release.yml --repo xom11/whiteboard
+#   → CI: typecheck + test → bump version → publish npm → tag vX.Y.Z + GitHub Release
+#   (hoặc bấm nút "Run workflow" trong tab Actions)
 ```
 
+- **Trigger = `workflow_dispatch`** (cố ý, KHÔNG `on: push`): tách "publish" khỏi "push". Nếu không có feat/fix mới kể từ tag trước → run no-op xanh, không publish.
 - **Thiết kế gọn (cố ý):** semantic-release CHỈ chạy `commit-analyzer` + `release-notes-generator` + `npm` + `github`. **KHÔNG** dùng `@semantic-release/git`/`changelog` → **KHÔNG commit ngược vào main** (tránh rủi ro commit "chore(release)" mồ côi khi publish lỗi, và không làm bẩn `CHANGELOG.md` văn xuôi tự viết).
 - **Nguồn version chuẩn = git tags `vX.Y.Z` + npm + GitHub Release.** `package.json` trong git GIỮ version cũ (semantic-release set version đúng lúc publish, không commit lại) — đừng tin số trong `package.json` git, xem `git tag` / npm / GitHub Releases.
 - `CHANGELOG.md` giờ HOÀN TOÀN thủ công (văn xuôi VN) — tự viết tiếp khi muốn; CI không đụng vào.
