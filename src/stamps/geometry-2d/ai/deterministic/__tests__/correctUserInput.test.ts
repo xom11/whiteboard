@@ -1,4 +1,4 @@
-import { foldVietnamese, FOLDED_VOCAB } from '../correctUserInput';
+import { foldVietnamese, FOLDED_VOCAB, classifyToken } from '../correctUserInput';
 
 describe('foldVietnamese', () => {
   it('bỏ dấu thanh + mũ + móc', () => {
@@ -34,6 +34,24 @@ describe('FOLDED_VOCAB', () => {
   it('mọi key là dạng fold của chính canonical (self-consistent)', () => {
     for (const [folded, canonical] of FOLDED_VOCAB) {
       expect(foldVietnamese(canonical)).toBe(folded);
+    }
+  });
+});
+
+describe('classifyToken (guard)', () => {
+  it('nhãn toán + đơn vị → protected', () => {
+    for (const t of ['A', 'BC', 'ABC', 'MNPQ', "O'", 'A′', '2R', '5cm', '90°', '(O)', 'O₁']) {
+      expect(classifyToken(t)).toBe('protected');
+    }
+  });
+  it('token thuần-chữ có HOA → upper', () => {
+    for (const t of ['Ax', 'By', 'DUONG', 'Cho', 'Đường']) {
+      expect(classifyToken(t)).toBe('upper');
+    }
+  });
+  it('token thuần-chữ toàn-thường → lower', () => {
+    for (const t of ['duong', 'tron', 'giac', 'tiep', 'gisc']) {
+      expect(classifyToken(t)).toBe('lower');
     }
   });
 });

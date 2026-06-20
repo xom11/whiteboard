@@ -73,3 +73,20 @@ export const FOLDED_VOCAB: Map<string, string> = (() => {
   }
   return m;
 })();
+
+export type TokenClass = 'protected' | 'upper' | 'lower';
+
+const LETTERS_ONLY = /^\p{L}+$/u; // thuần chữ (gồm tiếng Việt), không digit/ký-hiệu
+const UPPER_LABEL = /^\p{Lu}{1,4}$/u; // toàn HOA, 1-4 ký tự (geometric label: A,BC,ABC,MNPQ)
+const HAS_UPPER = /\p{Lu}/u; // có ít nhất 1 chữ HOA
+
+/** Phân loại 1 whitespace-token. Token KHÔNG thuần-chữ (có số/prime/ký-hiệu/ngoặc)
+ *  → protected (nhãn/đơn-vị). Thuần-chữ toàn HOA 1-4 ký tự → protected (label A,BC,ABC,MNPQ).
+ *  Thuần-chữ có HOA khác (Ax,By,DUONG,Cho,Đường) → upper (chỉ exact-fold). Thuần-chữ
+ *  toàn-thường → lower (exact + fuzzy). */
+export function classifyToken(token: string): TokenClass {
+  if (!LETTERS_ONLY.test(token)) return 'protected';
+  // Thuần chữ: kiểm tra có phải label (toàn HOA 1-4 ký tự)
+  if (UPPER_LABEL.test(token)) return 'protected';
+  return HAS_UPPER.test(token) ? 'upper' : 'lower';
+}
