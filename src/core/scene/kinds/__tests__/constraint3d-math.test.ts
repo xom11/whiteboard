@@ -63,4 +63,32 @@ describe('constraint3d-math: điểm phái sinh', () => {
       expect(JSON.parse(JSON.stringify(c))).toEqual(c);
     });
   });
+
+  describe('centroid', () => {
+    test('trọng tâm tam giác: (0,0,0),(3,0,0),(0,3,0) → (1,1,0)', () => {
+      const s = mkState([pt('A', 0, 0, 0), pt('B', 3, 0, 0), pt('C', 0, 3, 0)]);
+      const c: Constraint3D = { kind: 'centroid', vertices: ['A', 'B', 'C'] };
+      expect(constraintToWorld(c, s)).toEqual([1, 1, 0]);
+    });
+
+    test('trọng tâm tứ diện: (0,0,0),(4,0,0),(0,4,0),(0,0,4) → (1,1,1)', () => {
+      const s = mkState([pt('A', 0, 0, 0), pt('B', 4, 0, 0), pt('C', 0, 4, 0), pt('D', 0, 0, 4)]);
+      const c: Constraint3D = { kind: 'centroid', vertices: ['A', 'B', 'C', 'D'] };
+      expect(constraintToWorld(c, s)).toEqual([1, 1, 1]);
+    });
+
+    test('constraintRefs centroid → vertices', () => {
+      const c: Constraint3D = { kind: 'centroid', vertices: ['A', 'B', 'C'] };
+      expect(constraintRefs(c)).toEqual(['A', 'B', 'C']);
+    });
+
+    test('cascade-delete: xoá 1 đỉnh → xoá trọng tâm', () => {
+      let s = mkState([pt('A', 0, 0, 0), pt('B', 3, 0, 0), pt('C', 0, 3, 0)]);
+      const G = mkObj('point3d', 'G', { constraint: { kind: 'centroid', vertices: ['A', 'B', 'C'] } });
+      s = produce(s, d => reduce(d, { type: 'ADD', payload: { obj: G } }));
+      s = produce(s, d => reduce(d, { type: 'DELETE', payload: { id: 'C' } }));
+      expect(s.objects.G).toBeUndefined();
+      expect(s.objects.A).toBeDefined();
+    });
+  });
 });

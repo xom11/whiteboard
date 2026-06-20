@@ -2,7 +2,7 @@
 // Handler build-test cho điểm phái sinh 3D (tool editor → scene object).
 import { createStore, createEmptyState } from '../../../../../../core/scene';
 import { addPoint } from '../_ensurePoint';
-import { buildMidpoint } from '../derived';
+import { buildMidpoint, buildCentroid } from '../derived';
 import type { CollectedArg } from '../../spec';
 import type { Point3DAttrs } from '../../../../../../core/scene/kinds/point3d';
 
@@ -32,5 +32,26 @@ describe('buildMidpoint', () => {
     const store = createStore(createEmptyState('3d'));
     const a = addPoint(store, { kind: 'free', x: 0, y: 0, z: 0 });
     expect(buildMidpoint([existing(a), existing(a)], store)).toBeNull();
+  });
+});
+
+describe('buildCentroid', () => {
+  it('tạo point3d centroid{vertices} từ 3 điểm có sẵn', () => {
+    const store = createStore(createEmptyState('3d'));
+    const a = addPoint(store, { kind: 'free', x: 0, y: 0, z: 0 });
+    const b = addPoint(store, { kind: 'free', x: 3, y: 0, z: 0 });
+    const c = addPoint(store, { kind: 'free', x: 0, y: 3, z: 0 });
+    const id = buildCentroid([existing(a), existing(b), existing(c)], store);
+    expect(id).toBeTruthy();
+    expect((store.getState().objects[id!].attrs as Point3DAttrs).constraint)
+      .toEqual({ kind: 'centroid', vertices: [a, b, c] });
+  });
+
+  it('trả null nếu < 3 đỉnh phân biệt', () => {
+    const store = createStore(createEmptyState('3d'));
+    const a = addPoint(store, { kind: 'free', x: 0, y: 0, z: 0 });
+    const b = addPoint(store, { kind: 'free', x: 3, y: 0, z: 0 });
+    expect(buildCentroid([existing(a), existing(b)], store)).toBeNull();
+    expect(buildCentroid([existing(a), existing(b), existing(a)], store)).toBeNull();
   });
 });

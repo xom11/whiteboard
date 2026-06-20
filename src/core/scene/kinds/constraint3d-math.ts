@@ -118,6 +118,13 @@ export function constraintToWorld(c: Constraint3D, state: State): Vec3 {
       const p2 = getPointWorld(c.p2, state);
       return scale(add(p1, p2), 0.5);
     }
+    case 'centroid': {
+      const n = c.vertices.length;
+      if (n === 0) return [0, 0, 0];
+      let acc: Vec3 = [0, 0, 0];
+      for (const id of c.vertices) acc = add(acc, getPointWorld(id, state));
+      return scale(acc, 1 / n);
+    }
   }
 }
 

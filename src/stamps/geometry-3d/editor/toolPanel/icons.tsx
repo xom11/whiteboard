@@ -136,4 +136,11 @@ export const ToolIcons: Record<ToolKey, React.ReactElement> = {
       <circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none" />
     </>,
   ),
+  // Trọng tâm: tam giác + chấm tâm.
+  centroid: wrap(
+    <>
+      <polygon points="12,4 5,18 19,18" />
+      <circle cx="12" cy="13.3" r="2" fill="currentColor" stroke="none" />
+    </>,
+  ),
 };

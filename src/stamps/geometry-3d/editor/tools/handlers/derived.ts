@@ -14,3 +14,14 @@ export function buildMidpoint(args: CollectedArg[], store: Store): string | null
   if (!p1 || !p2 || p1 === p2) return null;
   return addPoint(store, { kind: 'midpoint', p1, p2 });
 }
+
+/** Trọng tâm: trung bình các đỉnh đã chọn (≥3 đỉnh phân biệt). */
+export function buildCentroid(args: CollectedArg[], store: Store): string | null {
+  const ids = args
+    .filter((a) => a.step.type === 'point' && a.hit)
+    .map((a) => ensurePoint(a.hit!, store))
+    .filter((x): x is string => !!x);
+  const uniq = Array.from(new Set(ids));
+  if (uniq.length < 3) return null;
+  return addPoint(store, { kind: 'centroid', vertices: uniq });
+}
