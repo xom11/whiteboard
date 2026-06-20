@@ -15,15 +15,43 @@ const MD = '.work/pdf/chuyen2026.md';
 const OUT = 'docs/datasets/hinh-phang-chuyen-2026.txt';
 
 const raw = readFileSync(MD, 'utf8');
-const lines = raw.split('\n');
+
+// GLUE-SPLITTER: PDF math-typeset của bộ này nuốt dấu cách hàng loạt
+// ("ChotamgiácABC nhọn(AB<AC)cóđườngtrònnộitiếp(I)tiếpxúcBC,CA,AB").
+// Tách tại ranh giới TIN CẬY: (1) từ-vựng hình học dính nhau theo whitelist,
+// (2) keyword↔nhãn-HOA, (3) chữ-thường↔'(' và ')'↔chữ. KHÔNG word-segment đa từ
+// tuỳ ý (tránh phá nhãn). Áp per-line trước khi gom bài.
+const GLUE_WORDS = [
+  'Cho', 'tam', 'giác', 'đường', 'tròn', 'nội', 'tiếp', 'ngoại', 'xúc', 'có',
+  'nhọn', 'cân', 'vuông', 'phân', 'trung', 'điểm', 'cạnh', 'kính', 'dây', 'cung',
+  'tứ', 'hình', 'nửa', 'đoạn', 'góc', 'với', 'và', 'tại', 'lấy', 'gọi', 'kẻ', 'vẽ',
+];
+const GLUE_RE = new RegExp(`(${GLUE_WORDS.join('|')})(?=${GLUE_WORDS.join('|')})`, 'gu');
+function deglue(line) {
+  let s = line;
+  // chèn cách giữa 2 từ-khoá dính (lặp tới khi ổn định — chuỗi dài nhiều ranh giới)
+  for (let k = 0; k < 6; k++) {
+    const next = s.replace(GLUE_RE, '$1 ');
+    if (next === s) break;
+    s = next;
+  }
+  // keyword↔nhãn HOA: "giácABC"→"giác ABC", "xúcBC"→"xúc BC"
+  s = s.replace(/(giác|tròn|tiếp|xúc|kính|điểm|đoạn|cạnh|dây|cung|tại|qua)([A-Z])/gu, '$1 $2');
+  // chữ-thường↔'(' và ')'↔chữ: "nhọn("→"nhọn (", ")có"→") có"
+  s = s.replace(/(\p{Ll})\(/gu, '$1 (').replace(/\)(\p{L})/gu, ') $1');
+  return s;
+}
+
+const lines = raw.split('\n').map(deglue);
 
 const isTable = (l) => /^\s*\|/.test(l) || /^\s*\|?\s*-{2,}/.test(l);
 const isProblemStart = (l) => /^Cho\s+(tam giác|đường tròn|hình|tứ giác|nửa|đoạn|góc|điểm)/.test(l.trim());
-// dừng phần dựng hình: lời giải / câu hỏi con đánh số / "Chứng minh"/"CMR"/"Tính"
+// dừng phần dựng hình: lời giải / câu hỏi con (1) hoặc a)/b)/c) / "Chứng minh"/"CMR"/"Tính"/kết luận GTLN
 const isStop = (l) =>
   /^\s*(Lời giải|Bài|Câu|Đề|HẾT|Hết)\b/.test(l) ||
   /^\s*\d+[).]\s/.test(l) ||
-  /(Chứng minh|Chứng tỏ|CMR|Tìm giá trị|Tính)\b/i.test(l);
+  /^\s*[a-d][).]\s/.test(l) ||
+  /(Chứng minh|Chứng tỏ|CMR|Tìm giá trị|Tính|Vậy giá trị|dấu bằng xảy ra)\b/i.test(l);
 
 const problems = [];
 let i = 0;
