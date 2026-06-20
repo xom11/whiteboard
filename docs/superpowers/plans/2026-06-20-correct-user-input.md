@@ -422,10 +422,18 @@ describe('correctUserInput — tầng 2 (phục-hồi-dấu + case)', () => {
     // fold("thang")=fold("thẳng")="thang" → giữ "thang" (đúng cho "hình thang").
     expect(correctUserInput('hinh thang ABCD')).toBe('hình thang ABCD');
   });
-  it('giữ case đầu (sentence-start + shouted)', () => {
+  it('giữ case đầu (sentence-start + shouted ≥5 ký tự)', () => {
     expect(correctUserInput('Cho duong tron')).toBe('Cho đường tròn');
-    expect(correctUserInput('DUONG TRON')).toBe('Đường Tròn');
+    // ALL-CAPS ≥5 ký tự → upper → phục-hồi-dấu (giữ Title): "DUONG"→"Đường".
+    expect(correctUserInput('DUONG')).toBe('Đường');
     expect(correctUserInput('Đường tròn')).toBe('Đường tròn'); // đã đúng → unchanged
+  });
+  it('GUARD: nhãn HOA ngắn 1-4 ký tự LUÔN protected (kể cả khi fold trùng vocab)', () => {
+    // "BA"/"CO"/"LA" fold ra "ba"/"co"/"la" CÓ trong vocab — nhưng là NHÃN đoạn,
+    // KHÔNG được rewrite thành "Ba"/"Có"/"Là". Đây là bất biến an toàn sống còn.
+    expect(correctUserInput('tia BA')).toBe('tia BA');
+    expect(correctUserInput('doan CO')).toBe('đoạn CO');
+    expect(correctUserInput('TAM GIAC')).toBe('TAM GIAC'); // shout ≤4 ký tự: protected, không recover
   });
 });
 
@@ -583,11 +591,12 @@ git commit -m "feat(ai/correct): tầng 2 phục-hồi-dấu + tầng 3 typo + l
 import { tryDeterministicFigure } from '../tryDeterministicFigure';
 
 describe('wiring e2e — đề gõ-tay lệch vẫn dựng được', () => {
-  it('thiếu dấu + case + xuống dòng → FULL như bản chuẩn', () => {
-    const messy = 'cho TAM giac ABC\nnoi tiep duong tron tam O';
-    const clean = 'Cho tam giác ABC nội tiếp đường tròn tâm O';
-    expect(tryDeterministicFigure(messy).ok).toBe(tryDeterministicFigure(clean).ok);
+  it('thiếu dấu + xuống dòng → FULL như bản chuẩn', () => {
+    // (O) protected (ngoặc). messy chỉ thiếu-dấu trên từ KHÔNG mơ hồ + xuống dòng.
+    const clean = 'Cho tam giác ABC nội tiếp đường tròn (O)';
+    const messy = 'cho tam giac ABC\nnoi tiep duong tron (O)';
     expect(tryDeterministicFigure(clean).ok).toBe(true);
+    expect(tryDeterministicFigure(messy).ok).toBe(tryDeterministicFigure(clean).ok);
   });
 });
 ```
