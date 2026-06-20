@@ -34,13 +34,73 @@ const PRIME_VARIANT = /([A-Za-z0-9])[’′´]/gu;
 const GLUE_WORD_LABEL = /(cắt|tâm|điểm|cạnh|tia|dây|cung|qua|của|và|tại|trên|đến)([A-Z])/gu;
 const GLUE_LABEL_WORD = /([A-Z])(sao|nằm|lần|thuộc|cắt|của|đến|trên|tại|và)/gu;
 
+// OCR multi-word-glue (mất space HÀNG LOẠT): nhiều từ-vựng hình-học dính liền
+// ("Chođườngtròn", "ChotamgiácABC", "vàbadâycung", "điquaA,Cvàcắtlạicáccạnh").
+// Tách tại ranh giới TIN CẬY trong WHITELIST từ-khoá hình-học bằng cách chèn dấu
+// cách giữa HAI từ-khoá whitelist dính nhau (lặp tới khi ổn định — chuỗi dài có
+// nhiều ranh giới). An toàn vì lookahead `(?=word)` chỉ khớp khi MỘT từ-khoá đầy
+// đủ theo NGAY bởi một từ-khoá đầy đủ khác — KHÔNG cắt giữa từ ("Cho"→"C ho").
+// KHÔNG word-segment đa-từ tuỳ ý ngoài whitelist (rủi ro phá nhãn HOA/đa-từ-dính).
+//
+// Whitelist sắp theo độ-dài GIẢM dần để alternation ưu tiên khớp từ DÀI trước
+// ("đường" trước "đ"-không-có; "trung" trước "tr"-không-có) — tránh khớp tiền tố
+// rồi để lại đuôi. Mỗi từ là từ-vựng dựng-hình phổ biến, viết-thường (đầu câu
+// "Cho"/"Đường" HOA xử lý riêng bằng nhánh CAP_GLUE bên dưới).
+const GLUE_VOCAB = [
+  'đường', 'ngoại', 'trung', 'phân', 'điểm', 'giác', 'tròn', 'cạnh', 'kính',
+  'nội', 'tiếp', 'cung', 'dây', 'tam', 'tứ', 'góc', 'vuông', 'cân', 'nhọn',
+  'nửa', 'đoạn', 'hình', 'qua', 'cắt', 'lại', 'các', 'và', 'tại', 'một',
+  'ba', 'bất', 'kì', 'kỳ', 'có', 'đi', 'với', 'lấy', 'của', 'lần', 'lượt',
+  'thứ', 'hai', 'gọi', 'kẻ', 'vẽ', 'cho', 'tâm', 'bán',
+];
+// Đặt từ DÀI trước trong alternation (regex alternation = first-match, không
+// longest-match) để không khớp tiền tố ngắn rồi bỏ lại đuôi.
+const GLUE_VOCAB_SORTED = [...GLUE_VOCAB].sort((a, b) => b.length - a.length);
+const GLUE_ALT = GLUE_VOCAB_SORTED.join('|');
+// Ranh giới whitelist↔whitelist: chèn cách giữa 2 từ-khoá dính. Lặp tới fixpoint.
+const GLUE_VOCAB_RE = new RegExp(`(${GLUE_ALT})(?=${GLUE_ALT})`, 'gu');
+// Từ-khoá whitelist (chữ thường) dính NGAY nhãn HOA: "giácABC"→"giác ABC",
+// "tròn(O)" xử lý ở nhánh paren. Chỉ các từ-khoá hay đứng trước nhãn.
+const GLUE_VOCAB_LABEL = new RegExp(
+  `(giác|tròn|tiếp|xúc|kính|điểm|đoạn|cạnh|dây|cung|tại|qua|đi|với|có|tâm)([A-Z])`,
+  'gu',
+);
+// "Cho"/"Đường" HOA-đầu-cụm dính từ-khoá whitelist: "Chođường"→"Cho đường",
+// "ChotamgiácABC"→"Cho tamgiác…" (đuôi do GLUE_VOCAB_RE xử lý tiếp). Chỉ 2 động
+// từ/danh-từ mở-đầu-câu phổ biến — KHÔNG tách "C ho" vì khớp NGUYÊN từ "Cho".
+const CAP_GLUE = /(Cho|Đường|Gọi|Trên|Vẽ|Kẻ|Lấy|Các|Một|Trung|Tâm|Nửa|Hình)(đường|tam|tứ|nửa|hình|điểm|các|cạnh|đoạn|trung|tròn|giác|một|ba|hai|tia|dây|cung)/gu;
+// Nhãn HOA dính NGAY từ-khoá whitelist chữ-thường: "ADbất"→"AD bất", "ABnội"→
+// "AB nội", "Cvà"→"C và". Chỉ khớp khi sau HOA là MỘT từ-khoá whitelist ĐẦY ĐỦ
+// (đa-ký-tự, viết-thường) → KHÔNG cắt cặp đỉnh "AB" (B không mở đầu từ-khoá nào).
+const GLUE_LABEL_VOCAB = new RegExp(`([A-Z])(${GLUE_ALT})(?![\\p{L}])`, 'gu');
+// Ranh giới chữ-thường↔'(' và ')'↔chữ: "tròn(O)"→"tròn (O)", ")và"→") và".
+const GLUE_PAREN_OPEN = /(\p{Ll})\(/gu;
+const GLUE_PAREN_CLOSE = /\)(\p{L})/gu;
+
+function deglueMultiWord(s: string): string {
+  let out = s.replace(CAP_GLUE, '$1 $2');
+  for (let k = 0; k < 8; k++) {
+    const next = out.replace(GLUE_VOCAB_RE, '$1 ');
+    if (next === out) break;
+    out = next;
+  }
+  out = out
+    .replace(GLUE_VOCAB_LABEL, '$1 $2')
+    .replace(GLUE_LABEL_VOCAB, '$1 $2')
+    .replace(GLUE_PAREN_OPEN, '$1 (')
+    .replace(GLUE_PAREN_CLOSE, ') $1');
+  return out;
+}
+
 export function normalizeProblemText(problem: string): string {
-  return problem
-    .replace(TRIANGLE_SYMBOL, 'tam giác ')
-    .replace(QUAD_SYMBOL, 'tứ giác ')
-    .replace(CIRCLE_SYNONYM, 'đường tròn')
-    .replace(SQRT_NOISE, ' ')
-    .replace(PRIME_VARIANT, "$1'")
-    .replace(GLUE_WORD_LABEL, '$1 $2')
-    .replace(GLUE_LABEL_WORD, '$1 $2');
+  return deglueMultiWord(
+    problem
+      .replace(TRIANGLE_SYMBOL, 'tam giác ')
+      .replace(QUAD_SYMBOL, 'tứ giác ')
+      .replace(CIRCLE_SYNONYM, 'đường tròn')
+      .replace(SQRT_NOISE, ' ')
+      .replace(PRIME_VARIANT, "$1'")
+      .replace(GLUE_WORD_LABEL, '$1 $2')
+      .replace(GLUE_LABEL_WORD, '$1 $2'),
+  );
 }
