@@ -224,10 +224,15 @@ export const arcMidpointRule: LanguageRule = {
 
       const pairM = ARC_PAIR.exec(c.text);
       if (!pairM) continue;
-      // Vượt scope CỤC BỘ: cung ĐANG lấy trung điểm là "lớn" → cung đối, defer.
-      // (Kiểm trên match — KHÔNG quét cả clause: clause gộp phẩy có thể chứa
-      // "cung lớn" ở định nghĩa khác, vd "M thuộc cung lớn AB, P là … cung AM".)
-      if (pairM[1] && /lớn/u.test(pairM[1])) continue;
+      // "cung lớn <PAIR>" = cung đối (cung dài). Điểm chính giữa cung lớn = đối đỉnh
+      // (antipode) của điểm chính giữa cung nhỏ → nằm CÙNG PHÍA dây với tâm O. Dùng
+      // cơ chế `containing` sẵn có (sameSide) với tham chiếu thích hợp thay vì defer:
+      //   - có "(không) chứa X" tường minh → user đã chỉ rõ cung, dùng containment đó
+      //   - có tam giác → cung lớn chứa đỉnh thứ 3 → containing: <đỉnh thứ 3>
+      //   - chỉ có dây (vao10:131) → containing: <tâm O> (tâm cùng phía dây với cung lớn)
+      // (Kiểm trên match — KHÔNG quét cả clause: clause gộp phẩy có thể chứa "cung
+      // lớn" ở định nghĩa khác, vd "M thuộc cung lớn AB, P là … cung AM".)
+      const isMajor = !!pairM[1] && /lớn/u.test(pairM[1]);
       const pair = pairFromToken(pairM[2] + pairM[3]);
       if (pair.length !== 2) continue;
       const [a, b] = pair;
@@ -259,14 +264,22 @@ export const arcMidpointRule: LanguageRule = {
       // Containment: "(không) chứa X" tường minh (lấy mệnh đề đầu), else đỉnh thứ 3 tam giác.
       const conts = parseContainmentsVN(c.text);
       if (conts.length >= 1) {
+        // User chỉ rõ cung qua "(không) chứa X" → containment thắng cả cờ lớn/nhỏ.
         pushArc(c, name, a, b, conts[0]);
       } else if (tri) {
+        // Có tam giác: cung nhỏ KHÔNG chứa đỉnh thứ 3; cung lớn CHỨA đỉnh thứ 3.
         const third = [tri[1], tri[2], tri[3]].find((v) => v !== a && v !== b);
-        if (third) pushArc(c, name, a, b, { rel: 'not', point: third });
+        if (third) pushArc(c, name, a, b, isMajor ? { rel: 'in', point: third } : { rel: 'not', point: third });
+      } else if (isMajor && explicitCircle) {
+        // Cung LỚN, chỉ có dây (không tam giác): điểm chính giữa cung lớn nằm CÙNG
+        // PHÍA dây với tâm O → containing: <tâm>. Tâm = chữ cái circle (center point
+        // giữ tên chữ cái, circle có thể rename → O_c). Cần circle TƯỜNG MINH để có
+        // điểm tâm chọn được (vao10:131).
+        pushArc(c, name, a, b, { rel: 'in', point: explicitCircle });
       } else {
-        // Không "chứa" tường minh + không tam giác → cung KHÔNG mơ hồ (nửa đường
-        // tròn đường kính AB: điểm chính giữa cung = đỉnh duy nhất). arcMidpoint
-        // không containment (notContaining/containing optional trong DSL).
+        // Không "chứa" tường minh + không tam giác + cung nhỏ/không xác định → cung
+        // KHÔNG mơ hồ (nửa đường tròn đường kính AB: điểm chính giữa cung = đỉnh duy
+        // nhất). arcMidpoint không containment (notContaining/containing optional).
         out.push({
           ruleId: 'arcMidpoint',
           clauseIds: [c.id],

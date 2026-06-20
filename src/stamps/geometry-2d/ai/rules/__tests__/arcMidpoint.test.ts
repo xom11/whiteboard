@@ -53,11 +53,42 @@ describe('arcMidpointRule', () => {
     expect(c.notContaining).toBe('A');
   });
 
-  it('"cung lớn" → KHÔNG claim (cung đối, defer → escalate)', () => {
+  // "cung lớn BC" trong tam giác ABC = cung CHỨA đỉnh thứ 3 (A) → containing: A.
+  it('"cung lớn BC" (tam giác) → arcMidpoint containing đỉnh thứ 3', () => {
     const m = run(
       'Cho tam giác ABC nội tiếp đường tròn (O). Gọi P là điểm chính giữa cung lớn BC',
     );
-    expect(m.flatMap((x) => x.intents)).toHaveLength(0);
+    const intent = m[0].intents[0] as any;
+    expect(intent.name).toBe('P');
+    expect(intent.constraint.kind).toBe('arcMidpoint');
+    expect(intent.constraint.a).toBe('B');
+    expect(intent.constraint.b).toBe('C');
+    expect(intent.constraint.containing).toBe('A');
+    expect(intent.constraint.notContaining).toBeUndefined();
+  });
+
+  // vao10:131 — "cung lớn AB" chỉ có dây (không tam giác): containing: <tâm O>
+  // (tâm cùng phía dây với cung lớn).
+  it('"cung lớn AB" (chỉ dây, không tam giác) → arcMidpoint containing tâm', () => {
+    const m = run(
+      'Cho đường tròn (O;R) với dây AB cố định. Gọi I là điểm chính giữa cung lớn AB.',
+    );
+    const intent = m[0].intents[0] as any;
+    expect(intent.name).toBe('I');
+    expect(intent.constraint.kind).toBe('arcMidpoint');
+    expect(intent.constraint.a).toBe('A');
+    expect(intent.constraint.b).toBe('B');
+    expect(intent.constraint.containing).toBe('O');
+  });
+
+  // "không chứa X" tường minh thắng cờ "lớn" (user đã chỉ rõ cung).
+  it('"cung lớn BC không chứa A" → containment tường minh thắng (notContaining A)', () => {
+    const m = run(
+      'Cho tam giác ABC nội tiếp đường tròn (O). Gọi P là điểm chính giữa cung lớn BC không chứa A',
+    );
+    const intent = m[0].intents[0] as any;
+    expect(intent.constraint.notContaining).toBe('A');
+    expect(intent.constraint.containing).toBeUndefined();
   });
 
   it('"đường tròn tâm O" (không ngoặc) cũng resolve circle', () => {

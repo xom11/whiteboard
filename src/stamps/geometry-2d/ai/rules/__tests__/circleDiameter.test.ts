@@ -96,4 +96,30 @@ describe('circleDiameterRule', () => {
       ),
     ).toEqual([]);
   });
+
+  // vao10:147/149/235 — tâm TRẦN (không ngoặc, không "đường tròn"): "Cho O đường kính AB".
+  it('"Cho O đường kính AB và dây CD…" → full construction (tâm trần)', () => {
+    const all = intents('Cho O đường kính AB và dây CD vuông góc với AB tại F.');
+    expect(all).toEqual([
+      { op: 'add-point', name: 'A', constraint: { kind: 'free' } },
+      { op: 'add-point', name: 'B', constraint: { kind: 'free' } },
+      { op: 'add-point', name: 'O', constraint: { kind: 'midpoint', of: 'AB' } },
+      { op: 'connect', from: 'A', to: 'B', style: 'segment' },
+      { op: 'draw-circle', name: 'O_c', spec: 'diameter', endpoints: ['A', 'B'] },
+    ]);
+  });
+
+  it('"Cho O đường kính AB =2R" → tâm trần + "=2R" xen giữa OK', () => {
+    const all = intents('Cho O đường kính AB =2R.');
+    expect(all).toContainEqual({ op: 'add-point', name: 'O', constraint: { kind: 'midpoint', of: 'AB' } });
+    expect(all).toContainEqual({ op: 'draw-circle', name: 'O_c', spec: 'diameter', endpoints: ['A', 'B'] });
+  });
+
+  it('tâm trần: KHÔNG double-claim với dạng "(O)" liền (dedup)', () => {
+    expect(matches('Cho O đường kính AB.')).toHaveLength(1);
+  });
+
+  it('guard tâm trần: "Cho ABC ... đường kính BC" (cặp đỉnh, không tâm đơn) → KHÔNG match', () => {
+    expect(intents('Cho ABC nội tiếp đường kính BC.')).toEqual([]);
+  });
 });

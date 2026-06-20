@@ -45,6 +45,16 @@ const GIVEN_BARE = new RegExp(
   String.raw`[Cc]ho\s+\(\s*(${CTR})\s*\)\s*,?\s*(?:có\s+)?` + DUONG_KW + String.raw`\s*kính\s+([A-Z])([A-Z])(?![A-Z])`,
   'gu',
 );
+// "Cho O đường kính AB" — tâm TRẦN, KHÔNG ngoặc, KHÔNG chữ "đường tròn" (vao10:147
+// "Cho O đường kính AB và dây CD…"; vao10:149 "Cho O đường kính AB = 2R"). Đề bỏ
+// hẳn cả "(…)" lẫn "đường tròn" → tâm chỉ còn 1 ký tự HOA ngay sau "Cho". Full
+// construction (A,B free + tâm + circle). Guard CHẶT để KHÔNG nuốt "đường kính"
+// của ngữ cảnh khác: phải mở đầu bằng "Cho", tâm = HOA ĐƠN (loại cặp đỉnh "AB"),
+// "=...R" tuỳ chọn xen giữa.
+const CHO_BARE = new RegExp(
+  String.raw`[Cc]ho\s+(${CTR})(?![A-Z\p{L}])\s+` + DUONG_KW + String.raw`\s*kính\s+([A-Z])([A-Z])(?![A-Z])`,
+  'gu',
+);
 // Bare paren "(I) đường kính AH" — KHÔNG chữ "đường tròn" đứng trước (vao10:61
 // "Vẽ (I) đường kính AH và (K) đường kính BH"). CHỈ nhận khi CẢ 2 đầu mút đã
 // xuất hiện TRƯỚC match (đường tròn phụ dựng trên đoạn có sẵn) → emit tâm
@@ -151,6 +161,25 @@ export const circleDiameterRule: LanguageRule = {
       if (emitted.has(key)) continue;
       emitted.add(key);
       const matched = gm[0];
+      const claim = ctx.clauses.filter((c) => c.text.includes(matched.replace(/^[Cc]ho\s+/u, ''))).map((c) => c.id);
+      out.push({
+        ruleId: 'circle-diameter',
+        clauseIds: claim.length > 0 ? claim : [ctx.clauses[0]?.id ?? 0],
+        intents: intentsFor(p),
+      });
+    }
+
+    // "Cho O đường kính AB" — tâm TRẦN (không ngoặc, không "đường tròn") → full
+    // construction như GIVEN_BARE.
+    CHO_BARE.lastIndex = 0;
+    let cm: RegExpExecArray | null;
+    while ((cm = CHO_BARE.exec(ctx.problem)) !== null) {
+      const p = { center: cm[1], a: cm[2], b: cm[3] };
+      if (!p.center || p.center === p.a || p.center === p.b || p.a === p.b) continue;
+      const key = `${p.center}|${p.a}${p.b}`;
+      if (emitted.has(key)) continue;
+      emitted.add(key);
+      const matched = cm[0];
       const claim = ctx.clauses.filter((c) => c.text.includes(matched.replace(/^[Cc]ho\s+/u, ''))).map((c) => c.id);
       out.push({
         ruleId: 'circle-diameter',
