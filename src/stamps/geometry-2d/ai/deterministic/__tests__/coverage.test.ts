@@ -20,6 +20,31 @@ describe('segmentClauses', () => {
     expect(word[1].hasGeometry).toBe(true);
   });
 
+  // vao10:123/248 — "Trên d lấy điểm M" (điểm tự do trên đường ĐẶT-TÊN-THƯỜNG).
+  // Vocab không có signal → trước đây hasGeometry=false → onSegmentPoint không
+  // thấy clause → M không dựng → cascade. Signal HẸP NAMED_LINE_PICK phải bật geo.
+  it('"Trên d lấy điểm M" (đường tên thường) → hasGeometry=true', () => {
+    const a = segmentClauses('Vẽ đường thẳng d ⊥ OA tại A. Trên d lấy điểm M');
+    expect(a[1].text).toBe('Trên d lấy điểm M');
+    expect(a[1].hasGeometry).toBe(true);
+
+    const b = segmentClauses('Cho tam giác ABC. Trên đường thẳng d lấy điểm M');
+    expect(b[1].hasGeometry).toBe(true);
+
+    const c = segmentClauses('Cho tam giác ABC. Lấy điểm C trên d');
+    expect(c[1].hasGeometry).toBe(true);
+  });
+
+  // KHÔNG bắt "lấy điểm" chung chung trên cạnh/cung/tia/đường tròn (token chữ
+  // thường >2 hoặc theo sau là ký tự Việt → NAMED_LINE_PICK fail).
+  it('"Trên cạnh/cung/tia/đường tròn lấy điểm" KHÔNG bị NAMED_LINE_PICK bật nhầm', () => {
+    // "Trên cạnh AB lấy điểm M" — geo qua vocab "cạnh", không phải qua signal mới.
+    // Kiểm chứng signal mới KHÔNG khớp các phrasing này (regression-guard).
+    expect(/(?:[Tt]rên|[Tt]huộc)\s+(?:đường\s*thẳng\s+)?[a-z]{1,2}[0-9]?(?![\p{L}])\s+(?:[Ll]ấy|có)/u.test('Trên cạnh AB lấy điểm M')).toBe(false);
+    expect(/(?:[Tt]rên|[Tt]huộc)\s+(?:đường\s*thẳng\s+)?[a-z]{1,2}[0-9]?(?![\p{L}])\s+(?:[Ll]ấy|có)/u.test('Trên cung BC lấy điểm M')).toBe(false);
+    expect(/(?:[Tt]rên|[Tt]huộc)\s+(?:đường\s*thẳng\s+)?[a-z]{1,2}[0-9]?(?![\p{L}])\s+(?:[Ll]ấy|có)/u.test('Trên tia Ax lấy điểm M')).toBe(false);
+  });
+
   // Dataset vao10: "(O;R)" — dấu ";" TRONG ngoặc không phải ranh giới clause.
   it('không tách clause tại ";" bên trong ngoặc "(O;R)"', () => {
     const cls = segmentClauses('Cho đường tròn (O;R) có đường kính BC. Gọi M là trung điểm BO');

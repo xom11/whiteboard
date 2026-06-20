@@ -86,7 +86,8 @@ export function segmentClauses(problem: string): Clause[] {
     .map((s) => unmask(s).trim())
     .filter((s) => s.length > 0)
     .map((text, id) => {
-      const hasGeometryKeyword = countGeometryKeywords(text) > 0;
+      const hasGeometryKeyword =
+        countGeometryKeywords(text) > 0 || NAMED_LINE_PICK.test(text);
       const proofOnly = isProofOnlyClause(text, proofMode);
       if (startsProofSection(text)) proofMode = true;
       // Mệnh đề LOCUS ("điểm A di chuyển/di động trên (O)") = điều kiện chuyển
@@ -105,6 +106,18 @@ const ENUM_PREFIX = '(?:[0-9]+\\s*[.)]?\\s*|[a-zA-Z]\\s*[.)]\\s*)*';
 // NHƯNG "di chuyển/di động trên cạnh/đoạn AC" GIỚI THIỆU điểm free mới (P) cần
 // dựng để các construct sau (BP, …) có ref hợp lệ → KHÔNG coi là locus.
 const LOCUS_CLAUSE = /(?:di\s*chuyển|di\s*động)\s+trên\s+(?:\(|đường\s*tròn|đương\s*tròn|cung|nửa)/u;
+
+// "Trên d lấy điểm M" / "Trên đường thẳng d lấy điểm M" / "Lấy điểm C trên d"
+// — điểm tự do trên ĐƯỜNG ĐẶT-TÊN-THƯỜNG (token chữ thường 1-2 + số tuỳ chọn:
+// d, d1, Δ→hiếm). Vocab không có signal cho clause này (toàn token tên + "lấy"
+// chung chung) → hasGeometry=false → không vào rule engine dù onSegmentPoint ĐÃ
+// có nhánh named-line → điểm M không dựng → cascade (vao10:123, vao10:248).
+// Signal HẸP: BẮT BUỘC có đường tên thường liền "trên/thuộc" — KHÔNG bắt
+// "lấy điểm" chung chung (substring vocab gây regression). `(?![\p{L}])` neo
+// để token 1-2 chữ thường KHÔNG nuốt "cạnh"/"cung"/"tia"/"đường tròn"
+// (chữ tiếp theo là ký tự Việt → fail).
+const NAMED_LINE_PICK =
+  /(?:[Tt]rên|[Tt]huộc)\s+(?:đường\s*thẳng\s+)?[a-z]{1,2}[0-9]?(?![\p{L}])\s+(?:[Ll]ấy|có)|[Ll]ấy\s+điểm\s+[A-Z]['′]?[0-9]?\s+(?:trên|thuộc)\s+(?:đường\s*thẳng\s+)?[a-z]{1,2}[0-9]?(?![\p{L}])/u;
 
 // "C/m"/"CMR" — viết tắt "Chứng minh (rằng)" phổ biến trong đề OCR (vao10:254
 // "a.C/m: Bốn điểm…"); thiếu nó clause proof bị coi geo-clause → escalate oan.
