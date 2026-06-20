@@ -16,9 +16,12 @@ const REFLECT = /đối\s*xứng/u;
 // (?:['′]?) non-capturing thì "M'" → "M", sinh phụ thuộc vòng M→M (d80:10).
 // normalizePointName chuẩn hoá ′→' để đồng bộ naming layer.
 const PT = `[A-Z](?:['′])?`;
+// GLOBAL ('gu'): 1 clause có thể chứa NHIỀU "X là điểm đối xứng của Y qua Z"
+// ("P là điểm đối xứng với M qua OO', Q là điểm đối xứng với N qua OO'" — httcd:26).
+// matchAll emit từng phản xạ. Clause 1-phản-xạ → 1 match (như exec cũ → additive).
 const NAME_BEFORE = new RegExp(
   `(${PT})\\s+(?:là\\s+)?(?:điểm\\s+)?đối\\s*xứng\\s+(?:của\\s+|với\\s+)?(?:điểm\\s+)?(${PT})\\s+qua\\s+(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+|trục\\s+|trung\\s*điểm\\s+|tâm\\s+|điểm\\s+)?([A-Za-z][A-Za-z′']?)`,
-  'u',
+  'gu',
 );
 
 // Dạng phân phối: "P, Q lần lượt (là điểm)? đối xứng (của|với) (điểm)? A qua L1, L2"
@@ -159,16 +162,36 @@ export const reflectionRule: LanguageRule = {
         }
       }
 
+      // NAME_BEFORE GLOBAL: emit MỌI "X là điểm đối xứng của Y qua Z" trong clause.
+      NAME_BEFORE.lastIndex = 0;
+      const befores = [...c.text.matchAll(NAME_BEFORE)];
+      if (befores.length) {
+        for (const b of befores) {
+          const nm = normalizePointName(b[1]);
+          const ofP = normalizePointName(b[2]);
+          const thr = classifyThrough(b[3]);
+          if (!thr) continue;
+          out.push({
+            ruleId: 'reflection',
+            clauseIds: [c.id],
+            intents: [
+              addPoint(
+                nm,
+                thr.kind === 'point'
+                  ? { kind: 'reflectPoint', of: ofP, through: thr.value }
+                  : { kind: 'reflectLine', of: ofP, through: thr.value },
+              ),
+            ],
+          });
+        }
+        continue;
+      }
+
       let name: string | undefined;
       let of: string | undefined;
       let throughRaw: string | undefined;
 
-      const before = NAME_BEFORE.exec(c.text);
-      if (before) {
-        name = normalizePointName(before[1]);
-        of = normalizePointName(before[2]);
-        throughRaw = before[3];
-      } else {
+      {
         const after = NAME_AFTER.exec(c.text);
         if (after) {
           // Không có tên đứng trước → lấy từ lời dẫn ("Gọi D là …").

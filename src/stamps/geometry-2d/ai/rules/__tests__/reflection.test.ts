@@ -61,6 +61,13 @@ describe('reflectionRule', () => {
     expect(intent.constraint.through).toBe('O');
   });
 
+  it('HAI phản xạ trong 1 clause (httcd:26): "P là điểm đối xứng với M qua AB, Q là điểm đối xứng với N qua AB"', () => {
+    const m = run('P là điểm đối xứng với M qua AB, Q là điểm đối xứng với N qua AB');
+    const byName = Object.fromEntries(m.flatMap((x) => x.intents).map((i: any) => [i.name, i.constraint]));
+    expect(byName.P).toEqual({ kind: 'reflectLine', of: 'M', through: 'AB' });
+    expect(byName.Q).toEqual({ kind: 'reflectLine', of: 'N', through: 'AB' });
+  });
+
   it('claim đúng clause id để coverage tính phủ', () => {
     const m = run('Cho tam giác ABC. Gọi D là điểm đối xứng của H qua BC');
     expect(m.length).toBe(1);
