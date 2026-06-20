@@ -112,6 +112,12 @@ export function constraintToWorld(c: Constraint3D, state: State): Vec3 {
       const z = center[2] + radius * Math.cos(c.phi);
       return [x, y, z];
     }
+    // ───── Điểm phái sinh (v1) ─────
+    case 'midpoint': {
+      const p1 = getPointWorld(c.p1, state);
+      const p2 = getPointWorld(c.p2, state);
+      return scale(add(p1, p2), 0.5);
+    }
   }
 }
 
@@ -188,5 +194,9 @@ export function worldToConstraint(current: Constraint3D, world: Vec3, state: Sta
       const theta = Math.atan2(rel[1], rel[0]);
       return { kind: 'onSphere', sphereId: current.sphereId, theta, phi };
     }
+    // Điểm PHÁI SINH (midpoint/centroid/intersection*/perpFoot…) KHÔNG kéo được
+    // → trả constraint hiện tại không đổi (giống điểm derived 2D worldToConstraint).
+    default:
+      return current;
   }
 }

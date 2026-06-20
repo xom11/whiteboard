@@ -8,8 +8,10 @@ export type Geom3DGroup =
   | 'line'
   | 'plane'
   | 'polyhedron'
-  | 'curve';
+  | 'curve'
+  | 'construct';
 
+// 'construct' (Dựng hình) append CUỐI → không xê dịch letter shortcut nhóm cũ (A–F).
 export const GROUP_ORDER: Geom3DGroup[] = [
   'basic',
   'point',
@@ -17,6 +19,7 @@ export const GROUP_ORDER: Geom3DGroup[] = [
   'plane',
   'polyhedron',
   'curve',
+  'construct',
 ];
 
 export const GROUP_LABELS: Record<Geom3DGroup, string> = {
@@ -26,6 +29,7 @@ export const GROUP_LABELS: Record<Geom3DGroup, string> = {
   plane: 'Mặt phẳng',
   polyhedron: 'Khối đa diện',
   curve: 'Khối cong',
+  construct: 'Dựng hình',
 };
 
 export const TOOLS_BY_GROUP: Record<Geom3DGroup, ToolKey[]> = {
@@ -35,6 +39,7 @@ export const TOOLS_BY_GROUP: Record<Geom3DGroup, ToolKey[]> = {
   plane: ['plane'],
   polyhedron: ['pyramid', 'prism', 'tetrahedron', 'cube'],
   curve: ['sphere', 'cylinder', 'cone'],
+  construct: ['midpoint'],
 };
 
 export interface Geom3DToolEntry {

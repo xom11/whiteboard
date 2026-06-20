@@ -2,6 +2,7 @@
 import { registerKind } from '../registry';
 import type { KindDef, RenderCtx, SceneObject } from '../types';
 import { type Constraint3D, constraintRefs } from './3d-constraint';
+import { constraintToWorld } from './constraint3d-math';
 
 export type Point3DAttrs = {
   constraint: Constraint3D;
@@ -96,6 +97,20 @@ const def: KindDef<Point3DAttrs> = {
         () => sph.F(c.theta, c.phi)[1],
         () => sph.F(c.theta, c.phi)[2],
       ], opts);
+    }
+    // Điểm PHÁI SINH (midpoint/centroid/intersection*/perpFoot…): toạ độ tính từ
+    // constraintToWorld đọc State SỐNG (ctx.getState) → function-based point3d.
+    // needsRegularUpdate để JSXGraph re-eval mỗi board.update() (khi điểm gốc bị
+    // recreate lúc kéo). KHÔNG capture element gốc (sẽ chết sau recreate) — đọc
+    // state tươi mỗi lần eval. Xem docs/.../2026-06-21-3d-foundation-v1-design.md.
+    const getState = ctx.getState;
+    if (getState) {
+      const cw = () => constraintToWorld(c, getState());
+      return view.create('point3d', [
+        () => cw()[0],
+        () => cw()[1],
+        () => cw()[2],
+      ], { ...opts, needsRegularUpdate: true });
     }
     return view.create('point3d', [0, 0, 0], opts);
   },

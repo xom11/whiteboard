@@ -35,6 +35,8 @@ export class JxgRenderer3D {
         return el;
       },
       defaults: {},
+      // State sống cho điểm phái sinh 3D (constraintToWorld đọc toạ độ gốc hiện tại).
+      getState: () => this.store.getState(),
     };
   }
 

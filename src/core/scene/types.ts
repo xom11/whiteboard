@@ -71,6 +71,12 @@ export type RenderCtx = {
   defaults: Readonly<Record<string, unknown>>;
   /** Map tham số (parameter.label → parameter.value). Chỉ graph2d dùng. */
   paramMap?: Readonly<Record<string, number>>;
+  /**
+   * State SỐNG để render điểm PHÁI SINH 3D (point3d.render gọi
+   * constraintToWorld(c, getState()) cho midpoint/centroid/intersection…).
+   * Chỉ JxgRenderer3D cấp; 2D bỏ qua (điểm phái sinh 2D dùng JSXGraph native).
+   */
+  getState?: () => State;
 };
 
 export type KindDef<A = Record<string, unknown>> = {

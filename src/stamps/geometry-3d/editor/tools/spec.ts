@@ -11,12 +11,15 @@ import { buildCube } from './handlers/cube';
 import { buildSphere } from './handlers/sphere';
 import { buildCylinder } from './handlers/cylinder';
 import { buildCone } from './handlers/cone';
+import { buildMidpoint } from './handlers/derived';
 
 export type ToolKey =
   | 'move' | 'point' | 'pointOnObject'
   | 'segment' | 'line' | 'ray' | 'vector' | 'polygon'
   | 'plane' | 'pyramid' | 'prism' | 'tetrahedron' | 'cube'
-  | 'sphere' | 'cylinder' | 'cone';
+  | 'sphere' | 'cylinder' | 'cone'
+  // ───── Dựng hình: điểm phái sinh (v1) ─────
+  | 'midpoint';
 
 export type ToolStep =
   | {
@@ -233,6 +236,17 @@ export const TOOLS: ToolSpec[] = [
     ],
     build: buildCone,
   },
+  // ───── Dựng hình: điểm phái sinh (v1) ─────
+  {
+    key: 'midpoint',
+    label: 'Trung điểm',
+    hintIdle: 'Chọn 2 điểm để lấy trung điểm',
+    steps: [
+      { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Chọn điểm thứ nhất' },
+      { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Chọn điểm thứ hai' },
+    ],
+    build: buildMidpoint,
+  },
 ];
 
 export const TOOL_GROUPS: Record<string, ToolKey[]> = {
@@ -240,6 +254,7 @@ export const TOOL_GROUPS: Record<string, ToolKey[]> = {
   'Điểm': ['point', 'pointOnObject'],
   'Đường thẳng': ['segment', 'line', 'ray', 'vector', 'polygon'],
   'Mặt phẳng': ['plane'],
+  'Dựng hình': ['midpoint'],
   'Khối đa diện': ['pyramid', 'prism', 'tetrahedron', 'cube'],
   'Khối cong': ['sphere', 'cylinder', 'cone'],
 };

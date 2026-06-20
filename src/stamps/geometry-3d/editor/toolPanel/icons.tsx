@@ -127,4 +127,13 @@ export const ToolIcons: Record<ToolKey, React.ReactElement> = {
       <ellipse cx="12" cy="18" rx="7" ry="2" />
     </>,
   ),
+  // Trung điểm: đoạn 2 đầu mút + chấm giữa (12,12 = trung điểm (4,18)-(20,6)).
+  midpoint: wrap(
+    <>
+      <line x1="4" y1="18" x2="20" y2="6" />
+      {dot(4, 18, 1.4)}
+      {dot(20, 6, 1.4)}
+      <circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none" />
+    </>,
+  ),
 };
