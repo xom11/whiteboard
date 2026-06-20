@@ -14,6 +14,7 @@ import { runDeterministicIntents } from './runDeterministicIntents';
 import { allNamedEntitiesPresent, verifyIntentFidelity } from './guards';
 import { normalizeIntents } from '../normalizeIntent';
 import { normalizeProblemText } from './normalizeText';
+import { correctUserInput } from './correctUserInput';
 import { resolveCircleNameCollisions } from '../resolveCircleNames';
 import { intentsToDsl } from '../intentToDsl';
 import { orderIntentsByDependency } from '../intentTopo';
@@ -93,7 +94,7 @@ export function buildAndTranspile(intents: readonly IntentT[]): BuildAndTranspil
 export function tryDeterministicFigure(rawProblem: string): TryDeterministicResult {
   // Chuẩn hoá ký hiệu (Δ→tam giác, vòng tròn→đường tròn) MỘT lần để mọi stage
   // (rule, normalizeIntents, named-entity guard) thấy text nhất quán.
-  const problem = normalizeProblemText(rawProblem);
+  const problem = normalizeProblemText(correctUserInput(rawProblem));
   const det = runDeterministicIntents(problem);
   if (!det.ok) return { ok: false, reason: det.reason, coverage: det.coverage };
 

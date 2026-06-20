@@ -6,6 +6,7 @@ import type { IntentT } from '../intent';
 import { segmentClauses, computeCoverage, type Clause, type CoverageReport } from './coverage';
 import { runRules } from '../rules/registry';
 import { normalizeProblemText } from './normalizeText';
+import { correctUserInput } from './correctUserInput';
 import { countGeometryKeywords } from './vocabulary';
 
 export type DetIntentResult =
@@ -28,7 +29,7 @@ interface Collected {
 // Dedupe intent y hệt nhau: nhiều rule cùng tham chiếu 1 hình (vd "tam giác ABC"
 // xuất hiện ở nhiều clause → triangle rule emit lặp; centers/cevian cũng cần nó).
 function collectDeterministic(rawProblem: string): Collected {
-  const problem = normalizeProblemText(rawProblem);
+  const problem = normalizeProblemText(correctUserInput(rawProblem));
   const clauses = segmentClauses(problem);
   const drawableClauses = clauses.filter((c) => c.hasGeometry);
   let drawableProblem = problem;

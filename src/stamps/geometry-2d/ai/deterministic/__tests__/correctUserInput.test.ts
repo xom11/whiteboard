@@ -1,4 +1,5 @@
 import { foldVietnamese, FOLDED_VOCAB, classifyToken, applyStructure, DEFAULT_CORRECT_CONFIG, correctUserInput } from '../correctUserInput';
+import { tryDeterministicFigure } from '../tryDeterministicFigure';
 
 describe('applyStructure (tầng 1)', () => {
   it('gộp xuống dòng + space thừa', () => {
@@ -128,5 +129,15 @@ describe('correctUserInput — idempotent + cờ tầng', () => {
   it('tắt accents+typo → chỉ tầng cấu trúc', () => {
     const out = correctUserInput(raw, { ...DEFAULT_CORRECT_CONFIG, accents: false, typo: false });
     expect(out).toBe('CHO duong tronh tam O, AB song song CD');
+  });
+});
+
+describe('wiring e2e — đề gõ-tay lệch vẫn dựng được', () => {
+  it('thiếu dấu + xuống dòng → FULL như bản chuẩn', () => {
+    // (O) protected (ngoặc). messy chỉ thiếu-dấu trên từ KHÔNG mơ hồ + xuống dòng.
+    const clean = 'Cho tam giác ABC nội tiếp đường tròn (O)';
+    const messy = 'cho tam giac ABC\nnoi tiep duong tron (O)';
+    expect(tryDeterministicFigure(clean).ok).toBe(true);
+    expect(tryDeterministicFigure(messy).ok).toBe(tryDeterministicFigure(clean).ok);
   });
 });

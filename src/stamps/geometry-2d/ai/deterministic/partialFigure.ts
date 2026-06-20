@@ -21,6 +21,7 @@ import { tryPartialDeterministic } from './runDeterministicIntents';
 import { allNamedEntitiesPresent } from './guards';
 import { normalizeIntents } from '../normalizeIntent';
 import { normalizeProblemText } from './normalizeText';
+import { correctUserInput } from './correctUserInput';
 import { resolveCircleNameCollisions } from '../resolveCircleNames';
 import { intentsToDsl } from '../intentToDsl';
 import { collectRefs } from '../../dsl/transpile/refs';
@@ -55,7 +56,7 @@ export interface PartialFigureResult {
  * được phần hình thật nào (→ caller báo miss toàn bộ như cũ).
  */
 export function tryPartialFigure(rawProblem: string): PartialFigureResult | null {
-  const problem = normalizeProblemText(rawProblem);
+  const problem = normalizeProblemText(correctUserInput(rawProblem));
   const part = tryPartialDeterministic(problem);
   // Không rule nào khớp → không có gì để cứu.
   if (part.detIntents.length === 0) return null;
