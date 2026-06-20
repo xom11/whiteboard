@@ -14,14 +14,17 @@
 // là CHỮ THƯỜNG THUẦN (d, a, xy) → KHÔNG có gốc-điểm nội tại, phải lấy anchor từ
 // "tại/qua <P>".
 //
-// KHÔNG xử lý đường thẳng tự do KHÔNG ràng buộc ("Cho đường thẳng d" trơ) — thiếu
-// neo hình học để dựng (defer; clause tham chiếu nó vẫn escalate fail-safe).
+// FREE_DECL — khai báo đường thẳng TỰ DO KHÔNG ràng buộc ("Cho/Vẽ (một)? đường
+// thẳng d") DỰNG được khi "d" được THAM CHIẾU sau (perpFoot "OH ⊥ d", onSegment
+// "M thuộc d", "d cắt …") → d = lineThrough qua 2 ĐIỂM TỰ DO (d_p1, d_p2). Guard
+// referenced để KHÔNG dựng đường thừa khi "d" chỉ là tên trơ (vao10:93). KHÔNG
+// match nếu clause cùng câu có ràng buộc ⊥/∥/qua (PERP/PARA/THRU thắng — seen).
 //
 // GOTCHA token chữ thường: `[a-z]{1,2}[0-9]?` + NEO (?!\p{L}) — KHÔNG `[a-z]*`
 // (nuốt "vuông"→"vu" vì 'ô' không trong [a-z] ASCII; cờ 'u' bắt buộc cho ký tự Việt).
 import type { LanguageRule, RuleMatch } from './_types';
 import type { IntentT } from '../intent';
-import { drawLine, DUONG_KW } from './_shared';
+import { addPoint, drawLine, DUONG_KW } from './_shared';
 
 // Token tên đường chữ thường: 1-2 ký tự thường + tối đa 1 chữ số ("d","xy","d1"),
 // NEO (?!\p{L}) để không nuốt từ tiếng Việt ("vuông"/"song").
@@ -78,6 +81,35 @@ const SECANT_LINE = new RegExp(
     PT + String.raw`\s+và\s+(?:điểm\s+)?` + PT,
   'gu',
 );
+
+// FREE_DECL: "(Cho|Vẽ|Kẻ|Dựng) (một)? đường thẳng <d>" — khai báo TỰ DO. KHÔNG
+//  có ràng buộc NGAY SAU (⊥/∥/qua/đi qua/cắt …): theo sau token là ranh giới câu
+//  ("." / "và" / cuối). Negative-lookahead loại dạng ràng buộc (sẽ do PERP/PARA/
+//  THRU/SECANT claim trước). `d` ở group1.
+const FREE_DECL = new RegExp(
+  String.raw`(?:[Cc]ho|[Vv]ẽ|[Kk]ẻ|[Dd]ựng)\s+(?:một\s+)?${DUONG_KW}\s*thẳng\s+` +
+    LC +
+    // KHÔNG theo sau bởi ràng buộc: ⊥/vuông góc, //|song song, (đi)?qua, cắt,
+    // tiếp xúc. Cho phép ranh giới câu / "và" / "," / "(".
+    String.raw`(?!\s*(?:⊥|//|vuông\s*góc|song\s*song|(?:đi\s+)?qua|cắt|tiếp\s*xúc|tại|ở)\b)`,
+  'gu',
+);
+
+// "d" được THAM CHIẾU như ĐƯỜNG ở chỗ khác trong đề (ngoài khai báo): "⊥ d",
+//  "thuộc d", "trên d", "d cắt", "d tại", "nằm trên d". Token neo (?<![\p{L}\d])
+//  + (?![\p{L}\d]) để "d" độc lập (không nuốt "do"/"đó"). Dùng làm guard tránh
+//  dựng đường thừa cho tên trơ.
+function lineReferenced(problem: string, name: string): boolean {
+  const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const N = String.raw`(?<![\p{L}\d])${esc}(?![\p{L}\d])`;
+  const REFS = [
+    // trước "d": "⊥ d", "song song d", "thuộc/trên/nằm trên d", "cắt … d", "của d"
+    new RegExp(String.raw`(?:⊥|vuông\s*góc(?:\s+với)?|//|song\s*song(?:\s+với)?|thuộc|trên|cắt|tiếp\s*tuyến\s+(?:của|với)?)\s+(?:${N})`, 'u'),
+    // sau "d": "d cắt", "d tại", "d lấy", "d, "
+    new RegExp(N + String.raw`\s+(?:cắt|tại|ở|lấy)`, 'u'),
+  ];
+  return REFS.some((re) => re.test(problem));
+}
 
 // Đề có "đường thẳng <chữ thường>" (token tên đường) — đủ hẹp để prefilter.
 const PREFILTER = new RegExp(
@@ -155,6 +187,25 @@ export const namedLineRule: LanguageRule = {
         if (seen.has(line) || a === b) continue;
         seen.add(line);
         push(c.id, [drawLine(line, 'lineThrough', { points: [a, b] })]);
+      }
+
+      // FREE_DECL: "Cho/Vẽ (một)? đường thẳng d" trơ → d = lineThrough qua 2 điểm
+      //  tự do (d_p1, d_p2). CHỈ khi (a) chưa claim ràng buộc trong clause này,
+      //  (b) "d" được tham chiếu như đường ở chỗ khác (tránh đường thừa). KHÔNG
+      //  claim coverage (intents có dựng nhưng clause "Cho đường thẳng d" thường
+      //  cũng nêu đường tròn → để rule khác claim; ở đây chỉ DỰNG d).
+      FREE_DECL.lastIndex = 0;
+      for (const m of c.text.matchAll(FREE_DECL)) {
+        const line = m[1];
+        if (seen.has(line) || !lineReferenced(ctx.problem, line)) continue;
+        seen.add(line);
+        const p1 = `${line}_p1`;
+        const p2 = `${line}_p2`;
+        push(c.id, [
+          addPoint(p1, { kind: 'free' }),
+          addPoint(p2, { kind: 'free' }),
+          drawLine(line, 'lineThrough', { points: [p1, p2] }),
+        ]);
       }
     }
     return out;

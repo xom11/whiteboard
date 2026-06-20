@@ -62,8 +62,36 @@ describe('namedLineRule', () => {
     expect(intents('Vẽ đường thẳng vuông góc với BC tại H')).toEqual([]);
   });
 
-  it('đường thẳng d TRƠ (không ràng buộc) → KHÔNG match (defer)', () => {
+  // FREE_DECL — "Cho đường thẳng d" KHÔNG ràng buộc NHƯNG "d" được tham chiếu sau
+  // (perpFoot/onSegment/cắt) → dựng d = lineThrough qua 2 điểm TỰ DO (vao10:93).
+  it('"Cho đường thẳng d" + tham chiếu sau ("⊥ d", "thuộc d") → d lineThrough 2 free point', () => {
+    const all = intents(
+      'Cho đường thẳng d và đường tròn (O;R) không có điểm chung. Hạ OH ⊥ d tại H. Điểm M thuộc d.',
+    );
+    // 2 free point + lineThrough qua chúng.
+    const free = all.filter((i) => i.op === 'add-point' && i.constraint?.kind === 'free');
+    expect(free.length).toBe(2);
+    const line = all.find((i) => i.op === 'draw-line' && i.name === 'd');
+    expect(line).toMatchObject({ op: 'draw-line', name: 'd', kind: 'lineThrough' });
+    expect(line.points.length).toBe(2);
+    // 2 điểm của line = 2 free point vừa tạo.
+    expect(line.points.sort()).toEqual(free.map((f) => f.name).sort());
+  });
+
+  it('"Vẽ một đường thẳng d" (có verb + "một") + "trên d lấy M" → d lineThrough free', () => {
+    const all = intents('Cho (O). Vẽ một đường thẳng d. Trên d lấy điểm M.');
+    expect(all.some((i) => i.op === 'draw-line' && i.name === 'd' && i.kind === 'lineThrough')).toBe(true);
+  });
+
+  it('đường thẳng d TRƠ KHÔNG được tham chiếu sau → KHÔNG match (tránh đường thừa)', () => {
     expect(intents('Cho đường thẳng d và đường tròn (O;R).')).toEqual([]);
+  });
+
+  it('FREE_DECL KHÔNG nuốt dạng có ràng buộc (⊥/∥/qua) — PERP thắng', () => {
+    // "Vẽ đường thẳng d ⊥ OA tại A" phải ra perpThrough, KHÔNG ra lineThrough-free.
+    const all = intents('Cho (O;R) và A. Vẽ đường thẳng d ⊥ OA tại A. Trên d lấy M.');
+    expect(all.some((i) => i.kind === 'perpThrough' && i.name === 'd')).toBe(true);
+    expect(all.some((i) => i.kind === 'lineThrough' && i.name === 'd')).toBe(false);
   });
 
   it('PREFILTER khớp dạng có "đường thẳng <chữ thường>"', () => {
