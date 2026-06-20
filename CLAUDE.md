@@ -151,15 +151,16 @@ Package publish lên npm (`@xom11/whiteboard`). `dist/` không track git — `pr
 #   fix: ...            → bump patch  (0.31.0 → 0.31.1)
 #   feat: ...           → bump minor  (0.31.0 → 0.32.0)
 #   feat!: / BREAKING CHANGE: → bump major
-#   docs:/chore:/refactor: → KHÔNG release
+#   docs:/chore:/refactor:/ci: → KHÔNG release
 git push   # → CI tự: typecheck + test → bump version → publish npm
-           #         → commit "chore(release): x.y.z [skip ci]" (package.json + CHANGELOG)
-           #         → tag vX.Y.Z + GitHub Release
+           #         → tag vX.Y.Z + GitHub Release (notes tự sinh từ commit)
 ```
 
-- **Secret cần có 1 lần** (GitHub repo → Settings → Secrets → Actions): `NPM_TOKEN` (npm automation token). `GITHUB_TOKEN` Actions tự cấp.
-- semantic-release dùng git tags `vX.Y.Z` (đã có sẵn) làm mốc — chạy lần đầu nó tính từ `v0.31.0`.
-- Commit release do CI tạo dùng `[skip ci]` + đẩy bằng `GITHUB_TOKEN` nên KHÔNG loop workflow.
+- **Thiết kế gọn (cố ý):** semantic-release CHỈ chạy `commit-analyzer` + `release-notes-generator` + `npm` + `github`. **KHÔNG** dùng `@semantic-release/git`/`changelog` → **KHÔNG commit ngược vào main** (tránh rủi ro commit "chore(release)" mồ côi khi publish lỗi, và không làm bẩn `CHANGELOG.md` văn xuôi tự viết).
+- **Nguồn version chuẩn = git tags `vX.Y.Z` + npm + GitHub Release.** `package.json` trong git GIỮ version cũ (semantic-release set version đúng lúc publish, không commit lại) — đừng tin số trong `package.json` git, xem `git tag` / npm / GitHub Releases.
+- `CHANGELOG.md` giờ HOÀN TOÀN thủ công (văn xuôi VN) — tự viết tiếp khi muốn; CI không đụng vào.
+- **Secret 1 lần** (repo → Settings → Secrets → Actions): `NPM_TOKEN` (npm token Read+Write hoặc Automation). `GITHUB_TOKEN` Actions tự cấp.
+- **GOTCHA setup-node:** KHÔNG để `registry-url` trong `setup-node` — nó tạo `.npmrc` tạm với `${NODE_AUTH_TOKEN}` placeholder mà semantic-release đọc nhầm → 401. Để semantic-release/npm tự lo auth từ `NPM_TOKEN`.
 - **Consumer (hoctotbachkhoa) tự cập nhật qua Renovate** (pull-based bot): publish bản mới → Renovate mở PR bump `@xom11/whiteboard` → CI xanh → tự merge. Config mẫu: `renovate.json5` (cài Renovate GitHub App vào repo consumer + đặt file ở gốc repo đó).
 - Muốn release tay khẩn cấp: `npx semantic-release --no-ci` (cần `NPM_TOKEN`+`GITHUB_TOKEN` env local).
 
