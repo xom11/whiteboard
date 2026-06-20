@@ -58,7 +58,9 @@ export const CORRECTION_VOCAB: readonly string[] = [
   'trung', 'trực', 'cao', 'phân', 'chiếu', 'đối', 'xứng',
   // verbs / connectors phổ biến trong đề
   'cho', 'gọi', 'vẽ', 'kẻ', 'lấy', 'qua', 'cắt', 'trên', 'dưới', 'đến',
-  'song', 'với', 'của', 'và', 'là', 'đi', 'có', 'nằm', 'thuộc', 'tại',
+  // 'đi' ĐÃ GỠ: "di"→"đi" net-harmful trên corpus (regress 7 bài locus "di động"
+  // → "đi động"). Từ TRẦN 2 ký tự đa-nghĩa: rủi ro cao, lợi ích thấp.
+  'song', 'với', 'của', 'và', 'là', 'có', 'nằm', 'thuộc', 'tại',
   'một', 'hai', 'ba', 'các', 'lần', 'lượt', 'thứ', 'bất', 'kì', 'kỳ',
   'trong', 'ngoài', 'lên', 'xuống',
 ];
@@ -111,16 +113,21 @@ export interface CorrectConfig {
 export const DEFAULT_CORRECT_CONFIG: CorrectConfig = {
   structure: true,
   accents: true,
-  typo: true,
+  // Tầng 3 (fuzzy typo) MẶC ĐỊNH TẮT: trên corpus thật nó băm từ TRẦN hợp lệ
+  // ("nhau"→"nhật", "giao"→"giác", "di"→"đi") vì vocab hình-học trùng không-gian
+  // âm với văn xuôi Việt → net-harmful (đo qua diag-all). Vẫn cài đặt đầy đủ + bật
+  // được qua flag (mutation test / opt-in tương lai). accents+structure đủ an toàn.
+  typo: false,
   maxTypoDistance: 1,
   minTypoLen: 4,
 };
 
 // Bảng ký hiệu/cụm → dạng rule engine hiểu. Giữ TỐI THIỂU + high-confidence;
-// thêm entry phải qua gate diag-all (xem Task 9). "//" → "song song" (rule +
-// vocab dùng "song song"). "<số> do|độ" → "<số>°".
+// thêm entry phải qua gate diag-all. "<số> do|độ" → "<số>°".
+// LƯU Ý: "//"→"song song" ĐÃ GỠ — qua diag-all nó BIẾN clause bị-bỏ-qua "IM // EF"
+// thành clause-hình-học KHÔNG phủ được (ràng buộc song song khó dựng) → coverage
+// gate đánh rớt cả bài (regress t02:BT25). Lợi ích ≈0 trên corpus, hại thật → bỏ.
 const SYMBOL_MAP: ReadonlyArray<readonly [RegExp, string]> = [
-  [/\/\//g, ' song song '],
   [/(\d+)\s*(?:độ|do)(?!\p{L})/giu, '$1°'],
 ];
 
@@ -171,6 +178,12 @@ function correctToken(token: string, cfg: CorrectConfig): string {
   const klass = classifyToken(token);
   if (klass === 'protected') return token;
   const folded = foldVietnamese(token);
+  // SỐNG CÒN: token ĐÃ có dấu (hoặc chữ 'đ') → coi như người gõ đã chủ đích viết
+  // đúng → KHÔNG đụng. Chỉ phục-hồi cho token TRẦN/thiếu-dấu (folded == lowercase).
+  // Nếu bỏ guard này, fold-collision sẽ HẠ CẤP từ đúng: "tâm"→"tam", "thẳng"→
+  // "thang", "ngoài"→"ngoại", và fuzzy băm từ có-dấu — phá hàng loạt đề OCR (đã
+  // đo: FULL 519→253). folded khác lowercase ⇔ token chứa dấu thanh/mũ/móc hoặc đ.
+  if (folded !== token.toLowerCase()) return token;
   // Tầng 2: fold-khớp-chính-xác (áp cho cả 'upper' shouted keyword lẫn 'lower').
   if (cfg.accents) {
     const exact = FOLDED_VOCAB.get(folded);

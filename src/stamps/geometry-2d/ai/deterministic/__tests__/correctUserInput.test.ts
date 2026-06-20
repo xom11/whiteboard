@@ -5,16 +5,15 @@ describe('applyStructure (tầng 1)', () => {
   it('gộp xuống dòng + space thừa', () => {
     expect(applyStructure('Cho tam giác\n  ABC   nội  tiếp')).toBe('Cho tam giác ABC nội tiếp');
   });
-  it('ký hiệu // → song song', () => {
-    expect(applyStructure('AB // CD')).toBe('AB song song CD');
-  });
   it('độ: "90 do" / "90 độ" → 90°', () => {
     expect(applyStructure('góc bằng 90 do')).toBe('góc bằng 90°');
     expect(applyStructure('góc bằng 90 độ')).toBe('góc bằng 90°');
   });
-  it('config mặc định bật cả 3 tầng', () => {
+  it('config mặc định: structure+accents bật, typo tắt', () => {
     expect(DEFAULT_CORRECT_CONFIG).toEqual({
-      structure: true, accents: true, typo: true, maxTypoDistance: 1, minTypoLen: 4,
+      // typo MẶC ĐỊNH TẮT: fuzzy băm từ trần hợp lệ trên corpus thật (xem comment
+      // trong correctUserInput.ts). Bật qua flag cho mutation test / opt-in.
+      structure: true, accents: true, typo: false, maxTypoDistance: 1, minTypoLen: 4,
     });
   });
 });
@@ -98,14 +97,16 @@ describe('correctUserInput — tầng 2 (phục-hồi-dấu + case)', () => {
   });
 });
 
-describe('correctUserInput — tầng 3 (typo)', () => {
-  it('typo edit-1 từ dài → canonical', () => {
-    expect(correctUserInput('tam gisc ABC')).toBe('tam giác ABC');
-    expect(correctUserInput('duong tronh')).toBe('đường tròn');
+describe('correctUserInput — tầng 3 (typo, OPT-IN qua flag)', () => {
+  // typo mặc định TẮT (corpus-safe) → bật tường minh để kiểm tra logic tầng 3.
+  const TYPO = { ...DEFAULT_CORRECT_CONFIG, typo: true };
+  it('typo edit-1 từ TRẦN dài → canonical', () => {
+    expect(correctUserInput('tam gisc ABC', TYPO)).toBe('tam giác ABC');
+    expect(correctUserInput('duong tronh', TYPO)).toBe('đường tròn');
   });
   it('từ ngắn (<minTypoLen) KHÔNG fuzzy', () => {
     // "hoc" (fold) cách "goc"(góc) d=1 nhưng len 3 < 4 → giữ nguyên
-    expect(correctUserInput('hoc sinh')).toBe('hoc sinh');
+    expect(correctUserInput('hoc sinh', TYPO)).toBe('hoc sinh');
   });
 });
 
@@ -121,14 +122,14 @@ describe('correctUserInput — GUARD label-protection (xuyên tầng)', () => {
 });
 
 describe('correctUserInput — idempotent + cờ tầng', () => {
-  const raw = 'CHO\nduong  tronh\ttam O, AB // CD';
+  const raw = 'CHO\nduong  tronh\ttam O, goc 90 do';
   it('idempotent', () => {
     const once = correctUserInput(raw);
     expect(correctUserInput(once)).toBe(once);
   });
-  it('tắt accents+typo → chỉ tầng cấu trúc', () => {
+  it('tắt accents+typo → chỉ tầng cấu trúc (whitespace + bảng ký hiệu)', () => {
     const out = correctUserInput(raw, { ...DEFAULT_CORRECT_CONFIG, accents: false, typo: false });
-    expect(out).toBe('CHO duong tronh tam O, AB song song CD');
+    expect(out).toBe('CHO duong tronh tam O, goc 90°');
   });
 });
 
