@@ -16,6 +16,17 @@ export function constraintRefs(c: Constraint3D): string[] {
     case 'onLine': return [c.lineId];
     case 'onPolygon': return [c.polygonId];
     case 'onSphere': return [c.sphereId];
-    default: return [];
+    // Kind KHÔNG có ref scene-object (toạ độ literal): liệt kê TƯỜNG MINH để
+    // exhaustive never-guard bên dưới buộc khai báo khi thêm constraint kind mới
+    // (mô phỏng constraintRefs2D — quên case = cascade-delete/deps sai âm thầm).
+    case 'free':
+    case 'onGround':
+    case 'onAxis':
+      return [];
+    default: {
+      const _exhaustive: never = c;
+      void _exhaustive;
+      return [];
+    }
   }
 }
