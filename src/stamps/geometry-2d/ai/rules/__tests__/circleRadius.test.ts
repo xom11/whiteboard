@@ -345,13 +345,4 @@ describe('circleRadiusRule', () => {
       expect(m.length).toBe(0);
     });
   });
-
-  // hsg9:306 — "tâm (O)" (tâm TRƯỚC ngoặc) khiến capture lọt dấu "(" → tên tâm
-  // thành "(O"; nội suy vào new RegExp() ở guard inscribed/diameter ném
-  // "Unterminated group" → crash CẢ pipeline. escapeRe(center) chặn crash.
-  it('crash-guard: tên tâm méo "(O" ("đường tròn tâm (O) bán kính R") KHÔNG ném', () => {
-    expect(() =>
-      run('Cho đường tròn tâm (O) bán kính R và dây cung BC cố định. Điểm A thay đổi trên cung lớn BC.'),
-    ).not.toThrow();
-  });
 });

@@ -139,14 +139,6 @@ function parseNum(raw: string): number {
  * circleRadius KHÔNG emit thêm 1 đường tròn rời (sẽ chồng + không nhất quán).
  * Bán kính chỉ là chú thích — circumcircle xác định bởi 3 đỉnh, bỏ radius là OK.
  */
-// Tên tâm nội suy vào RegExp động → escape regex-meta. OCR có thể cho tên méo
-// ("(O" khi đề viết "tâm (O)" — capture lọt dấu ngoặc) → `new RegExp` ném
-// "Unterminated group" làm crash CẢ pipeline. Escape = no-op với tên sạch (zero
-// regression), chỉ chặn crash khi tên bẩn (rule khi đó không khớp → escalate).
-function escapeRe(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 function isInscribedCircumscribed(problem: string, center: string): boolean {
   // Quan hệ "nội/ngoại tiếp" (VN) + "inscribed/circumscribes/circumscribed" (EN,
   // issue #46 group B). EN mirror chống silent-WRONG: "Triangle ABC inscribed in
@@ -156,7 +148,7 @@ function isInscribedCircumscribed(problem: string, center: string): boolean {
   // Chiều 1 — quan hệ ĐỨNG TRƯỚC circle: "(tam giác) nội/ngoại tiếp … (O".
   // Gap [^.]{0,30}? đủ nuốt "in circle " trước "(O" (EN).
   const after = new RegExp(
-    `${REL}[^.]{0,30}?(?:đường\\s*tròn\\s*|[Cc]ircle\\s*)?\\(?\\s*${escapeRe(center)}(?![A-Z])`,
+    `${REL}[^.]{0,30}?(?:đường\\s*tròn\\s*|[Cc]ircle\\s*)?\\(?\\s*${center}(?![A-Z])`,
     'u',
   );
   // Chiều 2 — circle ĐỨNG TRƯỚC quan hệ: ký hiệu "(O; R) … ngoại/nội tiếp".
@@ -164,7 +156,7 @@ function isInscribedCircumscribed(problem: string, center: string): boolean {
   // để tránh DOUBLE-circle quanh O. [^()]* không vượt ngoặc khác; [^.]{0,30}?
   // không nhảy câu (giữ proximity, tránh false-positive với circle rời khác).
   const before = new RegExp(
-    `\\(\\s*${escapeRe(center)}\\s*[;,][^()]*\\)[^.]{0,30}?${REL}`,
+    `\\(\\s*${center}\\s*[;,][^()]*\\)[^.]{0,30}?${REL}`,
     'u',
   );
   return after.test(problem) || before.test(problem);
@@ -172,11 +164,11 @@ function isInscribedCircumscribed(problem: string, center: string): boolean {
 
 function isDiameterCircle(problem: string, center: string): boolean {
   const parenThenDiameter = new RegExp(
-    `\\(\\s*${escapeRe(center)}\\s*[;,][^()]*\\)[^.]{0,40}?${DUONG_KW}\\s*kính\\s+[A-Z]{2}(?![A-Z])`,
+    `\\(\\s*${center}\\s*[;,][^()]*\\)[^.]{0,40}?${DUONG_KW}\\s*kính\\s+[A-Z]{2}(?![A-Z])`,
     'u',
   );
   const namedThenDiameter = new RegExp(
-    `${CIRCLE_KW}\\s*\\(\\s*${escapeRe(center)}\\s*\\)[^.]{0,40}?${DUONG_KW}\\s*kính\\s+[A-Z]{2}(?![A-Z])`,
+    `${CIRCLE_KW}\\s*\\(\\s*${center}\\s*\\)[^.]{0,40}?${DUONG_KW}\\s*kính\\s+[A-Z]{2}(?![A-Z])`,
     'u',
   );
   return parenThenDiameter.test(problem) || namedThenDiameter.test(problem);
@@ -187,7 +179,7 @@ function findParenClauseId(
   clauses: readonly Clause[],
   center: string,
 ): number | undefined {
-  const frag = new RegExp(`\\(\\s*${escapeRe(center)}(?![A-Z])`, 'u');
+  const frag = new RegExp(`\\(\\s*${center}(?![A-Z])`, 'u');
   for (const c of clauses) if (frag.test(c.text)) return c.id;
   return undefined;
 }
