@@ -148,3 +148,35 @@ describe('lineCircleIntersection — circumcircle mô tả (không "(O)")', () =
     expect(claimed).toBe(true);
   });
 });
+
+describe('lineCircleIntersection — residue', () => {
+  // vao10:185 — "BO kéo dài cắt (O) tại điểm thứ hai là C" ("kéo dài" xen line↔cắt).
+  it('SINGLE "kéo dài": "BO kéo dài cắt (O) tại điểm thứ hai là C"', () => {
+    const intents = run('BO kéo dài cắt (O) tại điểm thứ hai là C').flatMap((m) => m.intents) as any[];
+    expect(intents).toEqual([
+      { op: 'add-point', name: 'C', constraint: { kind: 'secondIntersection', line: 'BO', circle: 'O', other: 'B' } },
+    ]);
+  });
+
+  // vao10:139 — "DC cắt đường tròn tâm O' tại I" (circle tên-tâm, không paren).
+  it('SINGLE circle tên-tâm: "DC cắt đường tròn tâm O\' tại I"', () => {
+    const ctx = ctxOf("DC cắt đường tròn tâm O' tại I");
+    const intents = lineCircleIntersectionRule.match(ctx).flatMap((m) => m.intents) as any[];
+    expect(intents).toEqual([
+      { op: 'add-point', name: 'I', constraint: { kind: 'secondIntersection', line: 'DC', circle: "O'", other: 'D' } },
+    ]);
+  });
+
+  // julielltv:23 — "Các đường tròn (APB),(APC) cắt AC,AB tại E,F": 2 đường tròn
+  // ngoại tiếp (paren 3 chữ) cắt 2 đường (zip). E=2nd(AC,wAPB,other A), F=2nd(AB,wAPC,other A).
+  it('PAREN_PAIR_CUTS: "Các đường tròn (APB),(APC) cắt AC,AB tại E,F"', () => {
+    const intents = run('Các đường tròn (APB),(APC) cắt AC,AB tại E,F').flatMap((m) => m.intents) as any[];
+    const e = intents.find((i) => i.name === 'E');
+    const f = intents.find((i) => i.name === 'F');
+    expect(e.constraint).toEqual({ kind: 'secondIntersection', line: 'AC', circle: 'wAPB', other: 'A' });
+    expect(f.constraint).toEqual({ kind: 'secondIntersection', line: 'AB', circle: 'wAPC', other: 'A' });
+    // 2 circumcircle dựng kèm
+    const circles = intents.filter((i) => i.op === 'draw-circle').map((c) => c.name).sort();
+    expect(circles).toEqual(['wAPB', 'wAPC']);
+  });
+});

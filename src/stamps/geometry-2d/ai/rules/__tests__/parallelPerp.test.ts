@@ -48,6 +48,46 @@ describe('parallelPerpRule', () => {
   });
 });
 
+describe('parallelPerp distributive đa-đường vuông góc (chân đặt tên)', () => {
+  // vao10:173 — "Từ C kẻ CE, CF, CG lần lượt vuông góc với AD, DB, AB":
+  // CE⊥AD (chân E), CF⊥DB (chân F), CG⊥AB (chân G). Mỗi cặp = perpThrough(C) + foot.
+  it('3 đoạn cùng gốc C → 3 perpThrough + 3 chân', () => {
+    const problem =
+      'Cho hình bình hành ABCD. Từ C kẻ CE, CF, CG lần lượt vuông góc với AD, DB, AB';
+    const m = run(problem);
+    const intents = m.flatMap((x) => x.intents) as any[];
+    const lines = intents.filter((i) => i.op === 'draw-line');
+    const pts = intents.filter((i) => i.op === 'add-point');
+    expect(lines.length).toBe(3);
+    expect(lines.every((l) => l.kind === 'perpThrough' && l.through === 'C')).toBe(true);
+    expect(pts.map((p) => p.name).sort()).toEqual(['E', 'F', 'G']);
+    // foot E = giao đường ⊥ qua C với AD
+    const e = pts.find((p) => p.name === 'E');
+    expect(e.constraint.kind).toBe('intersection');
+    expect(e.constraint.of[1]).toBe('AD');
+  });
+
+  it('2 đoạn cùng gốc cũng chạy', () => {
+    const problem = 'Cho tam giác ABC. Từ M kẻ MH, MK lần lượt vuông góc với AB, AC';
+    const intents = run(problem).flatMap((x) => x.intents) as any[];
+    expect(intents.filter((i) => i.op === 'draw-line').length).toBe(2);
+    expect(intents.filter((i) => i.op === 'add-point').map((p) => p.name).sort()).toEqual([
+      'H',
+      'K',
+    ]);
+  });
+
+  it('chân trùng gốc (degenerate) → bỏ qua đoạn đó', () => {
+    // "Từ C kẻ CC" vô nghĩa — không nên phát sinh.
+    const problem = 'Từ C kẻ CE, CF vuông góc với AD, AB';
+    const intents = run(problem).flatMap((x) => x.intents) as any[];
+    expect(intents.filter((i) => i.op === 'add-point').map((p) => p.name).sort()).toEqual([
+      'E',
+      'F',
+    ]);
+  });
+});
+
 describe('parallelPerp KHÔNG nuốt perpFoot', () => {
   it('"Kẻ AH vuông góc với BC" vẫn do perpFoot xử lý (foot H)', () => {
     const problem = 'Cho tam giác ABC. Kẻ AH vuông góc với BC';
