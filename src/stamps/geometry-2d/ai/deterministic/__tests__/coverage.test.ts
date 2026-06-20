@@ -38,18 +38,43 @@ describe('segmentClauses', () => {
   });
 
   // ";" giữa phần tử LIST ("AD; BE; CF cắt nhau tại H") là phân cách liệt kê,
-  // không phải ranh giới clause — giữ nguyên để rule distributive cevian thấy cả list.
-  it('không tách tại ";" giữa phần tử list "AD; BE; CF cắt nhau tại H"', () => {
+  // không phải ranh giới clause — KHÔNG split, và chuẩn hoá ";" list-sep → "," để
+  // rule distributive cevian (viết theo ",") thấy cả list.
+  it('không tách tại ";" giữa phần tử list "AD; BE; CF cắt nhau tại H" + chuẩn hoá ","', () => {
     const cls = segmentClauses(
       'Cho tam giác ABC nhọn. Ba đường cao AD; BE; CF cắt nhau tại H. Gọi I là trung điểm BC',
     );
     expect(cls.length).toBe(3);
-    expect(cls[1].text).toBe('Ba đường cao AD; BE; CF cắt nhau tại H');
+    expect(cls[1].text).toBe('Ba đường cao AD, BE, CF cắt nhau tại H');
   });
 
   // ";" trước clause THẬT vẫn tách ("AE và BC..." là mệnh đề mới, không phải list).
   it('";" trước mệnh đề mới vẫn tách như cũ', () => {
     const cls = segmentClauses('nối BM cắt cung AC tại E; AE và BC kéo dài cắt nhau tại D');
+    expect(cls.length).toBe(2);
+  });
+
+  // Directive distributive "Kẻ HK; HM lần lượt ⊥ AB; AC" — CẢ HAI ";" đều là phân
+  // cách phần tử list: (HK; HM) là 2 đoạn được kẻ, (AB; AC) là 2 cạnh ⊥ tương ứng.
+  // Trước fix segmenter vỡ thành 4 mảnh vụn → mất name/line → không claim được.
+  it('không tách + chuẩn hoá "," trong directive distributive "Kẻ HK; HM lần lượt ⊥ AB; AC"', () => {
+    const cls = segmentClauses('Vẽ đường cao AH. Từ H kẻ HK; HM lần lượt vuông góc với AB; AC');
+    // 2 clause; clause directive giữ nguyên 1 mảnh, ";" list-sep → ",".
+    expect(cls.length).toBe(2);
+    expect(cls[1].text).toBe('Từ H kẻ HK, HM lần lượt vuông góc với AB, AC');
+  });
+
+  // Chuỗi 3 phần tử "CE; CF; CG lần lượt ⊥ AD; DB; AB" — tất cả ";" là list-sep.
+  it('không tách + chuẩn hoá "," trong directive distributive 3 phần tử "CE; CF; CG lần lượt ⊥ AD; DB; AB"', () => {
+    const cls = segmentClauses('Từ C kẻ CE; CF; CG lần lượt vuông góc với AD; DB; AB');
+    expect(cls.length).toBe(1);
+    expect(cls[0].text).toBe('Từ C kẻ CE, CF, CG lần lượt vuông góc với AD, DB, AB');
+  });
+
+  // ";" trước HOA-label nhưng theo sau là TỪ NỐI thường ("và") = mệnh đề mới, vẫn tách.
+  it('";" + HOA-label + từ nối thường ("AB và …") vẫn tách', () => {
+    const cls = segmentClauses('Hạ HE; AB và HF cắt nhau tại K');
+    // "AB và …" là mệnh đề/quan-hệ mới, không phải phần tử list distributive.
     expect(cls.length).toBe(2);
   });
 

@@ -25,33 +25,43 @@ interface MatchLike {
 
 // Mask dấu câu KHÔNG phải ranh giới clause trước khi split, unmask sau khi split.
 // Sentinel = control char không bao giờ xuất hiện trong đề.
+// MASK_SEMI_LIST (): ";" được nhận diện là PHÂN CÁCH PHẦN TỬ LIST (case 2/3)
+// → unmask về "," (dấu phân cách list chuẩn) thay vì ";" để rule distributive (viết
+// theo ",") thấy đúng danh sách. KHÁC MASK_SEMI (";" trong "(O;R)") vốn PHẢI giữ ";".
 const MASK_SEMI = '\u0001';
 const MASK_DOT = '\u0002';
 const MASK_COMMA = '\u0003';
+const MASK_SEMI_LIST = '\u0004';
 
 // 1) Dấu ;/./, BÊN TRONG ngoặc ngắn không lồng: "(O;R)", "(M, N thuộc đường tròn;
 //    AM khác AN)" — chú thích/tên đường tròn, không phải ranh giới clause. Giới hạn
 //    ≤40 ký tự để ngoặc OCR không cân "(O. Gọi…" không nuốt phần sau.
 // 2) ";" giữa phần tử LIST ("đường cao AD; BE; CF cắt nhau tại H"): ";" theo sau là
-//    token điểm/đoạn ngắn rồi tới ";" "," hoặc "cắt nhau"/"đồng quy" → phân cách
-//    liệt kê. ";" trước mệnh đề thật ("…tại E; AE và BC kéo dài…") vẫn split vì
-//    sau token là từ khác ("và", "kéo"…).
+//    token điểm/đoạn ngắn rồi tới ";" "," "lần lượt" hoặc "cắt nhau"/"đồng quy"/"đôi
+//    một" → phân cách liệt kê. ";" trước mệnh đề thật ("…tại E; AE và BC kéo dài…")
+//    vẫn split vì sau token là TỪ thường ("và", "kéo"…).
+// 3) ";" giữa hai nhãn HOA cuối directive distributive ("… ⊥ AB; AC.", "… xuống
+//    AB; AC", "… ⊥ AD; DB; AB."): ";" theo sau là nhãn HOA rồi NGAY tới ";" "," "."
+//    hoặc hết chuỗi (KHÔNG có từ thường xen vào) → vẫn là phần tử list, không phải
+//    ranh giới. "tại E; AB là tiếp tuyến" KHÔNG khớp vì sau "AB" là " là" (từ thường).
 function maskNonBoundaryPunct(s: string): string {
   return s
     .replace(/\(([^()\n]{1,40})\)/g, (m) =>
       m.replace(/;/g, MASK_SEMI).replace(/\./g, MASK_DOT).replace(/,/g, MASK_COMMA),
     )
     .replace(
-      /;(?=\s*[A-Z][A-Z]?['′]?\d?\s*(?:[;,]|cắt nhau|đồng quy))/gu,
-      MASK_SEMI,
-    );
+      /;(?=\s*[A-Z][A-Z]?['′]?\d?\s*(?:[;,]|lần lượt|cắt nhau|đồng quy|đôi một))/gu,
+      MASK_SEMI_LIST,
+    )
+    .replace(/;(?=\s*[A-Z][A-Z]?['′]?\d?\s*(?:[;,.]|$))/gu, MASK_SEMI_LIST);
 }
 
 function unmask(s: string): string {
   return s
     .replace(/\u0001/g, ';')
     .replace(/\u0002/g, '.')
-    .replace(/\u0003/g, ',');
+    .replace(/\u0003/g, ',')
+    .replace(/\u0004/g, ',');
 }
 
 /**
