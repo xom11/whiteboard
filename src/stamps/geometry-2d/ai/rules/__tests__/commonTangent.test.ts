@@ -9,6 +9,18 @@ function intents(problem: string) {
 }
 
 describe('commonTangentRule', () => {
+  // hinh9:55/son123:40 — tiếp điểm khai qua "tiếp xúc với (O) và (O') lần lượt tại P, Q"
+  // (KHÔNG glue "PQ" sau "chung", KHÔNG "PQ là tiếp tuyến chung").
+  it('phrasing "tiếp xúc với (O) và (O\') lần lượt tại P và Q" → P on=0, Q on=1', () => {
+    const all = intents(
+      "Cho hai đường tròn (O) và (O') cắt nhau tại A, B. Một tiếp tuyến chung của (O) và (O') tiếp xúc với (O) và (O') lần lượt tại P và Q.",
+    );
+    const p = all.find((i) => i.name === 'P');
+    const q = all.find((i) => i.name === 'Q');
+    expect(p.constraint).toMatchObject({ kind: 'commonTangentPoint', circles: ['O', "O'"], on: 0 });
+    expect(q.constraint).toMatchObject({ kind: 'commonTangentPoint', circles: ['O', "O'"], on: 1 });
+  });
+
   // vxhung #37: "Vẽ tiếp tuyến chung ngoài BC (B, C thứ tự là các tiếp điểm
   //  thuộc (O; R) và (O'; R'))."
   it('"tiếp tuyến chung ngoài BC của hai đường tròn (O) và (O\')" → 2 circle + 2 commonTangentPoint + connect', () => {

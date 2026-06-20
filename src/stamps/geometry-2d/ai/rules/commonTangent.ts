@@ -41,6 +41,20 @@ const INTERNAL = /tiếp\s*tuyến\s+chung\s+trong/u;
 
 // Tên đtròn "(X)" / "(X;R)" — X = 1 HOA + prime optional. Bắt TẤT CẢ trong đề.
 const CIRCLE_G = /\(\s*([A-Z]['′]?)(?:\s*[;,]\s*(?:[Rr]['′]?|\d+(?:[.,]\d+)?\s*[a-z]*))?\s*\)/gu;
+const CIRC = "\\(\\s*([A-Z]['′]?)(?:\\s*[;,]\\s*(?:[Rr]['′]?|\\d+(?:[.,]\\d+)?\\s*[a-z]*))?\\s*\\)";
+// Phrasing: "tiếp xúc (với)? (X) và (Y) (lần lượt|tương ứng|theo thứ tự)? (tại|ở) P (,|và) Q"
+// → c1=X,c2=Y, t1=P (trên X, on=0), t2=Q (trên Y, on=1). Cho cả circle lẫn tiếp điểm
+// trong 1 lần (hinh9:55/son123:40: "Một tiếp tuyến chung của (O),(O') tiếp xúc với
+// (O) và (O') lần lượt tại P và Q"). groups: 1=c1 2=c2 3=t1 4=t2.
+const TANGENT_TOUCH = new RegExp(
+  'tiếp\\s*xúc\\s+(?:với\\s+)?' +
+    CIRC +
+    '\\s*(?:,|và)\\s*' +
+    CIRC +
+    '\\s+(?:lần\\s*lượt\\s+|tương\\s+ứng\\s+|theo\\s+thứ\\s+tự\\s+)?(?:tại|ở)\\s+(?:các\\s+)?(?:điểm\\s+)?' +
+    "([A-Z]['′]?)(?![A-Za-z])\\s*(?:,|và)\\s*([A-Z]['′]?)(?![A-Za-z])",
+  'u',
+);
 
 const norm = (s: string) => s.replace(/′/g, "'");
 
@@ -65,28 +79,40 @@ export const commonTangentRule: LanguageRule = {
   match(ctx) {
     const p = ctx.problem;
 
-    // Tiếp điểm: glue "BC" sau "tiếp tuyến chung", hoặc tên trước "XY là tiếp tuyến chung".
     let t1: string | undefined;
     let t2: string | undefined;
-    const mg = TANGENT_GLUE.exec(p);
-    if (mg) {
-      t1 = mg[1];
-      t2 = mg[2];
+    let c1: string | undefined;
+    let c2: string | undefined;
+
+    // Phrasing "tiếp xúc với (X) và (Y) lần lượt tại P, Q" — cho cả circle lẫn tiếp điểm.
+    const mt = TANGENT_TOUCH.exec(p);
+    if (mt) {
+      c1 = norm(mt[1]);
+      c2 = norm(mt[2]);
+      t1 = norm(mt[3]);
+      t2 = norm(mt[4]);
     } else {
-      const mb = TANGENT_NAMED_BEFORE.exec(p);
-      if (mb) {
-        t1 = mb[1];
-        t2 = mb[2];
+      // Tiếp điểm: glue "BC" sau "tiếp tuyến chung", hoặc tên trước "XY là tiếp tuyến chung".
+      const mg = TANGENT_GLUE.exec(p);
+      if (mg) {
+        t1 = mg[1];
+        t2 = mg[2];
+      } else {
+        const mb = TANGENT_NAMED_BEFORE.exec(p);
+        if (mb) {
+          t1 = mb[1];
+          t2 = mb[2];
+        }
       }
     }
     if (!t1 || !t2 || t1 === t2) return [];
 
-    // 2 tên đtròn: ưu tiên membership của tiếp điểm; else 2 (X) đầu tiên trong đề.
-    const m1 = membership(p, t1);
-    const m2 = membership(p, t2);
-    let c1: string | undefined;
-    let c2: string | undefined;
-    if (m1 && m2 && m1 !== m2) {
+    // 2 tên đtròn (nếu TANGENT_TOUCH chưa cho): membership của tiếp điểm; else 2 (X) đầu.
+    const m1 = c1 ? undefined : membership(p, t1);
+    const m2 = c2 ? undefined : membership(p, t2);
+    if (c1 && c2) {
+      // đã có từ TANGENT_TOUCH
+    } else if (m1 && m2 && m1 !== m2) {
       c1 = m1; // đtròn của tiếp điểm t1
       c2 = m2;
     } else {
