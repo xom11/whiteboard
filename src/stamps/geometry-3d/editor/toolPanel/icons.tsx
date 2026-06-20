@@ -143,4 +143,22 @@ export const ToolIcons: Record<ToolKey, React.ReactElement> = {
       <circle cx="12" cy="13.3" r="2" fill="currentColor" stroke="none" />
     </>,
   ),
+  // Giao 2 đường: 2 đường chéo cắt nhau + chấm giao.
+  intersectionLines: wrap(
+    <>
+      <line x1="4" y1="7" x2="20" y2="17" />
+      <line x1="4" y1="17" x2="20" y2="7" />
+      <circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none" />
+    </>,
+  ),
+  // Chân ⊥ xuống đường: điểm P, đường ngang, đoạn ⊥ + ký hiệu góc vuông + chấm chân.
+  perpFootLine: wrap(
+    <>
+      <line x1="3" y1="17" x2="21" y2="17" />
+      <line x1="12" y1="4" x2="12" y2="17" />
+      <path d="M12 14 L15 14 L15 17" />
+      {dot(12, 4, 1.6)}
+      <circle cx="12" cy="17" r="2" fill="currentColor" stroke="none" />
+    </>,
+  ),
 };

@@ -11,7 +11,12 @@ import { buildCube } from './handlers/cube';
 import { buildSphere } from './handlers/sphere';
 import { buildCylinder } from './handlers/cylinder';
 import { buildCone } from './handlers/cone';
-import { buildMidpoint, buildCentroid } from './handlers/derived';
+import {
+  buildMidpoint,
+  buildCentroid,
+  buildIntersectionLines,
+  buildPerpFootLine,
+} from './handlers/derived';
 
 export type ToolKey =
   | 'move' | 'point' | 'pointOnObject'
@@ -19,7 +24,8 @@ export type ToolKey =
   | 'plane' | 'pyramid' | 'prism' | 'tetrahedron' | 'cube'
   | 'sphere' | 'cylinder' | 'cone'
   // ───── Dựng hình: điểm phái sinh (v1) ─────
-  | 'midpoint' | 'centroid';
+  | 'midpoint' | 'centroid'
+  | 'intersectionLines' | 'perpFootLine';
 
 export type ToolStep =
   | {
@@ -258,6 +264,29 @@ export const TOOLS: ToolSpec[] = [
     ],
     build: buildCentroid,
   },
+  {
+    key: 'intersectionLines',
+    label: 'Giao 2 đường',
+    hintIdle: 'Chọn 2 điểm cho đường thứ nhất, rồi 2 điểm cho đường thứ hai',
+    steps: [
+      { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Đường 1: điểm thứ nhất' },
+      { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Đường 1: điểm thứ hai' },
+      { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Đường 2: điểm thứ nhất' },
+      { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Đường 2: điểm thứ hai' },
+    ],
+    build: buildIntersectionLines,
+  },
+  {
+    key: 'perpFootLine',
+    label: 'Chân ⊥ xuống đường',
+    hintIdle: 'Chọn điểm cần hạ, rồi 2 điểm xác định đường',
+    steps: [
+      { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Điểm cần hạ vuông góc' },
+      { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Đường: điểm thứ nhất' },
+      { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Đường: điểm thứ hai' },
+    ],
+    build: buildPerpFootLine,
+  },
 ];
 
 export const TOOL_GROUPS: Record<string, ToolKey[]> = {
@@ -265,7 +294,7 @@ export const TOOL_GROUPS: Record<string, ToolKey[]> = {
   'Điểm': ['point', 'pointOnObject'],
   'Đường thẳng': ['segment', 'line', 'ray', 'vector', 'polygon'],
   'Mặt phẳng': ['plane'],
-  'Dựng hình': ['midpoint', 'centroid'],
+  'Dựng hình': ['midpoint', 'centroid', 'intersectionLines', 'perpFootLine'],
   'Khối đa diện': ['pyramid', 'prism', 'tetrahedron', 'cube'],
   'Khối cong': ['sphere', 'cylinder', 'cone'],
 };

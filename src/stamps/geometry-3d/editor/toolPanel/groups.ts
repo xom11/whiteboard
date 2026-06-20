@@ -39,7 +39,7 @@ export const TOOLS_BY_GROUP: Record<Geom3DGroup, ToolKey[]> = {
   plane: ['plane'],
   polyhedron: ['pyramid', 'prism', 'tetrahedron', 'cube'],
   curve: ['sphere', 'cylinder', 'cone'],
-  construct: ['midpoint', 'centroid'],
+  construct: ['midpoint', 'centroid', 'intersectionLines', 'perpFootLine'],
 };
 
 export interface Geom3DToolEntry {
