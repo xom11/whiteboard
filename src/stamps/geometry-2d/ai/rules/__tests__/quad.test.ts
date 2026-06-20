@@ -417,4 +417,45 @@ describe('quadRule', () => {
       expect((m[1].intents[0] as any).labels).toEqual(['E', 'F', 'G', 'H']);
     });
   });
+
+  // Tên hình viết HOA đầu câu (đề mở đầu bằng "Hình thang …"/"Tứ giác …", KHÔNG
+  // có "Cho" phía trước) — bug case-sensitivity: trước fix `hình`/`tứ giác` chỉ
+  // khớp chữ thường → prefilter trượt → rule không chạy → NONE (toan8:26/31).
+  describe('chữ HOA đầu câu (no "Cho" lead)', () => {
+    it('"Hình thang cân ABCD …" đầu câu → trapezoid isoceles', () => {
+      const m = run('Hình thang cân ABCD có đáy nhỏ AB');
+      const hit = m.find((x) => (x.intents[0] as any).labels?.join('') === 'ABCD');
+      expect(hit).toBeDefined();
+      const intent = hit!.intents[0] as any;
+      expect(intent.op).toBe('draw-shape');
+      expect(intent.shape).toBe('trapezoid');
+      expect(intent.variant).toBe('isoceles');
+      expect(intent.labels).toEqual(['A', 'B', 'C', 'D']);
+    });
+
+    it('"Tứ giác ABCD …" đầu câu → quadrilateral', () => {
+      const m = run('Tứ giác ABCD có hai đường chéo cắt nhau');
+      const hit = m.find((x) => (x.intents[0] as any).labels?.join('') === 'ABCD');
+      expect(hit).toBeDefined();
+      expect((hit!.intents[0] as any).shape).toBe('quadrilateral');
+    });
+
+    it('"Hình vuông ABCD" đầu câu → square', () => {
+      const m = run('Hình vuông ABCD');
+      expect(m.length).toBe(1);
+      expect((m[0].intents[0] as any).shape).toBe('square');
+      expect((m[0].intents[0] as any).labels).toEqual(['A', 'B', 'C', 'D']);
+    });
+
+    it('PREFILTER khớp "Hình thang cân ABCD" đầu câu', () => {
+      expect(quadRule.patterns.some((re) => re.test('Hình thang cân ABCD'))).toBe(true);
+    });
+
+    it('regression: "Cho hình thang cân ABCD" (chữ thường) vẫn match', () => {
+      const m = run('Cho hình thang cân ABCD');
+      const hit = m.find((x) => (x.intents[0] as any).labels?.join('') === 'ABCD');
+      expect(hit).toBeDefined();
+      expect((hit!.intents[0] as any).variant).toBe('isoceles');
+    });
+  });
 });

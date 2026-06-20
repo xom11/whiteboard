@@ -24,47 +24,50 @@ interface QuadKind {
   variant: string;
 }
 
+// CHỮ HOA ĐẦU CÂU: tên hình ("Hình thang cân ABCD …" / "Tứ giác ABCD …") đứng
+// đầu câu (KHÔNG có "Cho" phía trước) viết HOA → chỉ linh hoạt ký tự ĐẦU của cụm
+// (`[Hh]ình`, `[Tt]ứ`). TUYỆT ĐỐI KHÔNG cờ 'i' (sẽ phá nhóm [A-Z] bắt nhãn đỉnh).
 const KINDS: QuadKind[] = [
   // hình thang cân / vuông (modifier TRƯỚC đỉnh) — phải match trước thang chung
   {
-    name: new RegExp('hình\\s+thang\\s+cân\\s+' + QUAD, 'gu'),
+    name: new RegExp('[Hh]ình\\s+thang\\s+cân\\s+' + QUAD, 'gu'),
     shape: 'trapezoid',
     variant: 'isoceles',
   },
   {
-    name: new RegExp('hình\\s+thang\\s+vuông\\s+' + QUAD, 'gu'),
+    name: new RegExp('[Hh]ình\\s+thang\\s+vuông\\s+' + QUAD, 'gu'),
     shape: 'trapezoid',
     variant: 'right',
   },
   // hình thang chung — sau đó dò modifier 'vuông'/'cân' đứng SAU đỉnh
   // ("hình thang ABCD vuông tại A" → right; "...cân" → isoceles).
   {
-    name: new RegExp('hình\\s+thang\\s+' + QUAD, 'gu'),
+    name: new RegExp('[Hh]ình\\s+thang\\s+' + QUAD, 'gu'),
     shape: 'trapezoid',
     variant: 'general',
   },
   {
-    name: new RegExp('hình\\s+vuông\\s+' + QUAD, 'gu'),
+    name: new RegExp('[Hh]ình\\s+vuông\\s+' + QUAD, 'gu'),
     shape: 'square',
     variant: 'standard',
   },
   {
-    name: new RegExp('hình\\s+chữ\\s+nhật\\s+' + QUAD, 'gu'),
+    name: new RegExp('[Hh]ình\\s+chữ\\s+nhật\\s+' + QUAD, 'gu'),
     shape: 'rectangle',
     variant: 'wide',
   },
   {
-    name: new RegExp('hình\\s+bình\\s+hành\\s+' + QUAD, 'gu'),
+    name: new RegExp('[Hh]ình\\s+bình\\s+hành\\s+' + QUAD, 'gu'),
     shape: 'parallelogram',
     variant: 'standard',
   },
   {
-    name: new RegExp('hình\\s+thoi\\s+' + QUAD, 'gu'),
+    name: new RegExp('[Hh]ình\\s+thoi\\s+' + QUAD, 'gu'),
     shape: 'rhombus',
     variant: 'standard',
   },
   {
-    name: new RegExp('tứ\\s+giác(?:\\s+lồi)?\\s+' + QUAD, 'gu'),
+    name: new RegExp('[Tt]ứ\\s+giác(?:\\s+lồi)?\\s+' + QUAD, 'gu'),
     shape: 'quadrilateral',
     variant: 'any',
   },
@@ -118,7 +121,7 @@ const KINDS: QuadKind[] = [
 
 // Prefilter toàn đề: bất kỳ tên hình 4 đỉnh nào (VN + EN).
 const PREFILTER =
-  /hình\s+(?:vuông|chữ\s+nhật|bình\s+hành|thoi|thang)|tứ\s+giác|[Ss]quare|[Rr]ectangle|[Pp]arallelogram|[Rr]hombus|[Tt]rapezoid|[Tt]rapezium|[Qq]uadrilateral/u;
+  /[Hh]ình\s+(?:vuông|chữ\s+nhật|bình\s+hành|thoi|thang)|[Tt]ứ\s+giác|[Ss]quare|[Rr]ectangle|[Pp]arallelogram|[Rr]hombus|[Tt]rapezoid|[Tt]rapezium|[Qq]uadrilateral/u;
 
 // "hình thang ABCD vuông tại A" / "...cân ..." — modifier đứng SAU đỉnh, ngay
 // sau cụm 4 đỉnh (cho phép xen khoảng trắng). Cờ 'u' bắt buộc cho ký tự Việt.
@@ -126,7 +129,7 @@ const RIGHT_AFTER = /vuông(?!\p{L})/u;
 const ISO_AFTER = /(?<!\p{L})cân(?!\p{L})/u;
 // Biên cắt tail: KHÔNG cho modifier "vuông"/"cân" của hình SAU ("…và hình vuông
 // EFGH") bị gán nhầm cho hình thang đứng trước → dừng tail ở khai báo hình kế.
-const NEXT_SHAPE = /hình\s|tứ\s+giác/u;
+const NEXT_SHAPE = /[Hh]ình\s|[Tt]ứ\s+giác/u;
 
 interface Hit {
   index: number;
