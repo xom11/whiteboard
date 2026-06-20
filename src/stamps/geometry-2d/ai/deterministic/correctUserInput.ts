@@ -39,12 +39,17 @@ function levenshtein(a: string, b: string): number {
 // cấu trúc phổ biến. CHỈ từ-đơn (corrector chạy token-by-token); cụm nhiều-từ
 // tự khớp khi từng token khớp ("vuong goc"→"vuông góc"). Thứ tự = ưu tiên: nếu 2
 // canonical fold trùng key thì từ ĐỨNG TRƯỚC thắng (geometry-priority).
-const CORRECTION_VOCAB: readonly string[] = [
+//
+// ⚠️  Collision-winners (identity-form trước để tránh corrupt từ-đa-nghĩa):
+//   - 'tam' TRƯỚC 'tâm': fold('tam')=fold('tâm')='tam' → tam giác (NOT tâm giác)
+//   - 'thang' TRƯỚC 'thẳng': fold('thang')=fold('thẳng')='thang' → hình thang (NOT thẳng)
+// Các winner này được diag-all gate xác thực 0 regression.
+export const CORRECTION_VOCAB: readonly string[] = [
   // circle / line core
-  'đường', 'tròn', 'thẳng', 'tâm', 'bán', 'kính', 'vòng',
-  // polygon / triangle
-  'tam', 'giác', 'tứ', 'góc', 'cạnh', 'đoạn', 'hình', 'chữ', 'nhật',
-  'vuông', 'cân', 'nhọn', 'đều', 'thoi', 'thang', 'bình', 'hành',
+  'đường', 'tròn', 'bán', 'kính', 'vòng',
+  // polygon / triangle (TAM before TÂM, THANG before THẲNG — see collision-winner warning above)
+  'tam', 'tâm', 'thang', 'thẳng', 'giác', 'tứ', 'góc', 'cạnh', 'đoạn', 'hình', 'chữ', 'nhật',
+  'vuông', 'cân', 'nhọn', 'đều', 'thoi', 'bình', 'hành',
   // chord / arc / point
   'dây', 'cung', 'điểm', 'tia', 'nửa',
   // tangent / inscribed
@@ -59,6 +64,7 @@ const CORRECTION_VOCAB: readonly string[] = [
 ];
 
 // fold → canonical (first-wins theo thứ tự CORRECTION_VOCAB).
+// Exported để test + verify collision-winners.
 export const FOLDED_VOCAB: Map<string, string> = (() => {
   const m = new Map<string, string>();
   for (const w of CORRECTION_VOCAB) {

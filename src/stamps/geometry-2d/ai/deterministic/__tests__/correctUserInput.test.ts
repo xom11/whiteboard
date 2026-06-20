@@ -27,6 +27,10 @@ describe('FOLDED_VOCAB', () => {
     expect(FOLDED_VOCAB.get('vuong')).toBe('vuông');
     expect(FOLDED_VOCAB.get('goc')).toBe('góc');
   });
+  it('collision an toàn — không corrupt từ-đa-nghĩa', () => {
+    expect(FOLDED_VOCAB.get('tam')).toBe('tam');     // tam giác (KHÔNG → tâm)
+    expect(FOLDED_VOCAB.get('thang')).toBe('thang'); // hình thang (KHÔNG → thẳng)
+  });
   it('mọi key là dạng fold của chính canonical (self-consistent)', () => {
     for (const [folded, canonical] of FOLDED_VOCAB) {
       expect(foldVietnamese(canonical)).toBe(folded);
