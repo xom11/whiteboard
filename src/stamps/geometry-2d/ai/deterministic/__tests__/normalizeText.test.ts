@@ -10,6 +10,17 @@ describe('normalizeProblemText', () => {
     expect(normalizeProblemText('Cho ABC nhọn').replace(/\s+/g, ' ')).toBe('Cho tam giác ABC nhọn');
     expect(normalizeProblemText(' ABC').replace(/\s+/g, ' ').trim()).toBe('tam giác ABC');
   });
+  it('khôi phục ngoặc "đường tròn O;R" → "(O;R)" (phrasing/OCR rớt ngoặc)', () => {
+    // hsg9/vao10hcm: "Cho đường tròn O;R ..." không ngoặc → không rule circle nào chạy.
+    expect(normalizeProblemText('Cho đường tròn O;R đường kính AB')).toBe(
+      'Cho đường tròn (O;R) đường kính AB',
+    );
+    expect(normalizeProblemText("Cho nửa đường tròn O';R' có")).toBe("Cho nửa đường tròn (O';R') có");
+    // idempotent: đã có ngoặc → giữ nguyên
+    expect(normalizeProblemText('đường tròn (O;R)')).toBe('đường tròn (O;R)');
+    // KHÔNG đụng "đường tròn O." (không có ;R) — tránh nuốt nhầm.
+    expect(normalizeProblemText('cắt đường tròn O tại B')).toBe('cắt đường tròn O tại B');
+  });
   it('"vòng tròn" → "đường tròn" (mọi hoa/thường)', () => {
     expect(normalizeProblemText('I là tâm vòng tròn nội tiếp')).toBe('I là tâm đường tròn nội tiếp');
     expect(normalizeProblemText('Vòng tròn (O)')).toBe('đường tròn (O)');

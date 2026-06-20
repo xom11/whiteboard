@@ -14,6 +14,11 @@
 // Area. Giữ lookahead (?=[A-Z]) để CHỈ đổi khi đứng trước bộ-đỉnh tam giác.
 const TRIANGLE_SYMBOL = /[Δ∆]\s*(?=[A-Z])/gu;
 const CIRCLE_SYNONYM = /vòng\s+tròn/giu;
+// "đường tròn O;R" (rớt ngoặc — phrasing hsg9/OCR) → "đường tròn (O;R)" để rule
+// circle (cần "(O" / "(O;R)") nhận. Tâm = 1 HOA(+prime), ";", R(+prime). CHỈ dạng
+// ";R" rõ ràng (KHÔNG đụng "đường tròn O" trần — quá mơ hồ). Idempotent: sau
+// "đường tròn " là "(" thì `([A-Z])` không khớp.
+const CIRCLE_PAREN_RESTORE = /(đường\s*tròn\s+)([A-Z])(['′]?)\s*;\s*([Rr])(['′]?)(?![A-Za-z'′])/gu;
 // "◊ABCD" (U+25CA lozenge) / "▱" / "□" → "tứ giác ABCD" (đề toán 8 hay dùng).
 const QUAD_SYMBOL = /[◊▱□]\s*(?=[A-Z])/gu;
 // Ký hiệu căn "√" (nhiễu OCR chèn giữa câu, vd "hình chiếu của H lên √ √ √ AB,AC")
@@ -104,11 +109,17 @@ function deglueMultiWord(s: string): string {
 }
 
 export function normalizeProblemText(problem: string): string {
+  let s = problem
+    .replace(TRIANGLE_SYMBOL, 'tam giác ')
+    .replace(QUAD_SYMBOL, 'tứ giác ')
+    .replace(CIRCLE_SYNONYM, 'đường tròn');
+  // Khôi phục ngoặc circle CHỈ khi đề CHƯA có circle-paren nào "(<HOA>" → tránh
+  // NHÂN ĐÔI định nghĩa đường tròn (chuyen13:10/mohinh:12 có "( O;R )" sẵn ở cuối:
+  // restore tạo "(O;R)" thứ hai → 2 circle O → named-missing). Guard = đúng
+  // predicate đã lọc ra tập bài "đường tròn O;R" trần cần fix.
+  if (!/\(\s*[A-Z]/u.test(s)) s = s.replace(CIRCLE_PAREN_RESTORE, '$1($2$3;$4$5)');
   return deglueMultiWord(
-    problem
-      .replace(TRIANGLE_SYMBOL, 'tam giác ')
-      .replace(QUAD_SYMBOL, 'tứ giác ')
-      .replace(CIRCLE_SYNONYM, 'đường tròn')
+    s
       .replace(SQRT_NOISE, ' ')
       .replace(PRIME_VARIANT, "$1'")
       .replace(GLUE_WORD_LABEL, '$1 $2')
