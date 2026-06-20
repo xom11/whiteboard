@@ -551,3 +551,101 @@ describe('perpFoot — "X và Y lần lượt là chân đường vuông góc k�
       .toEqual(["E:B->AA'", "F:C->AA'"]);
   });
 });
+
+// === Gap 1: hình chiếu / chân ⊥ tới ĐƯỜNG TÊN CHỮ THƯỜNG (d / xy / Ax) ========
+// onLine là đường tên thường ĐÃ KHAI BÁO trong đề ("đường thẳng d", "tiếp tuyến
+// xy/Ax"). Guard: chỉ nhận khi token được khai báo (tránh nuốt chữ thường ngẫu).
+describe('perpFootRule — onLine là đường ĐẶT TÊN CHỮ THƯỜNG (declared)', () => {
+  function feet(problem: string) {
+    const intents = run(problem).flatMap((x) => x.intents) as any[];
+    return intents
+      .filter((i) => i.op === 'add-point' && i.constraint.kind === 'perpFoot')
+      .map((i) => ({ name: i.name, from: i.constraint.from, onLine: i.constraint.onLine }));
+  }
+
+  it('vao10:93: "Hạ OH ⊥ d tại H" với "đường thẳng d" khai báo → H=foot(O,d)', () => {
+    const f = feet('Cho đường thẳng d và đường tròn (O;R). Hạ OH ⊥ d tại H.');
+    expect(f).toEqual([{ name: 'H', from: 'O', onLine: 'd' }]);
+  });
+
+  it('vao10:185: "chân đường vuông góc hạ từ O xuống d" (cát tuyến d khai báo)', () => {
+    const f = feet('Cho (O;R) và một cát tuyến d. Gọi H là chân đường vuông góc hạ từ O xuống d.');
+    expect(f).toEqual([{ name: 'H', from: 'O', onLine: 'd' }]);
+  });
+
+  it('vao10:150: "hình chiếu của D lên tiếp tuyến Ax của (O)" → H=foot(D,Ax)', () => {
+    const f = feet('Cho (O). Vẽ tiếp tuyến Ax của (O). Gọi H là hình chiếu của D lên tiếp tuyến Ax của (O).');
+    expect(f).toEqual([{ name: 'H', from: 'D', onLine: 'Ax' }]);
+  });
+
+  it('httcd:96: "Vẽ AD và BC vuông góc với xy" (tiếp tuyến xy khai báo) → 2 chân CÙNG xy', () => {
+    const f = feet('Vẽ tiếp tuyến xy. Vẽ AD và BC vuông góc với xy.');
+    expect(f).toEqual([
+      { name: 'D', from: 'A', onLine: 'xy' },
+      { name: 'C', from: 'B', onLine: 'xy' },
+    ]);
+  });
+
+  // GUARD: token chữ thường KHÔNG khai báo trong đề → KHÔNG emit (escalate, không
+  // đoán bừa). "Hạ OH ⊥ d" mà đề KHÔNG có "đường thẳng/tiếp tuyến/cát tuyến/tia d".
+  it('guard: "Hạ OH ⊥ d tại H" KHÔNG khai báo "d" → bỏ qua (không emit)', () => {
+    const f = feet('Cho tam giác OHB. Hạ OH ⊥ d tại H.');
+    expect(f).toEqual([]);
+  });
+
+  it('guard: "hình chiếu của D lên xy" KHÔNG khai báo "xy" → bỏ qua', () => {
+    const f = feet('Cho tam giác. Gọi H là hình chiếu của D lên xy.');
+    expect(f).toEqual([]);
+  });
+
+  // onLine HOA-pair vẫn hoạt động bình thường (không bị guard chặn).
+  it('không-regress: onLine HOA "BC" vẫn nhận dù không khai báo', () => {
+    const f = feet('Cho tam giác ABC. Gọi H là hình chiếu của A trên BC.');
+    expect(f).toEqual([{ name: 'H', from: 'A', onLine: 'BC' }]);
+  });
+});
+
+// === Gap 2: distributive ZIP from-LIST ↔ line-LIST ===========================
+// "U,V,W là hình chiếu của X,Y,Z trên BC,CA,AB" → zip 1-1 (U←X trên BC ...).
+describe('perpFootRule — ZIP from-LIST ↔ line-LIST', () => {
+  function feet(problem: string) {
+    const intents = run(problem).flatMap((x) => x.intents) as any[];
+    return intents
+      .filter((i) => i.op === 'add-point' && i.constraint.kind === 'perpFoot')
+      .map((i) => ({ name: i.name, from: i.constraint.from, onLine: i.constraint.onLine }));
+  }
+
+  it('t02:VD9: "U, V, W theo thứ tự là hình chiếu vuông góc của X, Y, Z trên BC, CA, AB"', () => {
+    const f = feet('Gọi U, V, W theo thứ tự là hình chiếu vuông góc của X, Y, Z trên BC, CA, AB.');
+    expect(f).toEqual([
+      { name: 'U', from: 'X', onLine: 'BC' },
+      { name: 'V', from: 'Y', onLine: 'CA' },
+      { name: 'W', from: 'Z', onLine: 'AB' },
+    ]);
+  });
+
+  it('t02:BT39: tên + gốc CÓ CHỈ SỐ "A1, B1, C1 lần lượt là hình chiếu của A, B, C lên BC, CA, AB"', () => {
+    const f = feet('Gọi A1, B1, C1 lần lượt là hình chiếu của A, B, C lên BC, CA, AB.');
+    expect(f).toEqual([
+      { name: 'A1', from: 'A', onLine: 'BC' },
+      { name: 'B1', from: 'B', onLine: 'CA' },
+      { name: 'C1', from: 'C', onLine: 'AB' },
+    ]);
+  });
+
+  it('vẽ kèm đoạn hình chiếu X→U, Y→V, Z→W', () => {
+    const intents = run(
+      'Gọi U, V, W theo thứ tự là hình chiếu vuông góc của X, Y, Z trên BC, CA, AB.',
+    ).flatMap((x) => x.intents) as any[];
+    const segs = intents
+      .filter((i) => i.op === 'connect' && i.style === 'segment')
+      .map((i) => [i.from, i.to].join(''));
+    expect(segs).toEqual(['XU', 'YV', 'ZW']);
+  });
+
+  // zip lệch (số tên ≠ số gốc) → KHÔNG emit (escalate).
+  it('guard: zip lệch "U, V là hình chiếu của X, Y, Z trên BC, CA, AB" → bỏ', () => {
+    const f = feet('Gọi U, V là hình chiếu của X, Y, Z trên BC, CA, AB.');
+    expect(f).toEqual([]);
+  });
+});
