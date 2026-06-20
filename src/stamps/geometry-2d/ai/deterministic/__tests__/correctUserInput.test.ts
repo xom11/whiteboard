@@ -9,6 +9,9 @@ describe('applyStructure (tầng 1)', () => {
     expect(applyStructure('góc bằng 90 do')).toBe('góc bằng 90°');
     expect(applyStructure('góc bằng 90 độ')).toBe('góc bằng 90°');
   });
+  it('"//" CỐ Ý không đổi (đã gỡ khỏi SYMBOL_MAP vì regress diag-all)', () => {
+    expect(applyStructure('AB // CD')).toBe('AB // CD');
+  });
   it('config mặc định: structure+accents bật, typo tắt', () => {
     expect(DEFAULT_CORRECT_CONFIG).toEqual({
       // typo MẶC ĐỊNH TẮT: fuzzy băm từ trần hợp lệ trên corpus thật (xem comment
