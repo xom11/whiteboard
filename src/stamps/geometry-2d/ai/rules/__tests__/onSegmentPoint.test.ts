@@ -146,4 +146,25 @@ describe('onSegmentPoint — Wave hinh9 (coordinated / là-điểm / bất-kì /
     expect(i).toContainEqual({ op: 'add-point', name: 'M', constraint: { kind: 'onSegment', of: 'OA' } });
     expect(i).toContainEqual({ op: 'add-point', name: 'N', constraint: { kind: 'onSegment', of: 'OB' } });
   });
+
+  // vao10:168 — 2 điểm trên TIA ĐẶT TÊN (Ax = tiếp tuyến): "Trên tia Ax lấy hai
+  // điểm B và C". Ray Ax khai báo qua "tiếp tuyến Ax". CHẠY TRƯỚC metric-skip
+  // ("sao cho AB=BC" — đặt free, metric tinh chỉnh).
+  it('vao10:168: "Trên tia Ax lấy hai điểm B và C" (Ax = tiếp tuyến) → B,C onSegment Ax', () => {
+    const i = intents('Cho (O) và tiếp tuyến Ax. Trên tia Ax lấy hai điểm B và C sao cho AB=BC');
+    expect(i).toContainEqual({ op: 'add-point', name: 'B', constraint: { kind: 'onSegment', of: 'Ax' } });
+    expect(i).toContainEqual({ op: 'add-point', name: 'C', constraint: { kind: 'onSegment', of: 'Ax' } });
+  });
+
+  it('"Trên tia Ax lấy hai điểm B, C" (sep phẩy) → B,C onSegment Ax', () => {
+    const i = intents('Cho (O) và tiếp tuyến Ax. Trên tia Ax lấy hai điểm B, C');
+    expect(i).toContainEqual({ op: 'add-point', name: 'B', constraint: { kind: 'onSegment', of: 'Ax' } });
+    expect(i).toContainEqual({ op: 'add-point', name: 'C', constraint: { kind: 'onSegment', of: 'Ax' } });
+  });
+
+  // GUARD: ray KHÔNG khai báo trong đề → KHÔNG dựng (tránh nhầm token bịa).
+  it('GUARD: "Trên tia Ax lấy hai điểm B và C" KHÔNG có "tiếp tuyến/tia Ax" khai báo → không claim', () => {
+    const i = intents('Cho tam giác ABC. Trên tia Ax lấy hai điểm B và C');
+    expect(i.find((x) => x.constraint?.of === 'Ax')).toBeUndefined();
+  });
 });

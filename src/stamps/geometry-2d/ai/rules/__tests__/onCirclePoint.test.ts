@@ -202,4 +202,20 @@ describe('onCirclePointRule — điểm tự do trên cung (di chuyển / thay �
       constraint: { kind: 'onCircle', circle: 'O_c', theta: 1.2 },
     });
   });
+
+  it('"B và C là hai điểm thuộc đường tròn" (sep "và") → CẢ B và C on O (vao10:80)', () => {
+    const all = geoIntents('Cho đường tròn (O;R). B và C là hai điểm thuộc đường tròn sao cho BOC = 120.');
+    const b = all.find((i) => i.name === 'B' && i.constraint.kind === 'onCircle');
+    const c = all.find((i) => i.name === 'C' && i.constraint.kind === 'onCircle');
+    expect(b).toBeTruthy();
+    expect(c).toBeTruthy();
+    // theta phân biệt (không trùng nhau).
+    expect(b.constraint.theta).not.toBe(c.constraint.theta);
+  });
+
+  it('"M và N là hai điểm trên cung nhỏ AB" (sep "và" + cung) → CẢ M và N on O', () => {
+    const all = geoIntents('Cho đường tròn (O) đường kính AB. M và N là hai điểm trên cung nhỏ AB.');
+    expect(all.find((i) => i.name === 'M' && i.constraint.kind === 'onCircle')).toBeTruthy();
+    expect(all.find((i) => i.name === 'N' && i.constraint.kind === 'onCircle')).toBeTruthy();
+  });
 });

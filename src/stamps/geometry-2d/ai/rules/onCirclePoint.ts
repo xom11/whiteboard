@@ -58,10 +58,12 @@ const TWO_ON =
 const TWO_ON_COMMA =
   /(?:[CcNn]ác\s+|[Nn]hững\s+)?điểm\s+([A-Z])(?![A-Za-z])\s*,\s*([A-Z])(?![A-Za-z])\s+thuộc\s+(?:nửa\s+)?(?:đường\s*tròn|cung)/u;
 // "M, N là hai điểm thuộc cung nhỏ BC …" / "C,D là các điểm nằm trên (O)"
-// (vao10:12) — tên ĐỨNG TRƯỚC "là (hai|các) điểm thuộc/nằm trên". Hậu tố nhận
-// thêm "(X)" paren bare vì đề hay viết "nằm trên (O)" không chữ "đường tròn".
+// (vao10:12) / "B và C là hai điểm thuộc đường tròn" (vao10:80) — tên ĐỨNG TRƯỚC
+// "là (hai|các) điểm thuộc/nằm trên". Separator giữa 2 tên = phẩy HOẶC "và".
+// Hậu tố nhận thêm "(X)" paren bare vì đề hay viết "nằm trên (O)" không chữ
+// "đường tròn".
 const TWO_ON_NAMES =
-  /([A-Z])(?![A-Za-z])\s*,\s*([A-Z])(?![A-Za-z])\s+là\s+(?:hai|các)\s+điểm\s+(?:thuộc|nằm\s+trên|trên)\s+(?:(?:nửa\s+)?(?:đường\s*tròn|cung)|\(\s*[A-Z]\s*\))/u;
+  /([A-Z])(?![A-Za-z])\s*(?:,|và)\s*([A-Z])(?![A-Za-z])\s+là\s+(?:hai|các)\s+điểm\s+(?:thuộc|nằm\s+trên|trên)\s+(?:(?:nửa\s+)?(?:đường\s*tròn|cung)|\(\s*[A-Z]\s*\))/u;
 // ĐẢO 2 điểm trên CUNG: "Trên cung (lớn|nhỏ)? AB lấy hai điểm C, D" / "C và D"
 // (hinh9:19, vao10:202). Cung nêu bằng cặp đỉnh; circle = toàn đề. group1, group2
 // = 2 điểm.

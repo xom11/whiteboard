@@ -132,6 +132,16 @@ const TWO_SEG_LAY = new RegExp(
   'gu',
 );
 
+// 2 điểm trên TIA tiếp-tuyến ĐẶT TÊN dạng <HOA><x/y/z/t> ("Ax", "By", "Bx"):
+// "Trên tia Ax lấy hai điểm B và C" / "Trên Ax lấy hai điểm B, C". Ray token =
+// 1 HOA + x/y/z/t NEO (?!\p{L}) (khớp tangentRay). Separator 2 tên = phẩy HOẶC
+// "và". group1=ray, group2=point1, group3=point2. Chỉ kích hoạt khi ray KHAI BÁO
+// "tiếp tuyến <Ray>" trong đề — guard declaredNamedRays ở match().
+const TWO_ON_NAMED_RAY = new RegExp(
+  String.raw`[Tt]rên\s+(?:tia\s+)?([A-Z][xyzt])(?!\p{L})\s+(?:lấy\s+)?(?:hai\s+|2\s+)?(?:điểm\s+)?([A-Z](?:['′])?)(?![A-Z])\s*(?:,|và)\s*([A-Z](?:['′])?)(?![A-Z])`,
+  'gu',
+);
+
 function normalizePoint(name: string): string {
   return name.replace('′', "'");
 }
@@ -155,6 +165,18 @@ function declaredNamedLines(problem: string): Set<string> {
   return out;
 }
 
+// Tập TIA tiếp-tuyến ĐẶT TÊN dạng <HOA><x/y/z/t> ("Ax", "By") khai báo trong đề
+// qua "tiếp tuyến Ax" (tangentRay rule dựng shape tên "Ax"). Guard cho
+// TWO_ON_NAMED_RAY: chỉ glider khi ray thật sự được dựng — tránh bịa shape "Ax"
+// không tồn tại → transpile-fail. CHỈ "tiếp tuyến" (construct dựng ray); "tia Ax"
+// trong "Trên tia Ax lấy …" là CHỖ lấy điểm, KHÔNG phải khai báo dựng ray.
+function declaredNamedRays(problem: string): Set<string> {
+  const out = new Set<string>();
+  const RE = /tiếp\s*tuyến\s+([A-Z][xyzt])(?![A-Za-z])/gu;
+  for (const m of problem.matchAll(RE)) out.add(m[1]);
+  return out;
+}
+
 export const onSegmentPointRule: LanguageRule = {
   id: 'on-segment-point',
   priority: 62,
@@ -163,6 +185,7 @@ export const onSegmentPointRule: LanguageRule = {
   match(ctx) {
     const out: RuleMatch[] = [];
     const namedLines = declaredNamedLines(ctx.problem);
+    const namedRays = declaredNamedRays(ctx.problem);
     for (const c of ctx.clauses) {
       const intents = [];
 
@@ -195,6 +218,25 @@ export const onSegmentPointRule: LanguageRule = {
           const line = m[2];
           if (namedLines.has(line) && /^[A-Z]['′]?$/u.test(name)) {
             intents.push(addPoint(name, { kind: 'onSegment', of: line }));
+          }
+        }
+      }
+
+      // 2 điểm trên TIA tiếp-tuyến ĐẶT TÊN ("Trên tia Ax lấy hai điểm B và C")
+      // — CHẠY TRƯỚC metric-skip (đặt B,C free trên Ax dù "sao cho AB=BC"; metric
+      // chỉ tinh chỉnh). Guard: ray PHẢI khai báo "tiếp tuyến <Ray>" trong đề
+      // (namedRays) — tránh bịa shape ray không tồn tại → transpile-fail.
+      if (namedRays.size > 0) {
+        TWO_ON_NAMED_RAY.lastIndex = 0;
+        for (const m of c.text.matchAll(TWO_ON_NAMED_RAY)) {
+          const ray = m[1];
+          if (!namedRays.has(ray)) continue;
+          for (const raw of [m[2], m[3]]) {
+            const name = normalizePoint(raw);
+            // Điểm hợp lệ: 1 HOA (+prime) và KHÁC đầu mút gốc của ray (Ax → loại A).
+            if (/^[A-Z]['′]?$/u.test(name) && name[0] !== ray[0]) {
+              intents.push(addPoint(name, { kind: 'onSegment', of: ray }));
+            }
           }
         }
       }
