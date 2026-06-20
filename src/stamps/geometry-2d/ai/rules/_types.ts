@@ -21,6 +21,11 @@ export interface LanguageRule {
   id: string;
   /** cao chạy trước — giải overlap (vd 'trung trực' > 'trung điểm'). */
   priority: number;
+  /**
+   * Metadata ngôn ngữ (tài liệu). LƯU Ý: runRules KHÔNG lọc theo field này —
+   * prefilter chạy patterns[] cho MỌI rule bất kể languages. Đừng giả định set
+   * 'vi'/'en' sẽ skip rule khác ngôn ngữ (rule EN tự né qua patterns[] tiếng Anh).
+   */
   languages: readonly ('vi' | 'en')[];
   /** prefilter nhanh trên toàn đề trước khi gọi match(). */
   patterns: readonly RegExp[];

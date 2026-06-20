@@ -195,7 +195,17 @@ const RULES: readonly LanguageRule[] = [
   parallelSidePointsRule,
 ];
 
-/** Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load. */
+/**
+ * Sắp xếp priority giảm dần (cao chạy trước) — tính 1 lần ở module load.
+ *
+ * TIE-BREAK (quan trọng): Array.sort ỔN ĐỊNH → rule CÙNG priority giữ nguyên thứ
+ * tự khai báo trong RULES[] ở trên. Nghĩa là thứ tự mảng RULES[] LÀ precedence
+ * NGẦM khi priority bằng nhau (vd add-point first-wins). Đổi thứ tự import/array
+ * có thể đổi precedence ngầm — thêm rule cùng priority phải cân nhắc vị trí.
+ * (Rủi ro đã giảm: intent-layer có order-retry topo (intentTopo) nên KHÔNG còn
+ * phụ thuộc rule priority cho thứ tự BUILD — xem audit 2026-06-12.)
+ * Bất biến (no dup id / sorted / patterns≠[]) khoá ở registry.invariants.test.ts.
+ */
 export const ALL_RULES: readonly LanguageRule[] = [...RULES].sort(
   (a, b) => b.priority - a.priority,
 );
