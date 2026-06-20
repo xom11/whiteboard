@@ -23,10 +23,12 @@ jobs:
           fetch-depth: 0          # semantic-release cần toàn bộ history + tags
           persist-credentials: false
 
+      # KHÔNG dùng registry-url ở đây: nó tạo .npmrc tạm với ${NODE_AUTH_TOKEN}
+      # placeholder mà semantic-release đọc nhầm → 401. semantic-release/npm tự
+      # cấu hình auth từ NPM_TOKEN, nên chỉ cần node-version.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org
 
       - run: npm ci
 
