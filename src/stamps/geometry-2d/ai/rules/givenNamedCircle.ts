@@ -15,7 +15,7 @@
 //
 // GOTCHA \b: ký tự Việt → cờ 'u'.
 import type { LanguageRule, RuleMatch } from './_types';
-import { drawCircle, CIRCLE_KW } from './_shared';
+import { drawCircle, CIRCLE_KW, escapeRe } from './_shared';
 import { SYMBOLIC_RADIUS } from './circleRadius';
 
 // "(X)" trơ: 1 ký tự HOA trong ngoặc, KHÔNG ";"/"," (radius) bên trong.
@@ -45,21 +45,21 @@ export const givenNamedCircleRule: LanguageRule = {
       const c = center; // single [A-Z]
       // Bỏ qua nếu tâm này CÓ qualifier khác (rule khác lo): bán kính số/chữ
       // "(O; …)", đường kính, nội/ngoại tiếp.
-      if (new RegExp(`\\(\\s*${c}\\s*[;,]`, 'u').test(ctx.problem)) continue; // (O; R)/(O; 3)
-      if (new RegExp(`\\(\\s*${c}\\s*\\)[^.]{0,30}?đường\\s*kính|đường\\s*kính[^.]{0,30}?\\(\\s*${c}\\s*\\)`, 'u').test(ctx.problem)) continue;
-      if (new RegExp(`(?:nội|ngoại)\\s*tiếp[^.]{0,30}?\\(\\s*${c}\\s*\\)|\\(\\s*${c}\\s*\\)[^.]{0,30}?(?:nội|ngoại)\\s*tiếp`, 'u').test(ctx.problem)) continue;
+      if (new RegExp(`\\(\\s*${escapeRe(c)}\\s*[;,]`, 'u').test(ctx.problem)) continue; // (O; R)/(O; 3)
+      if (new RegExp(`\\(\\s*${escapeRe(c)}\\s*\\)[^.]{0,30}?đường\\s*kính|đường\\s*kính[^.]{0,30}?\\(\\s*${escapeRe(c)}\\s*\\)`, 'u').test(ctx.problem)) continue;
+      if (new RegExp(`(?:nội|ngoại)\\s*tiếp[^.]{0,30}?\\(\\s*${escapeRe(c)}\\s*\\)|\\(\\s*${escapeRe(c)}\\s*\\)[^.]{0,30}?(?:nội|ngoại)\\s*tiếp`, 'u').test(ctx.problem)) continue;
       // "(O)" phải là đường tròn:
       //   (a) đứng sau "đường tròn"/"(nửa) đường tròn" — "Cho đường tròn (O)", HOẶC
       //   (b) đề MỞ bằng "Cho (O)" (notation tắt phổ biến — "(O)" trần = đường tròn
       //       tâm O) — chỉ chấp nhận khi (O) được THAM CHIẾU bởi tiếp/cát tuyến (đã
       //       qua HAS_TANGENT_OR_SECANT ở đầu match) → tránh nuốt "(O)" chú thích điểm.
       // Yêu cầu CIRCLE_KW gần HOẶC mở đầu "Cho (O)" để không nuốt "(O)" chú thích.
-      const isNamedCircle = new RegExp(`${CIRCLE_KW}\\s*\\(\\s*${c}\\s*\\)`, 'u').test(ctx.problem);
-      const isOpenedBare = new RegExp(`^[Cc]ho\\s+\\(\\s*${c}\\s*\\)`, 'u').test(ctx.problem.trimStart());
+      const isNamedCircle = new RegExp(`${CIRCLE_KW}\\s*\\(\\s*${escapeRe(c)}\\s*\\)`, 'u').test(ctx.problem);
+      const isOpenedBare = new RegExp(`^[Cc]ho\\s+\\(\\s*${escapeRe(c)}\\s*\\)`, 'u').test(ctx.problem.trimStart());
       if (!isNamedCircle && !isOpenedBare) continue;
       seen.add(center);
       // claim clause chứa "(center)".
-      const owner = ctx.clauses.find((cl) => new RegExp(`\\(\\s*${c}\\s*\\)`, 'u').test(cl.text));
+      const owner = ctx.clauses.find((cl) => new RegExp(`\\(\\s*${escapeRe(c)}\\s*\\)`, 'u').test(cl.text));
       out.push({
         ruleId: 'givenNamedCircle',
         clauseIds: owner ? [owner.id] : [],

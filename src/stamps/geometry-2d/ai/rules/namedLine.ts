@@ -24,7 +24,7 @@
 // (nuốt "vuông"→"vu" vì 'ô' không trong [a-z] ASCII; cờ 'u' bắt buộc cho ký tự Việt).
 import type { LanguageRule, RuleMatch } from './_types';
 import type { IntentT } from '../intent';
-import { addPoint, drawLine, DUONG_KW } from './_shared';
+import { addPoint, drawLine, DUONG_KW, escapeRe } from './_shared';
 
 // Token tên đường chữ thường: 1-2 ký tự thường + tối đa 1 chữ số ("d","xy","d1"),
 // NEO (?!\p{L}) để không nuốt từ tiếng Việt ("vuông"/"song").
@@ -100,7 +100,7 @@ const FREE_DECL = new RegExp(
 //  + (?![\p{L}\d]) để "d" độc lập (không nuốt "do"/"đó"). Dùng làm guard tránh
 //  dựng đường thừa cho tên trơ.
 function lineReferenced(problem: string, name: string): boolean {
-  const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const esc = escapeRe(name);
   const N = String.raw`(?<![\p{L}\d])${esc}(?![\p{L}\d])`;
   const REFS = [
     // trước "d": "⊥ d", "song song d", "thuộc/trên/nằm trên d", "cắt … d", "của d"

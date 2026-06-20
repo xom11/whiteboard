@@ -24,7 +24,7 @@
 // ("đ","ề","ạ"…). Mọi regex chứa ký tự Việt dùng cờ 'u' + lookaround \p{L}.
 import type { LanguageRule, RuleMatch } from './_types';
 import type { Clause } from '../deterministic/coverage';
-import { drawCircle, CIRCLE_KW, DUONG_KW } from './_shared';
+import { drawCircle, CIRCLE_KW, DUONG_KW, escapeRe } from './_shared';
 
 // "đường tròn tâm O bán kính 3" / "(O) bán kính 3" / "O bán kính 3".
 // Tâm 1 ký tự HOA; "tâm" optional; có thể bọc trong ngoặc "(O)".
@@ -143,10 +143,6 @@ function parseNum(raw: string): number {
 // ("(O" khi đề viết "tâm (O)" — capture lọt dấu ngoặc) → `new RegExp` ném
 // "Unterminated group" làm crash CẢ pipeline. Escape = no-op với tên sạch (zero
 // regression), chỉ chặn crash khi tên bẩn (rule khi đó không khớp → escalate).
-function escapeRe(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 function isInscribedCircumscribed(problem: string, center: string): boolean {
   // Quan hệ "nội/ngoại tiếp" (VN) + "inscribed/circumscribes/circumscribed" (EN,
   // issue #46 group B). EN mirror chống silent-WRONG: "Triangle ABC inscribed in

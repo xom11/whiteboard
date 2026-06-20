@@ -90,6 +90,19 @@ export function pairFromToken(token: string): string[] {
 // "dây (cung)" cũng là đoạn thẳng — "trung điểm của dây MN" (vao10:254).
 export const SIDE_PREFIX = '(?:cạnh(?:\\s+huyền)?\\s+|đoạn(?:\\s+thẳng)?\\s+|dây(?:\\s+cung)?\\s+)?';
 
+/**
+ * Escape regex-metacharacter trong một tên (điểm/đường tròn) TRƯỚC khi nội suy
+ * vào `new RegExp(`…${name}…`)`. Bug-class lặp lại (CLAUDE.md): tên méo OCR
+ * ("tâm (O", "(O*)") lọt qua capture RỘNG → "Unterminated group" crash CẢ pipeline.
+ *
+ * QUY TẮC: MỌI `new RegExp` nội suy một tên runtime PHẢI bọc qua escapeRe — kể cả
+ * khi capture hiện tại chỉ [A-Z] (an toàn hôm nay ≠ an toàn khi capture nới rộng).
+ * Đây là 1 nguồn duy nhất, thay 2 def trùng (chord/circleRadius) + 3 inline.
+ */
+export function escapeRe(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /** "đường" và typo "đương" (thiếu dấu huyền). */
 export const DUONG_KW = '[Đđ]ư[ờơ]ng';
 

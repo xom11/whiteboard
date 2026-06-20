@@ -12,7 +12,7 @@
 // PRIORITY 67: sau circle (75/72) + externalPoint (68), trước tiếp-tuyến-từ-ngoài
 // (≤65) để A build TRƯỚC tangent (topo-retry vẫn lo nếu lệch).
 import type { LanguageRule, RuleMatch } from './_types';
-import { addPoint } from './_shared';
+import { addPoint, escapeRe } from './_shared';
 
 // "OA = 3R" / "OM =2R" — 2 nhãn HOA, "=", số ≥2, "R". 1 nhãn là TÂM, nhãn kia =
 // điểm ngoài. k=1 (=R) BỎ (điểm TRÊN đường tròn, rule khác lo). Cờ 'g' multi-match.
@@ -20,7 +20,7 @@ const METRIC = /([A-Z])(?:['′]?)([A-Z])(?:['′]?)\s*=\s*([2-9])\s*[Rr](?![A-Z
 
 // nhãn c là TÂM nếu toàn đề có "(c)"/"(c;..."/ "tâm c" / "đường tròn (c)".
 function isCenter(problem: string, c: string): boolean {
-  const e = c.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+  const e = escapeRe(c);
   return new RegExp(
     String.raw`\(\s*${e}[\s);,]|tâm\s*${e}(?![A-Za-z])|đường\s*tròn\s*\(?\s*${e}(?![A-Za-z])`,
     'u',

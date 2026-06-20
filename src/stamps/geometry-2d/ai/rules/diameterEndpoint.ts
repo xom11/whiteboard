@@ -13,7 +13,7 @@
 //
 // \b không khớp ký tự Việt → (?!\p{L}) + cờ 'u'.
 import type { LanguageRule, RuleMatch } from './_types';
-import { addPoint } from './_shared';
+import { addPoint, escapeRe } from './_shared';
 
 // group1+2 = cặp đầu mút đường kính (AD), 3 = tâm O.
 const RE = new RegExp(
@@ -83,7 +83,7 @@ export const diameterEndpointRule: LanguageRule = {
         // MN" qua điểm tuỳ ý — cả 2 mút mới — KHÔNG thuộc rule này). Lookbehind
         // chỉ loại chữ THƯỜNG: "C" trong "ABC" (sau B hoa) vẫn là điểm đã biết.
         const before = ctx.problem.slice(0, ctx.problem.indexOf(m[0]));
-        if (!new RegExp(`(?<![a-z])${a}(?![a-z])`, 'u').test(before)) continue;
+        if (!new RegExp(`(?<![a-z])${escapeRe(a)}(?![a-z])`, 'u').test(before)) continue;
         emitted.add(d);
         out.push({
           ruleId: 'diameterEndpoint',

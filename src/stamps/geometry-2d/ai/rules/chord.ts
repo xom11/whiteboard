@@ -24,7 +24,7 @@
 // tự Việt dùng cờ 'u' + lookaround (?!\p{L}).
 import type { LanguageRule, RuleMatch } from './_types';
 import type { Clause } from '../deterministic/coverage';
-import { addPoint, connect, drawCircle, CIRCLE_KW } from './_shared';
+import { addPoint, connect, drawCircle, CIRCLE_KW, escapeRe } from './_shared';
 import { SYMBOLIC_RADIUS } from './circleRadius';
 
 // Tên đường tròn toàn đề: "đường tròn (tâm) O" / "(O)".
@@ -57,11 +57,6 @@ const THETA_STEP = 0.9;
 
 // Prefilter toàn đề ("Dây" HOA đầu câu cũng khớp).
 const PREFILTER = /[Dd]ây/u;
-
-/** Escape regex metachar — tên đường tròn từ OCR bẩn có thể chứa "(", "*"… */
-function escapeRe(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
 
 /** Clause id chứa khai báo đường tròn (CIRCLE_WORDS hoặc "(O)"). */
 function findCircleClauseId(clauses: readonly Clause[], circle: string): number | undefined {

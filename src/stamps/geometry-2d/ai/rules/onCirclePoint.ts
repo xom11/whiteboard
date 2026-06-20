@@ -7,7 +7,7 @@
 // This rule is intentionally conservative: it needs one unambiguous circle name
 // in the whole problem, and it does not try to model arc bounds yet.
 import type { LanguageRule, RuleMatch } from './_types';
-import { addPoint } from './_shared';
+import { addPoint, escapeRe } from './_shared';
 
 const PREFILTER = /(?:nằm|thuộc|lấy\s+điểm|trên\s+(?:nửa\s+)?(?:đường\s*tròn|cung))/iu;
 const NAMED_CIRCLE = /(?:nửa\s+)?đường\s*tròn\s*(?:tâm\s+)?\(?\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)?/u;
@@ -99,7 +99,7 @@ function resolveCircle(problem: string): string | undefined {
   // circumcircle "(O)" (circleTriangle đặt tên "O") + 1 đường tròn đường kính MP
   // rời → onCircle phải trỏ "O", KHÔNG "O_c". Nếu là circle bán kính/qua-3-điểm
   // (tên thô "O"), resolveCircleNames sẽ map "O"→"O_c" khi cần (có collision).
-  const c = center.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const c = escapeRe(center);
   const diameterOfThisCenter =
     new RegExp(`(?:\\(\\s*${c}\\s*[;,)]|tâm\\s+${c}(?![A-Za-z]))[^.]{0,25}?đường\\s*kính`, 'u').test(problem) ||
     new RegExp(`đường\\s*kính[^.]{0,25}?\\(\\s*${c}\\s*\\)`, 'u').test(problem);

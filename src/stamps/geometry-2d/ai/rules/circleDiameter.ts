@@ -8,7 +8,7 @@
 // This deliberately does NOT parse "đường tròn đường kính BC cắt AB tại M" because
 // diameterCircleCutsSides owns that richer construct.
 import type { LanguageRule, RuleMatch } from './_types';
-import { addPoint, connect, drawCircle, DUONG_KW, CIRCLE_KW } from './_shared';
+import { addPoint, connect, drawCircle, DUONG_KW, CIRCLE_KW, escapeRe } from './_shared';
 
 const DIAMETER_KW = new RegExp(DUONG_KW + '\\s*kính', 'u');
 
@@ -200,7 +200,7 @@ export const circleDiameterRule: LanguageRule = {
       const key = `${center}|${a}${b}`;
       if (emitted.has(key)) continue;
       const before = ctx.problem.slice(0, bm.index);
-      const known = (p: string) => new RegExp(`(?<![a-z])${p}(?![a-z])`, 'u').test(before);
+      const known = (p: string) => new RegExp(`(?<![a-z])${escapeRe(p)}(?![a-z])`, 'u').test(before);
       if (!known(a) || !known(b)) continue;
       emitted.add(key);
       const matched = bm[0];

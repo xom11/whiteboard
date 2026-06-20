@@ -25,7 +25,7 @@
 //
 // GOTCHA \b: ký tự Việt → cờ 'u'; ⊥ hoặc "vuông góc với".
 import type { LanguageRule, RuleMatch } from './_types';
-import { addPoint, connect, drawLine } from './_shared';
+import { addPoint, connect, drawLine, escapeRe } from './_shared';
 
 // "(Kẻ)? dây (cung)? DE (⊥|vuông góc với) AB (tại H)?" — g1g2=dây DE, g3=đường
 // AB (1-2 ký tự), g4=H (optional, chân).
@@ -43,7 +43,7 @@ const CENTER = /\(\s*([A-Z])\s*[;,)]|tâm\s+([A-Z])(?![A-Za-z])/u;
 function appearsBefore(problem: string, chordText: string, d: string): boolean {
   const pos = problem.indexOf(chordText);
   if (pos < 0) return true; // không định vị được → conservative: coi như đã có (nhánh A)
-  return new RegExp(`(?<![A-Za-z])${d}(?![a-z])`, 'u').test(problem.slice(0, pos));
+  return new RegExp(`(?<![A-Za-z])${escapeRe(d)}(?![a-z])`, 'u').test(problem.slice(0, pos));
 }
 
 export const perpChordAtFootRule: LanguageRule = {
