@@ -18,7 +18,7 @@ import { addPoint, drawCircle, CIRCLE_KW } from './_shared';
 // — paren-tâm (1 chữ HOA, optional prime/;R) liền "cắt" + sau đó có cặp đỉnh
 // (line). Trước đây 2 nhánh circle-subject KHÔNG có prefilter → rule không chạy
 // khi đề KHÔNG có nhánh line-chủ-ngữ nào (julielltv:12 "(I) cắt AB,AC tại M,N").
-const PREFILTER = /cắt\s+(?:lại\s+)?(?:(?:nửa\s+)?đường\s*tròn\s*)?\(|cắt\s+(?:lại\s+)?(?:nửa\s+)?đường\s*tròn\s+(?:tâm\s+[A-Z](?:['′])?\s+)?(?:ở|tại)|cắt\s+[A-Z]{2}\s+và\s+\(|\(\s*[A-Z](?:['′]?)\s*(?:[;,]\s*[Rr]\s*)?\)\s+cắt\s+(?:lại\s+)?[A-Z]{2}\s*(?:,|và)?\s*(?:[A-Z]{2})?\s+(?:lần\s*lượt\s+|theo\s+thứ\s+tự\s+|tương\s+ứng\s+)?(?:ở|tại)|\(\s*[A-Z]{3}\s*\)\s*(?:,|và)\s*\(\s*[A-Z]{3}\s*\)\s+cắt|giao\s*điểm\s+(?:thứ\s+hai\s+)?(?:của\s+|khác\s+[A-Z]\s+của\s+)?(?:đường\s*thẳng\s+)?[A-Z]{2}\s+(?:và|với)\s+(?:(?:nửa\s+)?đường\s*tròn|\(|ngoại\s*tiếp\s+tam\s*giác)/u;
+const PREFILTER = /cắt\s+(?:lại\s+)?(?:(?:nửa\s+)?đường\s*tròn\s*)?\(|cắt\s+(?:lại\s+)?(?:nửa\s+)?đường\s*tròn\s+(?:tâm\s+[A-Z](?:['′])?\s+)?(?:ở|tại)|cắt\s+[A-Z]{2}\s+và\s+\(|\(\s*[A-Z](?:['′]?)\s*(?:[;,]\s*[Rr]\s*)?\)\s+cắt\s+(?:lại\s+)?[A-Z]{2}\s*(?:,|và)?\s*(?:[A-Z]{2})?\s+(?:lần\s*lượt\s+|theo\s+thứ\s+tự\s+|tương\s+ứng\s+)?(?:ở|tại)|\(\s*[A-Z]{3}\s*\)\s*(?:,|và)\s*\(\s*[A-Z]{3}\s*\)\s+cắt|giao\s*điểm\s+(?:thứ\s+hai\s+)?(?:của\s+|khác\s+[A-Z]\s+của\s+)?(?:đường\s*thẳng\s+)?[A-Z]{2}(?:\s*,\s*[A-Z]{2})?\s+(?:và|với)\s+(?:(?:nửa\s+)?đường\s*tròn|\(|ngoại\s*tiếp\s+tam\s*giác)/u;
 // "(O)" + compact "(O;R)"/"(O,R)" — vao10:127 "Tia CI cắt đường tròn (O;R) tại E".
 // "nửa" optional — vao10:18 "giao điểm thứ hai của DC với NỬA đường tròn (O)".
 const CIRCLE = String.raw`(?:(?:nửa\s+)?đường\s*tròn\s*)?\(\s*([A-Z])(?:['′]?)\s*(?:[;,]\s*[Rr]\s*)?\)`;

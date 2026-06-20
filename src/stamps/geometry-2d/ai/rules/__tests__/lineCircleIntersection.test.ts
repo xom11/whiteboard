@@ -179,4 +179,16 @@ describe('lineCircleIntersection — residue', () => {
     const circles = intents.filter((i) => i.op === 'draw-circle').map((c) => c.name).sort();
     expect(circles).toEqual(['wAPB', 'wAPC']);
   });
+
+  // hinh9:127, son123:123 — DISTRIB_2ND name-first khớp match() nhưng PREFILTER
+  // (branch "giao điểm thứ hai của <LINE> với (O)") chỉ cho 1 line → chặn "AM,AN".
+  it('DISTRIB_2ND name-first: "Gọi E,F lần lượt là giao điểm thứ hai của AM,AN với đường tròn (O)"', () => {
+    const text = 'Gọi E,F lần lượt là giao điểm thứ hai của AM,AN với đường tròn (O)';
+    expect(lineCircleIntersectionRule.patterns.some((re) => re.test(text))).toBe(true);
+    const intents = run(text).flatMap((m) => m.intents) as any[];
+    const e = intents.find((i) => i.name === 'E');
+    const f = intents.find((i) => i.name === 'F');
+    expect(e.constraint).toEqual({ kind: 'secondIntersection', line: 'AM', circle: 'O', other: 'A' });
+    expect(f.constraint).toEqual({ kind: 'secondIntersection', line: 'AN', circle: 'O', other: 'A' });
+  });
 });
