@@ -107,8 +107,19 @@ const GIAO_TWO_ONE_LA = new RegExp(
 //   1-1, KHÔNG dùng chung đường). "lần lượt/theo thứ tự" BẮT BUỘC để chắc zip.
 //   Bài 99: "Các đường thẳng BO,CO lần lượt cắt các đoạn thẳng AC,AB tại M,N".
 //   groups: 1=ref1 2=ref2 3=ref3 4=ref4 5=name1 6=name2.
+// "lần lượt"/"theo thứ tự"/"tương ứng" = zip-marker BẮT BUỘC (để chắc zip 1-1,
+//  không lẫn cross-product). Marker xuất hiện Ở MỘT trong 2 chỗ:
+//   - TRƯỚC "cắt": "BO,CO lần lượt cắt AC,AB tại M,N" (CAT_ZIP)
+//   - SAU cụm line2, trước "tại": "BH,CH cắt CA,AB tương ứng tại E,F"
+//     (CAT_ZIP_POST — julielltv:11).
+const ZIP_MK = `(?:lần\\s*lượt|theo\\s+thứ\\s+tự|tương\\s+ứng)`;
+const ZIP_SIDE = `(?:đoạn(?:\\s+thẳng)?\\s+|cạnh\\s+|tia\\s+|${DUONG_KW}\\s*thẳng\\s+)?`;
 const CAT_ZIP = new RegExp(
-  `${REF}\\s*,\\s*${REF}\\s+(?:lần\\s*lượt\\s+|theo\\s+thứ\\s+tự\\s+)cắt\\s+(?:các\\s+)?(?:đoạn(?:\\s+thẳng)?\\s+|cạnh\\s+|${DUONG_KW}\\s*thẳng\\s+)?${REF}\\s*,\\s*${REF}\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])`,
+  `${REF}\\s*,\\s*${REF}\\s+${ZIP_MK}\\s+cắt\\s+(?:các\\s+)?${ZIP_SIDE}${REF}\\s*,\\s*${REF}\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])`,
+  'gu',
+);
+const CAT_ZIP_POST = new RegExp(
+  `${REF}\\s*,\\s*${REF}\\s+cắt\\s+(?:các\\s+)?${ZIP_SIDE}${REF}\\s*,\\s*${REF}\\s+${ZIP_MK}\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])`,
   'gu',
 );
 
@@ -267,6 +278,12 @@ export const intersectionRule: LanguageRule = {
       // F3 (ZIP): "R1, R2 lần lượt cắt R3, R4 tại M, N" → M=R1∩R3, N=R2∩R4.
       CAT_ZIP.lastIndex = 0;
       for (const m of c.text.matchAll(CAT_ZIP)) {
+        emit(m[5], m[1], m[3]);
+        emit(m[6], m[2], m[4]);
+      }
+      // F3-POST (ZIP marker SAU): "R1,R2 cắt R3,R4 tương ứng tại M,N".
+      CAT_ZIP_POST.lastIndex = 0;
+      for (const m of c.text.matchAll(CAT_ZIP_POST)) {
         emit(m[5], m[1], m[3]);
         emit(m[6], m[2], m[4]);
       }

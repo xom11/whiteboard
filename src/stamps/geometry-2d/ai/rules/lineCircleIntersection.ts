@@ -9,12 +9,16 @@
 // "đường cao AD cắt lại ngoại tiếp tại M", "CM cắt (O) tại N"; dạng cần loại
 // chữ thứ hai sẽ phải có rule riêng/fail-safe sau.
 import type { LanguageRule, RuleMatch } from './_types';
-import { addPoint, CIRCLE_KW } from './_shared';
+import { addPoint, drawCircle, CIRCLE_KW } from './_shared';
 
 // 3 nhánh: cắt-rồi-paren | giao điểm thứ hai | "cắt AB và (O)" (LINE_AND_CIRCLE
 // vao10:28 — paren đứng sau "và", nhánh 1 không khớp) | "giao điểm thứ hai …
 // với đường tròn" TRẦN không paren (vao10:254).
-const PREFILTER = /cắt\s+(?:lại\s+)?(?:(?:nửa\s+)?đường\s*tròn\s*)?\(|cắt\s+(?:lại\s+)?(?:nửa\s+)?đường\s*tròn\s+(?:ở|tại)|cắt\s+[A-Z]{2}\s+và\s+\(|giao\s*điểm\s+(?:thứ\s+hai\s+)?(?:của\s+|khác\s+[A-Z]\s+của\s+)?(?:đường\s*thẳng\s+)?[A-Z]{2}\s+(?:và|với)\s+(?:(?:nửa\s+)?đường\s*tròn|\(|ngoại\s*tiếp\s+tam\s*giác)/u;
+// Cuối nhánh: ĐƯỜNG TRÒN CHỦ NGỮ "(O) cắt …" (CIRCLE_SUBJECT/CIRCLE_SUBJECT_TWO)
+// — paren-tâm (1 chữ HOA, optional prime/;R) liền "cắt" + sau đó có cặp đỉnh
+// (line). Trước đây 2 nhánh circle-subject KHÔNG có prefilter → rule không chạy
+// khi đề KHÔNG có nhánh line-chủ-ngữ nào (julielltv:12 "(I) cắt AB,AC tại M,N").
+const PREFILTER = /cắt\s+(?:lại\s+)?(?:(?:nửa\s+)?đường\s*tròn\s*)?\(|cắt\s+(?:lại\s+)?(?:nửa\s+)?đường\s*tròn\s+(?:ở|tại)|cắt\s+[A-Z]{2}\s+và\s+\(|\(\s*[A-Z](?:['′]?)\s*(?:[;,]\s*[Rr]\s*)?\)\s+cắt\s+(?:lại\s+)?[A-Z]{2}\s*(?:,|và)?\s*(?:[A-Z]{2})?\s+(?:lần\s*lượt\s+|theo\s+thứ\s+tự\s+|tương\s+ứng\s+)?(?:ở|tại)|giao\s*điểm\s+(?:thứ\s+hai\s+)?(?:của\s+|khác\s+[A-Z]\s+của\s+)?(?:đường\s*thẳng\s+)?[A-Z]{2}\s+(?:và|với)\s+(?:(?:nửa\s+)?đường\s*tròn|\(|ngoại\s*tiếp\s+tam\s*giác)/u;
 // "(O)" + compact "(O;R)"/"(O,R)" — vao10:127 "Tia CI cắt đường tròn (O;R) tại E".
 // "nửa" optional — vao10:18 "giao điểm thứ hai của DC với NỬA đường tròn (O)".
 const CIRCLE = String.raw`(?:(?:nửa\s+)?đường\s*tròn\s*)?\(\s*([A-Z])(?:['′]?)\s*(?:[;,]\s*[Rr]\s*)?\)`;
@@ -106,6 +110,15 @@ const CIRCLE_SUBJECT = new RegExp(
   'gu',
 );
 
+// Đường tròn chủ ngữ cắt HAI đường, phân phối: "(I) cắt AB,AC tại M,N"
+//   (julielltv:12) → M = 2nd(AB, I) other A, N = 2nd(AC, I) other A. Mỗi line có
+//   1 đầu mút trên đường tròn (đầu line) → giao thứ hai. groups: 1=circle 2=line1
+//   3=line2 4=name1 5=name2.
+const CIRCLE_SUBJECT_TWO = new RegExp(
+  CIRCLE + String.raw`\s+cắt\s+(?:lại\s+)?([A-Z]{2})\s*(?:,|và)\s*([A-Z]{2})(?![A-Z])\s+(?:lần\s*lượt\s+|theo\s+thứ\s+tự\s+|tương\s+ứng\s+)?(?:ở|tại)\s+([A-Z])\s*(?:,|và)\s*([A-Z])(?![A-Z])`,
+  'gu',
+);
+
 // "giao điểm của XY và (O) là R (khác W)?" — dạng "Gọi giao điểm của NQ và (O)
 // là R khác N". Ref đầu = line (cặp đỉnh), ref sau = circle "(O)".
 const GIAO_CIRCLE = new RegExp(
@@ -162,8 +175,24 @@ const NAME_2ND_CIRCUM = new RegExp(
   'gu',
 );
 
+// "CM theo thứ tự cắt (CDE),(ABC) tại điểm thứ hai là P,Q" (julielltv:1) — 1 đường
+//  cắt HAI đường tròn ngoại tiếp paren-3-chữ, zip. Mỗi giao = giao thứ hai; điểm
+//  chung (other) = đỉnh circumcircle nằm TRÊN line token (vd C ∈ CM ∩ {C,D,E}).
+//  group1=line 2=tri1 3=tri2 4=name1 5=name2.
+const LINE_CUTS_PAREN_PAIR = new RegExp(
+  String.raw`([A-Z]{2})(?![A-Z])\s+(?:lần\s*lượt\s+|theo\s+thứ\s+tự\s+|tương\s+ứng\s+)?cắt\s+(?:lại\s+)?` +
+    String.raw`\(\s*([A-Z]{3})\s*\)\s*(?:,|và)\s*\(\s*([A-Z]{3})\s*\)` +
+    String.raw`\s+(?:lần\s*lượt\s+|theo\s+thứ\s+tự\s+)?(?:ở|tại)\s+(?:điểm\s+(?:thứ\s+hai\s+)?(?:là\s+)?)?([A-Z])\s*(?:,|và)\s*([A-Z])(?![A-Z])`,
+  'gu',
+);
+
 function secondIntersection(name: string, line: string, circle: string, other?: string) {
   return addPoint(name, { kind: 'secondIntersection', line, circle, other: other ?? line[0] });
+}
+
+// Đỉnh circumcircle nằm trên line token (điểm chung đã biết của line∩circle).
+function vertexOnLine(verts: string, line: string): string | undefined {
+  return verts.split('').find((v) => line.includes(v));
 }
 
 function valid(name: string, line: string): boolean {
@@ -276,6 +305,15 @@ export const lineCircleIntersectionRule: LanguageRule = {
         if (circle && valid(name, line)) intents.push(secondIntersection(name, line, circle, line[0]));
       }
 
+      // "(I) cắt AB,AC tại M,N" — đường tròn chủ ngữ cắt 2 đường, phân phối.
+      CIRCLE_SUBJECT_TWO.lastIndex = 0;
+      for (const m of c.text.matchAll(CIRCLE_SUBJECT_TWO)) {
+        const [circle, l1, l2, n1, n2] = [m[1], m[2], m[3], m[4], m[5]];
+        if (n1 === n2) continue;
+        if (valid(n1, l1)) intents.push(secondIntersection(n1, l1, circle));
+        if (valid(n2, l2)) intents.push(secondIntersection(n2, l2, circle));
+      }
+
       // "(O) cắt XY tại Z" — đường tròn chủ ngữ (đảo SINGLE).
       CIRCLE_SUBJECT.lastIndex = 0;
       for (const m of c.text.matchAll(CIRCLE_SUBJECT)) {
@@ -322,6 +360,22 @@ export const lineCircleIntersectionRule: LanguageRule = {
         const name = m[4];
         if (line.includes(name)) continue;
         intents.push(addPoint(name, { kind: 'intersection', of: [line, circle], branch: 0 }));
+      }
+
+      // "CM cắt (CDE),(ABC) tại điểm thứ hai là P,Q" — 1 đường ∩ 2 circumcircle paren.
+      LINE_CUTS_PAREN_PAIR.lastIndex = 0;
+      for (const m of c.text.matchAll(LINE_CUTS_PAREN_PAIR)) {
+        const [line, t1, t2, n1, n2] = [m[1], m[2], m[3], m[4], m[5]];
+        const o1 = vertexOnLine(t1, line);
+        const o2 = vertexOnLine(t2, line);
+        if (!o1 || !o2 || n1 === n2) continue;
+        if (line.includes(n1) || line.includes(n2)) continue;
+        intents.push(
+          drawCircle(`w${t1}`, 'through3', { points: t1.split('') }),
+          drawCircle(`w${t2}`, 'through3', { points: t2.split('') }),
+          secondIntersection(n1, line, `w${t1}`, o1),
+          secondIntersection(n2, line, `w${t2}`, o2),
+        );
       }
 
       if (intents.length > 0) out.push({ ruleId: 'line-circle-intersection', clauseIds: [c.id], intents });

@@ -26,4 +26,13 @@ describe('circumcirclePairMeetRule', () => {
     expect(q.name).toBe('Q');
     expect(q.constraint).toEqual({ kind: 'circleSecondIntersection', c1: 'wAME', c2: 'wANF', exclude: 'A' });
   });
+
+  // t02:VD29 — paren circumcircle pair NÉN "cắt nhau tại K khác O".
+  it('"(AOC) và (BOD) cắt nhau tại K khác O" (paren cắt nhau) → K', () => {
+    const it = run('(AOC) và (BOD) cắt nhau tại K khác O').flatMap((m) => m.intents) as any[];
+    expect(it.filter((i) => i.op === 'draw-circle').map((i) => i.points)).toEqual([['A', 'O', 'C'], ['B', 'O', 'D']]);
+    const k = it.find((i) => i.op === 'add-point');
+    expect(k.name).toBe('K');
+    expect(k.constraint).toEqual({ kind: 'circleSecondIntersection', c1: 'wAOC', c2: 'wBOD', exclude: 'O' });
+  });
 });

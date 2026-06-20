@@ -103,6 +103,22 @@ describe('intersectionRule', () => {
       expect(pairs('TC, TB lần lượt cắt EF tại P, Q')).toEqual(['P:TC∩EF', 'Q:TB∩EF']);
     });
 
+    // ZIP marker "lần lượt" (kinh điển): "BO,CO lần lượt cắt AC,AB tại M,N".
+    it('"BO,CO lần lượt cắt AC,AB tại M,N" → M=BO∩AC, N=CO∩AB (zip)', () => {
+      expect(pairs('Các đường thẳng BO,CO lần lượt cắt các đoạn thẳng AC,AB tại M,N')).toEqual(['M:BO∩AC', 'N:CO∩AB']);
+    });
+
+    // julielltv:11 — ZIP marker "tương ứng" SAU cụm line2.
+    it('"BH,CH cắt CA,AB tương ứng tại E,F" → E=BH∩CA, F=CH∩AB (zip-post)', () => {
+      expect(pairs('Cho BH,CH cắt CA,AB tương ứng tại E,F')).toEqual(['E:BH∩CA', 'F:CH∩AB']);
+    });
+
+    // Guard zip: KHÔNG marker → CAT_ZIP_POST KHÔNG kích hoạt (cặp zip E=BH∩CA
+    // không xuất hiện; behavior khác là của pattern cũ, không phải zip mới).
+    it('"BH,CH cắt CA,AB tại E,F" (KHÔNG marker) → KHÔNG có cặp zip E=BH∩CA', () => {
+      expect(pairs('Cho BH,CH cắt CA,AB tại E,F')).not.toContain('E:BH∩CA');
+    });
+
     // httcd:68 — 2 dây ⊥ NHAU gặp tại I: "hai dây AB, CD … vuông góc với nhau tại I".
     it('"hai dây AB, CD bằng nhau và vuông góc với nhau tại I" → I=AB∩CD', () => {
       expect(pairs('Cho (O) và hai dây AB, CD bằng nhau và vuông góc với nhau tại I')).toContain('I:AB∩CD');

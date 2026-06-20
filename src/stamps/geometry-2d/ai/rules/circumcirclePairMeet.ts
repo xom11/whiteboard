@@ -52,6 +52,12 @@ const RE_PAREN_BEFORE = new RegExp(
   `([A-Z])(?![A-Z])\\s+là\\s+giao\\s*điểm\\s+(?:thứ\\s+hai\\s+)?(?:của\\s+)?${PAR}\\s+và\\s+${PAR}`,
   'u',
 );
+// "(AOC) và (BOD) cắt nhau tại K (khác O)?" — paren pair NÉN trực tiếp với "cắt
+//  nhau" (t02:VD29). group1=tri1 2=tri2 3=name 4=khác.
+const RE_PAREN_CAT = new RegExp(
+  `${PAR}\\s+và\\s+${PAR}\\s+cắt\\s+nhau\\s+(?:tại|ở)\\s+(?:điểm\\s+(?:thứ\\s+hai\\s+)?)?([A-Z])(?![A-Z])(?:\\s+khác\\s+([A-Z])(?![A-Z]))?`,
+  'u',
+);
 
 export const circumcirclePairMeetRule: LanguageRule = {
   id: 'circumcirclePairMeet',
@@ -63,13 +69,14 @@ export const circumcirclePairMeetRule: LanguageRule = {
     for (const c of ctx.clauses) {
       // Paren circumcircle "(ABC) và (ADE)" — tách trước (tri = 3 chữ trong ngoặc).
       const pl = RE_PAREN_LA.exec(c.text);
-      const pb = pl ? null : RE_PAREN_BEFORE.exec(c.text);
-      if (pl || pb) {
-        const t1 = (pl ? pl[1] : pb![2]);
-        const t2 = (pl ? pl[2] : pb![3]);
-        const q = pl ? pl[3] : pb![1];
+      const pc = pl ? null : RE_PAREN_CAT.exec(c.text);
+      const pb = pl || pc ? null : RE_PAREN_BEFORE.exec(c.text);
+      if (pl || pc || pb) {
+        const t1 = pl ? pl[1] : pc ? pc[1] : pb![2];
+        const t2 = pl ? pl[2] : pc ? pc[2] : pb![3];
+        const q = pl ? pl[3] : pc ? pc[3] : pb![1];
         const tri1 = t1.split(''), tri2 = t2.split('');
-        const shared = (pl && pl[4]) || tri1.find((v) => tri2.includes(v));
+        const shared = (pl && pl[4]) || (pc && pc[4]) || tri1.find((v) => tri2.includes(v));
         if (shared && !tri1.includes(q) && !tri2.includes(q)) {
           out.push({
             ruleId: 'circumcirclePairMeet',

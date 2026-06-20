@@ -57,6 +57,21 @@ describe('lineCircleIntersectionRule', () => {
     expect(intents).toContainEqual({ op: 'add-point', name: 'E', constraint: { kind: 'secondIntersection', line: 'AC', circle: 'O', other: 'A' } });
   });
 
+  // julielltv:12 — đường tròn chủ ngữ cắt 2 đường phân phối: "(I) cắt AB,AC tại M,N".
+  it('"(I) cắt AB,AC tại M,N" → M=2nd(AB,I) other A, N=2nd(AC,I) other A', () => {
+    const intents = run('(I) cắt AB,AC tại M,N').flatMap((x) => x.intents) as any[];
+    expect(intents).toContainEqual({ op: 'add-point', name: 'M', constraint: { kind: 'secondIntersection', line: 'AB', circle: 'I', other: 'A' } });
+    expect(intents).toContainEqual({ op: 'add-point', name: 'N', constraint: { kind: 'secondIntersection', line: 'AC', circle: 'I', other: 'A' } });
+  });
+
+  // julielltv:1 — 1 đường cắt 2 circumcircle paren-3-chữ, zip; other = đỉnh ∈ line.
+  it('"CM cắt (CDE),(ABC) tại điểm thứ hai là P,Q" → wCDE/wABC + P,Q', () => {
+    const intents = run('CM theo thứ tự cắt (CDE),(ABC) tại điểm thứ hai là P,Q').flatMap((x) => x.intents) as any[];
+    expect(intents.filter((i) => i.op === 'draw-circle').map((i) => i.points)).toEqual([['C', 'D', 'E'], ['A', 'B', 'C']]);
+    expect(intents).toContainEqual({ op: 'add-point', name: 'P', constraint: { kind: 'secondIntersection', line: 'CM', circle: 'wCDE', other: 'C' } });
+    expect(intents).toContainEqual({ op: 'add-point', name: 'Q', constraint: { kind: 'secondIntersection', line: 'CM', circle: 'wABC', other: 'C' } });
+  });
+
   // vao10:174 / son123:107 — 1 đường cắt HAI đường tròn (giao 2 circle tự do).
   it('"Đường thẳng AO cắt (O), (O′) lần lượt ở C và D" → C=2nd(AO,O), D=2nd(AO,O′)', () => {
     const intents = run('Đường thẳng AO cắt (O), (O′) lần lượt ở C và D').flatMap((x) => x.intents) as any[];
