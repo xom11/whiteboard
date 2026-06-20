@@ -16,6 +16,7 @@ import { circleRadiusRule } from './circleRadius';
 import { circleTriangleRule } from './circleTriangle';
 import { tangentFromExtRule } from './tangentFromExt';
 import { externalPointRule } from './externalPoint';
+import { externalPointAtRadiusRule } from './externalPointAtRadius';
 import { arcMidpointRule } from './arcMidpoint';
 import { excenterRule } from './excenter';
 import { parallelPerpRule } from './parallelPerp';
@@ -119,6 +120,7 @@ const RULES: readonly LanguageRule[] = [
   circleTriangleRule,
   tangentFromExtRule,
   externalPointRule,
+  externalPointAtRadiusRule,
   arcMidpointRule,
   excenterRule,
   parallelPerpRule,

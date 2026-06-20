@@ -191,4 +191,13 @@ describe('lineCircleIntersection — residue', () => {
     expect(e.constraint).toEqual({ kind: 'secondIntersection', line: 'AM', circle: 'O', other: 'A' });
     expect(f.constraint).toEqual({ kind: 'secondIntersection', line: 'AN', circle: 'O', other: 'A' });
   });
+
+  // vao10:29,32,107 — NAME_2ND_CUA thiếu prefix "đường thẳng" (NAME_2ND_BARE có
+  // prefix nhưng yêu cầu circle TRẦN không paren). other = line[1] = M (M trên (O)).
+  it('NAME_2ND_CUA "đường thẳng" prefix: "N là giao điểm thứ hai của đường thẳng AM với đường tròn (O)"', () => {
+    const text = 'Gọi N là giao điểm thứ hai của đường thẳng AM với đường tròn (O)';
+    expect(lineCircleIntersectionRule.patterns.some((re) => re.test(text))).toBe(true);
+    const n = (run(text).flatMap((m) => m.intents) as any[]).find((i) => i.name === 'N');
+    expect(n.constraint).toEqual({ kind: 'secondIntersection', line: 'AM', circle: 'O', other: 'M' });
+  });
 });

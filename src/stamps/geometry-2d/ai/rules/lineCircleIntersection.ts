@@ -142,7 +142,7 @@ const GIAO_CIRCLE = new RegExp(
 // line nằm trên đường tròn: ưu tiên chữ THỨ HAI (đỉnh tam giác/điểm-trên-(O)
 // thường đứng sau, vd KA→A, AH→H?) — mặc định line[1] cho dạng này.
 const NAME_2ND_CUA = new RegExp(
-  String.raw`([A-Z])(?![A-Z])\s+là\s+giao\s*điểm\s+thứ\s+hai\s+của\s+([A-Z]{2})(?![A-Z])\s+(?:và|với)\s+` + CIRCLE,
+  String.raw`([A-Z])(?![A-Z])\s+là\s+giao\s*điểm\s+thứ\s+hai\s+của\s+(?:đường\s*thẳng\s+)?([A-Z]{2})(?![A-Z])\s+(?:và|với)\s+` + CIRCLE,
   'gu',
 );
 
