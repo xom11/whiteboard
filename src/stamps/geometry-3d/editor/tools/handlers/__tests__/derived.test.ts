@@ -19,6 +19,13 @@ const existing = (pointId: string): CollectedArg =>
 const objectStep = { type: 'object', kinds: ['plane'], hint: '' } as const;
 const planeHit = (planeId: string): CollectedArg =>
   ({ step: objectStep as never, hit: { kind: 'onPlane', planeId, u: 0, v: 0, world: [0, 0, 0] } });
+const groundStep = { type: 'point', allowExisting: true, allowNewOn: ['ground'], hint: '' } as const;
+// Hit đặt điểm MỚI trên mặt Oxy → ensurePoint sẽ TẠO điểm (side-effect).
+const ground = (x: number, y: number): CollectedArg =>
+  ({ step: groundStep as never, hit: { kind: 'onGround', world: [x, y, 0] } });
+
+const objectCount = (store: ReturnType<typeof createStore>): number =>
+  Object.keys(store.getState().objects).length;
 
 describe('buildMidpoint', () => {
   it('tạo point3d midpoint{p1,p2} từ 2 điểm có sẵn', () => {
@@ -163,5 +170,44 @@ describe('buildPerpFootPlane', () => {
     const store = createStore(createEmptyState('3d'));
     const p = addPoint(store, { kind: 'free', x: 1, y: 2, z: 3 });
     expect(buildPerpFootPlane([existing(p)], store)).toBeNull();
+  });
+});
+
+// Build bị từ chối (suy biến / thiếu input) KHÔNG được để lại điểm mới mồ côi
+// trong scene — guard suy biến phải chạy TRƯỚC ensurePoint (review 2026-06-21).
+describe('không tạo điểm mồ côi khi build bị từ chối', () => {
+  it('intersectionLines: đường 1 suy biến (điểm có sẵn click 2 lần) + điểm mới', () => {
+    const store = createStore(createEmptyState('3d'));
+    const a1 = addPoint(store, { kind: 'free', x: 0, y: 0, z: 0 });
+    const before = objectCount(store);
+    const r = buildIntersectionLines([existing(a1), existing(a1), ground(1, 1), ground(2, 2)], store);
+    expect(r).toBeNull();
+    expect(objectCount(store)).toBe(before); // không leak 2 điểm mặt đất
+  });
+
+  it('perpFootLine: đường suy biến (a≡b) + điểm from mới', () => {
+    const store = createStore(createEmptyState('3d'));
+    const a = addPoint(store, { kind: 'free', x: 0, y: 0, z: 0 });
+    const before = objectCount(store);
+    const r = buildPerpFootLine([ground(5, 5), existing(a), existing(a)], store);
+    expect(r).toBeNull();
+    expect(objectCount(store)).toBe(before); // không leak điểm from
+  });
+
+  it('centroid: < 3 đỉnh phân biệt + điểm mới', () => {
+    const store = createStore(createEmptyState('3d'));
+    const a = addPoint(store, { kind: 'free', x: 0, y: 0, z: 0 });
+    const before = objectCount(store);
+    const r = buildCentroid([existing(a), existing(a), ground(9, 9)], store);
+    expect(r).toBeNull();
+    expect(objectCount(store)).toBe(before); // không leak điểm mặt đất
+  });
+
+  it('intersectionLinePlane: thiếu mặt phẳng + điểm đường mới', () => {
+    const store = createStore(createEmptyState('3d'));
+    const before = objectCount(store);
+    const r = buildIntersectionLinePlane([ground(1, 1), ground(2, 2)], store); // không có planeHit
+    expect(r).toBeNull();
+    expect(objectCount(store)).toBe(before); // không leak (kiểm plane TRƯỚC)
   });
 });
