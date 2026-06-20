@@ -150,3 +150,20 @@ describe('intersection — "giao điểm của X và Y là Z" (tên sau)', () =>
     expect(i.constraint).toEqual({ kind: 'intersection', of: ['CE', 'AB'] });
   });
 });
+
+describe('intersection — đường ĐẶT TÊN chữ thường ở TRƯỚC ("d cắt AB tại E")', () => {
+  it('"d cắt AB tại E" (d khai báo) → E = giao(AB, d)', () => {
+    const p = 'Cho đường thẳng d. Cho tam giác ABC. d cắt AB tại E.';
+    const m = intersectionRule.match({ problem: p, clauses: segmentClauses(p) });
+    const i = m.flatMap((x) => x.intents)[0] as any;
+    expect(i.name).toBe('E');
+    expect(i.constraint).toEqual({ kind: 'intersection', of: ['AB', 'd'] });
+  });
+
+  it('"d cắt AB tại E" KHÔNG fire khi d KHÔNG khai báo (tránh chữ lẻ)', () => {
+    // Không có "đường thẳng d" trong đề → namedLines rỗng → bỏ qua.
+    const p = 'Cho tam giác ABC. d cắt AB tại E.';
+    const m = intersectionRule.match({ problem: p, clauses: segmentClauses(p) });
+    expect(m.flatMap((x) => x.intents)).toEqual([]);
+  });
+});

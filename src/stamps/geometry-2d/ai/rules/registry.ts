@@ -93,8 +93,10 @@ import { collinearPointsRule } from './collinearPoints';
 import { quadDiagonalsRule } from './quadDiagonals';
 import { twoCirclesTangentRule } from './twoCirclesTangent';
 import { rightAngleVertexCirclesRule } from './rightAngleVertexCircles';
+import { namedLineRule } from './namedLine';
 
 const RULES: readonly LanguageRule[] = [
+  namedLineRule,
   collinearPointsRule,
   quadDiagonalsRule,
   twoCirclesTangentRule,

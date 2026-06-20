@@ -19,7 +19,7 @@ import { addPoint } from './_shared';
 // prefilter rộng vô hại.
 // "đường kính AB" là 1 ĐOẠN (đường kính của đường tròn) → cho phép "trên đường
 // kính AB lấy điểm C" (phang:14). Thêm vào prefix đoạn-loại.
-const PREFILTER = /(?:thuộc\s+(?:các\s+|hai\s+|ba\s+)?(?:cạnh|đoạn|đáy|tia|bán\s*kính|đường\s*kính|dây|[A-Z]{2})|[Tt]rên\s+(?:các\s+|hai\s+|ba\s+)?(?:cạnh|đoạn|đáy|tia|bán\s*kính|đường\s*kính|đường\s*thẳng|dây|[A-Z]{2})|(?:di\s*chuyển|di\s*động)\s+trên|nằm\s+giữa)/u;
+const PREFILTER = /(?:thuộc\s+(?:các\s+|hai\s+|ba\s+)?(?:cạnh|đoạn|đáy|tia|bán\s*kính|đường\s*kính|dây|[A-Za-z]{1,2}[0-9]?(?![\p{L}\d]))|[Tt]rên\s+(?:các\s+|hai\s+|ba\s+)?(?:cạnh|đoạn|đáy|tia|bán\s*kính|đường\s*kính|đường\s*thẳng|dây|[A-Za-z]{1,2}[0-9]?(?![\p{L}\d]))|(?:di\s*chuyển|di\s*động)\s+trên|nằm\s+giữa)/u;
 
 // "Trên đường thẳng d (lấy)? (một)? (điểm)? M" — đường ĐẶT TÊN chữ thường (d, d1).
 // resolveSegmentRef thấy shape "d" (tangentLineNamedAtPoint dựng) → glider trên d.
@@ -28,6 +28,19 @@ const PREFILTER = /(?:thuộc\s+(?:các\s+|hai\s+|ba\s+)?(?:cạnh|đoạn|đáy
 // vì sau "v" là "u" (chữ) — không khớp; tránh bịa đoạn "vu").
 const ON_NAMED_LINE = new RegExp(
   String.raw`[Tt]rên\s+đường\s*thẳng\s+([a-z][0-9]?)(?!\p{L})[^.]{0,20}?(?:lấy\s+)?(?:một\s+)?(?:điểm\s+)?([A-Z](?:['′])?)(?![A-Z])`,
+  'gu',
+);
+
+// Dạng VIẾT TẮT (bỏ chữ "đường thẳng"): "Trên d lấy điểm M" / "M thuộc d" — token
+// CHỮ THƯỜNG đứng MỘT MÌNH (1-2 ký tự + số), neo (?![\p{L}\d]) để KHÔNG nuốt từ
+// Việt + KHÔNG nhầm cặp đỉnh. CHỈ kích hoạt khi đề có "đường thẳng <token>"
+// (namedLine/tangentLineNamedAtPoint đã dựng) — guard ở match() qua ctx.problem.
+const ON_NAMED_LINE_BARE = new RegExp(
+  String.raw`[Tt]rên\s+([a-z]{1,2}[0-9]?)(?![\p{L}\d])\s+(?:lấy\s+)?(?:một\s+)?(?:điểm\s+)?([A-Z](?:['′])?)(?![A-Z])`,
+  'gu',
+);
+const POINT_THUOC_NAMED_BARE = new RegExp(
+  String.raw`(?:điểm\s+)?([A-Z](?:['′])?)(?![A-Z])\s+(?:là\s+(?:một\s+)?điểm\s+(?:bất\s*k[iìyỳ]\s+)?)?thuộc\s+([a-z]{1,2}[0-9]?)(?![\p{L}\d])`,
   'gu',
 );
 
@@ -131,6 +144,17 @@ function hasMetricConstraint(text: string): boolean {
   return /sao\s+cho[^.]{0,40}(?:=|>|<)/u.test(text);
 }
 
+// Tập tên đường ĐẶT TÊN chữ thường được KHAI BÁO trong đề ("(đường thẳng|tiếp
+// tuyến|cát tuyến) <token>"). Dùng làm guard cho dạng VIẾT TẮT "Trên d"/"thuộc d"
+// (chỉ glider trên d khi d thật sự là 1 đường — tránh nhầm chữ thường lẻ).
+function declaredNamedLines(problem: string): Set<string> {
+  const out = new Set<string>();
+  const RE =
+    /(?:đường\s*thẳng|tiếp\s*tuyến|cát\s*tuyến)\s+([a-z]{1,2}[0-9]?)(?![\p{L}\d])/gu;
+  for (const m of problem.matchAll(RE)) out.add(m[1]);
+  return out;
+}
+
 export const onSegmentPointRule: LanguageRule = {
   id: 'on-segment-point',
   priority: 62,
@@ -138,8 +162,42 @@ export const onSegmentPointRule: LanguageRule = {
   patterns: [PREFILTER],
   match(ctx) {
     const out: RuleMatch[] = [];
+    const namedLines = declaredNamedLines(ctx.problem);
     for (const c of ctx.clauses) {
       const intents = [];
+
+      // Điểm trên đường ĐẶT TÊN chữ thường ("Trên đường thẳng d lấy điểm M") —
+      // CHẠY TRƯỚC metric-skip (httcd:245 "… sao cho CA < CB"; đặt C free trên d,
+      // metric chỉ tinh chỉnh). Dạng CÓ chữ "đường thẳng" nên không cần guard
+      // namedLines (đã đặc thù).
+      ON_NAMED_LINE.lastIndex = 0;
+      for (const m of c.text.matchAll(ON_NAMED_LINE)) {
+        const line = m[1];
+        const name = normalizePoint(m[2]);
+        if (/^[A-Z]['′]?$/u.test(name)) intents.push(addPoint(name, { kind: 'onSegment', of: line }));
+      }
+
+      // Điểm trên đường ĐẶT TÊN chữ thường dạng VIẾT TẮT ("Trên d lấy điểm M",
+      // "M thuộc d") — CHẠY TRƯỚC metric-skip (đặt free dù "sao cho …"). Guard:
+      // token PHẢI là đường khai báo trong đề (namedLines) để không nhầm chữ lẻ.
+      if (namedLines.size > 0) {
+        ON_NAMED_LINE_BARE.lastIndex = 0;
+        for (const m of c.text.matchAll(ON_NAMED_LINE_BARE)) {
+          const line = m[1];
+          const name = normalizePoint(m[2]);
+          if (namedLines.has(line) && /^[A-Z]['′]?$/u.test(name)) {
+            intents.push(addPoint(name, { kind: 'onSegment', of: line }));
+          }
+        }
+        POINT_THUOC_NAMED_BARE.lastIndex = 0;
+        for (const m of c.text.matchAll(POINT_THUOC_NAMED_BARE)) {
+          const name = normalizePoint(m[1]);
+          const line = m[2];
+          if (namedLines.has(line) && /^[A-Z]['′]?$/u.test(name)) {
+            intents.push(addPoint(name, { kind: 'onSegment', of: line }));
+          }
+        }
+      }
 
       // Distributive đoạn-trước CHẠY TRƯỚC metric-skip (vẽ điểm free trên cạnh dù
       // có "sao cho …=…"). "trên BC, CA, AB … lấy điểm M, N, E" → zip 1-1.
@@ -218,14 +276,6 @@ export const onSegmentPointRule: LanguageRule = {
       if (hasMetricConstraint(c.text)) {
         if (intents.length > 0) out.push({ ruleId: 'on-segment-point', clauseIds: [c.id], intents });
         continue;
-      }
-
-      // Điểm trên đường ĐẶT TÊN chữ thường ("Trên đường thẳng d lấy điểm M").
-      ON_NAMED_LINE.lastIndex = 0;
-      for (const m of c.text.matchAll(ON_NAMED_LINE)) {
-        const line = m[1];
-        const name = normalizePoint(m[2]);
-        if (/^[A-Z]['′]?$/u.test(name)) intents.push(addPoint(name, { kind: 'onSegment', of: line }));
       }
 
       ON_SEG_THEN_POINT.lastIndex = 0;

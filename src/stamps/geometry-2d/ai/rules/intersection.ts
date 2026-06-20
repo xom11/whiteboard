@@ -93,6 +93,14 @@ const CAT_ONE_RAY = new RegExp(
   `${REF}\\s+cắt\\s+(?:tia\\s+)?(?:tiếp\\s*tuyến\\s+)?(?:đường\\s*thẳng\\s+)?([A-Z][a-z]|[a-z])(?![\\p{L}\\d])[^.;,]{0,40}?(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])`,
   'gu',
 );
+// NAMED_CAT_TAI: ĐƯỜNG ĐẶT TÊN CHỮ THƯỜNG ở VỊ TRÍ TRƯỚC — "(đường thẳng)? d cắt
+//   AB (kéo dài)? tại E" → E = d ∩ AB (đảo của CAT_ONE_RAY: ở đây line-thường cắt
+//   cặp-đỉnh). Token thường 1-2 ký tự + neo (?![\p{L}\d]) để không nuốt từ Việt.
+//   groups: 1=shape(lc) 2=ref 3=name.
+const NAMED_CAT_TAI = new RegExp(
+  `(?:đường\\s*thẳng\\s+|tia\\s+)?\\b([a-z]{1,2}[0-9]?)(?![\\p{L}\\d])\\s+(?:kéo\\s+dài\\s+)?cắt\\s+${REF}\\s+(?:kéo\\s+dài\\s+)?(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])`,
+  'gu',
+);
 
 // F2: "giao điểm của R1 (,|và) R2 với R3 (lần lượt|theo thứ tự)? là M và N" →
 //     M=R1∩R3, N=R2∩R3 (2 đường giao 1 đường chung, tên SAU, dạng "giao điểm
@@ -186,6 +194,16 @@ function makeIntent(name: string, ref1: string, ref2: string): IntentT | null {
   return addPoint(name, { kind: 'intersection', of: [ref1, ref2] });
 }
 
+// Tập tên đường ĐẶT TÊN chữ thường khai báo trong đề ("(đường thẳng|tiếp tuyến|
+// cát tuyến) <token>") — guard cho NAMED_CAT_TAI ("d cắt AB tại E") để token thường
+// PHẢI là đường thật (tránh nhầm chữ thường lẻ / verb).
+function declaredNamedLines(problem: string): Set<string> {
+  const out = new Set<string>();
+  const RE = /(?:đường\s*thẳng|tiếp\s*tuyến|cát\s*tuyến)\s+([a-z]{1,2}[0-9]?)(?![\p{L}\d])/gu;
+  for (const m of problem.matchAll(RE)) out.add(m[1]);
+  return out;
+}
+
 /** Như makeIntent nhưng 4 đầu mút TƯỜNG MINH (cho điểm có chỉ số: B1, A'…). */
 function makeIntentEnds(name: string, e1: string, e2: string, e3: string, e4: string): IntentT | null {
   const ends = [e1, e2, e3, e4];
@@ -205,6 +223,7 @@ export const intersectionRule: LanguageRule = {
   patterns: [PREFILTER],
   match(ctx) {
     const out: RuleMatch[] = [];
+    const namedLines = declaredNamedLines(ctx.problem);
     for (const c of ctx.clauses) {
       const seen = new Set<string>(); // tên đã claim trong clause (tránh trùng tên)
       const emit = (name: string, ref1: string, ref2: string) => {
@@ -268,6 +287,14 @@ export const intersectionRule: LanguageRule = {
       CAT_ONE_RAY.lastIndex = 0;
       for (const m of c.text.matchAll(CAT_ONE_RAY)) {
         emitShape(m[3], m[1], m[2]);
+      }
+      // NAMED_CAT_TAI: "d cắt AB tại E" — đường tên chữ thường <d> ở TRƯỚC cắt
+      //   cặp-đỉnh. Guard namedLines (token thật là đường). emitShape(name, pair, shape).
+      if (namedLines.size > 0) {
+        NAMED_CAT_TAI.lastIndex = 0;
+        for (const m of c.text.matchAll(NAMED_CAT_TAI)) {
+          if (namedLines.has(m[1])) emitShape(m[3], m[2], m[1]);
+        }
       }
       // F2: "giao điểm của R1 (,|và) R2 với R3 lần lượt là M và N".
       GIAO_TWO_ONE_LA.lastIndex = 0;
