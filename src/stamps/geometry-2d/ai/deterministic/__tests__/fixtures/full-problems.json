@@ -1,0 +1,202 @@
+[
+  {
+    "dataset": "chuyen2026",
+    "id": "1",
+    "text": "Cho hình thoi ABCD với B’AD < 90◦. Trên cạnh AD lấy điểm M (M ̸= A,D)."
+  },
+  {
+    "dataset": "d80",
+    "id": "11",
+    "text": "Cho tam giác ABC (AB = AC). Cạnh AB, BC, CA tiếp xúc với đường tròn (O) tại các điểm D, E, F. BF cắt (O) tại I, DI cắt BC tại M."
+  },
+  {
+    "dataset": "hinh9",
+    "id": "104",
+    "text": "Cho tam giác ABC nhọn, không cân, nội tiếp đường tròn (O). Điểm P nằm trong tam giác ABC. Gọi E,F lần lượt là hình chiếu vuông góc của P lên AC,AB. Giả sử tứ giác BCEF nội tiếp đường tròn (K)"
+  },
+  {
+    "dataset": "httcd",
+    "id": "109",
+    "text": "Cho tam giác ABC cân tại A nội tiếp đường tròn (O). Đường cao AH cắt đường tròn (O) ở D."
+  },
+  {
+    "dataset": "julielltv",
+    "id": "14",
+    "text": "Cho tứ giác ABCD nội tiếp (O) . E,F,I lần lượt là giao điểm của các cặp đường (AD,BC),(AB,CD),(AC,BD) . Gọi G là giao điểm thứ hai của (O) và (AEF) và H là giao điểm thứ hai của (O) và (CEF) ."
+  },
+  {
+    "dataset": "mohinh",
+    "id": "11",
+    "text": "Cho tam giác ABC nhọn (AB< AC)có đường cao AD và đường phân giác trong AO (D,O thuộc cạnh BC). Kẻ OM vuông góc với ABtại M , ON vuông góc với ACtại N ."
+  },
+  {
+    "dataset": "phang",
+    "id": "14",
+    "text": "Cho đường tròn (O) đường kính AB. Trên đường tròn lấy điểm D khác A và DAB > 60°. Trên đường kính AB lấy điểm C (C khác A, B) và kẻ CH vuông góc với AD tại H. Phân giác trong của góc DAB cắt đường tròn tại E và cắt CH tại F. Đường thẳng DF cắt đường tròn tại điểm thứ hai N."
+  },
+  {
+    "dataset": "son123",
+    "id": "105",
+    "text": "(CSP V2 2022) Cho tam giác đều ABC ngoại tiếp đường tròn (O). Cung nhỏ OB của đường tròn ngoại tiếp tam giác tam giác OBC cắt đường tròn (O) tại điểm E. Tia BE cắt đường tròn (O) tại điểm thứ hai F. 1."
+  },
+  {
+    "dataset": "t02",
+    "id": "BT11",
+    "text": "Cho tam giác ABC ngoại tiếp (I). Các cạnh AB, BC, CA tiếp xúc với (I) lần lượt tại F, D, E. AD cắt (I) tại điểm thứ hai là M. BM, CM cắt (I) tại điểm thứ hai là Y, X."
+  },
+  {
+    "dataset": "toan8",
+    "id": "1",
+    "text": "Cho ◊ABCD, biết     A:B :C :D =1:2:3:4 E"
+  },
+  {
+    "dataset": "vao10",
+    "id": "1",
+    "text": "Cho tam giác ABC đều nội tiếp (O;R) kẻ đường kính AD cắt BC tại H. Gọi M là một điểm trên cung nhỏ AC. Hạ BK ⊥ AM tại K, BK cắt CM tại E, R = 6cm."
+  },
+  {
+    "dataset": "chuyen2026",
+    "id": "14",
+    "text": "Cho tam giác ABC nhọn (AB < AC) nội tiếp đường tròn (O). Đường trung trực của đoạn thẳng BC cắt đường tròn (O) tại E, F (điểm F thuộc cung nhỏ BC). Gọi FB2"
+  },
+  {
+    "dataset": "d80",
+    "id": "13",
+    "text": "Cho tam giác ABC vuông ở A (AB > AC), đường cao AH. Trên nửa mặt phẳng bờ BC chứa điểm A, Vẽ nửa đường tròn đường kính BH cắt AB tại E, Nửa đường tròn đường kính HC cắt AC tại F."
+  },
+  {
+    "dataset": "hinh9",
+    "id": "105",
+    "text": "Cho đường tròn (O) và dây cung BC cố định (BC khác đường kính). Điểm A thuộc cung lớn BC sao cho tam giác ABC nhọn và AB < AC. Đường tròn (I) nội tiếp tam giác ABC tiếp xúc với các cạnh BC,AB lần lượt tại D,E. Đường thẳng AD cắt đường tròn (I) tại điểm thứ hai là M; BM cắt đường tròn (I) tại điểm thứ hai là Q; BI cắt DE tại P"
+  },
+  {
+    "dataset": "httcd",
+    "id": "111",
+    "text": "Cho tam giác ABC nhọn. Đường tròn đường kính BC cắt AB ở N và cắt AC ở M. Gọi H là giao điểm của BM và CN."
+  },
+  {
+    "dataset": "julielltv",
+    "id": "24",
+    "text": "Cho tam giác ABC nội tiếp (O) , AB<AC . Tiếp tuyến tại A của (O) cắt BC tại T . S đối xứng với T qua AB . Trên AS lấy điểm E khác A sao cho TA=TE . BE giao (O) tại F . AS cắt BC tại D ."
+  },
+  {
+    "dataset": "mohinh",
+    "id": "20",
+    "text": "Cho nửa đường tròn (O) đường kính AB. Điểm M nằm trên nửa đường tròn (M ≠ A; B). Tiếp tuyến tại M cắt tiếp tuyến tại A và B của đường tròn (O) lần lượt tại C và D"
+  },
+  {
+    "dataset": "phang",
+    "id": "18",
+    "text": "Cho tam giác nhọn ABC, AB > AC, nội tiếp đường tròn (O). Giả sử M, N là hai điểm thuộc cung nhỏ BC sao cho MN song song với BC và tia AN nằm giữa hai tia AM, AB. Gọi P là hình chiếu vuông góc của điểm C trên AN và Q là hình chiếu vuông góc của điểm M trên AB."
+  },
+  {
+    "dataset": "son123",
+    "id": "109",
+    "text": "(HSGSV22023)ChotamgiácABC nhọnvớiAB <AC nộitiếpđườngtròn(O)cótiếptuyến tại A của (O) cắt BC ở T sao cho TB >BC. Gọi P và E lần lượt là trung điểm của TA và TC. 1."
+  },
+  {
+    "dataset": "t02",
+    "id": "BT23",
+    "text": "Cho đường tròn (I) nội tiếp tam giác ABC không cân, tiếp xúc các cạnh BC, CA, AB tại M, N, P. Gọi D, E, F là trung điểm của NP, PM, MN."
+  },
+  {
+    "dataset": "toan8",
+    "id": "10",
+    "text": "( ), Cho hình thang ABCD AB//CD trong đó\n\n[A\nB] Bài 9: Cho hình thang vuông ABCD có 2 B A  A= D  =900,AB= AD=2cm,DC =4cm,BH ⊥CD≡ H 2 a."
+  },
+  {
+    "dataset": "vao10",
+    "id": "105",
+    "text": "Cho đường tròn (O),đường kính AB. Vẽ các tiếp tuyến Ax, By của đường tròn. M là một điểm trên đường tròn ( M khác A,B).Tiếp tuyến tại M của đường tròn cắt Ax, By lần lượt tại P, Q."
+  },
+  {
+    "dataset": "chuyen2026",
+    "id": "2",
+    "text": "Cho tứ giác ABCD nội tiếp đường tròn (O) với D’CB < A’DC < 90◦; giả sử có điểm P nằm trong tứ giác ABCD sao cho PA ⊥ AD và PB ⊥ BC. Dựng hình bình"
+  },
+  {
+    "dataset": "d80",
+    "id": "15",
+    "text": "Cho tam giác ABC vuông ở A. Trên cạnh AC lấy điểm M, dựng đường tròn (O) có đường kính MC. Đường thẳng BM cắt đường tròn (O) tại D. Đường thẳng AD cắt đường tròn (O) tại S."
+  },
+  {
+    "dataset": "hinh9",
+    "id": "106",
+    "text": "Cho tam giác nhọn ABC nội tiếp đường tròn (O) và AB <AC. Điểm M thay đổi trên cạnh BC (M khác B, M khác C). Đường thẳng AM cắt đường tròn (O) tại điểm thứ hai D. Đường tròn đường kính AM cắt đường tròn (O) tại điểm thứ hai E (E khác"
+  },
+  {
+    "dataset": "httcd",
+    "id": "116",
+    "text": "Cho đường tròn (O; 3cm) và điểm A có OA = 6 cm. Kẻ các tiếp tuyến AB và AC với đường tròn (B, C là các tiếp điểm). Gọi H là giao điểm của OA và BC."
+  },
+  {
+    "dataset": "mohinh",
+    "id": "33",
+    "text": "Cho tứ giác ABCD có AB nhỏ hơn AD; BC nhỏ hơn CD nội tiếp đường tròn đường kính BD, AB cắt DC tại E; CB cắt DA tại F, DB cắt EF tại G. a."
+  },
+  {
+    "dataset": "phang",
+    "id": "2",
+    "text": "Gọi I là tâm đường tròn nội tiếp tam giác ABC. Từ A kẻ tới đường tròn ngoại tiếp tam giác BIC các tiếp tuyến AP, AQ (P, Q là các tiếp điểm)"
+  },
+  {
+    "dataset": "son123",
+    "id": "11",
+    "text": "Cho tam giác ABC nhọn, đặt BC =a,CA=b,AB =C. Đặt p= ."
+  },
+  {
+    "dataset": "t02",
+    "id": "BT3",
+    "text": "Cho tam giác ABC nội tiếp đường tròn (O). Đường phân giác của góc BAC cắt BC tại D và cắt (O) tại E khác A. Đường tròn đường kính DE cắt (O) tại F."
+  },
+  {
+    "dataset": "toan8",
+    "id": "105",
+    "text": "Cho hình bình hành ABCD. Gọi E là một"
+  },
+  {
+    "dataset": "vao10",
+    "id": "11",
+    "text": "Cho đường tròn (O) đường kính AB. Dây MN đi qua trung điểm H của OB, I là trung điểm MN. Từ A kẻ Ax⊥MN tại K. Tia BI cắt Ax tại C, Ax cắt tiếp tuyến tại B của (O) ở Q."
+  },
+  {
+    "dataset": "chuyen2026",
+    "id": "3",
+    "text": "Cho tứ giác ABCD với AC ⊥ BD. Biết rằng AD = 1, BC = 7. Tìm giá trị lớn A C ABCD"
+  },
+  {
+    "dataset": "d80",
+    "id": "16",
+    "text": "Cho tam giác ABC vuông ở A và một điểm D nằm giữa A và B. Đường tròn đường kính BD cắt BC tại E. Các đường thẳng CD, AE lần lượt cắt đường tròn tại F, G."
+  },
+  {
+    "dataset": "hinh9",
+    "id": "108",
+    "text": "Cho tam giác ABC nhọn, AB < AC, nội tiếp đường tròn (O). Gọi E là một điểm bất kì thuộc cung nhỏ BC của đường tròn (O) sao cho BE < BA. Trên các cạnh AB,AC của tam giác ABC lần lượt lấy các điểm K, L sao cho BK =BE và CL=CE. Gọi M, N lần lượt là trung điểm của BC, KL"
+  },
+  {
+    "dataset": "httcd",
+    "id": "125",
+    "text": "Cho AB là dây cung của đường tròn (O), I là trung điểm của AB. Trên cung nhỏ AB lấy điểm M tùy ý. Gọi giao   điểm OI và MI với (O) lần lượt C và N. So sánh MCN và ACB."
+  },
+  {
+    "dataset": "mohinh",
+    "id": "46",
+    "text": "Cho tam giác ABC nhọn ( AB< AC ) có đường cao AD và đường phân giác trong AO (D, O thuộc cạnh BC). Kẻ OM ⊥ AB tại M , ON ⊥ AC tại N ."
+  },
+  {
+    "dataset": "phang",
+    "id": "20",
+    "text": "1. Cho tam giác ABC có BC cố định và A di động sao cho AB = 2AC."
+  },
+  {
+    "dataset": "son123",
+    "id": "122",
+    "text": "Cho hình vuông ABCD nội tiếp đường tròn (O). Điểm P di chuyển trên cung nhỏ AD. Gọi giao điểm của PB và BC với AD lần lượt là M và N; giao điểm của PB và AC là Q; giao điểm của PC và BD là R. 1."
+  },
+  {
+    "dataset": "t02",
+    "id": "BT37",
+    "text": "Cho tam giác ABC nội tiếp (O) và ngoại tiếp (I). Đường tròn (I) tiếp xúc với các cạnh BC, CA, AB lần lượt tại D, E, F."
+  }
+]
