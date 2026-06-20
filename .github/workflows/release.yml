@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+# semantic-release cần quyền ghi để push commit bump version + tạo GitHub Release.
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # semantic-release cần toàn bộ history + tags
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - run: npm ci
+
+      # Cổng chất lượng — release bị chặn nếu fail.
+      - run: npm run typecheck
+      - run: npm test
+
+      # Phân tích commit → bump version → publish npm → tag + GitHub Release.
+      # Chỉ chạy khi có commit feat:/fix:/BREAKING kể từ release trước.
+      - run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

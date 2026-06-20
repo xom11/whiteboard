@@ -142,21 +142,27 @@ npm run dev         # tsup --watch (auto rebuild + inject)
 
 ## Dev workflow phát hành phiên bản mới
 
-Package đã publish lên npm (`@xom11/whiteboard`). `dist/` không track git — `prepublishOnly` tự clean + build trước `npm publish`.
+Package publish lên npm (`@xom11/whiteboard`). `dist/` không track git — `prepublishOnly` tự clean + build trước `npm publish`.
+
+**Phát hành giờ TỰ ĐỘNG qua semantic-release** (`.github/workflows/release.yml` + `.releaserc.json`). KHÔNG còn `npm version` / `npm publish` thủ công.
 
 ```bash
-# 1. Bump version + tag (tự commit + tag)
-npm version patch        # 0.14.0 → 0.14.1
-
-# 2. Publish lên npm (prepublishOnly tự chạy clean + build)
-npm publish --access public
-
-# 3. Push tag + commit
-git push --follow-tags
-
-# Consumer cài qua npm như bình thường:
-# npm install @xom11/whiteboard@^0.14
+# Chỉ cần commit theo conventional commits rồi push main:
+#   fix: ...            → bump patch  (0.31.0 → 0.31.1)
+#   feat: ...           → bump minor  (0.31.0 → 0.32.0)
+#   feat!: / BREAKING CHANGE: → bump major
+#   docs:/chore:/refactor: → KHÔNG release
+git push   # → CI tự: typecheck + test → bump version → publish npm
+           #         → commit "chore(release): x.y.z [skip ci]" (package.json + CHANGELOG)
+           #         → tag vX.Y.Z + GitHub Release
 ```
+
+- **Secret cần có 1 lần** (GitHub repo → Settings → Secrets → Actions): `NPM_TOKEN` (npm automation token). `GITHUB_TOKEN` Actions tự cấp.
+- semantic-release dùng git tags `vX.Y.Z` (đã có sẵn) làm mốc — chạy lần đầu nó tính từ `v0.31.0`.
+- Commit release do CI tạo dùng `[skip ci]` + đẩy bằng `GITHUB_TOKEN` nên KHÔNG loop workflow.
+- **Consumer (hoctotbachkhoa) tự cập nhật qua Renovate** (pull-based bot): publish bản mới → Renovate mở PR bump `@xom11/whiteboard` → CI xanh → tự merge. Config mẫu: `renovate.json5` (cài Renovate GitHub App vào repo consumer + đặt file ở gốc repo đó).
+- Muốn release tay khẩn cấp: `npx semantic-release --no-ci` (cần `NPM_TOKEN`+`GITHUB_TOKEN` env local).
+
 
 ## Gotchas (AI/DSL pipeline)
 
