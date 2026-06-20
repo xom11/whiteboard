@@ -81,17 +81,17 @@ const UPPER_LABEL = /^\p{Lu}{1,4}$/u; // toàn HOA, 1-4 ký tự (geometric labe
 const HAS_UPPER = /\p{Lu}/u; // có ít nhất 1 chữ HOA
 
 /** Phân loại 1 whitespace-token. Token KHÔNG thuần-chữ (có số/prime/ký-hiệu/ngoặc)
- *  → protected (nhãn/đơn-vị). Thuần-chữ toàn HOA 1-4 ký tự mà fold KHÔNG trong vocab
- *  → protected (label A,BC,ABC,MNPQ). Thuần-chữ toàn HOA 1-4 ký tự fold CÓ trong vocab
- *  → upper (từ viết tắt/shouted có thể sửa). Thuần-chữ có HOA khác (Ax,By,DUONG,Cho,Đường)
- *  → upper (chỉ exact-fold). Thuần-chữ toàn-thường → lower (exact + fuzzy). */
+ *  → protected (nhãn/đơn-vị). Thuần-chữ toàn HOA 1-4 ký tự → protected (label A,BC,ABC,MNPQ
+ *  và cả "BA"/"CO"/"LA" dù fold trùng vocab: chúng là NHÃN đoạn, không phải từ shouted).
+ *  Hệ quả: shouted keyword ALL-CAPS ≤4 ký tự (vd "TRON","GIAC") KHÔNG được phục-hồi-dấu —
+ *  hiếm gặp, chấp nhận đánh đổi để tuyệt đối không corrupt nhãn 2 ký tự. ALL-CAPS ≥5 ký tự
+ *  (vd "DUONG") vẫn rơi xuống nhánh dưới → 'upper' → phục-hồi-dấu an toàn.
+ *  Thuần-chữ có HOA khác (Ax,By,DUONG,Cho,Đường) → upper (chỉ exact-fold). Thuần-chữ
+ *  toàn-thường → lower (exact + fuzzy). */
 export function classifyToken(token: string): TokenClass {
   if (!LETTERS_ONLY.test(token)) return 'protected';
-  // Thuần chữ: kiểm tra có phải label (toàn HOA 1-4 ký tự)
-  if (UPPER_LABEL.test(token)) {
-    // Nếu fold nằm trong vocab → là từ shouted (vd TRON), không phải nhãn (vd MNPQ)
-    return FOLDED_VOCAB.has(foldVietnamese(token)) ? 'upper' : 'protected';
-  }
+  // Thuần chữ: kiểm tra có phải label (toàn HOA 1-4 ký tự) — LUÔN protected
+  if (UPPER_LABEL.test(token)) return 'protected';
   return HAS_UPPER.test(token) ? 'upper' : 'lower';
 }
 

@@ -85,10 +85,15 @@ describe('correctUserInput — tầng 2 (phục-hồi-dấu + case)', () => {
     // fold("thang")=fold("thẳng")="thang" → giữ "thang" (đúng cho "hình thang").
     expect(correctUserInput('hinh thang ABCD')).toBe('hình thang ABCD');
   });
-  it('giữ case đầu (sentence-start + shouted)', () => {
+  it('giữ case đầu (sentence-start + shouted ≥5 ký tự)', () => {
     expect(correctUserInput('Cho duong tron')).toBe('Cho đường tròn');
-    expect(correctUserInput('DUONG TRON')).toBe('Đường Tròn');
-    expect(correctUserInput('Đường tròn')).toBe('Đường tròn'); // đã đúng → unchanged
+    expect(correctUserInput('DUONG')).toBe('Đường');
+    expect(correctUserInput('Đường tròn')).toBe('Đường tròn');
+  });
+  it('GUARD: nhãn HOA ngắn 1-4 ký tự LUÔN protected (kể cả khi fold trùng vocab)', () => {
+    expect(correctUserInput('tia BA')).toBe('tia BA');
+    expect(correctUserInput('doan CO')).toBe('đoạn CO');
+    expect(correctUserInput('TAM GIAC')).toBe('TAM GIAC');
   });
 });
 
