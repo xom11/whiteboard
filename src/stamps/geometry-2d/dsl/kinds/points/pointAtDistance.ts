@@ -66,11 +66,13 @@ export const pointAtDistanceModule = defineModule<'pointAtDistance', Input>({
   },
   emit: (e, ctx) => {
     const d = e.distance;
+    // `as const` giữ kind ở literal type — nếu không, withScaleOffset<T> generic nới
+    // kind thành string → distance không khớp ConstraintDistanceSpec (typo lọt qua).
     const distance = d.kind === 'circleRadius'
-      ? withScaleOffset({ kind: 'circleRadius', circle: ctx.resolveId(d.circle) }, d)
+      ? withScaleOffset({ kind: 'circleRadius' as const, circle: ctx.resolveId(d.circle) }, d)
       : d.kind === 'segmentLength'
-        ? withScaleOffset({ kind: 'segmentLength', p1: ctx.resolveId(d.p1), p2: ctx.resolveId(d.p2) }, d)
-        : withScaleOffset({ kind: 'literal', value: d.value }, d);
+        ? withScaleOffset({ kind: 'segmentLength' as const, p1: ctx.resolveId(d.p1), p2: ctx.resolveId(d.p2) }, d)
+        : withScaleOffset({ kind: 'literal' as const, value: d.value }, d);
     return [{
       role: 'primary',
       object: emitPointObject(ctx.resolveId(e.name), e.name, {

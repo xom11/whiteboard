@@ -1,5 +1,6 @@
 // src/stamps/geometry-2d/dsl/kinds/_shared.ts
 import type { SceneObject } from '../../../../core/scene/types';
+import type { Constraint2D } from '../../../../core/scene/kinds/2d-constraint';
 import type { EmitContext } from './_types';
 
 export const POINT_BASE_FIELDS = {
@@ -9,11 +10,11 @@ export const POINT_BASE_FIELDS = {
   schemaVersion: 1,
 } as const;
 
-/** Wrap a Constraint2D-style attrs into a primary 'point' SceneObject. */
+/** Wrap a Constraint2D attrs into a primary 'point' SceneObject. */
 export function emitPointObject(
   id: string,
   name: string,
-  constraint: Record<string, unknown>,
+  constraint: Constraint2D,
   visible = true,
 ): SceneObject {
   return {
