@@ -5,6 +5,11 @@ describe('normalizeProblemText', () => {
     expect(normalizeProblemText('tâm nội tiếp ΔMAB')).toBe('tâm nội tiếp tam giác MAB');
     expect(normalizeProblemText('ΔABC ~ ΔASQ')).toBe('tam giác ABC ~ tam giác ASQ');
   });
+  it('PUA U+F044 (Symbol-font ∆ do OCR) trước chữ HOA → "tam giác "', () => {
+    // hsg9:166/vao10hcm — "Cho ∆ABC" với ∆ map thành PUA U+F044 (Symbol-font 'D'=Δ).
+    expect(normalizeProblemText('Cho ABC nhọn').replace(/\s+/g, ' ')).toBe('Cho tam giác ABC nhọn');
+    expect(normalizeProblemText(' ABC').replace(/\s+/g, ' ').trim()).toBe('tam giác ABC');
+  });
   it('"vòng tròn" → "đường tròn" (mọi hoa/thường)', () => {
     expect(normalizeProblemText('I là tâm vòng tròn nội tiếp')).toBe('I là tâm đường tròn nội tiếp');
     expect(normalizeProblemText('Vòng tròn (O)')).toBe('đường tròn (O)');

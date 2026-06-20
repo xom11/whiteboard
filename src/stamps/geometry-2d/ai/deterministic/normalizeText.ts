@@ -4,12 +4,15 @@
 // về dạng canonical mà rule engine đã hiểu — tránh phải nhân đôi regex ở mọi rule.
 //
 //   "ΔABC" / "∆ABC"      → "tam giác ABC"   (Δ U+0394 Greek, ∆ U+2206 increment)
+//   "ABC" (U+F044)      → "tam giác ABC"   (OCR Symbol-font 'D'=Δ → PUA U+F044)
 //   "vòng tròn"          → "đường tròn"     (đồng nghĩa)
 //
 // Idempotent + thuần (không side-effect). KHÔNG đổi độ dài cách-từ ngoài các thay
 // thế trên để giữ ổn định coverage/clause-split.
 
-const TRIANGLE_SYMBOL = /[Δ∆]\s*(?=[A-Z])/gu;
+// U+F044 = glyph ∆ trong PDF font Symbol (ký tự 'D' = Δ), OCR map vào Private Use
+// Area. Giữ lookahead (?=[A-Z]) để CHỈ đổi khi đứng trước bộ-đỉnh tam giác.
+const TRIANGLE_SYMBOL = /[Δ∆]\s*(?=[A-Z])/gu;
 const CIRCLE_SYNONYM = /vòng\s+tròn/giu;
 // "◊ABCD" (U+25CA lozenge) / "▱" / "□" → "tứ giác ABCD" (đề toán 8 hay dùng).
 const QUAD_SYMBOL = /[◊▱□]\s*(?=[A-Z])/gu;
