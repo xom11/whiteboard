@@ -25,6 +25,17 @@ describe('oppositeRayPointRule', () => {
     });
   });
 
+  // vxhung:11 "trên tia đối của BA lấy điểm C" — thiếu "tia" thứ 2 + lowercase.
+  it('thiếu "tia" thứ 2: "trên tia đối của BA lấy điểm C" → C = pointAtDistance(from A, through B)', () => {
+    const all = run(oppositeRayPointRule, 'trên tia đối của BA lấy điểm C');
+    expect(all).toHaveLength(1);
+    expect(all[0]).toMatchObject({
+      op: 'add-point',
+      name: 'C',
+      constraint: { kind: 'pointAtDistance', from: 'A', through: 'B' },
+    });
+  });
+
   // httcd:148 "Trên tia đối của tia AB lấy một điểm M" — "một điểm" xen giữa.
   it('"Trên tia đối của tia AB lấy một điểm M" → M = pointAtDistance(from B, through A)', () => {
     const all = run(oppositeRayPointRule, 'Trên tia đối của tia AB lấy một điểm M');

@@ -14,14 +14,14 @@ import { addPoint } from './_shared';
 
 // "Trên tia đối của tia AB lấy điểm C" — g1g2 = tia AB (A gốc, B hướng), g3 = C.
 const RE = new RegExp(
-  String.raw`[Tt]rên\s+tia\s+đối\s+(?:của\s+)?tia\s+([A-Z])([A-Z])(?![A-Z])[^.]{0,20}?lấy\s+(?:một\s+)?(?:điểm\s+)?([A-Z])(?![A-Z])`,
+  String.raw`[Tt]rên\s+tia\s+đối\s+(?:của\s+)?(?:tia\s+)?([A-Z])([A-Z])(?![A-Z])[^.]{0,20}?lấy\s+(?:một\s+)?(?:điểm\s+)?([A-Z])(?![A-Z])`,
   'gu',
 );
 
 // Khoảng cách canonical (board units) — vị trí C trên tia đối không nêu metric.
 // Dạng tên-TRƯỚC (vao10): "Lấy điểm A trên tia đối của tia CB" — g1=tên, g2g3=tia.
 const RE_NAME_FIRST = new RegExp(
-  String.raw`[Ll]ấy\s+(?:điểm\s+)?([A-Z])(?![A-Z])\s+trên\s+tia\s+đối\s+(?:của\s+)?tia\s+([A-Z])([A-Z])(?![A-Z])`,
+  String.raw`[Ll]ấy\s+(?:điểm\s+)?([A-Z])(?![A-Z])\s+trên\s+tia\s+đối\s+(?:của\s+)?(?:tia\s+)?([A-Z])([A-Z])(?![A-Z])`,
   'gu',
 );
 
