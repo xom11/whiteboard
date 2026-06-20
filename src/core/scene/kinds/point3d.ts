@@ -46,6 +46,13 @@ const def: KindDef<Point3DAttrs> = {
     if (c.kind === 'onLine') return `${obj.label} trên đường ${c.lineId}`;
     if (c.kind === 'onPolygon') return `${obj.label} trên đa giác ${c.polygonId}`;
     if (c.kind === 'onSphere') return `${obj.label} trên mặt cầu ${c.sphereId}`;
+    // Điểm phái sinh — mô tả construct để row title / tooltip không chỉ là nhãn trơ.
+    if (c.kind === 'midpoint') return `${obj.label} = trung điểm ${c.p1}${c.p2}`;
+    if (c.kind === 'centroid') return `${obj.label} = trọng tâm ${c.vertices.join('')}`;
+    if (c.kind === 'intersectionLines') return `${obj.label} = giao 2 đường (${c.a1}${c.b1}, ${c.a2}${c.b2})`;
+    if (c.kind === 'intersectionLinePlane') return `${obj.label} = giao ${c.a}${c.b} ∩ ${c.plane}`;
+    if (c.kind === 'perpFootLine') return `${obj.label} = chân ⊥ từ ${c.from} xuống ${c.a}${c.b}`;
+    if (c.kind === 'perpFootPlane') return `${obj.label} = chân ⊥ từ ${c.from} xuống ${c.plane}`;
     return obj.label;
   },
   render: (obj, ctx: RenderCtx) => {

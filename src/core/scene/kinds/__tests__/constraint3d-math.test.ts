@@ -189,6 +189,16 @@ describe('constraint3d-math: điểm phái sinh', () => {
       expect(r[2]).toBeCloseTo(0, 9);
     });
 
+    test('mặt phẳng suy biến (3 điểm thẳng hàng) → trả P không đổi, hữu hạn', () => {
+      const s = mkState([
+        pt('Q', 0, 0, 0), pt('R', 1, 0, 0), pt('S', 2, 0, 0), plane('pl', 'Q', 'R', 'S'), // thẳng hàng
+        pt('P', 1, 2, 3),
+      ]);
+      const r = constraintToWorld({ kind: 'perpFootPlane', from: 'P', plane: 'pl' }, s);
+      expect(r.every(Number.isFinite)).toBe(true);
+      expect(r).toEqual([1, 2, 3]); // normal=0 → không chiếu được → P không đổi (fallback ghi nhận)
+    });
+
     test('cascade: xoá mặt phẳng → chân ⊥ mất', () => {
       let s = mkState([
         pt('Q', 0, 0, 0), pt('R', 1, 0, 0), pt('S', 0, 1, 0), plane('pl', 'Q', 'R', 'S'),
@@ -206,4 +216,58 @@ describe('constraint3d-math: điểm phái sinh', () => {
       expect(constraintRefs(c)).toEqual(['P', 'pl']);
     });
   });
+});
+
+// Biên/suy biến: KHÔNG yêu cầu kết quả đúng-hình-học (cấu hình vô định), chỉ
+// PIN hành vi fallback hiện tại + bảo đảm HỮU HẠN (không NaN/Infinity). Nếu sau
+// này siết chặt (chặn ở UI / sentinel), các test này lộ ra để cập nhật có chủ đích.
+describe('constraint3d-math: biên/suy biến (fallback hữu hạn)', () => {
+  test('intersectionLines 2 đường song song → midpoint(A,C), hữu hạn', () => {
+    const s = mkState([pt('A', 0, 0, 0), pt('B', 1, 0, 0), pt('C', 0, 1, 0), pt('D', 1, 1, 0)]);
+    const r = constraintToWorld({ kind: 'intersectionLines', a1: 'A', b1: 'B', a2: 'C', b2: 'D' }, s);
+    expect(r.every(Number.isFinite)).toBe(true);
+    expect(r).toEqual([0, 0.5, 0]); // fallback midpoint(A,C) (điểm trên KHÔNG đường nào)
+  });
+
+  test('intersectionLines đường suy biến (a1≡b1) → midpoint(A,C), hữu hạn', () => {
+    const s = mkState([pt('A', 3, 0, 0), pt('B', 0, 0, 0), pt('E', 10, 0, 0)]);
+    // đường 1 = (A,A) zero-length; đường 2 = trục x (B,E). Giao thực = (3,0,0).
+    const r = constraintToWorld({ kind: 'intersectionLines', a1: 'A', b1: 'A', a2: 'B', b2: 'E' }, s);
+    expect(r.every(Number.isFinite)).toBe(true);
+    expect(r).toEqual([1.5, 0, 0]); // fallback midpoint(A,B) — KHÔNG phải giao thực (3,0,0)
+  });
+
+  test('intersectionLinePlane đường song song NGOÀI mặt → trả A, hữu hạn', () => {
+    const s = mkState([
+      pt('A', 0, 0, 5), pt('B', 1, 0, 5),
+      pt('P', 0, 0, 0), pt('Q', 1, 0, 0), pt('R', 0, 1, 0), plane('pl', 'P', 'Q', 'R'),
+    ]);
+    const r = constraintToWorld({ kind: 'intersectionLinePlane', a: 'A', b: 'B', plane: 'pl' }, s);
+    expect(r.every(Number.isFinite)).toBe(true);
+    expect(r).toEqual([0, 0, 5]); // fallback A (NGOÀI mặt — không có giao)
+  });
+
+  test('perpFootLine đường suy biến (a≡b) → trả A, hữu hạn', () => {
+    const s = mkState([pt('P', 1, 2, 3), pt('A', 5, 5, 5)]);
+    const r = constraintToWorld({ kind: 'perpFootLine', from: 'P', a: 'A', b: 'A' }, s);
+    expect(r.every(Number.isFinite)).toBe(true);
+    expect(r).toEqual([5, 5, 5]); // t=0 → A
+  });
+});
+
+describe('point3d.describe: điểm phái sinh có mô tả (không chỉ nhãn trơ)', () => {
+  const describe3d = (c: Constraint3D): string => {
+    const def = getKind('point3d');
+    return def.describe!(mkObj('point3d', 'X', { constraint: c }) as never);
+  };
+  test('midpoint', () => expect(describe3d({ kind: 'midpoint', p1: 'A', p2: 'B' })).toContain('trung điểm'));
+  test('centroid', () => expect(describe3d({ kind: 'centroid', vertices: ['A', 'B', 'C'] })).toContain('trọng tâm'));
+  test('intersectionLines', () =>
+    expect(describe3d({ kind: 'intersectionLines', a1: 'A', b1: 'B', a2: 'C', b2: 'D' })).toContain('giao 2 đường'));
+  test('intersectionLinePlane', () =>
+    expect(describe3d({ kind: 'intersectionLinePlane', a: 'A', b: 'B', plane: 'pl' })).toContain('∩'));
+  test('perpFootLine', () =>
+    expect(describe3d({ kind: 'perpFootLine', from: 'P', a: 'A', b: 'B' })).toContain('chân ⊥'));
+  test('perpFootPlane', () =>
+    expect(describe3d({ kind: 'perpFootPlane', from: 'P', plane: 'pl' })).toContain('chân ⊥'));
 });

@@ -259,7 +259,20 @@ export function worldToConstraint(current: Constraint3D, world: Vec3, state: Sta
     }
     // Điểm PHÁI SINH (midpoint/centroid/intersection*/perpFoot…) KHÔNG kéo được
     // → trả constraint hiện tại không đổi (giống điểm derived 2D worldToConstraint).
-    default:
+    // Liệt kê TƯỜNG MINH + never-guard (mô phỏng constraintRefs): thêm constraint
+    // kind KÉO ĐƯỢC mới mà quên arm ở đây sẽ bị compiler chặn, không âm thầm hoá
+    // non-draggable.
+    case 'midpoint':
+    case 'centroid':
+    case 'intersectionLines':
+    case 'intersectionLinePlane':
+    case 'perpFootLine':
+    case 'perpFootPlane':
       return current;
+    default: {
+      const _exhaustive: never = current;
+      void _exhaustive;
+      return current;
+    }
   }
 }
