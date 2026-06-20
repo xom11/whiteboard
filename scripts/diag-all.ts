@@ -143,6 +143,14 @@ const DATASETS: DS[] = [
     intro: introBeforeProof,
   },
   {
+    name: 'vxhung',
+    file: 'docs/datasets/luyen-thi-vao10-hinhhoc-vxhung.txt',
+    // "Tài liệu luyện thi vào 10 phần Hình học - Vũ Xuân Hưng" (thcs.toanmath),
+    // 47 bài trích bởi scripts/extract-vxhung.mjs (text-layer sạch, nhãn nguyên).
+    parse: blockParse(/^Câu\s+(\d+):/, (m) => m[1]),
+    intro: introBeforeProof,
+  },
+  {
     name: 'hsg9',
     file: 'docs/datasets/hsg-toan9-hinh.txt',
     // Tuyển tập đề HSG Toán 9 cấp huyện/quận + bồi dưỡng HSG hình học 9 (toanmath).
