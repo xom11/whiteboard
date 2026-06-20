@@ -113,9 +113,12 @@ const SHARED_FROM_TWO = new RegExp(
 //   groups: 1=name1 2=from1... thực ra 1=n1 2=n2 3=from1 4=from2 5=line
 const FEET_FROM_SHARED_LINE = new RegExp(
   "(?:[Hh]ai\\s+điểm\\s+|[Cc]ác\\s+điểm\\s+)?([A-Z])(?:['′])?\\s*(?:,|và)\\s*([A-Z])(?:['′])?\\s+" +
-    'lần\\s*lượt\\s+là\\s+chân\\s+(?:các\\s+)?(?:đường\\s+)?(?:vuông\\s*góc|cao)\\s+' +
+    // "lần lượt" / "theo thứ tự" / "thứ tự" = phân phối 1-1 (LANLUOT_OPT).
+    '(?:lần\\s*lượt|(?:theo\\s+)?thứ\\s*tự)\\s+là\\s+chân\\s+(?:các\\s+)?(?:đường\\s+)?(?:vuông\\s*góc|cao)\\s+' +
     "(?:kẻ\\s+|hạ\\s+|vẽ\\s+|dựng\\s+)?(?:từ\\s+)?([A-Z](?:['′])?)\\s*(?:,|và)\\s*([A-Z](?:['′])?)\\s+" +
-    "(?:đến|xuống|trên|tới)\\s+(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{1,2}(?:['′])?)(?![A-Z])",
+    // line ref có thể đứng sau "đường kính" (vd "xuống đường kính AA'") — đoạn AA'
+    // được resolveSegmentRef tự dựng vì A, A' đã tồn tại.
+    "(?:đến|xuống|trên|tới)\\s+(?:đường\\s*thẳng\\s+|đường\\s*kính\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{1,2}(?:['′])?)(?![A-Z])",
   'gu',
 );
 

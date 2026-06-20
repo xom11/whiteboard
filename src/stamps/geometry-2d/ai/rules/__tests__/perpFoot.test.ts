@@ -525,6 +525,13 @@ describe('perpFoot — "X và Y lần lượt là chân đường vuông góc k�
       .toEqual(["E:B->AA'", "F:C->AA'"]);
   });
 
+  // vao10:141 — 2 gốc CÙNG đường, "theo thứ tự" (= lần lượt) + "xuống đường kính
+  // AA'" (prefix "đường kính" + ref đoạn ngầm AA', cả A và A' đã tồn tại).
+  it('vao10:141: "E, F theo thứ tự là chân đường vuông góc kẻ từ B và C xuống đường kính AA\'"', () => {
+    expect(feet("Gọi E, F theo thứ tự là chân đường vuông góc kẻ từ B và C xuống đường kính AA'."))
+      .toEqual(["E:B->AA'", "F:C->AA'"]);
+  });
+
   // httcd:100 — 2 gốc CÙNG đường, separator "và": "H và K ... kẻ từ A và B đến CD".
   it('httcd:100: "H và K lần lượt là chân các đường vuông góc kẻ từ A và B đến CD"', () => {
     expect(feet('Gọi H và K lần lượt là chân các đường vuông góc kẻ từ A và B đến CD.'))

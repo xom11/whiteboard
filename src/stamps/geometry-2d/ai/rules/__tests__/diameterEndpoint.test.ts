@@ -47,4 +47,24 @@ describe('diameterEndpointRule', () => {
     const ds = m.flatMap((x) => x.intents).filter((i: any) => i.name === 'D');
     expect(ds).toHaveLength(1);
   });
+
+  // vao10:141 — construct CHUỖI không "và": "Kẻ đường cao AD đường kính AA'".
+  // Đầu mút thứ hai prime (A'), tâm O từ "tâm O". reflectPoint(A, O).
+  it("vao10:141: \"Kẻ đường cao AD đường kính AA'\" → A' = reflectPoint(A, O)", () => {
+    const m = run("Cho tam giác ABC nội tiếp đường tròn tâm O. Kẻ đường cao AD đường kính AA'");
+    const c = m.flatMap((x) => x.intents).find((i: any) => i.name === "A'") as any;
+    expect(c?.constraint).toEqual({ kind: 'reflectPoint', of: 'A', through: 'O' });
+  });
+
+  // Guard chống over-match: dạng circle-diameter "đường kính" thuộc ĐƯỜNG TRÒN,
+  // KHÔNG được emit reflectPoint (nếu emit → CYCLE C→O / N→O). d80:15, vao10:157.
+  it('KHÔNG khớp "dựng đường tròn (O) có đường kính MC" (đường kính của đường tròn)', () => {
+    const m = run('Trên cạnh AC lấy điểm M, dựng đường tròn (O) có đường kính MC');
+    expect(m.flatMap((x) => x.intents).some((i: any) => i.constraint?.kind === 'reflectPoint')).toBe(false);
+  });
+
+  it('KHÔNG khớp "Vẽ đường tròn tâm O đường kính BN"', () => {
+    const m = run('Cho hình vuông ABCD, N là trung điểm DC. Vẽ đường tròn tâm O đường kính BN');
+    expect(m.flatMap((x) => x.intents).some((i: any) => i.constraint?.kind === 'reflectPoint')).toBe(false);
+  });
 });

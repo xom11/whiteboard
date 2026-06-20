@@ -22,8 +22,16 @@ const RE = new RegExp(
 );
 
 // Dạng động từ: groups 1=đầu mút cũ 2=đầu mút mới (có thể prime "CC'").
+// Blob xen giữa verb↔"đường kính" có 2 nhánh:
+//   • "và" (cũ): "Kẻ đường cao AD và đường kính AK" — blob tuỳ ý + "và".
+//   • chuỗi KHÔNG "và" (mới, vao10:141): "Kẻ đường cao AD đường kính AA'" —
+//     blob KHÔNG được chứa "đường tròn"/"(" để né dạng circle-diameter
+//     ("dựng đường tròn (O) có đường kính MC" / "Vẽ đường tròn tâm O đường kính
+//     BN") — ở đó "đường kính" thuộc ĐƯỜNG TRÒN, KHÔNG phải đầu-mút-đối-tâm,
+//     nếu emit reflectPoint sẽ gây CYCLE. Guard `before`-check + emitted dedup.
+const VERB_GAP = '(?:[^.;,]{0,24}?và\\s+|(?:(?!đường\\s*tròn|\\()[^.;,]){0,24}?)?';
 const RE_VERB = new RegExp(
-  "(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\\s+(?:[^.;,]{0,24}?và\\s+)?đường\\s*kính\\s+([A-Z])([A-Z]['′]?)(?![A-Za-z'′])",
+  "(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\\s+" + VERB_GAP + "đường\\s*kính\\s+([A-Z])([A-Z]['′]?)(?![A-Za-z'′])",
   'gu',
 );
 // Tâm từ đề: "(O)" / "(O;R)" / "(O,R)" / "tâm O" — match ĐẦU TIÊN (đường tròn
@@ -31,7 +39,10 @@ const RE_VERB = new RegExp(
 // point cho circumcenter/midpoint nên tên tâm là điểm thật).
 const RESOLVE_CENTER = /\(\s*([A-Z])(?:\s*[;,]\s*[Rr0-9][^)]*)?\s*\)|tâm\s+([A-Z])(?![A-Za-z])/u;
 
-const PREFILTER = /[A-Z]{2}\s+là\s+đường\s*kính|(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\s+(?:[^.;,]{0,24}?và\s+)?đường\s*kính/u;
+const PREFILTER = new RegExp(
+  '[A-Z]{2}\\s+là\\s+đường\\s*kính|(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng)\\s+' + VERB_GAP + 'đường\\s*kính',
+  'u',
+);
 
 export const diameterEndpointRule: LanguageRule = {
   id: 'diameterEndpoint',
