@@ -1,4 +1,4 @@
-import { foldVietnamese, FOLDED_VOCAB, classifyToken, applyStructure, DEFAULT_CORRECT_CONFIG } from '../correctUserInput';
+import { foldVietnamese, FOLDED_VOCAB, classifyToken, applyStructure, DEFAULT_CORRECT_CONFIG, correctUserInput } from '../correctUserInput';
 
 describe('applyStructure (tầng 1)', () => {
   it('gộp xuống dòng + space thừa', () => {
@@ -71,5 +71,57 @@ describe('classifyToken (guard)', () => {
     for (const t of ['duong', 'tron', 'giac', 'tiep', 'gisc']) {
       expect(classifyToken(t)).toBe('lower');
     }
+  });
+});
+
+describe('correctUserInput — tầng 2 (phục-hồi-dấu + case)', () => {
+  it('thiếu dấu → có dấu', () => {
+    expect(correctUserInput('cho duong tron')).toBe('cho đường tròn');
+    expect(correctUserInput('tiep tuyen')).toBe('tiếp tuyến');
+  });
+  it('KHÔNG corrupt từ-đa-nghĩa bỏ-dấu (collision an toàn)', () => {
+    // fold("tam")=fold("tâm")="tam" → giữ "tam" (đúng cho "tam giác"), KHÔNG đổi "tâm".
+    expect(correctUserInput('tam giac ABC')).toBe('tam giác ABC');
+    // fold("thang")=fold("thẳng")="thang" → giữ "thang" (đúng cho "hình thang").
+    expect(correctUserInput('hinh thang ABCD')).toBe('hình thang ABCD');
+  });
+  it('giữ case đầu (sentence-start + shouted)', () => {
+    expect(correctUserInput('Cho duong tron')).toBe('Cho đường tròn');
+    expect(correctUserInput('DUONG TRON')).toBe('Đường Tròn');
+    expect(correctUserInput('Đường tròn')).toBe('Đường tròn'); // đã đúng → unchanged
+  });
+});
+
+describe('correctUserInput — tầng 3 (typo)', () => {
+  it('typo edit-1 từ dài → canonical', () => {
+    expect(correctUserInput('tam gisc ABC')).toBe('tam giác ABC');
+    expect(correctUserInput('duong tronh')).toBe('đường tròn');
+  });
+  it('từ ngắn (<minTypoLen) KHÔNG fuzzy', () => {
+    // "hoc" (fold) cách "goc"(góc) d=1 nhưng len 3 < 4 → giữ nguyên
+    expect(correctUserInput('hoc sinh')).toBe('hoc sinh');
+  });
+});
+
+describe('correctUserInput — GUARD label-protection (xuyên tầng)', () => {
+  it('nhãn toán giữ nguyên qua mọi tầng', () => {
+    const out = correctUserInput("tam giac ABC, duong kinh BC, tiep tuyen tai A', AD = 2R, goc 90 do");
+    for (const label of ['ABC', 'BC', "A'", '2R', '90°']) {
+      expect(out).toContain(label);
+    }
+    expect(out).toContain('tam giác');
+    expect(out).toContain('tiếp tuyến');
+  });
+});
+
+describe('correctUserInput — idempotent + cờ tầng', () => {
+  const raw = 'CHO\nduong  tronh\ttam O, AB // CD';
+  it('idempotent', () => {
+    const once = correctUserInput(raw);
+    expect(correctUserInput(once)).toBe(once);
+  });
+  it('tắt accents+typo → chỉ tầng cấu trúc', () => {
+    const out = correctUserInput(raw, { ...DEFAULT_CORRECT_CONFIG, accents: false, typo: false });
+    expect(out).toBe('CHO duong tronh tam O, AB song song CD');
   });
 });

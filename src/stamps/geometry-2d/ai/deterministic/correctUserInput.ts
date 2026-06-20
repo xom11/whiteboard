@@ -81,13 +81,17 @@ const UPPER_LABEL = /^\p{Lu}{1,4}$/u; // toàn HOA, 1-4 ký tự (geometric labe
 const HAS_UPPER = /\p{Lu}/u; // có ít nhất 1 chữ HOA
 
 /** Phân loại 1 whitespace-token. Token KHÔNG thuần-chữ (có số/prime/ký-hiệu/ngoặc)
- *  → protected (nhãn/đơn-vị). Thuần-chữ toàn HOA 1-4 ký tự → protected (label A,BC,ABC,MNPQ).
- *  Thuần-chữ có HOA khác (Ax,By,DUONG,Cho,Đường) → upper (chỉ exact-fold). Thuần-chữ
- *  toàn-thường → lower (exact + fuzzy). */
+ *  → protected (nhãn/đơn-vị). Thuần-chữ toàn HOA 1-4 ký tự mà fold KHÔNG trong vocab
+ *  → protected (label A,BC,ABC,MNPQ). Thuần-chữ toàn HOA 1-4 ký tự fold CÓ trong vocab
+ *  → upper (từ viết tắt/shouted có thể sửa). Thuần-chữ có HOA khác (Ax,By,DUONG,Cho,Đường)
+ *  → upper (chỉ exact-fold). Thuần-chữ toàn-thường → lower (exact + fuzzy). */
 export function classifyToken(token: string): TokenClass {
   if (!LETTERS_ONLY.test(token)) return 'protected';
   // Thuần chữ: kiểm tra có phải label (toàn HOA 1-4 ký tự)
-  if (UPPER_LABEL.test(token)) return 'protected';
+  if (UPPER_LABEL.test(token)) {
+    // Nếu fold nằm trong vocab → là từ shouted (vd TRON), không phải nhãn (vd MNPQ)
+    return FOLDED_VOCAB.has(foldVietnamese(token)) ? 'upper' : 'protected';
+  }
   return HAS_UPPER.test(token) ? 'upper' : 'lower';
 }
 
@@ -127,3 +131,74 @@ function applyStructure(s: string): string {
   return out.replace(/\s+/g, ' ').trim();
 }
 export { applyStructure };
+
+/** Áp lại kiểu HOA-đầu của token gốc lên canonical: gốc có chữ-đầu HOA → canonical
+ *  viết-hoa-chữ-đầu (giữ "Cho"/"Đường" sentence-start, đưa shout "DUONG"→"Đường").
+ *  Gốc toàn-thường → trả canonical nguyên (đã có-dấu thường). */
+function applyLeadingCase(canonical: string, original: string): string {
+  if (/^\p{Lu}/u.test(original)) {
+    return canonical.charAt(0).toUpperCase() + canonical.slice(1);
+  }
+  return canonical;
+}
+
+/** Tầng 3: tìm vocab gần-khớp DUY NHẤT trong ngưỡng. Trả canonical hoặc null
+ *  (không khớp / mơ hồ → để nguyên). */
+function fuzzyLookup(folded: string, cfg: CorrectConfig): string | null {
+  if (folded.length < cfg.minTypoLen) return null;
+  let best: string | null = null;
+  let bestDist = cfg.maxTypoDistance + 1;
+  let tie = false;
+  for (const [key, canonical] of FOLDED_VOCAB) {
+    // Bỏ qua entry không-dấu (canonical == key): chúng không phải target sửa dấu.
+    if (canonical === key) continue;
+    if (Math.abs(key.length - folded.length) > cfg.maxTypoDistance) continue;
+    const d = levenshtein(folded, key);
+    if (d < bestDist) {
+      bestDist = d;
+      best = canonical;
+      tie = false;
+    } else if (d === bestDist) {
+      tie = true;
+    }
+  }
+  if (best === null || bestDist > cfg.maxTypoDistance || tie) return null;
+  return best;
+}
+
+/** Sửa 1 token theo guard + tầng 2/3. Token protected hoặc không khớp → giữ nguyên. */
+function correctToken(token: string, cfg: CorrectConfig): string {
+  const klass = classifyToken(token);
+  if (klass === 'protected') return token;
+  const folded = foldVietnamese(token);
+  // Tầng 2: fold-khớp-chính-xác (áp cho cả 'upper' shouted keyword lẫn 'lower').
+  if (cfg.accents) {
+    const exact = FOLDED_VOCAB.get(folded);
+    if (exact) return applyLeadingCase(exact, token);
+  }
+  // Tầng 3: fuzzy CHỈ cho token toàn-thường ('lower') — KHÔNG fuzzy token có HOA
+  // để tuyệt đối không mangle nhãn (ABD ~ abc…).
+  if (cfg.typo && klass === 'lower') {
+    const near = fuzzyLookup(folded, cfg);
+    if (near) return near;
+  }
+  return token;
+}
+
+/**
+ * Sửa lỗi input học sinh gõ. Thuần + idempotent. Chạy TRƯỚC normalizeProblemText.
+ * GUARD: chỉ đụng token chữ-thường-thuần; nhãn toán (HOA/prime/số/đơn-vị) bất biến.
+ */
+export function correctUserInput(
+  input: string,
+  cfg: CorrectConfig = DEFAULT_CORRECT_CONFIG,
+): string {
+  let s = input;
+  if (cfg.structure) s = applyStructure(s);
+  if (!cfg.accents && !cfg.typo) return s;
+  // Tách giữ separator để ghép lại nguyên vẹn.
+  return s
+    .split(/(\s+)/)
+    .map((tok) => (/\s/.test(tok) || tok === '' ? tok : correctToken(tok, cfg)))
+    .join('');
+}
