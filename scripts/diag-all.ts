@@ -136,6 +136,34 @@ const DATASETS: DS[] = [
     intro: introBeforeProof,
   },
   {
+    name: 'vao10hcm',
+    file: 'docs/datasets/vao10-tinh-hcm.txt',
+    // Đề tuyển sinh vào 10 + đề tham khảo TP.HCM (thcs.toanmath, text-layer sạch).
+    parse: blockParse(/^Câu\s+(\d+):/, (m) => m[1]),
+    intro: introBeforeProof,
+  },
+  {
+    name: 'hsg9',
+    file: 'docs/datasets/hsg-toan9-hinh.txt',
+    // Tuyển tập đề HSG Toán 9 cấp huyện/quận + bồi dưỡng HSG hình học 9 (toanmath).
+    parse: blockParse(/^Câu\s+(\d+):/, (m) => m[1]),
+    intro: introBeforeProof,
+  },
+  {
+    name: 'phieu9',
+    file: 'docs/datasets/phieu-duong-tron-9.txt',
+    // "Phiếu bài tập Toán 9 chương đường tròn" (thcs.toanmath, SGK 2024-2025).
+    parse: blockParse(/^Câu\s+(\d+):/, (m) => m[1]),
+    intro: introBeforeProof,
+  },
+  {
+    name: 'chuyen13',
+    file: 'docs/datasets/13-chuyen-de-vao10.txt',
+    // "13 chuyên đề ôn thi tuyển sinh vào 10 môn Toán" — chương hình (toanmath).
+    parse: blockParse(/^Câu\s+(\d+):/, (m) => m[1]),
+    intro: introBeforeProof,
+  },
+  {
     name: 'julielltv',
     file: 'docs/datasets/julielltv-hinh-hoc-phang.json',
     // JSON {problems:[{id, statement}]} — statement chứa LaTeX inline $...$.

@@ -183,6 +183,9 @@ function letterFold(token: string): string {
 // bị guard "đã có dấu" bỏ qua; bare-form chỉ xuất hiện ở input học-sinh + đúng
 // các ngữ cảnh dưới. Khôi phục "tâm" (tâm đường tròn — CỰC phổ biến) mà KHÔNG
 // corrupt "tam giác"/"hình thang".
+// HẠN CHẾ ĐÃ BIẾT (chấp nhận): nếu TỪ-KỀ phân-định cũng bị typo (vd "tam gisc"),
+// neighbor-fold không khớp "giac" → "tam"→"tâm" sai. Hiếm (chỉ khi typo bật + kề
+// typo); KHÔNG ảnh hưởng corpus (đã có dấu → guard bỏ qua).
 const DISAMBIG: Record<string, (prevFold: string, nextFold: string) => string> = {
   // "tam giác" giữ "tam"; còn lại (tâm O, tâm đường tròn…) → "tâm".
   tam: (_p, n) => (n === 'giac' ? 'tam' : 'tâm'),
