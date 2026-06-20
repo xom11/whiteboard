@@ -173,8 +173,33 @@ function fuzzyLookup(folded: string, cfg: CorrectConfig): string | null {
   return best;
 }
 
-/** Sửa 1 token theo guard + tầng 2/3. Token protected hoặc không khớp → giữ nguyên. */
-function correctToken(token: string, cfg: CorrectConfig): string {
+// Chỉ giữ chữ a-z của dạng fold (bỏ dấu câu/chỉ số dính nhãn) để so neighbor.
+function letterFold(token: string): string {
+  return foldVietnamese(token).replace(/[^a-z]+/g, '');
+}
+
+// Phân-định NGỮ-CẢNH cho fold-key đa-nghĩa (collision). Bare token (thiếu dấu)
+// → chọn canonical theo từ-kề. An toàn corpus: corpus đã có dấu nên các từ này
+// bị guard "đã có dấu" bỏ qua; bare-form chỉ xuất hiện ở input học-sinh + đúng
+// các ngữ cảnh dưới. Khôi phục "tâm" (tâm đường tròn — CỰC phổ biến) mà KHÔNG
+// corrupt "tam giác"/"hình thang".
+const DISAMBIG: Record<string, (prevFold: string, nextFold: string) => string> = {
+  // "tam giác" giữ "tam"; còn lại (tâm O, tâm đường tròn…) → "tâm".
+  tam: (_p, n) => (n === 'giac' ? 'tam' : 'tâm'),
+  // "hình thang" giữ "thang"; còn lại (đường thẳng, thẳng hàng…) → "thẳng".
+  thang: (p, _n) => (p === 'hinh' ? 'thang' : 'thẳng'),
+  // "ngoại tiếp" → "ngoại"; còn lại (nằm ngoài, điểm ngoài…) → "ngoài".
+  ngoai: (_p, n) => (n === 'tiep' ? 'ngoại' : 'ngoài'),
+};
+
+/** Sửa 1 token theo guard + tầng 2/3. Token protected hoặc không khớp → giữ nguyên.
+ *  prevFold/nextFold = letterFold của từ-kề (cho phân-định ngữ-cảnh). */
+function correctToken(
+  token: string,
+  cfg: CorrectConfig,
+  prevFold = '',
+  nextFold = '',
+): string {
   const klass = classifyToken(token);
   if (klass === 'protected') return token;
   const folded = foldVietnamese(token);
@@ -186,6 +211,8 @@ function correctToken(token: string, cfg: CorrectConfig): string {
   if (folded !== token.toLowerCase()) return token;
   // Tầng 2: fold-khớp-chính-xác (áp cho cả 'upper' shouted keyword lẫn 'lower').
   if (cfg.accents) {
+    const dis = DISAMBIG[folded];
+    if (dis) return applyLeadingCase(dis(prevFold, nextFold), token);
     const exact = FOLDED_VOCAB.get(folded);
     if (exact) return applyLeadingCase(exact, token);
   }
@@ -209,9 +236,19 @@ export function correctUserInput(
   let s = input;
   if (cfg.structure) s = applyStructure(s);
   if (!cfg.accents && !cfg.typo) return s;
-  // Tách giữ separator để ghép lại nguyên vẹn.
-  return s
-    .split(/(\s+)/)
-    .map((tok) => (/\s/.test(tok) || tok === '' ? tok : correctToken(tok, cfg)))
-    .join('');
+  // Tách giữ separator để ghép lại nguyên vẹn. Thu thập index từ-token (bỏ space/
+  // rỗng) để tra từ-kề cho phân-định ngữ-cảnh (DISAMBIG).
+  const parts = s.split(/(\s+)/);
+  const wordIdx: number[] = [];
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i] !== '' && !/\s/.test(parts[i])) wordIdx.push(i);
+  }
+  const out = parts.slice();
+  for (let w = 0; w < wordIdx.length; w++) {
+    const i = wordIdx[w];
+    const prevFold = w > 0 ? letterFold(parts[wordIdx[w - 1]]) : '';
+    const nextFold = w < wordIdx.length - 1 ? letterFold(parts[wordIdx[w + 1]]) : '';
+    out[i] = correctToken(parts[i], cfg, prevFold, nextFold);
+  }
+  return out.join('');
 }

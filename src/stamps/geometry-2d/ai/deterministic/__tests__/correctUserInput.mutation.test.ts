@@ -27,7 +27,8 @@ const MUTATORS: Array<[string, (t: string) => string]> = [
 ];
 
 // Ngưỡng GATING: chốt thực nghiệm (clear số đo với biên ~5%). KHÔNG ép cứng.
-const THRESHOLD = 0.45; // đo thực nghiệm 60/120=0.50; floor(0.50*20)/20−0.05=0.45
+// Sau khi thêm disambiguation ngữ-cảnh tâm/thẳng/ngoài: 73/120=0.61.
+const THRESHOLD = 0.55; // floor(0.61*20)/20 − 0.05 = 0.55
 
 describe('mutation test-set (corrector recovery)', () => {
   it('baseline: mọi đề fixture FULL không cần sửa', () => {
@@ -70,8 +71,9 @@ describe('mutation test-set (corrector recovery)', () => {
 
   it('tầng 3 (typo, opt-in) cứu typo keyword khi BẬT flag', () => {
     // Không gating qua pipeline (default typo:false) — kiểm tầng 3 trực tiếp.
+    // Tránh từ collision-disambig (tam/thang/ngoai) khi neighbor cũng typo.
     const TYPO = { ...DEFAULT_CORRECT_CONFIG, typo: true };
-    expect(correctUserInput('tam gisc', TYPO)).toBe('tam giác');
+    expect(correctUserInput('tiep tuyenn', TYPO)).toBe('tiếp tuyến');
     expect(correctUserInput('duong tronh', TYPO)).toBe('đường tròn');
   });
 });

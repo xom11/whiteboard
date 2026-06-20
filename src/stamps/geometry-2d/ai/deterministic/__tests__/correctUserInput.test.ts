@@ -104,7 +104,9 @@ describe('correctUserInput — tầng 3 (typo, OPT-IN qua flag)', () => {
   // typo mặc định TẮT (corpus-safe) → bật tường minh để kiểm tra logic tầng 3.
   const TYPO = { ...DEFAULT_CORRECT_CONFIG, typo: true };
   it('typo edit-1 từ TRẦN dài → canonical', () => {
-    expect(correctUserInput('tam gisc ABC', TYPO)).toBe('tam giác ABC');
+    // Tránh từ collision-disambig (tam/thang/ngoai) vì neighbor typo'd làm lệch
+    // ngữ-cảnh (vd "tam gisc"→"tâm giác"). Dùng từ không-collision.
+    expect(correctUserInput('tiep tuyenn', TYPO)).toBe('tiếp tuyến');
     expect(correctUserInput('duong tronh', TYPO)).toBe('đường tròn');
   });
   it('từ ngắn (<minTypoLen) KHÔNG fuzzy', () => {
