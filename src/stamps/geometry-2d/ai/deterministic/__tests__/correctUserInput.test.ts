@@ -1,4 +1,4 @@
-import { foldVietnamese } from '../correctUserInput';
+import { foldVietnamese, FOLDED_VOCAB } from '../correctUserInput';
 
 describe('foldVietnamese', () => {
   it('bỏ dấu thanh + mũ + móc', () => {
@@ -14,5 +14,22 @@ describe('foldVietnamese', () => {
   });
   it('input đã-bỏ-dấu giữ nguyên (idempotent fold)', () => {
     expect(foldVietnamese('duong tron')).toBe('duong tron');
+  });
+});
+
+describe('FOLDED_VOCAB', () => {
+  it('fold thiếu-dấu → canonical có-dấu', () => {
+    expect(FOLDED_VOCAB.get('duong')).toBe('đường');
+    expect(FOLDED_VOCAB.get('tron')).toBe('tròn');
+    expect(FOLDED_VOCAB.get('giac')).toBe('giác');
+    expect(FOLDED_VOCAB.get('tiep')).toBe('tiếp');
+    expect(FOLDED_VOCAB.get('tuyen')).toBe('tuyến');
+    expect(FOLDED_VOCAB.get('vuong')).toBe('vuông');
+    expect(FOLDED_VOCAB.get('goc')).toBe('góc');
+  });
+  it('mọi key là dạng fold của chính canonical (self-consistent)', () => {
+    for (const [folded, canonical] of FOLDED_VOCAB) {
+      expect(foldVietnamese(canonical)).toBe(folded);
+    }
   });
 });

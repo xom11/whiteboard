@@ -33,3 +33,37 @@ function levenshtein(a: string, b: string): number {
   }
   return prev[n];
 }
+
+// Closed-set từ-ĐƠN hình học (canonical, có dấu). Nguồn: GLUE_VOCAB trong
+// normalizeText.ts + từ-đơn tách từ GEOMETRY_KEYWORDS (vocabulary.ts) + vài từ
+// cấu trúc phổ biến. CHỈ từ-đơn (corrector chạy token-by-token); cụm nhiều-từ
+// tự khớp khi từng token khớp ("vuong goc"→"vuông góc"). Thứ tự = ưu tiên: nếu 2
+// canonical fold trùng key thì từ ĐỨNG TRƯỚC thắng (geometry-priority).
+const CORRECTION_VOCAB: readonly string[] = [
+  // circle / line core
+  'đường', 'tròn', 'thẳng', 'tâm', 'bán', 'kính', 'vòng',
+  // polygon / triangle
+  'tam', 'giác', 'tứ', 'góc', 'cạnh', 'đoạn', 'hình', 'chữ', 'nhật',
+  'vuông', 'cân', 'nhọn', 'đều', 'thoi', 'thang', 'bình', 'hành',
+  // chord / arc / point
+  'dây', 'cung', 'điểm', 'tia', 'nửa',
+  // tangent / inscribed
+  'tiếp', 'tuyến', 'nội', 'ngoại', 'xúc',
+  // cevians / projection
+  'trung', 'trực', 'cao', 'phân', 'chiếu', 'đối', 'xứng',
+  // verbs / connectors phổ biến trong đề
+  'cho', 'gọi', 'vẽ', 'kẻ', 'lấy', 'qua', 'cắt', 'trên', 'dưới', 'đến',
+  'song', 'với', 'của', 'và', 'là', 'đi', 'có', 'nằm', 'thuộc', 'tại',
+  'một', 'hai', 'ba', 'các', 'lần', 'lượt', 'thứ', 'bất', 'kì', 'kỳ',
+  'trong', 'ngoài', 'lên', 'xuống',
+];
+
+// fold → canonical (first-wins theo thứ tự CORRECTION_VOCAB).
+export const FOLDED_VOCAB: Map<string, string> = (() => {
+  const m = new Map<string, string>();
+  for (const w of CORRECTION_VOCAB) {
+    const f = foldVietnamese(w);
+    if (!m.has(f)) m.set(f, w);
+  }
+  return m;
+})();
