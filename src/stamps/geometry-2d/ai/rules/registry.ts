@@ -89,8 +89,16 @@ import { parallelSidePointsRule } from './parallelSidePoints';
 import { parallelThroughCutsCircleRule } from './parallelThroughCutsCircle';
 import { lineThroughCutsTwoLinesRule } from './lineThroughCutsTwoLines';
 import { rightAngleViewingRule } from './rightAngleViewing';
+import { collinearPointsRule } from './collinearPoints';
+import { quadDiagonalsRule } from './quadDiagonals';
+import { twoCirclesTangentRule } from './twoCirclesTangent';
+import { rightAngleVertexCirclesRule } from './rightAngleVertexCircles';
 
 const RULES: readonly LanguageRule[] = [
+  collinearPointsRule,
+  quadDiagonalsRule,
+  twoCirclesTangentRule,
+  rightAngleVertexCirclesRule,
   circumcircleCutsLineRule,
   lineConcurrencyRule,
   parallelThroughCutsCircleRule,
