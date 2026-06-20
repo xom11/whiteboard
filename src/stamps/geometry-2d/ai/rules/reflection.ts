@@ -28,6 +28,28 @@ const DISTRIB = new RegExp(
   'u',
 );
 
+// Synonym "lần lượt": "lần lượt" / "tương ứng" / "(theo) thứ tự".
+const LL = `(?:lần\\s*lượt|tương\\s*ứng|(?:theo\\s+)?thứ\\s+tự)`;
+
+// Dạng phân phối ĐA NGUỒN: "X, Y (lần lượt)? đối xứng (với|của) P, Q (lần lượt)? qua L1, L2"
+//   → X = đối xứng P qua L1; Y = đối xứng Q qua L2 (zip 3 danh sách tên/nguồn/trục 1-1-1).
+// "lần lượt" có thể đứng TRƯỚC "đối xứng" HOẶC sau danh sách nguồn (trước "qua").
+// PHẢI có ≥2 NGUỒN (phân biệt DISTRIB 1-nguồn-2-trục — clause 1 nguồn rơi xuống đó).
+const NAMES_BLOB = `(${PT}(?:\\s*(?:,|và)\\s*${PT})+)`;
+const SRCS_BLOB = `(${PT}(?:\\s*(?:,|và)\\s*${PT})+)`;
+const MIRRORS_BLOB = `([A-Za-z]{1,2}(?:['′]?)(?:\\s*(?:,|và)\\s*[A-Za-z]{1,2}(?:['′]?))+)`;
+const DISTRIB_MULTI = new RegExp(
+  `${NAMES_BLOB}\\s+(?:${LL}\\s+)?(?:là\\s+)?(?:các\\s+)?(?:điểm\\s+)?đối\\s*xứng\\s+(?:của\\s+|với\\s+)?(?:điểm\\s+)?${SRCS_BLOB}\\s+(?:${LL}\\s+)?qua\\s+${MIRRORS_BLOB}`,
+  'u',
+);
+
+function splitList(blob: string): string[] {
+  return blob
+    .split(/\s*,\s*|\s+và\s+/u)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 // Dạng B: KHÔNG có tên dẫn trước "đối xứng" (lấy tên từ lời dẫn "Gọi/Lấy …").
 //   "Gọi D là điểm đối xứng của H qua BC"
 //   "Lấy điểm đối xứng của H qua M"
@@ -81,6 +103,34 @@ export const reflectionRule: LanguageRule = {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
       if (!REFLECT.test(c.text) && !REFLECT_EN_PRE.test(c.text)) continue;
+
+      // Phân phối ĐA NGUỒN "X,Y đối xứng P,Q qua L1,L2" — xử lý TRƯỚC nhất (≥2 nguồn).
+      // zip name/source/mirror 1-1-1; số phần tử PHẢI bằng nhau (≥2) & mọi trục
+      // phân loại hợp lệ, else bỏ qua → rơi xuống DISTRIB 1-nguồn.
+      const dmm = DISTRIB_MULTI.exec(c.text);
+      if (dmm) {
+        const names = splitList(dmm[1]).map(normalizePointName);
+        const srcs = splitList(dmm[2]).map(normalizePointName);
+        const mirrors = splitList(dmm[3]);
+        if (names.length >= 2 && names.length === srcs.length && names.length === mirrors.length) {
+          const through = mirrors.map(classifyThrough);
+          if (through.every((t): t is { kind: 'point' | 'line'; value: string } => !!t)) {
+            out.push({
+              ruleId: 'reflection',
+              clauseIds: [c.id],
+              intents: names.map((nm, i) =>
+                addPoint(
+                  nm,
+                  through[i].kind === 'point'
+                    ? { kind: 'reflectPoint', of: srcs[i], through: through[i].value }
+                    : { kind: 'reflectLine', of: srcs[i], through: through[i].value },
+                ),
+              ),
+            });
+            continue;
+          }
+        }
+      }
 
       // Phân phối "P, Q lần lượt đối xứng A qua L1, L2" — xử lý TRƯỚC (NAME_BEFORE
       // sẽ chỉ bắt được P). Cả 2 trục phân loại bằng classifyThrough.

@@ -250,4 +250,11 @@ describe('midpointRule — distributive "lần lượt"', () => {
     const out = intentsOf('Gọi M, N, L lần lượt là trung điểm của AC, EF và BD');
     expect(out.map((x) => `${x.name}=${x.of}`)).toEqual(['M=AC', 'N=EF', 'L=BD']);
   });
+
+  it('bare "thứ tự" (không "theo"): "M, N thứ tự là trung điểm của AD, HK" → zip', () => {
+    // hsg9:167,196 — perpFoot đã nhận bare "thứ tự" nhưng midpoint trước đây chỉ
+    // nhận "theo thứ tự". "theo" giờ OPTIONAL.
+    const out = intentsOf('Gọi M, N thứ tự là trung điểm của AD, HK');
+    expect(out.map((x) => `${x.name}=${x.of}`)).toEqual(['M=AD', 'N=HK']);
+  });
 });

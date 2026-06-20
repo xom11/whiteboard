@@ -143,3 +143,42 @@ describe('reflection — phân phối "P, Q lần lượt đối xứng A qua BE
     expect(byName.Q).toEqual({ kind: 'reflectLine', of: 'A', through: 'CF' });
   });
 });
+
+describe('reflection — phân phối ĐA NGUỒN "X,Y đối xứng P,Q qua L1,L2"', () => {
+  function byName(problem: string) {
+    const m = run(problem);
+    return Object.fromEntries(m.flatMap((x) => x.intents).map((i: any) => [i.name, i.constraint]));
+  }
+
+  it('julielltv:60 — "E,F lần lượt đối xứng với B,C qua CA,AB" → E=refl(B,CA), F=refl(C,AB)', () => {
+    const bn = byName('E,F lần lượt đối xứng với B,C qua CA,AB');
+    expect(bn.E).toEqual({ kind: 'reflectLine', of: 'B', through: 'CA' });
+    expect(bn.F).toEqual({ kind: 'reflectLine', of: 'C', through: 'AB' });
+  });
+
+  it('hsg9:306 — "E, F là điểm đối xứng của B, C lần lượt qua AC, AB" (lần lượt SAU nguồn)', () => {
+    const bn = byName('Gọi E, F là điểm đối xứng của B, C lần lượt qua AC, AB');
+    expect(bn.E).toEqual({ kind: 'reflectLine', of: 'B', through: 'AC' });
+    expect(bn.F).toEqual({ kind: 'reflectLine', of: 'C', through: 'AB' });
+  });
+
+  it('synonym "tương ứng"', () => {
+    const bn = byName('E,F tương ứng đối xứng với B,C qua CA,AB');
+    expect(bn.E).toEqual({ kind: 'reflectLine', of: 'B', through: 'CA' });
+    expect(bn.F).toEqual({ kind: 'reflectLine', of: 'C', through: 'AB' });
+  });
+
+  it('3 phần tử qua điểm: "D,E,F lần lượt đối xứng A,B,C qua M,N,P"', () => {
+    const bn = byName('D,E,F lần lượt đối xứng A,B,C qua M,N,P');
+    expect(bn.D).toEqual({ kind: 'reflectPoint', of: 'A', through: 'M' });
+    expect(bn.E).toEqual({ kind: 'reflectPoint', of: 'B', through: 'N' });
+    expect(bn.F).toEqual({ kind: 'reflectPoint', of: 'C', through: 'P' });
+  });
+
+  it('lệch số (2 tên, 2 nguồn, 1 trục) → KHÔNG nuốt sang multi (fallback single)', () => {
+    // "E,F lần lượt đối xứng B qua CA, AB" = 1 nguồn 2 trục (single DISTRIB), KHÔNG multi.
+    const bn = byName('E,F lần lượt đối xứng với B qua CA, AB');
+    expect(bn.E).toEqual({ kind: 'reflectLine', of: 'B', through: 'CA' });
+    expect(bn.F).toEqual({ kind: 'reflectLine', of: 'B', through: 'AB' });
+  });
+});
