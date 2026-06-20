@@ -126,6 +126,16 @@ export function constraintRefs2D(c: Constraint2D): string[] {
     }
     case 'excenter': return [c.vertices[0], c.vertices[1], c.vertices[2]];
     case 'commonTangentPoint': return [c.circles[0], c.circles[1]];
-    default: return [];
+    // Các kind KHÔNG có ref scene-object (toạ độ literal): liệt kê TƯỜNG MINH để
+    // exhaustive never-guard bên dưới buộc khai báo khi thêm constraint kind mới.
+    case 'free':
+    case 'onAxis': return [];
+    default: {
+      // Thêm constraint kind có ref mà quên case ở trên → compile-error tại đây
+      // (thay vì âm thầm return [] khiến dependency graph / cascade-delete bỏ sót).
+      const _exhaustive: never = c;
+      void _exhaustive;
+      return [];
+    }
   }
 }

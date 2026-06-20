@@ -19,6 +19,7 @@ export const mixtilinearPointModule = defineModule<'mixtilinearPoint', Input>({
     which: z.union([z.literal('center'), z.literal('touch')]),
   }),
   collectRefs: (e) => [...e.vertices],
+  refSpecs: [{ field: 'vertices', role: 'point', many: true }],
   emit: (e, ctx) => [{
     role: 'primary',
     object: emitPointObject(ctx.resolveId(e.name), e.name, {

@@ -279,3 +279,74 @@ describe('validateRefs registry-driven — kind mới (issue #43)', () => {
     expect(check(dsl).errors.some((e) => e.code === 'KIND_MISMATCH')).toBe(true);
   });
 });
+
+// ===== Mức 1 (item 2): refSpecs cho 3 kind vốn KHÔNG validate ref =====
+// circleDiameter/onPerpBisector/mixtilinearPoint có collectRefs nhưng thiếu
+// refSpecs → validateRefs bỏ qua type-check (refs.ts: if(!raw)return) → ref sai
+// kiểu/không tồn tại lọt xuống emit thay vì báo lỗi sớm.
+describe('validateRefs — 3 kind thiếu refSpecs (Mức 1)', () => {
+  it('circleDiameter.p1 trỏ shape → KIND_MISMATCH', () => {
+    const dsl: DslInputT = {
+      version: 1,
+      points: [
+        { name: 'A', kind: 'free', x: 0, y: 0 },
+        { name: 'B', kind: 'free', x: 1, y: 0 },
+      ],
+      shapes: [
+        { name: 's1', kind: 'segment', p1: 'A', p2: 'B' },
+        { name: 'c1', kind: 'circleDiameter', p1: 's1', p2: 'B' },
+      ],
+    };
+    expect(check(dsl).errors.some((e) => e.code === 'KIND_MISMATCH')).toBe(true);
+  });
+
+  it('circleDiameter.p2 unknown → UNKNOWN_REF', () => {
+    const dsl: DslInputT = {
+      version: 1,
+      points: [{ name: 'A', kind: 'free', x: 0, y: 0 }],
+      shapes: [{ name: 'c1', kind: 'circleDiameter', p1: 'A', p2: 'Z' }],
+    };
+    expect(check(dsl).errors.some((e) => e.code === 'UNKNOWN_REF')).toBe(true);
+  });
+
+  it('onPerpBisector.p1 trỏ shape → KIND_MISMATCH', () => {
+    const dsl: DslInputT = {
+      version: 1,
+      points: [
+        { name: 'A', kind: 'free', x: 0, y: 0 },
+        { name: 'B', kind: 'free', x: 1, y: 0 },
+        { name: 'P', kind: 'onPerpBisector', p1: 's1', p2: 'B' },
+      ],
+      shapes: [{ name: 's1', kind: 'segment', p1: 'A', p2: 'B' }],
+    };
+    expect(check(dsl).errors.some((e) => e.code === 'KIND_MISMATCH')).toBe(true);
+  });
+
+  it('mixtilinearPoint.vertices trỏ shape → KIND_MISMATCH', () => {
+    const dsl: DslInputT = {
+      version: 1,
+      points: [
+        { name: 'A', kind: 'free', x: 0, y: 0 },
+        { name: 'B', kind: 'free', x: 1, y: 0 },
+        { name: 'P', kind: 'mixtilinearPoint', vertices: ['A', 'B', 's1'], which: 'center' },
+      ],
+      shapes: [{ name: 's1', kind: 'segment', p1: 'A', p2: 'B' }],
+    };
+    expect(check(dsl).errors.some((e) => e.code === 'KIND_MISMATCH')).toBe(true);
+  });
+
+  it('cả 3 kind ref hợp lệ → no errors', () => {
+    const dsl: DslInputT = {
+      version: 1,
+      points: [
+        { name: 'A', kind: 'free', x: 0, y: 0 },
+        { name: 'B', kind: 'free', x: 1, y: 0 },
+        { name: 'C', kind: 'free', x: 0, y: 1 },
+        { name: 'P', kind: 'onPerpBisector', p1: 'A', p2: 'B' },
+        { name: 'Q', kind: 'mixtilinearPoint', vertices: ['A', 'B', 'C'], which: 'center' },
+      ],
+      shapes: [{ name: 'c1', kind: 'circleDiameter', p1: 'A', p2: 'B' }],
+    };
+    expect(check(dsl).errors).toEqual([]);
+  });
+});

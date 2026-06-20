@@ -24,6 +24,7 @@ export const onPerpBisectorModule = defineModule<'onPerpBisector', Input>({
     t: z.number().optional(),
   }),
   collectRefs: (e) => [e.p1, e.p2],
+  refSpecs: [{ field: 'p1', role: 'point' }, { field: 'p2', role: 'point' }],
   emit: (e, ctx) => [{
     role: 'primary',
     object: emitPointObject(ctx.resolveId(e.name), e.name, {
