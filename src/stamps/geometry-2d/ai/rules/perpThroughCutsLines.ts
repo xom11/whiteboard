@@ -16,13 +16,16 @@
 import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint, drawLine } from './_shared';
 
+// Token đường bị cắt: đoạn 2-HOA "DC" HOẶC tia/đường ĐẶT TÊN "Ax"/"By"/"d1"
+// (HOA+thường+số) — vxhung:23 "cắt Ax, By thứ tự tại C và D".
+const LTOK = '(?:[A-Z]{2}|[A-Z][a-z][0-9]?)';
 // group1 = điểm qua; group2 = kind; group3+4 = đường tham chiếu;
-// group5+6, group7+8 = hai đường bị cắt; group9, group10 = hai giao điểm.
+// group5, group6 = hai đường bị cắt; group7, group8 = hai giao điểm.
 const RE = new RegExp(
   '(?:Qua|qua|Từ|từ)\\s+(?:điểm\\s+)?([A-Z])(?:[\'′]?)(?!\\p{L})' +
     '[^.]{0,24}?(song\\s*song|vuông\\s*góc)\\s+(?:với\\s+)?(?:cạnh\\s+|đoạn(?:\\s+thẳng)?\\s+)?' +
     '([A-Z])([A-Z])(?!\\p{L})' +
-    '[^.]{0,40}?cắt\\s+(?:các\\s+)?(?:đường\\s*thẳng\\s+)?([A-Z])([A-Z])\\s*(?:,|và)\\s*([A-Z])([A-Z])(?![A-Z])' +
+    `[^.]{0,40}?cắt\\s+(?:các\\s+)?(?:đường\\s*thẳng\\s+)?(${LTOK})\\s*(?:,|và)\\s*(${LTOK})(?![A-Z])` +
     '[^.]{0,30}?(?:ở|tại)\\s+([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])',
   'gu',
 );
@@ -62,10 +65,10 @@ export const perpThroughCutsLinesRule: LanguageRule = {
         const through = m[1];
         const isParallel = /song/.test(m[2]);
         const to = m[3] + m[4];
-        const line1 = m[5] + m[6];
-        const line2 = m[7] + m[8];
-        const h = m[9];
-        const k = m[10];
+        const line1 = m[5];
+        const line2 = m[6];
+        const h = m[7];
+        const k = m[8];
         if (isParallel && to.includes(through)) continue; // degenerate
         if (h === k) continue;
         const kind = isParallel ? 'parallelThrough' : 'perpThrough';

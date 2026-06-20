@@ -55,4 +55,17 @@ describe('perpThroughCutsLinesRule', () => {
       expect.objectContaining({ op: 'add-point', name: 'F', constraint: { kind: 'intersection', of: ['prpB', 'AC'] } }),
     );
   });
+
+  // vxhung:23 — đích cắt là TIA ĐẶT TÊN (Ax, By) thay vì đoạn 2-HOA; bare "thứ tự".
+  it('đích cắt là tia đặt tên Ax, By + bare "thứ tự"', () => {
+    const intents = perpThroughCutsLinesRule
+      .match(ctx('Đường thẳng qua N và vuông góc với NM cắt Ax, By thứ tự tại C và D.'))
+      .flatMap((m) => m.intents);
+    expect(intents).toContainEqual(
+      expect.objectContaining({ op: 'add-point', name: 'C', constraint: { kind: 'intersection', of: ['prpN', 'Ax'] } }),
+    );
+    expect(intents).toContainEqual(
+      expect.objectContaining({ op: 'add-point', name: 'D', constraint: { kind: 'intersection', of: ['prpN', 'By'] } }),
+    );
+  });
 });
