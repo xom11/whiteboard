@@ -62,9 +62,21 @@ const SphereIntentZ = z.object({
   surfacePoint: Label3DZ,
 });
 
+const ConeIntentZ = z.object({
+  op: z.literal('cone'),
+  name: Label3DZ.optional(),
+  baseCenter: Label3DZ, apex: Label3DZ, radius: z.number(),
+});
+
+const CylinderIntentZ = z.object({
+  op: z.literal('cylinder'),
+  name: Label3DZ.optional(),
+  baseCenter: Label3DZ, topCenter: Label3DZ, radius: z.number(),
+});
+
 export const Intent3DZ = z.discriminatedUnion('op', [
   SolidIntentZ, AddPoint3DIntentZ, Plane3DIntentZ, Line3DIntentZ, Connect3DIntentZ, CrossSectionIntentZ,
-  SphereIntentZ,
+  SphereIntentZ, ConeIntentZ, CylinderIntentZ,
 ]);
 export type Intent3DT = z.infer<typeof Intent3DZ>;
 
@@ -101,4 +113,12 @@ export function crossSection3d(spec: { name?: string; plane: string; solid?: str
 
 export function sphereIntent(spec: { name?: string; center: string; surfacePoint: string }): Intent3DT {
   return { op: 'sphere', ...spec } as Intent3DT;
+}
+
+export function coneIntent(spec: { name?: string; baseCenter: string; apex: string; radius: number }): Intent3DT {
+  return { op: 'cone', ...spec } as Intent3DT;
+}
+
+export function cylinderIntent(spec: { name?: string; baseCenter: string; topCenter: string; radius: number }): Intent3DT {
+  return { op: 'cylinder', ...spec } as Intent3DT;
 }
