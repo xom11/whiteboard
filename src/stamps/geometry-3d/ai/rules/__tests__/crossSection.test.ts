@@ -1,7 +1,7 @@
 // rules/__tests__/crossSection.test.ts
 import { crossSectionRule } from '../crossSection';
 import { segmentClauses3D } from '../../deterministic/coverage3d';
-import { runDeterministicIntents3d } from '../../deterministic/runDeterministicIntents3d';
+import { runRules3D } from '../registry';
 
 const run = (p: string) => crossSectionRule.match({ problem: p, clauses: segmentClauses3D(p) });
 
@@ -56,22 +56,16 @@ describe('crossSectionRule', () => {
 });
 
 // FIX I1 co-fire integration: exactly ONE cross-section op, plane = mp_par_M (not mp_SBC)
+// Uses runRules3D directly — coverage-independent, always runs regardless of whether
+// full deterministic coverage is achieved.
 describe('crossSectionRule + crossSectionParallelRule co-fire guard', () => {
-  const PROBLEM =
-    'Cho hình chóp S.ABCD có đáy là hình vuông. Gọi M là trung điểm của SA. Xác định thiết diện của hình chóp qua M song song với (SBC).';
-
-  it('runDeterministicIntents3d emits exactly ONE cross-section op', () => {
-    const result = runDeterministicIntents3d(PROBLEM);
-    if (!result.ok) return; // may not be full-coverage, but intents still accumulate via tryPartial
-    const crossSecs = result.intents.filter((i: any) => i.op === 'cross-section');
-    expect(crossSecs).toHaveLength(1);
-  });
-
-  it('the single cross-section op references mp_par_M, NOT mp_SBC', () => {
-    const result = runDeterministicIntents3d(PROBLEM);
-    if (!result.ok) return;
-    const sec = result.intents.find((i: any) => i.op === 'cross-section') as any;
-    expect(sec?.plane).toBe('mp_par_M');
-    expect(sec?.plane).not.toBe('mp_SBC');
+  it('co-firing: parallel phrasing yields exactly ONE cross-section (mp_par_M), no spurious mp_SBC', () => {
+    const problem =
+      'Cho hình chóp S.ABCD có đáy là hình vuông. Gọi M là trung điểm của SA. Xác định thiết diện của hình chóp qua M song song với (SBC).';
+    const clauses = segmentClauses3D(problem).filter((c) => c.hasGeometry);
+    const intents = runRules3D({ problem, clauses }).flatMap((m) => m.intents) as any[];
+    const sections = intents.filter((i) => i.op === 'cross-section');
+    expect(sections.length).toBe(1);
+    expect(sections[0].plane).toBe('mp_par_M');
   });
 });
