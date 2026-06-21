@@ -49,6 +49,7 @@ export function addShape3dObj(
   prefix: string,
   label: string,
   attrs: Record<string, unknown>,
+  visible = true,
 ): string {
   const st = s.store.getState();
   const id = `${prefix}${st.counter + 1}`;
@@ -56,7 +57,7 @@ export function addShape3dObj(
     id,
     kind,
     label,
-    visible: true,
+    visible,
     locked: false,
     layer: 'default',
     schemaVersion: 1,
