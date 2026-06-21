@@ -25,7 +25,10 @@ export function intentToScene3d(intents: readonly Intent3DT[]): State {
     meta: {
       domain: '3d',
       version: st.meta.version,
-      view: { bbox3D: [-3, -3, -3, 3, 3, 3], azimuth: 0.7, elevation: 0.4 },
+      // azimuth/elevation chosen for a clear 3/4 textbook view of solids — verified
+      // via Playwright that the editor default el≈0.4 squashes the horizontal base
+      // edge-on; el≈0.6 looks down enough to show the base as a proper polygon.
+      view: { bbox3D: [-3, -3, -3, 3, 3, 3], azimuth: 1.0, elevation: 0.6 },
     },
   } as State;
 }

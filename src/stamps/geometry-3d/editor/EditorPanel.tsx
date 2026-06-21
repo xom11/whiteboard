@@ -186,6 +186,30 @@ const EditorPanelInner = React.forwardRef<EditorPanelHandle, EditorPanelProps>(
       setReady(true);
     }, [store]);
 
+    const runAiGenerate = React.useCallback(() => {
+      const r = handleGenerateFigure3d({ problem: aiText });
+      if (!r.ok || !r.state) {
+        showToast(r.message ?? 'Không dựng được hình.', { variant: 'error' });
+        return;
+      }
+      store.dispatch({ type: 'LOAD', payload: { state: r.state } });
+      // LOAD swaps the state but doesn't move the live view3d camera — sync it to the
+      // figure's stored view so the generated solid shows at its 3/4 angle immediately
+      // (mirror of handleView3DReady's one-shot sync).
+      const savedView: View3D | null = r.state.meta.domain === '3d' ? r.state.meta.view : null;
+      if (savedView) {
+        try {
+
+          const v = boardRef.current?.getView3D() as any;
+          v?.az_slide?.setValue?.(savedView.azimuth);
+          v?.el_slide?.setValue?.(savedView.elevation);
+          v?.board?.update?.();
+        } catch {
+          /* swallow — JSXGraph cũ / mock không expose az_slide */
+        }
+      }
+    }, [aiText, store, showToast]);
+
     const handleClick = React.useCallback((screen: { x: number; y: number }) => {
       const view = boardRef.current?.getView3D();
       if (!view) return;
@@ -360,26 +384,14 @@ const EditorPanelInner = React.forwardRef<EditorPanelHandle, EditorPanelProps>(
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.currentTarget.blur();
-                    const r = handleGenerateFigure3d({ problem: aiText });
-                    if (r.ok && r.state) {
-                      store.dispatch({ type: 'LOAD', payload: { state: r.state } });
-                    } else {
-                      showToast(r.message ?? 'Không dựng được hình.', { variant: 'error' });
-                    }
+                    runAiGenerate();
                   }
                 }}
               />
               <button
                 data-testid="ai-generate-3d-btn"
                 type="button"
-                onClick={() => {
-                  const r = handleGenerateFigure3d({ problem: aiText });
-                  if (r.ok && r.state) {
-                    store.dispatch({ type: 'LOAD', payload: { state: r.state } });
-                  } else {
-                    showToast(r.message ?? 'Không dựng được hình.', { variant: 'error' });
-                  }
-                }}
+                onClick={runAiGenerate}
                 className="rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-emerald-700"
               >
                 AI dựng hình
