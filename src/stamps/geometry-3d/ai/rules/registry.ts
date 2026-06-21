@@ -1,7 +1,9 @@
 import type { LanguageRule3D, RuleContext3D, RuleMatch3D } from './_types';
 import { solidRule } from './solid';
+import { pointOnEdgeRule } from './pointOnEdge';
+import { planeNamedRule } from './planeNamed';
 
-const RULES: LanguageRule3D[] = [solidRule];
+const RULES: LanguageRule3D[] = [solidRule, pointOnEdgeRule, planeNamedRule];
 
 export const ALL_RULES_3D: readonly LanguageRule3D[] = RULES.slice().sort(
   (a, b) => b.priority - a.priority,
