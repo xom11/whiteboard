@@ -179,4 +179,12 @@ export const ToolIcons: Record<ToolKey, React.ReactElement> = {
       <circle cx="12" cy="14.5" r="1.8" fill="currentColor" stroke="none" />
     </>,
   ),
+  // Giao tuyến 2 mặt: 2 hình bình hành cắt nhau + đường giao (đậm).
+  planePlaneIntersection: wrap(
+    <>
+      <polygon points="3,7 12,4 17,9 8,12" />
+      <polygon points="7,12 16,9 21,14 12,17" />
+      <line x1="6" y1="13" x2="18" y2="8" strokeWidth="2.4" />
+    </>,
+  ),
 };

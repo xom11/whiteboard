@@ -19,6 +19,7 @@ import {
   buildIntersectionLinePlane,
   buildPerpFootPlane,
 } from './handlers/derived';
+import { buildPlanePlaneIntersection } from './handlers/construct3d';
 
 export type ToolKey =
   | 'move' | 'point' | 'pointOnObject'
@@ -28,7 +29,9 @@ export type ToolKey =
   // ───── Dựng hình: điểm phái sinh (v1) ─────
   | 'midpoint' | 'centroid'
   | 'intersectionLines' | 'perpFootLine'
-  | 'intersectionLinePlane' | 'perpFootPlane';
+  | 'intersectionLinePlane' | 'perpFootPlane'
+  // ───── Dựng hình: đường/mặt phái sinh (v1.5) ─────
+  | 'planePlaneIntersection';
 
 export type ToolStep =
   | {
@@ -311,6 +314,16 @@ export const TOOLS: ToolSpec[] = [
     ],
     build: buildPerpFootPlane,
   },
+  {
+    key: 'planePlaneIntersection',
+    label: 'Giao tuyến 2 mặt',
+    hintIdle: 'Chọn 2 mặt phẳng để dựng giao tuyến',
+    steps: [
+      { type: 'object', kinds: ['plane'], hint: 'Chọn mặt phẳng thứ nhất' },
+      { type: 'object', kinds: ['plane'], hint: 'Chọn mặt phẳng thứ hai' },
+    ],
+    build: buildPlanePlaneIntersection,
+  },
 ];
 
 export const TOOL_GROUPS: Record<string, ToolKey[]> = {
@@ -318,7 +331,7 @@ export const TOOL_GROUPS: Record<string, ToolKey[]> = {
   'Điểm': ['point', 'pointOnObject'],
   'Đường thẳng': ['segment', 'line', 'ray', 'vector', 'polygon'],
   'Mặt phẳng': ['plane'],
-  'Dựng hình': ['midpoint', 'centroid', 'intersectionLines', 'perpFootLine', 'intersectionLinePlane', 'perpFootPlane'],
+  'Dựng hình': ['midpoint', 'centroid', 'intersectionLines', 'perpFootLine', 'intersectionLinePlane', 'perpFootPlane', 'planePlaneIntersection'],
   'Khối đa diện': ['pyramid', 'prism', 'tetrahedron', 'cube'],
   'Khối cong': ['sphere', 'cylinder', 'cone'],
 };

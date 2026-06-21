@@ -7,7 +7,7 @@ import type { State, SceneObject } from '../types';
 import type { Constraint3D } from './3d-constraint';
 import type { Point3DAttrs } from './point3d';
 import type { Segment3DAttrs } from './segment3d';
-import type { Line3DAttrs } from './line3d';
+import type { Line3DAttrs, Line3DConstruction } from './line3d';
 import type { Ray3DAttrs } from './ray3d';
 import type { Vector3DAttrs } from './vector3d';
 import type { Plane3DAttrs } from './plane3d';
@@ -54,7 +54,8 @@ function getPlaneBasis(
 function lineDefiningPointIds(line: SceneObject): [string, string] | null {
   if (line.kind === 'line3d' || line.kind === 'segment3d') {
     const a = line.attrs as Segment3DAttrs | Line3DAttrs;
-    return [a.p1, a.p2];
+    // line3d construction-variant không có p1/p2 → không cấp 2 điểm gốc theo cách này.
+    return a.p1 && a.p2 ? [a.p1, a.p2] : null;
   }
   if (line.kind === 'ray3d') {
     const a = line.attrs as Ray3DAttrs;
@@ -87,6 +88,39 @@ function lineLineClosestMidpoint(A: Vec3, B: Vec3, C: Vec3, D: Vec3): Vec3 {
   const sc = (b * e - cc * d) / denom;
   const tc = (a * e - b * d) / denom;
   return scale(add(add(A, scale(u, sc)), add(C, scale(v, tc))), 0.5);
+}
+
+// ───── Math cho ĐƯỜNG/MẶT phái sinh (construction-variant, v1.5) ─────
+
+// origin + unit-normal của mặt phẳng theo id (bọc getPlaneBasis).
+function planeOriginNormal(planeId: string, state: State, ctx: string): { origin: Vec3; normal: Vec3 } {
+  const plane = state.objects[planeId];
+  if (!plane || plane.kind !== 'plane3d') throw new Error(`${ctx}: mặt phẳng ${planeId} thiếu`);
+  const { origin, normal } = getPlaneBasis(plane as SceneObject<Plane3DAttrs>, state);
+  return { origin, normal };
+}
+
+// 2 điểm (a,b) trên giao tuyến của đường phái sinh. Hàm THUẦN — renderer gọi mỗi
+// eval để live-update. 2 mặt song song (|d|≈0) → fallback hữu hạn (không NaN).
+export function lineConstructionWorld(c: Line3DConstruction, state: State): { a: Vec3; b: Vec3 } {
+  // if-chain (KHÔNG switch-default): never-guard narrow đúng cho cả union 1-thành-viên.
+  if (c.kind === 'planePlaneIntersection') {
+    const P1 = planeOriginNormal(c.plane1, state, 'planePlaneIntersection');
+    const P2 = planeOriginNormal(c.plane2, state, 'planePlaneIntersection');
+    const d = cross(P1.normal, P2.normal); // hướng giao tuyến = n1 × n2
+    const dd = dot(d, d);
+    if (dd < 1e-12) {
+      // 2 mặt song song/trùng → không có giao tuyến xác định: fallback hữu hạn.
+      return { a: P1.origin, b: add(P1.origin, P2.normal) };
+    }
+    // Điểm trên giao tuyến: p0 = (c1·(n2×d) + c2·(d×n1)) / |d|², ci = ni·oi.
+    const c1 = dot(P1.normal, P1.origin);
+    const c2 = dot(P2.normal, P2.origin);
+    const p0 = scale(add(scale(cross(P2.normal, d), c1), scale(cross(d, P1.normal), c2)), 1 / dd);
+    return { a: p0, b: add(p0, d) };
+  }
+  // NOTE: 1 thành-viên → chưa never-guard được (thêm khi union ≥2 — construct kế).
+  throw new Error('lineConstructionWorld: kind không hỗ trợ');
 }
 
 export function constraintToWorld(c: Constraint3D, state: State): Vec3 {
@@ -210,6 +244,7 @@ export function worldToConstraint(current: Constraint3D, world: Vec3, state: Sta
       let p2Id: string;
       if (line.kind === 'line3d' || line.kind === 'segment3d') {
         const a = line.attrs as Segment3DAttrs | Line3DAttrs;
+        if (!a.p1 || !a.p2) return current; // line3d construction-variant: không kéo được trên nó
         p1Id = a.p1; p2Id = a.p2;
       } else if (line.kind === 'ray3d') {
         const a = line.attrs as Ray3DAttrs;
