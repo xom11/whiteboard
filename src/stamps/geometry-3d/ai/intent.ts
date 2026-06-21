@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
-export const Label3DZ = z.string().min(1).max(16).regex(/^[A-Za-z][A-Za-z0-9'_]*$/);
+// Accept ASCII apostrophe (') and Unicode prime variants (′ U+2032, ' U+2019, ´ U+00B4)
+// that the rule engine emits for primed labels like A′, B′.
+export const Label3DZ = z.string().min(1).max(16).regex(/^[A-Za-z][A-Za-z0-9'′’´_]*$/);
 
 export type SolidFlavor = 'pyramid' | 'prism' | 'tetrahedron' | 'box';
 export type BaseVariant =
