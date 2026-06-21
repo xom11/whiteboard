@@ -54,8 +54,17 @@ const CrossSectionIntentZ = z.object({
   solid: Label3DZ.optional(),
 });
 
+// ───── Khối tròn xoay (Phase 4) — 1:1 scene kind sphere3d/cone3d/cylinder3d ─────
+const SphereIntentZ = z.object({
+  op: z.literal('sphere'),
+  name: Label3DZ.optional(),
+  center: Label3DZ,
+  surfacePoint: Label3DZ,
+});
+
 export const Intent3DZ = z.discriminatedUnion('op', [
   SolidIntentZ, AddPoint3DIntentZ, Plane3DIntentZ, Line3DIntentZ, Connect3DIntentZ, CrossSectionIntentZ,
+  SphereIntentZ,
 ]);
 export type Intent3DT = z.infer<typeof Intent3DZ>;
 
@@ -88,4 +97,8 @@ export function connect3d(from: string, to: string, style = 'segment'): Intent3D
 
 export function crossSection3d(spec: { name?: string; plane: string; solid?: string }): Intent3DT {
   return { op: 'cross-section', ...spec } as Intent3DT;
+}
+
+export function sphereIntent(spec: { name?: string; center: string; surfacePoint: string }): Intent3DT {
+  return { op: 'sphere', ...spec } as Intent3DT;
 }
