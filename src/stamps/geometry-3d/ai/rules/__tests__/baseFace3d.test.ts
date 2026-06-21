@@ -9,7 +9,7 @@ describe('parseSolidHead3D', () => {
   });
   it('prism ABC.A′B′C′ → base ABC', () => {
     const r = parseSolidHead3D('Cho lăng trụ ABC.A′B′C′ đều.');
-    expect(r?.baseLabels).toEqual(['A','B','C']);
+    expect(r).toEqual({ baseLabels: ['A','B','C'] });
   });
   it('no solid head → null', () => {
     expect(parseSolidHead3D('Tính khoảng cách giữa hai đường thẳng.')).toBeNull();
