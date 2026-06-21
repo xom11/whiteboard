@@ -2,8 +2,18 @@ import type { LanguageRule3D, RuleContext3D, RuleMatch3D } from './_types';
 import { solidRule } from './solid';
 import { pointOnEdgeRule } from './pointOnEdge';
 import { planeNamedRule } from './planeNamed';
+import { midpoint3dRule } from './midpoint3d';
+import { centroid3dRule } from './centroid3d';
+import { intersectionLineRule } from './intersectionLine';
 
-const RULES: LanguageRule3D[] = [solidRule, pointOnEdgeRule, planeNamedRule];
+const RULES: LanguageRule3D[] = [
+  solidRule,            // priority 90
+  midpoint3dRule,       // priority 62
+  centroid3dRule,       // priority 61
+  pointOnEdgeRule,      // priority 60
+  intersectionLineRule, // priority 58
+  planeNamedRule,       // priority 55
+];
 
 export const ALL_RULES_3D: readonly LanguageRule3D[] = RULES.slice().sort(
   (a, b) => b.priority - a.priority,
