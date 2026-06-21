@@ -64,3 +64,54 @@ test('AI dựng hình: hình chóp render đúng trong editor 3D', async ({ page
   // the plane3d [point,dir1,dir2] bug class manifests as a thrown render error
   expect(errors.join('\n')).not.toMatch(/plane3d|Cannot read|undefined is not/i);
 });
+
+// Render-verify for the Phase-2 cross-section (thiết diện) pipeline.
+// A pyramid problem with an explicit cutting plane (MBD) should produce ≥6 polygon3d
+// (5 solid faces + ≥1 section polygon). Catches any regression in crossSection3d rendering.
+test('renders a cross-section polygon for a thiết diện problem', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('console', (m) => {
+    if (m.type() === 'error') errors.push(m.text());
+  });
+
+  await page.goto('/');
+  // toolbar ready
+  await expect(page.locator('[data-testid="dropdown-menu-button"]').first()).toBeVisible({
+    timeout: 15_000,
+  });
+
+  // open the 3D geometry stamp editor
+  await page.locator('[data-testid="dropdown-menu-button"]').first().click();
+  await page.locator('[data-testid="stamp-toolbar-geometry3d"]').click();
+  await expect(page.locator('[data-testid="mini-board-3d"]')).toBeVisible({ timeout: 10_000 });
+  await page.waitForFunction(() => !!(window as { JXG?: unknown }).JXG, undefined, {
+    timeout: 10_000,
+  });
+
+  // type a pyramid thiết diện problem with an explicit cutting plane (MBD)
+  await page
+    .locator('[data-testid="ai-generate-3d-input"]')
+    .fill(
+      'Cho hình chóp S.ABCD có đáy là hình vuông. Gọi M là trung điểm của SA. ' +
+      'Xác định thiết diện của hình chóp cắt bởi mặt phẳng (MBD).',
+    );
+  await page.locator('[data-testid="ai-generate-3d-btn"]').click();
+
+  // pyramid = 5 face polygons; the section adds ≥1 → expect ≥6 polygon3d
+  await page.waitForFunction(
+    () => {
+      const JXG = (window as { JXG?: { boards?: Record<string, unknown> } }).JXG;
+      if (!JXG?.boards) return false;
+      for (const b of Object.values(JXG.boards) as Array<{ objects: Record<string, { elType?: string }> }>) {
+        const polys = Object.values(b.objects).filter((o) => o.elType === 'polygon3d');
+        if (polys.length >= 6) return true;
+      }
+      return false;
+    },
+    undefined,
+    { timeout: 8_000 },
+  );
+
+  // the plane3d [point,dir1,dir2] bug class manifests as a thrown render error
+  expect(errors.join('\n')).not.toMatch(/plane3d|Cannot read|undefined is not/i);
+});
