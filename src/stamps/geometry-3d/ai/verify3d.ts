@@ -101,7 +101,7 @@ export function verifyFigure3d(state: State): { ok: boolean; issues: string[] } 
       }
     }
 
-    // Kiểm tra perpFootLine: (foot−from)·(b−a) ≈ 0
+    // Kiểm tra perpFootLine: (foot−from)·(b−a) ≈ 0 + chân nằm trên đường AB
     if (c.kind === 'perpFootLine') {
       try {
         const A = ptWorld(state, c.a);
@@ -112,6 +112,16 @@ export function verifyFigure3d(state: State): { ok: boolean; issues: string[] } 
         const perpDot = fh[0] * ab[0] + fh[1] * ab[1] + fh[2] * ab[2];
         if (Math.abs(perpDot) > 1e-6) {
           issues.push(`${obj.label || obj.id}: chân ⊥ trên đường không vuông góc`);
+        }
+        // Kiểm tra collinearity: (w−A) × (b−a) ≈ 0 (chân phải nằm trên đường AB)
+        const wa: [number, number, number] = [w[0] - A[0], w[1] - A[1], w[2] - A[2]];
+        const cr: [number, number, number] = [
+          wa[1] * ab[2] - wa[2] * ab[1],
+          wa[2] * ab[0] - wa[0] * ab[2],
+          wa[0] * ab[1] - wa[1] * ab[0],
+        ];
+        if (Math.hypot(cr[0], cr[1], cr[2]) > 1e-6) {
+          issues.push(`${obj.label || obj.id}: chân ⊥ không nằm trên đường`);
         }
       } catch (e) {
         issues.push(`${obj.label || obj.id}: perpFootLine check lỗi — ${(e as Error).message}`);

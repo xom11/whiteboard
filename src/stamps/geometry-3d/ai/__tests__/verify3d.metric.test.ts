@@ -21,6 +21,7 @@ it('flags a perpFootLine whose stored foot is off the line', () => {
     solid({ flavor: 'pyramid', baseLabels: ['A', 'B', 'C', 'D'], baseVariant: 'square', apex: 'S', apexVariant: 'regular' }),
     addPoint3d('K', { kind: 'perpFootLine', from: 'A', a: 'S', b: 'B' }),
   ]);
+  expect(Object.values(st.objects).some((o: any) => o.attrs?.constraint?.kind === 'perpFootLine')).toBe(true);
   const r = verifyFigure3d(st);
   expect(r.ok).toBe(true);
 });
