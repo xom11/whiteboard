@@ -115,3 +115,45 @@ test('renders a cross-section polygon for a thiết diện problem', async ({ pa
   // the plane3d [point,dir1,dir2] bug class manifests as a thrown render error
   expect(errors.join('\n')).not.toMatch(/plane3d|Cannot read|undefined is not/i);
 });
+
+// Render-verify for the Phase-3a perpendicular-foot (hình chiếu) pipeline.
+// A pyramid problem with an explicit foot point should produce ≥6 point3d
+// (A,B,C,D,S + H) and ≥1 line3d (the distance segment S→H).
+test('renders a perpendicular-foot figure for a hình chiếu problem', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+
+  await page.goto('/');
+  // toolbar ready
+  await expect(page.locator('[data-testid="dropdown-menu-button"]').first()).toBeVisible({
+    timeout: 15_000,
+  });
+
+  // open the 3D geometry stamp editor
+  await page.locator('[data-testid="dropdown-menu-button"]').first().click();
+  await page.locator('[data-testid="stamp-toolbar-geometry3d"]').click();
+  await expect(page.locator('[data-testid="mini-board-3d"]')).toBeVisible({ timeout: 10_000 });
+  await page.waitForFunction(() => !!(window as any).JXG, undefined, {
+    timeout: 10_000,
+  });
+
+  await page.locator('[data-testid="ai-generate-3d-input"]').fill(
+    'Cho hình chóp S.ABCD có đáy là hình vuông. Gọi H là hình chiếu vuông góc của S lên mặt đáy. ' +
+    'Tính khoảng cách từ S đến mặt phẳng (ABCD).',
+  );
+  await page.locator('[data-testid="ai-generate-3d-btn"]').click();
+
+  // pyramid (5 base+lateral polys) + a foot point + ≥1 distance segment (line3d/segment3d).
+  await page.waitForFunction(() => {
+    const JXG = (window as any).JXG;
+    if (!JXG?.boards) return false;
+    for (const b of Object.values(JXG.boards) as any[]) {
+      const pts = Object.values(b.objects).filter((o: any) => o.elType === 'point3d');
+      const segs = Object.values(b.objects).filter((o: any) => o.elType === 'line3d');
+      if (pts.length >= 6 && segs.length >= 1) return true;   // 5 base/apex + foot H
+    }
+    return false;
+  }, undefined, { timeout: 8_000 });
+
+  expect(errors.join('\n')).not.toMatch(/plane3d|Cannot read|undefined is not/i);
+});
