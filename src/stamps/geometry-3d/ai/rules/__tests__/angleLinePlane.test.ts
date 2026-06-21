@@ -8,9 +8,9 @@ describe('angleLinePlaneRule', () => {
   it('"góc giữa SC và đáy" → apex-foot + projection triangle', () => {
     const I = flat('Cho hình chóp S.ABCD. Góc giữa SC và mặt đáy bằng 60°.');
     const pt = I.find((i) => i.op === 'add-point-3d');
-    expect(pt).toMatchObject({ name: 'H_S', constraint: { kind: 'perpFootPlane', from: 'S', plane: 'mp_ABC' } });
+    expect(pt).toMatchObject({ name: 'HS', constraint: { kind: 'perpFootPlane', from: 'S', plane: 'mp_ABC' } });
     const connects = I.filter((i) => i.op === 'connect').map((i) => [i.from, i.to].sort().join(''));
-    expect(connects).toEqual(expect.arrayContaining([['S', 'H_S'].sort().join(''), ['H_S', 'C'].sort().join(''), ['S', 'C'].sort().join('')]));
+    expect(connects).toEqual(expect.arrayContaining([['S', 'HS'].sort().join(''), ['HS', 'C'].sort().join(''), ['S', 'C'].sort().join('')]));
   });
 
   it('"SC tạo với đáy một góc" also matches', () => {
@@ -38,6 +38,6 @@ it('projection triangle builds: apex-foot point + 3 segments, no throw', () => {
   });
   const I = [solidIntent, ...flat(prob)];
   const st: any = intentToScene3d(I as any);
-  expect(Object.values(st.objects).some((o: any) => o.kind === 'point3d' && o.label === 'H_S')).toBe(true);
+  expect(Object.values(st.objects).some((o: any) => o.kind === 'point3d' && o.label === 'HS')).toBe(true);
   expect(Object.values(st.objects).filter((o: any) => o.kind === 'segment3d').length).toBeGreaterThanOrEqual(3);
 });

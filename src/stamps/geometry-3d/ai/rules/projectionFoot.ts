@@ -52,7 +52,7 @@ function toTarget(planeTok: string | undefined, dayKw: string | undefined, lineA
 }
 
 function emit(named: string | undefined, from: string, t: Target): Intent3DT[] {
-  const foot = named ?? `H_${stripPrime(from)}`;
+  const foot = named ?? `H${stripPrime(from)}`;
   const out: Intent3DT[] = [];
   if (t.kind === 'plane') {
     out.push(plane3d(t.planeName, { kind: 'threePoints', p1: t.p[0], p2: t.p[1], p3: t.p[2] }));

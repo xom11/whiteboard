@@ -33,8 +33,8 @@ describe('projectionFootRule', () => {
   it('"khoảng cách từ A đến (SBC)" → synth foot H_A + perpFootPlane + segment', () => {
     const I = flat('Cho hình chóp S.ABCD. Tính khoảng cách từ A đến mặt phẳng (SBC).');
     const pt = I.find((i) => i.op === 'add-point-3d');
-    expect(pt).toMatchObject({ name: 'H_A', constraint: { kind: 'perpFootPlane', from: 'A', plane: 'mp_SBC' } });
-    expect(I.find((i) => i.op === 'connect')).toMatchObject({ from: 'A', to: 'H_A' });
+    expect(pt).toMatchObject({ name: 'HA', constraint: { kind: 'perpFootPlane', from: 'A', plane: 'mp_SBC' } });
+    expect(I.find((i) => i.op === 'connect')).toMatchObject({ from: 'A', to: 'HA' });
   });
 
   it('claims the clause it matched', () => {

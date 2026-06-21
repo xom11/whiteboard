@@ -62,7 +62,7 @@ export const angleLinePlaneRule: LanguageRule3D = {
         p = [bf.p1, bf.p2, bf.p3];
       }
 
-      const foot = `H_${apex.replace(/['′]/gu, '')}`;
+      const foot = `H${apex.replace(/['′]/gu, '')}`;
 
       const intents: Intent3DT[] = [
         plane3d(planeName, { kind: 'threePoints', p1: p[0], p2: p[1], p3: p[2] }),
