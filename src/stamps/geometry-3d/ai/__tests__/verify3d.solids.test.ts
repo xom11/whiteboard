@@ -1,6 +1,6 @@
 import { verifyFigure3d } from '../verify3d';
 import { intentToScene3d } from '../intentToScene3d';
-import { solid, addPoint3d, sphereIntent } from '../intent';
+import { solid, addPoint3d, sphereIntent, coneIntent, cylinderIntent } from '../intent';
 import type { State, SceneObject } from '../../../../core/scene';
 
 describe('verify3d — sphere', () => {
@@ -40,6 +40,26 @@ describe('verify3d — sphere', () => {
     objects['s1'] = { id: 's1', kind: 'sphere3d', label: '', visible: true, locked: false, layer: 'default', schemaVersion: 1, attrs: { center: 'o', surfacePoint: 'a' } } as SceneObject;
     // verify circumsphereCenter check chạy với 3 vertices: w = P[0] = a = (0,0,0); cách đều a/b/c? r(a)=0, r(b)=2 → khác → fail
     const st = { objects, order: Object.keys(objects), counter: 6, meta: { domain: '3d' } } as unknown as State;
+    expect(verifyFigure3d(st).ok).toBe(false);
+  });
+});
+
+describe('verify3d — cone/cylinder', () => {
+  it('cone hợp lệ → ok', () => {
+    const st = intentToScene3d([
+      addPoint3d('O', { kind: 'free', x: 0, y: 0, z: -1.2 }),
+      addPoint3d('S', { kind: 'free', x: 0, y: 0, z: 1.2 }),
+      coneIntent({ baseCenter: 'O', apex: 'S', radius: 1.4 }),
+    ]);
+    expect(verifyFigure3d(st).ok).toBe(true);
+  });
+
+  it('cylinder trục suy biến (2 tâm trùng) → fail', () => {
+    const st = intentToScene3d([
+      addPoint3d('O', { kind: 'free', x: 0, y: 0, z: 0 }),
+      addPoint3d('I', { kind: 'free', x: 0, y: 0, z: 0 }),
+      cylinderIntent({ baseCenter: 'O', topCenter: 'I', radius: 1.4 }),
+    ]);
     expect(verifyFigure3d(st).ok).toBe(false);
   });
 });

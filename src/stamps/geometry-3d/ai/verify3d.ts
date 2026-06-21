@@ -160,6 +160,34 @@ export function verifyFigure3d(state: State): { ok: boolean; issues: string[] } 
     }
   }
 
+  // Kiểm tra cone3d: radius>0 + trục (apex−baseCenter) không suy biến
+  for (const obj of Object.values(state.objects)) {
+    if (obj.kind !== 'cone3d') continue;
+    try {
+      const a = obj.attrs as any;
+      const bc = ptWorld(state, a.baseCenter);
+      const ap = ptWorld(state, a.apex);
+      const h = Math.hypot(ap[0] - bc[0], ap[1] - bc[1], ap[2] - bc[2]);
+      if (!(a.radius > 0) || !Number.isFinite(h) || h <= 1e-9) issues.push(`${obj.label || obj.id}: khối nón suy biến`);
+    } catch (e) {
+      issues.push(`${obj.label || obj.id}: cone3d check lỗi — ${(e as Error).message}`);
+    }
+  }
+
+  // Kiểm tra cylinder3d: radius>0 + trục (topCenter−baseCenter) không suy biến
+  for (const obj of Object.values(state.objects)) {
+    if (obj.kind !== 'cylinder3d') continue;
+    try {
+      const a = obj.attrs as any;
+      const bc = ptWorld(state, a.baseCenter);
+      const tc = ptWorld(state, a.topCenter);
+      const h = Math.hypot(tc[0] - bc[0], tc[1] - bc[1], tc[2] - bc[2]);
+      if (!(a.radius > 0) || !Number.isFinite(h) || h <= 1e-9) issues.push(`${obj.label || obj.id}: khối trụ suy biến`);
+    } catch (e) {
+      issues.push(`${obj.label || obj.id}: cylinder3d check lỗi — ${(e as Error).message}`);
+    }
+  }
+
   // Kiểm tra polygon3d: ≥3 đỉnh + đồng phẳng
   for (const obj of Object.values(state.objects)) {
     if (obj.kind !== 'polygon3d') continue;
