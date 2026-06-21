@@ -160,6 +160,9 @@ function planeBasis(
   plane: Plane3DAttrs,
   state: State,
 ): { origin: Vec3; basis1: Vec3; basis2: Vec3; normal: Vec3 } | null {
+  // Mặt construction (phái sinh) không có p1/p2/p3 → bỏ qua hit-test (không
+  // đặt điểm trên / pick mặt phái sinh ở v1.5; mặt 3-điểm vẫn hit bình thường).
+  if (!plane.p1 || !plane.p2 || !plane.p3) return null;
   const p1Obj = state.objects[plane.p1];
   const p2Obj = state.objects[plane.p2];
   const p3Obj = state.objects[plane.p3];

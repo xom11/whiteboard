@@ -67,3 +67,25 @@ export function buildLinePerpToPlane(args: CollectedArg[], store: Store): string
   if (!point) return null;
   return addShape(store, 'line3d', 'l', { construction: { kind: 'linePerpToPlane', point, plane } });
 }
+
+/** Mặt qua điểm P song song mặt refPlane → plane3d construction. */
+export function buildPlaneParallelThrough(args: CollectedArg[], store: Store): string | null {
+  const refPlane = objectPlaneIds(args)[0];
+  if (!refPlane) return null;
+  const hits = pointHits(args);
+  if (hits.length < 1) return null;
+  const point = ensurePoint(hits[0], store);
+  if (!point) return null;
+  return addShape(store, 'plane3d', 'mp', { construction: { kind: 'planeParallelThrough', point, refPlane } });
+}
+
+/** Mặt qua điểm P vuông góc hướng lineA→lineB → plane3d construction. */
+export function buildPlanePerpToLine(args: CollectedArg[], store: Store): string | null {
+  const hits = pointHits(args);
+  if (hits.length < 3 || sameExistingPoint(hits[1], hits[2])) return null; // hướng suy biến
+  const point = ensurePoint(hits[0], store);
+  const lineA = ensurePoint(hits[1], store);
+  const lineB = ensurePoint(hits[2], store);
+  if (!point || !lineA || !lineB || lineA === lineB) return null;
+  return addShape(store, 'plane3d', 'mp', { construction: { kind: 'planePerpToLine', point, lineA, lineB } });
+}

@@ -10,7 +10,7 @@ import type { Segment3DAttrs } from './segment3d';
 import type { Line3DAttrs, Line3DConstruction } from './line3d';
 import type { Ray3DAttrs } from './ray3d';
 import type { Vector3DAttrs } from './vector3d';
-import type { Plane3DAttrs } from './plane3d';
+import type { Plane3DAttrs, Plane3DConstruction } from './plane3d';
 import type { Polygon3DAttrs } from './polygon3d';
 import type { Sphere3DAttrs } from './sphere3d';
 
@@ -39,14 +39,56 @@ function getPlaneBasis(
   planeObj: SceneObject<Plane3DAttrs>,
   state: State,
 ): { origin: Vec3; basis1: Vec3; basis2: Vec3; normal: Vec3 } {
-  const p1 = getPointWorld(planeObj.attrs.p1, state);
-  const p2 = getPointWorld(planeObj.attrs.p2, state);
-  const p3 = getPointWorld(planeObj.attrs.p3, state);
+  const a = planeObj.attrs;
+  let p1: Vec3, p2: Vec3, p3: Vec3;
+  if (a.construction) {
+    // Mặt construction (qua điểm ∥/⊥) → 3 điểm tính từ planeConstructionWorld.
+    const r = planeConstructionWorld(a.construction, state);
+    p1 = r.p1; p2 = r.p2; p3 = r.p3;
+  } else {
+    p1 = getPointWorld(a.p1!, state);
+    p2 = getPointWorld(a.p2!, state);
+    p3 = getPointWorld(a.p3!, state);
+  }
   const basis1 = sub(p2, p1);
   const tmp = sub(p3, p1);
   const normal = normalize(cross(basis1, tmp));
   const basis2 = cross(normal, basis1);
   return { origin: p1, basis1, basis2, normal };
+}
+
+// 2 vector đơn vị vuông góc với pháp tuyến n (dựng cặp chỉ phương cho mặt ⊥ đường).
+function orthoBasisFromNormal(n: Vec3): { basis1: Vec3; basis2: Vec3 } {
+  const seed: Vec3 = Math.abs(n[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0];
+  const basis1 = normalize(cross(n, seed));
+  const basis2 = cross(n, basis1);
+  return { basis1, basis2 };
+}
+
+// 3 điểm (p1,p2,p3) xác định MẶT phái sinh. Hàm THUẦN — renderer gọi mỗi eval.
+export function planeConstructionWorld(c: Plane3DConstruction, state: State): { p1: Vec3; p2: Vec3; p3: Vec3 } {
+  switch (c.kind) {
+    case 'planeParallelThrough': {
+      const P = getPointWorld(c.point, state);
+      const ref = state.objects[c.refPlane];
+      if (!ref || ref.kind !== 'plane3d') throw new Error('planeParallelThrough: mặt tham chiếu thiếu');
+      const { basis1, basis2 } = getPlaneBasis(ref as SceneObject<Plane3DAttrs>, state);
+      return { p1: P, p2: add(P, basis1), p3: add(P, basis2) };
+    }
+    case 'planePerpToLine': {
+      const P = getPointWorld(c.point, state);
+      const dir = sub(getPointWorld(c.lineB, state), getPointWorld(c.lineA, state));
+      const dn = norm(dir);
+      if (dn < 1e-12) return { p1: P, p2: add(P, [1, 0, 0]), p3: add(P, [0, 1, 0]) }; // hướng suy biến → fallback
+      const { basis1, basis2 } = orthoBasisFromNormal(scale(dir, 1 / dn));
+      return { p1: P, p2: add(P, basis1), p3: add(P, basis2) };
+    }
+    default: {
+      const _exhaustive: never = c;
+      void _exhaustive;
+      throw new Error('planeConstructionWorld: kind không hỗ trợ');
+    }
+  }
 }
 
 // 2 id điểm xác định một đường: line3d/segment3d (p1,p2), ray3d (origin,through),

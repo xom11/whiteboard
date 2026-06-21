@@ -7,10 +7,13 @@ import {
   buildPlanePlaneIntersection,
   buildLineParallelThrough,
   buildLinePerpToPlane,
+  buildPlaneParallelThrough,
+  buildPlanePerpToLine,
 } from '../construct3d';
 import type { CollectedArg } from '../../spec';
 import type { Store, SceneObject } from '../../../../../../core/scene';
 import type { Line3DAttrs } from '../../../../../../core/scene/kinds/line3d';
+import type { Plane3DAttrs } from '../../../../../../core/scene/kinds/plane3d';
 
 const objectStep = { type: 'object', kinds: ['plane'], hint: '' } as const;
 const planeHit = (planeId: string): CollectedArg =>
@@ -97,5 +100,46 @@ describe('buildLinePerpToPlane', () => {
     const store = createStore(createEmptyState('3d'));
     const p = addPoint(store, { kind: 'free', x: 1, y: 2, z: 3 });
     expect(buildLinePerpToPlane([existing(p)], store)).toBeNull();
+  });
+});
+
+describe('buildPlaneParallelThrough', () => {
+  it('tạo plane3d construction từ điểm + mặt tham chiếu', () => {
+    const store = withTwoPlanes();
+    const p = addPoint(store, { kind: 'free', x: 0, y: 0, z: 5 });
+    const id = buildPlaneParallelThrough([existing(p), planeHit('pl1')], store);
+    expect(id).toBeTruthy();
+    const obj = store.getState().objects[id!];
+    expect(obj.kind).toBe('plane3d');
+    expect((obj.attrs as Plane3DAttrs).construction).toEqual({
+      kind: 'planeParallelThrough', point: p, refPlane: 'pl1',
+    });
+  });
+
+  it('trả null nếu thiếu mặt tham chiếu', () => {
+    const store = createStore(createEmptyState('3d'));
+    const p = addPoint(store, { kind: 'free', x: 0, y: 0, z: 5 });
+    expect(buildPlaneParallelThrough([existing(p)], store)).toBeNull();
+  });
+});
+
+describe('buildPlanePerpToLine', () => {
+  it('tạo plane3d construction từ điểm + 2 điểm đường', () => {
+    const store = createStore(createEmptyState('3d'));
+    const p = addPoint(store, { kind: 'free', x: 0, y: 0, z: 0 });
+    const a = addPoint(store, { kind: 'free', x: 0, y: 0, z: 0 });
+    const b = addPoint(store, { kind: 'free', x: 0, y: 0, z: 2 });
+    const id = buildPlanePerpToLine([existing(p), existing(a), existing(b)], store);
+    expect(id).toBeTruthy();
+    expect((store.getState().objects[id!].attrs as Plane3DAttrs).construction).toEqual({
+      kind: 'planePerpToLine', point: p, lineA: a, lineB: b,
+    });
+  });
+
+  it('trả null nếu đường suy biến (lineA ≡ lineB)', () => {
+    const store = createStore(createEmptyState('3d'));
+    const p = addPoint(store, { kind: 'free', x: 0, y: 0, z: 0 });
+    const a = addPoint(store, { kind: 'free', x: 1, y: 0, z: 0 });
+    expect(buildPlanePerpToLine([existing(p), existing(a), existing(a)], store)).toBeNull();
   });
 });

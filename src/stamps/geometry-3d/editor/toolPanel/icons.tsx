@@ -204,4 +204,21 @@ export const ToolIcons: Record<ToolKey, React.ReactElement> = {
       {dot(12, 8, 1.6)}
     </>,
   ),
+  // Mặt ∥: 2 hình bình hành song song + chấm điểm.
+  planeParallelThrough: wrap(
+    <>
+      <polygon points="3,8 12,5 18,9 9,12" />
+      <polygon points="6,15 15,12 21,16 12,19" />
+      {dot(9, 11, 1.5)}
+    </>,
+  ),
+  // Mặt ⊥ đường: mặt phẳng + đường đứng ⊥ + ký hiệu góc vuông + chấm điểm.
+  planePerpToLine: wrap(
+    <>
+      <polygon points="3,13 13,9 21,14 11,18" />
+      <line x1="12" y1="3" x2="12" y2="16" />
+      <path d="M12 13 L14.5 12.3 L15 14" />
+      {dot(12, 16, 1.5)}
+    </>,
+  ),
 };
