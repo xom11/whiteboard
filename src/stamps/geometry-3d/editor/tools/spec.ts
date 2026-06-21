@@ -19,7 +19,11 @@ import {
   buildIntersectionLinePlane,
   buildPerpFootPlane,
 } from './handlers/derived';
-import { buildPlanePlaneIntersection } from './handlers/construct3d';
+import {
+  buildPlanePlaneIntersection,
+  buildLineParallelThrough,
+  buildLinePerpToPlane,
+} from './handlers/construct3d';
 
 export type ToolKey =
   | 'move' | 'point' | 'pointOnObject'
@@ -31,7 +35,7 @@ export type ToolKey =
   | 'intersectionLines' | 'perpFootLine'
   | 'intersectionLinePlane' | 'perpFootPlane'
   // ───── Dựng hình: đường/mặt phái sinh (v1.5) ─────
-  | 'planePlaneIntersection';
+  | 'planePlaneIntersection' | 'lineParallelThrough' | 'linePerpToPlane';
 
 export type ToolStep =
   | {
@@ -324,6 +328,27 @@ export const TOOLS: ToolSpec[] = [
     ],
     build: buildPlanePlaneIntersection,
   },
+  {
+    key: 'lineParallelThrough',
+    label: 'Đường ∥ (qua điểm)',
+    hintIdle: 'Chọn điểm, rồi 2 điểm xác định hướng song song',
+    steps: [
+      { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Điểm đường đi qua' },
+      { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Hướng: điểm thứ nhất' },
+      { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Hướng: điểm thứ hai' },
+    ],
+    build: buildLineParallelThrough,
+  },
+  {
+    key: 'linePerpToPlane',
+    label: 'Đường ⊥ mặt (qua điểm)',
+    hintIdle: 'Chọn điểm, rồi chọn mặt phẳng',
+    steps: [
+      { type: 'point', allowExisting: true, allowNewOn: ALL_SURFACES, hint: 'Điểm đường đi qua' },
+      { type: 'object', kinds: ['plane'], hint: 'Chọn mặt phẳng vuông góc' },
+    ],
+    build: buildLinePerpToPlane,
+  },
 ];
 
 export const TOOL_GROUPS: Record<string, ToolKey[]> = {
@@ -331,7 +356,7 @@ export const TOOL_GROUPS: Record<string, ToolKey[]> = {
   'Điểm': ['point', 'pointOnObject'],
   'Đường thẳng': ['segment', 'line', 'ray', 'vector', 'polygon'],
   'Mặt phẳng': ['plane'],
-  'Dựng hình': ['midpoint', 'centroid', 'intersectionLines', 'perpFootLine', 'intersectionLinePlane', 'perpFootPlane', 'planePlaneIntersection'],
+  'Dựng hình': ['midpoint', 'centroid', 'intersectionLines', 'perpFootLine', 'intersectionLinePlane', 'perpFootPlane', 'planePlaneIntersection', 'lineParallelThrough', 'linePerpToPlane'],
   'Khối đa diện': ['pyramid', 'prism', 'tetrahedron', 'cube'],
   'Khối cong': ['sphere', 'cylinder', 'cone'],
 };

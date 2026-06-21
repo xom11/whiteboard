@@ -12,7 +12,12 @@ import { lineConstructionWorld } from './constraint3d-math';
  */
 export type Line3DConstruction =
   // Giao tuyến 2 mặt phẳng (object). a,b = 2 điểm trên giao tuyến.
-  | { kind: 'planePlaneIntersection'; plane1: string; plane2: string };
+  | { kind: 'planePlaneIntersection'; plane1: string; plane2: string }
+  // Đường qua `point` song song hướng dirA→dirB (2 điểm — hitTest chưa pick được
+  // đường nên dùng 2 điểm xác định hướng, mô phỏng v1 intersectionLines).
+  | { kind: 'lineParallelThrough'; point: string; dirA: string; dirB: string }
+  // Đường qua `point` vuông góc với mặt `plane` (hướng = pháp tuyến mặt).
+  | { kind: 'linePerpToPlane'; point: string; plane: string };
 
 export type Line3DAttrs = {
   /** Hai-điểm fallback — bắt buộc khi KHÔNG có `construction`. */
@@ -23,13 +28,16 @@ export type Line3DAttrs = {
 };
 
 export function line3dConstructionRefs(c: Line3DConstruction): string[] {
-  // NOTE: Line3DConstruction hiện 1 thành-viên → never-guard chưa narrow được
-  // (TS chỉ tạo never cho union ≥2). Thêm `const _:never = c` ở default khi bổ
-  // sung kind thứ 2 (construct kế của v1.5) — brief §8.
   switch (c.kind) {
     case 'planePlaneIntersection': return [c.plane1, c.plane2];
+    case 'lineParallelThrough': return [c.point, c.dirA, c.dirB];
+    case 'linePerpToPlane': return [c.point, c.plane];
+    default: {
+      const _exhaustive: never = c;
+      void _exhaustive;
+      return [];
+    }
   }
-  return [];
 }
 
 const def: KindDef<Line3DAttrs> = {
@@ -47,6 +55,10 @@ const def: KindDef<Line3DAttrs> = {
     switch (c.kind) {
       case 'planePlaneIntersection':
         return `Giao tuyến ${obj.label} = ${labelOf(c.plane1, state)} ∩ ${labelOf(c.plane2, state)}`;
+      case 'lineParallelThrough':
+        return `${obj.label} ∥ ${labelOf(c.dirA, state)}${labelOf(c.dirB, state)} qua ${labelOf(c.point, state)}`;
+      case 'linePerpToPlane':
+        return `${obj.label} ⊥ ${labelOf(c.plane, state)} qua ${labelOf(c.point, state)}`;
       default: return obj.label;
     }
   },

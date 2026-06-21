@@ -68,3 +68,33 @@ describe('lineConstructionWorld: planePlaneIntersection', () => {
     expect(s.objects.xz).toBeDefined();
   });
 });
+
+describe('lineConstructionWorld: lineParallelThrough', () => {
+  test('qua P(1,1,1) ∥ hướng A(0,0,0)→B(2,0,0) → đường (1,1,1)-(3,1,1)', () => {
+    const s = mkState([pt('A', 0, 0, 0), pt('B', 2, 0, 0), pt('P', 1, 1, 1)]);
+    const { a, b } = lineConstructionWorld({ kind: 'lineParallelThrough', point: 'P', dirA: 'A', dirB: 'B' }, s);
+    expect(a).toEqual([1, 1, 1]);
+    expect(b).toEqual([3, 1, 1]); // P + (B-A) = (1,1,1)+(2,0,0)
+  });
+
+  test('hướng song song bảo toàn: (b-a) ∥ (dirB-dirA)', () => {
+    const s = mkState([pt('A', 1, 1, 0), pt('B', 3, 4, 0), pt('P', 0, 0, 5)]);
+    const { a, b } = lineConstructionWorld({ kind: 'lineParallelThrough', point: 'P', dirA: 'A', dirB: 'B' }, s);
+    expect([b[0] - a[0], b[1] - a[1], b[2] - a[2]]).toEqual([2, 3, 0]);
+  });
+});
+
+describe('lineConstructionWorld: linePerpToPlane', () => {
+  test('qua P(1,2,3) ⊥ mp xy → hướng = pháp tuyến (0,0,1), a=P', () => {
+    const s = mkState([
+      pt('Q', 0, 0, 0), pt('R', 1, 0, 0), pt('S', 0, 1, 0), plane('xy', 'Q', 'R', 'S'),
+      pt('P', 1, 2, 3),
+    ]);
+    const { a, b } = lineConstructionWorld({ kind: 'linePerpToPlane', point: 'P', plane: 'xy' }, s);
+    expect(a).toEqual([1, 2, 3]);
+    const dir = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+    expect(Math.abs(dir[0])).toBeCloseTo(0, 9);
+    expect(Math.abs(dir[1])).toBeCloseTo(0, 9);
+    expect(Math.abs(dir[2])).toBeCloseTo(1, 9); // pháp tuyến đơn vị
+  });
+});

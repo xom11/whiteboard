@@ -187,4 +187,21 @@ export const ToolIcons: Record<ToolKey, React.ReactElement> = {
       <line x1="6" y1="13" x2="18" y2="8" strokeWidth="2.4" />
     </>,
   ),
+  // Đường ∥: 2 đường song song + chấm điểm trên đường dưới.
+  lineParallelThrough: wrap(
+    <>
+      <line x1="4" y1="9" x2="20" y2="6" />
+      <line x1="4" y1="18" x2="20" y2="15" />
+      {dot(8, 17, 1.6)}
+    </>,
+  ),
+  // Đường ⊥ mặt: mặt phẳng + đường đứng qua điểm + ký hiệu góc vuông.
+  linePerpToPlane: wrap(
+    <>
+      <polygon points="3,15 13,11 21,16 11,20" />
+      <line x1="12" y1="3" x2="12" y2="17" />
+      <path d="M12 14 L14.4 13.3 L14.8 15" />
+      {dot(12, 8, 1.6)}
+    </>,
+  ),
 };

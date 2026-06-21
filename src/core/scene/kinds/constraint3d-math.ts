@@ -100,27 +100,41 @@ function planeOriginNormal(planeId: string, state: State, ctx: string): { origin
   return { origin, normal };
 }
 
-// 2 điểm (a,b) trên giao tuyến của đường phái sinh. Hàm THUẦN — renderer gọi mỗi
-// eval để live-update. 2 mặt song song (|d|≈0) → fallback hữu hạn (không NaN).
+// 2 điểm (a,b) xác định đường phái sinh. Hàm THUẦN — renderer gọi mỗi eval để
+// live-update. Cấu hình suy biến (song song…) → fallback hữu hạn (không NaN).
 export function lineConstructionWorld(c: Line3DConstruction, state: State): { a: Vec3; b: Vec3 } {
-  // if-chain (KHÔNG switch-default): never-guard narrow đúng cho cả union 1-thành-viên.
-  if (c.kind === 'planePlaneIntersection') {
-    const P1 = planeOriginNormal(c.plane1, state, 'planePlaneIntersection');
-    const P2 = planeOriginNormal(c.plane2, state, 'planePlaneIntersection');
-    const d = cross(P1.normal, P2.normal); // hướng giao tuyến = n1 × n2
-    const dd = dot(d, d);
-    if (dd < 1e-12) {
-      // 2 mặt song song/trùng → không có giao tuyến xác định: fallback hữu hạn.
-      return { a: P1.origin, b: add(P1.origin, P2.normal) };
+  switch (c.kind) {
+    case 'planePlaneIntersection': {
+      const P1 = planeOriginNormal(c.plane1, state, 'planePlaneIntersection');
+      const P2 = planeOriginNormal(c.plane2, state, 'planePlaneIntersection');
+      const d = cross(P1.normal, P2.normal); // hướng giao tuyến = n1 × n2
+      const dd = dot(d, d);
+      if (dd < 1e-12) {
+        // 2 mặt song song/trùng → không có giao tuyến xác định: fallback hữu hạn.
+        return { a: P1.origin, b: add(P1.origin, P2.normal) };
+      }
+      // Điểm trên giao tuyến: p0 = (c1·(n2×d) + c2·(d×n1)) / |d|², ci = ni·oi.
+      const c1 = dot(P1.normal, P1.origin);
+      const c2 = dot(P2.normal, P2.origin);
+      const p0 = scale(add(scale(cross(P2.normal, d), c1), scale(cross(d, P1.normal), c2)), 1 / dd);
+      return { a: p0, b: add(p0, d) };
     }
-    // Điểm trên giao tuyến: p0 = (c1·(n2×d) + c2·(d×n1)) / |d|², ci = ni·oi.
-    const c1 = dot(P1.normal, P1.origin);
-    const c2 = dot(P2.normal, P2.origin);
-    const p0 = scale(add(scale(cross(P2.normal, d), c1), scale(cross(d, P1.normal), c2)), 1 / dd);
-    return { a: p0, b: add(p0, d) };
+    case 'lineParallelThrough': {
+      const P = getPointWorld(c.point, state);
+      const dir = sub(getPointWorld(c.dirB, state), getPointWorld(c.dirA, state));
+      return { a: P, b: add(P, dir) };
+    }
+    case 'linePerpToPlane': {
+      const P = getPointWorld(c.point, state);
+      const { normal } = planeOriginNormal(c.plane, state, 'linePerpToPlane');
+      return { a: P, b: add(P, normal) }; // hướng = pháp tuyến (đã chuẩn hoá)
+    }
+    default: {
+      const _exhaustive: never = c;
+      void _exhaustive;
+      throw new Error('lineConstructionWorld: kind không hỗ trợ');
+    }
   }
-  // NOTE: 1 thành-viên → chưa never-guard được (thêm khi union ≥2 — construct kế).
-  throw new Error('lineConstructionWorld: kind không hỗ trợ');
 }
 
 export function constraintToWorld(c: Constraint3D, state: State): Vec3 {
