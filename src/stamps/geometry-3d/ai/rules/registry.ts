@@ -1,7 +1,7 @@
 import type { LanguageRule3D, RuleContext3D, RuleMatch3D } from './_types';
+import { solidRule } from './solid';
 
-// Rules are imported and added here as they are created (Tasks 9-11).
-const RULES: LanguageRule3D[] = [];
+const RULES: LanguageRule3D[] = [solidRule];
 
 export const ALL_RULES_3D: readonly LanguageRule3D[] = RULES.slice().sort(
   (a, b) => b.priority - a.priority,
