@@ -11,5 +11,5 @@ export const buildConnect: IntentBuilder3D = (s, intent) => {
     : intent.style === 'ray' ? 'ray3d'
     : 'segment3d';
   const label = nextLabel(s.store.getState(), kind);
-  addShape3dObj(s, kind, 'l', label, { p1, p2 });
+  addShape3dObj(s, kind, 'l', label, { p1, p2 }, true, false);
 };

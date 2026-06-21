@@ -19,7 +19,7 @@ export const buildAddPoint3d: IntentBuilder3D = (s, intent) => {
     const aId = resolveId(s, String(raw.a));
     const bId = resolveId(s, String(raw.b));
     const edgeLabel = nextLabel(s.store.getState(), 'segment3d');
-    const lineId = addShape3dObj(s, 'segment3d', 'l', edgeLabel, { p1: aId, p2: bId }, false);
+    const lineId = addShape3dObj(s, 'segment3d', 'l', edgeLabel, { p1: aId, p2: bId }, false, false);
     addPoint3dObj(s, intent.name, { kind: 'onLine', lineId, t: typeof raw.t === 'number' ? raw.t : 0.5 });
     return;
   }

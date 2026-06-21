@@ -54,7 +54,7 @@ export const buildLine3d: IntentBuilder3D = (s, intent) => {
     const p1 = need('p1');
     const p2 = need('p2');
     const kind = intent.kind === 'line' ? 'line3d' : intent.kind === 'ray' ? 'ray3d' : 'segment3d';
-    addShape3dObj(s, kind, 'l', label, { p1, p2 });
+    addShape3dObj(s, kind, 'l', label, { p1, p2 }, true, false);
     return;
   }
 

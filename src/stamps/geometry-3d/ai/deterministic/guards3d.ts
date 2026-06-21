@@ -11,9 +11,9 @@ const GOI = /(?:Gọi|Lấy|Dựng)\s+(?:điểm\s+)?([A-Z])(?![\p{L}])/gu;
 // "X là trung điểm…" / "X là chân…" — chỉ lấy tên ĐỘC LẬP (HOA, không đứng sau chữ)
 const LA_NAMED = /(?<![A-Za-z\p{L}])([A-Z])\s+là\s+(?!hình\s+chóp|tứ\s+diện|lăng\s+trụ)/gu;
 
-/** Tách các ký tự HOA đơn lẻ từ chuỗi nhãn như "ABCD" hoặc "A'B'C'" */
+/** Tách các nhãn điểm từ chuỗi như "ABCD" hoặc "A'B'C'" (giữ prime/chỉ số để khớp label thật). */
 function splitLabels(s: string): string[] {
-  return [...s.matchAll(/[A-Z]/gu)].map((m) => m[0]);
+  return [...s.matchAll(/[A-Z](?:['′]|[₀-₉0-9])?/gu)].map((m) => m[0]);
 }
 
 /**

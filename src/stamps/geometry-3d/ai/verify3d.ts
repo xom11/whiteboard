@@ -6,7 +6,7 @@ import { constraintToWorld } from '../../../core/scene/kinds/constraint3d-math';
  * 1. Không có chu trình tham chiếu (constraintToWorld ném nếu đệ quy quá sâu).
  * 2. Toạ độ hữu hạn.
  * 3. Với điểm midpoint: w ≈ trung bình p1 + p2.
- * 4. Mọi ref trong dependsOn tồn tại trong state.
+ * (Missing-ref được phát hiện bởi constraintToWorld ném khi id không tồn tại.)
  */
 export function verifyFigure3d(state: State): { ok: boolean; issues: string[] } {
   const issues: string[] = [];
@@ -16,15 +16,7 @@ export function verifyFigure3d(state: State): { ok: boolean; issues: string[] } 
 
     const c = (obj.attrs as any).constraint as { kind: string; [k: string]: any };
 
-    // Kiểm tra dependsOn refs tồn tại
-    const deps: string[] = (obj as any).dependsOn ?? [];
-    for (const dep of deps) {
-      if (!state.objects[dep]) {
-        issues.push(`${obj.label}: ref '${dep}' không tồn tại trong state`);
-      }
-    }
-
-    // Kiểm tra toạ độ + chu trình
+    // Kiểm tra toạ độ + chu trình (constraintToWorld ném nếu ref không tồn tại hoặc đệ quy)
     let w: [number, number, number];
     try {
       w = constraintToWorld(c as any, state);
