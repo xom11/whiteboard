@@ -2,14 +2,14 @@ import type { LanguageRule3D, RuleContext3D, RuleMatch3D } from './_types';
 import { plane3d, crossSection3d } from './_shared';
 import type { Intent3DT } from '../intent';
 
-const CUE = /thiết\s+diện|cắt\s+bởi/u;
-const TOKEN = /\(([A-Z])([A-Z])([A-Z])\)/u; // first 3-letter plane token in the clause
+const CUE = /thiết\s+diện|cắt\s+bởi/iu;
+const TOKEN = /\(([A-Z])([A-Z])([A-Z])\)/u; // first 3-letter plane token in the clause — stay case-sensitive
 
 export const crossSectionRule: LanguageRule3D = {
   id: 'crossSection',
   priority: 57,
   languages: ['vi'],
-  patterns: [/thiết\s+diện/u, /cắt\s+bởi/u],
+  patterns: [/thiết\s+diện/iu, /cắt\s+bởi/iu],
   match(ctx: RuleContext3D): RuleMatch3D[] {
     const out: RuleMatch3D[] = [];
     for (const c of ctx.clauses) {

@@ -2,14 +2,14 @@ import type { LanguageRule3D, RuleContext3D, RuleMatch3D } from './_types';
 import { plane3d, addPoint3d } from './_shared';
 import type { Intent3DT } from '../intent';
 
-// "giao điểm [I] [của] MN với|và (BCD)"
-const RE = /giao\s+điểm\s+(?:([A-Z])\s+)?(?:của\s+)?([A-Z])([A-Z])\s*(?:với|và)\s*\(([A-Z])([A-Z])([A-Z])\)/u;
+// "giao điểm [I] [của] MN với|và (BCD)" — [Gg]iao tolerates sentence-initial capital
+const RE = /[Gg]iao\s+điểm\s+(?:([A-Z])\s+)?(?:của\s+)?([A-Z])([A-Z])\s*(?:với|và)\s*\(([A-Z])([A-Z])([A-Z])\)/u;
 
 export const linePlanePointRule: LanguageRule3D = {
   id: 'linePlanePoint',
   priority: 56,
   languages: ['vi'],
-  patterns: [/giao\s+điểm/u],
+  patterns: [/giao\s+điểm/iu],
   match(ctx: RuleContext3D): RuleMatch3D[] {
     const out: RuleMatch3D[] = [];
     for (const c of ctx.clauses) {

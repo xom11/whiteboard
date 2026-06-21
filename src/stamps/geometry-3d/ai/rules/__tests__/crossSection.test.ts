@@ -27,4 +27,16 @@ describe('crossSectionRule', () => {
   it('does not match a clause with no 3-letter plane token', () => {
     expect(run('Tính diện tích thiết diện đó.')).toEqual([]);
   });
+
+  it('sentence-initial capital "Thiết diện ..." is matched (case-insensitive CUE)', () => {
+    const intents = run('Thiết diện của hình chóp cắt bởi (MCD).').flatMap((m) => m.intents) as any[];
+    const plane = intents.find((i) => i.op === 'plane');
+    const sec = intents.find((i) => i.op === 'cross-section');
+    expect(plane).toMatchObject({ name: 'mp_MCD', spec: { kind: 'threePoints', p1: 'M', p2: 'C', p3: 'D' } });
+    expect(sec).toMatchObject({ op: 'cross-section', plane: 'mp_MCD' });
+  });
+
+  it('lowercase token (mcd) is NOT matched — TOKEN stays case-sensitive', () => {
+    expect(run('Thiết diện cắt bởi (mcd).')).toEqual([]);
+  });
 });
