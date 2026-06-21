@@ -14,6 +14,9 @@ export const crossSectionRule: LanguageRule3D = {
     const out: RuleMatch3D[] = [];
     for (const c of ctx.clauses) {
       if (!CUE.test(c.text)) continue;
+      // Parallel-plane phrasing ("qua M song song (SBC)") is owned by crossSectionParallelRule —
+      // the (XYZ) token here is the REFERENCE plane, not the cutting plane. Skip to avoid a spurious section.
+      if (/qua\s+[A-Z]\s*(?:và\s+)?song\s+song/u.test(c.text)) continue;
       const m = TOKEN.exec(c.text);
       if (!m) continue;
       const [, a, b, d] = m;

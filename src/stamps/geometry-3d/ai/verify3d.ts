@@ -86,7 +86,19 @@ export function verifyFigure3d(state: State): { ok: boolean; issues: string[] } 
     if (!vids || vids.length < 3) { issues.push(`${obj.label || obj.id}: đa giác < 3 đỉnh`); continue; }
     try {
       const ws = vids.map((id) => ptWorld(state, id));
-      const f = planeFrame(ws[0], ws[1], ws[2]);
+      // Prefer the cutting plane frame when available (avoids near-collinear first-3-vertex degenerate normal).
+      let f: ReturnType<typeof planeFrame>;
+      const ilpVertex = vids.find((id) => {
+        const c = (state.objects[id]?.attrs as any)?.constraint;
+        return c?.kind === 'intersectionLinePlane';
+      });
+      if (ilpVertex) {
+        const cPlane = ((state.objects[ilpVertex].attrs as any).constraint as { plane: string }).plane;
+        const [q1, q2, q3] = planeWorld3(state, cPlane);
+        f = planeFrame(q1, q2, q3);
+      } else {
+        f = planeFrame(ws[0], ws[1], ws[2]);
+      }
       for (const wv of ws) {
         if (Math.abs(signedDistance(wv, f)) > 1e-5) { issues.push(`${obj.label || obj.id}: đa giác không phẳng`); break; }
       }
