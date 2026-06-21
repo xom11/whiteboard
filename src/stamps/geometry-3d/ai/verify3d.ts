@@ -127,6 +127,37 @@ export function verifyFigure3d(state: State): { ok: boolean; issues: string[] } 
         issues.push(`${obj.label || obj.id}: perpFootLine check lỗi — ${(e as Error).message}`);
       }
     }
+
+    // Kiểm tra circumsphereCenter: tâm cách đều mọi đỉnh
+    if (c.kind === 'circumsphereCenter') {
+      try {
+        const P = (c.vertices as string[]).map((id) => ptWorld(state, id));
+        if (P.length >= 2) {
+          const r0 = Math.hypot(w[0] - P[0][0], w[1] - P[0][1], w[2] - P[0][2]);
+          const tol = 1e-6 * Math.max(1, r0);
+          for (const p of P) {
+            const ri = Math.hypot(w[0] - p[0], w[1] - p[1], w[2] - p[2]);
+            if (Math.abs(ri - r0) > tol) { issues.push(`${obj.label || obj.id}: tâm mặt cầu không cách đều đỉnh`); break; }
+          }
+        }
+      } catch (e) {
+        issues.push(`${obj.label || obj.id}: circumsphereCenter check lỗi — ${(e as Error).message}`);
+      }
+    }
+  }
+
+  // Kiểm tra sphere3d: bán kính = |surface − center| hữu hạn > 0
+  for (const obj of Object.values(state.objects)) {
+    if (obj.kind !== 'sphere3d') continue;
+    try {
+      const a = obj.attrs as any;
+      const center = ptWorld(state, a.center);
+      const surface = ptWorld(state, a.surfacePoint);
+      const R = Math.hypot(surface[0] - center[0], surface[1] - center[1], surface[2] - center[2]);
+      if (!Number.isFinite(R) || R <= 1e-9) issues.push(`${obj.label || obj.id}: mặt cầu bán kính ≤ 0`);
+    } catch (e) {
+      issues.push(`${obj.label || obj.id}: sphere3d check lỗi — ${(e as Error).message}`);
+    }
   }
 
   // Kiểm tra polygon3d: ≥3 đỉnh + đồng phẳng
