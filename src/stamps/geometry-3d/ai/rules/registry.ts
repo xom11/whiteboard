@@ -6,15 +6,17 @@ import { midpoint3dRule } from './midpoint3d';
 import { centroid3dRule } from './centroid3d';
 import { intersectionLineRule } from './intersectionLine';
 import { crossSectionRule } from './crossSection';
+import { crossSectionParallelRule } from './crossSectionParallel';
 import { linePlanePointRule } from './linePlanePoint';
 
 const RULES: LanguageRule3D[] = [
-  solidRule,            // priority 90
-  midpoint3dRule,       // priority 62
-  centroid3dRule,       // priority 61
-  pointOnEdgeRule,      // priority 60
-  intersectionLineRule, // priority 58
-  crossSectionRule,     // priority 57
+  solidRule,                  // priority 90
+  midpoint3dRule,             // priority 62
+  centroid3dRule,             // priority 61
+  pointOnEdgeRule,            // priority 60
+  intersectionLineRule,       // priority 58
+  crossSectionParallelRule,   // priority 58
+  crossSectionRule,           // priority 57
   linePlanePointRule,   // priority 56
   planeNamedRule,       // priority 55
 ];
