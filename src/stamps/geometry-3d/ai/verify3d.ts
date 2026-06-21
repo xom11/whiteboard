@@ -133,6 +133,11 @@ export function verifyFigure3d(state: State): { ok: boolean; issues: string[] } 
       try {
         const P = (c.vertices as string[]).map((id) => ptWorld(state, id));
         if (P.length >= 2) {
+          // Bound sanity: đỉnh near-coplanar → solve3 ra tâm khổng lồ (radii spread lọt
+          // tol tương đối). Canonical layout luôn trong [-3,3]³ ⟹ tâm hợp lệ |coord|≲5.
+          if (!w.every((n) => Math.abs(n) < 1e3)) {
+            issues.push(`${obj.label || obj.id}: tâm mặt cầu ngoài khung hợp lệ`);
+          }
           const r0 = Math.hypot(w[0] - P[0][0], w[1] - P[0][1], w[2] - P[0][2]);
           const tol = 1e-6 * Math.max(1, r0);
           for (const p of P) {

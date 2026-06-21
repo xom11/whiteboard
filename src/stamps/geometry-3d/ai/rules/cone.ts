@@ -17,7 +17,8 @@ export const coneRule: LanguageRule3D = {
     if (parseSolidHead3D(ctx.problem) || INSCRIBED.test(ctx.problem)) return [];
     const c = ctx.clauses.find((cl) => CUE.test(cl.text));
     if (!c) return [];
-    const am = APEX.exec(ctx.problem);
+    // Scope tới CHÍNH clause nón (tránh nhặt "đỉnh/đường cao" từ tam giác khác trong đề).
+    const am = APEX.exec(c.text);
     const apexName = am ? (am[1] ?? am[2]!) : 'S';
     const baseRaw = am && am[3] ? am[3] : 'O';
     const baseName = baseRaw === apexName ? 'O' : baseRaw;

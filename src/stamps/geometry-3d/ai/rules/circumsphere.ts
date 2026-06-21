@@ -16,7 +16,8 @@ const TARGET = new RegExp(
   'u',
 );
 // Base quad non-cyclic trong canonical layout (parallelogram/trapezoid) → cầu vô nghiệm → skip.
-const NON_CYCLIC = /đáy[^.]*?hình\s+(?:bình\s+hành|thang)/iu;
+// Siết: shape phải KỀ "đáy [nhãn] (là)" — KHÔNG nuốt "mặt bên là hình bình hành" (mặt ≠ đáy).
+const NON_CYCLIC = /đáy(?:\s+[A-Z'′]+)?\s+(?:là\s+)?(?:hình\s+)?(?:bình\s+hành|thang)/iu;
 
 function pickCenter(vertices: string[]): string {
   for (const c of ['O', 'I', 'J', 'K', 'T']) if (!vertices.includes(c)) return c;
