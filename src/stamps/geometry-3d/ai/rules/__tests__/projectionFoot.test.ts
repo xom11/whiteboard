@@ -11,13 +11,16 @@ describe('projectionFootRule', () => {
     expect(I.find((i) => i.op === 'plane')).toMatchObject({ name: 'mp_ABC', spec: { kind: 'threePoints', p1: 'A', p2: 'B', p3: 'C' } });
     const pt = I.find((i) => i.op === 'add-point-3d');
     expect(pt.constraint).toMatchObject({ kind: 'perpFootPlane', from: 'S', plane: 'mp_ABC' });
+    expect(pt.name).toBe('H');
     expect(I.find((i) => i.op === 'connect')).toMatchObject({ from: 'S', to: pt.name });
   });
 
   it('"Hình chiếu của S trên mặt đáy" → base plane synth + perpFootPlane', () => {
     const I = flat('Cho hình chóp S.ABCD. Hình chiếu của S lên mặt đáy là H.');
     expect(I.find((i) => i.op === 'plane')).toMatchObject({ name: 'mp_ABC' });
-    expect(I.find((i) => i.op === 'add-point-3d').constraint).toMatchObject({ kind: 'perpFootPlane', from: 'S', plane: 'mp_ABC' });
+    const pt = I.find((i) => i.op === 'add-point-3d');
+    expect(pt.constraint).toMatchObject({ kind: 'perpFootPlane', from: 'S', plane: 'mp_ABC' });
+    expect(pt.name).toBe('H');
   });
 
   it('"Gọi H là hình chiếu của A trên cạnh SB" → perpFootLine, foot named H', () => {
