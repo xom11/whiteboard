@@ -5,6 +5,7 @@ import { planeNamedRule } from './planeNamed';
 import { midpoint3dRule } from './midpoint3d';
 import { centroid3dRule } from './centroid3d';
 import { intersectionLineRule } from './intersectionLine';
+import { crossSectionRule } from './crossSection';
 
 const RULES: LanguageRule3D[] = [
   solidRule,            // priority 90
@@ -12,6 +13,7 @@ const RULES: LanguageRule3D[] = [
   centroid3dRule,       // priority 61
   pointOnEdgeRule,      // priority 60
   intersectionLineRule, // priority 58
+  crossSectionRule,     // priority 57
   planeNamedRule,       // priority 55
 ];
 
