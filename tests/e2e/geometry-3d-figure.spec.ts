@@ -116,6 +116,97 @@ test('renders a cross-section polygon for a thiết diện problem', async ({ pa
   expect(errors.join('\n')).not.toMatch(/plane3d|Cannot read|undefined is not/i);
 });
 
+// Render-verify for Phase-4 mặt cầu ngoại tiếp: a tetrahedron + circumscribed sphere
+// should produce a sphere3d element + tetra faces, no render error.
+test('renders a circumscribed sphere for a mặt cầu ngoại tiếp problem', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+
+  await page.goto('/');
+  await expect(page.locator('[data-testid="dropdown-menu-button"]').first()).toBeVisible({ timeout: 15_000 });
+  await page.locator('[data-testid="dropdown-menu-button"]').first().click();
+  await page.locator('[data-testid="stamp-toolbar-geometry3d"]').click();
+  await expect(page.locator('[data-testid="mini-board-3d"]')).toBeVisible({ timeout: 10_000 });
+  await page.waitForFunction(() => !!(window as any).JXG, undefined, { timeout: 10_000 });
+
+  await page.locator('[data-testid="ai-generate-3d-input"]').fill(
+    'Cho tứ diện đều ABCD. Mặt cầu ngoại tiếp tứ diện ABCD.',
+  );
+  await page.locator('[data-testid="ai-generate-3d-btn"]').click();
+
+  await page.waitForFunction(() => {
+    const JXG = (window as any).JXG;
+    if (!JXG?.boards) return false;
+    for (const b of Object.values(JXG.boards) as any[]) {
+      const spheres = Object.values(b.objects).filter((o: any) => o.elType === 'sphere3d');
+      if (spheres.length >= 1) return true;
+    }
+    return false;
+  }, undefined, { timeout: 8_000 });
+
+  expect(errors.join('\n')).not.toMatch(/sphere3d|circumsphere|Cannot read|undefined is not/i);
+});
+
+// Render-verify for Phase-4 standalone cone: a faceted cone3d mesh (≥8 polygon3d faces).
+test('renders a standalone cone for a hình nón problem', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+
+  await page.goto('/');
+  await expect(page.locator('[data-testid="dropdown-menu-button"]').first()).toBeVisible({ timeout: 15_000 });
+  await page.locator('[data-testid="dropdown-menu-button"]').first().click();
+  await page.locator('[data-testid="stamp-toolbar-geometry3d"]').click();
+  await expect(page.locator('[data-testid="mini-board-3d"]')).toBeVisible({ timeout: 10_000 });
+  await page.waitForFunction(() => !!(window as any).JXG, undefined, { timeout: 10_000 });
+
+  await page.locator('[data-testid="ai-generate-3d-input"]').fill(
+    'Cho hình nón đỉnh S có chiều cao bằng 2.',
+  );
+  await page.locator('[data-testid="ai-generate-3d-btn"]').click();
+
+  await page.waitForFunction(() => {
+    const JXG = (window as any).JXG;
+    if (!JXG?.boards) return false;
+    for (const b of Object.values(JXG.boards) as any[]) {
+      const polys = Object.values(b.objects).filter((o: any) => o.elType === 'polygon3d');
+      if (polys.length >= 8) return true; // faceted cone (16 segments)
+    }
+    return false;
+  }, undefined, { timeout: 8_000 });
+
+  expect(errors.join('\n')).not.toMatch(/cone3d|Cannot read|undefined is not/i);
+});
+
+// Render-verify for Phase-4 standalone cylinder: a faceted cylinder3d mesh.
+test('renders a standalone cylinder for a hình trụ problem', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+
+  await page.goto('/');
+  await expect(page.locator('[data-testid="dropdown-menu-button"]').first()).toBeVisible({ timeout: 15_000 });
+  await page.locator('[data-testid="dropdown-menu-button"]').first().click();
+  await page.locator('[data-testid="stamp-toolbar-geometry3d"]').click();
+  await expect(page.locator('[data-testid="mini-board-3d"]')).toBeVisible({ timeout: 10_000 });
+  await page.waitForFunction(() => !!(window as any).JXG, undefined, { timeout: 10_000 });
+
+  await page.locator('[data-testid="ai-generate-3d-input"]').fill(
+    'Cho hình trụ có thiết diện qua trục là một hình vuông.',
+  );
+  await page.locator('[data-testid="ai-generate-3d-btn"]').click();
+
+  await page.waitForFunction(() => {
+    const JXG = (window as any).JXG;
+    if (!JXG?.boards) return false;
+    for (const b of Object.values(JXG.boards) as any[]) {
+      const polys = Object.values(b.objects).filter((o: any) => o.elType === 'polygon3d');
+      if (polys.length >= 8) return true; // faceted cylinder
+    }
+    return false;
+  }, undefined, { timeout: 8_000 });
+
+  expect(errors.join('\n')).not.toMatch(/cylinder3d|Cannot read|undefined is not/i);
+});
+
 // Render-verify for the Phase-3a perpendicular-foot (hình chiếu) pipeline.
 // A pyramid problem with an explicit foot point should produce ≥6 point3d
 // (A,B,C,D,S + H) and ≥1 line3d (the distance segment S→H).
