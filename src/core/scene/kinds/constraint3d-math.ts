@@ -203,6 +203,22 @@ export function lineConstructionWorld(c: Line3DConstruction, state: State): { a:
   }
 }
 
+// Giải hệ 3×3 M·x = b bằng Cramer. |det|<1e-9 → null (suy biến).
+function solve3(M: number[][], b: Vec3): Vec3 | null {
+  const det3 = (m: number[][]): number =>
+    m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
+    m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
+    m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+  const det = det3(M);
+  if (Math.abs(det) < 1e-9) return null;
+  const colDet = (j: number): number => {
+    const A = M.map((r) => r.slice());
+    for (let i = 0; i < 3; i++) A[i][j] = b[i];
+    return det3(A);
+  };
+  return [colDet(0) / det, colDet(1) / det, colDet(2) / det];
+}
+
 export function constraintToWorld(c: Constraint3D, state: State): Vec3 {
   // Check TRƯỚC khi tăng (cân bằng: throw không tăng → finally không decrement
   // lệch; counter luôn về 0 sau unwind).
@@ -272,6 +288,29 @@ function constraintToWorldInner(c: Constraint3D, state: State): Vec3 {
       let acc: Vec3 = [0, 0, 0];
       for (const id of c.vertices) acc = add(acc, getPointWorld(id, state));
       return scale(acc, 1 / n);
+    }
+    case 'circumsphereCenter': {
+      // Tâm cách đều mọi đỉnh: trừ |O−P₀|²=R² cho |O−Pᵢ|²=R² ⟹ 2(Pᵢ−P₀)·O = |Pᵢ|²−|P₀|².
+      // Giải bình phương tối thiểu qua normal equations AᵀA·O = Aᵀb (3×3).
+      const P = c.vertices.map((id) => getPointWorld(id, state));
+      if (P.length < 4) return P.length ? P[0] : [0, 0, 0];
+      const p0 = P[0];
+      const M = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+      const rhs: Vec3 = [0, 0, 0];
+      for (let i = 1; i < P.length; i++) {
+        const r: Vec3 = [2 * (P[i][0] - p0[0]), 2 * (P[i][1] - p0[1]), 2 * (P[i][2] - p0[2])];
+        const bi = dot(P[i], P[i]) - dot(p0, p0);
+        for (let a = 0; a < 3; a++) {
+          for (let bcol = 0; bcol < 3; bcol++) M[a][bcol] += r[a] * r[bcol];
+          rhs[a] += r[a] * bi;
+        }
+      }
+      const sol = solve3(M, rhs);
+      if (sol) return sol;
+      // Suy biến (đỉnh đồng phẳng/cộng tuyến) → trung bình đỉnh (hữu hạn, không NaN).
+      let acc: Vec3 = [0, 0, 0];
+      for (const p of P) acc = add(acc, p);
+      return scale(acc, 1 / P.length);
     }
     case 'intersectionLines': {
       const A = getPointWorld(c.a1, state), B = getPointWorld(c.b1, state);
@@ -395,6 +434,7 @@ export function worldToConstraint(current: Constraint3D, world: Vec3, state: Sta
     case 'intersectionLinePlane':
     case 'perpFootLine':
     case 'perpFootPlane':
+    case 'circumsphereCenter':
       return current;
     default: {
       const _exhaustive: never = current;

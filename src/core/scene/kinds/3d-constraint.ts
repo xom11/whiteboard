@@ -23,7 +23,9 @@ export type Constraint3D =
   // Chân ⊥ từ điểm `from` xuống đường (qua a,b).
   | { kind: 'perpFootLine'; from: string; a: string; b: string }
   // Chân ⊥ từ điểm `from` xuống mặt phẳng (object).
-  | { kind: 'perpFootPlane'; from: string; plane: string };
+  | { kind: 'perpFootPlane'; from: string; plane: string }
+  // Tâm mặt cầu ngoại tiếp N đỉnh (điểm cách đều mọi đỉnh — least-squares).
+  | { kind: 'circumsphereCenter'; vertices: string[] };
 
 export function constraintRefs(c: Constraint3D): string[] {
   switch (c.kind) {
@@ -37,6 +39,7 @@ export function constraintRefs(c: Constraint3D): string[] {
     case 'intersectionLinePlane': return [c.a, c.b, c.plane];
     case 'perpFootLine': return [c.from, c.a, c.b];
     case 'perpFootPlane': return [c.from, c.plane];
+    case 'circumsphereCenter': return [...c.vertices];
     // Kind KHÔNG có ref scene-object (toạ độ literal): liệt kê TƯỜNG MINH để
     // exhaustive never-guard bên dưới buộc khai báo khi thêm constraint kind mới
     // (mô phỏng constraintRefs2D — quên case = cascade-delete/deps sai âm thầm).
