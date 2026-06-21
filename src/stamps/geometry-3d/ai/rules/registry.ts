@@ -9,6 +9,7 @@ import { crossSectionRule } from './crossSection';
 import { crossSectionParallelRule } from './crossSectionParallel';
 import { linePlanePointRule } from './linePlanePoint';
 import { projectionFootRule } from './projectionFoot';
+import { perpLineToPlaneRule } from './perpLineToPlane';
 
 const RULES: LanguageRule3D[] = [
   solidRule,                  // priority 90
@@ -21,6 +22,7 @@ const RULES: LanguageRule3D[] = [
   linePlanePointRule,         // priority 56
   planeNamedRule,             // priority 55
   projectionFootRule,         // priority 54
+  perpLineToPlaneRule,        // priority 53
 ];
 
 export const ALL_RULES_3D: readonly LanguageRule3D[] = RULES.slice().sort(
