@@ -1,4 +1,4 @@
-export { solid, addPoint3d, plane3d, line3dIntent, connect3d } from '../intent';
+export { solid, addPoint3d, plane3d, line3dIntent, connect3d, crossSection3d } from '../intent';
 
 export function escapeRe(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

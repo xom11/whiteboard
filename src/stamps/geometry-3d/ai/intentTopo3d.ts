@@ -17,6 +17,7 @@ function producesOf(i: Intent3DT): string[] {
     case 'plane': return [i.name];
     case 'line': return i.name ? [i.name] : [];
     case 'connect': return [];
+    case 'cross-section': return i.name ? [i.name] : [];
   }
 }
 

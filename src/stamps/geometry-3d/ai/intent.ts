@@ -45,8 +45,15 @@ const Connect3DIntentZ = z.object({
   style: z.enum(['segment','line','ray']).default('segment'),
 });
 
+const CrossSectionIntentZ = z.object({
+  op: z.literal('cross-section'),
+  name: Label3DZ.optional(),
+  plane: Label3DZ,
+  solid: Label3DZ.optional(),
+});
+
 export const Intent3DZ = z.discriminatedUnion('op', [
-  SolidIntentZ, AddPoint3DIntentZ, Plane3DIntentZ, Line3DIntentZ, Connect3DIntentZ,
+  SolidIntentZ, AddPoint3DIntentZ, Plane3DIntentZ, Line3DIntentZ, Connect3DIntentZ, CrossSectionIntentZ,
 ]);
 export type Intent3DT = z.infer<typeof Intent3DZ>;
 
@@ -75,4 +82,8 @@ export function line3dIntent(spec: { name?: string; kind: string } & Record<stri
 
 export function connect3d(from: string, to: string, style = 'segment'): Intent3DT {
   return { op: 'connect', from, to, style } as Intent3DT;
+}
+
+export function crossSection3d(spec: { name?: string; plane: string; solid?: string }): Intent3DT {
+  return { op: 'cross-section', ...spec } as Intent3DT;
 }
