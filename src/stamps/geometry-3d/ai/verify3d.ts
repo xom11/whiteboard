@@ -77,6 +77,46 @@ export function verifyFigure3d(state: State): { ok: boolean; issues: string[] } 
         issues.push(`${obj.label || obj.id}: intersectionLinePlane check lỗi — ${(e as Error).message}`);
       }
     }
+
+    // Kiểm tra perpFootPlane: chân ⊥ nằm trên mặt + (foot−from) ∥ pháp tuyến
+    if (c.kind === 'perpFootPlane') {
+      try {
+        const [q1, q2, q3] = planeWorld3(state, c.plane);
+        const f = planeFrame(q1, q2, q3);
+        if (Math.abs(signedDistance(w, f)) > 1e-6) {
+          issues.push(`${obj.label || obj.id}: chân ⊥ không nằm trên mặt`);
+        }
+        const from = ptWorld(state, c.from);
+        const d: [number, number, number] = [w[0] - from[0], w[1] - from[1], w[2] - from[2]];
+        const cr: [number, number, number] = [
+          d[1] * f.normal[2] - d[2] * f.normal[1],
+          d[2] * f.normal[0] - d[0] * f.normal[2],
+          d[0] * f.normal[1] - d[1] * f.normal[0],
+        ];
+        if (Math.hypot(cr[0], cr[1], cr[2]) > 1e-6) {
+          issues.push(`${obj.label || obj.id}: đoạn ⊥ không song song pháp tuyến`);
+        }
+      } catch (e) {
+        issues.push(`${obj.label || obj.id}: perpFootPlane check lỗi — ${(e as Error).message}`);
+      }
+    }
+
+    // Kiểm tra perpFootLine: (foot−from)·(b−a) ≈ 0
+    if (c.kind === 'perpFootLine') {
+      try {
+        const A = ptWorld(state, c.a);
+        const B = ptWorld(state, c.b);
+        const from = ptWorld(state, c.from);
+        const ab: [number, number, number] = [B[0] - A[0], B[1] - A[1], B[2] - A[2]];
+        const fh: [number, number, number] = [w[0] - from[0], w[1] - from[1], w[2] - from[2]];
+        const perpDot = fh[0] * ab[0] + fh[1] * ab[1] + fh[2] * ab[2];
+        if (Math.abs(perpDot) > 1e-6) {
+          issues.push(`${obj.label || obj.id}: chân ⊥ trên đường không vuông góc`);
+        }
+      } catch (e) {
+        issues.push(`${obj.label || obj.id}: perpFootLine check lỗi — ${(e as Error).message}`);
+      }
+    }
   }
 
   // Kiểm tra polygon3d: ≥3 đỉnh + đồng phẳng
