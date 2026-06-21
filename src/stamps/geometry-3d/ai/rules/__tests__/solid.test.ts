@@ -1,5 +1,5 @@
 import { solidRule } from '../solid';
-import { segmentClauses3D } from '../../deterministic/coverage3d';
+import { segmentClauses3D, computeCoverage3D } from '../../deterministic/coverage3d';
 
 function run(problem: string) {
   const clauses = segmentClauses3D(problem);
@@ -43,5 +43,13 @@ describe('solidRule', () => {
   it('claims the clause for coverage', () => {
     const ms = run('Cho hình chóp S.ABC.');
     expect(ms[0].clauseIds.length).toBeGreaterThan(0);
+  });
+
+  it('solid claim makes coverage complete for a single-clause pyramid', () => {
+    const problem = 'Cho hình chóp S.ABCD có đáy là hình vuông.';
+    const clauses = segmentClauses3D(problem);
+    const ms = solidRule.match({ problem, clauses });
+    const cov = computeCoverage3D(clauses, ms.flatMap((m) => m.clauseIds));
+    expect(cov.complete).toBe(true);
   });
 });

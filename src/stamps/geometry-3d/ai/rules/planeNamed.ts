@@ -1,4 +1,5 @@
 import type { LanguageRule3D, RuleContext3D, RuleMatch3D } from './_types';
+import type { Intent3DT } from '../intent';
 import { plane3d } from './_shared';
 
 // Match "(ABC)" tokens — exactly 3 uppercase letters
@@ -11,7 +12,7 @@ export const planeNamedRule: LanguageRule3D = {
   patterns: [/mặt\s+phẳng/u, /giao\s+tuyến/u, /thiết\s+diện/u, /\([A-Z]{3}\)/u],
   match(ctx: RuleContext3D): RuleMatch3D[] {
     const seen = new Set<string>();
-    const intents = [];
+    const intents: Intent3DT[] = [];
     const claimed: number[] = [];
     for (const c of ctx.clauses) {
       PLANE_TOKEN.lastIndex = 0;

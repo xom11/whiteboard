@@ -22,6 +22,14 @@ describe('segmentClauses3D', () => {
     const cs = segmentClauses3D('Tìm giao tuyến của (S,B,C) và (DMN)');
     expect(cs.length).toBe(1);
   });
+
+  it('keeps S.ABCD intact — solid notation period is not a sentence boundary', () => {
+    const cs = segmentClauses3D('Cho hình chóp S.ABCD có đáy là hình vuông.');
+    const clause = cs.find((c) => /hình chóp/.test(c.text));
+    expect(clause).toBeDefined();
+    expect(clause!.text).toContain('S.ABCD');
+    expect(clause!.text).toContain('hình vuông');
+  });
 });
 
 describe('computeCoverage3D', () => {
