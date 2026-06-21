@@ -10,6 +10,7 @@ export const GEOMETRY_KEYWORDS_3D: string[] = [
   // metric / solids of revolution (recognized early so clauses aren't dropped; constructs come later phases)
   'khoảng cách', 'góc', 'mặt cầu', 'hình cầu', 'bán kính', 'đường kính',
   'hình trụ', 'hình nón', 'ngoại tiếp', 'nội tiếp',
+  'khối cầu', 'khối nón', 'khối trụ', 'đường sinh', 'trục',
   // generic geometry nouns
   'cạnh', 'đáy', 'đỉnh', 'điểm', 'đoạn', 'tam giác', 'hình vuông', 'hình chữ nhật',
   'hình bình hành', 'hình thang', 'hình thoi', 'đường thẳng', 'tia',
