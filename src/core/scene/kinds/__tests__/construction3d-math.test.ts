@@ -137,6 +137,40 @@ describe('planeConstructionWorld: planeParallelThrough', () => {
   });
 });
 
+describe('biên/suy biến + chống chu trình (review đối kháng 2026-06-21)', () => {
+  test('lineParallelThrough hướng suy biến (2 điểm trùng toạ độ, id khác) → fallback hữu hạn a≠b', () => {
+    const s = mkState([pt('P', 0, 0, 0), pt('A', 5, 5, 5), pt('B', 5, 5, 5)]);
+    const { a, b } = lineConstructionWorld({ kind: 'lineParallelThrough', point: 'P', dirA: 'A', dirB: 'B' }, s);
+    expect(a).toEqual([0, 0, 0]);
+    expect(b).toEqual([1, 0, 0]); // P + fallback [1,0,0] (dir=0)
+    expect(a[0] !== b[0] || a[1] !== b[1] || a[2] !== b[2]).toBe(true);
+  });
+
+  test('planeParallelThrough refPlane suy biến (3 điểm thẳng hàng) → fallback hữu hạn', () => {
+    const s = mkState([
+      pt('Q', 0, 0, 0), pt('R', 1, 0, 0), pt('S', 2, 0, 0), plane('col', 'Q', 'R', 'S'),
+      pt('P', 5, 5, 5),
+    ]);
+    const { p1, p2, p3 } = planeConstructionWorld({ kind: 'planeParallelThrough', point: 'P', refPlane: 'col' }, s);
+    expect(p1).toEqual([5, 5, 5]);
+    expect(p2).toEqual([6, 5, 5]); // P + [1,0,0]
+    expect(p3).toEqual([5, 6, 5]); // P + [0,1,0]
+    expect([p1, p2, p3].every((p) => p.every(Number.isFinite))).toBe(true);
+  });
+
+  test('chu trình tham chiếu mặt → throw MÔ TẢ (không RangeError stack overflow)', () => {
+    const s = mkState([
+      pt('P', 0, 0, 0), pt('Q', 1, 1, 1),
+      mkObj('plane3d', 'pA', { construction: { kind: 'planeParallelThrough', point: 'P', refPlane: 'pB' } }),
+      mkObj('plane3d', 'pB', { construction: { kind: 'planeParallelThrough', point: 'Q', refPlane: 'pA' } }),
+    ]);
+    expect(() => planeConstructionWorld({ kind: 'planeParallelThrough', point: 'P', refPlane: 'pA' }, s)).toThrow(/quá sâu/);
+    // counter phải về 0 sau throw → lời gọi hợp lệ kế tiếp vẫn chạy bình thường
+    const s2 = mkState([pt('A', 0, 0, 0), pt('B', 1, 0, 0), pt('C', 0, 1, 0), plane('xy', 'A', 'B', 'C'), pt('P2', 0, 0, 5)]);
+    expect(() => planeConstructionWorld({ kind: 'planeParallelThrough', point: 'P2', refPlane: 'xy' }, s2)).not.toThrow();
+  });
+});
+
 describe('planeConstructionWorld: planePerpToLine', () => {
   test('qua O ⊥ trục z (A(0,0,0)→B(0,0,2)) → mặt xy (pháp tuyến ∥ z)', () => {
     const s = mkState([pt('O', 0, 0, 0), pt('A', 0, 0, 0), pt('B', 0, 0, 2)]);

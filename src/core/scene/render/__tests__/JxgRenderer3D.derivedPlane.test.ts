@@ -13,6 +13,12 @@ function mockView() {
   const view = {
     create: jest.fn((kind: string, parents: any, attrs: any) => {
       const el: any = { kind, parents, attrs, _id: `${kind}_${created.length}` };
+      // Mô phỏng JSXGraph createPlane3D: khi nhận điểm-HÀM (construction) nó tạo
+      // 1 internal anchor point3d (_is_new) làm gốc — chính là cái bị leak nếu
+      // removeFromView không dọn. Mặt 3-điểm (parents là element thật) KHÔNG có.
+      if (kind === 'plane3d' && typeof parents?.[0] === 'function') {
+        el.point = { _is_new: true, _id: `anchor_${created.length}` };
+      }
       created.push(el);
       return el;
     }),
@@ -49,7 +55,7 @@ describe('JxgRenderer3D render mặt phái sinh (planeParallelThrough)', () => {
     store.dispatch({ type: 'ADD', payload: { obj: derivedPlane('mp', { kind: 'planeParallelThrough', point: 'P', refPlane: 'xy' }) } });
     // mặt construction = plane3d có needsRegularUpdate (mặt xy gốc thì không).
     const derived = created.find((e) => e.kind === 'plane3d' && e.attrs?.needsRegularUpdate);
-    return { store, derived };
+    return { store, view, derived };
   }
 
   // JSXGraph plane3d nhận [point, direction1, direction2] (directions = HIỆU
@@ -81,5 +87,16 @@ describe('JxgRenderer3D render mặt phái sinh (planeParallelThrough)', () => {
     expect(ev(derived.parents[0])[2]).toBeCloseTo(5, 9);
     store.dispatch({ type: 'UPDATE_ATTRS', payload: { id: 'P', patch: { constraint: { kind: 'free', x: 0, y: 0, z: 8 } } } });
     expect(ev(derived.parents[0])[2]).toBeCloseTo(8, 9);
+  });
+
+  // Chống leak: xoá mặt phái sinh phải dọn LUÔN internal anchor point3d (_is_new)
+  // mà JSXGraph createPlane3D tạo nhưng không adopt làm child (review 2026-06-21).
+  it('xoá mặt phái sinh → removeObject dọn cả internal anchor (_is_new)', () => {
+    const { store, view, derived } = setup();
+    const anchor = derived.point;
+    expect(anchor?._is_new).toBe(true);
+    store.dispatch({ type: 'DELETE', payload: { id: 'mp' } });
+    expect(view.removeObject).toHaveBeenCalledWith(derived); // xoá mặt
+    expect(view.removeObject).toHaveBeenCalledWith(anchor); // + dọn anchor (chống leak)
   });
 });

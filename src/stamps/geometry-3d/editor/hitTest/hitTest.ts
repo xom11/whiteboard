@@ -1,7 +1,7 @@
 import { screenToRay, type View3DLike } from './rayCast';
 import { rayGround, rayLineSegment, rayPlane, raySphere } from './intersect';
 import { findSnapPoint } from './snapping';
-import { constraintToWorld, type Vec3 } from '../scene/constraintMath';
+import { constraintToWorld, planeConstructionWorld, type Vec3 } from '../scene/constraintMath';
 import type { State } from '../../../../core/scene';
 import { listObjects } from '../../../../core/scene';
 import type { Point3DAttrs } from '../../../../core/scene/kinds/point3d';
@@ -160,18 +160,29 @@ function planeBasis(
   plane: Plane3DAttrs,
   state: State,
 ): { origin: Vec3; basis1: Vec3; basis2: Vec3; normal: Vec3 } | null {
-  // Mặt construction (phái sinh) không có p1/p2/p3 → bỏ qua hit-test (không
-  // đặt điểm trên / pick mặt phái sinh ở v1.5; mặt 3-điểm vẫn hit bình thường).
-  if (!plane.p1 || !plane.p2 || !plane.p3) return null;
-  const p1Obj = state.objects[plane.p1];
-  const p2Obj = state.objects[plane.p2];
-  const p3Obj = state.objects[plane.p3];
-  if (!p1Obj || p1Obj.kind !== 'point3d') return null;
-  if (!p2Obj || p2Obj.kind !== 'point3d') return null;
-  if (!p3Obj || p3Obj.kind !== 'point3d') return null;
-  const p1 = constraintToWorld((p1Obj.attrs as Point3DAttrs).constraint, state);
-  const p2 = constraintToWorld((p2Obj.attrs as Point3DAttrs).constraint, state);
-  const p3 = constraintToWorld((p3Obj.attrs as Point3DAttrs).constraint, state);
+  let p1: Vec3, p2: Vec3, p3: Vec3;
+  if (plane.construction) {
+    // Mặt PHÁI SINH (∥/⊥): 3 điểm tính từ planeConstructionWorld → pick được
+    // như mặt thường (math+render đã hỗ trợ; cho phép nối chuỗi mặt phái sinh).
+    // Chu trình/suy biến throw → bỏ qua hit.
+    try {
+      const r = planeConstructionWorld(plane.construction, state);
+      p1 = r.p1; p2 = r.p2; p3 = r.p3;
+    } catch {
+      return null;
+    }
+  } else {
+    if (!plane.p1 || !plane.p2 || !plane.p3) return null;
+    const p1Obj = state.objects[plane.p1];
+    const p2Obj = state.objects[plane.p2];
+    const p3Obj = state.objects[plane.p3];
+    if (!p1Obj || p1Obj.kind !== 'point3d') return null;
+    if (!p2Obj || p2Obj.kind !== 'point3d') return null;
+    if (!p3Obj || p3Obj.kind !== 'point3d') return null;
+    p1 = constraintToWorld((p1Obj.attrs as Point3DAttrs).constraint, state);
+    p2 = constraintToWorld((p2Obj.attrs as Point3DAttrs).constraint, state);
+    p3 = constraintToWorld((p3Obj.attrs as Point3DAttrs).constraint, state);
+  }
   const basis1: Vec3 = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
   const tmp: Vec3 = [p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]];
   const cx = basis1[1] * tmp[2] - basis1[2] * tmp[1];

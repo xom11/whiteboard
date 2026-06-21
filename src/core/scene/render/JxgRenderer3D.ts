@@ -81,6 +81,18 @@ export class JxgRenderer3D {
         }
         return;
       }
+      view.removeObject?.(el);
+      // Mặt PHÁI SINH (plane3d construction, render bằng [point, dir1, dir2] điểm-
+      // hàm): JSXGraph createPlane3D tạo internal anchor point3d (_is_new) làm gốc
+      // NHƯNG KHÔNG adopt làm child (khác createLine3D có guard _is_new) →
+      // removeObject(plane) bỏ sót anchor → orphan đọc state-sống MỖI FRAME, tích
+      // luỹ qua mỗi remove+recreate. Dọn thủ công; CHỈ point `_is_new` (KHÔNG đụng
+      // điểm scene thật của mặt 3-điểm — anchor đó không _is_new). Verify adversarial 2026-06-21.
+      const anchor = asObj['point'] as Record<string, unknown> | undefined;
+      if (anchor && typeof anchor === 'object' && anchor['_is_new'] === true) {
+        view.removeObject?.(anchor);
+      }
+      return;
     }
     view.removeObject?.(el);
   }

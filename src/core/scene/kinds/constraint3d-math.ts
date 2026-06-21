@@ -26,6 +26,14 @@ function cross(a: Vec3, b: Vec3): Vec3 {
 function norm(a: Vec3): number { return Math.sqrt(dot(a, a)); }
 function normalize(a: Vec3): Vec3 { const n = norm(a); return n === 0 ? a : scale(a, 1 / n); }
 
+// Chống tràn stack khi State có CHU TRÌNH tham chiếu (điểm/mặt construction trỏ
+// vòng — không tạo được bằng thao tác UI tuần tự, nhưng LOAD JSON hỏng/sửa-tay/
+// AI-gen có thể). Đếm độ sâu đệ quy CHUNG cho constraintToWorld + planeConstruction
+// World; vượt ngưỡng → throw lỗi MÔ TẢ ĐƯỢC (create() bắt + log) thay vì RangeError
+// sập board mỗi frame. (Chu trình thật nên chặn acyclic ở reducer — follow-up.)
+const MAX_REC_DEPTH = 512;
+let _recDepth = 0;
+
 function getPointWorld(id: string, state: State): Vec3 {
   const obj = state.objects[id];
   if (!obj || obj.kind !== 'point3d') {
@@ -67,12 +75,27 @@ function orthoBasisFromNormal(n: Vec3): { basis1: Vec3; basis2: Vec3 } {
 
 // 3 điểm (p1,p2,p3) xác định MẶT phái sinh. Hàm THUẦN — renderer gọi mỗi eval.
 export function planeConstructionWorld(c: Plane3DConstruction, state: State): { p1: Vec3; p2: Vec3; p3: Vec3 } {
+  if (_recDepth >= MAX_REC_DEPTH) throw new Error('planeConstructionWorld: đệ quy quá sâu — chu trình tham chiếu mặt?');
+  _recDepth++;
+  try {
+    return planeConstructionWorldInner(c, state);
+  } finally {
+    _recDepth--;
+  }
+}
+
+function planeConstructionWorldInner(c: Plane3DConstruction, state: State): { p1: Vec3; p2: Vec3; p3: Vec3 } {
   switch (c.kind) {
     case 'planeParallelThrough': {
       const P = getPointWorld(c.point, state);
       const ref = state.objects[c.refPlane];
       if (!ref || ref.kind !== 'plane3d') throw new Error('planeParallelThrough: mặt tham chiếu thiếu');
       const { basis1, basis2 } = getPlaneBasis(ref as SceneObject<Plane3DAttrs>, state);
+      // refPlane suy biến (3 điểm thẳng hàng) → basis2≈0 → mặt phái sinh suy biến.
+      // Fallback cặp chỉ phương chuẩn để mặt vẫn xác định (hữu hạn).
+      if (norm(basis1) < 1e-12 || norm(basis2) < 1e-12) {
+        return { p1: P, p2: add(P, [1, 0, 0]), p3: add(P, [0, 1, 0]) };
+      }
       return { p1: P, p2: add(P, basis1), p3: add(P, basis2) };
     }
     case 'planePerpToLine': {
@@ -164,6 +187,7 @@ export function lineConstructionWorld(c: Line3DConstruction, state: State): { a:
     case 'lineParallelThrough': {
       const P = getPointWorld(c.point, state);
       const dir = sub(getPointWorld(c.dirB, state), getPointWorld(c.dirA, state));
+      if (norm(dir) < 1e-12) return { a: P, b: add(P, [1, 0, 0]) }; // hướng suy biến → fallback hữu hạn (đồng bộ siblings)
       return { a: P, b: add(P, dir) };
     }
     case 'linePerpToPlane': {
@@ -180,6 +204,18 @@ export function lineConstructionWorld(c: Line3DConstruction, state: State): { a:
 }
 
 export function constraintToWorld(c: Constraint3D, state: State): Vec3 {
+  // Check TRƯỚC khi tăng (cân bằng: throw không tăng → finally không decrement
+  // lệch; counter luôn về 0 sau unwind).
+  if (_recDepth >= MAX_REC_DEPTH) throw new Error('constraintToWorld: đệ quy quá sâu — chu trình tham chiếu?');
+  _recDepth++;
+  try {
+    return constraintToWorldInner(c, state);
+  } finally {
+    _recDepth--;
+  }
+}
+
+function constraintToWorldInner(c: Constraint3D, state: State): Vec3 {
   switch (c.kind) {
     case 'free': return [c.x, c.y, c.z];
     case 'onGround': return [c.x, c.y, 0];
