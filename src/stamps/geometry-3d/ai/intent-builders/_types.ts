@@ -50,6 +50,7 @@ export function addShape3dObj(
   label: string,
   attrs: Record<string, unknown>,
   visible = true,
+  registerInNameMap = true,
 ): string {
   const st = s.store.getState();
   const id = `${prefix}${st.counter + 1}`;
@@ -64,6 +65,6 @@ export function addShape3dObj(
     attrs,
   };
   s.store.dispatch({ type: 'ADD', payload: { obj } });
-  if (label) s.nameToId.set(label, id);
+  if (label && registerInNameMap) s.nameToId.set(label, id);
   return id;
 }
