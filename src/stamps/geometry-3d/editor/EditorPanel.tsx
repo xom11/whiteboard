@@ -17,7 +17,8 @@ import { getView3DInfo, hitToHoverLabel } from './editorHelpers';
 import { serializeBoard3D } from '../serialize';
 import { renderGeometry3DSvgFromState } from '../render';
 import { STAMP_PANEL_DESKTOP } from '../../shared/StampLeftPanel/constants';
-import { ToastProvider, ToastHost } from '../../shared/Toast';
+import { ToastProvider, ToastHost, useToast } from '../../shared/Toast';
+import { handleGenerateFigure3d } from '../ai/handleGenerateFigure3d';
 
 export interface EditorPanelProps {
   isDark?: boolean;
@@ -78,6 +79,9 @@ const EditorPanelInner = React.forwardRef<EditorPanelHandle, EditorPanelProps>(
     const [hoverLabel, setHoverLabel] = React.useState<string | null>(null);
     const [ready, setReady] = React.useState(false);
     const [hasContent, setHasContent] = React.useState(false);
+    const [aiText, setAiText] = React.useState('');
+
+    const { showToast } = useToast();
 
     const boardRef = React.useRef<MiniBoard3DHandle | null>(null);
     const rendererRef = React.useRef<JxgRenderer3D | null>(null);
@@ -344,26 +348,64 @@ const EditorPanelInner = React.forwardRef<EditorPanelHandle, EditorPanelProps>(
         </div>
         <StatusHint hint={hint} hoverLabel={hoverLabel} />
         {!isMobile && (
-          <footer className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2">
-            <span className="text-xs text-slate-500">Chọn công cụ bên trái, click trên bảng để dựng hình.</span>
-            <div className="flex gap-2">
+          <>
+            <div className="flex items-center gap-2 border-t border-slate-200 bg-slate-50 px-3 py-2">
+              <input
+                data-testid="ai-generate-3d-input"
+                type="text"
+                value={aiText}
+                onChange={(e) => setAiText(e.target.value)}
+                placeholder="Nhập đề hình không gian…"
+                className="flex-1 rounded border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.currentTarget.blur();
+                    const r = handleGenerateFigure3d({ problem: aiText });
+                    if (r.ok && r.state) {
+                      store.dispatch({ type: 'LOAD', payload: { state: r.state } });
+                    } else {
+                      showToast(r.message ?? 'Không dựng được hình.', { variant: 'error' });
+                    }
+                  }
+                }}
+              />
               <button
-                onClick={onClose}
-                className="rounded border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+                data-testid="ai-generate-3d-btn"
+                type="button"
+                onClick={() => {
+                  const r = handleGenerateFigure3d({ problem: aiText });
+                  if (r.ok && r.state) {
+                    store.dispatch({ type: 'LOAD', payload: { state: r.state } });
+                  } else {
+                    showToast(r.message ?? 'Không dựng được hình.', { variant: 'error' });
+                  }
+                }}
+                className="rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-emerald-700"
               >
-                Huỷ
-              </button>
-              <button
-                onClick={tryInsert}
-                disabled={!ready || !hasContent}
-                title={!hasContent ? 'Vẽ ít nhất một đối tượng trước khi chèn' : undefined}
-                data-testid="geom3d-insert-btn"
-                className="rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50"
-              >
-                Chèn
+                AI dựng hình
               </button>
             </div>
-          </footer>
+            <footer className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-3 py-2">
+              <span className="text-xs text-slate-500">Chọn công cụ bên trái, click trên bảng để dựng hình.</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={onClose}
+                  className="rounded border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+                >
+                  Huỷ
+                </button>
+                <button
+                  onClick={tryInsert}
+                  disabled={!ready || !hasContent}
+                  title={!hasContent ? 'Vẽ ít nhất một đối tượng trước khi chèn' : undefined}
+                  data-testid="geom3d-insert-btn"
+                  className="rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  Chèn
+                </button>
+              </div>
+            </footer>
+          </>
         )}
         <ToastHost />
       </div>
