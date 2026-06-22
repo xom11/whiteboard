@@ -2,8 +2,9 @@ import { cylinderRule } from '../cylinder';
 function clause(text: string, id = 0) { return { id, text, hasGeometry: true }; }
 
 describe('cylinder rule', () => {
-  it('hình trụ standalone → cylinder + 2 điểm', () => {
-    const ctx = { problem: 'Cho hình trụ có thiết diện qua trục là hình vuông.', clauses: [clause('Cho hình trụ có thiết diện qua trục là hình vuông', 0)] };
+  it('hình trụ standalone (không thiết diện) → cylinder + 2 điểm', () => {
+    // Đề axial ("thiết diện qua trục") giờ vẽ thêm hcn mặt cắt — case đó ở cylinderSection.test.ts.
+    const ctx = { problem: 'Cho hình trụ có chiều cao h.', clauses: [clause('Cho hình trụ có chiều cao h', 0)] };
     const m = cylinderRule.match(ctx as any);
     expect(m.length).toBe(1);
     expect(m[0].intents.map((i: any) => i.op)).toContain('cylinder');
