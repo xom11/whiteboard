@@ -1,11 +1,13 @@
 import type { LanguageRule3D, RuleContext3D, RuleMatch3D } from './_types';
 import type { Intent3DT } from '../intent';
-import { coneIntent, addPoint3d, parseSolidHead3D } from './_shared';
+import { coneIntent, addPoint3d, parseSolidHead3D, polygonIntent, sectionNames } from './_shared';
 
 const CUE = /(?:hình|khối)\s*nón/iu;
 const INSCRIBED = /(?:nội|ngoại)\s*tiếp/iu;
 // "đỉnh S" hoặc "đường cao SO" (đỉnh = chữ đầu). Strict /u.
 const APEX = /(?:đỉnh\s+([A-Z])|đường\s+cao\s+([A-Z])([A-Z]))/u;
+// Thiết diện qua trục / mặt phẳng qua trục|đỉnh → vẽ tam giác qua trục.
+const AXIAL = /(?:thiết\s*diện\s*qua\s*trục|(?:mặt\s*phẳng|thiết\s*diện)[^.]*qua\s*(?:trục|đỉnh))/iu;
 
 export const coneRule: LanguageRule3D = {
   id: 'cone',
@@ -27,6 +29,18 @@ export const coneRule: LanguageRule3D = {
       addPoint3d(apexName, { kind: 'free', x: 0, y: 0, z: 1.2 }),
       coneIntent({ baseCenter: baseName, apex: apexName, radius: 1.4 }),
     ];
-    return [{ ruleId: this.id, clauseIds: [c.id], intents }];
+    const clauseIds = [c.id];
+    if (AXIAL.test(ctx.problem)) {
+      // 2 đầu mút đường kính đáy (trên vành R=1.4) + tam giác qua trục [A, đỉnh, B].
+      const [pA, pB] = sectionNames(2, [apexName, baseName]);
+      intents.push(
+        addPoint3d(pA, { kind: 'free', x: -1.4, y: 0, z: -1.2 }),
+        addPoint3d(pB, { kind: 'free', x: 1.4, y: 0, z: -1.2 }),
+        polygonIntent({ vertices: [pA, apexName, pB] }),
+      );
+      const sc = ctx.clauses.find((cl) => AXIAL.test(cl.text));
+      if (sc && sc.id !== c.id) clauseIds.push(sc.id);
+    }
+    return [{ ruleId: this.id, clauseIds, intents }];
   },
 };

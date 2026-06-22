@@ -36,6 +36,18 @@ export function parseSolidHead3D(problem: string): SolidHead3D | null {
   return null;
 }
 
+/** N tên điểm mặt cắt: chữ cái đơn (non-digit, non-`_`) đầu tiên KHÔNG ∈ taken (né nhãn đỉnh/tâm). */
+export function sectionNames(n: number, taken: string[]): string[] {
+  const pool = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'M', 'N', 'P', 'Q'];
+  const used = new Set(taken);
+  const out: string[] = [];
+  for (const x of pool) {
+    if (out.length === n) break;
+    if (!used.has(x)) out.push(x);
+  }
+  return out;
+}
+
 /** Implied base plane (3 base vertices) for "đáy"/"mặt đáy" with no (XYZ) token. */
 export function baseFaceOf(problem: string): { planeName: string; p1: string; p2: string; p3: string } | null {
   const head = parseSolidHead3D(problem);
