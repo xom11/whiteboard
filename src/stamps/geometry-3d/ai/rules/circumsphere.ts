@@ -1,6 +1,6 @@
 import type { LanguageRule3D, RuleContext3D, RuleMatch3D } from './_types';
 import type { Intent3DT } from '../intent';
-import { sphereIntent, addPoint3d, parseSolidHead3D, splitVertexToken } from './_shared';
+import { sphereIntent, addPoint3d, parseSolidHead3D, splitVertexToken, pickCenter } from './_shared';
 
 const CUE = /ngoại\s*tiếp/iu;
 const SPHERE_CUE = /(?:mặt|khối|hình)\s*cầu/iu;
@@ -18,11 +18,6 @@ const TARGET = new RegExp(
 // Base quad non-cyclic trong canonical layout (parallelogram/trapezoid) → cầu vô nghiệm → skip.
 // Siết: shape phải KỀ "đáy [nhãn] (là)" — KHÔNG nuốt "mặt bên là hình bình hành" (mặt ≠ đáy).
 const NON_CYCLIC = /đáy(?:\s+[A-Z'′]+)?\s+(?:là\s+)?(?:hình\s+)?(?:bình\s+hành|thang)/iu;
-
-function pickCenter(vertices: string[]): string {
-  for (const c of ['O', 'I', 'J', 'K', 'T']) if (!vertices.includes(c)) return c;
-  return 'O';
-}
 
 function verticesFromMatch(m: RegExpExecArray): string[] | null {
   if (m[1] && m[2]) return [m[1], ...splitVertexToken(m[2])];                        // chóp S.ABC

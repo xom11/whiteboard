@@ -15,6 +15,7 @@ import { angleLinePlaneRule } from './angleLinePlane';
 import { circumsphereRule } from './circumsphere';
 import { coneRule } from './cone';
 import { cylinderRule } from './cylinder';
+import { insphereCubeRule } from './insphereCube';
 
 const RULES: LanguageRule3D[] = [
   solidRule,                  // priority 90
@@ -33,6 +34,7 @@ const RULES: LanguageRule3D[] = [
   circumsphereRule,           // priority 50
   coneRule,                   // priority 49
   cylinderRule,               // priority 48
+  insphereCubeRule,           // priority 47
 ];
 
 export const ALL_RULES_3D: readonly LanguageRule3D[] = RULES.slice().sort(

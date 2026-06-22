@@ -36,6 +36,12 @@ export function parseSolidHead3D(problem: string): SolidHead3D | null {
   return null;
 }
 
+/** Tên tâm synth: phần tử đầu trong O/I/J/K/T KHÔNG ∈ vertices (non-digit, non-`_`). */
+export function pickCenter(vertices: string[]): string {
+  for (const c of ['O', 'I', 'J', 'K', 'T']) if (!vertices.includes(c)) return c;
+  return 'O';
+}
+
 /** N tên điểm mặt cắt: chữ cái đơn (non-digit, non-`_`) đầu tiên KHÔNG ∈ taken (né nhãn đỉnh/tâm). */
 export function sectionNames(n: number, taken: string[]): string[] {
   const pool = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'M', 'N', 'P', 'Q'];
