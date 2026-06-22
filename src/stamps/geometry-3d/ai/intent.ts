@@ -74,9 +74,16 @@ const CylinderIntentZ = z.object({
   baseCenter: Label3DZ, topCenter: Label3DZ, radius: z.number(),
 });
 
+// Đa giác từ nhãn điểm tường minh (mặt cắt qua trục nón/trụ) → polygon3d.
+const PolygonIntentZ = z.object({
+  op: z.literal('polygon'),
+  name: Label3DZ.optional(),
+  vertices: z.array(Label3DZ).min(3),
+});
+
 export const Intent3DZ = z.discriminatedUnion('op', [
   SolidIntentZ, AddPoint3DIntentZ, Plane3DIntentZ, Line3DIntentZ, Connect3DIntentZ, CrossSectionIntentZ,
-  SphereIntentZ, ConeIntentZ, CylinderIntentZ,
+  SphereIntentZ, ConeIntentZ, CylinderIntentZ, PolygonIntentZ,
 ]);
 export type Intent3DT = z.infer<typeof Intent3DZ>;
 
@@ -121,4 +128,8 @@ export function coneIntent(spec: { name?: string; baseCenter: string; apex: stri
 
 export function cylinderIntent(spec: { name?: string; baseCenter: string; topCenter: string; radius: number }): Intent3DT {
   return { op: 'cylinder', ...spec } as Intent3DT;
+}
+
+export function polygonIntent(spec: { name?: string; vertices: string[] }): Intent3DT {
+  return { op: 'polygon', ...spec } as Intent3DT;
 }

@@ -9,6 +9,7 @@ import { buildCrossSection } from './crossSection';
 import { buildSphere } from './sphere';
 import { buildCone } from './cone';
 import { buildCylinder } from './cylinder';
+import { buildPolygon } from './polygon';
 
 export const OP_BUILDERS_3D: Record<Intent3DT['op'], IntentBuilder3D> = {
   solid: buildSolid,
@@ -20,4 +21,5 @@ export const OP_BUILDERS_3D: Record<Intent3DT['op'], IntentBuilder3D> = {
   sphere: buildSphere,
   cone: buildCone,
   cylinder: buildCylinder,
+  polygon: buildPolygon,
 };

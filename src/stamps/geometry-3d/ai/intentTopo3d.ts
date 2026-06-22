@@ -21,6 +21,7 @@ function producesOf(i: Intent3DT): string[] {
     case 'sphere': return i.name ? [i.name] : [];
     case 'cone': return i.name ? [i.name] : [];
     case 'cylinder': return i.name ? [i.name] : [];
+    case 'polygon': return i.name ? [i.name] : [];
   }
 }
 
