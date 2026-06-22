@@ -248,3 +248,99 @@ test('renders a perpendicular-foot figure for a hình chiếu problem', async ({
 
   expect(errors.join('\n')).not.toMatch(/plane3d|Cannot read|undefined is not/i);
 });
+
+// ───── Phase 5 ─────
+
+// Render-verify cone axial cross-section (thiết diện qua trục): faceted cone (≥8 polygon3d)
+// + 1 axial triangle section → ≥9 polygon3d, no render error.
+test('renders an axial triangle for a cone thiết diện qua trục problem', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+
+  await page.goto('/');
+  await expect(page.locator('[data-testid="dropdown-menu-button"]').first()).toBeVisible({ timeout: 15_000 });
+  await page.locator('[data-testid="dropdown-menu-button"]').first().click();
+  await page.locator('[data-testid="stamp-toolbar-geometry3d"]').click();
+  await expect(page.locator('[data-testid="mini-board-3d"]')).toBeVisible({ timeout: 10_000 });
+  await page.waitForFunction(() => !!(window as any).JXG, undefined, { timeout: 10_000 });
+
+  await page.locator('[data-testid="ai-generate-3d-input"]').fill(
+    'Cho hình nón đỉnh S. Thiết diện qua trục là tam giác đều.',
+  );
+  await page.locator('[data-testid="ai-generate-3d-btn"]').click();
+
+  await page.waitForFunction(() => {
+    const JXG = (window as any).JXG;
+    if (!JXG?.boards) return false;
+    for (const b of Object.values(JXG.boards) as any[]) {
+      const polys = Object.values(b.objects).filter((o: any) => o.elType === 'polygon3d');
+      if (polys.length >= 9) return true; // faceted cone (≥8) + axial triangle (1)
+    }
+    return false;
+  }, undefined, { timeout: 8_000 });
+
+  expect(errors.join('\n')).not.toMatch(/polygon3d|cone3d|Cannot read|undefined is not/i);
+});
+
+// Render-verify cylinder axial cross-section: faceted cylinder (≥8 polygon3d)
+// + 1 axial rectangle section → ≥9 polygon3d, no render error.
+test('renders an axial rectangle for a cylinder thiết diện qua trục problem', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+
+  await page.goto('/');
+  await expect(page.locator('[data-testid="dropdown-menu-button"]').first()).toBeVisible({ timeout: 15_000 });
+  await page.locator('[data-testid="dropdown-menu-button"]').first().click();
+  await page.locator('[data-testid="stamp-toolbar-geometry3d"]').click();
+  await expect(page.locator('[data-testid="mini-board-3d"]')).toBeVisible({ timeout: 10_000 });
+  await page.waitForFunction(() => !!(window as any).JXG, undefined, { timeout: 10_000 });
+
+  await page.locator('[data-testid="ai-generate-3d-input"]').fill(
+    'Cho hình trụ có thiết diện qua trục là hình chữ nhật.',
+  );
+  await page.locator('[data-testid="ai-generate-3d-btn"]').click();
+
+  await page.waitForFunction(() => {
+    const JXG = (window as any).JXG;
+    if (!JXG?.boards) return false;
+    for (const b of Object.values(JXG.boards) as any[]) {
+      const polys = Object.values(b.objects).filter((o: any) => o.elType === 'polygon3d');
+      if (polys.length >= 9) return true; // faceted cylinder (≥8) + axial rectangle (1)
+    }
+    return false;
+  }, undefined, { timeout: 8_000 });
+
+  expect(errors.join('\n')).not.toMatch(/polygon3d|cylinder3d|Cannot read|undefined is not/i);
+});
+
+// Render-verify mặt cầu nội tiếp lập phương: a wireframe cube (≥12 line3d edges) + inscribed
+// sphere3d, no render error.
+test('renders an inscribed sphere for a mặt cầu nội tiếp lập phương problem', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+
+  await page.goto('/');
+  await expect(page.locator('[data-testid="dropdown-menu-button"]').first()).toBeVisible({ timeout: 15_000 });
+  await page.locator('[data-testid="dropdown-menu-button"]').first().click();
+  await page.locator('[data-testid="stamp-toolbar-geometry3d"]').click();
+  await expect(page.locator('[data-testid="mini-board-3d"]')).toBeVisible({ timeout: 10_000 });
+  await page.waitForFunction(() => !!(window as any).JXG, undefined, { timeout: 10_000 });
+
+  await page.locator('[data-testid="ai-generate-3d-input"]').fill(
+    'Mặt cầu nội tiếp hình lập phương cạnh a.',
+  );
+  await page.locator('[data-testid="ai-generate-3d-btn"]').click();
+
+  await page.waitForFunction(() => {
+    const JXG = (window as any).JXG;
+    if (!JXG?.boards) return false;
+    for (const b of Object.values(JXG.boards) as any[]) {
+      const spheres = Object.values(b.objects).filter((o: any) => o.elType === 'sphere3d');
+      const edges = Object.values(b.objects).filter((o: any) => o.elType === 'line3d');
+      if (spheres.length >= 1 && edges.length >= 12) return true; // inscribed sphere + 12 cube edges
+    }
+    return false;
+  }, undefined, { timeout: 8_000 });
+
+  expect(errors.join('\n')).not.toMatch(/sphere3d|polygon3d|Cannot read|undefined is not/i);
+});
