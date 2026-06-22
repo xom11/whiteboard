@@ -4,8 +4,9 @@ import { cylinderIntent, addPoint3d, parseSolidHead3D, polygonIntent, sectionNam
 
 const CUE = /(?:hình|khối)\s*trụ/iu;
 const INSCRIBED = /(?:nội|ngoại)\s*tiếp/iu;
-// Thiết diện qua trục / mặt phẳng qua trục → vẽ hình chữ nhật qua trục.
-const AXIAL = /(?:thiết\s*diện\s*qua\s*trục|(?:mặt\s*phẳng|thiết\s*diện)[^.]*qua\s*(?:trục|đỉnh))/iu;
+// Thiết diện qua trục / mặt phẳng (đi) qua trục → vẽ hình chữ nhật qua trục.
+// Trụ KHÔNG có đỉnh ⟹ chỉ "qua trục" (không "qua đỉnh"). Bound [^.]{0,40} chống nuốt cross-clause.
+const AXIAL = /(?:thiết\s*diện\s*qua\s*trục|(?:mặt\s*phẳng|thiết\s*diện)[^.]{0,40}qua\s*trục)/iu;
 
 export const cylinderRule: LanguageRule3D = {
   id: 'cylinder',

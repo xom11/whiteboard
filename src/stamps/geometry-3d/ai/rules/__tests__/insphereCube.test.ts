@@ -24,12 +24,15 @@ describe('insphereCube rule', () => {
     expect(cen).toBeDefined();
   });
 
-  it('lập phương CÓ nhãn → reference 8 đỉnh, KHÔNG emit box (solidRule lo)', () => {
+  it('lập phương CÓ nhãn → escalate (return []); solidRule vẽ box, KHÔNG thêm cầu sai', () => {
+    // Layout box không vuông-cạnh-đều → cầu nội tiếp sai mặt; verify (R>0) không bắt. Escalate.
     const ctx = { problem: 'Cho hình lập phương ABCD.A′B′C′D′. Mặt cầu nội tiếp hình lập phương đó.', clauses: [clause('Mặt cầu nội tiếp hình lập phương', 0)] };
-    const m = insphereCubeRule.match(ctx as any);
-    expect(m[0].intents.map((i: any) => i.op)).not.toContain('solid');
-    const cen = m[0].intents.find((i: any) => i.constraint?.kind === 'centroid' && i.constraint.vertices.length === 8) as any;
-    expect(cen.constraint.vertices).toEqual(['A', 'B', 'C', 'D', 'A′', 'B′', 'C′', 'D′']);
+    expect(insphereCubeRule.match(ctx as any).length).toBe(0);
+  });
+
+  it('hình hộp chữ nhật KHÔNG fire (không có mặt cầu nội tiếp)', () => {
+    const ctx = { problem: 'Mặt cầu nội tiếp hình hộp chữ nhật.', clauses: [clause('Mặt cầu nội tiếp hình hộp chữ nhật', 0)] };
+    expect(insphereCubeRule.match(ctx as any).length).toBe(0);
   });
 
   it('co-firing: lập phương vô nhãn → 0 solid (khung dây), 1 sphere, cone/cylinder skip', () => {
@@ -40,10 +43,11 @@ describe('insphereCube rule', () => {
     expect(ops.filter((o: string) => o === 'connect').length).toBe(12);
   });
 
-  it('co-firing: lập phương CÓ nhãn → đúng 1 box (solidRule, KHÔNG dup từ insphere)', () => {
+  it('co-firing: lập phương CÓ nhãn → đúng 1 box (solidRule), 0 sphere (insphere escalate)', () => {
     const p = 'Cho hình lập phương ABCD.A′B′C′D′. Mặt cầu nội tiếp hình lập phương.';
     const ops = runRules3D(ctxOf(p)).flatMap((mm) => mm.intents).map((i: any) => i.op);
-    expect(ops.filter((o: string) => o === 'solid').length).toBe(1);
+    expect(ops.filter((o: string) => o === 'solid').length).toBe(1); // solidRule vẽ box
+    expect(ops.filter((o: string) => o === 'sphere').length).toBe(0); // insphere escalate (box không-cube)
   });
 
   it('e2e numeric: sphere R>0, verify ok', () => {

@@ -6,8 +6,9 @@ const CUE = /(?:hình|khối)\s*nón/iu;
 const INSCRIBED = /(?:nội|ngoại)\s*tiếp/iu;
 // "đỉnh S" hoặc "đường cao SO" (đỉnh = chữ đầu). Strict /u.
 const APEX = /(?:đỉnh\s+([A-Z])|đường\s+cao\s+([A-Z])([A-Z]))/u;
-// Thiết diện qua trục / mặt phẳng qua trục|đỉnh → vẽ tam giác qua trục.
-const AXIAL = /(?:thiết\s*diện\s*qua\s*trục|(?:mặt\s*phẳng|thiết\s*diện)[^.]*qua\s*(?:trục|đỉnh))/iu;
+// Thiết diện qua trục / mặt phẳng (đi) qua trục|đỉnh(=đỉnh nón) → vẽ tam giác qua trục.
+// Bound [^.]{0,40} để không nuốt cross-clause (vd "mặt phẳng cắt … rồi qua đỉnh A của tam giác").
+const AXIAL = /(?:thiết\s*diện\s*qua\s*trục|(?:mặt\s*phẳng|thiết\s*diện)[^.]{0,40}qua\s*(?:trục|đỉnh))/iu;
 
 export const coneRule: LanguageRule3D = {
   id: 'cone',
