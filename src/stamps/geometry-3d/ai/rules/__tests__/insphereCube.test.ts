@@ -10,16 +10,16 @@ function ctxOf(problem: string) {
 }
 
 describe('insphereCube rule', () => {
-  it('lập phương vô nhãn → box + 2 centroid + sphere', () => {
+  it('lập phương vô nhãn → khung dây cube (8 đỉnh + 12 cạnh) + 2 centroid + sphere (KHÔNG solid box)', () => {
     const ctx = { problem: 'Mặt cầu nội tiếp hình lập phương cạnh a.', clauses: [clause('Mặt cầu nội tiếp hình lập phương cạnh a', 0)] };
     const m = insphereCubeRule.match(ctx as any);
     expect(m.length).toBe(1);
     const ops = m[0].intents.map((i: any) => i.op);
-    expect(ops).toContain('solid');           // box tự dựng (vô nhãn)
+    // Layout box KHÔNG-cube ⟹ tự dựng cube free-coord (khung dây), KHÔNG dùng solid box.
+    expect(ops).not.toContain('solid');
+    expect(ops.filter((o: string) => o === 'connect').length).toBe(12); // 12 cạnh cube
     expect(ops).toContain('sphere');
-    expect(ops.filter((o: string) => o === 'add-point-3d').length).toBe(2); // tâm + tâm-mặt
-    const sol = m[0].intents.find((i: any) => i.op === 'solid') as any;
-    expect(sol.flavor).toBe('box');
+    expect(ops.filter((o: string) => o === 'add-point-3d').length).toBe(10); // 8 đỉnh + tâm + tâm-mặt
     const cen = m[0].intents.find((i: any) => i.constraint?.kind === 'centroid' && i.constraint.vertices.length === 8) as any;
     expect(cen).toBeDefined();
   });
@@ -32,11 +32,12 @@ describe('insphereCube rule', () => {
     expect(cen.constraint.vertices).toEqual(['A', 'B', 'C', 'D', 'A′', 'B′', 'C′', 'D′']);
   });
 
-  it('co-firing: lập phương vô nhãn → 1 box (insphere), cone/cylinder skip', () => {
+  it('co-firing: lập phương vô nhãn → 0 solid (khung dây), 1 sphere, cone/cylinder skip', () => {
     const p = 'Mặt cầu nội tiếp hình lập phương cạnh a.';
     const ops = runRules3D(ctxOf(p)).flatMap((mm) => mm.intents).map((i: any) => i.op);
-    expect(ops.filter((o: string) => o === 'solid').length).toBe(1); // chỉ insphere
+    expect(ops.filter((o: string) => o === 'solid').length).toBe(0); // solidRule không fire (vô nhãn); insphere dựng khung dây
     expect(ops.filter((o: string) => o === 'sphere').length).toBe(1);
+    expect(ops.filter((o: string) => o === 'connect').length).toBe(12);
   });
 
   it('co-firing: lập phương CÓ nhãn → đúng 1 box (solidRule, KHÔNG dup từ insphere)', () => {
