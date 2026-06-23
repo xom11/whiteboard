@@ -33,6 +33,17 @@ function buildCircleBase(
   return { centerName, radiusTo: midName, intents }; // trung điểm cạnh = chân ⊥ tâm (mặt đều)
 }
 
+// Tâm đáy thứ 2 (top) của trụ lăng-trụ: centroid/faceCircumcenter của mặt top, tránh trùng tên.
+function topCenterIntent(topVerts: string[], circum: boolean, taken: string[]): { name: string; intent: Intent3DT } {
+  const name = pickCenter([...topVerts, ...taken]);
+  return {
+    name,
+    intent: circum
+      ? addPoint3d(name, { kind: 'faceCircumcenter', vertices: topVerts })
+      : addPoint3d(name, { kind: 'centroid', vertices: topVerts }),
+  };
+}
+
 // Nón/trụ nội/ngoại tiếp MẶT đa diện. Bán kính phái sinh (inradius/circumradius mặt) qua radiusTo.
 // Coexist solidRule@90 (host vẽ riêng). Render ⊥-trục (perpBasis) ⟹ đáy nghiêng (tetra slant face) đúng.
 export const inscribedRoundSolidRule: LanguageRule3D = {
@@ -46,17 +57,17 @@ export const inscribedRoundSolidRule: LanguageRule3D = {
       (cl) => ROUND.test(cl.text) && INSCRIBED.test(cl.text) && (/đường\s*tròn/iu.test(cl.text) || /đáy/iu.test(cl.text)),
     );
     if (!c) return [];
-    const faceM = FACE.exec(c.text);
-    if (!faceM) return [];
-    const faceVerts = splitVertexToken(faceM[1]);
-    if (faceVerts.length < 3) return [];
     const circum = NGOAI.test(c.text);
-    if (!circum && !REGULAR.test(ctx.problem)) return []; // incircle mặt không-đều → defer faceIncenter
     const isCone = CONE_T.test(c.text);
 
+    // ── Nón: CHỈ right-cone (đỉnh trên tâm đáy) ⟹ host chóp đều (đáy ngang, apex trên centroid).
+    // Nón trên mặt tứ diện (đỉnh = đỉnh đáy, vd 88c) = nón XIÊN → defer (cone3d chỉ right-cone).
     if (isCone) {
-      // Nón nội/ngoại tiếp: CHỈ right-cone (đỉnh trên tâm đáy) ⟹ host chóp đều (đáy ngang, apex trên
-      // centroid). Nón trên mặt tứ diện (đỉnh = đỉnh đáy, vd 88c) = nón XIÊN → defer (cone3d right-cone).
+      const faceM = FACE.exec(c.text);
+      if (!faceM) return [];
+      const faceVerts = splitVertexToken(faceM[1]);
+      if (faceVerts.length < 3) return [];
+      if (!circum && !REGULAR.test(ctx.problem)) return []; // incircle mặt không-đều → defer faceIncenter
       const py = parsePyramidTolerant(ctx.problem);
       if (!py) return [];
       const apexM = APEX.exec(c.text);
@@ -74,8 +85,41 @@ export const inscribedRoundSolidRule: LanguageRule3D = {
       return [{ ruleId: this.id, clauseIds: [c.id], intents }];
     }
 
-    // Trụ → Task B4.2 (tứ diện slant face / lăng trụ). Tránh lint unused TETRA/PRISM/cylinderIntent.
-    void TETRA; void PRISM; void cylinderIntent;
+    // ── Trụ ──
+    // Lăng trụ: 2 đáy của TRỤ = 2 mặt đáy lăng trụ (từ head, KHÔNG cần "tam giác" trong clause).
+    const prismM = PRISM.exec(ctx.problem);
+    if (prismM) {
+      const baseVerts = splitVertexToken(prismM[1]);
+      const topVerts = splitVertexToken(prismM[2]);
+      if (baseVerts.length < 3) return [];
+      if (!circum && !REGULAR.test(ctx.problem)) return [];
+      const bc = buildCircleBase(baseVerts, circum, []);
+      const tc = topCenterIntent(topVerts, circum, [bc.centerName, bc.radiusTo]);
+      return [{
+        ruleId: this.id, clauseIds: [c.id],
+        intents: [...bc.intents, tc.intent, cylinderIntent({ baseCenter: bc.centerName, topCenter: tc.name, radiusTo: bc.radiusTo })],
+      }];
+    }
+
+    // Tứ diện đều: trụ đứng trên mặt `face` (nội/ngoại tiếp); topCenter = đỉnh ĐỐI DIỆN mặt
+    // (regular tetra: đỉnh đối chiếu xuống tâm mặt ⟹ trục ⊥ mặt). face named trong clause.
+    const tetraM = TETRA.exec(ctx.problem);
+    if (tetraM) {
+      const faceM = FACE.exec(c.text);
+      if (!faceM) return [];
+      const faceVerts = splitVertexToken(faceM[1]);
+      if (faceVerts.length < 3) return [];
+      if (!circum && !REGULAR.test(ctx.problem)) return [];
+      const baseV = splitVertexToken(tetraM[1]);
+      const opp = baseV.find((v) => !faceVerts.includes(v));
+      if (!opp) return [];
+      const bc = buildCircleBase(faceVerts, circum, [opp]);
+      return [{
+        ruleId: this.id, clauseIds: [c.id],
+        intents: [...bc.intents, cylinderIntent({ baseCenter: bc.centerName, topCenter: opp, radiusTo: bc.radiusTo })],
+      }];
+    }
+
     return [];
   },
 };
