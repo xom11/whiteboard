@@ -29,9 +29,10 @@ describe('solids co-firing', () => {
     expect(count(p, 'cone')).toBe(0);
   });
 
-  it('chóp + nón nội tiếp: solid fires, cone KHÔNG (compound deferred)', () => {
-    const p = 'Cho hình chóp S.ABCD. Khối nón đỉnh S đáy nội tiếp ABCD.';
-    expect(count(p, 'cone')).toBe(0);
-    expect(count(p, 'solid')).toBe(1);
+  it('chóp tứ giác đều + nón nội tiếp (Phase 5b): cone nội tiếp + solid fire (inscribedRoundSolid)', () => {
+    // Phase 5b GỠ defer: nón/trụ nội-ngoại tiếp mặt → inscribedRoundSolid (coneRule cũ vẫn bail INSCRIBED).
+    const p = 'Cho hình chóp tứ giác đều S.ABCD. Khối nón có đỉnh S và đường tròn đáy nội tiếp tứ giác ABCD.';
+    expect(count(p, 'cone')).toBe(1);  // inscribedRoundSolid
+    expect(count(p, 'solid')).toBe(1); // tự vẽ (solidRule miss "tứ giác đều")
   });
 });
