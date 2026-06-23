@@ -62,16 +62,22 @@ const SphereIntentZ = z.object({
   surfacePoint: Label3DZ,
 });
 
+// radius: số literal (standalone Phase 4) HOẶC radiusTo: điểm trên đường tròn đáy
+// (bán kính phái sinh — builder tính khoảng cách ⊥ trục lúc build, Phase 5b).
 const ConeIntentZ = z.object({
   op: z.literal('cone'),
   name: Label3DZ.optional(),
-  baseCenter: Label3DZ, apex: Label3DZ, radius: z.number(),
+  baseCenter: Label3DZ, apex: Label3DZ,
+  radius: z.number().optional(),
+  radiusTo: Label3DZ.optional(),
 });
 
 const CylinderIntentZ = z.object({
   op: z.literal('cylinder'),
   name: Label3DZ.optional(),
-  baseCenter: Label3DZ, topCenter: Label3DZ, radius: z.number(),
+  baseCenter: Label3DZ, topCenter: Label3DZ,
+  radius: z.number().optional(),
+  radiusTo: Label3DZ.optional(),
 });
 
 // Đa giác từ nhãn điểm tường minh (mặt cắt qua trục nón/trụ) → polygon3d.
@@ -122,11 +128,11 @@ export function sphereIntent(spec: { name?: string; center: string; surfacePoint
   return { op: 'sphere', ...spec } as Intent3DT;
 }
 
-export function coneIntent(spec: { name?: string; baseCenter: string; apex: string; radius: number }): Intent3DT {
+export function coneIntent(spec: { name?: string; baseCenter: string; apex: string; radius?: number; radiusTo?: string }): Intent3DT {
   return { op: 'cone', ...spec } as Intent3DT;
 }
 
-export function cylinderIntent(spec: { name?: string; baseCenter: string; topCenter: string; radius: number }): Intent3DT {
+export function cylinderIntent(spec: { name?: string; baseCenter: string; topCenter: string; radius?: number; radiusTo?: string }): Intent3DT {
   return { op: 'cylinder', ...spec } as Intent3DT;
 }
 
