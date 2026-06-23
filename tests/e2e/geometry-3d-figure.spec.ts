@@ -401,8 +401,8 @@ test('renders an inscribed cone for a nón đáy nội tiếp problem', async ({
   expect(errors.join('\n')).not.toMatch(/cone3d|polygon3d|Cannot read|undefined is not/i);
 });
 
-// Trụ nội tiếp tứ diện trên mặt nghiêng BCD (Câu 73): tetra 4 mặt + trụ faceted ⊥ trục nghiêng.
-test('renders an inscribed cylinder for a trụ đáy nội tiếp tam giác problem', async ({ page }) => {
+// Trụ nội tiếp lăng trụ tam giác (Câu 75, trục ĐỨNG): prism 5 mặt + trụ faceted ≥8 → ≥13 polygon3d.
+test('renders an inscribed cylinder for a trụ nội tiếp lăng trụ problem', async ({ page }) => {
   const errors: string[] = [];
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   await page.goto('/');
@@ -412,7 +412,7 @@ test('renders an inscribed cylinder for a trụ đáy nội tiếp tam giác pro
   await expect(page.locator('[data-testid="mini-board-3d"]')).toBeVisible({ timeout: 10_000 });
   await page.waitForFunction(() => !!(window as any).JXG, undefined, { timeout: 10_000 });
   await page.locator('[data-testid="ai-generate-3d-input"]').fill(
-    'Cho tứ diện đều ABCD. Hình trụ có một đường tròn đáy là đường tròn nội tiếp tam giác BCD và chiều cao bằng chiều cao của tứ diện.',
+    'Cho hình lăng trụ đều ABC.A′B′C′ có cạnh đáy bằng a. Thể tích của hình trụ có hai đáy nội tiếp hình lăng trụ.',
   );
   await page.locator('[data-testid="ai-generate-3d-btn"]').click();
   await page.waitForFunction(() => {
