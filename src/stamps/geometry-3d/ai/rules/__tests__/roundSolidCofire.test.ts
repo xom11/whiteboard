@@ -6,10 +6,10 @@ const count = (p: string, op: string) =>
   runRules3D(ctxOf(p)).flatMap((m) => m.intents).filter((i: any) => i.op === op).length;
 
 describe('inscribedRoundSolid co-firing', () => {
-  it('Câu 73 trụ trên mặt nghiêng tứ diện: DEFER (render lệch) → 0 cylinder, chỉ solid(tetra) của solidRule', () => {
+  it('Câu 73 trụ trên mặt nghiêng tứ diện (Phase 6): 1 cylinder (trục ⊥ mặt qua pointAboveFace) + 1 solid(tetra), KHÔNG dup', () => {
     const p = 'Cho tứ diện đều ABCD. Hình trụ có một đường tròn đáy là đường tròn nội tiếp tam giác BCD và chiều cao bằng chiều cao của tứ diện.';
-    expect(count(p, 'cylinder')).toBe(0); // inscribedRoundSolid defer tetra-slant-face
-    expect(count(p, 'solid')).toBe(1);    // solidRule vẽ tứ diện (không regression)
+    expect(count(p, 'cylinder')).toBe(1); // inscribedRoundSolid nhánh tetra-face
+    expect(count(p, 'solid')).toBe(1);    // solidRule vẽ tứ diện (rule reference, không dup)
   });
 
   it('Câu 75 trụ nội tiếp lăng trụ (trục đứng): 1 cylinder + 1 solid(prism) + 0 sphere/cone', () => {
