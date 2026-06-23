@@ -29,7 +29,10 @@ export type Constraint3D =
   // Tâm mặt cầu nội tiếp chóp (cách đều đáy + mọi mặt bên — trên trục chóp đều).
   | { kind: 'pyramidInsphereCenter'; apex: string; vertices: string[] }
   // Tâm đường tròn ngoại tiếp mặt (tam giác — 3 đỉnh đầu): trong mặt + cách đều đỉnh.
-  | { kind: 'faceCircumcenter'; vertices: string[] };
+  | { kind: 'faceCircumcenter'; vertices: string[] }
+  // Tâm đáy-TRÊN của trụ đứng ⊥ MẶT (tứ diện): tâm mặt `base` offset dọc pháp tuyến mặt
+  // (3 đỉnh đầu `vertices`) một đoạn = chiều cao ⊥ từ `apex` (đỉnh đối) tới mặt-phẳng.
+  | { kind: 'pointAboveFace'; base: string; apex: string; vertices: string[] };
 
 export function constraintRefs(c: Constraint3D): string[] {
   switch (c.kind) {
@@ -46,6 +49,7 @@ export function constraintRefs(c: Constraint3D): string[] {
     case 'circumsphereCenter': return [...c.vertices];
     case 'pyramidInsphereCenter': return [c.apex, ...c.vertices];
     case 'faceCircumcenter': return [...c.vertices];
+    case 'pointAboveFace': return [c.base, c.apex, ...c.vertices];
     // Kind KHÔNG có ref scene-object (toạ độ literal): liệt kê TƯỜNG MINH để
     // exhaustive never-guard bên dưới buộc khai báo khi thêm constraint kind mới
     // (mô phỏng constraintRefs2D — quên case = cascade-delete/deps sai âm thầm).

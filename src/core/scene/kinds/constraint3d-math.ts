@@ -351,6 +351,19 @@ function constraintToWorldInner(c: Constraint3D, state: State): Vec3 {
       if (sol) return sol;
       return scale(add(add(p0, p1), p2), 1 / 3); // suy biến (collinear) → centroid hữu hạn
     }
+    case 'pointAboveFace': {
+      // Tâm đáy-TRÊN của trụ đứng ⊥ MẶT (tứ diện): tâm mặt + (chiều cao ⊥ đỉnh-đối→mặt)·pháp
+      // tuyến ⟹ trục topCenter−base ⊥ mặt dù layout tứ diện không-đều (trục đúng, vành nằm trên mặt).
+      const G = getPointWorld(c.base, state);
+      const P = c.vertices.map((id) => getPointWorld(id, state));
+      if (P.length < 3) return G;
+      let n = normalize(cross(sub(P[1], P[0]), sub(P[2], P[0])));
+      const S = getPointWorld(c.apex, state);
+      if (dot(n, sub(S, P[0])) < 0) n = scale(n, -1); // hướng về đỉnh đối
+      const h = dot(sub(S, P[0]), n);                 // chiều cao ⊥ đỉnh→mặt-phẳng
+      if (!Number.isFinite(h) || h <= 1e-9) return G; // suy biến → trùng base (hữu hạn)
+      return add(G, scale(n, h));
+    }
     case 'intersectionLines': {
       const A = getPointWorld(c.a1, state), B = getPointWorld(c.b1, state);
       const C = getPointWorld(c.a2, state), D = getPointWorld(c.b2, state);
@@ -476,6 +489,7 @@ export function worldToConstraint(current: Constraint3D, world: Vec3, state: Sta
     case 'circumsphereCenter':
     case 'pyramidInsphereCenter':
     case 'faceCircumcenter':
+    case 'pointAboveFace':
       return current;
     default: {
       const _exhaustive: never = current;
