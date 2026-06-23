@@ -176,6 +176,26 @@ export function verifyFigure3d(state: State): { ok: boolean; issues: string[] } 
         issues.push(`${obj.label || obj.id}: pyramidInsphereCenter check lỗi — ${(e as Error).message}`);
       }
     }
+
+    // Kiểm faceCircumcenter: trong mặt + cách đều 3 đỉnh
+    if (c.kind === 'faceCircumcenter') {
+      try {
+        const P = (c.vertices as string[]).map((id) => ptWorld(state, id));
+        if (P.length >= 3) {
+          const f = planeFrame(P[0], P[1], P[2]);
+          if (Math.abs(signedDistance(w, f)) > 1e-6) issues.push(`${obj.label || obj.id}: tâm ngoại tiếp không nằm trên mặt`);
+          const r0 = Math.hypot(w[0] - P[0][0], w[1] - P[0][1], w[2] - P[0][2]);
+          const tol = 1e-6 * Math.max(1, r0);
+          for (const p of P) {
+            if (Math.abs(Math.hypot(w[0] - p[0], w[1] - p[1], w[2] - p[2]) - r0) > tol) {
+              issues.push(`${obj.label || obj.id}: tâm ngoại tiếp không cách đều đỉnh`); break;
+            }
+          }
+        }
+      } catch (e) {
+        issues.push(`${obj.label || obj.id}: faceCircumcenter check lỗi — ${(e as Error).message}`);
+      }
+    }
   }
 
   // Kiểm tra sphere3d: bán kính = |surface − center| hữu hạn > 0
