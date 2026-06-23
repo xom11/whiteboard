@@ -196,6 +196,34 @@ export function verifyFigure3d(state: State): { ok: boolean; issues: string[] } 
         issues.push(`${obj.label || obj.id}: faceCircumcenter check lỗi — ${(e as Error).message}`);
       }
     }
+
+    // Kiểm pointAboveFace: w−base ∥ pháp tuyến mặt (trên trục ⊥ mặt) + |w−base| = dist(apex, mặt-phẳng)
+    if (c.kind === 'pointAboveFace') {
+      try {
+        const G = ptWorld(state, c.base);
+        const P = (c.vertices as string[]).map((id) => ptWorld(state, id));
+        const S = ptWorld(state, c.apex);
+        if (P.length >= 3) {
+          const f = planeFrame(P[0], P[1], P[2]);
+          const d: Vec3 = [w[0] - G[0], w[1] - G[1], w[2] - G[2]];
+          const cx: Vec3 = [
+            d[1] * f.normal[2] - d[2] * f.normal[1],
+            d[2] * f.normal[0] - d[0] * f.normal[2],
+            d[0] * f.normal[1] - d[1] * f.normal[0],
+          ];
+          const dlen = Math.hypot(d[0], d[1], d[2]);
+          if (Math.hypot(cx[0], cx[1], cx[2]) > 1e-6 * Math.max(1, dlen)) {
+            issues.push(`${obj.label || obj.id}: pointAboveFace không trên trục ⊥ mặt`);
+          }
+          const hExp = Math.abs(signedDistance(S, f));
+          if (Math.abs(dlen - hExp) > 1e-6 * Math.max(1, hExp)) {
+            issues.push(`${obj.label || obj.id}: pointAboveFace sai chiều cao`);
+          }
+        }
+      } catch (e) {
+        issues.push(`${obj.label || obj.id}: pointAboveFace check lỗi — ${(e as Error).message}`);
+      }
+    }
   }
 
   // Kiểm tra sphere3d: bán kính = |surface − center| hữu hạn > 0
