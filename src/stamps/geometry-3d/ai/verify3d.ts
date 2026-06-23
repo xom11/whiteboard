@@ -149,6 +149,33 @@ export function verifyFigure3d(state: State): { ok: boolean; issues: string[] } 
         issues.push(`${obj.label || obj.id}: circumsphereCenter check lỗi — ${(e as Error).message}`);
       }
     }
+
+    // Kiểm pyramidInsphereCenter: tâm trên trục chóp (collinear apex-G-tâm) + cách đều đáy/mặt bên
+    if (c.kind === 'pyramidInsphereCenter') {
+      try {
+        const S = ptWorld(state, c.apex);
+        const base = (c.vertices as string[]).map((id) => ptWorld(state, id));
+        if (base.length >= 3) {
+          const G: Vec3 = [0, 0, 0];
+          for (const p of base) { G[0] += p[0]; G[1] += p[1]; G[2] += p[2]; }
+          G[0] /= base.length; G[1] /= base.length; G[2] /= base.length;
+          const pg: Vec3 = [w[0] - G[0], w[1] - G[1], w[2] - G[2]];
+          const sg: Vec3 = [S[0] - G[0], S[1] - G[1], S[2] - G[2]];
+          const cr: Vec3 = [pg[1] * sg[2] - pg[2] * sg[1], pg[2] * sg[0] - pg[0] * sg[2], pg[0] * sg[1] - pg[1] * sg[0]];
+          if (Math.hypot(cr[0], cr[1], cr[2]) > 1e-6) issues.push(`${obj.label || obj.id}: tâm cầu nội tiếp không trên trục chóp`);
+          const fb = planeFrame(base[0], base[1], base[2]);
+          const dBase = Math.abs(signedDistance(w, fb));
+          for (let i = 0; i < base.length; i++) {
+            const lf = planeFrame(S, base[i], base[(i + 1) % base.length]);
+            if (Math.abs(Math.abs(signedDistance(w, lf)) - dBase) > 1e-6 * Math.max(1, dBase)) {
+              issues.push(`${obj.label || obj.id}: mặt cầu nội tiếp chóp không tiếp xúc đều đáy/mặt bên`); break;
+            }
+          }
+        }
+      } catch (e) {
+        issues.push(`${obj.label || obj.id}: pyramidInsphereCenter check lỗi — ${(e as Error).message}`);
+      }
+    }
   }
 
   // Kiểm tra sphere3d: bán kính = |surface − center| hữu hạn > 0
