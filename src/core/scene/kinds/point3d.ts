@@ -54,6 +54,7 @@ const def: KindDef<Point3DAttrs> = {
     if (c.kind === 'perpFootLine') return `${obj.label} = chân ⊥ từ ${c.from} xuống ${c.a}${c.b}`;
     if (c.kind === 'perpFootPlane') return `${obj.label} = chân ⊥ từ ${c.from} xuống ${c.plane}`;
     if (c.kind === 'pyramidInsphereCenter') return `${obj.label} = tâm cầu nội tiếp chóp ${c.apex}.${c.vertices.join('')}`;
+    if (c.kind === 'faceCircumcenter') return `${obj.label} = tâm ngoại tiếp ${c.vertices.join('')}`;
     return obj.label;
   },
   render: (obj, ctx: RenderCtx) => {

@@ -334,6 +334,23 @@ function constraintToWorldInner(c: Constraint3D, state: State): Vec3 {
       }
       return add(G, scale(nb, s));
     }
+    case 'faceCircumcenter': {
+      // Tâm ngoại tiếp tam giác (3 đỉnh đầu) trong 3D: giải 3×3 [2(P1−P0); 2(P2−P0); n]·O = rhs.
+      const P = c.vertices.map((id) => getPointWorld(id, state));
+      if (P.length < 3) return P.length ? P[0] : [0, 0, 0];
+      const [p0, p1, p2] = P;
+      const e1 = sub(p1, p0), e2 = sub(p2, p0);
+      const nrm = cross(e1, e2);
+      const M = [
+        [2 * e1[0], 2 * e1[1], 2 * e1[2]],
+        [2 * e2[0], 2 * e2[1], 2 * e2[2]],
+        [nrm[0], nrm[1], nrm[2]],
+      ];
+      const rhs: Vec3 = [dot(p1, p1) - dot(p0, p0), dot(p2, p2) - dot(p0, p0), dot(nrm, p0)];
+      const sol = solve3(M, rhs);
+      if (sol) return sol;
+      return scale(add(add(p0, p1), p2), 1 / 3); // suy biến (collinear) → centroid hữu hạn
+    }
     case 'intersectionLines': {
       const A = getPointWorld(c.a1, state), B = getPointWorld(c.b1, state);
       const C = getPointWorld(c.a2, state), D = getPointWorld(c.b2, state);
@@ -458,6 +475,7 @@ export function worldToConstraint(current: Constraint3D, world: Vec3, state: Sta
     case 'perpFootPlane':
     case 'circumsphereCenter':
     case 'pyramidInsphereCenter':
+    case 'faceCircumcenter':
       return current;
     default: {
       const _exhaustive: never = current;
