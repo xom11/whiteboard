@@ -143,7 +143,7 @@ if (intent.radiusTo) {
 // emit cone3d/cylinder3d kind với radius literal — KIND KHÔNG ĐỔI
 ```
 
-- **topo (`intentTopo3d.ts`):** `consumesOf` cone/cylinder thêm `radiusTo` (xếp cone/cylinder SAU điểm bán kính). `producesOf` không đổi.
+- **topo (`intentTopo3d.ts`):** **KHÔNG cần sửa** — `consumesOf` (`:39-64`) walk MỌI string field ∉ `PRODUCE_KEYS` → `baseCenter`/`topCenter`/`radiusTo` tự thành consume-edge (cone/cylinder xếp sau điểm bán kính). `producesOf` không đổi. **GOTCHA:** `apex` ∈ `PRODUCE_KEYS` (`:29-32`, cho solid) → field `apex` trong constraint `pyramidInsphereCenter` bị skip khi walk; ordering dựa vào edge `vertices` (apex+base cùng 1 producer solidRule@90 → đủ). Field `apex` vẫn resolve label→id qua REF_FIELDS.
 - cone3d/cylinder3d scene kind, render (`cone3d.ts`/`cylinder3d.ts`), verify3d **KHÔNG đụng**. Editor v1 **KHÔNG đụng** (vẫn truyền `radius` literal).
 
 ## 6. Cycle B4 — Rule `inscribedRoundSolid` (Câu 70/73/75/85/88c)
