@@ -44,6 +44,8 @@ function topCenterIntent(topVerts: string[], circum: boolean, taken: string[]): 
 
 // Khi rule TỰ vẽ host (solidRule miss "đều"/"tứ giác đều" qualifier), claim luôn clause đầu-đề
 // chứa head solid → coverage đủ (else clause head uncovered → PARTIAL → UI không render).
+// Heuristic: clause HEAD ĐẦU TIÊN khác clause round-solid. Đề ≥2 solid-head (hiếm) → có thể claim
+// nhầm clause → incomplete-coverage → ESCALATE (fail-safe, KHÔNG vẽ sai). Đủ cho dataset 1-host.
 function headClauseId(ctx: RuleContext3D, exceptId: number): number[] {
   const h = ctx.clauses.find((cl) => cl.id !== exceptId && HEAD.test(cl.text));
   return h ? [h.id] : [];
