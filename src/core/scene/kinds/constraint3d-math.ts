@@ -312,6 +312,28 @@ function constraintToWorldInner(c: Constraint3D, state: State): Vec3 {
       for (const p of P) acc = add(acc, p);
       return scale(acc, 1 / P.length);
     }
+    case 'pyramidInsphereCenter': {
+      // Tâm cầu nội tiếp chóp đều: trên trục G→S (G=centroid đáy), cách đều đáy + mặt bên.
+      // s = m·(G−A₀) / (1 − m·n)  với n=pháp tuyến đáy↑apex, m=pháp tuyến 1 mặt bên↑trong.
+      const S = getPointWorld(c.apex, state);
+      const base = c.vertices.map((id) => getPointWorld(id, state));
+      const n = base.length;
+      if (n < 3) return S;
+      let G: Vec3 = [0, 0, 0];
+      for (const p of base) G = add(G, p);
+      G = scale(G, 1 / n);
+      let nb = normalize(cross(sub(base[1], base[0]), sub(base[2], base[0])));
+      if (dot(nb, sub(S, G)) < 0) nb = scale(nb, -1);
+      let m = normalize(cross(sub(base[0], S), sub(base[1], S)));
+      if (dot(m, sub(G, base[0])) < 0) m = scale(m, -1);
+      const denom = 1 - dot(m, nb);
+      const s = Math.abs(denom) < 1e-9 ? NaN : dot(m, sub(G, base[0])) / denom;
+      if (!Number.isFinite(s) || s <= 0) {
+        // fallback hữu hạn: centroid (apex + base)
+        return scale(add(S, scale(G, n)), 1 / (n + 1));
+      }
+      return add(G, scale(nb, s));
+    }
     case 'intersectionLines': {
       const A = getPointWorld(c.a1, state), B = getPointWorld(c.b1, state);
       const C = getPointWorld(c.a2, state), D = getPointWorld(c.b2, state);
@@ -435,6 +457,7 @@ export function worldToConstraint(current: Constraint3D, world: Vec3, state: Sta
     case 'perpFootLine':
     case 'perpFootPlane':
     case 'circumsphereCenter':
+    case 'pyramidInsphereCenter':
       return current;
     default: {
       const _exhaustive: never = current;

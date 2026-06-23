@@ -53,6 +53,7 @@ const def: KindDef<Point3DAttrs> = {
     if (c.kind === 'intersectionLinePlane') return `${obj.label} = giao ${c.a}${c.b} ∩ ${c.plane}`;
     if (c.kind === 'perpFootLine') return `${obj.label} = chân ⊥ từ ${c.from} xuống ${c.a}${c.b}`;
     if (c.kind === 'perpFootPlane') return `${obj.label} = chân ⊥ từ ${c.from} xuống ${c.plane}`;
+    if (c.kind === 'pyramidInsphereCenter') return `${obj.label} = tâm cầu nội tiếp chóp ${c.apex}.${c.vertices.join('')}`;
     return obj.label;
   },
   render: (obj, ctx: RenderCtx) => {
