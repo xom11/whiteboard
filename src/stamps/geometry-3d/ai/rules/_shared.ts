@@ -54,6 +54,22 @@ export function sectionNames(n: number, taken: string[]): string[] {
   return out;
 }
 
+// Pyramid head tolerant of "(tứ|tam) giác (đều)?" qualifier giữa "chóp" và nhãn.
+// solidRule.PYRAMID = /hình\s+chóp\s+([A-Z])\./ FAIL khi có qualifier → solidRule KHÔNG vẽ chóp.
+const PYRAMID_TOLERANT = /(?:hình\s*)?chóp\s+(?:(?:tứ|tam)\s*giác\s*)?(?:đều\s+)?([A-Z])\.([A-Z]+)/u;
+const SOLID_RULE_PYRAMID = /hình\s+chóp\s+[A-Z]\./u; // mirror solidRule.PYRAMID firing prefix
+
+/**
+ * Parse chóp head, dung nạp qualifier "tứ/tam giác đều". `solidRuleDraws` = solidRule
+ * có vẽ chóp không (true khi bare "hình chóp X." khớp PYRAMID gốc; false khi qualifier chen).
+ * Rule gọi: !solidRuleDraws ⟹ tự emit solid (tránh dup); solidRuleDraws ⟹ chỉ reference.
+ */
+export function parsePyramidTolerant(problem: string): { apex: string; base: string[]; solidRuleDraws: boolean } | null {
+  const m = PYRAMID_TOLERANT.exec(problem);
+  if (!m) return null;
+  return { apex: m[1], base: splitVertexToken(m[2]), solidRuleDraws: SOLID_RULE_PYRAMID.test(problem) };
+}
+
 /** Implied base plane (3 base vertices) for "đáy"/"mặt đáy" with no (XYZ) token. */
 export function baseFaceOf(problem: string): { planeName: string; p1: string; p2: string; p3: string } | null {
   const head = parseSolidHead3D(problem);

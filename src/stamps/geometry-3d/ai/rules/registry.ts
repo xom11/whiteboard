@@ -13,6 +13,7 @@ import { perpLineToPlaneRule } from './perpLineToPlane';
 import { perpPlaneToLineRule } from './perpPlaneToLine';
 import { angleLinePlaneRule } from './angleLinePlane';
 import { circumsphereRule } from './circumsphere';
+import { insphereOfPyramidRule } from './insphereOfPyramid';
 import { coneRule } from './cone';
 import { cylinderRule } from './cylinder';
 import { insphereCubeRule } from './insphereCube';
@@ -32,6 +33,7 @@ const RULES: LanguageRule3D[] = [
   perpPlaneToLineRule,        // priority 52
   angleLinePlaneRule,         // priority 51
   circumsphereRule,           // priority 50
+  insphereOfPyramidRule,      // priority 50
   coneRule,                   // priority 49
   cylinderRule,               // priority 48
   insphereCubeRule,           // priority 47
