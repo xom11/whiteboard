@@ -70,6 +70,18 @@ export function parsePyramidTolerant(problem: string): { apex: string; base: str
   return { apex: m[1], base: splitVertexToken(m[2]), solidRuleDraws: SOLID_RULE_PYRAMID.test(problem) };
 }
 
+// Prism head tolerant of "đều" qualifier. solidRule.PRISM = /lăng\s+trụ\s+[A-Z]{3,4}\./ FAIL
+// khi có "đều" chen ⟹ solidRule KHÔNG vẽ lăng trụ. (Mirror parsePyramidTolerant.)
+const PRISM_TOLERANT = /lăng\s*trụ(?:\s*đều)?\s+([A-Z]{3,4})\.((?:[A-Z]['′])+)/u;
+const SOLID_RULE_PRISM = /lăng\s+trụ\s+[A-Z]{3,4}\./u; // mirror solidRule.PRISM firing prefix
+
+/** Parse lăng trụ head (đều-tolerant) → base + top labels + solidRuleDraws (bare → solidRule vẽ). */
+export function parsePrismTolerant(problem: string): { base: string[]; top: string[]; solidRuleDraws: boolean } | null {
+  const m = PRISM_TOLERANT.exec(problem);
+  if (!m) return null;
+  return { base: splitVertexToken(m[1]), top: splitVertexToken(m[2]), solidRuleDraws: SOLID_RULE_PRISM.test(problem) };
+}
+
 /** Implied base plane (3 base vertices) for "đáy"/"mặt đáy" with no (XYZ) token. */
 export function baseFaceOf(problem: string): { planeName: string; p1: string; p2: string; p3: string } | null {
   const head = parseSolidHead3D(problem);

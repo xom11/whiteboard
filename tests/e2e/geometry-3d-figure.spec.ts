@@ -373,3 +373,57 @@ test('renders an inscribed sphere for a mặt cầu nội tiếp chóp problem',
   }, undefined, { timeout: 8_000 });
   expect(errors.join('\n')).not.toMatch(/sphere3d|polygon3d|Cannot read|undefined is not/i);
 });
+
+// Nón nội tiếp chóp (Câu 70): chóp 5 mặt + nón faceted (≥8 polygon3d) → ≥13 polygon3d.
+test('renders an inscribed cone for a nón đáy nội tiếp problem', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+  await page.goto('/');
+  await expect(page.locator('[data-testid="dropdown-menu-button"]').first()).toBeVisible({ timeout: 15_000 });
+  await page.locator('[data-testid="dropdown-menu-button"]').first().click();
+  await page.locator('[data-testid="stamp-toolbar-geometry3d"]').click();
+  await expect(page.locator('[data-testid="mini-board-3d"]')).toBeVisible({ timeout: 10_000 });
+  await page.waitForFunction(() => !!(window as any).JXG, undefined, { timeout: 10_000 });
+  // Đề FULL: solidRule vẽ chóp (bare "hình chóp S.ABCD") + "hình vuông" (REGULAR) cho incircle.
+  await page.locator('[data-testid="ai-generate-3d-input"]').fill(
+    'Cho hình chóp S.ABCD có đáy là hình vuông. Khối nón có đỉnh S và đường tròn đáy nội tiếp tứ giác ABCD.',
+  );
+  await page.locator('[data-testid="ai-generate-3d-btn"]').click();
+  await page.waitForFunction(() => {
+    const JXG = (window as any).JXG;
+    if (!JXG?.boards) return false;
+    for (const b of Object.values(JXG.boards) as any[]) {
+      const polys = Object.values(b.objects).filter((o: any) => o.elType === 'polygon3d');
+      if (polys.length >= 13) return true; // chóp 5 + nón faceted ≥8
+    }
+    return false;
+  }, undefined, { timeout: 8_000 });
+  expect(errors.join('\n')).not.toMatch(/cone3d|polygon3d|Cannot read|undefined is not/i);
+});
+
+// Trụ nội tiếp tứ diện trên mặt nghiêng BCD (Câu 73): tetra 4 mặt + trụ faceted ⊥ trục nghiêng.
+test('renders an inscribed cylinder for a trụ đáy nội tiếp tam giác problem', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+  await page.goto('/');
+  await expect(page.locator('[data-testid="dropdown-menu-button"]').first()).toBeVisible({ timeout: 15_000 });
+  await page.locator('[data-testid="dropdown-menu-button"]').first().click();
+  await page.locator('[data-testid="stamp-toolbar-geometry3d"]').click();
+  await expect(page.locator('[data-testid="mini-board-3d"]')).toBeVisible({ timeout: 10_000 });
+  await page.waitForFunction(() => !!(window as any).JXG, undefined, { timeout: 10_000 });
+  await page.locator('[data-testid="ai-generate-3d-input"]').fill(
+    'Cho tứ diện đều ABCD. Hình trụ có một đường tròn đáy là đường tròn nội tiếp tam giác BCD và chiều cao bằng chiều cao của tứ diện.',
+  );
+  await page.locator('[data-testid="ai-generate-3d-btn"]').click();
+  await page.waitForFunction(() => {
+    const JXG = (window as any).JXG;
+    if (!JXG?.boards) return false;
+    for (const b of Object.values(JXG.boards) as any[]) {
+      // cylinder3d render thành polygon3d facets (không có elType 'cylinder3d' ở JXG).
+      const polys = Object.values(b.objects).filter((o: any) => o.elType === 'polygon3d');
+      if (polys.length >= 12) return true; // tetra 4 + trụ faceted ≥8
+    }
+    return false;
+  }, undefined, { timeout: 8_000 });
+  expect(errors.join('\n')).not.toMatch(/cylinder3d|polygon3d|Cannot read|undefined is not/i);
+});

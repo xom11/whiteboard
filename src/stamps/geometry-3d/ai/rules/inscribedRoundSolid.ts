@@ -2,7 +2,7 @@ import type { LanguageRule3D, RuleContext3D, RuleMatch3D } from './_types';
 import type { Intent3DT } from '../intent';
 import {
   coneIntent, cylinderIntent, addPoint3d, solid,
-  splitVertexToken, pickCenter, parsePyramidTolerant, sectionNames,
+  splitVertexToken, pickCenter, parsePyramidTolerant, parsePrismTolerant, sectionNames,
 } from './_shared';
 
 const ROUND = /(?:hình|khối)\s*(?:nón|trụ)/iu;
@@ -13,8 +13,7 @@ const FACE = /(?:tam\s*giác|tứ\s*giác)\s+([A-Z]{3,4})(?![\p{L}])/u; // mặt
 const APEX = /đỉnh\s+([A-Z])(?![\p{L}])/u;
 const CUBE = /lập\s*phương/iu;
 const REGULAR = /(?:đều|hình\s*vuông|tứ\s*giác\s*đều|tam\s*giác\s*đều)/iu; // incircle ≡ centroid hợp lệ
-const TETRA = /tứ\s*diện(?:\s*đều)?\s+([A-Z]{4})(?![\p{L}])/u;
-const PRISM = /lăng\s*trụ(?:\s*đều)?\s+([A-Z]{3,4})\.((?:[A-Z]['′])+)/u;
+const HEAD = /(?:chóp|lăng\s*trụ|tứ\s*diện)/iu;
 
 // Tâm + điểm-bán-kính (radiusTo) đường tròn đáy. nội tiếp(mặt đều)→centroid + radiusTo=trung
 // điểm cạnh; ngoại tiếp→faceCircumcenter + radiusTo=đỉnh mặt. Trả intents emit + tên dùng cho op.
@@ -33,7 +32,6 @@ function buildCircleBase(
   return { centerName, radiusTo: midName, intents }; // trung điểm cạnh = chân ⊥ tâm (mặt đều)
 }
 
-// Tâm đáy thứ 2 (top) của trụ lăng-trụ: centroid/faceCircumcenter của mặt top, tránh trùng tên.
 function topCenterIntent(topVerts: string[], circum: boolean, taken: string[]): { name: string; intent: Intent3DT } {
   const name = pickCenter([...topVerts, ...taken]);
   return {
@@ -44,8 +42,17 @@ function topCenterIntent(topVerts: string[], circum: boolean, taken: string[]): 
   };
 }
 
+// Khi rule TỰ vẽ host (solidRule miss "đều"/"tứ giác đều" qualifier), claim luôn clause đầu-đề
+// chứa head solid → coverage đủ (else clause head uncovered → PARTIAL → UI không render).
+function headClauseId(ctx: RuleContext3D, exceptId: number): number[] {
+  const h = ctx.clauses.find((cl) => cl.id !== exceptId && HEAD.test(cl.text));
+  return h ? [h.id] : [];
+}
+
 // Nón/trụ nội/ngoại tiếp MẶT đa diện. Bán kính phái sinh (inradius/circumradius mặt) qua radiusTo.
-// Coexist solidRule@90 (host vẽ riêng). Render ⊥-trục (perpBasis) ⟹ đáy nghiêng (tetra slant face) đúng.
+// Coexist solidRule@90 (host vẽ riêng); khi solidRule miss qualifier → rule tự emit host + claim head.
+// Render ⊥-trục (perpBasis) ⟹ trục đứng (nón-chóp, trụ-lăng-trụ) đúng. Defer trụ trên mặt NGHIÊNG
+// tứ diện (layout không-đều → trục không ⊥ mặt) & nón XIÊN (Phase 6).
 export const inscribedRoundSolidRule: LanguageRule3D = {
   id: 'inscribedRoundSolid',
   priority: 46,
@@ -58,11 +65,10 @@ export const inscribedRoundSolidRule: LanguageRule3D = {
     );
     if (!c) return [];
     const circum = NGOAI.test(c.text);
-    const isCone = CONE_T.test(c.text);
 
     // ── Nón: CHỈ right-cone (đỉnh trên tâm đáy) ⟹ host chóp đều (đáy ngang, apex trên centroid).
     // Nón trên mặt tứ diện (đỉnh = đỉnh đáy, vd 88c) = nón XIÊN → defer (cone3d chỉ right-cone).
-    if (isCone) {
+    if (CONE_T.test(c.text)) {
       const faceM = FACE.exec(c.text);
       if (!faceM) return [];
       const faceVerts = splitVertexToken(faceM[1]);
@@ -73,53 +79,45 @@ export const inscribedRoundSolidRule: LanguageRule3D = {
       const apexM = APEX.exec(c.text);
       const apex = apexM ? apexM[1] : py.apex;
       const intents: Intent3DT[] = [];
+      const clauseIds = [c.id];
       if (!py.solidRuleDraws) {
         intents.push(solid({
           flavor: 'pyramid', baseLabels: py.base,
           baseVariant: py.base.length === 4 ? 'square' : 'equilateral-triangle',
           apex: py.apex, apexVariant: 'regular',
         }));
+        clauseIds.push(...headClauseId(ctx, c.id));
       }
       const base = buildCircleBase(faceVerts, circum, [apex]);
       intents.push(...base.intents, coneIntent({ baseCenter: base.centerName, apex, radiusTo: base.radiusTo }));
-      return [{ ruleId: this.id, clauseIds: [c.id], intents }];
+      return [{ ruleId: this.id, clauseIds, intents }];
     }
 
-    // ── Trụ ──
-    // Lăng trụ: 2 đáy của TRỤ = 2 mặt đáy lăng trụ (từ head, KHÔNG cần "tam giác" trong clause).
-    const prismM = PRISM.exec(ctx.problem);
-    if (prismM) {
-      const baseVerts = splitVertexToken(prismM[1]);
-      const topVerts = splitVertexToken(prismM[2]);
+    // ── Trụ trên 2 đáy lăng trụ (trục ĐỨNG — render ⊥-trục đúng). Mặt lấy từ head lăng trụ.
+    const prism = parsePrismTolerant(ctx.problem);
+    if (prism) {
+      const { base: baseVerts, top: topVerts, solidRuleDraws } = prism;
       if (baseVerts.length < 3) return [];
       if (!circum && !REGULAR.test(ctx.problem)) return [];
+      const intents: Intent3DT[] = [];
+      const clauseIds = [c.id];
+      if (!solidRuleDraws) {
+        intents.push(solid({
+          flavor: 'prism', baseLabels: baseVerts,
+          baseVariant: baseVerts.length === 3 ? 'equilateral-triangle' : 'square',
+          apexVariant: 'free', topLabels: topVerts,
+        }));
+        clauseIds.push(...headClauseId(ctx, c.id));
+      }
       const bc = buildCircleBase(baseVerts, circum, []);
       const tc = topCenterIntent(topVerts, circum, [bc.centerName, bc.radiusTo]);
-      return [{
-        ruleId: this.id, clauseIds: [c.id],
-        intents: [...bc.intents, tc.intent, cylinderIntent({ baseCenter: bc.centerName, topCenter: tc.name, radiusTo: bc.radiusTo })],
-      }];
+      intents.push(...bc.intents, tc.intent, cylinderIntent({ baseCenter: bc.centerName, topCenter: tc.name, radiusTo: bc.radiusTo }));
+      return [{ ruleId: this.id, clauseIds, intents }];
     }
 
-    // Tứ diện đều: trụ đứng trên mặt `face` (nội/ngoại tiếp); topCenter = đỉnh ĐỐI DIỆN mặt
-    // (regular tetra: đỉnh đối chiếu xuống tâm mặt ⟹ trục ⊥ mặt). face named trong clause.
-    const tetraM = TETRA.exec(ctx.problem);
-    if (tetraM) {
-      const faceM = FACE.exec(c.text);
-      if (!faceM) return [];
-      const faceVerts = splitVertexToken(faceM[1]);
-      if (faceVerts.length < 3) return [];
-      if (!circum && !REGULAR.test(ctx.problem)) return [];
-      const baseV = splitVertexToken(tetraM[1]);
-      const opp = baseV.find((v) => !faceVerts.includes(v));
-      if (!opp) return [];
-      const bc = buildCircleBase(faceVerts, circum, [opp]);
-      return [{
-        ruleId: this.id, clauseIds: [c.id],
-        intents: [...bc.intents, cylinderIntent({ baseCenter: bc.centerName, topCenter: opp, radiusTo: bc.radiusTo })],
-      }];
-    }
-
+    // DEFER trụ trên mặt NGHIÊNG tứ diện (Câu 73/85): layout3d 'tetrahedron' KHÔNG phải tứ diện ĐỀU
+    // thật (cạnh đáy ≠ cạnh bên) ⟹ trục đỉnh→tâm-mặt-đối KHÔNG ⊥ mặt ⟹ vành ⊥-trục KHÔNG nằm trên
+    // mặt (MCP visual bắt: trụ vẽ nghiêng lệch). Cần layout regular HOẶC point=baseCenter+h·normal (Phase 6).
     return [];
   },
 };

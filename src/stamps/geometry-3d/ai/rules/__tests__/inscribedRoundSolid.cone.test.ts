@@ -24,6 +24,16 @@ describe('inscribedRoundSolid — nón', () => {
     expect(inscribedRoundSolidRule.match(ctxOf(p) as any).length).toBe(0);
   });
 
+  it('nón đáy NGOẠI tiếp đáy vuông (chóp, right-cone ngang) → faceCircumcenter + radiusTo=đỉnh', () => {
+    const p = 'Cho hình chóp S.ABCD có đáy là hình vuông. Khối nón có đỉnh S và đường tròn đáy ngoại tiếp tứ giác ABCD.';
+    const ms = inscribedRoundSolidRule.match(ctxOf(p) as any);
+    expect(ms.length).toBe(1);
+    const ops = ms[0].intents.map((i: any) => i.op + (i.constraint ? '/' + i.constraint.kind : ''));
+    expect(ops).toContain('add-point-3d/faceCircumcenter');
+    const cone = find([ms[0]], (i) => i.op === 'cone');
+    expect(cone.radiusTo).toBe('A'); // circum: radiusTo = đỉnh nằm trên đường tròn ngoại tiếp
+  });
+
   it('incircle host KHÔNG đều → escalate (return [])', () => {
     const p = 'Cho hình chóp S.ABCD có đáy là hình bình hành. Khối nón đỉnh S đáy nội tiếp tứ giác ABCD.';
     expect(inscribedRoundSolidRule.match(ctxOf(p) as any).length).toBe(0);
