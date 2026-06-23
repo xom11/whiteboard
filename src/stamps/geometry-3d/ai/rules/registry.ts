@@ -17,6 +17,7 @@ import { insphereOfPyramidRule } from './insphereOfPyramid';
 import { coneRule } from './cone';
 import { cylinderRule } from './cylinder';
 import { insphereCubeRule } from './insphereCube';
+import { inscribedRoundSolidRule } from './inscribedRoundSolid';
 
 const RULES: LanguageRule3D[] = [
   solidRule,                  // priority 90
@@ -37,6 +38,7 @@ const RULES: LanguageRule3D[] = [
   coneRule,                   // priority 49
   cylinderRule,               // priority 48
   insphereCubeRule,           // priority 47
+  inscribedRoundSolidRule,    // priority 46
 ];
 
 export const ALL_RULES_3D: readonly LanguageRule3D[] = RULES.slice().sort(
