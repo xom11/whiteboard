@@ -1,6 +1,7 @@
 // src/core/scene/kinds/cylinder3d.ts
 import { registerKind } from '../registry';
 import type { KindDef } from '../types';
+import { perpBasis } from './_ringBasis';
 
 export type Cylinder3DAttrs = { baseCenter: string; topCenter: string; radius: number; color?: string };
 
@@ -25,15 +26,19 @@ registerKind<Cylinder3DAttrs>({
     // Read world coords from JSXGraph point3d objects at render time.
     const ax = a.X?.() ?? 0, ay = a.Y?.() ?? 0, az = a.Z?.() ?? 0;
     const bx = b.X?.() ?? 0, by = b.Y?.() ?? 0, bz = b.Z?.() ?? 0;
-    // Build faceted cylinder vertices.
+    // Build faceted cylinder vertices. Vành 2 đáy nằm trên mặt ⊥ trục (base→top) — trục
+    // đứng ⟹ vành ngang (như cũ); trục nghiêng (trụ nội tiếp mặt nghiêng) ⟹ vành đúng mặt.
+    const [u, v] = perpBasis([bx - ax, by - ay, bz - az]);
     const baseRing: [number, number, number][] = [];
     const topRing: [number, number, number][] = [];
     for (let i = 0; i < CURVED_SEGMENTS; i++) {
       const theta = (i / CURVED_SEGMENTS) * Math.PI * 2;
-      const dx = r * Math.cos(theta);
-      const dy = r * Math.sin(theta);
-      baseRing.push([ax + dx, ay + dy, az]);
-      topRing.push([bx + dx, by + dy, bz]);
+      const c = Math.cos(theta), s = Math.sin(theta);
+      const ox = r * (c * u[0] + s * v[0]);
+      const oy = r * (c * u[1] + s * v[1]);
+      const oz = r * (c * u[2] + s * v[2]);
+      baseRing.push([ax + ox, ay + oy, az + oz]);
+      topRing.push([bx + ox, by + oy, bz + oz]);
     }
     const vertices = [...baseRing, ...topRing];
     const faces: number[][] = [];

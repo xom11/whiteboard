@@ -1,6 +1,7 @@
 // src/core/scene/kinds/cone3d.ts
 import { registerKind } from '../registry';
 import type { KindDef } from '../types';
+import { perpBasis } from './_ringBasis';
 
 export type Cone3DAttrs = { baseCenter: string; apex: string; radius: number; color?: string };
 
@@ -29,11 +30,18 @@ registerKind<Cone3DAttrs>({
       apexPt.Y?.() ?? 0,
       apexPt.Z?.() ?? 0,
     ];
-    // Build faceted cone vertices.
+    // Build faceted cone vertices. Vành đáy nằm trên mặt ⊥ trục (base→apex) — trục đứng
+    // ⟹ vành ngang (như cũ); trục nghiêng (nón nội tiếp mặt nghiêng) ⟹ vành đúng mặt đáy.
+    const [u, v] = perpBasis([apexCoords[0] - bx, apexCoords[1] - by, apexCoords[2] - bz]);
     const baseRing: [number, number, number][] = [];
     for (let i = 0; i < CURVED_SEGMENTS; i++) {
       const theta = (i / CURVED_SEGMENTS) * Math.PI * 2;
-      baseRing.push([bx + r * Math.cos(theta), by + r * Math.sin(theta), bz]);
+      const c = Math.cos(theta), s = Math.sin(theta);
+      baseRing.push([
+        bx + r * (c * u[0] + s * v[0]),
+        by + r * (c * u[1] + s * v[1]),
+        bz + r * (c * u[2] + s * v[2]),
+      ]);
     }
     const apexIdx = baseRing.length;
     const vertices = [...baseRing, apexCoords];
