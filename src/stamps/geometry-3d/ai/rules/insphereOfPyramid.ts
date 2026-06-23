@@ -2,9 +2,11 @@ import type { LanguageRule3D, RuleContext3D, RuleMatch3D } from './_types';
 import type { Intent3DT } from '../intent';
 import { solid, addPoint3d, sphereIntent, pickCenter, parsePyramidTolerant } from './_shared';
 
-const SPHERE_CUE = /(?:mặt|khối|hình)\s*cầu/iu;
 const INSCRIBED = /nội\s*tiếp/iu;
 const CUBE = /lập\s*phương/iu;
+// Cầu phải là CHỦ NGỮ của "nội tiếp" (cầu TRƯỚC nội tiếp = cầu nội tiếp chóp). Né "chóp nội tiếp
+// mặt cầu" (chóp-TRONG-cầu = cầu NGOẠI tiếp → circumsphere lo) — review đối kháng bắt false-positive.
+const SPHERE_SUBJECT = /(?:mặt|khối|hình)\s*cầu[^.]{0,40}nội\s*tiếp/iu;
 
 // Mặt cầu nội tiếp chóp: tâm = pyramidInsphereCenter (cách đều đáy + mọi mặt bên),
 // surfacePoint = centroid đáy (cầu chạm đáy tại tâm-đáy) → R = inradius. Reuse sphere.
@@ -18,7 +20,8 @@ export const insphereOfPyramidRule: LanguageRule3D = {
     if (!INSCRIBED.test(ctx.problem) || CUBE.test(ctx.problem)) return []; // cube → insphereCube
     const head = parsePyramidTolerant(ctx.problem);
     if (!head) return [];
-    const c = ctx.clauses.find((cl) => SPHERE_CUE.test(cl.text) && INSCRIBED.test(cl.text));
+    // Clause có "cầu … nội tiếp" (cầu là chủ ngữ) — KHÔNG khớp "chóp nội tiếp mặt cầu".
+    const c = ctx.clauses.find((cl) => SPHERE_SUBJECT.test(cl.text));
     if (!c) return [];
     const { apex, base, solidRuleDraws } = head;
     const center = pickCenter([apex, ...base]);          // tâm cầu (synth, né đỉnh)

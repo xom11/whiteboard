@@ -31,6 +31,18 @@ describe('insphereOfPyramid rule', () => {
     expect(insphereOfPyramidRule.match(ctxOf(p) as any).length).toBe(0);
   });
 
+  it('"chóp NỘI TIẾP mặt cầu" (chóp-trong-cầu) → KHÔNG fire (cầu ngoại tiếp → circumsphere lo)', () => {
+    const p = 'Cho hình chóp tứ giác đều S.ABCD nội tiếp mặt cầu bán kính R.';
+    expect(insphereOfPyramidRule.match(ctxOf(p) as any).length).toBe(0);
+  });
+
+  it('mixed: chóp nội tiếp cầu (O) + mặt cầu ngoại tiếp chóp → CHỈ circumsphere (1 sphere, không dup tên O)', () => {
+    const p = 'Cho hình chóp tứ giác đều S.ABCD nội tiếp mặt cầu (O). Mặt cầu ngoại tiếp hình chóp S.ABCD.';
+    expect(insphereOfPyramidRule.match(ctxOf(p) as any).length).toBe(0); // insphere KHÔNG fire
+    const all = runRules3D(ctxOf(p));
+    expect(all.flatMap((m) => m.intents).filter((i: any) => i.op === 'sphere').length).toBe(1); // chỉ circumsphere
+  });
+
   // GOTCHA honest-metric: clause "Tính bán kính mặt cầu nội tiếp…" bị coverage3d đánh
   // hasGeometry=false (PROOF_ONLY question) → rule không thấy clause. Render chỉ khi cầu
   // ở clause STATEMENT (vd "Mặt cầu nội tiếp …" / "Bán kính … là:"). Dataset: 21 statement
