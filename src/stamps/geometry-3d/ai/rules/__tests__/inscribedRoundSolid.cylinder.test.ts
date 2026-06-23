@@ -5,11 +5,16 @@ function ctxOf(problem: string) { return { problem, clauses: segmentClauses3D(pr
 const find = (ms: any[], pred: (i: any) => boolean) => ms.flatMap((m) => m.intents).find(pred);
 
 describe('inscribedRoundSolid — trụ', () => {
-  it('Câu 73/85: trụ trên mặt NGHIÊNG tứ diện → DEFER (layout tetra không-đều → trục không ⊥ mặt, render lệch — MCP bắt)', () => {
+  it('Câu 73/85: trụ trên mặt NGHIÊNG tứ diện → FIRE (Phase 6: pointAboveFace → trục ⊥ mặt; chi tiết ở slantedFace.test)', () => {
     const p73 = 'Cho tứ diện đều ABCD. Hình trụ có một đường tròn đáy là đường tròn nội tiếp tam giác BCD và chiều cao bằng chiều cao của tứ diện.';
     const p85 = 'Cho tứ diện đều ABCD. Diện tích xung quanh của hình trụ có đáy là đường tròn ngoại tiếp tam giác BCD và chiều cao bằng chiều cao của tứ diện.';
-    expect(inscribedRoundSolidRule.match(ctxOf(p73) as any).length).toBe(0);
-    expect(inscribedRoundSolidRule.match(ctxOf(p85) as any).length).toBe(0);
+    const m73 = inscribedRoundSolidRule.match(ctxOf(p73) as any);
+    const m85 = inscribedRoundSolidRule.match(ctxOf(p85) as any);
+    expect(m73.length).toBe(1);
+    expect(m85.length).toBe(1);
+    expect(find(m73, (i) => i.op === 'cylinder')).toBeDefined();
+    expect(find(m73, (i) => i.constraint?.kind === 'pointAboveFace')).toBeDefined();
+    expect(find(m85, (i) => i.constraint?.kind === 'pointAboveFace')).toBeDefined();
   });
 
   it('Câu 75: trụ hai đáy nội tiếp lăng trụ đều ABC.A′B′C′ (trục ĐỨNG) → 2 centroid (base+top)', () => {

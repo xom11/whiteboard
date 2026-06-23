@@ -6,7 +6,7 @@ import { nextLabel } from '../../../../core/scene';
 // everything else is a numeric/param literal left intact.
 const REF_FIELDS = new Set([
   'p1', 'p2', 'from', 'plane', 'a', 'b', 'a1', 'b1', 'a2', 'b2',
-  'lineId', 'planeId', 'polygonId', 'sphereId', 'apex',
+  'lineId', 'planeId', 'polygonId', 'sphereId', 'apex', 'base',
 ]);
 
 export const buildAddPoint3d: IntentBuilder3D = (s, intent) => {

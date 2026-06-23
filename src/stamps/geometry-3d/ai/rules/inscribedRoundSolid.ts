@@ -14,6 +14,7 @@ const APEX = /đỉnh\s+([A-Z])(?![\p{L}])/u;
 const CUBE = /lập\s*phương/iu;
 const REGULAR = /(?:đều|hình\s*vuông|tứ\s*giác\s*đều|tam\s*giác\s*đều)/iu; // incircle ≡ centroid hợp lệ
 const HEAD = /(?:chóp|lăng\s*trụ|tứ\s*diện)/iu;
+const TETRA = /tứ\s+diện(?:\s+đều)?\s+([A-Z]{4})/u; // tứ diện ABCD → 4 đỉnh (mirror solid.ts)
 
 // Tâm + điểm-bán-kính (radiusTo) đường tròn đáy. nội tiếp(mặt đều)→centroid + radiusTo=trung
 // điểm cạnh; ngoại tiếp→faceCircumcenter + radiusTo=đỉnh mặt. Trả intents emit + tên dùng cho op.
@@ -53,8 +54,8 @@ function headClauseId(ctx: RuleContext3D, exceptId: number): number[] {
 
 // Nón/trụ nội/ngoại tiếp MẶT đa diện. Bán kính phái sinh (inradius/circumradius mặt) qua radiusTo.
 // Coexist solidRule@90 (host vẽ riêng); khi solidRule miss qualifier → rule tự emit host + claim head.
-// Render ⊥-trục (perpBasis) ⟹ trục đứng (nón-chóp, trụ-lăng-trụ) đúng. Defer trụ trên mặt NGHIÊNG
-// tứ diện (layout không-đều → trục không ⊥ mặt) & nón XIÊN (Phase 6).
+// Render ⊥-trục (perpBasis) ⟹ trục đứng (nón-chóp, trụ-lăng-trụ) đúng. Trụ trên mặt NGHIÊNG tứ diện
+// (Câu 73/85) qua pointAboveFace (topCenter = tâm mặt + chiều-cao·pháp-tuyến → trục ⊥ mặt). Defer nón XIÊN 88c.
 export const inscribedRoundSolidRule: LanguageRule3D = {
   id: 'inscribedRoundSolid',
   priority: 46,
@@ -117,9 +118,29 @@ export const inscribedRoundSolidRule: LanguageRule3D = {
       return [{ ruleId: this.id, clauseIds, intents }];
     }
 
-    // DEFER trụ trên mặt NGHIÊNG tứ diện (Câu 73/85): layout3d 'tetrahedron' KHÔNG phải tứ diện ĐỀU
-    // thật (cạnh đáy ≠ cạnh bên) ⟹ trục đỉnh→tâm-mặt-đối KHÔNG ⊥ mặt ⟹ vành ⊥-trục KHÔNG nằm trên
-    // mặt (MCP visual bắt: trụ vẽ nghiêng lệch). Cần layout regular HOẶC point=baseCenter+h·normal (Phase 6).
+    // ── Trụ trên MẶT NGHIÊNG tứ diện (Câu 73/85): trục ⊥ mặt qua pointAboveFace (offset tâm mặt
+    // dọc pháp tuyến = chiều cao ⊥ đỉnh-đối→mặt). KHÔNG đổi layout → trục ĐÚNG dù tứ diện không-đều.
+    const tetraM = TETRA.exec(ctx.problem);
+    if (tetraM) {
+      const tetra = splitVertexToken(tetraM[1]); // 4 đỉnh tứ diện
+      if (tetra.length < 4) return [];
+      const faceM = FACE.exec(c.text);
+      if (!faceM) return [];
+      const faceVerts = splitVertexToken(faceM[1]);
+      if (faceVerts.length < 3) return [];
+      if (!circum && !REGULAR.test(ctx.problem)) return []; // incircle mặt không-đều → defer faceIncenter
+      const apex = tetra.find((v) => !faceVerts.includes(v)); // đỉnh ĐỐI diện mặt
+      if (!apex) return [];
+      // solidRule (TETRA) vẽ tứ diện → chỉ reference đỉnh (không emit solid → tránh dup).
+      const base = buildCircleBase(faceVerts, circum, [apex]);
+      const topName = pickCenter([...faceVerts, apex, base.centerName, base.radiusTo]);
+      const intents: Intent3DT[] = [
+        ...base.intents,
+        addPoint3d(topName, { kind: 'pointAboveFace', base: base.centerName, apex, vertices: faceVerts }),
+        cylinderIntent({ baseCenter: base.centerName, topCenter: topName, radiusTo: base.radiusTo }),
+      ];
+      return [{ ruleId: this.id, clauseIds: [c.id], intents }];
+    }
     return [];
   },
 };
