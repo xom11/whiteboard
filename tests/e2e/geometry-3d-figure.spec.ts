@@ -344,3 +344,32 @@ test('renders an inscribed sphere for a mặt cầu nội tiếp lập phương 
 
   expect(errors.join('\n')).not.toMatch(/sphere3d|polygon3d|Cannot read|undefined is not/i);
 });
+
+// ───── Phase 5b ─────
+
+// Render-verify mặt cầu nội tiếp chóp tứ giác đều (Câu 21): pyramid (5 polygon3d) + inscribed sphere3d.
+test('renders an inscribed sphere for a mặt cầu nội tiếp chóp problem', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+  await page.goto('/');
+  await expect(page.locator('[data-testid="dropdown-menu-button"]').first()).toBeVisible({ timeout: 15_000 });
+  await page.locator('[data-testid="dropdown-menu-button"]').first().click();
+  await page.locator('[data-testid="stamp-toolbar-geometry3d"]').click();
+  await expect(page.locator('[data-testid="mini-board-3d"]')).toBeVisible({ timeout: 10_000 });
+  await page.waitForFunction(() => !!(window as any).JXG, undefined, { timeout: 10_000 });
+  await page.locator('[data-testid="ai-generate-3d-input"]').fill(
+    'Bán kính của mặt cầu nội tiếp hình chóp tứ giác đều S.ABCD có cạnh đáy và cạnh bên cùng bằng a là bao nhiêu.',
+  );
+  await page.locator('[data-testid="ai-generate-3d-btn"]').click();
+  await page.waitForFunction(() => {
+    const JXG = (window as any).JXG;
+    if (!JXG?.boards) return false;
+    for (const b of Object.values(JXG.boards) as any[]) {
+      const spheres = Object.values(b.objects).filter((o: any) => o.elType === 'sphere3d');
+      const polys = Object.values(b.objects).filter((o: any) => o.elType === 'polygon3d');
+      if (spheres.length >= 1 && polys.length >= 5) return true; // chóp 5 mặt + cầu nội tiếp
+    }
+    return false;
+  }, undefined, { timeout: 8_000 });
+  expect(errors.join('\n')).not.toMatch(/sphere3d|polygon3d|Cannot read|undefined is not/i);
+});
