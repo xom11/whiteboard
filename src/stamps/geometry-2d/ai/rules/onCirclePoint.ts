@@ -159,10 +159,16 @@ export const onCirclePointRule: LanguageRule = {
       if (!m) continue;
       const name = m[1];
       if (name.length !== 1) continue;
+      // "cung LỚN <BC>" (cung lớn): điểm nằm trên CUNG LỚN → phía ĐỐI DIỆN dây BC.
+      // chord đặt 2 đầu dây cố định ở NỬA TRÊN (theta 0.7–2.3) → điểm cung lớn để
+      // ở NỬA DƯỚI (≈ -1.6 rad) tránh cụm 3 điểm thành "sliver" (C89). Cung nhỏ /
+      // không nêu → giữ theta tăng dần như cũ.
+      const major = /cung\s+lớn|lớn\s+[A-Z]{2}/u.test(c.text);
+      const ptTheta = major ? -1.6 : theta;
       out.push({
         ruleId: 'on-circle-point',
         clauseIds: [c.id],
-        intents: [addPoint(name, { kind: 'onCircle', circle, theta })],
+        intents: [addPoint(name, { kind: 'onCircle', circle, theta: ptTheta })],
       });
       theta += 0.8;
     }
