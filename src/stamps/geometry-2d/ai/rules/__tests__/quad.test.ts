@@ -192,6 +192,16 @@ describe('quadRule', () => {
     expect(poly.labels).toEqual(['A', 'B', 'C', 'D']);
   });
 
+  it('bare paren "tứ giác ABCD nội tiếp (O)" (KHÔNG chữ "đường tròn" — C31) → vẫn circle + 4 glider', () => {
+    const m = run('Cho tứ giác ABCD nội tiếp (O)');
+    expect(m.length).toBe(1);
+    const { circle, gliders, poly } = cyclicParts(m[0].intents as any[]);
+    expect(circle.spec).toBe('centerRadius');
+    expect(circle.name).toBe('O');
+    expect(gliders.map((g) => g.name)).toEqual(['A', 'B', 'C', 'D']);
+    expect(poly.shape).toBe('quadrilateral');
+  });
+
   it('Pattern B: "Đường tròn (O) ngoại tiếp tứ giác MNPQ" → circle + 4 glider + mark-shape', () => {
     const m = run('Đường tròn (O) ngoại tiếp tứ giác MNPQ');
     expect(m.length).toBe(1);

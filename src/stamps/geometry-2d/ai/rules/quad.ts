@@ -228,10 +228,15 @@ const CYCLIC_QUAD_THETAS: readonly number[] = CYCLIC_QUAD_COORDS.map(([x, y]) =>
 const CENTER = '(?:\\(\\s*([A-Z])\\s*\\)|tâm\\s+([A-Z]))?';
 
 // Pattern A — tứ giác nội tiếp đường tròn: "ABCD nội tiếp (trong) đường tròn
-// (O)/tâm O". Neo ^ vào phần text NGAY SAU 4 đỉnh (hit.afterEnd). Center group 1|2.
+// (O)/tâm O" HOẶC bare "ABCD nội tiếp (O)" (KHÔNG chữ "đường tròn" — C31). Neo ^
+// vào phần text NGAY SAU 4 đỉnh (hit.afterEnd). Center = g1|g2 (đường tròn) | g3
+// (bare paren) | g4|g5 (EN circle).
 const QUAD_INSCRIBED_IN_CIRCLE = new RegExp(
-  '^[\\s,]*(?:nội\\s*tiếp\\s+(?:trong\\s+)?(?:một\\s+)?đường\\s*tròn|(?:is\\s+|are\\s+)?inscribed\\s+in\\s+(?:a\\s+|the\\s+)?circle)\\s*' +
-    CENTER,
+  '^[\\s,]*(?:' +
+    'nội\\s*tiếp\\s+(?:trong\\s+)?(?:một\\s+)?đường\\s*tròn\\s*' + CENTER +
+    '|nội\\s*tiếp\\s+\\(\\s*([A-Z])\\s*\\)' +
+    '|(?:is\\s+|are\\s+)?inscribed\\s+in\\s+(?:a\\s+|the\\s+)?circle\\s*' + CENTER +
+    ')',
   'iu',
 );
 
@@ -286,9 +291,10 @@ function ownedByOthers(ctx: RuleContext, selfLabels: string[]): Set<string> {
  * Trả tên tâm (hoặc '') nếu khớp Pattern A/B; undefined nếu không nội tiếp.
  */
 function detectCyclic(text: string, hit: Hit): string | undefined {
-  // Pattern A: phần text NGAY SAU 4 đỉnh.
+  // Pattern A: phần text NGAY SAU 4 đỉnh. Center = g1|g2 (đường tròn) | g3 (bare
+  // paren "(O)") | g4|g5 (EN circle).
   const a = QUAD_INSCRIBED_IN_CIRCLE.exec(text.slice(hit.afterEnd));
-  if (a) return a[1] ?? a[2] ?? '';
+  if (a) return a[1] ?? a[2] ?? a[3] ?? a[4] ?? a[5] ?? '';
   // Pattern B: phần text TRƯỚC "tứ giác" (hit.index = đầu "tứ giác").
   const b = CIRCLE_CIRCUMSCRIBES_QUAD.exec(text.slice(0, hit.index));
   if (b) return b[1] ?? b[2] ?? '';
