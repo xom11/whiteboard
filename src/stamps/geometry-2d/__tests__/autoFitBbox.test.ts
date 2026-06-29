@@ -102,4 +102,20 @@ describe('computeAutoFitBbox', () => {
     expect(xmin).toBeLessThan(xmax);
     expect(ymin).toBeLessThan(ymax);
   });
+
+  it('GIỮ circumcircle khi điểm phái sinh cụm ở trong (C72/C91 — không "khối đặc")', () => {
+    // 3 đỉnh tam giác spread trên đtròn r=5 + 5 điểm phái sinh CỤM gần tâm.
+    // IQR trim đỉnh → clusterDiag nhỏ; ngưỡng cũ (clusterDiag) loại oan circumcircle.
+    const pts: [number, number][] = [
+      [0, 5], [-4, -3], [4, -3], // đỉnh
+      [0.2, 0.1], [-0.1, 0.2], [0.1, -0.1], [0, 0], [0.3, 0], // cụm trong
+    ];
+    const bbox = computeAutoFitBbox(pts, [{ cx: 0, cy: 0, r: 5 }], 1)!;
+    const [xmin, ymax, xmax, ymin] = bbox;
+    // bbox PHẢI chứa trọn đường tròn (±5) → tam giác nội tiếp vừa khung.
+    expect(xmin).toBeLessThanOrEqual(-5);
+    expect(xmax).toBeGreaterThanOrEqual(5);
+    expect(ymin).toBeLessThanOrEqual(-5);
+    expect(ymax).toBeGreaterThanOrEqual(5);
+  });
 });

@@ -76,16 +76,28 @@ export function computeAutoFitBbox(
 
   let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
   let clusterDiag = 0;
+  // FULL (untrimmed) point diagonal — dùng cho ngưỡng loại circle. clusterDiag
+  // (robust) có thể trim NHẦM đỉnh tam giác khi điểm phái sinh CỤM ở trong →
+  // clusterDiag nhỏ giả → circumcircle bình thường (r ~ bán kính) bị loại oan →
+  // bbox co về cụm nhỏ → tam giác/đtròn tràn kín khung ("khối đặc", C72/C91).
+  // fullDiag chứa cả đỉnh tam giác (~đường kính) nên circumcircle được GIỮ.
+  let fullDiag = 0;
   if (xs.length >= 2 && ys.length >= 2) {
     [xmin, xmax] = robustRange(xs);
     [ymin, ymax] = robustRange(ys);
     clusterDiag = Math.hypot(xmax - xmin, ymax - ymin);
+    fullDiag = Math.hypot(
+      Math.max(...xs) - Math.min(...xs),
+      Math.max(...ys) - Math.min(...ys),
+    );
   }
 
   for (const c of circles) {
     if (!Number.isFinite(c.cx) || !Number.isFinite(c.cy) || !Number.isFinite(c.r)) continue;
-    // Exclude an oversized circle only when we have a point cluster to compare to.
-    if (clusterDiag > 0 && c.r > CIRCLE_MAX_FACTOR * clusterDiag) continue;
+    // Loại circle CHỈ khi nó to bất thường so với SPAN THÔ của điểm (không phải
+    // cụm robust) → circumcircle nội tiếp tam giác KHÔNG bị loại oan; chỉ circle
+    // degenerate khổng lồ (eval cau-13) mới rớt.
+    if (fullDiag > 0 && c.r > CIRCLE_MAX_FACTOR * fullDiag) continue;
     xmin = Math.min(xmin, c.cx - c.r); xmax = Math.max(xmax, c.cx + c.r);
     ymin = Math.min(ymin, c.cy - c.r); ymax = Math.max(ymax, c.cy + c.r);
   }
