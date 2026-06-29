@@ -49,6 +49,29 @@ const INTERSECT_RE = /([A-Z]{2,3})N\s+([A-Z]\S{0,2})\s*=\s*\{/gu;
 // (khác "TÂU"/"<" bất khả thi). Né câu hỏi VN (chữ THƯỜNG trước "?").
 const SQUARE_RE = /([A-Z])\?(?=\s*[-=+)])/gu;
 
+// R7 — nhãn điểm C đọc thành "Ơ" (U+01A0, O-có-móc): "BƠ"→"BC", "ƠD"→"CD",
+// "Gọi Ơ là"→"Gọi C là", "(Ơ)"→"(C)". Đo trên đề scan font CM (38/38 chỗ "Ơ"
+// HOA = nhãn C). Gate `(?<!\p{Ll})Ơ(?!\p{Ll})` chỉ vá khi KHÔNG kề chữ THƯỜNG
+// → chừa từ Việt thật ("Ơn"/"Ơi"); "ơ" thường (trơn/sơ) không bị đụng (≠ U+01A0 HOA).
+const HORN_O_C_RE = /(?<!\p{Ll})Ơ(?!\p{Ll})/gu;
+
+// ── R8-R11: rớt-dấu tiếng Việt đặc thù OCR (Tesseract vie) — GATE theo ngữ cảnh
+// hình học để precision-first (chỉ vá khi gần như chắc chắn là từ hình-học). ──
+
+// R8 — "đường tron" → "đường tròn" (g/dấu rớt). Gate `(?![\p{L}])` né "đường trong".
+const DUONG_TRON_RE = /([Đđ]ường\s+)tron(?![\p{L}])/gu;
+
+// R9 — "Ƒ" (U+0192 florin) → "F": OCR đọc nhãn điểm F thành dấu florin. Né nhầm 0.
+const FLORIN_F_RE = /Ƒ/gu;
+
+// R10 — "tai" → "tại" CHỈ khi theo sau là nhãn HOA / "(" / "điểm" (ngữ cảnh "tại
+// <điểm>"). Né từ thật "tai" (lỗ tai) — không bao giờ đứng trước nhãn HOA.
+const TAI_TAI_RE = /(?<![\p{L}])tai(\s+)(?=[A-Z(]|điểm)/gu;
+
+// R11 — "tam" → "tâm" CHỈ trước "đường"/"(" (tâm đường tròn / tâm (O)). Gate này
+// KHÔNG đụng "tam giác" (theo sau là "giác", không phải "đường"/"(").
+const TAM_TAM_RE = /(?<![\p{L}])tam(\s+)(?=đường|\(|đối xứng)/gu;
+
 export function repairOcrSymbols(text: string): string {
   let t = text;
   t = t.replace(PERP_RE, '$1 ⊥ $3');
@@ -58,5 +81,10 @@ export function repairOcrSymbols(text: string): string {
   t = t.replace(ELEM_RE, '$1 ∈ (O)');
   t = t.replace(INTERSECT_RE, '$1 ∩ $2 = {');
   t = t.replace(SQUARE_RE, '$1²');
+  t = t.replace(HORN_O_C_RE, 'C');
+  t = t.replace(DUONG_TRON_RE, '$1tròn');
+  t = t.replace(FLORIN_F_RE, 'F');
+  t = t.replace(TAI_TAI_RE, 'tại$1');
+  t = t.replace(TAM_TAM_RE, 'tâm$1');
   return t;
 }
