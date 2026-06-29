@@ -54,3 +54,13 @@ Rasterize 2 PDF (MathType style + LaTeX style) @200dpi → chạy chính `runTes
 - Preprocessing ảnh / `vie+eng+equ` / custom traineddata (Approach B/C) — defer.
 - Lọc nhiễu nhãn hình vẽ (diagram-label noise) — defer (cần line-structure trước collapse, rủi ro).
 - Đụng `normalizeText` (giữ nguyên, bổ sung).
+
+## Cập nhật 2026-06-29 #2 (mở rộng từ ảnh ví dụ tứ giác nội tiếp)
+
+Đo thật thêm 1 ảnh (`AB∩CD={E}`, `△PQE cân`, `EF²`) lộ 3 gap + 1 bug:
+
+- **BUG R2 cũ (đã sửa):** `(Cho|Xét) A[A-Z]{3} ... nội tiếp` vá NHẦM `"Cho ABCD nội tiếp (O)"` (tứ giác nội tiếp, không có chữ "tứ giác") → `"tam giác BCD"`. Vì `nội tiếp` không phân biệt tam giác/tứ giác. **Fix:** tách R2 thành (a) **R2a strict** hậu tố tam-giác-thuần `cân/đều/nhọn/vuông` ngay sau, KHÔNG cần Cho/Xét (bắt cả `"Chứng minh: APQE cân"`), guard `(?<!giác )(?<!thang )`; (b) **R2b doubled** `AA[A-Z]{2}` + `nội/ngoại tiếp` — dùng tín hiệu **A nhân đôi** (△ABC→"AABC"; tứ giác "ABCD"→"AB.." không nhân đôi) để vá `△ABC nội tiếp` mà KHÔNG đụng tứ giác.
+- **R5 ∩** — `"AB ∩ CD = {E}"` → ∩ đọc thành "N" dính (`"ABN CD = {E}"`). Gate `= {` (tập hợp giao điểm) ⇒ hiếm false-positive. Vá ∩ (mút méo như `BƠ` vẫn để nguyên — lỗi nhầm-ký-tự, ngoài phạm vi).
+- **R6 ²** — `"EF²"` → `"EF?"` (chữ HOA + `?` + toán tử). Reconstruction precision cao (khác `TÂU`/`<` bất khả thi). Né câu hỏi VN (chữ thường trước `?`). Vá xong thì `detectFormulaRisk` không cảnh báo nữa (đã đúng).
+
+Verify: áp pipeline lên RAW OCR thật ảnh #2 → `(O)`/`AB ∩ CD`/`tam giác PQE`/`EF²` đúng, `"tứ giác ABCD nội tiếp"` giữ nguyên, warnings rỗng. +11 test, 3550 xanh, 0 regression. Lỗi nhầm-ký-tự (`BC→BƠ`, `AB→ADB`) vẫn ngoài phạm vi (cần dictionary/semantic).

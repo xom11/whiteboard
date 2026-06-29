@@ -73,6 +73,59 @@ describe('repairOcrSymbols — R4 ∈ (e dính cuối list điểm + (O))', () =
   });
 });
 
+describe('repairOcrSymbols — R2b △ trong câu chứng minh (không Cho/Xét)', () => {
+  it('vá "Chứng minh: APQE cân" → tam giác PQE', () => {
+    expect(repairOcrSymbols('a, Chứng minh: APQE cân.')).toBe('a, Chứng minh: tam giác PQE cân.');
+  });
+  it('vá hậu tố tam-giác-thuần khác (vuông/đều/nhọn)', () => {
+    expect(repairOcrSymbols('Chứng minh: AMNP vuông tại M')).toBe(
+      'Chứng minh: tam giác MNP vuông tại M',
+    );
+  });
+  it('KHÔNG đụng "hình thang ABCD cân" / "tứ giác ABCD ... "', () => {
+    expect(repairOcrSymbols('Cho hình thang ABCD cân')).toBe('Cho hình thang ABCD cân');
+    expect(repairOcrSymbols('tứ giác ABCD đều')).toBe('tứ giác ABCD đều');
+  });
+});
+
+describe('repairOcrSymbols — R2 fix bug tứ giác nội tiếp + nhánh A nhân đôi', () => {
+  it('KHÔNG còn vá nhầm "Cho ABCD nội tiếp (O)" → giữ nguyên ABCD', () => {
+    expect(repairOcrSymbols('Cho ABCD nội tiếp (O)')).toBe('Cho ABCD nội tiếp (O)');
+    expect(repairOcrSymbols('Cho tứ giác ABCD nội tiếp (O)')).toBe(
+      'Cho tứ giác ABCD nội tiếp (O)',
+    );
+  });
+  it('vá △ABC nội tiếp qua tín hiệu A nhân đôi "AABC"', () => {
+    expect(repairOcrSymbols('Cho AABC nội tiếp (O)')).toBe('Cho tam giác ABC nội tiếp (O)');
+  });
+});
+
+describe('repairOcrSymbols — R5 ∩ (giao, đọc thành N dính + "= {")', () => {
+  it('vá "ABN CD = {E}" → "AB ∩ CD = {E}"', () => {
+    expect(repairOcrSymbols('ABN CD = {E}')).toBe('AB ∩ CD = {E}');
+  });
+  it('vá cả khi mút thứ hai bị méo "ADN BƠ = {F}"', () => {
+    expect(repairOcrSymbols('ADN BƠ = {F}')).toBe('AD ∩ BƠ = {F}');
+  });
+  it('KHÔNG đụng "N" không có "= {"', () => {
+    expect(repairOcrSymbols('Trên AN lấy điểm M')).toBe('Trên AN lấy điểm M');
+  });
+});
+
+describe('repairOcrSymbols — R6 mũ ² (letter? + toán tử)', () => {
+  it('vá "EF? =" → "EF² ="', () => {
+    expect(repairOcrSymbols('Chứng minh: EF? = FA.FD + EC.ED')).toBe(
+      'Chứng minh: EF² = FA.FD + EC.ED',
+    );
+  });
+  it('vá "BM? =" và "AM? +"', () => {
+    expect(repairOcrSymbols('BM? = AM? + x')).toBe('BM² = AM² + x');
+  });
+  it('KHÔNG đụng câu hỏi VN (chữ thường trước ?)', () => {
+    expect(repairOcrSymbols('có phải góc vuông? Vì sao')).toBe('có phải góc vuông? Vì sao');
+  });
+});
+
 describe('repairOcrSymbols — tổng hợp + idempotent', () => {
   it('vá nhiều symbol trong 1 câu', () => {
     const ocr = 'Cho AABC đều nội tiếp (O;R), Hạ BK | AM tại K';
