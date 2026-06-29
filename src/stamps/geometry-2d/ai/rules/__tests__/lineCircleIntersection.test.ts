@@ -13,6 +13,14 @@ function ctxOf(text: string) {
 }
 
 describe('lineCircleIntersectionRule', () => {
+  it('TWO_NAMED: "AS cắt (O) tại A và D" (A đầu mút trên đtròn → D=2nd, other=A)', () => {
+    const it = run('AS cắt (O) tại A và D').flatMap((m) => m.intents) as any[];
+    const d = it.find((i) => i.op === 'add-point' && i.name === 'D');
+    expect(d.constraint).toEqual({ kind: 'secondIntersection', line: 'AS', circle: 'O', other: 'A' });
+    // KHÔNG tạo điểm "A" (đã là đầu mút/đỉnh)
+    expect(it.find((i) => i.name === 'A')).toBeUndefined();
+  });
+
   it('Bài 1: AD, BE, CF cắt đường tròn (O) lần lượt tại M,N,P', () => {
     const m = run(
       'Các đường cao AD, BE, CF cắt nhau tại H và cắt đường tròn (O) lần lượt tại M, N, P',

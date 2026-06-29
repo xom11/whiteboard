@@ -81,6 +81,16 @@ const BOTH = new RegExp(
   'gu',
 );
 
+// "XY cắt (O) tại P và Q" với P = đầu mút line NẰM TRÊN đtròn (cevian từ đỉnh cắt
+// lại đường tròn): "AS cắt (O) tại A và D" → other=A, Q=D=giao thứ hai. CHỈ fire
+// khi tên-ĐẦU ∈ line (else nhường SINGLE/BOTH) → không xung đột. g1=line g2=circle
+// g3=P g4=Q.
+const TWO_NAMED = new RegExp(
+  String.raw`([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?` + CIRCLE +
+    String.raw`\s+(?:ở|tại)\s+([A-Z])\s+và\s+([A-Z])(?![A-Z])`,
+  'gu',
+);
+
 // "XY cắt AB và (O) lần lượt tại H và I" (vao10:28 "OM cắt AB và (O) lần lượt
 // tại H và I") — 1 đường cắt 1 ĐƯỜNG + 1 ĐƯỜNG TRÒN phân phối: H=XY∩AB
 // (intersection thường), I=XY∩(O) (intersection lineCircle branch 0 — cả 2 đầu
@@ -285,6 +295,15 @@ export const lineCircleIntersectionRule: LanguageRule = {
           addPoint(x, { kind: 'intersection', of: [line, circle], branch: 0 }),
           addPoint(y, { kind: 'intersection', of: [line, circle], branch: 1 }),
         );
+      }
+
+      // "AS cắt (O) tại A và D" — P=A (đầu mút ∈ line, trên đtròn)=other, Q=D=2nd.
+      TWO_NAMED.lastIndex = 0;
+      for (const m of c.text.matchAll(TWO_NAMED)) {
+        const [line, circle, p, q] = [m[1], m[2], m[3], m[4]];
+        if (p === q) continue;
+        if (line.includes(p) && !line.includes(q)) intents.push(secondIntersection(q, line, circle, p));
+        else if (line.includes(q) && !line.includes(p)) intents.push(secondIntersection(p, line, circle, q));
       }
 
       // "I là giao điểm thứ hai của CE với đường tròn" TRẦN — circle toàn đề.
