@@ -17,7 +17,13 @@ import { repairOcrSymbols } from '../../src/stamps/geometry-2d/ai/vision/repairO
 
 interface Page { page: string; text: string; confidence: number }
 
+// Opener YẾU (fallback) — bất kỳ câu mở đầu nào.
 const STMT_START = /(Cho |Từ điểm |Từ một điểm |Gọi |Trên |Cho đường tròn|Cho tam giác|Cho hình|Cho nửa)/;
+// Opener MẠNH = mở đầu ĐỀ thật ("Cho <hình>" / "Từ (một) điểm"). Chương 2 không có
+// header → đề = đoạn trước "Lời giải" gồm [tail lời giải bài trước] + [đề]. Lấy từ
+// opener MẠNH CUỐI để KHÔNG cắt nhầm ở "Gọi/Trên" giữa đề (mất "Cho tam giác ABC…").
+const STRONG_START =
+  /Cho\s+(?:tam giác|tứ giác|đường tròn|nửa đường tròn|nửa|hình|hai|ba|bốn|góc|đoạn|điểm|\(|\d)|Từ\s+(?:điểm|một điểm)/g;
 
 // production postProcess (rút gọn — collapse + NFC + repairOcrSymbols)
 function clean(raw: string): string {
@@ -67,12 +73,19 @@ function main() {
   const segs = ch2.split(/Lời giải|Loi giai|Lời gải/);
   let ch2count = 0;
   for (let i = 0; i < segs.length - 1; i++) {
-    // đoạn segs[i] = [tail lời giải bài trước] + [đề bài i]; lấy từ statement-start CUỐI
+    // đoạn segs[i] = [tail lời giải bài trước] + [đề bài i]. Lấy từ opener MẠNH cuối
+    // ("Cho tam giác…"/"Từ điểm…") → giữ trọn đề; fallback opener yếu nếu không có.
     const blk = segs[i];
-    const matches = [...blk.matchAll(new RegExp(STMT_START.source, 'g'))];
-    if (matches.length === 0) continue;
-    const last = matches[matches.length - 1].index ?? 0;
-    let stmt = clean(blk.slice(last));
+    const strong = [...blk.matchAll(STRONG_START)];
+    let start: number;
+    if (strong.length > 0) {
+      start = strong[strong.length - 1].index ?? 0;
+    } else {
+      const weak = [...blk.matchAll(new RegExp(STMT_START.source, 'g'))];
+      if (weak.length === 0) continue;
+      start = weak[weak.length - 1].index ?? 0;
+    }
+    let stmt = clean(blk.slice(start));
     // cắt đuôi nếu lỡ nuốt (giữ tới hết câu hỏi)
     if (stmt.length < 25) continue;
     if (stmt.length > 700) stmt = stmt.slice(0, 700);
