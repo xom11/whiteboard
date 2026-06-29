@@ -32,3 +32,6 @@ tests/e2e/.auth/
 
 # diagnostic scratch (probe outputs)
 .work/
+
+# tesseract.js traineddata cache (tải về khi chạy OCR ở Node, vd script đo)
+*.traineddata

@@ -4,6 +4,7 @@
 // offline, không cần network / LLM / API key. (Engine 'llm' cũ đã gỡ.)
 
 import { runTesseractOcr } from './tesseract';
+import { repairOcrSymbols } from './repairOcrSymbols';
 import type { ImagePart } from './types';
 
 // Ngưỡng: text ngắn hơn thì force confidence=low bất kể engine report gì.
@@ -77,6 +78,9 @@ function postProcess(raw: string): string {
   t = t.replace(/```[\s\S]*?```/g, '').replace(/`([^`]+)`/g, '$1');
   t = t.replace(/\s+/g, ' ').trim();
   t = t.normalize('NFC');
+  // Vá symbol đặc thù lỗi OCR (⊥ △ (O) ∈) — đặt ở tầng OCR, không ở normalizeText
+  // dùng chung. Token đã collapse 1-space + NFC nên pattern ổn định.
+  t = repairOcrSymbols(t);
   if (t.length > MAX_TEXT_CHARS) t = t.slice(0, MAX_TEXT_CHARS);
   return t;
 }

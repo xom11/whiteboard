@@ -58,6 +58,19 @@ describe('extractProblemFromImage — Tesseract', () => {
     if (r.ok) expect(r.text).toBe('Cho tam giác ABC vuông tại A');
   });
 
+  it('post-process: áp repairOcrSymbols (vá ⊥ △ (O) trên output OCR thật)', async () => {
+    // Chuỗi đo thật từ tesseract.js trên PDF rasterize (tuyen-tap-400).
+    setupTesseractWorker({
+      text: 'Cho AABC đều nội tiếp (0) Hạ BK | AM tại K',
+      confidence: 88,
+    });
+    const r = await extractProblemFromImage(sampleImage);
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.text).toBe('Cho tam giác ABC đều nội tiếp (O) Hạ BK ⊥ AM tại K');
+    }
+  });
+
   it('empty text từ Tesseract → reason="empty"', async () => {
     setupTesseractWorker({ text: '   ', confidence: 0 });
     const r = await extractProblemFromImage(sampleImage);
