@@ -65,6 +65,7 @@ async function main() {
   if (JXG.Options?.board) JXG.Options.board.renderer = 'svg';
 
   const { tryDeterministicFigure } = await import('../../src/stamps/geometry-2d/ai/deterministic/tryDeterministicFigure');
+  const { tryPartialFigure } = await import('../../src/stamps/geometry-2d/ai/deterministic/partialFigure');
   const { serializeBoard } = await import('../../src/stamps/geometry-2d/serialize');
   const { renderGeometrySvgFromState } = await import('../../src/stamps/geometry-2d/render');
   const sharp = (await import('sharp')).default;
@@ -77,40 +78,54 @@ async function main() {
     else targets = all.filter((b) => b.id === +sel);
   }
 
-  const summary: Array<{ id: number; ok: boolean; reason?: string; points?: number; shapes?: number; text: string }> = [];
-  let okCount = 0;
+  const summary: Array<{ id: number; ok: boolean; mode?: 'full' | 'partial' | 'none'; reason?: string; points?: number; shapes?: number; uncovered?: number; text: string }> = [];
   for (const b of targets) {
     let r: any;
     const intro = introBeforeProof(b.text);
     try {
       r = tryDeterministicFigure(intro);
-    } catch (e) {
-      summary.push({ id: b.id, ok: false, reason: 'throw:' + (e instanceof Error ? e.message : String(e)), text: b.text });
+    } catch {
+      r = { ok: false, reason: 'throw' };
+    }
+    // FULL trước; nếu miss → PARTIAL (vẽ phần dựng được, đã transpile+verify sạch).
+    let fig: any = null;
+    let mode: 'full' | 'partial' = 'full';
+    if (r.ok) {
+      fig = r.figure;
+    } else {
+      let p: any = null;
+      try {
+        p = tryPartialFigure(intro);
+      } catch {
+        p = null;
+      }
+      if (p) {
+        fig = p.figure;
+        mode = 'partial';
+      }
+    }
+    if (!fig) {
+      summary.push({ id: b.id, ok: false, mode: 'none', reason: r.reason, text: b.text });
       continue;
     }
-    if (!r.ok) {
-      summary.push({ id: b.id, ok: false, reason: r.reason, text: b.text });
-      continue;
-    }
-    const dsl = r.figure.dsl;
     try {
-      const view = (r.figure.transpile.state.meta as any).view;
-      const jsonState = serializeBoard(r.figure.transpile.state, view);
+      const view = (fig.transpile.state.meta as any).view;
+      const jsonState = serializeBoard(fig.transpile.state, view);
       let svg = await renderGeometrySvgFromState(jsonState);
       svg = svg.replace(/(<svg[^>]*?xmlns="[^"]*")([^>]*?)\s+xmlns="[^"]*"/, '$1$2');
       const base = resolve(outDir, `cau-${String(b.id).padStart(3, '0')}`);
       await sharp(Buffer.from(svg), { density: 200 }).resize({ width: 700, fit: 'inside' }).png().toFile(`${base}.png`);
-      okCount++;
-      summary.push({ id: b.id, ok: true, points: dsl.points.length, shapes: dsl.shapes.length, text: b.text });
+      const uncovered = mode === 'partial' ? (fig.coverage?.uncovered?.length ?? 0) : 0;
+      summary.push({ id: b.id, ok: true, mode, points: fig.dsl.points.length, shapes: fig.dsl.shapes.length, uncovered, text: b.text });
     } catch (e) {
-      summary.push({ id: b.id, ok: false, reason: 'render:' + (e instanceof Error ? e.message : String(e)), text: b.text });
+      summary.push({ id: b.id, ok: false, mode, reason: 'render:' + (e instanceof Error ? e.message : String(e)), text: b.text });
     }
   }
   writeFileSync(resolve(outDir, 'summary.json'), JSON.stringify(summary, null, 2), 'utf-8');
-  const reasons: Record<string, number> = {};
-  for (const s of summary) if (!s.ok) reasons[s.reason!.split(':')[0]] = (reasons[s.reason!.split(':')[0]] ?? 0) + 1;
-  console.log(`render OK ${okCount}/${targets.length} → ${outDir}`);
-  console.log('fail reasons:', JSON.stringify(reasons));
+  const full = summary.filter((s) => s.ok && s.mode === 'full').length;
+  const partial = summary.filter((s) => s.ok && s.mode === 'partial').length;
+  const none = summary.filter((s) => !s.ok).length;
+  console.log(`render: FULL ${full} + PARTIAL ${partial} = ${full + partial}/${targets.length} có hình (none ${none}) → ${outDir}`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
