@@ -197,6 +197,11 @@ describe('repairOcrSymbols — R12-R19 glyph + rớt dấu (đo PDF vào-10 2018
     expect(repairOcrSymbols('M di chuyển trên BC')).toBe('M di chuyển trên BC');
     expect(repairOcrSymbols('điểm A di động')).toBe('điểm A di động');
   });
+  it('R21 " va " → " và " (rớt dấu liên từ); né "va chạm"', () => {
+    expect(repairOcrSymbols('(O) va (O\') cắt nhau')).toBe('(O) và (O\') cắt nhau');
+    expect(repairOcrSymbols('giao điểm của BM va (O)')).toBe('giao điểm của BM và (O)');
+    expect(repairOcrSymbols('hai xe va chạm')).toBe('hai xe va chạm'); // "va" dính "chạm" → né
+  });
   it('R20 "Dường" → "Đường" (rớt gạch Đ); chuỗi với R8; né "Dường như"', () => {
     expect(repairOcrSymbols('Dường tròn (O)')).toBe('Đường tròn (O)');
     expect(repairOcrSymbols('Dường thẳng d cắt')).toBe('Đường thẳng d cắt');

@@ -107,6 +107,11 @@ const LAY_RE = /(?<!\p{L})Lay(?!\p{L})/gu;
 // R19 — "di qua" → "đi qua" (CHỈ bigram — né "di chuyển"/"di động" hợp lệ).
 const DIQUA_RE = /(?<!\p{L})di qua(?!\p{L})/gu;
 
+// R21 — "va" → "và" (rớt dấu huyền liên từ). Gate: theo sau là nhãn HOA / "(" /
+// "dây" / "đường" (ref hình học) → phủ "X va (O)"/"AB va AC"/"va dây"; CHỪA "va
+// chạm"/"va li" (từ thật, theo sau lowercase-khác).
+const VA_VAND_RE = /(?<!\p{L})va (?=[A-Z(]|dây|đường)/gu;
+
 export function repairOcrSymbols(text: string): string {
   let t = text;
   t = t.replace(PERP_RE, '$1 ⊥ $3');
@@ -130,5 +135,6 @@ export function repairOcrSymbols(text: string): string {
   t = t.replace(GOI_RE, 'Gọi');
   t = t.replace(LAY_RE, 'Lấy');
   t = t.replace(DIQUA_RE, 'đi qua');
+  t = t.replace(VA_VAND_RE, 'và ');
   return t;
 }
