@@ -166,6 +166,39 @@ describe('repairOcrSymbols — R8-R11 rớt dấu tiếng Việt (gate ngữ c�
   });
 });
 
+describe('repairOcrSymbols — R12-R19 glyph + rớt dấu (đo PDF vào-10 2018)', () => {
+  it('R12 € → ∈', () => {
+    expect(repairOcrSymbols('C € (O), D € (O)')).toBe('C ∈ (O), D ∈ (O)');
+  });
+  it('R13 || → ∥ (song song)', () => {
+    expect(repairOcrSymbols('OK || MB và OL || MC')).toBe('OK ∥ MB và OL ∥ MC');
+    expect(repairOcrSymbols('Chứng minh PQ || BC')).toBe('Chứng minh PQ ∥ BC');
+  });
+  it('R14 ¢ → c (đánh số ý)', () => {
+    expect(repairOcrSymbols('nội tiếp ¢, Tìm')).toBe('nội tiếp c, Tìm');
+  });
+  it('R15 Ð (Eth) → D nhãn điểm; chừa Ð đầu từ thường', () => {
+    expect(repairOcrSymbols('đi qua Ð và C')).toBe('đi qua D và C');
+    expect(repairOcrSymbols('PA, PB lần lượt tại Ð và E')).toBe('PA, PB lần lượt tại D và E');
+    expect(repairOcrSymbols('Ðường tròn')).toBe('Ðường tròn'); // Ð kề chữ thường → giữ
+  });
+  it('R16 Ø → O (nhãn O/O′)', () => {
+    expect(repairOcrSymbols("(O) và (Ø') cắt nhau")).toBe("(O) và (O') cắt nhau");
+    expect(repairOcrSymbols('Gọi Ø là tâm')).toBe('Gọi O là tâm');
+  });
+  it('R17 Goi → Gọi', () => {
+    expect(repairOcrSymbols('Goi M là trung điểm')).toBe('Gọi M là trung điểm');
+  });
+  it('R18 Lay → Lấy', () => {
+    expect(repairOcrSymbols('Lay D bất kì trên BC')).toBe('Lấy D bất kì trên BC');
+  });
+  it('R19 "di qua" → "đi qua" (né "di chuyển"/"di động")', () => {
+    expect(repairOcrSymbols('đường tròn di qua D và C')).toBe('đường tròn đi qua D và C');
+    expect(repairOcrSymbols('M di chuyển trên BC')).toBe('M di chuyển trên BC');
+    expect(repairOcrSymbols('điểm A di động')).toBe('điểm A di động');
+  });
+});
+
 describe('repairOcrSymbols — tổng hợp + idempotent', () => {
   it('vá nhiều symbol trong 1 câu', () => {
     const ocr = 'Cho AABC đều nội tiếp (O;R), Hạ BK | AM tại K';

@@ -72,6 +72,35 @@ const TAI_TAI_RE = /(?<![\p{L}])tai(\s+)(?=[A-Z(]|điểm)/gu;
 // KHÔNG đụng "tam giác" (theo sau là "giác", không phải "đường"/"(").
 const TAM_TAM_RE = /(?<![\p{L}])tam(\s+)(?=đường|\(|đối xứng)/gu;
 
+// ── R12-R19: glyph thay-thế + rớt-dấu khác (đo trên cùng PDF, gate precision-first) ──
+
+// R12 — "€" (euro U+20AC) → "∈": OCR đọc ∈ thành €. "C € (O)" → "C ∈ (O)". € không
+// bao giờ xuất hiện hợp lệ trong đề hình.
+const EURO_ELEM_RE = /€/gu;
+
+// R13 — "||" → "∥": OCR đọc ∥ (song song) thành 2 gạch đứng. "OK || MB" → "OK ∥ MB".
+const PARALLEL_RE = /\|\|/gu;
+
+// R14 — "¢" (cent U+00A2) → "c": đọc nhãn ý "c)" / "c," thành ¢. ¢ không hợp lệ.
+const CENT_C_RE = /¢/gu;
+
+// R15 — "Ð" (Eth U+00D0, KHÁC Đ-Việt U+0110) → "D": nhãn điểm D. Gate `(?<!\p{Ll})…(?!\p{Ll})`
+// chừa trường hợp Ð là Đ-Việt đầu từ ("Ðường" — theo sau lowercase → giữ nguyên).
+const ETH_D_RE = /(?<!\p{Ll})Ð(?!\p{Ll})/gu;
+
+// R16 — "Ø" (O-slash U+00D8) → "O": nhãn điểm/đường tròn O (verify ảnh gốc: "(O') cắt
+// nhau"). Gate như trên (Ø không là chữ Việt nên rất an toàn).
+const SLASH_O_RE = /(?<!\p{Ll})Ø(?!\p{Ll})/gu;
+
+// R17 — "Goi" → "Gọi" ("Goi" không là từ Việt). Gate word-boundary Unicode.
+const GOI_RE = /(?<!\p{L})Goi(?!\p{L})/gu;
+
+// R18 — "Lay" → "Lấy" (động từ "lấy điểm"). Gate word-boundary.
+const LAY_RE = /(?<!\p{L})Lay(?!\p{L})/gu;
+
+// R19 — "di qua" → "đi qua" (CHỈ bigram — né "di chuyển"/"di động" hợp lệ).
+const DIQUA_RE = /(?<!\p{L})di qua(?!\p{L})/gu;
+
 export function repairOcrSymbols(text: string): string {
   let t = text;
   t = t.replace(PERP_RE, '$1 ⊥ $3');
@@ -86,5 +115,13 @@ export function repairOcrSymbols(text: string): string {
   t = t.replace(FLORIN_F_RE, 'F');
   t = t.replace(TAI_TAI_RE, 'tại$1');
   t = t.replace(TAM_TAM_RE, 'tâm$1');
+  t = t.replace(EURO_ELEM_RE, '∈');
+  t = t.replace(PARALLEL_RE, '∥');
+  t = t.replace(CENT_C_RE, 'c');
+  t = t.replace(ETH_D_RE, 'D');
+  t = t.replace(SLASH_O_RE, 'O');
+  t = t.replace(GOI_RE, 'Gọi');
+  t = t.replace(LAY_RE, 'Lấy');
+  t = t.replace(DIQUA_RE, 'đi qua');
   return t;
 }
