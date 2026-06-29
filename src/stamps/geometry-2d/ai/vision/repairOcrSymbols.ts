@@ -62,7 +62,7 @@ const HORN_O_C_RE = /(?<!\p{Ll})Ơ(?!\p{Ll})/gu;
 // WHITELIST danh-từ hình-học theo sau (KHÔNG dùng `(?!như\b)` vì `\b` cạnh "ư"
 // Việt lỗi — bug-class \b-ASCII đã biết). Né "Dường như". Chạy TRƯỚC R8.
 const DUONG_DBAR_RE =
-  /Dường(?= (?:tròn|tron|thẳng|kính|cao|chéo|trung|phân|vuông|nối|gấp|tâm))/gu;
+  /D(?:ường|uong)(?= (?:tròn|tron|thẳng|kính|cao|chéo|trung|phân|vuông|nối|gấp|tâm))/gu;
 
 // R8 — "đường tron" → "đường tròn" (g/dấu rớt). Gate `(?![\p{L}])` né "đường trong".
 const DUONG_TRON_RE = /([Đđ]ường\s+)tron(?![\p{L}])/gu;

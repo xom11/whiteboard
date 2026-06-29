@@ -202,6 +202,8 @@ describe('repairOcrSymbols — R12-R19 glyph + rớt dấu (đo PDF vào-10 2018
     expect(repairOcrSymbols('Dường thẳng d cắt')).toBe('Đường thẳng d cắt');
     expect(repairOcrSymbols('Dường tron (I) nội tiếp')).toBe('Đường tròn (I) nội tiếp');
     expect(repairOcrSymbols('Dường như hai đường song song')).toBe('Dường như hai đường song song');
+    expect(repairOcrSymbols('Duong tròn (O)')).toBe('Đường tròn (O)'); // mất hết dấu
+    expect(repairOcrSymbols('Duong thẳng d')).toBe('Đường thẳng d');
   });
 });
 
