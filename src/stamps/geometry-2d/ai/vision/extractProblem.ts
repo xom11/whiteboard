@@ -5,6 +5,7 @@
 
 import { runTesseractOcr } from './tesseract';
 import { repairOcrSymbols } from './repairOcrSymbols';
+import { detectFormulaRisk } from './detectFormulaRisk';
 import type { ImagePart } from './types';
 
 // Ngưỡng: text ngắn hơn thì force confidence=low bất kể engine report gì.
@@ -23,6 +24,8 @@ export interface ExtractProblemSuccess {
   ok: true;
   text: string;
   confidence: 'high' | 'low';
+  /** Cảnh báo công thức/ký hiệu nghi bị OCR huỷ (detectFormulaRisk). Rỗng = sạch. */
+  warnings: string[];
   usage: { inputTokens: number; outputTokens: number };
 }
 
@@ -66,6 +69,7 @@ export async function extractProblemFromImage(
     ok: true,
     text,
     confidence,
+    warnings: detectFormulaRisk(text),
     usage: { inputTokens: 0, outputTokens: 0 },
   };
 }

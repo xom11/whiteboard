@@ -41,6 +41,16 @@ export async function handleExtractProblem(
   try {
     const r = await extractProblemFromImage(image, opts);
     if (r.ok) {
+      // Cảnh báo công thức nghi sai ưu tiên hơn (cụ thể hơn) — confidence vẫn
+      // có thể 'high' dù công thức bị huỷ (đo: "a²/pq"→"<" mà conf=90).
+      if (r.warnings.length > 0) {
+        return {
+          kind: 'low-confidence',
+          text: r.text,
+          warning: `Có thể có công thức/ký hiệu bị nhận dạng sai (${r.warnings.join('; ')}). Kiểm tra kỹ trước khi vẽ.`,
+          usage: r.usage,
+        };
+      }
       if (r.confidence === 'low') {
         return {
           kind: 'low-confidence',

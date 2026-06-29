@@ -43,6 +43,19 @@ describe('handleExtractProblem (Tesseract)', () => {
     }
   });
 
+  it('confidence cao NHƯNG công thức nghi sai → low-confidence + warning cụ thể', async () => {
+    // Đo thật: "x̂Ay"→"TÂU", "a²/pq"→"<"; tesseract vẫn report conf cao.
+    setupWorker({
+      text: 'Cho TÂU = 90° và đường tròn (O). Chứng minh: < không đổi',
+      confidence: 90,
+    });
+    const r = await handleExtractProblem(sampleImage);
+    expect(r.kind).toBe('low-confidence');
+    if (r.kind === 'low-confidence') {
+      expect(r.warning).toMatch(/công thức|ký hiệu/i);
+    }
+  });
+
   it('empty OCR → kind=error code=empty', async () => {
     setupWorker({ text: '   ', confidence: 0 });
     const r = await handleExtractProblem(sampleImage);
