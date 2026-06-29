@@ -1,0 +1,597 @@
+[
+  {
+    "page": "p001",
+    "text": "Tạ Công Hoàng - Nguyên Đăng Khoa\nK Ệ\nTỔNG HỢP CÁC BÀI TOÁN\nHÌNH HOC PHANG\nON THI VÀO LỚP 10\nTHPT 2018 - 2019\n<<\nZẽ%z>.\nXÃ Geometry pr\n",
+    "confidence": 83
+  },
+  {
+    "page": "p002",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 2\n",
+    "confidence": 95
+  },
+  {
+    "page": "p003",
+    "text": "Mục lục\nLời nói đầu 5\n1 Một số bổ đề và kí hiệu, thuật ngữ sử dụng trong tài liệu 7\n1.1 Cáckíhiệu thuật ngữ .............. oT\n12 Một số bổ đề dùng trong tài lieu... ....................... T\n2 Cac bài toán đã có lời giải 13\n3 Một số bài toán chưa có lời giải 115\n4 Bài tập rèn luyện 117\nTài liệu tham khảo 119\n3\n",
+    "confidence": 90
+  },
+  {
+    "page": "p004",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 4\n",
+    "confidence": 95
+  },
+  {
+    "page": "p005",
+    "text": "`. so X\nLời nói dau\n\nHình học là một phần quan trọng trong Toán học và rất phát triển tại Việt Nam. Tôi\nđã thấy rất nhiều người giỏi Hình học nhưng ngược lại thì lại có nhiều người vẫn đang rất sợ\nbộ môn mang tên Hình học phẳng này. Bằng sự động lực và đam mê nên tôi đã quyết định\nbiên soạn một tài liệu về hình học cấp THCS dành cho những bạn nào đam mê Hình học\nhoặc chưa đam mê thì mong qua cuốn tài liệu này các bạn sẽ tìm được thấy vẻ đẹp ẩn chứa\ntrong đó. Cuốn tài liệu này bắt nguồn từ \"[TOPIC] HÌNH HỌC ÔN THI VÀO THPT\nCHUYEN 2018-2019\" do tôi sáng lập ở trên diễn đàn Toán học với tài khoản là Khoa\nLinh. Lúc đó là vào dịp tôi đang ôn thi vào lớp 10 THPT, mặc dù khá là nhiều việc nhưng\nđược sự cho phép của bạn ĐHV THCS MoMo1323 và sự ủng hộ của rất nhiều bạn nên tôi\nđã sáng lập ra TOPIC này. Trải qua một tháng TOPIC được thành lập thì đã có hơn 100 bài\ntoán được đưa lên với phong trào giải bài rất sôi nổi, nhiệt tình của các bạn. Đó cũng là nơi\ngiao lưu học hỏi thêm về nhiều bài toán hay trong hình học phẳng. Khi kết thúc TOPIC của\nmình thì tôi đã có dự định trong hè gõ lại tất cả những bài toán có trên đó nhưng do số lượng\nbài khá nhiều và cũng rất nhiều bài chưa có lời giải nên tôi đã nhờ đến sự trợ giúp của bạn\nTạ Công Hoàng - THPT chuyên Lê Khiết với tài khoản trên diễn đàn là taconghoang. Tôi\nmuốn gửi lời cảm ơn tới các bạn đã tham gia đóng góp rất nhiều bài toán hay, lời giải đẹp\ncho TOPIC, đặc biệt là các bạn có tên tài khoản sau: Minhcamgia, conankun, MoMo123,\nBunhiChySchwarz, buingoctu, Korkot, phamhuy1801, khanhdat1, Tea coffee... Tôi\ncũng đặc biệt cảm on anh Nguyễn Phúc Tăng- Khóa 9 THPT chuyên Nguyễn Quang Dieu\nđã giúp chúng tôi thiết kế bìa, các khung bài tập để cho tài liệu hoàn thiện hơn. Một số bài\ntoán vẫn chưa có lời giải thì tôi đã cho vào mục khác và thay vào đó là những bài toán do tôi\nhoặc người khác đề xuất. Mặc dù đã cố gắng rất nhiều nhưng sai sót trong tài liệu là không\nthể tránh khỏi và trong quá trình gõ tài liệu thì tôi cũng đã gặp phải rất nhiều lỗi biên soạn\n",
+    "confidence": 95
+  },
+  {
+    "page": "p006",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 6\nnên có thể tài liệu nhìn chưa được đẹp như ý muốn. Mong mọi người đóng góp ý kiến thêm tại\nhòm thư: khoanguyen17112003@gmatil.com.\n\nChúc các bạn tìm được sự đam mê với môn học này. Xin chân thành cảm ơn!\nPhú Thọ, ngay 17 tháng 8 năm 2018\nNguyễn Đăng Khoa - Khóa 36 THPT chuyên Hùng Vương\n",
+    "confidence": 94
+  },
+  {
+    "page": "p007",
+    "text": "Chương 1\n~ £ 2 X ` Pp LPN ~ ~ ?\nMột sô bõ đề và kí hiệu, thuật ngữ sử\nˆ. oa\n\ndung trong tài liệu\n1.1 Cac kí hiệu, thuật ngữ\n(ABC) : Dường tròn ngoại tiếp tam giác ABC\nRape) : Bán kính đường tròn ngoại tiếp tam giác ABC\nSAnc : Diện tích tam giác ABC\nA,B,C.D đồng viên: A, B,C, D cùng nằm trên một đường tron\ndpem: Điều phải chứng minh\n1.2 Một so bo dé dùng trong tài liệu\n\nSau đây là các bổ đề hay gặp được chúng tôi sử dụng trong tài liệu và không đưa ra phép\nchứng minh, bạn đọc sẽ phải tự chứng minh. Ngoài ra còn rất nhiều tính chất, bổ đề quen\nthuộc bạn đọc sẽ được tiếp cận qua các bài toán.\n",
+    "confidence": 91
+  },
+  {
+    "page": "p008",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 8\nBổ đề 1: Cho tam giác ABC nội tiếp (O), phân giác góc A cắt (O) tai D khác A. I thuộc AD\nvà J thuộc tia đối của tia DA. Khi đó I,J là tâm đường tròn nội tiếp và bàng tiếp góc A khi\nvà chỉ khi DB = DC = DI = DJ.\n\nA\n\nf&N\nPL\n\nBổ đề 2: Cho tam giác ABC có trực tam H. M là trung điểm BC. Đường thẳng qua H cắt\nAB, AC lần lượt tại P,Q khi đó MH 1 PQ < HP = HQ\n\nA\n\nD\nE\nP\nB M ¢\n\nNhận xét. Day là trường hợp đặc biệt của bai toán con bướm.\n",
+    "confidence": 90
+  },
+  {
+    "page": "p009",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 9\nBổ đề 3: Từ điểm M năm ngoài (O) kẻ hai tiếp tuyến MA, MB. Kẻ cát tuyến MCD tới (O).\n\nAC BC\nKhi đó ta có — = —=\n\nđó ta có == 5D\nA\n^ | —_Z M\n2 /—/\nB\n\nNhận xét. Tứ giác ACBD như trên được gọi là tứ giác điều hòa. Trong bac THCS ta chủ yếu\nnghiên cứu tính chất trên.\nBổ đề 4: Phép đồng dạng tương ứng (không có định nghĩa).\nVi dụ: Cho hai tam giác ABC và A'B'Ơ' đồng dạng có các phân giác AD, AD’ và đường cao\n\n. BD B'D' AB APBP'. Ruanp) Rupe) ——% 75\nAH AH Khidétacd — === 1 ==) 5 —— =—5— ADB =A'D'B' và\n\n: \"ĐC PC HD T HD Rump Ruwpel và\nta có hàng loạt, các tỉ số, các góc bằng nhau sao cho chúng có tính tương ứng.\n4\n\nIAN |\nNhận xét. Phép đồng dang tương ứng không có trong chương trình học và dạy nhưng chúng\nta hoàn toàn chứng minh được bằng phép đồng dạng. Nó giúp chúng ta nhìn hình dé hơn và\nlời giải sẽ đẹp, gọn hơn rất nhiều.\n",
+    "confidence": 85
+  },
+  {
+    "page": "p010",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 10\nBổ đề 5: Cho tam giác ABC nội tiếp (O). Tiếp tuyến tai B,C của (O) cắt nhau tại P. Goi\nM là trung điểm của BC. Khi đó BAP = CAM.\n\nA N\nB N_\\” ⁄ C\nP\nNhận xét. Dường thẳng AP được gọi là đường đối trung trong tam giác ABC va đã có rất\nnhiều bài toán đề cập tới đường thẳng này, bạn đọc sẽ thấy ở trong tài liệu.\nBổ đề 6: Cho tứ giác lồi ABCD. Goi M là trung điểm AC. Điểm N thuộc đoạn thẳng DA\nhoặc DC sao cho BN chia diện tích tứ giác thành hai phần bằng nhau. Khi đó ta có MN || BD.\nB\nA\nLai\nN\nD\n",
+    "confidence": 92
+  },
+  {
+    "page": "p011",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 11\nBổ đề 7: Cho ba đường tròn phân biệt đôi một cắt nhau tai hai điểm, khi đó ba dây cung\nchung của ba đường tròn đồng quy.\n\nNhận xét. Dây là nội dung của định lý trục đẳng phương, trong bậc THCS thì ta chỉ xét\ntrường hợp hai đường tròn có dây cung chung.\n\nNgoài ra các bạn nên đọc thêm các định lý hay dùng trong bậc THCS như Menelaus, Ceva,\nPotoleme... để có thêm nền tảng vững chắc.\n",
+    "confidence": 95
+  },
+  {
+    "page": "p012",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 12\n",
+    "confidence": 95
+  },
+  {
+    "page": "p013",
+    "text": "Chương 2\nZ `. Z ~ 2 `... .”?.\nCac bài toán đã có lời giải\nCho tam giác ABC ngoại tiếp đường tròn tâm (O). Trên đoạn BC lấy điểm M, trên đoạn\nBA lấy N, trên đoạn CA lấy P sao cho BM = BN và CM = CP.\na, Chứng minh O là tâm đường tron ngoại tiếp tam giác MNP\nb, Chứng minh tứ giác ANOP nội tiếp\n¢, Tìm một vị trí của M, N, P sao cho độ dài đoạn NP nhỏ nhất\n(Dé thi TS lớp 10 Sư Phạm 2000-2001)\nLời giải\nA\n/ P\nNIN\nB M C\n13\n",
+    "confidence": 89
+  },
+  {
+    "page": "p014",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 14\na, Ta có: BM = BN;CM = CP suy ra BO là trung trực MN và CO là trung trực MP suy\nra O là tâm (MNP)\n\nb, Theo tính đối xứng ta có: APO + ANO = OMC + OMB = 180° suy ra tứ giác ANOP nội\ntiếp\n¢, Ta có: NOP = 180° — BAC (không đổi) mà ON = OP nên để NP nhỏ nhất thì ON =\nOP = OM nhỏ nhất khi đó M, N, P là điểm tiếp xúc của đường tròn nội tiếp tam giác ABC\nvới 3 cạnh của tam giác.\nTừ điểm A ngoài đường tròn (O) kẻ hai tiếp tuyến AB và AC và cát tuyến ADE. BƠ cắt\nDE 6 K. Chứng minh hệ thức sau:\n_——\nAD AE AK\n(trách dé thi TS lớp 10 tinh Phú Tho 2017-2018)\nLoi giai\nA\nB _—Z\n(XT\n“\nGọi giao của AO và BC là H ta có: AH.AO = AD.AE = AB? suy ra tứ giác DHOE nội tiếp\n= DHA=OED = ODE = OHE\n",
+    "confidence": 92
+  },
+  {
+    "page": "p015",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 15\nSuy ra HK, HA là phân giác trong và phân giác ngoài DHE\nDK KE . P JE\n\n24D 4E (Theo tính chất phân giác)\nio AE AK DK mm\n\n“AD \"AE T° TAD TAB ~° 7 AD \"AE TAK\nNhận xét: Dây chính là hệ thức Descartes\n\nCho đường tròn (O) và điểm A, B cố định, trong đó A nằm ngoài và B nằm trong (O).\n\nDây ƠD di động và đi qua B. AC, AD lần lượt cắt (O) tại điểm thứ 2 là E và F. Chứng\n\nminh EF đi qua một điểm cố định.\n\n(Đề xuất bởi Khoa Linh)\nLời giải\n/ |\nA fh IL\n— >\n\nABN (0) = {K,L}; EF NAB = {M}; (ACD) N AB = {A, I}\nTa có: AB.BI = CB.BD = BK.BL(không đổi) = I cố định.\nMặt khác: AEM = FDC = MIC = MECT nội tiếp\n= AM.AI = AE.AC = AK.AL (không đổi)\n= M cố định. Vay EF đi qua điểm M cố định.\n",
+    "confidence": 84
+  },
+  {
+    "page": "p016",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 16\nCho tam giác ABC có đường cao BE, CF cắt nhau tại H. Goi M là trung điểm EF và\ndựng hình bình hành AETH. Chứng minh: BM vuông góc với IF.\n\n(Dé zudt bởi Tự Cường)\nLời giải\nCách 1:\n4\nB NE Lại\nGọi N là trung điểm BE. Khi đó ta chứng minh được: AMNB ~ AFHI(c.g.c) suy ra điều\nphải chứng minh.\nCách 2:\n4\nTL E\nF\nB Lại\n",
+    "confidence": 89
+  },
+  {
+    "page": "p017",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 17\nLấy T đối xứng với I qua điểm H thì ta có ngay ETI = BIH = EAH = ATHE nội tiếp.\nTừ đó A,7, F, H, E cùng thuộc một đường tròn nhận ET là đuờng kính.\n\nSuy ra AT FH ~ AbEFB(g.g) kéo theo AIFT ~ ABMEP(c.g.c) suy ra đpem.\nCho tam giác nhọn ABC nội tiếp đường tròn (O). I là điểm chính giữa cung lớn BC. Gọi\nH và K lần lượt là hình chiếu của I lên phân giác góc trong tại B và C.\nChứng minh rằng trung điểm @ của HK thuộc trung trực BC\n(Đề xuất bởi Khoa Linh)\nLời giải\nI\n7 .\nÂN\nxZỹ\n-\nB — 3⁄2 Lại\nGọi M là trung điểm BC. Khi đó ta có IM vuông góc với BC. KCN BH = J\nTa có: IKC = IMC = 90° suy ra TK MC nội tiếp va THM B nội tiếp.\n— _— BAC _— —, ABC+ACB\nsuy ra: MKC = MIC = — và KIH=HJC = SU\nTừ đó: TKM + KTH = 180° suy ra KM || TH. Tương tự thi ta có: IK MH là hình bình hành\nSuy ra G thuộc IM hay ta có điều phải chứng minh.\nCho AABC nhọn có AB > AC. Các đường cao AD, BF,CE cắt nhau ở H. BƠ cắt EF\n\nở K. Gọi M là trung điểm của BC. (O), (O) lần lượt là tâm đường tròn ngoại tiếp 2 tam\n\ngiác AEF, BKE. Chứng mình H là trực tâm của tam giác AMK.\n\n(Đề xuất bởi conankun)\n",
+    "confidence": 87
+  },
+  {
+    "page": "p018",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 18\nLời giải\n4\nDi\n2> RA\nẤ C D M 5\nGọi L là giao điểm thứ 2 của (O) va (Ø).\nTa có: ALE = AFE = EBC = 180° — KLE. Suy ra A, L, K thẳng hàng.\nHLA=HFA=90°= HL 1 AK.(1)\nTa lại có:\nEMD = 2MBE = AFE + CFD = 180° — DFE suy ra tứ giác DFEM nội tiếp.\nquy ra: KL.KA=KF.KE = KD.KM = ALDM nội tiếp = MLA = MDA = 90°\n= ML 1 AK(2).\nTừ (1) va (2) ta có: M, H, L thẳng hàng va H là trực tam tam giác AK M.\nNhận xét. Bài toán này là bài toán hay có nhiều lời giải bằng các dựng các đường tròn ngoại\ntiếp khác nhau.\nCho tam giác ABC nội tiếp đường tròn (O). Phân giác trong góc ABC cắt (O) tại Ð và\ncắt AC tại E. Gọi (w) là đường tròn ngoại tiếp tam giác AEB. F là giao BƠ và (up), DF\nP 1 N MA NB AB?\ncắt (w) tại G, EG cắt AD, BC tai M, N. Chứng minh rằng: VD NC — Do\n(Đề xuất bởi Nguyễn. Tăng Vii)\n",
+    "confidence": 89
+  },
+  {
+    "page": "p019",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 19\nLời giải\nB\n. N\nK\nAN\n4 | ⁄4 c\nD\nDễ dang chứng minh DA là tiếp tuyến của (w) = DC? = DA? = DG.DF Tit day suy ra\n/GFC = ZGCD mà /GFC = ZBEG. Tit day suy ra GEDC nội tiếp\n/BAG = /BEG = 4DCG; 4ABG = ZGEC = GDC\nAB BG AG\nABAG ~ AD —\n= ABAG~ADCE = 6p ba Ca\nMặt khác, ta có LZAGE = ZABE = ZECD = ZEGD suy ra GE là tia phân giác ZAGD\nAM AG Ñ : . —_ _Ð\n=> MD GD Tương tu ta cũng chứng minh được GN là phân giác ZBGC\n_NB_GB__ MA NB _ AB\nNC GC \" MD NC CD?\nCho (0) và đường thẳng d cố định va (O); d không có điểm chung . M là điểm di động\ntrên d. Vẽ 2 tiếp tuyến MA, MB phân biệt và cát tuyến MCD của (O) (C năm giữa M\nvà D) . Vẽ day DN của (O) song song với AB. Goi J là giao điểm của CN và AB. Chứng\nminh rằng\nIC BƠ | -\na, 7A pp R*1A=IB\nb, Điểm I thuộc một đường cố định khi M di động trên đường thẳng d.\n(Dé zudt bởi MoMo123)\nLời giải\n",
+    "confidence": 83
+  },
+  {
+    "page": "p020",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 20\nAM\n| 7\n⁄ vế\n7 H\nN\nN ö\nD\na, Ta thay:\nTCA = BOD: TAC = BDC = ACA ~ ABCD = 10 = gp 1)\nTương tự ta có: AICB ~ AACD = - = Ấn\nmm\nĐể ý ta có: BD = AD (bo đề 3)\nTừ (1) và (2) ta có J là trung điểm AB.\nb, Hạ OH vuông góc với d cắt AB tại K.\nTa có: OK.OH = OI.OM = OA? suy ra K cố định.\nSuy ra I thuộc đường tròn đường kính OK.\nCho đường tron (O), đường kính AB. Trên đường tròn lấy điểm D khác A, B và ZDAB >\n60°. Trên đường kính AB lấy điểm Ơ (C khác A, B) và kẻ CH vuông góc với AD tại H.\nPhân giác trong của DAB cắt đường tròn tại Z và cắt CH tại F. Dường thẳng DF cắt\nđường tròn tại điểm thứ hai N.\na, Chứng minh AFCN nội tiếp và 3 điểm N, Ơ, E thẳng hàng.\nb, Cho AD = BC, chứng minh DN đi qua trung điểm AC.\n(Dé zudt bởi MoMo123)\nLời giải\n",
+    "confidence": 88
+  },
+  {
+    "page": "p021",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 21\nE\nD ><\n4 ACH\nN /Z⁄⁄ |\nN\na, Ta có: NAC = NDB = NFC = Tứ giác AFC'N nội tiếp\n= FNC = FAC = DAE = DNE = C, N, E thẳng hang\nb) Ké CG song song AD (G € DN)\nTa có: CGD = ADN = ABN = Tứ giác BCGN nội tiếp\n= CGB = CNB = BAB = FNC = CBG\n= ACGB cân tại C = CG = CB = AD = ADCG là hình bình hành\n= DN di qua trung diém AC\nCho tứ giác ABCD nội tiếp trong (O), AC cắt BD tai J. Dường tròn (O’) tiếp xúc với\nJA, JB tại E, F và tiếp xúc trong với (O), Chứng minh rằng đường thẳng EF đi qua tâm\nđường tron nội tiếp AABD\n(Dinh lj Lyness)\nLoi giai\n",
+    "confidence": 88
+  },
+  {
+    "page": "p022",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 22\nA\nIN\nARN,\n0 đà\nS\nZZ TẾ 5\nọ\nCc\nN\nGọi T là tiếp điểm của (O) và (Ø), TF cắt (O) tại N, AN cắt EF tại I.\nTa có: O'F 1 BD nên ON L BD do đó N là điểm chính giữa cung BD nên AN là phân giác\n4ZDAB.\nDé dàng chứng minh BN? = WƑ.NT(1) (ANFB ~ ANBT)\nvà LNAT = 5“TON = 2“TOF = ZIET nên tứ giác IFAT nội tiếp = ZAJT = ZAET =\nZIFT nên ANIF ~ ANTI suy ra NF.NT = NI (2)\nTừ (1) và (2) suy ra NI = NB = ND uên I là tâm nội tiếp tam giác ABD.\nTừ 3 đỉnh của một tam giác hạ các đường vuông góc xuống một đường thẳng ở ngoài tam\ngiác đó. Chứng minh rằng tổng độ dài của 3 đường vuông góc đó gấp 3 lần độ dài của\nđoạn thẳng vuông góc hạ từ trọng tâm của tam giác xuống cùng đường thẳng đó .\n(Dé xuất bởi thanhdatqu2003)\nLời giải\n",
+    "confidence": 87
+  },
+  {
+    "page": "p023",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 23\n4\nM\nF D\nB tai\nd\nKL\nHI kẻ\nN\n\nDựng các điểm như hình vẽ (M đối xứng với trong tâm G qua D)\nTheo tính chất đường trung bình hình thang ta có:\n(AH +CL)+ BN =2DJ + BN =GI + MK + BN = GI + (MK + BN) = 3GI\nSuy ra điều phải chứng minh.\n\nCho AABC có trực tâm H. Chứng minh rằng đường tròn ngoại tiếp của\n\nAHDC,AHAB,AHCA có bán kính bằng nhau.\n\n(Đề xuất bởi Lao Hac)\nLời giải\n| |\n2 = A\nD —\n\nGọi D là giao điểm thứ 2 của AH với (ABC).\n",
+    "confidence": 89
+  },
+  {
+    "page": "p024",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 24\nDé dàng chứng minh được D đối xứng với H qua BC. Suy ra Rsuey = B(ppc) = B(ABo).\nTương tự ta có bán kính đường tròn ngoại tiếp AHBC, AHAB, AHC A bang nhau và cùng\nbằng bán kính đường tròn ngoại tiếp AABC.\n\nCho tam giác ABC có đường tròn nội tiếp (J). Gọi D, E, F là điểm tiếp xúc của đường\nP Ñ 1\ntròn bàng tiếp đỉnh A với ba cạnh tam giác. Chứng minh rang: Sgro > 15D5F\n(Dé xuất bởi NguyenHoaiTrung)\nLời giải\n4\n5 PK ZzN\nE\nTa dễ dàng chứng minh được: BI || DE;JC || DF = ABIC ~ AFDE(g.9) = đc =\nDEF\nBC),\nEF\nLs BC\\* 1\nMặt khác 2BC =BC+BE+CF > EF = | — | > +:\nEF 4\nSuy ra đpcm.\n",
+    "confidence": 84
+  },
+  {
+    "page": "p025",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 25\nCho đường tròn (O; R) và điểm A cố định với OA = 2R, đường kính BC quay quanh O\nsao cho 3 điểm A, B, C không thẳng hang; Dường tròn (ABC) cắt OA tai điểm thứ 2 là\nI. Dường thẳng AB, AC cắt (O; R) lần lượt tai D, E vớ D # B , C # E. Nối DE cắt\nđường thẳng OA tai K.\na) Chứng minh: OJ.OA = OB.OC và AK. Al = AE AC\nb) Tinh do dai OI; OK theo R\n¢) Chứng minh: đường tròn (ADE) luôn di qua 1 điểm cố định (khác A) khi BC quay\nquanh O.\n(TS lớp 10 dai học Su Phạm ngoại ngữ 2001-2002)\nLời giải\n-_ C\nA a N\nw— ⁄\nB\nOA cắt (O) tại M,N.\na, Tương tự bài số 3\nb, OI.OA = 2R.OI = OB.OC = FỀ suy ra OI = 5\n4\nTa có: AK.AI = AD.AB = AM.AN = 3R? suy ra liệu =3H> AK = or = 0K = sẽ\n",
+    "confidence": 86
+  },
+  {
+    "page": "p026",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 26\n\n¢) Gọi (ADE) giao AO tại S khác A.\nDo K cố định nên KD.DE không đổi và KD.KE = KA.KS nên KS không đổi nên S cố định\nVậy (ADE) đi qua điểm Ø là điểm cố định.\n\nCho AABC nhọn nội tiếp (O; R) và ngoại tiếp (J;r). Gọi x,y,z là khoảng cách từ (O)\n\nxuống ba cạnh của tam giác ABC. Chứng minh hệ thức z+uy+Z= R.+r\n\n(Dinh lý Carnot)\nLoi giai\nA N\n` 3⁄2\n\nGọi M,N, P là trung điểm BC,CA, AB.\nP b\nAp dụng định lý Ptolemy ta có: OB.MP = OM.BP+OP.BM & 5 = x3 + 23\nThiết lập các đẳng thức tương tự rồi cộng lại được.\npatbte b+c pote Lath\n\neo Tg tT Di hư\nĐể ý rằng 2Sapc = 2r(a + b + c) = ax + by + cz\n\na+b+c a+b+c b+c a+c a+b a b c\n\nSuy ra 2x + — T= 2 + ~—¬ + ~—¬ + e5 + êm + zg\n= (nan =(r+u+ 2. Ee\nSuy ra đpcm\nNhận xét. Hệ thức trên chỉ đúng khi AABC nhọn. Nếu AABC tù tại A thì ta có hệ thức\nR+r=ụutz-zs. Tương tự với góc B,C tù thì ta có các hệ thức còn lai.\n",
+    "confidence": 83
+  },
+  {
+    "page": "p027",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 27\nCho tam giác nhọn ABC nội tiếp (O) có các đường cao BE, CF. Các tiếp tuyến tại B,C\ncủa (O) cắt nhau ở K, gọi M là giao điểm của OK với BC.\n1, Chứng mình: AAEB ~ ACMK\n2, Chứng minh: BAK = MAC\n3, Goi Ơ là giao điểm của AM và EF, H là giao điểm của AK và BC. Chứng minh rằng\nGH | OM\n(Dé suất bởi BunhiChySchwarz)\nLời giải\nA\nxá\nB NS Lại\nK\n1, Ta có: AAEB ~ ACMK(s.g)\n2, Ta có: OM.OK = OC? = OAP = AOMA ~ AOAK(e.g.c) = OAM = OKA = DAH (1)\nMặt khác OAC = DAB (2)\nTừ (1), (2) ta có: MAC = BAK\n",
+    "confidence": 91
+  },
+  {
+    "page": "p028",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 28\n3, Ta có: A4GE ~ AAHB và AAEM ~ AABPK(g.g)\nAG AE AM\nSuy ra AH AB AR = HGI|OM\nTừ M nam ngoài (O) cho trước dựng hai tiếp tuyến MA, MB. C Chạy trên cung nhỏ AB.\nD,E,F là hình chiếu của Ơ trên AB, MA, MB. S,T là giao của DE, DF với CA,CB.\nChứng minh rằng:\na, ST || AB.\nb, Chứng minh ST là tiếp tuyến chung của (TFC) va (SCE)\n¢, Goi I là giao điểm thứ 2 của (TFC) va (SCE). Chứng minh: CT đi qua điểm cố định\nkhi C di chuyển trên cung AB\n(Đề xuất bởi Minhcamgia,)\nLời giải\nB\nNN F\nDE /)\nAN =\n7\n4 r\n/ ì\n4\na, Dễ dàng chứng minh được tứ giác CDAFE và CDFPB nội tiếp nên ta có:\nZSDT = ZCAB + ZCBA = 180° — ZSCT\nTừ đây suy ra tứ giác SCTD nội tiếp = LOST = 4CDT = 4CBF = ZCAB\nSuy ra ST | AB\nb, Ta có : CST = CAD = CED = ST la tiếp tuyến của (SEC).\n",
+    "confidence": 87
+  },
+  {
+    "page": "p029",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 29\nTương tự ta cũng có ST là tiếp tuyến của (TCF)\n¢, Gọi P,Q lần lượt là giao điểm của IC với T'S và AB.\nVì ST là tiếp tuyến chung của (TFC) và (SCE) nên TP? = PS = PC.PI = PT = PS mà\nTS || AB uên Q là trung điểm AB (có định) Suy ra dpem.\nCho đường tròn (O) hai điểm A, B nằm trên đường tròn, điểm Ơ nằm trong đường tròn\n(O). Duong tròn (O') tiếp xúc trong với (O) tại R và tiếp xúc với CA, CB theo tứ tự ở\nP,Q. Gọi I là tam đường tron nội tiếp tam giác ABC. Chứng minh : A, P, R, I đồng viên.\n(Bổ đề Sawayama)\nLời giải\nSe\nNe\nA\n>\n<i\n—z#x\n% / TA B\n) SO\nR\nKéo dài BƠ cắt (O) tại điểm thứ hai là D. Goi K là tâm đường tròn nội tiếp tam giác DAB\nvà L là điểm chính giữa cung BD.\nTheo bài số 10 thì ta có: P, i, Q thẳng hàng.\n— ROQ ROL —= )\nTa có: RPK = 209 = — = RAK uên tứ giác RAPK nội tiếp.\n— Z5 Z~zz ACB CBA CAB.—\nMặt khác: IKQ = CQP — QBK = 90° — _ - — = -— = PAI\nSuy ra tứ giác PKTA nội tiếp. Từ đó ta có: P,J, R, A đồng viên.\n",
+    "confidence": 88
+  },
+  {
+    "page": "p030",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 30\nCho tam giác từ M nằm ngoài (O) vẽ tiếp tuyến MA, MB, gọi MO giao AB tại H, I là\ntrung điểm MH, K là giao của IA và (O).\n\na, Chứng minh JA1L HK.\nb, Tinh MKB.\n(Dé thi TP.HCM 2014-2015)\nLời giải\n4\npẮ“^sa\na, Kẻ đường kính AD của (O). Ta có: AAHM ~ ADBA(g.g)\nVì H là trung điểm AB và I là trung điểm HM nên ADBH ~ AAHI(c.g.c)\nSuy ra BDH = HAR = BDK nên D, H, K thẳng hàng.\nTa có: AKH = ABD = 90° nên AI 1 HK\nb, Vì AI L HK nen KHI = HAK = KBM. Từ đó ta có tứ giác K HBM nội tiếp.\nSuy ra BKM = BHM = 90°\nDường tròn (O;) và (O2) cắt nhau tại P và Q. Qua P vẽ đường thẳng dị bất kỳ cắt (O;)\nvà (Oy) tại A và B. Duong thẳng dy qua P cắt (O¡) và (O›) tại C và D. BD cắt AC tại\nX. Vẽ dây PY | BD (Y € (01), PZ || AC (Z € (Os). Chứng minh rằng : X,Y,Z,Q\nthẳng hàng.\n(Đề xuất bởi taconghoang)\n",
+    "confidence": 88
+  },
+  {
+    "page": "p031",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 31\nLời giải\n⁄\nBy\nc\nZ\nTa có: QDB = QPB = LCQ nen tứ giác LDQC nội tiếp.\nSuy ra: DLQ = DCQ = PYQ ma DL || PY nên Y, L, Q thẳng hàng.\nva CLO = CDQ = PZQ nên L,Q, Z thẳng hàng.\nVậy suy ra Y, L,Q, Z thẳng hàng.\n1, Cho &TÁu = 90° và đường tròn (O) tiếp xúc với Az và Ay lần lượt tại P,Q. Đường\nthẳng (d) là một tiếp tuyến thay đổi của (O). Gọi a,p, q là khoảng cách từ A, P,Q xuống\n2\nđường thẳng (d). Chứng minh: ”. không đổi khi (d) dịch chuyển\n2, Khẳng định trên còn đúng không khi wy không phải góc vuông.\n(Dé thi PTNK 2000)\nLời giải\n",
+    "confidence": 86
+  },
+  {
+    "page": "p032",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 32\n4\nF\nWAN ;\nB\n» \\\np\n. <. .2 › Pp Ñ a+ b +c\nGoi B,C la gia điểm của (d) với AP, AQ. Đặt AB = ¢; AC = b; BC =a vam = — =\nAP = AQ\nTa có:\npg BPCQ (m—c)(m—b) m?>—m(b+c)+bc mồ-m(b-e) m\na2 AB.AC . be = bc Bh be\n(a+b+c)—2@+b+e)b+c) a? — bò — cò — 2bc a=b-c 1\n= rmm 3  ”r^ l= 1=— ưmề =\nđòc + 4bc + 4be + 2\nx— su. J-bo-c 1. 1 Ñ Ñ\n1, Nếu zÁAy = 90° thì me + 273 (không đổi)\n(== lop -c 1 1 sA :\n2, Nếu zAy không phú góc vuông thì — + 273 = (khong doi)\nVậy từ đó suy ra “ không đổi (dpem)\npq\nCho đường tron (0), đường kính AB, gọi Ơ là trung điểm AO. Qua Ơ kẻ đường vuông\ngóc với OA cắt (O) tại 2 điểm M và N.Trén cung MN lớn lấy điểm K. Giao điểm của\nAK với MN là H\na, Tìm vị trí i để cho khoảng cách từ N đến tâm đường tròn ngoại tiếp tam giác KM H\nnhỏ nhất\nb, Với K thuộc cung MB, lấy I trên KN sao cho KI = KM. Chứng minh: NI = KB\n(Đề xuất bởi buingoctu)\n",
+    "confidence": 77
+  },
+  {
+    "page": "p033",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 33\nLời giải\nHN\nN= K\nA LAN B\nVS\nN\na, Gọi O' là tâm đường tròn ngoại tiếp AM HK Ta có: AMC = MKH (do cung MA bằng\ncung NA) nên MA là tiếp tuyến của đường tron ngoại tiếp AM HK.\nMà MA L MB uên (Ơ) thuộc MB. Kẻ NH 1 MB suy ra H cô định.\nTa có: NO' > NH. Vậy khoảng cách từ N đến tâm đường tròn ngoại tiếp AM HK nhỏ nhất\nkhi K =B\nb, Vi C là trung điểm AO nên AMNB đều = AMIK đều.\nSuy ra AMNI = AMBK(c.g.c) = NI = KB (dpcm)\nCho tam giác ABC với AD, BE, CF la các đường cao tương ứng. EF cat BC tai P, O là\ntrung điểm BC. Biết rằng OP = BC. Chứng minh DB = DO.\n(Đề xuất bởi Minhcamgia,)\nLời giải\n",
+    "confidence": 88
+  },
+  {
+    "page": "p034",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 34\n4\nE\nF\nP B D 0 ¢\nTa có tinh chất quen thuộc là tứ giác FEOD nội tiếp. Kết hợp tứ giác FEC B nội tiếp\nSuy ra: PD.PO = PE.PF = PB.PC. Tit đó suy ra được DB = DO.\nCho tam giác ABC, M,N, P là các điểm bất kì trên các cạnh BC, CA, AB. Chứng minh\nrằng trong các tam giác ANP, BMP,CMN tồn tại một tam giác có diện tích không vượt\n1\nquá 1 diện tích tam giác ABC.\n(Đề xuất bởi Minhcamgia,)\nLời giải\nA\nN\nP\nC\nB M\n_ Sanp ÁP.AN\nTa có —— = ———\nSage  AB.AC\nSCMN - CN.CM SBMP - BP.BM\nSapc ~~ CA.CB` Sipe  BA.BC\n",
+    "confidence": 83
+  },
+  {
+    "page": "p035",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 35\nSuv ra: Savp-Scun-Spup  AP.BP CN.AN CM.BM < 1\nvi (SApc) TTAB AC BC “64\nÑ 1\nVậy trong 3 tam giác ANP, BM P,CMN tồn tại một tam giác có diện tích không vượt quá 1\ndiện tích tam giác ABC.\nCho tứ giác ABCD nội tiếp (O). ABN CD = {E}; ADN BC = {F}. Phân giác trong\nDFC cắt AB,CD lan lượt tại P và Q.\na, Chứng minh: APQE cân.\nb, Chứng minh: EF? = FA.FD + EC.ED\n(Dé thi Quốc hoc - Huế 2001)\nLoi giai\nF\nlh) :\n»x<s⁄ <<\na, Ta có: EPQ = PFB + PBF = DFQ + FDQ = PQF nen AEPQ cân tai E.\nb, Duong tron ngoại tiếp tam giác ABF cắt EF tại M.\nKhi đó BMF = BAD = BCE nên tứ giác CBME nội tiếp.\nSuy ra FA.FD + EC.ED = FB.FC + EB.BA= FM.FE + EM.EF = EF?\n",
+    "confidence": 86
+  },
+  {
+    "page": "p036",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 36\nCho tứ giác ABCD, phân giác ZDAB và ABC cắt nhau tại M, phân giác Z4DC và\nZGCBD cắt nhau tại N, phân giác ZBDA và ZADC cắt nhau tại P, phân giác ZABC và\nZBCD cắt nhau tại Q.\n\n1. Chứng minh tứ giác MPNQ nội tiếp.\n2. M',N', P',@Q' là các tâm nội tiếp MAB, NCD, PAD,QBC, My, Ny, P,Q; là giao của\nMM',,NN,PP,QØỢ với (M NPQ). Chứng minh À4, Xi = P,Q,\n(Đề thi tỉnh Thái Nguyên 2015-2016)\nLời giải\nB\nA\nl7\n. xà )\nI 17 A\nW=\nN =7\n/\n5 i\nCc\n_— DAB+CBA __— ADC + DCB\na, Sử dụng phép cộng góc ta có: QM P = —— và QNP = —\nSuy ra QMP + QNP = 180° nên ta có tứ giác MPNQ nội tiếp.\nb, Ta có MM, NN, PP, QQ; là các phân giác tương ứng nên M,; là điểm chính giữa cung\nQP. Tương tự với các điểm còn lại rồi ta có: My Ni; ÐLQ: là đường kính nên suy ra đpcm.\n",
+    "confidence": 81
+  },
+  {
+    "page": "p037",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 37\nCho đường tròn (O), từ một điểm A nằm ngoài (O) kẻ hai tiếp tuyến AB, AC. Kẻ đường\nkính BD, lấy F là trung điểm OB. Qua A kẻ đường thẳng vuông góc với AB cắt OC tại\nE. Chứng minh: AD 1 EF\n(Dé suất bởi BunhiChySchwarz)\nLoi giai\nB\nAN\naN 7 |\n|\n> —\nE\nGọi G là giao của AD va EF, H là trung điểm OA.\nTa có: EAO = BOA = EOA nen AEOA can tai E.\nOF OH OD OA OD FH\nTa có: AOFH~AOHP(99)2TRE” gp © FH HECOA, HE\nSuy ra AFHE ~ ADOA(c.g.c) = HEG = HAG = GHAE nội tiếp. Suy ra EF 1 AD\nCho tam giác ABC vuông tại A. Từ điểm I thuộc miền trong của tam giác vẽ IM, IN, IK\nlà các đường vuông góc tới BƠ, CA, AB. Tìm vị trí của điểm I sao cho IM? + IN? + 1K?\nbé nhất.\n(Đề thi tỉnh Bình Dinh 2017-2018)\n",
+    "confidence": 89
+  },
+  {
+    "page": "p038",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 38\nLời giải\n4\nN\nK\nB 173 17: c\nKẻ đường cao AH của AABC.\nTa có tứ giác AKIN là hình chữ nhật nên AI = KN\nAIrIM)° _ AH?\nSuy ra: IK? + IN? + IM? = KN? + IM? = 1A°+1M° > Lư. >\nVậy để TK? + IN? + IM? dat giá trị nhỏ nhất thi I là trung điểm của AH\nCho tam giác ABC nội tiếp (O), (I) là đường tròn nội tiếp của tam giác ABC. AI cắt\n(O) tại Ava J. E là trung điểm của BC. Tiếp tuyến tại B và Ơ cắt nhau tại S. AS cắt\n(O) tại A và D. DI cắt (O) tại D và M. Chứng minh MJ chia đôi IE.\n(Đề thi Bà Rịa- Vũng Tau 2017-2018)\nLời giải\n",
+    "confidence": 89
+  },
+  {
+    "page": "p039",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 39\n\nM\n\nA \\\nN /\nB NÀN\\ ⁄Z\nS\nT\n\nGoi 7 là tâm bàng tiếp đối diện góc A.\nÁp dụng Bài 16 ta có: BAD = EAC\nSuy ra AABD ~ AAEC(g.g) va AABI ~ AATC(g.g) Từ đó ta có: AD. AE = AB.AC =\nAIJ.Ar\nSuy ra AIAD ~ AEAT(c.g.c) = ETA = ADI = AJM = MJ | ET\nMặt khác ta có tính chất quen thuộc: JI = JB = JC = JT nên JM là đường trung bình\nAIET\nSuy ra điều phải chứng minh.\n",
+    "confidence": 89
+  },
+  {
+    "page": "p040",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 40\nCho tam giác ABC có ba góc nhọn nội tiếp đường tròn (O) . Goi M là trung điểm của\ncạnh BC và N là điểm đối xứng với M qua O. Qua A vẽ đường thẳng vuông góc với AN\ncắt đường thẳng qua Ö vuông góc BC tại D. Kẻ dường kính AE của (O). Chứng minh\nrằng:\n\n1, BA.BC=2BD.BE\n\n2, CD di qua trung điểm của dường cao AH của tam giác ABC.\n\n(Đề thi TP.HCM 2015-2016)\nLời giải\nG\nDO\n\n1, Kéo dai AN cắt BC tại F. Ta có: ANEM là hình bình hành nên ME | AF = BME =\n180° — EMC = 180° — AFB = BDA\nMặt khác: MBE = OAC = 90° — ABC = DBA\nSuy ra: ADBA ~ AMBE(g.9) = 2BD.BE = BA.BC\n2, Kéo dai BD cat CA tai G, CD cat AH tai I.\n",
+    "confidence": 92
+  },
+  {
+    "page": "p041",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 41\nTa có: ABDA ~ ABME = ABDM ~ ABAE(c.g.c) = BMD = BEA = BCA = MD |\nGC\nSuy ra D là trung điểm GB ma AH || GB nên J la trung điểm AH. Suy ra đpcm\nTừ A nằm ngoài (O) kẻ AB, AC là tiếp tuyến, kẻ đường kính BD, gọi E là hình chiếu của\nC trên BD, F là giao của CE và AD. Chứng minh rằng Ƒ là trung điểm CFE.\n(Đề xuất bởi Minhcamgia,)\nLời giải\n“xà\nP DR\nN⁄ ‘\nA\nGọi M là giao điểm của OA và BC, khi đó M là trung điểm BC\n; Ñ ——_ ; DE OM\nTa có: AOCA ~ ADCB(g.g) ma CM, CFE la hai đường cao tương ứng nên BE = AM\nDE DF OM DF °\nMặt khác: —=“r” 77”: MF | BE= F lat điểm FE\nặt khác: oo = TA AM PA = I = F la trung diem EC\nCho tứ giác ABCD nội tiếp (O), AB < BD biết AC = CD. Goi I là tâm đường tròn nội\ntiếp AABD. Gọi giao điểm của đường tròn ngoại tiếp ABIC với AB là F. E là trung\nđiểm AD. Chứng minh rằng: AI vuông góc với EF\n(Dé zudt bởi MoMo123)\nLời giải\n",
+    "confidence": 86
+  },
+  {
+    "page": "p042",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 42\nD\nro\nA\n4 dl N\nvà\nA N\nNỀN C\n»““—ï\nGọi J là điểm chính giữa cung nhỏ AD.\nTa có: JCF = IBF = ACE ® [CJ = FCA\nTa lại có: JI? = JD? = JE.JC = AJEI ~ AJIC ~ AAFC\nSuy ra: EI.AF = JE.FC, ta lại c6: AIFC ~ AJEA(g.g) nên JE.FC = AE.FI\n\\ AF IF\nVay ta có: AF.El = AEF] & iF TẾ\n—- < . Ls . P Ñ J IF AF FK \"\nGiả sử AI cắt EF tại K thì áp dụng tinh chất đường phân giác ta có: TE AF KE nên\nIK cũng là phân giác ÐJ F = AAEI = AAFI(g.c.g). Suy ra đpcm\nCho AABC nhọn nội tiếp (O), đường cao BE, CF cắt nhau tại H. Vẽ day BD cắt CH\ntại K nằm giữa H và C. CD cắt BE tai G. Chứng minh: EF đi qua trung điểm GK\n(Dé zudt bởi MoMo123)\nLời giải\n",
+    "confidence": 82
+  },
+  {
+    "page": "p043",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 43\nG\n| ) |\n2 <<}\nB NU Lại\n\nGọi M là giao điểm của FE với GK.\nTa có: ABFK ~ ACEG(g.g) và ABFH ~ ACEH(g.g)\ns FK BF FH\n\nWI GE TCE” HE\nAp dụng định lý Menelaus vào AGHK ta có:\nGE FH KM\nBH FE MC = 1=MK=MG\nSuy ra đpcm.\n\nCho tứ giác ABCD nội tiếp (O) . AD cắt BC tại P, AC cắt BD tại Q. AB cắt CD tại\n\nM. Chứng minh: MQ L PO\n\n(Dinh lý Brocard)\nLoi giai\n",
+    "confidence": 84
+  },
+  {
+    "page": "p044",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 44\nP\nA :\n⁄ SIN\n— Ñ \\\ns J A\nGoi J là giao điểm của (4QB) va (DQC), khi đó M, Q, J thẳng hàng.\nTa có: AJD = AJQ + QJD = ABQ + QCD = AOD nen tứ giác AJOD nội tiếp.\nTương tự ta có: J € (BOC). Suy ra P, J, O thẳng hàng.\nTa có: AJQ + ODA = ABD + ADO = 90°\nSuy ra: QJ0 = 90° nên ta có dpcm.\nCho tam giác ABC nội tiếp (O) có phân giác AD. (ADC)NAB = {A, F}; (ABD)nAC =\n{A, E}. Chứng minh rằng: OD L EF\n(Đề xuất bởi Khoa Linh)\nLời giải\n",
+    "confidence": 86
+  },
+  {
+    "page": "p045",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 45\n4\nZ7\nSAAN\n<\nM >,\nN\nKéo dài AD cắt (0) tai I. CIN AB = {M}; BIN AC = {N}.\nTheo định lý Brocard ta có: OD L MN.\n—— _— BAC\nMặt khác ta có: BCD = CBI = =5= = BN | CE và BF | CM\nAF AF AC AB AE AE\nSura IN = AC AN ~ AMAB, AB MN IEF\nVay suy ra OD 1 EF.\nTừ điểm M ngoài (0), vẽ tiếp tuyến MA, MB. Dường tron (I) nội tiếp AABM tiếp xúc\nvới AB, AM lần lượt tại H,G ; (I) cắt (O) tại P, R (P nằm trên nửa mặt phẳng bờ OM\nchứa A), AR cắt (I) tại Q. Chứng minh PR, AI, HG đồng quy và AAPQ cân.\n(Dé suất bởi phamhuy1801)\nLời giải\n",
+    "confidence": 81
+  },
+  {
+    "page": "p046",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 46\nA\nE>\nAR va\n\\ II :\nB\nDé dàng chứng minh 7 là giao của OM với (O), H là giao của OM và AB\nTheo tính chất 2 tiếp tuyến cắt nhau ta có: AI đi qua trung điểm của HG (1)\nGọi giao của PR với AM là S thì ta có SA? = SG? = SP.SR suy ra: SA= SR\nMà PR || AB suy ra PR đi qua trung điểm của HG (2)\nTừ (1), (2) suy ra đpcm\n— —> 1⁄= — —\nTa có: PIA = PRQ = 3PIQ = PIA = AIQ\nVì J là điểm chính giữa cung PQ của (O) nên PAI = TAO = AAPI = AAIQ(g.c.g)\n= AP = AQ\nVậy hoàn tất chứng minh.\n",
+    "confidence": 87
+  },
+  {
+    "page": "p047",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 47\nCho điểm A cố định nằm ngoài đường tron (O). Kẻ các tiếp tuyến AE, AF của (O)(E, F\nlà các tiếp điểm). Diểm D di động trên cung lớn EF sao cho DE < DF, D không trùng\nvới E và tiếp tuyến tại D của (O) cắt các tia AE, AF lần lượt tại B,C.\na, Gọi M,N lần lượt là giao điểm của đường thẳng EF với các đường thẳng OB, OC.\nChứng minh tứ giác BN MC nội tiếp một đường tròn.\nb, Kẻ tia phân giác DK của EDF và tia phân giác OI của BOC (K thuộc FF và I\nthuộc BC). Chứng minh rằng OI song song với DK.\n¢, Chứng minh đường thẳng IK luôn di qua một điểm cố định.\n(Đề thi chuyên Phan Bội Châu 2017-2018)\nLời giải\nB\nPs : \\ >\n(So<V 7\nVN\n⁄ y\nLại\n— = BA —szz.Z= a= .. .... a\na, Ta có: CFM = EFA = 90° — — = OBC + OCB = COM nén tứ giác COFM nội tiep\n= BMC = 90°\nTương tự ta có: BNC = 90° = BNMC nội tiép.\n",
+    "confidence": 86
+  },
+  {
+    "page": "p048",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 48\n— —  Ö— 1 — — —\nb, Ta có: OIC = OBC + BOI = (ABC + BOC) = (ABC + 180° — OBC — OCB) =\n1 —  —\n90° + ABC — ACB)\n\nÑ — — 1⁄- —\nBằng phép cộng góc thi ta cũng chứng minh được: CDK = C10 = 90° + 1(15C — ACB) =\n10 | DK\n¢, G là giao điểm của AO và (O) khi đó Ø nằm chính giữa cung EF nên D, K, G thẳng hang.\nGọi H là giao điểm của OA và EF\n\nGK HG HG\nTa có: AGHK ~ AODI(g. —=>XZ-=\n\na có: AG O (99)” 57 OD — OF\n\nTa dé dàng có: EG là phân giác HEA nên us = = = = = = = =\nGK GA A .\n\nSuy ra: OI — 0A = AGKA ~x AOIA = I,K, A thắng hàng.\n\nSuy ra IK luôn đi qua 1 điểm cố định là A.\n\nCho tam giác ABC có ba góc nhọn và nội tiếp đường tron (O). Gọi H là trực tâm của tam\n\ngiác ABC và P là một điểm trên đoạn BC (P khác B,C). Dường thẳng AH cắt (BHC)\n\ntại 7 khác H. Duong thẳng PT cắt (BHC) tại K khác T. Giả sử BK cắt AC tại M và\n\nCK cắt AB tại N. Goi X,Y lần lượt là trung điểm của BN, CM.\n\na, Chứng minh rằng tứ giác AN KM nội tiếp đường tròn.\nb, Chứng minh rằng góc X PY có số đo không đổi khi P di động trên BC.\n(Đề xuất bởi khanhdat1)\nLời giải\n",
+    "confidence": 85
+  },
+  {
+    "page": "p049",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 49\n4 NO\n[5] Y\nBTS\n=\na, Ta có: PKC = THC = ABC nen tứ giác MK PB nội tiếp, tương tu ta có tứ giác NK PC\nnội tiếp\nSuy ra tứ giác A1 KN nội tiếp.\nb, Gọi L là trung điểm BC\nTa có: BAC = NKC = NPC = NPC ~ ABAC(g.g) mà PY, AL là hai đường trung tuyến\ntương ứng nên YPC = LAC nen APLY nội tiếp.\nTương tự ta có: ALPX nội tiếp suy ra AX PY nội tiếp = XPY = 180° — BAC(không đổi)\nVậy ta có đpcm.\nCho tam giác ABC nội tiếp (O) có các đường cao BE, CF. M là trung điểm BC, AM\ncắt EF tại N. Kẻ NX 1 BC, XY 1 AB, XZ 1 AC. Chứng minh N là trực tâm của\ntam giác AY Z.\n(Đề xuất bởi taconghoang)\nLời giải\n",
+    "confidence": 86
+  },
+  {
+    "page": "p050",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 50\n4\n\\ Ñ\n@M AN\n\\ Z\n: AN\n|Z 7 SLY\n/ Dr\n| /\\\nB XM C\n\nKẻ MK 1 EF khi đó tứ giác MNKX nội tiếp và K là trung điểm EF\nTa có: AAEF ~ AABC(g.g) và có hai đường trung tuyến tương ứng là AK và AM nên\nAKE = AMX. Từ đó ta có: A, K, X thing hàng.\n\nÑ Ñ ~ NE BX\nBằng dong d t ứng ta dé da 6: — = —\n\ning đồng dang tương ứng ta dễ dàng có: = = =\nvà BX BY EZ\n\nXC YF ZC\n\nSuy ra: YN | BE; ZN || CF = N la trực tâm tam giác AY Z\n\nTừ A nằm ngoài (O) kẻ hai cát tuyến ABC và ADE. Chứng minh rằng I là giao của BE\n\nvà ƠD chạy trên một đường cố định khi cát tuyến thay đối.\n\n(Đề xuất bởi Minhcamgia,)\nLời giải\n",
+    "confidence": 84
+  },
+  {
+    "page": "p051",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 51\nA\nil N)\nC SÀN\nE\n\nKẻ hai tiếp tuyến AM, AN. AON MN = {H}. (BIC)N (DIC) = {K}\nAp dụng bài 34 ta có: A, I, K thẳng hang và OK 1 AI\nTa có: AI.LAK = AM? = AH. AO = AAIH ~ ANAOK (c.g.c) = IH LAO\nSuy ra: M,I, N thing hang. Từ đó ta có I chạy trên đoạn MN cố định.\n\nCho tam giác ABC và các điểm như hình vẽ. Giả sử diện tích của các tam giác tô mau đôi\n\nmột bằng nhau. Chứng minh diện tích của các tứ giác không tô màu cũng đôi một bằng\n\nnhau.\n\n(Đề xuất bởi Korkot)\nLời giải\n",
+    "confidence": 84
+  },
+  {
+    "page": "p052",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 52\n4\nF N\nBD = Ñ\nGọi J là giao của AK và LC.\nTa có: SILK = SkEC >1IE l LC = JL= JC\nMặt khác: ®/pA = Six = FL | AK = K là trung điểm CF\nSuy ra: Spr = Sox  SEILB = SLpCK\nTương tự thi ta hoàn tất chứng minh.\nCho (O) và dây cung BC cố định, lấy điểm A trên cung lớn BC. Kẻ BD 1 AC,CE 1 AB.\nBD cắt đường thẳng kẻ từ A vuông góc với AB tại I, ED cắt đường thẳng kẻ từ A song\nsong với BC tại M. Chứng minh MI đi qua tâm một đường tròn có đường kính cố định.\n(Dé suất bởi phamhuy1801)\nLời giải\n",
+    "confidence": 87
+  },
+  {
+    "page": "p053",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 53\nA_— 2M\n27\nVs ZÃ\nẨ TT A\nBDNCE={H}; MINAH ={T}. Ké AK L IM,ON 1 BC\nTa có: MK.MT = MA? = MD.ME = tứ giác TKDE nội tiếp.\nTa lại có: AKT = ADI = 90° > tứ giác AK DI nội tiếp.\nSuy ra: TED = DKI = DAI\nMà AED = DAM = TAM = TEA « TEA = TAE\nSuy ra 7 là trung điểm AH.\nMặt khác AH = 2ON(không đổi khi A di chuyển trên cung lớn BC).\nVậy suy ra MT đi qua tam một đường tròn có đường kính cố định.\nCho AABC nhọn, đường cao PD,CE cắt nhau tại H. Dường tròn đường kính AB cắt\nCFE tại G, đường tròn đường kính AC cắt BD tại F. CF cắt BƠ tai I, DG cắt EF tại\nK.\na, Chứng minh 3 điểm A, I, K thẳng hàng.\nb, Gia sử EF cắt BG tai M, DG cắt CF tại N. Chứng minh HI, EN, DM đồng quy.\n(Dé zudt bởi phamhuy1801)\nLoi giai\n",
+    "confidence": 89
+  },
+  {
+    "page": "p054",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 54\n4\n/ |\nE i574\nIN ng... HN\nOCT\nB M Œ\nK\n\na, Ta có: AF? = AD.AC = AE.AB = AG? = AF = AG = AAIG = AAIF(ch — cạu) =\nAF = AG; IF = IG ; AFG = AGF(1)\nMặt khác: AFE = ACE = ABD = AGD(2)\nTừ (1), (2) suy ra: GFK = FGK = KF = KG\nVậy ta có A, K, I thẳng hang\nb, Day là nội dung của định lý Pappus, các bạn đọc tham khảo trên mạng.\n\nCho tam giác ABC nhọn, M thay đổi trên cạnh AB. (BMC) N AC = {C, N}.\n\na, Chứng minh: AAMN ~ AACB. Tinh ul để Samy = Sane\n\nb, Goi I là tam (AM N). Chứng minh J thuộc một đường cố định khi M di động.\n\n¢, J là tâm (BMC). Chứng minh độ dài J.J không đổi khi M di động.\n\n(Đề xuất bởi Korkot)\nLời giải\n",
+    "confidence": 87
+  },
+  {
+    "page": "p055",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 55\nN\n| N—2 |\na, Ta có: AAMN ~ AACB(g.g)\nV2\nem AME V2 MA ¬ Ác\nBch =S =<” = = >> = x“ =>. _ -\n2 5 AB.AC AC? 2 MB\nABC AB — ac\nAC\nV2AB — AC\nb, Gọi O là tam (ABC).\nBằng phép cộng góc ta dé dàng có: AO 1 MN;1J 1 MN = AO | MN\nvà AI 1 BC:OJ 1 BC = AI || OJ\nSuy ra tứ giác AIJO là hình bình hành. Vay I thuộc đường thẳng qua J là song song với AO\n¢, Ta có: IJ = AO (không đổi khi M di động).\nVậy ta hoàn tất chứng minh.\nCho 3 điểm A, B,C thẳng hàng theo thứ tự. Dường tròn (O) đi qua Ð và Ơ. Từ A kẻ tiếp\ntuyến AM, AN với (O). Goi I là trung điểm của BC. NI cắt (O) tại D. Chứng minh\nrằng: a, Khi (O) thay đổi đi qua B,C thì N, D luôn thuộc một đường tròn cố định\nb, Tâm đường tròn ngoại tiếp AAIO chạy trên một đường thẳng cố định.\n(Đề xuất bởi MarkGot7)\nLời giải\n",
+    "confidence": 87
+  },
+  {
+    "page": "p056",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 56\nM D\n4 AVY ANS\n——7 / K\nNT\nN\n\na, Ta có: AN? = AB.AC = N € (4 VAB.AC) (có định)\nQua D kẻ đường thẳng vuông góc với OD cắt BC tại K\nTa có:\nMIA = AIN = DIK = MOA = DOK = AMAO = ADKO(g.c.g)\nSuy ra: OA = OK © CK = AB ti đó ta có K cố định.\nMặt khác: KD? = KC.KB = D € (5 VAB.AC) (cố định)\nb, Ta dễ thấy tâm (AIO) là trung điểm AO nên tâm (AIO) thuộc đường thẳng đi qua trung\nđiểm của AI và vuông góc với BC\n\nCho hai đường tròn (O) và (0) cắt nhau tại A và B . Trên tia đối của tia AB lấy điểm\n\nM từ M kẻ hai tiếp tuyến MC, MD với (O), AC, AD cắt (O) tai E, F. Chứng minh rằng\n\na, Chứng minh rằng CD đi qua trung điểm của EF.\n\nb, EF luôn đi qua một điểm cố định khi A/ di động trên tia đối của tia AB.\n\n(Dé thi tinh Nghệ An 2017-2018)\nLời giải\n",
+    "confidence": 88
+  },
+  {
+    "page": "p057",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 57\nM\nA\nSAN\nF\na, CDNEF ={N}\nBD DF\nMặt khác: AADM ~ ADBM(g.g); AACM ~ ACM B(g. — ===\nat khác mm 09)” ZB” CA CA CR()\nÁp dụng định lý Menelaus ta có: NEDACE 1= NE=NF\nb, CDNOO ={K}; MO'NCD ={H}; ABNOO' = {I}\nTa có: OC° = O'H.O'M = Ơ1I.O'K = K cố định nên ta có dpem.\nCho tam giác ABC' có ba góc nhọn nội tiếp đường tron tâm O bán kính Ƒ cố định và D là\nchân đường phân giác trong góc A của tam giác. Gọi E và Ƒ lần lượt là tâm đường tron\nngoại tiếp của tam giác ABD và tam giác ACD.\na, Chứng minh ZAEO = ZADC và tứ giác AEOF là tứ giác nội tiếp.\nb, Chứng minh tam giác FOF là tam giác cân.\nc, Khi BC cố định và A di động trên (O), chứng minh tứ giác AEOF có diện tích không\nđổi.\n(Đề thi tỉnh Thanh Hóa 2017-2018)\nLời giải\n",
+    "confidence": 85
+  },
+  {
+    "page": "p058",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 58\nA\nJ Ny\n<< 5\n5 = SV đ\nI\na, Ta có: AEO = ADC = 90° + BAE\nAFO = ADB = 90° — FAC\nSuy ra: AEO + AFO = ADC + ADB = 180° nên tứ giác AEOF nội tiếp.\nb, Ta có: XÓE = “7% ~ XD = EAO = DAO = ĐC\nTương tự ta có: FAO = Be\nquy ra: EAO = FAO = OF = OF\n¢, ADN (0) = {AT}\n2\nTa có: AAEO ~ ABDI; AAFO ~ ACDI = Sago _ Saro _ a0\nF Sppr Scp: IB\nSuy ra: Sapor = Spic- TT (không đổi)\nVậy hoàn tất chứng minh.\nCho tam giác ABC và đường tròn nội tiếp (O) tiếp xúc với BC, CA, AB lan lượt tại\nD.E,F. Đường tròn (A; AE) cắt đường cao AH của tam giác ABC tại M (M nim\ngiữa A và H). Duong thẳng OM và DM cắt đường tròn (A; AE) lần lượt tại K và N.\nMOn BC = {I}\na, Chứng minh rằng ba điểm A, I, N thẳng hàng.\nb, Chứng minh rằng đường tròn đường kính AT tiếp xúc với (O).\n(Đề xuất bởi khanhdat1)\nLời giải\n",
+    "confidence": 84
+  },
+  {
+    "page": "p059",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 59\niS\nx NV\nNi II\nN Q\nNA:\nx›>^.x\nL\na, Ta có: ND] = HMD + 90° = 90° + AMN = MEN = tứ giác NK DI nội tiếp.\n= DNI = DKI.\nMặt khác: OM.OK = OF? = OD? = AOMD ~ AODK(c.gc) = ODK = ODM =\nAMN = MNA\nSuy ra: DNI = MNA = A, N, I thẳng hàng.\nb, Qua A dựng đường thẳng song song với DN cit DE tai J. Kéo dai ED cắt AH tai L = AJ\nlà phân giác HAI\nÁp dụng Menelaus ta có: op =1& sự = a = a = - = HJ là phân\ngiác AHD\nSuy ra J là tâm nội tiếp AAHI mà D, J, E thẳng hàng. Ap dụng bài 10 ta có đường tròn (O)\ntiếp xúc với (AHI) >đpcm\n",
+    "confidence": 85
+  },
+  {
+    "page": "p060",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 60\nCho tam giác ABC có cạnh BC cố định và điểm A thay đổi sao cho tam giác ABC nhọn\nkhông cân. Gọi D là trung điểm của BC và E, F tương ứng là hình chiếu của D trên\nAC,AB.\n\na, Gọi O là tâm đường tròn ngoại tiếp tam giác ABC. Dường thẳng EF cắt AO và BC\n\ntheo thứ tự tai M và N. Chứng minh rằng đường tròn ngoại tiếp tam giác AMN luôn đi\n\nqua một điểm cố định.\n\nb, Các tiếp tuyến tai FE, F của đường tròn ngoại tiếp tam giác AEF cắt nhau tại 7. Chứng\n\nminh rằng 7 luôn thuộc một đường thẳng cố định.\n\n(Đề xuất bởi khanhdat1)\nLời giải\n4 NV\nAN £\nNZ >,\nX\nPs\nT\nK\n\na, Ta có: AMN = OAC + MEA = 90° — ABC + ADF = FDB + ADF = ADB\n= AMDN nội tiếp hay (AM N) đi qua điểm D cố định.\nb, EDNAB ={K}; FDNAC ={L). Khi đó D là trực tâm AAKL\nGọi 7\" là trung điểm KL. Ta dễ dàng chứng minh được T7'E; T'F là tiếp tuyến của (O) = T\nlà trung điểm KL.\nMặt khác: DB = DC nén TD 1 BC. Vậy T thuộc một đường thẳng cố định đi qua D và\nvuông góc với BC.\n",
+    "confidence": 90
+  },
+  {
+    "page": "p061",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 61\nCho tứ giác ABC'D nội tiếp trong 1 đường tròn và ngoại tiếp một đường tròn khác, các\ntiếp điểm lần lượt là E, Ƒ,G, H. Chứng minh: EG vuông góc với FH.\n(Dé xuất bởi thanhdatqu2003)\nLời giải\nó |\nV N)\nNE\nlai\n~~ n 1809 — BAD , 1809 — BCD\nTa có: EGH + GIT = AIT + heo = PAD SUZ BCD gp,\nSuy ra: EG 1 FH\nTìm kích thước của tam giác ABC có diện tích lớn nhất nội tiếp đường tròn (O; R) cho\ntrước.\n(Đề xuất bởi Korkot)\nLời giải\n",
+    "confidence": 82
+  },
+  {
+    "page": "p062",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 62\nD\nbà N\n—\nGọi D là điểm chính giữa cung BC chứa A. E là trung điểm BC.\nTa có:\nSapc < Sppc = DE.CEB= vR- OE%*(R+ OE) = \\/(R+ OE)}(R— OE)\n_ y(|+ob)(B+ OE)(R +OE)(3R — 30E) < 3v3R°\nva 4\nVậy để Spc lớn nhất thì tam giác ABC là tam giác đều nội tiếp (O).\nCho điểm A thuộc đường tròn tâm Ø đường kính BC (A khác B và C). Vẽ đường tron\ntâm A tiếp xúc với BC tại H, cắt đường tròn (O) tại E và F. Gọi I là trung điểm của\nHC, D là hình chiếu của I trên EF. Duong tròn đường kính AH cắt đường tròn (O) tại\nG.\na, Chứng minh rằng các đường thẳng AG, EF, BC đồng quy.\nb, Chứng minh rằng ba điểm A, D2, C thẳng hàng.\n(Đề xuất bởi khanhdat1)\nLời giải\n",
+    "confidence": 85
+  },
+  {
+    "page": "p063",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 63\nF\n, TR / c\nLI ~——%\na, Kẻ đường kính AK, AH kéo dai cắt (O) tại L. EF cắt AH, AO là lượt tại M và S.\n4AGnCB=1T}\nTa có: AMAL = AS.AK = AE? = AH? & AM.2AH = AHÊ = AM = MH = MG = MA\nSuy ra: OM 1 AG = M là trực tam AATO = TM LAO\nMa EF 1L AO = T, E, FF thẳng hang. Suy ra AG, EF, BƠ đồng quy.\nb, Kẻ HD 1 AC. Bằng phép cộng góc ta có: MD' | AO = De EF.\nMặt khác: MD' = MH; 1IDP=IH>MDI= MHI=990>1D1EE>D=D\nVậy hoàn tất chứng minh.\nCho đường tròn tâm O. Từ điểm M nằm ngoài đường tròn vẽ tiếp tuyến MA, MC (A,C\nlà tiếp điểm), Ð thuộc cung lớn AC sao cho MB nằm giữa MO và MC. Tia MB cắt\nđường tròn tại Q khác B, cắt ƠA tai N.\na, Gọi T là trung điểm của BQ. Chứng minh rằng MQ.MB = MN.MT\nb, Gọi K là điểm đối xứng với C qua B. Qua Q kẻ đường thẳng song song với BC cắt\nCM tại H. Chứng minh rằng QH, AC, MK đồng quy.\n(Đề xuất bởi khanhdat1)\nLời giải\n",
+    "confidence": 89
+  },
+  {
+    "page": "p064",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 64\n4\nA= I”\n\\VZÈ\\=L—Ÿ\nat Sav\n<7 Wh 7\nẤt -—x Z\n\"r7\nC\nQHnAC = {5}: MSNCB = {K'}; OM 0 AC = {I}\na, Ta có: MQ.MB = MA? = MI.MO = MN.MT\nb, Ta có: MI.MO = MQ.MB = IQBO nội tiếp = QIM = OBQ = OQB = OIB = IN,\nIM lần lượt là phân giác trong và phân giác ngoài của ATBQ\n.QgH _ QM _ QV QS _ la = qr\nSuy ra: BC MB BN BC 9= QH 3 PK = BƠ = K = K'. Suy ra\nMK, AC, HQ dong quy.\nCho tam giác ABC, M, N là trung điểm của AB, AC, đường tròn (AMC) cắt đường tron\n(ANB) tại G khác A, D là trung điểm của BC. Chứng minh ZDAC = ZGAB.\n(Đề xuất bởi Minhcamgia,)\nLời giải\n| Sì\nAN =\nP\nAGN (ABC) ={A, P}\n",
+    "confidence": 80
+  },
+  {
+    "page": "p065",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 65\nJ BP MG BM AB\n\n= AC.BP = AB.CP.\n\n; ; BP DC\nAp dung Potoleme ta có: BP.AC+AB.CP = AP.BC < 2BP.AC =2AP.DC XP AC\n= APBA x ACDA(c.g.c) = 4DAC = ZGAB(dpcm)\n\nCho tam giác ABC nội tiếp (0), D, E là trung điểm AB, AC, đường tron (ADC) cắt\n\nđường tròn (AEB) tai J khác A, trung trực BC cắt DE tại G. Chứng minh AJOG nội\n\ntiếp.\n\n(Đề xuất bởi Minhcamgia,)\nLời giải\n4\n— \\\nB No \\|\n\nGọi L là giao điểm của ED với (AEB). LB cắt tiếp tuyến tai C của (0) ở K.\nTa có: LBA = LEA = ACB = LB là tiếp tuyến của (0). Suy ra: A, J, K và G,0, K thẳng\nhàng.\nTa có: OBL = OGL = 90° = KO.KG = KB.KL= KJ KA = AJOG nội tiếp.\n",
+    "confidence": 85
+  },
+  {
+    "page": "p066",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 66\nTừ điểm M nằm ngoài đường tròn (O) kẻ hai tiếp tuyến MA, MB (A, B là các tiếp điểm).\nLấy E bất kì thuộc cung lớn AB. Trên ME, MO lấy Ơ, D sao cho MB = MD = MC.\nOM N AB = {H). Chứng minh: ƠD là phân giác ZOCH\n\n(Đề xuất bởi Minhcamgia,)\nLời giải\nB\nhà >>\n4\nTa có: MC? = MB? = MH.MO = AHCM ~ ACOM(c.g.c) = a = ed = kd = =\nVì MD = MB = BD là phân giác OBH = 5 = 5\nSuy ra: - = pt = CD la phan giac OCH.\nCho AABC có I là tâm đường tròn nội tiếp Đường trung trực đoạn IC cit\nAI, BI, AC, BƠ lần lượt tại D, E, H, F. Gọi T là tâm đường tròn ngoại tiếp AATH.\na, Chứng minh (7) đi qua E và 5 điểm A, B,C, D, E cùng thuộc một đường tròn.\nb, Chứng minh IT | BD.\n(Dé zudt bởi phamhuy1801)\nLời giải\n",
+    "confidence": 88
+  },
+  {
+    "page": "p067",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 67\n’ N\nL ) AN |\nA — /\nD\na, Ta có: AIE = TAB + IBA = 90° — ICA = FHC = AHE = AIHE nội tiếp = E € (T)\nTa có: HIC = HƠI = ICF = IH | BC = AEI = AHI = ACB = AECB nội tiếp.\nTương tự ta có ABDC nội tiếp từ đó 5 điểm A, B,C, D, E thuộc một đường tron.\nb, Kẻ tiếp tuyến IL của (7).\nTa có: LIA = AEI = ADB = IL || BD = IT 1 BD (đpcm)\nCho AABC vuông tại A, đường cao AH. HD, HE lần lượt là phân giác góc BHA và\nCHA (D, E thuộc AB, AC). I là trung điểm DE. BI cắt DH,CD lần lượt tại M, P; ƠI\ncắt EH, BE lần lượt tai N,Q. BE cắt CD tại K. Chứng minh:\na, Tứ giác APKQ nội tiếp.\n55 MN | DE và MN cắt AH tại K\n(Dé suất bởi phamhuy1801)\nLời giải\n",
+    "confidence": 88
+  },
+  {
+    "page": "p068",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 68\nINN\n_¬ =\"\n.,Z`N .\na, Ta có: DHE = DAE = 90° = tứ giác ADHE nội tiếp và HA là phân giác DHE = AD =\nAE.\nTa lại có: = = = = BD.CE = AD.AE = DE.IE = ABDE ~ AIEC = DBE = EIC\n= tứ giác JQBD nội tiếp = EQ.BB = EI.BD = EA? = AQ 1 BE + AQK = 90°.\nTương tự thì ta có: APK = AQK = 90° = tứ giác APKQ nội tiếp.\nb, Trước hết bằng định lý Ceva ta có: CD, BE, AH đồng quy tai K.\nTa có: ATE = AQE = 90° = AIQE nội tiếp\nSuy ra: EQC = EHC = KHN = 45° = tứ giác KQNH, HQEC nội tiếp\n= QKN = QHN = QCA = AE] — BIC = 45° — QAE\nTương tự ta có:\nMKD = 45 — DAP = MKD + QKN = 90° - DAP — QAE = PAQ = 180° — PKQ\nVậy ta có: M, K, N thẳng hang.\nMặt khác: INK = KHQ = 90° - QHC = 90° — AEQ = QAE = QIE = DE | MN\nVậy hoàn tất chứng minh.\n",
+    "confidence": 88
+  },
+  {
+    "page": "p069",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 69\nCho đường tron (O) có đường kính BC và A là một điểm nằm trên nửa đường tròn. Dường\ntròn (J;r) tiếp xúc với BC, CA, AB theo thứ tự tại D, E, F. Gọi M là trung điểm cạnh\nAC. Duong thẳng M1 cắt AB tại N, đường thẳng DF cắt đường cao AH tại P.\na, Chứng minh tam giác ANP là tam giác cân.\nb, Gọi 7 là hình chiếu của D trên EF. Chứng minh rằng: TB.CD = TC.BD\n(Đề xuất bởi khanhdat1)\nLời giải\nA,\np= \\ \\\n: \\/ XI\n/\\\nPat\n| J |\nĐặt AB = c; BC = a; CA=bSr=ID=IE=IF=S T8\nb+tc—a a-—c\nb b+c—a a-c EI EM 2 2\nTa có: EM = AM — AF = —- — ——— = — = s:=> -= -s —_nsmt\nee 2 2 5 TAN AM CĂN b\n2\n_ 22 pl _\n>AN= bre ah _ a = bla 2) bec a\n2(a — c) 2(a — c) 2\nQua A ké AK || BC (K € DF)\nAP BD b+c—a\nTa có: AKAP ~ AIDB(g. AP=AK— =AF— =BD = ———\nee (9:9) = AK ID 2\nSuy ra: AANP cân tại A.\nb, Gọi F, 6 lần lượt là chân đường cao kẻ từ B,C xuống EF.\nTa có:\n",
+    "confidence": 79
+  },
+  {
+    "page": "p070",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 70\nRT BD BF —\nCo... === BT BD -\n<1 D là phân giác BTC = TC DC = BT.DC = BD.CT\nCho tam giác ABC nhọn nội tiếp đường tron (O) có ba đường cao AG, BD, CE cắt nhau\ntại H. Goi I là giao điểm của DF và AH. Dường thẳng qua I và song song với BC cắt\ntia AB, tia DB lần lượt tại P và Q. Gọi M là trung điểm của AH.\na, Chứng minh rằng IP = IQ và I là trực tâm của tam giác MBC.\nb, Từ A vẽ các tiếp tuyến AS, AT với đường tròn đường kính BC (S, T là các tiếp điểm).\nChứng minh rằng ba điểm S, H, T thẳng hàng.\n(Đề xuất bởi khanhdat1)\nLời giải\n4\nAN\nIr AST Nề\nBAX\n[> SO\nAN\nB G N C\na, Ta dễ dàng chứng minh được: DH và DA lần lượt là phân giác trong và phân giác ngoài\ncủa AIDG.\n1Q IH ID AI IP\nSW BG SHG pe ac Ba eT”\nTa có: AMID ~ AMDG(g.g) = MI.MG = MD? = MH?\n= MG.IG = MG? — MH? = HG.AG = BG.GC = ABGM ~ AIGC(c.g.c) = CI L MB\nva BI L MC =I là trực tam AM BC\n",
+    "confidence": 86
+  },
+  {
+    "page": "p071",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 71\nb, Ta có: AS? = AT? = AE.AB = AH AG = AAHS ~ AASG;, AAHT ~ AATG =\nAHS + AHT = ASG + ATG\nMặt khác: ASN = ATN = AGN = 90° = ASGT nội tiếp nên suy ra: ASG + ATG = 180°\nVậy ta có: S, H, T thẳng hàng.\nCho (O: B) va (Oy; Ry) cắt nhau tại A, B, tiếp tuyến tai A của (0) va (04) cắt (Oy), (0)\ntai D,C, AB cắt CD tai E, M là trung điểm DE.\nB EC R?\n1. Chứng minh 5D = m\n2. Chứng minh ZMAC = 4BAD.\n(Đề xuất bởi Minhcamgia,)\nLời giải\n‘A —\na\n=\nÑ BA BD AD hi\n1, Ta có: ABAD ~ ABCA(g.g)> BC BA AC TR\n— —— _—_ _—_ [EC BC BC BA R?\nMặt khác ta có: ABC = ABD BE=DBE= —=—=—.— = —\nfit khác ta co: ABC sau “ED BD BABD TỦ\n2 Goi N là trung điểm AC. Ta có: ANM = 180° — NAD = 180° — BAD — BDA = ABD\nNM AD BD mơ\nTa lại có: NA 4C AB = AANM ~ AABD = MAC = BAD\n",
+    "confidence": 82
+  },
+  {
+    "page": "p072",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 72\nCho (O) va (Ø') cắt nhau tai A, B, tiếp tuyến chung ngoài CD, (C € (0), D € (O)). Một\ndường thẳng d bất kì qua B cắt (0), (Ơ) tại E,F, CE cắt DF tai G, M là trung điểm\nEF. Chứng minh ZMGF = ZAGC.\n\n(Đề xuất bởi Minhcamgia,)\nLời giải\nG\nANS\nvai\nKéo dai BA cất CD tại H. Khi đó ta có: HC? = HA.HB = HD? = HC = HD.\nTa có: ABCD ~ AGEF(g.g) mà hai tam giác có hai đường trung tuyến tương ứng nên\nMGF = HBD = ADC.\nMặt khác ta dễ dàng có tứ giác GCAD nội tiếp nen ADC = AGC\nVậy suy ra: MGF = 4GC.\nCho AABC nhọn (AB < AC), đường cao BD, CE cắt nhau tại H. M, N lần lượt là trung\nđiểm BD,CE. Goi I là trực tam AADE. Chứng minh MN L HI\n(Dé zudt bởi phamhuy1801)\nLời giải\n",
+    "confidence": 90
+  },
+  {
+    "page": "p073",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 73\nA\nJ /\nB Cc\nGọi P là giao điểm của DE và IH. Ta có: tứ giác HEID là hình bình hành\nDựa vào tính chất đường trung bình thì ta dễ dàng chứng minh được M là trực tâm AHPN =\nMN LHI\nCho tam giác ABC nội tiếp đường tròn (O). Đường tròn (O') tiếp xúc trong với đường\ntròn (O) và tiếp xúc với các cạnh AB, AC lần lượt tại R, P,Q. Gọi I là tâm đường tron\nnội tiếp tam giác ABC.\na, Chứng minh rằng BRI = CRI.\nb, Dường trung trực của AI cắt AC, AB theo thứ tu tai Z, F. Chứng minh rằng đường\ntròn tiếp xúc với AC, AB tại E, F tiếp xúc với đường tròn ngoại tiếp tam giác BOC\n(Đề xuất bởi khanhdat1)\nLời giải\n",
+    "confidence": 92
+  },
+  {
+    "page": "p074",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 74\nNo\nNIA 0\n7 aN\nZN\na, Theo bài 18 ta có tứ giác PJRB, QI RC nội tiếp nên BRI = APQ = AQP = CRI\nb, (EIB) N (FIC) = {I,G} Gọi T là tâm đường tròn tiếp xúc với AB, AC tại E, F Ta có:\nBGC = BGI + IGC = BEI + IFC = 2EAI + 2FAI = 2BAC = BOC = G € (0)\nTa có: EGF = EBI + TOF = 90 - ĐC - TT ge)\nMặt khác: FGC = FIC = FIQ + QIC = FEI + IBC = GEF + GBC\nSuy ra: (7) tiếp xúc với (O) tai G.\nCho tam giác ABC nội tiếp (O), M là trung điểm cung nhỏ BC. Lấy K, Ƒ lần lượt thuộc\nAB, AC sao cho OK || MB và OL || MC. ML cắt (O) tại điểm thứ 2 là Ø .Chứng minh\nBG chia đôi KL.\n(Đề xuất bởi kekkes)\nLời giải\n",
+    "confidence": 85
+  },
+  {
+    "page": "p075",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 75\nJ G6\n4A ZT\n1\nlà)\nNS SA\nNRK\nXIN\n⁄\\ FEN\nB, SUỤỰW⁄, Lại\n> M\nR\nKéo dài MO cắt (O) tại J. Gọi P, Q, I lần lượt là trung điểm KM, LM, KL.\nTa có: AJM = ACM = ALO = J € (AKOL).\nSuy ra: AJLC = AJKB(g.c.g) = KB = LC.\nTrên tia đối của tia BA lấy R sao cho BR = BK = CL\n= AMBR = AMCL(c.gc) = ML=MR=2BP = MQ =QL= BP = PI.\nTương tự ta có: MP = PK = CQ\nSuy ra ta có: AMBP = ACMQ; ACLQ = AKBP(c.c.c)\n= BPI = KPB + KPI = PBM + PMB + PMQ = BMC = BIP = BCM = BGM.\nVi PI | MG = B,I,G thẳng hàng nên ta có đpem.\nCho AABC nhọn có đường cao BG, CI cắt nhau tai H. Trung trực của AH cắt AB, AC\nlần lượt tai D, E. OD, OF cắt IG lần lượt tai S,7. Chứng minh: AO di qua trung điểm\nST.\n(Dé zudt bởi viethoang2002)\nLời giải\n",
+    "confidence": 83
+  },
+  {
+    "page": "p076",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 76\nN`\nẤT\n7N\n| >\nTa có: AADH ~ AAOC(g.g) = AADO ~ AAHC(c.g.c) = AOD = ACH.\nTương tự ta có: 4OB = ABH = OA là phan giac DOE.\nMặt khác dé dàng chứng minh: OA L IG = AOST cân tại O hay ta có đpem.\nCho góc Ay vuông tại A và hai điểm B,C trên Az, Ay. Dựng hình vuông MN PQ có\nM trên AB, N trên AC va P,Q trên BC. Biết rằng B,C dịch chuyển và thỏa mãn\nAB.AC = k (không đổi). Tìm giá trị lớn nhất của diện tích hình vuông MN PQ.\n(Đề xuất bởi Korkot)\nLời giải\n",
+    "confidence": 89
+  },
+  {
+    "page": "p077",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa li\nB\n~ 0\n4 H\n> P\nC\nĐặt độ dài cạnh hình vuông là z và AH = h, BC = a.\nTa có: MQ MN BÀI, AM _U \"ạ ĐO CC ah kK?\n\"AH BƠ, AB = AB . hạ Ta+h  a+th\nTa có: a> = AB? + AC? > 2AB.AC = 2k = a > /2k\nh. 2k.\nQuy ra: a+h=S+5+h23Ù > 22s <5\nP 2\nVậy giá trị lớn nhất của Syypo = ok? khi AB = AC = |k|\nCho tam giác ABC nhọn nội tiếp (0). M là trung điểm BC, E la điểm chính giữa cung\nnhỏ BC. Lấy F đối xứng với E qua M. Gọi I là tâm đường tròn nội tiếp AABC và P\nthay đổi trên (IBC) sao cho P,O, F không thẳng hàng. Chứng minh tiếp tuyến tai P của\n(POF) luông đi qua 1 điểm cố định khi A di chuyên trên cung lớn BC.\n(Đề xuất bởi Korkot)\nLời giải\n",
+    "confidence": 84
+  },
+  {
+    "page": "p078",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 78\nG\n| |\nÒ\ngpd\nail\nCTT\nB z\nE\nKéo dài EM cắt (O) tai điểm G.\nTa có: MI = MB = MC. Suy ra: EP? = EC* = EM.EG = EM.2EO = EF.EO\n= EP la tiếp tuyến của (POF). Suy ra dpcm.\nCho tứ giác ABCD có ABC = ADC = 90° nội tiếp đường tron (O). Lấy điểm M trên\nđoạn thẳng AB sao cho AM = AD. Duong thẳng DM cắt BC tại N. Gọi H là hình chiếu\ncủa D trên AC và K là hình chiếu của Ơ trên AN.\na, Chứng minh rằng MHN = MCR. (USMO 2009)\nb, Gọi 7 la giao điểm của AB và CK. Lấy các điểm FE, F lần lượt trên đoạn AT va CT\nsao cho EF song song với AC và tâm đường tròn ngoại tiếp tam giác TEF nim trên\nAC. Chứng minh rằng đường tròn ngoại tam giác TEF và đường tròn ngoại tiếp tam giác\nNAC tiếp xúc với nhau.\n(Đề xuất bởi khanhdat1)\nLời giải\n",
+    "confidence": 91
+  },
+  {
+    "page": "p079",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 79\nT\nAS)\n7 r\nG\na, Ta có AM? = AD? = AH. AC = AAMH ~ AACM.\nCOND = 90° - AMD = 90° - ADM = NDC = CN = CD = CN* = CH.CA\n= ACNH ~ ACAN = MHN = MHA- NHÀ = AMC —~ BNA = AMC — MTC = MCK.\nb, Vi AC || EF nên dễ dang chứng minh (TAC) va (TEF) tiếp xúc với nhau.\nMặt khác dé dàng chi ra (ANC) và (TAC) đối xứng qua AC, AC là truc đối xứng của (O),\n(TEF)\nSuy ra (TEF) tiếp xúc (ANC) theo tính đối xứng.\nCho AABC nội tiếp (O), phân giác góc BAC cắt (O) tại D. Gọi N, K lần lượt là chân\ncác đường vuông góc kẻ từ O, D xuống AC. Chứng minh AB = 2NK.\n(Dé suất bởi phamhuy1801)\n",
+    "confidence": 86
+  },
+  {
+    "page": "p080",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 80\n4\nTx |\n: 9\n: VAN\nCc\nD\nKé DH 1 AB.\nTa có: ADCK = ADBH(g.c.g) = BH = CK\nAC —-2CK AB\nVì AK = AK = AC = AB + 20K = NK = NC — CK = TT.\nSuy ra đpcm.\nCho tam giác ABC nội tiếp (O). M là điểm bất kì thuộc trung trực của BC. R, S lần lượt\nlà tâm nội tiếp các tam giác ACM, ABM. Chứng minh (ARS) qua 1 điểm cố định khác\nA khi M thay đổi.\n(Đề xuất bởi taconghoang)\nLời giải\n",
+    "confidence": 86
+  },
+  {
+    "page": "p081",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 81\nK\n4 K/\nvị\nợ\nẦ\nIAN\nNON\nMIỄN\nVN,\nM\nGọi K là điểm chính giữa cung lớn BC. (MRC)N KM = {M, PP}; (MRC)N KC = {C,Q}\nTa có: AKPQ ~ AKBM(g.9)(1)\nTa lại có: SMR = 2% — BMP = BMS = PMR\nMặt khác: KCR= ` CM AC = — _ 5B\n= APRQ ~ ABSM(g.9)(2)\nTừ (1), (2) ta có: AKRP ~ AKSB = SKR = BKP = Be = SAR = K € (ASR).\nVay (ASR) di qua điểm K cố định khi M di động.\nCho tam giác ABC nội tiếp đường tron (O) có BC cố định và A di dong sao cho tam giác\nABC luôn nhọn. Gọi H là trực tâm của tam giác ABC. Dường tròn tâm H bán kính AH\ncắt AB, AC theo thứ tự tai M,N.\na, Chứng minh rằng đường thẳng kẻ từ H và vuông góc với MN cũng đi qua một điểm\ncố định.\nb, Gọi D và E theo thứ tự là giao điểm của AB, AC với tiếp tuyến tại O của đường tròn\nngoại tiếp tam giác BOC. Gọi Q là điểm đối xứng với A qua DE. Chứng minh rằng đường\ntròn ngoại tiếp tam giác QDE tiếp xúc với đường tròn (O).\n(Đề xuất bởi khanhdat1)\n",
+    "confidence": 87
+  },
+  {
+    "page": "p082",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 82\nLời giải\n4\n/ ENN\n—— ì\\\nVASE SN\nÁ IN Ạ\n2 N\\A\nM <\nK\n\na, Ta có: BMH = BAH = BCH = BHCM nội tiếp. Tương tự thì ta có 5 điểm M, B, H, N,C\ncùng thuộc 1 đường tròn.\nLấy K đối xứng với O qua BƠ = AHKO là hình bình hành. Kẻ tiếp tuyến Az của (O).\nTa có: MAz = BCA = BMN = Az | MN. Vi Az 1 AO Ax 1 HK = HK | MN.\nVậy đường thẳng qua H và vuông góc với MN đi qua điểm cố định là K.\nb, Ta có: DE || BC = (ADE) tiếp xúc với (O).\nMà (ADE); (QDE) đối xứng qua DE và DE là trục đối xứng của (O)\n> (QDE) tiếp xúc với (O).\n\nCho tam giác ABC cân tại A nội tiếp (O). D là điểm chính giữa cung nhỏ BC. Lấy J\n\nbất kì trên đoạn BC, dựng hình bình hành IKDL (k € BD, L € CD). Chứng minh:\n\nAl L KL\n\n(Đề thi chuyên Lê Quy Don 2016-2017)\nLời giải\n",
+    "confidence": 88
+  },
+  {
+    "page": "p083",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 83\n4\nBề? IN\nNEES\nD\nAINKL={E}.\nTa có: KD = IL = LC; OL = OC; OCL = ODC = ODK = AOLC = AOKD(c.g.c)\n= OKD = OLC = OKDL nội tiếp = COL = KOD = KLD.\nMặt khác ta có: AAOC ~ AILC(g.g) = AOLC ~ AAIC = LOC = TAC\nSuy ra: KLD = TAC = AELC nội tiếp. Từ đó ta có đpcm.\nCho điểm A cố định thuộc (O; R). Hai dây cung thay đổi AB, AC thỏa mãn AB.AC = 3R>.\nChứng minh:\na, BC tiếp xúc với 1 đường tròn cổ định.\nb, Xác định vị trí các dây AB, AC để diện tích tam giác ABC đạt giá trị lớn nhất.\n(Đề xuất bởi eLcouQ Tai)\nLời giải\n",
+    "confidence": 89
+  },
+  {
+    "page": "p084",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 84\n⁄Á ~)\n_— /\\ pD\nNS\nvA\nB\nGọi AH là đường cao của AABC, kẻ đường kính AD.\n~ 3\nDé dàng chứng minh AHAB ~ ACAD(g.g9) = AB.AC =2R.AH = AH = 5t\n= BC tiếp xúc với (4 3)\nSapc lớn nhất < BC lớn nhất < OM nhỏ nhất = M = L. Trong đó L là giao của AD va\n3\nA -R).\n(+2%)\nCho tam giác ABC nhọn có AB < AC, nội tiếp đường tròn (O) . Duong tròn tâm P\nđường kính ÐƠ cắt AB, AC lần lượt tại F' và E. Gọi giao điểm của BE và CF là H. Vẽ\nHD vuông góc với BC tại D. Gọi K là giao điểm của EF và AH. Goi I là trung điểm\ncủa AH. IC cắt đường tròn (P) tại M khác Ơ. Chứng minh rằng :\na) A, H, D thẳng hàng và B, K, M thẳng hàng.\nb) Gọi T là giao điểm của các tiếp tuyến tai B,C của đường tròn (O) . Gọi S là điểm đối\nxứng T qua BC. Goi J, N theo thứ tự là giao điểm của EF với SB, SƠ. Chứng minh rằng\nđường tròn ngoại tiếp tam giác BHC tiếp xúc với đường tròn ngoại tiếp tam giác SJN.\n(Đề xuất bởi khanhdat1)\nLời giải\n",
+    "confidence": 89
+  },
+  {
+    "page": "p085",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 85\ns\nZV\n: KZ⁄\nASA SEA\nZ\n2432402.\n> S3)\n⁄/,;\\ SX\n\\/\nT\nBC, === === —> Ñ ,\na) Vi E,F € (P, =) nên BEC = BFC = 90° hay BE, CF là các đường cao của tam giác\nABC. Suy ra : H là trực tam của tam giác ABC = AH 1 BC.\nMà HD 1 BƠ nên A, H, D thẳng hàng.\nDé dang ta chứng minh được IE là tiếp tuyến của (P) nên TER = ABE.\nMặt khác ta có : ADB = AEB = 90° = AEDB nội tiếp = ABE = IDE. Suy ra : JEK =\nIDE.\nDo đó : AIDE ~ AIEK(g.g) = 1E° = [K.ID. (1)\nNgoài ra do IE là tiếp tuyến của (P) nên dễ có JE° = IM.IC. Kết hợp với (1) ta được :\nIK.ID = IM.IC = AIMK ~ AIDC(c.g.c) = IMK = IDC = 90° = KM 1 IC.\nB 5\nMà M € (P, nên BM 1L IC hay B, K, M thắng hang.\n",
+    "confidence": 83
+  },
+  {
+    "page": "p086",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 86\nb) Ta có : NCF = SCB— BCH = TCB— BCH = BAC - BAH = CAH = NFC = ANCF\ncan tại N = CONE = 180° — 2NFC = 24CB = BPE = CPBN nội tiếp.\n\nTương tự ta cũng có BF JP nội tiếp.\nGọi X là giao điểm thứ 2 của (BPF) và (CNE). Khi đó : BXC = BXP + CXP = BFP +\nCEP = ABC + ACB = 180 — BAC' = BHC = BHXC nội tiếp.\nDo tính chất đối xứng của Ø và T nên SN XJ cũng nội tiếp.\nTa lại có : BXJ = 4FE = ACB = XCB + XCÄ= XCB +XNL.\nTừ đó suy ra (BXC) tiếp xúc với (NX J) hay (BHC) tiếp xúc với (SN).\nCho tam giác ABC với AB = AC và D là trung điểm AC.Phan giác BAC cắt (BCD) tại\nFE ở miền trong tam gidc. BD cắt (ABE) tại F(Khác B).AF cắt BE tại I và CI cắt BD\ntại K. Chứng minh rằng : I là tâm đường tròn nội tiếp tam giác K AB.\n(Đề ruất bởi BurakkuYokuro11)\nLời giải\n4\nẤN\nJIN\nPT\n| NE\nVi AF la tia phân giác của tam giác ABC cân tai A nên EBA =ECA.\n",
+    "confidence": 87
+  },
+  {
+    "page": "p087",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 87\nMa ECA = EBD nen EBD = EBA hay BI là tia phân giác của ABK.\nTa đi chứng minh A7 là tia phân giác BAK.\nGọi Ơ là trung điểm BC, H là giao điểm thứ 2 của IC với (BDO).\nTa có : DG | AB = AGD = BAE = EED = DEFG nội tiếp.\nDo đó : AFG = AFE + EFG = ABE + 180° — EDG = ABE + ADE + GDC = ABE +\nEBC + BAC = 180° — ACB = AFGC nội tiếp.\nLại có : IHIC = IE.IB= IF.IA> AHFC nội tiếp hay A, H, F,G, C cùng thuộc một đường\ntròn đường kính AƠ = DH = DC = BD la tia phân giác HBC.\nSuy ra: ACKD ~ ABCD (9.9) = CD? = DK.DB = AD? = DK.DB\n= AADK ~ ABDA(c.g.c) = KAD = ABD.\nDo đó : TAB = IEF = BED — DEF = (180° — ACG) — (180° — DGF) = DGF — ACG =\n00 — GPF) _ gq _ BAC, BAC GDF BẢO ABD BAC DAK KAD\n2 2 772 2 2 2 2 2...2\n= AI là tia phân giác của KAB. Suy ra J là tâm đường tròn nội tiếp tam giác AK B.\nTiếp tuyến của đường tròn (O) tại A và B cắt nhau tại P. Trên cung nhỏ AB, lấy điểm\nC sao cho không phải là điểm chính giữa cung đó. Tiếp tuyến tại C cắt OP tại F và cắt\nPA, PB lần lượt tai Ð và E. Chứng minh rằng (PCF); (PAB); (PDE) đồng quy tại một\nđiểm khác P.\n(Dé ruất bởi Badong2211)\nLời giải\n",
+    "confidence": 89
+  },
+  {
+    "page": "p088",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 88\nP N\nTR r\nSe\n= <<\no\nGiả sử C, Ð năm cùng phía so với OP. Goi {P,T} = (PCP)n(PDPb).\n-. ˆ —. ~~ DPE DIE\nTa có: CTE = FCT - CET = (180° - FPT) = (180° = DPT) = DPF = —— = +\n— DC CE AD BE\n= 17C là phân giác góc DTE = TT” BT DT ” ET ` ABET ~ AADT(c.g.c)\n= DAT =EBT =T¢ (PAB)\nSuy ra điều phải chứng minh.\nCho tam giác ABC nội tiếp (O) có đường kính AZ. Lấy D bất kì trên BC và lấy X,Y\ntrên OB, OC sao cho BXD + ABC = CYD + ACB = 180°. Chứng minh: XZY không\nđổi khi Ð di chuyển trên BC.\n(Đề xuất bởi Fabffriver)\nLời giải\n",
+    "confidence": 84
+  },
+  {
+    "page": "p089",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 89\n4\nJ\n8V J Z⁄\nGọi {D,T} = (BXD)N (CYD)\nTa có: BTC = BTD + DTC = OXD + OYD = ABC + ACB = 180° — BAC\n¬ T e (ABC) = GVT = OVD + DVT = A0B + DOT = 407 = OFF\n= O,Y,Z,T đồng viên. Tương tự ta có: X,0, Z,T đồng viên = XZY = 180° — BOC(const)\nVậy ta có đpcm.\nCho tam giác ABC ngoại tiếp (I) và (I) tiếp xúc với BC tại D. Qua D kẻ đường thẳng\nvuông góc với AD cắt BJ,C1I lần lượt tại M, N. Chứng minh: AAMN cân.\n(Đề xuất bởi Nguyễn Minh Ha)\nLời giải\n",
+    "confidence": 87
+  },
+  {
+    "page": "p090",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 90\n4\nISN E\n| Q ~\nB SY 2\n— 1 Cc\nGọi K là giao điểm thứ 2 của AD với (I). E, F lần lượt là các tiếp điểm của AC, AB với (I).\nBằng phép biến đổi góc ta có: AKFD ~ AIDM; AIDN ~ AKEDP(g.g)\n_ DM _DF DN _ DE\nID: FK ID =~ EK’\n——_ P DF _ DE _\nMặt khác dễ dàng chỉ ra được: TRÍ EK > DM = DN.\nSuy ra AAMN cân tại A.\nCho hình bình hành ABCD. Dường phân giác BAD cắt cạnh CD và đường thẳng BC\ntại M, V.Vẽ đường tron tam O ngoại tiếp tam giác CM N.Vé dây cung CK của (O) sao\ncho CK song song BD. Chứng minh rằng : B, K, 0, C, D cùng thuộc một đường tròn.\n(Dé ruất bởi Tea Coffee)\nLời giải\n",
+    "confidence": 86
+  },
+  {
+    "page": "p091",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 91\n: Z  >xụ\nSC)\nPa\nK\nM\n\nGoi FE là giao điểm của AC và BD.\nDo AN là tia phân giác của DAB nen DNA = NAB = DAN = ADAN can tai D = DN =\nAD = BC.\nMặt khác : CMN = DAN = DNA = CNM = AOMN can tại C = CN = CM = OC là\ntrung trực của MN = 3M CO = OCN = ONC = BCO = DNO.\nMà O là tam (CMN) nên OC = ON. Suy ra: AOND = AOCB (c.g.c) = ODN = OBC =\nODBC noi tiép.(1)\nVì AOND = AOCB nén OD = OB = OF la trung trực của BD.\nTa lai có : CK || BD nên OF cũng la trung trực của CK hay OF là trục đối xứng của hình\nthang BCKD = BCKD la hinh thang can = BCKD nội tiếp.(2)\nTừ (1) va (2) suy ra : B, K,0,C, D đồng viên.\n",
+    "confidence": 89
+  },
+  {
+    "page": "p092",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 92\nCho tam giác ABC nội tiếp (O). Dường tròn (Oi) qua B.C cắt cạnh AB, AC tai D, E.\nĐường tròn (Os) qua A, D, E cắt (O) tại K (K khác A).Gọi M, N lần lượt là trung điểm\nBD,CE. Chứng minh rằng A, K, N, Oy, M cùng thuộc một đường tròn.\n\n(Dé ruất bởi Tea Coffee)\nLời giải\n4\nvd\n“ýN\n| Na\n\nVi 0; là tam (BDEC) mà M,N lần lượt là trung điểm của BD, CE nên O;MA = O,NA =\n90° = AMO, N nội tiếp.\nTa có : KDA=KEA= KDB = KEC va KBD = KCA.\nNên AKBD ~ AKCE (g.g).\nMa KM, KN là các trung tuyến tương ứng nên KMA=KNA= AKMN nội tiếp.\nDo đó : A, X, M,O,,N đồng viên.\n",
+    "confidence": 86
+  },
+  {
+    "page": "p093",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 93\nCho tam giác ABC không cân nội tiếp (O), BD là phân giác ABC.BD cắt (O) tại E.\nĐƯờng tròn (O.) đường kính DE cắt (O) tại F.\na) Chứng minh : đường thẳng đối xứng với BF qua BD di qua trung điểm của AC.\nb) Giả sử tam giác ABC vuông tai B, BAC = 60° và bán kính của (O) bằng R. Tính bán\nkính (O¡) theo R.\n(Dé xuất bởi quynhanhlh7)\nLời giải\na)\nI\n4 Ni\nF \"” E\nGọi M là trung điểm BC, kẻ đường kính ET của (O) suy ra I, D, F thẳng hàng.\nTa có: IMD = TAD = 90° = AIMD nội tiếp.\nTừ đó ta có:\nFAFE = FIE = DAM = đpcm.\n3\n",
+    "confidence": 89
+  },
+  {
+    "page": "p094",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 94\nB\n4 _ Cc\nF A)\nE\n. DC BC AC\nTaco: —m =~ = V3e 1D V3+1= AD =(V3-1)R= 0D =R—AD = (2—/3)R.\nAp dung Pythagoras ta có: DE? = DO? + OE? = (8 — 4/3) R? = Ro,) = VE IIR\nCho (I, R) va (J,r) là hai đường tròn bàng tiếp trong BAC và ABC của tam giác ABC.\nDuong tròn (I) tiếp xúc AB tại N,BC tại P,AC tai H.Dường tròn (J) tiếp xúc BA tại\nK,BC tại Q,NM là đường kính của (I). Chứng minh rằng BC, AH, KM đồng quy.\n(Dé ruất bởi Tea Coffee)\nLời giải\n",
+    "confidence": 83
+  },
+  {
+    "page": "p095",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 95\nK\n\\ J\n\\\n4 \\\nB _ NA [4\nCIN\njar\n4\n:\n(J) tiếp xúc với BC tại L.\nTacó: KLLAJSKLIAISKLLNHSKLIHM.\n—, —- HM IH CH\nMặt khác: HIM = NAH = AJL = AJKL~ AIHM = —— = — = ——.\nathe Sa “KL JM CL\nSuy ra ACHM ~ ACLK(c.g.c) = K,C, M thẳng hang.\nTừ đó ta có đpcm.\nCho tam giác đều ABC và M là điểm bất kỳ trên BC.Goi H, K là chân đường vuông góc\nkẻ từ M xuống AB, AC.Xác định vị trí M để diện tích tam giác HM K lớn nhất.\n(Dé ruất bởi Tea Coffee)\nLoi giai\n",
+    "confidence": 83
+  },
+  {
+    "page": "p096",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 96\n4\nK\nBH,\nB Ir; lại\nTa có : HME = 120° không đổi nên dé Spx lớn nhất thì MH. MK phải lớn nhất.\nTa lại có : MHMK = Space = TMC.MB < 2 Bee\nVậy với M là trung điểm BC thì diện tích tam giác HM K lớn nhất.\nCho tam giác ABC (AB < AC) nội tiếp (O). Phân giác góc BAC cắt (O) tại D khác\nA, E đối xứng D qua O. Gọi F là một điểm trên cung BD không chứa A, Ơ của (0); FE\ncat BC tại G, H thuộc AF sao cho GH song song với AD. Chứng minh HG là phân giác\nBHC.\n(Đề xuất bởi Diepnguyencva)\nLời giải\n",
+    "confidence": 87
+  },
+  {
+    "page": "p097",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 97\nE\n| |\n’ NY ‘\nNV\n4\nGọi I là giao của HG va DE.\nTa có : FHI = FAD = FED = FHEI nội tiếp = GH.GI = GF.GE = GB.GC = BHCI\nnoi tiép.\nSuy ra : BHI = BCT = OBI = CHI = HG là tia phan giác BHC.\nCho tứ giác ABCD nội tiếp đường tron tam O có các đường chéo AC và BD vuông góc\nvới nhau. Các điểm M và N lần lượt là điểm chính giữa các cung ADC và ABC. Dường\nkính qua D của (O) giao dây cung AN tại G. Dường thẳng qua G song song với NC cắt\nCD tại K. Chứng minh rằng BM 1 AK.\n(Dé zudt bởi quangminhltv99)\nLoi giai\n",
+    "confidence": 90
+  },
+  {
+    "page": "p098",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 98\nB =\nSơ,\ni \\\n⁄7 jJ = x\nk\nD \\/\nM\nTa có: ADCN nội tiếp va NC || GK nên AGKD nội tiếp .\nSuy ra NGD = CKA mà ACD = AND = NDG = CAK.\nTa lại cóc NDG = OND = DBM = DBM = CAK.\nTừ đó ta có đpcm.\nCho (O) và dây AB không đi qua tâm. Dây PQ vuông góc với AB tại H (HA> HB). M\nlà hình chiếu của Q trên PB, QM cắt AB tại K. Tia MH cắt AP tai N. Từ N kẻ đường\nthẳng song song với AK cắt QB tại I. Chứng minh : P,J, K thẳng hàng.\n(Đề xuất bởi MarkGot7)\nLời giải\n",
+    "confidence": 86
+  },
+  {
+    "page": "p099",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 99\nP\nAN I\ný =k_ VAN\n4 SA K\n== M\n[4\nGoi {I'} = QBN PK.\nTa có : PHK = PMK = QHB = OMB = 90° nên các tứ giác HBMQ, HPK M nội tiếp.\n= MQB = MHB = MPT = PI'MQ nội tiếp = PI'Q = PMQ = 90°.\nTam giác PAB nội tiếp (O) có QM L PB, QH 1 AB mà M, H, N thẳng hàng nên theo tinh\nchất của đường thẳng Simson ta có : QN L AP.\nLại có : MKH = MPH = QAB = AQAK can tai Q = PQA = PQK.\nMà NQA = TQK = 90° — PKQ = 90° — PAQ nen PQN = PQT.\nMặt khác : QPN = QPI’ nên PQ là trung trực của NI’ hay PQ L NI' = NI || AK = I' =\nI = P,I,K thẳng hang.\nCho tam giác ABC nội tiếp (O). M là điểm chính giữa cung lớn BC. Lấy D, E thuộc tia\nđối của tia AB, AC sao cho BD = AC và CE = AB. Gọi K là điểm đối xứng với M qua\nBC. Chứng minh: D, K, E thẳng hàng.\n(Dé ruất bởi Phan Qué Son)\nLời giải\n",
+    "confidence": 88
+  },
+  {
+    "page": "p100",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 100\n4\nNZ` ’\nKk F\nD\nDựng hình bình hành ABFC'. Từ đó ta có: ABDF và ACEF cân tại B và C.\n——— — BAC N= BAA M Ñ\nTa có: CFE = BFD = 90 — 3 và FC = BAC = D, F, E thăng hàng.\nMặt khác: BFC = BAC = BKC = BK FC nội tiếp.\nSuy ra: BFK = BCK = 90° — pre = 90° — Be =BFD = D, K, F thẳng hàng.\nTương tự K, F, E thẳng hàng nên ta có dpem.\nCho tam giác ABC, phân giác AD, trung tuyến AM. Dường vuông góc với AD tại D cắt\nAB, AM lần lượt tai X,Y. Dường vuông góc với AB tại X cắt AD tại Z. Chứng minh\nYZ vuông góc với BC.\n(Đề xuất bởi viaaiv)\nLời giải\nCách 1 :\n",
+    "confidence": 85
+  },
+  {
+    "page": "p101",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 101\n4\nI\nPp 7 -\nBl\nSN NTA ~~\nTAL”\nNN\nX\n\nKéo dai DY cắt AC tai I.\nSuy ra ZI 1 AC.\nTừ Y kẻ đường thẳng vuông góc với YZ cắt AB, AC tai P,Q.\nTa có hai tứ giác ZY PX và ZY IQ nội tiếp.\nKết hợp với ZXY = ZIY thì ta có: ZPY = ZQY.\nSuy ra YP =YQ mà MB = MC từ đó ta có PQ||BC. Suy ra đepem.\nCách 2 :\n\nN A\n\n' Z—\n\nI\nK\n",
+    "confidence": 84
+  },
+  {
+    "page": "p102",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 102\nTa có : AD cắt đường tròn ngoại tiếp tam giác ABC tai I.\nKẻ IK vuông góc với AB suy ra tứ giác IM BK nội tiếp nên TKM = 1BM = = = KAI =\nKM L Al = KM||XY = YZ|IMI = đpem.\nCho tam giác ABC nội tiếp (O) có AB < AC. Goi M là trung điển BC.AM cắt (O) tại\nđiểm thứ hai là D. Dường tròn ngoại tiếp AM DC cắt AC tại E. Dường tròn ngoại tiếp\nAMBD cắt đường thẳng AB tại F.\na) Chứng minh ACED ~ ABFD và E, M, F thẳng hàng.\nb) Phân giác ZBAC cắt EF tại N. Phân giác ZCEM cat CN tại P. Phân giác ZBFN\ncắt BN tại Q. Chứng minh PQ || BC.\n(Dé zudt bởi MoMo123)\nLời giải\n|\nAw ZR\n\\  ZWL—==\na\nF\na) Vì tứ giác ABCD nội tiếp nên FBD = ECD. (1)\n",
+    "confidence": 88
+  },
+  {
+    "page": "p103",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 103\nMặt khác tứ giác BÀI DF và DM BƠ nội tiếp nên BFD = DMC = DEC. (2)\nTừ (1) và (2) suy ra : ACED ~ ABFD(g.g)\n= BDF = CDE = BMF = CME = FMC + CME = BMF + FMC = 180.\n= E, F, M thẳng hàng.\nb) Tam giác BF N có tia phân giác FQ nên : 25 = ai\nPN EN\nTam giác CEN có tia phân giác EP nên : ra = ma\nTam giác AEF có tia phân giác AN nên : XE AE\nAp dụng định lí Menelaus cho tam giác ABC có cát tuyến FME, ta có :\nEC MB FA 1\nEA'MC'FB .\nP : E FB\nTheo gia thiết ta có : M là trung diem BC nên MB = MC. Suy ra : _ = Fa\nPA_EPB_NE_FB FN EN _QN_ PN _ po pe\nEA EC  NE EC FB EC QB. PC ’\nCho hình chữ nhật ABCD nội tiếp (O). Lấy điểm E thuộc cung nhỏ AB. AE cắt BƠ\ntại H. AB cắt CE tại F. AE cắt DC tại K. Chứng minh rằng : đường tròn ngoại tiếp\nAF BE tiếp xúc với đường tròn ngoại tiếp AJ-ED.\n(Đề xuất bởi MarkGot7)\nLời giải\n<T\nA \\)\nK\n",
+    "confidence": 84
+  },
+  {
+    "page": "p104",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 104\nTa sẽ đi chứng minh OF là tiếp tuyến chung của (KDE) và (EFB).\nThật vậy, ta có : OEC = OCE = ACE = ABE = OF là tiếp tuyến của (EFB). (1)\nTương tự ta cũng có : OED = ODE = BDE = BAE.\nMa ABCD là hình chữ nhật nên AB || KC = BAE = DKE. uy ra: OED = DKE hay OE\nlà tiếp tuyến của (KDE). (2)\nTừ (1) và (2) suy ra : OP là tiếp tuyến chung của (K ED) và (EF B). Do đó :(K ED) tiếp xúc\n(EFB).\nCho 20y vuông và hai điểm cổ định A, B trên Ox (A nằm giữa O và B). Diểm M chạy\ntrên Oy (M khác O). Dường tròn đường kính AB cắt MA, MB lan lượt tại Ơ, E. Tia OF\ncắt đường tròn tại F. Xác định vị trí của M để tứ giác OCF'M là hình bình hành.\n(Đề xuất bởi MarkGot7)\nLời giải\ny\nM NN\nCS ⁄\nƒ RN\nNL ?\nGọi D= MCnOF.\nTa có : AOM + AEM = 180° mà hai góc này nằm ở vị trí đối nhau nên tứ giác OAEM nội\ntiếp. Suy ra : OFA = OMA. (1)\n",
+    "confidence": 90
+  },
+  {
+    "page": "p105",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 105\nMặt khác, tứ giác MOCB có : MOB = MCB = 90° mà hai góc nay cùng nhìn cạnh MB nên\ntứ giác MOCB nội tiếp. Do đó : CBO = CMO. 2)\n\nTheo giả thiết ta có tứ giác AF EB nội tiếp nên ABF = AEF. (3)\nTừ (1), (2) và (3) suy ra : CBA = CMO = AEO = ABF = BA là tia phân giác FBC.\nMà BA là đường kính của đường tròn qua A, F, B,C nên BA là trung trực của CF.\nSuy ra: CF LAD > CF | MO = MOCF là hình thang.\nGiả sử OCFM là hình bình hành = D là trung điểm OF.\nNgoài ra BA là trung trực của CF nên OA là trung tuyến của AOCF. Suy ra : A là trọng\nCA 2 CA 1\ntâm của tam giác OF xsé>x—=—z=;.\nâm của tam giác O C23 Zp 37 AM 2\nUY TPE AM? h\nVì tứ giác 3/JOCB nội tiép nên CA. AM = OA.AB = — = OA.AB = AM? =20A.AB =\nAM = V2OA.AB. Vậy với M chạy trên Oy thoả AM = v20A.AB thi tứ giác OCF M là hình\nbinh hanh.\nCho tam giác ABC nhọn và can tại C. Dường tron tâm O đường kính BC cắt AB va AC\nlần lượt tai £ và F. Goi H là giao điểm BF và CE. Duong tron đường kính EC cắt AC\ntại M. Gọi K là giao điểm của BM va (O). Chứng minh KC đi qua trung điểm HF.\n(Đề xuất bởi Diepnguyencva)\nLời giải\n",
+    "confidence": 88
+  },
+  {
+    "page": "p106",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 106\n4\nHL ZN\nIEE A\n=\nGoi I =CKNME.\nTa có : MEA = 90° - CAB = 90° — CBA = ECB = MEA +OEB = BCE + CBE = 90° =\nMEO = 90° = ME là tiếp tuyén của (0) = MEK = KCE.\nSuy ra AJEK ~ AICK(g.g) = IE? = IK.IC.\nAp dụng hệ thức lượng vào tam giác IMC vuông tai M có đường cao MK ta có :\n1M°= IK.IC\nDo đó : IM = IE mà HF || EM nên KC đi qua trung điểm của HF.\nTừ điểm A nằm ngoài đường tron (O) kẻ 2 tiếp tuyến AB và AC; cát tuyến ADE sao cho\nBD < CD; AD < AE. Gọi H là giao điểm của OA và BC. Gọi I là trung điểm DE. Kéo\ndai TH cắt (O) tại K sao cho H nằm giữa J và K. Gọi Ø là tâm đường tròn ngoại tiếp\ntam giác OK A. Chứng mình OS L IK.\n(Đề xuất bởi Diepnguyencva)\nLời giải\n",
+    "confidence": 87
+  },
+  {
+    "page": "p107",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 107\nF\nURES\nN= 4\nLai\nGọi F là giao điểm thứ hai của TH với đường tròn (O).\nVì tứ giác FBKC nội tiếp nên : HF.HK = HB.HC\nMà tứ giác BOC A nội tiếp nên : HB.HC = HO.HA\nSuy ra : HF.HK = HO.HA = AKOF nội tiếp. Do đó : FK là dây chung của hai đường tron\n(O) và (S) nên OS L FK hay OS L IK.\nCho đường tron (O) va dây BƠ cố định không đi qua tâm , điểm A di động trên cung lớn\nBƠ, (I) nội tiếp tam giác ABC tiếp xúc với AB, AC tại D, E. Chứng minh rằng ED luôn\ntiếp xúc với một đường tròn cố định khi A di động.\n(Đề xuất bởi Minhcamgia,)\nLời giải\n",
+    "confidence": 91
+  },
+  {
+    "page": "p108",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 108\n4\nỆ Se\n: av\n| PIN\n’ NZ )\nGọi M là trung điểm BC. Kẻ BP, MH, CQ vuông góc với PQ.\nVì BC có định nên DBP = ECQ = Be = a = const.\nHình thang BPQC có MH là đường trung bình của hình thang nên : MH = On\nMà BP = BD.cosDBP = BD.cosa; CQ = CE.cosQCE = CE .cosa\nNên BP + CQ = (BD + CE).cosac = BC.cosaw = const = MH = const.\nVay DE luôn tiếp xúc (M, MH) cố định.\nCho tam giác ABC nhọn nội tiếp (O) và P là điểm nằm trên cung nhỏ BC, , trung trực\nAB,AC cắt AP tại E, F, BE cắt CF tại Q. Chứng minh rằng AP = BQ + CQ\n(Đề xuất bởi Minhcamgia,)\nLời giải\n",
+    "confidence": 84
+  },
+  {
+    "page": "p109",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 109\n4\nB SN —2 c\nP\n\nGọi {D} =CQnN (0).\nVì Ƒ thuộc trung trực của AC nên FA = FC = AFAC cân tại C = FAC = FCA.\nMa DAP = DCP( cùng chắn cung DP của (O)) nên DAC = PCA > ADPC là hình thang\ncân. Do đó: AP = CD.\nTa có : QBD = EBA + ABD = EAB + ACD = EAB + FAC = BAC = BDC  ABDQ\ncân tại Q = BQ = QD.\nDo đó : BQ+CQ=QD+CQ=CD = AP.\n\nCho tam giác ABC nhọn nội tiếp đường tron (O). M là một điểm thay đổi trên cung nhỏ\n\nBC. Gọi N là điểm đối xứng với M qua trung điểm J của AB.\n\na) Chứng minh trực tâm K của tam giác ABN thuộc một đường tròn cố định.\n\nb) Giả sử NKNAB =D, hạ KE L BC. H là trực tâm của tam giác ABC. Chứng minh\n\nDE di qua trung điểm J của HK.\n\n(Tuyển sinh lớp 10 PTNK 2004-2005)\nLời giải\n",
+    "confidence": 91
+  },
+  {
+    "page": "p110",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 110\nN\n1\nNN D\nK\n» 1\nUM\nọ oN\n{, /\nm IN ¿|\nVY\n2 ⁄NtỲ—N\nSƒẮN ‘\n¬À\nH, \\\nK;\na) Vi ANBM là hinh bình hành nên : ANB = AMB.\nMà K là trực tâm của tam giác ABN nên AKB = ANB = (90° — KBN).\nSuy ra : AKB = AMB hay AK M B là tứ giác nội tiếp. Do đó K € (O) cố định.\nb) Goi Hy, Hy lần lượt là giao của CH và AH với (O), Ki, Ky lần lượt là điểm đối xứng của K\nqua AB và BC.\nDé dàng ta chứng minh được : BC là trung trực của HH và AB là trung trực của HH.\nTheo tính chất trung trực ta có : BH. = BHEK, và BH,K = BHEK,.\nDo đó : BHE, + BHE, = BHLK + BH›K = 180° hay Ku, H, K2 thẳng hàng.\nTam giác KKK, có DE là đường trung bình nên DE || K; Ko.\nGọi J=DENHK. Ta có DJ || KLH = DJ là đường trung bình của tam giác KK, H. Do đó\nJ là trung điểm của HK hay DE đi qua trung điểm J của HK.\n",
+    "confidence": 85
+  },
+  {
+    "page": "p111",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 11\nCho tam giác ABC đều. P nằm trong tam giác. Hạ PÁi, PBu,PCq vuông góc xuống\nBC,CA, AB. Tìm quỹ tích điểm P để tam giác A,B,C; cân\n(Đề xuất bởi Korkot)\nLời giải\nA\nløĩ Bi\nB A c\nGia sử tam giác ABC) cân tại A; thì ta có Ai Di = AiCi\nXét 2 đường tròn đường kính BP và CP như hình vẽ:\nTa thấy 2 day Ai Pu = ALC, và ÕLBA, = BLCA, = 60°\nSuy ra 2 đường tròn bằng nhau hay BP = ƠP suy ra P thuộc trung trực BC\nChứng minh tương tự ta có quỹ tích điểm P để A; B,C) can là 3 đường trung trực của tam\ngiác ABC\nCho tam giác ABC có ACB = 45° và ACB + BAC = 2ABC. Duong trung trực của AB\ncắt BƠ tại M.\na) Tính MAC.\nb) Goi I là tam đường tron (AMC). Chứng minh tứ giác ABCT nội tiếp.\n(Tuyén sinh 10 PTNK 2005-2006)\n",
+    "confidence": 88
+  },
+  {
+    "page": "p112",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 112\nLời giải\nD\ny\nB AN\nNO\na) Theo giả thiết ta có : ACB = 45° và ACB + BAC = 2ABC. Suy ra : BAC = 75°, ABC =\n60°.\nMà M thuộc trung trực của AB nên MBA = MAB = 60° = MAC = 15°.\nb) Gọi D bất ki nằm trên cung lớn AC của (J).\nTa có : AIC = 2ADC = 2(180° — AMC) = 120°.\nDo đó : ABC + AIC = 180° = AJCB nội tiếp.\nBài 100\nCho tam giác ABC và đường thẳng d song song với BC và khác phía với A. Lay M thuộc\nd sao cho tứ giác ABMC lồi. Điểm N trên MB hoặc MC sao cho AN chia diện tích tứ\ngiác ABMC thành hai phần bằng nhau. Tìm quỹ tích điểm N khi M di động.\n(Đề xuất bởi Korkot)\nLời giải\n",
+    "confidence": 91
+  },
+  {
+    "page": "p113",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 113\n4\np M L E\nKéo dài AB, AC cắt d tai D, E. Goi K,I,L, P lan lượt là trung điểm CD, BE, DE, BC\nGia sử N thuộc đoạn MC. Áp dụng bd đề 6 ta có: Spun = SANG = PN I AM\nMN PQ ML\nSuy ra: wm PC TIE = NL ICESZ>NSKL.\nTương tự với N thuộc đoạn BM thì N € IL\n",
+    "confidence": 86
+  },
+  {
+    "page": "p114",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 114\n",
+    "confidence": 95
+  },
+  {
+    "page": "p115",
+    "text": "Chương 3\nMột số bài toán chưa có lời giải\n\nSau đây là năm bài toán vẫn chưa có lời giải trên diễn đàn Toán học. Bạn đọc hãy thử tự\ntìm lời giải cho riêng mình nhé.\nBài 101. (Diepnguyencva) Cho đường tron (O); AB = 2R. Lấy Ơ thuộc đường tron (AC >\nBC). Tiếp tuyến tại A và C của (O) cắt nhau tai D, DB cắt (O) tại E. Kẻ CH vuông góc\nAB. DH cắt AE tại I; ƠI cắt AD tại K. Lay F đối xứng với E qua AB.\na, Chứng minh KF là tiếp tuyến của (O)\nb, Qua F kẻ đường thẳng song song AB cắt KB tại S. OS cắt AE tại Q. Chứng minh: D, Q,\nF thẳng hàng.\nBài 102. (phamhuy1801) Cho AABC nhọn. Dường tròn (O; 7 cắt AB, AC thứ tự tai E, D.\nCác tiếp tuyến kẻ từ E,D của (O) cắt nhau tai I và lần lượt cắt tiếp tuyến kẻ từ B,C của\n(O) tại F,G. FG cắt AI tại H và cắt (O) tại M,N. Chứng minh H là trực tâm của AABC\nvà MA, NA lần lượt các tiếp tuyến của (O)\nBài 103. (khanhdat1) Cho tam giác ABC nội tiếp đường tròn (O) có E, F thuộc đoạn CA\nvà BA sao cho EF song song với BC. Dường trung trực của đoạn thẳng BC cắt AC tại M,\nđường trung trực của đoạn EF cắt cắt AB tại N. Dường tròn ngoại tiếp tam giác BƠ M cắt\nCF tại P khác Ơ, đường tròn ngoại tiếp tam giác EF N cắt CF tại Q khác F.\na, Chứng minh rằng đường trung trực của PQ đi qua trung điểm của MN.\nb, Gọi L là điểm chính giữa cung lớn BC của đường tròn (O) và I là một điểm bất kì trên\nđoạn AL. Goi J là hình chiếu của I trên BC. Dường tròn tâm J bán kính IJ cắt AB, AC theo\nthứ tự tại X,Y. Chứng minh rằng đường tròn ngoại tiếp tam giác AXY và đường tròn tâm L\n",
+    "confidence": 92
+  },
+  {
+    "page": "p116",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 116\nbán kính LB tiếp xúc với nhau.\nBài 104. (khanhdat1) Cho tam giác ABC nhọn nội tiếp đường tròn (O) có trực tâm H, đường\ncao AF và M là trung điểm của BC. Dường tròn đường kính AH cắt HM tại Q khác H. Lay\nđiểm X thuộc BC sao cho XH vuông góc với QM. Gọi Ƒ, P lần lượt là trung điểm của QH\nvà QA. Duong thẳng qua Q song song với LX cắt MP tại N. Vẽ đường tròn tâm X bán kính\nXH cắt đường tròn (O) tại K sao cho K cùng phía với A so với BƠ\na, Chứng minh rằng ba điểm K, Q, N thẳng hàng.\nb, Chứng minh rằng (MNF) tiếp xúc với đường tròn đường kính QH.\nBài 105. (khanhdat1) Cho đường tròn (O; R) có đường kính AB và một điểm M bất kì nằm\ntrong (O) nhưng không nằm trên đường kính AB. Gọi N là giao điểm của đường phân giác\ntrong của góc 41MB với đường tròn (O). Dường phân giác ngoài của góc AM B cắt đường\nthẳng NA, NB lần lượt tại P và Q. Dường thẳng MA cắt đường tròn đường kính NQ tại R,\nđường thẳng À/ Ð cắt đường tròn đường kính NP tại S(R,S khác M). Qua R kẻ đường thẳng\nsong song với PQ cắt AN tại Ơ, qua kẻ đường thẳng song song với PQ cắt BN tại D. Gọi\nI là trung điểm của CD.\na, Chứng minh rằng ba điểm N,O, I thẳng hàng.\nb, Chứng minh rằng ba điểm R, S, J thẳng hàng.\n",
+    "confidence": 92
+  },
+  {
+    "page": "p117",
+    "text": "Chương 4\n\nBài tập rèn luyện\n\nBài 1. (Nguyễn Văn Linh) Cho AABC nội tiếp (O). Lay E, F bất kì trên AB và AC. Gọi\nM,N, P lần lượt là trung điểm CE, BF, EF. K là chân đường cao hạ từ O xuống EF. Chứng\nminh M,N, P, K đồng viên\n\nBài 2. Cho AABC nội tiếp (O) và ngoại tiếp (I). Giả sử AB + AC = 2BC.\n\nChứng mình AIO = 90°\n\nBài 3. (VMO 2011) Cho đường tron (O) đường kính AB. Lấy P trên tiếp tuyến tai B của\n(O). PA cắt (O) tại điểm thứ hai là Ơ. Kẻ đường kính CD của (O). PD cắt (O) tại điểm thứ\nhai là E. Chứng minh rằng AE, BC, PO đồng quy.\n\nBài 4. Cho AABC không cân nội tiếp (O). Kẻ đường kính AD, tiếp tuyến tai D cắt BC tại\nP. PO lần lượt cắt AB, AC tại FE, F. Chứng minh rằng OE = OF\n\nBài 5. Cho AABC có AB < AC < BƠ và nội tiếp (O). Trên tia BA, BƠ lấy D, E sao cho\nBD = BE = AC. (BDE) dắt (O) tại điểm thứ hai là P. Chứng minh rằng BP = AP + CP.\nBài 6. Cho AABC nội tiếp (O) có đường cao BD, CE. Tiếp tuyến tại B và Ơ cắt nhau ở P.\nChứng minh AP đi qua trung điểm DE.\n\nBài 7. Cho AABC nội tiếp (O) có trực tâm H. Gọi M là trung điểm AH, E trên AC sao cho\nOF || BC. F là điểm đối xứng của E qua O. Chứng minh rằng: BM 1 ME và BF là phân\ngiác MBE\n\nBài 8. Cho AABC nội tiếp (O) và ngoại tiếp (I). Kẻ đường kính AD của (O). AI cắt (O) tại\nE. Tia DI cắt (O) tại K. KE cắt BƠ tai L. Chứng minh rằng: IL 1 BC.\n\nBài 9. Cho tam giác ABC ngoại tiếp (I). BC tiếp xúc với (I) tại D. Gọi K là chân đường cao\n",
+    "confidence": 92
+  },
+  {
+    "page": "p118",
+    "text": "Tạ Công Hoàng - Nguyễn Đăng Khoa 118\nhạ từ I xuống AD. Chứng minh KD là phân giác BKC.\nBài 10. (IMO 2018) Cho AABC nội tiếp (O). Trên AB, AC lấy D, E sao cho AD = AE.\nTrung trực của BD, CE lần lượt cắt cung nhỏ AB, AC tai F,G. Chứng minh GF || DE\nBài 11. (Russian MO 2015) Cho tam giác ABC nhọn không cân. Kẻ đường cao AH va trung\ntuyến AM. Lấy Q, P nằm trên AB, AC sao cho QM 1 AC, PM | AB. Dường tròn ngoại tiếp\nAPMQ cắt BƠ tại điểm thứ hai là X. Chứng minh BH = CX\nBài 12. Cho AABC cân tại A. Trên AB lấy D sao cho BD = 2AD. Kẻ BE LCD, lấy F là\ntrung điểm CE. Chứng minh: AFB = 90°\nBài 13. (Stan Fulger) Cho tam giác ABC vuông tại A. Kẻ hình vuông MN PQ với M € AB,\nNe AC và P,Q € BC. NB cắt MQ tai B, MC cắt NP tai S. Chứng minh AR = AS\nBài 14. Cho đường tron (O) có dây cung AB. Lay D la điểm chính giữa cung nhỏ AB, C là\nđiểm bất kì trên cung lớn AB. Vẽ đường tròn (I) tiếp xúc với đường (O) tại Ơ đồng thời tiếp\nxúc AB tại F. Kẻ tiếp tuyến XA, XC của đường tròn (O). Goi giao điểm XD và AB là M.\nChứng minh M là trung điểm AF.\nBài 15. Cho tam giác ABC nội tiếp (O) có I là tâm nội tiếp. N là điểm chính giữa cung BAC\ncủa (O). NI cắt BƠ tại D. Qua D kẻ đường thẳng vuông góc với AI cắt IB, IC lần lượt tại\nK và L. Chứng mình DK = DL.\nBài 16. Cho AABC vuông tai A có phân giác BE và CF cắt nhau tai I. Gọi K là trung điểm\nEF. Chứng minh KI 1 BC.\nBài 17. (Tap chí Kvant) Cho AABC nội tiếp (O) có đường cao AH. Qua H kẻ đường thẳng\nsong song với OA cắt OA tại 2. Chứng minh D thuộc đường trung bình AABC.\nBài 18. (China TST) Cho hai đường tròn (O) và (O') cắt nhau tại Ơ, D. Kẻ tiếp tuyến chung\nngoài AB sao cho Ơ gần AB hơn D. Lấy E thuộc OO’ sao cho AE 1 BC. Chứng minh\nACE = 90°.\nBai 19. Cho AABC không cân có đường cao AD, BE, CF. EF cắt BC tai I. Qua D kẻ đường\nthẳng song song với EF cắt AB, AC lần lượt tai K, L. Chứng minh (IK L) luôn đi qua một\nđiểm cố định khi A di động và BC cố định.\nBài 20. (Nguyễn Dang Khoa) Cho lục giác ABCDEF ngoại tiếp (0). AEN BD = K,\nBEnCE=1,ACn DF = L. Chứng minh K, I, L thing hàng.\n",
+    "confidence": 91
+  },
+  {
+    "page": "p119",
+    "text": "Tài liệu tham khảo\n\n[1] Tài liệu chuyên Toán trung học cơ sở - Vũ Hữu Bình (Chủ biên). Nxb Giáo dục Việt Nam\n[2] Vẽ thêm yêu tố phụ để giải một số bài toán hình học 7,8,9 - Nguyễn Dic Tấn. Nxb Giáo\ndục Việt Nam\n\n[3] Bài tập Hình học chọn lọc cho học sinh trung học cơ sở - GS. Nguyễn Tiến Dũng, GS.Đỗ\nDức Thái (Chủ biên) - Nxb thông tin và truyền thông\n\n[4] Nâng cao và phát triển toán 6,7,8,9 - Vũ Hữu Bình. Nxb Giáo dục Việt Nam\n\n[5] Các chuyên đề chọn lọc Toán 8,9 - Tôn Thân (Chủ biên). Nxb Giáo dục Việt Nam\n\n[6] Các chuyên đề bồi dưỡng học sinh giỏi Toán lớp 9, tập hai: Hình học - Nguyễn Bá Dang.\nNxb Giáo dục Việt Nam\n\n[7] Tạp chí Toán tuổi thơ 2, Tạp chí Toán học và Tuổi trẻ, Tap chí Pi.\n\nInternet:\n\n[9] [TOPIC] HÌNH HỌC ÔN THI VÀO THPT CHUYEN 2018-2019\nhttps://diendantoanhoc.net/topic/182061-topic-hình-học-ôn-thi-vào-thpt-chuyên-2018-2019/\n[9] AoPS forum.\n\nhttps://artofproblemsolving.com/\n\n[10] Diễn đàn Mathscope\n\nhttp://mathscope.org/\n\n[11] Trần Quang Hùng, Blog hình học sơ cấp\n\nhttps://analgeomatica.blogspot.com/\n\n[12] Blog Toán học của Khoa Nguyễn\n\nhttps://khoalinhmathematics.blogspot.com/\n",
+    "confidence": 94
+  }
+]

@@ -28,11 +28,12 @@ const PERP_RE = new RegExp(
 const TRI_STRICT_RE =
   /(?<!giác )(?<!thang )(?<![\p{L}\d])A([A-Z]{3})\s+(đều|cân|nhọn|vuông)(?![\p{L}])/gu;
 
-// R2b — △ABC "nội/ngoại tiếp": phân biệt với TỨ GIÁC bằng tín hiệu A NHÂN ĐÔI.
-// △ABC→"AABC" (AA…); tứ giác "ABCD"→"AB…" (không nhân đôi) → "Cho ABCD nội tiếp"
-// KHÔNG bị vá nhầm (trước đây R2a cũ vá sai thành "tam giác BCD").
-const TRI_DOUBLE_RE =
-  /(?<![\p{L}\d])AA([A-Z]{2})(?=\s+(?:đều|cân|nhọn|vuông|nội tiếp|ngoại tiếp))/gu;
+// R2b — △ABC: tín hiệu A NHÂN ĐÔI ("AABC" = △+ABC) tự PHÂN BIỆT với TỨ GIÁC
+// (single-A "ABCD"). Doubled-A word-bounded (chính xác 4 ký tự, `(?![A-Z])` chặn
+// "AABCD") gần như CHẮC CHẮN là △ → KHÔNG cần tính-từ ngay sau (bản cũ yêu cầu →
+// miss "AABC không cân"/"AABC có AB<AC"/"AABM tiếp xúc": 16 chỗ). Tứ giác single-A
+// không khớp "AA" nên không bị vá nhầm.
+const TRI_DOUBLE_RE = /(?<![\p{L}\d])AA([A-Z]{2})(?![A-Z])/gu;
 
 // R3 — (O) : tâm đường tròn O bị đọc thành số 0. Chỉ dạng bare "(0)" (né "(0;…)" toạ độ).
 const CIRCLE_O_RE = /\(0\)/gu;

@@ -16,12 +16,15 @@ SP=/tmp/pdf-work            # thư mục tạm (ảnh + ocr + figures — KHÔNG
 .venv/bin/python -c "import fitz; d=fitz.open('docs/datasets/sources/<file>.pdf'); \
   [d[i].get_pixmap(dpi=200).save(f'$SP/pages/p{i+1:03d}.png') for i in range(d.page_count)]"
 
-# 2) OCR mọi trang (1 worker Tesseract vie+eng dùng lại) → text raw có newline
-npx tsx scripts/pdf-dataset/ocr-pages.ts $SP/pages $SP/ocr
+# 2) OCR mọi trang (1 worker Tesseract vie+eng dùng lại) → text raw có newline.
+#    Raw OCR là DETERMINISTIC + ổn định → CACHE vào repo (docs/datasets/sources/ocr/
+#    all.json) để KHÔNG phải re-OCR khi tweak repair. Chỉ chạy lại khi đổi PDF/DPI.
+npx tsx scripts/pdf-dataset/ocr-pages.ts $SP/pages $SP/ocr && cp $SP/ocr/all.json docs/datasets/sources/ocr/
 
-# 3) Cắt ĐỀ BÀI (chỉ statement, bỏ lời giải + hình) → docs/datasets/*.txt
-#    Áp repairOcrSymbols (production) lên mỗi đề. Re-chạy sau mỗi lần sửa repair.
-npx tsx scripts/pdf-dataset/segment-problems.ts $SP/ocr \
+# 3) Cắt ĐỀ BÀI (chỉ statement, bỏ lời giải + hình) → docs/datasets/*.txt.
+#    Áp repairOcrSymbols (production) lên mỗi đề. Re-chạy sau MỖI lần sửa repair —
+#    đọc TỪ CACHE (không cần re-OCR):
+npx tsx scripts/pdf-dataset/segment-problems.ts docs/datasets/sources/ocr \
   --write docs/datasets/tong-hop-hinh-phang-vao10-2018-2019.txt
 
 # 4) Dựng hình (deterministic, không LLM) + render PNG để kiểm tra mắt

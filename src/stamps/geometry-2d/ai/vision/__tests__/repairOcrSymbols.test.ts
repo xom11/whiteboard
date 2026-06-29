@@ -44,8 +44,10 @@ describe('repairOcrSymbols — R2 △/∆ (A dính đầu, chỉ câu đề)', (
       'Cho hình vuông ABCD có cạnh bằng 2',
     );
   });
-  it('cố ý BỎ QUA △ ở phần lời giải ("Suy ra AADN = ABAM")', () => {
-    expect(repairOcrSymbols('Suy ra AADN = ABAM')).toBe('Suy ra AADN = ABAM');
+  it('R2b nới: doubled-A "AADN" → △ kể cả lời giải (vô hại — lời giải bị cắt khỏi hình)', () => {
+    // Đổi từ hành vi cũ (bỏ qua khi không có tính-từ): doubled-A là △ rõ ràng.
+    // "ABAM" KHÔNG doubled-A đầu token → giữ nguyên.
+    expect(repairOcrSymbols('Suy ra AADN = ABAM')).toBe('Suy ra tam giác ADN = ABAM');
   });
 });
 
@@ -97,6 +99,15 @@ describe('repairOcrSymbols — R2 fix bug tứ giác nội tiếp + nhánh A nh�
   });
   it('vá △ABC nội tiếp qua tín hiệu A nhân đôi "AABC"', () => {
     expect(repairOcrSymbols('Cho AABC nội tiếp (O)')).toBe('Cho tam giác ABC nội tiếp (O)');
+  });
+  it('R2b nới: tính-từ KHÔNG cần ngay sau (từ chen "không"/"có"/"~"/standalone)', () => {
+    expect(repairOcrSymbols('Cho AABC không cân nội tiếp (O)')).toBe('Cho tam giác ABC không cân nội tiếp (O)');
+    expect(repairOcrSymbols('Cho AABC có AB < AC < BC')).toBe('Cho tam giác ABC có AB < AC < BC');
+    expect(repairOcrSymbols('AABM tiếp xúc với AB')).toBe('tam giác ABM tiếp xúc với AB');
+    expect(repairOcrSymbols('Cho AABC có trực tâm H.')).toBe('Cho tam giác ABC có trực tâm H.');
+  });
+  it('R2b vẫn KHÔNG đụng tứ giác single-A "AABCD" (5 ký tự không khớp)', () => {
+    expect(repairOcrSymbols('Cho ABCDE nội tiếp')).toBe('Cho ABCDE nội tiếp');
   });
 });
 
