@@ -20,4 +20,12 @@ describe('circumcircleCutsLineRule', () => {
   it('fail-safe: K trùng đầu mút line → 0 match', () => {
     expect(run('Đường tròn ngoại tiếp tam giác ABE cắt AC tại A')).toEqual([]);
   });
+
+  it('shorthand PAREN "(ABC)" + "điểm thứ 2 là" (vao10:14)', () => {
+    const it = run('Đường tròn (ABC) cắt OA tại điểm thứ 2 là I').flatMap((m) => m.intents) as any[];
+    expect(it.find((i) => i.op === 'draw-circle')).toMatchObject({ name: 'wABC', spec: 'through3', points: ['A', 'B', 'C'] });
+    const k = it.find((i) => i.op === 'add-point');
+    expect(k.name).toBe('I');
+    expect(k.constraint).toEqual({ kind: 'secondIntersection', line: 'OA', circle: 'wABC', other: 'A' });
+  });
 });

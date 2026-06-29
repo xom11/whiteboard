@@ -14,13 +14,23 @@
 import type { LanguageRule, RuleMatch } from './_types';
 import { drawCircle, addPoint } from './_shared';
 
-const PREFILTER = /[Đđ]ường\s*tròn\s+ngoại\s*tiếp\s+(?:tam\s*giác\s+)?[A-Z]{3}[^.]{0,20}?cắt\s+[A-Z]{2}/u;
+const PREFILTER =
+  /[Đđ]ường\s*tròn\s+ngoại\s*tiếp\s+(?:tam\s*giác\s+)?[A-Z]{3}[^.]{0,20}?cắt\s+[A-Z]{2}|[Đđ]ường\s*tròn\s+\([A-Z]{3}\)[^.]{0,20}?cắt\s+[A-Z]{2}/u;
 
 // group1 = 3 đỉnh tam giác, 2 = line (cặp đỉnh), 3 = giao K, 4 = "khác W" (optional).
 const RE = new RegExp(
   '[Đđ]ường\\s*tròn\\s+ngoại\\s*tiếp\\s+(?:tam\\s*giác\\s+)?([A-Z]{3})(?![A-Z])\\s+cắt\\s+(?:lại\\s+)?' +
     '(?:đường\\s*thẳng\\s+|đoạn\\s+|tia\\s+|cạnh\\s+)?([A-Z]{2})(?![A-Z])\\s+(?:tại|ở)\\s+' +
     '(?:điểm\\s+(?:thứ\\s+hai\\s+)?)?([A-Z])(?![A-Z])(?:\\s+khác\\s+([A-Z])(?![A-Z]))?',
+  'gu',
+);
+
+// Shorthand PAREN: "Đường tròn (ABC) cắt OA tại điểm thứ 2 là I" — (XYZ) = đường
+// tròn ngoại tiếp tam giác XYZ. Cho "thứ 2"/"thứ hai" + "là" (vao10:14).
+const RE_PAREN = new RegExp(
+  '[Đđ]ường\\s*tròn\\s+\\(([A-Z]{3})\\)\\s+cắt\\s+(?:lại\\s+)?' +
+    '(?:đường\\s*thẳng\\s+|đoạn\\s+|tia\\s+|cạnh\\s+)?([A-Z]{2})(?![A-Z])\\s+(?:tại|ở)\\s+' +
+    '(?:điểm\\s+(?:thứ\\s+(?:hai|2)\\s+)?)?(?:là\\s+)?([A-Z])(?![A-Z])(?:\\s+khác\\s+([A-Z])(?![A-Z]))?',
   'gu',
 );
 
@@ -32,23 +42,25 @@ export const circumcircleCutsLineRule: LanguageRule = {
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
-      RE.lastIndex = 0;
-      for (const m of c.text.matchAll(RE)) {
-        const tri = m[1].split('');
-        const line = m[2];
-        const k = m[3];
-        // Điểm chung (loại): "khác W" tường minh, else đầu mút line nằm trong tam giác.
-        const shared = m[4] ?? line.split('').find((v) => tri.includes(v));
-        if (!shared || tri.includes(k) || line.includes(k)) continue;
-        const w = `w${m[1]}`;
-        out.push({
-          ruleId: 'circumcircleCutsLine',
-          clauseIds: [c.id],
-          intents: [
-            drawCircle(w, 'through3', { points: tri }),
-            addPoint(k, { kind: 'secondIntersection', line, circle: w, other: shared }),
-          ],
-        });
+      for (const re of [RE, RE_PAREN]) {
+        re.lastIndex = 0;
+        for (const m of c.text.matchAll(re)) {
+          const tri = m[1].split('');
+          const line = m[2];
+          const k = m[3];
+          // Điểm chung (loại): "khác W" tường minh, else đầu mút line nằm trong tam giác.
+          const shared = m[4] ?? line.split('').find((v) => tri.includes(v));
+          if (!shared || tri.includes(k) || line.includes(k)) continue;
+          const w = `w${m[1]}`;
+          out.push({
+            ruleId: 'circumcircleCutsLine',
+            clauseIds: [c.id],
+            intents: [
+              drawCircle(w, 'through3', { points: tri }),
+              addPoint(k, { kind: 'secondIntersection', line, circle: w, other: shared }),
+            ],
+          });
+        }
       }
     }
     return out;

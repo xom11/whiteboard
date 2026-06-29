@@ -112,6 +112,9 @@ const DIQUA_RE = /(?<!\p{L})di qua(?!\p{L})/gu;
 // chạm"/"va li" (từ thật, theo sau lowercase-khác).
 const VA_VAND_RE = /(?<!\p{L})va (?=[A-Z(]|dây|đường)/gu;
 
+// R22 — "Trén/trén" → "Trên/trên" (OCR é↔ê trên từ "trên"). "trén" không là từ Việt.
+const TREN_RE = /([Tt])rén(?![\p{L}])/gu;
+
 export function repairOcrSymbols(text: string): string {
   let t = text;
   t = t.replace(PERP_RE, '$1 ⊥ $3');
@@ -136,5 +139,6 @@ export function repairOcrSymbols(text: string): string {
   t = t.replace(LAY_RE, 'Lấy');
   t = t.replace(DIQUA_RE, 'đi qua');
   t = t.replace(VA_VAND_RE, 'và ');
+  t = t.replace(TREN_RE, '$1rên');
   return t;
 }

@@ -36,7 +36,7 @@ Câu 18: Cho tam giác từ M nằm ngoài (O) vẽ tiếp tuyến MA, MB, gọi
 
 Câu 19: Gọi a,p, q là khoảng cách từ A, P,Q xuống đường thẳng (d). Chứng minh: ”. không đổi khi (d) dịch chuyển 2, Khẳng định trên còn đúng không khi wy không phải góc vuông. (Dé thi PTNK 2000)
 
-Câu 20: Cho đường tròn (O), đường kính AB, gọi C là trung điểm AO. Qua C kẻ đường vuông góc với OA cắt (O) tại 2 điểm M và N.Trén cung MN lớn lấy điểm K. Giao điểm của AK với MN là H a, Tìm vị trí i để cho khoảng cách từ N đến tâm đường tròn ngoại tiếp tam giác KM H nhỏ nhất b, Với K thuộc cung MB, lấy I trên KN sao cho KI = KM. Chứng minh: NI = KB (Đề xuất bởi buingoctu)
+Câu 20: Cho đường tròn (O), đường kính AB, gọi C là trung điểm AO. Qua C kẻ đường vuông góc với OA cắt (O) tại 2 điểm M và N.Trên cung MN lớn lấy điểm K. Giao điểm của AK với MN là H a, Tìm vị trí i để cho khoảng cách từ N đến tâm đường tròn ngoại tiếp tam giác KM H nhỏ nhất b, Với K thuộc cung MB, lấy I trên KN sao cho KI = KM. Chứng minh: NI = KB (Đề xuất bởi buingoctu)
 
 Câu 21: Cho tam giác ABC với AD, BE, CF la các đường cao tương ứng. EF cat BC tại P, O là trung điểm BC. Biết rằng OP = BC. Chứng minh DB = DO. (Đề xuất bởi Minhcamgia,)
 
