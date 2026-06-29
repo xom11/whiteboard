@@ -197,6 +197,12 @@ describe('repairOcrSymbols — R12-R19 glyph + rớt dấu (đo PDF vào-10 2018
     expect(repairOcrSymbols('M di chuyển trên BC')).toBe('M di chuyển trên BC');
     expect(repairOcrSymbols('điểm A di động')).toBe('điểm A di động');
   });
+  it('R20 "Dường" → "Đường" (rớt gạch Đ); chuỗi với R8; né "Dường như"', () => {
+    expect(repairOcrSymbols('Dường tròn (O)')).toBe('Đường tròn (O)');
+    expect(repairOcrSymbols('Dường thẳng d cắt')).toBe('Đường thẳng d cắt');
+    expect(repairOcrSymbols('Dường tron (I) nội tiếp')).toBe('Đường tròn (I) nội tiếp');
+    expect(repairOcrSymbols('Dường như hai đường song song')).toBe('Dường như hai đường song song');
+  });
 });
 
 describe('repairOcrSymbols — tổng hợp + idempotent', () => {

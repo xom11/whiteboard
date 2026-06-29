@@ -16,7 +16,7 @@ Câu 8: Cho (O) và đường thẳng d cố định va (O); d không có điể
 
 Câu 9: Cho AD = BC, chứng minh DN đi qua trung điểm AC. (Dé zudt bởi MoMo123)
 
-Câu 10: Cho tứ giác ABCD nội tiếp trong (O), AC cắt BD tại J. Dường tròn (O’) tiếp xúc với JA, JB tại E, F và tiếp xúc trong với (O), Chứng minh rằng đường thẳng EF đi qua tâm đường tròn nội tiếp AABD (Dinh lj Lyness)
+Câu 10: Cho tứ giác ABCD nội tiếp trong (O), AC cắt BD tại J. Đường tròn (O’) tiếp xúc với JA, JB tại E, F và tiếp xúc trong với (O), Chứng minh rằng đường thẳng EF đi qua tâm đường tròn nội tiếp AABD (Dinh lj Lyness)
 
 Câu 11: Gọi T là tiếp điểm của (O) và (O), TF cắt (O) tại N, AN cắt EF tại I. Ta có: O'F 1 BD nên ON ⊥ BD do đó N là điểm chính giữa cung BD nên AN là phân giác 4ZDAB. Dé dàng chứng minh BN² = WF.NT(1) (ANFB ~ ANBT) và LNAT = 5“TON = 2“TOF = ZIET nên tứ giác IFAT nội tiếp = ZAJT = ZAET = ZIFT nên ANIF ~ ANTI suy ra NF.NT = NI (2) Từ (1) và (2) suy ra NI = NB = ND uên I là tâm nội tiếp tam giác ABD. Từ 3 đỉnh của một tam giác hạ các đường vuông góc xuống một đường thẳng ở ngoài tam giác đó. Chứng minh rằng tổng độ dài của 3 đường vuông góc đó gấp 3 lần độ dài của đoạn thẳng vuông góc hạ từ trọng tâm của tam giác xuống cùng đường thẳng đó . (Dé xuất bởi thanhdatqu2003)
 
@@ -24,7 +24,7 @@ Câu 12: Cho AABC có trực tâm H. Chứng minh rằng đường tròn ngoại
 
 Câu 13: Gọi D, E, F là điểm tiếp xúc của đường P Ñ 1 tròn bàng tiếp đỉnh A với ba cạnh tam giác. Chứng minh rang: Sgro > 15D5F (Dé xuất bởi NguyenHoaiTrung)
 
-Câu 14: Cho đường tròn (O; R) và điểm A cố định với OA = 2R, đường kính BC quay quanh O sao cho 3 điểm A, B, C không thẳng hang; Dường tròn (ABC) cắt OA tại điểm thứ 2 là I. Dường thẳng AB, AC cắt (O; R) lần lượt tại D, E vớ D # B , C # E. Nối DE cắt đường thẳng OA tại K. a) Chứng minh: OJ.OA = OB.OC và AK. Al = AE AC b) Tinh do dai OI; OK theo R c) Chứng minh: đường tròn (ADE) luôn đi qua 1 điểm cố định (khác A) khi BC quay quanh O. (TS lớp 10 dai học Su Phạm ngoại ngữ 2001-2002)
+Câu 14: Cho đường tròn (O; R) và điểm A cố định với OA = 2R, đường kính BC quay quanh O sao cho 3 điểm A, B, C không thẳng hang; Đường tròn (ABC) cắt OA tại điểm thứ 2 là I. Đường thẳng AB, AC cắt (O; R) lần lượt tại D, E vớ D # B , C # E. Nối DE cắt đường thẳng OA tại K. a) Chứng minh: OJ.OA = OB.OC và AK. Al = AE AC b) Tinh do dai OI; OK theo R c) Chứng minh: đường tròn (ADE) luôn đi qua 1 điểm cố định (khác A) khi BC quay quanh O. (TS lớp 10 dai học Su Phạm ngoại ngữ 2001-2002)
 
 Câu 15: Gọi x,y,z là khoảng cách từ (O) xuống ba cạnh của tam giác ABC. Chứng minh hệ thức z+uy+Z= R.+r (Dinh lý Carnot)
 
@@ -62,11 +62,11 @@ Câu 31: Cho tứ giác ABCD nội tiếp (O) . AD cắt BC tại P, AC cắt BD
 
 Câu 32: Cho tam giác ABC nội tiếp (O) có phân giác AD. (ADC)NAB = {A, F}; (ABD)nAC = {A, E}. Chứng minh rằng: OD ⊥ EF (Đề xuất bởi Khoa Linh)
 
-Câu 33: Từ điểm M ngoài (O), vẽ tiếp tuyến MA, MB. Dường tron (I) nội tiếp AABM tiếp xúc với AB, AM lần lượt tại H,G ; (I) cắt (O) tại P, R (P nằm trên nửa mặt phẳng bờ OM chứa A), AR cắt (I) tại Q. Chứng minh PR, AI, HG đồng quy và tam giác APQ cân. (Dé suất bởi phamhuy1801)
+Câu 33: Từ điểm M ngoài (O), vẽ tiếp tuyến MA, MB. Đường tròn (I) nội tiếp AABM tiếp xúc với AB, AM lần lượt tại H,G ; (I) cắt (O) tại P, R (P nằm trên nửa mặt phẳng bờ OM chứa A), AR cắt (I) tại Q. Chứng minh PR, AI, HG đồng quy và tam giác APQ cân. (Dé suất bởi phamhuy1801)
 
 Câu 34: Gọi M,N lần lượt là giao điểm của đường thẳng EF với các đường thẳng OB, OC. Chứng minh tứ giác BN MC nội tiếp một đường tròn. b, Kẻ tia phân giác DK của EDF và tia phân giác OI của BOC (K thuộc FF và I thuộc BC). Chứng minh rằng OI song song với DK. c, Chứng minh đường thẳng IK luôn đi qua một điểm cố định. (Đề thi chuyên Phan Bội Châu 2017-2018)
 
-Câu 35: Gọi H là trực tâm của tam giác ABC và P là một điểm trên đoạn BC (P khác B,C). Dường thẳng AH cắt (BHC) tại 7 khác H. Duong thẳng PT cắt (BHC) tại K khác T. Giả sử BK cắt AC tại M và CK cắt AB tại N. Gọi X,Y lần lượt là trung điểm của BN, CM. a, Chứng minh rằng tứ giác AN KM nội tiếp đường tròn. b, Chứng minh rằng góc X PY có số đo không đổi khi P di động trên BC. (Đề xuất bởi khanhdat1)
+Câu 35: Gọi H là trực tâm của tam giác ABC và P là một điểm trên đoạn BC (P khác B,C). Đường thẳng AH cắt (BHC) tại 7 khác H. Duong thẳng PT cắt (BHC) tại K khác T. Giả sử BK cắt AC tại M và CK cắt AB tại N. Gọi X,Y lần lượt là trung điểm của BN, CM. a, Chứng minh rằng tứ giác AN KM nội tiếp đường tròn. b, Chứng minh rằng góc X PY có số đo không đổi khi P di động trên BC. (Đề xuất bởi khanhdat1)
 
 Câu 36: Cho tam giác ABC nội tiếp (O) có các đường cao BE, CF. M là trung điểm BC, AM cắt EF tại N. Kẻ NX ⊥ BC, XY ⊥ AB, XZ ⊥ AC. Chứng minh N là trực tâm của tam giác AY Z. (Đề xuất bởi taconghoang)
 
@@ -74,11 +74,11 @@ Câu 37: Cho tam giác ABC và các điểm như hình vẽ. Giả sử diện t
 
 Câu 38: Cho (O) và dây cung BC cố định, lấy điểm A trên cung lớn BC. Kẻ BD ⊥ AC,CE ⊥ AB. BD cắt đường thẳng kẻ từ A vuông góc với AB tại I, ED cắt đường thẳng kẻ từ A song song với BC tại M. Chứng minh MI đi qua tâm một đường tròn có đường kính cố định. (Dé suất bởi phamhuy1801)
 
-Câu 39: Cho tam giác ABC nhọn, đường cao PD,CE cắt nhau tại H. Dường tròn đường kính AB cắt CFE tại G, đường tròn đường kính AC cắt BD tại F. CF cắt BC tại I, DG cắt EF tại K. a, Chứng minh 3 điểm A, I, K thẳng hàng. b, Gia sử EF cắt BG tại M, DG cắt CF tại N. Chứng minh HI, EN, DM đồng quy. (Dé zudt bởi phamhuy1801)
+Câu 39: Cho tam giác ABC nhọn, đường cao PD,CE cắt nhau tại H. Đường tròn đường kính AB cắt CFE tại G, đường tròn đường kính AC cắt BD tại F. CF cắt BC tại I, DG cắt EF tại K. a, Chứng minh 3 điểm A, I, K thẳng hàng. b, Gia sử EF cắt BG tại M, DG cắt CF tại N. Chứng minh HI, EN, DM đồng quy. (Dé zudt bởi phamhuy1801)
 
 Câu 40: Cho tam giác ABC nhọn, M thay đổi trên cạnh AB. (BMC) N AC = {C, N}. a, Chứng minh: AAMN ~ AACB. Tinh ul để Samy = Sane b, Gọi I là tâm (AM N). Chứng minh J thuộc một đường cố định khi M di động. c, J là tâm (BMC). Chứng minh độ dài J.J không đổi khi M di động. (Đề xuất bởi Korkot)
 
-Câu 41: Cho 3 điểm A, B,C thẳng hàng theo thứ tự. Dường tròn (O) đi qua D và C. Từ A kẻ tiếp tuyến AM, AN với (O). Gọi I là trung điểm của BC. NI cắt (O) tại D. Chứng minh rằng: a, Khi (O) thay đổi đi qua B,C thì N, D luôn thuộc một đường tròn cố định b, Tâm đường tròn ngoại tiếp AAIO chạy trên một đường thẳng cố định. (Đề xuất bởi MarkGot7)
+Câu 41: Cho 3 điểm A, B,C thẳng hàng theo thứ tự. Đường tròn (O) đi qua D và C. Từ A kẻ tiếp tuyến AM, AN với (O). Gọi I là trung điểm của BC. NI cắt (O) tại D. Chứng minh rằng: a, Khi (O) thay đổi đi qua B,C thì N, D luôn thuộc một đường tròn cố định b, Tâm đường tròn ngoại tiếp AAIO chạy trên một đường thẳng cố định. (Đề xuất bởi MarkGot7)
 
 Câu 42: Trên tia đối của tia AB lấy điểm M từ M kẻ hai tiếp tuyến MC, MD với (O), AC, AD cắt (O) tại E, F. Chứng minh rằng a, Chứng minh rằng CD đi qua trung điểm của EF. b, EF luôn đi qua một điểm cố định khi A/ di động trên tia đối của tia AB. (Dé thi tinh Nghệ An 2017-2018)
 
@@ -86,7 +86,7 @@ Câu 43: Gọi E và F lần lượt là tâm đường tròn ngoại tiếp c�
 
 Câu 44: Cho tam giác ABC và đường tròn nội tiếp (O) tiếp xúc với BC, CA, AB lan lượt tại D.E,F. Đường tròn (A; AE) cắt đường cao AH của tam giác ABC tại M (M nim giữa A và H). Duong thẳng OM và DM cắt đường tròn (A; AE) lần lượt tại K và N. MOn BC = {I} a, Chứng minh rằng ba điểm A, I, N thẳng hàng. b, Chứng minh rằng đường tròn đường kính AT tiếp xúc với (O). (Đề xuất bởi khanhdat1)
 
-Câu 45: Gọi O là tâm đường tròn ngoại tiếp tam giác ABC. Dường thẳng EF cắt AO và BC theo thứ tự tại M và N. Chứng minh rằng đường tròn ngoại tiếp tam giác AMN luôn đi qua một điểm cố định. b, Các tiếp tuyến tại FE, F của đường tròn ngoại tiếp tam giác AEF cắt nhau tại 7. Chứng minh rằng 7 luôn thuộc một đường thẳng cố định. (Đề xuất bởi khanhdat1)
+Câu 45: Gọi O là tâm đường tròn ngoại tiếp tam giác ABC. Đường thẳng EF cắt AO và BC theo thứ tự tại M và N. Chứng minh rằng đường tròn ngoại tiếp tam giác AMN luôn đi qua một điểm cố định. b, Các tiếp tuyến tại FE, F của đường tròn ngoại tiếp tam giác AEF cắt nhau tại 7. Chứng minh rằng 7 luôn thuộc một đường thẳng cố định. (Đề xuất bởi khanhdat1)
 
 Câu 46: Cho tứ giác ABC'D nội tiếp trong 1 đường tròn và ngoại tiếp một đường tròn khác, các tiếp điểm lần lượt là E, F,G, H. Chứng minh: EG vuông góc với FH. (Dé xuất bởi thanhdatqu2003)
 
@@ -114,7 +114,7 @@ Câu 57: Cho (O) va (O') cắt nhau tại A, B, tiếp tuyến chung ngoài CD, 
 
 Câu 58: Cho tam giác ABC nhọn (AB < AC), đường cao BD, CE cắt nhau tại H. M, N lần lượt là trung điểm BD,CE. Gọi I là trực tam AADE. Chứng minh MN ⊥ HI (Dé zudt bởi phamhuy1801)
 
-Câu 59: Gọi I là tâm đường tròn nội tiếp tam giác ABC. a, Chứng minh rằng BRI = CRI. b, Dường trung trực của AI cắt AC, AB theo thứ tu tại Z, F. Chứng minh rằng đường tròn tiếp xúc với AC, AB tại E, F tiếp xúc với đường tròn ngoại tiếp tam giác BOC (Đề xuất bởi khanhdat1)
+Câu 59: Gọi I là tâm đường tròn nội tiếp tam giác ABC. a, Chứng minh rằng BRI = CRI. b, Đường trung trực của AI cắt AC, AB theo thứ tu tại Z, F. Chứng minh rằng đường tròn tiếp xúc với AC, AB tại E, F tiếp xúc với đường tròn ngoại tiếp tam giác BOC (Đề xuất bởi khanhdat1)
 
 Câu 60: Cho tam giác ABC nội tiếp (O), M là trung điểm cung nhỏ BC. Lấy K, F lần lượt thuộc AB, AC sao cho OK ∥ MB và OL ∥ MC. ML cắt (O) tại điểm thứ 2 là O .Chứng minh BG chia đôi KL. (Đề xuất bởi kekkes)
 
@@ -144,31 +144,31 @@ Câu 72: Cho tam giác ABC nội tiếp (O) có đường kính AZ. Lấy D bấ
 
 Câu 73: Cho tam giác ABC ngoại tiếp (I) và (I) tiếp xúc với BC tại D. Qua D kẻ đường thẳng vuông góc với AD cắt BJ,C1I lần lượt tại M, N. Chứng minh: tam giác AMN cân. (Đề xuất bởi Nguyễn Minh Ha)
 
-Câu 74: Cho hình bình hành ABCD. Dường phân giác BAD cắt cạnh CD và đường thẳng BC tại M, V.Vẽ đường tròn tam O ngoại tiếp tam giác CM N.Vé dây cung CK của (O) sao cho CK song song BD. Chứng minh rằng : B, K, 0, C, D cùng thuộc một đường tròn. (Dé ruất bởi Tea Coffee)
+Câu 74: Cho hình bình hành ABCD. Đường phân giác BAD cắt cạnh CD và đường thẳng BC tại M, V.Vẽ đường tròn tam O ngoại tiếp tam giác CM N.Vé dây cung CK của (O) sao cho CK song song BD. Chứng minh rằng : B, K, 0, C, D cùng thuộc một đường tròn. (Dé ruất bởi Tea Coffee)
 
 Câu 75: Gọi M, N lần lượt là trung điểm BD,CE. Chứng minh rằng A, K, N, Oy, M cùng thuộc một đường tròn. (Dé ruất bởi Tea Coffee)
 
 Câu 76: Cho tam giác ABC không cân nội tiếp (O), BD là phân giác ABC.BD cắt (O) tại E. ĐƯờng tròn (O.) đường kính DE cắt (O) tại F. a) Chứng minh : đường thẳng đối xứng với BF qua BD đi qua trung điểm của AC. b) Giả sử tam giác ABC vuông tại B, BAC = 60° và bán kính của (O) bằng R. Tính bán kính (O¡) theo R. (Dé xuất bởi quynhanhlh7)
 
-Câu 77: Cho (I, R) va (J,r) là hai đường tròn bàng tiếp trong BAC và ABC của tam giác ABC. Duong tròn (I) tiếp xúc AB tại N,BC tại P,AC tại H.Dường tròn (J) tiếp xúc BA tại K,BC tại Q,NM là đường kính của (I). Chứng minh rằng BC, AH, KM đồng quy. (Dé ruất bởi Tea Coffee)
+Câu 77: Cho (I, R) va (J,r) là hai đường tròn bàng tiếp trong BAC và ABC của tam giác ABC. Duong tròn (I) tiếp xúc AB tại N,BC tại P,AC tại H.Đường tròn (J) tiếp xúc BA tại K,BC tại Q,NM là đường kính của (I). Chứng minh rằng BC, AH, KM đồng quy. (Dé ruất bởi Tea Coffee)
 
 Câu 78: Cho tam giác đều ABC và M là điểm bất kỳ trên BC.Gọi H, K là chân đường vuông góc kẻ từ M xuống AB, AC.Xác định vị trí M để diện tích tam giác HM K lớn nhất. (Dé ruất bởi Tea Coffee)
 
 Câu 79: Gọi F là một điểm trên cung BD không chứa A, C của (O); FE cat BC tại G, H thuộc AF sao cho GH song song với AD. Chứng minh HG là phân giác BHC. (Đề xuất bởi Diepnguyencva)
 
-Câu 80: Cho tứ giác ABCD nội tiếp đường tròn tam O có các đường chéo AC và BD vuông góc với nhau. Các điểm M và N lần lượt là điểm chính giữa các cung ADC và ABC. Dường kính qua D của (O) giao dây cung AN tại G. Dường thẳng qua G song song với NC cắt CD tại K. Chứng minh rằng BM ⊥ AK. (Dé zudt bởi quangminhltv99)
+Câu 80: Cho tứ giác ABCD nội tiếp đường tròn tam O có các đường chéo AC và BD vuông góc với nhau. Các điểm M và N lần lượt là điểm chính giữa các cung ADC và ABC. Đường kính qua D của (O) giao dây cung AN tại G. Đường thẳng qua G song song với NC cắt CD tại K. Chứng minh rằng BM ⊥ AK. (Dé zudt bởi quangminhltv99)
 
 Câu 81: Cho (O) và dây AB không đi qua tâm. Dây PQ vuông góc với AB tại H (HA> HB). M là hình chiếu của Q trên PB, QM cắt AB tại K. Tia MH cắt AP tại N. Từ N kẻ đường thẳng song song với AK cắt QB tại I. Chứng minh : P,J, K thẳng hàng. (Đề xuất bởi MarkGot7)
 
 Câu 82: Gọi K là điểm đối xứng với M qua BC. Chứng minh: D, K, E thẳng hàng. (Dé ruất bởi Phan Qué Son)
 
-Câu 83: Cho tam giác ABC, phân giác AD, trung tuyến AM. Dường vuông góc với AD tại D cắt AB, AM lần lượt tại X,Y. Dường vuông góc với AB tại X cắt AD tại Z. Chứng minh YZ vuông góc với BC. (Đề xuất bởi viaaiv)
+Câu 83: Cho tam giác ABC, phân giác AD, trung tuyến AM. Đường vuông góc với AD tại D cắt AB, AM lần lượt tại X,Y. Đường vuông góc với AB tại X cắt AD tại Z. Chứng minh YZ vuông góc với BC. (Đề xuất bởi viaaiv)
 
-Câu 84: Cho tam giác ABC nội tiếp (O) có AB < AC. Gọi M là trung điển BC.AM cắt (O) tại điểm thứ hai là D. Dường tròn ngoại tiếp AM DC cắt AC tại E. Dường tròn ngoại tiếp AMBD cắt đường thẳng AB tại F. a) Chứng minh ACED ~ ABFD và E, M, F thẳng hàng. b) Phân giác ZBAC cắt EF tại N. Phân giác ZCEM cat CN tại P. Phân giác ZBFN cắt BN tại Q. Chứng minh PQ ∥ BC. (Dé zudt bởi MoMo123)
+Câu 84: Cho tam giác ABC nội tiếp (O) có AB < AC. Gọi M là trung điển BC.AM cắt (O) tại điểm thứ hai là D. Đường tròn ngoại tiếp AM DC cắt AC tại E. Đường tròn ngoại tiếp AMBD cắt đường thẳng AB tại F. a) Chứng minh ACED ~ ABFD và E, M, F thẳng hàng. b) Phân giác ZBAC cắt EF tại N. Phân giác ZCEM cat CN tại P. Phân giác ZBFN cắt BN tại Q. Chứng minh PQ ∥ BC. (Dé zudt bởi MoMo123)
 
 Câu 85: Cho hình chữ nhật ABCD nội tiếp (O). Lấy điểm E thuộc cung nhỏ AB. AE cắt BC tại H. AB cắt CE tại F. AE cắt DC tại K. Chứng minh rằng : đường tròn ngoại tiếp AF BE tiếp xúc với đường tròn ngoại tiếp AJ-ED. (Đề xuất bởi MarkGot7)
 
-Câu 86: Cho 20y vuông và hai điểm cổ định A, B trên Ox (A nằm giữa O và B). Diểm M chạy trên Oy (M khác O). Dường tròn đường kính AB cắt MA, MB lan lượt tại C, E. Tia OF cắt đường tròn tại F. Xác định vị trí của M để tứ giác OCF'M là hình bình hành. (Đề xuất bởi MarkGot7)
+Câu 86: Cho 20y vuông và hai điểm cổ định A, B trên Ox (A nằm giữa O và B). Diểm M chạy trên Oy (M khác O). Đường tròn đường kính AB cắt MA, MB lan lượt tại C, E. Tia OF cắt đường tròn tại F. Xác định vị trí của M để tứ giác OCF'M là hình bình hành. (Đề xuất bởi MarkGot7)
 
 Câu 87: Gọi K là giao điểm của BM va (O). Chứng minh KC đi qua trung điểm HF. (Đề xuất bởi Diepnguyencva)
 
@@ -188,13 +188,13 @@ Câu 94: Cho tam giác ABC và đường thẳng d song song với BC và khác 
 
 Câu 95: Bài 101. (Diepnguyencva) Cho đường tròn (O); AB = 2R. Lấy C thuộc đường tròn (AC > BC). Tiếp tuyến tại A và C của (O) cắt nhau tại D, DB cắt (O) tại E. Kẻ CH vuông góc AB. DH cắt AE tại I; CI cắt AD tại K. Lấy F đối xứng với E qua AB. a, Chứng minh KF là tiếp tuyến của (O) b, Qua F kẻ đường thẳng song song AB cắt KB tại S. OS cắt AE tại Q. Chứng minh: D, Q, F thẳng hàng.
 
-Câu 96: Bài 102. (phamhuy1801) Cho tam giác ABC nhọn. Dường tròn (O; 7 cắt AB, AC thứ tự tại E, D. Các tiếp tuyến kẻ từ E,D của (O) cắt nhau tại I và lần lượt cắt tiếp tuyến kẻ từ B,C của (O) tại F,G. FG cắt AI tại H và cắt (O) tại M,N. Chứng minh H là trực tâm của AABC và MA, NA lần lượt các tiếp tuyến của (O)
+Câu 96: Bài 102. (phamhuy1801) Cho tam giác ABC nhọn. Đường tròn (O; 7 cắt AB, AC thứ tự tại E, D. Các tiếp tuyến kẻ từ E,D của (O) cắt nhau tại I và lần lượt cắt tiếp tuyến kẻ từ B,C của (O) tại F,G. FG cắt AI tại H và cắt (O) tại M,N. Chứng minh H là trực tâm của AABC và MA, NA lần lượt các tiếp tuyến của (O)
 
-Câu 97: Bài 103. (khanhdat1) Cho tam giác ABC nội tiếp đường tròn (O) có E, F thuộc đoạn CA và BA sao cho EF song song với BC. Dường trung trực của đoạn thẳng BC cắt AC tại M, đường trung trực của đoạn EF cắt cắt AB tại N. Dường tròn ngoại tiếp tam giác BC M cắt CF tại P khác C, đường tròn ngoại tiếp tam giác EF N cắt CF tại Q khác F. a, Chứng minh rằng đường trung trực của PQ đi qua trung điểm của MN. b, Gọi L là điểm chính giữa cung lớn BC của đường tròn (O) và I là một điểm bất kì trên đoạn AL. Gọi J là hình chiếu của I trên BC. Dường tròn tâm J bán kính IJ cắt AB, AC theo thứ tự tại X,Y. Chứng minh rằng đường tròn ngoại tiếp tam giác AXY và đường tròn tâm L bán kính LB tiếp xúc với nhau.
+Câu 97: Bài 103. (khanhdat1) Cho tam giác ABC nội tiếp đường tròn (O) có E, F thuộc đoạn CA và BA sao cho EF song song với BC. Đường trung trực của đoạn thẳng BC cắt AC tại M, đường trung trực của đoạn EF cắt cắt AB tại N. Đường tròn ngoại tiếp tam giác BC M cắt CF tại P khác C, đường tròn ngoại tiếp tam giác EF N cắt CF tại Q khác F. a, Chứng minh rằng đường trung trực của PQ đi qua trung điểm của MN. b, Gọi L là điểm chính giữa cung lớn BC của đường tròn (O) và I là một điểm bất kì trên đoạn AL. Gọi J là hình chiếu của I trên BC. Đường tròn tâm J bán kính IJ cắt AB, AC theo thứ tự tại X,Y. Chứng minh rằng đường tròn ngoại tiếp tam giác AXY và đường tròn tâm L bán kính LB tiếp xúc với nhau.
 
-Câu 98: Bài 104. (khanhdat1) Cho tam giác ABC nhọn nội tiếp đường tròn (O) có trực tâm H, đường cao AF và M là trung điểm của BC. Dường tròn đường kính AH cắt HM tại Q khác H. Lấy điểm X thuộc BC sao cho XH vuông góc với QM. Gọi F, P lần lượt là trung điểm của QH và QA. Duong thẳng qua Q song song với LX cắt MP tại N. Vẽ đường tròn tâm X bán kính XH cắt đường tròn (O) tại K sao cho K cùng phía với A so với BC a, Chứng minh rằng ba điểm K, Q, N thẳng hàng. b, Chứng minh rằng (MNF) tiếp xúc với đường tròn đường kính QH.
+Câu 98: Bài 104. (khanhdat1) Cho tam giác ABC nhọn nội tiếp đường tròn (O) có trực tâm H, đường cao AF và M là trung điểm của BC. Đường tròn đường kính AH cắt HM tại Q khác H. Lấy điểm X thuộc BC sao cho XH vuông góc với QM. Gọi F, P lần lượt là trung điểm của QH và QA. Duong thẳng qua Q song song với LX cắt MP tại N. Vẽ đường tròn tâm X bán kính XH cắt đường tròn (O) tại K sao cho K cùng phía với A so với BC a, Chứng minh rằng ba điểm K, Q, N thẳng hàng. b, Chứng minh rằng (MNF) tiếp xúc với đường tròn đường kính QH.
 
-Câu 99: Bài 105. (khanhdat1) Cho đường tròn (O; R) có đường kính AB và một điểm M bất kì nằm trong (O) nhưng không nằm trên đường kính AB. Gọi N là giao điểm của đường phân giác trong của góc 41MB với đường tròn (O). Dường phân giác ngoài của góc AM B cắt đường thẳng NA, NB lần lượt tại P và Q. Dường thẳng MA cắt đường tròn đường kính NQ tại R, đường thẳng À/ D cắt đường tròn đường kính NP tại S(R,S khác M). Qua R kẻ đường thẳng song song với PQ cắt AN tại C, qua kẻ đường thẳng song song với PQ cắt BN tại D. Gọi I là trung điểm của CD. a, Chứng minh rằng ba điểm N,O, I thẳng hàng. b, Chứng minh rằng ba điểm R, S, J thẳng hàng. Chương 4 Bài tập rèn luyện
+Câu 99: Bài 105. (khanhdat1) Cho đường tròn (O; R) có đường kính AB và một điểm M bất kì nằm trong (O) nhưng không nằm trên đường kính AB. Gọi N là giao điểm của đường phân giác trong của góc 41MB với đường tròn (O). Đường phân giác ngoài của góc AM B cắt đường thẳng NA, NB lần lượt tại P và Q. Đường thẳng MA cắt đường tròn đường kính NQ tại R, đường thẳng À/ D cắt đường tròn đường kính NP tại S(R,S khác M). Qua R kẻ đường thẳng song song với PQ cắt AN tại C, qua kẻ đường thẳng song song với PQ cắt BN tại D. Gọi I là trung điểm của CD. a, Chứng minh rằng ba điểm N,O, I thẳng hàng. b, Chứng minh rằng ba điểm R, S, J thẳng hàng. Chương 4 Bài tập rèn luyện
 
 Câu 100: Bài 1. (Nguyễn Văn Linh) Cho tam giác ABC nội tiếp (O). Lấy E, F bất kì trên AB và AC. Gọi M,N, P lần lượt là trung điểm CE, BF, EF. K là chân đường cao hạ từ O xuống EF. Chứng minh M,N, P, K đồng viên
 
@@ -216,7 +216,7 @@ Câu 108: Bài 9. Cho tam giác ABC ngoại tiếp (I). BC tiếp xúc với (I)
 
 Câu 109: Bài 10. (IMO 2018) Cho tam giác ABC nội tiếp (O). Trên AB, AC lấy D, E sao cho AD = AE. Trung trực của BD, CE lần lượt cắt cung nhỏ AB, AC tại F,G. Chứng minh GF ∥ DE
 
-Câu 110: Bài 11. (Russian MO 2015) Cho tam giác ABC nhọn không cân. Kẻ đường cao AH va trung tuyến AM. Lấy Q, P nằm trên AB, AC sao cho QM ⊥ AC, PM ⊥ AB. Dường tròn ngoại tiếp APMQ cắt BC tại điểm thứ hai là X. Chứng minh BH = CX
+Câu 110: Bài 11. (Russian MO 2015) Cho tam giác ABC nhọn không cân. Kẻ đường cao AH va trung tuyến AM. Lấy Q, P nằm trên AB, AC sao cho QM ⊥ AC, PM ⊥ AB. Đường tròn ngoại tiếp APMQ cắt BC tại điểm thứ hai là X. Chứng minh BH = CX
 
 Câu 111: Bài 12. Cho tam giác ABC cân tại A. Trên AB lấy D sao cho BD = 2AD. Kẻ BE LCD, lấy F là trung điểm CE. Chứng minh: AFB = 90°
 

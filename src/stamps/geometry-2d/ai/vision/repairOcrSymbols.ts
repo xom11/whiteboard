@@ -58,6 +58,12 @@ const HORN_O_C_RE = /(?<!\p{Ll})Ơ(?!\p{Ll})/gu;
 // ── R8-R11: rớt-dấu tiếng Việt đặc thù OCR (Tesseract vie) — GATE theo ngữ cảnh
 // hình học để precision-first (chỉ vá khi gần như chắc chắn là từ hình-học). ──
 
+// R20 — "Dường" → "Đường" (OCR rớt gạch ngang Đ HOA, U+0110 → D U+0044). Gate =
+// WHITELIST danh-từ hình-học theo sau (KHÔNG dùng `(?!như\b)` vì `\b` cạnh "ư"
+// Việt lỗi — bug-class \b-ASCII đã biết). Né "Dường như". Chạy TRƯỚC R8.
+const DUONG_DBAR_RE =
+  /Dường(?= (?:tròn|tron|thẳng|kính|cao|chéo|trung|phân|vuông|nối|gấp|tâm))/gu;
+
 // R8 — "đường tron" → "đường tròn" (g/dấu rớt). Gate `(?![\p{L}])` né "đường trong".
 const DUONG_TRON_RE = /([Đđ]ường\s+)tron(?![\p{L}])/gu;
 
@@ -111,6 +117,7 @@ export function repairOcrSymbols(text: string): string {
   t = t.replace(INTERSECT_RE, '$1 ∩ $2 = {');
   t = t.replace(SQUARE_RE, '$1²');
   t = t.replace(HORN_O_C_RE, 'C');
+  t = t.replace(DUONG_DBAR_RE, 'Đường'); // R20 — trước R8 để "Dường tron"→"Đường tròn"
   t = t.replace(DUONG_TRON_RE, '$1tròn');
   t = t.replace(FLORIN_F_RE, 'F');
   t = t.replace(TAI_TAI_RE, 'tại$1');
