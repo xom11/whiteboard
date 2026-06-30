@@ -67,7 +67,7 @@ const DISTRIB_TWO = new RegExp(
 // E: 1 đường ∩ 2 đường — "MA cắt DB, DC (theo thứ tự|lần lượt)? tại X, Z"
 //    → X=MA∩DB, Z=MA∩DC. groups: 1=line, 2=ref1, 3=ref2, 4=name1, 5=name2.
 const CAT_ONE_TWO = new RegExp(
-  `${REF}\\s+cắt\\s+${REF}\\s*(?:,|và)\\s*${REF}\\s+(?:theo\\s+thứ\\s+tự\\s+|lần\\s*lượt\\s+)?tại\\s+([A-Z])\\s*(?:,|và)\\s*(?:tại\\s+)?([A-Z])(?![A-Z])`,
+  `${REF}\\s+(?:lần\\s*lượt\\s+|theo\\s+thứ\\s+tự\\s+)?cắt\\s+${REF}\\s*(?:,|và)\\s*${REF}\\s+(?:theo\\s+thứ\\s+tự\\s+|lần\\s*lượt\\s+)?tại\\s+([A-Z])\\s*(?:,|và)\\s*(?:tại\\s+)?([A-Z])(?![A-Z])`,
   'gu',
 );
 // F: 2 đường ∩ 1 đường — "TC, TB (lần lượt|theo thứ tự)? cắt EF tại P, Q"
@@ -153,6 +153,12 @@ const PAIR_IN_BLOB = new RegExp(`\\(?\\s*([A-Z]\\s*[A-Z])\\s*(?:,|${CONN})\\s*([
 const PT = "[A-Z](?:[0-9]|['′])?";
 const CAP_SYMBOL = new RegExp(
   `(${PT})\\s*=\\s*(${PT})\\s*(${PT})\\s*∩\\s*(${PT})\\s*(${PT})(?!${PT})`,
+  'gu',
+);
+// H-POST: ∩ với tên SAU trong ngoặc tập hợp — "AB ∩ CD = {E}" / "AD ∩ BC = {F}"
+//   (C23 — đối điểm tứ giác nội tiếp). groups: 1-2=ref1, 3-4=ref2, 5=tên.
+const CAP_SYMBOL_POST = new RegExp(
+  `(${PT})\\s*(${PT})\\s*∩\\s*(${PT})\\s*(${PT})\\s*=\\s*\\{?\\s*(${PT})\\s*\\}?`,
   'gu',
 );
 
@@ -247,6 +253,17 @@ export const intersectionRule: LanguageRule = {
         const name = m[1];
         if (seen.has(name)) continue;
         const intent = makeIntentEnds(name, m[2], m[3], m[4], m[5]);
+        if (!intent) continue;
+        seen.add(name);
+        out.push({ ruleId: 'intersection', clauseIds: [c.id], intents: [intent] });
+      }
+
+      // H-POST: "AB ∩ CD = {E}" (tên SAU trong ngoặc).
+      CAP_SYMBOL_POST.lastIndex = 0;
+      for (const m of c.text.matchAll(CAP_SYMBOL_POST)) {
+        const name = m[5];
+        if (seen.has(name)) continue;
+        const intent = makeIntentEnds(name, m[1], m[2], m[3], m[4]);
         if (!intent) continue;
         seen.add(name);
         out.push({ ruleId: 'intersection', clauseIds: [c.id], intents: [intent] });

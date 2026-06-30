@@ -99,6 +99,11 @@ describe('intersectionRule', () => {
       expect(pairs('MA cắt DB, DC theo thứ tự tại X, Z')).toEqual(['X:MA∩DB', 'Z:MA∩DC']);
     });
 
+    // C103: "lần lượt" TRƯỚC "cắt" (đường có tên "PO" cắt 2 đường).
+    it('"PO lần lượt cắt AB, AC tại E, F" → E=PO∩AB, F=PO∩AC', () => {
+      expect(pairs('PO lần lượt cắt AB, AC tại E, F')).toEqual(['E:PO∩AB', 'F:PO∩AC']);
+    });
+
     it('"TC, TB lần lượt cắt EF tại P, Q" → P=TC∩EF, Q=TB∩EF', () => {
       expect(pairs('TC, TB lần lượt cắt EF tại P, Q')).toEqual(['P:TC∩EF', 'Q:TB∩EF']);
     });
@@ -111,6 +116,11 @@ describe('intersectionRule', () => {
     // julielltv:11 — ZIP marker "tương ứng" SAU cụm line2.
     it('"BH,CH cắt CA,AB tương ứng tại E,F" → E=BH∩CA, F=CH∩AB (zip-post)', () => {
       expect(pairs('Cho BH,CH cắt CA,AB tương ứng tại E,F')).toEqual(['E:BH∩CA', 'F:CH∩AB']);
+    });
+
+    // C23: ∩ với tên SAU trong ngoặc tập hợp "{E}" (đối điểm tứ giác nội tiếp).
+    it('"AB ∩ CD = {E}; AD ∩ BC = {F}" → E=AB∩CD, F=AD∩BC', () => {
+      expect(pairs('AB ∩ CD = {E}; AD ∩ BC = {F}')).toEqual(['E:AB∩CD', 'F:AD∩BC']);
     });
 
     // Guard zip: KHÔNG marker → CAT_ZIP_POST KHÔNG kích hoạt (cặp zip E=BH∩CA
