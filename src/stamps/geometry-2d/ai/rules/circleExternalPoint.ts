@@ -32,15 +32,18 @@ const VN_FORM = new RegExp(
 // tròn tâm O"; vao10:31 "một điểm A nằm ngoài đường tròn" — tâm vắng, resolve
 // từ đề). group1=điểm, group2=tâm (optional — '.' chặn \s* nên không nuốt chữ
 // HOA mở câu sau).
+// `[^.A-Z]{0,18}?` giữa điểm và "ngoài" — cho phép bổ ngữ "cố định"/"di động"/
+// "nằm"/"ở" (vao10:34 "điểm A cố định nằm ngoài đường tròn (O)"). Chặn '.' + HOA
+// khác ⇒ không nuốt sang câu/điểm khác.
 const VN_REV = new RegExp(
-  String.raw`điểm\s+([A-Z])(?:['′]?)\s+(?:nằm\s+|ở\s+)?ngoài\s+đường\s*tròn\s*(?:tâm\s+)?\(?\s*([A-Z])?`,
+  String.raw`điểm\s+([A-Z])(?:['′]?)[^.A-Z]{0,18}?ngoài\s+đường\s*tròn\s*(?:tâm\s+)?\(?\s*([A-Z])?`,
   'u',
 );
 // Dạng ĐẢO + bare paren KHÔNG "điểm": "(Từ)? M (nằm)? ngoài (đường tròn)? (O)"
 // (vao10:18 "từ M nằm ngoài (O) vẽ tiếp tuyến"). Point = 1 HOA đầu token (token
 // start), "(O)" bare. group1=điểm, group2=tâm. Thử SAU VN_REV (cần "điểm")/VN_FORM.
 const VN_REV_BARE = new RegExp(
-  String.raw`(?<![\p{L}])([A-Z])(?:['′]?)\s+(?:nằm\s+|ở\s+)?ngoài\s+(?:đường\s*tròn\s*)?\(\s*([A-Z])\s*\)`,
+  String.raw`(?<![\p{L}])([A-Z])(?:['′]?)[^.A-Z]{0,18}?ngoài\s+(?:đường\s*tròn\s*)?\(\s*([A-Z])\s*\)`,
   'u',
 );
 

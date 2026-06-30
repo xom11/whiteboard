@@ -59,6 +59,19 @@ describe('circleExternalPointRule', () => {
     });
   });
 
+  // C34: bổ ngữ "cố định" chen giữa điểm và "ngoài" (VN_REV [^.A-Z]{0,18}?).
+  it('bổ ngữ "điểm A cố định nằm ngoài đường tròn (O)" → circle O + external A', () => {
+    const all = run(circleExternalPointRule, 'Cho điểm A cố định nằm ngoài đường tròn (O). Kẻ các tiếp tuyến AE, AF');
+    expect(all).toContainEqual(
+      expect.objectContaining({ op: 'draw-circle', name: 'O', spec: 'centerRadius' }),
+    );
+    expect(all).toContainEqual({
+      op: 'add-point',
+      name: 'A',
+      constraint: { kind: 'externalToCircle', circle: 'O' },
+    });
+  });
+
   it('bare paren KHÔNG khớp khi tên 2 ký tự (đoạn AB ngoài (O))', () => {
     const all = run(circleExternalPointRule, 'Đoạn AB nằm ngoài (O)');
     expect(all.find((i: any) => i.constraint?.kind === 'externalToCircle')).toBeUndefined();
