@@ -179,10 +179,41 @@ describe('chordRule', () => {
     expect(connPairs).toContain('BD'); // dây vẫn được nối
   });
 
+  // C74: phrasing đảo "đường tròn O NGOẠI TIẾP tam giác CMN" (= circumcircle
+  // through3 C,M,N) + "dây cung CK của (O)". C là đỉnh tam giác ⇒ trên O ⇒ skip
+  // onCircle (cùng cycle class với 'nội tiếp', qua chữ "ngoại tiếp").
+  it('"đường tròn O ngoại tiếp tam giác CMN … dây CK" → KHÔNG onCircle cho C (đỉnh), CÓ cho K', () => {
+    const { problem, clauses } = ctxOf(
+      'Vẽ đường tròn O ngoại tiếp tam giác CMN. Vẽ dây cung CK của (O).',
+    );
+    const onCircleNames = chordRule
+      .match({ problem, clauses })
+      .flatMap((m) => m.intents)
+      .filter((i: any) => i.op === 'add-point' && i.constraint.kind === 'onCircle')
+      .map((i: any) => i.name)
+      .sort();
+    expect(onCircleNames).toEqual(['K']); // C (đỉnh circumcircle) loại, K giữ
+  });
+
   // Đối chứng: KHÔNG có tam giác nội tiếp (O) → dây BD giữ NGUYÊN cả 2 đầu mút
   // onCircle (hành vi cũ, không regress khi B không phải đỉnh nội tiếp).
   it('"đường tròn (O) … dây BD" (không tam giác nội tiếp) → onCircle CẢ B và D', () => {
     const { onCircle } = summary('Cho đường tròn (O), dây BD.');
     expect(onCircle.map((i: any) => i.name).sort()).toEqual(['B', 'D']);
+  });
+
+  // Đối chứng INCIRCLE: "đường tròn (O) NỘI TIẾP tam giác ABC" (= incircle, đỉnh
+  // KHÔNG trên đường tròn) → đầu mút dây MN onCircle BÌNH THƯỜNG (không skip nhầm).
+  it('"đường tròn (O) nội tiếp tam giác ABC … dây MN" → onCircle CẢ M và N (incircle, đỉnh không trên O)', () => {
+    const { problem, clauses } = ctxOf(
+      'Cho đường tròn (O) nội tiếp tam giác ABC, dây MN.',
+    );
+    const onCircleNames = chordRule
+      .match({ problem, clauses })
+      .flatMap((m) => m.intents)
+      .filter((i: any) => i.op === 'add-point' && i.constraint.kind === 'onCircle')
+      .map((i: any) => i.name)
+      .sort();
+    expect(onCircleNames).toEqual(['M', 'N']);
   });
 });

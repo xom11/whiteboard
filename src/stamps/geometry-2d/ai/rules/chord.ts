@@ -86,22 +86,29 @@ function resolveCircle(problem: string): string | undefined {
 // \b không khớp quanh ký tự Việt → cờ 'u' + lookaround.
 function inscribedTriangleVertices(problem: string, circle: string): Set<string> {
   const out = new Set<string>();
-  // "tam giác XYZ [adj]? … nội tiếp (trong)? (đường tròn)? [ (O)/tâm O ]" — đường
-  // tròn (tuỳ chọn nêu tên) đứng SAU. Khoảng cách bounded để không bắt chéo câu.
-  const RE = new RegExp(
-    'tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])' +
-      '[^.]{0,40}?nội\\s*tiếp\\s+(?:trong\\s+)?(?:' +
-      CIRCLE_KW +
-      ')?\\s*(?:\\(\\s*([^\\s;,).:]+)\\s*\\)|tâm\\s+([A-Z]))?',
-    'gu',
-  );
-  for (const m of problem.matchAll(RE)) {
+  // CHỈ circumcircle (through3) mới có đỉnh NẰM TRÊN đường tròn → 2 phrasing:
+  //  (A) "tam giác XYZ [adj]? … nội tiếp (trong)? (đường tròn)? [ (O)/tâm O ]"
+  //      (tam giác TRƯỚC, đường tròn SAU). Đường tròn (tuỳ chọn nêu tên) bound.
+  //  (B) "(đường tròn) [ (O)/tâm O ] NGOẠI tiếp tam giác XYZ" (đường tròn TRƯỚC).
+  // KHÔNG bắt incircle ("đường tròn (O) NỘI tiếp tam giác") — đỉnh KHÔNG trên O.
+  // \b không khớp quanh ký tự Việt → cờ 'u' + lookaround.
+  const NAMED_O = '(?:\\(\\s*([^\\s;,).:]+)\\s*\\)|tâm\\s+([A-Z]))?';
+  const TRI = 'tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])';
+  // (A) tam giác … nội tiếp … (O)
+  const RE_A = new RegExp(TRI + '[^.]{0,40}?nội\\s*tiếp\\s+(?:trong\\s+)?(?:' + CIRCLE_KW + ')?\\s*' + NAMED_O, 'gu');
+  for (const m of problem.matchAll(RE_A)) {
     const named = m[4] ?? m[5];
-    // Đường tròn nội tiếp PHẢI là O (hoặc không nêu tên → giả định O duy nhất).
+    if (named && named !== circle) continue; // đường tròn khác O → bỏ
+    out.add(m[1]); out.add(m[2]); out.add(m[3]);
+  }
+  // (B) (đường tròn) (O) ngoại tiếp tam giác … — circumcircle, đỉnh trên O.
+  // Tên đường tròn có thể là "(O)", "tâm O" HOẶC bare "O" (OCR "đường tròn O").
+  const NAMED_O_B = '(?:\\(\\s*([^\\s;,).:]+)\\s*\\)|tâm\\s+([A-Z])|([A-Z]))?';
+  const RE_B = new RegExp(CIRCLE_KW + '\\s*' + NAMED_O_B + '\\s*ngoại\\s*tiếp\\s+' + TRI, 'gu');
+  for (const m of problem.matchAll(RE_B)) {
+    const named = m[1] ?? m[2] ?? m[3]; // tên đường tròn đứng TRƯỚC ở phrasing này
     if (named && named !== circle) continue;
-    out.add(m[1]);
-    out.add(m[2]);
-    out.add(m[3]);
+    out.add(m[4]); out.add(m[5]); out.add(m[6]);
   }
   return out;
 }
