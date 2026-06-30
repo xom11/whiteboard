@@ -149,6 +149,13 @@ const DO_DAI_RE = /(?<![\p{L}])do dai(?![\p{L}])/gu;
 const NIM_RE = /(?<![\p{L}])nim(?= (?:giữa|trên|trong)(?![\p{L}]))/gu;
 const NAM_GIUA_RE = /(?<![\p{L}])năm(?= (?:giữa|trên) [A-Z])/gu;
 
+// R30 — "∠" (góc) đọc thành "Z" (đôi khi tiền tố méo "4Z"). Token Z + 2-3 HOA =
+// tên góc (∠DAB, ∠ABC, ∠AEO). Gate: Z PHẢI ở đầu token (`(?<![\p{L}\d])`) + theo
+// sau 2-3 HOA + `(?![A-Z])` ⇒ né đoạn "AZ" (Z giữa), điểm "Z " (đứng riêng, 0 HOA
+// sau), "Oz" (z thường), và cụm 4+ HOA (đề phòng nhiễu OCR như "ZGCBD"). Cùng lớp
+// glyph với R12 €→∈ / R13 ||→∥. Verify ảnh p36 (Câu 24): sách in ∠, OCR ra "Z".
+const ANGLE_Z_RE = /(?<![\p{L}\d])4?Z([A-Z]{2,3})(?![A-Z])/gu;
+
 export function repairOcrSymbols(text: string): string {
   let t = text;
   t = t.replace(PERP_RE, '$1 ⊥ $3');
@@ -182,5 +189,6 @@ export function repairOcrSymbols(text: string): string {
   t = t.replace(DO_DAI_RE, 'độ dài'); // R28
   t = t.replace(NIM_RE, 'nằm'); // R29
   t = t.replace(NAM_GIUA_RE, 'nằm'); // R29
+  t = t.replace(ANGLE_Z_RE, '∠$1'); // R30
   return t;
 }

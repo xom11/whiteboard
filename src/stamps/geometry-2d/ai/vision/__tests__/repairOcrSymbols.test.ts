@@ -264,6 +264,25 @@ describe('repairOcrSymbols — R23-R29 dấu/glyph (đo PDF vào-10 HHP 2018-201
   });
 });
 
+describe('repairOcrSymbols — R30 ∠ (góc đọc thành Z, đôi khi 4Z)', () => {
+  it('vá "Z" + 2-3 HOA → ∠ (tên góc)', () => {
+    expect(repairOcrSymbols('phân giác ZDAB và ZABC')).toBe('phân giác ∠DAB và ∠ABC');
+    expect(repairOcrSymbols('ZAEO = ZADC')).toBe('∠AEO = ∠ADC');
+    expect(repairOcrSymbols('Phân giác ZBAC cắt EF')).toBe('Phân giác ∠BAC cắt EF');
+  });
+  it('vá tiền tố méo "4Z" → ∠ (glyph ∠ đọc thành 4Z)', () => {
+    expect(repairOcrSymbols('phân giác 4ZDAB')).toBe('phân giác ∠DAB');
+  });
+  it('KHÔNG đụng Z không ở đầu token / chỉ 1 HOA sau (đoạn AZ, điểm Z)', () => {
+    expect(repairOcrSymbols('đoạn AZ song song')).toBe('đoạn AZ song song'); // Z giữa token
+    expect(repairOcrSymbols('điểm Z thuộc (O)')).toBe('điểm Z thuộc (O)'); // Z đứng riêng
+    expect(repairOcrSymbols('trục Oz nằm ngang')).toBe('trục Oz nằm ngang'); // z thường
+  });
+  it('idempotent với ∠ đã đúng', () => {
+    expect(repairOcrSymbols('∠DAB = ∠ABC')).toBe('∠DAB = ∠ABC');
+  });
+});
+
 describe('repairOcrSymbols — tổng hợp + idempotent', () => {
   it('vá nhiều symbol trong 1 câu', () => {
     const ocr = 'Cho AABC đều nội tiếp (O;R), Hạ BK | AM tại K';

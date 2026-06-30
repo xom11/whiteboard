@@ -62,6 +62,12 @@ describe('angleBisectorAngleRule', () => {
     expect([i!.p1, i!.vertex, i!.p2]).toEqual(['M', 'N', 'P']);
   });
 
+  it('glyph ∠ thay "góc": "phân giác ∠BAC" → vertex giữa A (OCR đề in ∠)', () => {
+    const i = findBisector(run('Cho tam giác ABC. Kẻ phân giác ∠BAC.'));
+    expect(i).toBeTruthy();
+    expect([i!.p1, i!.vertex, i!.p2]).toEqual(['B', 'A', 'C']);
+  });
+
   it('không cần tam giác để khớp "góc XYZ" (3 đỉnh đã đủ)', () => {
     const i = findBisector(run('Vẽ tia phân giác của góc BAC.'));
     expect(i).toBeTruthy();

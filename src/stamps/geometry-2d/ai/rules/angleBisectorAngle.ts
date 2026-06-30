@@ -45,11 +45,13 @@ const PREFILTER = [
 // "(?:trong\s+)?" — bổ ngữ "phân giác TRONG (của) góc …" (phân giác trong =
 // phân giác mặc định angleBisector vẽ). "ngoài" KHÔNG nhận (phân giác ngoài =
 // construct khác). Trước đây "trong" chen vào phá khớp → bỏ sót (phang:14).
+// "(?:góc\s+|∠\s*)" — nhận cả chữ "góc" lẫn glyph ∠ (OCR đề in ∠; repairOcrSymbols
+// R30 khôi phục Z→∠). "phân giác ∠BAC" ≡ "phân giác góc BAC".
 const ANGLE3 =
-  /phân\s*giác\s+(?:trong\s+)?(?:(?:của|cho)\s+)?góc\s+([A-Z])([A-Z])([A-Z])(?![A-Z])/giu;
+  /phân\s*giác\s+(?:trong\s+)?(?:(?:của|cho)\s+)?(?:góc\s+|∠\s*)([A-Z])([A-Z])([A-Z])(?![A-Z])/giu;
 // "phân giác … góc A" (1 ký tự HOA, không theo sau bởi HOA khác → không phải 3-point).
 const ANGLE1 =
-  /phân\s*giác\s+(?:trong\s+)?(?:(?:của|cho)\s+)?góc\s+([A-Z])(?![A-Z])/giu;
+  /phân\s*giác\s+(?:trong\s+)?(?:(?:của|cho)\s+)?(?:góc\s+|∠\s*)([A-Z])(?![A-Z])/giu;
 
 // "chân (của)? (đường|tia)? " NGAY TRƯỚC "phân giác" → cụm "CHÂN phân giác" là
 // FOOT (điểm), thuộc angleBisectorFoot.ts. angleBisectorAngle né để KHÔNG vẽ tia
