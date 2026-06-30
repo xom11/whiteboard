@@ -271,6 +271,17 @@ describe('quadRule', () => {
     expect(shape.explicitCoords).toBeUndefined();
   });
 
+  // --- C29: tam giác con (⊆ đỉnh tứ giác) KHÔNG chặn cyclic -------------------
+  it('SUBSET-OK: "tứ giác ABCD nội tiếp (O) ... tam giác ABD" → vẫn cyclic (ABD ⊆ ABCD, C29)', () => {
+    const m = run('Cho tứ giác ABCD nội tiếp (O), AC = CD. Gọi I là tâm đường tròn nội tiếp tam giác ABD.');
+    const abcd = cyclicMatch(m, 'ABCD');
+    expect(abcd).toBeDefined();
+    const { circle, gliders } = cyclicParts(abcd!.intents as any[]);
+    expect(circle.spec).toBe('centerRadius');
+    expect(circle.name).toBe('O');
+    expect(gliders.map((g) => g.name)).toEqual(['A', 'B', 'C', 'D']);
+  });
+
   // --- Regression: plain quad không sinh circle / explicitCoords -------------
   it('plain quad "tứ giác ABCD" → 1 intent, không circle, không explicitCoords', () => {
     const m = run('Cho tứ giác ABCD');
@@ -425,9 +436,17 @@ describe('quadRule', () => {
         expect(circle.name).toBe('O');
       });
 
-      it('fail-safe: vertices shared with EN triangle → quad-only (no circle)', () => {
-        // ABCD chia A,B,C với "Triangle ABC" → ownedByOthers chặn concyclic.
-        const m = run('Triangle ABC. Quadrilateral ABCD is inscribed in circle (O)');
+      it('subset triangle (ABC ⊆ ABCD) → vẫn cyclic (tam giác con cùng đường tròn)', () => {
+        // ABC ⊆ ABCD → tam giác con tự động đồng viên → KHÔNG xung đột (như C29).
+        const quad = cyclicMatch(run('Triangle ABC. Quadrilateral ABCD is inscribed in circle (O)'), 'ABCD');
+        expect(quad).toBeDefined();
+        const { circle } = cyclicParts(quad!.intents as any[]);
+        expect(circle.name).toBe('O');
+      });
+
+      it('fail-safe: đỉnh NGOÀI tứ giác (Triangle ABE ⊄ ABCD) → quad-only (no circle)', () => {
+        // ABE có E NGOÀI ABCD → xung đột thật (E đặt theo toạ độ riêng) → chặn concyclic.
+        const m = run('Triangle ABE. Quadrilateral ABCD is inscribed in circle (O)');
         const quad = m.find((x) => (x.intents[0] as any).labels?.join('') === 'ABCD');
         expect(quad).toBeDefined();
         expect(quad!.intents.length).toBe(1);

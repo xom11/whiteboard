@@ -287,6 +287,31 @@ function ownedByOthers(ctx: RuleContext, selfLabels: string[]): Set<string> {
 }
 
 /**
+ * Như ownedByOthers nhưng BỎ QUA hình mà MỌI đỉnh đều ⊆ đỉnh tứ giác cyclic này
+ * (vd tam giác ABD ⊂ tứ giác ABCD): tam giác con tự động nội tiếp CÙNG đường tròn
+ * → KHÔNG xung đột toạ độ (4 glider đặt A,B,C,D lên đtròn; draw-shape tam giác tái
+ * dùng đỉnh đã có). CHỈ hình có đỉnh NGOÀI tứ giác mới là xung đột thật (đặt theo
+ * toạ độ riêng → phá đồng viên). Khắc phục C29 (cyclic quad + tâm nội tiếp ABD).
+ */
+function conflictingOwners(ctx: RuleContext, quadLabels: string[]): Set<string> {
+  const quadSet = new Set(quadLabels);
+  const owned = new Set<string>();
+  const addIfOutside = (verts: string[]) => {
+    if (verts.some((v) => !quadSet.has(v))) for (const v of verts) owned.add(v);
+  };
+  TRIANGLE_DECL.lastIndex = 0;
+  for (const m of ctx.problem.matchAll(TRIANGLE_DECL)) addIfOutside([m[1], m[2], m[3]]);
+  const selfKey = quadLabels.join('');
+  for (const c of ctx.clauses) {
+    for (const h of scanClause(c.text)) {
+      if (h.labels.join('') === selfKey) continue;
+      addIfOutside(h.labels);
+    }
+  }
+  return owned;
+}
+
+/**
  * Phát hiện ngữ cảnh nội tiếp cho 1 hit tứ giác chung trong clause `text`.
  * Trả tên tâm (hoặc '') nếu khớp Pattern A/B; undefined nếu không nội tiếp.
  */
@@ -352,8 +377,9 @@ export const quadRule: LanguageRule = {
         if (hit.shape === 'quadrilateral') {
           const center = detectCyclic(c.text, hit);
           if (center !== undefined) {
-            // Fail-safe: đỉnh dùng chung với hình khác → giữ quad-only.
-            const owned = ownedByOthers(ctx, hit.labels);
+            // Fail-safe: đỉnh dùng chung với hình XUNG ĐỘT (có đỉnh NGOÀI tứ giác)
+            // → giữ quad-only. Tam giác con (⊆ đỉnh tứ giác) KHÔNG xung đột (C29).
+            const owned = conflictingOwners(ctx, hit.labels);
             const shared = hit.labels.some((lbl) => owned.has(lbl));
             if (!shared) {
               const centerName = center || 'O';
