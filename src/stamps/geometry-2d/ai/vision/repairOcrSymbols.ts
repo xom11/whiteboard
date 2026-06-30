@@ -165,6 +165,14 @@ const DE_PAREN_RE = /\(Dé /gu;
 const DE_VERB_RE = /(\(Đề )\S+( bởi)/gu;
 const DE_THI_LOWER_RE = /(?<![\p{L}])dé(?= thi)/gu;
 
+// R32 — "di dong" → "di động" (điểm/đường DI ĐỘNG). Bigram word-bounded; "di dong"
+// không là từ Việt (≠ "di chuyển"/"di qua" đã có R19).
+const DI_DONG_RE = /(?<![\p{L}])di dong(?![\p{L}])/gu;
+
+// R33 — "£" (bảng Anh U+00A3) → "E": OCR đọc nhãn điểm E thành £ (vạch ngang ≈ E).
+// £ KHÔNG bao giờ hợp lệ trong đề hình → map về E (verify: "tại £ và F" = "E và F").
+const POUND_E_RE = /£/gu;
+
 export function repairOcrSymbols(text: string): string {
   let t = text;
   t = t.replace(PERP_RE, '$1 ⊥ $3');
@@ -202,5 +210,7 @@ export function repairOcrSymbols(text: string): string {
   t = t.replace(DE_PAREN_RE, '(Đề '); // R31a — trước R31b
   t = t.replace(DE_VERB_RE, '$1xuất$2'); // R31b — chỉ khi có "bởi"
   t = t.replace(DE_THI_LOWER_RE, 'đề'); // R31c
+  t = t.replace(DI_DONG_RE, 'di động'); // R32
+  t = t.replace(POUND_E_RE, 'E'); // R33
   return t;
 }

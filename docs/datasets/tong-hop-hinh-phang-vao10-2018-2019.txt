@@ -277,7 +277,7 @@ Chứng minh rằng đường tròn ngoại tam giác TEF và đường tròn ng
 Câu 65: Cho tam giác ABC nội tiếp (O). M là điểm bất kì thuộc trung trực của BC. R, S lần lượt là tâm nội tiếp các tam giác ACM, ABM.
 Chứng minh (ARS) qua 1 điểm cố định khác A khi M thay đổi. (Đề xuất bởi taconghoang)
 
-Câu 66: Cho tam giác ABC nội tiếp đường tròn (O) có BC cố định và A di dong sao cho tam giác ABC luôn nhọn. Gọi H là trực tâm của tam giác ABC. Đường tròn tâm H bán kính AH cắt AB, AC theo thứ tự tại M,N.
+Câu 66: Cho tam giác ABC nội tiếp đường tròn (O) có BC cố định và A di động sao cho tam giác ABC luôn nhọn. Gọi H là trực tâm của tam giác ABC. Đường tròn tâm H bán kính AH cắt AB, AC theo thứ tự tại M,N.
 a,
 Chứng minh rằng đường thẳng kẻ từ H và vuông góc với MN cũng đi qua một điểm cố định.
 b, Gọi D và E theo thứ tự là giao điểm của AB, AC với tiếp tuyến tại O của đường tròn ngoại tiếp tam giác BOC. Gọi Q là điểm đối xứng với A qua DE.
@@ -354,7 +354,7 @@ Chứng minh rằng : đường tròn ngoại tiếp AF BE tiếp xúc với đ�
 Câu 86: Cho 20y vuông và hai điểm cổ định A, B trên Ox (A nằm giữa O và B). Diểm M chạy trên Oy (M khác O). Đường tròn đường kính AB cắt MA, MB lan lượt tại C, E. Tia OF cắt đường tròn tại F.
 Xác định vị trí của M để tứ giác OCF'M là hình bình hành. (Đề xuất bởi MarkGot7)
 
-Câu 87: Cho tam giác ABC nhọn và can tại C. Đường tròn tâm O đường kính BC cắt AB và AC lần lượt tai £ và F. Gọi H là giao điểm BF và CE. Đường tròn đường kính EC cắt AC tại M. Gọi K là giao điểm của BM và (O).
+Câu 87: Cho tam giác ABC nhọn và can tại C. Đường tròn tâm O đường kính BC cắt AB và AC lần lượt tai E và F. Gọi H là giao điểm BF và CE. Đường tròn đường kính EC cắt AC tại M. Gọi K là giao điểm của BM và (O).
 Chứng minh KC đi qua trung điểm HF. (Đề xuất bởi Diepnguyencva)
 
 Câu 88: Từ điểm A nằm ngoài đường tròn (O) kẻ 2 tiếp tuyến AB và AC; cát tuyến ADE sao cho BD < CD; AD < AE. Gọi H là giao điểm của OA và BC. Gọi I là trung điểm DE. Kéo dai TH cắt (O) tại K sao cho H nằm giữa J và K. Gọi O là tâm đường tròn ngoại tiếp tam giác OK A.

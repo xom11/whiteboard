@@ -307,6 +307,16 @@ describe('repairOcrSymbols — R31 attribution "(Dé … bởi)" → "(Đề xu�
   });
 });
 
+describe('repairOcrSymbols — R32-R33 (di động / £→E)', () => {
+  it('R32 "di dong" → "di động" (né "di chuyển"/"di qua")', () => {
+    expect(repairOcrSymbols('A di dong sao cho tam giác')).toBe('A di động sao cho tam giác');
+    expect(repairOcrSymbols('M di chuyển trên BC')).toBe('M di chuyển trên BC');
+  });
+  it('R33 "£" → "E" (nhãn điểm)', () => {
+    expect(repairOcrSymbols('cắt AB và AC lần lượt tại £ và F')).toBe('cắt AB và AC lần lượt tại E và F');
+  });
+});
+
 describe('repairOcrSymbols — tổng hợp + idempotent', () => {
   it('vá nhiều symbol trong 1 câu', () => {
     const ocr = 'Cho AABC đều nội tiếp (O;R), Hạ BK | AM tại K';
