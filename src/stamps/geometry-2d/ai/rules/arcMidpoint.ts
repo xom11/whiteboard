@@ -35,7 +35,7 @@ import type { IntentT } from '../intent';
 import { addPoint, drawCircle, extractPointName, pairFromToken } from './_shared';
 
 // Prefilter toàn đề: "chính giữa cung" hoặc "trung điểm cung".
-const ARC_MID = /(?:chính\s+giữa|trung\s*điểm)\s+(?:của\s+)?cung/u;
+const ARC_MID = /(?:chính\s+giữa|trung\s*điểm)\s+(?:của\s+|các\s+)*cung/u;
 
 // Cụm cung + cặp đỉnh: "điểm chính giữa cung (nhỏ|lớn) BC".
 // "nhỏ|lớn" optional; "của" optional. Cặp đỉnh = 2 ký tự HOA liền.
@@ -118,6 +118,18 @@ const DISTRIB_TWO_ARCS = new RegExp(
   'u',
 );
 
+// Phân phối 2 cung tên 3-CHỮ: "M và N lần lượt là điểm chính giữa (các)? cung ADC
+// và ABC" (C80) → cung XYZ = cung từ X tới Z CHỨA Y (chữ giữa) → arcMidpoint
+// {a:X, b:Z, containing:Y}. M↔ADC (a=A,b=C,containing=D), N↔ABC (a=A,b=C,containing=B).
+// groups: 1=n1 2=n2 3-5=arc1(XYZ) 6-8=arc2(UVW).
+const DISTRIB_TWO_ARCS3 = new RegExp(
+  "([A-Z])(?:['′]?)\\s*(?:,|và)\\s*([A-Z])(?:['′]?)\\s+lần\\s*lượt\\s+(?:là\\s+)?(?:điểm\\s+)?" +
+    '(?:chính\\s+giữa|trung\\s*điểm)\\s+(?:của\\s+|các\\s+)*cung\\s+([A-Z])([A-Z])([A-Z])(?![A-Z])' +
+    // "cung" thứ 2 OPTIONAL: "các cung ADC và ABC" (cung chung) HOẶC "cung ADC và cung ABC".
+    '\\s+và\\s+(?:điểm\\s+)?(?:(?:chính\\s+giữa|trung\\s*điểm)\\s+)?(?:của\\s+)?(?:cung\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])',
+  'u',
+);
+
 /** Tên đường tròn từ toàn đề; undefined nếu không tìm thấy. */
 function resolveCircle(problem: string): string | undefined {
   const w = CIRCLE_WORDS.exec(problem);
@@ -197,6 +209,32 @@ export const arcMidpointRule: LanguageRule = {
 
     for (const c of ctx.clauses) {
       if (!ARC_MID.test(c.text)) continue;
+
+      // Phân phối 2 cung tên 3-CHỮ "M và N … cung ADC và ABC" (C80): cung XYZ =
+      // X→Z chứa Y. Chạy TRƯỚC DISTRIB_TWO_ARCS (2-chữ) vì 3-chữ là dạng đặc biệt.
+      const twoArcs3 = DISTRIB_TWO_ARCS3.exec(c.text);
+      if (twoArcs3) {
+        const [, n1, n2, x1, y1, z1, x2, y2, z2] = twoArcs3;
+        // mỗi cung: [name, a=X, b=Z, containing=Y]
+        const triples: Array<[string, string, string, string]> = [
+          [n1, x1, z1, y1],
+          [n2, x2, z2, y2],
+        ];
+        const ok = triples.every(
+          ([n, a, b, ct]) =>
+            arcOnCircum(a, b) && new Set([a, b, ct]).size === 3 && n !== a && n !== b && n !== ct,
+        );
+        if (ok) {
+          const mark = out.length;
+          let good = true;
+          for (const [n, a, b, ct] of triples) {
+            good = pushArc(c, n, a, b, { rel: 'in', point: ct });
+            if (!good) break;
+          }
+          if (!good) out.length = mark;
+        }
+        continue;
+      }
 
       // Phân phối 2 cung "N và P … cung AM và cung MB" → zip (chạy TRƯỚC dạng đơn
       // vì ARC_PAIR chỉ bắt cung ĐẦU, bỏ sót điểm thứ hai).

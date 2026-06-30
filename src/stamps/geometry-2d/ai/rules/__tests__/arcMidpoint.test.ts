@@ -270,6 +270,19 @@ describe('arcMidpointRule — phân phối 2-tên "lần lượt"', () => {
     );
     expect(m.flatMap((x) => x.intents)).toHaveLength(0);
   });
+
+  // C80: cung tên 3-CHỮ "cung ADC và ABC" — cung XYZ = X→Z chứa Y. "cung" thứ 2
+  // ngầm dùng chung ("các cung ADC và ABC").
+  it('phân phối 2 cung 3-chữ: "M và N … các cung ADC và ABC" → M=arc(A,C) chứa D, N=arc(A,C) chứa B', () => {
+    const intents = run(
+      'Cho tứ giác ABCD nội tiếp đường tròn tâm O. Các điểm M và N lần lượt là điểm chính giữa các cung ADC và ABC.',
+    ).flatMap((x) => x.intents) as any[];
+    const arcs = intents.filter((i) => i.op === 'add-point' && i.constraint.kind === 'arcMidpoint');
+    const M = arcs.find((i) => i.name === 'M');
+    const N = arcs.find((i) => i.name === 'N');
+    expect(M.constraint).toMatchObject({ circle: 'O', a: 'A', b: 'C', containing: 'D' });
+    expect(N.constraint).toMatchObject({ circle: 'O', a: 'A', b: 'C', containing: 'B' });
+  });
 });
 
 describe('arcMidpoint EN không collision với midpoint rule', () => {
