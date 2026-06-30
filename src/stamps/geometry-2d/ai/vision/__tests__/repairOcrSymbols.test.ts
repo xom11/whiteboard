@@ -227,6 +227,43 @@ describe('repairOcrSymbols — R12-R19 glyph + rớt dấu (đo PDF vào-10 2018
   });
 });
 
+describe('repairOcrSymbols — R23-R29 dấu/glyph (đo PDF vào-10 HHP 2018-2019)', () => {
+  it('R23 "dường" thường → "đường" (D mất gạch, gate danh-từ hình học)', () => {
+    expect(repairOcrSymbols('Kẻ dường kính AE của (O)')).toBe('Kẻ đường kính AE của (O)');
+    expect(repairOcrSymbols('trung điểm của dường cao AH')).toBe('trung điểm của đường cao AH');
+    expect(repairOcrSymbols('Một dường thẳng d bất kì')).toBe('Một đường thẳng d bất kì');
+    expect(repairOcrSymbols('dường tron (I) nội tiếp')).toBe('đường tròn (I) nội tiếp'); // chuỗi R23→R8
+    expect(repairOcrSymbols('dường như hai cạnh')).toBe('dường như hai cạnh'); // né "dường như"
+  });
+  it('R24 "day" → "dây" (Vẽ/Kẻ day <nhãn> hoặc "day cung")', () => {
+    expect(repairOcrSymbols('Vẽ day DN của (O)')).toBe('Vẽ dây DN của (O)');
+    expect(repairOcrSymbols('Kẻ day BD cắt')).toBe('Kẻ dây BD cắt');
+    expect(repairOcrSymbols('lấy day cung AB')).toBe('lấy dây cung AB');
+    expect(repairOcrSymbols('every day life')).toBe('every day life'); // "day" thường EN → né
+  });
+  it('R25 "Chứng mình" → "Chứng minh"', () => {
+    expect(repairOcrSymbols('Chứng mình H là trực tâm')).toBe('Chứng minh H là trực tâm');
+    expect(repairOcrSymbols('a, chứng mình rằng')).toBe('a, chứng minh rằng');
+  });
+  it('R26 "thẳng hang" → "thẳng hàng"', () => {
+    expect(repairOcrSymbols('A, B, C không thẳng hang')).toBe('A, B, C không thẳng hàng');
+  });
+  it('R27 "Tinh" → "Tính" (mệnh lệnh tính toán)', () => {
+    expect(repairOcrSymbols('Tinh MKB')).toBe('Tính MKB');
+    expect(repairOcrSymbols('Tinh do dai OI')).toBe('Tính độ dài OI'); // R27 + R28
+    expect(repairOcrSymbols('Tinh bán kính')).toBe('Tính bán kính');
+  });
+  it('R28 "do dai" → "độ dài"', () => {
+    expect(repairOcrSymbols('có do dai bằng')).toBe('có độ dài bằng');
+  });
+  it('R29 "năm/nim giữa|trên" → "nằm"', () => {
+    expect(repairOcrSymbols('C năm giữa M và D')).toBe('C nằm giữa M và D');
+    expect(repairOcrSymbols('M nim giữa A và H')).toBe('M nằm giữa A và H');
+    expect(repairOcrSymbols('tâm nim trên AC')).toBe('tâm nằm trên AC');
+    expect(repairOcrSymbols('vào năm 2018 thi')).toBe('vào năm 2018 thi'); // "năm" (year) → né
+  });
+});
+
 describe('repairOcrSymbols — tổng hợp + idempotent', () => {
   it('vá nhiều symbol trong 1 câu', () => {
     const ocr = 'Cho AABC đều nội tiếp (O;R), Hạ BK | AM tại K';

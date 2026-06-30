@@ -116,6 +116,39 @@ const VA_VAND_RE = /(?<!\p{L})va (?=[A-Z(]|dây|đường)/gu;
 // R22 — "Trén/trén" → "Trên/trên" (OCR é↔ê trên từ "trên"). "trén" không là từ Việt.
 const TREN_RE = /([Tt])rén(?![\p{L}])/gu;
 
+// ── R23-R29: dấu/glyph đo trên PDF "Tổng hợp HHP vào 10 2018-2019" (precision-first) ──
+
+// R23 — "dường" (thường) → "đường": bản chữ-thường của R20 (D mất gạch giữa câu, vd
+// "Kẻ dường kính"/"dường cao"/"Một dường thẳng"). Gate = WHITELIST danh-từ hình-học
+// theo sau ⇒ né "dường như". Chạy TRƯỚC R8 để "dường tron"→"đường tron"→"đường tròn".
+const DUONG_LOWER_RE =
+  /(?<![\p{L}])dường(?= (?:tròn|tron|thẳng|kính|cao|chéo|trung|phân|vuông|nối|gấp|tâm))/gu;
+
+// R24 — "day" → "dây" (dây cung): OCR rớt dấu mũ+huyền. Gate = "Vẽ/Kẻ day <2 HOA>"
+// (vẽ dây <nhãn>) hoặc "day cung". Né "day" tiếng Anh (theo sau chữ thường).
+const DAY_RE = /(?<![\p{L}])day(?=\s+(?:cung(?![\p{L}])|[A-Z]{2}))/gu;
+
+// R25 — "Chứng mình" → "Chứng minh" (OCR thêm dấu huyền vào "minh"). "Chứng mình"
+// không hợp lệ (mình = self) → an toàn. Chỉ vá "mình" NGAY sau "Chứng".
+const CHUNG_MINH_RE = /([Cc]hứng )mình(?![\p{L}])/gu;
+
+// R26 — "thẳng hang" → "thẳng hàng" (rớt dấu "hàng"). Gate = sau "thẳng".
+const THANG_HANG_RE = /thẳng hang(?![\p{L}])/gu;
+
+// R27 — "Tinh" → "Tính" (mệnh lệnh "Tính <đại lượng>"). Gate = theo sau nhãn HOA /
+// "do"/"độ"/đại-lượng ⇒ né danh từ "tinh" (tinh thể…) hiếm + "tỉnh"/"tình".
+const TINH_RE =
+  /(?<![\p{L}])Tinh(?= (?:[A-Z]|do(?![\p{L}])|độ|diện|bán|chu|số|giá))/gu;
+
+// R28 — "do dai" → "độ dài" (rớt dấu cụm "độ dài"). Bigram word-bounded → an toàn.
+const DO_DAI_RE = /(?<![\p{L}])do dai(?![\p{L}])/gu;
+
+// R29 — "năm/nim giữa|trên" → "nằm" (rớt/đọc sai dấu "nằm"). "nim" không là từ Việt
+// (gate giữa|trên|trong); "năm" (year) CHỈ vá khi "năm giữa|trên <nhãn HOA>" ⇒ né
+// "năm 2018"/"trong năm".
+const NIM_RE = /(?<![\p{L}])nim(?= (?:giữa|trên|trong)(?![\p{L}]))/gu;
+const NAM_GIUA_RE = /(?<![\p{L}])năm(?= (?:giữa|trên) [A-Z])/gu;
+
 export function repairOcrSymbols(text: string): string {
   let t = text;
   t = t.replace(PERP_RE, '$1 ⊥ $3');
@@ -127,6 +160,7 @@ export function repairOcrSymbols(text: string): string {
   t = t.replace(SQUARE_RE, '$1²');
   t = t.replace(HORN_O_C_RE, 'C');
   t = t.replace(DUONG_DBAR_RE, 'Đường'); // R20 — trước R8 để "Dường tron"→"Đường tròn"
+  t = t.replace(DUONG_LOWER_RE, 'đường'); // R23 — trước R8 (chuỗi "dường tron"→"đường tròn")
   t = t.replace(DUONG_TRON_RE, '$1tròn');
   t = t.replace(FLORIN_F_RE, 'F');
   t = t.replace(TAI_TAI_RE, 'tại$1');
@@ -141,5 +175,12 @@ export function repairOcrSymbols(text: string): string {
   t = t.replace(DIQUA_RE, 'đi qua');
   t = t.replace(VA_VAND_RE, 'và ');
   t = t.replace(TREN_RE, '$1rên');
+  t = t.replace(DAY_RE, 'dây'); // R24
+  t = t.replace(CHUNG_MINH_RE, '$1minh'); // R25
+  t = t.replace(THANG_HANG_RE, 'thẳng hàng'); // R26
+  t = t.replace(TINH_RE, 'Tính'); // R27 — trước R28 ("Tinh do dai"→"Tính độ dài")
+  t = t.replace(DO_DAI_RE, 'độ dài'); // R28
+  t = t.replace(NIM_RE, 'nằm'); // R29
+  t = t.replace(NAM_GIUA_RE, 'nằm'); // R29
   return t;
 }
