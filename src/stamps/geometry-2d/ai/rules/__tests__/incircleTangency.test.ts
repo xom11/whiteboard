@@ -133,4 +133,28 @@ describe('incircle tangency rule', () => {
       ['F', 'AB', 'I'],
     ]);
   });
+
+  it('FORM XEN KẼ (C77): "(I) tiếp xúc AB tại N, BC tại P, AC tại H" → 3 tiếp điểm, KHÔNG inscribedIn', () => {
+    const all = intents(
+      'Cho tam giác ABC. Đường tròn (I) tiếp xúc AB tại N, BC tại P, AC tại H.',
+    );
+    const tg = all.filter((i) => i.op === 'add-point' && i.constraint?.kind === 'tangencyPoint');
+    expect(tg.map((i) => [i.name, i.constraint.onLine, i.constraint.circle])).toEqual([
+      ['N', 'AB', 'I'],
+      ['P', 'BC', 'I'],
+      ['H', 'AC', 'I'],
+    ]);
+    // KHÔNG emit inscribedIn (I) — (I) có thể là BÀNG tiếp (excircle), circle dựng nơi khác.
+    expect(all.filter((i) => i.op === 'draw-circle' && i.spec === 'inscribedIn')).toEqual([]);
+  });
+
+  it('FORM ĐẢO TRẦN (C108): "BC tiếp xúc với (I) tại D" — 1 cạnh, không tiền tố "cạnh" → 1 tiếp điểm', () => {
+    const all = intents(
+      'Cho tam giác ABC ngoại tiếp (I). BC tiếp xúc với (I) tại D.',
+    );
+    const tg = all.filter((i) => i.op === 'add-point' && i.constraint?.kind === 'tangencyPoint');
+    expect(tg.map((i) => [i.name, i.constraint.onLine, i.constraint.circle])).toEqual([
+      ['D', 'BC', 'I'],
+    ]);
+  });
 });

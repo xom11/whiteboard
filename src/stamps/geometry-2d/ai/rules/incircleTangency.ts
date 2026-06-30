@@ -36,6 +36,21 @@ const SIDE_POINT_LIST = /tiếp\s*xúc\s+(?:với\s+)?(?:các\s+|ba\s+|hai\s+|b�
 // 3 cạnh) — không rule nào khác dựng nên rule này tự emit circle inscribedIn.
 const REVERSED_SIDE_POINT = /(?:các\s+)?(?:cạnh|đoạn)\s+([A-Z]{2}(?:\s*(?:,|và)\s*[A-Z]{2})*)\s+tiếp\s*xúc\s+(?:với\s+)?(?:đường\s*tròn\s*)?\(\s*([A-Z])\s*\)\s+(?:lần\s*lượt\s+|tương\s*ứng\s+)?tại\s+(?:các\s+)?(?:điểm\s+)?([A-Z]'?(?:\s*(?:,|và)\s*[A-Z]'?)*)(?![A-Za-z])/iu;
 
+// FORM XEN KẼ (interleaved): "Đường tròn (I) tiếp xúc AB tại N, BC tại P, AC tại
+// H" — mỗi cạnh ĐI LIỀN tiếp điểm của nó (KHÁC SIDE_POINT_LIST gom cạnh rồi gom
+// điểm). circle = (X) NGAY TRƯỚC "tiếp xúc". KHÔNG emit inscribedIn (circle đã do
+// circleTriangle/circleRadius dựng; (I) có thể là BÀNG tiếp như C77 → inscribedIn
+// sẽ SAI). Chỉ emit tangencyPoint từng cặp. Bài C77.
+const INTERLEAVED_CIRCLE = /(?:đường\s*tròn\s*)?\(\s*([A-Z])\s*[,;]?\s*[Rr]?\s*\)\s*tiếp\s*xúc\s+(?:với\s+)?(?:(?:cạnh|đoạn)\s+)?([A-Z]{2}\s+tại\s+[A-Z]'?(?:\s*,\s*[A-Z]{2}\s+tại\s+[A-Z]'?)+)(?![A-Za-z])/iu;
+const PAIR_RE = /([A-Z]{2})\s+tại\s+([A-Z]'?)/giu;
+
+// FORM ĐẢO TRẦN (reversed, KHÔNG cần tiền tố "cạnh"): "BC tiếp xúc với (I) tại D"
+// — 1+ cạnh đứng trước "tiếp xúc với (X) tại <điểm>". KHÁC REVERSED_SIDE_POINT
+// (vốn BẮT BUỘC "cạnh|đoạn" + ngụ ý đủ 3 cạnh → emit inscribedIn). Form này dùng
+// khi circle đã dựng nơi khác (C108: "tam giác ABC ngoại tiếp (I)" → circleTriangle)
+// → chỉ emit tangencyPoint. (?<![A-Za-z]) neo trước cặp đầu để không nuốt chữ.
+const REVERSED_BARE = /(?<![A-Za-z])([A-Z]{2}(?:\s*(?:,|và)\s*[A-Z]{2})*)\s+tiếp\s*xúc\s+(?:với\s+)?(?:đường\s*tròn\s*)?\(\s*([A-Z])\s*\)\s+(?:lần\s*lượt\s+|tương\s*ứng\s+)?tại\s+(?:các\s+)?(?:điểm\s+)?([A-Z]'?(?:\s*(?:,|và)\s*[A-Z]'?)*)(?![A-Za-z])/iu;
+
 function splitCsv(blob: string): string[] {
   // Blob do capture đảm bảo chỉ gồm tên HOA + separator (,/và) → split thẳng.
   // KHÔNG dùng \bvà\b: 'à' non-word theo ASCII nên \b sau 'à' chết trước space.
@@ -143,6 +158,24 @@ export const incircleTangencyRule: LanguageRule = {
         }
       }
 
+      // FORM XEN KẼ: "(I) tiếp xúc AB tại N, BC tại P, AC tại H" (C77). Mỗi cạnh
+      // đi liền tiếp điểm. KHÔNG emit inscribedIn (circle (I) đã dựng nơi khác,
+      // có thể là BÀNG tiếp → inscribedIn sai). Chỉ tiếp điểm.
+      const il = INTERLEAVED_CIRCLE.exec(chunk.text);
+      if (il) {
+        const circle = il[1];
+        const pairs: Array<[string, string]> = [];
+        PAIR_RE.lastIndex = 0;
+        for (const pm of il[2].matchAll(PAIR_RE)) pairs.push([pm[1], pm[2]]);
+        if (pairs.length >= 1) {
+          const intents: IntentT[] = pairs.map(([side, name]) =>
+            addPoint(name, { kind: 'tangencyPoint', circle, onLine: side }),
+          );
+          out.push({ ruleId: 'incircleTangency', clauseIds: chunk.clauseIds, intents });
+          continue;
+        }
+      }
+
       // Dạng ĐẢO trước: "Cạnh ... tiếp xúc với đường tròn (O) tại ..." — circle là
       // đường tròn nội tiếp, tự dựng inscribedIn + tiếp điểm.
       const rev = REVERSED_SIDE_POINT.exec(chunk.text);
@@ -160,6 +193,25 @@ export const incircleTangencyRule: LanguageRule = {
           for (let i = 0; i < names.length; i++) {
             intents.push(addPoint(names[i], { kind: 'tangencyPoint', circle, onLine: sides[i] }));
           }
+          out.push({ ruleId: 'incircleTangency', clauseIds: chunk.clauseIds, intents });
+          continue;
+        }
+      }
+
+      // FORM ĐẢO TRẦN (SAU rev): "BC tiếp xúc với (I) tại D" (C108 — circle do
+      // circleTriangle dựng từ "tam giác ABC ngoại tiếp (I)"). KHÔNG có tiền tố
+      // "cạnh"/không đủ 3 cạnh → REVERSED_SIDE_POINT đã bỏ qua. Chỉ emit
+      // tangencyPoint (KHÔNG inscribedIn — circle đã dựng nơi khác). Đặt SAU `rev`
+      // để form "Cạnh AB,BC,CA tiếp xúc với (O) tại D,E,F" (đủ 3) vẫn dựng inscribedIn.
+      const rb = REVERSED_BARE.exec(chunk.text);
+      if (rb) {
+        const sides = splitCsv(rb[1]);
+        const circle = rb[2];
+        const names = splitCsv(rb[3]);
+        if (sides.length >= 1 && sides.length === names.length) {
+          const intents: IntentT[] = sides.map((side, i) =>
+            addPoint(names[i], { kind: 'tangencyPoint', circle, onLine: side }),
+          );
           out.push({ ruleId: 'incircleTangency', clauseIds: chunk.clauseIds, intents });
           continue;
         }
