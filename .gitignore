@@ -23,7 +23,8 @@ tmp/
 test-results/
 playwright-report/
 tests/e2e/.auth/
-.claude/
+.claude/*
+!.claude/skills/
 
 # Env (chứa API key — KHÔNG commit)
 .env
