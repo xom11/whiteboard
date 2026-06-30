@@ -108,7 +108,7 @@ Tìm vị trí của điểm I sao cho IM² + IN² + 1K? bé nhất. (Đề thi 
 Câu 27: Cho tam giác ABC nội tiếp (O), (I) là đường tròn nội tiếp của tam giác ABC. AI cắt (O) tại Ava J. E là trung điểm của BC. Tiếp tuyến tại B và C cắt nhau tại S. AS cắt (O) tại A và D. DI cắt (O) tại D và M.
 Chứng minh MJ chia đôi IE. (Đề thi Bà Rịa- Vũng Tau 2017-2018)
 
-Câu 28: Cho tam giác ABC có ba góc nhọn nội tiếp đường tròn (O) . Gọi M là trung điểm của cạnh BC và N là điểm đối xứng với M qua O. Qua A vẽ đường thẳng vuông góc với AN cắt đường thẳng qua Ö vuông góc BC tại D. Kẻ đường kính AE của (O).
+Câu 28: Cho tam giác ABC có ba góc nhọn nội tiếp đường tròn (O) . Gọi M là trung điểm của cạnh BC và N là điểm đối xứng với M qua O. Qua A vẽ đường thẳng vuông góc với AN cắt đường thẳng qua O vuông góc BC tại D. Kẻ đường kính AE của (O).
 Chứng minh rằng:
 1, BA.BC=2BD.BE
 2, CD đi qua trung điểm của đường cao AH của tam giác ABC. (Đề thi TP.HCM 2015-2016)
@@ -157,7 +157,7 @@ Chứng minh 3 điểm A, I, K thẳng hàng.
 b, Gia sử EF cắt BG tại M, DG cắt CF tại N.
 Chứng minh HI, EN, DM đồng quy. (Đề xuất bởi phamhuy1801)
 
-Câu 40: Cho tam giác ABC nhọn, M thay đổi trên cạnh AB. (BMC) N AC = {C, N}.
+Câu 40: Cho tam giác ABC nhọn, M thay đổi trên cạnh AB. (BMC) ∩ AC = {C, N}.
 a,
 Chứng minh: tam giác AMN ~ tam giác ACB. Tinh ul để Samy = Sane
 b, Gọi I là tâm (AM N).
