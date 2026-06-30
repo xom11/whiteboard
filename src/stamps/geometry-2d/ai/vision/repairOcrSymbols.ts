@@ -181,6 +181,18 @@ const POUND_E_RE = /£/gu;
 const TRI_SPACE_2_1 = /(tam\s*giác\s+)([A-Z])([A-Z])\s+([A-Z])(?![A-Z\p{Ll}])/gu;
 const TRI_SPACE_1_2 = /(tam\s*giác\s+)([A-Z])\s+([A-Z])([A-Z])(?![A-Z\p{Ll}])/gu;
 
+// R35 — "Ö" (O-diaeresis U+00D6, KHÁC Đ/Ø) → "O": nhãn điểm/tâm O bị OCR đọc thành
+// O-hai-chấm (verify PDF vào-10 C28: "đường thẳng qua Ö vuông góc BC" = qua O).
+// Cùng lớp glyph-O với R16 Ø→O; gate `(?<!\p{Ll})…(?!\p{Ll})` chừa trường hợp Ö kề
+// chữ THƯỜNG (không phải nhãn) — Ö không là chữ Việt nên rất an toàn.
+const DIAERESIS_O_RE = /(?<!\p{Ll})Ö(?!\p{Ll})/gu;
+
+// R36 — ∩ (giao) đứng RỜI sau ")" đọc thành "N": "(BMC) N AC = {C, N}" → "(BMC) ∩
+// AC = {C, N}" (C40). KHÁC R5 (N DÍNH nhóm-hoa "ABN CD"): ở đây N là token RỜI
+// ngay sau ngoặc đóng đường-tròn "(XYZ)". Gate "= {" (set-notation giao điểm) ⇒
+// rất hiếm false-positive; né "N" làm nhãn điểm thật (không kèm "= {").
+const INTERSECT_PAREN_RE = /(\([A-Z]{3}\))\s+N\s+([A-Z]{2})(\s*=\s*\{)/gu;
+
 export function repairOcrSymbols(text: string): string {
   let t = text;
   t = t.replace(PERP_RE, '$1 ⊥ $3');
@@ -222,5 +234,7 @@ export function repairOcrSymbols(text: string): string {
   t = t.replace(POUND_E_RE, 'E'); // R33
   t = t.replace(TRI_SPACE_2_1, '$1$2$3$4'); // R34 — join "tam giác XY Z"→"XYZ"
   t = t.replace(TRI_SPACE_1_2, '$1$2$3$4'); // R34 — join "tam giác X YZ"→"XYZ"
+  t = t.replace(DIAERESIS_O_RE, 'O'); // R35 — Ö → O (nhãn tâm/điểm)
+  t = t.replace(INTERSECT_PAREN_RE, '$1 ∩ $2$3'); // R36 — "(XYZ) N PQ = {" → ∩
   return t;
 }

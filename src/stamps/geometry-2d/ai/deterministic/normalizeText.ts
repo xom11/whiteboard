@@ -37,6 +37,16 @@ const SQRT_NOISE = /√/gu;
 // đồng nhất. Chỉ thay khi đứng sau [A-Za-z0-9] (ngữ cảnh prime), không nuốt dấu
 // nháy mở đầu cụm.
 const PRIME_VARIANT = /([A-Za-z0-9])[’′´]/gu;
+// Glyph "Ö" (O-diaeresis U+00D6) → "O": OCR đọc nhãn tâm/điểm O thành O-hai-chấm
+// (C28: "đường thẳng qua Ö vuông góc BC" = qua O). Mirror R35 trong repairOcrSymbols
+// (tầng OCR) để pipeline dựng-hình — vốn KHÔNG chạy repairOcrSymbols — cũng nhận.
+// Gate `(?<!\p{Ll})…(?!\p{Ll})` chừa Ö kề chữ THƯỜNG (không phải nhãn); Ö không là
+// chữ Việt nên rất an toàn (cùng lớp glyph-O với Ø).
+const DIAERESIS_O = /(?<!\p{Ll})Ö(?!\p{Ll})/gu;
+// "∩" (giao) đứng RỜI sau ")" đọc thành "N": "(BMC) N AC = {C, N}" → "(BMC) ∩ AC
+// = {C, N}" (C40). Mirror R36 trong repairOcrSymbols cho pipeline dựng-hình. Gate
+// "= {" (set-notation) ⇒ né "N" làm nhãn điểm thật.
+const INTERSECT_PAREN = /(\([A-Z]{3}\))\s+N\s+([A-Z]{2})(\s*=\s*\{)/gu;
 
 // OCR glue (mất space): tách ở ranh giới TIN CẬY để không phá chữ thường.
 //  (a) từ-vựng-hình-học THƯỜNG dính nhãn HOA: "cắtBC"→"cắt BC", "tâmF"→"tâm F".
@@ -119,6 +129,8 @@ export function normalizeProblemText(problem: string): string {
     .replace(TRIANGLE_SYMBOL, 'tam giác ')
     .replace(QUAD_SYMBOL, 'tứ giác ')
     .replace(MIDPOINT_TYPO, 'trung điểm')
+    .replace(DIAERESIS_O, 'O')
+    .replace(INTERSECT_PAREN, '$1 ∩ $2$3')
     .replace(CIRCLE_SYNONYM, 'đường tròn');
   // Khôi phục ngoặc circle CHỈ khi đề CHƯA có circle-paren nào "(<HOA>" → tránh
   // NHÂN ĐÔI định nghĩa đường tròn (chuyen13:10/mohinh:12 có "( O;R )" sẵn ở cuối:

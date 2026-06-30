@@ -121,6 +121,12 @@ describe('repairOcrSymbols — R5 ∩ (giao, đọc thành N dính + "= {")', ()
   it('KHÔNG đụng "N" không có "= {"', () => {
     expect(repairOcrSymbols('Trên AN lấy điểm M')).toBe('Trên AN lấy điểm M');
   });
+  it('R36 vá "(BMC) N AC = {C, N}" → "(BMC) ∩ AC = {C, N}" (∩ đứng rời sau ")")', () => {
+    expect(repairOcrSymbols('(BMC) N AC = {C, N}')).toBe('(BMC) ∩ AC = {C, N}');
+  });
+  it('R36 KHÔNG đụng "N" rời thiếu "= {"', () => {
+    expect(repairOcrSymbols('(BMC) N AC tại điểm')).toBe('(BMC) N AC tại điểm');
+  });
 });
 
 describe('repairOcrSymbols — R6 mũ ² (letter? + toán tử)', () => {
@@ -322,6 +328,10 @@ describe('repairOcrSymbols — R32-R33 (di động / £→E)', () => {
     // né 4-đỉnh + né nuốt từ mở câu HOA
     expect(repairOcrSymbols('tam giác ABC Cho điểm')).toBe('tam giác ABC Cho điểm');
     expect(repairOcrSymbols('tam giác AB CD vuông')).toBe('tam giác AB CD vuông'); // 2+2=4 → không join
+  });
+  it('R35 "Ö" → "O" (nhãn tâm/điểm, C28)', () => {
+    expect(repairOcrSymbols('đường thẳng qua Ö vuông góc BC')).toBe('đường thẳng qua O vuông góc BC');
+    expect(repairOcrSymbols('Gọi Ö là tâm')).toBe('Gọi O là tâm');
   });
 });
 

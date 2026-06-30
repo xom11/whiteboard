@@ -35,6 +35,21 @@ describe('normalizeProblemText', () => {
     expect(normalizeProblemText('I là tâm vòng tròn nội tiếp')).toBe('I là tâm đường tròn nội tiếp');
     expect(normalizeProblemText('Vòng tròn (O)')).toBe('đường tròn (O)');
   });
+  it('glyph "Ö" (O-diaeresis U+00D6) → "O" (nhãn tâm/điểm, C28)', () => {
+    // C28: "đường thẳng qua Ö vuông góc BC" = qua O (tâm) — OCR đọc O thành Ö.
+    expect(normalizeProblemText('đường thẳng qua Ö vuông góc BC')).toBe(
+      'đường thẳng qua O vuông góc BC',
+    );
+    // gate: Ö kề chữ thường (không phải nhãn) → giữ nguyên
+    expect(normalizeProblemText('xÖy')).toBe('xÖy');
+    // idempotent
+    expect(normalizeProblemText('qua O vuông góc')).toBe('qua O vuông góc');
+  });
+  it('∩ rời sau ")" đọc thành "N": "(BMC) N AC = {C, N}" → "∩" (C40)', () => {
+    expect(normalizeProblemText('(BMC) N AC = {C, N}')).toBe('(BMC) ∩ AC = {C, N}');
+    // né "N" nhãn điểm thật (không "= {")
+    expect(normalizeProblemText('(BMC) N AC tại điểm')).toBe('(BMC) N AC tại điểm');
+  });
   it('idempotent + không đụng text khác', () => {
     const s = 'Cho tam giác ABC nội tiếp đường tròn (O)';
     expect(normalizeProblemText(s)).toBe(s);
