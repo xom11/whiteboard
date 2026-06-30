@@ -234,7 +234,7 @@ const CENTER = '(?:\\(\\s*([A-Z])\\s*\\)|tâm\\s+([A-Z]))?';
 const QUAD_INSCRIBED_IN_CIRCLE = new RegExp(
   '^[\\s,]*(?:' +
     'nội\\s*tiếp\\s+(?:trong\\s+)?(?:một\\s+)?đường\\s*tròn\\s*' + CENTER +
-    '|nội\\s*tiếp\\s+\\(\\s*([A-Z])\\s*\\)' +
+    '|nội\\s*tiếp\\s+(?:trong\\s+)?\\(\\s*([A-Z])\\s*\\)' + // bare paren, "trong" optional (C10)
     '|(?:is\\s+|are\\s+)?inscribed\\s+in\\s+(?:a\\s+|the\\s+)?circle\\s*' + CENTER +
     ')',
   'iu',
