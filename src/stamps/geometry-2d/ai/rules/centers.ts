@@ -11,6 +11,7 @@
 // Tên điểm phải trích được (HOA ngay sau cụm từ khoá, hoặc "X là <từ khoá>");
 // nếu không → bỏ qua, KHÔNG bịa tên.
 import type { LanguageRule, RuleMatch } from './_types';
+import type { IntentT } from '../intent';
 import { addPoint } from './_shared';
 
 // Tam giác (global): quét mọi tam giác nêu trong một đoạn text.
@@ -199,10 +200,12 @@ function resolveTriangle(
 // giác OKA" — OCR đọc nhầm tên tâm thành đỉnh O) → định nghĩa VÒNG (circumcenter
 // phụ thuộc OKA chứa chính O) → transpile crash → KÉO CẢ partial xuống none. Tâm
 // (ngoại/nội/trọng/trực) KHÔNG BAO GIỜ là đỉnh của tam giác đó → an toàn loại.
-function dropDegenerate<T extends { name?: string; constraint?: { of?: string[] } }>(intents: T[]): T[] {
-  return intents.filter(
-    (i) => !(Array.isArray(i.constraint?.of) && i.name != null && i.constraint!.of!.includes(i.name)),
-  );
+function dropDegenerate(intents: IntentT[]): IntentT[] {
+  return intents.filter((i) => {
+    if (i.op !== 'add-point') return true;
+    const of = (i.constraint as { of?: string[] }).of;
+    return !(Array.isArray(of) && of.includes(i.name));
+  });
 }
 
 /**
