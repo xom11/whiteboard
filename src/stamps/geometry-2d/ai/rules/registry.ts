@@ -99,6 +99,7 @@ import { commonTangentRule } from './commonTangent';
 import { twoCirclesCenterRadiusMeetRule } from './twoCirclesCenterRadiusMeet';
 import { rightAngleVertexCirclesRule } from './rightAngleVertexCircles';
 import { namedLineRule } from './namedLine';
+import { bisectorsMeetRule } from './bisectorsMeet';
 
 const RULES: readonly LanguageRule[] = [
   namedLineRule,
@@ -197,6 +198,7 @@ const RULES: readonly LanguageRule[] = [
   radiusRule,
   perpNamedLineRule,
   parallelSidePointsRule,
+  bisectorsMeetRule,
 ];
 
 /**
