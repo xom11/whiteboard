@@ -25,12 +25,28 @@ const STMT_START = /(Cho |Từ điểm |Từ một điểm |Gọi |Trên |Cho đ
 const STRONG_START =
   /Cho\s+(?:tam giác|tứ giác|đường tròn|nửa đường tròn|nửa|hình|hai|ba|bốn|góc|đoạn|điểm|\(|\d)|Từ\s+(?:điểm|một điểm)/g;
 
-// production postProcess (rút gọn — collapse + NFC + repairOcrSymbols)
+// Chèn '\n' trước các mốc cấu trúc đề (ý a)/b), số 1,/2,, động từ kết luận) để
+// đề DỄ ĐỌC thay vì 1 dòng dài. KHÔNG đổi nội dung — chỉ thay 1 dấu cách = '\n'.
+// An toàn với pipeline: diag-all blockParse join lại bằng '\n' + introBeforeProof
+// cắt tại chính các mốc này (phần dựng hình = trước "Chứng minh/Tính/a)" giữ
+// nguyên); compare.py render '\n'→<br>. (Verify diag-all 0 regression.)
+function insertBreaks(t: string): string {
+  // ý chữ thường "a)/a," (sub-question) — nhãn 1 ký tự a-d + )/, theo sau dấu cách
+  t = t.replace(/\s+([a-d][),])(?=\s)/g, '\n$1');
+  // ý số "1,/1./2," THEO SAU chữ HOA/Đ (né số trong công thức "= 2BD", toạ độ)
+  t = t.replace(/\s+([1-9][.,])(?=\s+[A-ZĐ])/g, '\n$1');
+  // động từ mệnh đề kết luận / yêu cầu
+  t = t.replace(/\s+(Chứng minh|Chứng tỏ|CMR|Tính|Tìm|Xác định)/g, '\n$1');
+  return t.replace(/\n{2,}/g, '\n').replace(/[ \t]+\n/g, '\n').trim();
+}
+
+// production postProcess (rút gọn — collapse + NFC + repairOcrSymbols) + xuống dòng
 function clean(raw: string): string {
   let t = raw.trim();
   t = t.replace(/\s+/g, ' ').trim();
   t = t.normalize('NFC');
   t = repairOcrSymbols(t);
+  t = insertBreaks(t);
   return t;
 }
 

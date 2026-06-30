@@ -79,7 +79,7 @@ for line in open(DATASET, encoding='utf-8'):
     if m:
         if cur is not None: ds.append(cur)
         cur = m.group(2)
-    elif cur is not None and line.strip(): cur += ' ' + line.strip()
+    elif cur is not None and line.strip(): cur += '\n' + line.rstrip()  # giữ xuống dòng đề
 if cur is not None: ds.append(cur)
 
 _tsv = {}
@@ -147,7 +147,7 @@ for i in range(n):
     badge = {'full': '<span class="b bf">đầy đủ</span>', 'partial': '<span class="b bp">một phần</span>'}.get(mode, '<span class="b bn">chưa vẽ</span>')
     imgc = f'<img src="{img}">' if img else f'<div class="miss">(không cắt được — tr.{pg})</div>'
     figc = f'<img src="{fig}">' if fig else '<div class="miss">(chưa dựng được hình)</div>'
-    rows.append(f'<tr><td class="idc">Câu {cid}<br><span class="pg">tr.{pg}</span><br>{badge}</td><td class="imgc">{imgc}</td><td class="txtc">{ds[i].replace("&","&amp;").replace("<","&lt;")}</td><td class="figc">{figc}</td></tr>')
+    rows.append(f'<tr><td class="idc">Câu {cid}<br><span class="pg">tr.{pg}</span><br>{badge}</td><td class="imgc">{imgc}</td><td class="txtc">{ds[i].replace("&","&amp;").replace("<","&lt;").replace(chr(10),"<br>")}</td><td class="figc">{figc}</td></tr>')
 print(f"crops ok {ok_img}/{n}", file=sys.stderr)
 
 html = '''<style>
