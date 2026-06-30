@@ -32,6 +32,37 @@ describe('circleExternalPointRule', () => {
     const all = run(circleExternalPointRule, 'Cho đường tròn (O ; 5cm) và điểm A có OA = 2 cm');
     expect(all.find((i: any) => i.name === 'A' && i.constraint?.kind === 'externalToCircle')).toBeUndefined();
   });
+
+  // C18: bare paren, point-first, KHÔNG chữ "điểm" — "(Từ)? M (nằm)? ngoài (O)".
+  it('bare paren "Từ M nằm ngoài (O)" → circle O + external M', () => {
+    const all = run(circleExternalPointRule, 'Cho tam giác từ M nằm ngoài (O) vẽ tiếp tuyến MA, MB');
+    expect(all).toContainEqual(
+      expect.objectContaining({ op: 'draw-circle', name: 'O', spec: 'centerRadius' }),
+    );
+    expect(all).toContainEqual({
+      op: 'add-point',
+      name: 'M',
+      constraint: { kind: 'externalToCircle', circle: 'O' },
+    });
+  });
+
+  // C48: "ngoài đường tròn" KHÔNG nêu tên → default tâm 'O' (khớp tangentPointsFromExt).
+  it('"điểm M nằm ngoài đường tròn" (vô danh) → circle default O + external M', () => {
+    const all = run(circleExternalPointRule, 'Từ điểm M nằm ngoài đường tròn vẽ tiếp tuyến MA, MC');
+    expect(all).toContainEqual(
+      expect.objectContaining({ op: 'draw-circle', name: 'O', spec: 'centerRadius' }),
+    );
+    expect(all).toContainEqual({
+      op: 'add-point',
+      name: 'M',
+      constraint: { kind: 'externalToCircle', circle: 'O' },
+    });
+  });
+
+  it('bare paren KHÔNG khớp khi tên 2 ký tự (đoạn AB ngoài (O))', () => {
+    const all = run(circleExternalPointRule, 'Đoạn AB nằm ngoài (O)');
+    expect(all.find((i: any) => i.constraint?.kind === 'externalToCircle')).toBeUndefined();
+  });
 });
 
 describe('tangentNamedFromExtRule (vao10 variants)', () => {

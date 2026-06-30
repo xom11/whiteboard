@@ -36,6 +36,14 @@ const VN_REV = new RegExp(
   String.raw`điểm\s+([A-Z])(?:['′]?)\s+(?:nằm\s+|ở\s+)?ngoài\s+đường\s*tròn\s*(?:tâm\s+)?\(?\s*([A-Z])?`,
   'u',
 );
+// Dạng ĐẢO + bare paren KHÔNG "điểm": "(Từ)? M (nằm)? ngoài (đường tròn)? (O)"
+// (vao10:18 "từ M nằm ngoài (O) vẽ tiếp tuyến"). Point = 1 HOA đầu token (token
+// start), "(O)" bare. group1=điểm, group2=tâm. Thử SAU VN_REV (cần "điểm")/VN_FORM.
+const VN_REV_BARE = new RegExp(
+  String.raw`(?<![\p{L}])([A-Z])(?:['′]?)\s+(?:nằm\s+|ở\s+)?ngoài\s+(?:đường\s*tròn\s*)?\(\s*([A-Z])\s*\)`,
+  'u',
+);
+
 // Resolve tâm từ toàn đề khi VN_REV không có tâm sau "ngoài đường tròn":
 // "đường tròn (tâm)? O" / "(O)" / "(O;R)".
 const RESOLVE_CENTER =
@@ -80,11 +88,19 @@ export const circleExternalPointRule: LanguageRule = {
         }
       } else {
         const rv = VN_REV.exec(c.text);
-        if (!rv) continue;
-        ext = rv[1];
-        // Tâm sau "ngoài đường tròn" nếu có, else resolve từ toàn đề.
-        const rc = rv[2] ? undefined : RESOLVE_CENTER.exec(ctx.problem);
-        center = rv[2] ?? rc?.[1] ?? rc?.[2];
+        if (rv) {
+          ext = rv[1];
+          // Tâm sau "ngoài đường tròn" nếu có, else resolve từ toàn đề, else 'O'
+          // (đề "ngoài đường tròn" KHÔNG nêu tên — tangentPointsFromExt cũng default 'O').
+          const rc = rv[2] ? undefined : RESOLVE_CENTER.exec(ctx.problem);
+          center = rv[2] ?? rc?.[1] ?? rc?.[2] ?? 'O';
+        } else {
+          // "(Từ)? M (nằm)? ngoài (O)" — bare paren, KHÔNG "điểm" (C18).
+          const rb = VN_REV_BARE.exec(c.text);
+          if (!rb) continue;
+          ext = rb[1];
+          center = rb[2];
+        }
       }
       if (!center || !ext || center === ext) continue;
       out.push({
