@@ -21,6 +21,12 @@ const CIRCLE_SYNONYM = /vòng\s+tròn/giu;
 const CIRCLE_PAREN_RESTORE = /(đường\s*tròn\s+)([A-Z])(['′]?)\s*;\s*([Rr])(['′]?)(?![A-Za-z'′])/gu;
 // "◊ABCD" (U+25CA lozenge) / "▱" / "□" → "tứ giác ABCD" (đề toán 8 hay dùng).
 const QUAD_SYMBOL = /[◊▱□]\s*(?=[A-Z])/gu;
+// OCR rớt-dấu "trung điển" → "trung điểm" (n↔m cuối từ — Tesseract hay lẫn; C84
+// "Gọi M là trung điển BC"). GATE chặt: CHỈ "điển" đứng NGAY SAU "trung" → không
+// đụng "từ điển"/"kinh điển"/"điển hình" (danh từ thật, không có "trung" trước).
+// Thiếu fix: clause không có keyword "trung điểm" → hasGeometry=false → midpoint
+// rule không thấy clause → M (mốc) không dựng → cascade (D,E,F downstream sụp).
+const MIDPOINT_TYPO = /trung\s*điển(?!\p{L})/gu;
 // Ký hiệu căn "√" (nhiễu OCR chèn giữa câu, vd "hình chiếu của H lên √ √ √ AB,AC")
 // → khoảng trắng. KHÔNG mang nghĩa hình học khi dựng hình (chỉ trong biểu thức độ
 // dài). Thay bằng ' ' (không '') để không dính chữ ("lên√AB"→"lên AB"); rule dùng
@@ -112,6 +118,7 @@ export function normalizeProblemText(problem: string): string {
   let s = problem
     .replace(TRIANGLE_SYMBOL, 'tam giác ')
     .replace(QUAD_SYMBOL, 'tứ giác ')
+    .replace(MIDPOINT_TYPO, 'trung điểm')
     .replace(CIRCLE_SYNONYM, 'đường tròn');
   // Khôi phục ngoặc circle CHỈ khi đề CHƯA có circle-paren nào "(<HOA>" → tránh
   // NHÂN ĐÔI định nghĩa đường tròn (chuyen13:10/mohinh:12 có "( O;R )" sẵn ở cuối:

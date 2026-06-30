@@ -21,6 +21,16 @@ describe('normalizeProblemText', () => {
     // KHÔNG đụng "đường tròn O." (không có ;R) — tránh nuốt nhầm.
     expect(normalizeProblemText('cắt đường tròn O tại B')).toBe('cắt đường tròn O tại B');
   });
+  it('OCR typo "trung điển" → "trung điểm" (n↔m cuối từ); gate né "từ điển"/"điển hình"', () => {
+    // C84: "Gọi M là trung điển BC" — nếu không sửa, hasGeometry=false → M không dựng.
+    expect(normalizeProblemText('Gọi M là trung điển BC')).toBe('Gọi M là trung điểm BC');
+    expect(normalizeProblemText('trung  điển AB')).toBe('trung điểm AB');
+    // GATE: "điển" KHÔNG đứng sau "trung" → giữ nguyên (danh từ thật).
+    expect(normalizeProblemText('tra từ điển')).toBe('tra từ điển');
+    expect(normalizeProblemText('bài toán điển hình')).toBe('bài toán điển hình');
+    // idempotent
+    expect(normalizeProblemText('trung điểm BC')).toBe('trung điểm BC');
+  });
   it('"vòng tròn" → "đường tròn" (mọi hoa/thường)', () => {
     expect(normalizeProblemText('I là tâm vòng tròn nội tiếp')).toBe('I là tâm đường tròn nội tiếp');
     expect(normalizeProblemText('Vòng tròn (O)')).toBe('đường tròn (O)');
