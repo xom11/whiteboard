@@ -7,6 +7,9 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   // Base shapes
   'tam giác', 'đường tròn', 'đương tròn', 'hình chữ nhật', 'hình vuông',
   'hình bình hành', 'hình thoi', 'hình thang', 'tứ giác',
+  // Đa giác ≥5 đỉnh: "Cho lục giác ABCDEF …" — thiếu các từ này thì clause chỉ
+  // có tên đa giác (không "ngoại/nội tiếp") bị coi văn xuôi → hexagonRule miss.
+  'ngũ giác', 'lục giác', 'đa giác',
   // Triangle variants
   'vuông tại', 'cân tại', 'đều',
   // Circle parts

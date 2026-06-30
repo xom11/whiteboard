@@ -100,6 +100,7 @@ import { twoCirclesCenterRadiusMeetRule } from './twoCirclesCenterRadiusMeet';
 import { rightAngleVertexCirclesRule } from './rightAngleVertexCircles';
 import { namedLineRule } from './namedLine';
 import { bisectorsMeetRule } from './bisectorsMeet';
+import { hexagonRule } from './hexagon';
 
 const RULES: readonly LanguageRule[] = [
   namedLineRule,
@@ -116,6 +117,7 @@ const RULES: readonly LanguageRule[] = [
   rightAngleViewingRule,
   triangleRule,
   inscribedSquareRule,
+  hexagonRule,
   quadRule,
   connectRule,
   midpointRule,

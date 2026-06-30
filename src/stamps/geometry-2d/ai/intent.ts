@@ -225,10 +225,13 @@ export const DrawLineIntentZ = z.object({
 });
 
 // op: mark-shape (sub-shape từ điểm đã có, không tạo coord mới)
+// `shape` chỉ là nhãn ngữ nghĩa — builder LUÔN emit DSL kind 'polygon' (generic
+// N đỉnh). 'polygon' cho đa giác ≥5 đỉnh (ngũ giác/lục giác…); 'triangle'/
+// 'quadrilateral' giữ cho 3/4 đỉnh (backward-compat). labels tối đa 8 đỉnh.
 export const MarkShapeIntentZ = z.object({
   op: z.literal('mark-shape'),
-  shape: z.enum(['triangle', 'quadrilateral']),
-  labels: z.array(LabelZ).min(3).max(4),
+  shape: z.enum(['triangle', 'quadrilateral', 'polygon']),
+  labels: z.array(LabelZ).min(3).max(8),
 });
 
 // Master discriminated union — 6 variants theo op
