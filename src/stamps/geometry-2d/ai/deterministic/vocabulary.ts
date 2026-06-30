@@ -59,6 +59,13 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   'chín điểm',
   // Relations
   'song song', 'vuông góc', 'giao điểm', 'cắt', 'đường thẳng', 'đương thẳng',
+  // "thẳng hàng" — "Cho 3 điểm A, B, C thẳng hàng theo thứ tự" (C41): clause GIỚI
+  // THIỆU bộ điểm thẳng hàng (collinearPointsRule dựng A,B,C) NHƯNG không có keyword
+  // nào khác → hasGeometry=false → clause bị lọc khỏi rule engine → A,B,C KHÔNG dựng
+  // → cascade làm sụp tiếp tuyến/trung điểm phụ thuộc chúng. "thẳng hàng" (≥8 ký tự,
+  // phân biệt) đánh dấu geo-clause. Clause CHỨNG MINH ("Chứng minh A,B,C thẳng hàng")
+  // vẫn non-geo nhờ guard proofOnly (startsProofSection) — không bị ảnh hưởng.
+  'thẳng hàng',
   // Ký hiệu (symbol-only phrasing tương đương từ chữ): "⊥" ≡ "vuông góc".
   // perpFoot rule đã nhận "⊥" ở tầng construct (PERP_DRAW), nhưng gate
   // hasGeometry trước đây CHỈ nhận chữ "vuông góc" → clause mà "⊥" là tín hiệu
