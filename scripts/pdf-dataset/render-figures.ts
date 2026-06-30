@@ -18,7 +18,7 @@ interface Bai { id: number; text: string }
 
 // Phần dựng hình = cắt trước "Chứng minh"/"Tính"/"a)" (giống diag-all).
 function introBeforeProof(text: string): string {
-  const idx = text.search(/(Chứng minh|Chứng tỏ|CMR|C\/m|Tính|Gọi[^.]*\?|\s+a\))/i);
+  const idx = text.search(/(Chứng minh|Chứng tỏ|CMR|C\/m|Tính|Gọi[^.]*\?|(?<![\p{L}])a\))/iu);
   return (idx >= 0 ? text.slice(0, idx) : text).trim();
 }
 

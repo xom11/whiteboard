@@ -30,7 +30,7 @@ function parse(raw: string): Array<{ id: number; text: string }> {
 }
 
 function intro(text: string): string {
-  const idx = text.search(/(Chứng minh|Chứng tỏ|CMR|C\/m|Tính|Tìm|\n?\s*a\))/i);
+  const idx = text.search(/(Chứng minh|Chứng tỏ|CMR|C\/m|Tính|Tìm|(?<![\p{L}])a\))/iu);
   return (idx >= 0 ? text.slice(0, idx) : text).trim();
 }
 

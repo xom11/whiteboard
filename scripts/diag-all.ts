@@ -35,8 +35,10 @@ function blockParse(headRe: RegExp, idFmt: (m: RegExpMatchArray) => string) {
 }
 
 function introBeforeProof(text: string): string {
-  // cắt trước "Chứng minh" / "Tính" / "a)" / "CMR" đầu tiên (phần dựng hình)
-  const idx = text.search(/(Chứng minh|Chứng tỏ|CMR|C\/m|Tính|Gọi[^.]*\?|\n?\s*a\))/i);
+  // cắt trước "Chứng minh" / "Tính" / "a)" / "CMR" đầu tiên (phần dựng hình).
+  // "a)" PHẢI là nhãn ý (lookbehind (?<![\p{L}]) — KHÔNG khớp "...Khoa)" trong tên
+  // tác giả "(Nguyễn Dang Khoa)" ở đầu đề Chương 4, vốn cắt mất CẢ mệnh đề dựng hình).
+  const idx = text.search(/(Chứng minh|Chứng tỏ|CMR|C\/m|Tính|Gọi[^.]*\?|(?<![\p{L}])a\))/iu);
   const head = idx >= 0 ? text.slice(0, idx) : text;
   return head.trim();
 }
