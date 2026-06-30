@@ -315,6 +315,14 @@ describe('repairOcrSymbols — R32-R33 (di động / £→E)', () => {
   it('R33 "£" → "E" (nhãn điểm)', () => {
     expect(repairOcrSymbols('cắt AB và AC lần lượt tại £ và F')).toBe('cắt AB và AC lần lượt tại E và F');
   });
+  it('R34 join tên tam giác bị OCR chèn space', () => {
+    expect(repairOcrSymbols('ngoại tiếp tam giác BC M cắt CF')).toBe('ngoại tiếp tam giác BCM cắt CF');
+    expect(repairOcrSymbols('tam giác K AB cân')).toBe('tam giác KAB cân');
+    expect(repairOcrSymbols('diện tích tam giác HM K lớn nhất')).toBe('diện tích tam giác HMK lớn nhất');
+    // né 4-đỉnh + né nuốt từ mở câu HOA
+    expect(repairOcrSymbols('tam giác ABC Cho điểm')).toBe('tam giác ABC Cho điểm');
+    expect(repairOcrSymbols('tam giác AB CD vuông')).toBe('tam giác AB CD vuông'); // 2+2=4 → không join
+  });
 });
 
 describe('repairOcrSymbols — tổng hợp + idempotent', () => {

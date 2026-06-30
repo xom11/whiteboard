@@ -153,6 +153,18 @@ describe('centersRule', () => {
     expect(m[0].clauseIds.length).toBe(1);
     expect(typeof m[0].clauseIds[0]).toBe('number');
   });
+
+  // C52/C88: tâm TRÙNG đỉnh (OCR đọc nhầm tên tâm) → định nghĩa vòng → bỏ qua
+  // (tránh crash kéo partial xuống none). Tâm hợp lệ (∉ đỉnh) vẫn emit bình thường.
+  it('degenerate "O là tâm ngoại tiếp tam giác OKA" (O ∈ đỉnh) → KHÔNG emit', () => {
+    expect(find('Gọi O là tâm đường tròn ngoại tiếp tam giác OKA', 'circumcenter')).toBeUndefined();
+  });
+  it('tâm hợp lệ "S là tâm ngoại tiếp tam giác OKA" (S ∉ đỉnh) → circumcenter S', () => {
+    const i = find('Gọi S là tâm đường tròn ngoại tiếp tam giác OKA', 'circumcenter');
+    expect(i).toBeDefined();
+    expect(i.name).toBe('S');
+    expect(i.constraint.of).toEqual(['O', 'K', 'A']);
+  });
 });
 
 // === EN (issue #46 group B) =================================================

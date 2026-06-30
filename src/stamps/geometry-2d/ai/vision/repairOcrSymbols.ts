@@ -173,6 +173,14 @@ const DI_DONG_RE = /(?<![\p{L}])di dong(?![\p{L}])/gu;
 // £ KHÔNG bao giờ hợp lệ trong đề hình → map về E (verify: "tại £ và F" = "E và F").
 const POUND_E_RE = /£/gu;
 
+// R34 — OCR chèn SPACE vào tên tam giác 3-đỉnh: "tam giác BC M"→"BCM", "tam giác
+// K AB"→"KAB" (8 chỗ trên dataset). Phá MỌI rule cần "tam giác XYZ" liền (triangle/
+// circumcircle…). Gate: NGAY sau "tam giác" + đúng 3 HOA tách 1 space (2+1 hoặc
+// 1+2) + lookahead (?![A-Z\p{Ll}]) ⇒ né 4-đỉnh ("AB CD") + né nuốt từ mở câu HOA
+// ("tam giác AB Cho…"). 2 nhánh cho 2 vị trí space.
+const TRI_SPACE_2_1 = /(tam\s*giác\s+)([A-Z])([A-Z])\s+([A-Z])(?![A-Z\p{Ll}])/gu;
+const TRI_SPACE_1_2 = /(tam\s*giác\s+)([A-Z])\s+([A-Z])([A-Z])(?![A-Z\p{Ll}])/gu;
+
 export function repairOcrSymbols(text: string): string {
   let t = text;
   t = t.replace(PERP_RE, '$1 ⊥ $3');
@@ -212,5 +220,7 @@ export function repairOcrSymbols(text: string): string {
   t = t.replace(DE_THI_LOWER_RE, 'đề'); // R31c
   t = t.replace(DI_DONG_RE, 'di động'); // R32
   t = t.replace(POUND_E_RE, 'E'); // R33
+  t = t.replace(TRI_SPACE_2_1, '$1$2$3$4'); // R34 — join "tam giác XY Z"→"XYZ"
+  t = t.replace(TRI_SPACE_1_2, '$1$2$3$4'); // R34 — join "tam giác X YZ"→"XYZ"
   return t;
 }

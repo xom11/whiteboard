@@ -195,6 +195,16 @@ function resolveTriangle(
   return uniqueProblemTri;
 }
 
+// Bỏ tâm DEGENERATE: tên tâm TRÙNG 1 đỉnh tam giác (vd "O là tâm ngoại tiếp tam
+// giác OKA" — OCR đọc nhầm tên tâm thành đỉnh O) → định nghĩa VÒNG (circumcenter
+// phụ thuộc OKA chứa chính O) → transpile crash → KÉO CẢ partial xuống none. Tâm
+// (ngoại/nội/trọng/trực) KHÔNG BAO GIỜ là đỉnh của tam giác đó → an toàn loại.
+function dropDegenerate<T extends { name?: string; constraint?: { of?: string[] } }>(intents: T[]): T[] {
+  return intents.filter(
+    (i) => !(Array.isArray(i.constraint?.of) && i.name != null && i.constraint!.of!.includes(i.name)),
+  );
+}
+
 /**
  * Tâm tam giác → add-point với of=[A,B,C]. Một clause có thể nêu nhiều tâm
  * (vd "trọng tâm G và trực tâm H"); emit từng intent, cùng claim clause.
@@ -239,7 +249,8 @@ export const centersRule: LanguageRule = {
         if (of) {
           intents.push(addPoint(dc[1], { kind: centerTypeToKind(dc[3]), of }));
           intents.push(addPoint(dc[2], { kind: centerTypeToKind(dc[4]), of }));
-          out.push({ ruleId: 'centers', clauseIds: [c.id], intents });
+          const kept = dropDegenerate(intents);
+          if (kept.length) out.push({ ruleId: 'centers', clauseIds: [c.id], intents: kept });
           continue; // clause đã xử lý bằng distributive
         }
       }
@@ -303,8 +314,9 @@ export const centersRule: LanguageRule = {
         if (name && of) intents.push(addPoint(name, { kind: 'incenter', of }));
       }
 
-      if (intents.length > 0) {
-        out.push({ ruleId: 'centers', clauseIds: [c.id], intents });
+      const kept = dropDegenerate(intents);
+      if (kept.length > 0) {
+        out.push({ ruleId: 'centers', clauseIds: [c.id], intents: kept });
       }
     }
     return out;

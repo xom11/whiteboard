@@ -77,7 +77,7 @@ Chứng minh: ”. không đổi khi (d) dịch chuyển
 
 Câu 20: Cho đường tròn (O), đường kính AB, gọi C là trung điểm AO. Qua C kẻ đường vuông góc với OA cắt (O) tại 2 điểm M và N.Trên cung MN lớn lấy điểm K. Giao điểm của AK với MN là H
 a,
-Tìm vị trí i để cho khoảng cách từ N đến tâm đường tròn ngoại tiếp tam giác KM H nhỏ nhất
+Tìm vị trí i để cho khoảng cách từ N đến tâm đường tròn ngoại tiếp tam giác KMH nhỏ nhất
 b, Với K thuộc cung MB, lấy I trên KN sao cho KI = KM.
 Chứng minh: NI = KB (Đề xuất bởi buingoctu)
 
@@ -143,7 +143,7 @@ b,
 Chứng minh rằng góc X PY có số đo không đổi khi P di động trên BC. (Đề xuất bởi khanhdat1)
 
 Câu 36: Cho tam giác ABC nội tiếp (O) có các đường cao BE, CF. M là trung điểm BC, AM cắt EF tại N. Kẻ NX ⊥ BC, XY ⊥ AB, XZ ⊥ AC.
-Chứng minh N là trực tâm của tam giác AY Z. (Đề xuất bởi taconghoang)
+Chứng minh N là trực tâm của tam giác AYZ. (Đề xuất bởi taconghoang)
 
 Câu 37: Cho tam giác ABC và các điểm như hình vẽ. Giả sử diện tích của các tam giác tô mau đôi một bằng nhau.
 Chứng minh diện tích của các tứ giác không tô màu cũng đôi một bằng nhau. (Đề xuất bởi Korkot)
@@ -299,7 +299,7 @@ b) Gọi T là giao điểm của các tiếp tuyến tại B,C của đường 
 Chứng minh rằng đường tròn ngoại tiếp tam giác BHC tiếp xúc với đường tròn ngoại tiếp tam giác SJN. (Đề xuất bởi khanhdat1)
 
 Câu 70: Cho tam giác ABC với AB = AC và D là trung điểm AC.Phan giác BAC cắt (BCD) tại FE ở miền trong tam gidc. BD cắt (ABE) tại F(Khác B).AF cắt BE tại I và CI cắt BD tại K.
-Chứng minh rằng : I là tâm đường tròn nội tiếp tam giác K AB. (Đề xuất bởi BurakkuYokuro11)
+Chứng minh rằng : I là tâm đường tròn nội tiếp tam giác KAB. (Đề xuất bởi BurakkuYokuro11)
 
 Câu 71: Trên cung nhỏ AB, lấy điểm C sao cho không phải là điểm chính giữa cung đó. Tiếp tuyến tại C cắt OP tại F và cắt PA, PB lần lượt tai D và E.
 Chứng minh rằng (PCF); (PAB); (PDE) đồng quy tại một điểm khác P. (Đề xuất bởi Badong2211)
@@ -310,7 +310,7 @@ Chứng minh: XZY không đổi khi D di chuyển trên BC. (Đề xuất bởi 
 Câu 73: Cho tam giác ABC ngoại tiếp (I) và (I) tiếp xúc với BC tại D. Qua D kẻ đường thẳng vuông góc với AD cắt BJ,C1I lần lượt tại M, N.
 Chứng minh: tam giác AMN cân. (Đề xuất bởi Nguyễn Minh Ha)
 
-Câu 74: Cho hình bình hành ABCD. Đường phân giác BAD cắt cạnh CD và đường thẳng BC tại M, V.Vẽ đường tròn tam O ngoại tiếp tam giác CM N.Vé dây cung CK của (O) sao cho CK song song BD.
+Câu 74: Cho hình bình hành ABCD. Đường phân giác BAD cắt cạnh CD và đường thẳng BC tại M, V.Vẽ đường tròn tam O ngoại tiếp tam giác CMN.Vé dây cung CK của (O) sao cho CK song song BD.
 Chứng minh rằng : B, K, 0, C, D cùng thuộc một đường tròn. (Đề xuất bởi Tea Coffee)
 
 Câu 75: Cho tam giác ABC nội tiếp (O). Đường tròn (Oi) qua B.C cắt cạnh AB, AC tại D, E. Đường tròn (Os) qua A, D, E cắt (O) tại K (K khác A).Gọi M, N lần lượt là trung điểm BD,CE.
@@ -325,7 +325,7 @@ Tính bán kính (O¡) theo R. (Đề xuất bởi quynhanhlh7)
 Câu 77: Cho (I, R) và (J,r) là hai đường tròn bàng tiếp trong BAC và ABC của tam giác ABC. Đường tròn (I) tiếp xúc AB tại N,BC tại P,AC tại H.Đường tròn (J) tiếp xúc BA tại K,BC tại Q,NM là đường kính của (I).
 Chứng minh rằng BC, AH, KM đồng quy. (Đề xuất bởi Tea Coffee)
 
-Câu 78: Cho tam giác đều ABC và M là điểm bất kỳ trên BC.Gọi H, K là chân đường vuông góc kẻ từ M xuống AB, AC.Xác định vị trí M để diện tích tam giác HM K lớn nhất. (Đề xuất bởi Tea Coffee)
+Câu 78: Cho tam giác đều ABC và M là điểm bất kỳ trên BC.Gọi H, K là chân đường vuông góc kẻ từ M xuống AB, AC.Xác định vị trí M để diện tích tam giác HMK lớn nhất. (Đề xuất bởi Tea Coffee)
 
 Câu 79: Cho tam giác ABC (AB < AC) nội tiếp (O). Phân giác góc BAC cắt (O) tại D khác A, E đối xứng D qua O. Gọi F là một điểm trên cung BD không chứa A, C của (O); FE cat BC tại G, H thuộc AF sao cho GH song song với AD.
 Chứng minh HG là phân giác BHC. (Đề xuất bởi Diepnguyencva)
@@ -357,7 +357,7 @@ Xác định vị trí của M để tứ giác OCF'M là hình bình hành. (Đ
 Câu 87: Cho tam giác ABC nhọn và can tại C. Đường tròn tâm O đường kính BC cắt AB và AC lần lượt tai E và F. Gọi H là giao điểm BF và CE. Đường tròn đường kính EC cắt AC tại M. Gọi K là giao điểm của BM và (O).
 Chứng minh KC đi qua trung điểm HF. (Đề xuất bởi Diepnguyencva)
 
-Câu 88: Từ điểm A nằm ngoài đường tròn (O) kẻ 2 tiếp tuyến AB và AC; cát tuyến ADE sao cho BD < CD; AD < AE. Gọi H là giao điểm của OA và BC. Gọi I là trung điểm DE. Kéo dai TH cắt (O) tại K sao cho H nằm giữa J và K. Gọi O là tâm đường tròn ngoại tiếp tam giác OK A.
+Câu 88: Từ điểm A nằm ngoài đường tròn (O) kẻ 2 tiếp tuyến AB và AC; cát tuyến ADE sao cho BD < CD; AD < AE. Gọi H là giao điểm của OA và BC. Gọi I là trung điểm DE. Kéo dai TH cắt (O) tại K sao cho H nằm giữa J và K. Gọi O là tâm đường tròn ngoại tiếp tam giác OKA.
 Chứng minh OS ⊥ IK. (Đề xuất bởi Diepnguyencva)
 
 Câu 89: Cho đường tròn (O) và dây BC cố định không đi qua tâm , điểm A di động trên cung lớn BC, (I) nội tiếp tam giác ABC tiếp xúc với AB, AC tại D, E.
@@ -393,7 +393,7 @@ Chứng minh: D, Q, F thẳng hàng.
 Câu 96: Bài 102. (phamhuy1801) Cho tam giác ABC nhọn. Đường tròn (O; 7 cắt AB, AC thứ tự tại E, D. Các tiếp tuyến kẻ từ E,D của (O) cắt nhau tại I và lần lượt cắt tiếp tuyến kẻ từ B,C của (O) tại F,G. FG cắt AI tại H và cắt (O) tại M,N.
 Chứng minh H là trực tâm của tam giác ABC và MA, NA lần lượt các tiếp tuyến của (O)
 
-Câu 97: Bài 103. (khanhdat1) Cho tam giác ABC nội tiếp đường tròn (O) có E, F thuộc đoạn CA và BA sao cho EF song song với BC. Đường trung trực của đoạn thẳng BC cắt AC tại M, đường trung trực của đoạn EF cắt cắt AB tại N. Đường tròn ngoại tiếp tam giác BC M cắt CF tại P khác C, đường tròn ngoại tiếp tam giác EF N cắt CF tại Q khác F.
+Câu 97: Bài 103. (khanhdat1) Cho tam giác ABC nội tiếp đường tròn (O) có E, F thuộc đoạn CA và BA sao cho EF song song với BC. Đường trung trực của đoạn thẳng BC cắt AC tại M, đường trung trực của đoạn EF cắt cắt AB tại N. Đường tròn ngoại tiếp tam giác BCM cắt CF tại P khác C, đường tròn ngoại tiếp tam giác EFN cắt CF tại Q khác F.
 a,
 Chứng minh rằng đường trung trực của PQ đi qua trung điểm của MN.
 b, Gọi L là điểm chính giữa cung lớn BC của đường tròn (O) và I là một điểm bất kì trên đoạn AL. Gọi J là hình chiếu của I trên BC. Đường tròn tâm J bán kính IJ cắt AB, AC theo thứ tự tại X,Y.
