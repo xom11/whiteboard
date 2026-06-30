@@ -88,6 +88,7 @@ import { twoCirclesMeetRule } from './twoCirclesMeet';
 import { radiusRule } from './radius';
 import { perpNamedLineRule } from './perpNamedLine';
 import { parallelSidePointsRule } from './parallelSidePoints';
+import { inscribedSquareRule } from './inscribedSquare';
 import { parallelThroughCutsCircleRule } from './parallelThroughCutsCircle';
 import { lineThroughCutsTwoLinesRule } from './lineThroughCutsTwoLines';
 import { rightAngleViewingRule } from './rightAngleViewing';
@@ -113,6 +114,7 @@ const RULES: readonly LanguageRule[] = [
   lineThroughCutsTwoLinesRule,
   rightAngleViewingRule,
   triangleRule,
+  inscribedSquareRule,
   quadRule,
   connectRule,
   midpointRule,
