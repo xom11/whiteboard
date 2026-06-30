@@ -181,6 +181,15 @@ const NAME_KHAC_CUA = new RegExp(
   'gu',
 );
 
+// Tên ĐỨNG TRƯỚC, KHÔNG "thứ hai", KHÔNG "khác": "K là giao điểm của BM và (O)"
+// (C87). 1 đầu mút line nằm trên (O) → giao THỨ HAI, other = line[0] mặc định
+// (cùng quy ước SINGLE_BARE/CIRCLE_SUBJECT). Negative-lookahead loại "thứ hai"/
+// "khác" để KHÔNG chồng NAME_2ND_CUA (other=line[1]) / NAME_KHAC_CUA.
+const NAME_CUA = new RegExp(
+  String.raw`([A-Z])(?![A-Z])\s+là\s+giao\s*điểm\s+của\s+(?!thứ\s+hai)(?!khác)(?:đường\s*thẳng\s+)?([A-Z]{2})(?![A-Z])\s+(?:và|với)\s+` + CIRCLE,
+  'gu',
+);
+
 // Đường tròn MÔ TẢ (KHÔNG "(O)"): "giao điểm thứ hai của <LINE> (và|với) (nửa)?
 // đường tròn ngoại tiếp tam giác XYZ là (điểm)? P (khác Q)?" (hinh9 #66).
 // circleTriangle dựng circumcircle này KHÔNG khai báo tâm → tên mặc định "O"
@@ -386,6 +395,13 @@ export const lineCircleIntersectionRule: LanguageRule = {
         const line = m[3];
         const circle = m[4];
         if (valid(name, line)) intents.push(secondIntersection(name, line, circle, other));
+      }
+
+      // "K là giao điểm của BM và (O)" — tên trước, KHÔNG "thứ hai"/"khác".
+      NAME_CUA.lastIndex = 0;
+      for (const m of c.text.matchAll(NAME_CUA)) {
+        const [name, line, circle] = [m[1], m[2], m[3]];
+        if (valid(name, line)) intents.push(secondIntersection(name, line, circle));
       }
 
       // "giao điểm thứ hai của AI và đường tròn ngoại tiếp tam giác ABC là điểm P

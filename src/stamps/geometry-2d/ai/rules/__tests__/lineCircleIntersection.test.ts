@@ -208,4 +208,20 @@ describe('lineCircleIntersection — residue', () => {
     const n = (run(text).flatMap((m) => m.intents) as any[]).find((i) => i.name === 'N');
     expect(n.constraint).toEqual({ kind: 'secondIntersection', line: 'AM', circle: 'O', other: 'M' });
   });
+
+  it('NAME_CUA (C87): "K là giao điểm của BM và (O)" — không "thứ hai"/"khác" → other=line[0]', () => {
+    const k = (run('Gọi K là giao điểm của BM và (O)').flatMap((m) => m.intents) as any[]).find(
+      (i) => i.name === 'K',
+    );
+    expect(k.constraint).toEqual({ kind: 'secondIntersection', line: 'BM', circle: 'O', other: 'B' });
+  });
+
+  it('NAME_CUA KHÔNG chồng NAME_2ND_CUA: "thứ hai" → vẫn other=line[1], chỉ 1 intent K', () => {
+    const ints = (run('Gọi K là giao điểm thứ hai của BM với (O)').flatMap((m) => m.intents) as any[]).filter(
+      (i) => i.name === 'K',
+    );
+    expect(ints).toEqual([
+      { op: 'add-point', name: 'K', constraint: { kind: 'secondIntersection', line: 'BM', circle: 'O', other: 'M' } },
+    ]);
+  });
 });
