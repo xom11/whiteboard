@@ -48,8 +48,9 @@ const LINE_TOK = '([A-Z]{1,2}(?![A-Za-z])|[A-Z]?[a-z][a-z]?[0-9]?(?![A-Za-z]))';
 const LINE = LINE_PREFIX + LINE_TOK;
 const PREP = '(?:trên|lên|xuống|đến|tới)';
 // "lần lượt" và các biến thể đồng nghĩa "(theo)? thứ tự" (vao10:218 "M, N thứ tự
-// là hình chiếu …"). Optional — chỉ THÊM match, không đổi ngữ nghĩa.
-const LANLUOT_OPT = '(?:(?:lần\\s*lượt|theo\\s+thứ\\s+tự|thứ\\s+tự)\\s+)?';
+// là hình chiếu …") + "tương ứng" (C45 "E, F tương ứng là hình chiếu của D trên
+// AC, AB"). Optional — chỉ THÊM match, không đổi ngữ nghĩa.
+const LANLUOT_OPT = '(?:(?:lần\\s*lượt|theo\\s+thứ\\s+tự|thứ\\s+tự|tương\\s+ứng)\\s+)?';
 
 // "hình chiếu (vuông góc)? (của)? (điểm)? X PREP [cạnh|đường thẳng] LINE"
 const PROJ_CORE = `hình\\s*chiếu\\s+(?:vuông\\s*góc\\s+)?(?:của\\s+)?(?:điểm\\s+)?([A-Z])\\s+${PREP}\\s+${LINE}`;
@@ -77,9 +78,14 @@ const NAMES_BLOB = "((?:[A-Z](?:['′]?)\\s*(?:,|và)\\s*)+[A-Z](?:['′]?))";
 const LINES_BLOB = '((?:[A-Z]{1,2}\\s*(?:,|và)\\s*)+[A-Z]{1,2})(?!\\p{L})';
 // Tiền tố trước DANH SÁCH cạnh: "(các)? (đường thẳng|cạnh|đoạn)?".
 const LINES_PREFIX = '(?:các\\s+)?(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?';
+// Chặn NAMES_BLOB bắt đầu GIỮA token HOA: tên distributive ngăn bằng "và" nên
+// "…BC và E, F" sẽ để regex backtrack lấy "C và E, F" (C = chữ 2 của "BC") → 3
+// tên ≠ 2 cạnh → zip lệch → mất match (C45). Lookbehind (?<![A-Z]) buộc tên đầu
+// blob KHÔNG dính chữ HOA phía trước.
+const NO_HOA_BEFORE = '(?<![A-Z])';
 // "lần lượt" optional → bắt cả "X, Y là các hình chiếu của F trên L1, L2".
 const DISTRIB_PROJ = new RegExp(
-  NAMES_BLOB +
+  NO_HOA_BEFORE + NAMES_BLOB +
     '\\s+' + LANLUOT_OPT + '(?:là\\s+)?(?:các\\s+)?hình\\s*chiếu\\s+(?:vuông\\s*góc\\s+)?(?:của\\s+)?(?:điểm\\s+)?([A-Z])(?!\\p{L})' +
     '\\s+(?:trên|lên|xuống|đến)\\s+' +
     LINES_PREFIX +
@@ -87,7 +93,7 @@ const DISTRIB_PROJ = new RegExp(
   'gu',
 );
 const DISTRIB_FOOT = new RegExp(
-  NAMES_BLOB +
+  NO_HOA_BEFORE + NAMES_BLOB +
     '\\s+' + LANLUOT_OPT + '(?:là\\s+)?(?:các\\s+)?chân\\s+(?:của\\s+)?(?:các\\s+)?đường\\s+(?:vuông\\s*góc|cao)\\s*(?:hạ\\s+|kẻ\\s+|vẽ\\s+|dựng\\s+)?(?:từ\\s+)?(?:điểm\\s+)?([A-Z])(?!\\p{L})' +
     '\\s+(?:đến|xuống|trên|tới)\\s+' +
     LINES_PREFIX +
@@ -104,7 +110,7 @@ const DISTRIB_FOOT = new RegExp(
 const NAMES_BLOB_IDX = "((?:[A-Z][0-9]?(?:['′]?)\\s*(?:,|và)\\s*)+[A-Z][0-9]?(?:['′]?))";
 const FROMS_BLOB_IDX = "((?:[A-Z][0-9]?(?:['′]?)\\s*(?:,|và)\\s*)+[A-Z][0-9]?(?:['′]?))(?!\\p{L})";
 const ZIP_FROM_PROJ = new RegExp(
-  NAMES_BLOB_IDX +
+  NO_HOA_BEFORE + NAMES_BLOB_IDX +
     '\\s+' + LANLUOT_OPT + '(?:là\\s+)?(?:các\\s+)?hình\\s*chiếu\\s+(?:vuông\\s*góc\\s+)?(?:của\\s+)?(?:điểm\\s+)?' +
     FROMS_BLOB_IDX +
     '\\s+(?:trên|lên|xuống|đến)\\s+' +
@@ -171,6 +177,21 @@ const PERP_DRAW_DISTRIB = new RegExp(
   '(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng|[Hh]ạ)\\s+([A-Z])([A-Z])\\s*,\\s*([A-Z])([A-Z])(?![A-Z])\\s+' +
     '(?:lần\\s*lượt\\s+)?(?:⊥|vuông\\s*góc(?:\\s+với)?)\\s+(?:với\\s+)?(?:các\\s+)?' +
     '(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z]{2})\\s*,\\s*([A-Z]{2})(?![A-Z])',
+  'gu',
+);
+
+// "vẽ XY, XZ, XW là (các)? đường(s)? vuông góc (tới|đến|xuống) L1, L2, L3" (C26:
+// "vẽ IM, IN, IK là các đường vuông góc tới BC, CA, AB"). Cặp XY,XZ,XW (≥2) CÙNG
+// chữ đầu (from), chân = chữ thứ 2; zip 1-1 với danh sách đường L1,L2,L3. KHÁC
+// PERP_DRAW_DISTRIB ("⊥"/"vuông góc với" + ĐÚNG 2 cặp): ở đây cụm "là (các)?
+// đường vuông góc (tới|đến|xuống)" + danh sách độ dài bất kỳ (≥2).
+//   groups: 1=pairs blob (≥2, "XY, XZ, ...") | 2=lines blob (≥2)
+const PAIRS_BLOB = '((?:[A-Z]{2}\\s*,\\s*)+[A-Z]{2})(?![A-Z])';
+const PERP_DRAW_ARE = new RegExp(
+  '(?:[Kk]ẻ|[Vv]ẽ|[Dd]ựng|[Hh]ạ)\\s+' + PAIRS_BLOB +
+    '\\s+là\\s+(?:các\\s+)?(?:đường\\s*thẳng\\s+|đường\\s+)?vuông\\s*góc\\s+(?:tới|đến|xuống|với)\\s+(?:các\\s+)?' +
+    '(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?' +
+    '((?:[A-Z]{2}\\s*(?:,|và)\\s*)+[A-Z]{2})(?![A-Z])',
   'gu',
 );
 
@@ -538,6 +559,31 @@ function parseFeet(text: string, fallbackTri?: string[], declared: Set<string> =
     out.push({ name: foot1, from: from1, onLine: line1, withSegment: true });
     out.push({ name: foot2, from: from2, onLine: line2, withSegment: true });
     consumed.push([ddm.index ?? 0, (ddm.index ?? 0) + ddm[0].length]);
+  }
+
+  // 2b2) "vẽ XY, XZ, XW là (các)? đường vuông góc (tới|đến|xuống) L1, L2, L3" —
+  //      cặp CÙNG chữ đầu (from), chân = chữ thứ 2; zip 1-1 với danh sách đường.
+  PERP_DRAW_ARE.lastIndex = 0;
+  for (const am of text.matchAll(PERP_DRAW_ARE)) {
+    const start = am.index ?? 0;
+    if (consumed.some(([a, b]) => start >= a && start < b)) continue;
+    const pairs = am[1].split(',').map((s) => s.trim()).filter((s) => /^[A-Z]{2}$/.test(s));
+    const lines = am[2].split(/,|và/).map((s) => s.trim()).filter((s) => /^[A-Z]{2}$/.test(s));
+    if (pairs.length < 2 || pairs.length !== lines.length) continue; // zip lệch → escalate
+    const from = pairs[0][0];
+    if (!pairs.every((p) => p[0] === from)) continue; // không cùng chữ đầu → không phải dạng này
+    const local: Foot[] = [];
+    let ok = true;
+    for (let i = 0; i < pairs.length; i++) {
+      const foot = pairs[i][1];
+      const onLine = lines[i];
+      if (onLine.includes(foot)) { ok = false; break; } // chân trùng đỉnh đường → degenerate
+      local.push({ name: foot, from, onLine, withSegment: true });
+    }
+    if (ok && local.length > 0) {
+      out.push(...local);
+      consumed.push([start, start + am[0].length]);
+    }
   }
 
   // 2c) "Hạ XY và ZW cùng vuông góc (với)? L" — 2 chân khác gốc, CÙNG đường L.

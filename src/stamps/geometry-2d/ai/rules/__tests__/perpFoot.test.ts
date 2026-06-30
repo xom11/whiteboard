@@ -375,6 +375,15 @@ describe('perpFootRule — distributive shared-from "X,Y,Z lần lượt là hì
     ]);
   });
 
+  // C45: "E, F tương ứng là hình chiếu của D trên AC, AB" — "tương ứng" = "lần lượt".
+  it('biến thể "tương ứng": E, F tương ứng là hình chiếu của D trên AC, AB', () => {
+    const f = feet('Gọi D là trung điểm của BC và E, F tương ứng là hình chiếu của D trên AC,AB');
+    expect(f).toEqual([
+      { name: 'E', from: 'D', onLine: 'AC' },
+      { name: 'F', from: 'D', onLine: 'AB' },
+    ]);
+  });
+
   it('regression: LANLUOT 2-chân "của B trên AC và của C trên AB" vẫn chạy', () => {
     const f = feet('H, K lần lượt là hình chiếu của B trên AC và của C trên AB');
     expect(f).toEqual([
@@ -647,5 +656,39 @@ describe('perpFootRule — ZIP from-LIST ↔ line-LIST', () => {
   it('guard: zip lệch "U, V là hình chiếu của X, Y, Z trên BC, CA, AB" → bỏ', () => {
     const f = feet('Gọi U, V là hình chiếu của X, Y, Z trên BC, CA, AB.');
     expect(f).toEqual([]);
+  });
+});
+
+// === C26: "vẽ IM, IN, IK là các đường vuông góc tới BC, CA, AB" ===============
+// Directive dựng: cặp IM/IN/IK CÙNG chữ đầu (from = I), chân = chữ thứ 2 (M/N/K),
+// zip với danh sách đường BC/CA/AB. KHÁC PERP_DRAW_DISTRIB ("⊥"/"vuông góc với" +
+// 2 cặp) ở chỗ: cụm "là (các)? đường vuông góc (tới|đến|xuống)" + ≥2 cặp.
+describe('perpFoot — "vẽ XY, XZ, XW là các đường vuông góc tới L1, L2, L3"', () => {
+  const feet = (p: string) =>
+    run(p).flatMap((m) => m.intents)
+      .filter((i: any) => i.op === 'add-point' && i.constraint.kind === 'perpFoot')
+      .map((i: any) => `${i.name}:${i.constraint.from}->${i.constraint.onLine}`)
+      .sort();
+
+  it('C26: "vẽ IM, IN, IK là các đường vuông góc tới BC, CA, AB" → M,N,K từ I', () => {
+    expect(feet('Từ điểm I thuộc miền trong của tam giác ABC vẽ IM, IN, IK là các đường vuông góc tới BC, CA, AB.'))
+      .toEqual(['K:I->AB', 'M:I->BC', 'N:I->CA']);
+  });
+
+  it('2 cặp: "kẻ AD, AE là đường vuông góc đến BC, CD" → D,E từ A', () => {
+    expect(feet('Cho tứ giác. Kẻ AD, AE là đường vuông góc đến BC, CD.'))
+      .toEqual(['D:A->BC', 'E:A->CD']);
+  });
+
+  // GUARD: cặp KHÔNG cùng chữ đầu → không phải dạng này (escalate).
+  it('guard: "vẽ IM, JN là các đường vuông góc tới BC, CA" (khác chữ đầu) → bỏ', () => {
+    expect(feet('Từ I, J vẽ IM, JN là các đường vuông góc tới BC, CA.'))
+      .toEqual([]);
+  });
+
+  // GUARD: zip lệch (3 cặp, 2 đường) → bỏ.
+  it('guard: zip lệch "vẽ IM, IN, IK là các đường vuông góc tới BC, CA" → bỏ', () => {
+    expect(feet('Vẽ IM, IN, IK là các đường vuông góc tới BC, CA.'))
+      .toEqual([]);
   });
 });
