@@ -56,6 +56,7 @@ import { perpAtPointCutsLineRule } from './perpAtPointCutsLine';
 import { tangentAtCutsLinesRule } from './tangentAtCutsLines';
 import { diameterEndpointRule } from './diameterEndpoint';
 import { circleThroughTwoCutsSidesRule } from './circleThroughTwoCutsSides';
+import { circleCenterRadiusCutsSidesRule } from './circleCenterRadiusCutsSides';
 import { circumcircleNamedDistribRule } from './circumcircleNamedDistrib';
 import { circumcirclePairMeetRule } from './circumcirclePairMeet';
 import { tangentCircleAtPointRule } from './tangentCircleAtPoint';
@@ -164,6 +165,7 @@ const RULES: readonly LanguageRule[] = [
   tangentAtCutsLinesRule,
   diameterEndpointRule,
   circleThroughTwoCutsSidesRule,
+  circleCenterRadiusCutsSidesRule,
   circumcircleNamedDistribRule,
   circumcirclePairMeetRule,
   tangentCircleAtPointRule,
