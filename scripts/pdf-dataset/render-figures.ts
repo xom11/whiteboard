@@ -114,7 +114,14 @@ async function main() {
       let svg = await renderGeometrySvgFromState(jsonState);
       svg = svg.replace(/(<svg[^>]*?xmlns="[^"]*")([^>]*?)\s+xmlns="[^"]*"/, '$1$2');
       const base = resolve(outDir, `cau-${String(b.id).padStart(3, '0')}`);
-      await sharp(Buffer.from(svg), { density: 200 }).resize({ width: 700, fit: 'inside' }).png().toFile(`${base}.png`);
+      // flatten nền TRONG SUỐT → TRẮNG: SVG không có rect nền → PNG alpha=0, khi
+      // hiển thị (convert RGB / viewer) bị dồn thành ĐEN khó nhìn. Nền trắng khớp
+      // theme sáng của editor + dễ quan sát trên compare/montage.
+      await sharp(Buffer.from(svg), { density: 200 })
+        .resize({ width: 700, fit: 'inside' })
+        .flatten({ background: '#ffffff' })
+        .png()
+        .toFile(`${base}.png`);
       const uncovered = mode === 'partial' ? (fig.coverage?.uncovered?.length ?? 0) : 0;
       summary.push({ id: b.id, ok: true, mode, points: fig.dsl.points.length, shapes: fig.dsl.shapes.length, uncovered, text: b.text });
     } catch (e) {
