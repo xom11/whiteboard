@@ -156,6 +156,15 @@ const NAM_GIUA_RE = /(?<![\p{L}])năm(?= (?:giữa|trên) [A-Z])/gu;
 // glyph với R12 €→∈ / R13 ||→∥. Verify ảnh p36 (Câu 24): sách in ∠, OCR ra "Z".
 const ANGLE_Z_RE = /(?<![\p{L}\d])4?Z([A-Z]{2,3})(?![A-Z])/gu;
 
+// ── R31: attribution cuối đề "(Đề xuất bởi …)" / "(Đề thi …)" (metadata) ──
+// "Đề" (Đ-bar + ề) bị OCR đọc rớt-dấu thành "Dé"; động từ "xuất" méo thành
+// zudt/ruất/suất. CHỈ vá trong ngoặc attribution (gate "(Dé ") → KHÔNG đụng
+// "Dé dàng" (=Dễ dàng) giữa câu. R31b chuẩn hoá động-từ về "xuất" CHỈ khi có
+// "bởi" (attribution người đề xuất) ⇒ "(Đề thi …)" giữ nguyên "thi".
+const DE_PAREN_RE = /\(Dé /gu;
+const DE_VERB_RE = /(\(Đề )\S+( bởi)/gu;
+const DE_THI_LOWER_RE = /(?<![\p{L}])dé(?= thi)/gu;
+
 export function repairOcrSymbols(text: string): string {
   let t = text;
   t = t.replace(PERP_RE, '$1 ⊥ $3');
@@ -190,5 +199,8 @@ export function repairOcrSymbols(text: string): string {
   t = t.replace(NIM_RE, 'nằm'); // R29
   t = t.replace(NAM_GIUA_RE, 'nằm'); // R29
   t = t.replace(ANGLE_Z_RE, '∠$1'); // R30
+  t = t.replace(DE_PAREN_RE, '(Đề '); // R31a — trước R31b
+  t = t.replace(DE_VERB_RE, '$1xuất$2'); // R31b — chỉ khi có "bởi"
+  t = t.replace(DE_THI_LOWER_RE, 'đề'); // R31c
   return t;
 }

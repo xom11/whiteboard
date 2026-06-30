@@ -283,6 +283,30 @@ describe('repairOcrSymbols — R30 ∠ (góc đọc thành Z, đôi khi 4Z)', ()
   });
 });
 
+describe('repairOcrSymbols — R31 attribution "(Dé … bởi)" → "(Đề xuất bởi)"', () => {
+  it('vá "(Dé <verb méo> bởi X)" → "(Đề xuất bởi X)"', () => {
+    expect(repairOcrSymbols('(Dé zudt bởi MoMo123)')).toBe('(Đề xuất bởi MoMo123)');
+    expect(repairOcrSymbols('(Dé ruất bởi Tea Coffee)')).toBe('(Đề xuất bởi Tea Coffee)');
+    expect(repairOcrSymbols('(Dé suất bởi phamhuy1801)')).toBe('(Đề xuất bởi phamhuy1801)');
+    expect(repairOcrSymbols('(Dé xuất bởi Korkot)')).toBe('(Đề xuất bởi Korkot)');
+  });
+  it('vá verb méo khi Đề đã đúng "(Đề ruất bởi)"', () => {
+    expect(repairOcrSymbols('(Đề ruất bởi BurakkuYokuro11)')).toBe('(Đề xuất bởi BurakkuYokuro11)');
+  });
+  it('"(Dé thi …)" → "(Đề thi …)" (giữ động từ "thi", không có "bởi")', () => {
+    expect(repairOcrSymbols('(Dé thi TP.HCM 2014-2015)')).toBe('(Đề thi TP.HCM 2014-2015)');
+  });
+  it('"dé thi" thường → "đề thi" (trong câu)', () => {
+    expect(repairOcrSymbols('trích dé thi TS lớp 10')).toBe('trích đề thi TS lớp 10');
+  });
+  it('KHÔNG đụng "Dé dàng" (= "Dễ dàng", không ở attribution)', () => {
+    expect(repairOcrSymbols('Dé dàng chứng minh BN')).toBe('Dé dàng chứng minh BN');
+  });
+  it('idempotent với "(Đề xuất bởi)" đã đúng', () => {
+    expect(repairOcrSymbols('(Đề xuất bởi Minhcamgia)')).toBe('(Đề xuất bởi Minhcamgia)');
+  });
+});
+
 describe('repairOcrSymbols — tổng hợp + idempotent', () => {
   it('vá nhiều symbol trong 1 câu', () => {
     const ocr = 'Cho AABC đều nội tiếp (O;R), Hạ BK | AM tại K';
