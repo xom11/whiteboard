@@ -28,4 +28,17 @@ describe('circumcircleCutsLineRule', () => {
     expect(k.name).toBe('I');
     expect(k.constraint).toEqual({ kind: 'secondIntersection', line: 'OA', circle: 'wABC', other: 'A' });
   });
+
+  it('set-notation "(BMC) ∩ AC = {C, N}" (C40) → wBMC + N = second(AC, wBMC, C)', () => {
+    const it = run('(BMC) ∩ AC = {C, N}').flatMap((m) => m.intents) as any[];
+    expect(it.find((i) => i.op === 'draw-circle')).toMatchObject({ name: 'wBMC', spec: 'through3', points: ['B', 'M', 'C'] });
+    const k = it.find((i) => i.op === 'add-point');
+    expect(k.name).toBe('N');
+    expect(k.constraint).toEqual({ kind: 'secondIntersection', line: 'AC', circle: 'wBMC', other: 'C' });
+  });
+
+  it('set-notation fail-safe: điểm chung phải nằm trên line (else bỏ)', () => {
+    // {D, N}: D KHÔNG nằm trên line AC → không xác định điểm chung → bỏ qua.
+    expect(run('(BMC) ∩ AC = {D, N}')).toEqual([]);
+  });
 });

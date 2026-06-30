@@ -15,7 +15,7 @@ import type { LanguageRule, RuleMatch } from './_types';
 import { drawCircle, addPoint } from './_shared';
 
 const PREFILTER =
-  /[Đđ]ường\s*tròn\s+ngoại\s*tiếp\s+(?:tam\s*giác\s+)?[A-Z]{3}[^.]{0,20}?cắt\s+[A-Z]{2}|[Đđ]ường\s*tròn\s+\([A-Z]{3}\)[^.]{0,20}?cắt\s+[A-Z]{2}/u;
+  /[Đđ]ường\s*tròn\s+ngoại\s*tiếp\s+(?:tam\s*giác\s+)?[A-Z]{3}[^.]{0,20}?cắt\s+[A-Z]{2}|[Đđ]ường\s*tròn\s+\([A-Z]{3}\)[^.]{0,20}?cắt\s+[A-Z]{2}|\([A-Z]{3}\)\s*∩\s*[A-Z]{2}\s*=\s*\{/u;
 
 // group1 = 3 đỉnh tam giác, 2 = line (cặp đỉnh), 3 = giao K, 4 = "khác W" (optional).
 const RE = new RegExp(
@@ -31,6 +31,17 @@ const RE_PAREN = new RegExp(
   '[Đđ]ường\\s*tròn\\s+\\(([A-Z]{3})\\)\\s+cắt\\s+(?:lại\\s+)?' +
     '(?:đường\\s*thẳng\\s+|đoạn\\s+|tia\\s+|cạnh\\s+)?([A-Z]{2})(?![A-Z])\\s+(?:tại|ở)\\s+' +
     '(?:điểm\\s+(?:thứ\\s+(?:hai|2)\\s+)?)?(?:là\\s+)?([A-Z])(?![A-Z])(?:\\s+khác\\s+([A-Z])(?![A-Z]))?',
+  'gu',
+);
+
+// Set-notation KÝ HIỆU: "(BMC) ∩ AC = {C, N}" (C40) — đường tròn ngoại tiếp (XYZ)
+// giao đường thẳng PQ tại tập 2 điểm {S1, S2}. (XYZ) = circumcircle tam giác XYZ.
+// Điểm CHUNG (loại khỏi second-intersection) = phần tử của {S1,S2} NẰM TRÊN line
+// PQ (đầu mút line) — phần tử còn lại là giao THỨ HAI cần dựng. Cùng builder
+// secondIntersection với RE/RE_PAREN. group: 1=tam giác, 2=line, 3=S1, 4=S2.
+const RE_SET = new RegExp(
+  '\\(([A-Z]{3})\\)\\s*∩\\s*(?:đường\\s*thẳng\\s+|đoạn\\s+|tia\\s+|cạnh\\s+)?([A-Z]{2})(?![A-Z])' +
+    '\\s*=\\s*\\{\\s*([A-Z])(?![A-Z])\\s*,\\s*([A-Z])(?![A-Z])\\s*\\}',
   'gu',
 );
 
@@ -61,6 +72,29 @@ export const circumcircleCutsLineRule: LanguageRule = {
             ],
           });
         }
+      }
+      // Set-notation: "(XYZ) ∩ PQ = {S1, S2}". Điểm CHUNG = phần tử ∈ {S1,S2} nằm
+      // TRÊN line PQ (đầu mút line); giao THỨ HAI = phần tử còn lại. Fail-safe nếu
+      // không xác định được đúng 1 điểm chung (cả 2 / không phần tử nào ∈ line).
+      RE_SET.lastIndex = 0;
+      for (const m of c.text.matchAll(RE_SET)) {
+        const tri = m[1].split('');
+        const line = m[2];
+        const set = [m[3], m[4]];
+        const onLine = set.filter((v) => line.includes(v));
+        if (onLine.length !== 1) continue; // điểm chung không xác định → bỏ
+        const shared = onLine[0];
+        const k = set.find((v) => v !== shared)!;
+        if (tri.includes(k) || line.includes(k)) continue;
+        const w = `w${m[1]}`;
+        out.push({
+          ruleId: 'circumcircleCutsLine',
+          clauseIds: [c.id],
+          intents: [
+            drawCircle(w, 'through3', { points: tri }),
+            addPoint(k, { kind: 'secondIntersection', line, circle: w, other: shared }),
+          ],
+        });
       }
     }
     return out;
