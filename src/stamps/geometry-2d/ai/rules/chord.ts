@@ -76,6 +76,36 @@ function resolveCircle(problem: string): string | undefined {
   return undefined;
 }
 
+// Đỉnh tam giác NỘI TIẾP đường tròn O ("tam giác ABC nội tiếp (O)" / "… nội tiếp
+// đường tròn (O)"). Các đỉnh này ĐÃ ràng buộc trên O qua circumcircle through3
+// (circleTriangle rule) → resolveCircleNames đổi circle O→O_c, O_c=through3(A,B,C)
+// phụ thuộc CHÍNH các đỉnh đó. Nếu chord lại đặt đỉnh = onCircle(O)→onCircle(O_c)
+// thì sinh CYCLE (vd B → O_c → B) → transpile crash, KÉO CẢ partial xuống none.
+// → SKIP onCircle cho đầu mút dây là đỉnh tam giác nội tiếp (đã trên đường tròn);
+//   đầu mút MỚI + đoạn nối vẫn giữ. Chỉ áp khi tam giác nội tiếp ĐÚNG circle O.
+// \b không khớp quanh ký tự Việt → cờ 'u' + lookaround.
+function inscribedTriangleVertices(problem: string, circle: string): Set<string> {
+  const out = new Set<string>();
+  // "tam giác XYZ [adj]? … nội tiếp (trong)? (đường tròn)? [ (O)/tâm O ]" — đường
+  // tròn (tuỳ chọn nêu tên) đứng SAU. Khoảng cách bounded để không bắt chéo câu.
+  const RE = new RegExp(
+    'tam\\s*giác\\s+(?:(?:nhọn|cân|đều|vuông|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])' +
+      '[^.]{0,40}?nội\\s*tiếp\\s+(?:trong\\s+)?(?:' +
+      CIRCLE_KW +
+      ')?\\s*(?:\\(\\s*([^\\s;,).:]+)\\s*\\)|tâm\\s+([A-Z]))?',
+    'gu',
+  );
+  for (const m of problem.matchAll(RE)) {
+    const named = m[4] ?? m[5];
+    // Đường tròn nội tiếp PHẢI là O (hoặc không nêu tên → giả định O duy nhất).
+    if (named && named !== circle) continue;
+    out.add(m[1]);
+    out.add(m[2]);
+    out.add(m[3]);
+  }
+  return out;
+}
+
 export const chordRule: LanguageRule = {
   id: 'chord',
   // Dưới circleRadius (75) — nếu circle O có bán kính cụ thể, định nghĩa đó thắng.
@@ -89,6 +119,10 @@ export const chordRule: LanguageRule = {
   match(ctx) {
     const circle = resolveCircle(ctx.problem);
     if (!circle) return []; // không có đường tròn → escalate
+
+    // Đỉnh tam giác nội tiếp O — đã trên đường tròn (qua circumcircle). KHÔNG
+    // gắn onCircle (tránh CYCLE qua O_c=through3); connect vẫn dựng dây.
+    const inscribedVerts = inscribedTriangleVertices(ctx.problem, circle);
 
     // Gom các dây hợp lệ.
     interface Chord {
@@ -141,15 +175,12 @@ export const chordRule: LanguageRule = {
     //    giữ 2.3/0.7 như cũ ⇒ hành vi 1-dây không đổi).
     chords.forEach((ch, k) => {
       const offset = k * THETA_STEP;
-      out.push({
-        ruleId: 'chord',
-        clauseIds: [ch.clauseId],
-        intents: [
-          addPoint(ch.a, { kind: 'onCircle', circle, theta: THETA_A + offset }),
-          addPoint(ch.b, { kind: 'onCircle', circle, theta: THETA_B + offset }),
-          connect(ch.a, ch.b, 'segment'),
-        ],
-      });
+      const intents = [];
+      // Đầu mút là đỉnh tam giác nội tiếp O → BỎ onCircle (đã trên O, tránh cycle).
+      if (!inscribedVerts.has(ch.a)) intents.push(addPoint(ch.a, { kind: 'onCircle', circle, theta: THETA_A + offset }));
+      if (!inscribedVerts.has(ch.b)) intents.push(addPoint(ch.b, { kind: 'onCircle', circle, theta: THETA_B + offset }));
+      intents.push(connect(ch.a, ch.b, 'segment'));
+      out.push({ ruleId: 'chord', clauseIds: [ch.clauseId], intents });
     });
     return out;
   },

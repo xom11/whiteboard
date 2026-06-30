@@ -157,4 +157,32 @@ describe('chordRule', () => {
       }).length,
     ).toBe(0);
   });
+
+  // C30: "tam giác ABC nội tiếp (O) … dây BD" — B là ĐỈNH tam giác nội tiếp (O)
+  // (đã ràng buộc trên (O) qua circumcircle through3 A,B,C). Nếu chord lại đặt B =
+  // onCircle(O) → sau resolveCircleNames (circle→O_c) thành B=onCircle(O_c) trong
+  // khi O_c=through3(A,B,C) phụ thuộc B ⇒ CYCLE B→O_c. Phải SKIP onCircle cho đầu
+  // mút là đỉnh tam giác nội tiếp; đầu mút MỚI (D) vẫn onCircle; connect B-D giữ.
+  it('"tam giác ABC nội tiếp (O) … dây BD" → KHÔNG onCircle cho B (đỉnh), CÓ cho D + connect BD', () => {
+    const { problem, clauses } = ctxOf(
+      'Cho tam giác ABC nhọn nội tiếp (O), đường cao BE, CF cắt nhau tại H. Vẽ dây BD cắt CH tại K.',
+    );
+    const all = chordRule.match({ problem, clauses }).flatMap((m) => m.intents);
+    const onCircleNames = all
+      .filter((i: any) => i.op === 'add-point' && i.constraint.kind === 'onCircle')
+      .map((i: any) => i.name)
+      .sort();
+    expect(onCircleNames).toEqual(['D']); // B (đỉnh nội tiếp) BỊ loại, D giữ
+    const connPairs = all
+      .filter((i: any) => i.op === 'connect')
+      .map((c: any) => [c.from, c.to].sort().join(''));
+    expect(connPairs).toContain('BD'); // dây vẫn được nối
+  });
+
+  // Đối chứng: KHÔNG có tam giác nội tiếp (O) → dây BD giữ NGUYÊN cả 2 đầu mút
+  // onCircle (hành vi cũ, không regress khi B không phải đỉnh nội tiếp).
+  it('"đường tròn (O) … dây BD" (không tam giác nội tiếp) → onCircle CẢ B và D', () => {
+    const { onCircle } = summary('Cho đường tròn (O), dây BD.');
+    expect(onCircle.map((i: any) => i.name).sort()).toEqual(['B', 'D']);
+  });
 });
