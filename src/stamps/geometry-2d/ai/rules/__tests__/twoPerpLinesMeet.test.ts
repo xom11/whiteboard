@@ -77,3 +77,39 @@ describe('twoPerpLinesMeetRule — dạng phân phối (hinh9 #76)', () => {
     expect(twoPerpLinesMeetRule.match(ctxOf(p)).flatMap((m) => m.intents)).toHaveLength(0);
   });
 });
+
+describe('twoPerpLinesMeetRule — dạng 3: mở "Qua/Từ <P> vẽ/kẻ đường thẳng ⊥ <L1>" (C28)', () => {
+  it('"Qua A vẽ đường thẳng vuông góc với AN cắt đường thẳng qua O vuông góc BC tại D"', () => {
+    const p =
+      'Qua A vẽ đường thẳng vuông góc với AN cắt đường thẳng qua O vuông góc BC tại D';
+    const intents = twoPerpLinesMeetRule.match(ctxOf(p)).flatMap((m) => m.intents) as any[];
+    // line1 = ⊥ AN qua A
+    expect(intents).toContainEqual(
+      expect.objectContaining({ op: 'draw-line', kind: 'perpThrough', through: 'A', to: 'AN', name: 'prpA' }),
+    );
+    // line2 = ⊥ BC qua O
+    expect(intents).toContainEqual(
+      expect.objectContaining({ op: 'draw-line', kind: 'perpThrough', through: 'O', to: 'BC', name: 'prpO' }),
+    );
+    // D = prpA ∩ prpO
+    expect(intents).toContainEqual(
+      expect.objectContaining({ op: 'add-point', name: 'D', constraint: { kind: 'intersection', of: ['prpA', 'prpO'] } }),
+    );
+  });
+
+  it('chấp nhận "Từ" + "kẻ" + thiếu "với" ở vế đầu', () => {
+    const p =
+      'Từ A kẻ đường thẳng vuông góc AN cắt đường thẳng qua O vuông góc với BC tại D';
+    const intents = twoPerpLinesMeetRule.match(ctxOf(p)).flatMap((m) => m.intents) as any[];
+    expect(intents).toContainEqual(
+      expect.objectContaining({ op: 'add-point', name: 'D', constraint: { kind: 'intersection', of: ['prpA', 'prpO'] } }),
+    );
+  });
+
+  it('guard: D trùng A/O → không match', () => {
+    const p =
+      'Qua A vẽ đường thẳng vuông góc với AN cắt đường thẳng qua O vuông góc BC tại A';
+    const intents = twoPerpLinesMeetRule.match(ctxOf(p)).flatMap((m) => m.intents) as any[];
+    expect(intents).toHaveLength(0);
+  });
+});

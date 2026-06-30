@@ -22,14 +22,30 @@
 import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint, drawLine } from './_shared';
 
-// PREFILTER nhận CẢ hai dạng: (a) "…cắt đường thẳng qua…" (gốc), (b) "…cắt
-// nhau…" (phân phối). Đều mở đầu "Đường thẳng qua <P> … vuông góc/⊥".
+// PREFILTER nhận CẢ ba dạng: (a) "…cắt đường thẳng qua…" (gốc), (b) "…cắt
+// nhau…" (phân phối), (c) mở "Qua/Từ <P> vẽ/kẻ đường thẳng ⊥ <L1> cắt đường thẳng
+// qua <P2> ⊥ <L2> tại <S>" (C28 — vế đầu điểm-qua đứng TRƯỚC "đường thẳng" + động
+// từ vẽ/kẻ). Đều có "vuông góc/⊥ … cắt đường thẳng qua …".
 const PREFILTER =
-  /[Đđ]ường\s*thẳng\s+qua\s+[A-Z][^.]{0,30}?(?:vuông\s*góc|⊥)[^.]{0,40}?cắt\s+(?:[Đđ]ường\s*thẳng\s+qua|nhau)/u;
+  /(?:[Đđ]ường\s*thẳng\s+qua|(?:Qua|qua|Từ|từ)\s+[A-Z][^.]{0,20}?(?:vẽ|kẻ|dựng)\s+đường\s*thẳng)\s*[^.]{0,30}?(?:vuông\s*góc|⊥)[^.]{0,40}?cắt\s+(?:[Đđ]ường\s*thẳng\s+qua|nhau)/u;
 
 const RE = new RegExp(
   '[Đđ]ường\\s*thẳng\\s+qua\\s+([A-Z])(?!\\p{L})\\s+(?:vuông\\s*góc|⊥)\\s+(?:với\\s+)?([A-Z])([A-Z])(?![A-Z])' +
     '[^.]{0,20}?cắt\\s+[Đđ]ường\\s*thẳng\\s+qua\\s+([A-Z])(?!\\p{L})\\s+(?:vuông\\s*góc|⊥)\\s+(?:với\\s+)?([A-Z])([A-Z])(?![A-Z])' +
+    '\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])',
+  'gu',
+);
+
+// Dạng 3 (C28): vế đầu MỞ bằng điểm-qua TRƯỚC "đường thẳng" + động từ vẽ/kẻ/dựng:
+//   "Qua A vẽ đường thẳng vuông góc với AN cắt đường thẳng qua O vuông góc BC tại D"
+//   → prpA = perpThrough(A, AN); prpO = perpThrough(O, BC); D = prpA ∩ prpO.
+// Vế đầu: "Qua/Từ <P1> [vẽ|kẻ|dựng] đường thẳng [thẳng]? ⊥ [với]? <L1>"; vế sau =
+// nhánh "cắt đường thẳng qua <P2> ⊥ [với]? <L2> tại <S>" (giống RE gốc). KHÁC
+// parallelPerp (chỉ dựng 2 đường, KHÔNG dựng giao S → coverage báo named-missing S).
+const RE_DRAW_FIRST = new RegExp(
+  '(?:Qua|qua|Từ|từ)\\s+(?:điểm\\s+)?([A-Z])(?!\\p{L})\\s*' +
+    '[^.]{0,16}?(?:vẽ|kẻ|dựng)\\s+đường\\s*thẳng\\s+(?:vuông\\s*góc|⊥)\\s+(?:với\\s+)?([A-Z])([A-Z])(?![A-Z])' +
+    '\\s*[^.]{0,16}?cắt\\s+[Đđ]ường\\s*thẳng\\s+qua\\s+([A-Z])(?!\\p{L})\\s+(?:vuông\\s*góc|⊥)\\s+(?:với\\s+)?([A-Z])([A-Z])(?![A-Z])' +
     '\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])',
   'gu',
 );
@@ -69,6 +85,11 @@ export const twoPerpLinesMeetRule: LanguageRule = {
       // Dạng gốc (2 mệnh đề tách rời).
       RE.lastIndex = 0;
       for (const m of c.text.matchAll(RE)) {
+        emit(c, m[1], m[2] + m[3], m[4], m[5] + m[6], m[7]);
+      }
+      // Dạng 3 (C28): vế đầu mở "Qua/Từ <P> vẽ/kẻ đường thẳng ⊥ <L1>".
+      RE_DRAW_FIRST.lastIndex = 0;
+      for (const m of c.text.matchAll(RE_DRAW_FIRST)) {
         emit(c, m[1], m[2] + m[3], m[4], m[5] + m[6], m[7]);
       }
       // Dạng phân phối: zip <P1>↔<L1>, <P2>↔<L2>.
