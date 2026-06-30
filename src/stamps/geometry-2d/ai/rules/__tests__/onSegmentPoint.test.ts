@@ -167,4 +167,64 @@ describe('onSegmentPoint — Wave hinh9 (coordinated / là-điểm / bất-kì /
     const i = intents('Cho tam giác ABC. Trên tia Ax lấy hai điểm B và C');
     expect(i.find((x) => x.constraint?.of === 'Ax')).toBeUndefined();
   });
+
+  // ─── Dạng tên-TRƯỚC "Lấy <pt> (bất kì)? trên <seg>" (giới từ "trên", KHÔNG
+  // "thuộc"). Trước đây chỉ "Lấy điểm X thuộc BC" khớp; "Lấy J bất kì trên đoạn
+  // BC" (C67) / "Lấy D bất kì trên BC" (C72) bị bỏ sót. ───
+  it('C67: "Lấy J bất kì trên đoạn BC" → J onSegment BC', () => {
+    const i = intents('Cho tam giác ABC. Lấy J bất kì trên đoạn BC, dựng hình bình hành');
+    expect(i).toContainEqual({ op: 'add-point', name: 'J', constraint: { kind: 'onSegment', of: 'BC' } });
+  });
+
+  it('C72: "Lấy D bất kì trên BC" (không chữ "đoạn") → D onSegment BC', () => {
+    const i = intents('Cho tam giác ABC nội tiếp (O). Lấy D bất kì trên BC');
+    expect(i).toContainEqual({ op: 'add-point', name: 'D', constraint: { kind: 'onSegment', of: 'BC' } });
+  });
+
+  it('"Lấy điểm M trên cạnh AC" → M onSegment AC', () => {
+    const i = intents('Cho tam giác ABC. Lấy điểm M trên cạnh AC');
+    expect(i).toContainEqual({ op: 'add-point', name: 'M', constraint: { kind: 'onSegment', of: 'AC' } });
+  });
+
+  // GUARD: "Lấy M trên (O)/cung/nửa đường tròn" KHÔNG khớp ở đây (onCircle lo) —
+  // ON_SUFFIX của onCircle neo circle; onSegment chỉ nhận cạnh/đoạn/tia/cặp HOA.
+  it('GUARD: "Lấy điểm M trên cung BC" → KHÔNG claim onSegment', () => {
+    const i = intents('Cho tam giác ABC nội tiếp (O). Lấy điểm M trên cung BC');
+    expect(i.find((x) => x.constraint?.kind === 'onSegment')).toBeUndefined();
+  });
+
+  // GUARD: "Lấy M trên tia đối của tia AB" → oppositeRayPoint lo, KHÔNG onSegment.
+  it('GUARD: "Lấy điểm M trên tia đối của tia AB" → KHÔNG claim onSegment', () => {
+    const i = intents('Cho tam giác ABC. Lấy điểm M trên tia đối của tia AB');
+    expect(i.find((x) => x.constraint?.kind === 'onSegment')).toBeUndefined();
+  });
+
+  // ─── Distributive tên-TRƯỚC "Lấy <p1>, <p2> (bất kì)? trên <s1> và <s2>" →
+  // zip 1-1 (C100 "Lấy E, F bất kì trên AB và AC"). ───
+  it('C100: "Lấy E, F bất kì trên AB và AC" → E∈AB, F∈AC', () => {
+    const i = intents('Cho tam giác ABC nội tiếp (O). Lấy E, F bất kì trên AB và AC');
+    expect(i).toContainEqual({ op: 'add-point', name: 'E', constraint: { kind: 'onSegment', of: 'AB' } });
+    expect(i).toContainEqual({ op: 'add-point', name: 'F', constraint: { kind: 'onSegment', of: 'AC' } });
+  });
+
+  // ─── SEGS_THEN_POINTS: bỏ ràng buộc bắt buộc chữ "điểm" sau "lấy". "Trên AB, AC
+  // lấy D, E" (C109) / "Trên ME, MO lấy C, D sao cho ..." (C51). ───
+  it('C109: "Trên AB, AC lấy D, E sao cho AD = AE" → D∈AB, E∈AC', () => {
+    const i = intents('Cho tam giác ABC nội tiếp (O). Trên AB, AC lấy D, E sao cho AD = AE');
+    expect(i).toContainEqual({ op: 'add-point', name: 'D', constraint: { kind: 'onSegment', of: 'AB' } });
+    expect(i).toContainEqual({ op: 'add-point', name: 'E', constraint: { kind: 'onSegment', of: 'AC' } });
+  });
+
+  it('C51: "Trên ME, MO lấy C, D sao cho ..." → C∈ME, D∈MO', () => {
+    const i = intents('Cho (O), điểm M ngoài. Trên ME, MO lấy C, D sao cho MB = MD = MC');
+    expect(i).toContainEqual({ op: 'add-point', name: 'C', constraint: { kind: 'onSegment', of: 'ME' } });
+    expect(i).toContainEqual({ op: 'add-point', name: 'D', constraint: { kind: 'onSegment', of: 'MO' } });
+  });
+
+  // ─── Đoạn-TRƯỚC nêu TRẦN bằng cặp đỉnh đơn (KHÔNG chữ "cạnh/đoạn"): "Trên AS
+  // lấy điểm E khác A sao cho TA=TE" (julielltv:24). ───
+  it('julielltv:24: "Trên AS lấy điểm E khác A sao cho TA=TE" → E onSegment AS', () => {
+    const i = intents('Cho tam giác ABC. Trên AS lấy điểm E khác A sao cho TA=TE');
+    expect(i).toContainEqual({ op: 'add-point', name: 'E', constraint: { kind: 'onSegment', of: 'AS' } });
+  });
 });

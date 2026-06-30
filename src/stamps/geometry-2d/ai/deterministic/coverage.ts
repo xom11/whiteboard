@@ -87,7 +87,9 @@ export function segmentClauses(problem: string): Clause[] {
     .filter((s) => s.length > 0)
     .map((text, id) => {
       const hasGeometryKeyword =
-        countGeometryKeywords(text) > 0 || NAMED_LINE_PICK.test(text);
+        countGeometryKeywords(text) > 0 ||
+        NAMED_LINE_PICK.test(text) ||
+        (BARE_SEG_PICK.test(text) && !/tia\s+đối/u.test(text));
       const proofOnly = isProofOnlyClause(text, proofMode);
       if (startsProofSection(text)) proofMode = true;
       // Mệnh đề LOCUS ("điểm A di chuyển/di động trên (O)") = điều kiện chuyển
@@ -118,6 +120,17 @@ const LOCUS_CLAUSE = /(?:di\s*chuyển|di\s*động)\s+trên\s+(?:\(|đường\s
 // (chữ tiếp theo là ký tự Việt → fail).
 const NAMED_LINE_PICK =
   /(?:[Tt]rên|[Tt]huộc)\s+(?:đường\s*thẳng\s+)?[a-z]{1,2}[0-9]?(?![\p{L}])\s+(?:[Ll]ấy|có)|[Ll]ấy\s+điểm\s+[A-Z]['′]?[0-9]?\s+(?:trên|thuộc)\s+(?:đường\s*thẳng\s+)?[a-z]{1,2}[0-9]?(?![\p{L}])/u;
+
+// "Lấy/Trên … <cặp HOA> … lấy/trên" — điểm trên đoạn nêu bằng CẶP ĐỈNH (KHÔNG có
+// chữ "cạnh/đoạn/thuộc" nên countGeometryKeywords=0 → clause bị coi văn xuôi dù
+// onSegmentPoint ĐÃ có nhánh). 2 dạng:
+//   A. tên-TRƯỚC:  "Lấy E, F bất kì trên AB và AC" / "Lấy D bất kì trên BC"
+//   B. đoạn-TRƯỚC: "Trên AB, AC lấy D, E" / "Trên ME, MO lấy C, D"
+// Signal HẸP: BẮT BUỘC "lấy"/"trên" KỀ cặp HOA [A-Z]{2} (neo (?![A-Z]) để KHÔNG
+// nuốt đỉnh thứ 3 của tam giác ABC). KHÔNG bắt "lấy" chung chung (substring vocab
+// gây regression). Loại "tia đối" để oppositeRayPoint giữ phận sự.
+const BARE_SEG_PICK =
+  /[Ll]ấy\s+(?:điểm\s+)?[A-Z]['′]?(?:\s*,\s*[A-Z]['′]?)?\s+(?:bất\s*k[iìyỳ]\s+)?(?:trên|thuộc)\s+(?:cạnh\s+|đoạn\s+|tia\s+)?[A-Z]{2}(?![A-Z])|[Tt]rên\s+(?:cạnh\s+|đoạn\s+|tia\s+)?[A-Z]{2}(?:\s*,\s*[A-Z]{2})*\s+(?:(?:theo\s+)?thứ\s+tự\s+|lần\s*lượt\s+)?lấy\s+(?:các\s+)?(?:điểm\s+)?[A-Z]/u;
 
 // "C/m"/"CMR" — viết tắt "Chứng minh (rằng)" phổ biến trong đề OCR (vao10:254
 // "a.C/m: Bốn điểm…"); thiếu nó clause proof bị coi geo-clause → escalate oan.

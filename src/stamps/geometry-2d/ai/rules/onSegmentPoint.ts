@@ -47,9 +47,38 @@ const POINT_THUOC_NAMED_BARE = new RegExp(
 const SEG = '([A-Z]{2})(?![A-Z])';
 const POINT = "([A-Z](?:['′])?)(?![A-Z])";
 
+// Tên-TRƯỚC dạng "Lấy <pt> (bất kì)? trên/thuộc (cạnh|đoạn|tia)? <seg>" — đối xứng
+// với "Lấy điểm X thuộc BC" (POINT_THUOC_SEG bắt qua "điểm … thuộc") nhưng cho
+// giới từ "trên" lẫn "thuộc" + tên ĐỨNG NGAY SAU "Lấy". C67 "Lấy J bất kì trên
+// đoạn BC"; C72 "Lấy D bất kì trên BC". Tiền tố loại "tia đối" (oppositeRayPoint
+// lo) bằng cách yêu cầu SEG = cặp HOA NGAY sau "tia" (≠ "đối"); circle/cung KHÔNG
+// khớp vì SEG=[A-Z]{2} (paren/'cung' chữ thường loại). "(bất kì)?" optional xen.
+const TAKE_POINT_ON_SEG = new RegExp(
+  String.raw`[Ll]ấy\s+(?:điểm\s+)?${POINT}\s+(?:bất\s*k[iìyỳ]\s+)?(?:trên|thuộc)\s+(?:cạnh\s+|đáy\s+|đoạn(?:\s+thẳng)?\s+|tia\s+|bán\s*kính\s+|đường\s*kính\s+)?${SEG}`,
+  'gu',
+);
+
+// Distributive tên-TRƯỚC: "Lấy <p1>, <p2> (bất kì)? trên <s1> và <s2>" → zip 1-1.
+// C100 "Lấy E, F bất kì trên AB và AC". Separator điểm = phẩy; separator đoạn =
+// "và" HOẶC phẩy. group1,2 = điểm; group3,4 = đoạn.
+const TAKE_TWO_ON_TWO_SEG = new RegExp(
+  String.raw`[Ll]ấy\s+(?:điểm\s+)?([A-Z](?:['′])?)\s*,\s*([A-Z](?:['′])?)(?![A-Z])\s+(?:bất\s*k[iìyỳ]\s+)?(?:trên|thuộc)\s+(?:các\s+)?(?:cạnh\s+|đoạn\s+|tia\s+)?([A-Z]{2})\s*(?:,|và)\s*([A-Z]{2})(?![A-Z])`,
+  'gu',
+);
+
 // "Trên cạnh AC lấy điểm M" / "Trên đoạn thẳng OB lấy điểm H" / "trên đáy CD …".
 const ON_SEG_THEN_POINT = new RegExp(
   String.raw`[Tt]rên\s+(?:cạnh|đáy|đoạn(?:\s+thẳng)?|bán\s*kính|đường\s*kính|dây\s*(?:cung)?)\s+${SEG}[^.]{0,30}?(?:lấy\s+)?(?:một\s+)?(?:điểm\s+)?${POINT}`,
+  'gu',
+);
+
+// Đoạn-TRƯỚC nêu TRẦN bằng CẶP ĐỈNH (KHÔNG chữ "cạnh/đoạn"): "Trên AS lấy điểm E
+// khác A" (julielltv:24) — seg = [A-Z]{2} NGAY sau "Trên", rồi "lấy (điểm)? <pt>".
+// CHẠY TRƯỚC metric-skip ("sao cho TA=TE" — đặt E free, metric tinh chỉnh). Cửa sổ
+// HẸP (≤14 ký tự, không vượt câu) giữa seg và "lấy" để không khớp xuyên mệnh đề.
+// "cung/đường tròn" chữ thường nên KHÔNG khớp [A-Z]{2}; "tia đối" loại ở match().
+const ON_BARE_SEG_THEN_POINT = new RegExp(
+  String.raw`[Tt]rên\s+${SEG}[^.]{0,14}?\blấy\s+(?:một\s+)?(?:điểm\s+)?${POINT}`,
   'gu',
 );
 
@@ -118,8 +147,11 @@ const ZIP_SEG = new RegExp(
 // M, N, E" → zip SEG_i ↔ point_i (N≥2). Đề hay nêu cạnh TRƯỚC rồi tên điểm SAU.
 // CHẠY kể cả khi clause có "sao cho …=…" (metric chỉ TINH CHỈNH vị trí; đặt điểm
 // free trên cạnh là đủ cho hình). group1 = blob đoạn, group2 = blob tên điểm.
+// "điểm" sau "lấy" giờ OPTIONAL: "Trên AB, AC lấy D, E" (C109) / "Trên ME, MO lấy
+// C, D" (C51) viết tắt KHÔNG có chữ "điểm". Vẫn an toàn: blob tên (group2) là cặp
+// HOA ngăn phẩy, validOnSegment loại tên trùng đỉnh đoạn.
 const SEGS_THEN_POINTS = new RegExp(
-  String.raw`[Tt]rên\s+(?:các\s+)?(?:cạnh\s+|đoạn(?:\s+thẳng)?\s+|đáy\s+|bán\s*kính\s+)?((?:[A-Z]{2}\s*,\s*)+[A-Z]{2})(?![A-Z])(?:\s+của\s+(?:tam\s*giác\s+|tứ\s*giác\s+)?[A-Z]{2,4})?\s+(?:(?:theo\s+)?thứ\s+tự\s+|lần\s*lượt\s+)?lấy\s+(?:các\s+)?điểm\s+((?:[A-Z]\s*,\s*)+[A-Z])(?![A-Z])`,
+  String.raw`[Tt]rên\s+(?:các\s+)?(?:cạnh\s+|đoạn(?:\s+thẳng)?\s+|đáy\s+|bán\s*kính\s+)?((?:[A-Z]{2}\s*,\s*)+[A-Z]{2})(?![A-Z])(?:\s+của\s+(?:tam\s*giác\s+|tứ\s*giác\s+)?[A-Z]{2,4})?\s+(?:(?:theo\s+)?thứ\s+tự\s+|lần\s*lượt\s+)?lấy\s+(?:các\s+)?(?:điểm\s+)?((?:[A-Z]\s*,\s*)+[A-Z])(?![A-Z])`,
   'gu',
 );
 
@@ -237,6 +269,41 @@ export const onSegmentPointRule: LanguageRule = {
             if (/^[A-Z]['′]?$/u.test(name) && name[0] !== ray[0]) {
               intents.push(addPoint(name, { kind: 'onSegment', of: ray }));
             }
+          }
+        }
+      }
+
+      // "Lấy <p1>, <p2> (bất kì)? trên <s1> và <s2>" distributive (C100) — CHẠY
+      // TRƯỚC metric-skip. Loại "tia đối" (oppositeRayPoint lo).
+      if (!/tia\s+đối/u.test(c.text)) {
+        TAKE_TWO_ON_TWO_SEG.lastIndex = 0;
+        for (const m of c.text.matchAll(TAKE_TWO_ON_TWO_SEG)) {
+          const [n1, n2, s1, s2] = [normalizePoint(m[1]), normalizePoint(m[2]), m[3], m[4]];
+          if (validOnSegment(n1, s1) && validOnSegment(n2, s2)) {
+            intents.push(addPoint(n1, { kind: 'onSegment', of: s1 }));
+            intents.push(addPoint(n2, { kind: 'onSegment', of: s2 }));
+          }
+        }
+
+        // "Lấy <pt> (bất kì)? trên/thuộc <seg>" tên-TRƯỚC đơn (C67/C72) — CHẠY
+        // TRƯỚC metric-skip. Skip toàn clause nếu có "tia đối" (oppositeRayPoint).
+        TAKE_POINT_ON_SEG.lastIndex = 0;
+        for (const m of c.text.matchAll(TAKE_POINT_ON_SEG)) {
+          const name = normalizePoint(m[1]);
+          const segment = m[2];
+          if (validOnSegment(name, segment)) {
+            intents.push(addPoint(name, { kind: 'onSegment', of: segment }));
+          }
+        }
+
+        // Đoạn-TRƯỚC trần cặp đỉnh đơn "Trên AS lấy điểm E" (julielltv:24) — CHẠY
+        // TRƯỚC metric-skip. validOnSegment loại tên trùng đỉnh đoạn (E∉{A,S}).
+        ON_BARE_SEG_THEN_POINT.lastIndex = 0;
+        for (const m of c.text.matchAll(ON_BARE_SEG_THEN_POINT)) {
+          const segment = m[1];
+          const name = normalizePoint(m[2]);
+          if (validOnSegment(name, segment)) {
+            intents.push(addPoint(name, { kind: 'onSegment', of: segment }));
           }
         }
       }
