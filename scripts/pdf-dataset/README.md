@@ -1,6 +1,6 @@
 # pdf-dataset — pipeline ẢNH → OCR → ĐỀ BÀI → VẼ HÌNH 2D
 
-Xây dataset đề "vẽ hình 2D" từ PDF **scan ảnh** (không text-layer), đi qua đúng
+Xây dataset đề "vẽ hình 2D" từ PDF, đi qua đúng
 pipeline OCR production (Tesseract + `repairOcrSymbols`), rồi **dựng hình
 deterministic** + **đo độ phủ** + **đối chiếu mắt** để cải thiện liên tục.
 
@@ -21,6 +21,15 @@ PDF scan ──①rasterize──▶ PNG/trang ──②OCR──▶ all.json (c
 
 Nguồn hiện tại: `docs/datasets/sources/tong-hop-hinh-hoc-phang-vao-10-2018-2019.pdf`
 (Tạ Công Hoàng – Nguyễn Đăng Khoa, 119 trang) → `docs/datasets/tong-hop-hinh-phang-vao10-2018-2019.txt`.
+
+> **Lưu ý (2026-07-01):** PDF này thực chất **born-digital (LaTeX), CÓ text-layer** —
+> KHÔNG phải scan. Pipeline vẫn **CỐ Ý dùng OCR** (không trích text-layer) vì đã đo:
+> (a) text-layer thay OCR làm coverage **TỆ HƠN** (46→35 full, điểm 644→557) — rule
+> engine + `repairOcrSymbols` + `normalizeText` đã tuned theo đặc tính OCR, còn
+> text-layer có quirk math-spacing (`MNP`→"M N P", `△`→`4`, `∠`→dấu-mũ); (b) production
+> thật nhận **ẢNH crop không có text-layer** nên buộc phải OCR. Wrapper Tesseract cũng
+> đã near-ceiling (config/upscale = no-op). Chi tiết: memory
+> `project_ocr_wrapper_ceiling_2026_07_01`.
 
 ---
 
