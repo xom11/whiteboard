@@ -124,15 +124,31 @@ export function useScenePersist(opts: UseScenePersistOptions): UseScenePersistRe
     }
   };
 
+  // Nguồn element tin cậy cho flushFiles/flushPrune.
+  //
+  // KHÔNG lấy `api.getSceneElements()` làm nguồn chính: Excalidraw là class
+  // component, `componentWillUnmount` gọi `scene.destroy()` (elements = []) và
+  // chạy TRƯỚC cleanup useEffect của Whiteboard. Lúc unmount, api báo scene rỗng
+  // → prune tưởng board trắng và xoá sạch raster của storageKey (PDF mất hình sau
+  // khi GV chuyển chế độ rồi quay lại bảng). `?? ` cũng không cứu được vì `[]`
+  // không phải nullish.
+  //
+  // `latestSceneRef` giữ payload onChange cuối cùng — luôn hợp lệ trong cleanup.
+  // Excalidraw truyền CẢ element đã xoá vào onChange nên phải lọc `isDeleted`
+  // (prune vẫn phải thu hồi file của trang PDF vừa bị xoá).
+  const liveElements = (): readonly ExcalidrawElement[] => {
+    const latest = latestSceneRef.current?.elements;
+    if (latest) return latest.filter((e) => !e.isDeleted);
+    return (apiRef.current?.getSceneElements?.() ?? []) as readonly ExcalidrawElement[];
+  };
+
   const flushFilesRef = useRef<() => void>(() => undefined);
   flushFilesRef.current = () => {
     try {
       const pending = pendingFilesRef.current;
       pendingFilesRef.current = {};
       if (Object.keys(pending).length === 0) return;
-      const currentElements = (apiRef.current?.getSceneElements?.()
-        ?? latestSceneRef.current?.elements
-        ?? []) as readonly ExcalidrawElement[];
+      const currentElements = liveElements();
       const stampIds = new Set<string>();
       for (const el of currentElements) {
          
@@ -154,9 +170,11 @@ export function useScenePersist(opts: UseScenePersistOptions): UseScenePersistRe
   const flushPruneRef = useRef<() => void>(() => undefined);
   flushPruneRef.current = () => {
     try {
-      const currentElements = (apiRef.current?.getSceneElements?.()
-        ?? latestSceneRef.current?.elements
-        ?? []) as readonly ExcalidrawElement[];
+      // Prune = xoá mọi file KHÔNG nằm trong keep. Chưa từng có onChange nào →
+      // không đủ thông tin để biết board đang có gì → hoãn GC sang phiên sau,
+      // KHÔNG đoán bằng api (xem ghi chú ở liveElements).
+      if (!latestSceneRef.current) return;
+      const currentElements = liveElements();
       const keep = new Set<string>();
       for (const el of currentElements) {
          

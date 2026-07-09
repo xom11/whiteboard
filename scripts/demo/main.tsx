@@ -2,6 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   Whiteboard,
+  insertRasterizedPagesIntoScene,
   type AiFigureUiResult,
   type AiFigureProgress,
   type GenerateGeometryFigure,
@@ -79,10 +80,41 @@ const generateGeometryFigure: GenerateGeometryFigure = async (
   }
 };
 
+/**
+ * E2E harness hook (không render DOM gì thêm để khỏi che toolbar của spec khác):
+ *
+ *   window.__wbSetBoardMounted(false)  → unmount Whiteboard (mô phỏng GV chuyển
+ *                                        sang chia sẻ màn hình / gọi HS lên bảng)
+ *   window.__wbApi                     → Excalidraw imperative API
+ *   window.__wbInsertPages(pages)      → chạy ĐÚNG code chèn trang PDF của package
+ */
 function App() {
+  const [mounted, setMounted] = React.useState(true);
+  React.useEffect(() => {
+    (window as unknown as Record<string, unknown>).__wbSetBoardMounted = setMounted;
+    (window as unknown as Record<string, unknown>).__wbInsertPages = (
+      pages: Parameters<typeof insertRasterizedPagesIntoScene>[1],
+    ) =>
+      insertRasterizedPagesIntoScene(
+        (window as unknown as { __wbApi: unknown }).__wbApi,
+        pages,
+        { scale: 2 },
+      );
+  }, []);
+
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
-      <Whiteboard generateGeometryFigure={generateGeometryFigure} />
+      {mounted ? (
+        <Whiteboard
+          storageKey="e2e_board"
+          generateGeometryFigure={generateGeometryFigure}
+          onApi={(api) => {
+            (window as unknown as Record<string, unknown>).__wbApi = api;
+          }}
+        />
+      ) : (
+        <div data-testid="other-mode">Chế độ khác (whiteboard đã unmount)</div>
+      )}
     </div>
   );
 }
