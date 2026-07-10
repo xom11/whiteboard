@@ -51,13 +51,15 @@ Thay đổi duy nhất: `handleInsert` gọi prop `onCommit(jsonState, svgString
 
 ### 3.3 Dọn dẹp kèm theo
 
-`useStampStore(domain, editingElement, parseInitial)` thực ra chỉ đọc `editingElement?.customData` rồi gọi `parseInitial` (`shared/useStampStore.ts:31-36`). Hạ nó xuống một tham số thuần:
+`useStampStore(domain, editingElement, parseInitial)` thực ra chỉ đọc `editingElement?.customData` rồi gọi `parseInitial` (`shared/useStampStore.ts:31-36`). Hạ nó xuống một tham số **thunk lười**:
 
 ```ts
-useStampStore(domain: StampDomain, initialState: State | null): Store
+useStampStore(domain: StampDomain, makeInitialState?: () => State | null): Store
 ```
 
-Việc parse `customData` đẩy về phía caller — mỗi stamp vốn đã có `parseInitialState` riêng. Nhờ vậy `GeometryStudio` seed store từ `initialJsonState` qua `deserializeBoard` mà không phải bịa một `editingElement` giả, còn `GeometryStampHost` tự gọi `parseInitialState(editingElement?.customData)`.
+Việc parse `customData` đẩy về phía caller — mỗi stamp vốn đã có `parseInitialState` riêng. Nhờ vậy `GeometryStudio` seed store từ `initialJsonState` qua `deserializeBoard` mà không phải bịa một `editingElement` giả, còn `GeometryStampHost` tự gọi `parseInitialState(editingElement.customData)`.
+
+**Phải là thunk, không phải `initialState: State | null`.** Truyền giá trị thẳng sẽ khiến `deserializeBoard`/`parseInitialState` chạy lại mỗi lần render, trong khi bản hiện tại chỉ chạy đúng một lần (nằm trong `if (!ref.current)`). Thunk giữ nguyên tính lười đó. Test hiện có `parseInitial only called once` (`shared/__tests__/useStampStore.test.tsx:73-81`) chính là bất biến này, và nó phải sống tiếp dưới tên mới.
 
 Ba host (2d, 3d, graph-2d) mỗi chỗ sửa một dòng. Đây là cải thiện đúng chỗ đang mổ, không phải refactor lan man.
 
@@ -210,7 +212,8 @@ Tất cả nằm ở Mức 2 hoặc xa hơn.
 | `insertImage` chỉ import type-only | `src/stamps/shared/insertImage.ts:2` |
 | `StampHostProps` không dùng type Excalidraw | `src/stamps/shared/types.ts:67-72` |
 | `host.tsx` chạm `api` 3 chỗ | `src/stamps/geometry-2d/host.tsx:73,75,160` |
-| `useStampStore` chỉ đọc `customData` | `src/stamps/shared/useStampStore.ts:31-36` |
+| `useStampStore` chỉ đọc `customData`, parse lười 1 lần | `src/stamps/shared/useStampStore.ts:31-36` |
+| Bất biến "parseInitial chỉ gọi 1 lần" | `src/stamps/shared/__tests__/useStampStore.test.tsx:73-81` |
 | `serializeBoard` cần `View2D` | `src/stamps/geometry-2d/serialize.ts:10` |
 | `renderGeometrySvgFromState` nhận `jsonState` | `src/stamps/geometry-2d/render.ts:99` |
 | Subpath export đã có | `package.json` `exports`, `tsup.config.ts` `entry` |
