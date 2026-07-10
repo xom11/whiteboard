@@ -993,11 +993,16 @@ import { dirname, resolve, basename } from 'node:path';
 
 const GEOMETRY_2D_CEILING = 220_000; // baseline 158.221B; editor tĩnh ⇒ ~463KB
 
-const STATIC_FROM = /(?:^|\n)\s*(?:import|export)[^\n]*?from\s*['"]([^'"]+)['"]/g;
-const SIDE_EFFECT = /(?:^|\n)\s*import\s*['"]([^'"]+)['"]/g;
+// `import('./x.mjs')` LÀ ranh giới React.lazy → không đi theo. Xoá trước khi quét.
+const DYNAMIC_IMPORT = /\bimport\s*\(\s*(['"])[^'"]*\1\s*\)/g;
+// Sau khi xoá dynamic, mọi literal tương đối `.mjs` còn lại đều thuộc import/export
+// TĨNH. Quét literal thay vì "câu lệnh import" là cố ý: neo `^\s*import … from`
+// trên CÙNG MỘT DÒNG sẽ bỏ sót ÂM THẦM một import xuống dòng giữa {} (hoặc khi
+// bật minify) → cổng xanh sai.
+const RELATIVE_MJS = /(['"])(\.[^'"]*\.mjs)\1/g;
 
-/** Bao đóng import tĩnh của `entry`: [{file, src}]. Bỏ qua import() động. */
-function staticClosure(entry) {
+/** Bao đóng import tĩnh của `entry`. Lỗi đọc file ⇒ đẩy vào `failures`, KHÔNG nuốt. */
+function staticClosure(entry, failures) {
   const seen = new Map();
   const stack = [resolve(entry)];
 
@@ -1009,17 +1014,20 @@ function staticClosure(entry) {
     try {
       src = readFileSync(file, 'utf8');
     } catch {
-      continue; // specifier bare (react, immer…) — không phải file trong dist/
+      // Mọi path tới đây đều là relative .mjs do chính bundle sinh ra. Đọc không
+      // được nghĩa là dist/ hỏng. Bỏ qua im lặng sẽ làm biến mất khỏi phép đo
+      // đúng cái chunk có thể đang vi phạm.
+      failures.push(
+        `${basename(file)}: không đọc được (nằm trong bao đóng của ${entry}). dist/ hỏng — chạy lại \`npm run build\`.`,
+      );
+      continue;
     }
     seen.set(file, src);
 
-    for (const re of [STATIC_FROM, SIDE_EFFECT]) {
-      re.lastIndex = 0;
-      let m;
-      while ((m = re.exec(src))) {
-        if (m[1].startsWith('.')) stack.push(resolve(dirname(file), m[1]));
-      }
-    }
+    const stripped = src.replace(DYNAMIC_IMPORT, '');
+    RELATIVE_MJS.lastIndex = 0;
+    let m;
+    while ((m = RELATIVE_MJS.exec(stripped))) stack.push(resolve(dirname(file), m[2]));
   }
   return [...seen.entries()].map(([file, src]) => ({ file, src }));
 }
@@ -1034,7 +1042,7 @@ for (const entry of ['dist/studio.mjs', 'dist/geometry-2d.mjs']) {
 
 if (failures.length === 0) {
   // (1) studio phải sạch @excalidraw trên TOÀN BỘ bao đóng
-  const studio = staticClosure('dist/studio.mjs');
+  const studio = staticClosure('dist/studio.mjs', failures);
   const dirty = studio.filter((m) => m.src.includes('@excalidraw'));
   if (dirty.length > 0) {
     failures.push(
@@ -1045,7 +1053,7 @@ if (failures.length === 0) {
   }
 
   // (2) geometry-2d không được phình (React.lazy bị phá)
-  const g2d = staticClosure('dist/geometry-2d.mjs');
+  const g2d = staticClosure('dist/geometry-2d.mjs', failures);
   const bytes = g2d.reduce((n, m) => n + m.src.length, 0);
   if (bytes > GEOMETRY_2D_CEILING) {
     failures.push(
@@ -1053,7 +1061,11 @@ if (failures.length === 0) {
         `${GEOMETRY_2D_CEILING.toLocaleString()}. Nghi ngờ export tĩnh kéo editor ` +
         `vào bundle gốc (React.lazy ở geometry-2d/index.tsx bị phá).`,
     );
-  } else {
+  }
+
+  // Chỉ in dòng "sạch" khi CẢ HAI bất biến còn xanh — in cả khi check
+  // @excalidraw đã đỏ sẽ tạo log tự mâu thuẫn.
+  if (failures.length === 0) {
     console.log(
       `[check-bundle-boundaries] studio: ${studio.length} module sạch @excalidraw; ` +
         `geometry-2d: ${bytes.toLocaleString()}B ≤ ${GEOMETRY_2D_CEILING.toLocaleString()}B`,
@@ -1098,9 +1110,19 @@ export { Whiteboard } from '../../../Whiteboard';
 Run: `npm run build && node scripts/check-bundle-boundaries.mjs`
 Expected: **EXIT 1**, in `dist/studio.mjs: bao đóng chứa "@excalidraw" tại ...`.
 
+Đồng thời xác nhận dòng `studio: N module sạch @excalidraw` **không** còn in ra (log không được tự mâu thuẫn).
+
 Sau đó `git checkout -- src/stamps/geometry-2d/studio/index.ts`, rebuild, chạy lại → OK.
 
-(Hai bước này bắt buộc — một cổng chưa bao giờ đỏ là một cổng chưa được kiểm chứng. Cổng bản đầu của plan này *chưa từng đỏ được*, vì nó đo file entry chứ không đo bao đóng.)
+- [ ] **Step 3c: Chứng minh `catch` không còn nuốt lỗi**
+
+Tạm `mv` một `dist/chunk-*.mjs` nằm trong bao đóng của `studio.mjs` sang `.bak`, chạy `npm run check:bundle`.
+
+Expected: **EXIT 1**, in `... không đọc được (nằm trong bao đóng của dist/studio.mjs)`.
+
+`mv` trả lại → chạy lại → OK.
+
+(Ba bước này bắt buộc — một cổng chưa bao giờ đỏ là một cổng chưa được kiểm chứng. Cổng bản đầu của plan này *chưa từng đỏ nổi*, vì nó đo file entry chứ không đo bao đóng; và bản thứ hai vẫn có thể **xanh sai** khi một chunk đọc lỗi bị nuốt im lặng.)
 
 - [ ] **Step 4: Nối vào `package.json`**
 
