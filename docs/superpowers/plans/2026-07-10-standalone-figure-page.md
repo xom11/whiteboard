@@ -952,56 +952,111 @@ dùng React.lazy có chủ đích."
 
 Repo chỉ có `release.yml` (trigger `workflow_dispatch`), không có CI on-push. Nên cổng gắn vào **cả** `prepublishOnly` (chặn publish hỏng) và một step tường minh trong `release.yml` (báo lỗi sớm, trước `semantic-release`).
 
+> **VIẾT LẠI 2026-07-10 sau Task 5.** Thiết kế cổng ban đầu (grep chuỗi + đo byte trên *file entry*) **gần như vô nghĩa**. Đo thật cho thấy `dist/geometry-2d.mjs` và `dist/studio.mjs` chỉ là **stub vài trăm byte**: chúng `export` một-hai symbol rồi `import` hàng chục `chunk-*.mjs`; toàn bộ code nằm trong chunk. Grep `@excalidraw` trên stub **luôn** trả false, và đo byte stub chỉ đo độ dài danh sách tên chunk (459→490 byte chỉ vì thêm entry mới đổi hash chunk).
+>
+> Phép đo đúng là **bao đóng import TĨNH**: đi theo mọi `import`/`export … from './chunk-*.mjs'`, **không** đi theo `import()` động — vì đúng ranh giới `React.lazy` tạo ra là thứ ta muốn bảo vệ.
+>
+> Baseline đo ngày 2026-07-10 (sau Task 5):
+>
+> | entry | module tĩnh | tổng byte | external |
+> |---|---|---|---|
+> | `dist/studio.mjs` | 17 | 463.253 | immer, react, react-dom, react/jsx-runtime, zod |
+> | `dist/geometry-2d.mjs` | 13 | 158.221 | immer, react, react/jsx-runtime |
+> | `dist/index.mjs` | 25 | 271.157 | + `@excalidraw/excalidraw/index.css` |
+>
+> Hai bất biến có thật, và **có tính phân biệt** (bao đóng `index.mjs` CÓ chứa `@excalidraw`, `studio.mjs` thì không):
+> 1. Bao đóng `studio.mjs` không chứa chuỗi `@excalidraw` ở bất kỳ file nào.
+> 2. Bao đóng `geometry-2d.mjs` ≤ 220.000 byte (baseline 158.221). Nếu ai đó thêm `export { GeometryStudio }` tĩnh vào `geometry-2d/index.tsx`, con số này nhảy về phía 463KB.
+
 - [ ] **Step 1: Viết script**
 
 Tạo `scripts/check-bundle-boundaries.mjs`:
 
 ```js
-// Cổng bundle: khoá hai bất biến kích thước/phụ thuộc sau mỗi build.
+// Cổng bundle: khoá hai bất biến sau mỗi build, đo trên BAO ĐÓNG IMPORT TĨNH
+// của từng entry — KHÔNG phải trên file entry (entry chỉ là stub vài trăm byte
+// re-export từ chunk-*.mjs; grep/size trên stub không đo được gì).
 //
-//  1. dist/studio.mjs KHÔNG được chứa "@excalidraw" — trang landing standalone
-//     không bao giờ được kéo Excalidraw vào.
-//  2. dist/geometry-2d.mjs phải giữ nguyên dạng shim mỏng (Host bọc React.lazy).
-//     Nếu ai đó re-export GeometryStudio từ geometry-2d/index.tsx, file này
-//     phình lên và MỌI consumer <Whiteboard> phải tải cả editor.
+//  1. Bao đóng của dist/studio.mjs KHÔNG chứa "@excalidraw" ở bất kỳ file nào.
+//     Trang landing standalone không bao giờ được kéo Excalidraw vào.
+//     (Đối chứng dương: bao đóng dist/index.mjs CÓ chứa → cổng phân biệt được.)
 //
-// Baseline đo ngày 2026-07-10: geometry-2d.mjs = 459 byte.
+//  2. Bao đóng của dist/geometry-2d.mjs ≤ CEILING byte. `Host` được bọc
+//     React.lazy có chủ đích; một export tĩnh của editor sẽ kéo cả MiniBoard +
+//     EditorPanel vào bundle gốc của MỌI consumer <Whiteboard>.
+//
+// KHÔNG đi theo import() động — đó chính là ranh giới React.lazy cần bảo vệ.
+//
+// Baseline đo 2026-07-10: studio 463.253B / geometry-2d 158.221B.
 import { readFileSync, existsSync } from 'node:fs';
+import { dirname, resolve, basename } from 'node:path';
 
-const SHIM_MAX_BYTES = 4096; // baseline 459B, nới rộng cho thay đổi lành tính
+const GEOMETRY_2D_CEILING = 220_000; // baseline 158.221B; editor tĩnh ⇒ ~463KB
 
-const checks = [
-  {
-    file: 'dist/studio.mjs',
-    forbid: ['@excalidraw'],
-    maxBytes: null,
-  },
-  {
-    file: 'dist/geometry-2d.mjs',
-    forbid: ['@excalidraw', 'jsxgraph'],
-    maxBytes: SHIM_MAX_BYTES,
-  },
-];
+const STATIC_FROM = /(?:^|\n)\s*(?:import|export)[^\n]*?from\s*['"]([^'"]+)['"]/g;
+const SIDE_EFFECT = /(?:^|\n)\s*import\s*['"]([^'"]+)['"]/g;
+
+/** Bao đóng import tĩnh của `entry`: [{file, src}]. Bỏ qua import() động. */
+function staticClosure(entry) {
+  const seen = new Map();
+  const stack = [resolve(entry)];
+
+  while (stack.length) {
+    const file = stack.pop();
+    if (seen.has(file)) continue;
+
+    let src;
+    try {
+      src = readFileSync(file, 'utf8');
+    } catch {
+      continue; // specifier bare (react, immer…) — không phải file trong dist/
+    }
+    seen.set(file, src);
+
+    for (const re of [STATIC_FROM, SIDE_EFFECT]) {
+      re.lastIndex = 0;
+      let m;
+      while ((m = re.exec(src))) {
+        if (m[1].startsWith('.')) stack.push(resolve(dirname(file), m[1]));
+      }
+    }
+  }
+  return [...seen.entries()].map(([file, src]) => ({ file, src }));
+}
 
 const failures = [];
 
-for (const { file, forbid, maxBytes } of checks) {
-  if (!existsSync(file)) {
-    failures.push(`${file}: KHÔNG tồn tại — chạy \`npm run build\` trước.`);
-    continue;
+for (const entry of ['dist/studio.mjs', 'dist/geometry-2d.mjs']) {
+  if (!existsSync(entry)) {
+    failures.push(`${entry}: KHÔNG tồn tại — chạy \`npm run build\` trước.`);
   }
-  const src = readFileSync(file, 'utf8');
+}
 
-  for (const needle of forbid) {
-    if (src.includes(needle)) {
-      failures.push(`${file}: chứa "${needle}" — vi phạm ranh giới bundle.`);
-    }
-  }
-
-  if (maxBytes !== null && src.length > maxBytes) {
+if (failures.length === 0) {
+  // (1) studio phải sạch @excalidraw trên TOÀN BỘ bao đóng
+  const studio = staticClosure('dist/studio.mjs');
+  const dirty = studio.filter((m) => m.src.includes('@excalidraw'));
+  if (dirty.length > 0) {
     failures.push(
-      `${file}: ${src.length} byte > ngưỡng ${maxBytes}. ` +
-        `Nghi ngờ có export tĩnh kéo editor vào bundle gốc (React.lazy bị phá).`,
+      `dist/studio.mjs: bao đóng chứa "@excalidraw" tại ${dirty
+        .map((m) => basename(m.file))
+        .join(', ')} — trang landing sẽ phải cài Excalidraw.`,
+    );
+  }
+
+  // (2) geometry-2d không được phình (React.lazy bị phá)
+  const g2d = staticClosure('dist/geometry-2d.mjs');
+  const bytes = g2d.reduce((n, m) => n + m.src.length, 0);
+  if (bytes > GEOMETRY_2D_CEILING) {
+    failures.push(
+      `dist/geometry-2d.mjs: bao đóng ${bytes.toLocaleString()} byte > ngưỡng ` +
+        `${GEOMETRY_2D_CEILING.toLocaleString()}. Nghi ngờ export tĩnh kéo editor ` +
+        `vào bundle gốc (React.lazy ở geometry-2d/index.tsx bị phá).`,
+    );
+  } else {
+    console.log(
+      `[check-bundle-boundaries] studio: ${studio.length} module sạch @excalidraw; ` +
+        `geometry-2d: ${bytes.toLocaleString()}B ≤ ${GEOMETRY_2D_CEILING.toLocaleString()}B`,
     );
   }
 }
@@ -1019,9 +1074,9 @@ console.log('[check-bundle-boundaries] OK — ranh giới bundle nguyên vẹn.'
 - [ ] **Step 2: Chạy để xác nhận PASS trên cây hiện tại**
 
 Run: `npm run build && node scripts/check-bundle-boundaries.mjs`
-Expected: `[check-bundle-boundaries] OK — ranh giới bundle nguyên vẹn.`
+Expected: EXIT 0, in ra dòng `studio: 17 module sạch @excalidraw; geometry-2d: 158,221B ≤ 220,000B` (con số có thể xê dịch chút, miễn dưới ngưỡng).
 
-- [ ] **Step 3: Chứng minh cổng thật sự bắt được vi phạm**
+- [ ] **Step 3a: Chứng minh cổng bắt được vi phạm #2 (editor vào bundle gốc)**
 
 Tạm thêm dòng này vào cuối `src/stamps/geometry-2d/index.tsx`:
 ```ts
@@ -1029,13 +1084,23 @@ export { GeometryStudio } from './studio/GeometryStudio';
 ```
 
 Run: `npm run build && node scripts/check-bundle-boundaries.mjs`
-Expected: EXIT 1, in ra `dist/geometry-2d.mjs: ... byte > ngưỡng 4096`.
+Expected: **EXIT 1**, in `dist/geometry-2d.mjs: bao đóng ... byte > ngưỡng 220,000`.
 
-Sau đó **xoá dòng vừa thêm** và chạy lại để về trạng thái OK:
+Sau đó `git checkout -- src/stamps/geometry-2d/index.tsx`, rebuild, chạy lại → OK.
+
+- [ ] **Step 3b: Chứng minh cổng bắt được vi phạm #1 (studio kéo Excalidraw)**
+
+Tạm thêm vào đầu `src/stamps/geometry-2d/studio/index.ts`:
+```ts
+export { Whiteboard } from '../../../Whiteboard';
+```
+
 Run: `npm run build && node scripts/check-bundle-boundaries.mjs`
-Expected: OK.
+Expected: **EXIT 1**, in `dist/studio.mjs: bao đóng chứa "@excalidraw" tại ...`.
 
-(Bước này bắt buộc — một cổng chưa bao giờ đỏ là một cổng chưa được kiểm chứng.)
+Sau đó `git checkout -- src/stamps/geometry-2d/studio/index.ts`, rebuild, chạy lại → OK.
+
+(Hai bước này bắt buộc — một cổng chưa bao giờ đỏ là một cổng chưa được kiểm chứng. Cổng bản đầu của plan này *chưa từng đỏ được*, vì nó đo file entry chứ không đo bao đóng.)
 
 - [ ] **Step 4: Nối vào `package.json`**
 

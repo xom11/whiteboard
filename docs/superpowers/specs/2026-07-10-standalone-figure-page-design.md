@@ -189,9 +189,21 @@ Tree-shaking của Next.js *có thể* cắt phần thừa, nhưng zod schema v�
 1. `GeometryStudio` — `onCommit` được gọi đúng `(jsonState, svgString)`; thiếu `api` không vỡ.
 2. Roundtrip `geometryStateToJsonState` → `deserializeBoard` trả lại cùng `State`.
 3. `insertGeometryStampIntoScene` với `api` giả — kiểm `addFiles` + `updateScene` được gọi.
-4. **Cổng bundle (CI)** — hai khẳng định, baseline đã đo ngày 2026-07-10:
-   - `dist/studio.mjs` KHÔNG chứa chuỗi `@excalidraw`. Ngăn ai đó sáu tháng nữa vô tình nhét Excalidraw vào trang landing.
-   - `dist/geometry-2d.mjs` giữ nguyên trạng thái shim mỏng (hiện 459 byte, không `@excalidraw`, không `jsxgraph`). Ngăn chiều ngược lại: một export tĩnh làm editor rơi vào bundle gốc của mọi consumer `<Whiteboard>`.
+4. **Cổng bundle (CI)** — đo trên **bao đóng import TĨNH**, KHÔNG phải file entry.
+
+   > **Sửa 2026-07-10 sau Task 5.** Thiết kế đầu (grep chuỗi + đo byte trên file entry) gần như vô nghĩa: `dist/studio.mjs` và `dist/geometry-2d.mjs` chỉ là **stub vài trăm byte** re-export từ hàng chục `chunk-*.mjs`. Grep `@excalidraw` trên stub luôn false; đo byte stub chỉ đo độ dài danh sách tên chunk (459→490B chỉ vì thêm entry mới đổi hash chunk).
+
+   Đi theo mọi `import`/`export … from './chunk-*.mjs'`, **không** đi theo `import()` động — vì đúng ranh giới `React.lazy` là thứ cần bảo vệ. Baseline đo 2026-07-10:
+
+   | entry | module tĩnh | tổng byte | external |
+   |---|---|---|---|
+   | `dist/studio.mjs` | 17 | 463.253 | immer, react, react-dom, react/jsx-runtime, zod |
+   | `dist/geometry-2d.mjs` | 13 | 158.221 | immer, react, react/jsx-runtime |
+   | `dist/index.mjs` | 25 | 271.157 | + `@excalidraw/excalidraw/index.css` |
+
+   - Bao đóng `dist/studio.mjs` không chứa `@excalidraw` ở bất kỳ file nào. **Đối chứng dương:** bao đóng `dist/index.mjs` CÓ chứa ⇒ cổng thật sự phân biệt được.
+   - Bao đóng `dist/geometry-2d.mjs` ≤ 220.000 byte. Một `export { GeometryStudio }` tĩnh trong `geometry-2d/index.tsx` sẽ đẩy con số này về phía 463KB, bắt mọi consumer `<Whiteboard>` tải cả editor.
+   - Cổng phải được chứng minh đỏ được ở CẢ HAI chiều trước khi tin. Cổng bản đầu **chưa từng đỏ nổi**.
 
 **Xong Mức 1 =** `npm run typecheck` xanh + `npm test` xanh + cổng bundle xanh + một trang thật trong hoctotbachkhoa dán được đề → ra hình → tải được PNG → mở được sang bảng trắng.
 
