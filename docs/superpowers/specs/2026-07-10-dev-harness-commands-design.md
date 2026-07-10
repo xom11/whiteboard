@@ -118,6 +118,24 @@ Cần cổng riêng vì `playground/next.config.ts` đặt `typescript: { ignore
 
 Sửa hai file (mỗi file một ký tự). Nhưng **cổng `typecheck:tests` là việc riêng, ngoài phạm vi spec này** — nêu để mở issue.
 
+## 8b. Bug đóng gói `sideEffects` — nguyên mẫu bắt được ngay lần chạy đầu
+
+Đúng như mục 5 dự đoán, `/ve-hinh` lộ ra một lỗi thật ngay lần chạy đầu tiên.
+
+**Triệu chứng:** rule engine dựng đúng (`p1..p5`, `poly1`, `c1`, `s1`) nhưng renderer in 8 warning `[scene/render/2d] không render được … Error: [scene] unknown kind: point` và SVG rỗng hoàn toàn. Registry kind **rỗng**.
+
+**Nguyên nhân:** `src/core/scene/index.ts:35` có `import './kinds';` — side-effect thuần. Nhưng chính `index.ts` KHÔNG nằm trong `package.json` `sideEffects`, nên bundler coi nó thuần khiết và **nối tắt** `import { createStore } from '../../core/scene'` thẳng tới `./store`, bỏ qua `index.ts` ⇒ `import './kinds'` không bao giờ chạy. Khai `kinds/**` là vô ích vì không còn ai import tới đó.
+
+Tái hiện ở **cả webpack lẫn turbopack**. Không phải lỗi của Turbopack.
+
+**Bản đã publish KHÔNG dính** — và đó là may, không phải thiết kế: tsup gộp `registry` + toàn bộ `registerKind()` vào cùng `chunk-B4NJJZFR.mjs`, mà `JxgRenderer` import binding `getKind` từ chunk đó ⇒ chunk vẫn được nạp. Nếu một phiên bản tsup sau này tách hai thứ ra, consumer sẽ vỡ im lặng.
+
+**Sửa:** thêm `"src/core/scene/index.ts"` vào `sideEffects` (commit `d0cca23`).
+
+**Kiểm chứng:** trước 8 warning + 0 phần tử vẽ; sau 0 warning, hình có nhãn `A B C O M`, 7 ellipse, 4 line. Cổng bundle giữ nguyên `158.221B ≤ 220.000B`.
+
+**Nợ:** không có test nào bắt được lớp lỗi này (jest không tree-shake; vite dev không tree-shake; cổng bundle chỉ soi `dist`, mà `dist` lại đúng). Cần một e2e trên playground — xem mục 10.
+
 ## 9. Tiêu chí xong
 
 - `npm run typecheck` xanh, `npm test` xanh (3686), `npm run typecheck:playground` **xanh** (mới)
@@ -126,9 +144,14 @@ Sửa hai file (mỗi file một ký tự). Nhưng **cổng `typecheck:tests` l�
 - Chạy tay `npm run dev:figure`: dán một đề thật từ dataset → ra hình; đề dựng một phần → banner `partial.message`; "Mở trong bảng trắng" → hình xuất hiện ở `/` và **double-click re-edit được**
 - `/ve-hinh` **không** import gì từ `../../src`
 
-## 10. Không làm
+## 10. Không làm (và nợ để lại)
 
-E2E cho `/ve-hinh` (Playwright đang trỏ vite :5173). Đụng `ignoreBuildErrors`. Cổng `typecheck:tests`. OCR, LLM, share link, deploy.
+E2E cho `/ve-hinh` (Playwright đang trỏ vite :5173). Đụng `ignoreBuildErrors`. OCR, LLM, share link, deploy.
+
+**Hai issue nên mở:**
+
+1. **`typecheck:tests`** — repo không typecheck file test nào (root `exclude`, `ts-jest diagnostics:false`). Đó là lý do 2 lỗi `TS1005` sống sót qua 3686 test xanh (mục 8).
+2. **E2E chống hồi quy tree-shaking** — không cổng nào bắt được lớp lỗi ở mục 8b: jest và vite dev không tree-shake, còn cổng bundle chỉ soi `dist` (vốn đang đúng nhờ may). Một spec Playwright chạy `/ve-hinh` dưới `next dev` (dán đề → khẳng định SVG có ≥1 `<ellipse>` và 0 warning `unknown kind`) sẽ khoá được nó.
 
 ---
 
