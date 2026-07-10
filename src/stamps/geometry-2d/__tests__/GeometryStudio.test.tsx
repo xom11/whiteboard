@@ -94,4 +94,17 @@ describe('GeometryStudio', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
     spy.mockRestore();
   });
+
+  test('onCommit trả về false (chưa commit) → onClose KHÔNG được gọi, panel giữ mở', async () => {
+    const onClose = jest.fn();
+    const onCommit = jest.fn().mockResolvedValue(false);
+    render(<GeometryStudio onCommit={onCommit} onClose={onClose} />);
+
+    await act(async () => {
+      capturedOnInsert!('{}', '<svg/>');
+    });
+
+    expect(onCommit).toHaveBeenCalledTimes(1);
+    expect(onClose).not.toHaveBeenCalled();
+  });
 });

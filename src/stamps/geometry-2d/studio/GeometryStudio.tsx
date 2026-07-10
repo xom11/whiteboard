@@ -28,8 +28,12 @@ import { makeDslRenderRow } from '../editor/dslRenderRow';
 export interface GeometryStudioProps {
   /** Seed store lúc mount. Vắng = board trống. */
   initialJsonState?: string;
-  /** Thay cho insertStampImage. Editor gọi khi user bấm "Chèn". */
-  onCommit: (jsonState: string, svgString: string) => void | Promise<void>;
+  /**
+   * Thay cho insertStampImage. Editor gọi khi user bấm "Chèn".
+   * Trả `false` nghĩa là CHƯA commit (vd Excalidraw api chưa sẵn sàng) →
+   * GeometryStudio giữ panel mở để user thử lại. Mọi giá trị khác = đã commit.
+   */
+  onCommit: (jsonState: string, svgString: string) => boolean | void | Promise<boolean | void>;
   onClose: () => void;
   isDark?: boolean;
   /** Chỉ để EditorPanel đọc viewport khi dựng draft. Vắng = bỏ qua draft. */
@@ -79,7 +83,8 @@ export const GeometryStudio = forwardRef<StampHostHandle, GeometryStudioProps>(
     const handleInsert = useCallback(
       async (jsonState: string, svgString: string) => {
         try {
-          await onCommit(jsonState, svgString);
+          const committed = await onCommit(jsonState, svgString);
+          if (committed === false) return; // chưa commit → giữ panel mở
         } catch (err) {
           console.error('Geometry commit failed:', err);
         }

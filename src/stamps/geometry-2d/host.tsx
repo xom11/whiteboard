@@ -17,8 +17,8 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
       : undefined;
 
     const handleCommit = useCallback(
-      async (jsonState: string, svgString: string) => {
-        if (!api) return;
+      async (jsonState: string, svgString: string): Promise<boolean> => {
+        if (!api) return false;
         await insertStampImage(api, {
           svgString,
           makeCustomData: (): GeometryCustomData => ({
@@ -29,6 +29,7 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
           editingElementId: editingElement?.id ?? null,
           preserveExistingSize: true,
         });
+        return true;
       },
       [api, editingElement?.id],
     );
