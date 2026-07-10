@@ -226,7 +226,8 @@ editingElement giả. Thunk giữ nguyên bất biến 'parse chỉ 1 lần' c�
   ```ts
   interface GeometryStudioProps {
     initialJsonState?: string;
-    onCommit: (jsonState: string, svgString: string) => void | Promise<void>;
+    /** Trả `false` = CHƯA commit → giữ panel mở. Giá trị khác = đã commit → đóng. */
+    onCommit: (jsonState: string, svgString: string) => boolean | void | Promise<boolean | void>;
     onClose: () => void;
     isDark?: boolean;
     api?: unknown;
@@ -434,7 +435,8 @@ export const GeometryStudio = forwardRef<StampHostHandle, GeometryStudioProps>(
     const handleInsert = useCallback(
       async (jsonState: string, svgString: string) => {
         try {
-          await onCommit(jsonState, svgString);
+          const committed = await onCommit(jsonState, svgString);
+          if (committed === false) return; // chưa commit → giữ panel mở
         } catch (err) {
           console.error('Geometry commit failed:', err);
         }
@@ -550,8 +552,8 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
       : undefined;
 
     const handleCommit = useCallback(
-      async (jsonState: string, svgString: string) => {
-        if (!api) return;
+      async (jsonState: string, svgString: string): Promise<boolean> => {
+        if (!api) return false; // api chưa sẵn sàng → Studio giữ panel mở
         await insertStampImage(api, {
           svgString,
           makeCustomData: (): GeometryCustomData => ({
@@ -562,6 +564,7 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
           editingElementId: editingElement?.id ?? null,
           preserveExistingSize: true,
         });
+        return true;
       },
       [api, editingElement?.id],
     );
@@ -582,7 +585,11 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
 );
 ```
 
-Ghi chú hành vi: bản cũ bọc `try/catch` quanh `insertStampImage` và log `'Geometry insert failed:'`. Nay `GeometryStudio.handleInsert` bọc `try/catch` quanh `onCommit` và log `'Geometry commit failed:'`. Lỗi vẫn bị nuốt + `onClose()` vẫn chạy ⇒ hành vi quan sát được không đổi.
+Ghi chú hành vi (SỬA sau review Task 2 — bản đầu của plan có bug):
+
+- Lỗi: bản cũ bọc `try/catch` quanh `insertStampImage`, log `'Geometry insert failed:'`, rồi vẫn `onClose()`. Nay Studio bọc `try/catch` quanh `onCommit`, log `'Geometry commit failed:'`, rồi vẫn `onClose()`. Giữ nguyên.
+- **`api` chưa sẵn sàng:** bản cũ có `if (!api) return;` là câu lệnh ĐẦU TIÊN của `handleInsert` ⇒ **không** gọi `onClose()` ⇒ panel ở lại, user bấm lại được. Nếu host chỉ `return;` trong `handleCommit`, promise resolve bình thường và Studio sẽ đóng panel, **xoá mất hình đang dựng**. Vì thế `onCommit` trả `false` để báo "chưa commit". Nhánh này chạm tới được thật: `Whiteboard.tsx:312` render `<HostComponent api={api}>` không gate theo `api`, mà `api` đến bất đồng bộ (`Whiteboard.tsx:255`).
+- Hai test bắt buộc, vì đây chính là chỗ hồi quy lọt lưới: `GeometryStudio.test.tsx` — `onCommit` trả `false` ⇒ KHÔNG gọi `onClose`; `__tests__/Host.noApi.test.tsx` — render `GeometryStampHost` thiếu `api`, bấm chèn ⇒ KHÔNG gọi `onClose`.
 
 - [ ] **Step 6: Chạy lưới an toàn**
 
