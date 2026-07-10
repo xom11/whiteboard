@@ -18,15 +18,19 @@ const GEOMETRY_2D_CEILING = 220_000; // baseline 158.221B; editor tĩnh ⇒ ~463
 
 // `import('./x.mjs')` LÀ ranh giới React.lazy → không đi theo. Xoá trước khi quét.
 const DYNAMIC_IMPORT = /\bimport\s*\(\s*(['"])[^'"]*\1\s*\)/g;
-// Sau khi xoá dynamic, mọi literal tương đối `.mjs` còn lại đều thuộc import/export
-// TĨNH. Quét literal thay vì "câu lệnh import" là cố ý: bản trước neo
-// `^\s*import … from` trên CÙNG MỘT DÒNG, nên một import xuống dòng giữa {} (hoặc
-// một lần bật minify) sẽ bị bỏ sót ÂM THẦM → cổng xanh sai.
+// Sau khi xoá dynamic, quét MỌI literal tương đối `.mjs`. Đây là SIÊU TẬP an toàn
+// của tập specifier import/export tĩnh thật: cú pháp ES bắt specifier tĩnh phải là
+// string literal (không bao giờ là biểu thức tính toán), nên cách quét này KHÔNG
+// THỂ bỏ sót một import tĩnh — khác với bản trước neo `^\s*import … from` cùng một
+// dòng, vốn bỏ sót âm thầm khi import xuống dòng giữa {} hoặc khi bật minify.
+// Đánh đổi: có thể over-include một literal dữ liệu tình cờ mang dạng './x.mjs'.
+// Hướng lệch đó AN TOÀN (đỏ nhầm, chặn release tốt) chứ không xanh nhầm.
 const RELATIVE_MJS = /(['"])(\.[^'"]*\.mjs)\1/g;
 
 /** Bao đóng import tĩnh của `entry`. Lỗi đọc file ⇒ đẩy vào `failures`, KHÔNG nuốt. */
 function staticClosure(entry, failures) {
   const seen = new Map();
+  const unreadable = new Set();
   const stack = [resolve(entry)];
 
   while (stack.length) {
@@ -37,12 +41,16 @@ function staticClosure(entry, failures) {
     try {
       src = readFileSync(file, 'utf8');
     } catch {
-      // Mọi path tới đây đều là relative .mjs do chính bundle sinh ra. Đọc không
-      // được nghĩa là dist/ hỏng hoặc build đổi cách chia chunk. Bỏ qua im lặng
-      // sẽ làm biến mất khỏi phép đo đúng cái chunk có thể đang vi phạm.
-      failures.push(
-        `${basename(file)}: không đọc được (nằm trong bao đóng của ${entry}). dist/ hỏng — chạy lại \`npm run build\`.`,
-      );
+      if (!unreadable.has(file)) {
+        unreadable.add(file);
+        // Không nuốt: bỏ qua im lặng sẽ làm biến mất khỏi phép đo đúng cái chunk có
+        // thể đang vi phạm (mang @excalidraw, hoặc mang byte làm vượt ngưỡng).
+        failures.push(
+          `${basename(file)}: không đọc được (nằm trong bao đóng của ${entry}). ` +
+            `Thường là dist/ chưa build hoặc hỏng — chạy lại \`npm run build\`. ` +
+            `Nếu dist/ lành, có thể một literal dữ liệu dạng './x.mjs' bị quét nhầm.`,
+        );
+      }
       continue;
     }
     seen.set(file, src);
