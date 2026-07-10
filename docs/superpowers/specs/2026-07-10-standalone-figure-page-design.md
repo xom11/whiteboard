@@ -173,6 +173,9 @@ Móc analytics vào đó, log `reason` (`deterministic_miss` / `transpile_error`
 
 CPU thuần, 21 rule + các gate coverage. Đề dài có thể làm khựng giao diện. Mức 1 phải **đo p95** thời gian `handleGenerateFigure` trên chính 118 đề trong `docs/datasets/tong-hop-hinh-phang-vao10-2018-2019.txt`. Nếu vượt ~100ms → đẩy sang Web Worker ở Mức 2. **Chỉ làm khi số đo bảo phải làm**, không tối ưu trước.
 
+**Đo ngày 2026-07-10:** p50 = 0.6 ms, p95 = 9.5 ms, max = 47.1 ms trên 118 đề.
+Kết luận: ĐÓNG rủi ro (p95 < 100ms).
+
 ### 8.2 `dist/ai.mjs` nặng 490KB (đo baseline 2026-07-10, chưa minify)
 
 Barrel `ai/index.ts` xuất cả `envelope`, `intent`, `buildIntentSystemPrompt` (chuỗi prompt dài), `verify`, `vision`. Trang landing chỉ cần `handleGenerateFigure`.

@@ -78,6 +78,7 @@
     "demo": "vite --config scripts/demo/vite.config.ts",
     "ai:eval": "tsx scripts/eval-ai.ts",
     "ai:smoke": "tsx scripts/smoke-ai.ts",
+    "perf:figure": "tsx scripts/measure-figure-perf.ts",
     "diag:3d": "tsx scripts/diag-all-3d.ts",
     "dbg:3d": "tsx scripts/dbg-bai-3d.ts",
     "check:matrix": "tsx scripts/check-construct-matrix.ts",
