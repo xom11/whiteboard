@@ -85,8 +85,12 @@ export { geometryStateToJsonState }          // mới: State → jsonState
 interface GeometryStudioProps {
   /** Seed store lúc mount. Vắng = board trống. */
   initialJsonState?: string;
-  /** Thay cho insertStampImage. Editor gọi khi user bấm "Chèn". */
-  onCommit: (jsonState: string, svgString: string) => void | Promise<void>;
+  /**
+   * Thay cho insertStampImage. Editor gọi khi user bấm "Chèn".
+   * Trả `false` = CHƯA commit → Studio GIỮ panel mở để user thử lại.
+   * Mọi giá trị khác = đã commit → Studio gọi `onClose()`.
+   */
+  onCommit: (jsonState: string, svgString: string) => boolean | void | Promise<boolean | void>;
   onClose: () => void;
   isDark?: boolean;
   /** Chỉ để EditorPanel đọc viewport khi dựng draft. Vắng = bỏ qua draft. */
@@ -97,6 +101,10 @@ interface GeometryStudioProps {
 ```
 
 Ref vẫn expose `StampHostHandle` (`tryInsert` / `hasContent`) — `GeometryStampHost` cần nó cho auto-commit khi click ra ngoài.
+
+**Vì sao `onCommit` trả được `false`** (phát hiện lúc review Task 2): bản `host.tsx` cũ đặt `if (!api) return;` là câu lệnh ĐẦU TIÊN của `handleInsert`, nên nó bỏ qua luôn `onClose()` ở cuối hàm — `api` chưa sẵn sàng thì panel **ở lại**, user bấm lại được. Nếu host chỉ `return;` trong `onCommit`, promise resolve bình thường và Studio sẽ đóng panel, **xoá mất hình đang dựng dở**. Nhánh này chạm tới được thật: `Whiteboard.tsx:312` render `<HostComponent api={api}>` không gate theo `api`, mà `api` đến bất đồng bộ (`Whiteboard.tsx:255`).
+
+**Cảnh báo cho consumer:** "mọi giá trị ≠ `false` = đã commit" đẩy trách nhiệm sang phía cấp `onCommit`. Một provider nuốt lỗi rồi trả `undefined` sẽ khiến panel đóng và mất hình. Phải trả `false` ở MỌI nhánh không-commit, kể cả trong `catch`.
 
 `geometryStateToJsonState(state: State): string` — bọc `serializeBoard(state, view)`, vì `serializeBoard` cần thêm `View2D` (`serialize.ts:10`) mà trang không có sẵn. Lấy view từ `state.meta.view` khi `domain === '2d'`, else `DEFAULT_VIEW_2D`.
 
