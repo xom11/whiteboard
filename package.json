@@ -63,6 +63,7 @@
   },
   "sideEffects": [
     "*.css",
+    "src/core/scene/index.ts",
     "src/core/scene/kinds/**"
   ],
   "scripts": {
