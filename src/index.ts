@@ -56,6 +56,9 @@ export {
 } from './pdf/rasterize';
 export { parsePageRange } from './pdf/parseRange';
 
+// Chèn hình học (jsonState) vào scene — dùng cho handoff từ trang standalone.
+export { insertGeometryStampIntoScene } from './stamps/geometry-2d/insertGeometryStamp';
+
 // AI types (safe for browser)
 export type {
   AiFigureUiResult,

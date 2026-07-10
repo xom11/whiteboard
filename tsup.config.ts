@@ -7,6 +7,7 @@ export default defineConfig({
     'geometry-3d': 'src/stamps/geometry-3d/index.tsx',
     latex: 'src/stamps/latex/index.tsx',
     'graph-2d': 'src/stamps/graph-2d/index.tsx',
+    studio: 'src/stamps/geometry-2d/studio/index.ts',
     ai: 'src/stamps/geometry-2d/ai/index.ts',
   },
   format: ['cjs', 'esm'],

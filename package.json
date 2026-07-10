@@ -41,6 +41,11 @@
       "import": "./dist/graph-2d.mjs",
       "require": "./dist/graph-2d.js"
     },
+    "./studio": {
+      "types": "./dist/studio.d.ts",
+      "import": "./dist/studio.mjs",
+      "require": "./dist/studio.js"
+    },
     "./ai": {
       "types": "./dist/ai.d.ts",
       "import": "./dist/ai.mjs",
