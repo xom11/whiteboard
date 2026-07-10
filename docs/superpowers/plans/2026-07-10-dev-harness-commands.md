@@ -154,6 +154,11 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const playgroundDir = path.resolve(here, '..', 'playground');
 
 function openBrowser(target) {
+  // Guard cho kiểm thử tự động: đừng bật tab thật.
+  if (process.env.DEV_PLAYGROUND_NO_OPEN) {
+    console.log(`[dev-playground] (bỏ qua mở trình duyệt) ${target}`);
+    return;
+  }
   const cmd =
     process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start' : 'xdg-open';
   spawn(cmd, [target], {

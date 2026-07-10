@@ -77,6 +77,8 @@
     "clean": "rm -rf dist .yalc yalc.lock",
     "e2e:serve": "vite --config scripts/demo/vite.config.ts",
     "demo": "node scripts/demo-renamed.mjs",
+    "dev:board": "node scripts/dev-playground.mjs /",
+    "dev:figure": "node scripts/dev-playground.mjs /ve-hinh",
     "ai:eval": "tsx scripts/eval-ai.ts",
     "ai:smoke": "tsx scripts/smoke-ai.ts",
     "perf:figure": "tsx scripts/measure-figure-perf.ts",
