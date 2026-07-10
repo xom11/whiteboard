@@ -121,7 +121,7 @@ describe('lineCircleIntersectionRule', () => {
     expect(pt.constraint).toEqual({ kind: 'secondIntersection', line: 'NQ', circle: 'O', other: 'N' });
     expect(pt.name).toBe('R');
   });
-}
+});
 
 describe('lineCircleIntersection — "cắt (O) tại hai điểm M, N" (cả 2 nhánh)', () => {
   it('M=branch0, N=branch1 intersection lineCircle', () => {

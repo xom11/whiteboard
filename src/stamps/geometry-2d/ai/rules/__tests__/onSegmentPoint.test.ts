@@ -88,7 +88,7 @@ describe('onSegmentPointRule', () => {
   it('metric ratio "sao cho AD = 2DB" vẫn bỏ qua để escalate an toàn', () => {
     expect(intents('Trên cạnh AB lấy điểm D sao cho AD = 2DB')).toEqual([]);
   });
-}
+});
 
 describe('onSegmentPoint — điểm di chuyển/di động trên cạnh', () => {
   it('Bài 79: "Điểm P di chuyển trên cạnh AC" → P onSegment AC', () => {

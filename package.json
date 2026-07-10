@@ -72,6 +72,7 @@
     "test": "jest",
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
+    "typecheck:playground": "tsc --noEmit -p playground/tsconfig.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "clean": "rm -rf dist .yalc yalc.lock",
