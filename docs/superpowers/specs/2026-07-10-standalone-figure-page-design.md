@@ -102,7 +102,7 @@ interface GeometryStudioProps {
 
 Ref vẫn expose `StampHostHandle` (`tryInsert` / `hasContent`) — `GeometryStampHost` cần nó cho auto-commit khi click ra ngoài.
 
-**Vì sao `onCommit` trả được `false`** (phát hiện lúc review Task 2): bản `host.tsx` cũ đặt `if (!api) return;` là câu lệnh ĐẦU TIÊN của `handleInsert`, nên nó bỏ qua luôn `onClose()` ở cuối hàm — `api` chưa sẵn sàng thì panel **ở lại**, user bấm lại được. Nếu host chỉ `return;` trong `onCommit`, promise resolve bình thường và Studio sẽ đóng panel, **xoá mất hình đang dựng dở**. Nhánh này chạm tới được thật: `Whiteboard.tsx:312` render `<HostComponent api={api}>` không gate theo `api`, mà `api` đến bất đồng bộ (`Whiteboard.tsx:255`).
+**Vì sao `onCommit` trả được `false`** (phát hiện lúc review Task 2): bản `host.tsx` cũ đặt `if (!api) return;` là câu lệnh ĐẦU TIÊN của `handleInsert`, nên nó bỏ qua luôn `onClose()` ở cuối hàm — `api` chưa sẵn sàng thì panel **ở lại**, user bấm lại được. Nếu host chỉ `return;` trong `onCommit`, promise resolve bình thường và Studio sẽ đóng panel, **xoá mất hình đang dựng dở**. Nhánh này chạm tới được thật: `Whiteboard.tsx:312-315` render `<HostComponent api={api}>` không gate theo `api`, mà `api` đến bất đồng bộ (`Whiteboard.tsx:255`).
 
 **Cảnh báo cho consumer:** "mọi giá trị ≠ `false` = đã commit" đẩy trách nhiệm sang phía cấp `onCommit`. Một provider nuốt lỗi rồi trả `undefined` sẽ khiến panel đóng và mất hình. Phải trả `false` ở MỌI nhánh không-commit, kể cả trong `catch`.
 
