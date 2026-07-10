@@ -9,30 +9,27 @@
 // pre-load từ customData ngay frame đầu → bỏ ternary `store ? ... : undefined`
 // + bỏ flash 1 frame trên 2D + graph-2d.
 //
-// Roundtrip edit: khi double-click stamp existing element, `editingElement`
-// được pass vào, hook gọi `parseInitial(customData)` để extract State trước
-// khi createStore. Stamp tự define parseInitial vì format customData khác nhau.
+// Roundtrip edit: caller tự chịu trách nhiệm đọc `editingElement.customData`
+// và trả về State (hoặc null) qua thunk `makeInitialState`.
 
 import { useRef } from 'react';
 import { createStore, createEmptyState, type Store } from '../../core/scene';
 import type { State } from '../../core/scene/types';
-import type { StampHostProps } from './types';
 
 export type StampDomain = '2d' | '3d' | 'graph2d';
 
-export type ParseInitialStateFn = (customData: unknown) => State | null;
-
+/**
+ * Tạo + giữ scene store tại Host level. `makeInitialState` là THUNK LƯỜI:
+ * chỉ gọi đúng một lần ở render đầu, nên caller thoải mái đặt
+ * `deserializeBoard(...)` bên trong mà không sợ parse lại mỗi render.
+ */
 export function useStampStore(
   domain: StampDomain,
-  editingElement: StampHostProps['editingElement'],
-  parseInitial: ParseInitialStateFn,
+  makeInitialState?: () => State | null,
 ): Store {
   const ref = useRef<Store | null>(null);
   if (!ref.current) {
-    const initial = editingElement?.customData
-      ? parseInitial(editingElement.customData) ?? createEmptyState(domain)
-      : createEmptyState(domain);
-    ref.current = createStore(initial);
+    ref.current = createStore(makeInitialState?.() ?? createEmptyState(domain));
   }
   return ref.current;
 }

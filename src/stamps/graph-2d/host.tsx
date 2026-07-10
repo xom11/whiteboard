@@ -79,7 +79,9 @@ export const Graph2DStampHost = forwardRef<StampHostHandle, StampHostProps>(
     const panelRef = useRef<GraphEditorPanelHandle | null>(null);
     const { isMobile } = useIsMobile();
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const sceneStore = useStampStore('graph2d', editingElement, parseInitialState);
+    const sceneStore = useStampStore('graph2d', () =>
+      editingElement?.customData ? parseInitialState(editingElement.customData) : null,
+    );
     const [selectedObjectId, setSelectedObjectId] = useState<string | undefined>(undefined);
 
     // Tier 2 F — host owns editor UI state.

@@ -39,7 +39,9 @@ export const GeometryStampHost = forwardRef<StampHostHandle, StampHostProps>(
     const panelRef = useRef<GeometryEditorPanelHandle | null>(null);
     const { isMobile } = useIsMobile();
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const sceneStore = useStampStore('2d', editingElement, parseInitialState);
+    const sceneStore = useStampStore('2d', () =>
+      editingElement?.customData ? parseInitialState(editingElement.customData) : null,
+    );
 
     // Tier 2 F — host owns editor UI state.
     const initialMeta = sceneStore.getState().meta;

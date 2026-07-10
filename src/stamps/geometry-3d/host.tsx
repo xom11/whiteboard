@@ -48,7 +48,9 @@ function parseInitialState(data: unknown): State | null {
 export const Geometry3DStampHost = forwardRef<StampHostHandle, StampHostProps>(
   function Geometry3DStampHost({ api, editingElement, onClose, isDark }, ref) {
     const editorRef = useRef<EditorPanelHandle | null>(null);
-    const sceneStore = useStampStore('3d', editingElement, parseInitialState);
+    const sceneStore = useStampStore('3d', () =>
+      editingElement?.customData ? parseInitialState(editingElement.customData) : null,
+    );
     const { isMobile } = useIsMobile();
     const [drawerOpen, setDrawerOpen] = useState(false);
 

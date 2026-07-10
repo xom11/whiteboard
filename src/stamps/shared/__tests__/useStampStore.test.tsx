@@ -1,29 +1,15 @@
 import { renderHook } from '@testing-library/react';
 import { useStampStore } from '../useStampStore';
-import { createEmptyState, type State } from '../../../core/scene';
+import type { State } from '../../../core/scene';
 
 describe('useStampStore', () => {
-  test('creates store with empty state when no editingElement', () => {
-    const parseInitial = jest.fn();
-    const { result } = renderHook(() =>
-      useStampStore('2d', null, parseInitial),
-    );
-    expect(parseInitial).not.toHaveBeenCalled();
+  test('tạo store rỗng khi không truyền thunk', () => {
+    const { result } = renderHook(() => useStampStore('2d'));
     expect(Object.keys(result.current.getState().objects)).toHaveLength(0);
     expect(result.current.getState().meta.domain).toBe('2d');
   });
 
-  test('calls parseInitial with editingElement.customData when present', () => {
-    const customData = { kind: 'geometry', version: 1 };
-    const parseInitial = jest.fn().mockReturnValue(null);
-    renderHook(() =>
-      useStampStore('2d', { id: 'el-1', customData }, parseInitial),
-    );
-    expect(parseInitial).toHaveBeenCalledTimes(1);
-    expect(parseInitial).toHaveBeenCalledWith(customData);
-  });
-
-  test('uses parsed state when parseInitial returns non-null', () => {
+  test('dùng state do thunk trả về', () => {
     const seedState: State = {
       objects: {
         foo: {
@@ -34,7 +20,7 @@ describe('useStampStore', () => {
           locked: false,
           layer: 'default',
           schemaVersion: 1,
-           
+
           attrs: { expression: 'x', color: '#000', visible: true } as any,
         },
       },
@@ -42,49 +28,34 @@ describe('useStampStore', () => {
       counter: 1,
       meta: { domain: 'graph2d', version: 1 },
     };
-    const parseInitial = jest.fn().mockReturnValue(seedState);
-    const { result } = renderHook(() =>
-      useStampStore('graph2d', { id: 'el', customData: {} }, parseInitial),
-    );
+    const { result } = renderHook(() => useStampStore('graph2d', () => seedState));
     expect(result.current.getState().objects['foo']).toBeDefined();
   });
 
-  test('falls back to empty state when parseInitial returns null', () => {
-    const parseInitial = jest.fn().mockReturnValue(null);
-    const { result } = renderHook(() =>
-      useStampStore('3d', { id: 'el', customData: {} }, parseInitial),
-    );
+  test('fallback về state rỗng khi thunk trả null', () => {
+    const { result } = renderHook(() => useStampStore('3d', () => null));
     expect(Object.keys(result.current.getState().objects)).toHaveLength(0);
     expect(result.current.getState().meta.domain).toBe('3d');
   });
 
-  test('store identity is stable across re-renders', () => {
-    const parseInitial = jest.fn().mockReturnValue(null);
-    const { result, rerender } = renderHook(
-      ({ el }) => useStampStore('2d', el, parseInitial),
-      { initialProps: { el: null as { id: string; customData: unknown } | null } },
-    );
+  test('store identity ổn định qua re-render', () => {
+    const { result, rerender } = renderHook(() => useStampStore('2d', () => null));
     const firstStore = result.current;
-    rerender({ el: null });
-    rerender({ el: { id: 'x', customData: {} } });
+    rerender();
+    rerender();
     expect(result.current).toBe(firstStore);
   });
 
-  test('parseInitial only called once (on first render)', () => {
-    const parseInitial = jest.fn().mockReturnValue(null);
-    const { rerender } = renderHook(() =>
-      useStampStore('2d', { id: 'el', customData: { foo: 1 } }, parseInitial),
-    );
+  test('thunk CHỈ được gọi một lần (bất biến lười)', () => {
+    const makeInitial = jest.fn().mockReturnValue(null);
+    const { rerender } = renderHook(() => useStampStore('2d', makeInitial));
     rerender();
     rerender();
-    expect(parseInitial).toHaveBeenCalledTimes(1);
+    expect(makeInitial).toHaveBeenCalledTimes(1);
   });
 
-  test('store supports dispatch + undo from initial state', () => {
-    const parseInitial = jest.fn().mockReturnValue(null);
-    const { result } = renderHook(() =>
-      useStampStore('2d', null, parseInitial),
-    );
+  test('store hỗ trợ dispatch + undo từ state ban đầu', () => {
+    const { result } = renderHook(() => useStampStore('2d'));
     const store = result.current;
     expect(store.canUndo()).toBe(false);
     expect(typeof store.dispatch).toBe('function');
