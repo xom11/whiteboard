@@ -184,7 +184,30 @@ CPU thuần, 21 rule + các gate coverage. Đề dài có thể làm khựng gia
 **Đo ngày 2026-07-10:** p50 = 0.6 ms, p95 = 9.5 ms, max = 47.1 ms trên 118 đề.
 Kết luận: ĐÓNG rủi ro (p95 < 100ms).
 
-### 8.2 `dist/ai.mjs` nặng 490KB (đo baseline 2026-07-10, chưa minify)
+### 8.2 `/studio` sạch Excalidraw ở RUNTIME, KHÔNG sạch ở tầng TYPE (đo 2026-07-10)
+
+`dist/studio.d.ts` dòng 3 có `import '@excalidraw/excalidraw/element/types';`. Nguồn: tsup gộp mọi type vào **một chunk dts dùng chung** (`dist/types-*.d.ts`), và trong đó `StampType.restoreFileFromCustomData?: (element: ExcalidrawElement) => …` là chỗ **duy nhất** cần Excalidraw. Bốn symbol mà `/studio` thật sự dùng (`GenerateGeometryFigure`, `GeometryDraftPreview`, `StampHostHandle`, `State`) đều KHÔNG cần nó — import đó chỉ đi ké.
+
+Đo trên một dự án TS giả lập chỉ import từ `/studio`:
+
+| `skipLibCheck` | Kết quả |
+|---|---|
+| `true` (mặc định Next.js) | **compile sạch** |
+| `false` | vỡ — nhưng vỡ ở type của CHÍNH Excalidraw (`browser-fs-access`, `@excalidraw/math`) |
+
+Hệ quả thực tế: nhỏ. Next.js bật `skipLibCheck` mặc định, và `@excalidraw/excalidraw` vốn là `peerDependency` nên npm tự cài. Bundle trình duyệt vẫn sạch — đó mới là thứ cổng bundle gác, và nó gác đúng.
+
+**Cổng bundle KHÔNG bắt được chuyện này** (nó chỉ đi bao đóng `.mjs`). Đừng nhầm "cổng xanh" thành "type cũng sạch".
+
+**Cách sửa (follow-up, ngoài Mức 1):** đổi `restoreFileFromCustomData` sang type cấu trúc — nó chỉ đọc `element.customData` và `element.fileId`:
+
+```ts
+restoreFileFromCustomData?: (element: { customData?: unknown; fileId?: string | null }) => Promise<RestoredStampFile | null>;
+```
+
+Bỏ được import Excalidraw duy nhất khỏi chunk dts dùng chung.
+
+### 8.3 `dist/ai.mjs` nặng 490KB (đo baseline 2026-07-10, chưa minify)
 
 Barrel `ai/index.ts` xuất cả `envelope`, `intent`, `buildIntentSystemPrompt` (chuỗi prompt dài), `verify`, `vision`. Trang landing chỉ cần `handleGenerateFigure`.
 
