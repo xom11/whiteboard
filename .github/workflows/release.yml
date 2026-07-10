@@ -37,6 +37,8 @@ jobs:
       # Cổng chất lượng — release bị chặn nếu fail.
       - run: npm run typecheck
       - run: npm test
+      - run: npm run build
+      - run: npm run check:bundle
 
       # Phân tích commit → bump version → publish npm → tag + GitHub Release.
       # Chỉ chạy khi có commit feat:/fix:/BREAKING kể từ release trước.

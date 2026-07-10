@@ -81,7 +81,8 @@
     "diag:3d": "tsx scripts/diag-all-3d.ts",
     "dbg:3d": "tsx scripts/dbg-bai-3d.ts",
     "check:matrix": "tsx scripts/check-construct-matrix.ts",
-    "prepublishOnly": "npm run clean && npm run build"
+    "check:bundle": "node scripts/check-bundle-boundaries.mjs",
+    "prepublishOnly": "npm run clean && npm run build && npm run check:bundle"
   },
   "peerDependencies": {
     "@excalidraw/excalidraw": "^0.18.1",
