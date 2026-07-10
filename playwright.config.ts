@@ -4,8 +4,8 @@ import { defineConfig, devices } from '@playwright/test';
  * Playwright config cho E2E smoke tests.
  *
  * - Headless Chromium only (đủ cho smoke).
- * - `webServer` tự start vite demo (`npm run demo`) — port 5173, host 127.0.0.1
- *   (xem `scripts/demo/vite.config.ts`).
+ * - `webServer` tự start harness vite (`npm run e2e:serve`) — port 5173,
+ *   host 127.0.0.1 (xem `scripts/demo/vite.config.ts`).
  * - Reuse existing server khi chạy local (CI luôn fresh start).
  */
 export default defineConfig({
@@ -28,7 +28,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run demo',
+    command: 'npm run e2e:serve',
     url: 'http://127.0.0.1:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,

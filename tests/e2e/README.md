@@ -26,12 +26,12 @@ npx playwright install chromium
 
 ## Cấu trúc
 
-- `playwright.config.ts` — config root (chromium headless, webServer auto-start `npm run demo`).
+- `playwright.config.ts` — config root (chromium headless, webServer auto-start `npm run e2e:serve`).
 - `tests/e2e/*.spec.ts` — specs.
 
 ## Lưu ý
 
-- Vite demo serve ở `http://127.0.0.1:5173` (xem `scripts/demo/vite.config.ts`).
+- Harness vite serve ở `http://127.0.0.1:5173` (xem `scripts/demo/vite.config.ts`).
 - Jest (`*.test.{ts,tsx}`) và Playwright (`*.spec.ts`) tách biệt theo extension —
   Jest cũng được cấu hình `testPathIgnorePatterns: /tests/e2e/` để chắc chắn
   không nuốt file Playwright.

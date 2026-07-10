@@ -105,7 +105,7 @@ test.describe('Geometry 3D editor — Scene v2 pre-flight', () => {
   //       broken-image trong khi chờ — dblclick vào placeholder không trigger
   //       `croppingElementId` intercept.
   // Phase 3 sẽ viết integration test riêng với MSW + jsdom (ổn hơn).
-  // Tạm thời verify re-edit thủ công trong `npm run demo`.
+  // Tạm thời verify re-edit thủ công trong `npm run e2e:serve`.
   test.skip('re-edit roundtrip: select + dblclick inserted image reopens editor', async ({
     page,
   }) => {

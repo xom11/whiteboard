@@ -208,7 +208,7 @@ Trước khi PR:
 - [ ] `npm run lint` 0 errors trên file mới.
 - [ ] `npm run build` xanh — `dist/<your-kind>.mjs` có mặt.
 - [ ] `dist/catalog.json` có entry mới + `bundleSize.js > 0`.
-- [ ] Manual smoke: chạy demo (`npm run demo`), kích shortcut → editor mở → insert →
+- [ ] Manual smoke: chạy harness (`npm run e2e:serve`), kích shortcut → editor mở → insert →
       ảnh xuất hiện → reload page → ảnh vẫn còn → double-click → editor mở lại với
       state cũ.
 

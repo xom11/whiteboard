@@ -12,7 +12,7 @@ import { test, expect, type Page, type Locator } from '@playwright/test';
  *   - Re-edit smoke: double-click image → editor reopen.
  *
  * NOTE: Requires demo server running on port 5173 (playwright.config.ts
- * auto-start via `npm run demo`). Skip locally nếu chưa cài playwright browsers:
+ * auto-start via `npm run e2e:serve`). Skip locally nếu chưa cài playwright browsers:
  *   npx playwright install chromium
  */
 
