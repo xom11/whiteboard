@@ -728,47 +728,71 @@ Trang `/whiteboard` bên hoctotbachkhoa đọc `jsonState` từ sessionStorage r
 
 Tạo `src/stamps/geometry-2d/__tests__/insertGeometryStamp.test.ts`:
 
+> **SỬA sau review Task 4.** Bản đầu của plan mock `renderGeometrySvgFromState` trả một hằng số rồi khẳng định `opts.svgString` bằng chính hằng số đó — **impl hardcode chuỗi cũng pass**, và không assertion nào chứng minh render từng được gọi. Mock dưới đây nhúng input vào output, nên dòng chảy dữ liệu bị ràng buộc thật.
+
 ```ts
 import { insertGeometryStampIntoScene } from '../insertGeometryStamp';
 
+// Mock render nhúng CHÍNH input vào output → nếu impl hardcode svgString mà
+// không gọi render, assertion (2) sẽ đỏ.
+const mockRender = jest.fn(async (json: string) => `<svg data-json='${json}'/>`);
 jest.mock('../render', () => ({
-  renderGeometrySvgFromState: jest.fn().mockResolvedValue('<svg width="10" height="10"/>'),
+  renderGeometrySvgFromState: (json: string) => mockRender(json),
 }));
 
-const insertStampImage = jest.fn().mockResolvedValue({ fileId: 'f1' });
+const mockInsertStampImage = jest.fn().mockResolvedValue({ fileId: 'f1' });
 jest.mock('../../shared/insertImage', () => ({
-  insertStampImage: (...args: unknown[]) => insertStampImage(...args),
+  insertStampImage: (...args: unknown[]) => mockInsertStampImage(...args),
 }));
+
+const JSON_STATE = '{"objects":{}}';
+
+function fakeApi() {
+  return { addFiles: jest.fn(), updateScene: jest.fn(), getSceneElements: () => [] };
+}
 
 describe('insertGeometryStampIntoScene', () => {
   beforeEach(() => {
-    insertStampImage.mockClear();
+    mockRender.mockClear();
+    mockInsertStampImage.mockClear();
   });
 
-  test('render SVG từ jsonState rồi gọi insertStampImage', async () => {
-    const api = { addFiles: jest.fn(), updateScene: jest.fn(), getSceneElements: () => [] };
-    await insertGeometryStampIntoScene(api, '{"objects":{}}');
+  test('render được gọi với ĐÚNG jsonState, và output của nó chảy vào insertStampImage', async () => {
+    const api = fakeApi();
+    await insertGeometryStampIntoScene(api, JSON_STATE);
 
-    expect(insertStampImage).toHaveBeenCalledTimes(1);
-    const [passedApi, opts] = insertStampImage.mock.calls[0] as [unknown, Record<string, unknown>];
+    // (1) render thực sự được gọi, với đúng jsonState
+    expect(mockRender).toHaveBeenCalledTimes(1);
+    expect(mockRender).toHaveBeenCalledWith(JSON_STATE);
+
+    // (2) svgString là OUTPUT của render, không phải hằng số hardcode
+    expect(mockInsertStampImage).toHaveBeenCalledTimes(1);
+    const [passedApi, opts] = mockInsertStampImage.mock.calls[0] as [
+      unknown,
+      Record<string, unknown>,
+    ];
     expect(passedApi).toBe(api);
-    expect(opts.svgString).toBe('<svg width="10" height="10"/>');
+    expect(opts.svgString).toBe(`<svg data-json='${JSON_STATE}'/>`);
     expect(opts.editingElementId).toBeNull();
   });
 
   test('customData mang đúng kind + jsonState để re-edit được', async () => {
-    const api = { addFiles: jest.fn(), updateScene: jest.fn(), getSceneElements: () => [] };
-    await insertGeometryStampIntoScene(api, '{"objects":{}}');
+    await insertGeometryStampIntoScene(fakeApi(), JSON_STATE);
 
-    const [, opts] = insertStampImage.mock.calls[0] as [unknown, { makeCustomData: () => unknown }];
+    const [, opts] = mockInsertStampImage.mock.calls[0] as [
+      unknown,
+      { makeCustomData: () => unknown },
+    ];
     expect(opts.makeCustomData()).toEqual({
       kind: 'geometry',
       version: 1,
-      jsonState: '{"objects":{}}',
+      jsonState: JSON_STATE,
     });
   });
 });
 ```
+
+**Kiểm chứng test không vô nghĩa (bắt buộc):** tạm hardcode `svgString` trong `insertGeometryStamp.ts` → test phải ĐỎ (`mockRender` gọi 0 lần) → revert → XANH.
 
 - [ ] **Step 2: Chạy test để xác nhận FAIL**
 
