@@ -130,12 +130,12 @@ export async function insertStampImage(
     const scale = oldLongest > 0 && newLongest > 0 ? oldLongest / newLongest : 1;
     const w = width * scale;
     const h = height * scale;
-    // Chèn lại = "chèn sau" → đưa element lên TRÊN CÙNG (cuối mảng), giữ
-    // nguyên id/vị trí/size. Index fractional cũ thành invalid ở vị trí mới
-    // → updateScene tự syncInvalidIndices cấp index cao nhất.
-    const updated = old
-      ? [...elements.filter((e) => e.id !== editingId), { ...old, fileId, customData, width: w, height: h }]
-      : elements;
+    // Sửa hình = edit-in-place: GIỮ vị trí z (chuẩn Excalidraw) để note GV
+    // vẽ đè lên hình vẫn nằm trên sau khi sửa. KHÔNG bring-to-front (v0.34.0
+    // từng làm vậy do đọc ngược bug report — đã revert sau e2e 2026-07-14).
+    const updated = elements.map((e) =>
+      e.id === editingId ? { ...e, fileId, customData, width: w, height: h } : e,
+    );
     api.updateScene({ elements: updated, appState: clearAppStateAfterInsert() });
     return { fileId, width: w, height: h, elementId: editingId };
   }

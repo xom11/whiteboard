@@ -61,11 +61,10 @@ describe('insertStampImage', () => {
     expect(result.elementId).toBe('el_existing');
   });
 
-  it('re-edit đưa element lên trên cùng (cuối mảng), giữ thứ tự phần còn lại', async () => {
-    // Bug report: chèn hình → note đè lên vùng đó → double-click sửa hình →
-    // chèn lại → hình vẫn nằm DƯỚI các nét vẽ sau nó. Kỳ vọng: chèn lại từ
-    // editor = "chèn sau" → nằm trên cùng (Excalidraw sync fractional index
-    // theo thứ tự mảng khi updateScene).
+  it('re-edit GIỮ nguyên vị trí z (không nhảy lên đè note vẽ sau)', async () => {
+    // Semantics chốt sau e2e 2026-07-14: sửa hình = edit-in-place (chuẩn
+    // Excalidraw) — note GV vẽ đè lên hình phải TIẾP TỤC nằm trên sau khi
+    // sửa. (v0.34.0 từng đổi sang bring-to-front do đọc ngược report — revert.)
     const api = makeApiStub([
       { id: 'el_below', type: 'freedraw' },
       { id: 'el_existing', type: 'image' },
@@ -79,9 +78,9 @@ describe('insertStampImage', () => {
 
     expect(result.elementId).toBe('el_existing');
     const ids = (api._state.elements as { id: string }[]).map((e) => e.id);
-    expect(ids).toEqual(['el_below', 'note_above', 'el_existing']);
-    const moved = api._state.elements[2] as { customData: { kind: string } };
-    expect(moved.customData).toEqual({ kind: 'replaced' });
+    expect(ids).toEqual(['el_below', 'el_existing', 'note_above']);
+    const updated = api._state.elements[1] as { customData: { kind: string } };
+    expect(updated.customData).toEqual({ kind: 'replaced' });
   });
 
   it('re-edit id không tồn tại → scene giữ nguyên, không chèn rác', async () => {
