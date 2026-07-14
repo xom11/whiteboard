@@ -123,15 +123,19 @@ export async function insertStampImage(
     // Giữ cạnh dài nhất của element cũ, áp tỉ lệ (aspect) của SVG mới → không
     // méo khi sửa nội dung làm đổi aspect. Element cũ chưa có size hợp lệ →
     // dùng natural.
-    const old = opts.preserveExistingSize ? elements.find((e) => e.id === editingId) : undefined;
-    const oldLongest = old ? Math.max(old.width ?? 0, old.height ?? 0) : 0;
+    const old = elements.find((e) => e.id === editingId);
+    const oldLongest =
+      opts.preserveExistingSize && old ? Math.max(old.width ?? 0, old.height ?? 0) : 0;
     const newLongest = Math.max(width, height);
     const scale = oldLongest > 0 && newLongest > 0 ? oldLongest / newLongest : 1;
     const w = width * scale;
     const h = height * scale;
-    const updated = elements.map((e) =>
-      e.id === editingId ? { ...e, fileId, customData, width: w, height: h } : e,
-    );
+    // Chèn lại = "chèn sau" → đưa element lên TRÊN CÙNG (cuối mảng), giữ
+    // nguyên id/vị trí/size. Index fractional cũ thành invalid ở vị trí mới
+    // → updateScene tự syncInvalidIndices cấp index cao nhất.
+    const updated = old
+      ? [...elements.filter((e) => e.id !== editingId), { ...old, fileId, customData, width: w, height: h }]
+      : elements;
     api.updateScene({ elements: updated, appState: clearAppStateAfterInsert() });
     return { fileId, width: w, height: h, elementId: editingId };
   }

@@ -61,6 +61,40 @@ describe('insertStampImage', () => {
     expect(result.elementId).toBe('el_existing');
   });
 
+  it('re-edit đưa element lên trên cùng (cuối mảng), giữ thứ tự phần còn lại', async () => {
+    // Bug report: chèn hình → note đè lên vùng đó → double-click sửa hình →
+    // chèn lại → hình vẫn nằm DƯỚI các nét vẽ sau nó. Kỳ vọng: chèn lại từ
+    // editor = "chèn sau" → nằm trên cùng (Excalidraw sync fractional index
+    // theo thứ tự mảng khi updateScene).
+    const api = makeApiStub([
+      { id: 'el_below', type: 'freedraw' },
+      { id: 'el_existing', type: 'image' },
+      { id: 'note_above', type: 'freedraw' },
+    ]);
+    const result = await insertStampImage(api, {
+      svgString: '<svg></svg>',
+      makeCustomData: () => ({ kind: 'replaced' }),
+      editingElementId: 'el_existing',
+    });
+
+    expect(result.elementId).toBe('el_existing');
+    const ids = (api._state.elements as { id: string }[]).map((e) => e.id);
+    expect(ids).toEqual(['el_below', 'note_above', 'el_existing']);
+    const moved = api._state.elements[2] as { customData: { kind: string } };
+    expect(moved.customData).toEqual({ kind: 'replaced' });
+  });
+
+  it('re-edit id không tồn tại → scene giữ nguyên, không chèn rác', async () => {
+    const api = makeApiStub([{ id: 'el_other', type: 'image' }]);
+    const result = await insertStampImage(api, {
+      svgString: '<svg></svg>',
+      makeCustomData: () => ({}),
+      editingElementId: 'el_gone',
+    });
+    expect(result.elementId).toBe('el_gone');
+    expect((api._state.elements as { id: string }[]).map((e) => e.id)).toEqual(['el_other']);
+  });
+
   it('giữ size hiện tại của element khi re-edit (không reset về size SVG mới)', async () => {
     // User đã chèn rồi (có thể đã resize) → element 200×160. SVG mới render
     // natural 100×80 (cùng tỉ lệ). Re-edit KHÔNG được reset về 100×80.
