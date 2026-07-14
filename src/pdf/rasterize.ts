@@ -45,8 +45,16 @@ export interface RasterizedPage {
   dataURL: string;
   width: number;
   height: number;
-  mimeType: 'image/png';
+  mimeType: 'image/jpeg';
 }
+
+/**
+ * Chất lượng JPEG cho trang PDF full-scale. Trang PDF nền trắng đục (không cần
+ * alpha) → JPEG 0.85 nhỏ hơn PNG ~3-6 lần mà chữ vẫn nét ở scale 2. Quan
+ * trọng cho consumer lưu snapshot kèm files base64: 4 trang PNG ≈ 1.4MB đã
+ * suýt chạm trần lưu trữ phía server (2MB) → save fail âm thầm → mất note.
+ */
+const PAGE_JPEG_QUALITY = 0.85;
 
 export interface RasterizeOptions {
   /** Scale render. Mặc định 2 (HiDPI sharp). */
@@ -80,7 +88,7 @@ export async function closePdfDocument(doc: PDFDocumentProxy): Promise<void> {
 }
 
 /**
- * Render danh sách trang ra PNG dataURL.
+ * Render danh sách trang ra JPEG dataURL (nền trắng, quality 0.85).
  *
  * Lưu ý:
  *   - Sử dụng `OffscreenCanvas` nếu có (browser hiện đại) để không touch DOM,
@@ -104,8 +112,8 @@ export async function rasterizePdf(
     const pageNum = pages[i];
     const page = await doc.getPage(pageNum);
     try {
-      const rendered = await renderPageToPng(page, scale);
-      result.push({ pageNumber: pageNum, mimeType: 'image/png', ...rendered });
+      const rendered = await renderPageToJpeg(page, scale);
+      result.push({ pageNumber: pageNum, mimeType: 'image/jpeg', ...rendered });
     } finally {
       page.cleanup();
     }
@@ -114,7 +122,7 @@ export async function rasterizePdf(
   return result;
 }
 
-async function renderPageToPng(
+async function renderPageToJpeg(
   page: PDFPageProxy,
   scale: number,
 ): Promise<{ dataURL: string; width: number; height: number }> {
@@ -127,8 +135,12 @@ async function renderPageToPng(
   canvas.height = height;
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Không lấy được 2D context của canvas.');
+  // JPEG không có alpha — vùng canvas còn transparent sẽ thành ĐEN khi encode.
+  // Fill trắng trước cho chắc (không phụ thuộc default background của pdf.js).
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, width, height);
   await page.render({ canvasContext: ctx, viewport, canvas }).promise;
-  const dataURL = canvas.toDataURL('image/png');
+  const dataURL = canvas.toDataURL('image/jpeg', PAGE_JPEG_QUALITY);
   return { dataURL, width, height };
 }
 

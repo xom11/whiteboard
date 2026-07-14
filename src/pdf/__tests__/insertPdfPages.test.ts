@@ -42,8 +42,8 @@ function makePage(pageNumber: number, width = 800, height = 1000): RasterizedPag
     pageNumber,
     width,
     height,
-    mimeType: 'image/png',
-    dataURL: `data:image/png;base64,page${pageNumber}`,
+    mimeType: 'image/jpeg',
+    dataURL: `data:image/jpeg;base64,page${pageNumber}`,
   };
 }
 
@@ -55,7 +55,7 @@ describe('insertRasterizedPagesIntoScene', () => {
     const result = insertRasterizedPagesIntoScene(api, pages, { scale: 2 });
 
     expect(api.added).toHaveLength(3);
-    expect(api.added[0].mimeType).toBe('image/png');
+    expect(api.added[0].mimeType).toBe('image/jpeg');
     expect(result.insertedElementIds).toHaveLength(3);
     expect(result.fileIds).toHaveLength(3);
 
