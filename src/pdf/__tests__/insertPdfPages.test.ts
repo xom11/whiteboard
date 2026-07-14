@@ -92,12 +92,33 @@ describe('insertRasterizedPagesIntoScene', () => {
     expect(a.x - b.x).toBe(100);
   });
 
-  it('preserve scene elements cũ', () => {
+  it('trang PDF chèn DƯỚI ink/element cũ (tài liệu nền — không đè note GV)', () => {
+    // Bug report thật (e2e 2026-07-14): GV đang note → import PDF → trang PDF
+    // trắng đục đè MẤT chữ. Trang PDF = giấy nền, mực phải luôn nằm trên.
     const api = makeFakeApi();
-    api.sceneElements = [{ id: 'existing', type: 'rectangle' }];
+    api.sceneElements = [
+      { id: 'note1', type: 'freedraw' },
+      { id: 'stamp1', type: 'image' },
+    ];
     insertRasterizedPagesIntoScene(api, [makePage(1)], { scale: 2 });
-    expect(api.lastUpdate.elements[0].id).toBe('existing');
-    expect(api.lastUpdate.elements[1].type).toBe('image');
+    const ids = api.lastUpdate.elements.map((e: { id: string }) => e.id);
+    expect(ids[0]).toMatch(/^pdf_/); // trang mới ở ĐÁY stack
+    expect(ids.slice(1)).toEqual(['note1', 'stamp1']); // ink giữ nguyên thứ tự, trên PDF
+  });
+
+  it('trang PDF mới nằm TRÊN trang PDF cũ nhưng vẫn DƯỚI ink (giấy xếp chồng)', () => {
+    const api = makeFakeApi();
+    api.sceneElements = [
+      { id: 'pdf_old_1', type: 'image' },
+      { id: 'pdf_old_2', type: 'image' },
+      { id: 'note1', type: 'freedraw' },
+    ];
+    insertRasterizedPagesIntoScene(api, [makePage(1)], { scale: 2 });
+    const ids = api.lastUpdate.elements.map((e: { id: string }) => e.id);
+    expect(ids[0]).toBe('pdf_old_1');
+    expect(ids[1]).toBe('pdf_old_2');
+    expect(ids[2]).toMatch(/^pdf_/); // trang mới ngay sau trang cũ cuối
+    expect(ids[3]).toBe('note1'); // note vẫn trên cùng
   });
 
   it('empty pages → noop', () => {

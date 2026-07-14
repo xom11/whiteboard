@@ -59,9 +59,19 @@ export function insertRasterizedPagesIntoScene(
     return buildPdfImageElement(filesPayload[i].id, x, y, width, height);
   });
 
+  // Trang PDF = TÀI LIỆU NỀN (như giấy trong OneNote/GoodNotes): chèn DƯỚI
+  // mọi ink/stamp hiện có để không đè mất chữ GV đang viết — nhưng TRÊN các
+  // trang PDF cũ (giấy xếp chồng, trang mới import phải nhìn thấy được).
+  // Element mới không có `index` → updateScene syncInvalidIndices tự cấp
+  // fractional index khớp vị trí giữa mảng.
   const existing = api.getSceneElements() as readonly ExcalidrawElement[];
+  const lastPdfIdx = existing.reduce(
+    (acc, e, i) => (e.type === 'image' && e.id.startsWith('pdf_') ? i : acc),
+    -1,
+  );
+  const insertAt = lastPdfIdx + 1;
   api.updateScene({
-    elements: [...existing, ...newElements],
+    elements: [...existing.slice(0, insertAt), ...newElements, ...existing.slice(insertAt)],
     appState: { selectedElementIds: {}, croppingElementId: null },
   });
 
