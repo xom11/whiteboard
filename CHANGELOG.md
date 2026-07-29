@@ -1,6 +1,6 @@
 # Changelog
 
-## Chưa phát hành
+## v0.35.0 — 2026-07-29
 
 ### Thu gọn panel thuộc tính
 
