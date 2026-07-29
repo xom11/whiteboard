@@ -7,46 +7,87 @@
  */
 
 /*
- * Sticky anchor (F1 — nút trôi khỏi tầm nhìn khi panel cuộn).
+ * F1 (nút trôi khỏi tầm nhìn khi panel cuộn) + fix round 2 (nút đè lên
+ * control khi panel cuộn) — 2026-07-29.
  *
- * `.App-menu__left` là chính scroll container (overflow-y:auto) — con
- * `position:absolute` của nó cuộn theo nội dung vì containing block của nó
- * VẪN là toạ độ trong vùng cuộn. Wrapper được portal vào CUỐI Island (con
- * cuối cùng, sau `.panelColumn`) nên KHÔNG thể sticky trực tiếp: `top`
- * "tĩnh" (flow) của 1 phần tử sticky = tổng chiều cao các sibling đứng
- * trước nó — đứng cuối nghĩa là tĩnh ở gần đáy, chỉ "dính" khi cuộn gần hết
- * (không đạt trong dải cuộn thực tế).
+ * `.App-menu__left` (Excalidraw's own CSS) VỪA là Island VỪA là chính
+ * scroll container (`overflow-y:auto`, inline `max-height`). Wrapper của
+ * mình luôn được `appendChild` — tức LUÔN LÀ CON CUỐI CÙNG, sau
+ * `.panelColumn` (nội dung thật).
  *
- * Fix: buộc `.App-menu__left` thành flex column (`display:flex` — 2 con
- * của nó vốn đã stack dọc như block nên không đổi layout hiện có), rồi
- * cho wrapper `order:-1` để nó xử sự như phần tử ĐẦU TIÊN trong flex layout
- * (bất kể thứ tự DOM) — flow-position lúc đó = 0, sticky top:0 dính đúng
- * ngay từ đầu. Wrapper `height:0` để không chiếm chỗ (nút portal bên trong
- * dùng absolute, không đổi layout .panelColumn).
+ * ĐÃ THỬ và KHÔNG ĐỦ: `position: sticky` trên wrapper (giữ `.App-menu__left`
+ * là scroll container, chỉ ghim nút bằng sticky + `order:-1` để né việc
+ * đứng cuối DOM). Đo bằng Playwright thật: nút đứng yên đúng vị trí qua
+ * mọi mức cuộn — NHƯNG vì `.App-menu__left` vẫn là 1 scroll container DUY
+ * NHẤT chứa cả nút VÀ nội dung, sticky chỉ "ghim nút tại 1 toạ độ màn
+ * hình cố định" trong khi `.panelColumn` vẫn trượt NGANG QUA đúng toạ độ
+ * đó — dù có "chiếm chỗ thật" (height thật, đẩy nội dung xuống ở trạng
+ * thái nghỉ scrollTop=0) thì tại CÁC MỐC CUỘN KHÁC (vd 50%), nút vẫn đè
+ * lên bất kỳ control nào đang trượt qua đúng toạ độ đó — đo được đè lên
+ * "Show background color picker" ở scroll 50% dù đã có `flex-shrink:0`
+ * đúng cách. Sticky-trên-cùng-1-scroll-container về bản chất KHÔNG loại
+ * trừ overlap khi cuộn (chỉ đảm bảo overlap = 0 tại điểm nghỉ).
+ *
+ * FIX THẬT (kiến trúc tách vùng cuộn — vẫn thuần CSS, không đổi
+ * `PropsPanelToggle.tsx`, không đổi chỗ mount): thay vì để `.App-menu__left`
+ * tự cuộn, chuyển việc cuộn xuống CHÍNH `.panelColumn` — 2 vùng (dải nút +
+ * panelColumn cuộn riêng) không còn chung 1 viewport nên KHÔNG THỂ trượt
+ * qua nhau ở bất kỳ mức cuộn nào:
+ *   - `.App-menu__left`: `display:flex;flex-direction:column;overflow:hidden`
+ *     — không tự cuộn nữa, chỉ còn là khung chứa 2 hàng.
+ *   - `.wb-props-toggle-mount`: `flex-shrink:0; height:1.5rem; order:-1`
+ *     — dải cố định ~24px, `order:-1` để xử sự như hàng ĐẦU TIÊN dù đứng
+ *     cuối DOM (không cần sticky nữa vì Island không còn cuộn).
+ *   - `.App-menu__left > .panelColumn`: `flex:1 1 auto; min-height:0;
+ *     overflow-y:auto` — nhận lại đúng hành vi cuộn + auto-height mà
+ *     `.App-menu__left` từng có, nhưng trong viewport RIÊNG, bắt đầu NGAY
+ *     DƯỚI dải nút. Island vẫn auto-shrink cho panel ngắn (không đủ nội
+ *     dung để chạm `max-height`) vì `flex:1` chỉ giãn khi container có
+ *     kích thước XÁC ĐỊNH lớn hơn nội dung — ở đây `.App-menu__left` cao
+ *     `auto` (chỉ CHẶN TRÊN bởi `max-height` do Excalidraw set), nên
+ *     không có "khoảng trống dương" để giãn khi nội dung ít hơn max-height.
  *
  * `.App-menu__left.App-menu__left` (double selector) để thắng chắc chắn
- * rule gốc `.excalidraw .App-menu__left{display:block}` của Excalidraw
- * (cùng specificity 2 lớp — thứ tự nạp CSS phụ thuộc module graph, không
- * nên dựa vào đó).
+ * rule gốc `.excalidraw .App-menu__left{display:block;overflow-y:auto}`
+ * của Excalidraw (cùng specificity 2 lớp — thứ tự nạp CSS phụ thuộc module
+ * graph, không nên dựa vào đó).
+ *
+ * GOTCHA (đo được, không suy luận suông): chỉ đổi `height` KHÔNG đủ để
+ * "chiếm chỗ thật" — `.wb-props-toggle-mount` là flex-item, và nút bên
+ * trong là `position:absolute` nên KHÔNG tính vào min-content của wrapper
+ * (absolutely-positioned con bị flow bỏ qua khi tính kích thước tối
+ * thiểu) → automatic minimum size của wrapper = 0. Khi tổng chiều cao các
+ * hàng vượt không gian sẵn có, flex-shrink mặc định (1) co MỌI thứ có thể
+ * co — wrapper co được tới 0 (sàn=0) trong khi `.panelColumn` có nội dung
+ * thật (sàn co lớn hơn nhiều) nên gần như toàn bộ phần co dồn vào wrapper,
+ * đưa height thực tế về LẠI 0px dù CSS khai 1.5rem (verify bằng
+ * `getComputedStyle` + set `!important` qua JS vẫn ra 0 — chứng minh đây
+ * là kết quả thuật toán flex-shrink, không phải specificity/cascade).
+ * `flex-shrink: 0` khoá wrapper không tham gia co giãn.
  */
 .excalidraw .App-menu__left.App-menu__left {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+.excalidraw .App-menu__left.App-menu__left > .panelColumn {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .wb-props-toggle-mount {
   display: block;
-  height: 0;
-  overflow: visible;
-  position: sticky;
-  top: 0;
+  height: 1.5rem;
+  flex-shrink: 0;
   order: -1;
   z-index: 3;
 }
 
 .excalidraw .wb-props-toggle {
   position: absolute;
-  top: 0.375rem;
+  top: 0;
   right: 0.375rem;
   z-index: 2;
   display: flex;
@@ -79,8 +120,9 @@
   display: none;
 }
 
-/* Bỏ sticky anchor khi thu gọn: không còn scroll, nút cần contribute kích
-   thước thật để Island shrink-to-fit đúng ~32x32 (giống hành vi gốc). */
+/* Bỏ layout đặc biệt khi thu gọn: không còn scroll/panelColumn hiển thị,
+   nút cần contribute kích thước thật để Island shrink-to-fit đúng
+   ~32x32 (giống hành vi gốc). */
 .wb-props-collapsed .excalidraw .wb-props-toggle-mount {
   display: contents;
 }
