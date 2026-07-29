@@ -39,35 +39,50 @@ Một state `propsCollapsed: boolean` trong `src/Whiteboard.tsx`, mặc định 
 **Không** persist (mỗi lần load lại panel hiện). Không đụng `appState` của Excalidraw,
 không đụng scene / sessionStorage / IndexedDB → không ảnh hưởng persistence và sync.
 
-### Cách ẩn
+### Nút toggle — đặt BÊN TRONG Island
 
-CSS thuần. Wrapper sẵn có (`src/Whiteboard.tsx:252`) thêm class khi collapsed:
+Ràng buộc phát hiện khi lập plan: `.App-menu__left` là **`position: absolute`** (CSS gốc
+của Excalidraw). Nó không chiếm chỗ trong flow của `.App-menu_top__left`, nên nếu portal
+nút thành *sibling* của panel thì nút sẽ nằm ngay dưới hamburger và **đè lên panel**.
+Không dùng flow layout được.
+
+⟹ Component mới `src/ui/PropsPanelToggle.tsx` portal nút vào **bên trong** Island
+`.App-menu__left`. Khi mở, nút `position: absolute` ở góc trên-phải panel; khi thu gọn,
+nút về `position: static` và chính Island co lại quanh nó thành một tab nhỏ.
+
+Icon `«` (thu) / `»` (mở), kèm `title`/`aria-label` tiếng Việt và `aria-expanded`.
+Tái dùng pattern portal + `MutationObserver` của `src/pdf/PdfImporterButton.tsx`.
+
+### Cách thu gọn
+
+CSS thuần. Wrapper sẵn có (`src/Whiteboard.tsx:252`) thêm class `wb-props-collapsed`:
 
 ```css
-.wb-props-collapsed .excalidraw .App-menu__left { display: none; }
+.wb-props-collapsed .excalidraw .App-menu__left {
+  width: auto; min-width: 0; padding: 0.25rem; overflow: visible;
+}
+.wb-props-collapsed .excalidraw .App-menu__left > *:not(.wb-props-toggle-mount) {
+  display: none;
+}
+.wb-props-collapsed .excalidraw .wb-props-toggle { position: static; }
 ```
 
-### Nút toggle
-
-Component mới `src/ui/PropsPanelToggle.tsx`, portal vào `.App-menu_top__left` — Stack
-chứa nút hamburger + panel thuộc tính, luôn tồn tại trên desktop. Nút là con cuối của
-stack nên **tự** nằm dưới panel khi panel hiện, và tụt lên ngay dưới hamburger khi panel
-bị ẩn: không tính toạ độ tay, không lệch khi panel cao/thấp theo tool đang chọn.
-
-Icon `«` (thu) / `»` (mở), kèm `title` tiếng Việt và `aria-expanded`.
-
-Tái dùng pattern portal + `MutationObserver` của `src/pdf/PdfImporterButton.tsx`.
+Tức là **không** `display: none` cả Island (làm vậy thì mất luôn nút mở lại, phải dựng
+nút thứ hai và tự tính toạ độ). Thay vào đó ẩn nội dung (`.panelColumn`) và để Island
+co về đúng kích thước cái nút.
 
 ### Điều kiện render nút
 
-Nút chỉ render khi `!readOnly` **và** `.App-menu__left` đang có trong DOM. Hệ quả:
+Nút chỉ render khi `!readOnly` **và** `.App-menu__left` đang có trong DOM. Vì nút là con
+của Island nên nó sống/chết theo panel, không cần đồng bộ gì thêm:
 
 | Tình huống | Kết quả |
 |---|---|
-| Mobile (dùng `App-mobile-menu`) | Không có target → nút không render. Desktop-only, đúng phạm vi issue. |
+| Mobile (dùng `App-mobile-menu`) | Không có Island → nút không render. Desktop-only, đúng phạm vi issue. |
 | Tool = selection, không chọn gì | Excalidraw gỡ panel → nút biến mất (không có gì để ẩn). |
 | Đang mở stamp editor (tool = `hand`) | Panel vắng → nút vắng. |
-| `collapsed = true` | Panel vẫn trong DOM (chỉ `display:none`) → nút vẫn hiện → mở lại được. |
+| `collapsed = true` | Island vẫn render (chỉ co lại) → nút vẫn hiện → mở lại được. |
+| Chọn tool khác khi đang thu gọn | Island remount, class `wb-props-collapsed` vẫn còn → vẫn thu gọn. |
 | `readOnly` (viewModeEnabled) | Panel không render → nút không render. |
 
 ### Luồng
@@ -77,16 +92,16 @@ Không có side effect nào khác.
 
 ## Rủi ro
 
-Ta bám vào class nội bộ `.App-menu__left` và `.App-menu_top__left` của Excalidraw. Nếu
-0.19 đổi tên: mất target portal → nút không hiện (fail-safe, UI về như cũ); hoặc đổi class
-Island → nút hiện nhưng bấm không ăn. E2E bắt được cả hai khi bump version.
+Ta bám vào class nội bộ `.App-menu__left` (Island) và `.panelColumn` (nội dung panel) của
+Excalidraw. Nếu 0.19 đổi tên: mất target portal → nút không hiện (fail-safe, UI về đúng như
+hiện tại); hoặc `.panelColumn` đổi tên → thu gọn không ẩn hết nội dung. E2E bắt được cả hai
+khi bump version.
 
 ## Test
 
-**Jest** (`src/ui/__tests__/PropsPanelToggle.test.tsx`): dựng DOM giả có
-`.App-menu_top__left` + `.App-menu__left` →
+**Jest** (`src/ui/__tests__/PropsPanelToggle.test.tsx`): dựng DOM giả có `.App-menu__left` →
 
-- nút mount vào đúng stack;
+- nút mount vào bên trong Island;
 - click → gọi `onToggle`, `aria-expanded` đổi;
 - `readOnly` / thiếu `.App-menu__left` → không render nút.
 
