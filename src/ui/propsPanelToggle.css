@@ -48,9 +48,14 @@
  *     không có "khoảng trống dương" để giãn khi nội dung ít hơn max-height.
  *
  * `.App-menu__left.App-menu__left` (double selector) để thắng chắc chắn
- * rule gốc `.excalidraw .App-menu__left{display:block;overflow-y:auto}`
- * của Excalidraw (cùng specificity 2 lớp — thứ tự nạp CSS phụ thuộc module
- * graph, không nên dựa vào đó).
+ * rule gốc của Excalidraw — thực tế (verify trong
+ * `node_modules/@excalidraw/excalidraw/dist/prod/index.css`):
+ * `.App-menu__left{overflow-y:auto;padding:.75rem;width:12.5rem;
+ * box-sizing:border-box;position:absolute}` (KHÔNG có `display` tường
+ * minh — mặc định `display:block` của `<div>`, ta chỉ cần thắng
+ * `overflow-y:auto` vì đó là property duy nhất 2 rule cùng đụng tới; cùng
+ * specificity 2 lớp — thứ tự nạp CSS phụ thuộc module graph, không nên
+ * dựa vào đó).
  *
  * GOTCHA (đo được, không suy luận suông): chỉ đổi `height` KHÔNG đủ để
  * "chiếm chỗ thật" — `.wb-props-toggle-mount` là flex-item, và nút bên

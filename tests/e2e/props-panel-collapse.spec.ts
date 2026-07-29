@@ -156,14 +156,28 @@ test.describe('Thu gọn panel thuộc tính', () => {
    *    CLIP (ẩn, không thể click) bởi overflow của `.panelColumn` hay không.
    * 2. Diện tích giao nhau giữa boundingBox() của nút và boundingBox() ĐÃ
    *    CẮT THEO VÙNG NHÌN THẤY (clip theo `.panelColumn`) của mọi
-   *    button/input/label/.color-picker__button/[role="radio"] còn lại
-   *    trong panel — phải bằng 0. Dùng rect ĐÃ CLIP (không phải rect thô)
-   *    vì raw `getBoundingClientRect()` KHÔNG phản ánh việc phần tử bị
-   *    `.panelColumn`'s `overflow-y:auto` cắt mất — đo thực nghiệm cho thấy
-   *    rect thô vẫn báo "chồng lấn" ở một số mốc cuộn (vd 50%) dù phần tử
-   *    đó đã bị cắt khỏi vùng nhìn thấy (verify bằng `elementFromPoint` tại
-   *    đúng điểm đó trả về `<path>` bên trong nút toggle, KHÔNG phải control
-   *    kia) — tức đó là false positive của phép đo thô, không phải bug thật.
+   *    button/input/label/.color-picker__button/[role="radio"]/h3/legend/
+   *    .control-label còn lại trong panel — phải bằng 0. Dùng rect ĐÃ CLIP
+   *    (không phải rect thô) vì raw `getBoundingClientRect()` KHÔNG phản
+   *    ánh việc phần tử bị `.panelColumn`'s `overflow-y:auto` cắt mất — đo
+   *    thực nghiệm cho thấy rect thô vẫn báo "chồng lấn" ở một số mốc cuộn
+   *    (vd 50%) dù phần tử đó đã bị cắt khỏi vùng nhìn thấy (verify bằng
+   *    `elementFromPoint` tại đúng điểm đó trả về `<path>` bên trong nút
+   *    toggle, KHÔNG phải control kia) — tức đó là false positive của phép
+   *    đo thô, không phải bug thật.
+   *
+   * Fix round 3 (2026-07-29): danh sách ứng viên ban đầu chỉ gồm phần tử
+   * TƯƠNG TÁC (button/input/label/...) nên BỎ SÓT heading/nhãn nhóm không
+   * tương tác (`<h3 aria-hidden="true">Stroke</h3>`, `<legend>`,
+   * `.control-label`) mà Excalidraw luôn render phía trên mỗi nhóm control
+   * — nút đè lên CHỮ "Stroke" (không phải 1 control cụ thể) lọt qua cổng
+   * cũ hoàn toàn. Reviewer chứng minh bằng tiêm CSS mô phỏng quên
+   * `flex-shrink:0` (`.wb-props-toggle-mount{height:0 !important}`): nút
+   * đè thật lên "Stroke" (216px²) nhưng cổng cũ báo `totalOverlap: 0` (bỏ
+   * sót vì `<h3>` không khớp selector cũ). Thêm `h3, legend,
+   * .control-label` vào danh sách ứng viên — vẫn giữ nguyên cách clip
+   * theo `.panelColumn` (không quay lại clip theo Island, đã có bài học
+   * false positive 252px² ở round 2).
    */
   test('cuộn panel ở 3 mốc 0/50/100%: nút toggle không đè (thật) lên control nào', async ({
     page,
@@ -223,10 +237,12 @@ test.describe('Thu gọn panel thuộc tính', () => {
 
         // Diện tích giao nhau với rect ĐÃ CLIP theo vùng nhìn thấy của
         // panelColumn (mọi control nằm trong panelColumn không thể hiển thị
-        // ngoài rect này).
+        // ngoài rect này). Gồm CẢ heading/nhãn nhóm không tương tác (h3,
+        // legend, .control-label) — round 3: cổng cũ chỉ xét phần tử tương
+        // tác nên bỏ sót "nút đè lên CHỮ Stroke" (không phải 1 control).
         const candidates = Array.from(
           panelEl.querySelectorAll<HTMLElement>(
-            'button, input, label, .color-picker__button, [role="radio"]',
+            'button, input, label, .color-picker__button, [role="radio"], h3, legend, .control-label',
           ),
         ).filter((el) => !mount.contains(el));
 
