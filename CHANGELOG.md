@@ -1,5 +1,19 @@
 # Changelog
 
+## Chưa phát hành
+
+### Thu gọn panel thuộc tính
+
+Panel thuộc tính bên trái của Excalidraw (Nét vẽ / Nền / Độ dày / Độ mờ / Lớp)
+giờ có nút thu gọn ở góc trên-phải. Bấm một lần, panel co lại thành một tab nhỏ,
+trả diện tích cho bảng; bấm lại để mở. Trạng thái không lưu — vào lại bảng là panel
+hiện như cũ. Undo/redo, thanh công cụ và zoom giữ nguyên (khác với zen mode `Alt+Z`
+của Excalidraw — chế độ đó ẩn luôn undo/redo).
+
+Chỉ áp dụng cho desktop; bản mobile dùng bottom sheet nên không chiếm diện tích ngang.
+
+---
+
 ## v0.31.0 — 2026-06-17
 
 Massive AI rule engine expansion + dataset coverage.
