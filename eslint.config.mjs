@@ -16,6 +16,14 @@ export default [
       'playground/**',
       'examples/**',
       '**/*.d.ts',
+      // Không phải source của repo: worktree tạm, venv Python của script đo,
+      // và output do Playwright sinh ra. Trước đây chúng lọt vào lint và tạo
+      // ra hàng nghìn lỗi giả, che mất lỗi thật.
+      '.claude/**',
+      '.worktrees/**',
+      '.venv/**',
+      'playwright-report/**',
+      'test-results/**',
     ],
   },
   js.configs.recommended,
