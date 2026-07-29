@@ -1,0 +1,50 @@
+/**
+ * Nút thu gọn panel thuộc tính của Excalidraw.
+ *
+ * Nút được portal vào BÊN TRONG Island `.App-menu__left` (Excalidraw 0.18)
+ * vì Island là `position: absolute` — sibling sẽ đè lên panel.
+ * Class `wb-props-collapsed` do Whiteboard đặt trên wrapper ngoài cùng.
+ */
+
+.wb-props-toggle-mount {
+  display: contents;
+}
+
+.excalidraw .wb-props-toggle {
+  position: absolute;
+  top: 0.375rem;
+  right: 0.375rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: none;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: var(--color-on-surface, #1b1b1f);
+  cursor: pointer;
+}
+
+.excalidraw .wb-props-toggle:hover {
+  background: var(--button-hover-bg, rgba(0, 0, 0, 0.06));
+}
+
+/* --- Trạng thái thu gọn: Island co lại chỉ còn cái nút --- */
+
+.wb-props-collapsed .excalidraw .App-menu__left {
+  width: auto;
+  min-width: 0;
+  padding: 0.25rem;
+  overflow: visible;
+}
+
+.wb-props-collapsed .excalidraw .App-menu__left > *:not(.wb-props-toggle-mount) {
+  display: none;
+}
+
+.wb-props-collapsed .excalidraw .wb-props-toggle {
+  position: static;
+}
