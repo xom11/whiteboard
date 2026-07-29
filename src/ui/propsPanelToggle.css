@@ -6,8 +6,42 @@
  * Class `wb-props-collapsed` do Whiteboard đặt trên wrapper ngoài cùng.
  */
 
+/*
+ * Sticky anchor (F1 — nút trôi khỏi tầm nhìn khi panel cuộn).
+ *
+ * `.App-menu__left` là chính scroll container (overflow-y:auto) — con
+ * `position:absolute` của nó cuộn theo nội dung vì containing block của nó
+ * VẪN là toạ độ trong vùng cuộn. Wrapper được portal vào CUỐI Island (con
+ * cuối cùng, sau `.panelColumn`) nên KHÔNG thể sticky trực tiếp: `top`
+ * "tĩnh" (flow) của 1 phần tử sticky = tổng chiều cao các sibling đứng
+ * trước nó — đứng cuối nghĩa là tĩnh ở gần đáy, chỉ "dính" khi cuộn gần hết
+ * (không đạt trong dải cuộn thực tế).
+ *
+ * Fix: buộc `.App-menu__left` thành flex column (`display:flex` — 2 con
+ * của nó vốn đã stack dọc như block nên không đổi layout hiện có), rồi
+ * cho wrapper `order:-1` để nó xử sự như phần tử ĐẦU TIÊN trong flex layout
+ * (bất kể thứ tự DOM) — flow-position lúc đó = 0, sticky top:0 dính đúng
+ * ngay từ đầu. Wrapper `height:0` để không chiếm chỗ (nút portal bên trong
+ * dùng absolute, không đổi layout .panelColumn).
+ *
+ * `.App-menu__left.App-menu__left` (double selector) để thắng chắc chắn
+ * rule gốc `.excalidraw .App-menu__left{display:block}` của Excalidraw
+ * (cùng specificity 2 lớp — thứ tự nạp CSS phụ thuộc module graph, không
+ * nên dựa vào đó).
+ */
+.excalidraw .App-menu__left.App-menu__left {
+  display: flex;
+  flex-direction: column;
+}
+
 .wb-props-toggle-mount {
-  display: contents;
+  display: block;
+  height: 0;
+  overflow: visible;
+  position: sticky;
+  top: 0;
+  order: -1;
+  z-index: 3;
 }
 
 .excalidraw .wb-props-toggle {
@@ -43,6 +77,12 @@
 
 .wb-props-collapsed .excalidraw .App-menu__left > *:not(.wb-props-toggle-mount) {
   display: none;
+}
+
+/* Bỏ sticky anchor khi thu gọn: không còn scroll, nút cần contribute kích
+   thước thật để Island shrink-to-fit đúng ~32x32 (giống hành vi gốc). */
+.wb-props-collapsed .excalidraw .wb-props-toggle-mount {
+  display: contents;
 }
 
 .wb-props-collapsed .excalidraw .wb-props-toggle {

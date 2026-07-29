@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 import './propsPanelToggle.css';
 
@@ -116,6 +116,14 @@ export function PropsPanelToggle({
 
   const label = collapsed ? 'Hiện bảng thuộc tính' : 'Ẩn bảng thuộc tính';
 
+  // Blur ngay sau click (F2): nếu không, focus kẹt lại trên nút và phím
+  // Space (pan tạm thời của Excalidraw) hoặc Enter ngay sau đó sẽ vô tình
+  // toggle lại panel.
+  const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
+    e.currentTarget.blur();
+    onToggle();
+  };
+
   return createPortal(
     <button
       type="button"
@@ -124,7 +132,7 @@ export function PropsPanelToggle({
       aria-expanded={!collapsed}
       aria-label={label}
       title={label}
-      onClick={onToggle}
+      onClick={handleClick}
     >
       <ChevronIcon direction={collapsed ? 'right' : 'left'} />
     </button>,

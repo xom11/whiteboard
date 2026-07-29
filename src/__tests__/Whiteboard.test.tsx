@@ -480,6 +480,13 @@ describe('Whiteboard — initialScene + initialFiles (server load)', () => {
 });
 
 describe('Thu gọn panel thuộc tính', () => {
+  // Test tự tạo `<div class="excalidraw">` giả ngoài container của RTL
+  // (root.appendChild(document.body)) → RTL auto-cleanup không dọn được.
+  // Dọn ở `afterEach` (KHÔNG ở cuối thân test) để nếu assertion fail giữa
+  // chừng, node giả vẫn được gỡ — tránh kẹt lại làm test sau phụ thuộc
+  // thứ tự chạy.
+  let fakeIslandRoot: HTMLElement | null = null;
+
   /** Mock Excalidraw không render Island thật → dựng tay để portal có chỗ bám. */
   function mountFakeIsland() {
     const root = document.createElement('div');
@@ -488,8 +495,14 @@ describe('Thu gọn panel thuộc tính', () => {
     island.className = 'Island App-menu__left';
     root.appendChild(island);
     document.body.appendChild(root);
+    fakeIslandRoot = root;
     return root;
   }
+
+  afterEach(() => {
+    fakeIslandRoot?.remove();
+    fakeIslandRoot = null;
+  });
 
   it('click nút toggle thêm/bỏ class wb-props-collapsed trên wrapper', async () => {
     // Dựng fake Island TRƯỚC khi render: PropsPanelToggle dò `.excalidraw`
@@ -500,7 +513,7 @@ describe('Thu gọn panel thuộc tính', () => {
     // node thật (rỗng) thay vì node giả, và vì node giả nằm NGOÀI subtree
     // đang được quan sát nên MutationObserver không bao giờ thấy nó (flaky
     // theo thứ tự chạy test). Gọi trước → fake root luôn đứng đầu DOM order.
-    const root = mountFakeIsland();
+    mountFakeIsland();
     const { container } = render(<Whiteboard storageKey={null} />);
 
     // Chờ MutationObserver + rAF của PropsPanelToggle chạy.
@@ -527,13 +540,11 @@ describe('Thu gọn panel thuộc tính', () => {
         .click();
     });
     expect(wrapper.className).not.toContain('wb-props-collapsed');
-
-    root.remove();
   });
 
   it('readOnly → không render nút toggle', async () => {
     render(<Whiteboard storageKey={null} readOnly />);
-    const root = mountFakeIsland();
+    mountFakeIsland();
 
     await act(async () => {
       await new Promise((r) => setTimeout(r, 50));
@@ -542,6 +553,5 @@ describe('Thu gọn panel thuộc tính', () => {
     expect(
       document.querySelector('[data-testid="props-panel-toggle"]'),
     ).toBeNull();
-    root.remove();
   });
 });

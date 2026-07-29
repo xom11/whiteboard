@@ -82,4 +82,61 @@ test.describe('Thu gọn panel thuộc tính', () => {
     expect(box!.width).toBeLessThan(60);
     await expect(page.getByTestId('props-panel-toggle')).toBeVisible();
   });
+
+  /**
+   * F1 (review 2026-07-29) — cổng chặn regression.
+   *
+   * `.App-menu__left` là chính scroll container (`overflow-y:auto`, Excalidraw
+   * set inline `max-height`). Nút toggle được portal vào BÊN TRONG nó (con
+   * cuối cùng) — với CSS cũ (`position: absolute` chay), nút cuộn theo nội
+   * dung và biến mất khỏi tầm nhìn ngay khi panel bị cuộn. Viewport 1000×620
+   * đủ thấp để panel có scrollHeight > clientHeight thật (không phải mọi
+   * viewport đều kích hoạt — MacBook 1440×900 thu gọn cũng dính, nhưng CI
+   * cần con số ổn định nên hard-code viewport nhỏ ở đây).
+   */
+  test('cuộn panel xuống đáy: nút toggle vẫn nằm trong vùng nhìn thấy của panel', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1000, height: 620 });
+    await page.goto('/');
+    await expect(page.locator('.excalidraw').first()).toBeVisible({
+      timeout: 15_000,
+    });
+
+    await page.locator('.excalidraw canvas.interactive').first().click({ position: { x: 400, y: 300 } });
+    await page.keyboard.press('r');
+
+    const panel = page.locator('.App-menu__left');
+    await expect(panel).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('.App-menu__left .panelColumn').first()).toBeVisible();
+
+    // Gate: nếu panel KHÔNG thật sự cuộn được thì test này vô nghĩa (không
+    // đo được điều nó tuyên bố đo).
+    const { scrollHeight, clientHeight } = await panel.evaluate((el) => ({
+      scrollHeight: el.scrollHeight,
+      clientHeight: el.clientHeight,
+    }));
+    expect(scrollHeight).toBeGreaterThan(clientHeight);
+
+    // Cuộn panel xuống đáy.
+    await panel.evaluate((el) => {
+      el.scrollTop = el.scrollHeight;
+    });
+
+    const toggle = page.getByTestId('props-panel-toggle');
+    await expect(toggle).toBeInViewport();
+
+    const toggleBox = await toggle.boundingBox();
+    const panelBox = await panel.boundingBox();
+    expect(toggleBox).not.toBeNull();
+    expect(panelBox).not.toBeNull();
+
+    // Nút phải nằm trong dải y hiển thị của chính panel (không trôi lên trên
+    // mép panel, không rơi xuống dưới mép panel) — đây là điều CSS cũ vi
+    // phạm (nút cuộn theo nội dung, y âm sau khi cuộn).
+    expect(toggleBox!.y).toBeGreaterThanOrEqual(panelBox!.y);
+    expect(toggleBox!.y + toggleBox!.height).toBeLessThanOrEqual(
+      panelBox!.y + panelBox!.height + 1,
+    );
+  });
 });
