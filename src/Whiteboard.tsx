@@ -1,6 +1,6 @@
 'use client';
 
-import { lazy, Suspense, useCallback, useEffect, useRef } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import type {
   ExcalidrawElement,
   BinaryFiles,
@@ -15,6 +15,7 @@ import { ToolbarInjector } from './stamps/shared/ToolbarInjector';
 import { useShortcuts } from './stamps/shared/useShortcuts';
 import { PdfImporterButton } from './pdf/PdfImporterButton';
 import { PageRangeDialog } from './pdf/PageRangeDialog';
+import { PropsPanelToggle } from './ui/PropsPanelToggle';
 import { useStampDoubleClick } from './stamps/shared/useStampDoubleClick';
 import { useStampShortcutBlocker } from './stamps/shared/useStampShortcutBlocker';
 import { useStampClickOutside } from './stamps/shared/useStampClickOutside';
@@ -145,6 +146,13 @@ export function Whiteboard({
     stamps,
   });
 
+  // Thu gọn panel thuộc tính của Excalidraw (issue hoctotbachkhoa#528).
+  // Cố ý KHÔNG persist: mỗi lần vào bảng panel hiện lại như cũ.
+  const [propsCollapsed, setPropsCollapsed] = useState(false);
+  const togglePropsPanel = useCallback(() => {
+    setPropsCollapsed((v) => !v);
+  }, []);
+
   const hostRef = useRef<StampHostHandle | null>(null);
   const handledCropIdRef = useRef<string | null>(null);
   const prevExcalidrawToolRef = useRef<string>('selection');
@@ -249,7 +257,11 @@ export function Whiteboard({
   useStampClickOutside({ activeStamp, hostRef, onClose: closeStamp });
 
   return (
-    <div className={`relative h-full w-full${isDark ? ' theme--dark' : ''}`}>
+    <div
+      className={`relative h-full w-full${isDark ? ' theme--dark' : ''}${
+        propsCollapsed ? ' wb-props-collapsed' : ''
+      }`}
+    >
       <Suspense fallback={<ExcalidrawLoadingFallback />}>
         <Excalidraw
           excalidrawAPI={setApiFromExcalidraw}
@@ -279,6 +291,12 @@ export function Whiteboard({
       />
 
       <PdfImporterButton enabled={!readOnly} onPick={handlePdfPick} />
+
+      <PropsPanelToggle
+        enabled={!readOnly}
+        collapsed={propsCollapsed}
+        onToggle={togglePropsPanel}
+      />
 
       {pdfPending && (
         <PageRangeDialog

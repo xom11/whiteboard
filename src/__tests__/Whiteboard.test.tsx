@@ -478,3 +478,70 @@ describe('Whiteboard — initialScene + initialFiles (server load)', () => {
     expect(api.addFiles).not.toHaveBeenCalled();
   });
 });
+
+describe('Thu gọn panel thuộc tính', () => {
+  /** Mock Excalidraw không render Island thật → dựng tay để portal có chỗ bám. */
+  function mountFakeIsland() {
+    const root = document.createElement('div');
+    root.className = 'excalidraw';
+    const island = document.createElement('div');
+    island.className = 'Island App-menu__left';
+    root.appendChild(island);
+    document.body.appendChild(root);
+    return root;
+  }
+
+  it('click nút toggle thêm/bỏ class wb-props-collapsed trên wrapper', async () => {
+    // Dựng fake Island TRƯỚC khi render: PropsPanelToggle dò `.excalidraw`
+    // đầu tiên trong document tại thời điểm mount effect. Sau vài test khác
+    // trong file này, Excalidraw (lazy) đã resolve sẵn nên `render()` có thể
+    // đồng bộ mount luôn `.excalidraw` thật (không Island) TRƯỚC panel giả —
+    // nếu mountFakeIsland() gọi sau, querySelector('.excalidraw') vớ trúng
+    // node thật (rỗng) thay vì node giả, và vì node giả nằm NGOÀI subtree
+    // đang được quan sát nên MutationObserver không bao giờ thấy nó (flaky
+    // theo thứ tự chạy test). Gọi trước → fake root luôn đứng đầu DOM order.
+    const root = mountFakeIsland();
+    const { container } = render(<Whiteboard storageKey={null} />);
+
+    // Chờ MutationObserver + rAF của PropsPanelToggle chạy.
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
+
+    const wrapper = container.firstElementChild as HTMLElement;
+    expect(wrapper.className).not.toContain('wb-props-collapsed');
+
+    const btn = document.querySelector<HTMLButtonElement>(
+      '[data-testid="props-panel-toggle"]',
+    );
+    expect(btn).not.toBeNull();
+
+    await act(async () => {
+      btn!.click();
+    });
+    expect(wrapper.className).toContain('wb-props-collapsed');
+
+    await act(async () => {
+      document
+        .querySelector<HTMLButtonElement>('[data-testid="props-panel-toggle"]')!
+        .click();
+    });
+    expect(wrapper.className).not.toContain('wb-props-collapsed');
+
+    root.remove();
+  });
+
+  it('readOnly → không render nút toggle', async () => {
+    render(<Whiteboard storageKey={null} readOnly />);
+    const root = mountFakeIsland();
+
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
+
+    expect(
+      document.querySelector('[data-testid="props-panel-toggle"]'),
+    ).toBeNull();
+    root.remove();
+  });
+});
