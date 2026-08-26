@@ -16,6 +16,10 @@ import { useShortcuts } from './stamps/shared/useShortcuts';
 import { PdfImporterButton } from './pdf/PdfImporterButton';
 import { PageRangeDialog } from './pdf/PageRangeDialog';
 import { PropsPanelToggle } from './ui/PropsPanelToggle';
+import { ToolbarDragger } from './ui/ToolbarDragger';
+import { useToolbarPosition } from './ui/useToolbarPosition';
+import { toolbarPositionAttr } from './ui/toolbarPosition';
+import { useIsMobile } from './stamps/shared/useIsMobile';
 import { useStampDoubleClick } from './stamps/shared/useStampDoubleClick';
 import { useStampShortcutBlocker } from './stamps/shared/useStampShortcutBlocker';
 import { useStampClickOutside } from './stamps/shared/useStampClickOutside';
@@ -153,6 +157,15 @@ export function Whiteboard({
     setPropsCollapsed((v) => !v);
   }, []);
 
+  // Vị trí thanh công cụ chính (kéo-thả + hít mép). Tắt ở readOnly (view
+  // mode đổi `.App-menu` sang display:flex) và mobile (Excalidraw dùng
+  // `.App-bottom-bar`, layout khác hẳn).
+  const { isMobile } = useIsMobile();
+  const toolbarDragEnabled = !readOnly && !isMobile;
+  const { position: toolbarPosition, setPosition: setToolbarPosition } =
+    useToolbarPosition();
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
   const hostRef = useRef<StampHostHandle | null>(null);
   const handledCropIdRef = useRef<string | null>(null);
   const prevExcalidrawToolRef = useRef<string>('selection');
@@ -258,9 +271,13 @@ export function Whiteboard({
 
   return (
     <div
+      ref={rootRef}
       className={`relative h-full w-full${isDark ? ' theme--dark' : ''}${
         propsCollapsed ? ' wb-props-collapsed' : ''
       }`}
+      data-wb-toolbar={
+        toolbarDragEnabled ? toolbarPositionAttr(toolbarPosition) : undefined
+      }
     >
       <Suspense fallback={<ExcalidrawLoadingFallback />}>
         <Excalidraw
@@ -296,6 +313,13 @@ export function Whiteboard({
         enabled={!readOnly}
         collapsed={propsCollapsed}
         onToggle={togglePropsPanel}
+      />
+
+      <ToolbarDragger
+        enabled={toolbarDragEnabled}
+        position={toolbarPosition}
+        onChange={setToolbarPosition}
+        containerRef={rootRef}
       />
 
       {pdfPending && (

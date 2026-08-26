@@ -1,0 +1,304 @@
+/**
+ * Đổi vị trí thanh công cụ chính của Excalidraw (kéo-thả + hít mép).
+ *
+ * Excalidraw 0.18 KHÔNG có API cho việc này: `UIOptions` chỉ có
+ * `canvasActions` / `tools` / `dockedSidebarBreakpoint`, còn vị trí toolbar
+ * bị khoá cứng trong CSS của nó. Upstream issue #7583 xin đúng tính năng
+ * này và vẫn đang mở. Nên ta đè CSS — cùng cách `propsPanelToggle.css`
+ * đang làm với panel thuộc tính.
+ *
+ * ── Cây DOM thật (đo bằng Playwright trên Excalidraw 0.18, KHÔNG suy ra
+ *    từ việc đọc CSS — đọc CSS suông sai cả 3 điểm bên dưới):
+ *
+ *   .FixedSideContainer_side_top      [absolute, inset = editor padding]
+ *     .App-menu.App-menu_top          [static, grid 1fr 2fr 1fr]
+ *       .Stack_vertical.App-menu_top__left      ← cột 1: ☰ + panel thuộc tính
+ *       section.shapes-section                  ← cột 2: CHÍNH LÀ THỨ TA DI CHUYỂN
+ *         div (KHÔNG class)           [relative]
+ *           .Stack.Stack_vertical
+ *             .Stack.Stack_horizontal.App-toolbar-container
+ *               .Island.App-toolbar   [relative]  ← Island THẬT nằm ở đây
+ *                 .HintViewer         [absolute, top:100%]
+ *                 h2.visually-hidden
+ *                 .Stack.Stack_horizontal        ← hàng icon
+ *       .layer-ui__wrapper__top-right           ← cột 3: nút Library
+ *
+ * ── Ba điều dễ nhầm nếu chỉ đọc CSS của Excalidraw:
+ *   1. `.App-toolbar-container` KHÔNG phải Island (Island là
+ *      `.Island.App-toolbar`, sâu hơn một tầng) — và có một `div`
+ *      `position:relative` không class bọc ngoài. Cho Island thành
+ *      `absolute` sẽ lấy nhầm div đó làm containing block.
+ *   2. Hàng icon là GRID (`.Stack_horizontal { grid-auto-flow: column }`),
+ *      không phải flex → lật dọc bằng `grid-auto-flow: row`, không phải
+ *      `flex-direction: column`.
+ *   3. `.App-toolbar-content` (cái tên nghe đúng nhất) thuộc bottom-bar
+ *      MOBILE, hoàn toàn không có mặt trong cây desktop.
+ *
+ * ── Vì sao di chuyển cả `section.shapes-section` chứ không riêng Island:
+ *   nó là con trực tiếp của grid `.App-menu_top` và `.App-menu_top` đang
+ *   `position:static`, nên khi cho `absolute` thì containing block đúng là
+ *   `.FixedSideContainer_side_top` — trùng khít "vùng an toàn" mà
+ *   Excalidraw tự chừa, kẹp toạ độ theo nó là tự nhiên. Đổi lại phải ghim
+ *   `grid-column` cho hai sibling (xem ngay dưới).
+ *
+ * Mọi thứ nằm dưới `[data-wb-toolbar]` — wrapper của Whiteboard chỉ đặt
+ * attribute này khi tính năng bật (không readOnly, không mobile), nên khi
+ * tắt thì file này không đụng gì tới Excalidraw. `.excalidraw` được lọc
+ * `:not(.excalidraw--mobile)`: Excalidraw chuyển layout mobile theo BỀ
+ * RỘNG CONTAINER, còn `useIsMobile` đo theo viewport — hai mốc có thể
+ * lệch nhau khi bảng bị nhét vào khung hẹp trên desktop.
+ */
+
+/* ───────────────────────── Bốc section ra khỏi grid ──────────────────── */
+
+/*
+ * Section rời khỏi luồng grid → auto-placement sẽ kéo nút Library từ cột 3
+ * về cột 2. Ghim cột cho hai sibling để layout hai bên đứng yên.
+ */
+[data-wb-toolbar]:not([data-wb-toolbar='top'])
+  .excalidraw:not(.excalidraw--mobile)
+  .App-menu_top
+  > .App-menu_top__left {
+  grid-column: 1;
+}
+
+[data-wb-toolbar]:not([data-wb-toolbar='top'])
+  .excalidraw:not(.excalidraw--mobile)
+  .App-menu_top
+  > .layer-ui__wrapper__top-right {
+  grid-column: 3;
+}
+
+[data-wb-toolbar]:not([data-wb-toolbar='top'])
+  .excalidraw:not(.excalidraw--mobile)
+  .shapes-section,
+[data-wb-toolbar][data-wb-toolbar-dragging]
+  .excalidraw:not(.excalidraw--mobile)
+  .shapes-section {
+  position: absolute;
+  z-index: 1;
+}
+
+/* `.App-toolbar { width:100% }` chỉ hợp lý khi section còn chiếm cả cột 2. */
+[data-wb-toolbar]:not([data-wb-toolbar='top'])
+  .excalidraw:not(.excalidraw--mobile)
+  .App-toolbar {
+  width: auto;
+}
+
+/*
+ * `.HintViewer` là `absolute; top:100%; width:100%` — gợi ý chạy ngang dưới
+ * toolbar. Dock dưới thì nó rơi khỏi màn, dock trái/phải thì bị bóp còn
+ * ~44px. Ẩn đi, đúng như Excalidraw tự làm ở zen mode.
+ */
+[data-wb-toolbar]:not([data-wb-toolbar='top'])
+  .excalidraw:not(.excalidraw--mobile)
+  .App-toolbar
+  > .HintViewer {
+  display: none;
+}
+
+/* ────────────────────────────── Bốn mép ─────────────────────────────── */
+
+[data-wb-toolbar='left'] .excalidraw:not(.excalidraw--mobile) .shapes-section {
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+[data-wb-toolbar='right'] .excalidraw:not(.excalidraw--mobile) .shapes-section {
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+[data-wb-toolbar='bottom'] .excalidraw:not(.excalidraw--mobile) .shapes-section {
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+}
+
+[data-wb-toolbar='float'] .excalidraw:not(.excalidraw--mobile) .shapes-section {
+  left: var(--wb-toolbar-x, 0px);
+  top: var(--wb-toolbar-y, 0px);
+}
+
+/*
+ * Dock trái đè lên panel thuộc tính (`.App-menu__left`, rộng 12.5rem, cũng
+ * dính mép trái). Panel vốn đã `position:absolute` cùng containing block
+ * nên chỉ cần cho nó một `left` — `top` vẫn `auto` nên giữ nguyên vị trí
+ * dọc tự nhiên dưới nút ☰.
+ */
+[data-wb-toolbar='left'] .excalidraw:not(.excalidraw--mobile) .App-menu__left {
+  left: 3.5rem;
+}
+
+/* ──────────────────── Lật dọc khi dock trái/phải ─────────────────────── */
+
+/*
+ * `.Stack_horizontal { grid-template-rows:auto; grid-auto-flow:column;
+ * grid-auto-columns:min-content }` → lật thành đúng bộ của `.Stack_vertical`.
+ */
+[data-wb-toolbar='left']
+  .excalidraw:not(.excalidraw--mobile)
+  .App-toolbar
+  > .Stack_horizontal,
+[data-wb-toolbar='right']
+  .excalidraw:not(.excalidraw--mobile)
+  .App-toolbar
+  > .Stack_horizontal {
+  grid-template-rows: none;
+  grid-template-columns: auto;
+  grid-auto-flow: row;
+  grid-auto-rows: min-content;
+  grid-auto-columns: auto;
+}
+
+/*
+ * Vạch ngăn 1px×1.5rem → 1.5rem×1px.
+ *
+ * `justify-self: center` là bắt buộc chứ không phải trang trí: cột grid
+ * rộng theo icon (36px) nhưng vạch khai `width:1.5rem` (24px) tường minh,
+ * nên `stretch` mặc định không áp dụng được và nó dồn về mép trái — đo
+ * bằng ảnh chụp Playwright, số đo boundingBox của Island thì không thấy.
+ */
+[data-wb-toolbar='left'] .excalidraw:not(.excalidraw--mobile) .App-toolbar__divider,
+[data-wb-toolbar='right'] .excalidraw:not(.excalidraw--mobile) .App-toolbar__divider {
+  width: 1.5rem;
+  height: 1px;
+  margin: 0.25rem 0;
+  justify-self: center;
+}
+
+/* ─────────── Popover "More tools" (chỗ 4 nút stamp được cắm) ─────────── */
+
+/*
+ * Mặc định `.dropdown-menu { position:absolute; top:100% }` +
+ * `.App-toolbar__extra-tools-dropdown { right:0; min-width:11.875rem }` —
+ * tức luôn mở XUỐNG DƯỚI, canh mép phải Island. Dock dưới thì popover rơi
+ * khỏi màn; dock trái thì nó thò ra ngoài mép trái. Phải xoay theo mode,
+ * nếu không `ToolbarInjector` vẫn chạy nhưng người dùng không bấm được
+ * nút stamp nào.
+ */
+[data-wb-toolbar='left']
+  .excalidraw:not(.excalidraw--mobile)
+  .App-toolbar__extra-tools-dropdown {
+  top: auto;
+  bottom: 0;
+  left: 100%;
+  right: auto;
+  margin-top: 0;
+  margin-left: 0.375rem;
+}
+
+[data-wb-toolbar='right']
+  .excalidraw:not(.excalidraw--mobile)
+  .App-toolbar__extra-tools-dropdown {
+  top: auto;
+  bottom: 0;
+  right: 100%;
+  left: auto;
+  margin-top: 0;
+  margin-right: 0.375rem;
+}
+
+[data-wb-toolbar='bottom']
+  .excalidraw:not(.excalidraw--mobile)
+  .App-toolbar__extra-tools-dropdown,
+[data-wb-toolbar='float'][data-wb-toolbar-vflip='up']
+  .excalidraw:not(.excalidraw--mobile)
+  .App-toolbar__extra-tools-dropdown {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: 0.375rem;
+}
+
+/* ────────────────────────── Tay cầm để kéo ──────────────────────────── */
+
+/*
+ * `display:contents` để wrapper không sinh hộp nào (nếu không nó thành
+ * block cuối trong Island và đội chiều cao toolbar lên). Nút bên trong
+ * `absolute` theo `.Island.App-toolbar` (`position:relative`).
+ */
+[data-wb-toolbar] .wb-toolbar-drag-mount {
+  display: contents;
+}
+
+/* Chừa máng cho tay cầm. Island gốc có `padding: 4px` (`--padding:1`). */
+[data-wb-toolbar] .excalidraw:not(.excalidraw--mobile) .App-toolbar.App-toolbar {
+  padding-left: 1.25rem;
+}
+
+[data-wb-toolbar='left']
+  .excalidraw:not(.excalidraw--mobile)
+  .App-toolbar.App-toolbar,
+[data-wb-toolbar='right']
+  .excalidraw:not(.excalidraw--mobile)
+  .App-toolbar.App-toolbar {
+  padding-left: 0.25rem;
+  padding-top: 1.25rem;
+}
+
+[data-wb-toolbar] .excalidraw .wb-toolbar-drag-handle {
+  position: absolute;
+  left: 0.125rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.875rem;
+  height: 1.75rem;
+  padding: 0;
+  border: none;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--color-gray-40, #adb5bd);
+  cursor: grab;
+  touch-action: none;
+  z-index: 2;
+}
+
+[data-wb-toolbar='left'] .excalidraw .wb-toolbar-drag-handle,
+[data-wb-toolbar='right'] .excalidraw .wb-toolbar-drag-handle {
+  left: 50%;
+  top: 0.125rem;
+  transform: translateX(-50%) rotate(90deg);
+  width: 0.875rem;
+  height: 1.75rem;
+}
+
+[data-wb-toolbar] .excalidraw .wb-toolbar-drag-handle:hover {
+  background: var(--button-hover-bg, rgba(0, 0, 0, 0.06));
+  color: var(--color-on-surface, #1b1b1f);
+}
+
+[data-wb-toolbar] .excalidraw .wb-toolbar-drag-handle:focus-visible {
+  outline: 2px solid var(--color-primary, #6965db);
+  outline-offset: 1px;
+}
+
+[data-wb-toolbar][data-wb-toolbar-dragging] .excalidraw .wb-toolbar-drag-handle {
+  cursor: grabbing;
+}
+
+/* ─────────────────────── Trạng thái đang kéo ────────────────────────── */
+
+/*
+ * Thắng rule của 4 mép bằng specificity (thêm một attribute) thay vì
+ * `!important` — trạng thái này chỉ tồn tại trong lúc giữ chuột.
+ */
+[data-wb-toolbar][data-wb-toolbar-dragging]
+  .excalidraw:not(.excalidraw--mobile)
+  .shapes-section {
+  left: var(--wb-toolbar-x, 0px);
+  top: var(--wb-toolbar-y, 0px);
+  right: auto;
+  bottom: auto;
+  transform: none;
+}
+
+[data-wb-toolbar][data-wb-toolbar-dragging] {
+  user-select: none;
+}
