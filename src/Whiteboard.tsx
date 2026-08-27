@@ -19,6 +19,8 @@ import { PropsPanelToggle } from './ui/PropsPanelToggle';
 import { ToolbarDragger } from './ui/ToolbarDragger';
 import { useToolbarPosition } from './ui/useToolbarPosition';
 import { toolbarPositionAttr } from './ui/toolbarPosition';
+import { PaperBackground } from './ui/PaperBackground';
+import { usePaperBackground } from './ui/usePaperBackground';
 import { useIsMobile } from './stamps/shared/useIsMobile';
 import { useStampDoubleClick } from './stamps/shared/useStampDoubleClick';
 import { useStampShortcutBlocker } from './stamps/shared/useStampShortcutBlocker';
@@ -150,6 +152,10 @@ export function Whiteboard({
     stamps,
   });
 
+  // Nền giấy kẻ dòng. CÓ persist (khác panel thuộc tính bên dưới): đây là
+  // sở thích dạy học, chọn một lần rồi thôi. Mặc định 'none' = bảng trắng.
+  const { paperStyle, togglePaperStyle } = usePaperBackground();
+
   // Thu gọn panel thuộc tính của Excalidraw (issue hoctotbachkhoa#528).
   // Cố ý KHÔNG persist: mỗi lần vào bảng panel hiện lại như cũ.
   const [propsCollapsed, setPropsCollapsed] = useState(false);
@@ -274,14 +280,19 @@ export function Whiteboard({
       ref={rootRef}
       className={`relative h-full w-full${isDark ? ' theme--dark' : ''}${
         propsCollapsed ? ' wb-props-collapsed' : ''
-      }`}
+      }${paperStyle !== 'none' ? ' wb-paper-on' : ''}`}
       data-wb-toolbar={
         toolbarDragEnabled ? toolbarPositionAttr(toolbarPosition) : undefined
       }
     >
+      {/* Nằm TRƯỚC Excalidraw trong DOM ⇒ vẽ ở dưới canvas. */}
+      <PaperBackground style={paperStyle} api={api} />
+
       <Suspense fallback={<ExcalidrawLoadingFallback />}>
         <Excalidraw
           excalidrawAPI={setApiFromExcalidraw}
+          paperLined={paperStyle === 'lined'}
+          onTogglePaperLined={togglePaperStyle}
           langCode={langCode}
           viewModeEnabled={readOnly}
           initialData={

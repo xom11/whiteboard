@@ -15,8 +15,24 @@ import {
  
 type ExcalidrawProps = any;
 
+/** Icon cho mục menu nền bảng — 20×20 để khớp icon mặc định của Excalidraw. */
+const PaperLinedIcon = (
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.25">
+    <rect x="2.5" y="2.5" width="15" height="15" rx="2" />
+    <path d="M5 7.5h10M5 10h10M5 12.5h10" />
+  </svg>
+);
+
+const PaperPlainIcon = (
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.25">
+    <rect x="2.5" y="2.5" width="15" height="15" rx="2" />
+  </svg>
+);
+
 export function ExcalidrawWithMenus(props: ExcalidrawProps) {
-  const { children, ...rest } = props;
+  // `paperLined`/`onTogglePaperLined` là của riêng ta — tách khỏi `rest`
+  // để không spread prop lạ vào Excalidraw.
+  const { children, paperLined, onTogglePaperLined, ...rest } = props;
   return (
     <Excalidraw {...rest}>
       {/* Replace default menu with curated items — no socials/help/branding */}
@@ -25,6 +41,15 @@ export function ExcalidrawWithMenus(props: ExcalidrawProps) {
         <MainMenu.DefaultItems.SaveAsImage />
         <MainMenu.DefaultItems.ClearCanvas />
         <MainMenu.DefaultItems.ToggleTheme />
+        {onTogglePaperLined && (
+          <MainMenu.Item
+            icon={paperLined ? PaperLinedIcon : PaperPlainIcon}
+            onSelect={onTogglePaperLined}
+            data-testid="wb-paper-toggle"
+          >
+            {paperLined ? 'Bảng trắng trơn' : 'Nền kẻ dòng'}
+          </MainMenu.Item>
+        )}
       </MainMenu>
       {/* Footer slot with no content suppresses default "Made with Excalidraw" link */}
       <Footer>

@@ -35,6 +35,12 @@ jest.mock('@excalidraw/excalidraw', () => {
   const NoopChildren = ({ children }: { children?: React.ReactNode }) =>
     ReactMod.createElement(ReactMod.Fragment, null, children);
   const DefaultItem = () => null;
+  const Item = ({ children, onSelect, icon, ...rest }: any) =>
+    React.createElement(
+      'button',
+      { type: 'button', onClick: onSelect, ...rest },
+      children,
+    );
   const MainMenu = Object.assign(NoopChildren, {
     DefaultItems: {
       LoadScene: DefaultItem,
@@ -42,6 +48,7 @@ jest.mock('@excalidraw/excalidraw', () => {
       ClearCanvas: DefaultItem,
       ToggleTheme: DefaultItem,
     },
+    Item,
   });
   return {
     Excalidraw: (props: {

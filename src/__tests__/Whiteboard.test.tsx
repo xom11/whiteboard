@@ -17,6 +17,15 @@ jest.mock('@excalidraw/excalidraw', () => {
   const NoopChildren = ({ children }: { children?: React.ReactNode }) =>
     React.createElement(React.Fragment, null, children);
   const DefaultItem = () => null;
+  // `Item` render thành <button> thật (khác DefaultItems trả null) để test
+  // bấm được mục menu tự viết, ví dụ nút bật nền kẻ dòng.
+
+  const Item = ({ children, onSelect, icon, ...rest }: any) =>
+    React.createElement(
+      'button',
+      { type: 'button', onClick: onSelect, ...rest },
+      children,
+    );
   const MainMenu = Object.assign(NoopChildren, {
     DefaultItems: {
       LoadScene: DefaultItem,
@@ -24,6 +33,7 @@ jest.mock('@excalidraw/excalidraw', () => {
       ClearCanvas: DefaultItem,
       ToggleTheme: DefaultItem,
     },
+    Item,
   });
   return {
     Excalidraw: (props: {
@@ -553,5 +563,69 @@ describe('Thu gọn panel thuộc tính', () => {
     expect(
       document.querySelector('[data-testid="props-panel-toggle"]'),
     ).toBeNull();
+  });
+});
+
+describe('Nền giấy kẻ dòng', () => {
+  afterEach(() => {
+    window.localStorage.clear();
+  });
+
+  it('mặc định tắt: không có lớp giấy, không đụng vào nền canvas', async () => {
+    const { container } = render(<Whiteboard storageKey={null} />);
+
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
+
+    const wrapper = container.firstElementChild as HTMLElement;
+    expect(wrapper.className).not.toContain('wb-paper-on');
+    expect(container.querySelector('.wb-paper-layer')).toBeNull();
+  });
+
+  it('bấm mục menu → hiện lớp giấy và nhớ lựa chọn', async () => {
+    const { container } = render(<Whiteboard storageKey={null} />);
+
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
+
+    const toggle = document.querySelector<HTMLButtonElement>(
+      '[data-testid="wb-paper-toggle"]',
+    );
+    expect(toggle).not.toBeNull();
+
+    await act(async () => {
+      toggle!.click();
+    });
+
+    const wrapper = container.firstElementChild as HTMLElement;
+    expect(wrapper.className).toContain('wb-paper-on');
+    expect(container.querySelector('.wb-paper-layer')).not.toBeNull();
+    expect(window.localStorage.getItem('whiteboard:paper-bg')).toBe('lined');
+
+    // Bấm lần nữa → trả bảng về trắng trơn.
+    await act(async () => {
+      document
+        .querySelector<HTMLButtonElement>('[data-testid="wb-paper-toggle"]')!
+        .click();
+    });
+    expect(wrapper.className).not.toContain('wb-paper-on');
+    expect(container.querySelector('.wb-paper-layer')).toBeNull();
+    expect(window.localStorage.getItem('whiteboard:paper-bg')).toBe('none');
+  });
+
+  it('lựa chọn đã lưu được khôi phục khi mở lại bảng', async () => {
+    window.localStorage.setItem('whiteboard:paper-bg', 'lined');
+    const { container } = render(<Whiteboard storageKey={null} />);
+
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
+
+    expect((container.firstElementChild as HTMLElement).className).toContain(
+      'wb-paper-on',
+    );
+    expect(container.querySelector('.wb-paper-layer')).not.toBeNull();
   });
 });

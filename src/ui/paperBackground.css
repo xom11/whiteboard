@@ -1,0 +1,45 @@
+/*
+ * Nền giấy kẻ dòng — một lớp nằm SAU canvas Excalidraw.
+ *
+ * Excalidraw vẽ nền bảng bằng JS chứ không bằng CSS
+ * (`ctx.fillStyle = viewBackgroundColor; ctx.fillRect(...)`), nên muốn
+ * nhìn xuyên xuống lớp này thì phải đặt `viewBackgroundColor` thành
+ * 'transparent' — giá trị Excalidraw xử lý sẵn bằng một nhánh
+ * `clearRect` riêng, xem `PaperBackground.tsx`.
+ *
+ * Ngoài canvas, bản thân container `.excalidraw` cũng sơn nền riêng.
+ * Chỉ khi bật nền giấy (class `wb-paper-on` trên wrapper) ta mới gỡ nó
+ * đi, để lúc tắt mọi thứ y nguyên như trước.
+ */
+
+.wb-paper-layer {
+  --wb-paper-bg: #ffffff;
+  --wb-paper-line: #c7dcf5;
+
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  /* Không bao giờ cản bút vẽ / chọn object. */
+  pointer-events: none;
+
+  background-color: var(--wb-paper-bg);
+  /* Mỗi ô lặp cao đúng `background-size`, kẻ 1px ở mép trên. Khoảng cách
+   * và điểm bắt đầu do JS ghi vào style, xem `paperMetrics`. */
+  background-image: linear-gradient(
+    to bottom,
+    var(--wb-paper-line) 0 1px,
+    transparent 1px
+  );
+  background-repeat: repeat;
+}
+
+.theme--dark .wb-paper-layer {
+  --wb-paper-bg: #121212;
+  --wb-paper-line: #2f3b4a;
+}
+
+/* Gỡ nền của container Excalidraw để lộ lớp giấy. Chỉ khi đang bật. */
+.wb-paper-on .excalidraw,
+.wb-paper-on .excalidraw .excalidraw__canvas {
+  background: transparent !important;
+}
