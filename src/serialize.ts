@@ -1,5 +1,6 @@
 import type { AppState } from '@excalidraw/excalidraw/types';
 import type { SyncableAppState } from './types';
+import { DEFAULT_STROKE_WIDTH, snapStrokeWidth } from './ui/strokeWidth';
 
 /**
  * Nền bảng khi đang bật lớp giấy kẻ dòng. Đây là trạng thái HIỂN THỊ do
@@ -21,5 +22,8 @@ export function pickSyncableAppState(s: AppState): SyncableAppState {
     scrollY: s.scrollY,
     gridSize: s.gridSize ?? null,
     theme: s.theme,
+    currentItemStrokeWidth: snapStrokeWidth(
+      s.currentItemStrokeWidth ?? DEFAULT_STROKE_WIDTH,
+    ),
   };
 }

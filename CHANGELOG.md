@@ -1,5 +1,21 @@
 # Changelog
 
+## Chưa phát hành
+
+### Thanh trượt độ dày nét, có nấc mảnh hơn hẳn
+
+Hàng ba nút *Mảnh / Đậm / Rất đậm* trong panel thuộc tính được thay bằng một
+thanh trượt (dựng giống control Độ mờ có sẵn). Thang chạy từ **0,25 đến 4**, bước
+0,25 — tức có ba nấc nằm **dưới** mức "Mảnh" cũ của Excalidraw.
+
+Điều này quan trọng với bút vẽ tay: Excalidraw nhân độ dày lên **4,25 lần** khi
+dựng nét bút, nên mức "Mảnh" cũ (=1) thực ra ra nét ~4,25px — đậm hơn hẳn hình
+khối cùng thông số, và không có cách nào chọn mảnh hơn. Giờ nấc nhỏ nhất cho nét
+~1,1px.
+
+Ba mức cũ (1 / 2 / 4) rơi đúng vào nấc nên bảng vẽ từ trước mở lại không đổi
+hình. Độ dày đang chọn được nhớ qua lần tải lại trang.
+
 ## v0.38.0 — 2026-08-31
 
 ### Trang giấy có vách cho nền kẻ dòng

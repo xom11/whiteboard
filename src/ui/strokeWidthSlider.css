@@ -1,0 +1,107 @@
+/*
+ * Thanh trượt độ dày nét — thay hàng 3 nút thin/bold/extraBold.
+ *
+ * Dùng lại đúng bộ biến của Excalidraw (`--color-slider-track`,
+ * `--color-slider-thumb`, `--slider-thumb-size`, `--text-primary-color`) nên tự
+ * đúng cả light lẫn dark theme, không phải khai màu riêng. Fallback đi kèm
+ * phòng khi bump bản làm đổi tên biến — khi đó slider xấu chứ không tàng hình.
+ *
+ * COUPLING với DOM nội bộ Excalidraw 0.18: `.buttonList` (hàng nút gốc, ẩn đi)
+ * và `[data-testid="strokeWidth-thin"]` (neo tìm fieldset, ở .tsx).
+ * Bump 0.19 → chạy `npx playwright test tests/e2e/stroke-width-slider.spec.ts`.
+ */
+
+/*
+ * Hàng 3 nút gốc vẫn nằm trong DOM (Excalidraw sở hữu nó, React sẽ dựng lại mỗi
+ * lần re-render) — ta chỉ giấu đi. Xoá node là chống lại React.
+ *
+ * ⚠️ CLASS NHÂN ĐÔI LÀ BẮT BUỘC, không phải thừa. Selector thật của Excalidraw
+ * là `.excalidraw .panelColumn .buttonList` (0,3,0) và
+ * `.excalidraw .panelColumn legend` (0,2,1) — viết một lớp là HOÀ specificity,
+ * rồi thua theo thứ tự nạp CSS (phụ thuộc module graph, không nên dựa vào).
+ * Bản đầu viết `.excalidraw .wb-stroke-width-fieldset > .buttonList` và hàng nút
+ * vẫn hiện nguyên; chỉ `tests/e2e/stroke-width-slider.spec.ts` bắt được vì jsdom
+ * không có cascade. Cùng mẹo với `.App-menu__left.App-menu__left` ở
+ * `propsPanelToggle.css`.
+ */
+.excalidraw .wb-stroke-width-fieldset.wb-stroke-width-fieldset > .buttonList {
+  display: none;
+}
+
+/* Legend gốc của fieldset cũng thừa: control của ta tự có nhãn kèm số. */
+.excalidraw .wb-stroke-width-fieldset.wb-stroke-width-fieldset > legend {
+  display: none;
+}
+
+.wb-stroke-width-mount {
+  display: block;
+}
+
+.excalidraw .wb-stroke-width-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.excalidraw .wb-stroke-width-legend {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-primary-color, #1b1b1f);
+}
+
+/* Số hiện ở cuối hàng nhãn, KHÔNG bám theo thumb như bong bóng opacity của
+   Excalidraw: panel chỉ rộng 12.5rem nên bong bóng ở hai đầu dải sẽ tràn ra
+   ngoài, và cách đó còn phải đo `offsetWidth` (bằng 0 khi panel đang ẩn). */
+.excalidraw .wb-stroke-width-bubble {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+  min-width: 2ch;
+  text-align: right;
+}
+
+.excalidraw .wb-stroke-width-range {
+  width: 100%;
+  height: 4px;
+  margin: 0.25rem 0;
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  /* Vệt tô phần đã đi qua — `--wb-stroke-fill` do component ghi lúc render. */
+  background: linear-gradient(
+    to right,
+    var(--color-slider-track, #6965db) 0%,
+    var(--color-slider-track, #6965db) var(--wb-stroke-fill, 50%),
+    var(--button-bg, #e9ecef) var(--wb-stroke-fill, 50%),
+    var(--button-bg, #e9ecef) 100%
+  );
+}
+
+.excalidraw .wb-stroke-width-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--slider-thumb-size, 16px);
+  height: var(--slider-thumb-size, 16px);
+  background: var(--color-slider-thumb, #fff);
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+}
+
+.excalidraw .wb-stroke-width-range::-moz-range-thumb {
+  width: var(--slider-thumb-size, 16px);
+  height: var(--slider-thumb-size, 16px);
+  background: var(--color-slider-thumb, #fff);
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+}
+
+.excalidraw .wb-stroke-width-range:focus-visible {
+  outline: 2px solid var(--focus-highlight-color, #a5d8ff);
+  outline-offset: 2px;
+}

@@ -15,6 +15,12 @@ export interface SyncableAppState {
   scrollY: number;
   gridSize: AppState['gridSize'] | null;
   theme: AppState['theme'];
+  /**
+   * Nét sẽ dùng cho hình kế tiếp. Excalidraw KHÔNG coi đây là dữ liệu scene,
+   * nhưng ta lưu vì thanh trượt cho phép chọn ngoài bộ ba thin/bold/extraBold —
+   * không nhớ thì GV chọn nét mảnh xong tải lại là về mặc định 2.
+   */
+  currentItemStrokeWidth: number;
 }
 
 export interface ExcalidrawSceneSnapshot {

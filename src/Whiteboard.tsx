@@ -16,6 +16,8 @@ import { useShortcuts } from './stamps/shared/useShortcuts';
 import { PdfImporterButton } from './pdf/PdfImporterButton';
 import { PageRangeDialog } from './pdf/PageRangeDialog';
 import { PropsPanelToggle } from './ui/PropsPanelToggle';
+import { StrokeWidthSlider } from './ui/StrokeWidthSlider';
+import { useStrokeWidth } from './ui/useStrokeWidth';
 import { ToolbarDragger } from './ui/ToolbarDragger';
 import { useToolbarPosition } from './ui/useToolbarPosition';
 import { toolbarPositionAttr } from './ui/toolbarPosition';
@@ -173,6 +175,12 @@ export function Whiteboard({
     useToolbarPosition();
   const rootRef = useRef<HTMLDivElement | null>(null);
 
+  const {
+    value: strokeWidth,
+    sync: syncStrokeWidth,
+    apply: applyStrokeWidth,
+  } = useStrokeWidth(api as never);
+
   const hostRef = useRef<StampHostHandle | null>(null);
   const handledCropIdRef = useRef<string | null>(null);
   const prevExcalidrawToolRef = useRef<string>('selection');
@@ -184,6 +192,8 @@ export function Whiteboard({
       syncThemeFromAppState(appState);
 
       if (readOnly) return;
+
+      syncStrokeWidth(elements, appState);
 
       // Intercept Excalidraw crop-image flow cho stamps: khi user double-click
       // 1 stamp, Excalidraw set appState.croppingElementId. Ta dismiss crop mode +
@@ -220,7 +230,7 @@ export function Whiteboard({
 
       onSceneTick(elements, appState, files);
     },
-    [readOnly, api, stamps, openStamp, syncThemeFromAppState, onSceneTick],
+    [readOnly, api, stamps, openStamp, syncThemeFromAppState, onSceneTick, syncStrokeWidth],
   );
 
   // Double-click detection for re-edit.
@@ -327,6 +337,12 @@ export function Whiteboard({
         enabled={!readOnly}
         collapsed={propsCollapsed}
         onToggle={togglePropsPanel}
+      />
+
+      <StrokeWidthSlider
+        enabled={!readOnly}
+        value={strokeWidth}
+        onChange={applyStrokeWidth}
       />
 
       <ToolbarDragger
