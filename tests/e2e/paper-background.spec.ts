@@ -65,6 +65,61 @@ async function countLinePixels(page: Page): Promise<number> {
 }
 
 /**
+ * Vị trí pha của hoa văn dòng kẻ trong ô mẫu, tính bằng px, trong [0, size).
+ *
+ * Đo bằng TRUNG BÌNH VÒNG (circular mean) trên độ đậm từng hàng pixel, không
+ * bằng cách dò hàng đậm nhất: dòng kẻ 1px rơi vào toạ độ lẻ sẽ bị trình duyệt
+ * tãi ra hai hàng, dò argmax thì nhảy ±1px và test rung. Trung bình vòng cho
+ * kết quả dưới-pixel và tự xử lý ca dòng kẻ vắt qua mép ô mẫu (y=31 → y=0).
+ *
+ * Quan trọng: hàm này KHÔNG dùng công thức của `paperMetrics`. Nó chỉ đọc
+ * pixel. Đó là toàn bộ lý do nó tồn tại — phép đo cũ ở chỗ này chép lại công
+ * thức của bản cài đặt rồi so với chính nó nên không bao giờ đỏ được.
+ */
+async function linePhasePx(page: Page, size: number): Promise<number> {
+  const shot = await page.screenshot({ clip: SAMPLE });
+  return page.evaluate(
+    async ({ dataUrl, period }) => {
+      const img = new Image();
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('decode failed'));
+        img.src = dataUrl;
+      });
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+      ctx.drawImage(img, 0, 0);
+      const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+      // Độ đậm một hàng = tổng mức lệch khỏi nền trắng trên kênh đỏ.
+      // Dòng kẻ #c7dcf5 lệch 56; pha trộn 50% vẫn còn 28, vẫn đo được.
+      let sumSin = 0;
+      let sumCos = 0;
+      for (let y = 0; y < canvas.height; y++) {
+        let weight = 0;
+        for (let x = 0; x < canvas.width; x++) {
+          weight += 255 - data[(y * canvas.width + x) * 4];
+        }
+        const angle = (2 * Math.PI * y) / period;
+        sumSin += weight * Math.sin(angle);
+        sumCos += weight * Math.cos(angle);
+      }
+      const theta = Math.atan2(sumSin, sumCos);
+      return ((((theta / (2 * Math.PI)) * period) % period) + period) % period;
+    },
+    { dataUrl: `data:image/png;base64,${shot.toString('base64')}`, period: size },
+  );
+}
+
+/** Chênh lệch hai pha trên vòng tròn chu kỳ `size` — luôn trong [0, size/2]. */
+function phaseGap(a: number, b: number, size: number): number {
+  const d = Math.abs(a - b) % size;
+  return Math.min(d, size - d);
+}
+
+/**
  * Alpha của canvas static tại một điểm trống giữa bảng.
  * 255 = canvas tự sơn nền (không nhìn xuyên được), 0 = trong suốt.
  */
@@ -139,13 +194,15 @@ test.describe('Nền giấy kẻ dòng', () => {
     expect(await countLinePixels(page)).toBeLessThan(50);
   });
 
-  test('cuộn bảng thì dòng kẻ trôi theo đúng quãng đường', async ({ page }) => {
+  test('cuộn bảng thì dòng kẻ trôi CÙNG CHIỀU với nội dung', async ({ page }) => {
     await page.goto('/');
     await waitForBoard(page);
     await togglePaper(page);
 
     const before = await readLayerStyle(page);
     expect(before).not.toBeNull();
+    const size = LINE_HEIGHT * before!.zoom;
+    const phaseBefore = await linePhasePx(page, size);
 
     // Cuộn như giáo viên vẫn làm (wheel trên canvas), không bơm state.
     await page.mouse.move(600, 400);
@@ -159,10 +216,14 @@ test.describe('Nền giấy kẻ dòng', () => {
     const after = await readLayerStyle(page);
     expect(after!.scrollY).not.toBeCloseTo(before!.scrollY, 1);
 
-    // Dòng kẻ phải nằm đúng chỗ ảnh của scene: screenY = (sceneY - scrollY) * zoom.
-    const size = LINE_HEIGHT * after!.zoom;
-    const expected = (((-after!.scrollY * after!.zoom) % size) + size) % size;
-    expect(after!.positionY).toBeCloseTo(expected, 1);
+    // Nội dung dịch đi (scrollY_sau − scrollY_trước) * zoom px trên màn hình.
+    // Dòng kẻ là một phần của cùng hệ toạ độ scene nên phải dịch ĐÚNG BẰNG ẤY.
+    // Lật dấu trong paperMetrics thì vế đo được sẽ ra dịch ngược lại và ca này đỏ.
+    const contentShift = (after!.scrollY - before!.scrollY) * after!.zoom;
+    const predicted = (((phaseBefore + contentShift) % size) + size) % size;
+    const measured = await linePhasePx(page, size);
+
+    expect(phaseGap(measured, predicted, size)).toBeLessThan(2);
 
     // Và vẫn hiện ra thật sau khi cuộn.
     expect(await countLinePixels(page)).toBeGreaterThan(2000);
