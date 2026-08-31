@@ -12,7 +12,8 @@ import {
  * Nền giấy kẻ dòng chỉ là một lớp CSS sau canvas, nên toàn bộ phần khó
  * (dòng kẻ phải trôi khớp với nội dung khi pan/zoom) nằm ở hàm thuần
  * `paperMetrics`. Test ở đây khoá đúng phép quy đổi scene → screen mà
- * Excalidraw dùng: `screenY = (sceneY - scrollY) * zoom`.
+ * Excalidraw dùng: `screenY = (sceneY + scrollY) * zoom` — dấu CỘNG, đọc
+ * từ `sceneCoordsToViewportCoords` trong dist/dev/chunk-4FTI6OG3.js.
  */
 describe('paperMetrics', () => {
   test('scroll 0, zoom 1: dòng kẻ đầu nằm đúng gốc toạ độ scene', () => {
@@ -22,11 +23,10 @@ describe('paperMetrics', () => {
     expect(m.offsetPx).toBe(0);
   });
 
-  test('cuộn xuống thì dòng kẻ trôi lên theo đúng quãng đường', () => {
-    // sceneY=0 nằm ở screenY=-10 → dòng kẻ nhìn thấy đầu tiên là
-    // sceneY=32, tức screenY=22.
+  test('scroll dương thì dòng kẻ trôi xuống đúng quãng đường', () => {
+    // sceneY=0 nằm ở screenY=(0+10)*1=10 → dòng kẻ đầu tiên ở screenY=10.
     const m = paperMetrics(10, 1);
-    expect(m.offsetPx).toBeCloseTo(22);
+    expect(m.offsetPx).toBeCloseTo(10);
   });
 
   test('offset luôn nằm trong [0, sizePx) kể cả khi scroll âm', () => {
@@ -44,10 +44,15 @@ describe('paperMetrics', () => {
   });
 
   test('zoom vẫn dịch offset đúng tỉ lệ', () => {
-    // scrollY=10 ở zoom 2 → sceneY=0 ở screenY=-20, dòng kế tiếp
-    // (sceneY=32) ở screenY = (32-10)*2 = 44.
+    // scrollY=10 ở zoom 2 → sceneY=0 ở screenY=(0+10)*2=20, chu kỳ 64.
     const m = paperMetrics(10, 2);
-    expect(m.offsetPx).toBeCloseTo(44);
+    expect(m.offsetPx).toBeCloseTo(20);
+  });
+
+  test('scroll âm và dương cho offset đối xứng qua gốc, không trùng nhau', () => {
+    // Nếu lật dấu công thức, hai giá trị này sẽ hoán đổi cho nhau.
+    expect(paperMetrics(10, 1).offsetPx).toBeCloseTo(10);
+    expect(paperMetrics(-10, 1).offsetPx).toBeCloseTo(22);
   });
 
   test('zoom quá nhỏ thì tắt hẳn thay vì biến thành mảng xám', () => {

@@ -19,6 +19,7 @@ import { PropsPanelToggle } from './ui/PropsPanelToggle';
 import { ToolbarDragger } from './ui/ToolbarDragger';
 import { useToolbarPosition } from './ui/useToolbarPosition';
 import { toolbarPositionAttr } from './ui/toolbarPosition';
+import { OffPageNotice } from './ui/OffPageNotice';
 import { PaperBackground } from './ui/PaperBackground';
 import { usePaperBackground } from './ui/usePaperBackground';
 import { useIsMobile } from './stamps/shared/useIsMobile';
@@ -319,6 +320,8 @@ export function Whiteboard({
       />
 
       <PdfImporterButton enabled={!readOnly} onPick={handlePdfPick} />
+
+      <OffPageNotice api={api} enabled={paperStyle !== 'none'} />
 
       <PropsPanelToggle
         enabled={!readOnly}

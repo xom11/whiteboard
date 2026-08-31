@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 
 import './paperBackground.css';
 import { paperMetrics, type PaperStyle } from './paperStyle';
+import { usePageCamera } from './usePageCamera';
 
 type ExApi = any;
 
@@ -25,6 +26,12 @@ export interface PaperBackgroundProps {
  */
 export function PaperBackground({ style, api }: PaperBackgroundProps) {
   const layerRef = useRef<HTMLDivElement | null>(null);
+
+  // Bật nền kẻ dòng thì bảng thành một TRANG có vách: kéo ngang dừng ở mép
+  // trang, zoom out dừng khi trang khít màn hình, chỉ cuộn xuống là vô hạn.
+  // PHẢI đứng trước early-return `style === 'none'` bên dưới — hook không
+  // được gọi có điều kiện.
+  usePageCamera(api, style !== 'none', layerRef);
 
   useEffect(() => {
     const layer = layerRef.current;

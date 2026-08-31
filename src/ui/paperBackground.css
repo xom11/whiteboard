@@ -43,3 +43,30 @@
 .wb-paper-on .excalidraw .excalidraw__canvas {
   background: transparent !important;
 }
+
+/* Dải báo nội dung ngoài trang. Nổi trên bảng, không cản thao tác. */
+.wb-offpage-notice {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 5;
+  pointer-events: none;
+
+  max-width: min(90%, 420px);
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #f0c674;
+  background: #fdf6e3;
+  color: #6b4e00;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
+}
+
+.theme--dark .wb-offpage-notice {
+  border-color: #6b5a2a;
+  background: #2a2418;
+  color: #e8d9a8;
+}

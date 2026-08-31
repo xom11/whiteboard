@@ -22,6 +22,9 @@ const SAMPLE = { x: 420, y: 260, width: 360, height: 288 };
 /** Khoảng cách dòng kẻ theo đơn vị scene — khớp PAPER_LINE_HEIGHT. */
 const LINE_HEIGHT = 32;
 
+/** Bề rộng trang theo đơn vị scene — khớp PAPER_PAGE_WIDTH. */
+const PAGE_WIDTH = 1440;
+
 async function waitForBoard(page: Page) {
   await expect(page.locator('.excalidraw').first()).toBeVisible({
     timeout: 20_000,
@@ -62,6 +65,61 @@ async function countLinePixels(page: Page): Promise<number> {
     },
     { dataUrl: `data:image/png;base64,${shot.toString('base64')}`, rgb: LINE_RGB },
   );
+}
+
+/**
+ * Vị trí pha của hoa văn dòng kẻ trong ô mẫu, tính bằng px, trong [0, size).
+ *
+ * Đo bằng TRUNG BÌNH VÒNG (circular mean) trên độ đậm từng hàng pixel, không
+ * bằng cách dò hàng đậm nhất: dòng kẻ 1px rơi vào toạ độ lẻ sẽ bị trình duyệt
+ * tãi ra hai hàng, dò argmax thì nhảy ±1px và test rung. Trung bình vòng cho
+ * kết quả dưới-pixel và tự xử lý ca dòng kẻ vắt qua mép ô mẫu (y=31 → y=0).
+ *
+ * Quan trọng: hàm này KHÔNG dùng công thức của `paperMetrics`. Nó chỉ đọc
+ * pixel. Đó là toàn bộ lý do nó tồn tại — phép đo cũ ở chỗ này chép lại công
+ * thức của bản cài đặt rồi so với chính nó nên không bao giờ đỏ được.
+ */
+async function linePhasePx(page: Page, size: number): Promise<number> {
+  const shot = await page.screenshot({ clip: SAMPLE });
+  return page.evaluate(
+    async ({ dataUrl, period }) => {
+      const img = new Image();
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('decode failed'));
+        img.src = dataUrl;
+      });
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+      ctx.drawImage(img, 0, 0);
+      const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+      // Độ đậm một hàng = tổng mức lệch khỏi nền trắng trên kênh đỏ.
+      // Dòng kẻ #c7dcf5 lệch 56; pha trộn 50% vẫn còn 28, vẫn đo được.
+      let sumSin = 0;
+      let sumCos = 0;
+      for (let y = 0; y < canvas.height; y++) {
+        let weight = 0;
+        for (let x = 0; x < canvas.width; x++) {
+          weight += 255 - data[(y * canvas.width + x) * 4];
+        }
+        const angle = (2 * Math.PI * y) / period;
+        sumSin += weight * Math.sin(angle);
+        sumCos += weight * Math.cos(angle);
+      }
+      const theta = Math.atan2(sumSin, sumCos);
+      return ((((theta / (2 * Math.PI)) * period) % period) + period) % period;
+    },
+    { dataUrl: `data:image/png;base64,${shot.toString('base64')}`, period: size },
+  );
+}
+
+/** Chênh lệch hai pha trên vòng tròn chu kỳ `size` — luôn trong [0, size/2]. */
+function phaseGap(a: number, b: number, size: number): number {
+  const d = Math.abs(a - b) % size;
+  return Math.min(d, size - d);
 }
 
 /**
@@ -109,6 +167,24 @@ async function readLayerStyle(page: Page) {
   });
 }
 
+async function readCamera(page: Page) {
+  return page.evaluate(() => {
+    const st = window.__wbApi.getAppState();
+    return {
+      scrollX: st.scrollX as number,
+      scrollY: st.scrollY as number,
+      zoom: st.zoom.value as number,
+      width: st.width as number,
+    };
+  });
+}
+
+/** Đẩy bảng sang ngang bằng wheel; Excalidraw đọc deltaX cho cuộn ngang. */
+async function panHorizontally(page: Page, deltaX: number, times: number) {
+  await page.mouse.move(600, 400);
+  for (let i = 0; i < times; i++) await page.mouse.wheel(deltaX, 0);
+}
+
 test.describe('Nền giấy kẻ dòng', () => {
   test('bật → canvas trong suốt và dòng kẻ hiện ra; tắt → trắng như cũ', async ({
     page,
@@ -139,13 +215,15 @@ test.describe('Nền giấy kẻ dòng', () => {
     expect(await countLinePixels(page)).toBeLessThan(50);
   });
 
-  test('cuộn bảng thì dòng kẻ trôi theo đúng quãng đường', async ({ page }) => {
+  test('cuộn bảng thì dòng kẻ trôi CÙNG CHIỀU với nội dung', async ({ page }) => {
     await page.goto('/');
     await waitForBoard(page);
     await togglePaper(page);
 
     const before = await readLayerStyle(page);
     expect(before).not.toBeNull();
+    const size = LINE_HEIGHT * before!.zoom;
+    const phaseBefore = await linePhasePx(page, size);
 
     // Cuộn như giáo viên vẫn làm (wheel trên canvas), không bơm state.
     await page.mouse.move(600, 400);
@@ -159,36 +237,101 @@ test.describe('Nền giấy kẻ dòng', () => {
     const after = await readLayerStyle(page);
     expect(after!.scrollY).not.toBeCloseTo(before!.scrollY, 1);
 
-    // Dòng kẻ phải nằm đúng chỗ ảnh của scene: screenY = (sceneY - scrollY) * zoom.
-    const size = LINE_HEIGHT * after!.zoom;
-    const expected = (((-after!.scrollY * after!.zoom) % size) + size) % size;
-    expect(after!.positionY).toBeCloseTo(expected, 1);
+    // Nội dung dịch đi (scrollY_sau − scrollY_trước) * zoom px trên màn hình.
+    // Dòng kẻ là một phần của cùng hệ toạ độ scene nên phải dịch ĐÚNG BẰNG ẤY.
+    // Lật dấu trong paperMetrics thì vế đo được sẽ ra dịch ngược lại và ca này đỏ.
+    const contentShift = (after!.scrollY - before!.scrollY) * after!.zoom;
+    const predicted = (((phaseBefore + contentShift) % size) + size) % size;
+    const measured = await linePhasePx(page, size);
+
+    expect(phaseGap(measured, predicted, size)).toBeLessThan(2);
 
     // Và vẫn hiện ra thật sau khi cuộn.
     expect(await countLinePixels(page)).toBeGreaterThan(2000);
   });
 
-  test('zoom nhỏ hết cỡ thì tắt dòng kẻ thay vì bôi thành mảng xám', async ({
+  /*
+   * Ca 'zoom nhỏ hết cỡ thì tắt dòng kẻ' đã bị gỡ ở đây: sàn zoom của trang
+   * giấy làm zoom 0.15 không còn đạt tới được khi nền kẻ dòng bật, nên tiền
+   * đề của nó không còn tồn tại. Nhánh ẩn-khi-dày-quá của paperMetrics vẫn
+   * còn và vẫn do src/ui/__tests__/paperStyle.test.ts phủ.
+   */
+
+  test('kéo sang phải thì dừng ở mép phải trang', async ({ page }) => {
+    await page.goto('/');
+    await waitForBoard(page);
+    await togglePaper(page);
+
+    // Đẩy thật lực rồi xem nó dừng ở đâu.
+    await panHorizontally(page, 200, 50);
+
+    const cam = await readCamera(page);
+    // Vách phải: scrollX ≥ width/zoom − PAGE_WIDTH, và phải CHẠM tới nó.
+    expect(cam.scrollX).toBeCloseTo(cam.width / cam.zoom - PAGE_WIDTH, 0);
+  });
+
+  test('kéo sang trái dừng ở mép trái, cuộn lên dừng ở đỉnh trang', async ({
     page,
   }) => {
     await page.goto('/');
     await waitForBoard(page);
     await togglePaper(page);
 
+    await panHorizontally(page, -200, 50);
+    for (let i = 0; i < 50; i++) await page.mouse.wheel(0, -200);
+
+    const cam = await readCamera(page);
+    expect(cam.scrollX).toBeCloseTo(0, 0);
+    expect(cam.scrollY).toBeCloseTo(0, 0);
+  });
+
+  test('zoom out dừng khi trang khít bề ngang, dòng kẻ vẫn hiện', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await waitForBoard(page);
+    await togglePaper(page);
+
+    // Bơm thẳng một mức zoom phi lý; ràng buộc phải kéo nó lên sàn.
     await page.evaluate(() => {
       window.__wbApi.updateScene({
         appState: { zoom: { value: 0.15 } },
         captureUpdate: 'NEVER',
       });
     });
+    // Chờ zoom RỜI KHỎI giá trị ban đầu, không chờ nó "> 0.5": zoom khởi
+    // điểm là 1 nên điều kiện đó đúng sẵn và test sẽ đọc giá trị trước khi
+    // ràng buộc kịp áp. Khẳng định thật nằm ở dưới, không nằm trong chờ.
     await page.waitForFunction(
-      () => window.__wbApi.getAppState().zoom.value < 0.3,
+      () => window.__wbApi.getAppState().zoom.value !== 1,
       null,
       { timeout: 5_000 },
     );
 
-    const style = await readLayerStyle(page);
-    expect(style!.display).toBe('none');
-    expect(await countLinePixels(page)).toBeLessThan(50);
+    const cam = await readCamera(page);
+    expect(cam.zoom).toBeCloseTo(cam.width / PAGE_WIDTH, 2);
+    // Ở sàn zoom, trang phủ đúng bề ngang ⇒ không kéo ngang đi đâu được.
+    expect(cam.scrollX).toBeCloseTo(0, 0);
+
+    // Và dòng kẻ vẫn phải THẤY được — sàn zoom giữ khoảng cách trên ngưỡng 8px
+    // (32 × 0.889 = 28,4px). Ngưỡng ở đây thấp hơn 2000 của các ca zoom-1 vì
+    // khoảng cách không còn nguyên px: phần lớn dòng bị khử răng cưa tãi qua
+    // hai hàng nên rơi ra ngoài dung sai màu chặt của countLinePixels. Con số
+    // đếm được là CẬN DƯỚI của lượng mực thật, và vẫn cách xa trạng thái tắt
+    // (< 50) hai chục lần.
+    expect(await countLinePixels(page)).toBeGreaterThan(1000);
+  });
+
+  test('tắt nền kẻ dòng thì bảng tự do trở lại', async ({ page }) => {
+    await page.goto('/');
+    await waitForBoard(page);
+    await togglePaper(page);
+    await togglePaper(page);
+
+    await panHorizontally(page, 200, 30);
+
+    const cam = await readCamera(page);
+    // Không còn vách: kéo được quá mép phải của trang.
+    expect(cam.scrollX).toBeLessThan(cam.width / cam.zoom - PAGE_WIDTH - 1);
   });
 });

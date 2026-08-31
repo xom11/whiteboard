@@ -1,5 +1,20 @@
 # Changelog
 
+## Chưa phát hành
+
+### Trang giấy có vách cho nền kẻ dòng
+
+Bật nền kẻ dòng giờ biến bảng thành một trang giấy thật: bề ngang có giới hạn,
+kéo sang trái/phải dừng ở mép trang, zoom out dừng lại khi trang vừa khít màn
+hình. Chỉ còn cuộn xuống là vô hạn, và có mép trên nên luôn quay về đầu trang
+được. Tắt nền kẻ dòng thì bảng trở lại canvas vô tận như cũ.
+
+Nội dung nằm ngoài trang (ảnh PDF quá khổ, hoặc bảng vẽ tự do từ trước) không
+bị dịch chuyển gì — bảng chỉ báo một dải nhắc tắt nền kẻ dòng để xem.
+
+**Sửa lỗi:** dòng kẻ trước đây trôi *ngược* chiều với nội dung khi cuộn dọc, do
+`paperMetrics` dùng sai dấu của `scrollY`.
+
 ## v0.35.0 — 2026-07-29
 
 ### Thu gọn panel thuộc tính
