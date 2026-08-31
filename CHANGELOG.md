@@ -1,6 +1,6 @@
 # Changelog
 
-## Chưa phát hành
+## v0.38.0 — 2026-08-31
 
 ### Trang giấy có vách cho nền kẻ dòng
 
