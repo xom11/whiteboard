@@ -1,6 +1,6 @@
 # Changelog
 
-## Chưa phát hành
+## v0.39.0 — 2026-09-01
 
 ### Thanh trượt độ dày nét, có nấc mảnh hơn hẳn
 
