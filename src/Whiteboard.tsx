@@ -1,6 +1,6 @@
 'use client';
 
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   ExcalidrawElement,
   BinaryFiles,
@@ -129,8 +129,13 @@ export function Whiteboard({
   const {
     activeStamp,
     editingElement,
+    seedCustomData,
+    session,
+    closeStampIfSession,
+    stampByKind,
     HostComponent,
     openStamp,
+    openStampWithSeed,
     closeStamp,
     toggleStampByKind,
   } = useActiveStamp({ readOnly, stamps });
@@ -182,6 +187,33 @@ export function Whiteboard({
   } = useStrokeWidth(api as never);
 
   const hostRef = useRef<StampHostHandle | null>(null);
+
+  // Host hỏi trước khi hiện lối sang stamp khác: consumer có thể không đăng ký
+  // stamp đó (vd chỉ STABLE_STAMPS) — hiện nút mà bấm không ăn thì tệ hơn ẩn.
+  const canOpenStamp = useCallback(
+    (kind: string) => !readOnly && stampByKind.has(kind),
+    [readOnly, stampByKind],
+  );
+
+  // `onClose` của host gắn với PHIÊN mở nó. GeometryStudio chèn bất đồng bộ
+  // rồi mới gọi onClose; nếu giữa chừng đã chuyển sang stamp khác (openStampFromHost)
+  // thì onClose trần sẽ đóng luôn stamp MỚI — đồ thị vừa mở đã biến mất.
+  const closeHostSession = useMemo(() => {
+    const phien = session;
+    return () => closeStampIfSession(phien);
+  }, [session, closeStampIfSession]);
+
+  // Chuyển stamp từ BÊN TRONG host (vd Dựng hình → Đồ thị 2D): chèn nội dung dở
+  // dang của stamp hiện tại trước — đúng như bấm ra ngoài (useStampClickOutside)
+  // — để không mất hình đang dựng, rồi mới mở stamp mới với dữ liệu gieo.
+  const openStampFromHost = useCallback(
+    (kind: string, seed: unknown) => {
+      hostRef.current?.tryInsert();
+      openStampWithSeed(kind, seed);
+    },
+    [openStampWithSeed],
+  );
+
   const handledCropIdRef = useRef<string | null>(null);
   const prevExcalidrawToolRef = useRef<string>('selection');
 
@@ -393,10 +425,13 @@ export function Whiteboard({
             ref={hostRef}
             api={api}
             editingElement={editingElement}
-            onClose={closeStamp}
+            onClose={closeHostSession}
             isDark={isDark}
             generateGeometryFigure={generateGeometryFigure}
             onGeometryDraft={onGeometryDraft}
+            initialCustomData={seedCustomData}
+            canOpenStamp={canOpenStamp}
+            onOpenStamp={openStampFromHost}
           />
         )}
       </Suspense>
