@@ -75,13 +75,16 @@ function parseInitialState(data: unknown): State | null {
 }
 
 export const Graph2DStampHost = forwardRef<StampHostHandle, StampHostProps>(
-  function Graph2DStampHost({ api, editingElement, onClose, isDark }, ref) {
+  function Graph2DStampHost({ api, editingElement, onClose, isDark, initialCustomData }, ref) {
     const panelRef = useRef<GraphEditorPanelHandle | null>(null);
     const { isMobile } = useIsMobile();
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const sceneStore = useStampStore('graph2d', () =>
-      editingElement?.customData ? parseInitialState(editingElement.customData) : null,
-    );
+    // Re-edit thắng dữ liệu gieo. Gieo (vd hàm gõ ở editor Dựng hình) chỉ nạp
+    // state — lúc chèn vẫn là element MỚI vì editingElement null.
+    const sceneStore = useStampStore('graph2d', () => {
+      const source = editingElement?.customData ?? initialCustomData;
+      return source ? parseInitialState(source) : null;
+    });
     const [selectedObjectId, setSelectedObjectId] = useState<string | undefined>(undefined);
 
     // Tier 2 F — host owns editor UI state.

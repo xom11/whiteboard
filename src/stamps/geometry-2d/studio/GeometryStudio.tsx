@@ -9,6 +9,7 @@ import {
   useState,
 } from 'react';
 import { StampLeftPanel } from '../../shared/StampLeftPanel';
+import type { StampLeftPanelSearchProps } from '../../shared/StampLeftPanel/types';
 import { GeometryIconHeader } from '../editor/icons';
 import {
   GeometryEditorPanel,
@@ -40,11 +41,13 @@ export interface GeometryStudioProps {
   api?: unknown;
   generateGeometryFigure?: GenerateGeometryFigure;
   onGeometryDraft?: (draft: GeometryDraftPreview | null) => void;
+  /** Tuỳ biến ô "Tìm công cụ" (vd gõ hàm số → chuyển sang đồ thị 2D). */
+  toolSearch?: StampLeftPanelSearchProps;
 }
 
 export const GeometryStudio = forwardRef<StampHostHandle, GeometryStudioProps>(
   function GeometryStudio(
-    { initialJsonState, onCommit, onClose, isDark, api, generateGeometryFigure, onGeometryDraft },
+    { initialJsonState, onCommit, onClose, isDark, api, generateGeometryFigure, onGeometryDraft, toolSearch },
     ref,
   ) {
     const panelRef = useRef<GeometryEditorPanelHandle | null>(null);
@@ -115,6 +118,7 @@ export const GeometryStudio = forwardRef<StampHostHandle, GeometryStudioProps>(
           groupLabels={GROUP_LABELS}
           activeTool={selectedTool}
           onToolChange={setSelectedTool}
+          search={toolSearch}
           view={{
             showAxis,
             showGrid,

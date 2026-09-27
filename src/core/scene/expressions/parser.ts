@@ -57,11 +57,16 @@ export function validate(expression: string): ValidateResult {
     }
   }
 
-  // Try syntactic compile (with dummy params) to catch syntax errors.
+  // Compile thử để bắt lỗi cú pháp. PHẢI `new Function` thật — trước đây chỉ
+  // gọi buildFunctionBody (dựng CHUỖI, không bao giờ ném) nên `x+`, `(x` lọt
+  // qua validate rồi đồ thị lặng lẽ không vẽ gì. `new Function` chỉ parse,
+  // không chạy thân hàm.
+  const paramNames = Array.from(ids).filter(
+    (id) => id !== 'x' && !(ALLOWED_CONSTANTS as readonly string[]).includes(id) && !(ALLOWED_FUNCTIONS as readonly string[]).includes(id),
+  );
   try {
-    buildFunctionBody(jsExpr, Array.from(ids).filter(
-      (id) => id !== 'x' && !(ALLOWED_CONSTANTS as readonly string[]).includes(id) && !(ALLOWED_FUNCTIONS as readonly string[]).includes(id),
-    ));
+     
+    new Function('x', ...paramNames, buildFunctionBody(jsExpr, paramNames));
   } catch (err) {
     return { ok: false, error: `Cú pháp lỗi: ${(err as Error).message}` };
   }
@@ -109,18 +114,30 @@ export function compile(
   }
 }
 
+/** Tên trong biểu thức → biểu thức JS. Không có trong map ⇒ `Math.<tên>`. */
+const NAME_TO_JS: Readonly<Record<string, string>> = {
+  ln: 'Math.log',
+  log: 'Math.log10', // log không ghi cơ số = log cơ số 10 (quy ước THPT VN)
+  log10: 'Math.log10',
+  pi: '(Math.PI)',
+  e: '(Math.E)',
+};
+
+// Thay MỘT LƯỢT, tên dài trước. Trước đây là chuỗi replace nối tiếp nên lượt
+// sau khớp lại vào kết quả lượt trước: `ln` → `Math.log` rồi `\blog\b` khớp chữ
+// "log" trong đó → `Math.Math.log10` ⇒ `ln(x)` ném TypeError; còn `log10` bị
+// vòng lặp bỏ qua ("already handled" — nhưng không có dòng nào xử lý) ⇒
+// ReferenceError. `(?<![.\w])` chặn khớp bên trong `Math.xxx` và số khoa học
+// (`1e5`), `(?!\w)` chặn khớp tiền tố (`log` trong `log10`).
+const NAME_RE = new RegExp(
+  `(?<![.\\w])(${[...ALLOWED_FUNCTIONS, ...ALLOWED_CONSTANTS]
+    .sort((a, b) => b.length - a.length)
+    .join('|')})(?!\\w)`,
+  'g',
+);
+
 function buildFunctionBody(jsExpr: string, _paramNames: string[]): string {
-  // Inline Math constants and functions.
-  // sin → Math.sin, pi → Math.PI, e → Math.E, ln → Math.log.
-  let body = jsExpr;
-  body = body.replace(/\bln\b/g, 'Math.log');
-  body = body.replace(/\blog\b/g, 'Math.log10');
-  body = body.replace(/\bpi\b/g, '(Math.PI)');
-  body = body.replace(/\be\b(?!\w)/g, '(Math.E)');
-  for (const fn of ALLOWED_FUNCTIONS) {
-    if (fn === 'log' || fn === 'log10') continue;        // already handled
-    body = body.replace(new RegExp(`\\b${fn}\\b`, 'g'), `Math.${fn}`);
-  }
+  const body = jsExpr.replace(NAME_RE, (name) => NAME_TO_JS[name] ?? `Math.${name}`);
   return `"use strict"; return (${body});`;
 }
 

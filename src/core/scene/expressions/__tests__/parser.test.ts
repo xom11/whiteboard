@@ -54,6 +54,26 @@ describe('expressions/parser', () => {
     });
   });
 
+  // Hai lỗi làm đồ thị lặng lẽ không vẽ gì: validate báo hợp lệ cho biểu thức
+  // hỏng (chỉ dựng chuỗi, không compile thật), và log10 không được map sang
+  // Math.log10 (ném ReferenceError lúc vẽ).
+  describe('biểu thức hỏng / log10', () => {
+    it.each(['x+', '(x', 'x)', '2**', 'x x', 'sin(', '*x'])('validate từ chối lỗi cú pháp: %j', (expr) => {
+      expect(validate(expr)).toMatchObject({ ok: false });
+    });
+
+    it('log10 tính đúng (trước đây ReferenceError)', () => {
+      const fn = compile('log10(x)', {});
+      expect(typeof fn).toBe('function');
+      expect((fn as (x: number) => number)(1000)).toBeCloseTo(3);
+    });
+
+    it('log vẫn là log cơ số 10, ln là log tự nhiên (không đổi hành vi cũ)', () => {
+      expect((compile('log(x)', {}) as (x: number) => number)(100)).toBeCloseTo(2);
+      expect((compile('ln(x)', {}) as (x: number) => number)(Math.E)).toBeCloseTo(1);
+    });
+  });
+
   describe('collectFreeVars', () => {
     it('returns [x, a] for "a*x + b" when only a known', () => {
       const vars = collectFreeVars('a*x + b');

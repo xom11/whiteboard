@@ -83,6 +83,21 @@ export interface StampHostProps {
    * broadcast cho học sinh xem live. `null` = clear ghost (đã chèn / huỷ / rỗng).
    */
   onGeometryDraft?: (draft: import('./draftTypes').GeometryDraftPreview | null) => void;
+  /**
+   * Dữ liệu GIEO khi mở stamp MỚI (không phải re-edit): host nạp như customData
+   * nhưng lúc chèn tạo element mới. Khác `editingElement` ở chỗ không có id —
+   * đưa id giả vào `editingElement` thì insertStampImage đi nhánh "sửa element"
+   * không tìm thấy gì và nội dung biến mất im lặng.
+   */
+  initialCustomData?: unknown;
+  /** Stamp `kind` có được đăng ký ở Whiteboard này không (consumer có thể tắt). */
+  canOpenStamp?: (kind: string) => boolean;
+  /**
+   * Chuyển sang stamp khác, gieo sẵn `seed` làm `initialCustomData`. Whiteboard
+   * chèn nội dung dở dang của stamp hiện tại trước (như bấm ra ngoài), rồi mới
+   * mở stamp mới — không mất hình đang dựng.
+   */
+  onOpenStamp?: (kind: string, seed: unknown) => void;
 }
 
 /**

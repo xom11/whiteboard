@@ -11,6 +11,7 @@
 import React, { useMemo, useState } from 'react';
 import type {
   StampLeftPanelChordProps,
+  StampLeftPanelSearchProps,
   StampToolDef,
 } from './types';
 import { useToolHoverTooltip } from './useToolHoverTooltip';
@@ -23,6 +24,7 @@ export interface ToolGridProps<TKey extends string, TGroup extends string> {
   activeTool: TKey;
   onToolChange: (k: TKey) => void;
   chord?: StampLeftPanelChordProps<TGroup>;
+  search?: StampLeftPanelSearchProps;
 }
 
 function normalize(s: string): string {
@@ -94,7 +96,7 @@ function ToolResultList<TKey extends string, TGroup extends string>(props: {
 export function ToolGrid<TKey extends string, TGroup extends string>(
   props: ToolGridProps<TKey, TGroup>,
 ): React.ReactElement {
-  const { tools, groupOrder, groupLabels, activeTool, onToolChange, chord } = props;
+  const { tools, groupOrder, groupLabels, activeTool, onToolChange, chord, search } = props;
   const { hover, portalReady, showHover, hideHover } = useToolHoverTooltip();
 
   const [query, setQuery] = useState('');
@@ -122,7 +124,18 @@ export function ToolGrid<TKey extends string, TGroup extends string>(
     [grouped, groupOrder],
   );
 
-  const noMatch = normalizedQuery !== '' && groupKeys.length === 0;
+  // Hành động theo chữ gõ (vd gõ hàm số → vẽ đồ thị). Tính trên chuỗi GỐC
+  // (không bỏ dấu/hạ chữ): `x^2`, `sin(x)` phân biệt hoa thường.
+  const trimmedQuery = query.trim();
+  const actionForQuery = search?.actionForQuery;
+  const queryAction = useMemo(
+    () => (trimmedQuery && actionForQuery ? actionForQuery(trimmedQuery) : null),
+    [trimmedQuery, actionForQuery],
+  );
+
+  // Có hành động thì "không có công cụ nào khớp" là thông tin thừa — chữ gõ
+  // vốn không phải để tìm công cụ.
+  const noMatch = normalizedQuery !== '' && groupKeys.length === 0 && !queryAction;
 
   return (
     <>
@@ -134,7 +147,13 @@ export function ToolGrid<TKey extends string, TGroup extends string>(
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Tìm công cụ…"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && queryAction) {
+              e.preventDefault();
+              queryAction.onRun();
+            }
+          }}
+          placeholder={search?.placeholder ?? 'Tìm công cụ…'}
           aria-label="Tìm công cụ"
           data-testid="tool-search-input"
           className="w-full rounded-md border border-slate-200 bg-slate-50 py-1.5 pl-7 pr-7 text-[12px] text-slate-800 placeholder:text-slate-400 focus:border-emerald-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-300"
@@ -151,6 +170,26 @@ export function ToolGrid<TKey extends string, TGroup extends string>(
           </button>
         )}
       </div>
+
+      {queryAction && (
+        <button
+          type="button"
+          onClick={queryAction.onRun}
+          data-testid={queryAction.testId ?? 'tool-search-action'}
+          className="flex items-center gap-2 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-1.5 text-left text-emerald-900 transition hover:bg-emerald-100"
+        >
+          {queryAction.icon && (
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center text-[15px]">{queryAction.icon}</span>
+          )}
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[12px] font-semibold leading-tight">{queryAction.label}</span>
+            {queryAction.hint && (
+              <span className="block truncate text-[10px] leading-tight text-emerald-700">{queryAction.hint}</span>
+            )}
+          </span>
+          <kbd className="shrink-0 rounded border border-emerald-300 bg-white px-1 text-[10px] text-emerald-700">Enter</kbd>
+        </button>
+      )}
 
       {noMatch && (
         <div

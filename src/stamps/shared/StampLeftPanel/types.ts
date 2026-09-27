@@ -68,6 +68,25 @@ export interface StampLeftPanelObjectsProps {
   addButtons?: ReadonlyArray<{ label: string; testId?: string; onClick: () => void }>;
 }
 
+/**
+ * Hành động gợi ý theo chữ gõ ở ô "Tìm công cụ" — hiện TRÊN danh sách kết quả,
+ * bấm hoặc Enter để chạy. Vd editor Dựng hình học: gõ `y = x^2` → "Vẽ đồ thị".
+ */
+export interface StampToolSearchAction {
+  label: string;
+  hint?: string;
+  icon?: ReactNode;
+  testId?: string;
+  onRun: () => void;
+}
+
+export interface StampLeftPanelSearchProps {
+  /** Placeholder ô tìm. Default "Tìm công cụ…". */
+  placeholder?: string;
+  /** Hành động cho chuỗi đang gõ (đã trim, khác rỗng). `null` = không có. */
+  actionForQuery?: (query: string) => StampToolSearchAction | null;
+}
+
 export interface StampLeftPanelProps<
   TKey extends string = string,
   TGroup extends string = string,
@@ -93,6 +112,8 @@ export interface StampLeftPanelProps<
   chord?: StampLeftPanelChordProps<TGroup>;
   objects?: StampLeftPanelObjectsProps;
   tabs?: StampLeftPanelTabs;
+  /** Tuỳ biến ô "Tìm công cụ" (placeholder + hành động theo chữ gõ). Desktop only. */
+  search?: StampLeftPanelSearchProps;
 
   // Mobile
   isMobile?: boolean;

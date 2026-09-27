@@ -32,6 +32,7 @@ export function StampLeftPanelDesktop<TKey extends string, TGroup extends string
     chord,
     objects,
     tabs,
+    search,
   } = props;
 
   const [tab, setTab] = useState<'tools' | 'objects'>('tools');
@@ -71,6 +72,7 @@ export function StampLeftPanelDesktop<TKey extends string, TGroup extends string
             activeTool={activeTool}
             onToolChange={onToolChange}
             chord={chord}
+            search={search}
           />
         </>
       ) : (
