@@ -381,17 +381,25 @@ export function Whiteboard({
         </div>
       )}
 
-      {HostComponent && (
-        <HostComponent
-          ref={hostRef}
-          api={api}
-          editingElement={editingElement}
-          onClose={closeStamp}
-          isDark={isDark}
-          generateGeometryFigure={generateGeometryFigure}
-          onGeometryDraft={onGeometryDraft}
-        />
-      )}
+      {/* Suspense RIÊNG cho host: stamp nạp lazy (React.lazy) suspend lần đầu mở.
+          Không có boundary này thì boundary gần nhất là của CONSUMER — phía
+          trên cả Whiteboard (vd next/dynamic) — nên React ẩn luôn Excalidraw.
+          Excalidraw là class component: bị ẩn = componentWillUnmount
+          (scene.destroy + new Scene) rồi mount lại ⇒ BẢNG TRẮNG TRƠN, và
+          persist ghi đè localStorage bằng scene rỗng. */}
+      <Suspense fallback={null}>
+        {HostComponent && (
+          <HostComponent
+            ref={hostRef}
+            api={api}
+            editingElement={editingElement}
+            onClose={closeStamp}
+            isDark={isDark}
+            generateGeometryFigure={generateGeometryFigure}
+            onGeometryDraft={onGeometryDraft}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }
