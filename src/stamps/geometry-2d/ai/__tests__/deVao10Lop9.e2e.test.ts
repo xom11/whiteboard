@@ -90,3 +90,58 @@ describe('"các đường cao AH, BK và CP" — đủ ba đường cao', () => 
     expect(dist(p.A, p.E)).toBeCloseTo(dist(p.A, p.F), 7); // OA ⊥ EF ⇒ AE = AF
   });
 });
+
+describe('chân đường cao / hình chiếu viết theo đỉnh, chung một đường', () => {
+  it('#1 (Thanh Hóa 2022): "H là chân đường cao hạ từ đỉnh A của tam giác ABC"; E hình chiếu của B lên AO', () => {
+    const p = hinh(1);
+    expect(vuong(p.A, p.H, p.B, p.C) && thuocDoan(p.H, p.B, p.C, 1e-7)).toBe(true);
+    expect(vuong(p.B, p.E, p.A, p.O) && thangHang(p.E, p.A, p.O)).toBe(true);
+    expect(dist(p.A, p.B)).toBeLessThan(dist(p.A, p.C));
+  });
+  it('#40 (Ninh Thuận 2022): "D và E lần lượt là chân đường cao của tam giác ABC hạ từ B và C"', () => {
+    const p = hinh(40);
+    expect(vuong(p.B, p.D, p.A, p.C) && thangHang(p.D, p.A, p.C)).toBe(true);
+    expect(vuong(p.C, p.E, p.A, p.B) && thangHang(p.E, p.A, p.B)).toBe(true);
+  });
+  it('#10 (Thái Bình 2024): "M, N lần lượt là hình chiếu vuông góc của A và B lên đường thẳng EF"', () => {
+    const p = hinh(10);
+    expect(vuong(p.A, p.M, p.E, p.F) && thangHang(p.M, p.E, p.F)).toBe(true);
+    expect(vuong(p.B, p.N, p.E, p.F) && thangHang(p.N, p.E, p.F)).toBe(true);
+    const R = dist(p.O, p.A);
+    expect(trenDuongTron(p.C, p.O, R) && trenDuongTron(p.D, p.O, R) && vuong(p.C, p.D, p.A, p.B)).toBe(true);
+  });
+});
+
+describe('cát tuyến / đường qua điểm cắt đường tròn', () => {
+  it('#44 (Lâm Đồng 2019): cát tuyến ACD (C nằm giữa A và D) — không còn vòng phụ thuộc', () => {
+    const p = hinh(44);
+    const R = dist(p.O, p.B);
+    expect(trenDuongTron(p.C, p.O, R) && trenDuongTron(p.D, p.O, R)).toBe(true);
+    expect(thuocDoan(p.C, p.A, p.D, 1e-7) && khac(p.C, p.D)).toBe(true);
+    expect(tiepXuc(p, 'B', 'A')).toBe(true);
+  });
+  it('#58 (Cần Thơ 2022): qua K cắt (O) tại E và D "sao cho KD < KE"', () => {
+    const p = hinh(58);
+    expect(dist(p.K, p.D)).toBeLessThan(dist(p.K, p.E));
+    expect(thuocDoan(p.D, p.K, p.E, 1e-7)).toBe(true);
+    // A và O khác phía EK
+    expect(cungPhia(p.E, p.K, p.A, p.O)).toBe(false);
+  });
+  it('#31 (Quảng Bình 2023): E thuộc cung AC của NỬA đường tròn — nằm giữa A và C trên cung', () => {
+    const p = hinh(31);
+    const R = dist(p.O, p.A);
+    expect(trenDuongTron(p.E, p.O, R) && cungPhia(p.A, p.B, p.E, p.C)).toBe(true);
+    expect(cungPhia(p.A, p.C, p.E, p.O)).toBe(false);
+    expect(dist(p.A, p.E)).toBeLessThan(dist(p.B, p.C));
+  });
+});
+
+describe('rule đơn lẻ', () => {
+  it('linesCutDistrib: "BC và AC cắt DE lần lượt tại F và I" / "BC cắt OA, AD lần lượt tại H và K"; bỏ đường tham chiếu sau "với"', async () => {
+    const { linesCutDistribRule: r } = await import('../rules/linesCutDistrib');
+    const chay = (t: string) => r.match({ problem: t, clauses: [{ id: 0, text: t, hasGeometry: true }] }).flatMap((m) => m.intents as any[]);
+    expect(chay('BC và AC cắt DE lần lượt tại F và I').map((i) => `${i.name}=${i.constraint.of.join('∩')}`)).toEqual(['F=BC∩DE', 'I=AC∩DE']);
+    expect(chay('Đường thẳng BC cắt OA, AD lần lượt tại H và K').map((i) => `${i.name}=${i.constraint.of.join('∩')}`)).toEqual(['H=BC∩OA', 'K=BC∩AD']);
+    expect(chay('Đường thẳng qua D vuông góc với AC cắt AB, BC lần lượt tại M, N')).toEqual([]);
+  });
+});

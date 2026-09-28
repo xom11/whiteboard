@@ -105,6 +105,9 @@ import { namedLineRule } from './namedLine';
 import { bisectorsMeetRule } from './bisectorsMeet';
 import { hexagonRule } from './hexagon';
 import { lineCutsLineAndCircleRule } from './lineCutsLineAndCircle';
+import { footsExtraRule } from './footsExtra';
+import { lineThroughPointCutsCircleRule } from './lineThroughPointCutsCircle';
+import { linesCutDistribRule } from './linesCutDistrib';
 
 const RULES: readonly LanguageRule[] = [
   namedLineRule,
@@ -209,6 +212,9 @@ const RULES: readonly LanguageRule[] = [
   parallelSidePointsRule,
   bisectorsMeetRule,
   lineCutsLineAndCircleRule,
+  footsExtraRule,
+  lineThroughPointCutsCircleRule,
+  linesCutDistribRule,
 ];
 
 /**
