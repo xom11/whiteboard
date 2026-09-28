@@ -64,7 +64,8 @@ function describeEntity(e: DslPointT | DslShapeT): string {
       const distStr = d.kind === 'circleRadius' ? `r(${d.circle})`
         : d.kind === 'segmentLength' ? `|${d.p1}${d.p2}|`
         : `${d.value}`;
-      return `${e.name} = điểm trên tia ${e.from}${e.through} cách ${e.through} một khoảng ${distStr}`;
+      const moc = e.origin === 'from' ? e.from : e.through;
+      return `${e.name} = điểm trên tia ${e.from}${e.through} cách ${moc} một khoảng ${distStr}`;
     }
     case 'onPerpBisector': return `${e.name} = điểm trên trung trực ${e.p1}${e.p2}`;
     case 'commonTangentPoint': {

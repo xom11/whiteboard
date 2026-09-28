@@ -146,7 +146,7 @@ function constraintKey(c: AddPointIntentT['constraint']): string {
       const dKey = d.kind === 'circleRadius' ? `r:${d.circle}`
         : d.kind === 'segmentLength' ? `seg:${d.p1}:${d.p2}`
         : `lit:${d.value}`;
-      return `pointAtDistance:${c.from}:${c.through}:${dKey}`;
+      return `pointAtDistance:${c.from}:${c.through}:${dKey}${c.origin ? ':' + c.origin : ''}`;
     }
     case 'externalToCircle': return `externalToCircle:${c.circle}`;
     case 'onCircle': return `onCircle:${c.circle}:${c.theta ?? ''}`;

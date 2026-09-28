@@ -234,7 +234,7 @@ function serializePoint(obj: SceneObject<PointAttrs>, state: State): SerializedE
       if (d.offset !== undefined) distance.offset = d.offset;
       return {
         ok: true,
-        entity: { name: obj.label, kind: 'pointAtDistance', from: refs[0], through: refs[1], distance },
+        entity: { name: obj.label, kind: 'pointAtDistance', from: refs[0], through: refs[1], distance, ...(c.origin ? { origin: c.origin } : {}) },
       };
     }
 

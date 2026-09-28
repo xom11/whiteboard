@@ -38,6 +38,8 @@ export const pointAtDistanceModule = defineModule<'pointAtDistance', Input>({
     from: NameZ,
     through: NameZ,
     distance: DistanceZ,
+    // Vắng = đo từ `through` ra ngoài (kéo dài); 'from' = đo từ `from` về phía `through`.
+    origin: z.literal('from').optional(),
   }),
   collectRefs: (e) => {
     const d = e.distance;
@@ -80,6 +82,8 @@ export const pointAtDistanceModule = defineModule<'pointAtDistance', Input>({
         from: ctx.resolveId(e.from),
         through: ctx.resolveId(e.through),
         distance,
+        // Chỉ chèn khi có — object cũ KHÔNG mọc key (additive, như scale/offset).
+        ...(e.origin ? { origin: e.origin } : {}),
       }),
     }];
   },

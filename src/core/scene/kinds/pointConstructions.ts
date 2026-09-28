@@ -129,11 +129,13 @@ export function mixtilinearPoint(a: XY, b: XY, c: XY, which: 'center' | 'touch')
   return [O[0] + (R * (K[0] - O[0])) / kl, O[1] + (R * (K[1] - O[1])) / kl];
 }
 
-export function pointAtDistanceCoord(from: XY, through: XY, d: number): XY {
+export function pointAtDistanceCoord(from: XY, through: XY, d: number, origin?: 'from'): XY {
   const dx = through[0] - from[0];
   const dy = through[1] - from[1];
   const len = Math.hypot(dx, dy) || 1;
-  return [through[0] + (d * dx) / len, through[1] + (d * dy) / len];
+  // origin 'from': mốc đo là `from`, đi về phía `through` (điểm trên tia from→through).
+  const base = origin === 'from' ? from : through;
+  return [base[0] + (d * dx) / len, base[1] + (d * dy) / len];
 }
 
 /**

@@ -80,7 +80,9 @@ export type Constraint2D =
   //   - `containing`:    cung CHỨA điểm này (= antipode của trường hợp notContaining)
   | { kind: 'arcMidpoint'; circle: string; a: string; b: string; notContaining?: string; containing?: string }
   // Điểm trên tia from→through kéo dài qua through, cách through khoảng `distance`.
-  | { kind: 'pointAtDistance'; from: string; through: string; distance: ConstraintDistanceSpec }
+  // origin vắng = đặt từ `through` ra ngoài (tia from→through kéo dài quá through);
+  // origin 'from' = đặt từ `from` về phía `through` ("Trên cạnh AB lấy E sao cho AE = AD").
+  | { kind: 'pointAtDistance'; from: string; through: string; distance: ConstraintDistanceSpec; origin?: 'from' }
   // Tâm bàng tiếp tam giác `vertices` đối diện đỉnh `opposite`.
   // `opposite` LUÔN là một phần tử của `vertices` (vì vậy constraintRefs2D không cần thêm nó).
   | { kind: 'excenter'; vertices: [string, string, string]; opposite: string }

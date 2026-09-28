@@ -13,14 +13,16 @@ export const pointAtDistanceConstraint = definePointConstraint({
       : d.kind === 'segmentLength'
         ? `${state?.objects[d.p1]?.label ?? d.p1}${state?.objects[d.p2]?.label ?? d.p2}`
         : `bán kính (${state?.objects[d.circle]?.label ?? d.circle})`;
-    return `${obj.label} = trên tia ${fromL}${thrL} kéo dài, cách ${thrL} khoảng ${dLabel}`;
+    return c.origin === 'from'
+      ? `${obj.label} = trên tia ${fromL}${thrL}, cách ${fromL} khoảng ${dLabel}`
+      : `${obj.label} = trên tia ${fromL}${thrL} kéo dài, cách ${thrL} khoảng ${dLabel}`;
   },
   render: (obj, ctx, c, opts) => {
     const board = ctx.jxg as any;
     const A: any = ctx.resolveRef(c.from);
     const B: any = ctx.resolveRef(c.through);
     const dFn = makeDistanceFn(ctx, c.distance);
-    const pc = () => pointAtDistanceCoord([A.X(), A.Y()], [B.X(), B.Y()], dFn());
+    const pc = () => pointAtDistanceCoord([A.X(), A.Y()], [B.X(), B.Y()], dFn(), c.origin);
     return board.create('point', [() => pc()[0], () => pc()[1]], opts);
   },
 });

@@ -37,6 +37,7 @@ import { circleDiameterRule } from './circleDiameter';
 import { onCirclePointRule } from './onCirclePoint';
 import { tangentAtRule } from './tangentAt';
 import { onSegmentPointRule } from './onSegmentPoint';
+import { pointOnSideAtLengthRule } from './pointOnSideAtLength';
 import { lineCircleIntersectionRule } from './lineCircleIntersection';
 import { incenterNamedTriangleRule } from './incenterNamedTriangle';
 import { perpThroughCutsLinesRule } from './perpThroughCutsLines';
@@ -151,6 +152,7 @@ const RULES: readonly LanguageRule[] = [
   onCirclePointRule,
   tangentAtRule,
   onSegmentPointRule,
+  pointOnSideAtLengthRule,
   lineCircleIntersectionRule,
   incenterNamedTriangleRule,
   perpThroughCutsLinesRule,

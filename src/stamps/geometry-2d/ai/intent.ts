@@ -159,6 +159,9 @@ export const AddPointIntentZ = z.object({
         z.object({ kind: z.literal('segmentLength'), p1: LabelZ, p2: LabelZ, scale: z.number().positive().optional(), offset: z.number().optional() }),
         z.object({ kind: z.literal('literal'), value: z.number().positive(), scale: z.number().positive().optional(), offset: z.number().optional() }),
       ]),
+      // Vắng = đặt ngoài `through` (tia from→through kéo dài). 'from' = đặt từ
+      // `from` về phía `through`: "Trên cạnh AB lấy E sao cho AE = AD".
+      origin: z.literal('from').optional(),
     }),
     // Tiếp điểm tiếp tuyến CHUNG 2 đường tròn (spec mục A). circles = 2 tên đtròn;
     // on = tiếp điểm trên đtròn 0 hay 1; variant = ngoài/trong; side = chọn 1 trong
