@@ -19,6 +19,8 @@ const SolidIntentZ = z.object({
   apexVariant: z.enum(['regular','over-vertex','over-edge-mid','free']),
   apexAnchor: z.string().optional(),        // vertex label (over-vertex) or edge token "AB" (over-edge-mid)
   topLabels: z.array(Label3DZ).optional(),  // prism/box top face
+  // Điều kiện đề đặt lên khối (đáy vuông tại B, chân đường cao, chiều cao…) — solidRefine3d.
+  refine: z.record(z.unknown()).optional(),
 });
 
 // Mirror Constraint3D kinds (core/scene/kinds/3d-constraint.ts) + a few rule-level kinds.
@@ -96,6 +98,7 @@ export type Intent3DT = z.infer<typeof Intent3DZ>;
 export function solid(spec: {
   flavor: SolidFlavor; baseLabels: string[]; baseVariant: BaseVariant;
   apex?: string; apexVariant: ApexVariant; apexAnchor?: string; topLabels?: string[];
+  refine?: Record<string, unknown>;
 }): Intent3DT {
   return { op: 'solid', ...spec } as Intent3DT;
 }

@@ -57,8 +57,10 @@ export function sectionNames(n: number, taken: string[]): string[] {
 // Pyramid head tolerant of "(tứ|tam) giác (đều)?" qualifier giữa "chóp" và nhãn.
 // solidRule.PYRAMID = /hình\s+chóp\s+([A-Z])\./ FAIL khi có qualifier → solidRule KHÔNG vẽ chóp.
 const PYRAMID_TOLERANT = /(?:hình\s*)?chóp\s+(?:(?:tứ|tam)\s*giác\s*)?(?:đều\s+)?([A-Z])\.([A-Z]+)/u;
-// Mirror CHÍNH XÁC solidRule.PYRAMID /hình\s+chóp\s+([A-Z])\.([A-Z]+)/ (kèm nhãn sau dấu chấm).
-const SOLID_RULE_PYRAMID = /hình\s+chóp\s+[A-Z]\.[A-Z]/u;
+// Head chóp mà solidRule VẼ — nguồn DUY NHẤT (solidRule import) để solidRuleDraws không lệch.
+// Dung nạp "hình chóp (tứ|tam) giác đều S.ABCD" / "hình chóp đều S.ABC".
+export const SOLID_PYRAMID_RE = /hình\s+chóp\s+(?:(?:tứ|tam)\s+giác\s+)?(?:đều\s+)?([A-Z])\.([A-Z]+)/u;
+const SOLID_RULE_PYRAMID = SOLID_PYRAMID_RE;
 
 /**
  * Parse chóp head, dung nạp qualifier "tứ/tam giác đều". `solidRuleDraws` = solidRule
@@ -74,8 +76,9 @@ export function parsePyramidTolerant(problem: string): { apex: string; base: str
 // Prism head tolerant of "đều" qualifier. solidRule.PRISM = /lăng\s+trụ\s+[A-Z]{3,4}\./ FAIL
 // khi có "đều" chen ⟹ solidRule KHÔNG vẽ lăng trụ. (Mirror parsePyramidTolerant.)
 const PRISM_TOLERANT = /lăng\s*trụ(?:\s*đều)?\s+([A-Z]{3,4})\.((?:[A-Z]['′])+)/u;
-// Mirror CHÍNH XÁC solidRule.PRISM /lăng\s+trụ\s+([A-Z]{3,4})\.((?:[A-Z]['′])+)/ (kèm top prime).
-const SOLID_RULE_PRISM = /lăng\s+trụ\s+[A-Z]{3,4}\.(?:[A-Z]['′])+/u;
+// Head lăng trụ mà solidRule VẼ — nguồn DUY NHẤT (solidRule import). Dung nạp "đứng/đều/tam giác/tứ giác".
+export const SOLID_PRISM_RE = /lăng\s+trụ(?:\s+(?:đứng|đều|tam\s+giác|tứ\s+giác))*\s+([A-Z]{3,4})\.((?:[A-Z]['′])+)/u;
+const SOLID_RULE_PRISM = SOLID_PRISM_RE;
 
 /** Parse lăng trụ head (đều-tolerant) → base + top labels + solidRuleDraws (bare → solidRule vẽ). */
 export function parsePrismTolerant(problem: string): { base: string[]; top: string[]; solidRuleDraws: boolean } | null {

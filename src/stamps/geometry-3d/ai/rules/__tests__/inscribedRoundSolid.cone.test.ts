@@ -5,12 +5,12 @@ function ctxOf(problem: string) { return { problem, clauses: segmentClauses3D(pr
 const find = (ms: any[], pred: (i: any) => boolean) => ms.flatMap((m) => m.intents).find(pred);
 
 describe('inscribedRoundSolid — nón', () => {
-  it('Câu 70: nón đỉnh S đáy nội tiếp tứ giác ABCD (chóp tứ giác đều) → cone radiusTo midpoint + centroid baseCenter + solid', () => {
+  it('Câu 70: nón đỉnh S đáy nội tiếp tứ giác ABCD (chóp tứ giác đều) → cone radiusTo midpoint + centroid baseCenter (solid do solidRule vẽ)', () => {
     const p = 'Cho hình chóp tứ giác đều S.ABCD có cạnh đáy bằng a. Thể tích của khối nón có đỉnh S và đường tròn đáy nội tiếp tứ giác ABCD.';
     const ms = inscribedRoundSolidRule.match(ctxOf(p) as any);
     expect(ms.length).toBe(1);
     const ops = ms[0].intents.map((i: any) => i.op + (i.constraint ? '/' + i.constraint.kind : ''));
-    expect(ops).toContain('solid');                       // chóp tứ giác đều → solidRule miss → tự vẽ
+    expect(ops).not.toContain('solid');                   // solidRule dung nạp "tứ giác đều" → rule chỉ reference
     expect(ops).toContain('cone');
     expect(ops).toContain('add-point-3d/centroid');       // tâm incircle = centroid (vuông)
     expect(ops).toContain('add-point-3d/midpoint');       // radiusTo = trung điểm cạnh

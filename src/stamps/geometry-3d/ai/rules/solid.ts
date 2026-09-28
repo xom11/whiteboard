@@ -1,15 +1,27 @@
 import type { LanguageRule3D, RuleContext3D, RuleMatch3D } from './_types';
-import { solid, escapeRe, splitVertexToken } from './_shared';
-import type { BaseVariant, ApexVariant } from '../intent';
+import { solid, escapeRe, splitVertexToken, SOLID_PYRAMID_RE, SOLID_PRISM_RE } from './_shared';
+import type { BaseVariant, ApexVariant, Intent3DT } from '../intent';
+import { refineSolid, type SolidHeadInfo } from '../solidRefine3d';
 
-// Match against full problem: "hình chóp S.ABCD"
-const PYRAMID = /hình\s+chóp\s+([A-Z])\.([A-Z]+)/u;
+// Match against full problem: "hình chóp S.ABCD" | "hình chóp tứ giác đều S.ABCD" (qualifier dung nạp)
+const PYRAMID = SOLID_PYRAMID_RE;
 // "tứ diện [đều]? ABCD"
 const TETRA = /tứ\s+diện(?:\s+đều)?\s+([A-Z]{4})/u;
-// "lăng trụ ABC.A'B'C'" — base then dot then primed top
-const PRISM = /lăng\s+trụ\s+([A-Z]{3,4})\.((?:[A-Z]['′])+)/u;
-// "hình hộp / lập phương ABCD.A'B'C'D'"
-const BOX = /hình\s+(?:hộp|lập\s+phương)\s+([A-Z]{4})\.((?:[A-Z]['′])+)/u;
+// "lăng trụ [đứng|đều|tam giác…]? ABC.A'B'C'" — base then dot then primed top
+const PRISM = SOLID_PRISM_RE;
+// "hình hộp [chữ nhật|đứng]? / lập phương ABCD.A'B'C'D'"
+const BOX = /hình\s+(?:hộp(?:\s+(?:chữ\s+nhật|đứng))?|lập\s+phương)\s+([A-Z]{4})\.((?:[A-Z]['′])+)/u;
+
+/** Gắn SolidRefine (điều kiện đề: đáy vuông tại B, chân đường cao, chiều cao…) vào solid intent. */
+function withRefine(prob: string, intent: Intent3DT): Intent3DT {
+  const i = intent as Extract<Intent3DT, { op: 'solid' }>;
+  const head: SolidHeadInfo = { flavor: i.flavor, base: i.baseLabels, apex: i.apex, top: i.topLabels };
+  const { refine } = refineSolid(prob, head);
+  if (!refine) return intent;
+  const out = { ...i, refine: refine as unknown as Record<string, unknown> };
+  if (refine.reorder) { out.apex = refine.reorder.apex; out.baseLabels = refine.reorder.base; }
+  return out;
+}
 
 function baseVariantFrom(problem: string, n: number): BaseVariant {
   if (/đáy[^.]*?hình\s+vuông/u.test(problem)) return 'square';
@@ -71,14 +83,14 @@ export const solidRule: LanguageRule3D = {
           ruleId: this.id,
           clauseIds: solidClauseIds(ctx),
           intents: [
-            solid({
+            withRefine(prob, solid({
               flavor: 'pyramid',
               baseLabels,
               baseVariant: baseVariantFrom(prob, baseLabels.length),
               apex,
               apexVariant: v,
               apexAnchor: anchor,
-            }),
+            })),
           ],
         },
       ];
@@ -93,13 +105,13 @@ export const solidRule: LanguageRule3D = {
             ruleId: this.id,
             clauseIds: solidClauseIds(ctx),
             intents: [
-              solid({
+              withRefine(prob, solid({
                 flavor: 'tetrahedron',
                 baseLabels: verts.slice(0, 3),
                 baseVariant: isReg ? 'equilateral-triangle' : 'triangle',
                 apex: verts[3],
                 apexVariant: 'regular',
-              }),
+              })),
             ],
           },
         ];
@@ -114,13 +126,13 @@ export const solidRule: LanguageRule3D = {
           ruleId: this.id,
           clauseIds: solidClauseIds(ctx),
           intents: [
-            solid({
+            withRefine(prob, solid({
               flavor: 'prism',
               baseLabels,
               baseVariant: baseVariantFrom(prob, baseLabels.length),
               apexVariant: 'free',
               topLabels,
-            }),
+            })),
           ],
         },
       ];
@@ -134,13 +146,13 @@ export const solidRule: LanguageRule3D = {
           ruleId: this.id,
           clauseIds: solidClauseIds(ctx),
           intents: [
-            solid({
+            withRefine(prob, solid({
               flavor: 'box',
               baseLabels,
               baseVariant: 'rectangle',
               apexVariant: 'free',
               topLabels,
-            }),
+            })),
           ],
         },
       ];
