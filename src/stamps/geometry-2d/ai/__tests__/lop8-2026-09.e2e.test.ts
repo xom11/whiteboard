@@ -166,4 +166,39 @@ describe('lớp 8 — hình đúng dữ kiện đề', () => {
     expect(dist(p.A, p.E)).toBeCloseTo((2 * dist(p.A, p.B)) / 3, 9);
     expect(thuocDoan(p.E, p.A, p.B)).toBe(true);
   });
+
+  // --- tia phân giác cắt nhiều đường; điểm trên tia theo số đo -------------------
+  /** P nằm trên tia phân giác góc (p1, v, p2): góc(p1,v,P) = góc(P,v,p2). */
+  const goc = (v: XY, a: XY, b: XY) => Math.acos(tich(v, a, v, b) / (dist(v, a) * dist(v, b)));
+  const tia = (P: XY, p1: XY, v: XY, p2: XY) => Math.abs(goc(v, p1, P) - goc(v, P, p2)) < 1e-9;
+
+  it('lop8 #53: "Tia phân giác của góc ABC lần lượt cắt các đoạn thẳng AM, AC tại D, E"', () => {
+    const p = toaDoHinh('Cho tam giác ABC có đường trung tuyến AM. Tia phân giác của góc ABC lần lượt cắt các đoạn thẳng AM, AC tại điểm D, E.');
+    expect(tia(p.D, p.A, p.B, p.C)).toBe(true);
+    expect(tia(p.E, p.A, p.B, p.C)).toBe(true);
+    expect(thuocDoan(p.D, p.A, p.M)).toBe(true);
+    expect(thuocDoan(p.E, p.A, p.C)).toBe(true);
+  });
+
+  it('hinh-phang #110: "Tia phân giác của góc B cắt AH, AC lần lượt tại D, E"', () => {
+    const p = toaDoHinh('Cho tam giác ABC vuông tại A, đường cao AH. Tia phân giác của góc B cắt AH, AC lần lượt tại D, E.');
+    expect(tia(p.D, p.A, p.B, p.C)).toBe(true);
+    expect(thuocDoan(p.D, p.A, p.H)).toBe(true);
+    expect(thuocDoan(p.E, p.A, p.C)).toBe(true);
+  });
+
+  it('lop8 #52: hai phân giác khác đỉnh "góc AMB cắt AB tại D và … góc AMC cắt AC tại E" ⇒ DE // BC', () => {
+    const p = toaDoHinh('Cho tam giác ABC có đường trung tuyến AM. Đường phân giác của góc AMB cắt AB tại D và đường phân giác góc AMC cắt AC tại E.');
+    expect(tia(p.D, p.A, p.M, p.B)).toBe(true);
+    expect(tia(p.E, p.A, p.M, p.C)).toBe(true);
+    expect(songSong(p.D, p.E, p.B, p.C)).toBe(true);
+  });
+
+  it('lop8 #56: "Trên các tia AB, AC lần lượt lấy M, N sao cho AM = 10 cm, AN = 8 cm" (AB = 12, AC = 15)', () => {
+    const p = toaDoHinh('Cho tam giác ABC có AB = 12 cm, AC = 15 cm. Trên các tia AB, AC lần lượt lấy các điểm M, N sao cho AM = 10 cm, AN = 8 cm.');
+    expect(dist(p.A, p.M) / dist(p.A, p.B)).toBeCloseTo(10 / 12, 9);
+    expect(dist(p.A, p.N) / dist(p.A, p.C)).toBeCloseTo(8 / 15, 9);
+    expect(thuocDoan(p.M, p.A, p.B)).toBe(true);
+    expect(thuocDoan(p.N, p.A, p.C)).toBe(true);
+  });
 });

@@ -49,7 +49,7 @@ const NHIEU_TEN_TRUOC = new RegExp(
 );
 // "Trên (các)? cạnh AB, AC lấy (lần lượt|theo thứ tự)? (các)? (điểm)? M, N"
 const PHAN_PHOI = new RegExp(
-  String.raw`[Tt]rên\s+(?:các\s+|hai\s+)?(?:${SEG_KIND}\s+)?((?:[A-Z]{2}\s*(?:,|và)\s*)+[A-Z]{2})(?![A-Z])\s*,?\s*lấy\s+(?:(?:theo\s+)?thứ\s+tự\s+|lần\s*lượt\s+)?(?:các\s+|hai\s+)?(?:điểm\s+)?((?:[A-Z]\s*(?:,|và)\s*)+[A-Z])(?![A-Z])`,
+  String.raw`[Tt]rên\s+(?:các\s+|hai\s+)?(?:(${SEG_KIND}|tia)\s+)?((?:[A-Z]{2}\s*(?:,|và)\s*)+[A-Z]{2})(?![A-Z])\s*,?\s*(?:(?:theo\s+)?thứ\s+tự\s+|lần\s*lượt\s+)?lấy\s+(?:(?:theo\s+)?thứ\s+tự\s+|lần\s*lượt\s+)?(?:các\s+|hai\s+)?(?:điểm\s+)?((?:[A-Z]\s*(?:,|và)\s*)+[A-Z])(?![A-Z])`,
   'gu',
 );
 
@@ -98,7 +98,8 @@ function so(s: string): number {
 /** Dạng tuyến tính: c0 + Σ c[v]·t_v, tính theo thang |base|. */
 type Lin = { base: string; c0: number; c: Map<string, number> };
 
-interface Diem { name: string; x: string; y: string; order: number }
+/** tia = điểm trên TIA XY (t > 0, có thể vượt Y): chỉ nhận quan hệ qua đoạn XP. */
+interface Diem { name: string; x: string; y: string; order: number; tia?: boolean }
 
 function key(a: string, b: string) {
   return [a, b].sort().join('');
@@ -122,6 +123,8 @@ function doanLin(uv: string, diem: Map<string, Diem>): Lin | null {
     return null;
   };
   const base = pu ?? pv;
+  // Điểm trên tia: chỉ đoạn nối nó với GỐC tia (XP); PY/… mơ hồ (P trước hay sau Y).
+  for (const d of [pu, pv]) if (d?.tia && !(uv.includes(d.x) && uv.includes(d.name))) return null;
   if (!base) {
     // không dính điểm mới: chỉ nhận chính một đoạn gốc (vd "AB" khi D ∈ AB)
     return null;
@@ -203,16 +206,16 @@ function tachDs(blob: string): string[] {
 
 function diemTrongMenhDe(text: string): Diem[] {
   const out: Diem[] = [];
-  const them = (name: string, seg: string) => {
+  const them = (name: string, seg: string, tia = false) => {
     const n = name.replace('′', "'");
     if (n.length !== 1 || seg.includes(n) || seg[0] === seg[1]) return;
     if (out.some((d) => d.name === n)) return;
-    out.push({ name: n, x: seg[0], y: seg[1], order: out.length });
+    out.push({ name: n, x: seg[0], y: seg[1], order: out.length, tia });
   };
   for (const m of text.matchAll(PHAN_PHOI)) {
-    const segs = tachDs(m[1]);
-    const names = tachDs(m[2]);
-    if (segs.length >= 2 && segs.length === names.length) segs.forEach((s, i) => them(names[i], s));
+    const segs = tachDs(m[2]);
+    const names = tachDs(m[3]);
+    if (segs.length >= 2 && segs.length === names.length) segs.forEach((s, i) => them(names[i], s, m[1] === 'tia'));
   }
   for (const m of text.matchAll(NHIEU_TEN_TRUOC)) {
     for (const n of tachDs(m[1])) them(n, m[2]);
@@ -318,7 +321,7 @@ export const pointOnSideAtRatioRule: LanguageRule = {
       if (!t) continue;
       // Trong (0;1) + đúng thứ tự nêu trên cùng đoạn.
       let ok = true;
-      for (const [n, v] of t) if (!(v > 1e-9 && v < 1 - 1e-9)) ok = false;
+      for (const [n, v] of t) if (!(v > 1e-9 && (diem.get(n)?.tia || v < 1 - 1e-9))) ok = false;
       for (const d1 of ds) for (const d2 of ds) {
         if (d1.order < d2.order && key(d1.x, d1.y) === key(d2.x, d2.y) && t.has(d1.name) && t.has(d2.name)) {
           const p1 = d1.x === d2.x ? t.get(d1.name)! : 1 - t.get(d1.name)!;
