@@ -119,7 +119,12 @@ export const pointRatioRule: LanguageRule = {
 
       // (A) Đẳng thức vectơ: mỗi đẳng thức có đúng MỘT ẩn là điểm được giới thiệu.
       if (/vectơ/u.test(text)) {
-        const moi = gioiThieu(text);
+        let moi = gioiThieu(text);
+        // Mệnh đề chỉ có đẳng thức (sau ";"): ẩn là điểm giới thiệu ở mệnh đề trước.
+        for (const truoc of ctx.clauses.filter((k) => k.id < c.id).reverse()) {
+          if (moi.size > 0 || !/vectơ|v[eé]c\s*t[ơo]/u.test(truoc.text)) break;
+          moi = gioiThieu(chuanHoaVecto(truoc.text));
+        }
         for (const c2 of cho) moi.add(c2.ten);
         for (const lin of moiDangThucVecto(text)) {
           const an = [...lin.keys()].filter((q) => moi.has(q) && !daDung.has(q));

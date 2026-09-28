@@ -76,6 +76,7 @@ export function segmentClauses(problem: string): Clause[] {
   // ABC, let M be the midpoint of BC" tách thành 2 clause. Thuần additive: không
   // đổi segmentation VN (alternation rời nhau, không trùng từ).
   let proofMode = false;
+  let truocLaDinhNghiaVecto = false;
 
   return maskNonBoundaryPunct(problem)
     .split(
@@ -97,7 +98,12 @@ export function segmentClauses(problem: string): Clause[] {
       // Mệnh đề LOCUS ("điểm A di chuyển/di động trên (O)") = điều kiện chuyển
       // động trên điểm ĐÃ dựng (đỉnh), KHÔNG phải construct → loại khỏi coverage.
       const locusOnly = LOCUS_CLAUSE.test(text) && !CONSTRUCTION_LEAD.test(text);
-      return { id, text, hasGeometry: hasGeometryKeyword && !proofOnly && !locusOnly };
+      // "ba điểm G, H, K thỏa mãn: vectơ KA + vectơ KC = vectơ 0; vectơ GA + … = vectơ 0; …"
+      // — các đẳng thức sau dấu ";" vẫn là định nghĩa điểm (mệnh đề trước đã giới thiệu).
+      const tiepDinhNghia = truocLaDinhNghiaVecto && DANG_THUC_VECTO_TRAN.test(text) && !proofOnly;
+      const laDinhNghia = (VECTOR_POINT_DEF.test(text) && !VECTOR_KHONG_DUNG.test(text)) || tiepDinhNghia;
+      truocLaDinhNghiaVecto = laDinhNghia;
+      return { id, text, hasGeometry: (hasGeometryKeyword || tiepDinhNghia) && !proofOnly && !locusOnly };
     });
 }
 
@@ -143,6 +149,7 @@ const VECTOR_POINT_DEF =
 
 // "Với M là điểm tùy ý, chứng minh rằng vectơ MA + … = 4 vectơ MO": M bất kỳ trong
 // một mệnh đề CHỨNG MINH — không phải điểm cần dựng.
+const DANG_THUC_VECTO_TRAN = /^[-−+\d\s/.,]*[Vv][eé]c\s*-?\s*t[ơo](?!\p{L})[^.;]*=[^.;]*$/u;
 const VECTOR_KHONG_DUNG = /t[uù][ỳy]\s*ý|bất\s*k[ìỳiy]|[Cc]hứng\s*minh|với\s+mọi/u;
 
 // "Cho ba điểm A, B, C phân biệt" / "Cho hai điểm A và B" — đề chỉ có điểm trần
