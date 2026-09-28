@@ -155,7 +155,7 @@ function planePerpFacts(problem: string, solid: SolidInfo | null): Fact3D[] {
     for (const t of [m[1], m[2]]) { const a = splitLabels(t).slice(0, 3); if (a.length === 3) push(a, b, m[0]); }
   }
   // "tam giác SAB … (nằm trong|thuộc) mặt phẳng vuông góc với đáy" | "mặt bên SAB … vuông góc với đáy"
-  const re3 = new RegExp(`(?:tam\\s+giác|mặt\\s+bên)\\s+((?:${LBL}){3})(?![A-Z])(?:(?!(?:tam\\s+giác|mặt\\s+bên)\\s+[A-Z]{3})[^.;]){0,80}?(?:nằm\\s+trong|thuộc)\\s+(?:một\\s+)?mặt\\s*phẳng\\s+(?:vuông\\s*góc|⊥)(?:\\s+với)?\\s*${PLANE_TOK}`, 'gu');
+  const re3 = new RegExp(`(?:[Tt]am\\s+giác|[Mm]ặt\\s+bên)\\s+((?:${LBL}){3})(?![A-Z])(?:(?!(?:[Tt]am\\s+giác|[Mm]ặt\\s+bên)\\s+[A-Z]{3})[^.;]){0,80}?(?:nằm\\s+trong|thuộc)\\s+(?:một\\s+)?mặt\\s*phẳng\\s+(?:vuông\\s*góc|⊥)(?:\\s+với)?\\s*${PLANE_TOK}`, 'gu');
   for (const m of problem.matchAll(re3)) {
     const a = splitLabels(m[1]); const b = planeLabels(m[2] ?? m[3], solid);
     if (a.length === 3 && b) push(a, b, m[0]);

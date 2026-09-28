@@ -164,7 +164,7 @@ function baseDesc(problem: string, base: string[]): string | null {
   const res = [
     new RegExp(`đáy\\s*(?:\\(?${B}\\)?\\s*)?(?:là\\s+)?((?:một\\s+)?(?:hình|tam\\s+giác|nửa\\s+lục\\s+giác)[^.;]*)`, 'u'),
     new RegExp(`(?<![A-Z])${B}(?![A-Z'′])\\s+là\\s+((?:một\\s+)?(?:hình|tam\\s+giác|nửa\\s+lục\\s+giác)[^.;]*)`, 'u'),
-    new RegExp(`(?:tam\\s+giác|∆|Δ)\\s*${B}(?![A-Z'′])\\s*((?:là\\s+tam\\s+giác\\s+)?(?:vuông|cân|đều)[^.;]*)`, 'u'),
+    new RegExp(`(?:[Tt]am\\s+giác|∆|Δ)\\s*${B}(?![A-Z'′])\\s*((?:là\\s+tam\\s+giác\\s+)?(?:vuông|cân|đều)[^.;]*)`, 'u'),
   ];
   for (const re of res) {
     const m = re.exec(problem);
@@ -243,8 +243,8 @@ function rhombusAngle(problem: string, B: string[]): number | null {
   if (m) return deg(m[1]);
   m = new RegExp(`(?:góc\\s+)?(?:${A}\\s*${Bv}\\s*${C}|${C}\\s*${Bv}\\s*${A})\\s*=\\s*(\\d+(?:[.,]\\d+)?)\\s*(?:°|◦|o|độ|0)`, 'u').exec(problem);
   if (m) return 180 - deg(m[1]);
-  if (new RegExp(`(?:tam\\s+giác|∆|Δ)\\s*(?:${A}${Bv}${C}|${A}${C}${Bv}|${Bv}${A}${C})\\s+(?:là\\s+tam\\s+giác\\s+)?đều`, 'u').test(problem)) return 120;
-  if (new RegExp(`(?:tam\\s+giác|∆|Δ)\\s*(?:${A}${Bv}${D}|${A}${D}${Bv}|${Bv}${A}${D})\\s+(?:là\\s+tam\\s+giác\\s+)?đều`, 'u').test(problem)) return 60;
+  if (new RegExp(`(?:[Tt]am\\s+giác|∆|Δ)\\s*(?:${A}${Bv}${C}|${A}${C}${Bv}|${Bv}${A}${C})\\s+(?:là\\s+tam\\s+giác\\s+)?đều`, 'u').test(problem)) return 120;
+  if (new RegExp(`(?:[Tt]am\\s+giác|∆|Δ)\\s*(?:${A}${Bv}${D}|${A}${D}${Bv}|${Bv}${A}${D})\\s+(?:là\\s+tam\\s+giác\\s+)?đều`, 'u').test(problem)) return 60;
   return null;
 }
 
@@ -252,7 +252,7 @@ function rhombusAngle(problem: string, B: string[]): number | null {
 
 function triProps(problem: string, S: string, x: string, y: string): { prop: string; at?: string; text: string } | null {
   const perms = [`${S}${x}${y}`, `${S}${y}${x}`, `${x}${S}${y}`, `${y}${S}${x}`, `${x}${y}${S}`, `${y}${x}${S}`];
-  const re = new RegExp(`(?:tam\\s+giác|mặt\\s+bên|∆|Δ)\\s*\\(?(?:${perms.join('|')})\\)?(?![A-Z'])\\s*(?:là\\s+(?:một\\s+)?(?:tam\\s+giác\\s+)?)?(vuông\\s+cân|vuông|cân|đều)(?:\\s+(?:tại|ở|đỉnh)\\s+([A-Z])(?![A-Z']))?`, 'u');
+  const re = new RegExp(`(?:[Tt]am\\s+giác|[Mm]ặt\\s+bên|∆|Δ)\\s*\\(?(?:${perms.join('|')})\\)?(?![A-Z'])\\s*(?:là\\s+(?:một\\s+)?(?:tam\\s+giác\\s+)?)?(vuông\\s+cân|vuông|cân|đều)(?:\\s+(?:tại|ở|đỉnh)\\s+([A-Z])(?![A-Z']))?`, 'u');
   const m = re.exec(problem);
   if (!m) return null;
   return { prop: m[1], at: m[2], text: m[0] };
@@ -412,8 +412,8 @@ export function refineSolid(problemRaw: string, head: SolidHeadInfo): RefineResu
     if (!r.apexFoot) {
       const res = [
         new RegExp(`\\(${s}([A-Z])([A-Z])\\)\\s*(?:⊥|vuông\\s*góc(?:\\s+với)?)\\s*${PLANE}`, 'gu'),
-        new RegExp(`(?:tam\\s+giác|mặt\\s+bên|mặt\\s+phẳng)\\s*\\(?${s}([A-Z])([A-Z])\\)?(?![A-Z'])(?:(?!(?:tam\\s+giác|mặt\\s+bên)\\s+[A-Z]{3})[^.;]){0,80}?(?:nằm\\s+trong|thuộc|nằm\\s+trên)\\s+(?:một\\s+)?mặt\\s*phẳng\\s+(?:vuông\\s*góc|⊥)(?:\\s+với)?\\s*${PLANE}`, 'gu'),
-        new RegExp(`mặt\\s+bên\\s*\\(?${s}([A-Z])([A-Z])\\)?(?![A-Z'])(?:(?!(?:tam\\s+giác|mặt\\s+bên)\\s+[A-Z]{3})[^.;]){0,60}?(?:vuông\\s*góc|⊥)(?:\\s+với)?\\s*${PLANE}`, 'gu'),
+        new RegExp(`(?:[Tt]am\\s+giác|[Mm]ặt\\s+bên|mặt\\s+phẳng)\\s*\\(?${s}([A-Z])([A-Z])\\)?(?![A-Z'])(?:(?!(?:[Tt]am\\s+giác|[Mm]ặt\\s+bên)\\s+[A-Z]{3})[^.;]){0,80}?(?:nằm\\s+trong|thuộc|nằm\\s+trên)\\s+(?:một\\s+)?mặt\\s*phẳng\\s+(?:vuông\\s*góc|⊥)(?:\\s+với)?\\s*${PLANE}`, 'gu'),
+        new RegExp(`[Mm]ặt\\s+bên\\s*\\(?${s}([A-Z])([A-Z])\\)?(?![A-Z'])(?:(?!(?:[Tt]am\\s+giác|[Mm]ặt\\s+bên)\\s+[A-Z]{3})[^.;]){0,60}?(?:vuông\\s*góc|⊥)(?:\\s+với)?\\s*${PLANE}`, 'gu'),
         new RegExp(`hai\\s+mặt\\s+phẳng\\s*\\(${s}([A-Z])([A-Z])\\)\\s*(?:,|và)\\s*${PLANE}\\s*vuông\\s+góc`, 'gu'),
       ];
       const faces: Array<{ x: string; y: string; text: string }> = [];

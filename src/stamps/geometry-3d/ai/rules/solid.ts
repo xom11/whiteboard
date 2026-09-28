@@ -29,7 +29,8 @@ function baseVariantFrom(problem: string, n: number): BaseVariant {
   if (/đáy[^.]*?hình\s+bình\s+hành/u.test(problem)) return 'parallelogram';
   if (/đáy[^.]*?hình\s+thang/u.test(problem)) return 'trapezoid';
   if (/đáy[^.]*?hình\s+thoi/u.test(problem)) return 'rhombus';
-  if (/(tam\s+giác\s+đều|đáy[^.]*?đều)/u.test(problem)) return 'equilateral-triangle';
+  // Chỉ đáy 3 đỉnh: "đáy … lục giác đều" với nhãn ABCD từng ra template tam giác ⇒ D trùng A.
+  if (n === 3 && /(tam\s+giác\s+đều|đáy[^.]*?đều)/u.test(problem)) return 'equilateral-triangle';
   // Fallback: check the whole problem for shape keywords
   if (/hình\s+vuông/u.test(problem)) return 'square';
   if (/hình\s+chữ\s+nhật/u.test(problem)) return 'rectangle';
@@ -60,7 +61,11 @@ function apexVariantFrom(problem: string, apex: string): { v: ApexVariant; ancho
 }
 
 /** Return clause ids that are about the solid declaration (claim the first geo clause). */
-function solidClauseIds(ctx: RuleContext3D): number[] {
+function solidClauseIds(ctx: RuleContext3D, nBase?: number): number[] {
+  // Đáy "lục giác/ngũ giác (đều)" mà nhãn chỉ 4 đỉnh (đề lỗi) ⇒ hình vẽ KHÔNG đúng mô tả: dựng
+  // nhưng không claim mệnh đề (thà thiếu còn hơn sai).
+  const poly = /đáy[^.;]{0,20}?(?<!nửa\s)(lục|ngũ)\s+giác/u.exec(ctx.problem);
+  if (poly && nBase !== undefined && nBase !== (poly[1] === 'lục' ? 6 : 5)) return [];
   const geoIds = ctx.clauses.filter((c) => c.hasGeometry).map((c) => c.id);
   return geoIds.length > 0 ? [geoIds[0]] : ctx.clauses.length > 0 ? [ctx.clauses[0].id] : [];
 }
@@ -81,7 +86,7 @@ export const solidRule: LanguageRule3D = {
       return [
         {
           ruleId: this.id,
-          clauseIds: solidClauseIds(ctx),
+          clauseIds: solidClauseIds(ctx, baseLabels.length),
           intents: [
             withRefine(prob, solid({
               flavor: 'pyramid',

@@ -66,6 +66,11 @@ export function allNamedEntities3DPresent(
     expected.add(m[1]);
   }
 
+  // "trung điểm H của AC" | "trọng tâm G của tam giác …" | "tâm O" | "giao điểm I của …" — tên đặt
+  // giữa mô tả (không có "là"): trước đây lọt guard ⇒ FULL mà thiếu điểm H.
+  const EMBED = /(?:trung\s+điểm|trọng\s+tâm|giao\s+điểm|(?<![\p{L}])tâm)\s+(?:là\s+)?([A-Z])(?![\p{L}A-Z'′\d])/gu;
+  while ((m = EMBED.exec(problem)) !== null) expected.add(m[1]);
+
   const labels = new Set(
     Object.values(state.objects)
       .filter((o) => o.kind === 'point3d')

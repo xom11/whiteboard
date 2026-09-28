@@ -3,7 +3,7 @@ import { plane3d, addPoint3d } from './_shared';
 import type { Intent3DT } from '../intent';
 
 // "giao điểm [I] [của] MN với|và (BCD)" — [Gg]iao tolerates sentence-initial capital
-const RE = /[Gg]iao\s+điểm\s+(?:([A-Z])\s+)?(?:của\s+)?([A-Z])([A-Z])\s*(?:với|và)\s*\(([A-Z])([A-Z])([A-Z])\)/u;
+const RE = /[Gg]iao\s+điểm\s+(?:([A-Z])\s+)?(?:của\s+)?(?:đường\s+thẳng\s+)?([A-Z])([A-Z])\s*(?:với|và)\s*(?:mặt\s*phẳng\s*|mp\s*)?\(([A-Z])([A-Z])([A-Z])\)/u;
 
 export const linePlanePointRule: LanguageRule3D = {
   id: 'linePlanePoint',
