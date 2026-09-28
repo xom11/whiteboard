@@ -113,6 +113,7 @@ import { pointOnNamedSideRule } from './pointOnNamedSide';
 import { lineThroughPointCutsRule } from './lineThroughPointCuts';
 import { bisectorCutsLinesRule } from './bisectorCutsLines';
 import { linesAtPointsMeetRule } from './linesAtPointsMeet';
+import { oppositeRayAtLengthRule } from './oppositeRayAtLength';
 
 const RULES: readonly LanguageRule[] = [
   namedLineRule,
@@ -173,6 +174,7 @@ const RULES: readonly LanguageRule[] = [
   lineThroughPointCutsRule,
   bisectorCutsLinesRule,
   linesAtPointsMeetRule,
+  oppositeRayAtLengthRule,
   diagonalsMeetNamedRule,
   intersectionDistribRule,
   lineCircleIntersectionRule,
