@@ -391,7 +391,7 @@ function solidKindFacts(problem: string, solid: SolidInfo | null): Fact3D[] {
 
 /** Rút mọi sự kiện kiểm được từ đề. */
 export function extractFacts3d(problem: string): Fact3D[] {
-  const p = problem.replace(/\s+/gu, ' ');
+  const p = problem.normalize('NFC').replace(/\s+/gu, ' ');
   const solid = parseSolid(p);
   return [
     ...lineperpPlaneFacts(p, solid),
