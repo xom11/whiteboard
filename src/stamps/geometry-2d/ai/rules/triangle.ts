@@ -1,6 +1,6 @@
 // src/stamps/geometry-2d/ai/rules/triangle.ts
 import type { LanguageRule, RuleMatch } from './_types';
-import { doCanhDeCho, toaDoTamGiacTheoCanh, toaDoTamGiacTuKhiTrungTrucCatCanh } from './triangleLengths';
+import { doCanhDeCho, toaDoTamGiacTheoCanh, toaDoTamGiacTheoSoSanh, toaDoTamGiacTuKhiTrungTrucCatCanh } from './triangleLengths';
 import type { IntentT } from '../intent';
 import { drawShape, addPoint, drawCircle, markShape } from './_shared';
 
@@ -26,6 +26,7 @@ const TRI_G =
 const TRI_BEFORE_G = /(?<![A-Z])([A-Z])([A-Z])([A-Z])(?![A-Z])\s+là\s+tam\s*giác/gu;
 const RIGHT_AT = /vuông\s+tại\s+(?:đỉnh\s+)?([A-Z])(?![A-Za-z])/u;
 const ISO_AT = /cân\s+tại\s+(?:đỉnh\s+)?([A-Z])(?![A-Za-z])/u;
+const VUONG_CAN_AT = /vuông\s+cân\s+tại\s+(?:đỉnh\s+)?([A-Z])(?![A-Za-z])/u;
 // LƯU Ý: \b của JS dựa trên ASCII word-char nên KHÔNG khớp quanh ký tự Việt
 // ("đ","ề"…). Dùng lookaround \p{L} để chặn match giữa từ dài hơn.
 const EQUILATERAL = /(?<!\p{L})đều(?!\p{L})/u;
@@ -282,10 +283,24 @@ export const triangleRule: LanguageRule = {
             if (thales) return thales;
           }
         }
+        // "vuông cân tại X": variant cân (đáy đối X) nhưng hình mẫu cân KHÔNG vuông
+        // (góc đỉnh ≈ 67°) → đặt đỉnh vuông cân thật: X = (0, 2), đáy (∓2, 0).
+        const vc = VUONG_CAN_AT.exec(window);
+        // Chỉ khi tam giác là hình ĐỘC LẬP (đỉnh không thuộc hình khai báo khác — vd
+        // "vẽ ra ngoài hình bình hành tam giác ABM vuông cân tại A" cần dựng từ cạnh AB).
+        const khac = new Set<string>();
+        for (const h of ctx.problem.matchAll(/(?:tam\s*giác|tứ\s*giác|hình\s+(?:vuông|chữ\s+nhật|bình\s+hành|thoi|thang)(?:\s+(?:cân|vuông))?)\s+([A-Z]{3,4})(?![A-Z])/gu)) {
+          if (h[1] !== hit.labels.join('')) for (const ch of h[1]) khac.add(ch);
+        }
+        if (vc && hit.labels.includes(vc[1]) && variant.startsWith('isoceles') && !hit.labels.some((x) => khac.has(x))) {
+          const [p, q] = hit.labels.filter((x) => x !== vc[1]);
+          return [drawShape('triangle', hit.labels, variant, { [vc[1]]: [0, 2], [p]: [-2, 0], [q]: [2, 0] })];
+        }
         // Số đo đề cho ("AB = 4 cm, AC = 8 cm") ⇒ đặt đỉnh đúng tỉ lệ thay tam giác mẫu.
         const theoCanh =
           toaDoTamGiacTheoCanh(hit.labels as [string, string, string], variant, doCanhDeCho(ctx.problem, hit.labels)) ??
-          (variant === 'any' ? toaDoTamGiacTuKhiTrungTrucCatCanh(ctx.problem, hit.labels as [string, string, string]) : undefined);
+          (variant === 'any' ? toaDoTamGiacTuKhiTrungTrucCatCanh(ctx.problem, hit.labels as [string, string, string]) : undefined) ??
+          toaDoTamGiacTheoSoSanh(ctx.problem, hit.labels as [string, string, string], variant);
         return [drawShape('triangle', hit.labels, variant, theoCanh)];
       });
 

@@ -133,3 +133,63 @@ export function toaDoTamGiacTuKhiTrungTrucCatCanh(
   // Góc V ≈ 118° (tù rõ nhưng không dẹt); cạnh PQ nằm ngang.
   return { [P]: [0, 0], [Q]: [6, 0], [V]: [2.6, 1.4] };
 }
+
+// "AB < AC" / "(AB > AC)" — so sánh hai cạnh của tam giác. Hình mẫu vi phạm (tam giác
+// mẫu có AB = 5 > AC ≈ 3,6; tam giác vuông mẫu tại A có AB = 4 > AC = 3) là lỗi người
+// xem thấy ngay ("đề cho AB < AC mà hình vẽ ngược").
+// Vế phải trong lookahead ⇒ chuỗi "AB < AC < BC" cho CẢ hai so sánh.
+const SO_SANH = /(?<![A-Z])([A-Z])([A-Z])\s*([<>])\s*(?=([A-Z])([A-Z])(?![A-Z]))/gu;
+
+/**
+ * Toạ độ tam giác thoả mọi so sánh cạnh đề cho, CHỈ khi hình mẫu vi phạm (không có
+ * so sánh / hình mẫu đã đúng → undefined, giữ nguyên hình). Chỉ biến thể 'any' và
+ * 'right-at-X' (hoán vị độ dài cạnh của chính hình mẫu); cân/đều → undefined.
+ */
+export function toaDoTamGiacTheoSoSanh(
+  problem: string,
+  labels: readonly [string, string, string],
+  variant: string,
+): Record<string, Pt> | undefined {
+  const tap = new Set(labels);
+  const ss: [string, string][] = []; // [ngắn, dài]
+  for (const m of problem.matchAll(SO_SANH)) {
+    if (![m[1], m[2], m[4], m[5]].every((x) => tap.has(x)) || m[1] === m[2] || m[4] === m[5]) continue;
+    const [k1, k2] = [key(m[1], m[2]), key(m[4], m[5])];
+    if (k1 === k2) continue;
+    ss.push(m[3] === '<' ? [k1, k2] : [k2, k1]);
+  }
+  if (ss.length === 0) return undefined;
+  const [A, B, C] = labels;
+  const kAB = key(A, B), kAC = key(A, C), kBC = key(B, C);
+  const thoa = (L: Map<string, number>) => ss.every(([n, d]) => L.get(n)! < L.get(d)! - 1e-9);
+  const P = (x: [number, number], y: [number, number]) => Math.hypot(x[0] - y[0], x[1] - y[1]);
+  const doCua = (pts: [number, number][]) =>
+    new Map([[kAB, P(pts[0], pts[1])], [kAC, P(pts[0], pts[2])], [kBC, P(pts[1], pts[2])]]);
+
+  let mau: [number, number][];
+  const vuong = /^right-at-([ABC])$/.exec(variant);
+  if (variant === 'any') mau = [[0, 0], [5, 0], [2, 3]];
+  else if (vuong) mau = vuong[1] === 'A' ? [[0, 0], [4, 0], [0, 3]] : vuong[1] === 'B' ? [[0, 0], [4, 0], [4, 3]] : [[0, 0], [6, 0], [3, 3]];
+  else return undefined;
+  if (thoa(doCua(mau))) return undefined; // hình mẫu đã đúng
+
+  const goc = doCua(mau);
+  const lens = [goc.get(kAB)!, goc.get(kAC)!, goc.get(kBC)!];
+  const hoanVi = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]];
+  for (const h of hoanVi) {
+    const L = new Map([[kAB, lens[h[0]]], [kAC, lens[h[1]]], [kBC, lens[h[2]]]]);
+    if (!thoa(L)) continue;
+    // Tam giác vuông tại V: cạnh huyền (đối V) phải giữ độ dài lớn nhất.
+    if (vuong) {
+      const V = labels['ABC'.indexOf(vuong[1])];
+      const huyen = key(...(labels.filter((x) => x !== V) as [string, string]));
+      if (L.get(huyen)! < Math.max(...lens) - 1e-9) continue;
+    }
+    const ab = L.get(kAB)!, ac = L.get(kAC)!, bc = L.get(kBC)!;
+    const x = (ab * ab + bc * bc - ac * ac) / (2 * bc);
+    const y = Math.sqrt(Math.max(ab * ab - x * x, 0));
+    const k = CO_CHUAN / Math.max(ab, ac, bc);
+    return { [A]: [x * k, y * k], [B]: [0, 0], [C]: [bc * k, 0] };
+  }
+  return undefined;
+}

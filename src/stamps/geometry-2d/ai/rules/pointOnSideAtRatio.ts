@@ -48,6 +48,30 @@ const PHAN_PHOI = new RegExp(
   'gu',
 );
 
+// Điểm trên TIA XY (có thể vượt Y): chỉ nhận quan hệ giữa XP và XY ("AP = 2AB",
+// "AB = 3AP") — dạng PY mơ hồ (P trước hay sau Y) thì bỏ.
+const TIA_DON = [
+  new RegExp(String.raw`[Ll]ấy\s+(?:một\s+)?(?:điểm\s+)?${PT}\s+(?:trên|thuộc)\s+tia\s+${SEG}\s*,?\s*sao\s+cho\s+([^,.;]+)`, 'u'),
+  new RegExp(String.raw`[Tt]rên\s+tia\s+${SEG}\s*,?\s*lấy\s+(?:một\s+)?(?:điểm\s+)?${PT}\s*,?\s*sao\s+cho\s+([^,.;]+)`, 'u'),
+];
+const HE_SO = String.raw`(?:(\d+(?:[.,]\d+)?)\s*\/\s*(\d+(?:[.,]\d+)?)|(\d+(?:[.,]\d+)?))?`;
+
+function tiaTiSo(p: string, x: string, y: string, rel: string): number | undefined {
+  const m = new RegExp(String.raw`^\s*${HE_SO}\s*([A-Z]{2})\s*=\s*${HE_SO}\s*([A-Z]{2})\s*$`, 'u').exec(rel);
+  if (!m) return undefined;
+  const he = (a?: string, b?: string, c?: string) => (a ? so(a) / so(b!) : c ? so(c) : 1);
+  const h1 = he(m[1], m[2], m[3]);
+  const h2 = he(m[5], m[6], m[7]);
+  const k1 = key(m[4][0], m[4][1]);
+  const k2 = key(m[8][0], m[8][1]);
+  const xp = key(x, p);
+  const xy = key(x, y);
+  // h1·S1 = h2·S2 ; t = XP/XY
+  if (k1 === xp && k2 === xy) return h2 / h1;
+  if (k1 === xy && k2 === xp) return h1 / h2;
+  return undefined;
+}
+
 // --- Biểu thức độ dài --------------------------------------------------------
 
 const NUM = String.raw`\d+(?:[.,]\d+)?`;
@@ -210,6 +234,23 @@ export const pointOnSideAtRatioRule: LanguageRule = {
     for (const c of ctx.clauses) {
       const idx = c.text.search(PREFILTER);
       if (idx < 0) continue;
+      const t0 = TIA_DON[0].exec(c.text);
+      const tia = t0 ?? TIA_DON[1].exec(c.text);
+      if (tia) {
+        const [p, seg, rel] = t0 ? [tia[1], tia[2], tia[3]] : [tia[2], tia[1], tia[3]];
+        const t = !seg.includes(p) && seg[0] !== seg[1] ? tiaTiSo(p, seg[0], seg[1], rel) : undefined;
+        if (t !== undefined && t > 0 && Math.abs(t - 1) > 1e-9) {
+          out.push({
+            ruleId: 'pointOnSideAtRatio',
+            clauseIds: [c.id],
+            intents: [addPoint(p, {
+              kind: 'pointAtDistance', from: seg[0], through: seg[1],
+              distance: { kind: 'segmentLength', p1: seg[0], p2: seg[1], scale: t }, origin: 'from',
+            })],
+          });
+        }
+        continue;
+      }
       const truoc = c.text.slice(0, idx);
       const sau = c.text.slice(idx);
       const ds = diemTrongMenhDe(truoc);

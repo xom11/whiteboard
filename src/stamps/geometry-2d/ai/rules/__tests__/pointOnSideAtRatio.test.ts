@@ -67,6 +67,12 @@ describe('pointOnSideAtRatio — điểm chia đoạn theo tỉ số (Thalès)',
     chiaDung(toaDoHinh(`Cho tam giác ABC. ${menhDe}.`), P, X, Y, k);
   });
 
+  it('lop8 #17 trên TIA vượt đầu mút: "Lấy điểm P trên tia AB sao cho AP = 2AB" → B trung điểm AP', () => {
+    const p = toaDoHinh('Cho hình bình hành ABCD. Lấy điểm P trên tia AB sao cho AP = 2AB.');
+    expect(dist(p.A, p.P)).toBeCloseTo(2 * dist(p.A, p.B), 9);
+    expect(dist(p.A, p.P)).toBeCloseTo(dist(p.A, p.B) + dist(p.B, p.P), 9);
+  });
+
   it.each([
     ['tỉ số giữa hai đoạn KHÁC đoạn gốc', 'Cho tam giác ABC. Trên cạnh AB lấy D sao cho AD = 2BC.'],
     ['số đo mà không biết độ dài cạnh', 'Cho tam giác ABC. Trên cạnh AC lấy D sao cho AD = 2 cm.'],
