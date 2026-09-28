@@ -43,7 +43,13 @@ function parse(problem: string): Parsed | undefined {
   if (!dm) return undefined;
   let region = dm[1];
   const cut = region.search(/đôi một|cắt nhau/u);
-  if (cut >= 0) region = region.slice(0, cut);
+  // "đôi một/cắt nhau" phải nằm NGAY sau danh sách đường kính (cùng câu), và vùng
+  // giữa chỉ là các cặp đỉnh. Trước đây "(O) đường kính BC, đường tròn (O) cắt AB
+  // tại E … Hai đường thẳng AH và BM cắt nhau tại I" (câu khác) vẫn khớp BC/AB →
+  // dựng khung Simson sai và tạo vòng phụ thuộc kO → O → B.
+  if (cut < 0) return undefined;
+  region = region.slice(0, cut);
+  if (!/^\s*[A-Z]{2}(?:\s*(?:,|và)\s*[A-Z]{2})+\s*$/u.test(region)) return undefined;
   const pairs = region.match(/[A-Z][A-Z]/g) ?? [];
   if (pairs.length < 2) return undefined;
 
