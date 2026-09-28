@@ -243,4 +243,18 @@ describe('lớp 8 — hình đúng dữ kiện đề', () => {
     expect(dist(p.A, p.H) / dist(p.C, p.H)).toBeCloseTo(12 / 9, 9);
     expect(vuongGoc(p.A, p.B, p.A, p.C)).toBe(true);
   });
+
+  // --- hình bình hành có ba đỉnh sẵn --------------------------------------------
+  it('lop8 #27: "hình thoi ABCD và hình bình hành BCMD" — M dựng (A, D, M thẳng hàng như đề), không tự do', () => {
+    const p = toaDoHinh('Cho hình thoi ABCD và hình bình hành BCMD. Gọi O là giao điểm của AC và BD.');
+    expect(songSong(p.B, p.C, p.D, p.M)).toBe(true);
+    expect(songSong(p.C, p.M, p.B, p.D)).toBe(true);
+    expect(Math.abs((p.D[0] - p.A[0]) * (p.M[1] - p.A[1]) - (p.D[1] - p.A[1]) * (p.M[0] - p.A[0]))).toBeLessThan(1e-9);
+  });
+
+  it('"Cho tam giác ABC. Vẽ hình bình hành ABDC" — D = B + C − A', () => {
+    const p = toaDoHinh('Cho tam giác ABC. Vẽ hình bình hành ABDC.');
+    expect(p.D[0]).toBeCloseTo(p.B[0] + p.C[0] - p.A[0], 9);
+    expect(p.D[1]).toBeCloseTo(p.B[1] + p.C[1] - p.A[1], 9);
+  });
 });

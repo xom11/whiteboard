@@ -6,6 +6,7 @@
 import type { LanguageRule, RuleContext, RuleMatch } from './_types';
 import { drawShape, drawCircle, addPoint, markShape } from './_shared';
 import { toaDoTuGiacTheoDe } from './quadLayout';
+import { dungTuDinhCo } from './quadFromExisting';
 
 // LƯU Ý: \b của JS dựa trên ASCII word-char nên KHÔNG khớp quanh ký tự Việt
 // ("đ","ề","ạ"…). Dùng lookaround \p{L} (cờ 'u') ở prefilter để chặn biên từ.
@@ -373,6 +374,12 @@ export const quadRule: LanguageRule = {
         });
       }
       for (const hit of scanClause(c.text)) {
+        // Ba đỉnh đã có từ hình nêu trước → dựng đỉnh thứ tư (không đặt tự do).
+        const tuDinhCo = dungTuDinhCo(ctx.problem, Math.max(0, ctx.problem.indexOf(c.text)) + hit.index, hit.shape, hit.labels);
+        if (tuDinhCo) {
+          out.push({ ruleId: 'quad', clauseIds: [c.id], intents: tuDinhCo });
+          continue;
+        }
         // Toạ độ theo dữ kiện đề (cặp đáy, tỉ lệ cạnh, góc) — undefined = hình mẫu.
         const theoDe = toaDoTuGiacTheoDe(ctx.problem, hit.shape, hit.variant, hit.labels);
         let intents = [

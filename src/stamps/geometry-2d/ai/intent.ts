@@ -107,7 +107,8 @@ export const AddPointIntentZ = z.object({
   op: z.literal('add-point'),
   name: LabelZ,
   constraint: z.discriminatedUnion('kind', [
-    z.object({ kind: z.literal('midpoint'), of: z.string() }),
+    // hidden: điểm PHỤ không hiện (vd trung điểm đường chéo để dựng đỉnh thứ 4 hình bình hành).
+    z.object({ kind: z.literal('midpoint'), of: z.string(), hidden: z.boolean().optional() }),
     z.object({ kind: z.literal('onPerpBisector'), p1: LabelZ, p2: LabelZ }),
     z.object({ kind: z.literal('perpFoot'), from: LabelZ, onLine: z.string() }),
     z.object({ kind: z.literal('centroid'), of: z.tuple([LabelZ, LabelZ, LabelZ]) }),
