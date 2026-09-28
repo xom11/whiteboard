@@ -44,6 +44,14 @@ const COLLINEAR = new RegExp(
   'u',
 );
 
+// Dạng C: "Cho A, B, C là ba điểm thẳng hàng" (tên TRƯỚC "là … điểm").
+const LA_DIEM = new RegExp(
+  '(?:[Cc]ho\\s+)?' + NAMES + '\\s+là\\s+(?:\\d+\\s+|(?:ba|bốn|năm|sáu)\\s+)?(?:điểm\\s+)?(?:phân\\s+biệt\\s+)?thẳng\\s+hàng',
+  'u',
+);
+// "B nằm giữa A và C" — thứ tự trên đường thẳng.
+const NAM_GIUA = /(?<![A-Z])([A-Z])(?![A-Z'′])\s+nằm\s+giữa\s+(?:hai\s+điểm\s+)?([A-Z])(?![A-Z'′])\s+và\s+([A-Z])(?![A-Z'′])/u;
+
 function parseNames(blob: string): string[] {
   return blob
     .split(/\s*(?:,|và)\s*/u)
@@ -59,9 +67,12 @@ export const collinearPointsRule: LanguageRule = {
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
-      const m = ON_LINE.exec(c.text) ?? COLLINEAR.exec(c.text);
+      const m = ON_LINE.exec(c.text) ?? COLLINEAR.exec(c.text) ?? LA_DIEM.exec(c.text);
       if (!m) continue;
-      const names = parseNames(m[1]);
+      let names = parseNames(m[1]);
+      // Đề nói rõ điểm nằm giữa ⇒ xếp lại cho đúng thứ tự (3 điểm).
+      const g = NAM_GIUA.exec(ctx.problem);
+      if (g && names.length === 3 && [g[1], g[2], g[3]].every((x) => names.includes(x))) names = [g[2], g[1], g[3]];
       if (names.length < 3) continue;
       if (new Set(names).size !== names.length) continue; // tên trùng → bỏ
 

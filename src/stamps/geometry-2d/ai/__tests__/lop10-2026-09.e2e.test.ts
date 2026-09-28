@@ -111,4 +111,17 @@ describe('lop10 — đề thật, đo hình', () => {
     khop(p.G, tong([[1 / 3, p.A], [1 / 3, p.B], [1 / 3, p.C]]));
     khop(p.H, tong([[1 / 3, p.A], [1 / 3, p.D], [1 / 3, p.C]]));
   });
+
+  it('#24 "Cho A, B, C là ba điểm thẳng hàng, B nằm giữa A và C" ⇒ B trong đoạn AC', () => {
+    const p = toaDoHinh('Cho A, B, C là ba điểm thẳng hàng, B nằm giữa A và C. Viết các cặp vectơ cùng hướng, ngược hướng trong những vectơ sau: vectơ AB, vectơ AC, vectơ BA, vectơ BC, vectơ CA, vectơ CB.');
+    expect(dist(p.A, p.B) + dist(p.B, p.C)).toBeCloseTo(dist(p.A, p.C), 9);
+    expect(dist(p.A, p.B)).toBeGreaterThan(0.5);
+    expect(dist(p.B, p.C)).toBeGreaterThan(0.5);
+  });
+
+  it('#29 "Cho đường tròn tâm O. Giả sử A, B là hai điểm nằm trên đường tròn" ⇒ OA = OB', () => {
+    const p = toaDoHinh('Cho đường tròn tâm O. Giả sử A, B là hai điểm nằm trên đường tròn. Tìm điều kiện cần và đủ để hai vectơ OA và OB đối nhau.');
+    expect(dist(p.O, p.A)).toBeCloseTo(dist(p.O, p.B), 9);
+    expect(dist(p.A, p.B)).toBeGreaterThan(0.5);
+  });
 });
