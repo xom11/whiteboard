@@ -3,7 +3,7 @@ import type { State } from '../../../../core/scene';
 // Khớp đầu khối: "hình chóp S.ABCD" → S + ABCD, "tứ diện ABCD" → ABCD, "lăng trụ ABC.A'B'C'" → ABC + A'B'C'.
 // Mỗi nhóm capture lấy 1 phần, code dưới tách ký tự đơn lẻ.
 const SOLID_HEAD =
-  /(?:hình\s+chóp\s+([A-Z])\.([A-Z'′₀-₉0-9]+))|(?:tứ\s+diện(?:\s+đều)?\s+([A-Z'′]{4}))|(?:lăng\s+trụ\s+([A-Z]{3,})\.([A-Z'′]+))/gu;
+  /(?:hình\s+chóp\s+(?:(?:tứ|tam)\s+giác\s+)?(?:đều\s+)?([A-Z])\.([A-Z'′₀-₉0-9]+))|(?:tứ\s+diện(?:\s+đều)?\s+([A-Z'′]{4}))|(?:lăng\s+trụ(?:\s+(?:đứng|đều|tam\s+giác|tứ\s+giác))*\s+([A-Z]{3,})\.([A-Z'′]+))/gu;
 
 // "Gọi M là…" / "Lấy điểm K…" / "Dựng điểm N…"
 const GOI = /(?:Gọi|Lấy|Dựng)\s+(?:điểm\s+)?([A-Z])(?![\p{L}])/gu;

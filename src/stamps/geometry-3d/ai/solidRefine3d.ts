@@ -25,7 +25,8 @@ export type BaseShape =
   | { kind: 'right-trap'; at: [string, string] }   // 2 đỉnh KỀ vuông, đáy lớn ở đỉnh đầu
   | { kind: 'trap'; long: [string, string] }       // cạnh đáy lớn (∥ cạnh đối)
   | { kind: 'half-hex'; long: [string, string] }   // nửa lục giác đều, đáy lớn = đường kính
-  | { kind: 'rhombus'; angleAt0: number };         // góc tại đỉnh đầu (độ)
+  | { kind: 'rhombus'; angleAt0: number }          // góc tại đỉnh đầu (độ)
+  | { kind: 'general-quad' };                      // tứ giác lồi KHÔNG có cặp cạnh ∥ (AB ∩ CD, AD ∩ BC có thật)
 
 export type HeightRule =
   | { kind: 'tri'; x: string; y: string; prop: 'equi' | 'riso-apex' | 'right-apex' | 'riso-x' }
@@ -306,7 +307,15 @@ export function refineSolid(problemRaw: string, head: SolidHeadInfo): RefineResu
   const regTetra = head.flavor === 'tetrahedron' && /tứ\s+diện\s+đều/u.test(problem);
   const cube = head.flavor === 'box' && /lập\s+phương/u.test(problem);
 
-  const shape = parseBaseShape(problem, { ...head, base }, regularPyr || regularPrism || regTetra);
+  let shape = parseBaseShape(problem, { ...head, base }, regularPyr || regularPrism || regTetra);
+  // Đáy tứ giác KHÔNG nêu hình dạng mà đề cắt 2 cạnh đối (AB ∩ CD, "AD cắt BC tại E", "AB, CD không
+  // song song") ⇒ tứ giác thường; template vuông mặc định có AB ∥ CD ⇒ giao điểm không tồn tại.
+  if (!shape && base.length === 4 && isPyr && !/đáy[^.;]{0,30}?(?:hình\s+(?:vuông|chữ\s+nhật|bình\s+hành|thoi|thang)|nửa\s+lục)/u.test(problem)) {
+    const [A, B, C, D] = base;
+    const opp = [[`${A}${B}`, `${C}${D}`], [`${A}${B}`, `${D}${C}`], [`${B}${A}`, `${C}${D}`], [`${A}${D}`, `${B}${C}`], [`${D}${A}`, `${B}${C}`], [`${A}${D}`, `${C}${B}`]];
+    const cue = opp.some(([e, f]) => new RegExp(`${e}\\s*(?:∩|cắt|và)\\s*${f}|${f}\\s*(?:∩|cắt)\\s*${e}|${e}\\s*,\\s*${f}\\s+không\\s+song\\s+song`, 'u').test(problem));
+    if (cue) shape = { kind: 'general-quad' };
+  }
   if (shape) r.baseShape = shape;
   if (regTetra) r.height = { kind: 'reg-tetra' };
   if (cube) { r.baseShape = { kind: 'square' }; r.height = { kind: 'cube' }; }

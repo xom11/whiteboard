@@ -165,6 +165,13 @@ function shapeCoords(shape: BaseShape, L: string[]): Record<string, V2> | null {
       for (let k = 0; k < 4; k++) out[rot(start + k)] = tpl[k];
       break;
     }
+    case 'general-quad': {
+      if (n !== 4) return null;
+      // lồi, AB ∩ CD ≈ (−2.9, −1), AD ∩ BC ≈ (0.6, 2.3) — cả hai giao điểm nằm trong khung nhìn
+      const t: V2[] = [[-1.5, -1], [1.5, -1], [0.9, 1.3], [-0.6, 0.4]];
+      L.forEach((l, i) => { out[l] = t[i]; });
+      break;
+    }
     case 'rhombus': {
       if (n !== 4) return null;
       const th = (shape.angleAt0 * Math.PI) / 180;

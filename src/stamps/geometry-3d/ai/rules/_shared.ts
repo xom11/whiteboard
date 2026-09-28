@@ -25,8 +25,9 @@ export function splitVertexToken(token: string): string[] {
 export interface SolidHead3D { apex?: string; baseLabels: string[] }
 
 // Mirror guards3d.SOLID_HEAD (non-global here — first match only).
+// Dung nạp qualifier như SOLID_PYRAMID_RE/SOLID_PRISM_RE (solidRule vẽ được thì head phải đọc được).
 const SOLID_HEAD_3D =
-  /(?:hình\s+chóp\s+([A-Z])\.([A-Z'′₀-₉0-9]+))|(?:tứ\s+diện(?:\s+đều)?\s+([A-Z'′]{3,}))|(?:lăng\s+trụ\s+([A-Z]{3,})\.([A-Z'′]+))/u;
+  /(?:hình\s+chóp\s+(?:(?:tứ|tam)\s+giác\s+)?(?:đều\s+)?([A-Z])\.([A-Z'′₀-₉0-9]+))|(?:tứ\s+diện(?:\s+đều)?\s+([A-Z'′]{3,}))|(?:lăng\s+trụ(?:\s+(?:đứng|đều|tam\s+giác|tứ\s+giác))*\s+([A-Z]{3,})\.([A-Z'′]+))/u;
 
 /** Parse the leading solid header → apex (pyramid only) + base vertex labels. */
 export function parseSolidHead3D(problem: string): SolidHead3D | null {

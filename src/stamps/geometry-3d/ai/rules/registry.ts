@@ -1,6 +1,7 @@
 import type { LanguageRule3D, RuleContext3D, RuleMatch3D } from './_types';
 import { solidRule } from './solid';
 import { pointOnEdgeRule } from './pointOnEdge';
+import { lineIntersection3dRule } from './lineIntersection3d';
 import { planeNamedRule } from './planeNamed';
 import { midpoint3dRule } from './midpoint3d';
 import { pointList3dRule } from './pointList3d';
@@ -26,6 +27,7 @@ const RULES: LanguageRule3D[] = [
   pointList3dRule,            // priority 62
   centroid3dRule,             // priority 61
   pointOnEdgeRule,            // priority 60
+  lineIntersection3dRule,     // priority 59
   intersectionLineRule,       // priority 58
   crossSectionParallelRule,   // priority 58
   crossSectionRule,           // priority 57
