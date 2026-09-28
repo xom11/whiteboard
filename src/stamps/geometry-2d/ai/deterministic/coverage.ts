@@ -144,7 +144,7 @@ const PROOF_SECTION_START = new RegExp(
 );
 
 const CONSTRUCTION_LEAD = new RegExp(
-  `^${ENUM_PREFIX}(?:[Cc]ho|[Gg]ọi|[Vv]ẽ|[Kk]ẻ|[Ll]ấy|[Dd]ựng|[Qq]ua|[Tt]ừ|[Tt]rên|[Nn]ối|Let|Draw|Mark|Take|Construct|Join)(?!\\p{L})`,
+  `^${ENUM_PREFIX}(?:[Cc]ho|[Gg]ọi|[Vv]ẽ|[Kk]ẻ|[Ll]ấy|[Dd]ựng|[Qq]ua|[Tt]ừ|[Tt]rên|[Nn]ối|[Đđ]ường\\s*thẳng\\s+(?:đó|này)|Let|Draw|Mark|Take|Construct|Join)(?!\\p{L})`,
   'u',
 );
 

@@ -201,4 +201,28 @@ describe('lớp 8 — hình đúng dữ kiện đề', () => {
     expect(thuocDoan(p.M, p.A, p.B)).toBe(true);
     expect(thuocDoan(p.N, p.A, p.C)).toBe(true);
   });
+
+  // --- đường ⊥ tại điểm cắt nhau; đường ∥ hai đáy; "đường thẳng đó" ---------------
+  it('lop8 #9: "Kẻ đường thẳng ⊥ AC tại C và đường thẳng ⊥ BD tại D, hai đường thẳng này cắt nhau tại E"', () => {
+    const p = toaDoHinh('Cho hình thang ABCD (AB // CD). Kẻ đường thẳng vuông góc với AC tại C và đường thẳng vuông góc với BD tại D, hai đường thẳng này cắt nhau tại E.');
+    expect(vuongGoc(p.C, p.E, p.A, p.C)).toBe(true);
+    expect(vuongGoc(p.D, p.E, p.B, p.D)).toBe(true);
+  });
+
+  it('lop8 #42: "Đường thẳng d song song với hai đáy cắt AD, BC tại M, N; cắt đường chéo AC tại P" (AB = 4, CD = 6)', () => {
+    const p = toaDoHinh('Cho hình thang ABCD (AB // CD) có AB = 4 cm, CD = 6 cm. Đường thẳng d song song với hai đáy và cắt hai cạnh bên AD, BC của hình thang đó lần lượt tại M, N; cắt đường chéo AC tại P.');
+    expect(dist(p.C, p.D) / dist(p.A, p.B)).toBeCloseTo(6 / 4, 9);
+    expect(songSong(p.M, p.N, p.A, p.B)).toBe(true);
+    expect(thuocDoan(p.M, p.A, p.D)).toBe(true);
+    expect(thuocDoan(p.N, p.B, p.C)).toBe(true);
+    expect(thuocDoan(p.P, p.A, p.C)).toBe(true);
+    expect(thuocDoan(p.P, p.M, p.N)).toBe(true);
+  });
+
+  it('lop8 #13: "Qua điểm M bất kì thuộc cạnh AC, vẽ đường thẳng song song với CD. Đường thẳng đó cắt BD tại N"', () => {
+    const p = toaDoHinh('Cho hình thang cân ABCD (AB // CD, AB < CD). Qua điểm M bất kì thuộc cạnh AC, vẽ đường thẳng song song với CD. Đường thẳng đó cắt BD tại N.');
+    expect(thuocDoan(p.M, p.A, p.C)).toBe(true);
+    expect(songSong(p.M, p.N, p.C, p.D)).toBe(true);
+    expect(thuocDoan(p.N, p.B, p.D)).toBe(true);
+  });
 });

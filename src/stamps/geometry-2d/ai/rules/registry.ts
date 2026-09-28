@@ -112,6 +112,7 @@ import { midpointConditionRule } from './midpointCondition';
 import { pointOnNamedSideRule } from './pointOnNamedSide';
 import { lineThroughPointCutsRule } from './lineThroughPointCuts';
 import { bisectorCutsLinesRule } from './bisectorCutsLines';
+import { linesAtPointsMeetRule } from './linesAtPointsMeet';
 
 const RULES: readonly LanguageRule[] = [
   namedLineRule,
@@ -171,6 +172,7 @@ const RULES: readonly LanguageRule[] = [
   pointOnNamedSideRule,
   lineThroughPointCutsRule,
   bisectorCutsLinesRule,
+  linesAtPointsMeetRule,
   diagonalsMeetNamedRule,
   intersectionDistribRule,
   lineCircleIntersectionRule,
