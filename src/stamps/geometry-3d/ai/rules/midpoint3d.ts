@@ -2,11 +2,13 @@ import type { LanguageRule3D, RuleContext3D, RuleMatch3D } from './_types';
 import { addPoint3d } from './_shared';
 
 // Single: "M là trung điểm của BC" | "M là trung điểm cạnh BC" | "M là trung điểm BC"
-const SINGLE = /([A-Z])\s+là\s+trung\s+điểm\s+(?:của\s+)?(?:cạnh\s+)?([A-Z])([A-Z])(?![\p{L}])/u;
+// Nhãn đỉnh có thể mang dấu phẩy (CC', A'B'): trước đây "trung điểm của CC'" bắt thành C–C
+// (trung điểm = chính C — hình sai). `(?![\p{L}'′])` chặn cắt ngang nhãn có prime.
+const SINGLE = /([A-Z])\s+là\s+trung\s+điểm\s+(?:của\s+)?(?:cạnh\s+)?([A-Z]['′]?)([A-Z]['′]?)(?![\p{L}'′])/u;
 
 // Distributive: "M, N lần lượt là trung điểm AB, CD"
 const DISTRIB =
-  /([A-Z])\s*,\s*([A-Z])\s+lần\s+lượt\s+là\s+trung\s+điểm\s+(?:(?:của|cạnh)\s+)?([A-Z])([A-Z])\s*,\s*([A-Z])([A-Z])(?![\p{L}])/u;
+  /([A-Z])\s*,\s*([A-Z])\s+lần\s+lượt\s+là\s+trung\s+điểm\s+(?:(?:của|cạnh)\s+)?([A-Z]['′]?)([A-Z]['′]?)\s*,\s*([A-Z]['′]?)([A-Z]['′]?)(?![\p{L}'′])/u;
 
 export const midpoint3dRule: LanguageRule3D = {
   id: 'midpoint3d',

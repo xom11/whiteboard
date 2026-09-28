@@ -296,5 +296,15 @@ export function verifyFigure3d(state: State): { ok: boolean; issues: string[] } 
     }
   }
 
+  // Hai điểm CÙNG nhãn (vd "hình chiếu của A trên SB" từng bị hiểu thành "A ∈ SB" → A thứ hai):
+  // hình mâu thuẫn chính nó — từ chối ("thà thiếu còn hơn sai"). Nhãn rỗng (điểm mặt cắt) bỏ qua.
+  const seen = new Set<string>();
+  for (const obj of Object.values(state.objects)) {
+    if (obj.kind !== 'point3d' || !obj.label) continue;
+    const k = obj.label.replace(/[′’´]/gu, "'");
+    if (seen.has(k)) issues.push(`${obj.label}: nhãn điểm bị trùng`);
+    seen.add(k);
+  }
+
   return { ok: issues.length === 0, issues };
 }
