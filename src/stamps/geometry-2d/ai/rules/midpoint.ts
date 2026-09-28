@@ -103,6 +103,12 @@ export const midpointRule: LanguageRule = {
         });
       };
 
+      // Phần đuôi SAU cụm phân phối: "M, N lần lượt là trung điểm AB, CD và I là
+      // trung điểm MN" — trung điểm thứ hai trong cùng mệnh đề (trước đây bị bỏ).
+      const emitTail = (tail: string, clauseId: number) => {
+        for (const m of tail.matchAll(NAME_BEFORE_G)) emit(m[1], m[2] + m[3], clauseId);
+      };
+
       if (hasVi) {
         // Distributive "lần lượt" ưu tiên: "M, N lần lượt là trung điểm AB, AC"
         // → M=mid(AB), N=mid(AC). Số tên = số cặp mới emit (else bỏ qua → escalate).
@@ -118,6 +124,7 @@ export const midpointRule: LanguageRule = {
             .filter(Boolean);
           if (names.length >= 2 && names.length === pairs.length) {
             for (let i = 0; i < names.length; i++) emit(names[i], pairs[i], c.id);
+            emitTail(c.text.slice(dm.index + dm[0].length), c.id);
             continue; // clause đã xử lý bằng distributive — skip dạng A/B + EN
           }
         }
@@ -129,6 +136,7 @@ export const midpointRule: LanguageRule = {
           const names = da[2].split(/\s*,\s*|\s+và\s+/u).map((s) => nameToken(s)).filter((x): x is string => !!x);
           if (names.length >= 2 && names.length === pairs.length) {
             for (let i = 0; i < names.length; i++) emit(names[i], pairs[i], c.id);
+            emitTail(c.text.slice(da.index + da[0].length), c.id);
             continue;
           }
         }
