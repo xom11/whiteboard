@@ -27,7 +27,11 @@ import '../../../../../core/scene/kinds';
 
 export type XY = [number, number];
 
-export function toaDoHinh(de: string): Record<string, XY> {
+/**
+ * Dựng hình trên board JSXGraph thật và GIỮ board để test thao tác (kéo điểm).
+ * Gọi `huy()` khi xong.
+ */
+export function dungHinh(de: string) {
   const r = tryDeterministicFigure(de);
   if (!r.ok) throw new Error(`không dựng đủ: ${r.reason} ${r.detail ?? ''}`);
   const state = r.figure.transpile.state;
@@ -43,19 +47,46 @@ export function toaDoHinh(de: string): Record<string, XY> {
   });
   const store = createStore(state);
   const renderer = new JxgRenderer(store, board);
-  const out: Record<string, XY> = {};
-  for (const o of Object.values(state.objects) as any[]) {
-    // Điểm giao là object kind riêng ('intersection'), không phải 'point' — lấy mọi
-    // object có toạ độ (đường/đường tròn không có X()/Y()).
-    const e = renderer.getElement(o.id) as { X?: () => number; Y?: () => number } | null;
-    if (e?.X && e.Y) {
-      const xy: XY = [e.X(), e.Y()];
-      if (Number.isFinite(xy[0]) && Number.isFinite(xy[1])) out[o.label] = xy;
+  const phanTu = (nhan: string): any => {
+    const o = (Object.values(state.objects) as any[]).find((x) => x.label === nhan);
+    return o ? renderer.getElement(o.id) : null;
+  };
+  const toaDo = (): Record<string, XY> => {
+    const out: Record<string, XY> = {};
+    for (const o of Object.values(state.objects) as any[]) {
+      // Điểm giao là object kind riêng ('intersection'), không phải 'point' — lấy mọi
+      // object có toạ độ (đường/đường tròn không có X()/Y()).
+      const e = renderer.getElement(o.id) as { X?: () => number; Y?: () => number } | null;
+      if (e?.X && e.Y) {
+        const xy: XY = [e.X(), e.Y()];
+        if (Number.isFinite(xy[0]) && Number.isFinite(xy[1])) out[o.label] = xy;
+      }
     }
-  }
-  renderer.dispose();
-  (JXG as any).JSXGraph.freeBoard(board);
-  el.remove();
+    return out;
+  };
+  /**
+   * Kéo điểm tự do `nhan` tới (x, y) rồi cập nhật board. Cập nhật HAI lần: glider
+   * (kể cả onCircle có sẵn) được cập nhật trước đường tròn cha trong cùng một lượt,
+   * nên sau một lượt còn trễ một nhịp — trên trình duyệt board update liên tục khi
+   * kéo nên không thấy.
+   */
+  const keo = (nhan: string, x: number, y: number) => {
+    phanTu(nhan).setPosition((JXG as any).COORDS_BY_USER, [x, y]);
+    board.update();
+    board.update();
+  };
+  const huy = () => {
+    renderer.dispose();
+    (JXG as any).JSXGraph.freeBoard(board);
+    el.remove();
+  };
+  return { toaDo, keo, huy };
+}
+
+export function toaDoHinh(de: string): Record<string, XY> {
+  const h = dungHinh(de);
+  const out = h.toaDo();
+  h.huy();
   return out;
 }
 

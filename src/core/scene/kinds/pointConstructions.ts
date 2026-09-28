@@ -150,3 +150,38 @@ export function radicalAxisFoot(o1: XY, r1: number, o2: XY, r2: number): XY {
   const t = (d2 + r1 * r1 - r2 * r2) / (2 * d2);
   return [o1[0] + t * dx, o1[1] + t * dy];
 }
+
+/**
+ * Cung AB (của đường tròn tâm `center`) được chọn theo `mode`, trả về cặp đầu mút
+ * [start, end] sao cho cung đi NGƯỢC chiều kim đồng hồ từ start tới end (quy ước
+ * `arc` của JSXGraph):
+ *   - 'minor' / 'major'      : cung nhỏ / cung lớn AB.
+ *   - 'notContaining' (ref)  : cung AB không chứa ref.
+ *   - 'containing' (ref)     : cung AB chứa ref.
+ */
+export type ArcMode = 'minor' | 'major' | 'notContaining' | 'containing';
+
+export function orientedArc(center: XY, a: XY, b: XY, mode: ArcMode, ref?: XY): [XY, XY] {
+  const TAU = 2 * Math.PI;
+  const ang = (p: XY) => Math.atan2(p[1] - center[1], p[0] - center[0]);
+  const ccw = (from: number, to: number) => ((to - from) % TAU + TAU) % TAU;
+  const sweepAB = ccw(ang(a), ang(b)); // cung ngược chiều kim đồng hồ A → B
+  let useAB: boolean;
+  if (mode === 'minor') useAB = sweepAB <= Math.PI;
+  else if (mode === 'major') useAB = sweepAB > Math.PI;
+  else {
+    const inAB = ref ? ccw(ang(a), ang(ref)) < sweepAB : false;
+    useAB = mode === 'containing' ? inAB : !inAB;
+  }
+  return useAB ? [a, b] : [b, a];
+}
+
+/** Điểm trên cung ngược chiều kim đồng hồ start → end, tại tỉ lệ t ∈ (0,1) của góc quét. */
+export function pointOnOrientedArc(center: XY, radius: number, start: XY, end: XY, t: number): XY {
+  const TAU = 2 * Math.PI;
+  const a0 = Math.atan2(start[1] - center[1], start[0] - center[0]);
+  const a1 = Math.atan2(end[1] - center[1], end[0] - center[0]);
+  const sweep = ((a1 - a0) % TAU + TAU) % TAU;
+  const a = a0 + t * sweep;
+  return [center[0] + radius * Math.cos(a), center[1] + radius * Math.sin(a)];
+}

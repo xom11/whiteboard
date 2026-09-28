@@ -142,6 +142,18 @@ export const AddPointIntentZ = z.object({
     z.object({ kind: z.literal('externalAngleBisectorFoot'), from: LabelZ, onLine: z.string() }),
     // Cụm A
     z.object({ kind: z.literal('arcMidpoint'), circle: LabelZ, a: LabelZ, b: LabelZ, notContaining: LabelZ.optional(), containing: LabelZ.optional() }),
+    // Điểm chạy trên CUNG ab: cung nhỏ/lớn, hoặc cung không chứa/chứa `ref`.
+    // t ∈ (0,1) = vị trí ban đầu theo tỉ lệ góc quét; mặc định lệch khỏi giữa cung
+    // (0.35) để hình không gợi "điểm chính giữa cung" mà đề không cho.
+    z.object({
+      kind: z.literal('onArc'),
+      circle: LabelZ,
+      a: LabelZ,
+      b: LabelZ,
+      mode: z.enum(['minor', 'major', 'notContaining', 'containing']),
+      ref: LabelZ.optional(),
+      t: z.number().gt(0).lt(1).optional(),
+    }),
     z.object({ kind: z.literal('reflectPoint'), of: LabelZ, through: LabelZ }),
     z.object({ kind: z.literal('reflectLine'), of: LabelZ, through: z.string() }),
     z.object({ kind: z.literal('excenter'), of: z.tuple([LabelZ, LabelZ, LabelZ]), opposite: LabelZ }),

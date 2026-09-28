@@ -7,6 +7,7 @@
 // This rule is intentionally conservative: it needs one unambiguous circle name
 // in the whole problem, and it does not try to model arc bounds yet.
 import type { LanguageRule, RuleMatch } from './_types';
+import type { IntentT } from '../intent';
 import { addPoint, escapeRe } from './_shared';
 
 const PREFILTER = /(?:nằm|thuộc|lấy\s+điểm|trên\s+(?:nửa\s+)?(?:đường\s*tròn|cung))/iu;
@@ -117,6 +118,60 @@ function laTiepDiem(problem: string, x: string): boolean {
     new RegExp(`(?<![A-Z])${e}(?![A-Z])[^.()]{0,12}?là\\s+(?:các\\s+|hai\\s+)?tiếp\\s*điểm`, 'u').test(problem)
   );
 }
+// Cung đề chỉ định cho điểm: "cung nhỏ BC" / "cung BC nhỏ" / "cung lớn AB" /
+// "cung BC không chứa (điểm)? A" / "cung BC chứa A". Trả spec onArc (a,b = đầu cung).
+const CUNG_TINH_TU_TRUOC = /cung\s+(nhỏ|lớn)\s+([A-Z])([A-Z])(?![A-Z])/u;
+const CUNG_TINH_TU_SAU = /cung\s+([A-Z])([A-Z])\s*(nhỏ|lớn)(?!\p{L})/u;
+const CUNG_CHUA = /cung\s+([A-Z])([A-Z])(?![A-Z])\s*(?:\(\s*)?(không\s+chứa|chứa)\s+(?:điểm\s+)?([A-Z])(?![A-Z])/u;
+
+interface CungSpec { a: string; b: string; mode: 'minor' | 'major' | 'notContaining' | 'containing'; ref?: string }
+
+function cungCuaDiem(text: string, name: string): CungSpec | undefined {
+  let spec: CungSpec | undefined;
+  const chua = CUNG_CHUA.exec(text);
+  if (chua) spec = { a: chua[1], b: chua[2], mode: chua[3].startsWith('không') ? 'notContaining' : 'containing', ref: chua[4] };
+  const truoc = CUNG_TINH_TU_TRUOC.exec(text);
+  if (!spec && truoc) spec = { a: truoc[2], b: truoc[3], mode: truoc[1] === 'nhỏ' ? 'minor' : 'major' };
+  const sau = CUNG_TINH_TU_SAU.exec(text);
+  if (!spec && sau) spec = { a: sau[1], b: sau[2], mode: sau[3] === 'nhỏ' ? 'minor' : 'major' };
+  if (!spec) return undefined;
+  const ten = [spec.a, spec.b, spec.ref].filter(Boolean);
+  if (spec.a === spec.b || ten.includes(name) || (spec.ref && (spec.ref === spec.a || spec.ref === spec.b))) return undefined;
+  return spec;
+}
+
+/** "sao cho MD > ME" (M trên cung DE) ⇒ M gần E hơn: t = 0.65 tính từ D; "<" ⇒ 0.35. */
+function tTheoSoSanh(text: string, name: string, a: string, b: string): number | undefined {
+  const [n, x, y] = [name, a, b].map(escapeRe);
+  const m =
+    new RegExp(`${n}(${x}|${y})\\s*([<>])\\s*${n}(${x}|${y})(?![A-Z])`, 'u').exec(text) ??
+    new RegExp(`(${x}|${y})${n}\\s*([<>])\\s*(${x}|${y})${n}(?![A-Z])`, 'u').exec(text);
+  if (!m || m[1] === m[3]) return undefined;
+  const gan = m[2] === '<' ? m[1] : m[3]; // đầu cung GẦN điểm hơn
+  return gan === a ? 0.35 : 0.65;
+}
+
+/**
+ * Đầu cung phải là điểm đề ĐÃ nêu ở chỗ khác (đỉnh tam giác, tiếp điểm…). "Cho (O).
+ * Trên cung nhỏ AB lấy C" mà A, B không được dựng ở đâu ⇒ onArc sẽ treo tham chiếu
+ * — giữ onCircle như cũ (thà không ép cung còn hơn mất cả điểm).
+ */
+function daNeu(problem: string, x: string): boolean {
+  // "dây cung BC" là dây (B, C được dựng) — không xoá.
+  const boCung = problem.replace(/(?<!dây\s*)cung\s+(?:nhỏ\s+|lớn\s+)?[A-Z]{2}(?![A-Z])/gu, ' ');
+  return new RegExp(`(?<![\\p{L}])[A-Z]*${escapeRe(x)}[A-Z]*(?![\\p{L}])`, 'u').test(boCung);
+}
+
+function diemTren(name: string, circle: string, text: string, theta: number, problem: string, t?: number): IntentT {
+  let cung = cungCuaDiem(text, name);
+  if (cung && ![cung.a, cung.b, cung.ref].every((x) => !x || daNeu(problem, x))) cung = undefined;
+  if (cung) {
+    const tt = t ?? tTheoSoSanh(text, name, cung.a, cung.b);
+    return addPoint(name, { kind: 'onArc', circle, ...cung, ...(tt !== undefined ? { t: tt } : {}) });
+  }
+  return addPoint(name, { kind: 'onCircle', circle, theta });
+}
+
 export const onCirclePointRule: LanguageRule = {
   id: 'on-circle-point',
   priority: 64,
@@ -136,7 +191,7 @@ export const onCirclePointRule: LanguageRule = {
           out.push({
             ruleId: 'on-circle-point',
             clauseIds: [c.id],
-            intents: [addPoint(name, { kind: 'onCircle', circle: rev[1], theta })],
+            intents: [diemTren(name, rev[1], c.text, theta, ctx.problem)],
           });
           theta += 0.8;
         }
@@ -155,8 +210,8 @@ export const onCirclePointRule: LanguageRule = {
           ruleId: 'on-circle-point',
           clauseIds: [c.id],
           intents: [
-            addPoint(two[1], { kind: 'onCircle', circle, theta }),
-            addPoint(two[2], { kind: 'onCircle', circle, theta: theta + 0.8 }),
+            diemTren(two[1], circle, c.text, theta, ctx.problem, 0.3),
+            diemTren(two[2], circle, c.text, theta + 0.8, ctx.problem, 0.7),
           ],
         });
         theta += 1.6;
@@ -183,7 +238,7 @@ export const onCirclePointRule: LanguageRule = {
       out.push({
         ruleId: 'on-circle-point',
         clauseIds: [c.id],
-        intents: [addPoint(name, { kind: 'onCircle', circle, theta: ptTheta })],
+        intents: [diemTren(name, circle, c.text, ptTheta, ctx.problem)],
       });
       theta += 0.8;
     }

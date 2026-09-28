@@ -76,6 +76,8 @@ export type DslPointT =
   | { name: Name; kind: 'tangentPointExt'; from: Name; circle: Name; which: 0 | 1 }
   // Cụm A
   | { name: Name; kind: 'arcMidpoint'; circle: Name; a: Name; b: Name; notContaining?: Name; containing?: Name }
+  // Điểm chạy trên cung AB (cung nhỏ/lớn/không chứa ref/chứa ref) — glider trên cung.
+  | { name: Name; kind: 'onArc'; circle: Name; a: Name; b: Name; mode: 'minor' | 'major' | 'notContaining' | 'containing'; ref?: Name; t: number }
   | { name: Name; kind: 'excenter'; vertices: [Name, Name, Name]; opposite: Name }
   | { name: Name; kind: 'mixtilinearPoint'; vertices: [Name, Name, Name]; which: 'center' | 'touch' }
   | { name: Name; kind: 'reflectPoint'; of: Name; through: Name }

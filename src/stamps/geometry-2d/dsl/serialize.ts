@@ -200,6 +200,19 @@ function serializePoint(obj: SceneObject<PointAttrs>, state: State): SerializedE
       };
     }
 
+    case 'onArc': {
+      const baseRefs = c.ref ? [c.circle, c.a, c.b, c.ref] : [c.circle, c.a, c.b];
+      const refs = resolveRefs(baseRefs, state);
+      if (!refs) return fail('unresolved-ref', baseRefs.join(','));
+      return {
+        ok: true,
+        entity: {
+          name: obj.label, kind: 'onArc', circle: refs[0], a: refs[1], b: refs[2],
+          mode: c.mode, t: c.t, ...(c.ref ? { ref: refs[3] } : {}),
+        },
+      };
+    }
+
     case 'excenter': {
       const refs = resolveRefs([c.vertices[0], c.vertices[1], c.vertices[2], c.opposite], state);
       if (!refs) return fail('unresolved-ref', `${c.vertices.join(',')},${c.opposite}`);

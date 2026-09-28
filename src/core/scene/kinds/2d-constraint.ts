@@ -79,6 +79,10 @@ export type Constraint2D =
   //   - `notContaining`: cung KHÔNG chứa điểm này
   //   - `containing`:    cung CHỨA điểm này (= antipode của trường hợp notContaining)
   | { kind: 'arcMidpoint'; circle: string; a: string; b: string; notContaining?: string; containing?: string }
+  // Điểm chạy trên CUNG AB của `circle` (glider trên cung ẩn). mode: cung nhỏ /
+  // cung lớn / cung không chứa `ref` / cung chứa `ref`. t ∈ (0,1): vị trí ban đầu
+  // theo tỉ lệ góc quét, tính từ a về phía b.
+  | { kind: 'onArc'; circle: string; a: string; b: string; mode: 'minor' | 'major' | 'notContaining' | 'containing'; ref?: string; t: number }
   // Điểm trên tia from→through kéo dài qua through, cách through khoảng `distance`.
   // origin vắng = đặt từ `through` ra ngoài (tia from→through kéo dài quá through);
   // origin 'from' = đặt từ `from` về phía `through` ("Trên cạnh AB lấy E sao cho AE = AD").
@@ -119,6 +123,7 @@ export function constraintRefs2D(c: Constraint2D): string[] {
       const containment = c.notContaining ?? c.containing;
       return containment ? [c.circle, c.a, c.b, containment] : [c.circle, c.a, c.b];
     }
+    case 'onArc': return c.ref ? [c.circle, c.a, c.b, c.ref] : [c.circle, c.a, c.b];
     case 'mixtilinearPoint': return [c.vertices[0], c.vertices[1], c.vertices[2]];
     case 'pointAtDistance': {
       const d = c.distance;

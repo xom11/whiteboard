@@ -54,6 +54,7 @@ function describeEntity(e: DslPointT | DslShapeT): string {
     case 'excircle':            return `${e.name} = đường tròn bàng tiếp ${e.vertices.join('')} đối diện ${e.opposite}`;
     // Cụm A
     case 'arcMidpoint':   return `${e.name} = trung điểm cung ${e.a}${e.b}${e.containing || e.notContaining ? ` (${e.containing ? 'chứa' : 'không chứa'} ${e.containing ?? e.notContaining})` : ''} trên ${e.circle}`;
+    case 'onArc':         return `${e.name} ∈ cung ${e.mode === 'minor' ? 'nhỏ ' : e.mode === 'major' ? 'lớn ' : ''}${e.a}${e.b}${e.ref ? ` (${e.mode === 'containing' ? 'chứa' : 'không chứa'} ${e.ref})` : ''} trên ${e.circle}`;
     case 'excenter':      return `${e.name} = tâm bàng tiếp ${e.vertices.join('')} đối diện ${e.opposite}`;
     case 'mixtilinearPoint': return `${e.name} = ${e.which === 'center' ? 'tâm' : 'tiếp điểm'} mixtilinear ${e.vertices.join('')}`;
     case 'reflectPoint':  return `${e.name} = đối xứng ${e.of} qua điểm ${e.through}`;
