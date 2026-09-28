@@ -5,6 +5,7 @@
 // hình → draw-shape với shape + variant tương ứng.
 import type { LanguageRule, RuleContext, RuleMatch } from './_types';
 import { drawShape, drawCircle, addPoint, markShape } from './_shared';
+import { toaDoTuGiacTheoDe } from './quadLayout';
 
 // LƯU Ý: \b của JS dựa trên ASCII word-char nên KHÔNG khớp quanh ký tự Việt
 // ("đ","ề","ạ"…). Dùng lookaround \p{L} (cờ 'u') ở prefilter để chặn biên từ.
@@ -372,7 +373,13 @@ export const quadRule: LanguageRule = {
         });
       }
       for (const hit of scanClause(c.text)) {
-        let intents = [drawShape(hit.shape, hit.labels, hit.variant)];
+        // Toạ độ theo dữ kiện đề (cặp đáy, tỉ lệ cạnh, góc) — undefined = hình mẫu.
+        const theoDe = toaDoTuGiacTheoDe(ctx.problem, hit.shape, hit.variant, hit.labels);
+        let intents = [
+          theoDe
+            ? drawShape(hit.shape, hit.labels, theoDe.variant, theoDe.coords)
+            : drawShape(hit.shape, hit.labels, hit.variant),
+        ];
         // Chỉ tứ giác CHUNG: thử phát hiện đường tròn ngoại tiếp.
         if (hit.shape === 'quadrilateral') {
           const center = detectCyclic(c.text, hit);
