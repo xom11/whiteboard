@@ -2,7 +2,7 @@
 // (docs/datasets/hinh-phang-tong-hop-2026-09.txt), ĐÚNG đường production:
 // nguyên văn đề → tryDeterministicFigure → (miss) tryPartialFigure.
 //
-//   npx tsx scripts/diag-hinh-phang.ts            → tóm tắt + .work/hinh-phang.json
+//   npx tsx scripts/diag-hinh-phang.ts [bo-de.txt] → tóm tắt + .work/<tên bộ đề>.json
 //   npx tsx scripts/diag-hinh-phang.ts --gaps     → + xếp hạng mệnh đề chưa phủ
 //
 // Phân loại mỗi bài:
@@ -58,12 +58,13 @@ export function chayBai(text: string): { kq: KetQua; reason: string | null; todo
 }
 
 if (process.argv[1]?.endsWith('diag-hinh-phang.ts')) {
-  const FILE = 'docs/datasets/hinh-phang-tong-hop-2026-09.txt';
+  const FILE = process.argv.slice(2).find((a) => a.endsWith('.txt')) ?? 'docs/datasets/hinh-phang-tong-hop-2026-09.txt';
+  const TEN = FILE.replace(/^.*\//, '').replace(/-tong-hop-2026-09\.txt$|\.txt$/, '');
   const bo = docBoDe(readFileSync(FILE, 'utf8'));
   const rows = bo.map((b) => ({ ...b, ...chayBai(b.text) }));
 
   mkdirSync('.work', { recursive: true });
-  writeFileSync('.work/hinh-phang.json', JSON.stringify(rows, null, 2));
+  writeFileSync(`.work/${TEN}.json`, JSON.stringify(rows, null, 2));
 
   const dem = (xs: typeof rows) => {
     const f = xs.filter((r) => r.kq === 'full').length;
