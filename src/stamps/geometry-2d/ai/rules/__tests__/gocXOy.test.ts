@@ -100,6 +100,38 @@ describe('gocXOy — đề xuất phát từ góc xOy (tia tên chữ thường)
     expect(dist(p.A, p.M)).toBeCloseTo(dist(p.M, p.B), 9);
   });
 
+  it('lop7 #10 "Trên tia Ox lấy hai điểm A, M; trên tia Oy lấy hai điểm B, N sao cho OA = OB, OM = ON, OA > OM": thứ tự đúng', () => {
+    const p = toaDoHinh('Cho góc xOy. Trên tia Ox lấy hai điểm A, M; trên tia Oy lấy hai điểm B, N sao cho OA = OB, OM = ON, OA > OM. Chứng minh rằng: a) Tam giác OAN = tam giác OBM; b) Tam giác AMN = tam giác BNM.');
+    expect(thuocTia(p.A, p.O, p.x)).toBe(true);
+    expect(thuocTia(p.M, p.O, p.x)).toBe(true);
+    expect(thuocTia(p.B, p.O, p.y)).toBe(true);
+    expect(thuocTia(p.N, p.O, p.y)).toBe(true);
+    expect(dist(p.O, p.A)).toBeCloseTo(dist(p.O, p.B), 9);
+    expect(dist(p.O, p.M)).toBeCloseTo(dist(p.O, p.N), 9);
+    expect(dist(p.O, p.A)).toBeGreaterThan(dist(p.O, p.M) + 0.1);
+  });
+
+  it('lop7 #36 "Cho góc xOy nhọn, trên Ox lấy hai điểm A và B (A nằm giữa O và B)…": tính từ đứng sau, thứ tự A giữa O–B, C giữa O–D', () => {
+    const p = toaDoHinh('Cho góc xOy nhọn, trên Ox lấy hai điểm A và B (điểm A nằm giữa hai điểm O và B). Trên Oy lấy hai điểm C và D (điểm C nằm giữa O và D). Chứng minh AB + CD < AD + BC.');
+    expect(goc(p.x, p.O, p.y)).toBeLessThan(90);
+    expect(thuocDoan(p.A, p.O, p.B)).toBe(true);
+    expect(thuocDoan(p.C, p.O, p.D)).toBe(true);
+    expect(thuocTia(p.B, p.O, p.x)).toBe(true);
+    expect(thuocTia(p.D, p.O, p.y)).toBe(true);
+  });
+
+  it('lop7 #36 biến thể: "B nằm giữa O và A" đảo thứ tự nêu → vẫn đúng', () => {
+    const p = toaDoHinh('Cho góc xOy nhọn, trên Ox lấy hai điểm A và B (điểm B nằm giữa hai điểm O và A).');
+    expect(thuocDoan(p.B, p.O, p.A)).toBe(true);
+  });
+
+  it('lop7 #56 "Cho góc xOy = 40°… Lấy điểm C sao cho OB là đường trung trực của AC": C đối xứng A qua OB, góc AOC = 80°', () => {
+    const p = toaDoHinh('Cho góc xOy = 40°. Trên Ox lấy điểm A, trên Oy lấy điểm B. Lấy điểm C sao cho OB là đường trung trực của AC. a) Chứng minh tam giác OAB = tam giác OCB. b) Tính số đo góc AOC.');
+    expect(dist(p.B, p.A)).toBeCloseTo(dist(p.B, p.C), 9);
+    expect(dist(p.O, p.A)).toBeCloseTo(dist(p.O, p.C), 9);
+    expect(goc(p.A, p.O, p.C)).toBeCloseTo(80, 6);
+  });
+
   it.each([
     ['không có góc chữ thường', 'Cho tam giác ABC. Trên tia AB lấy điểm D.'],
     ['số đo không hợp lệ', 'Cho góc xOy = 200°. Vẽ tia phân giác Oz của góc xOy.'],

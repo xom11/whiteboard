@@ -22,7 +22,8 @@ import type { LanguageRule, RuleMatch } from './_types';
 import type { IntentT } from '../intent';
 import { addPoint, connect, drawLine } from './_shared';
 
-const GOC = /[Cc]ho\s+(?:một\s+)?góc\s+(?:(nhọn|vuông|tù)\s+)?([a-z])([A-Z])([a-z])(?![\p{L}\d'′])/u;
+// Tính từ đứng trước ("góc nhọn xOy") hoặc sau ("góc xOy nhọn").
+const GOC = /[Cc]ho\s+(?:một\s+)?góc\s+(?:(nhọn|vuông|tù)\s+)?([a-z])([A-Z])([a-z])(?![\p{L}\d'′])(?:\s+(nhọn|vuông|tù)(?!\p{L}))?/u;
 const SO_DO = /^\s*(?:\(\s*)?(?:=|bằng|có\s+số\s+đo(?:\s+bằng)?)\s*(\d{1,3})\s*(?:°|độ|o(?!\p{L}))/u;
 
 const R = 8; // độ dài tia vẽ
@@ -38,7 +39,8 @@ interface Khung {
 function docKhung(problem: string): Khung | null {
   const m = GOC.exec(problem);
   if (!m) return null;
-  const [, loai, a, o, b] = m;
+  const [, loaiTruoc, a, o, b, loaiSau] = m;
+  const loai = loaiTruoc ?? loaiSau;
   if (a === b) return null;
   let deg = loai === 'vuông' ? 90 : loai === 'tù' ? 120 : 60;
   const sd = SO_DO.exec(problem.slice((m.index ?? 0) + m[0].length));
@@ -131,6 +133,7 @@ export const gocXOyRule: LanguageRule = {
     }
 
     // Điểm trên tia (không tên-tia HOA): "M thuộc tia Oz", "Trên tia Ox lấy điểm A (, B)".
+    const tuDo: Array<{ ten: string; tia: string; idx: number; hang: number }> = [];
     const place = (ten: string, tia: string, sau?: { p1: string; p2: string }) => {
       if (known.has(ten) || !k.tia.has(tia)) return false;
       const list = (onRay[tia] ??= []);
@@ -145,16 +148,9 @@ export const gocXOyRule: LanguageRule = {
           }),
         );
       } else {
-        const t = [0.35, 0.65, 0.85][list.length] ?? 0.9;
-        intents.push(
-          addPoint(ten, {
-            kind: 'pointAtDistance',
-            from: o,
-            through: tia,
-            origin: 'from',
-            distance: { kind: 'literal', value: R * t },
-          }),
-        );
+        // khoảng cách chốt SAU khi đọc hết ràng buộc thứ tự ("OA > OM", "A nằm giữa O và B")
+        tuDo.push({ ten, tia, idx: intents.length, hang: list.length });
+        intents.push(addPoint(ten, { kind: 'free' }));
       }
       list.push(ten);
       known.add(ten);
@@ -173,7 +169,7 @@ export const gocXOyRule: LanguageRule = {
     };
 
     const TREN_TIA = new RegExp(
-      String.raw`[Tt]rên\s+tia\s+${o}([a-z])\s+lấy\s+(?:các\s+|hai\s+|một\s+)?(?:điểm\s+)?([A-Z](?:\s*(?:,|và)\s*[A-Z])*)(?![\p{L}\d'′])`,
+      String.raw`[Tt]rên\s+(?:tia\s+)?${o}([a-z])\s+lấy\s+(?:các\s+|hai\s+|một\s+)?(?:điểm\s+)?([A-Z](?:\s*(?:,|và)\s*[A-Z])*)(?![\p{L}\d'′])`,
       'gu',
     );
     const TREN_CAC_TIA = new RegExp(
@@ -205,6 +201,47 @@ export const gocXOyRule: LanguageRule = {
         }
         for (const m of c.text.matchAll(THUOC_TIA)) tryPlace(m[1], m[2]);
         // Chỉ có "sao cho OA = OB" mà A, B đều đã đặt từ trước (không mới) → không đụng.
+      }
+    }
+
+    // Chốt khoảng cách các điểm tự do trên tia theo thứ tự nêu + ràng buộc
+    // "OA > OM" / "OA < OB" / "A nằm giữa O và B". Không thoả được → không dựng.
+    {
+      const d = new Map<string, number>(tuDo.map((p) => [p.ten, R * ([0.35, 0.65, 0.85][p.hang] ?? 0.9)]));
+      const nho: Array<[string, string]> = []; // [p, q]: OP < OQ
+      for (const m of ctx.problem.matchAll(new RegExp(String.raw`${o}([A-Z])\s*([<>])\s*${o}([A-Z])(?![\p{L}\d'′])`, 'gu'))) {
+        nho.push(m[2] === '<' ? [m[1], m[3]] : [m[3], m[1]]);
+      }
+      for (const m of ctx.problem.matchAll(new RegExp(String.raw`(?<![A-Z])([A-Z])\s+nằm\s+giữa\s+(?:hai\s+điểm\s+)?${o}\s+và\s+([A-Z])(?![\p{L}\d'′])`, 'gu'))) {
+        nho.push([m[1], m[2]]);
+      }
+      const lienQuan = nho.filter(([a, b]) => d.has(a) && d.has(b));
+      for (let it = 0; it < 6; it++) {
+        let doi = false;
+        for (const [a, b] of lienQuan) {
+          if (d.get(a)! >= d.get(b)! - 1e-9) {
+            // đổi chỗ nếu cùng tia, khác tia thì đẩy xa
+            const pa = tuDo.find((p) => p.ten === a)!;
+            const pb = tuDo.find((p) => p.ten === b)!;
+            if (pa.tia === pb.tia) {
+              const t = d.get(a)!;
+              d.set(a, d.get(b)!);
+              d.set(b, t);
+            } else d.set(b, Math.min(d.get(a)! + R * 0.25, R * 0.95));
+            doi = true;
+          }
+        }
+        if (!doi) break;
+      }
+      if (lienQuan.some(([a, b]) => d.get(a)! >= d.get(b)! - 1e-9)) return [];
+      for (const p of tuDo) {
+        intents[p.idx] = addPoint(p.ten, {
+          kind: 'pointAtDistance',
+          from: o,
+          through: p.tia,
+          origin: 'from',
+          distance: { kind: 'literal', value: d.get(p.ten)! },
+        });
       }
     }
 
@@ -288,6 +325,19 @@ export const gocXOyRule: LanguageRule = {
 
     // Đối xứng qua tia: "(tia) Ox là (đường) trung trực của (đoạn) MN" → N = đối xứng M qua Ox.
     const TRUC = new RegExp(String.raw`(?:tia\s+)?${o}([a-z])\s+là\s+(?:đường\s+)?trung\s*trực\s+(?:của\s+)?(?:đoạn\s+(?:thẳng\s+)?)?([A-Z])([A-Z])(?![\p{L}\d'′])`, 'gu');
+    // "OB là đường trung trực của AC" với B là điểm trên tia Oy → đối xứng qua đường OB.
+    const TRUC_HOA = new RegExp(String.raw`(?<![A-Z])${o}([A-Z])\s+là\s+(?:đường\s+)?trung\s*trực\s+(?:của\s+)?(?:đoạn\s+(?:thẳng\s+)?)?([A-Z])([A-Z])(?![\p{L}\d'′])`, 'gu');
+    for (const c of doan) {
+      for (const m of c.text.matchAll(TRUC_HOA)) {
+        const [, diem, p, q] = m;
+        if (!Object.values(onRay).some((l) => l.includes(diem))) continue;
+        const [goc, moi] = known.has(p) && !known.has(q) ? [p, q] : known.has(q) && !known.has(p) ? [q, p] : ['', ''];
+        if (!goc || moi === diem) continue;
+        intents.push(addPoint(moi, { kind: 'reflectLine', of: goc, through: `${o}${diem}` }), connect(goc, moi, 'segment'));
+        known.add(moi);
+        claimed.add(c.id);
+      }
+    }
     for (const c of doan) {
       for (const m of c.text.matchAll(TRUC)) {
         const [, tia, p, q] = m;
