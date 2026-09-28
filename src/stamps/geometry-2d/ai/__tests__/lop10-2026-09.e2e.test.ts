@@ -92,4 +92,16 @@ describe('lop10 — đề thật, đo hình', () => {
     expect(dist(p.C, p.A) / k).toBeCloseTo(27, 6);
     khop(p.G, tong([[1 / 3, p.A], [1 / 3, p.B], [1 / 3, p.C]]));
   });
+
+  it('#57 "Cho đoạn thẳng AB có O là trung điểm và cho điểm M tùy ý": O trung điểm, M không trùng/không thẳng hàng', () => {
+    const p = toaDoHinh('Cho đoạn thẳng AB có O là trung điểm và cho điểm M tùy ý. Chứng minh rằng: vectơ MA . vectơ MB = MO² − OA².');
+    khop(p.O, tong([[0.5, p.A], [0.5, p.B]]));
+    const cheo = (p.B[0] - p.A[0]) * (p.M[1] - p.A[1]) - (p.B[1] - p.A[1]) * (p.M[0] - p.A[0]);
+    expect(Math.abs(cheo)).toBeGreaterThan(1);
+  });
+
+  it('#49 "… và một điểm M tùy ý": M được dựng, khác mọi đỉnh', () => {
+    const p = toaDoHinh('Cho hình bình hành ABCD có O là giao điểm của hai đường chéo và một điểm M tùy ý. Chứng minh rằng: a) vectơ BA + vectơ DC = vectơ 0.');
+    for (const v of ['A', 'B', 'C', 'D', 'O']) expect(dist(p.M, p[v])).toBeGreaterThan(0.5);
+  });
 });

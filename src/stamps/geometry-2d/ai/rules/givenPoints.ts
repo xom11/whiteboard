@@ -21,6 +21,7 @@ const DIEM = new RegExp(
   'u',
 );
 const THANG_HANG = /(?<!không\s)thẳng\s+hàng|(?:thuộc|nằm\s+trên)\s+(?:một\s+)?(?:cùng\s+)?(?:một\s+)?[Đđ]ư[ờơ]ng\s*thẳng/u;
+const TRUNG_DIEM_SAU = /^\s*,?\s*(?:có|với)\s+([A-Z])(?![A-Z'′])\s+là\s+trung\s*điểm(?!\s+(?:của\s+)?(?:đoạn\s+|cạnh\s+)?[A-Z]{2})/u;
 const CON_LAI = /^\s*(?:(?:phân\s+biệt|bất\s+k[ìỳiy]|tu[ỳy]\s+ý|không\s+thẳng\s+hàng|cho\s+trước)\s*,?\s*)*$/u;
 const SO: Record<string, number> = { hai: 2, ba: 3, 'bốn': 4, 'năm': 5, 'sáu': 6 };
 
@@ -49,6 +50,9 @@ export const givenPointsRule: LanguageRule = {
           addPoint(d[2], { kind: 'free', at: VI_TRI[2][1] }),
           connect(d[1], d[2]),
         ];
+        // "Cho đoạn thẳng AB có O là trung điểm" — trung điểm không nêu lại tên đoạn.
+        const td = TRUNG_DIEM_SAU.exec(c.text.slice(d.index + d[0].length));
+        if (td && td[1] !== d[1] && td[1] !== d[2]) intents.push(addPoint(td[1], { kind: 'midpoint', of: d[1] + d[2] }));
         out.push({ ruleId: 'givenPoints', clauseIds: [c.id], intents });
         continue;
       }

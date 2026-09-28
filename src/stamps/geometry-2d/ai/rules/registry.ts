@@ -43,6 +43,7 @@ import { givenPointsRule } from './givenPoints';
 import { quadCenterRule } from './quadCenter';
 import { parallelogramVertexRule } from './parallelogramVertex';
 import { centersDistribRule } from './centersDistrib';
+import { arbitraryPointRule } from './arbitraryPoint';
 import { diagonalsMeetNamedRule } from './diagonalsMeetNamed';
 import { intersectionDistribRule } from './intersectionDistrib';
 import { lineCircleIntersectionRule } from './lineCircleIntersection';
@@ -165,6 +166,7 @@ const RULES: readonly LanguageRule[] = [
   quadCenterRule,
   parallelogramVertexRule,
   centersDistribRule,
+  arbitraryPointRule,
   diagonalsMeetNamedRule,
   intersectionDistribRule,
   lineCircleIntersectionRule,
