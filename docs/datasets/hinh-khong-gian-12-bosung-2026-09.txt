@@ -1,0 +1,139 @@
+Câu 1: Cho hình chóp S.ABC có đáy ABC là tam giác đều cạnh a, cạnh bên SA vuông góc với đáy, đường thẳng SC tạo với đáy một góc 60°. Thể tích khối chóp S.ABC bằng?
+
+Câu 2: Cho hình chóp S.ABCD có đáy là hình vuông cạnh a, hình chiếu vuông góc của S lên mặt phẳng (ABCD) trùng với trung điểm của cạnh AD, cạnh bên SB hợp với đáy một góc 60°. Tính theo a thể tích V của khối chóp S.ABCD.
+
+Câu 3: Cho hình chóp S.ABC có đáy là tam giác vuông tại B có AB = a, BC = a√3. Hình chiếu của đỉnh S trên mặt phẳng đáy trùng với trung điểm của cạnh AC. Biết SB tạo với đáy một góc 30°. Thể tích khối chóp S.ABC là:
+
+Câu 4: Cho hình chóp S.ABCD có đáy là hình vuông cạnh a, SA vuông góc với mặt đáy, SD tạo với mặt phẳng (SAB) một góc bằng 30°. Tính thể tích V của khối chóp S.ABCD.
+
+Câu 5: Cho hình chóp S.ABCD có đáy là hình chữ nhật ABCD có AB = 2a. Hình chiếu vuông góc của đỉnh S xuống mặt đáy là trung điểm của AB. Biết rằng SA = a√7 và mặt phẳng (SCD) tạo với đáy một góc 60°. Thể tích khối chóp là:
+
+Câu 6: Cho hình chóp S.ABCD có đáy ABCD là hình chữ nhật với AB = 2a, AD = a. Hình chiếu của S lên (ABCD) là trung điểm H của AB, SC tạo với đáy một góc 45°. Thể tích khối chóp S.ABCD là
+
+Câu 7: Cho hình chóp S.ABCD có đáy là nửa lục giác đều cạnh a, AD = 2a, SA ⊥ (ABCD). Mặt phẳng (SCD) tạo với đáy một góc 45°. Thể tích khối chóp S.ACD là:
+
+Câu 8: Cho hình chóp S.ABC có đáy là tam giác ABC vuông tại B có AB = a√3, BC = a. Tam giác SAC cân tại S và thuộc mặt phẳng vuông góc với đáy, mặt phẳng (SAB) tạo với đáy một góc bằng 60°. Thể tích khối chóp S.ABC là:
+
+Câu 9: Cho khối chóp S.ABC có đáy là tam giác ABC vuông tại A, tam giác SAB vuông tại S và thuộc mặt phẳng vuông góc với đáy. Biết SA = a√6, SB = a√3 và AC = 2a. Thể tích khối chóp S.ABC là:
+
+Câu 10: Cho hình chóp S.ABC có mặt phẳng (SAC) vuông góc với mặt phẳng (ABC), SAB là tam giác đều cạnh a√3, BC = a√3, đường thẳng SC tạo với mặt phẳng (ABC) góc 60°. Thể tích của khối chóp S.ABC bằng:
+
+Câu 11: Cho khối chóp S.ABCD có đáy là hình chữ nhật ABCD. Tam giác SAB đều cạnh 2a và thuộc mặt phẳng vuông góc với đáy. Đường thẳng SC tạo với đáy một góc 30°. Thể tích khối chóp S.ABCD là:
+
+Câu 12: Cho khối chóp tam giác đều S.ABC có cạnh đáy bằng a, cạnh bên bằng 2a. Tính thể tích V của khối chóp S.ABC.
+
+Câu 13: Cho hình chóp đều S.ABC có đáy là tam giác đều cạnh a, cạnh bên tạo với đáy một góc bằng 60°. Tính thể tích khối chóp đã cho.
+
+Câu 14: Cho hình chóp đều S.ABCD có đáy là hình vuông cạnh 4a. Khoảng cách từ điểm D đến mặt phẳng (SAB) bằng 4a/√5. Thể tích khối chóp đã cho là:
+
+Câu 15: Cho hình chóp đều S.ABCD có mặt bên tạo với đáy một góc 60°. Cạnh bên SA = a√5. Thể tích khối chóp S.ABCD là:
+
+Câu 16: Cho hình chóp đều S.ABC có đáy là tam giác đều cạnh a. Biết tam giác ASB vuông, thể tích khối chóp S.ABC là:
+
+Câu 17: Cho hình chóp S.ABC có đáy là tam giác ABC, các cạnh bên SA = SB = SC = a. Biết rằng góc ASB = góc BSC = 60°, góc ASC = 90°. Thể tích khối chóp đã cho là:
+
+Câu 18: Cho hình chóp S.ABC có đáy là tam giác ABC, có AB = AC = a, góc BAC = 120°. Các cạnh bên đều tạo với đáy một góc 60°. Thể tích khối chóp S.ABC là:
+
+Câu 19: Cho hình chóp S.ABC có đáy là tam giác ABC vuông tại B có AB = 3, BC = 4. Biết rằng các mặt bên của khối chóp đều tạo với đáy một góc bằng nhau và bằng 60°. Thể tích khối chóp đã cho là
+
+Câu 20: Cho khối chóp S.ABC có đáy là tam giác ABC đều cạnh a. Hai mặt phẳng (SAB) và (SAC) cùng vuông góc với đáy. Tính thể tích khối chóp S.ABC biết SC = a√3.
+
+Câu 21: Cho khối chóp S.ABCD có đáy là hình chữ nhật; AD = 2AB = 2a; Gọi H là trung điểm của AD, biết SH vuông góc với mặt phẳng đáy. Tính thể tích khối chóp S.ABCD biết SA = a√5.
+
+Câu 22: Cho khối chóp S.ABC có đáy là tam giác ABC đều cạnh a. Hai mặt phẳng (SAB) và (SAC) cùng vuông góc với đáy. Tính thể tích khối chóp S.ABC biết SM hợp với đáy một góc 60°, với M là trung điểm của BC.
+
+Câu 23: Cho hình chóp tam giác S.ABC có SA, SB, SC đôi một vuông góc và SA = SB = SC = a. Khi đó, thể tích khối chóp trên bằng:
+
+Câu 24: Cho hình chóp S.ABCD có đáy là một hình vuông cạnh a. Các mặt phẳng (SAB) và (SAD) cùng vuông góc với mặt phẳng đáy, còn cạnh bên SC tạo với mặt phẳng (SAB) một góc 30°. Thể tích hình chóp đó bằng
+
+Câu 25: Cho khối chóp S.ABCD có ABCD là hình chữ nhật, AB = 2a. Tam giác SAB nằm trong mặt phẳng vuông góc với đáy và SA = a; SB = a√3. Tính thể tích khối chóp biết AD = 3a.
+
+Câu 26: Cho hình chóp S.ABC có đáy ABC là tam giác đều. Mặt bên SAB nằm trong mặt phẳng vuông góc với mặt phẳng đáy và tam giác SAB vuông tại S, SA = a√3, SB = a. Tính thể tích hình chóp S.ABC.
+
+Câu 27: Cho hình chóp S.ABC có đáy ABC là tam giác vuông tại A, AB = 3a, BC = 5a, mặt phẳng (SAC) vuông góc với đáy. Biết SA = 2a√3, góc SAC = 30°. Thể tích khối chóp là:
+
+Câu 28: Cho khối chóp đều S.ABC cạnh đáy bằng a√3. Tính thể tích của khối chóp S.ABC biết mặt bên là tam giác vuông cân.
+
+Câu 29: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a. Mặt phẳng (SAB), (SAD) cùng vuông góc với mặt phẳng (ABCD). Đường thẳng SC tạo với đáy góc 45°. Gọi M, N lần lượt là trung điểm của AB, AD. Thể tích khối chóp S.MCDN là bao nhiêu?
+
+Câu 30: Cho hình chóp tam giác S.ABC có AB = 5a, BC = 6a, CA = 7a. Các mặt bên (SAB), (SBC), (SCA) tạo với đáy một góc 60°. Tính thể tích khối chóp.
+
+Câu 31: Cho hình lăng trụ đứng ABC.A'B'C' có đáy là tam giác đều cạnh a. Biết mặt phẳng (A'BC) tạo với đáy một góc 60°. Thể tích khối lăng trụ đã cho là:
+
+Câu 32: Cho hình lăng trụ đứng ABC.A'B'C' có đáy là tam giác đều cạnh a. Đường thẳng A'C tạo với mặt phẳng (BCC'B') một góc 30°. Thể tích khối lăng trụ đã cho là
+
+Câu 33: Cho khối lăng trụ đứng ABC.A'B'C' có đáy ABC là tam giác cân với AB = AC = a, góc BAC = 120°, mặt phẳng (AB'C') tạo với đáy một góc 60°. Tính thể tích V của khối lăng trụ đã cho.
+
+Câu 34: Cho hình lăng trụ đứng ABC.A'B'C' có đáy là tam giác ABC vuông tại B có AB = a√3, BC = a. Gọi M là trung điểm của AC, đường thẳng B'M tạo với đáy một góc 45°. Thể tích khối lăng trụ đã cho là:
+
+Câu 35: Cho khối lăng trụ đứng ABC.A'B'C' có đáy là tam giác ABC vuông tại A có AB = 5a, AC = 12a. Biết rằng mặt phẳng (A'BC) tạo với đáy một góc 60°. Tính thể tích khối lăng trụ ABC.A'B'C'.
+
+Câu 36: Cho khối lăng trụ đứng ABCD.A'B'C'D' có đáy là hình chữ nhật ABCD có AB = a, AD = a√3. Mặt phẳng (A'BD) tạo với đáy một góc 60°. Thể tích khối lăng trụ đã cho là:
+
+Câu 37: Cho hình hộp chữ nhật ABCD.A'B'C'D' có đáy là hình chữ nhật ABCD có AB = 3a, AD = 4a. Đường thẳng A'C tạo với mặt phẳng (A'B'BA) một góc 30°. Thể tích khối hộp chữ nhật đã cho là:
+
+Câu 38: Cho hình lăng trụ ABC.A'B'C' có đáy ABC là tam giác vuông tại B, góc ACB = 60°, BC = a, AA' = 2a. Cạnh bên tạo với mặt phẳng (ABC) một góc 30°. Thể tích khối lăng trụ ABC.A'B'C' bằng
+
+Câu 39: Cho khối lăng trụ ABC.A'B'C' có đáy ABC là tam giác đều cạnh bằng a, cạnh bên AA' = a, góc giữa AA' và mặt phẳng đáy bằng 30°. Tính thể tích khối lăng trụ đã cho theo a.
+
+Câu 40: Cho lăng trụ ABC.A'B'C' có đáy là tam giác đều cạnh 4a. Hình chiếu của A' trên mặt phẳng (ABC) là điểm H thuộc cạnh AB sao cho HB = 3HA. Góc tạo bởi đường thẳng A'C và mặt đáy bằng 30°. Thể tích khối lăng trụ ABC.A'B'C' là:
+
+Câu 41: Cho hình lăng trụ ABC.A'B'C' có đáy là tam giác đều cạnh a. Gọi M là trung điểm của AB, tam giác C'MC cân tại C' và thuộc mặt phẳng vuông góc với đáy. Đường thẳng AC' tạo với đáy góc 60°. Thể tích khối lăng trụ là:
+
+Câu 42: Cho hình hộp ABCD.A'B'C'D' có đáy là hình chữ nhật có AB = 3a, AD = 4a. Biết A'A = A'B = A'C = A'D và mặt phẳng (A'CD) tạo với đáy một góc 60°. Thể tích khối hộp đã cho là:
+
+Câu 43: Cho hình lăng trụ ABCD.A'B'C'D' có đáy là hình thoi ABCD tâm O có AC = 2a, BD = 2a√3. Hình chiếu vuông góc của B' xuống đáy trùng với trung điểm của OB. Đường thẳng B'C tạo với đáy góc 45°. Thể tích khối lăng trụ đã cho là:
+
+Câu 44: Cho hình lăng trụ ABCD.A'B'C'D' có đáy là hình vuông ABCD cạnh 6a. Hình chiếu vuông góc của A' xuống đáy trùng với trọng tâm tam giác ABD. Biết tam giác AA'C vuông tại A'. Thể tích khối lăng trụ ABCD.A'B'C'D' là:
+
+Câu 45: Cho lăng trụ ABCD.A'B'C'D' có đáy ABCD là hình chữ nhật có AB = 2a, AD = 2a√3, hình chiếu vuông góc của A' lên mặt phẳng (ABCD) trùng với tâm O của hình chữ nhật ABCD. Biết cạnh AA' tạo với đáy một góc 60°. Thể tích lăng trụ ABCD.A'B'C'D' là:
+
+Câu 46: Tính thể tích V của khối lập phương ABCD.A'B'C'D', biết AC' = a√3.
+
+Câu 47: Cho lăng trụ ABC.A1B1C1 có đáy ABC là tam giác đều cạnh a√3, cạnh bên có độ dài bằng 2a. Hình chiếu của điểm A1 lên (ABC) trùng với trung điểm của BC. Thể tích khối lăng trụ ABC.A1B1C1 là:
+
+Câu 48: Cho hình hộp ABCD.A'B'C'D' có đáy là một hình thoi và hai mặt chéo ACC'A', BDD'B' đều vuông góc với mặt phẳng đáy. Hai mặt này có diện tích lần lượt bằng 100cm², 105cm² và cắt nhau theo một đoạn thẳng có độ dài 10cm. Khi đó thể tích của hình hộp đã cho là:
+
+Câu 49: Cho hình lăng trụ đứng ABC.A'B'C' có AC = a, BC = 2a, góc ACB = 120° và đường thẳng A'C tạo với mặt phẳng (ABB'A') góc 30°. Thể tích khối lăng trụ ABC.A'B'C' là:
+
+Câu 50: Cho khối chóp S.ABC có đáy là tam giác vuông cân tại A, AB = 2; SA vuông góc với đáy và SA = 3 (tham khảo hình vẽ). Thể tích khối chóp đã cho bằng
+
+Câu 51: Cho hình chóp đều S.ABCD có chiều cao a, AC = 2a (tham khảo hình bên). Tính khoảng cách từ điểm B đến mặt phẳng (SCD).
+
+Câu 52: Cho khối lăng trụ đứng ABC.A'B'C' có đáy ABC là tam giác vuông cân tại B, AB = a. Biết khoảng cách từ A đến mặt phẳng (A'BC) bằng (√6/3)a, thể tích khối lăng trụ đã cho bằng
+
+Câu 53: Cho khối nón có đỉnh S, chiều cao bằng 8 và thể tích bằng 800π/3. Gọi A và B là hai điểm thuộc đường tròn đáy sao cho AB = 12, khoảng cách từ tâm của đường tròn đáy đến mặt phẳng (SAB) bằng
+
+Câu 54: Cho khối chóp S.ABCD có chiều cao bằng 4 và đáy ABCD có diện tích bằng 3. Thể tích khối chóp đã cho bằng
+
+Câu 55: Cho hình hộp chữ nhật ABCD.A'B'C'D' có AB = 1, BC = 2, AA' = 2 (tham khảo hình bên). Khoảng cách giữa hai đường thẳng AD' và DC' bằng
+
+Câu 56: Cho hình chóp đều S.ABCD có đáy bằng a, chiều cao bằng (√3/6)a. Góc giữa mặt phẳng (SCD) và mặt phẳng đáy bằng
+
+Câu 57: Cho khối chóp S.ABCD có đáy ABCD là hình bình hành, SA = SB = SC = AC = a, SB tạo với mặt phẳng (SAC) một góc 30°. Thể tích của khối chóp đã cho bằng
+
+Câu 58: Xét khối nón (N) có đỉnh và đường tròn đáy cùng nằm trên một mặt cầu bán kính bằng 2. Khi (N) có độ dài đường sinh bằng 2√3, thể tích của nó bằng
+
+Câu 59: Cho hình lập phương ABCD.A'B'C'D' có cạnh bằng 4. Xét hình nón (N) có đáy nằm trên mặt phẳng (ABCD) và mặt xung quanh đi qua bốn điểm A', B', C', D'. Khi bán kính đáy của (N) bằng 3√2, diện tích xung quanh của (N) bằng
+
+Câu 60: Cho hình chóp S.ABCD có đáy là hình vuông cạnh a, cạnh bên SA vuông góc với mặt phẳng đáy và SA = √2a. Khoảng cách từ C đến mặt phẳng (SBD) bằng
+
+Câu 61: Cho hình chóp S.ABC có đáy là tam giác vuông cân tại A, BC = 2a, cạnh bên SA vuông góc với mặt phẳng đáy và SA = √3a. Góc giữa hai mặt phẳng (SBC) và (ABC) bằng
+
+Câu 62: Cho hình lăng trụ đứng ABC.A'B'C' có đáy ABC là tam giác vuông cân tại A, AB = a. Biết góc giữa hai mặt phẳng (A'BC) và (ABC) bằng 30°, thể tích của khối lăng trụ đã cho bằng
+
+Câu 63: Cho hình chóp S.ABC có đáy là tam giác vuông cân tại A, AB = 2a, mặt bên SAB là tam giác đều nằm trong mặt phẳng vuông góc với mặt phẳng đáy. Diện tích của mặt cầu ngoại tiếp hình chóp đã cho bằng
+
+Câu 64: Cho hình chóp tứ giác đều S.ABCD có tất cả các cạnh bằng 2a. Khoảng cách từ A đến mặt phẳng (SCD) bằng
+
+Câu 65: Cho khối lăng trụ đứng ABC.A'B'C' có đáy ABC là tam giác vuông tại C, AB = √3a và AC = a. Biết góc giữa đường thẳng B'C và mặt phẳng (ABC) bằng 30°, thể tích của khối lăng trụ đã cho bằng
+
+Câu 66: Cho hình chóp S.ABC có SA vuông góc với mặt phẳng (ABC), tam giác ABC vuông tại A và SA = 3, AB = 4, AC = 5. Thể tích của khối chóp S.ABC bằng
+
+Câu 67: Cho hình chóp S.ABCD có đáy ABCD là hình thoi với góc ABC = 60° và AB = 2. Biết rằng hình chiếu vuông góc của S trên mặt phẳng (ABCD) là trọng tâm H của tam giác ABC và SH = √3. Khoảng cách giữa hai đường thẳng AC và SD bằng bao nhiêu (không làm tròn kết quả các phép tính trung gian, chỉ làm tròn kết quả cuối cùng đến hàng phần trăm)?
+
+Câu 68: Để đặt được một vật trang trí trên mặt bàn, người ta thiết kế một chân đế như sau: lấy một khối gỗ có dạng khối chóp cụt tứ giác đều với độ dài hai cạnh đáy lần lượt bằng 7,4cm và 10,4cm, bề dày của khối gỗ bằng 1,5cm. Sau đó khoét bỏ đi một phần của khối gỗ sao cho phần đó có dạng vật thể H, ở đó H nhận được bằng cách cắt khối cầu bán kính 5,8cm bởi một mặt phẳng cắt mà mặt cắt là hình tròn bán kính 3,5cm (xem hình vẽ). Thể tích của khối chân đế bằng bao nhiêu centimet khối (không làm tròn kết quả các phép tính trung gian, chỉ làm tròn kết quả cuối cùng đến hàng phần mười)?
+
+Câu 69: Cho khối chóp O.ABC có OA vuông góc với mặt phẳng (ABC), tam giác ABC vuông tại A và OA = 2, AB = 3, AC = 6. Thể tích của khối chóp O.ABC bằng
+
+Câu 70: Cho hình chóp S.ABCD có đáy ABCD là hình vuông với AB = 2. Biết rằng hình chiếu vuông góc của S trên mặt phẳng (ABCD) là trọng tâm H của tam giác ABC và SH = √2. Khoảng cách giữa hai đường thẳng AC và SD là bao nhiêu (không làm tròn kết quả các phép tính trung gian, chỉ làm tròn kết quả cuối cùng đến hàng phần trăm)?
