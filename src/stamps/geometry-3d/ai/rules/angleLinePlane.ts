@@ -27,7 +27,8 @@ export const angleLinePlaneRule: LanguageRule3D = {
   match(ctx: RuleContext3D): RuleMatch3D[] {
     const head = parseSolidHead3D(ctx.problem);
     const apex = head?.apex;
-    if (!apex) return [];            // need a pyramid apex to project
+    const boxBase = /hình\s+(?:hộp(?:\s+(?:chữ\s+nhật|đứng))?|lập\s+phương)\s+([A-Z]{4})\./u.exec(ctx.problem)?.[1];
+    if (!apex && !head && !boxBase) return [];      // cần một khối để biết mặt đáy
 
     const out: RuleMatch3D[] = [];
 
@@ -41,11 +42,22 @@ export const angleLinePlaneRule: LanguageRule3D = {
       const e2 = m[2];
       const planeTok = m[4];       // group 4 = three-letter plane label (no parens), or undefined for đáy
 
-      // exactly one endpoint must be the apex; the other is a base vertex
+      // Chóp: một đầu là đỉnh S, đầu kia trên mặt. Lăng trụ/hộp (không có đỉnh chóp): một đầu
+      // thuộc MẶT (nhãn mặt/đáy), đầu kia ngoài mặt ⇒ chiếu đầu ngoài (vd AC' với (ABCD) ⇒ chiếu C').
+      // Mặt CHỨA đỉnh chóp (vd góc giữa SC và (SAB)) ⇒ chiếu đầu KHÔNG thuộc mặt (C), không phải S
+      // (trước đây chiếu S lên (SAB) = chính S — hình suy biến).
+      const apexInPlane = !!(apex && planeTok && planeTok.includes(apex));
       let vtx: string | null = null;
-      if (e1 === apex && e2 !== apex) vtx = e2;
-      else if (e2 === apex && e1 !== apex) vtx = e1;
-      if (!vtx) continue;
+      let from: string | null = apex ?? null;
+      if (apex && !apexInPlane && e1 === apex && e2 !== apex) vtx = e2;
+      else if (apex && !apexInPlane && e2 === apex && e1 !== apex) vtx = e1;
+      else if (!apex || apexInPlane) {
+        const inPlane = planeTok ? [...planeTok].filter((x) => /[A-Z]/u.test(x)) : (head?.baseLabels ?? (boxBase ? [...boxBase] : []));
+        const strip = (x: string) => x.replace(/['′]/gu, '');
+        const in1 = inPlane.includes(e1) && e1 === strip(e1), in2 = inPlane.includes(e2) && e2 === strip(e2);
+        if (in1 && !in2) { vtx = e1; from = e2; } else if (in2 && !in1) { vtx = e2; from = e1; }
+      }
+      if (!vtx || !from) continue;
 
       // Resolve base plane
       let planeName: string;
@@ -62,14 +74,14 @@ export const angleLinePlaneRule: LanguageRule3D = {
         p = [bf.p1, bf.p2, bf.p3];
       }
 
-      const foot = `H${apex.replace(/['′]/gu, '')}`;
+      const foot = `H${from.replace(/['′]/gu, '')}`;
 
       const intents: Intent3DT[] = [
         plane3d(planeName, { kind: 'threePoints', p1: p[0], p2: p[1], p3: p[2] }),
-        addPoint3d(foot, { kind: 'perpFootPlane', from: apex, plane: planeName }),
-        connect3d(apex, foot, 'segment'),
+        addPoint3d(foot, { kind: 'perpFootPlane', from, plane: planeName }),
+        connect3d(from, foot, 'segment'),
         connect3d(foot, vtx, 'segment'),
-        connect3d(apex, vtx, 'segment'),
+        connect3d(from, vtx, 'segment'),
       ];
 
       out.push({ ruleId: this.id, clauseIds: [c.id], intents });
