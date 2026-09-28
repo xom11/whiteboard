@@ -67,6 +67,13 @@ describe('pointOnSideAtLength — dựng đúng điều kiện độ dài', () =
     expect(by.Q).toMatchObject({ from: 'A', through: 'D' });
   });
 
+  it('lop7 #22 vế nối "Lấy điểm D thuộc cạnh AC và điểm E thuộc cạnh AB sao cho AD = AE": D ∈ AC, E ∈ AB, AD = AE', () => {
+    const p = toaDoHinh('Cho tam giác ABC cân ở A. Lấy điểm D thuộc cạnh AC và điểm E thuộc cạnh AB sao cho AD = AE. Gọi I là giao điểm của BD và CE.');
+    expect(thuocDoan(p.D, p.A, p.C)).toBe(true);
+    expect(thuocDoan(p.E, p.A, p.B)).toBe(true);
+    expect(dist(p.A, p.D)).toBeCloseTo(dist(p.A, p.E), 9);
+  });
+
   it.each([
     ['tỉ số — không đoán', 'Cho tam giác ABC, điểm M thuộc đoạn thẳng BC sao cho BM = 2MC.'],
     ['tổng hai đoạn — không đoán', 'Trên tia phân giác của góc A lấy điểm D sao cho AD = AB + AC.'],

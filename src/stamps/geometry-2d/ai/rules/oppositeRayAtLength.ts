@@ -23,17 +23,75 @@ const RE = new RegExp(
   'gu',
 );
 
+// Tên đứng trước: "Gọi A là điểm (nằm) trên tia đối của tia MB sao cho MA = MB".
+const RE_TEN_TRUOC = new RegExp(
+  String.raw`(?<![A-Z])([A-Z])\s+là\s+(?:một\s+)?điểm\s+(?:nằm\s+)?(?:trên|thuộc)\s+tia\s+đối\s+(?:của\s+)?(?:tia\s+)?([A-Z])([A-Z])(?![A-Z])` +
+    String.raw`\s*,?\s*sao\s+cho\s+([A-Z])([A-Z])\s*=\s*([A-Z])([A-Z])(?![\p{L}\d'′])(?!\s*[+\-*/·.]\s*[A-Z\d])`,
+  'gu',
+);
+
+// Phân phối hai tia, độ dài bằng nhau:
+//   "Trên tia đối của các tia BC và CB lấy thứ tự hai điểm D và E sao cho BD = CE"
+//   "Trên tia đối của tia AB và AC lần lượt lấy các điểm D, E sao cho AD = AE < AB"
+// → điểm đầu tuỳ ý trên tia đối (cách gốc ½ đoạn nền — thoả luôn "< XY" nếu có),
+//   điểm sau đo bằng điểm đầu. Hai vế phải đo từ đúng GỐC hai tia.
+const RE_PHAN_PHOI = new RegExp(
+  String.raw`[Tt]rên\s+(?:các\s+)?tia\s+đối\s+(?:của\s+)?(?:các\s+|hai\s+)?(?:tia\s+)?([A-Z])([A-Z])\s*(?:,|và)\s*(?:tia\s+)?([A-Z])([A-Z])(?![A-Z])` +
+    String.raw`\s*,?\s*(?:lần\s*lượt\s+|(?:theo\s+)?thứ\s+tự\s+)?lấy\s+(?:lần\s*lượt\s+|(?:theo\s+)?thứ\s+tự\s+)?(?:các\s+|hai\s+)?(?:điểm\s+)?([A-Z])\s*(?:,|và)\s*([A-Z])(?![\p{L}\d'′])` +
+    String.raw`\s*,?\s*sao\s+cho\s+([A-Z])([A-Z])\s*=\s*([A-Z])([A-Z])(?![\p{L}\d'′])(\s*[<>]\s*[A-Z]{2}(?![A-Z]))?(?!\s*[+\-*/·.=]\s*[A-Z\d])`,
+  'gu',
+);
+
 export const oppositeRayAtLengthRule: LanguageRule = {
   id: 'oppositeRayAtLength',
   priority: 56,
   languages: ['vi'],
-  patterns: [/tia\s+đối[^.]{0,40}sao\s+cho/u],
+  patterns: [/tia\s+đối[^.]{0,60}sao\s+cho/u],
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
-      RE.lastIndex = 0;
-      for (const m of c.text.matchAll(RE)) {
-        const [, x, y, p, a1, a2, b1, b2] = m;
+      for (const m of c.text.matchAll(RE_PHAN_PHOI)) {
+        const [, x1, y1, x2, y2, p1, p2, a1, a2, b1, b2, bdt] = m;
+        if (new Set([x1, y1, p1]).size !== 3 || new Set([x2, y2, p2]).size !== 3 || p1 === p2) continue;
+        const doan = (u: string, v: string, x: string, p: string) => (u === x && v === p) || (u === p && v === x);
+        const khop =
+          (doan(a1, a2, x1, p1) && doan(b1, b2, x2, p2)) || (doan(a1, a2, x2, p2) && doan(b1, b2, x1, p1));
+        if (!khop) continue;
+        // "AD = AE < AB": chỉ nhận so sánh "<" với đúng đoạn nền của một trong hai tia.
+        if (bdt) {
+          const bm = /([<>])\s*([A-Z])([A-Z])/u.exec(bdt)!;
+          const nen = (u: string, v: string) => (u === x1 && v === y1) || (u === y1 && v === x1) || (u === x2 && v === y2) || (u === y2 && v === x2);
+          if (bm[1] !== '<' || !nen(bm[2], bm[3])) continue;
+        }
+        // ½ của đoạn nền NGẮN hơn chưa biết trước → dùng đoạn nền tia 1; nếu có "< XY"
+        // thì lấy ½·XY (thoả chặt).
+        const base = bdt ? /[<>]\s*([A-Z])([A-Z])/u.exec(bdt)!.slice(1, 3) : [x1, y1];
+        out.push({
+          ruleId: 'oppositeRayAtLength',
+          clauseIds: [c.id],
+          intents: [
+            addPoint(p1, {
+              kind: 'pointAtDistance',
+              from: y1,
+              through: x1,
+              distance: { kind: 'segmentLength', p1: base[0], p2: base[1], scale: 0.5 },
+            }),
+            addPoint(p2, {
+              kind: 'pointAtDistance',
+              from: y2,
+              through: x2,
+              distance: { kind: 'segmentLength', p1: x1, p2: p1 },
+            }),
+            connect(x1, p1, 'segment'),
+            connect(x2, p2, 'segment'),
+          ],
+        });
+      }
+      const hits = [
+        ...[...c.text.matchAll(RE)].map((m) => [m[1], m[2], m[3], m[4], m[5], m[6], m[7]]),
+        ...[...c.text.matchAll(RE_TEN_TRUOC)].map((m) => [m[2], m[3], m[1], m[4], m[5], m[6], m[7]]),
+      ];
+      for (const [x, y, p, a1, a2, b1, b2] of hits) {
         if (new Set([x, y, p]).size !== 3) continue;
         const la = (u: string, v: string) => (u === x && v === p) || (u === p && v === x);
         let known: [string, string] | null = null;

@@ -16,6 +16,7 @@ import { centersRule } from './centers';
 import { concurrencyCenterRule } from './concurrencyCenter';
 import { perpFootRule } from './perpFoot';
 import { barePerpFootRule } from './barePerpFoot';
+import { perpFeetFromTwoRule } from './perpFeetFromTwo';
 import { circleRadiusRule } from './circleRadius';
 import { circleTriangleRule } from './circleTriangle';
 import { tangentFromExtRule } from './tangentFromExt';
@@ -144,6 +145,7 @@ const RULES: readonly LanguageRule[] = [
   concurrencyCenterRule,
   perpFootRule,
   barePerpFootRule,
+  perpFeetFromTwoRule,
   circleRadiusRule,
   circleTriangleRule,
   tangentFromExtRule,

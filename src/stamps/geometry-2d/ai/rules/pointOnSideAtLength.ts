@@ -38,6 +38,11 @@ const LAY_TREN = new RegExp(
   String.raw`[Ll]ấy\s+(?:một\s+)?(?:điểm\s+)?${PT}\s+(?:trên|thuộc)\s+${SEG_KIND}\s+([A-Z]{2})(?![A-Z])`,
   'gu',
 );
+// Vế nối tiếp ngay sau LAY_TREN: "(,|và) điểm E thuộc/trên cạnh AB" — BẮT BUỘC chữ "điểm".
+const VA_DIEM_TREN = new RegExp(
+  String.raw`^\s*(?:,|và)\s+(?:một\s+)?điểm\s+${PT}\s+(?:trên|thuộc)\s+${SEG_KIND}\s+([A-Z]{2})(?![A-Z])`,
+  'u',
+);
 // Phân phối: "Trên (các)? cạnh (bên)? AB, AC (, …) lấy (theo thứ tự|lần lượt) (các)? (điểm)? D và E"
 const TREN_LAY_DISTRIB = new RegExp(
   String.raw`[Tt]rên\s+(?:các\s+)?${SEG_KIND}\s+((?:[A-Z]{2}\s*(?:,|và)\s*)+[A-Z]{2})(?![A-Z])\s*,?\s*lấy\s+(?:(?:theo\s+)?thứ\s+tự\s+|lần\s*lượt\s+)?(?:các\s+)?(?:điểm\s+)?((?:[A-Z](?:['′])?\s*(?:,|và)\s*)+[A-Z](?:['′])?)(?![A-Z])`,
@@ -80,6 +85,9 @@ function takenPoints(text: string): Taken[] {
   }
   for (const m of text.matchAll(LAY_TREN)) {
     out.push({ name: normName(m[1]), a: m[3][0], b: m[3][1], ray: m[2].startsWith('tia') });
+    // "Lấy điểm D thuộc cạnh AC và điểm E thuộc cạnh AB" — vế sau không lặp "Lấy".
+    const tiep = VA_DIEM_TREN.exec(text.slice((m.index ?? 0) + m[0].length));
+    if (tiep) out.push({ name: normName(tiep[1]), a: tiep[3][0], b: tiep[3][1], ray: tiep[2].startsWith('tia') });
   }
   return out;
 }
