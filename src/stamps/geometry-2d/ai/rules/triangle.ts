@@ -1,6 +1,8 @@
 // src/stamps/geometry-2d/ai/rules/triangle.ts
 import type { LanguageRule, RuleMatch } from './_types';
 import { doCanhDeCho, toaDoTamGiacTheoCanh, toaDoTamGiacTuKhiTrungTrucCatCanh } from './triangleLengths';
+import { toaDoTamGiacTheoGoc, tiSoCanh } from './triangleAngles';
+import { triangleCanonical } from '../intent-builders/shared';
 import type { IntentT } from '../intent';
 import { drawShape, addPoint, drawCircle, markShape } from './_shared';
 
@@ -90,6 +92,12 @@ interface TriHit {
 // isoceles-BC (positional), KHÔNG phải "isoceles-CD". Với nhãn ABC chuẩn,
 // positional trùng label nên tương thích ngược.
 const RIGHT_BY_IDX = ['right-at-A', 'right-at-B', 'right-at-C'];
+
+/** Tam giác `labels` là tam giác nêu ĐẦU TIÊN trong đề. */
+function laTamGiacChinh(problem: string, labels: readonly string[]): boolean {
+  const m = /tam\s*giác(?:\s+(?:vuông|cân|đều|nhọn|tù)(?:\s+(?:tại|ở|đỉnh)\s+[A-Z])?)*\s+([A-Z])([A-Z])([A-Z])(?![A-Z])/u.exec(problem);
+  return !!m && m[1] === labels[0] && m[2] === labels[1] && m[3] === labels[2];
+}
 const ISO_BY_IDX = ['isoceles-BC', 'isoceles-CA', 'isoceles-AB'];
 
 // === Thales: tam giác VUÔNG nội tiếp đường tròn → đường kính + glider ===========
@@ -303,8 +311,17 @@ export const triangleRule: LanguageRule = {
         // Số đo đề cho ("AB = 4 cm, AC = 8 cm") ⇒ đặt đỉnh đúng tỉ lệ thay tam giác mẫu.
         const theoCanh =
           toaDoTamGiacTheoCanh(hit.labels as [string, string, string], variant, doCanhDeCho(ctx.problem, hit.labels)) ??
+          (hit.lang === 'vi' && laTamGiacChinh(ctx.problem, hit.labels) && doCanhDeCho(ctx.problem, hit.labels).size === 0
+            ? toaDoTamGiacTheoCanh(hit.labels as [string, string, string], variant, tiSoCanh(ctx.problem, hit.labels))
+            : undefined) ??
           (variant === 'any' ? toaDoTamGiacTuKhiTrungTrucCatCanh(ctx.problem, hit.labels as [string, string, string]) : undefined);
-        return [drawShape('triangle', hit.labels, variant, theoCanh)];
+        // Góc / bất đẳng thức cạnh đề cho — chỉ áp cho tam giác CHÍNH (đầu tiên của đề):
+        // "góc A = 90°" trần không chỉ rõ thuộc tam giác nào khi đề có nhiều tam giác.
+        const theoGoc =
+          !theoCanh && hit.lang === 'vi' && laTamGiacChinh(ctx.problem, hit.labels)
+            ? toaDoTamGiacTheoGoc(hit.labels as [string, string, string], variant, ctx.problem, triangleCanonical(variant))
+            : undefined;
+        return [drawShape('triangle', hit.labels, variant, theoCanh ?? theoGoc)];
       });
 
       out.push({ ruleId: 'triangle', clauseIds: [c.id], intents });
