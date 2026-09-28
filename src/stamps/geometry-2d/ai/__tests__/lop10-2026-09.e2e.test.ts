@@ -50,4 +50,26 @@ describe('lop10 — đề thật, đo hình', () => {
     const r = tryDeterministicFigure('Cho hình bình hành ABCD có O là giao điểm hai đường chéo. Với M là điểm tùy ý, chứng minh rằng: a) vectơ MA + vectơ MB + vectơ MC + vectơ MD = 4 vectơ MO; b) vectơ AB + vectơ AC + vectơ AD = 2 vectơ AC.');
     expect(r.ok).toBe(true);
   });
+
+  it('#81 (Olympic 30/4 2026): tứ giác nội tiếp (O) + "J, K, L tương ứng là tâm đường tròn ngoại tiếp tam giác ADX, BCX, PAB"', () => {
+    const p = toaDoHinh('Cho tứ giác ABCD nội tiếp đường tròn (O), có tia DA cắt tia CB tại điểm P. Lấy điểm X bất kỳ trên cạnh CD. Gọi J, K, L tương ứng là tâm đường tròn ngoại tiếp tam giác ADX, BCX, PAB.');
+    // Bốn đỉnh trên (O) — trước đây nhánh nội tiếp bị tam giác ADX (nhắc SAU) chặn.
+    for (const v of ['B', 'C', 'D']) expect(dist(p.O, p[v])).toBeCloseTo(dist(p.O, p.A), 9);
+    // P hữu hạn, nằm trên tia DA quá A và tia CB quá B (tứ giác mẫu cũ là hình vuông ⇒ AD ∥ BC).
+    expect(p.P).toBeDefined();
+    const trenTiaQua = (q: XY, goc: XY, qua: XY) => {
+      const t = ((q[0] - goc[0]) * (qua[0] - goc[0]) + (q[1] - goc[1]) * (qua[1] - goc[1])) / dist(goc, qua) ** 2;
+      return t > 1;
+    };
+    expect(trenTiaQua(p.P, p.D, p.A)).toBe(true);
+    expect(trenTiaQua(p.P, p.C, p.B)).toBe(true);
+    // Tâm ngoại tiếp đúng tam giác của mình (zip 1-1).
+    const cachDeu = (o: XY, a: XY, b: XY, c: XY) => {
+      expect(dist(o, a)).toBeCloseTo(dist(o, b), 9);
+      expect(dist(o, a)).toBeCloseTo(dist(o, c), 9);
+    };
+    cachDeu(p.J, p.A, p.D, p.X);
+    cachDeu(p.K, p.B, p.C, p.X);
+    cachDeu(p.L, p.P, p.A, p.B);
+  });
 });
