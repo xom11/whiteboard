@@ -103,6 +103,37 @@ export function doGocDeCho(problem: string, labels: readonly string[]): Map<stri
 }
 
 /**
+ * Độ dài ĐƯỜNG TRUNG TUYẾN đề cho, theo đỉnh: "trung tuyến AM = 8" (M ngoài tam
+ * giác), hoặc "M là trung điểm (của) BC" + "AM = 8" ở đâu đó trong đề.
+ */
+export function doTrungTuyenDeCho(problem: string, labels: readonly string[]): Map<string, number> {
+  const out = new Map<string, number>();
+  const tap = new Set(labels);
+  const doDai = (a: string, b: string): number | undefined => {
+    for (const m of problem.matchAll(LEN)) {
+      const caps = m[1].match(/[A-Z][A-Z]/gu) ?? [];
+      if (!caps.some((c) => (c[0] === a && c[1] === b) || (c[0] === b && c[1] === a))) continue;
+      const gt = giaTri(m.slice(2, 7));
+      if (gt && gt.unit === '') return gt.v;
+    }
+    return undefined;
+  };
+  for (const m of problem.matchAll(/trung\s*tuyến\s+([A-Z])([A-Z])(?![A-Z'′])/gu)) {
+    if (tap.has(m[1]) && !tap.has(m[2])) {
+      const v = doDai(m[1], m[2]);
+      if (v) out.set(m[1], v);
+    }
+  }
+  for (const m of problem.matchAll(/(?<![A-Z])([A-Z])(?![A-Z'′])\s+là\s+trung\s*điểm\s+(?:của\s+)?(?:cạnh\s+|đoạn\s+)?([A-Z])([A-Z])(?![A-Z'′])/gu)) {
+    if (tap.has(m[1]) || !tap.has(m[2]) || !tap.has(m[3]) || m[2] === m[3]) continue;
+    const V = labels.find((x) => x !== m[2] && x !== m[3])!;
+    const v = doDai(V, m[1]);
+    if (v && !out.has(V)) out.set(V, v);
+  }
+  return out;
+}
+
+/**
  * Toạ độ 3 đỉnh [A, B, C] theo số đo, hoặc undefined nếu không đủ dữ kiện.
  * variant: 'right-at-X' | 'isoceles-XY' (đáy XY) | 'equilateral' | 'any'.
  * angles: số đo góc đề cho theo đỉnh (độ) — xem doGocDeCho.
@@ -118,6 +149,7 @@ export function toaDoTamGiacTheoCanh(
   variant: string,
   lens: Map<string, number>,
   angles: Map<string, number> = new Map(),
+  medians: Map<string, number> = new Map(),
 ): Record<string, Pt> | undefined {
   if ((lens.size === 0 && angles.size === 0) || variant === 'equilateral') return undefined;
   const [A, B, C] = labels;
@@ -166,6 +198,32 @@ export function toaDoTamGiacTheoCanh(
     if (a && b && !h) L.set(key(X, Y), Math.hypot(a, b));
     else if (a && h && !b && h > a) L.set(key(V, Y), Math.sqrt(h * h - a * a));
     else if (b && h && !a && h > b) L.set(key(V, X), Math.sqrt(h * h - b * b));
+  }
+
+  // Trung tuyến m_V (công thức 4m² = 2b² + 2c² − a², a = cạnh đối V): biết 3 trong
+  // 4 đại lượng ⇒ suy đại lượng còn lại. Chỉ dùng khi ĐỦ 3 (không đoán).
+  for (const [Vm, m] of medians) {
+    if (!labels.includes(Vm)) continue;
+    const [X, Y] = labels.filter((x) => x !== Vm);
+    const a = len(X, Y);
+    const b = len(Vm, X);
+    const c = len(Vm, Y);
+    const bp = (v: number | undefined) => (v === undefined ? undefined : v * v);
+    if (a && b && !c) {
+      const c2 = (4 * m * m + a * a - 2 * b * b) / 2;
+      if (!(c2 > 0)) return undefined;
+      L.set(key(Vm, Y), Math.sqrt(c2));
+    } else if (a && c && !b) {
+      const b2 = (4 * m * m + a * a - 2 * c * c) / 2;
+      if (!(b2 > 0)) return undefined;
+      L.set(key(Vm, X), Math.sqrt(b2));
+    } else if (b && c && !a) {
+      const a2 = 2 * bp(b)! + 2 * bp(c)! - 4 * m * m;
+      if (!(a2 > 0)) return undefined;
+      L.set(key(X, Y), Math.sqrt(a2));
+    } else if (a && b && c && Math.abs(4 * m * m - (2 * b * b + 2 * c * c - a * a)) > 0.02 * 4 * m * m) {
+      return undefined; // mâu thuẫn
+    }
   }
 
   // Hai góc ⇒ góc thứ ba.

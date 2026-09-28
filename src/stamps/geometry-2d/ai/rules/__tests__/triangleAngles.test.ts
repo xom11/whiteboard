@@ -77,6 +77,25 @@ describe('tam giác theo số đo góc — đo trên hình thật', () => {
     expect(dist(p.B, p.C) / dist(p.A, p.C)).toBeCloseTo(10 / 8, 6);
   });
 
+  it('"vuông cân tại A" ⇒ góc A = 90°, AB = AC (trước đây vẽ tam giác cân NHỌN)', () => {
+    const p = toaDoHinh('Cho tam giác ABC vuông cân tại A có AB = a.');
+    expect(goc(p.B, p.A, p.C)).toBeCloseTo(90, 6);
+    expect(dist(p.A, p.B)).toBeCloseTo(dist(p.A, p.C), 6);
+  });
+
+  it('trung tuyến: BC = 12, CA = 13, "trung tuyến AM = 8" ⇒ AB = √31 (4m² = 2b² + 2c² − a²)', () => {
+    const p = toaDoHinh('Cho tam giác ABC có BC = 12, CA = 13, trung tuyến AM = 8.');
+    const k = dist(p.B, p.C) / 12;
+    expect(dist(p.A, p.B) / k).toBeCloseTo(Math.sqrt(31), 6);
+    expect(dist(p.A, p.M) / k).toBeCloseTo(8, 6);
+  });
+
+  it('"M là trung điểm BC" + "AM = 4" cũng là trung tuyến', () => {
+    const p = toaDoHinh('Cho tam giác ABC có AB = 5, AC = 7. Gọi M là trung điểm BC, biết AM = 4.');
+    const k = dist(p.A, p.B) / 5;
+    expect(dist(p.A, p.M) / k).toBeCloseTo(4, 6);
+  });
+
   it('"Â = 60°" (chữ có mũ) cũng là góc A', () => {
     const p = toaDoHinh('Cho tam giác ABC có Â = 60°, AB = 2, AC = 3.');
     expect(goc(p.B, p.A, p.C)).toBeCloseTo(60, 6);

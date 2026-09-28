@@ -1,6 +1,6 @@
 // src/stamps/geometry-2d/ai/rules/triangle.ts
 import type { LanguageRule, RuleMatch } from './_types';
-import { doCanhDeCho, doGocDeCho, toaDoTamGiacTheoCanh, toaDoTamGiacTuKhiTrungTrucCatCanh } from './triangleLengths';
+import { doCanhDeCho, doGocDeCho, doTrungTuyenDeCho, toaDoTamGiacTheoCanh, toaDoTamGiacTuKhiTrungTrucCatCanh } from './triangleLengths';
 import type { IntentT } from '../intent';
 import { drawShape, addPoint, drawCircle, markShape } from './_shared';
 
@@ -25,6 +25,11 @@ const TRI_G =
 // SAU "tam giác" (vd "ABC là tam giác vuông tại A" → window "vuông tại A").
 const TRI_BEFORE_G = /(?<![A-Z])([A-Z])([A-Z])([A-Z])(?![A-Z])\s+là\s+tam\s*giác/gu;
 const RIGHT_AT = /vuông\s+tại\s+([A-Z])(?![A-Za-z])/u;
+// "vuông cân tại A": trước đây rơi xuống ISO_AT ⇒ vẽ tam giác cân NHỌN (sai đề). Nay
+// là vuông tại A + hai góc đáy 45° — CHỈ với tam giác không chung đỉnh với tam giác
+// khai báo trước nó (tam giác "dựng ra phía ngoài" trên cạnh có sẵn: đỉnh chung đã có
+// toạ độ, toạ độ mới chỉ áp cho đỉnh còn lại ⇒ không thể đúng; giữ hành vi cũ).
+const VUONG_CAN = /vuông\s+cân\s+tại\s+([A-Z])(?![A-Za-z])/u;
 const ISO_AT = /cân\s+tại\s+([A-Z])(?![A-Za-z])/u;
 // LƯU Ý: \b của JS dựa trên ASCII word-char nên KHÔNG khớp quanh ký tự Việt
 // ("đ","ề"…). Dùng lookaround \p{L} để chặn match giữa từ dài hơn.
@@ -269,7 +274,11 @@ export const triangleRule: LanguageRule = {
         const next = hits[idx + 1];
         const windowEnd = next ? next.start : c.text.length;
         const window = c.text.slice(hit.end, windowEnd);
-        const variant = variantFor(hit, window);
+        const vc = hit.lang === 'vi' ? VUONG_CAN.exec(window) : null;
+        const chungDinh = hits.slice(0, idx).some((h) => h.labels.some((x) => hit.labels.includes(x))) ||
+          [...ctx.problem.slice(0, ctx.problem.indexOf(c.text)).matchAll(TRI_G)].some((m) => [m[2], m[3], m[4]].some((x) => hit.labels.includes(x)));
+        const vuongCan = !!vc && hit.labels.includes(vc[1]) && !chungDinh;
+        const variant = vuongCan ? RIGHT_BY_IDX[hit.labels.indexOf(vc![1])] : variantFor(hit, window);
         // Thales: tam giác VUÔNG + nội tiếp đường tròn (window) → dựng ràng buộc
         // (đường kính + apex glider) thay draw-shape free (free chỉ "may mắn" vuông,
         // kéo là vỡ + không thoả AB<AC). circle3 của circleTriangle bị idempotent
@@ -283,8 +292,13 @@ export const triangleRule: LanguageRule = {
           }
         }
         // Số đo đề cho ("AB = 4 cm, AC = 8 cm", "góc A = 60°") ⇒ đặt đỉnh đúng số đo thay tam giác mẫu.
+        const goc = doGocDeCho(ctx.problem, hit.labels);
+        if (vuongCan) {
+          // Vuông cân: hai góc còn lại 45° (đề cho góc khác ⇒ solver thấy mâu thuẫn).
+          for (const x of hit.labels) if (x !== vc![1] && !goc.has(x)) goc.set(x, 45);
+        }
         const theoCanh =
-          toaDoTamGiacTheoCanh(hit.labels as [string, string, string], variant, doCanhDeCho(ctx.problem, hit.labels), doGocDeCho(ctx.problem, hit.labels)) ??
+          toaDoTamGiacTheoCanh(hit.labels as [string, string, string], variant, doCanhDeCho(ctx.problem, hit.labels), goc, doTrungTuyenDeCho(ctx.problem, hit.labels)) ??
           (variant === 'any' ? toaDoTamGiacTuKhiTrungTrucCatCanh(ctx.problem, hit.labels as [string, string, string]) : undefined);
         return [drawShape('triangle', hit.labels, variant, theoCanh)];
       });
