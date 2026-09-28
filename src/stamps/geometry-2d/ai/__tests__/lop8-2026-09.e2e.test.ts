@@ -270,4 +270,28 @@ describe('lớp 8 — hình đúng dữ kiện đề', () => {
   it('"hình bình hành ABCD, đường cao AH" (không rõ xuống cạnh nào) → KHÔNG báo full', () => {
     expect(() => toaDoHinh('Cho hình bình hành ABCD, đường cao AH.')).toThrow(/named-missing/);
   });
+
+  // --- góc xOy ------------------------------------------------------------------
+  it('lop8 #40: góc xOy, OA = 2, OB = 5 trên Ox, OC = 3 trên Oy, BD // AC cắt Oy tại D (Thalès: OD = 7,5)', () => {
+    const p = toaDoHinh('Cho góc xOy. Trên tia Ox, lấy hai điểm A và B sao cho OA = 2 cm, OB = 5 cm. Trên tia Oy, lấy điểm C sao cho OC = 3 cm. Từ điểm B kẻ đường thẳng song song với AC cắt Oy tại D.');
+    expect(dist(p.O, p.B) / dist(p.O, p.A)).toBeCloseTo(5 / 2, 9);
+    expect(dist(p.O, p.C) / dist(p.O, p.A)).toBeCloseTo(3 / 2, 9);
+    expect(songSong(p.B, p.D, p.A, p.C)).toBe(true);
+    expect(dist(p.O, p.D) / dist(p.O, p.A)).toBeCloseTo(7.5 / 2, 9);
+  });
+
+  it('lop8 #66: "A, N trên tia Ox, B, M trên tia Oy sao cho AM, BN lần lượt vuông góc với Oy, Ox"', () => {
+    const p = toaDoHinh('Cho góc nhọn xOy, các điểm A, N nằm trên tia Ox, các điểm B, M nằm trên tia Oy sao cho AM, BN lần lượt vuông góc với Oy, Ox.');
+    expect(vuongGoc(p.A, p.M, p.O, p.y)).toBe(true);
+    expect(vuongGoc(p.B, p.N, p.O, p.x)).toBe(true);
+    expect(thuocDoan(p.N, p.O, p.x)).toBe(true);
+    expect(thuocDoan(p.M, p.O, p.y)).toBe(true);
+  });
+
+  it('hinh-phang #116: "Qua D kẻ đường thẳng d vuông góc với BD, d cắt tia BC tại E"', () => {
+    const p = toaDoHinh('Cho hình chữ nhật ABCD có AD = 6 cm, AB = 8 cm. Gọi O là giao điểm của AC và BD. Qua D kẻ đường thẳng d vuông góc với BD, d cắt tia BC tại E.');
+    expect(vuongGoc(p.D, p.E, p.B, p.D)).toBe(true);
+    expect(Math.abs((p.C[0] - p.B[0]) * (p.E[1] - p.B[1]) - (p.C[1] - p.B[1]) * (p.E[0] - p.B[0]))).toBeLessThan(1e-9);
+    expect(dist(p.A, p.B) / dist(p.A, p.D)).toBeCloseTo(8 / 6, 9);
+  });
 });
