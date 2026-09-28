@@ -43,7 +43,7 @@ const RE = new RegExp(
     '(?:\\s+(?:của|với)\\s+[^.]{0,14}?)?\\s+cắt\\s+(?:các\\s+)?(?:(?:các\\s+)?tiếp\\s*tuyến\\s+|đường\\s*thẳng\\s+|cạnh\\s+)?' +
     // Đường bị cắt: cặp đỉnh "AD" HOẶC token tia đã đặt tên "Ax"/"By" (1 HOA +
     // x/y/z/t). tangentRay dựng tia Ax,By (priority 63>62) trước → giao hợp lệ.
-    '([A-Z](?:[A-Z]|[xyzt]))\\s*(?:,|và)\\s*([A-Z](?:[A-Z]|[xyzt]))(?!\\p{L})(?:\\s+kéo\\s+dài)?\\s+(?:lần\\s*lượt\\s+)?(?:tại|ở)\\s+(?:(?:các\\s+)?điểm\\s+)?([A-Z])\\s*(?:,|và)\\s*(?:(?:tại|ở)\\s+)?([A-Z])(?![A-Z])',
+    '([A-Z](?:[A-Z]|[xyzt]))\\s*(?:,|và)\\s*([A-Z](?:[A-Z]|[xyzt]))(?!\\p{L})(?:\\s+kéo\\s+dài)?\\s+(?:(?:lần\\s*lượt|theo\\s+thứ\\s+tự)\\s+)?(?:tại|ở)\\s+(?:(?:các\\s+)?điểm\\s+)?([A-Z])\\s*(?:,|và)\\s*(?:(?:tại|ở)\\s+)?([A-Z])(?![A-Z])',
   'gu',
 );
 

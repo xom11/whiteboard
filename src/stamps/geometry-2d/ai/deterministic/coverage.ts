@@ -154,7 +154,7 @@ const CONSTRUCTION_LEAD = new RegExp(
 const MID_PROOF_CONSTRUCTION = new RegExp(
   `^${ENUM_PREFIX}` +
     `(?:(?:(?:[Đđ]ường|[Tt]ia|[Tt]iếp\\s*tuyến|[Hh]ai|[Cc]ác|[Đđ]oạn|[Dd]ây|[Cc]át\\s*tuyến|[Nn]ửa)(?!\\p{L})|[A-Z]{2}(?![\\p{L}]))` +
-    `[^]*cắt[^]*(?:tại|ở)\\s+(?:điểm\\s+)?[A-Z](?!\\p{L})` +
+    `[^]*cắt[^]*(?:tại|ở)\\s+(?:(?:hai\\s+|các\\s+)?điểm\\s+(?:thứ\\s+hai\\s+)?)?(?:là\\s+)?[A-Z](?!\\p{L})` +
     `|[A-Z]{2}\\s+là\\s+(?:một\\s+)?đường\\s*kính)`,
   'u',
 );
