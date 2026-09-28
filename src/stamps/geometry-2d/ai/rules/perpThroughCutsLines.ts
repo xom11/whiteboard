@@ -84,6 +84,9 @@ export const perpThroughCutsLinesRule: LanguageRule = {
         const k = m[8];
         if (isParallel && to.includes(through)) continue; // degenerate
         if (h === k) continue;
+        // "song song với AB VÀ AC, cắt AC và AB …" = HAI đường (parallelsThroughCut lo);
+        // đọc thành một đường ∥ AB cắt cả AB ⇒ giao hai đường song song (điểm rác).
+        if (/^\s*(?:,|và)\s*(?:(?:cạnh|đường\s*thẳng)\s+)?[A-Z]{2}(?![A-Z])/u.test(c.text.slice((m.index ?? 0) + m[0].indexOf(m[3] + m[4], m[0].search(/song|vuông/u)) + 2))) continue;
         const kind = isParallel ? 'parallelThrough' : 'perpThrough';
         const name = (isParallel ? 'par' : 'prp') + through;
         out.push({

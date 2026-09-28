@@ -81,7 +81,9 @@ export function segmentClauses(problem: string): Clause[] {
     .split(
       // (?!\p{L}) thay \b: "Vẽ"/"Kẻ" kết thúc bằng chữ Việt — \b ASCII không bao
       // giờ khớp trước space → split chết im lặng (bug class \b+tiếng Việt).
-      /[.;\n]+|,\s*(?=(?:Gọi|Vẽ|Kẻ|Cho|Lấy|Dựng|trên|với|Let|Draw|Mark|Take|Construct|Join)(?!\p{L}))/u,
+      // "?" kết thúc câu hỏi (giữ lại dấu — QUESTION_CLAUSE cần nó): "a) Tứ giác BFCH là
+      // hình gì? b) Gọi M là …" (xuống dòng đã bị gộp) phải tách thành 2 mệnh đề.
+      /[.;\n]+|(?<=\?)\s*|,\s*(?=(?:Gọi|Vẽ|Kẻ|Cho|Lấy|Dựng|trên|với|Let|Draw|Mark|Take|Construct|Join)(?!\p{L}))/u,
     )
     .map((s) => unmask(s).trim())
     .filter((s) => s.length > 0)
@@ -150,8 +152,21 @@ function startsProofSection(text: string): boolean {
   return PROOF_SECTION_START.test(text);
 }
 
+// Câu HỎI / GIẢ ĐỊNH (lớp 8 hay hỏi): "a) Tứ giác BPCD có phải là hình bình hành
+// không? Tại sao?", "Tam giác FBA và tam giác FCK có bằng nhau không? Vì sao?",
+// "Tứ giác AHBK là hình gì?", "b) Khi tam giác ABD vuông cân tại A, hãy tính …".
+// ("Giả sử AI cắt OK tại H" KHÔNG thuộc nhóm này — thường là dựng thêm điểm.)
+// Không phải dựng hình: coi là geo thì triangle/quad rule vẽ LẠI hình nêu trong câu
+// hỏi bằng toạ độ mẫu, đè lên điểm đã dựng (hình sai đề mà vẫn báo đủ).
+const QUESTION_CLAUSE = /\?\s*$|(?<!\p{L})(?:[Vv]ì|[Tt]ại)\s+sao(?!\p{L})|là\s+hình\s+gì|có\s+(?:phải\s+)?[^?]{0,60}?không\s*\?/u;
+const HYPOTHETICAL_LEAD = new RegExp(
+  `^${ENUM_PREFIX}(?:[Kk]hi|[Nn]ếu|[Tt]rong\\s+trường\\s+hợp)(?!\\p{L})`,
+  'u',
+);
+
 function isProofOnlyClause(text: string, proofMode: boolean): boolean {
   if (PROOF_SECTION_START.test(text) && !CONSTRUCTION_LEAD.test(text)) return true;
+  if ((QUESTION_CLAUSE.test(text) || HYPOTHETICAL_LEAD.test(text)) && !CONSTRUCTION_LEAD.test(text)) return true;
   return proofMode && !CONSTRUCTION_LEAD.test(text);
 }
 

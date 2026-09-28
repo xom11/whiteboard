@@ -105,6 +105,11 @@ import { namedLineRule } from './namedLine';
 import { bisectorsMeetRule } from './bisectorsMeet';
 import { hexagonRule } from './hexagon';
 import { pointOnSideAtRatioRule } from './pointOnSideAtRatio';
+import { parallelsThroughCutRule } from './parallelsThroughCut';
+import { pointOnSegmentNoteRule } from './pointOnSegmentNote';
+import { namedRayLinesRule } from './namedRayLines';
+import { midpointConditionRule } from './midpointCondition';
+import { pointOnNamedSideRule } from './pointOnNamedSide';
 
 const RULES: readonly LanguageRule[] = [
   namedLineRule,
@@ -157,6 +162,11 @@ const RULES: readonly LanguageRule[] = [
   onSegmentPointRule,
   pointOnSideAtLengthRule,
   pointOnSideAtRatioRule,
+  parallelsThroughCutRule,
+  pointOnSegmentNoteRule,
+  namedRayLinesRule,
+  midpointConditionRule,
+  pointOnNamedSideRule,
   diagonalsMeetNamedRule,
   intersectionDistribRule,
   lineCircleIntersectionRule,

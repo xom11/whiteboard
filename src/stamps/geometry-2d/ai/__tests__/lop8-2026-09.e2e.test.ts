@@ -36,4 +36,94 @@ describe('lớp 8 — hình đúng dữ kiện đề', () => {
     expect(thuocDoan(p.M, p.A, p.B)).toBe(true);
     expect(thuocDoan(p.M, p.C, p.D)).toBe(true);
   });
+
+  // --- đường song song qua một điểm (Thalès) ---------------------------------
+  const songSong = (a: XY, b: XY, c: XY, d: XY) =>
+    Math.abs((b[0] - a[0]) * (d[1] - c[1]) - (b[1] - a[1]) * (d[0] - c[0])) < 1e-9 * dist(a, b) * dist(c, d);
+
+  it('hinh-phang #83 / #86: "Qua D kẻ các đường thẳng song song với AB và AC, cắt AC và AB theo thứ tự ở E và F" — HAI đường', () => {
+    const p = toaDoHinh('Cho tam giác ABC, qua điểm D thuộc cạnh BC, kẻ các đường thẳng song song với AB và AC, cắt AC và AB theo thứ tự ở E và F.');
+    expect(thuocDoan(p.E, p.A, p.C)).toBe(true);
+    expect(thuocDoan(p.F, p.A, p.B)).toBe(true);
+    expect(songSong(p.D, p.E, p.A, p.B)).toBe(true);
+    expect(songSong(p.D, p.F, p.A, p.C)).toBe(true);
+    const q = toaDoHinh('Cho tam giác ABC vuông tại A, M là một điểm thuộc cạnh BC. Qua M vẽ các đường thẳng song song với AB và AC, chúng cắt các cạnh AC, AB theo thứ tự tại E và F.');
+    expect(songSong(q.M, q.E, q.A, q.B)).toBe(true);
+    expect(songSong(q.M, q.F, q.A, q.C)).toBe(true);
+    expect(thuocDoan(q.E, q.A, q.C)).toBe(true);
+  });
+
+  it('lop8 #39: hai mảnh "kẻ … song song với AB cắt AC tại F và kẻ … song song với AC cắt AB tại E"', () => {
+    const p = toaDoHinh('Cho tam giác ABC, từ điểm D trên cạnh BC, kẻ đường thẳng song song với AB cắt AC tại F và kẻ đường thẳng song song với AC cắt AB tại E.');
+    expect(thuocDoan(p.D, p.B, p.C)).toBe(true);
+    expect(songSong(p.D, p.F, p.A, p.B)).toBe(true);
+    expect(songSong(p.D, p.E, p.A, p.C)).toBe(true);
+    expect(thuocDoan(p.F, p.A, p.C)).toBe(true);
+  });
+
+  it('lop8 #41: "Kẻ IM song song với BK (M thuộc AC)" — M là GIAO, không phải điểm tự do trên AC', () => {
+    const p = toaDoHinh('Cho tam giác ABC, điểm I thuộc cạnh AB, điểm K thuộc cạnh AC. Kẻ IM song song với BK (M thuộc AC), kẻ KN song song với CI (N thuộc AB).');
+    expect(songSong(p.I, p.M, p.B, p.K)).toBe(true);
+    expect(songSong(p.K, p.N, p.C, p.I)).toBe(true);
+    expect(thuocDoan(p.M, p.A, p.C)).toBe(true);
+    // Thalès đảo: MN // BC.
+    expect(songSong(p.M, p.N, p.B, p.C)).toBe(true);
+  });
+
+  it('lop8 #44: "Từ điểm D (D ∈ AB) kẻ đường thẳng song song với BC cắt AC tại E"', () => {
+    const p = toaDoHinh('Cho tam giác ABC. Từ điểm D (D ∈ AB) kẻ đường thẳng song song với BC cắt AC tại E.');
+    expect(thuocDoan(p.D, p.A, p.B)).toBe(true);
+    expect(songSong(p.D, p.E, p.B, p.C)).toBe(true);
+    expect(thuocDoan(p.E, p.A, p.C)).toBe(true);
+  });
+
+  // --- tia đặt tên, trung điểm-điều kiện, cạnh huyền -----------------------------
+  it('lop8 #60: "Từ A kẻ tia Ax ⊥ AC, từ B kẻ tia By ⊥ BC. Tia Ax và By cắt nhau tại K"', () => {
+    const p = toaDoHinh('Cho tam giác ABC có ba góc nhọn. Từ A kẻ tia Ax vuông góc với AC, từ B kẻ tia By vuông góc với BC. Tia Ax và By cắt nhau tại K.');
+    expect(vuongGoc(p.A, p.K, p.A, p.C)).toBe(true);
+    expect(vuongGoc(p.B, p.K, p.B, p.C)).toBe(true);
+  });
+
+  it('lop8 #65: "Từ B kẻ tia Bx ⊥ AB, tia Bx cắt AH tại K"', () => {
+    const p = toaDoHinh('Cho tam giác ABC vuông tại A (AB > AC), đường cao AH. Từ B kẻ tia Bx ⊥ AB, tia Bx cắt AH tại K.');
+    expect(vuongGoc(p.B, p.K, p.A, p.B)).toBe(true);
+    expect(Math.abs((p.H[0] - p.A[0]) * (p.K[1] - p.A[1]) - (p.H[1] - p.A[1]) * (p.K[0] - p.A[0]))).toBeLessThan(1e-9);
+    expect(dist(p.A, p.B)).toBeGreaterThan(dist(p.A, p.C));
+  });
+
+  it('lop8 #33 / #25: "lấy điểm N sao cho I là trung điểm của MN" → N đối xứng M qua I', () => {
+    const p = toaDoHinh('Cho tam giác ABC cân tại A, trung tuyến AM. Gọi I là trung điểm của AC. Trên tia MI lấy điểm N sao cho I là trung điểm của MN.');
+    expect(p.I[0]).toBeCloseTo((p.M[0] + p.N[0]) / 2, 9);
+    expect(p.I[1]).toBeCloseTo((p.M[1] + p.N[1]) / 2, 9);
+  });
+
+  it('lop8 #19: "điểm M trên cạnh huyền của tam giác ABC vuông cân tại A" — M ∈ BC, góc A VUÔNG', () => {
+    const p = toaDoHinh('Xét một điểm M trên cạnh huyền của tam giác ABC vuông cân tại A. Gọi N và P lần lượt là hình chiếu vuông góc của M trên các cạnh AB và AC.');
+    expect(thuocDoan(p.M, p.B, p.C)).toBe(true);
+    expect(vuongGoc(p.A, p.B, p.A, p.C)).toBe(true);
+    expect(dist(p.A, p.B)).toBeCloseTo(dist(p.A, p.C), 9);
+    expect(vuongGoc(p.M, p.N, p.A, p.B)).toBe(true);
+  });
+
+  it('hinh-phang #78: "tam giác ABC vuông cân tại C" — hình mẫu cân trước đây KHÔNG vuông', () => {
+    const p = toaDoHinh('Cho tam giác ABC vuông cân tại C. Trên các cạnh AC, BC lấy lần lượt các điểm P, Q sao cho AP = CQ. Từ điểm P vẽ PM song song với BC (M ∈ AB).');
+    expect(vuongGoc(p.C, p.A, p.C, p.B)).toBe(true);
+    expect(songSong(p.P, p.M, p.B, p.C)).toBe(true);
+    expect(thuocDoan(p.M, p.A, p.B)).toBe(true);
+  });
+
+  // --- câu hỏi không phải dựng hình ------------------------------------------
+  it('lop8 #17: câu hỏi "Khi tam giác ABD vuông cân tại A, hãy tính …" KHÔNG vẽ lại ABD đè lên hình bình hành; P trên TIA AB, AP = 2AB', () => {
+    const p = toaDoHinh('Cho hình bình hành ABCD. Lấy điểm P trên tia AB sao cho AP = 2AB.\na) Tứ giác BPCD có phải là hình bình hành không? Tại sao?\nb) Khi tam giác ABD vuông cân tại A, hãy tính số đo các góc của tứ giác BPCD.');
+    expect(songSong(p.A, p.B, p.C, p.D)).toBe(true);
+    expect(songSong(p.A, p.D, p.B, p.C)).toBe(true);
+    expect(dist(p.A, p.P)).toBeCloseTo(2 * dist(p.A, p.B), 9);
+    expect(dist(p.A, p.P)).toBeCloseTo(dist(p.A, p.B) + dist(p.B, p.P), 9);
+  });
+
+  it('hinh-phang #144: "a) Tứ giác BFCH là hình gì? b) Gọi M là trung điểm của BC" — M vẫn dựng (tách câu ở "?")', () => {
+    const p = toaDoHinh('Cho tam giác ABC nội tiếp đường tròn (O), hai đường cao BD và CE cắt nhau tại H. Vẽ đường kính AF.\na) Tứ giác BFCH là hình gì?\nb) Gọi M là trung điểm của BC. Chứng minh rằng ba điểm H, M, F thẳng hàng.');
+    expect(p.M[0]).toBeCloseTo((p.B[0] + p.C[0]) / 2, 9);
+    expect(p.M[1]).toBeCloseTo((p.B[1] + p.C[1]) / 2, 9);
+  });
 });
