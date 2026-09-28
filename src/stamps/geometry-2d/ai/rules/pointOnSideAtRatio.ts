@@ -42,6 +42,11 @@ const NHIEU_CUNG_DOAN = new RegExp(
   String.raw`[Tt]rên\s+(?:${SEG_KIND}\s+)?${SEG}\s*,?\s*lấy\s+(?:các\s+|hai\s+|ba\s+)?(?:điểm\s+)?((?:[A-Z]\s*(?:,|và)\s*)+[A-Z])(?![A-Z])`,
   'gu',
 );
+// "Lấy (các|hai)? điểm D và E trên cạnh AB" — nhiều điểm, tên đứng trước.
+const NHIEU_TEN_TRUOC = new RegExp(
+  String.raw`[Ll]ấy\s+(?:các\s+|hai\s+|ba\s+)?(?:điểm\s+)?((?:[A-Z]\s*(?:,|và)\s*)+[A-Z])(?![A-Z])\s+(?:trên|thuộc)\s+(?:${SEG_KIND}\s+)?${SEG}`,
+  'gu',
+);
 // "Trên (các)? cạnh AB, AC lấy (lần lượt|theo thứ tự)? (các)? (điểm)? M, N"
 const PHAN_PHOI = new RegExp(
   String.raw`[Tt]rên\s+(?:các\s+|hai\s+)?(?:${SEG_KIND}\s+)?((?:[A-Z]{2}\s*(?:,|và)\s*)+[A-Z]{2})(?![A-Z])\s*,?\s*lấy\s+(?:(?:theo\s+)?thứ\s+tự\s+|lần\s*lượt\s+)?(?:các\s+|hai\s+)?(?:điểm\s+)?((?:[A-Z]\s*(?:,|và)\s*)+[A-Z])(?![A-Z])`,
@@ -208,6 +213,9 @@ function diemTrongMenhDe(text: string): Diem[] {
     const segs = tachDs(m[1]);
     const names = tachDs(m[2]);
     if (segs.length >= 2 && segs.length === names.length) segs.forEach((s, i) => them(names[i], s));
+  }
+  for (const m of text.matchAll(NHIEU_TEN_TRUOC)) {
+    for (const n of tachDs(m[1])) them(n, m[2]);
   }
   for (const m of text.matchAll(NHIEU_CUNG_DOAN)) {
     for (const n of tachDs(m[2])) them(n, m[1]);

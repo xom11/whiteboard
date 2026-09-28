@@ -20,7 +20,7 @@ import { drawShape, addPoint, drawCircle, markShape } from './_shared';
 // trắng. Phủ "tam giác nhọn, không cân ABC" / "tam giác không cân ABC" (olympiad).
 // (?!\p{L}) thay \b quanh ký tự Việt.
 const TRI_G =
-  /tam giác\s+(?:(đều|vuông|cân|nhọn|tù)(?!\p{L})\s*,?\s*)?(?:(?:không\s+(?:cân|đều|vuông)|đều|vuông|cân|nhọn|tù)(?!\p{L})\s*,?\s*)*([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
+  /[Tt]am giác\s+(?:(đều|vuông|cân|nhọn|tù)(?!\p{L})\s*,?\s*)?(?:(?:không\s+(?:cân|đều|vuông)|đều|vuông|cân|nhọn|tù)(?!\p{L})\s*,?\s*)*([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
 // Tên ĐỨNG TRƯỚC: "ABC là tam giác (vuông|cân|đều)? …" — variant suy từ window
 // SAU "tam giác" (vd "ABC là tam giác vuông tại A" → window "vuông tại A").
 const TRI_BEFORE_G = /(?<![A-Z])([A-Z])([A-Z])([A-Z])(?![A-Z])\s+là\s+tam\s*giác/gu;

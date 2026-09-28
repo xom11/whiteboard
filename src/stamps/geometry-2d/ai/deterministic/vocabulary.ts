@@ -78,6 +78,9 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   // hình học DUY NHẤT bị coi là văn xuôi (hasGeometry=false). Thêm "⊥" để 2
   // phrasing hành xử như nhau ở gate coverage (issue #46 nhóm A).
   '⊥',
+  // "//" ≡ "song song" (lớp 8: "Qua D vẽ DE // AB (E ∈ AC)") — thiếu thì mệnh đề bị coi
+  // văn xuôi, E không dựng mà hình vẫn báo đủ.
+  '//', '∥',
   // Ký hiệu giao "∩" ("A1 = BC ∩ AP"): tương đương "giao điểm". Thiếu nó, clause
   // chỉ dùng "∩" (không chữ "giao điểm/cắt") bị coi văn xuôi (hasGeometry=false)
   // → điểm giao KHÔNG dựng (silent-incomplete) dù intersection rule khớp "∩".

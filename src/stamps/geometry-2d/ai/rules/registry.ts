@@ -110,6 +110,7 @@ import { pointOnSegmentNoteRule } from './pointOnSegmentNote';
 import { namedRayLinesRule } from './namedRayLines';
 import { midpointConditionRule } from './midpointCondition';
 import { pointOnNamedSideRule } from './pointOnNamedSide';
+import { lineThroughPointCutsRule } from './lineThroughPointCuts';
 
 const RULES: readonly LanguageRule[] = [
   namedLineRule,
@@ -167,6 +168,7 @@ const RULES: readonly LanguageRule[] = [
   namedRayLinesRule,
   midpointConditionRule,
   pointOnNamedSideRule,
+  lineThroughPointCutsRule,
   diagonalsMeetNamedRule,
   intersectionDistribRule,
   lineCircleIntersectionRule,

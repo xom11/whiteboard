@@ -126,4 +126,44 @@ describe('lớp 8 — hình đúng dữ kiện đề', () => {
     expect(p.M[0]).toBeCloseTo((p.B[0] + p.C[0]) / 2, 9);
     expect(p.M[1]).toBeCloseTo((p.B[1] + p.C[1]) / 2, 9);
   });
+
+  // --- đường thẳng tự do qua một điểm; trung tuyến "BD và CE"; "//" ------------
+  const thangHang = (a: XY, b: XY, c: XY) => Math.abs((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])) < 1e-9;
+
+  it('lop8 #57: "Một đường thẳng đi qua D cắt đoạn BC và tia AB tại M và N" — M ∈ BC, N trên tia AB, D-M-N thẳng hàng', () => {
+    const p = toaDoHinh('Cho hình bình hành ABCD. Một đường thẳng đi qua D lần lượt cắt đoạn thẳng BC và tia AB tại M và N sao cho điểm M nằm giữa hai điểm B và C.');
+    expect(thuocDoan(p.M, p.B, p.C)).toBe(true);
+    expect(thangHang(p.D, p.M, p.N)).toBe(true);
+    expect(thangHang(p.A, p.B, p.N)).toBe(true);
+    expect(dist(p.A, p.N)).toBeGreaterThan(dist(p.A, p.B)); // trên tia AB, vượt B
+  });
+
+  it('lop8 #14: đường qua tâm O hình bình hành cắt HAI CẠNH AB, CD tại M, N (O trung điểm MN)', () => {
+    const p = toaDoHinh('Gọi O là giao điểm của hai đường chéo của hình bình hành ABCD. Một đường thẳng đi qua O lần lượt cắt các cạnh AB, CD của hình bình hành tại hai điểm M, N.');
+    expect(thuocDoan(p.M, p.A, p.B)).toBe(true);
+    expect(thuocDoan(p.N, p.C, p.D)).toBe(true);
+    expect(p.O[0]).toBeCloseTo((p.M[0] + p.N[0]) / 2, 9);
+  });
+
+  it('lop8 #47: "các đường trung tuyến BD và CE cắt nhau tại G" (danh sách nối "và")', () => {
+    const p = toaDoHinh('Cho tam giác ABC, các đường trung tuyến BD và CE cắt nhau tại G. Gọi I, K lần lượt là trung điểm của GB, GC.');
+    expect(p.D[0]).toBeCloseTo((p.A[0] + p.C[0]) / 2, 9);
+    expect(p.E[0]).toBeCloseTo((p.A[0] + p.B[0]) / 2, 9);
+    expect(p.G[0]).toBeCloseTo((p.A[0] + p.B[0] + p.C[0]) / 3, 9);
+  });
+
+  it('lop8 #51: "Tam giác ABC có …" (viết hoa đầu câu) + "Qua D vẽ DE // AB (E ∈ AC)" — E dựng, tam giác vuông 15-20-25', () => {
+    const p = toaDoHinh('Tam giác ABC có AB = 15 cm, AC = 20 cm, BC = 25 cm. Đường phân giác của góc BAC cắt BC tại D. Qua D vẽ DE // AB (E ∈ AC).');
+    expect(vuongGoc(p.A, p.B, p.A, p.C)).toBe(true);
+    expect(songSong(p.D, p.E, p.A, p.B)).toBe(true);
+    expect(thuocDoan(p.E, p.A, p.C)).toBe(true);
+    expect(dist(p.B, p.D) / dist(p.D, p.C)).toBeCloseTo(15 / 20, 9); // tính chất phân giác
+  });
+
+  it('lop8 #45: "Lấy điểm D và E trên cạnh AB sao cho AD = DE = EB"', () => {
+    const p = toaDoHinh('Cho tam giác ABC có trung tuyến AM. Lấy điểm D và E trên cạnh AB sao cho AD = DE = EB và D nằm giữa hai điểm A, E.');
+    expect(dist(p.A, p.D)).toBeCloseTo(dist(p.A, p.B) / 3, 9);
+    expect(dist(p.A, p.E)).toBeCloseTo((2 * dist(p.A, p.B)) / 3, 9);
+    expect(thuocDoan(p.E, p.A, p.B)).toBe(true);
+  });
 });

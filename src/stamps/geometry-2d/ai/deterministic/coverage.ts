@@ -164,7 +164,11 @@ const HYPOTHETICAL_LEAD = new RegExp(
   'u',
 );
 
+// "Từ đó suy ra PQ // EF" / "Suy ra …" — kết luận ("Từ" không phải "Từ A kẻ …").
+const CONCLUSION_LEAD = new RegExp(`^${ENUM_PREFIX}(?:[Tt]ừ\\s+đó\\s+)?(?:[Ss]uy\\s+ra|[Dd]o\\s+đó)(?!\\p{L})`, 'u');
+
 function isProofOnlyClause(text: string, proofMode: boolean): boolean {
+  if (CONCLUSION_LEAD.test(text)) return true;
   if (PROOF_SECTION_START.test(text) && !CONSTRUCTION_LEAD.test(text)) return true;
   if ((QUESTION_CLAUSE.test(text) || HYPOTHETICAL_LEAD.test(text)) && !CONSTRUCTION_LEAD.test(text)) return true;
   return proofMode && !CONSTRUCTION_LEAD.test(text);
