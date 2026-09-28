@@ -154,10 +154,14 @@ function thalesIntents(
 
 const DA_GIAC = /(?:[Tt]ứ\s+giác(?:\s+lồi)?|[Hh]ình\s+(?:vuông|chữ\s+nhật|bình\s+hành|thoi|thang(?:\s+(?:cân|vuông))?)|[Ll]ục\s+giác(?:\s+đều)?)\s+([A-Z]{4,6})(?![A-Z])/gu;
 
-/** Mọi đỉnh của tam giác thuộc MỘT đa giác (4–6 đỉnh) khai báo trong đề. */
-function laTamGiacCon(problem: string, labels: readonly string[]): boolean {
+/**
+ * Mọi đỉnh của tam giác thuộc MỘT đa giác (4–6 đỉnh) khai báo TRƯỚC nó trong đề
+ * ("Cho tứ giác ABCD … tam giác BCD"). Đa giác khai báo SAU ("Cho tam giác ABC …
+ * tứ giác ABMC lồi") thì tam giác mới là hình gốc — giữ drawShape.
+ */
+function laTamGiacCon(problem: string, labels: readonly string[], viTri: number): boolean {
   for (const m of problem.matchAll(DA_GIAC)) {
-    if (labels.every((x) => m[1].includes(x))) return true;
+    if (m.index! < viTri && labels.every((x) => m[1].includes(x))) return true;
   }
   return false;
 }
@@ -294,7 +298,7 @@ export const triangleRule: LanguageRule = {
         // trước (cùng priority, triangle đứng trước quad) rồi A của tứ giác rơi TRÙNG B
         // (0,0) — hình suy biến. mark-shape chỉ nối đỉnh có sẵn; thiếu đỉnh thì build
         // ném lỗi ⇒ thử lại theo thứ tự phụ thuộc (quad dựng trước).
-        if (hit.lang === 'vi' && laTamGiacCon(ctx.problem, hit.labels)) {
+        if (hit.lang === 'vi' && laTamGiacCon(ctx.problem, hit.labels, Math.max(0, ctx.problem.indexOf(c.text)) + hit.start)) {
           return [markShape('triangle', hit.labels)];
         }
         // Thales: tam giác VUÔNG + nội tiếp đường tròn (window) → dựng ràng buộc
