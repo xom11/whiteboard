@@ -148,7 +148,7 @@ const CONSTRUCTION_LEAD = new RegExp(
 // tại I") là dựng hình, không phải chứng minh — trước đây trong proofMode nó bị coi
 // văn xuôi nên K không được dựng dù ý sau dùng K ("Gọi I là trung điểm của KC").
 const CUT_LEAD = new RegExp(
-  `^${ENUM_PREFIX}(?:[Tt]ia\\s+|[Đđ]ường\\s*thẳng\\s+)?[A-Z]{2}\\s+cắt\\s+(?:tia\\s+|đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+(?:thẳng\\s+)?)?[A-Z]{2}\\s+(?:tại|ở)\\s+(?:điểm\\s+)?[A-Z](?![\\p{L}\\d'′])`,
+  `^${ENUM_PREFIX}(?:(?:[Tt]ia\\s+|[Đđ]ường\\s*thẳng\\s+)?[A-Z]{2}\\s+cắt\\s+(?:tia\\s+|đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+(?:thẳng\\s+)?)?[A-Z]{2}|(?:[Tt]ia|[Đđ]ường\\s*thẳng)\\s[^.;]{0,50}?\\scắt\\s[^.;]{0,30}?)\\s+(?:lần\\s*lượt\\s+)?(?:tại|ở)\\s+(?:điểm\\s+)?[A-Z](?![\\p{L}\\d'′])`,
   'u',
 );
 
@@ -156,7 +156,12 @@ function startsProofSection(text: string): boolean {
   return PROOF_SECTION_START.test(text);
 }
 
+// "Từ đó suy ra AH vuông góc với BC" (kết luận, không phải "Từ D kẻ …") và "Giả sử
+// AM vuông góc với BC" (giả thiết của một ý, trái với hình chung) → không dựng.
+const LAP_LUAN = new RegExp(`^${ENUM_PREFIX}(?:[Tt]ừ\\s+đó|[Ss]uy\\s+ra|[Gg]iả\\s+sử)(?!\\p{L})`, 'u');
+
 function isProofOnlyClause(text: string, proofMode: boolean): boolean {
+  if (LAP_LUAN.test(text)) return true;
   if (PROOF_SECTION_START.test(text) && !CONSTRUCTION_LEAD.test(text)) return true;
   return proofMode && !CONSTRUCTION_LEAD.test(text) && !CUT_LEAD.test(text);
 }

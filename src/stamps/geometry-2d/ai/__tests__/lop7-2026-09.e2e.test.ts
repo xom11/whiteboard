@@ -150,5 +150,27 @@ describe('lop7-2026-09 — hình đúng điều kiện đề', () => {
     expect(thangHang(p.I, p.B, p.C)).toBe(true);
     expect(dist(p.B, p.M)).toBeCloseTo(dist(p.M, p.C), 9);
   });
+
+  it('#26 "AB = AC, AB > BC" (không chữ "cân") ⇒ cân tại A, cạnh bên > đáy; ý b), c) mở đầu bằng "Tia…/Đường thẳng… cắt" được dựng', () => {
+    const p = toaDoHinh('Cho tam giác ABC, AB = AC, AB > BC, H là trung điểm của BC.\na) Chứng minh tam giác ABH = tam giác ACH. Từ đó suy ra AH vuông góc với BC.\nb) Tia phân giác của góc B cắt AH tại I. Chứng minh tam giác BIC cân.\nc) Đường thẳng đi qua A và song song với BC cắt BI, CI lần lượt tại M, N. Chứng minh A là trung điểm của đoạn MN.\nd) Kẻ IE vuông góc với AB tại E, IF vuông góc với AC tại F. Chứng minh: IH = IE = IF.\ne) Chứng minh IC vuông góc với MC.');
+    expect(dist(p.A, p.B)).toBeCloseTo(dist(p.A, p.C), 9);
+    expect(dist(p.A, p.B)).toBeGreaterThan(dist(p.B, p.C));
+    expect(thangHang(p.I, p.A, p.H)).toBe(true);
+    expect(goc(p.A, p.B, p.I)).toBeCloseTo(goc(p.I, p.B, p.C), 9);
+    expect(dist(p.A, p.M)).toBeCloseTo(dist(p.A, p.N), 9);
+    expect(dist(p.I, p.H)).toBeCloseTo(dist(p.I, p.E), 9);
+    expect(dot(p.C, p.I, p.C, p.M)).toBeCloseTo(0, 9);
+  });
+
+  it('"vuông tại A và AB = AC" ⇒ vuông cân', () => {
+    const p = toaDoHinh('Cho tam giác ABC vuông tại A và AB = AC. Gọi M là trung điểm của BC.');
+    expect(goc(p.B, p.A, p.C)).toBeCloseTo(90, 9);
+    expect(dist(p.A, p.B)).toBeCloseTo(dist(p.A, p.C), 9);
+  });
+
+  it('#21 "a) Giả sử AM vuông góc với BC" là giả thiết của ý, KHÔNG dựng (tam giác vẫn thường)', () => {
+    const p = toaDoHinh('Cho tam giác ABC và M là trung điểm của đoạn thẳng BC.\na) Giả sử AM vuông góc với BC. Chứng minh rằng tam giác ABC cân tại A.\nb) Giả sử AM là tia phân giác của góc BAC. Chứng minh rằng tam giác ABC cân tại A.');
+    expect(dist(p.B, p.M)).toBeCloseTo(dist(p.M, p.C), 9);
+  });
 });
 

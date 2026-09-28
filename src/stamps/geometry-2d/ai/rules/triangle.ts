@@ -186,7 +186,25 @@ function variantForVi(hit: TriHit, window: string): string {
     if (i >= 0) return ISO_BY_IDX[i];
   }
 
+  // "Cho tam giác ABC, AB = AC" (không chữ "cân") — hai cạnh chung đỉnh X bằng nhau
+  // ngay trong mệnh đề khai báo tam giác ⇒ cân tại X.
+  const x = dinhCanhBang(labels, window);
+  if (x >= 0) return ISO_BY_IDX[x];
   return 'any';
+}
+
+/** "XY = XZ" (hai cạnh chung đỉnh X của tam giác, không hệ số) trong window → chỉ số X. */
+function dinhCanhBang(labels: readonly string[], window: string): number {
+  const re = /(?<![A-Z\d])([A-Z])([A-Z])\s*=\s*([A-Z])([A-Z])(?![\p{L}\d'′])(?!\s*[+\-*/·.:]\s*[A-Z\d])/gu;
+  for (const m of window.matchAll(re)) {
+    const s1 = [m[1], m[2]];
+    const s2 = [m[3], m[4]];
+    if (![...s1, ...s2].every((v) => labels.includes(v)) || m[1] === m[2] || m[3] === m[4]) continue;
+    const chung = s1.filter((v) => s2.includes(v));
+    if (chung.length !== 1) continue;
+    return labels.indexOf(chung[0]);
+  }
+  return -1;
 }
 
 /**
@@ -287,7 +305,7 @@ export const triangleRule: LanguageRule = {
         const next = hits[idx + 1];
         const windowEnd = next ? next.start : c.text.length;
         const window = c.text.slice(hit.end, windowEnd);
-        const variant = variantFor(hit, window);
+        let variant = variantFor(hit, window);
         // Thales: tam giác VUÔNG + nội tiếp đường tròn (window) → dựng ràng buộc
         // (đường kính + apex glider) thay draw-shape free (free chỉ "may mắn" vuông,
         // kéo là vỡ + không thoả AB<AC). circle3 của circleTriangle bị idempotent
@@ -302,8 +320,15 @@ export const triangleRule: LanguageRule = {
         }
         // Vuông cân: cân tại X với góc đỉnh 90° (toạ độ tường minh).
         const vc = hit.lang === 'vi' ? RIGHT_ISO_AT.exec(window) : null;
-        const vcIdx = vc ? hit.labels.indexOf(vc[1]) : -1;
-        if (vcIdx >= 0 && variant === ISO_BY_IDX[vcIdx]) {
+        let vcIdx = vc ? hit.labels.indexOf(vc[1]) : -1;
+        if (vcIdx >= 0 && variant !== ISO_BY_IDX[vcIdx]) vcIdx = -1;
+        // "vuông tại A và AB = AC" cũng là vuông cân.
+        const rIdx = RIGHT_BY_IDX.indexOf(variant);
+        if (vcIdx < 0 && hit.lang === 'vi' && rIdx >= 0 && dinhCanhBang(hit.labels, window) === rIdx) {
+          vcIdx = rIdx;
+          variant = ISO_BY_IDX[rIdx];
+        }
+        if (vcIdx >= 0) {
           const xyz = RIGHT_ISO_COORDS[vcIdx];
           const coords = Object.fromEntries(hit.labels.map((l, i) => [l, xyz[i]]));
           return [drawShape('triangle', hit.labels, variant, coords)];

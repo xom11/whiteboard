@@ -138,6 +138,17 @@ export function toaDoTamGiacTheoGoc(
     return { [labels[0]]: P0, [labels[1]]: P1, [labels[2]]: P2 };
   }
   if (bdt.length === 0) return undefined;
+  // Cân: so cạnh bên với đáy chỉ đổi được bằng chiều cao đỉnh.
+  const isoM = /^isoceles-([ABC])([ABC])$/.exec(variant);
+  if (isoM) {
+    const apex = [0, 1, 2].find((i) => !isoM[0].slice(9).includes('ABC'[i]))!;
+    const [b1, b2] = [0, 1, 2].filter((i) => i !== apex);
+    for (const h of [3, 5, 1.2]) {
+      const coords: Record<string, Pt> = { [labels[apex]]: [0, h], [labels[b1]]: [-2, 0], [labels[b2]]: [2, 0] };
+      if (thoa(coords, bdt)) return h === 3 ? undefined : coords;
+    }
+    return undefined;
+  }
   // Hoán vị toạ độ mẫu giữ variant: any → mọi hoán vị; vuông/cân tại X → giữ X, đổi hai đỉnh kia.
   const perms: number[][] = [
     [0, 1, 2],
