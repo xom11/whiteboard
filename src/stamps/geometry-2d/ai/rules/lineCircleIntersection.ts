@@ -56,8 +56,10 @@ const DOUBLE_DISTRIB = new RegExp(
 // "XY cắt (O) (ở|tại) (điểm (thứ hai)?)? Z (khác W)?" — "điểm thứ hai" + "khác W"
 // optional. `khác W` (nếu có) là điểm chung cần loại (other); else mặc định
 // chữ đầu của line (đầu mút nằm trên đường tròn).
+// "Đường cao AD của tam giác ABC cắt (O) tại E": cụm "của tam giác ABC" chen giữa.
+// (?<![A-Z]) trước tên đường: không bắt đuôi "BC" của "tam giác ABC cắt …".
 const SINGLE = new RegExp(
-  String.raw`([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?` + CIRCLE +
+  String.raw`(?<![A-Z])([A-Z]{2})(?![A-Z])(?:\s+của\s+tam\s*giác\s+[A-Z]{3}(?![A-Z]))?\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?` + CIRCLE +
     String.raw`\s+(?:ở|tại)\s+(?:điểm\s+(?:thứ\s+hai\s+)?)?(?:là\s+)?([A-Z])(?![A-Z])(?:\s+khác\s+([A-Z])(?![A-Z]))?`,
   'gu',
 );
@@ -67,7 +69,7 @@ const SINGLE = new RegExp(
 // giữ prime → resolveCircleNames map "O'"→"O'_c". 1 đầu mút XY trên đường tròn
 // (đầu line) → Z = giao thứ hai. groups: 1=line 2=center 3=name.
 const SINGLE_NAMED_CENTER = new RegExp(
-  String.raw`([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?(?:nửa\s+)?đường\s*tròn\s+tâm\s+([A-Z](?:['′])?)(?![A-Za-z])` +
+  String.raw`(?<![A-Z])([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?(?:nửa\s+)?đường\s*tròn\s+tâm\s+([A-Z](?:['′])?)(?![A-Za-z])` +
     String.raw`\s+(?:ở|tại)\s+(?:điểm\s+(?:thứ\s+hai\s+)?)?(?:là\s+)?([A-Z])(?![A-Z])`,
   'gu',
 );
@@ -76,7 +78,7 @@ const SINGLE_NAMED_CENTER = new RegExp(
 // 0/1). Khác SINGLE (1 giao thứ hai khi biết điểm chung): ở đây 2 đầu mút đều
 // chưa nằm trên (O) nên dùng intersection lineCircle 2 nhánh.
 const BOTH = new RegExp(
-  String.raw`([A-Z]{2})(?![A-Z])\s+cắt\s+` + CIRCLE +
+  String.raw`(?<![A-Z])([A-Z]{2})(?![A-Z])\s+cắt\s+` + CIRCLE +
     String.raw`\s+(?:ở|tại)\s+(?:hai\s+|các\s+)?điểm\s+(?:phân\s*biệt\s+)?([A-Z])\s*(?:,|và)\s*([A-Z])(?![A-Z])`,
   'gu',
 );
@@ -86,7 +88,7 @@ const BOTH = new RegExp(
 // khi tên-ĐẦU ∈ line (else nhường SINGLE/BOTH) → không xung đột. g1=line g2=circle
 // g3=P g4=Q.
 const TWO_NAMED = new RegExp(
-  String.raw`([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?` + CIRCLE +
+  String.raw`(?<![A-Z])([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?` + CIRCLE +
     String.raw`\s+(?:ở|tại)\s+([A-Z])\s+và\s+([A-Z])(?![A-Z])`,
   'gu',
 );
@@ -97,7 +99,7 @@ const TWO_NAMED = new RegExp(
 // mút XY đều không trên đường tròn nên không dùng secondIntersection).
 //   groups: 1=line 2=line2 3=circle 4=name1 5=name2.
 const LINE_AND_CIRCLE = new RegExp(
-  String.raw`([A-Z]{2})(?![A-Z])\s+cắt\s+([A-Z]{2})(?![A-Z])\s+và\s+` + CIRCLE +
+  String.raw`(?<![A-Z])([A-Z]{2})(?![A-Z])\s+cắt\s+([A-Z]{2})(?![A-Z])\s+và\s+` + CIRCLE +
     String.raw`\s+(?:lần\s*lượt\s+|theo\s+thứ\s+tự\s+)?(?:tại|ở)\s+([A-Z])\s*(?:,|và)\s*([A-Z])(?![A-Z])`,
   'gu',
 );
@@ -106,7 +108,7 @@ const LINE_AND_CIRCLE = new RegExp(
 // đường tròn TRẦN (không paren, httcd:42 "BN cắt đường tròn ở C"). 1 đầu mút XY
 // trên đường tròn (đầu line) → Z = giao thứ hai. circle resolve toàn đề.
 const SINGLE_BARE = new RegExp(
-  String.raw`([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?(?:nửa\s+)?đường\s*tròn(?!\s*\()\s+(?:ở|tại)\s+(?:điểm\s+(?:thứ\s+hai\s+)?)?(?:là\s+)?([A-Z])(?![A-Z])`,
+  String.raw`(?<![A-Z])([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?(?:nửa\s+)?đường\s*tròn(?!\s*\()\s+(?:ở|tại)\s+(?:điểm\s+(?:thứ\s+hai\s+)?)?(?:là\s+)?([A-Z])(?![A-Z])`,
   'gu',
 );
 
@@ -209,7 +211,7 @@ const NAME_2ND_CIRCUM = new RegExp(
 //  chung (other) = đỉnh circumcircle nằm TRÊN line token (vd C ∈ CM ∩ {C,D,E}).
 //  group1=line 2=tri1 3=tri2 4=name1 5=name2.
 const LINE_CUTS_PAREN_PAIR = new RegExp(
-  String.raw`([A-Z]{2})(?![A-Z])\s+(?:lần\s*lượt\s+|theo\s+thứ\s+tự\s+|tương\s+ứng\s+)?cắt\s+(?:lại\s+)?` +
+  String.raw`(?<![A-Z])([A-Z]{2})(?![A-Z])\s+(?:lần\s*lượt\s+|theo\s+thứ\s+tự\s+|tương\s+ứng\s+)?cắt\s+(?:lại\s+)?` +
     String.raw`\(\s*([A-Z]{3})\s*\)\s*(?:,|và)\s*\(\s*([A-Z]{3})\s*\)` +
     String.raw`\s+(?:lần\s*lượt\s+|theo\s+thứ\s+tự\s+)?(?:ở|tại)\s+(?:điểm\s+(?:thứ\s+hai\s+)?(?:là\s+)?)?([A-Z])\s*(?:,|và)\s*([A-Z])(?![A-Z])`,
   'gu',

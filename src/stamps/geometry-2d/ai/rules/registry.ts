@@ -27,6 +27,7 @@ import { externalPointAtRadiusRule } from './externalPointAtRadius';
 import { arcMidpointRule } from './arcMidpoint';
 import { excenterRule } from './excenter';
 import { parallelPerpRule } from './parallelPerp';
+import { twoParallelsThroughPointRule } from './twoParallelsThroughPoint';
 import { twoThroughLinesMeetRule } from './twoThroughLinesMeet';
 import { reflectionRule } from './reflection';
 import { pointAtDistanceRule } from './pointAtDistance';
@@ -161,6 +162,7 @@ const RULES: readonly LanguageRule[] = [
   arcMidpointRule,
   excenterRule,
   parallelPerpRule,
+  twoParallelsThroughPointRule,
   twoThroughLinesMeetRule,
   reflectionRule,
   pointAtDistanceRule,

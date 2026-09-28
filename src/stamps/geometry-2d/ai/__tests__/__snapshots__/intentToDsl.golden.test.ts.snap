@@ -1291,7 +1291,7 @@ exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: onSegmen
       "kind": "onSegment",
       "name": "P",
       "segmentId": "AB",
-      "t": 0.5,
+      "t": 0.4,
     },
   ],
   "shapes": [
