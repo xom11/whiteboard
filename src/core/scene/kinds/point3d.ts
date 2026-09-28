@@ -50,6 +50,7 @@ const def: KindDef<Point3DAttrs> = {
     if (c.kind === 'midpoint') return `${obj.label} = trung điểm ${c.p1}${c.p2}`;
     if (c.kind === 'centroid') return `${obj.label} = trọng tâm ${c.vertices.join('')}`;
     if (c.kind === 'intersectionLines') return `${obj.label} = giao 2 đường (${c.a1}${c.b1}, ${c.a2}${c.b2})`;
+    if (c.kind === 'commonPerpFoot') return `${obj.label} = chân đường ⊥ chung trên ${c.a1}${c.b1} (với ${c.a2}${c.b2})`;
     if (c.kind === 'intersectionLinePlane') return `${obj.label} = giao ${c.a}${c.b} ∩ ${c.plane}`;
     if (c.kind === 'perpFootLine') return `${obj.label} = chân ⊥ từ ${c.from} xuống ${c.a}${c.b}`;
     if (c.kind === 'perpFootPlane') return `${obj.label} = chân ⊥ từ ${c.from} xuống ${c.plane}`;

@@ -369,6 +369,15 @@ function constraintToWorldInner(c: Constraint3D, state: State): Vec3 {
       const C = getPointWorld(c.a2, state), D = getPointWorld(c.b2, state);
       return lineLineClosestMidpoint(A, B, C, D);
     }
+    case 'commonPerpFoot': {
+      const A = getPointWorld(c.a1, state), B = getPointWorld(c.b1, state);
+      const C = getPointWorld(c.a2, state), D = getPointWorld(c.b2, state);
+      const u = sub(B, A), v = sub(D, C), w0 = sub(A, C);
+      const a = dot(u, u), b = dot(u, v), cc = dot(v, v), d = dot(u, w0), e = dot(v, w0);
+      const denom = a * cc - b * b;
+      if (Math.abs(denom) < 1e-12) return A; // song song → vô định
+      return add(A, scale(u, (b * e - cc * d) / denom));
+    }
     case 'intersectionLinePlane': {
       const A = getPointWorld(c.a, state), B = getPointWorld(c.b, state);
       const plane = state.objects[c.plane];
@@ -483,6 +492,7 @@ export function worldToConstraint(current: Constraint3D, world: Vec3, state: Sta
     case 'midpoint':
     case 'centroid':
     case 'intersectionLines':
+    case 'commonPerpFoot':
     case 'intersectionLinePlane':
     case 'perpFootLine':
     case 'perpFootPlane':

@@ -89,6 +89,17 @@ function defOfLabel(X: string, ctx: Ctx): PSpec | null {
       if (r) return r;
     }
   }
+  // "M, N (và P) lần lượt là trung điểm (của) (các cạnh) AB, BC (và CD)"
+  for (const lm of p.matchAll(/((?:[A-Z]\s*(?:,|và)\s*)+[A-Z])\s+lần\s+lượt\s+là\s+(?:các\s+)?(trung\s+điểm|trọng\s+tâm)\s+(?:của\s+)?(?:các\s+|hai\s+|ba\s+)?(?:cạnh\s+|đoạn\s+|tam\s+giác\s+)?((?:[A-Z]{2,3}\s*(?:,|và)\s*(?:tam\s+giác\s+)?)+[A-Z]{2,3})(?![A-Z\p{L}'])/gu)) {
+    const names = lm[1].split(/\s*(?:,|và)\s*/u);
+    const items = lm[3].split(/\s*(?:,|và)\s*(?:tam\s+giác\s+)?/u);
+    const k = names.indexOf(X);
+    if (k < 0 || names.length !== items.length) continue;
+    const pts = [...items[k]].map((y) => defOfLabel(y, c));
+    if (pts.some((q) => !q)) continue;
+    if (/trung/u.test(lm[2]) && pts.length === 2) return { mid: pts as [PSpec, PSpec] };
+    if (/trọng/u.test(lm[2]) && pts.length === 3) return { cen: pts as PSpec[] };
+  }
   // "AC ∩ BD = O" | "O = AC ∩ BD"
   let m = new RegExp(`([A-Z])([A-Z])\\s*∩\\s*([A-Z])([A-Z])\\s*=\\s*${x}(?![\\p{L}'])`, 'u').exec(p)
     ?? new RegExp(`(?<![\\p{L}])${x}\\s*=\\s*([A-Z])([A-Z])\\s*∩\\s*([A-Z])([A-Z])`, 'u').exec(p);

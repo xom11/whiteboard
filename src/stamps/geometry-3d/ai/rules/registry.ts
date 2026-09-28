@@ -13,6 +13,7 @@ import { crossSectionParallelRule } from './crossSectionParallel';
 import { linePlanePointRule } from './linePlanePoint';
 import { projectionFootRule } from './projectionFoot';
 import { perpLineToPlaneRule } from './perpLineToPlane';
+import { skewDistance3dRule } from './skewDistance3d';
 import { perpPlaneToLineRule } from './perpPlaneToLine';
 import { angleLinePlaneRule } from './angleLinePlane';
 import { circumsphereRule } from './circumsphere';
@@ -37,6 +38,7 @@ const RULES: LanguageRule3D[] = [
   planeNamedRule,             // priority 55
   projectionFootRule,         // priority 54
   perpLineToPlaneRule,        // priority 53
+  skewDistance3dRule,         // priority 53
   perpPlaneToLineRule,        // priority 52
   angleLinePlaneRule,         // priority 51
   circumsphereRule,           // priority 50
