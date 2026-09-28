@@ -46,6 +46,8 @@ const CEVIAN_PATTERNS: ReadonlyArray<{ type: CevianType; patterns: readonly RegE
     patterns: [
       /(?:[Kk]ẻ|[Vv]ẽ|[Hh]ạ|[Dd]ựng)\s+[Đđ]ường\s*cao\s+([A-Z])([A-Z])(?![A-Z])/gu,
       /[Đđ]ường\s*cao\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      // "chiều cao AH" (SGK lớp 8: "tam giác cân, chiều cao AH = 3 cm") = đường cao.
+      /[Cc]hiều\s*cao\s+([A-Z])([A-Z])(?![A-Z])/gu,
       /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?đường\s*cao/gu,
       // EN (issue #46 group B). g1=apex g2=foot, nhãn strict [A-Z], NO cờ 'i'.
       // First-letter flex [Aa] (HOA đầu câu "Altitude AH"); KHÔNG cờ 'i' (phá nhãn).
@@ -151,6 +153,7 @@ function splitCevianPair(tok: string): [string, string] | null {
 // boolean .test() thuần (KHÔNG capture nhãn) nên cờ 'i' AN TOÀN.
 const PREFILTER = [
   /[Đđ]ường\s*cao/u,
+  /[Cc]hiều\s*cao/u,
   /[Tt]rung\s*tuyến/u,
   /[Pp]hân\s*giác/u,
   /median/i,

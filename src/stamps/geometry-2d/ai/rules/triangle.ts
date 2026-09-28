@@ -24,8 +24,8 @@ const TRI_G =
 // Tên ĐỨNG TRƯỚC: "ABC là tam giác (vuông|cân|đều)? …" — variant suy từ window
 // SAU "tam giác" (vd "ABC là tam giác vuông tại A" → window "vuông tại A").
 const TRI_BEFORE_G = /(?<![A-Z])([A-Z])([A-Z])([A-Z])(?![A-Z])\s+là\s+tam\s*giác/gu;
-const RIGHT_AT = /vuông\s+tại\s+([A-Z])(?![A-Za-z])/u;
-const ISO_AT = /cân\s+tại\s+([A-Z])(?![A-Za-z])/u;
+const RIGHT_AT = /vuông\s+tại\s+(?:đỉnh\s+)?([A-Z])(?![A-Za-z])/u;
+const ISO_AT = /cân\s+tại\s+(?:đỉnh\s+)?([A-Z])(?![A-Za-z])/u;
 // LƯU Ý: \b của JS dựa trên ASCII word-char nên KHÔNG khớp quanh ký tự Việt
 // ("đ","ề"…). Dùng lookaround \p{L} để chặn match giữa từ dài hơn.
 const EQUILATERAL = /(?<!\p{L})đều(?!\p{L})/u;

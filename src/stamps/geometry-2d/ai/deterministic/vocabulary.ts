@@ -37,7 +37,7 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   'trọng tâm', 'trực tâm', 'tâm nội tiếp', 'tâm ngoại tiếp',
   'đối xứng',
   // Cevian names
-  'đường cao', 'đương cao', 'trung tuyến', 'phân giác', 'trung trực',
+  'đường cao', 'đương cao', 'chiều cao', 'trung tuyến', 'phân giác', 'trung trực',
   // Special lines/circles
   'tiếp tuyến', 'tiếp điểm', 'tiếp xúc',
   'nội tiếp', 'ngoại tiếp',

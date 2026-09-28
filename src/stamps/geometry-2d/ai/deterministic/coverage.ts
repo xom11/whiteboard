@@ -132,10 +132,12 @@ const NAMED_LINE_PICK =
 const BARE_SEG_PICK =
   /[Ll]ấy\s+(?:điểm\s+)?[A-Z]['′]?(?:\s*,\s*[A-Z]['′]?)?\s+(?:bất\s*k[iìyỳ]\s+)?(?:trên|thuộc)\s+(?:cạnh\s+|đoạn\s+|tia\s+)?[A-Z]{2}(?![A-Z])|[Tt]rên\s+(?:cạnh\s+|đoạn\s+|tia\s+)?[A-Z]{2}(?:\s*,\s*[A-Z]{2})*\s+(?:(?:theo\s+)?thứ\s+tự\s+|lần\s*lượt\s+)?lấy\s+(?:các\s+)?(?:điểm\s+)?[A-Z]/u;
 
+// "Hãy tính/tìm/chứng minh …" (SGK lớp 8: "Hãy tính độ dài các cạnh bên AB, AC") là
+// câu hỏi, không phải dựng hình — trước đây chỉ nhận "Hãy xác định".
 // "C/m"/"CMR" — viết tắt "Chứng minh (rằng)" phổ biến trong đề OCR (vao10:254
 // "a.C/m: Bốn điểm…"); thiếu nó clause proof bị coi geo-clause → escalate oan.
 const PROOF_SECTION_START = new RegExp(
-  `^${ENUM_PREFIX}(?:[Cc]hứng\\s*minh|C/m|CMR|[Tt]ính|[Tt]ìm|[Xx]ác\\s*định|[Hh]ãy\\s+xác\\s*định)(?!\\p{L})`,
+  `^${ENUM_PREFIX}(?:[Cc]hứng\\s*minh|C/m|CMR|[Tt]ính|[Tt]ìm|[Xx]ác\\s*định|[Hh]ãy\\s+(?:xác\\s*định|tính|tìm|chứng\\s*minh|so\\s+sánh))(?!\\p{L})`,
   'u',
 );
 

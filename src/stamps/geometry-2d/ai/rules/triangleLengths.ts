@@ -28,6 +28,14 @@ export function doCanhDeCho(problem: string, labels: readonly string[]): Map<str
     const v = Number(m[3].replace(',', '.'));
     if (v > 0) out.set(key(m[1], m[2]), v);
   }
+  // Đường cao từ đỉnh X: "đường cao AH = 3 cm" / "chiều cao AH = 3 cm" / "đường cao AH …
+  // AH = 3 cm" → khoá 'h:A' (dùng cho tam giác cân: cạnh bên từ đáy + chiều cao).
+  for (const m of problem.matchAll(/(?:[Đđ]ường|[Cc]hiều)\s*cao\s+([A-Z])([A-Z])(?![A-Z])/gu)) {
+    const [X, H] = [m[1], m[2]];
+    if (!tap.has(X) || tap.has(H)) continue;
+    const v = new RegExp(`(?<![A-Z])(?:${X}${H}|${H}${X})\\s*=\\s*(\\d+(?:[.,]\\d+)?)`, 'u').exec(problem);
+    if (v && Number(v[1].replace(',', '.')) > 0) out.set(`h:${X}`, Number(v[1].replace(',', '.')));
+  }
   return out;
 }
 
@@ -40,7 +48,7 @@ export function toaDoTamGiacTheoCanh(
   variant: string,
   lens: Map<string, number>,
 ): Record<string, Pt> | undefined {
-  if (lens.size === 0 || variant === 'equilateral') return undefined;
+  if ([...lens.keys()].every((k) => k.startsWith('h:')) || variant === 'equilateral') return undefined;
   const [A, B, C] = labels;
   const L = new Map(lens);
   const len = (p: string, q: string) => L.get(key(p, q));
@@ -55,6 +63,16 @@ export function toaDoTamGiacTheoCanh(
     const l2 = len(apex, b2);
     if (l1 && !l2) L.set(key(apex, b2), l1);
     if (l2 && !l1) L.set(key(apex, b1), l2);
+    // Chiều cao từ đỉnh cân h + đáy ⇒ cạnh bên (Pythagore); h + cạnh bên ⇒ đáy.
+    const h = L.get(`h:${apex}`);
+    const day = len(b1, b2);
+    const ben = len(apex, b1);
+    if (h && day && !ben) {
+      L.set(key(apex, b1), Math.hypot(h, day / 2));
+      L.set(key(apex, b2), Math.hypot(h, day / 2));
+    } else if (h && ben && !day && ben > h) {
+      L.set(key(b1, b2), 2 * Math.sqrt(ben * ben - h * h));
+    }
   }
 
   // Vuông tại V: suy cạnh thứ ba bằng Pythagore.
