@@ -89,7 +89,9 @@ export function segmentClauses(problem: string): Clause[] {
       const hasGeometryKeyword =
         countGeometryKeywords(text) > 0 ||
         NAMED_LINE_PICK.test(text) ||
-        (BARE_SEG_PICK.test(text) && !/tia\s+đối/u.test(text));
+        (BARE_SEG_PICK.test(text) && !/tia\s+đối/u.test(text)) ||
+        VECTOR_POINT_DEF.test(text) ||
+        GIVEN_POINTS.test(text);
       const proofOnly = isProofOnlyClause(text, proofMode);
       if (startsProofSection(text)) proofMode = true;
       // Mệnh đề LOCUS ("điểm A di chuyển/di động trên (O)") = điều kiện chuyển
@@ -131,6 +133,19 @@ const NAMED_LINE_PICK =
 // gây regression). Loại "tia đối" để oppositeRayPoint giữ phận sự.
 const BARE_SEG_PICK =
   /[Ll]ấy\s+(?:điểm\s+)?[A-Z]['′]?(?:\s*,\s*[A-Z]['′]?)?\s+(?:bất\s*k[iìyỳ]\s+)?(?:trên|thuộc)\s+(?:cạnh\s+|đoạn\s+|tia\s+)?[A-Z]{2}(?![A-Z])|[Tt]rên\s+(?:cạnh\s+|đoạn\s+|tia\s+)?[A-Z]{2}(?:\s*,\s*[A-Z]{2})*\s+(?:(?:theo\s+)?thứ\s+tự\s+|lần\s*lượt\s+)?lấy\s+(?:các\s+)?(?:điểm\s+)?[A-Z]/u;
+
+// Điểm ĐỊNH NGHĨA bằng đẳng thức vectơ (Toán 10): "Gọi I là điểm thoả mãn vectơ IA
+// + 2 vectơ IB = vectơ 0", "điểm M sao cho vectơ MA = 2 vectơ MB". Không từ khoá
+// hình nào ⇒ trước đây bị coi văn xuôi: hình "đủ" mà thiếu hẳn điểm I. Signal HẸP:
+// phải có điểm được giới thiệu ("điểm X" / "X là điểm") + "vectơ" + "=".
+const VECTOR_POINT_DEF =
+  /(?:[Đđ]iểm\s+[A-Z](?![A-Z])|(?<![A-Z])[A-Z]['′]?\s+(?:lần\s*lượt\s+)?là\s+(?:một\s+|các\s+|hai\s+)?điểm)[^.;]*?[Vv][eé]c\s*-?\s*t[ơo](?!\p{L})[^.;]*=/u;
+
+// "Cho ba điểm A, B, C phân biệt" / "Cho hai điểm A và B" — đề chỉ có điểm trần
+// (chương Vectơ lớp 10), không từ khoá hình nào ⇒ clause bị coi văn xuôi và các
+// điểm không bao giờ được dựng (givenPoints). Neo đầu mệnh đề "Cho".
+const GIVEN_POINTS =
+  /^(?:[0-9]+\s*[.)]\s*)?[Cc]ho\s+(?:(?:\d|hai|ba|bốn|năm|sáu)\s+)?điểm\s+(?:phân\s+biệt\s+)?[A-Z](?![A-Z])(?:\s*(?:,|và)\s*[A-Z](?![A-Z]))+/u;
 
 // "C/m"/"CMR" — viết tắt "Chứng minh (rằng)" phổ biến trong đề OCR (vao10:254
 // "a.C/m: Bốn điểm…"); thiếu nó clause proof bị coi geo-clause → escalate oan.

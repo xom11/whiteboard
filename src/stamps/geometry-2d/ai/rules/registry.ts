@@ -38,6 +38,8 @@ import { onCirclePointRule } from './onCirclePoint';
 import { tangentAtRule } from './tangentAt';
 import { onSegmentPointRule } from './onSegmentPoint';
 import { pointOnSideAtLengthRule } from './pointOnSideAtLength';
+import { pointRatioRule } from './pointRatio';
+import { givenPointsRule } from './givenPoints';
 import { diagonalsMeetNamedRule } from './diagonalsMeetNamed';
 import { intersectionDistribRule } from './intersectionDistrib';
 import { lineCircleIntersectionRule } from './lineCircleIntersection';
@@ -155,6 +157,8 @@ const RULES: readonly LanguageRule[] = [
   tangentAtRule,
   onSegmentPointRule,
   pointOnSideAtLengthRule,
+  pointRatioRule,
+  givenPointsRule,
   diagonalsMeetNamedRule,
   intersectionDistribRule,
   lineCircleIntersectionRule,
