@@ -161,7 +161,7 @@ const GIVEN_POINTS =
 // "C/m"/"CMR" — viết tắt "Chứng minh (rằng)" phổ biến trong đề OCR (vao10:254
 // "a.C/m: Bốn điểm…"); thiếu nó clause proof bị coi geo-clause → escalate oan.
 const PROOF_SECTION_START = new RegExp(
-  `^${ENUM_PREFIX}(?:[Cc]hứng\\s*minh|C/m|CMR|[Tt]ính|[Tt]ìm|[Xx]ác\\s*định|[Hh]ãy\\s+xác\\s*định)(?!\\p{L})`,
+  `^${ENUM_PREFIX}(?:[Cc]hứng\\s*minh|C/m|CMR|[Tt]ính|[Tt]ìm|[Xx]ác\\s*định|[Hh]ãy\\s+(?:xác\\s*định|chỉ\\s+ra|chia|tìm|tính|biểu\\s+(?:thị|diễn)|viết|gọi\\s+tên|so\\s+sánh|chứng\\s+minh))(?!\\p{L})`,
   'u',
 );
 

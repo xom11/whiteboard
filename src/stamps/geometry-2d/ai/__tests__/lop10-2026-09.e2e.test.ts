@@ -124,4 +124,11 @@ describe('lop10 — đề thật, đo hình', () => {
     expect(dist(p.O, p.A)).toBeCloseTo(dist(p.O, p.B), 9);
     expect(dist(p.A, p.B)).toBeGreaterThan(0.5);
   });
+
+  it('#6 câu hỏi "Hãy chỉ ra … / Hãy chia …" không phải việc dựng hình; O là giao hai đường chéo', () => {
+    const de = 'Cho hình vuông ABCD có hai đường chéo cắt nhau tại O. Hãy chỉ ra tập S gồm tất cả các vectơ khác vectơ 0, có điểm đầu và điểm cuối thuộc tập hợp {A; B; C; D; O}. Hãy chia tập S thành các nhóm sao cho hai vectơ thuộc cùng một nhóm khi và chỉ khi chúng bằng nhau.';
+    expect(tryDeterministicFigure(de).ok).toBe(true);
+    const p = toaDoHinh(de);
+    khop(p.O, tong([[0.5, p.A], [0.5, p.C]]));
+  });
 });
