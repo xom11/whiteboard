@@ -5,6 +5,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tryDeterministicFigure3d } from '../src/stamps/geometry-3d/ai/deterministic/tryDeterministicFigure3d';
 import { tryPartial3d } from '../src/stamps/geometry-3d/ai/deterministic/runDeterministicIntents3d';
 import { segmentClauses3D } from '../src/stamps/geometry-3d/ai/deterministic/coverage3d';
+import { auditFacts3d } from '../src/stamps/geometry-3d/ai/deterministic/factAudit3d';
 
 interface Bai { id: string; text: string }
 
@@ -35,6 +36,7 @@ const DATASETS = [
   { name: 'ss-thietdien', file: 'docs/datasets/hinh-khong-gian-11-songsong-thietdien.txt' },
   { name: 'vuonggoc',     file: 'docs/datasets/hinh-khong-gian-11-vuonggoc-khoangcach.txt' },
   { name: 'tron-xoay',   file: 'docs/datasets/hinh-khong-gian-12-khoi-tron-xoay.txt' },
+  { name: 'bosung-11',   file: 'docs/datasets/hinh-khong-gian-11-bosung-2026-09.txt' },
 ];
 
 interface Row {
@@ -46,6 +48,8 @@ interface Row {
   detail: string | null;
   detIntents: string[];
   uncovered: string[];
+  /** FULL: sự kiện đề nêu mà hình dựng VI PHẠM (factAudit3d) — rỗng = hình đúng mọi điều kiện kiểm được. */
+  violations: string[];
 }
 
 // intentKind: robust với mọi op (không crash trên op lạ)
@@ -93,6 +97,7 @@ for (const ds of DATASETS) {
       detail: r.ok ? null : (r.detail ?? null),
       detIntents: (r.ok ? r.intents : part.detIntents).map(intentKind),
       uncovered: r.ok ? [] : part.uncovered.map((c) => c.text),
+      violations: r.ok ? auditFacts3d(intro, r.state).violated.map((f) => `${f.group}:${f.text}`) : [],
     });
   }
 }
@@ -105,11 +110,14 @@ for (const ds of DATASETS) {
   const full = sub.filter((r) => r.tier === 'FULL').length;
   const partial = sub.filter((r) => r.tier === 'PARTIAL').length;
   const none = sub.filter((r) => r.tier === 'NONE').length;
-  console.log(`${ds.name}: FULL ${full} / PARTIAL ${partial} / NONE ${none} (total ${sub.length})`);
+  const sai = sub.filter((r) => r.tier === 'FULL' && r.violations.length > 0).length;
+  if (sub.length === 0) continue;
+  console.log(`${ds.name}: FULL ${full} (sai ${sai}) / PARTIAL ${partial} / NONE ${none} (total ${sub.length})`);
 }
 
 const totFull = rows.filter((r) => r.tier === 'FULL').length;
 const totPartial = rows.filter((r) => r.tier === 'PARTIAL').length;
 const totNone = rows.filter((r) => r.tier === 'NONE').length;
-console.log(`TOTAL: FULL ${totFull} / PARTIAL ${totPartial} / NONE ${totNone} (${rows.length})`);
+const totSai = rows.filter((r) => r.tier === 'FULL' && r.violations.length > 0).length;
+console.log(`TOTAL: FULL ${totFull} (sai ${totSai}) / PARTIAL ${totPartial} / NONE ${totNone} (${rows.length})`);
 console.log('Wrote .work/escalations-3d.json');
