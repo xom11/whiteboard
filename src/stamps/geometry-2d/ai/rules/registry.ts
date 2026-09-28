@@ -13,6 +13,7 @@ import { cevianRule } from './cevian';
 import { cevianListRule } from './cevianList';
 import { angleBisectorAngleRule } from './angleBisectorAngle';
 import { centersRule } from './centers';
+import { concurrencyCenterRule } from './concurrencyCenter';
 import { perpFootRule } from './perpFoot';
 import { circleRadiusRule } from './circleRadius';
 import { circleTriangleRule } from './circleTriangle';
@@ -137,6 +138,7 @@ const RULES: readonly LanguageRule[] = [
   cevianListRule,
   angleBisectorAngleRule,
   centersRule,
+  concurrencyCenterRule,
   perpFootRule,
   circleRadiusRule,
   circleTriangleRule,
