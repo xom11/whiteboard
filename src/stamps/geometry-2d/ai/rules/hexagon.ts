@@ -28,7 +28,11 @@ const HEX = '([A-Z])([A-Z])([A-Z])([A-Z])([A-Z])([A-Z])(?![A-Z])';
 
 // "(lục|ngũ)? giác ABCDEF" — chỉ LỤC giác (6 đỉnh). Cờ 'g' để quét nhiều khai báo
 // trong cùng clause; cờ 'u' cho ký tự Việt.
-const HEXAGON_DECL = new RegExp('[Ll]ục\\s+giác\\s+' + HEX, 'gu');
+// "lục giác đều ABCDEF" — chữ "đều" đứng giữa (cách viết chuẩn SGK lớp 10); hình
+// dựng vốn đã là lục giác đều.
+const HEXAGON_DECL = new RegExp('[Ll]ục\\s+giác\\s+(?:đều\\s+)?' + HEX, 'gu');
+// "… ABCDEF (có)? tâm O" — tâm lục giác đều (không kèm đường tròn).
+const HEX_TAM = /^\s*,?\s*(?:có\s+)?tâm\s+(?:là\s+)?([A-Z])(?![A-Z'′\p{L}])/u;
 
 // Prefilter toàn đề: có chữ "lục giác".
 const PREFILTER = /[Ll]ục\s+giác/u;
@@ -128,6 +132,11 @@ export const hexagonRule: LanguageRule = {
               radius: HEX_APOTHEM,
             }),
           );
+        }
+        const tam = center === undefined ? HEX_TAM.exec(c.text.slice(afterEnd)) : null;
+        if (tam && !labels.includes(tam[1])) {
+          // Tâm lục giác đều = tâm đường tròn qua A, C, E (phái sinh, kéo đỉnh vẫn đúng).
+          intents.push(addPoint(tam[1], { kind: 'circumcenter', of: [labels[0], labels[2], labels[4]] }));
         }
         intents.push(markShape('polygon', labels));
 
