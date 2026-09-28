@@ -55,6 +55,7 @@ import { intersectionDistribRule } from './intersectionDistrib';
 import { lineCircleIntersectionRule } from './lineCircleIntersection';
 import { incenterNamedTriangleRule } from './incenterNamedTriangle';
 import { perpThroughCutsLinesRule } from './perpThroughCutsLines';
+import { throughLineCutsTwiceRule } from './throughLineCutsTwice';
 import { tangentRayRule } from './tangentRay';
 import { pointOnTangentRayRule } from './pointOnTangentRay';
 import { pointOnTangentAtRule } from './pointOnTangentAt';
@@ -190,6 +191,7 @@ const RULES: readonly LanguageRule[] = [
   lineCircleIntersectionRule,
   incenterNamedTriangleRule,
   perpThroughCutsLinesRule,
+  throughLineCutsTwiceRule,
   tangentRayRule,
   pointOnTangentRayRule,
   pointOnTangentAtRule,

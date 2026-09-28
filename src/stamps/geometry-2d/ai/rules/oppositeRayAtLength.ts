@@ -42,6 +42,12 @@ const RE_PHAN_PHOI = new RegExp(
   'gu',
 );
 
+// Viết tắt: "Trên tia đối của tia MH lấy MD = MH" — đoạn mới nêu thẳng sau "lấy".
+const RE_LAY_DOAN = new RegExp(
+  String.raw`[Tt]rên\s+tia\s+đối\s+(?:của\s+)?(?:tia\s+)?([A-Z])([A-Z])(?![A-Z])[^.]{0,20}?lấy\s+(?:điểm\s+)?([A-Z])([A-Z])\s*=\s*([A-Z])([A-Z])(?![\p{L}\d'′])(?!\s*[+\-*/·.]\s*[A-Z\d])`,
+  'gu',
+);
+
 export const oppositeRayAtLengthRule: LanguageRule = {
   id: 'oppositeRayAtLength',
   priority: 56,
@@ -90,6 +96,8 @@ export const oppositeRayAtLengthRule: LanguageRule = {
       const hits = [
         ...[...c.text.matchAll(RE)].map((m) => [m[1], m[2], m[3], m[4], m[5], m[6], m[7]]),
         ...[...c.text.matchAll(RE_TEN_TRUOC)].map((m) => [m[2], m[3], m[1], m[4], m[5], m[6], m[7]]),
+        // "lấy MD = MH": gốc tia phải là chữ đầu của đoạn mới, điểm mới là chữ sau.
+        ...[...c.text.matchAll(RE_LAY_DOAN)].filter((m) => m[3] === m[1]).map((m) => [m[1], m[2], m[4], m[3], m[4], m[5], m[6]]),
       ];
       for (const [x, y, p, a1, a2, b1, b2] of hits) {
         if (new Set([x, y, p]).size !== 3) continue;

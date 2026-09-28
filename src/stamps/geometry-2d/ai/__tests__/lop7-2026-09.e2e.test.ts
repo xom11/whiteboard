@@ -172,5 +172,30 @@ describe('lop7-2026-09 — hình đúng điều kiện đề', () => {
     const p = toaDoHinh('Cho tam giác ABC và M là trung điểm của đoạn thẳng BC.\na) Giả sử AM vuông góc với BC. Chứng minh rằng tam giác ABC cân tại A.\nb) Giả sử AM là tia phân giác của góc BAC. Chứng minh rằng tam giác ABC cân tại A.');
     expect(dist(p.B, p.M)).toBeCloseTo(dist(p.M, p.C), 9);
   });
+
+  it('#31 "Trên các cạnh AB, BC, CA lấy theo thứ tự ba điểm M, N, P sao cho AM = BN = CP": MNP đều; O tâm chung', () => {
+    const p = toaDoHinh('Cho tam giác ABC đều. Trên các cạnh AB, BC, CA lấy theo thứ tự ba điểm M, N, P sao cho AM = BN = CP.\na) Chứng minh tam giác MNP là tam giác đều.\nb) Gọi O là giao điểm các đường trung trực của tam giác ABC. Chứng minh O cũng là giao điểm các đường trung trực của tam giác MNP.');
+    expect(thuocDoan(p.M, p.A, p.B)).toBe(true);
+    expect(thuocDoan(p.N, p.B, p.C)).toBe(true);
+    expect(thuocDoan(p.P, p.C, p.A)).toBe(true);
+    expect(dist(p.M, p.N)).toBeCloseTo(dist(p.N, p.P), 9);
+    expect(dist(p.O, p.M)).toBeCloseTo(dist(p.O, p.N), 9);
+  });
+
+  it('#58 "Từ H kẻ đường thẳng song song với AI, cắt AB kéo dài tại E và cắt AC tại F": E trên đường AB, EF // AI; AE = AF', () => {
+    const p = toaDoHinh('Cho tam giác ABC cố định, đường phân giác AI (I ∈ BC). Trên đoạn thẳng IC lấy điểm H. Từ H kẻ đường thẳng song song với AI, cắt AB kéo dài tại E và cắt AC tại F.');
+    expect(thangHang(p.E, p.A, p.B)).toBe(true);
+    expect(thangHang(p.F, p.A, p.C)).toBe(true);
+    expect(songSong(p.E, p.F, p.A, p.I)).toBe(true);
+    expect(dist(p.A, p.E)).toBeCloseTo(dist(p.A, p.F), 9);
+  });
+
+  it('#67 "Trên tia đối của tia MH lấy MD = MH": M trung điểm HD; IB phân giác góc HID', () => {
+    const p = toaDoHinh('Cho tam giác ABC có ba góc nhọn, đường cao AH. Vẽ HM, HN lần lượt vuông góc với AB, AC. Trên tia đối của tia MH lấy MD = MH. Trên tia đối NH lấy điểm E sao cho NE = NH. Gọi I và K là giao điểm của DE với AB và AC.');
+    expect(thuocDoan(p.M, p.H, p.D)).toBe(true);
+    expect(dist(p.M, p.D)).toBeCloseTo(dist(p.M, p.H), 9);
+    expect(dist(p.N, p.E)).toBeCloseTo(dist(p.N, p.H), 9);
+    expect(goc(p.H, p.I, p.B)).toBeCloseTo(goc(p.B, p.I, p.D), 6);
+  });
 });
 

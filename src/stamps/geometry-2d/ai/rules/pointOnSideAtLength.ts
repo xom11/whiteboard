@@ -45,7 +45,7 @@ const VA_DIEM_TREN = new RegExp(
 );
 // Phân phối: "Trên (các)? cạnh (bên)? AB, AC (, …) lấy (theo thứ tự|lần lượt) (các)? (điểm)? D và E"
 const TREN_LAY_DISTRIB = new RegExp(
-  String.raw`[Tt]rên\s+(?:các\s+)?${SEG_KIND}\s+((?:[A-Z]{2}\s*(?:,|và)\s*)+[A-Z]{2})(?![A-Z])\s*,?\s*lấy\s+(?:(?:theo\s+)?thứ\s+tự\s+|lần\s*lượt\s+)?(?:các\s+)?(?:điểm\s+)?((?:[A-Z](?:['′])?\s*(?:,|và)\s*)+[A-Z](?:['′])?)(?![A-Z])`,
+  String.raw`[Tt]rên\s+(?:các\s+)?${SEG_KIND}\s+((?:[A-Z]{2}\s*(?:,|và)\s*)+[A-Z]{2})(?![A-Z])\s*,?\s*lấy\s+(?:(?:theo\s+)?thứ\s+tự\s+|lần\s*lượt\s+)?(?:các\s+|hai\s+|ba\s+|bốn\s+)?(?:điểm\s+)?((?:[A-Z](?:['′])?\s*(?:,|và)\s*)+[A-Z](?:['′])?)(?![A-Z])`,
   'u',
 );
 
