@@ -48,7 +48,10 @@ export function toaDoHinh(de: string): Record<string, XY> {
     // Điểm giao là object kind riêng ('intersection'), không phải 'point' — lấy mọi
     // object có toạ độ (đường/đường tròn không có X()/Y()).
     const e = renderer.getElement(o.id) as { X?: () => number; Y?: () => number } | null;
-    if (e?.X && e.Y) out[o.label] = [e.X(), e.Y()];
+    if (e?.X && e.Y) {
+      const xy: XY = [e.X(), e.Y()];
+      if (Number.isFinite(xy[0]) && Number.isFinite(xy[1])) out[o.label] = xy;
+    }
   }
   renderer.dispose();
   (JXG as any).JSXGraph.freeBoard(board);

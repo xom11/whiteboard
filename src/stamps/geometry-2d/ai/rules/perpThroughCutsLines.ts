@@ -22,16 +22,29 @@ const LTOK = '(?:[A-Z]{2}|[A-Z][a-z][0-9]?)';
 // group1 = điểm qua; group2 = kind; group3+4 = đường tham chiếu;
 // group5, group6 = hai đường bị cắt; group7, group8 = hai giao điểm.
 const RE = new RegExp(
-  '(?:Qua|qua|Từ|từ)\\s+(?:điểm\\s+)?([A-Z])(?:[\'′]?)(?!\\p{L})' +
+  '(?:Qua|qua|Từ|từ)\\s+(?:một\\s+)?(?:điểm\\s+)?([A-Z])(?:[\'′]?)(?!\\p{L})' +
     '[^.]{0,24}?(song\\s*song|vuông\\s*góc)\\s+(?:với\\s+)?(?:cạnh\\s+|đoạn(?:\\s+thẳng)?\\s+)?' +
     '([A-Z])([A-Z])(?!\\p{L})' +
-    `[^.]{0,40}?cắt\\s+(?:các\\s+)?(?:đường\\s*thẳng\\s+)?(${LTOK})\\s*(?:,|và)\\s*(${LTOK})(?![A-Z])` +
+    `[^.]{0,40}?cắt\\s+(?:các\\s+|hai\\s+)?(?:đường\\s*thẳng\\s+|cạnh\\s+)?(${LTOK})\\s*(?:,|và)\\s*(${LTOK})(?![A-Z])` +
     '[^.]{0,30}?(?:ở|tại)\\s+([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])',
   'gu',
 );
 
 const PREFILTER =
-  /(?:Qua|qua|Từ|từ)\s+(?:điểm\s+)?[A-Z][^.]{0,24}?(?:song\s*song|vuông\s*góc)[^.]{0,80}?cắt/u;
+  /(?:Qua|qua|Từ|từ)\s+(?:một\s+)?(?:điểm\s+)?[A-Z][^.]{0,40}?(?:song\s*song|vuông\s*góc)[^.]{0,80}?cắt/u;
+// Tia ĐẶT TÊN theo điểm gốc: "Kẻ Ex song song với BC cắt AB tại M" (Ex = tia gốc E).
+const PREFILTER_RAY = /[Kk]ẻ\s+(?:tia\s+|đường\s*thẳng\s+)?[A-Z][xyzt](?!\p{L})\s+(?:song\s*song|vuông\s*góc)/u;
+const RE_NAMED_RAY = new RegExp(
+  String.raw`[Kk]ẻ\s+(?:tia\s+|đường\s*thẳng\s+)?([A-Z])[xyzt](?!\p{L})\s+(song\s*song|vuông\s*góc)\s+(?:với\s+)?(?:cạnh\s+|đoạn(?:\s+thẳng)?\s+)?([A-Z])([A-Z])(?!\p{L})[^.]{0,20}?cắt\s+(?:đường\s*thẳng\s+|cạnh\s+|đoạn\s+)?([A-Z])([A-Z])(?!\p{L})\s+(?:ở|tại)\s+(?:điểm\s+)?([A-Z])(?![A-Z])`,
+  'gu',
+);
+// "Từ (một)? điểm E trên (cạnh|đoạn) AC vẽ …" — điểm qua chưa có ⇒ dựng luôn E trên AC.
+const DIEM_TREN_CANH = /(?:Qua|qua|Từ|từ)\s+(?:một\s+)?điểm\s+([A-Z])(?![A-Z'′])\s+(?:trên|thuộc)\s+(?:cạnh\s+|đoạn(?:\s+thẳng)?\s+)?([A-Z]{2})(?![A-Z])/u;
+// Vế NỐI TIẾP cùng điểm qua: "… và đường thẳng song song với AB cắt BC tại D".
+const VE_NOI_TIEP = new RegExp(
+  String.raw`^[^.]*?\s+và\s+(?:một\s+)?đường\s*thẳng\s+(song\s*song|vuông\s*góc)\s+(?:với\s+)?(?:cạnh\s+|đoạn(?:\s+thẳng)?\s+)?([A-Z])([A-Z])(?!\p{L})[^.]{0,20}?cắt\s+(?:đường\s*thẳng\s+|cạnh\s+|đoạn\s+)?([A-Z])([A-Z])(?!\p{L})\s+(?:ở|tại)\s+(?:điểm\s+)?([A-Z])(?![A-Z])`,
+  'u',
+);
 
 // SINGLE: "(Một đường thẳng (đi)? )?(Qua|Từ) (điểm)? P ... (vuông góc|song song)
 // với L1 ... cắt L2 (ở|tại) Q" — CHỈ 1 đường bị cắt, 1 giao điểm. Bài 30
@@ -42,7 +55,7 @@ const PREFILTER =
 // group8=giao. Chân chỉ khớp khi tên đứng RIÊNG (?![A-Za-z]) → KHÔNG bắt "Evà"
 // dính (giữ nguyên hành vi cũ với OCR-glue, tránh regress).
 const RE_SINGLE = new RegExp(
-  '(?:Qua|qua|Từ|từ)\\s+(?:điểm\\s+)?([A-Z])(?:[\'′]?)(?!\\p{L})' +
+  '(?:Qua|qua|Từ|từ)\\s+(?:một\\s+)?(?:điểm\\s+)?([A-Z])(?:[\'′]?)(?!\\p{L})' +
     '[^.]{0,30}?(song\\s*song|vuông\\s*góc)\\s+(?:với\\s+)?(?:cạnh\\s+|đoạn(?:\\s+thẳng)?\\s+|đường\\s*thẳng\\s+)?' +
     '([A-Z])([A-Z])(?!\\p{L})' +
     '(?:\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Za-z]))?' +
@@ -54,7 +67,7 @@ export const perpThroughCutsLinesRule: LanguageRule = {
   id: 'perpThroughCutsLines',
   priority: 50,
   languages: ['vi'],
-  patterns: [PREFILTER],
+  patterns: [PREFILTER, PREFILTER_RAY],
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
@@ -104,7 +117,45 @@ export const perpThroughCutsLinesRule: LanguageRule = {
           intents.push(addPoint(foot, { kind: 'intersection', of: [name, to] }));
         }
         intents.push(addPoint(q, { kind: 'intersection', of: [name, l2] }));
+        // Điểm qua được giới thiệu ngay trong câu ("Từ một điểm E trên cạnh AC …").
+        const dm = DIEM_TREN_CANH.exec(m[0]);
+        if (dm && dm[1] === through && !dm[2].includes(through)) {
+          intents.unshift(addPoint(through, { kind: 'onSegment', of: dm[2] }));
+        }
+        // Vế thứ hai cùng điểm qua: "… và đường thẳng song song với AB cắt BC tại D".
+        const nt = VE_NOI_TIEP.exec(c.text.slice(m.index! + m[0].length));
+        if (nt) {
+          const par2 = /song/.test(nt[1]);
+          const to2 = nt[2] + nt[3];
+          const l3 = nt[4] + nt[5];
+          const q2 = nt[6];
+          if (!(par2 && to2.includes(through)) && !l3.includes(q2) && q2 !== q && q2 !== through) {
+            const name2 = (par2 ? 'par' : 'prp') + through + (par2 === isParallel ? '2' : '');
+            intents.push(
+              drawLine(name2, par2 ? 'parallelThrough' : 'perpThrough', { through, to: to2 }),
+              addPoint(q2, { kind: 'intersection', of: [name2, l3] }),
+            );
+          }
+        }
         out.push({ ruleId: 'perpThroughCutsLines', clauseIds: [c.id], intents });
+      }
+      // "Kẻ Ex song song với BC cắt AB tại M" — tia đặt tên theo gốc E.
+      for (const m of c.text.matchAll(RE_NAMED_RAY)) {
+        const through = m[1];
+        const isParallel = /song/.test(m[2]);
+        const to = m[3] + m[4];
+        const l2 = m[5] + m[6];
+        const q = m[7];
+        if ((isParallel && to.includes(through)) || l2.includes(q) || through === q) continue;
+        const name = (isParallel ? 'par' : 'prp') + through;
+        out.push({
+          ruleId: 'perpThroughCutsLines',
+          clauseIds: [c.id],
+          intents: [
+            drawLine(name, isParallel ? 'parallelThrough' : 'perpThrough', { through, to }),
+            addPoint(q, { kind: 'intersection', of: [name, l2] }),
+          ],
+        });
       }
     }
     return out;

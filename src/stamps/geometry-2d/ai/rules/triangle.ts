@@ -1,5 +1,6 @@
 // src/stamps/geometry-2d/ai/rules/triangle.ts
 import type { LanguageRule, RuleMatch } from './_types';
+import { doCanhDeCho, toaDoTamGiacTheoCanh, toaDoTamGiacTuKhiTrungTrucCatCanh } from './triangleLengths';
 import type { IntentT } from '../intent';
 import { drawShape, addPoint, drawCircle, markShape } from './_shared';
 
@@ -281,7 +282,11 @@ export const triangleRule: LanguageRule = {
             if (thales) return thales;
           }
         }
-        return [drawShape('triangle', hit.labels, variant)];
+        // Số đo đề cho ("AB = 4 cm, AC = 8 cm") ⇒ đặt đỉnh đúng tỉ lệ thay tam giác mẫu.
+        const theoCanh =
+          toaDoTamGiacTheoCanh(hit.labels as [string, string, string], variant, doCanhDeCho(ctx.problem, hit.labels)) ??
+          (variant === 'any' ? toaDoTamGiacTuKhiTrungTrucCatCanh(ctx.problem, hit.labels as [string, string, string]) : undefined);
+        return [drawShape('triangle', hit.labels, variant, theoCanh)];
       });
 
       out.push({ ruleId: 'triangle', clauseIds: [c.id], intents });

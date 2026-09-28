@@ -113,6 +113,19 @@ function inscribedTriangleVertices(problem: string, circle: string): Set<string>
   return out;
 }
 
+const SECANT_TOKEN = /cát\s*tuyến\s+[A-Z]([A-Z])([A-Z])(?![A-Z])/gu;
+const SECANT_THROUGH =
+  /[Qq]ua\s+(?:điểm\s+)?[A-Z](?!\p{L})[^.]{0,30}?cắt\s+(?:lại\s+)?(?:nửa\s+)?(?:đường\s*tròn\s*)?(?:\(\s*[A-Z]\s*\)\s*|[A-Z]\s+)?(?:tại|ở)\s+(?:hai\s+|2\s+)?(?:điểm\s+)?([A-Z])\s*(?:và|,)\s*([A-Z])(?![A-Z])/gu;
+
+/** Điểm do cát tuyến định nghĩa (khớp các dạng rule secant nhận). */
+function secantPoints(problem: string): Set<string> {
+  const out = new Set<string>();
+  for (const re of [SECANT_TOKEN, SECANT_THROUGH]) {
+    for (const m of problem.matchAll(re)) { out.add(m[1]); out.add(m[2]); }
+  }
+  return out;
+}
+
 export const chordRule: LanguageRule = {
   id: 'chord',
   // Dưới circleRadius (75) — nếu circle O có bán kính cụ thể, định nghĩa đó thắng.
@@ -130,6 +143,10 @@ export const chordRule: LanguageRule = {
     // Đỉnh tam giác nội tiếp O — đã trên đường tròn (qua circumcircle). KHÔNG
     // gắn onCircle (tránh CYCLE qua O_c=through3); connect vẫn dựng dây.
     const inscribedVerts = inscribedTriangleVertices(ctx.problem, circle);
+    // Hai giao điểm của cát tuyến ("cát tuyến ABC", "qua A cắt (O) tại D và E")
+    // do rule secant dựng ĐÚNG thứ tự gần→xa. Gắn onCircle tự do ở đây (prio 71 >
+    // secant 58) là đè mất: "dây BC" của cát tuyến ABC từng ra B xa, C gần.
+    for (const p of secantPoints(ctx.problem)) inscribedVerts.add(p);
 
     // Gom các dây hợp lệ.
     interface Chord {

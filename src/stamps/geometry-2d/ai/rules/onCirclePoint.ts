@@ -28,7 +28,9 @@ const POINT_ON = new RegExp(
   // Nhánh "là (một)? điểm …" chấp nhận giới từ kết là "trên" HOẶC "thuộc"
   // ("Gọi E là một điểm bất kì thuộc cung nhỏ BC" — hinh9 #108). ON_SUFFIX vẫn
   // neo circle/cung nên "thuộc" trần không nuốt "thuộc cạnh/đoạn".
-  `(?:[Đđ]iểm\\s+)?([A-Z])(?:\\s+[^.]{0,12}?)?\\s+(?:(?:nằm\\s+)?trên|thuộc|là\\s+(?:một\\s+)?điểm\\s+(?:[^.A-Z]{0,16}?\\s+)?(?:(?:nằm\\s+)?trên|thuộc))\\s+${ON_SUFFIX}`,
+  // Khoảng chen giữa tên và "thuộc" KHÔNG được chứa chữ HOA (tên điểm khác): trước đây
+  // "(AB < AC và N thuộc cung nhỏ BC)" bắt nhầm B của "AB" thay vì N.
+  `(?:[Đđ]iểm\\s+)?([A-Z])(?:\\s+[^.A-Z]{0,12}?)?\\s+(?:(?:nằm\\s+)?trên|thuộc|là\\s+(?:một\\s+)?điểm\\s+(?:[^.A-Z]{0,16}?\\s+)?(?:(?:nằm\\s+)?trên|thuộc))\\s+${ON_SUFFIX}`,
   'u',
 );
 const TAKE_ON = new RegExp(
@@ -106,6 +108,15 @@ function resolveCircle(problem: string): string | undefined {
   return diameterOfThisCenter ? `${center}_c` : center;
 }
 
+
+/** X là tiếp điểm: "tiếp tuyến AX" hoặc "(…, X là (các)? tiếp điểm)". */
+function laTiepDiem(problem: string, x: string): boolean {
+  const e = x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return (
+    new RegExp(`tiếp\\s*tuyến\\s+(?:[A-Z]${e}(?![A-Z])|[^.]{0,30}?(?:,|và)\\s*[A-Z]${e}(?![A-Z]))`, 'u').test(problem) ||
+    new RegExp(`(?<![A-Z])${e}(?![A-Z])[^.()]{0,12}?là\\s+(?:các\\s+|hai\\s+)?tiếp\\s*điểm`, 'u').test(problem)
+  );
+}
 export const onCirclePointRule: LanguageRule = {
   id: 'on-circle-point',
   priority: 64,
@@ -159,6 +170,10 @@ export const onCirclePointRule: LanguageRule = {
       if (!m) continue;
       const name = m[1];
       if (name.length !== 1) continue;
+      // Tiếp điểm đã do rule tiếp tuyến định nghĩa: "N thuộc cung nhỏ BC" chỉ là ĐIỀU
+      // KIỆN vị trí, không phải định nghĩa — gắn onCircle tự do (prio 64 > tiếp tuyến 50)
+      // là đè mất tiếp điểm.
+      if (laTiepDiem(ctx.problem, name)) continue;
       // "cung LỚN <BC>" (cung lớn): điểm nằm trên CUNG LỚN → phía ĐỐI DIỆN dây BC.
       // chord đặt 2 đầu dây cố định ở NỬA TRÊN (theta 0.7–2.3) → điểm cung lớn để
       // ở NỬA DƯỚI (≈ -1.6 rad) tránh cụm 3 điểm thành "sliver" (C89). Cung nhỏ /

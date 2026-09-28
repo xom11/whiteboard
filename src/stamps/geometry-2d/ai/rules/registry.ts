@@ -39,6 +39,7 @@ import { tangentAtRule } from './tangentAt';
 import { onSegmentPointRule } from './onSegmentPoint';
 import { pointOnSideAtLengthRule } from './pointOnSideAtLength';
 import { diagonalsMeetNamedRule } from './diagonalsMeetNamed';
+import { intersectionDistribRule } from './intersectionDistrib';
 import { lineCircleIntersectionRule } from './lineCircleIntersection';
 import { incenterNamedTriangleRule } from './incenterNamedTriangle';
 import { perpThroughCutsLinesRule } from './perpThroughCutsLines';
@@ -155,6 +156,7 @@ const RULES: readonly LanguageRule[] = [
   onSegmentPointRule,
   pointOnSideAtLengthRule,
   diagonalsMeetNamedRule,
+  intersectionDistribRule,
   lineCircleIntersectionRule,
   incenterNamedTriangleRule,
   perpThroughCutsLinesRule,

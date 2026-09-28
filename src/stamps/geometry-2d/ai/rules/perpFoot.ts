@@ -626,7 +626,9 @@ function parseFeet(text: string, fallbackTri?: string[], declared: Set<string> =
       if (onLine.includes(foot)) continue;
       if (!isAllowedLine(onLine, declared)) continue; // onLine chữ thường chưa khai báo → bỏ
       if (out.some((o) => o.name === foot)) continue;
-      out.push({ name: foot, from, onLine });
+      // Cặp này KHÔNG đứng sau động từ dựng ⇒ connect.ts (chỉ bắt "Kẻ PM") không
+      // nối đoạn QN ⇒ tự nối, kẻo hình có chân N mà thiếu đoạn QN.
+      out.push({ name: foot, from, onLine, withSegment: true });
     }
   }
 
