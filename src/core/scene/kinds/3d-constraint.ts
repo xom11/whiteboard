@@ -18,6 +18,9 @@ export type Constraint3D =
   // nhau → trung điểm đoạn ⊥ chung). Dùng điểm thay line-object để tool không cần
   // chọn đường (hitTest chưa sinh onLine; line-object-ref để dành v1.5).
   | { kind: 'intersectionLines'; a1: string; b1: string; a2: string; b2: string }
+  // Chân đường vuông góc chung trên đường (a1,b1) của cặp đường (a1b1, a2b2) — đổi thứ tự cặp để
+  // lấy chân trên đường kia. Hai đường chéo nhau ⇒ đoạn 2 chân = khoảng cách giữa chúng.
+  | { kind: 'commonPerpFoot'; a1: string; b1: string; a2: string; b2: string }
   // Giao điểm đường (qua a,b) ∩ mặt phẳng (object — chọn qua onPlane hit).
   | { kind: 'intersectionLinePlane'; a: string; b: string; plane: string }
   // Chân ⊥ từ điểm `from` xuống đường (qua a,b).
@@ -43,6 +46,7 @@ export function constraintRefs(c: Constraint3D): string[] {
     case 'midpoint': return [c.p1, c.p2];
     case 'centroid': return [...c.vertices];
     case 'intersectionLines': return [c.a1, c.b1, c.a2, c.b2];
+    case 'commonPerpFoot': return [c.a1, c.b1, c.a2, c.b2];
     case 'intersectionLinePlane': return [c.a, c.b, c.plane];
     case 'perpFootLine': return [c.from, c.a, c.b];
     case 'perpFootPlane': return [c.from, c.plane];

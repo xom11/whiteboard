@@ -9,8 +9,10 @@ const CUE = /hình\s*chiếu|chân\s+đường|khoảng\s*cách/iu;
 // Target = plane token (≥3 letters), or "mặt đáy"/"đáy", or a bare 2-letter line.
 // Trailing optional: "là [điểm] <name>" after target.
 const TARGET =
-  '(?:(?:mặt\\s*phẳng\\s*)?\\(([A-Z]{3,})\\)|(mặt\\s*đáy|[Đđ]áy)|(?:cạnh\\s+|đường\\s*thẳng\\s+)?([A-Z](?:[\'′])?)([A-Z](?:[\'′])?))';
-const TRAIL = '(?:\\s+là\\s+(?:điểm\\s+)?([A-Z](?:[\'′]?)))?';
+  '(?:(?:mặt\\s*phẳng\\s*)?\\(([A-Z]{3,})\\)|(?:mặt\\s*phẳng\\s*)?(mặt\\s*đáy|[Đđ]áy)|(?:cạnh\\s+|đường\\s*thẳng\\s+)?([A-Z](?:[\'′])?)([A-Z](?:[\'′])?))';
+// "… là H" | "… là điểm H" | "… trùng với trung điểm H của AC" | "… là trọng tâm G của …" (chân được
+// ĐẶT TÊN trong mô tả — trước đây bỏ qua ⇒ chân tên "HS", điểm H đề nêu không hề có trên hình).
+const TRAIL = '(?:\\s+(?:là|trùng\\s+với|chính\\s+là)\\s+(?:(?:trung\\s+điểm|trọng\\s+tâm|giao\\s+điểm|tâm)\\s+)?(?:điểm\\s+)?([A-Z](?:[\'′]?))(?![\\p{L}A-Z]))?';
 
 // "[<H> là] hình chiếu [vuông góc] [của] [đỉnh|điểm] <from> lên|trên|xuống <target> [là [điểm] <name>]"
 // Groups: 1=leading-name, 2=from, 3=planeTok, 4=dayKw, 5=lineA, 6=lineB, 7=trailing-name
@@ -51,9 +53,17 @@ function toTarget(planeTok: string | undefined, dayKw: string | undefined, lineA
   return null;
 }
 
-function emit(named: string | undefined, from: string, t: Target): Intent3DT[] {
+// Tên chân ĐÃ được rule khác dựng ("… trùng với điểm O là giao điểm hai đường chéo") ⇒ chỉ nối,
+// không tạo điểm thứ hai cùng nhãn (hình đúng khi khối đặt chân đúng chỗ — factAudit3d kiểm).
+function definedElsewhere(name: string, problem: string): boolean {
+  const x = name.replace(/['′]/gu, "['′]");
+  return new RegExp(`(?<![\\p{L}'′])${x}\\s+là\\s+(?:giao\\s+điểm|trung\\s+điểm|trọng\\s+tâm|tâm)`, 'u').test(problem);
+}
+
+function emit(named: string | undefined, from: string, t: Target, problem = ''): Intent3DT[] {
   const foot = named ?? `H${stripPrime(from)}`;
   const out: Intent3DT[] = [];
+  if (named && definedElsewhere(named, problem)) return [connect3d(from, foot, 'segment')];
   if (t.kind === 'plane') {
     out.push(plane3d(t.planeName, { kind: 'threePoints', p1: t.p[0], p2: t.p[1], p3: t.p[2] }));
     out.push(addPoint3d(foot, { kind: 'perpFootPlane', from, plane: t.planeName }));
@@ -79,10 +89,11 @@ export const projectionFootRule: LanguageRule3D = {
         if (!t) continue;
         // Named: leading "H là" (m[1]) takes priority; then trailing "là H" (m[7]).
         const named = m[1] ?? m[7];
-        out.push({ ruleId: this.id, clauseIds: [c.id], intents: emit(named, m[2], t) });
+        out.push({ ruleId: this.id, clauseIds: [c.id], intents: emit(named, m[2], t, ctx.problem) });
         continue;
       }
-      m = RE_KC.exec(c.text);
+      // "khoảng cách từ A đến mặt phẳng SBC" (nguồn rơi ngoặc) ⇒ coi như "(SBC)"
+      m = RE_KC.exec(c.text.replace(/(mặt\s*phẳng\s+)((?:[A-Z]['′]?){3,})(?![\p{L}'′(])/gu, '$1($2)'));
       if (m) {
         const t = toTarget(m[2], m[3], m[4], m[5], ctx.problem);
         if (!t) continue;
