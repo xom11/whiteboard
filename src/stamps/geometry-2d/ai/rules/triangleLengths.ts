@@ -24,7 +24,7 @@ const LEN = new RegExp(String.raw`(?<![A-Z])((?:[A-Z][A-Z]\s*=\s*)+)` + NUM, 'gu
 // Ký hiệu cạnh chuẩn của tam giác ABC: a = BC, b = CA, c = AB ("a = 7, b = 8, c = 5").
 const SIDE_ABC = new RegExp(String.raw`(?<![\p{L}\d])([abc])\s*=\s*` + NUM, 'gu');
 // Số đo góc: "góc A = 60°", "góc BAC = 120°", "∠B = 45°", "Â = 60°", "góc C bằng 30 độ".
-const GOC = /(?:(?<!\p{L})[Gg]óc|∠)\s*(?:([A-Z])([A-Z])([A-Z])|([A-Z]))(?![A-Z'′\p{Ll}])\s*(?:=|bằng)\s*(\d+(?:[.,]\d+)?)\s*(?:°|º|˚|độ(?!\p{L}))/gu;
+export const GOC = /(?:(?<!\p{L})[Gg]óc|∠)\s*(?:([A-Z])([A-Z])([A-Z])|([A-Z]))(?![A-Z'′\p{Ll}])\s*(?:=|bằng)\s*(\d+(?:[.,]\d+)?)\s*(?:°|º|˚|độ(?!\p{L}))/gu;
 const GOC_MU = /(?<!\p{L})(Â|Ê|Ô|[A-Z]̂)\s*=\s*(\d+(?:[.,]\d+)?)\s*(?:°|º|˚|độ(?!\p{L}))/gu;
 const TU_GIAC = /(?:tứ\s+giác|hình\s+(?:vuông|chữ\s+nhật|bình\s+hành|thoi|thang)(?:\s+(?:cân|vuông))?|[Ll]ục\s+giác|ngũ\s+giác)\s+([A-Z]{4,6})(?![A-Z])/gu;
 const GOC_KHONG_RO = (70 * Math.PI) / 180;

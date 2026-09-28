@@ -5,6 +5,7 @@
 // hình → draw-shape với shape + variant tương ứng.
 import type { LanguageRule, RuleContext, RuleMatch } from './_types';
 import { drawShape, drawCircle, addPoint, markShape } from './_shared';
+import { toaDoTuGiacTheoSoDo } from './quadLengths';
 
 // LƯU Ý: \b của JS dựa trên ASCII word-char nên KHÔNG khớp quanh ký tự Việt
 // ("đ","ề","ạ"…). Dùng lookaround \p{L} (cờ 'u') ở prefilter để chặn biên từ.
@@ -372,7 +373,9 @@ export const quadRule: LanguageRule = {
         });
       }
       for (const hit of scanClause(c.text)) {
-        let intents = [drawShape(hit.shape, hit.labels, hit.variant)];
+        // Số đo đề cho ("AB = 3, AD = 4", "góc BAD = 60°") ⇒ đặt đỉnh đúng số đo.
+        const theoSoDo = toaDoTuGiacTheoSoDo(hit.shape, hit.variant, hit.labels as [string, string, string, string], ctx.problem);
+        let intents = [drawShape(hit.shape, hit.labels, hit.variant, theoSoDo)];
         // Chỉ tứ giác CHUNG: thử phát hiện đường tròn ngoại tiếp.
         if (hit.shape === 'quadrilateral') {
           const center = detectCyclic(c.text, hit);
