@@ -119,7 +119,7 @@ const CEVIAN_PATTERNS: ReadonlyArray<{ type: CevianType; patterns: readonly RegE
 // ĐẦU (cặp sau thiếu keyword). Capture blob → tách từng cặp (apex+foot).
 // Cặp đỉnh có thể có PRIME ở chân ("BB'", "CC'") — đề olympiad đặt chân đường cao
 // B', C'. apex = chữ đầu, foot = chữ + prime optional.
-// Phân cách "," hoặc "và" ("các đường trung tuyến BD và CE cắt nhau tại G" — lớp 8).
+// Phân cách "," hoặc "và" ("các đường cao AH, BK và CP", "AD và CE là hai đường cao").
 const PAIR_LIST = String.raw`(?:[A-Z][A-Z](?:['′])?\s*(?:,|và)\s*)+[A-Z][A-Z](?:['′])?`;
 const CEVIAN_LISTS: ReadonlyArray<{ type: CevianType; re: RegExp }> = [
   { type: 'altitude', re: new RegExp(String.raw`[Đđ]ường\s*cao\s+(${PAIR_LIST})(?![A-Z])`, 'gu') },
@@ -132,7 +132,7 @@ const CEVIAN_LISTS: ReadonlyArray<{ type: CevianType; re: RegExp }> = [
   // nuốt chữ nối ("đường cao nhất"…). dedup theo (apex,foot,type) né trùng single.
   {
     type: 'altitude',
-    re: new RegExp(String.raw`(${PAIR_LIST})\s+(?:là\s+)?(?:các\s+)?đường\s*cao(?!\p{L})`, 'gu'),
+    re: new RegExp(String.raw`(${PAIR_LIST})\s+(?:là\s+)?(?:các\s+|hai\s+|ba\s+)?đường\s*cao(?!\p{L})`, 'gu'),
   },
   { type: 'median', re: new RegExp(String.raw`[Tt]rung\s*tuyến\s+(${PAIR_LIST})(?![A-Z])`, 'gu') },
   {
@@ -221,7 +221,7 @@ export const cevianRule: LanguageRule = {
       for (const cl of CEVIAN_LISTS) {
         cl.re.lastIndex = 0;
         for (const m of c.text.matchAll(cl.re)) {
-          for (const tok of m[1].split(/,|\s+và\s+/u).map((s) => s.trim())) {
+          for (const tok of m[1].split(/\s*,\s*|\s+và\s+/u).map((s) => s.trim())) {
             const pair = splitCevianPair(tok);
             if (pair) addCandidate(c.id, cl.type, pair[0], pair[1]);
           }

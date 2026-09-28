@@ -232,8 +232,8 @@ const DO_DAI = /(?<![A-Z])([A-Z]{2})\s*=\s*(\d+(?:[.,]\d+)?)\s*(?:cm|dm|mm|m)?(?
 
 export const pointOnSideAtRatioRule: LanguageRule = {
   id: 'pointOnSideAtRatio',
-  // TRÊN pointOnSideAtLength (64) và onSegmentPoint (62): điều kiện tỉ số là định
-  // nghĩa chính xác — thắng "điểm tự do trên cạnh" (addPoint first-wins theo priority).
+  // KHÔNG đăng ký riêng trong registry: pointRatio gọi rule này cho các mệnh đề nó
+  // không dựng được (một điểm quyết định duy nhất cho điểm chia theo tỉ số).
   priority: 65,
   languages: ['vi'],
   patterns: [PREFILTER],

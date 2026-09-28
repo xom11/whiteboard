@@ -13,12 +13,12 @@
 import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint, drawLine } from './_shared';
 
-const PREFILTER = /[Tt]iếp\s*tuyến[^.]{0,40}?tại\s+[A-Z][^.]{0,30}?(?:và|,)\s*[A-Z][^.]{0,30}?cắt\s+nhau/u;
+const PREFILTER = /[Tt]iếp\s*tuyến[^.]{0,40}?tại\s+(?:hai\s+)?(?:điểm\s+)?[A-Z][^.]{0,30}?(?:và|,)\s*[A-Z][^.]{0,30}?cắt\s+nhau/u;
 const CIRCLE_REF = /đường\s*tròn\s*(?:tâm\s+)?\(?\s*([A-ZωΩ])(?:\s*[;,]\s*[Rr])?\s*\)?|\(\s*([A-ZωΩ])\s*\)/u;
 
 // "tiếp tuyến (của (O))? tại B (và|,) C (của (O))? cắt nhau (tại|ở) J"
 const RE = new RegExp(
-  '[Tt]iếp\\s*tuyến\\s+(?:của\\s+[^.]{0,14}?\\s+)?tại\\s+(?:điểm\\s+)?([A-Z])\\s*(?:và|,)\\s*([A-Z])(?!\\p{L})' +
+  '[Tt]iếp\\s*tuyến\\s+(?:của\\s+[^.]{0,20}?\\s+)?tại\\s+(?:hai\\s+)?(?:điểm\\s+)?([A-Z])\\s*(?:và|,)\\s*([A-Z])(?!\\p{L})' +
     '(?:\\s+của\\s+[^.]{0,14}?)?\\s+cắt\\s+nhau\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])',
   'gu',
 );

@@ -38,6 +38,14 @@ import { onCirclePointRule } from './onCirclePoint';
 import { tangentAtRule } from './tangentAt';
 import { onSegmentPointRule } from './onSegmentPoint';
 import { pointOnSideAtLengthRule } from './pointOnSideAtLength';
+import { pointRatioRule } from './pointRatio';
+import { givenPointsRule } from './givenPoints';
+import { quadCenterRule } from './quadCenter';
+import { parallelogramVertexRule } from './parallelogramVertex';
+import { centersDistribRule } from './centersDistrib';
+import { arbitraryPointRule } from './arbitraryPoint';
+import { parallelogramOnSidesRule } from './parallelogramOnSides';
+import { figuresOnSidesRule } from './figuresOnSides';
 import { diagonalsMeetNamedRule } from './diagonalsMeetNamed';
 import { intersectionDistribRule } from './intersectionDistrib';
 import { lineCircleIntersectionRule } from './lineCircleIntersection';
@@ -104,7 +112,6 @@ import { rightAngleVertexCirclesRule } from './rightAngleVertexCircles';
 import { namedLineRule } from './namedLine';
 import { bisectorsMeetRule } from './bisectorsMeet';
 import { hexagonRule } from './hexagon';
-import { pointOnSideAtRatioRule } from './pointOnSideAtRatio';
 import { parallelsThroughCutRule } from './parallelsThroughCut';
 import { pointOnSegmentNoteRule } from './pointOnSegmentNote';
 import { namedRayLinesRule } from './namedRayLines';
@@ -117,6 +124,10 @@ import { oppositeRayAtLengthRule } from './oppositeRayAtLength';
 import { altitudesOfNamedTrianglesRule } from './altitudesOfNamedTriangles';
 import { trapezoidAltitudesRule } from './trapezoidAltitudes';
 import { angleXOyRule } from './angleXOy';
+import { lineCutsLineAndCircleRule } from './lineCutsLineAndCircle';
+import { footsExtraRule } from './footsExtra';
+import { lineThroughPointCutsCircleRule } from './lineThroughPointCutsCircle';
+import { linesCutDistribRule } from './linesCutDistrib';
 
 const RULES: readonly LanguageRule[] = [
   namedLineRule,
@@ -168,7 +179,6 @@ const RULES: readonly LanguageRule[] = [
   tangentAtRule,
   onSegmentPointRule,
   pointOnSideAtLengthRule,
-  pointOnSideAtRatioRule,
   parallelsThroughCutRule,
   pointOnSegmentNoteRule,
   namedRayLinesRule,
@@ -181,6 +191,14 @@ const RULES: readonly LanguageRule[] = [
   altitudesOfNamedTrianglesRule,
   trapezoidAltitudesRule,
   angleXOyRule,
+  pointRatioRule,
+  givenPointsRule,
+  quadCenterRule,
+  parallelogramVertexRule,
+  centersDistribRule,
+  arbitraryPointRule,
+  parallelogramOnSidesRule,
+  figuresOnSidesRule,
   diagonalsMeetNamedRule,
   intersectionDistribRule,
   lineCircleIntersectionRule,
@@ -233,6 +251,10 @@ const RULES: readonly LanguageRule[] = [
   perpNamedLineRule,
   parallelSidePointsRule,
   bisectorsMeetRule,
+  lineCutsLineAndCircleRule,
+  footsExtraRule,
+  lineThroughPointCutsCircleRule,
+  linesCutDistribRule,
 ];
 
 /**

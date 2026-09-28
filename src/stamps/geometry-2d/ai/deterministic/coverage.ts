@@ -76,6 +76,7 @@ export function segmentClauses(problem: string): Clause[] {
   // ABC, let M be the midpoint of BC" tách thành 2 clause. Thuần additive: không
   // đổi segmentation VN (alternation rời nhau, không trùng từ).
   let proofMode = false;
+  let truocLaDinhNghiaVecto = false;
 
   return maskNonBoundaryPunct(problem)
     .split(
@@ -91,13 +92,20 @@ export function segmentClauses(problem: string): Clause[] {
       const hasGeometryKeyword =
         countGeometryKeywords(text) > 0 ||
         NAMED_LINE_PICK.test(text) ||
-        (BARE_SEG_PICK.test(text) && !/tia\s+đối/u.test(text));
+        (BARE_SEG_PICK.test(text) && !/tia\s+đối/u.test(text)) ||
+        (VECTOR_POINT_DEF.test(text) && !VECTOR_KHONG_DUNG.test(text)) ||
+        GIVEN_POINTS.test(text);
       const proofOnly = isProofOnlyClause(text, proofMode);
       if (startsProofSection(text)) proofMode = true;
       // Mệnh đề LOCUS ("điểm A di chuyển/di động trên (O)") = điều kiện chuyển
       // động trên điểm ĐÃ dựng (đỉnh), KHÔNG phải construct → loại khỏi coverage.
       const locusOnly = LOCUS_CLAUSE.test(text) && !CONSTRUCTION_LEAD.test(text);
-      return { id, text, hasGeometry: hasGeometryKeyword && !proofOnly && !locusOnly };
+      // "ba điểm G, H, K thỏa mãn: vectơ KA + vectơ KC = vectơ 0; vectơ GA + … = vectơ 0; …"
+      // — các đẳng thức sau dấu ";" vẫn là định nghĩa điểm (mệnh đề trước đã giới thiệu).
+      const tiepDinhNghia = truocLaDinhNghiaVecto && DANG_THUC_VECTO_TRAN.test(text) && !proofOnly;
+      const laDinhNghia = (VECTOR_POINT_DEF.test(text) && !VECTOR_KHONG_DUNG.test(text)) || tiepDinhNghia;
+      truocLaDinhNghiaVecto = laDinhNghia;
+      return { id, text, hasGeometry: (hasGeometryKeyword || tiepDinhNghia) && !proofOnly && !locusOnly };
     });
 }
 
@@ -134,12 +142,29 @@ const NAMED_LINE_PICK =
 const BARE_SEG_PICK =
   /[Ll]ấy\s+(?:điểm\s+)?[A-Z]['′]?(?:\s*,\s*[A-Z]['′]?)?\s+(?:bất\s*k[iìyỳ]\s+)?(?:trên|thuộc)\s+(?:cạnh\s+|đoạn\s+|tia\s+)?[A-Z]{2}(?![A-Z])|[Tt]rên\s+(?:cạnh\s+|đoạn\s+|tia\s+)?[A-Z]{2}(?:\s*,\s*[A-Z]{2})*\s+(?:(?:theo\s+)?thứ\s+tự\s+|lần\s*lượt\s+)?lấy\s+(?:các\s+)?(?:điểm\s+)?[A-Z]/u;
 
-// "Hãy tính/tìm/chứng minh …" (SGK lớp 8: "Hãy tính độ dài các cạnh bên AB, AC") là
-// câu hỏi, không phải dựng hình — trước đây chỉ nhận "Hãy xác định".
+// Điểm ĐỊNH NGHĨA bằng đẳng thức vectơ (Toán 10): "Gọi I là điểm thoả mãn vectơ IA
+// + 2 vectơ IB = vectơ 0", "điểm M sao cho vectơ MA = 2 vectơ MB". Không từ khoá
+// hình nào ⇒ trước đây bị coi văn xuôi: hình "đủ" mà thiếu hẳn điểm I. Signal HẸP:
+// phải có điểm được giới thiệu ("điểm X" / "X là điểm") + "vectơ" + "=".
+const VECTOR_POINT_DEF =
+  /(?:[Đđ]iểm\s+[A-Z](?![A-Z])|(?<![A-Z])[A-Z]['′]?\s+(?:lần\s*lượt\s+)?là\s+(?:một\s+|các\s+|hai\s+)?điểm)[^.;]*?[Vv][eé]c\s*-?\s*t[ơo](?!\p{L})[^.;]*=/u;
+
+// "Với M là điểm tùy ý, chứng minh rằng vectơ MA + … = 4 vectơ MO": M bất kỳ trong
+// một mệnh đề CHỨNG MINH — không phải điểm cần dựng.
+const DANG_THUC_VECTO_TRAN = /^[-−+\d\s/.,]*[Vv][eé]c\s*-?\s*t[ơo](?!\p{L})[^.;]*=[^.;]*$/u;
+const VECTOR_KHONG_DUNG = /t[uù][ỳy]\s*ý|bất\s*k[ìỳiy]|[Cc]hứng\s*minh|với\s+mọi/u;
+
+// "Cho ba điểm A, B, C phân biệt" / "Cho hai điểm A và B" — đề chỉ có điểm trần
+// (chương Vectơ lớp 10), không từ khoá hình nào ⇒ clause bị coi văn xuôi và các
+// điểm không bao giờ được dựng (givenPoints). Neo đầu mệnh đề "Cho".
+const GIVEN_POINTS =
+  /^(?:[0-9]+\s*[.)]\s*)?[Cc]ho\s+(?:(?:\d|hai|ba|bốn|năm|sáu)\s+)?điểm\s+(?:phân\s+biệt\s+)?[A-Z](?![A-Z])(?:\s*(?:,|và)\s*[A-Z](?![A-Z]))+/u;
+
+// "Hãy tính/tìm/chứng minh …" là câu hỏi, không phải dựng hình (SGK lớp 8/10).
 // "C/m"/"CMR" — viết tắt "Chứng minh (rằng)" phổ biến trong đề OCR (vao10:254
 // "a.C/m: Bốn điểm…"); thiếu nó clause proof bị coi geo-clause → escalate oan.
 const PROOF_SECTION_START = new RegExp(
-  `^${ENUM_PREFIX}(?:[Cc]hứng\\s*minh|C/m|CMR|[Tt]ính|[Tt]ìm|[Xx]ác\\s*định|[Hh]ãy\\s+(?:xác\\s*định|tính|tìm|chứng\\s*minh|so\\s+sánh))(?!\\p{L})`,
+  `^${ENUM_PREFIX}(?:[Cc]hứng\\s*minh|C/m|CMR|[Tt]ính|[Tt]ìm|[Xx]ác\\s*định|[Hh]ãy\\s+(?:xác\\s*định|chỉ\\s+ra|chia|tìm|tính|biểu\\s+(?:thị|diễn)|viết|gọi\\s+tên|so\\s+sánh|chứng\\s+minh))(?!\\p{L})`,
   'u',
 );
 
@@ -147,6 +172,26 @@ const CONSTRUCTION_LEAD = new RegExp(
   `^${ENUM_PREFIX}(?:[Cc]ho|[Gg]ọi|[Vv]ẽ|[Kk]ẻ|[Ll]ấy|[Dd]ựng|[Qq]ua|[Tt]ừ|[Tt]rên|[Nn]ối|[Đđ]ường\\s*thẳng\\s+(?:đó|này)|Let|Draw|Mark|Take|Construct|Join)(?!\\p{L})`,
   'u',
 );
+
+// Mệnh đề DỰNG HÌNH nằm GIỮA phần chứng minh (đề vào 10 nhiều ý: "b) Đường thẳng
+// qua E vuông góc với BC cắt tia AF tại G. Chứng minh …", "c) Tia FE cắt (O) tại
+// P", "Hai đoạn thẳng CM và HN cắt nhau tại T") — không mở bằng từ dẫn dựng hình
+// nên trước đây bị coi là câu chứng minh → BỎ QUA IM LẶNG: hình báo "đủ" mà thiếu
+// G/K/T. Nhận diện HẸP: chủ ngữ là đường/tia/tiếp tuyến/đoạn/dây/cặp đỉnh, có
+// "cắt … tại|ở <điểm>", và KHÔNG chứa động từ chứng minh/tính/tìm hay dấu "?".
+// Thêm "CD là đường kính (của (O))" (định nghĩa đầu mút D).
+const MID_PROOF_CONSTRUCTION = new RegExp(
+  `^${ENUM_PREFIX}` +
+    `(?:(?:(?:[Đđ]ường|[Tt]ia|[Tt]iếp\\s*tuyến|[Hh]ai|[Cc]ác|[Đđ]oạn|[Dd]ây|[Cc]át\\s*tuyến|[Nn]ửa)(?!\\p{L})|[A-Z]{2}(?![\\p{L}]))` +
+    `[^]*cắt[^]*(?:tại|ở)\\s+(?:(?:hai\\s+|các\\s+)?điểm\\s+(?:thứ\\s+hai\\s+)?)?(?:là\\s+)?[A-Z](?!\\p{L})` +
+    `|[A-Z]{2}\\s+là\\s+(?:một\\s+)?đường\\s*kính)`,
+  'u',
+);
+const PROOF_WORD = /[Cc]hứng\s*(?:minh|tỏ)|CMR|C\/m|[Tt]ính(?!\p{L})|[Tt]ìm(?!\p{L})|\?/u;
+
+function isMidProofConstruction(text: string): boolean {
+  return MID_PROOF_CONSTRUCTION.test(text) && !PROOF_WORD.test(text);
+}
 
 function startsProofSection(text: string): boolean {
   return PROOF_SECTION_START.test(text);
@@ -160,7 +205,7 @@ function startsProofSection(text: string): boolean {
 // hỏi bằng toạ độ mẫu, đè lên điểm đã dựng (hình sai đề mà vẫn báo đủ).
 const QUESTION_CLAUSE = /\?\s*$|(?<!\p{L})(?:[Vv]ì|[Tt]ại)\s+sao(?!\p{L})|là\s+hình\s+gì|có\s+(?:phải\s+)?[^?]{0,60}?không\s*\?/u;
 const HYPOTHETICAL_LEAD = new RegExp(
-  `^${ENUM_PREFIX}(?:[Kk]hi|[Nn]ếu|[Tt]rong\\s+trường\\s+hợp)(?!\\p{L})`,
+  `^${ENUM_PREFIX}(?:[Kk]hi(?!\\s+đó)|[Nn]ếu|[Tt]rong\\s+trường\\s+hợp)(?!\\p{L})`,
   'u',
 );
 
@@ -171,7 +216,7 @@ function isProofOnlyClause(text: string, proofMode: boolean): boolean {
   if (CONCLUSION_LEAD.test(text)) return true;
   if (PROOF_SECTION_START.test(text) && !CONSTRUCTION_LEAD.test(text)) return true;
   if ((QUESTION_CLAUSE.test(text) || HYPOTHETICAL_LEAD.test(text)) && !CONSTRUCTION_LEAD.test(text)) return true;
-  return proofMode && !CONSTRUCTION_LEAD.test(text);
+  return proofMode && !CONSTRUCTION_LEAD.test(text) && !isMidProofConstruction(text);
 }
 
 export function computeCoverage(

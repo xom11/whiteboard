@@ -56,8 +56,10 @@ const DOUBLE_DISTRIB = new RegExp(
 // "XY cắt (O) (ở|tại) (điểm (thứ hai)?)? Z (khác W)?" — "điểm thứ hai" + "khác W"
 // optional. `khác W` (nếu có) là điểm chung cần loại (other); else mặc định
 // chữ đầu của line (đầu mút nằm trên đường tròn).
+// Chủ ngữ KHÔNG được là đường tham chiếu của "song song/vuông góc với XY" hay
+// đường kính của đường tròn khác ("đường tròn đường kính OM cắt (O) tại E, F").
 const SINGLE = new RegExp(
-  String.raw`([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?` + CIRCLE +
+  String.raw`(?<!(?:với|song\s*song|vuông\s*góc|kính)\s+(?:đường\s*thẳng\s+)?)([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?` + CIRCLE +
     String.raw`\s+(?:ở|tại)\s+(?:điểm\s+(?:thứ\s+hai\s+)?)?(?:là\s+)?([A-Z])(?![A-Z])(?:\s+khác\s+([A-Z])(?![A-Z]))?`,
   'gu',
 );
@@ -76,8 +78,8 @@ const SINGLE_NAMED_CENTER = new RegExp(
 // 0/1). Khác SINGLE (1 giao thứ hai khi biết điểm chung): ở đây 2 đầu mút đều
 // chưa nằm trên (O) nên dùng intersection lineCircle 2 nhánh.
 const BOTH = new RegExp(
-  String.raw`([A-Z]{2})(?![A-Z])\s+cắt\s+` + CIRCLE +
-    String.raw`\s+(?:ở|tại)\s+(?:hai\s+|các\s+)?điểm\s+(?:phân\s*biệt\s+)?([A-Z])\s*(?:,|và)\s*([A-Z])(?![A-Z])`,
+  String.raw`(?<!(?:với|song\s*song|vuông\s*góc|kính)\s+(?:đường\s*thẳng\s+)?)([A-Z]{2})(?![A-Z])\s+cắt\s+(?:` + CIRCLE + String.raw`|(?:nửa\s+)?đường\s*tròn(?!\s*\())` +
+    String.raw`\s+(?:lần\s*lượt\s+)?(?:ở|tại)\s+(?:hai\s+|các\s+)?điểm\s+(?:phân\s*biệt\s+)?([A-Z])\s*(?:,|và)\s*([A-Z])(?![A-Z])`,
   'gu',
 );
 
@@ -86,7 +88,7 @@ const BOTH = new RegExp(
 // khi tên-ĐẦU ∈ line (else nhường SINGLE/BOTH) → không xung đột. g1=line g2=circle
 // g3=P g4=Q.
 const TWO_NAMED = new RegExp(
-  String.raw`([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?` + CIRCLE +
+  String.raw`(?<!(?:với|song\s*song|vuông\s*góc|kính)\s+(?:đường\s*thẳng\s+)?)([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?` + CIRCLE +
     String.raw`\s+(?:ở|tại)\s+([A-Z])\s+và\s+([A-Z])(?![A-Z])`,
   'gu',
 );
@@ -106,7 +108,7 @@ const LINE_AND_CIRCLE = new RegExp(
 // đường tròn TRẦN (không paren, httcd:42 "BN cắt đường tròn ở C"). 1 đầu mút XY
 // trên đường tròn (đầu line) → Z = giao thứ hai. circle resolve toàn đề.
 const SINGLE_BARE = new RegExp(
-  String.raw`([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?(?:nửa\s+)?đường\s*tròn(?!\s*\()\s+(?:ở|tại)\s+(?:điểm\s+(?:thứ\s+hai\s+)?)?(?:là\s+)?([A-Z])(?![A-Z])`,
+  String.raw`(?<!(?:với|song\s*song|vuông\s*góc|kính)\s+(?:đường\s*thẳng\s+)?)([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?(?:nửa\s+)?đường\s*tròn(?!\s*\()\s+(?:ở|tại)\s+(?:điểm\s+(?:thứ\s+hai\s+)?)?(?:là\s+)?([A-Z])(?![A-Z])`,
   'gu',
 );
 
@@ -297,12 +299,22 @@ export const lineCircleIntersectionRule: LanguageRule = {
       BOTH.lastIndex = 0;
       for (const m of c.text.matchAll(BOTH)) {
         const line = m[1];
-        const circle = m[2];
+        const rc = m[2] ? undefined : RESOLVE_CIRCLE_BARE.exec(ctx.problem);
+        const circle = m[2] ?? rc?.[1] ?? rc?.[2];
         const [x, y] = [m[3], m[4]];
-        if (x === y || line.includes(x) || line.includes(y)) continue;
+        if (!circle || x === y || line.includes(x) || line.includes(y)) continue;
+        // Thứ tự theo đề: tên đầu là giao GẦN đầu mút đầu của đường (line[0]) —
+        // "AO cắt (O) tại M, N" ⇒ M gần A — trừ khi đề nói ngược ("AN < AM",
+        // "N nằm giữa A và M"). Giao gần = tia line[0]→line[1] gặp đường tròn đầu
+        // tiên (secondIntersection với điểm chung không nằm trên đường tròn); giao
+        // xa = giao còn lại. Trước đây branch 0/1 của JSXGraph: thứ tự tuỳ ý.
+        const g = line[0];
+        const nguoc =
+          new RegExp(`${g}${y}\\s*<\\s*${g}${x}(?![A-Z])|${g}${x}\\s*>\\s*${g}${y}(?![A-Z])|${y}\\s+(?:nằm|ở)\\s+giữa\\s+${g}\\s+và\\s+${x}(?![A-Z])`, 'u').test(c.text);
+        const [gan, xa] = nguoc ? [y, x] : [x, y];
         intents.push(
-          addPoint(x, { kind: 'intersection', of: [line, circle], branch: 0 }),
-          addPoint(y, { kind: 'intersection', of: [line, circle], branch: 1 }),
+          addPoint(gan, { kind: 'secondIntersection', line, circle, other: g }),
+          addPoint(xa, { kind: 'secondIntersection', line, circle, other: gan }),
         );
       }
 

@@ -14,10 +14,12 @@ import { onPolygonConstraint } from './onPolygon';
 // Batch 2 — function-coords / native intersection kinds
 import { centroidConstraint } from './centroid';
 import { arcMidpointConstraint } from './arcMidpoint';
+import { onArcConstraint } from './onArc';
 import { excenterConstraint } from './excenter';
 import { mixtilinearPointConstraint } from './mixtilinearPoint';
 import { pointAtDistanceConstraint } from './pointAtDistance';
 import { commonTangentPointConstraint } from './commonTangentPoint';
+import { affineConstraint } from './affine';
 import { circleIntersectionConstraint } from './circleIntersection';
 import { circleSecondIntersectionConstraint } from './circleSecondIntersection';
 import { secondIntersectionConstraint } from './secondIntersection';
@@ -43,10 +45,12 @@ const ALL: PointConstraintModule[] = [
   onPolygonConstraint,
   centroidConstraint,
   arcMidpointConstraint,
+  onArcConstraint,
   excenterConstraint,
   mixtilinearPointConstraint,
   pointAtDistanceConstraint,
   commonTangentPointConstraint,
+  affineConstraint,
   circleIntersectionConstraint,
   circleSecondIntersectionConstraint,
   secondIntersectionConstraint,

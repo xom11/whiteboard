@@ -31,7 +31,9 @@ const MIDPOINT_TYPO = /trung\s*điển(?!\p{L})/gu;
 // → khoảng trắng. KHÔNG mang nghĩa hình học khi dựng hình (chỉ trong biểu thức độ
 // dài). Thay bằng ' ' (không '') để không dính chữ ("lên√AB"→"lên AB"); rule dùng
 // \s+ nên khoảng trắng dư vô hại; không tạo/huỷ ranh giới câu.
-const SQRT_NOISE = /√/gu;
+// GIỮ "√" đứng trước chữ số ("AB = 3√2", "AC = a√3"): đó là số đo thật — xoá đi
+// thành "3 2" thì triangleLengths đọc nhầm AB = 3.
+const SQRT_NOISE = /√(?!\s*\d)/gu;
 // Prime cong ’ (U+2019) / ′ (U+2032) / ´ (U+00B4) SAU chữ-cái-số → ASCII ' —
 // canonical hoá nhãn phái sinh (O'/A'/d') để mọi rule dùng `['′]` (hoặc ') khớp
 // đồng nhất. Chỉ thay khi đứng sau [A-Za-z0-9] (ngữ cảnh prime), không nuốt dấu

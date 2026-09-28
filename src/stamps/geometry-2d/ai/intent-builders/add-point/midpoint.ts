@@ -13,11 +13,6 @@ export const buildMidpoint = (s: BuildState, intent: AddPointIntentT): void => {
   const name = intent.name;
   const ends = parseEnds(c.of);
   if (!ends) throw new IntentBuilderError(`midpoint.of không parse được: ${c.of}`, intent);
-  if (c.hidden) {
-    // Điểm phụ: không hiện, không vẽ đoạn.
-    addPoint(s, { name, kind: 'midpoint', p1: ends[0], p2: ends[1], visible: false });
-    return;
-  }
   // Ensure segment for the midpoint reference (optional but nice for rendering)
   ensureSegment(s, ends[0], ends[1]);
   addPoint(s, { name, kind: 'midpoint', p1: ends[0], p2: ends[1] });

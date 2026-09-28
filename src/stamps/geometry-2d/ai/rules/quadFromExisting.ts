@@ -5,7 +5,7 @@
 //   "Cho tam giác ABC. Vẽ hình bình hành ABDC"      → D = đối xứng A qua trung điểm BC
 //   "Cho hình thoi ABCD và hình bình hành BCMD"     → M = đối xứng C qua trung điểm BD
 // (draw-shape cũ thêm D/M ở toạ độ mẫu ⇒ "hình bình hành" méo, báo full mà sai.)
-// Đỉnh mới Pi = đối xứng của đỉnh đối diện P(i+2) qua trung điểm (ẩn) của P(i+1)P(i+3).
+// Đỉnh mới Pi = P(i−1) + P(i+1) − P(i+2) (constraint 'affine').
 // Với chữ nhật/thoi/vuông, hình đúng loại khi ba đỉnh có sẵn đúng dữ kiện đề (tam giác
 // vuông / cân …) — dựng theo hình bình hành là cách chính xác duy nhất từ ba đỉnh.
 import type { IntentT } from '../intent';
@@ -29,12 +29,12 @@ export function dungTuDinhCo(problem: string, viTri: number, shape: string, labe
   const moi = labels.filter((x) => !co.has(x));
   if (moi.length !== 1) return undefined;
   const i = labels.indexOf(moi[0]);
+  // Đỉnh mới = đỉnh trước + đỉnh sau − đỉnh đối (constraint affine, như parallelogramVertex).
+  const truoc = labels[(i + 3) % 4];
+  const sau = labels[(i + 1) % 4];
   const doi = labels[(i + 2) % 4];
-  const [p, q] = [labels[(i + 1) % 4], labels[(i + 3) % 4]];
-  const tam = `mid${p}${q}`;
   return [
-    addPoint(tam, { kind: 'midpoint', of: p + q, hidden: true }),
-    addPoint(moi[0], { kind: 'reflectPoint', of: doi, through: tam }),
+    addPoint(moi[0], { kind: 'affine', points: [truoc, sau, doi], weights: [1, 1, -1] }),
     markShape('quadrilateral', [...labels]),
   ];
 }

@@ -16,7 +16,7 @@ import { segmentClauses } from './coverage';
 // Issue #46 nhóm A: prime (' U+0027 / ′ U+2032) là PHẦN của tên ("D′" ≠ "D").
 // Group prime đứng ngay sau chữ cái — collect bằng letter + normalize(prime) để
 // expected-name khớp DSL (rule pointAtDistance giữ prime → DSL có "D'").
-const NAMED_INTRO = /(?:Gọi|gọi|Lấy|lấy|Dựng|dựng|Đặt|đặt|tại|điểm|và)\s+(?:điểm\s+)?([A-Z])(['′]?)(?![A-Za-z])/gu;
+const NAMED_INTRO = /(?:Gọi|gọi|Lấy|lấy|Dựng|dựng|Đặt|đặt|tại|điểm|Điểm|và|tâm)\s+(?:điểm\s+)?([A-Z])(['′]?)(?![A-Za-z])/gu;
 // LƯU Ý: KHÔNG dùng `là\b` — `\b` của JS theo ASCII, mà 'à' (U+00E0) là
 // non-word-char ASCII → `\b` sau 'là' KHÔNG khớp khi theo sau là space/dấu câu
 // → pattern chết, bỏ sót mọi "X là <construct>" (bug silent-incomplete). Dùng
@@ -38,7 +38,8 @@ const SHAPE_TRI = /[Tt]am giác\s+([A-Z]{3})(?![A-Z])/gu;
 // H, K phải có (trước đây "hình thang ABCD, đường cao AH, BK": quad claim cả mệnh đề,
 // H/K không ai dựng mà hình vẫn báo đủ).
 const CEVIAN_FEET = /(?:[Đđ]ường\s*cao|[Cc]hiều\s*cao|[Tt]rung\s*tuyến|[Pp]hân\s*giác)\s+((?:[A-Z][A-Z]\s*(?:,|và)\s*)*[A-Z][A-Z])(?![A-Z])/gu;
-const SHAPE_QUAD = /(?:tứ giác|hình\s+(?:vuông|chữ nhật|bình hành|thoi|thang))\s+([A-Z]{4})(?![A-Z])/gu;
+// Danh sách "các hình bình hành ABIJ, BCPQ, CARS" — mọi đỉnh của mọi hình trong list.
+const SHAPE_QUAD = /(?:tứ giác|hình\s+(?:vuông|chữ nhật|bình hành|thoi|thang))\s+([A-Z]{4}(?:\s*(?:,|và)\s*[A-Z]{4}(?![A-Z]))*)(?![A-Z])/gu;
 
 export interface NamedEntityReport {
   ok: boolean;
@@ -70,7 +71,7 @@ function collectExpectedNames(problem: string): Set<string> {
     re.lastIndex = 0;
     let m: RegExpExecArray | null;
     while ((m = re.exec(problem)) !== null) {
-      for (const ch of m[1]) names.add(ch);
+      for (const ch of m[1].replace(/[^A-Z]/gu, '')) names.add(ch);
     }
   }
   return names;
