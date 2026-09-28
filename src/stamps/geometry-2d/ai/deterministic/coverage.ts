@@ -144,13 +144,21 @@ const CONSTRUCTION_LEAD = new RegExp(
   'u',
 );
 
+// Ý con mở đầu bằng một GIAO ĐIỂM đặt tên ("b) Tia ED cắt tia AH tại K", "AB cắt DE
+// tại I") là dựng hình, không phải chứng minh — trước đây trong proofMode nó bị coi
+// văn xuôi nên K không được dựng dù ý sau dùng K ("Gọi I là trung điểm của KC").
+const CUT_LEAD = new RegExp(
+  `^${ENUM_PREFIX}(?:[Tt]ia\\s+|[Đđ]ường\\s*thẳng\\s+)?[A-Z]{2}\\s+cắt\\s+(?:tia\\s+|đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+(?:thẳng\\s+)?)?[A-Z]{2}\\s+(?:tại|ở)\\s+(?:điểm\\s+)?[A-Z](?![\\p{L}\\d'′])`,
+  'u',
+);
+
 function startsProofSection(text: string): boolean {
   return PROOF_SECTION_START.test(text);
 }
 
 function isProofOnlyClause(text: string, proofMode: boolean): boolean {
   if (PROOF_SECTION_START.test(text) && !CONSTRUCTION_LEAD.test(text)) return true;
-  return proofMode && !CONSTRUCTION_LEAD.test(text);
+  return proofMode && !CONSTRUCTION_LEAD.test(text) && !CUT_LEAD.test(text);
 }
 
 export function computeCoverage(

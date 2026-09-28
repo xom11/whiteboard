@@ -21,7 +21,7 @@ import { addPoint } from './_shared';
 const TRI = /tam\s*giác(?:\s+(?:vuông|cân|đều|nhọn|tù))?\s+([A-Z])([A-Z])([A-Z])(?![A-Z])/u;
 const KIND = String.raw`(phân\s*giác(?:\s+trong)?(?!\s+ngoài)|trung\s*tuyến|đường\s*cao|cao|trung\s*trực)`;
 const TAMGIAC = String.raw`(?:\s+(?:của|trong)\s+(?:tam\s*giác(?:\s+([A-Z]{3})(?![A-Z]))?|nó))?`;
-const DAU = String.raw`giao\s*điểm\s+(?:của\s+)?(?:ba\s+|các\s+|hai\s+)?(?:đường\s+|tia\s+)?`;
+const DAU = String.raw`(?:giao\s*điểm|điểm\s+đồng\s+quy)\s+(?:của\s+)?(?:ba\s+|các\s+|hai\s+)?(?:đường\s+|tia\s+)?`;
 
 // Tên đứng trước (một tên).
 const MOT = new RegExp(String.raw`(?<![\p{L}\d'′])([A-Z])\s+(?:là\s+)?` + DAU + KIND + TAMGIAC + String.raw`(?![\p{L}])`, 'gu');
@@ -48,7 +48,7 @@ export const concurrencyCenterRule: LanguageRule = {
   id: 'concurrencyCenter',
   priority: 66,
   languages: ['vi'],
-  patterns: [/giao\s*điểm[^.]{0,30}(?:phân\s*giác|trung\s*tuyến|đường\s*cao|trung\s*trực)/u],
+  patterns: [/(?:giao\s*điểm|đồng\s+quy)[^.]{0,30}(?:phân\s*giác|trung\s*tuyến|đường\s*cao|trung\s*trực)/u],
   match(ctx) {
     const tm = TRI.exec(ctx.problem);
     const tri0 = tm ? [tm[1], tm[2], tm[3]] : null;
@@ -76,7 +76,7 @@ export const concurrencyCenterRule: LanguageRule = {
         const tri = triTxt ? triTxt.split('') : tri0;
         if (!tri) continue;
         // Phải là NHIỀU đường cùng loại ("ba/các/hai") hoặc nêu rõ "của tam giác".
-        if (!/giao\s*điểm\s+(?:của\s+)?(?:ba|các|hai)\s/u.test(whole) && !triTxt) continue;
+        if (!/(?:giao\s*điểm|đồng\s+quy)\s+(?:của\s+)?(?:ba|các|hai)\s/u.test(whole) && !triTxt) continue;
         const rest = c.text.slice((m.index ?? 0) + whole.length);
         // "giao điểm của đường cao AH và trung tuyến BM" — hai loại khác nhau → không đoán.
         const khac = /^\s*(?:[A-Z]{2}\s*)?(?:,\s*)?và\s+(?:đường\s+|tia\s+)?(phân\s*giác|trung\s*tuyến|cao|trung\s*trực)/u.exec(rest);

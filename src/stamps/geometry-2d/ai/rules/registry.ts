@@ -25,6 +25,7 @@ import { externalPointAtRadiusRule } from './externalPointAtRadius';
 import { arcMidpointRule } from './arcMidpoint';
 import { excenterRule } from './excenter';
 import { parallelPerpRule } from './parallelPerp';
+import { twoThroughLinesMeetRule } from './twoThroughLinesMeet';
 import { reflectionRule } from './reflection';
 import { pointAtDistanceRule } from './pointAtDistance';
 import { eulerLineRule } from './eulerLine';
@@ -42,7 +43,9 @@ import { circleDiameterRule } from './circleDiameter';
 import { onCirclePointRule } from './onCirclePoint';
 import { tangentAtRule } from './tangentAt';
 import { onSegmentPointRule } from './onSegmentPoint';
+import { pointNamedOnSegmentRule } from './pointNamedOnSegment';
 import { pointOnSideAtLengthRule } from './pointOnSideAtLength';
+import { twoPointsOneSideRule } from './twoPointsOneSide';
 import { ratioPointOnSegmentRule } from './ratioPointOnSegment';
 import { diagonalsMeetNamedRule } from './diagonalsMeetNamed';
 import { intersectionDistribRule } from './intersectionDistrib';
@@ -154,6 +157,7 @@ const RULES: readonly LanguageRule[] = [
   arcMidpointRule,
   excenterRule,
   parallelPerpRule,
+  twoThroughLinesMeetRule,
   reflectionRule,
   pointAtDistanceRule,
   eulerLineRule,
@@ -171,7 +175,9 @@ const RULES: readonly LanguageRule[] = [
   onCirclePointRule,
   tangentAtRule,
   onSegmentPointRule,
+  pointNamedOnSegmentRule,
   pointOnSideAtLengthRule,
+  twoPointsOneSideRule,
   ratioPointOnSegmentRule,
   diagonalsMeetNamedRule,
   intersectionDistribRule,
