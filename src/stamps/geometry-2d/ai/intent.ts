@@ -166,6 +166,13 @@ export const AddPointIntentZ = z.object({
     // Tiếp điểm tiếp tuyến CHUNG 2 đường tròn (spec mục A). circles = 2 tên đtròn;
     // on = tiếp điểm trên đtròn 0 hay 1; variant = ngoài/trong; side = chọn 1 trong
     // 2 tiếp tuyến cùng loại.
+    // Tổ hợp affine Σ weights[i]·points[i] (Σ = 1): điểm theo đẳng thức vectơ có ≥ 3
+    // điểm ("vectơ MA + vectơ MB + 2 vectơ MC = vectơ 0"), đỉnh thứ tư hình bình hành.
+    z.object({
+      kind: z.literal('affine'),
+      points: z.array(LabelZ).min(2).max(8),
+      weights: z.array(z.number()).min(2).max(8),
+    }),
     z.object({
       kind: z.literal('commonTangentPoint'),
       circles: z.tuple([LabelZ, LabelZ]),

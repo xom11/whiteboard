@@ -22,6 +22,7 @@ import { buildCommonTangentPoint } from './commonTangentPoint';
 import { buildExternalToCircle } from './externalToCircle';
 import { buildOnCircle } from './onCircle';
 import { buildMixtilinearPoint } from './mixtilinear';
+import { buildAffine } from './affine';
 
 export const ADD_POINT_BUILDERS: Record<string, (s: BuildState, intent: AddPointIntentT) => void> = {
   midpoint: buildMidpoint, onPerpBisector: buildOnPerpBisector, perpFoot: buildPerpFoot,
@@ -39,6 +40,7 @@ export const ADD_POINT_BUILDERS: Record<string, (s: BuildState, intent: AddPoint
   externalToCircle: buildExternalToCircle,
   onCircle: buildOnCircle,
   mixtilinearPoint: buildMixtilinearPoint,
+  affine: buildAffine,
 };
 
 export const buildAddPoint = (s: BuildState, intent: AddPointIntentT): void => {

@@ -254,6 +254,12 @@ function serializePoint(obj: SceneObject<PointAttrs>, state: State): SerializedE
       };
     }
 
+    case 'affine': {
+      const refs = resolveRefs([...c.points], state);
+      if (!refs) return fail('unresolved-ref', c.points.join(','));
+      return { ok: true, entity: { name: obj.label, kind: 'affine', points: refs, weights: [...c.weights] } };
+    }
+
     // Out of DSL v1:
     case 'onAxis':
     case 'onPolygon':

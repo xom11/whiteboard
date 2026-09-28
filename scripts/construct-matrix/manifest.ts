@@ -59,6 +59,7 @@ export const CONSTRUCT_MANIFEST: ConstructEntry[] = [
   { dslKind: 'reflectLine',        sceneKind: 'point',   intentKey: 'reflectLine',        toolKey: null,             ruleId: 'reflection',     serialize: false, evalFixture: null },
   { dslKind: 'pointAtDistance',    sceneKind: 'point',   intentKey: 'pointAtDistance',    toolKey: null,             ruleId: 'pointAtDistance', serialize: true, evalFixture: null },
   { dslKind: 'commonTangentPoint', sceneKind: 'point',   intentKey: 'commonTangentPoint', toolKey: null,             ruleId: 'common-tangent', serialize: true, evalFixture: null },
+  { dslKind: 'affine',             sceneKind: 'point',   intentKey: 'affine',             toolKey: null,             ruleId: 'pointRatio',     serialize: true, evalFixture: null },
 
   // ── lines / line-constructions ──────────────────────────────────────────────
   { dslKind: 'segment',            sceneKind: 'segment', intentKey: 'connect',            toolKey: 'segment',        ruleId: 'connect',        serialize: true,  evalFixture: null },

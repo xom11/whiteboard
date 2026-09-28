@@ -41,6 +41,7 @@ import { pointOnSideAtLengthRule } from './pointOnSideAtLength';
 import { pointRatioRule } from './pointRatio';
 import { givenPointsRule } from './givenPoints';
 import { quadCenterRule } from './quadCenter';
+import { parallelogramVertexRule } from './parallelogramVertex';
 import { diagonalsMeetNamedRule } from './diagonalsMeetNamed';
 import { intersectionDistribRule } from './intersectionDistrib';
 import { lineCircleIntersectionRule } from './lineCircleIntersection';
@@ -161,6 +162,7 @@ const RULES: readonly LanguageRule[] = [
   pointRatioRule,
   givenPointsRule,
   quadCenterRule,
+  parallelogramVertexRule,
   diagonalsMeetNamedRule,
   intersectionDistribRule,
   lineCircleIntersectionRule,

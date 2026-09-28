@@ -11,10 +11,9 @@
 //   "Gọi M là điểm thoả vectơ AM = 1/3 vectơ AC"
 //
 // Dựng CHÍNH XÁC bằng pointAtDistance (khoảng cách = t·|XY|, kéo đỉnh vẫn đúng tỉ
-// số), không đặt "đại khái" trên đoạn như onSegmentPoint. Chỉ nhận khi lời giải là
-// tổ hợp của ĐÚNG HAI điểm đã có (thẳng hàng). Ba điểm trở lên ("vectơ MA + vectơ MB
-// + 2 vectơ MC = vectơ 0", "vectơ AD = vectơ BC") → bỏ qua (mệnh đề chưa phủ →
-// GV thấy việc cần dựng nốt), không đoán.
+// số), không đặt "đại khái" trên đoạn như onSegmentPoint. Lời giải là tổ hợp của ba
+// điểm trở lên ("vectơ MA + vectơ MB + 2 vectơ MC = vectơ 0", "vectơ AD = vectơ BC")
+// → điểm affine Σ wᵢ·Pᵢ (constraint 'affine', cũng phái sinh theo đỉnh).
 //
 // Hệ thức ĐỘ DÀI (không vectơ) chỉ dựng khi đề nói rõ điểm nằm trên ĐOẠN/CẠNH: trên
 // đường thẳng thì "MA = 2MB" có hai nghiệm (chia trong / chia ngoài) — nhập nhằng.
@@ -127,7 +126,14 @@ export const pointRatioRule: LanguageRule = {
           if (an.length !== 1) continue;
           const P = an[0];
           const sol = giaiDiem(lin, P);
-          if (!sol || sol.size !== 2) { hong = true; continue; }
+          if (!sol || sol.size < 2) { hong = true; continue; }
+          if (sol.size > 2) {
+            // Ba điểm trở lên: tổ hợp affine (không nằm trên một đoạn cho trước).
+            if (cho.some((k) => k.ten === P)) { hong = true; continue; }
+            intents.push(addPoint(P, { kind: 'affine', points: [...sol.keys()], weights: [...sol.values()] }));
+            daDung.add(P);
+            continue;
+          }
           const [[X, a], [Y, b]] = [...sol];
           if (Math.abs(a + b - 1) > 1e-9 || Math.abs(b) < 1e-12 || Math.abs(a) < 1e-12) { hong = true; continue; }
           // P = a·X + b·Y = X + b·(Y − X).

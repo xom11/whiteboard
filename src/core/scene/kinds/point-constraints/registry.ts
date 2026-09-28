@@ -18,6 +18,7 @@ import { excenterConstraint } from './excenter';
 import { mixtilinearPointConstraint } from './mixtilinearPoint';
 import { pointAtDistanceConstraint } from './pointAtDistance';
 import { commonTangentPointConstraint } from './commonTangentPoint';
+import { affineConstraint } from './affine';
 import { circleIntersectionConstraint } from './circleIntersection';
 import { circleSecondIntersectionConstraint } from './circleSecondIntersection';
 import { secondIntersectionConstraint } from './secondIntersection';
@@ -47,6 +48,7 @@ const ALL: PointConstraintModule[] = [
   mixtilinearPointConstraint,
   pointAtDistanceConstraint,
   commonTangentPointConstraint,
+  affineConstraint,
   circleIntersectionConstraint,
   circleSecondIntersectionConstraint,
   secondIntersectionConstraint,

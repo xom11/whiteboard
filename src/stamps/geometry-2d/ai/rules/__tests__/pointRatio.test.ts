@@ -114,11 +114,11 @@ describe('pointRatio — hình dựng đúng tỉ số (JSXGraph thật)', () =>
     expect(thamSo(p.M, p.A, p.C)).toBeCloseTo(1 / 3, 9);
   });
 
-  it('ba điểm trở lên ("… + 2 vectơ MC = vectơ 0") ⇒ KHÔNG dựng bừa: mệnh đề chưa phủ', () => {
+  it('ba điểm trở lên ⇒ điểm affine (đo ở affinePoints.test.ts), không phải pointAtDistance', () => {
     const de = 'Cho tam giác ABC. Gọi M là điểm thỏa mãn vectơ MA + vectơ MB + 2 vectơ MC = vectơ 0.';
-    expect(pointRatioRule.match({ problem: de, clauses: segmentClauses(de) })).toHaveLength(0);
-    const r = tryDeterministicFigure(de);
-    expect(r.ok).toBe(false); // không còn "đủ hình" mà thiếu M
+    const [m] = pointRatioRule.match({ problem: de, clauses: segmentClauses(de) });
+    expect((m.intents[0] as any).constraint.kind).toBe('affine');
+    expect(tryDeterministicFigure(de).ok).toBe(true);
   });
 
   it('chỗ chứa là đoạn nhưng vectơ cho điểm ngoài đoạn ⇒ bỏ qua (mâu thuẫn cách hiểu)', () => {

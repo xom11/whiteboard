@@ -92,7 +92,11 @@ export type Constraint2D =
   // Tiếp điểm của tiếp tuyến CHUNG 2 đường tròn `circles` (external/internal).
   // `on` = tiếp điểm trên đtròn 0 hay 1; `variant` = ngoài/trong; `side` = chọn 1
   // trong 2 tiếp tuyến cùng loại. Render functional (đọc tâm+R sống của 2 đtròn).
-  | { kind: 'commonTangentPoint'; circles: [string, string]; on: 0 | 1; variant: 'external' | 'internal'; side: 0 | 1 };
+  | { kind: 'commonTangentPoint'; circles: [string, string]; on: 0 | 1; variant: 'external' | 'internal'; side: 0 | 1 }
+  // Tổ hợp AFFINE Σ wᵢ·Pᵢ (Σ wᵢ = 1) — điểm xác định bởi đẳng thức vectơ (Toán 10):
+  // "vectơ MA + vectơ MB + 2 vectơ MC = vectơ 0" ⇒ M = (A + B + 2C)/4; đỉnh thứ tư
+  // hình bình hành D = A − B + C. Render functional (kéo đỉnh vẫn đúng đẳng thức).
+  | { kind: 'affine'; points: string[]; weights: number[] };
 
 export function constraintRefs2D(c: Constraint2D): string[] {
   switch (c.kind) {
@@ -128,6 +132,7 @@ export function constraintRefs2D(c: Constraint2D): string[] {
     }
     case 'excenter': return [c.vertices[0], c.vertices[1], c.vertices[2]];
     case 'commonTangentPoint': return [c.circles[0], c.circles[1]];
+    case 'affine': return [...c.points];
     // Các kind KHÔNG có ref scene-object (toạ độ literal): liệt kê TƯỜNG MINH để
     // exhaustive never-guard bên dưới buộc khai báo khi thêm constraint kind mới.
     case 'free':
