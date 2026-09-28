@@ -230,3 +230,12 @@ describe('lineCircleIntersection — residue', () => {
     ]);
   });
 });
+
+describe('lineCircleIntersection — chủ ngữ không phải đường tham chiếu / đường kính của đường tròn khác', () => {
+  it('"Đường tròn đường kính OM cắt (O; R) tại hai điểm E, F" KHÔNG thành giao của ĐƯỜNG THẲNG OM', () => {
+    expect(run('Đường tròn đường kính OM cắt đường tròn (O; R) tại hai điểm E, F').flatMap((m) => m.intents)).toEqual([]);
+  });
+  it('"Đường thẳng đi qua C và vuông góc với AB cắt nửa đường tròn tại K" KHÔNG thành giao của AB', () => {
+    expect(run('Đường thẳng đi qua C và vuông góc với AB cắt nửa đường tròn tại K').flatMap((m) => m.intents)).toEqual([]);
+  });
+});

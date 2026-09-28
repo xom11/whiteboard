@@ -56,9 +56,10 @@ const DOUBLE_DISTRIB = new RegExp(
 // "XY cắt (O) (ở|tại) (điểm (thứ hai)?)? Z (khác W)?" — "điểm thứ hai" + "khác W"
 // optional. `khác W` (nếu có) là điểm chung cần loại (other); else mặc định
 // chữ đầu của line (đầu mút nằm trên đường tròn).
-// Chủ ngữ KHÔNG được là đường tham chiếu của "song song/vuông góc với XY".
+// Chủ ngữ KHÔNG được là đường tham chiếu của "song song/vuông góc với XY" hay
+// đường kính của đường tròn khác ("đường tròn đường kính OM cắt (O) tại E, F").
 const SINGLE = new RegExp(
-  String.raw`(?<!(?:với|song\s*song|vuông\s*góc)\s+(?:đường\s*thẳng\s+)?)([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?` + CIRCLE +
+  String.raw`(?<!(?:với|song\s*song|vuông\s*góc|kính)\s+(?:đường\s*thẳng\s+)?)([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?` + CIRCLE +
     String.raw`\s+(?:ở|tại)\s+(?:điểm\s+(?:thứ\s+hai\s+)?)?(?:là\s+)?([A-Z])(?![A-Z])(?:\s+khác\s+([A-Z])(?![A-Z]))?`,
   'gu',
 );
@@ -77,7 +78,7 @@ const SINGLE_NAMED_CENTER = new RegExp(
 // 0/1). Khác SINGLE (1 giao thứ hai khi biết điểm chung): ở đây 2 đầu mút đều
 // chưa nằm trên (O) nên dùng intersection lineCircle 2 nhánh.
 const BOTH = new RegExp(
-  String.raw`([A-Z]{2})(?![A-Z])\s+cắt\s+(?:` + CIRCLE + String.raw`|(?:nửa\s+)?đường\s*tròn(?!\s*\())` +
+  String.raw`(?<!(?:với|song\s*song|vuông\s*góc|kính)\s+(?:đường\s*thẳng\s+)?)([A-Z]{2})(?![A-Z])\s+cắt\s+(?:` + CIRCLE + String.raw`|(?:nửa\s+)?đường\s*tròn(?!\s*\())` +
     String.raw`\s+(?:lần\s*lượt\s+)?(?:ở|tại)\s+(?:hai\s+|các\s+)?điểm\s+(?:phân\s*biệt\s+)?([A-Z])\s*(?:,|và)\s*([A-Z])(?![A-Z])`,
   'gu',
 );
@@ -87,7 +88,7 @@ const BOTH = new RegExp(
 // khi tên-ĐẦU ∈ line (else nhường SINGLE/BOTH) → không xung đột. g1=line g2=circle
 // g3=P g4=Q.
 const TWO_NAMED = new RegExp(
-  String.raw`([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?` + CIRCLE +
+  String.raw`(?<!(?:với|song\s*song|vuông\s*góc|kính)\s+(?:đường\s*thẳng\s+)?)([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?` + CIRCLE +
     String.raw`\s+(?:ở|tại)\s+([A-Z])\s+và\s+([A-Z])(?![A-Z])`,
   'gu',
 );
@@ -107,7 +108,7 @@ const LINE_AND_CIRCLE = new RegExp(
 // đường tròn TRẦN (không paren, httcd:42 "BN cắt đường tròn ở C"). 1 đầu mút XY
 // trên đường tròn (đầu line) → Z = giao thứ hai. circle resolve toàn đề.
 const SINGLE_BARE = new RegExp(
-  String.raw`([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?(?:nửa\s+)?đường\s*tròn(?!\s*\()\s+(?:ở|tại)\s+(?:điểm\s+(?:thứ\s+hai\s+)?)?(?:là\s+)?([A-Z])(?![A-Z])`,
+  String.raw`(?<!(?:với|song\s*song|vuông\s*góc|kính)\s+(?:đường\s*thẳng\s+)?)([A-Z]{2})(?![A-Z])\s+(?:kéo\s+dài\s+)?cắt\s+(?:lại\s+)?(?:nửa\s+)?đường\s*tròn(?!\s*\()\s+(?:ở|tại)\s+(?:điểm\s+(?:thứ\s+hai\s+)?)?(?:là\s+)?([A-Z])(?![A-Z])`,
   'gu',
 );
 
