@@ -5,24 +5,12 @@
 // docs/datasets/lop9-2026-09.txt và hinh-phang-tong-hop-2026-09.txt.
 import { tryDeterministicFigure } from '../deterministic/tryDeterministicFigure';
 import { segmentClauses } from '../deterministic/coverage';
-import { toaDoHinh, dist, thuocDoan, type XY } from './helpers/toaDoHinh';
+import { toaDoHinh, dist, thuocDoan } from './helpers/toaDoHinh';
+import { thangHang, vuong, songSong, trenDuongTron, cungPhia, khac } from './helpers/doHinh';
 
 beforeAll(() => {
   window.matchMedia ??= (() => ({ matches: false, addListener() {}, removeListener() {} })) as never;
 });
-
-const cheo = (a: XY, b: XY, p: XY) => (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0]);
-const thangHang = (p: XY, a: XY, b: XY) => Math.abs(cheo(a, b, p)) < 1e-7 * Math.max(1, dist(a, b));
-const tich = (a: XY, b: XY, c: XY, d: XY) => (b[0] - a[0]) * (d[0] - c[0]) + (b[1] - a[1]) * (d[1] - c[1]);
-/** AB ⊥ CD */
-const vuong = (a: XY, b: XY, c: XY, d: XY) => Math.abs(tich(a, b, c, d)) < 1e-7 * dist(a, b) * dist(c, d);
-const songSong = (a: XY, b: XY, c: XY, d: XY) =>
-  Math.abs((b[0] - a[0]) * (d[1] - c[1]) - (b[1] - a[1]) * (d[0] - c[0])) < 1e-7 * dist(a, b) * dist(c, d);
-/** P trên đường tròn tâm O bán kính OR. */
-const trenDuongTron = (p: XY, o: XY, r: number) => Math.abs(dist(p, o) - r) < 1e-7 * Math.max(1, r);
-/** P, Q cùng phía đường thẳng AB. */
-const cungPhia = (a: XY, b: XY, p: XY, q: XY) => Math.sign(cheo(a, b, p)) === Math.sign(cheo(a, b, q));
-const khac = (p: XY, q: XY) => dist(p, q) > 1e-3;
 
 describe('coverage — mệnh đề dựng hình nằm giữa phần chứng minh', () => {
   it('"b) Đường thẳng qua E … cắt tia AF tại G" là mệnh đề hình; "Chứng minh … cắt … tại" thì không', () => {
