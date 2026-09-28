@@ -27,3 +27,19 @@ describe('orientedArc', () => {
     expect(giua2[0]).toBeCloseTo(-Math.SQRT1_2, 9); // cung lớn 225°
   });
 });
+
+import { rayCircleHit } from '../pointConstructions';
+
+describe('rayCircleHit (giao thứ hai khi điểm biết trước KHÔNG nằm trên đường tròn)', () => {
+  it('điểm ngoài: lấy giao GẦN trên tia', () => {
+    const p = rayCircleHit([0, 0], 1, [-3, 0], [0, 0]);
+    expect(p[0]).toBeCloseTo(-1, 9);
+  });
+  it('điểm trong: lấy giao trên tia (không phải phía ngược lại)', () => {
+    const p = rayCircleHit([0, 0], 1, [0.2, 0], [0.5, 0]);
+    expect(p[0]).toBeCloseTo(1, 9);
+  });
+  it('không cắt ⇒ NaN', () => {
+    expect(Number.isNaN(rayCircleHit([0, 0], 1, [-3, 5], [3, 5])[0])).toBe(true);
+  });
+});

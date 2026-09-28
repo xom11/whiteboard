@@ -185,3 +185,26 @@ export function pointOnOrientedArc(center: XY, radius: number, start: XY, end: X
   const a = a0 + t * sweep;
   return [center[0] + radius * Math.cos(a), center[1] + radius * Math.sin(a)];
 }
+
+/**
+ * Giao của TIA from→through với đường tròn khi `from` KHÔNG nằm trên đường tròn
+ * ("Tia FE cắt (O) tại P", "AH cắt (O) tại P" với A ngoài): điểm đầu tiên tia gặp
+ * đường tròn (from ngoài ⇒ giao gần; from trong ⇒ giao duy nhất trên tia). Tia
+ * không cắt ⇒ lấy giao trên đường thẳng gần `from` nhất; không cắt ⇒ NaN.
+ */
+export function rayCircleHit(center: XY, radius: number, from: XY, through: XY): XY {
+  const dx = through[0] - from[0];
+  const dy = through[1] - from[1];
+  const fx = from[0] - center[0];
+  const fy = from[1] - center[1];
+  const a = dx * dx + dy * dy;
+  const b = 2 * (fx * dx + fy * dy);
+  const c = fx * fx + fy * fy - radius * radius;
+  const disc = b * b - 4 * a * c;
+  if (a < 1e-18 || disc < 0) return [NaN, NaN];
+  const s = Math.sqrt(disc);
+  const roots = [(-b - s) / (2 * a), (-b + s) / (2 * a)];
+  const tren = roots.filter((t) => t > 1e-9);
+  const t = tren.length > 0 ? Math.min(...tren) : roots.reduce((p, q) => (Math.abs(q) < Math.abs(p) ? q : p));
+  return [from[0] + t * dx, from[1] + t * dy];
+}

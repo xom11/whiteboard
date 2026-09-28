@@ -125,7 +125,7 @@ export function tryPartialDeterministic(problem: string): PartialDeterministicRe
 const goc = (circle: string) => circle.replace(/_c$/u, '');
 
 /** Tên các điểm CHẮC CHẮN nằm trên từng đường tròn (theo tên gốc, bỏ hậu tố _c). */
-function diemTrenDuongTron(intents: readonly IntentT[]): Map<string, Set<string>> {
+export function diemTrenDuongTron(intents: readonly IntentT[]): Map<string, Set<string>> {
   const out = new Map<string, Set<string>>();
   const them = (circle: string | undefined, ...names: (string | undefined)[]) => {
     if (!circle) return;

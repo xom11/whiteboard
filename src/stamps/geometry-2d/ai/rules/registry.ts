@@ -104,6 +104,7 @@ import { rightAngleVertexCirclesRule } from './rightAngleVertexCircles';
 import { namedLineRule } from './namedLine';
 import { bisectorsMeetRule } from './bisectorsMeet';
 import { hexagonRule } from './hexagon';
+import { lineCutsLineAndCircleRule } from './lineCutsLineAndCircle';
 
 const RULES: readonly LanguageRule[] = [
   namedLineRule,
@@ -207,6 +208,7 @@ const RULES: readonly LanguageRule[] = [
   perpNamedLineRule,
   parallelSidePointsRule,
   bisectorsMeetRule,
+  lineCutsLineAndCircleRule,
 ];
 
 /**
