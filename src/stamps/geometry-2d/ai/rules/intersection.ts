@@ -47,6 +47,10 @@ const CAT_TAI = new RegExp(`${REF}\\s+(?:kéo\\s+dài\\s+)?cắt\\s+${REF}\\s+(?
 //    nhau" → "đôi một" (diameterCirclePairwise) chen vào sẽ phá khớp.
 // CONN gồm dấu phẩy: "AB, CD cắt nhau tại E" (Câu 13). "đôi một" vẫn bị loại vì
 // nó chen giữa REF2 và "cắt nhau" → REF2 không liền "cắt nhau".
+const DUONG_CUA_TRUOC =
+  /(?:trung\s*trực\s+(?:của\s+)?|(?:phân\s*giác|vuông\s*góc|song\s*song)\s+của\s+)(?:các\s+|hai\s+)?(?:đoạn\s*(?:thẳng\s+)?|cạnh\s+|góc\s+)?$/u;
+// ("đường trung tuyến BD, CE cắt nhau tại G" / "phân giác BE và CF cắt nhau tại I":
+// đoạn nêu tên CHÍNH là đường → giao hợp lệ, không chặn.)
 const CAT_NHAU = new RegExp(
   `${REF}\\s*(?:,|và|với)\\s*${REF}\\s+(?:của\\s+tam\\s*giác\\s+[A-Z]{3}\\s+)?(?:kéo\\s+dài\\s+)?(?:cắt|giao)\\s+nhau\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])`,
   'gu',
@@ -347,7 +351,12 @@ export const intersectionRule: LanguageRule = {
       for (const m of c.text.matchAll(CAT_TAI)) emit(m[3], m[1], m[2]);
       // C: "REF1 và REF2 cắt nhau tại D".
       CAT_NHAU.lastIndex = 0;
-      for (const m of c.text.matchAll(CAT_NHAU)) emit(m[3], m[1], m[2]);
+      for (const m of c.text.matchAll(CAT_NHAU)) {
+        // "các đường trung trực của các đoạn thẳng BE và CA cắt nhau ở I": cái cắt
+        // nhau là hai ĐƯỜNG trung trực/phân giác/…, không phải BE và CA.
+        if (DUONG_CUA_TRUOC.test(c.text.slice(0, m.index))) continue;
+        emit(m[3], m[1], m[2]);
+      }
 
       // C2: "hai dây AB, CD … vuông góc với nhau tại I" → I=AB∩CD (chỉ clause "dây").
       if (/dây/u.test(c.text)) {
@@ -380,6 +389,7 @@ export const intersectionRule: LanguageRule = {
       CAT_NHAU_PRIMED.lastIndex = 0;
       for (const m of c.text.matchAll(CAT_NHAU_PRIMED)) {
         const name = m[3];
+        if (DUONG_CUA_TRUOC.test(c.text.slice(0, m.index))) continue;
         if (seen.has(name)) continue;
         const [a, b] = splitPrimedPair(m[1]);
         const [d, e] = splitPrimedPair(m[2]);

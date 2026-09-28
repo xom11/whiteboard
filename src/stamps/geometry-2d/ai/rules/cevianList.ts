@@ -38,6 +38,13 @@ const REVERSE = new RegExp(
   'gu',
 );
 
+// Hai loại khác nhau, phân phối: "AI và AM lần lượt là đường cao và đường trung tuyến"
+const HON_HOP = new RegExp(
+  String.raw`(?<![A-Z])([A-Z])([A-Z])\s*(?:,|và)\s*([A-Z])([A-Z])(?![A-Z'′])\s+(?:lần\s*lượt|theo\s+thứ\s+tự)\s+là\s+(?:các\s+)?(?:đường\s*|tia\s+)?` +
+    KIND + String.raw`(?!\s*ngoài)\s*(?:,|và)\s*(?:đường\s*|tia\s+)?` + KIND + String.raw`(?!\s*ngoài)(?!\p{L})`,
+  'gu',
+);
+
 type Kind = 'median' | 'bisector' | 'altitude';
 function kindOf(word: string): Kind {
   if (/trung/iu.test(word)) return 'median';
@@ -65,6 +72,12 @@ export const cevianListRule: LanguageRule = {
         hits.push({ kind: kindOf(m[1]), list: m[2], after, rev: false });
       }
       for (const m of c.text.matchAll(REVERSE)) hits.push({ kind: kindOf(m[2]), list: m[1], after: '', rev: true });
+      for (const m of c.text.matchAll(HON_HOP)) {
+        const [, a1, f1, a2, f2, k1, k2] = m;
+        if (kindOf(k1) === kindOf(k2) || f1 === f2) continue;
+        hits.push({ kind: kindOf(k1), list: a1 + f1, after: '', rev: true });
+        hits.push({ kind: kindOf(k2), list: a2 + f2, after: '', rev: true });
+      }
 
       for (const h of hits) {
         // Tên-sau chỉ-phẩy là việc của `cevian`; tên-trước thì `cevian` chỉ nhận đường cao.

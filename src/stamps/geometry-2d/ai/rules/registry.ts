@@ -4,11 +4,13 @@
 // + thêm vào ALL_RULES (không sửa engine).
 import type { LanguageRule, RuleContext, RuleMatch } from './_types';
 import { triangleRule } from './triangle';
+import { congruentTriangleOppositeRule } from './congruentTriangleOpposite';
 import { quadRule } from './quad';
 import { connectRule } from './connect';
 import { midpointRule } from './midpoint';
 import { midpointReflectRule } from './midpointReflect';
 import { perpBisectorRule } from './perpBisector';
+import { perpBisectorsMeetRule } from './perpBisectorsMeet';
 import { cevianRule } from './cevian';
 import { cevianListRule } from './cevianList';
 import { angleBisectorAngleRule } from './angleBisectorAngle';
@@ -134,6 +136,7 @@ const RULES: readonly LanguageRule[] = [
   lineThroughCutsTwoLinesRule,
   rightAngleViewingRule,
   triangleRule,
+  congruentTriangleOppositeRule,
   inscribedSquareRule,
   hexagonRule,
   quadRule,
@@ -141,6 +144,7 @@ const RULES: readonly LanguageRule[] = [
   midpointRule,
   midpointReflectRule,
   perpBisectorRule,
+  perpBisectorsMeetRule,
   cevianRule,
   cevianListRule,
   angleBisectorAngleRule,

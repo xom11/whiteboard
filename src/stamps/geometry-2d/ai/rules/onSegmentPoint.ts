@@ -68,7 +68,9 @@ const TAKE_TWO_ON_TWO_SEG = new RegExp(
 
 // "Trên cạnh AC lấy điểm M" / "Trên đoạn thẳng OB lấy điểm H" / "trên đáy CD …".
 const ON_SEG_THEN_POINT = new RegExp(
-  String.raw`[Tt]rên\s+(?:cạnh|đáy|đoạn(?:\s+thẳng)?|bán\s*kính|đường\s*kính|dây\s*(?:cung)?)\s+${SEG}[^.]{0,30}?(?:lấy\s+)?(?:một\s+)?(?:điểm\s+)?${POINT}`,
+  // (?<![A-Z]) trước tên: "hình chiếu của H trên cạnh AB, AC" từng bắt chữ "C" của
+  // "AC" thành điểm mới C ∈ AB (đỉnh tam giác bị kéo lên cạnh — hình sai mà vẫn full).
+  String.raw`[Tt]rên\s+(?:cạnh|đáy|đoạn(?:\s+thẳng)?|bán\s*kính|đường\s*kính|dây\s*(?:cung)?)\s+${SEG}[^.]{0,30}?(?:lấy\s+)?(?:một\s+)?(?:điểm\s+)?(?<![A-Z])${POINT}`,
   'gu',
 );
 

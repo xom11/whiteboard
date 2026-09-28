@@ -68,4 +68,87 @@ describe('lop7-2026-09 — hình đúng điều kiện đề', () => {
     expect(thangHang(p.K, p.A, p.D)).toBe(true);
     expect(dist(p.A, p.D) / dist(p.A, p.K)).toBeCloseTo(2 / 3, 9);
   });
+
+  const goc = (a: XY, o: XY, b: XY) => {
+    const u = [a[0] - o[0], a[1] - o[1]];
+    const v = [b[0] - o[0], b[1] - o[1]];
+    return (Math.acos((u[0] * v[0] + u[1] * v[1]) / (Math.hypot(u[0], u[1]) * Math.hypot(v[0], v[1]))) * 180) / Math.PI;
+  };
+
+  it('#17 "góc A = 90°; góc B = 60°" (không chữ "vuông"): góc đúng số đo; D trên CẠNH BC với BD = AB', () => {
+    const p = toaDoHinh('Cho tam giác ABC có góc A = 90°; góc B = 60°. Trên cạnh BC lấy điểm D sao cho BD = AB. Đường vuông góc với BC tại D cắt AC ở E.');
+    expect(goc(p.B, p.A, p.C)).toBeCloseTo(90, 9);
+    expect(goc(p.A, p.B, p.C)).toBeCloseTo(60, 9);
+    expect(thuocDoan(p.D, p.B, p.C)).toBe(true);
+    expect(dist(p.B, p.D)).toBeCloseTo(dist(p.A, p.B), 9);
+  });
+
+  it('#32 "vuông tại C có góc A = 60°" và #59 "cân tại A, có góc A = 50°": số đo góc đúng', () => {
+    const p = toaDoHinh('Cho tam giác ABC vuông tại C có góc A = 60°. Trên cạnh AB lấy điểm K sao cho AK = AC.');
+    expect(goc(p.A, p.C, p.B)).toBeCloseTo(90, 9);
+    expect(goc(p.C, p.A, p.B)).toBeCloseTo(60, 9);
+    const q = toaDoHinh('Cho tam giác ABC cân tại A, có góc A = 50°. Đường trung trực của AB cắt BC ở D.');
+    expect(goc(q.B, q.A, q.C)).toBeCloseTo(50, 9);
+    expect(dist(q.A, q.B)).toBeCloseTo(dist(q.A, q.C), 9);
+  });
+
+  it('#33 "góc BAC là góc tù": góc A > 90°', () => {
+    const p = toaDoHinh('Cho tam giác ABC có góc BAC là góc tù. Lấy điểm D nằm giữa A và B, lấy điểm E nằm giữa A và C. Chứng minh DE < BC.');
+    expect(goc(p.B, p.A, p.C)).toBeGreaterThan(90);
+  });
+
+  it('#54 "AB < AC" được tôn trọng ⇒ E (AE = AB) nằm TRONG cạnh AC', () => {
+    const p = toaDoHinh('Cho tam giác ABC có AB < AC. Kẻ tia phân giác AD của góc BAC (D ∈ BC). Trên cạnh AC lấy điểm E sao cho AE = AB, trên tia AB lấy điểm F sao cho AF = AC.');
+    expect(dist(p.A, p.B)).toBeLessThan(dist(p.A, p.C));
+    expect(thuocDoan(p.E, p.A, p.C)).toBe(true);
+  });
+
+  it('#55 "vuông tại A có AB = AC/2": tỉ số cạnh đúng; B là trung điểm AK', () => {
+    const p = toaDoHinh('Cho tam giác ABC vuông tại A có AB = AC/2, AD là tia phân giác góc BAC (D ∈ BC). Gọi E là trung điểm của AC.\nb) AB cắt DE tại K. Chứng minh rằng tam giác DCK cân và B là trung điểm của đoạn thẳng AK.');
+    expect(goc(p.B, p.A, p.C)).toBeCloseTo(90, 9);
+    expect(dist(p.A, p.C)).toBeCloseTo(2 * dist(p.A, p.B), 9);
+    expect(dist(p.A, p.B)).toBeCloseTo(dist(p.B, p.K), 9);
+  });
+
+  it('#25 "hình chiếu vuông góc của H trên cạnh AB, AC": đỉnh C KHÔNG bị kéo lên AB; M, N là chân vuông góc', () => {
+    const p = toaDoHinh('Cho tam giác ABC cân tại A, đường cao AH. Lấy điểm M, N lần lượt là hình chiếu vuông góc của H trên cạnh AB, AC. Đường thẳng qua H và song song với AC cắt cạnh AB ở D.');
+    expect(dist(p.A, p.B)).toBeCloseTo(dist(p.A, p.C), 9);
+    expect(dist(p.C, p.A)).toBeGreaterThan(1);
+    expect(dot(p.H, p.M, p.A, p.B)).toBeCloseTo(0, 9);
+    expect(dot(p.H, p.N, p.A, p.C)).toBeCloseTo(0, 9);
+    expect(dist(p.D, p.H)).toBeCloseTo(dist(p.A, p.B) / 2, 9);
+  });
+
+  it('#61 "các đường trung trực của các đoạn thẳng BE và CA cắt nhau ở I": IB = IE, IC = IA (không phải I = BE ∩ CA)', () => {
+    const p = toaDoHinh('Cho tam giác ABC có AB < AC, lấy E trên cạnh CA sao cho CE = BA, các đường trung trực của các đoạn thẳng BE và CA cắt nhau ở I.');
+    expect(thuocDoan(p.E, p.C, p.A)).toBe(true);
+    expect(dist(p.I, p.B)).toBeCloseTo(dist(p.I, p.E), 9);
+    expect(dist(p.I, p.C)).toBeCloseTo(dist(p.I, p.A), 9);
+    // kết luận b): AI là phân giác góc BAC
+    expect(goc(p.B, p.A, p.I)).toBeCloseTo(goc(p.I, p.A, p.C), 6);
+  });
+
+  it('#7 "Trên nửa mặt phẳng bờ AC không chứa B vẽ tam giác ACD sao cho AD = BC; CD = AB": đúng độ dài, khác phía B', () => {
+    const p = toaDoHinh('Cho tam giác ABC, đường cao AH. Trên nửa mặt phẳng bờ AC không chứa B vẽ tam giác ACD sao cho AD = BC; CD = AB. Chứng minh rằng: AB // CD và AH ⊥ AD.');
+    expect(dist(p.A, p.D)).toBeCloseTo(dist(p.B, p.C), 9);
+    expect(dist(p.C, p.D)).toBeCloseTo(dist(p.A, p.B), 9);
+    expect(cheo(p.A, p.C, p.B) * cheo(p.A, p.C, p.D)).toBeLessThan(0);
+    expect(dot(p.A, p.H, p.A, p.D)).toBeCloseTo(0, 9);
+  });
+
+  it('#68 "hai tam giác nhọn ABC và ECD": đỉnh E KHÔNG trùng A; B, C, D thẳng hàng', () => {
+    const p = toaDoHinh('Cho hai tam giác nhọn ABC và ECD, trong đó ba điểm B, C, D thẳng hàng. Hai đường cao BM và CN của tam giác ABC cắt nhau tại I, hai đường cao CP và DQ của tam giác ECD cắt nhau tại K. Chứng minh AI // EK.');
+    expect(dist(p.E, p.A)).toBeGreaterThan(0.5);
+    expect(thangHang(p.C, p.B, p.D)).toBe(true);
+    // đúng kết luận: AI // EK
+    expect(songSong(p.A, p.I, p.E, p.K)).toBe(true);
+  });
+
+  it('#43 "AI và AM lần lượt là đường cao và đường trung tuyến": I chân đường cao, M trung điểm BC', () => {
+    const p = toaDoHinh('Gọi AI và AM lần lượt là đường cao và đường trung tuyến xuất phát từ đỉnh A của tam giác ABC. Chứng minh rằng a) AI < (AB + AC)/2');
+    expect(dot(p.A, p.I, p.B, p.C)).toBeCloseTo(0, 9);
+    expect(thangHang(p.I, p.B, p.C)).toBe(true);
+    expect(dist(p.B, p.M)).toBeCloseTo(dist(p.M, p.C), 9);
+  });
 });
+
