@@ -9,6 +9,7 @@
 import type { SolidSpec3D, BaseVariant, ApexVariant, HeightMode } from '../intent';
 import type { RuleContext3D } from './_types';
 import { segmentClauses3D } from '../deterministic/coverage3d';
+import { solidLayout } from '../layout3d';
 import { chuanHoaDe3d } from '../deterministic/chuanHoa3d';
 
 // (Không import _shared: _shared gọi ngược module này — tránh vòng import.)
@@ -33,7 +34,7 @@ const QUAL = '(?:\\s+(?:tam|tứ|lục)\\s+giác)?(?:\\s+đều)?';
 const HEAD_PYRAMID = new RegExp(`(?:[Hh]ình|[Kk]hối)\\s+chóp${QUAL}\\s+([A-Z])\\.([A-Z]{3,})(?![A-Z'])`, 'u');
 const HEAD_TETRA = /(?:[Hh]ình\s+|[Kk]hối\s+)?[Tt]ứ\s+diện(\s+đều)?\s+([A-Z]{4})(?![\p{L}'])/u;
 const HEAD_PRISM = new RegExp(
-  `(?:[Hh]ình|[Kk]hối)\\s+lăng\\s+trụ((?:\\s+(?:đứng|đều|tam\\s+giác|tứ\\s+giác|lục\\s+giác|xiên))*)\\s+([A-Z]{3,4})\\.((?:[A-Z]')+)`,
+  `(?:(?:[Hh]ình|[Kk]hối)\\s+)?[Ll]ăng\\s+trụ((?:\\s+(?:đứng|đều|tam\\s+giác|tứ\\s+giác|lục\\s+giác|xiên))*)\\s+([A-Z]{3,4})\\.((?:[A-Z]')+|(?:[A-Z]1)+)(?![A-Z'\\d])`,
   'u',
 );
 const HEAD_BOX = /(?:[Hh]ình|[Kk]hối)\s+(hộp(?:\s+chữ\s+nhật|\s+đứng)?|lập\s+phương)\s+([A-Z]{4})\.((?:[A-Z]')+)/u;
@@ -290,7 +291,7 @@ function apexFacts(ctx: RuleContext3D, apex: string, base: string[], bVar: BaseV
     return f.variant === 'regular' ? { ...f, anchor: `center:${h}` } : f;
   }));
   // (2) (SXY) ⊥ đáy | mặt bên SXY nằm trong mặt phẳng vuông góc với đáy
-  out.push(...eachClause(ctx, new RegExp(`(?:\\(${A}(${V})(${V})\\)|(?<=mặt\\s+phẳng\\s+)${A}(${V})(${V})(?![\\p{L}']))\\s*${PERP}\\s*${MP}${B}`, 'u'), (m) =>
+  out.push(...eachClause(ctx, new RegExp(`(?:\\(${A}(${V})(${V})\\)|(?<=(?:mặt\\s+phẳng|mặt\\s+bên)\\s+)${A}(${V})(${V})(?![\\p{L}']))\\s*${PERP}\\s*${MP}${B}`, 'u'), (m) =>
     ({ variant: 'unknown' as const, facePerp: (m[1] ?? m[3]) + (m[2] ?? m[4]) })));
   out.push(...eachClause(ctx, new RegExp(
     `(?:(?:[Mm]ặt\\s+bên|[Tt]am\\s+giác|[Mm]ặt\\s+phẳng|[Cc]ạnh\\s+bên|△|∆)\\s*)?(?<![\\p{L}'])\\(?${A}(${V})(${V})\\)?[^.;]{0,60}?(?:nằm\\s+trong|thuộc)\\s+(?:một\\s+)?mặt\\s+phẳng\\s+${PERP}\\s*${MP}${B}`, 'u'), (m) =>
@@ -331,7 +332,7 @@ function apexFacts(ctx: RuleContext3D, apex: string, base: string[], bVar: BaseV
     const s0 = sh[0];
     let r: ApexFact;
     // Tam giác SXY được nhắc tới mà không đọc được hình dạng → không đoán.
-    const mentioned = new RegExp(`(?:[Tt]am\\s+giác|△|∆)\\s*(?:${A}${x}${y}|${A}${y}${x}|${x}${A}${y}|${y}${A}${x}|${x}${y}${A}|${y}${x}${A})(?![\\p{L}'])`, 'u').test(chuanHoaDe3d(ctx.problem));
+    const mentioned = new RegExp(`(?:[Tt]am\\s+giác|△|∆)\\s*(?:${A}${x}${y}|${A}${y}${x}|${x}${A}${y}|${y}${A}${x}|${x}${y}${A}|${y}${x}${A})(?![\\p{L}'])(?!\\s+(?:và\\s+)?(?:nằm|thuộc)\\s)`, 'u').test(chuanHoaDe3d(ctx.problem));
     if (!s0 && eqSides) r = { variant: 'over-edge-mid', anchor: x + y };
     else if (!s0 && mentioned) r = { variant: 'unknown' };
     else if (!s0) r = { variant: 'over-edge-mid', anchor: x + y };   // chân bất kỳ trên XY: trung điểm hợp lệ
@@ -351,7 +352,7 @@ function faceShapes(ctx: RuleContext3D, apex: string, V: string): Array<FaceShap
   const A = esc(apex);
   const re = new RegExp(
     `(?:(?:[Tt]am\\s+giác|[Mm]ặt\\s+bên|△|∆)\\s*(?:${A}(${V})(${V})|(${V})${A}(${V})|(${V})(${V})${A})|(?<![\\p{L}])(?:${A}(${V})(${V}))\\s+là\\s+(?:một\\s+)?tam\\s+giác)` +
-    `\\s+(?:là\\s+(?:một\\s+)?tam\\s+giác\\s+)?(đều|vuông\\s+cân|cân|vuông)(?:\\s+(?:tại|đỉnh)\\s*([A-Z])(?![\\p{L}']))?(?![\\p{L}])`,
+    `\\s+(?:là\\s+(?:một\\s+)?tam\\s+giác\\s+)?(đều|vuông\\s+cân|cân|vuông(?!\\s+góc))(?:\\s+(?:tại|đỉnh)\\s*([A-Z])(?![\\p{L}']))?(?![\\p{L}])`,
     'u',
   );
   return eachClause(ctx, re, (m) => {
@@ -636,6 +637,12 @@ export function parseKhoiDaDien(ctx: RuleContext3D): KhoiDaDien | KhoiTuChoi | n
       /(?:nằm\s+trong|thuộc)\s+(?:một\s+)?mặt\s+phẳng\s+vuông\s+góc/u,
       /(?<![\p{L}])[A-Z]'[A-Z]'?\s*=\s*[A-Z]'[A-Z]'?\s*=/u,
     ])) return refuse('dữ kiện lăng trụ chưa hiểu');
+    // Cạnh bên tạo với đáy góc nhọn ⟹ lăng trụ XIÊN; hình đứng mặc định sẽ sai (90°).
+    if (!oblique && !/đứng|đều/u.test(q)) {
+      const tb = baseLabels.map(esc).join('');
+      const lat = new RegExp(`(?:[Cc]ạnh\\s+bên|(?<![\\p{L}'])([${tb}])'\\1(?!')|(?<![\\p{L}'])([${tb}])\\2'|(?<![\\p{L}'])([${tb}])1\\3(?!\\d)|(?<![\\p{L}'])([${tb}])\\4 ?1)[^.;]{0,30}?(?:tạo|hợp)\\s+với|góc\\s+(?:giữa|tạo\\s+bởi)\\s+(?:cạnh\\s+bên|(?:đường\\s+thẳng\\s+)?(?<![\\p{L}'])([${tb}])\\5'|([${tb}])'\\6(?!'))\\s+và`, 'u');
+      if (lat.test(p)) return refuse('cạnh bên lăng trụ xiên tạo góc với đáy');
+    }
     const spec: SolidSpec3D = {
       flavor: 'prism', baseLabels, topLabels: top, baseVariant: bVar, apexVariant: 'free',
       ...(bAnc ? { baseAnchor: bAnc } : {}),
@@ -707,6 +714,49 @@ export function parseKhoiDaDien(ctx: RuleContext3D): KhoiDaDien | KhoiTuChoi | n
   if (isRegular || isTetraReg || allEq) {
     spec.apexVariant = spec.apexVariant === 'over-circumcenter' || n === 3 || bVar === 'square' ? spec.apexVariant : 'regular';
     if (allEq || isTetraReg || (latEq && isRegular)) spec.heightMode = 'lateral-eq-base';
+  }
+  // Mặt bên có hình dạng mà chưa dữ kiện nào quyết định chiều cao:
+  //  - chân đường cao TỰ DO → đặt đỉnh trên trung điểm cạnh của mặt đó (trường hợp riêng hợp lệ);
+  //  - chân đã cố định → giải chiều cao cho mặt đều / vuông tại S (vô nghiệm ⟹ kiểm số từ chối).
+  const shapes0 = faceShapes(ctx, apex, `[${baseLabels.map(esc).join('')}]`)
+    .filter((f) => f.shape === 'đều' || f.shape === 'vuông cân' || f.shape === 'vuông S' || f.shape === 'cân');
+  if (shapes0.length && !spec.heightMode) {
+    const f = shapes0[0];
+    const free = !strong.length && !af.some((x) => x.weak) && !isRegular && !isTetraReg && !allEq;
+    if (free) {
+      spec.apexVariant = 'over-edge-mid';
+      spec.apexAnchor = f.edge;
+      if (f.shape === 'đều') spec.heightMode = 'face-equilateral';
+      else if (f.shape !== 'cân') spec.heightMode = 'face-right-isosceles';
+    } else if (f.shape === 'đều' || f.shape === 'vuông S' || f.shape === 'vuông cân') {
+      spec.heightMode = f.shape === 'đều' ? 'solve-equilateral' : 'solve-right-apex';
+      spec.heightEdge = f.edge;
+    }
+  }
+  // Kiểm SỐ mọi hình dạng tam giác mặt bên đề nêu ("tam giác SAB đều", "SBC vuông tại B"…)
+  // trên chính layout sẽ vẽ — sai một cái là từ chối.
+  const L = solidLayout(spec);
+  for (const f of faceShapes(ctx, apex, `[${baseLabels.map(esc).join('')}]`)) {
+    const [x, y] = splitVertexToken(f.edge);
+    const S = L.coords[apex], X = L.coords[x], Y = L.coords[y];
+    if (!S || !X || !Y) return refuse('mặt bên lạ');
+    const d = (a: number[], b: number[]) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+    const ang = (o: number[], a: number[], b: number[]) => {
+      const u = [a[0] - o[0], a[1] - o[1], a[2] - o[2]], v = [b[0] - o[0], b[1] - o[1], b[2] - o[2]];
+      return Math.abs(u[0] * v[0] + u[1] * v[1] + u[2] * v[2]) / (Math.hypot(u[0], u[1], u[2]) * Math.hypot(v[0], v[1], v[2]));
+    };
+    const eq = (a: number, b: number) => Math.abs(a - b) < 1e-6 * Math.max(1, a);
+    const P: Record<string, number[]> = { [apex]: S, [x]: X, [y]: Y };
+    let ok = true;
+    if (f.shape === 'đều') ok = eq(d(S, X), d(X, Y)) && eq(d(S, Y), d(X, Y));
+    else if (f.shape === 'vuông cân') ok = ang(S, X, Y) < 1e-6 && eq(d(S, X), d(S, Y));
+    else if (f.shape === 'cân') ok = eq(d(S, X), d(S, Y));
+    else if (f.shape === 'vuông S') ok = ang(S, X, Y) < 1e-6;
+    else if (f.shape === 'vuông tại' && f.at && P[f.at]) {
+      const o = P[f.at], rest = [apex, x, y].filter((l) => l !== f.at).map((l) => P[l]);
+      ok = ang(o, rest[0], rest[1]) < 1e-6;
+    } else ok = false;
+    if (!ok) return refuse('hình dạng mặt bên không khớp');
   }
   return { spec, clauseIds: claimsOf(bf, af), ...(center ? { center } : {}) };
 }

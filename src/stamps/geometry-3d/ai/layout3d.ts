@@ -161,6 +161,18 @@ export function solidLayout(spec: SolidSpec3D): SolidLayout {
       const r = Math.hypot(tpl[0][0] - foot[0], tpl[0][1] - foot[1]);
       return e > r ? Math.sqrt(e * e - r * r) : H;
     }
+    if ((spec.heightMode === 'solve-equilateral' || spec.heightMode === 'solve-right-apex') && spec.heightEdge) {
+      const [a, b] = splitAnchor(spec.heightEdge);
+      if (coords[a] && coords[b]) {
+        const [xa, ya] = [coords[a][0] - foot[0], coords[a][1] - foot[1]];
+        const [xb, yb] = [coords[b][0] - foot[0], coords[b][1] - foot[1]];
+        const h2 = spec.heightMode === 'solve-right-apex'
+          ? -(xa * xb + ya * yb)
+          : (xa - xb) ** 2 + (ya - yb) ** 2 - (xa * xa + ya * ya);
+        if (h2 > 1e-9) return Math.sqrt(h2);
+      }
+      return H; // vô nghiệm → rule kiểm số sẽ từ chối
+    }
     if ((spec.heightMode === 'face-equilateral' || spec.heightMode === 'face-right-isosceles') && spec.apexAnchor) {
       const [a, b] = splitAnchor(spec.apexAnchor);
       if (coords[a] && coords[b]) {

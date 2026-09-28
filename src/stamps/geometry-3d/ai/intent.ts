@@ -17,7 +17,9 @@ export type ApexVariant =
   // Lớp 12: chân đường cao = tâm ngoại tiếp đáy (cạnh bên bằng nhau) / điểm chia cạnh theo apexRatio.
   | 'over-circumcenter' | 'over-edge-point' | 'over-incenter' | 'over-weights';
 /** Cách lấy chiều cao để giữ HÌNH DẠNG đề nêu (không phải độ dài). */
-export type HeightMode = 'lateral-eq-base' | 'face-equilateral' | 'face-right-isosceles';
+export type HeightMode = 'lateral-eq-base' | 'face-equilateral' | 'face-right-isosceles'
+  // chân đường cao CỐ ĐỊNH, giải chiều cao để mặt (S, heightEdge) đều / vuông tại S
+  | 'solve-equilateral' | 'solve-right-apex';
 
 const SolidIntentZ = z.object({
   op: z.literal('solid'),
@@ -32,7 +34,8 @@ const SolidIntentZ = z.object({
   // ── Lớp 12 (tuỳ chọn, vắng = hành vi cũ) ──
   baseAnchor: z.string().optional(),        // đỉnh góc vuông/đỉnh cân; right-trapezoid: cặp "AB" vuông tại A và B
   apexRatio: z.number().optional(),         // over-edge-point: chân H = X + t·(Y−X), X/Y = apexAnchor
-  heightMode: z.enum(['lateral-eq-base','face-equilateral','face-right-isosceles']).optional(),
+  heightMode: z.enum(['lateral-eq-base','face-equilateral','face-right-isosceles','solve-equilateral','solve-right-apex']).optional(),
+  heightEdge: z.string().optional(),        // solve-*: cạnh đáy XY của mặt SXY
   projOf: Label3DZ.optional(),              // lăng trụ XIÊN: đỉnh trên có hình chiếu = chân theo apexVariant
   apexWeights: z.record(z.number()).optional(), // over-weights: chân = Σ w·đỉnh đáy (Σw = 1)
 });
@@ -113,7 +116,7 @@ export interface SolidSpec3D {
   flavor: SolidFlavor; baseLabels: string[]; baseVariant: BaseVariant;
   apex?: string; apexVariant: ApexVariant; apexAnchor?: string; topLabels?: string[];
   baseAnchor?: string; apexRatio?: number; heightMode?: HeightMode; projOf?: string;
-  apexWeights?: Record<string, number>;
+  apexWeights?: Record<string, number>; heightEdge?: string;
 }
 
 export function solid(spec: SolidSpec3D): Intent3DT {

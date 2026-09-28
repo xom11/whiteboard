@@ -137,6 +137,28 @@ describe('khối chóp — chân đường cao đúng đề', () => {
   });
 });
 
+describe('hình dạng mặt bên (kiểm số trên layout)', () => {
+  it('"∆SAB đều" không có dữ kiện chân đường cao → SAB đều thật (đỉnh trên trung điểm AB)', () => {
+    const { P } = dung3d('Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a và tam giác SAB đều. Gọi M là trung điểm của CD.');
+    expect(gan(dist(P.S, P.A), dist(P.A, P.B))).toBe(true);
+    expect(gan(dist(P.S, P.B), dist(P.A, P.B))).toBe(true);
+  });
+  it('chân cố định (trung điểm OA) + tam giác SBD vuông tại S → giải chiều cao: góc BSD = 90°', () => {
+    const { P } = dung3d('Cho hình chóp S.ABCD có đáy hình vuông ABCD tâm O. Hình chiếu vuông góc của S lên mặt phẳng (ABCD) trùng với trung điểm của cạnh OA, biết tam giác SBD vuông tại S.');
+    expect(gan(goc(P.B, P.S, P.D), 90)).toBe(true);
+    const O = mid(P.A, P.C);
+    expect(ganV(chan(P, 'S', ['A', 'B', 'C']), mid(O, P.A))).toBe(true);
+  });
+  it('(SAC) ⊥ đáy nhưng "SAB là tam giác đều" không khớp layout → từ chối, không vẽ sai', () => {
+    const k = khoiDaDienFromProblem('Cho hình chóp S.ABC có mặt phẳng (SAC) vuông góc với mặt phẳng (ABC), SAB là tam giác đều cạnh a√3, BC = a√3.');
+    expect(isRefused(k)).toBe(true);
+  });
+  it('lăng trụ (không đứng) có cạnh bên tạo với đáy 30° → từ chối (hình đứng sẽ là 90°)', () => {
+    const k = khoiDaDienFromProblem("Cho khối lăng trụ ABC.A'B'C' có đáy ABC là tam giác đều cạnh bằng a, cạnh bên AA' = a, góc giữa AA' và mặt phẳng đáy bằng 30°.");
+    expect(isRefused(k)).toBe(true);
+  });
+});
+
 describe('lăng trụ / hộp / lập phương', () => {
   it('lập phương ABCD.A\'B\'C\'D\': 12 cạnh bằng nhau, các góc vuông', () => {
     const { P } = dung3d("Cho hình lập phương ABCD.A'B'C'D' có cạnh bằng a.");

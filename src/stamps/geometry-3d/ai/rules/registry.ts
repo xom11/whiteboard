@@ -18,6 +18,7 @@ import { coneRule } from './cone';
 import { cylinderRule } from './cylinder';
 import { insphereCubeRule } from './insphereCube';
 import { inscribedRoundSolidRule } from './inscribedRoundSolid';
+import { duKienSoDoRule } from './duKienSoDo';
 
 const RULES: LanguageRule3D[] = [
   solidRule,                  // priority 90
@@ -39,6 +40,7 @@ const RULES: LanguageRule3D[] = [
   cylinderRule,               // priority 48
   insphereCubeRule,           // priority 47
   inscribedRoundSolidRule,    // priority 46
+  duKienSoDoRule,             // priority 20 — chỉ claim câu hỏi/số đo, không vẽ
 ];
 
 export const ALL_RULES_3D: readonly LanguageRule3D[] = RULES.slice().sort(
