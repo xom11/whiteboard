@@ -105,6 +105,7 @@ import { twoCirclesTangentRule } from './twoCirclesTangent';
 import { commonTangentRule } from './commonTangent';
 import { twoCirclesCenterRadiusMeetRule } from './twoCirclesCenterRadiusMeet';
 import { rightAngleVertexCirclesRule } from './rightAngleVertexCircles';
+import { gocXOyRule } from './gocXOy';
 import { namedLineRule } from './namedLine';
 import { bisectorsMeetRule } from './bisectorsMeet';
 import { triangleBisectorsMeetRule } from './triangleBisectorsMeet';
@@ -118,6 +119,7 @@ const RULES: readonly LanguageRule[] = [
   commonTangentRule,
   twoCirclesCenterRadiusMeetRule,
   rightAngleVertexCirclesRule,
+  gocXOyRule,
   circumcircleCutsLineRule,
   lineConcurrencyRule,
   parallelThroughCutsCircleRule,
