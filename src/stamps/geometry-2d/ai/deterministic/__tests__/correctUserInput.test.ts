@@ -151,3 +151,15 @@ describe('wiring e2e — đề gõ-tay lệch vẫn dựng được', () => {
     expect(tryDeterministicFigure(messy).ok).toBe(tryDeterministicFigure(clean).ok);
   });
 });
+
+describe('correctUserInput — ý con xuống dòng không có dấu chấm', () => {
+  it('chèn dấu chấm trước nhãn ý đầu dòng để hai ý không dính thành một mệnh đề', () => {
+    expect(correctUserInput('a) Chứng minh tam giác ADE cân\nb) Gọi M là trung điểm của BC')).toBe(
+      'a) Chứng minh tam giác ADE cân. b) Gọi M là trung điểm của BC',
+    );
+  });
+  it('không đụng dòng đã có dấu câu, hay chữ thường không phải nhãn ý', () => {
+    expect(correctUserInput('Cho tam giác ABC.\nb) Gọi M')).toBe('Cho tam giác ABC. b) Gọi M');
+    expect(correctUserInput('Cho tam giác ABC\ncân tại A')).toBe('Cho tam giác ABC cân tại A');
+  });
+});
