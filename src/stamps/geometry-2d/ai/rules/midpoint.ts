@@ -1,6 +1,7 @@
 // src/stamps/geometry-2d/ai/rules/midpoint.ts
 import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint, pairFromToken, SIDE_PREFIX } from './_shared';
+import { laTrungDiemDiemMoi } from './midpointReflect';
 
 // LƯU Ý: \b của JS dựa trên ASCII word-char nên KHÔNG khớp quanh ký tự Việt
 // ("đ","ề"…). Mọi regex chứa ký tự Việt dùng cờ 'u' + lookaround \p{L}.
@@ -143,6 +144,9 @@ export const midpointRule: LanguageRule = {
         for (const m of c.text.matchAll(NAME_BEFORE_G)) {
           const tdIdx = c.text.indexOf('trung', m.index ?? 0);
           if (tdIdx >= 0) consumed.add(tdIdx);
+          // "Vẽ điểm D sao cho C là trung điểm của AD": C là điểm CŨ, D mới →
+          // nhường midpointReflect (D = đối xứng A qua C), đừng biến C thành trung điểm.
+          if (laTrungDiemDiemMoi(c.text, m.index ?? -1)) continue;
           emit(m[1], m[2] + m[3], c.id);
         }
 

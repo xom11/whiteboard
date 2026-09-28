@@ -7,6 +7,7 @@ import { triangleRule } from './triangle';
 import { quadRule } from './quad';
 import { connectRule } from './connect';
 import { midpointRule } from './midpoint';
+import { midpointReflectRule } from './midpointReflect';
 import { perpBisectorRule } from './perpBisector';
 import { cevianRule } from './cevian';
 import { cevianListRule } from './cevianList';
@@ -39,6 +40,7 @@ import { onCirclePointRule } from './onCirclePoint';
 import { tangentAtRule } from './tangentAt';
 import { onSegmentPointRule } from './onSegmentPoint';
 import { pointOnSideAtLengthRule } from './pointOnSideAtLength';
+import { ratioPointOnSegmentRule } from './ratioPointOnSegment';
 import { diagonalsMeetNamedRule } from './diagonalsMeetNamed';
 import { intersectionDistribRule } from './intersectionDistrib';
 import { lineCircleIntersectionRule } from './lineCircleIntersection';
@@ -127,6 +129,7 @@ const RULES: readonly LanguageRule[] = [
   quadRule,
   connectRule,
   midpointRule,
+  midpointReflectRule,
   perpBisectorRule,
   cevianRule,
   cevianListRule,
@@ -159,6 +162,7 @@ const RULES: readonly LanguageRule[] = [
   tangentAtRule,
   onSegmentPointRule,
   pointOnSideAtLengthRule,
+  ratioPointOnSegmentRule,
   diagonalsMeetNamedRule,
   intersectionDistribRule,
   lineCircleIntersectionRule,
