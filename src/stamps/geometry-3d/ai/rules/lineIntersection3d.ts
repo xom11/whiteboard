@@ -16,8 +16,8 @@ const LINE = `(${P})(${P})`;
 const RES: Array<{ re: RegExp; kind: 'center' | 'lines' }> = [
   { re: new RegExp(`(?<![\\p{L}'′])${NM}\\s+là\\s+tâm\\s+(?:của\\s+)?(?:mặt\\s+)?đáy(?:\\s+((?:${P}){4}))?`, 'u'), kind: 'center' },
   { re: new RegExp(`hình\\s+(?:vuông|chữ\\s+nhật|thoi|bình\\s+hành)\\s+(?:((?:${P}){4})\\s+)?(?:có\\s+)?tâm\\s+(?:là\\s+)?${NM}(?![\\p{L}'′\\d])`, 'u'), kind: 'center' },
-  // "đáy ABCD là hình bình hành, tâm O" (tâm tách bằng dấu phẩy)
-  { re: new RegExp(`đáy\\s+(?:((?:${P}){4})\\s+)?là\\s+hình\\s+(?:vuông|chữ\\s+nhật|thoi|bình\\s+hành)\\s*,\\s*(?:có\\s+)?tâm\\s+(?:là\\s+)?${NM}(?![\\p{L}'′\\d])`, 'u'), kind: 'center' },
+  // "đáy ABCD là hình bình hành, tâm O" | "hình vuông cạnh 2a, tâm O" (tâm tách bằng dấu phẩy) — đỉnh lấy từ head
+  { re: new RegExp(`hình\\s+(?:vuông|chữ\\s+nhật|thoi|bình\\s+hành)(?:\\s+((?:${P}){4}))?[^.;]{0,30}?,\\s*(?:có\\s+)?tâm\\s+(?:là\\s+)?${NM}(?![\\p{L}'′\\d])`, 'u'), kind: 'center' },
   { re: new RegExp(`(?<![\\p{L}'′])${NM}\\s+là\\s+giao\\s+điểm\\s+(?:của\\s+)?hai\\s+đường\\s+chéo(?:\\s+(?:của\\s+)?(?:mặt\\s+)?(?:đáy|hình\\s+[a-zà-ỹ\\s]+?)?\\s*((?:${P}){4})?)?`, 'u'), kind: 'center' },
   { re: new RegExp(`(?<![\\p{L}'′])${NM}\\s+là\\s+giao\\s+điểm\\s+(?:của\\s+)?(?:(?:hai\\s+)?đường\\s+thẳng\\s+)?${LINE}\\s+(?:và|với)\\s+${LINE}(?![\\p{L}'′])`, 'u'), kind: 'lines' },
   { re: new RegExp(`(?<![\\p{L}'′])${LINE}\\s+(?:cắt|giao)\\s+${LINE}\\s+tại\\s+(?:điểm\\s+)?${NM}(?![\\p{L}'′\\d])`, 'u'), kind: 'lines' },
@@ -52,7 +52,7 @@ export const lineIntersection3dRule: LanguageRule3D = {
         let name: string, quad: string[] | null = null, ends: string[] | null = null;
         if (kind === 'center') {
           // nhóm: [name, quad?] hoặc [quad?, name] (mẫu "hình vuông ABCD tâm O")
-          const isShapeFirst = /^(?:hình|đáy)/u.test(m[0]);
+          const isShapeFirst = /^hình/u.test(m[0]);
           name = isShapeFirst ? g[1] : g[0];
           const q = isShapeFirst ? g[0] : g[1];
           quad = q ? splitVertexToken(q) : head && head.baseLabels.length === 4 ? head.baseLabels : null;

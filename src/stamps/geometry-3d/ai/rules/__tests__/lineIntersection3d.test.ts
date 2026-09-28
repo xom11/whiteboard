@@ -25,6 +25,12 @@ describe('lineIntersection3d', () => {
     expect(len(sub(P.E, P.A))).toBeLessThan(6);
   });
 
+  it('"hình vuông cạnh 2a, tâm O" (chóp tứ giác đều) ⇒ O là tâm đáy', () => {
+    const P = toaDoDe3d('Cho hình chóp tứ giác đều S.ABCD có đáy ABCD là hình vuông cạnh 2a, tâm O, SO=a');
+    expect(dist(P.O, mid(P.A, P.C))).toBeLessThan(1e-9);
+    expect(dist(P.O, mid(P.B, P.D))).toBeLessThan(1e-9);
+  });
+
   it('hai đường chéo nhau ⇒ verify từ chối (không có giao điểm thật)', () => {
     const r = tryDeterministicFigure3d('Cho tứ diện ABCD. Gọi O là giao điểm của AB và CD.');
     expect(r.ok).toBe(false);
