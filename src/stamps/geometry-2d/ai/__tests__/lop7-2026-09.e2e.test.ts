@@ -196,6 +196,10 @@ describe('lop7-2026-09 — hình đúng điều kiện đề', () => {
     expect(dist(p.M, p.D)).toBeCloseTo(dist(p.M, p.H), 9);
     expect(dist(p.N, p.E)).toBeCloseTo(dist(p.N, p.H), 9);
     expect(goc(p.H, p.I, p.B)).toBeCloseTo(goc(p.B, p.I, p.D), 6);
+    // "Gọi I và K là giao điểm của DE với AB và AC": K trên AC, KHÔNG trùng I
+    expect(thangHang(p.K, p.A, p.C)).toBe(true);
+    expect(thangHang(p.I, p.A, p.B)).toBe(true);
+    expect(dist(p.I, p.K)).toBeGreaterThan(0.1);
   });
 });
 

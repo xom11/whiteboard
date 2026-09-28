@@ -136,7 +136,9 @@ const CAT_ZIP_POST = new RegExp(
 );
 
 // Tên điểm đứng TRƯỚC (pattern A): "X là " NGAY TRƯỚC "giao điểm".
-const NAME_BEFORE = /([A-Z])(?:['′]?)\s+là\s+$/u;
+// (?<!…) : "Gọi I và K là giao điểm của DE với AB và AC" — K đứng sau một tên khác
+// (danh sách tên, phân phối) → KHÔNG gán K = DE ∩ AB (intersectionDistrib lo zip).
+const NAME_BEFORE = /(?<!(?<![A-Z])[A-Z]['′]?\s*(?:,|và)\s*)([A-Z])(?:['′]?)\s+là\s+$/u;
 
 // G: phân phối N CẶP — "X, Y, Z lần lượt là giao (điểm)? của (các)? cặp (đường
 //    thẳng)? (R1a, R1b), (R2a, R2b), …" / "… AC và BD; AB và CD; …". Zip tên↔cặp.
