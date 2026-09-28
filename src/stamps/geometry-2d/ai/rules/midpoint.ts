@@ -25,6 +25,7 @@ const NAME_AFTER_G = new RegExp(
   'gu',
 );
 
+// ("tương ứng" = "lần lượt" — cách viết SGK Kết nối tri thức; "của hai cạnh AB và CD".)
 // Distributive "lần lượt": "M, N (, P) lần lượt là trung điểm AB, AC (, BC)" →
 // zip 1-1: M=mid(AB), N=mid(AC), P=mid(BC). group1 = blob tên (≥2, phẩy),
 // group2 = blob cặp đỉnh (≥2, phẩy). Số tên PHẢI bằng số cặp (else bỏ qua,
@@ -33,14 +34,14 @@ const NAME_AFTER_G = new RegExp(
 // của NP, PM, MN" cũng là zip (≥2 tên liệt kê phẩy NGAY trước "(là) trung điểm"
 // → an toàn; dạng đơn "M là trung điểm BC" không có blob tên ≥2 nên không dính).
 const DISTRIB = new RegExp(
-  `((?:[A-Z](?:['′]?)\\s*(?:,|và)\\s*)+[A-Z](?:['′]?))\\s+(?:lần\\s*lượt\\s+|(?:theo\\s+)?thứ\\s+tự\\s+)?(?:là\\s+)?(?:điểm\\s+)?trung\\s*điểm\\s+(?:của\\s+)?(?:các\\s+)?${SIDE_PREFIX}((?:[A-Z][A-Z]\\s*,\\s*)*(?:[A-Z][A-Z]\\s*,\\s*)?[A-Z][A-Z](?:\\s*và\\s*[A-Z][A-Z])?)`,
+  `((?:[A-Z](?:['′]?)\\s*(?:,|và)\\s*)+[A-Z](?:['′]?))\\s+(?:lần\\s*lượt\\s+|(?:theo\\s+)?thứ\\s+tự\\s+|tương\\s+ứng\\s+)?(?:là\\s+)?(?:điểm\\s+)?trung\\s*điểm\\s+(?:của\\s+)?(?:các\\s+|hai\\s+|ba\\s+)?${SIDE_PREFIX}((?:[A-Z][A-Z]\\s*,\\s*)*(?:[A-Z][A-Z]\\s*,\\s*)?[A-Z][A-Z](?:\\s*và\\s*[A-Z][A-Z])?)`,
   'u',
 );
 
 // Distributive NAME-AFTER: "(Gọi)? trung điểm của AC, AB lần lượt là K, L" →
 // K=mid(AC), L=mid(AB). group1 = blob cặp đỉnh, group2 = blob tên. Zip 1-1.
 const DISTRIB_AFTER = new RegExp(
-  `trung\\s*điểm\\s+(?:của\\s+)?(?:các\\s+)?${SIDE_PREFIX}((?:[A-Z][A-Z]\\s*(?:,|và)\\s*)+[A-Z][A-Z])(?![A-Z])\\s+(?:lần\\s*lượt\\s+|(?:theo\\s+)?thứ\\s+tự\\s+)?là\\s+((?:[A-Z](?:['′]?)\\s*(?:,|và)\\s*)+[A-Z](?:['′]?))(?!\\p{L})`,
+  `trung\\s*điểm\\s+(?:của\\s+)?(?:các\\s+|hai\\s+|ba\\s+)?${SIDE_PREFIX}((?:[A-Z][A-Z]\\s*(?:,|và)\\s*)+[A-Z][A-Z])(?![A-Z])\\s+(?:lần\\s*lượt\\s+|(?:theo\\s+)?thứ\\s+tự\\s+|tương\\s+ứng\\s+)?là\\s+((?:[A-Z](?:['′]?)\\s*(?:,|và)\\s*)+[A-Z](?:['′]?))(?!\\p{L})`,
   'u',
 );
 
@@ -104,6 +105,12 @@ export const midpointRule: LanguageRule = {
         });
       };
 
+      // Phần đuôi SAU cụm phân phối: "M, N lần lượt là trung điểm AB, CD và I là
+      // trung điểm MN" — trung điểm thứ hai trong cùng mệnh đề (trước đây bị bỏ).
+      const emitTail = (tail: string, clauseId: number) => {
+        for (const m of tail.matchAll(NAME_BEFORE_G)) emit(m[1], m[2] + m[3], clauseId);
+      };
+
       if (hasVi) {
         // Distributive "lần lượt" ưu tiên: "M, N lần lượt là trung điểm AB, AC"
         // → M=mid(AB), N=mid(AC). Số tên = số cặp mới emit (else bỏ qua → escalate).
@@ -119,6 +126,7 @@ export const midpointRule: LanguageRule = {
             .filter(Boolean);
           if (names.length >= 2 && names.length === pairs.length) {
             for (let i = 0; i < names.length; i++) emit(names[i], pairs[i], c.id);
+            emitTail(c.text.slice(dm.index + dm[0].length), c.id);
             continue; // clause đã xử lý bằng distributive — skip dạng A/B + EN
           }
         }
@@ -130,6 +138,7 @@ export const midpointRule: LanguageRule = {
           const names = da[2].split(/\s*,\s*|\s+và\s+/u).map((s) => nameToken(s)).filter((x): x is string => !!x);
           if (names.length >= 2 && names.length === pairs.length) {
             for (let i = 0; i < names.length; i++) emit(names[i], pairs[i], c.id);
+            emitTail(c.text.slice(da.index + da[0].length), c.id);
             continue;
           }
         }

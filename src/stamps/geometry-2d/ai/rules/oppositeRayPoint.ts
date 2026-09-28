@@ -20,8 +20,9 @@ const RE = new RegExp(
 
 // Khoảng cách canonical (board units) — vị trí C trên tia đối không nêu metric.
 // Dạng tên-TRƯỚC (vao10): "Lấy điểm A trên tia đối của tia CB" — g1=tên, g2g3=tia.
+// + "(Điểm) M thuộc/nằm trên tia đối của tia CA" (đề HSG trại hè Hùng Vương 2024).
 const RE_NAME_FIRST = new RegExp(
-  String.raw`[Ll]ấy\s+(?:điểm\s+)?([A-Z])(?![A-Z])\s+trên\s+tia\s+đối\s+(?:của\s+)?(?:tia\s+)?([A-Z])([A-Z])(?![A-Z])`,
+  String.raw`(?:[Ll]ấy|[Đđ]iểm|[Gg]ọi|[Cc]ho)\s+(?:điểm\s+)?([A-Z])(?![A-Z])\s+(?:là\s+(?:một\s+)?điểm\s+)?(?:trên|thuộc|nằm\s+trên)\s+tia\s+đối\s+(?:của\s+)?(?:tia\s+)?([A-Z])([A-Z])(?![A-Z])`,
   'gu',
 );
 

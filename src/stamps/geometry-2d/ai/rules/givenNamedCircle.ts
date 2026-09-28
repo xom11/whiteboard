@@ -33,7 +33,7 @@ export const givenNamedCircleRule: LanguageRule = {
   id: 'givenNamedCircle',
   priority: 74, // dưới circleRadius(75)/circleTriangle, trên điểm onCircle(64)
   languages: ['vi'],
-  patterns: [/\(\s*[A-Z]\s*\)/u],
+  patterns: [/\(\s*[A-Z]\s*\)/u, /đường\s*tròn\s+tâm/u],
   match(ctx) {
     if (!HAS_POINTS_ON.test(ctx.problem) && !HAS_TANGENT_OR_SECANT.test(ctx.problem)) return [];
     const out: RuleMatch[] = [];
@@ -70,6 +70,18 @@ export const givenNamedCircleRule: LanguageRule = {
         ruleId: 'givenNamedCircle',
         clauseIds: owner ? [owner.id] : [],
         intents: [drawCircle(center, 'centerRadius', { center, radius: SYMBOLIC_RADIUS })],
+      });
+    }
+    // "Cho đường tròn tâm O." trơ (cả mệnh đề chỉ có vậy) + có điểm trên đường tròn:
+    // "Giả sử A, B là hai điểm nằm trên đường tròn" (SGK Cánh diều).
+    for (const cl of ctx.clauses) {
+      const m = /^(?:[Cc]ho\s+)?(?:một\s+)?đường\s*tròn\s+tâm\s+([A-Z])(?![A-Z'′\p{L}])\s*$/u.exec(cl.text.trim());
+      if (!m || seen.has(m[1])) continue;
+      seen.add(m[1]);
+      out.push({
+        ruleId: 'givenNamedCircle',
+        clauseIds: [cl.id],
+        intents: [drawCircle(m[1], 'centerRadius', { center: m[1], radius: SYMBOLIC_RADIUS })],
       });
     }
     return out;

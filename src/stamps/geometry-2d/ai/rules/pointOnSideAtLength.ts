@@ -45,11 +45,12 @@ const TREN_LAY_DISTRIB = new RegExp(
 );
 
 // Vế chuỗi bằng nhau sau "sao cho": cặp đỉnh "AE" hoặc số đo "2 cm" / "2,5cm" / "3".
-const TERM = String.raw`(?:[A-Z]{2}(?![A-Z])|\d+(?:[.,]\d+)?\s*(?:cm|dm|mm|m)?(?!\p{L}))`;
+const TERM = String.raw`(?:[A-Z]{2}(?![A-Z])|\d+(?:[.,]\d+)?(?!\s*[√\d])\s*(?:cm|dm|mm|m)?(?!\p{L}))`;
 const CHAIN = new RegExp(String.raw`sao\s+cho\s+(${TERM}(?:\s*=\s*${TERM})+)(?=\s*(?:$|[,.;)]|và\s|thì\s))`, 'u');
 
 // "AC = 8 cm" ở bất kỳ đâu trong đề → độ dài đề cho, để quy số cm về tỉ lệ.
-const GIVEN_LEN = /(?<![A-Z])([A-Z]{2})\s*=\s*(\d+(?:[.,]\d+)?)\s*(?:cm|dm|mm|m)?(?!\p{L})/gu;
+// (?!\s*[√\d]): "AC = 3√2" KHÔNG phải AC = 3 (normalizeText giữ √ trước chữ số).
+const GIVEN_LEN = /(?<![A-Z])([A-Z]{2})\s*=\s*(\d+(?:[.,]\d+)?)(?!\s*[√\d])\s*(?:cm|dm|mm|m)?(?!\p{L})/gu;
 
 type Taken = { name: string; a: string; b: string; ray: boolean };
 

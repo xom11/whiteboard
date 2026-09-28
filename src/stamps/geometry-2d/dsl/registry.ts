@@ -43,6 +43,7 @@ import { reflectPointModule } from './kinds/points/reflectPoint';
 import { reflectLineModule } from './kinds/points/reflectLine';
 import { pointAtDistanceModule } from './kinds/points/pointAtDistance';
 import { commonTangentPointModule } from './kinds/points/commonTangentPoint';
+import { affineModule } from './kinds/points/affine';
 
 const ALL_MODULES: ReadonlyArray<DslKindModule> = [
   freeModule, midpointModule, onPerpBisectorModule, onSegmentModule, onLineModule, onCircleModule,
@@ -64,6 +65,8 @@ const ALL_MODULES: ReadonlyArray<DslKindModule> = [
   pointAtDistanceModule,
   // 2-circle relations (spec mục A)
   commonTangentPointModule,
+  // Đẳng thức vectơ (Toán 10)
+  affineModule,
 ];
 
 export const KIND_REGISTRY: ReadonlyMap<string, DslKindModule> =

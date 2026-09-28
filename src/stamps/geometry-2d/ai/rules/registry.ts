@@ -38,6 +38,14 @@ import { onCirclePointRule } from './onCirclePoint';
 import { tangentAtRule } from './tangentAt';
 import { onSegmentPointRule } from './onSegmentPoint';
 import { pointOnSideAtLengthRule } from './pointOnSideAtLength';
+import { pointRatioRule } from './pointRatio';
+import { givenPointsRule } from './givenPoints';
+import { quadCenterRule } from './quadCenter';
+import { parallelogramVertexRule } from './parallelogramVertex';
+import { centersDistribRule } from './centersDistrib';
+import { arbitraryPointRule } from './arbitraryPoint';
+import { parallelogramOnSidesRule } from './parallelogramOnSides';
+import { figuresOnSidesRule } from './figuresOnSides';
 import { diagonalsMeetNamedRule } from './diagonalsMeetNamed';
 import { intersectionDistribRule } from './intersectionDistrib';
 import { lineCircleIntersectionRule } from './lineCircleIntersection';
@@ -159,6 +167,14 @@ const RULES: readonly LanguageRule[] = [
   tangentAtRule,
   onSegmentPointRule,
   pointOnSideAtLengthRule,
+  pointRatioRule,
+  givenPointsRule,
+  quadCenterRule,
+  parallelogramVertexRule,
+  centersDistribRule,
+  arbitraryPointRule,
+  parallelogramOnSidesRule,
+  figuresOnSidesRule,
   diagonalsMeetNamedRule,
   intersectionDistribRule,
   lineCircleIntersectionRule,

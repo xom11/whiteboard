@@ -69,6 +69,7 @@ function describeEntity(e: DslPointT | DslShapeT): string {
       return `${e.name} = điểm trên tia ${e.from}${e.through} cách ${moc} một khoảng ${distStr}`;
     }
     case 'onPerpBisector': return `${e.name} = điểm trên trung trực ${e.p1}${e.p2}`;
+    case 'affine': return `${e.name} = ${e.points.map((p, i) => `${+e.weights[i].toFixed(4)}·${p}`).join(' + ')}${e.rot ? ` + J(${e.points.map((p, i) => `${+e.rot![i].toFixed(4)}·${p}`).join(' + ')})` : ''}${e.awayFrom ? ` (khác phía ${e.awayFrom})` : ''}`;
     case 'commonTangentPoint': {
       const v = e.variant === 'internal' ? 'trong' : 'ngoài';
       return `${e.name} = tiếp điểm tiếp tuyến chung ${v} ${e.circles[0]},${e.circles[1]} (trên ${e.circles[e.on]})`;
