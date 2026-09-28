@@ -29,22 +29,25 @@ export const duKienSoDoRule: LanguageRule3D = {
     const claimed: number[] = [];
     // Chỉ khi đề có vật thể do rule khác vẽ (khối đa diện / nón / trụ / cầu).
     if (!parseKhoiHead(ctx.problem) && !ROUND.test(ctx.problem)) return [];
-    // (1) câu hỏi đại lượng — không kèm giá trị cho trước
-    for (const c of ctx.clauses) {
-      const t = c.text.trim();
-      if (!HOI.test(t) || /=/u.test(t) || /thiết\s+diện/iu.test(t)) continue;
-      // Nhãn trong câu hỏi phải đã xuất hiện ở phần dựng hình (không hỏi về điểm chưa ai vẽ).
-      const others = ctx.clauses.filter((o) => o.id !== c.id).map((o) => o.text).join(' ').replace(/[’′]/gu, "'");
+    // Nhãn trong câu hỏi phải đã được vẽ (không hỏi về điểm chưa ai vẽ).
+    const knownFor = (cid: number): Set<string> => {
+      const others = ctx.clauses.filter((o) => o.id !== cid).map((o) => o.text).join(' ').replace(/[’′]/gu, "'");
       const head = parseKhoiHead(ctx.problem);
-      const known = new Set(head
+      return new Set(head
         // khối đa diện: đỉnh khối + điểm được đặt tên ("Gọi M…", "M là…", tâm O do solidRule vẽ)
         ? [...head.base, ...(head.top ?? []), ...(head.apex ? [head.apex] : []),
           ...[...others.matchAll(/(?:Gọi|Lấy|Dựng)\s+(?:điểm\s+)?([A-Z]'?)(?![\p{L}])/gu)].map((m) => m[1]),
           ...[...others.matchAll(/(?<![\p{L}'])([A-Z]'?)\s+là\s/gu)].map((m) => m[1]),
           ...(() => { const k = khoiDaDienFromProblem(ctx.problem); return k && !isRefused(k) && k.center ? [k.center] : []; })()]
         : labelsOf(others));
-      if (labelsOf(t.replace(/[’′]/gu, "'")).every((l) => known.has(l))) claimed.push(c.id);
-    }
+    };
+    const laCauHoi = (t: string, cid: number): boolean => {
+      if (!HOI.test(t) || /=/u.test(t) || /thiết\s+diện/iu.test(t)) return false;
+      const known = knownFor(cid);
+      return labelsOf(t.replace(/[’′]/gu, "'")).every((l) => known.has(l));
+    };
+    // (1) câu hỏi đại lượng — không kèm giá trị cho trước
+    for (const c of ctx.clauses) if (laCauHoi(c.text.trim(), c.id)) claimed.push(c.id);
     // (2) dữ kiện số đo — chỉ khi khối dựng được đúng
     const k = khoiDaDienFromProblem(ctx.problem);
     if (k && !isRefused(k)) {
@@ -54,7 +57,7 @@ export const duKienSoDoRule: LanguageRule3D = {
         && a.replace("'", '') === b.replace("'", '');
       const oblique = !!s.projOf;
       const L = String.raw`([A-Z]'?)([A-Z]'?)`;
-      const PL = String.raw`(?:mặt\s+phẳng\s+)?(?:\(([A-Z'\s]{3,9})\)|(?:mặt\s+)?đáy)`;
+      const PL = String.raw`(?:mặt\s+phẳng\s+)?(?:\(([A-Z'\s]{3,9})\)|(?:mặt\s+(?:phẳng\s+)?)?đáy)`;
       const item = [
         // độ dài: "SA = a√5", "cạnh bên SA = a", "AA' = 2a", "chiều cao bằng a", "cạnh bên có độ dài bằng 2a"
         new RegExp(String.raw`^(?:(?:cạnh\s+(?:bên|đáy)|đường\s+cao|chiều\s+cao(?:\s+h)?|độ\s+dài\s+cạnh\s+(?:bên|đáy))\s*)?(?:${L}\s*)?(?:=|bằng|có\s+độ\s+dài\s+(?:bằng\s+)?)\s*${VAL}$`, 'u'),
@@ -62,6 +65,8 @@ export const duKienSoDoRule: LanguageRule3D = {
         // góc đường–đáy/mặt: "SC tạo với đáy một góc 60°", "góc giữa SB và (ABCD) bằng 45°"
         new RegExp(String.raw`^(?:đường\s+thẳng\s+|cạnh\s+(?:bên\s+)?)?${L}\s+(?:tạo|hợp)\s+với\s+${PL}\s+(?:một\s+)?góc\s+(?:bằng\s+)?${DEG}$`, 'u'),
         new RegExp(String.raw`^góc\s+(?:giữa|tạo\s+bởi)\s+(?:đường\s+thẳng\s+|cạnh\s+(?:bên\s+)?)?${L}\s+và\s+${PL}\s+(?:bằng|là)\s+${DEG}$`, 'u'),
+        // khoảng cách cho trước: "khoảng cách từ A đến mặt phẳng (A'BC) bằng (√6/3)a"
+        new RegExp(String.raw`^khoảng\s+cách\s+từ\s+(?:điểm\s+)?([A-Z]'?)\s+đến\s+${PL}\s+bằng\s+${VAL}$`, 'u'),
         // góc mặt–đáy: "mặt phẳng (A'BC) tạo với đáy một góc 60°", "góc giữa (SBC) và đáy bằng 60°"
         new RegExp(String.raw`^(?:mặt\s+phẳng\s+|mặt\s+bên\s+)?\(([A-Z'\s]{3,9})\)\s+(?:tạo|hợp)\s+với\s+${PL}\s+(?:một\s+)?góc\s+(?:bằng\s+)?${DEG}$`, 'u'),
         new RegExp(String.raw`^góc\s+giữa\s+(?:hai\s+)?(?:mặt\s+phẳng\s+)?\(([A-Z'\s]{3,9})\)\s+và\s+${PL}\s+(?:bằng|là)\s+${DEG}$`, 'u'),
@@ -72,7 +77,10 @@ export const duKienSoDoRule: LanguageRule3D = {
         t = t.replace(/[’′]/gu, "'");
         const parts = t.split(/\s*(?:,|;|\bvà\b)\s*/u).filter(Boolean);
         if (!parts.length) continue;
-        const ok = parts.every((part) => {
+        const ok = parts.every((part0) => {
+          // chữ hoa đầu mệnh đề ("Cạnh bên", "Đường thẳng", "Mặt phẳng", "Góc") → thường; nhãn giữ nguyên
+          const part = /^[A-ZĐ]\p{Ll}/u.test(part0) ? part0[0].toLowerCase() + part0.slice(1) : part0;
+          if (laCauHoi(part, c.id)) return true; // đuôi câu hỏi "…, thể tích … bằng"
           for (const re of item) {
             const m = re.exec(part);
             if (!m) continue;

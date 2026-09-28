@@ -2,7 +2,7 @@
 import { duKienSoDoRule } from '../duKienSoDo';
 import { segmentClauses3D } from '../../deterministic/coverage3d';
 import { tryDeterministicFigure3d } from '../../deterministic/tryDeterministicFigure3d';
-import { dung3d, sub, dot, len, vuongGocMat, gan, goc, mid, chieuLenMat } from '../../__tests__/helpers/toaDo3d';
+import { dung3d, sub, dot, len, vuongGocMat, gan, goc, mid, chieuLenMat, dist } from '../../__tests__/helpers/toaDo3d';
 
 const claimedTexts = (p: string) => {
   const cl = segmentClauses3D(p).filter((c) => c.hasGeometry);
@@ -52,5 +52,16 @@ describe('duKienSoDo', () => {
 
   it('đề chỉ có câu hỏi (không vật thể) → không nhận gì', () => {
     expect(claimedTexts('Thể tích khối cầu bán kính a bằng')).toEqual([]);
+  });
+  it('số đo viết hoa đầu câu + khoảng cách cho trước kèm đuôi câu hỏi (Câu 15, 52)', () => {
+    const p1 = 'Cho hình chóp S.ABCD có đáy là hình vuông cạnh a, SA vuông góc với đáy. Cạnh bên SA = a√5. Thể tích khối chóp S.ABCD là:';
+    expect(claimedTexts(p1)).toContain('Cạnh bên SA = a√5');
+    const { P } = dung3d(p1);
+    expect(vuongGocMat(P.S, P.A, P.A, P.B, P.C)).toBe(true);
+    const p2 = "Cho lăng trụ đứng ABC.A'B'C' có đáy là tam giác đều cạnh a. Biết khoảng cách từ A đến mặt phẳng (A'BC) bằng (√6/3)a, thể tích khối lăng trụ đã cho bằng";
+    expect(tryDeterministicFigure3d(p2).ok).toBe(true);
+    const Q = dung3d(p2).P;
+    expect(vuongGocMat(Q.A, Q["A'"], Q.A, Q.B, Q.C)).toBe(true);
+    expect(gan(dist(Q.A, Q.B), dist(Q.B, Q.C))).toBe(true);
   });
 });
