@@ -289,7 +289,7 @@ export const triangleRule: LanguageRule = {
           (variant === 'any'
             ? toaDoTamGiacTuKhiTrungTrucCatCanh(ctx.problem, hit.labels as [string, string, string]) ??
               toaDoTamGiacTheoBatDangThuc(hit.labels as [string, string, string], window)
-            : undefined);
+            : toaDoTamGiacTheoBatDangThuc(hit.labels as [string, string, string], window, variant));
         return [drawShape('triangle', hit.labels, variant, theoCanh)];
       });
 

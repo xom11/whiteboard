@@ -21,3 +21,17 @@ describe('tam giác "(AB < AC)" — hình phải đúng bất đẳng thức đ�
     expect(dist(q.A, q.C)).toBeLessThan(dist(q.B, q.C));
   });
 });
+
+describe('tam giác vuông / chuỗi bất đẳng thức', () => {
+  it('"vuông tại A có AB < AC": hai cạnh góc vuông đúng thứ tự, góc A vuông', () => {
+    const p = toaDoHinh('Cho tam giác ABC vuông tại A có AB < AC. Gọi M là trung điểm của BC.');
+    expect(dist(p.A, p.B)).toBeLessThan(dist(p.A, p.C));
+    const tich = (p.B[0] - p.A[0]) * (p.C[0] - p.A[0]) + (p.B[1] - p.A[1]) * (p.C[1] - p.A[1]);
+    expect(Math.abs(tich)).toBeLessThan(1e-9);
+  });
+  it('"AB < AC < BC": cả ba cạnh đúng thứ tự', () => {
+    const p = toaDoHinh('Cho tam giác ABC có AB < AC < BC và nội tiếp (O). Gọi M là trung điểm của BC.');
+    expect(dist(p.A, p.B)).toBeLessThan(dist(p.A, p.C));
+    expect(dist(p.A, p.C)).toBeLessThan(dist(p.B, p.C));
+  });
+});
