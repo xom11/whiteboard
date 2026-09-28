@@ -90,7 +90,7 @@ export function segmentClauses(problem: string): Clause[] {
         countGeometryKeywords(text) > 0 ||
         NAMED_LINE_PICK.test(text) ||
         (BARE_SEG_PICK.test(text) && !/tia\s+đối/u.test(text)) ||
-        VECTOR_POINT_DEF.test(text) ||
+        (VECTOR_POINT_DEF.test(text) && !VECTOR_KHONG_DUNG.test(text)) ||
         GIVEN_POINTS.test(text);
       const proofOnly = isProofOnlyClause(text, proofMode);
       if (startsProofSection(text)) proofMode = true;
@@ -140,6 +140,10 @@ const BARE_SEG_PICK =
 // phải có điểm được giới thiệu ("điểm X" / "X là điểm") + "vectơ" + "=".
 const VECTOR_POINT_DEF =
   /(?:[Đđ]iểm\s+[A-Z](?![A-Z])|(?<![A-Z])[A-Z]['′]?\s+(?:lần\s*lượt\s+)?là\s+(?:một\s+|các\s+|hai\s+)?điểm)[^.;]*?[Vv][eé]c\s*-?\s*t[ơo](?!\p{L})[^.;]*=/u;
+
+// "Với M là điểm tùy ý, chứng minh rằng vectơ MA + … = 4 vectơ MO": M bất kỳ trong
+// một mệnh đề CHỨNG MINH — không phải điểm cần dựng.
+const VECTOR_KHONG_DUNG = /t[uù][ỳy]\s*ý|bất\s*k[ìỳiy]|[Cc]hứng\s*minh|với\s+mọi/u;
 
 // "Cho ba điểm A, B, C phân biệt" / "Cho hai điểm A và B" — đề chỉ có điểm trần
 // (chương Vectơ lớp 10), không từ khoá hình nào ⇒ clause bị coi văn xuôi và các

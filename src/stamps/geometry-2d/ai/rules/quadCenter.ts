@@ -13,6 +13,9 @@ import { addPoint, connect } from './_shared';
 
 const RE = /[Hh]ình\s+(?:bình\s+hành|chữ\s+nhật|thoi|vuông)\s+([A-Z])([A-Z])([A-Z])([A-Z])(?![A-Z])\s*,?\s*(?:có\s+)?tâm\s+(?:là\s+)?([A-Z])(?![A-Z'′\p{L}])/gu;
 
+// "O là tâm (của) hình vuông ABCD" — tên tâm đứng trước.
+const RE_TRUOC = /(?<![A-Z])([A-Z])(?![A-Z'′])\s+là\s+tâm\s+(?:của\s+)?[Hh]ình\s+(?:bình\s+hành|chữ\s+nhật|thoi|vuông)\s+([A-Z])([A-Z])([A-Z])([A-Z])(?![A-Z])/gu;
+
 export const quadCenterRule: LanguageRule = {
   id: 'quadCenter',
   // Dưới quad (100): cần 4 đỉnh đã có; addPoint intersection chỉ tham chiếu đỉnh.
@@ -22,8 +25,11 @@ export const quadCenterRule: LanguageRule = {
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
-      for (const m of c.text.matchAll(RE)) {
-        const [a, b, cc, d, o] = [m[1], m[2], m[3], m[4], m[5]];
+      const hits = [
+        ...[...c.text.matchAll(RE)].map((m) => [m[1], m[2], m[3], m[4], m[5]]),
+        ...[...c.text.matchAll(RE_TRUOC)].map((m) => [m[2], m[3], m[4], m[5], m[1]]),
+      ];
+      for (const [a, b, cc, d, o] of hits) {
         if (new Set([a, b, cc, d, o]).size !== 5) continue;
         out.push({
           ruleId: 'quadCenter',

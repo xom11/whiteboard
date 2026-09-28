@@ -152,6 +152,16 @@ function thalesIntents(
   ];
 }
 
+const DA_GIAC = /(?:[Tt]ứ\s+giác(?:\s+lồi)?|[Hh]ình\s+(?:vuông|chữ\s+nhật|bình\s+hành|thoi|thang(?:\s+(?:cân|vuông))?)|[Ll]ục\s+giác(?:\s+đều)?)\s+([A-Z]{4,6})(?![A-Z])/gu;
+
+/** Mọi đỉnh của tam giác thuộc MỘT đa giác (4–6 đỉnh) khai báo trong đề. */
+function laTamGiacCon(problem: string, labels: readonly string[]): boolean {
+  for (const m of problem.matchAll(DA_GIAC)) {
+    if (labels.every((x) => m[1].includes(x))) return true;
+  }
+  return false;
+}
+
 function variantFor(hit: TriHit, window: string): string {
   return hit.lang === 'en' ? variantForEn(hit, window) : variantForVi(hit, window);
 }
@@ -279,6 +289,14 @@ export const triangleRule: LanguageRule = {
           [...ctx.problem.slice(0, ctx.problem.indexOf(c.text)).matchAll(TRI_G)].some((m) => [m[2], m[3], m[4]].some((x) => hit.labels.includes(x)));
         const vuongCan = !!vc && hit.labels.includes(vc[1]) && !chungDinh;
         const variant = vuongCan ? RIGHT_BY_IDX[hit.labels.indexOf(vc![1])] : variantFor(hit, window);
+        // Tam giác CON của một đa giác đã khai báo ("tứ giác ABCD … trọng tâm tam giác
+        // BCD"): đỉnh do đa giác đặt. drawShape ở đây sẽ đặt B, C, D theo tam giác mẫu
+        // trước (cùng priority, triangle đứng trước quad) rồi A của tứ giác rơi TRÙNG B
+        // (0,0) — hình suy biến. mark-shape chỉ nối đỉnh có sẵn; thiếu đỉnh thì build
+        // ném lỗi ⇒ thử lại theo thứ tự phụ thuộc (quad dựng trước).
+        if (hit.lang === 'vi' && laTamGiacCon(ctx.problem, hit.labels)) {
+          return [markShape('triangle', hit.labels)];
+        }
         // Thales: tam giác VUÔNG + nội tiếp đường tròn (window) → dựng ràng buộc
         // (đường kính + apex glider) thay draw-shape free (free chỉ "may mắn" vuông,
         // kéo là vỡ + không thoả AB<AC). circle3 của circleTriangle bị idempotent

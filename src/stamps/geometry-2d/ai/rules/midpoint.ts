@@ -24,6 +24,7 @@ const NAME_AFTER_G = new RegExp(
   'gu',
 );
 
+// ("tương ứng" = "lần lượt" — cách viết SGK Kết nối tri thức; "của hai cạnh AB và CD".)
 // Distributive "lần lượt": "M, N (, P) lần lượt là trung điểm AB, AC (, BC)" →
 // zip 1-1: M=mid(AB), N=mid(AC), P=mid(BC). group1 = blob tên (≥2, phẩy),
 // group2 = blob cặp đỉnh (≥2, phẩy). Số tên PHẢI bằng số cặp (else bỏ qua,
@@ -32,14 +33,14 @@ const NAME_AFTER_G = new RegExp(
 // của NP, PM, MN" cũng là zip (≥2 tên liệt kê phẩy NGAY trước "(là) trung điểm"
 // → an toàn; dạng đơn "M là trung điểm BC" không có blob tên ≥2 nên không dính).
 const DISTRIB = new RegExp(
-  `((?:[A-Z](?:['′]?)\\s*(?:,|và)\\s*)+[A-Z](?:['′]?))\\s+(?:lần\\s*lượt\\s+|(?:theo\\s+)?thứ\\s+tự\\s+)?(?:là\\s+)?(?:điểm\\s+)?trung\\s*điểm\\s+(?:của\\s+)?(?:các\\s+)?${SIDE_PREFIX}((?:[A-Z][A-Z]\\s*,\\s*)*(?:[A-Z][A-Z]\\s*,\\s*)?[A-Z][A-Z](?:\\s*và\\s*[A-Z][A-Z])?)`,
+  `((?:[A-Z](?:['′]?)\\s*(?:,|và)\\s*)+[A-Z](?:['′]?))\\s+(?:lần\\s*lượt\\s+|(?:theo\\s+)?thứ\\s+tự\\s+|tương\\s+ứng\\s+)?(?:là\\s+)?(?:điểm\\s+)?trung\\s*điểm\\s+(?:của\\s+)?(?:các\\s+|hai\\s+|ba\\s+)?${SIDE_PREFIX}((?:[A-Z][A-Z]\\s*,\\s*)*(?:[A-Z][A-Z]\\s*,\\s*)?[A-Z][A-Z](?:\\s*và\\s*[A-Z][A-Z])?)`,
   'u',
 );
 
 // Distributive NAME-AFTER: "(Gọi)? trung điểm của AC, AB lần lượt là K, L" →
 // K=mid(AC), L=mid(AB). group1 = blob cặp đỉnh, group2 = blob tên. Zip 1-1.
 const DISTRIB_AFTER = new RegExp(
-  `trung\\s*điểm\\s+(?:của\\s+)?(?:các\\s+)?${SIDE_PREFIX}((?:[A-Z][A-Z]\\s*(?:,|và)\\s*)+[A-Z][A-Z])(?![A-Z])\\s+(?:lần\\s*lượt\\s+|(?:theo\\s+)?thứ\\s+tự\\s+)?là\\s+((?:[A-Z](?:['′]?)\\s*(?:,|và)\\s*)+[A-Z](?:['′]?))(?!\\p{L})`,
+  `trung\\s*điểm\\s+(?:của\\s+)?(?:các\\s+|hai\\s+|ba\\s+)?${SIDE_PREFIX}((?:[A-Z][A-Z]\\s*(?:,|và)\\s*)+[A-Z][A-Z])(?![A-Z])\\s+(?:lần\\s*lượt\\s+|(?:theo\\s+)?thứ\\s+tự\\s+|tương\\s+ứng\\s+)?là\\s+((?:[A-Z](?:['′]?)\\s*(?:,|và)\\s*)+[A-Z](?:['′]?))(?!\\p{L})`,
   'u',
 );
 

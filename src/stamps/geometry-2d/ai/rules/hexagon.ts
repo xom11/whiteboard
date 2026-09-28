@@ -32,6 +32,8 @@ const HEX = '([A-Z])([A-Z])([A-Z])([A-Z])([A-Z])([A-Z])(?![A-Z])';
 // dựng vốn đã là lục giác đều.
 const HEXAGON_DECL = new RegExp('[Ll]ục\\s+giác\\s+(?:đều\\s+)?' + HEX, 'gu');
 // "… ABCDEF (có)? tâm O" — tâm lục giác đều (không kèm đường tròn).
+// "Gọi O là tâm (của) (hình) lục giác đều ABCDEF" — tên tâm đứng TRƯỚC.
+const HEX_TAM_TRUOC = /(?<![A-Z])([A-Z])(?![A-Z'′])\s+là\s+tâm\s+(?:của\s+)?(?:hình\s+)?$/u;
 const HEX_TAM = /^\s*,?\s*(?:có\s+)?tâm\s+(?:là\s+)?([A-Z])(?![A-Z'′\p{L}])/u;
 
 // Prefilter toàn đề: có chữ "lục giác".
@@ -133,7 +135,9 @@ export const hexagonRule: LanguageRule = {
             }),
           );
         }
-        const tam = center === undefined ? HEX_TAM.exec(c.text.slice(afterEnd)) : null;
+        const tam = center === undefined
+          ? HEX_TAM.exec(c.text.slice(afterEnd)) ?? HEX_TAM_TRUOC.exec(c.text.slice(0, start))
+          : null;
         if (tam && !labels.includes(tam[1])) {
           // Tâm lục giác đều = tâm đường tròn qua A, C, E (phái sinh, kéo đỉnh vẫn đúng).
           intents.push(addPoint(tam[1], { kind: 'circumcenter', of: [labels[0], labels[2], labels[4]] }));
