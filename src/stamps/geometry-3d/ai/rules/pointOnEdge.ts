@@ -9,7 +9,7 @@ const SINGLE =
 
 // Distributive: "M, N lần lượt thuộc AB, AC"
 const DISTRIB =
-  /([A-Z])\s*,\s*([A-Z])\s+lần\s+lượt\s+(?:∈|thuộc(?:\s+(?:cạnh|cạnh\s+của)?)?|trên(?:\s+cạnh)?)\s*([A-Z])([A-Z])\s*,\s*([A-Z])([A-Z])(?![\p{L}])/u;
+  /(?<!(?:,|và)\s*)([A-Z])\s*,\s*([A-Z])\s+lần\s+lượt\s+(?:∈|thuộc(?:\s+(?:cạnh|cạnh\s+của)?)?|trên(?:\s+cạnh)?)\s*([A-Z])([A-Z])\s*,\s*([A-Z])([A-Z])(?![\p{L}])/u;
 
 const FOOT_CUE = /hình\s*chiếu|chân\s+đường/iu;
 // "… sao cho HB = 2HA" ngay sau "H ∈ AB": |XP1| = k|XP2| ⇒ X = P1 + k/(k+1)·(P2 − P1).

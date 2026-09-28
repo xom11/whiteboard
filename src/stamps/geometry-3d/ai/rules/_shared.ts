@@ -1,3 +1,5 @@
+import { countGeometryKeywords3D } from '../deterministic/vocabulary3d';
+
 export { solid, addPoint3d, plane3d, line3dIntent, connect3d, crossSection3d, sphereIntent, coneIntent, cylinderIntent, polygonIntent } from '../intent';
 
 export function escapeRe(s: string): string {
@@ -94,4 +96,16 @@ export function baseFaceOf(problem: string): { planeName: string; p1: string; p2
   const [p1, p2, p3] = head.baseLabels;
   const clean = (s: string) => s.replace(/['′'´₀-₉0-9]/gu, '');
   return { planeName: `mp_${clean(p1)}${clean(p2)}${clean(p3)}`, p1, p2, p3 };
+}
+
+/**
+ * Mệnh đề còn nội dung hình học NGOÀI các đoạn rule đã hiểu? (vd "Gọi M, N lần lượt là trung
+ * điểm AB, CD, trên cạnh AD lấy điểm P" — rule trung điểm KHÔNG được claim cả mệnh đề, kẻo P
+ * bị bỏ mà vẫn báo FULL). Bỏ các đoạn đã hiểu + từ nối/động từ dẫn rồi đếm từ khoá hình học.
+ */
+export function residualHasGeometry(clause: string, understood: readonly string[]): boolean {
+  let rest = clause;
+  for (const u of understood) if (u) rest = rest.split(u).join(' ');
+  rest = rest.replace(/(?:Gọi|Cho|Lấy|Biết|biết|Cho\s+biết|Giả\s+sử|và|với|,|;|:)/gu, ' ');
+  return countGeometryKeywords3D(rest) > 0;
 }
