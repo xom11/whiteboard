@@ -9,6 +9,7 @@ import { connectRule } from './connect';
 import { midpointRule } from './midpoint';
 import { perpBisectorRule } from './perpBisector';
 import { cevianRule } from './cevian';
+import { cevianListRule } from './cevianList';
 import { angleBisectorAngleRule } from './angleBisectorAngle';
 import { centersRule } from './centers';
 import { perpFootRule } from './perpFoot';
@@ -103,6 +104,7 @@ import { twoCirclesCenterRadiusMeetRule } from './twoCirclesCenterRadiusMeet';
 import { rightAngleVertexCirclesRule } from './rightAngleVertexCircles';
 import { namedLineRule } from './namedLine';
 import { bisectorsMeetRule } from './bisectorsMeet';
+import { triangleBisectorsMeetRule } from './triangleBisectorsMeet';
 import { hexagonRule } from './hexagon';
 
 const RULES: readonly LanguageRule[] = [
@@ -126,6 +128,7 @@ const RULES: readonly LanguageRule[] = [
   midpointRule,
   perpBisectorRule,
   cevianRule,
+  cevianListRule,
   angleBisectorAngleRule,
   centersRule,
   perpFootRule,
@@ -207,6 +210,7 @@ const RULES: readonly LanguageRule[] = [
   perpNamedLineRule,
   parallelSidePointsRule,
   bisectorsMeetRule,
+  triangleBisectorsMeetRule,
 ];
 
 /**
