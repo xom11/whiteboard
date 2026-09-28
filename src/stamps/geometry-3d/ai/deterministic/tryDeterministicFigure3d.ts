@@ -25,7 +25,16 @@ export type TryResult3D =
  */
 export function tryDeterministicFigure3d(problemRaw: string): TryResult3D {
   const problem = normalizeProblem3d(problemRaw); // xem runDeterministicIntents3d (NFD → NFC)
-  const det = runDeterministicIntents3d(problem);
+  // Hai nhánh dựng khối (solidRefine3d lớp 11 / khoiDaDien lớp 12): thử nhánh mặc định; không ra
+  // hình ĐỦ + ĐÚNG (factAudit3d) thì thử ưu tiên nhánh kia. Lỗi trả về là của lần thử đầu.
+  const first = attempt(problem, 'refine');
+  if (first.ok) return first;
+  const second = attempt(problem, 'khoi');
+  return second.ok ? second : first;
+}
+
+function attempt(problem: string, solidPref: 'refine' | 'khoi'): TryResult3D {
+  const det = runDeterministicIntents3d(problem, solidPref);
   if (!det.ok) return { ok: false, reason: det.reason, coverage: det.coverage };
 
   let state: State;

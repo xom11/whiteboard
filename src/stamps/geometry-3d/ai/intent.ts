@@ -7,20 +7,39 @@ export const Label3DZ = z.string().min(1).max(16).regex(/^[A-Za-z][A-Za-z0-9'′
 export type SolidFlavor = 'pyramid' | 'prism' | 'tetrahedron' | 'box';
 export type BaseVariant =
   | 'square' | 'rectangle' | 'parallelogram' | 'trapezoid' | 'rhombus'
-  | 'triangle' | 'equilateral-triangle';
-export type ApexVariant = 'regular' | 'over-vertex' | 'over-edge-mid' | 'free';
+  | 'triangle' | 'equilateral-triangle'
+  // Lớp 12 (khối đa diện): đáy có góc vuông / cân tại đỉnh `baseAnchor`.
+  | 'right-triangle' | 'right-isosceles-triangle' | 'isosceles-triangle' | 'right-trapezoid'
+  | 'rhombus-60' // hình thoi góc nhọn 60° tại baseAnchor
+  | 'half-hexagon'; // nửa lục giác đều, baseAnchor = cặp đỉnh kề là đường kính
+export type ApexVariant =
+  | 'regular' | 'over-vertex' | 'over-edge-mid' | 'free'
+  // Lớp 12: chân đường cao = tâm ngoại tiếp đáy (cạnh bên bằng nhau) / điểm chia cạnh theo apexRatio.
+  | 'over-circumcenter' | 'over-edge-point' | 'over-incenter' | 'over-weights';
+/** Cách lấy chiều cao để giữ HÌNH DẠNG đề nêu (không phải độ dài). */
+export type HeightMode = 'lateral-eq-base' | 'face-equilateral' | 'face-right-isosceles'
+  // chân đường cao CỐ ĐỊNH, giải chiều cao để mặt (S, heightEdge) đều / vuông tại S
+  | 'solve-equilateral' | 'solve-right-apex';
 
 const SolidIntentZ = z.object({
   op: z.literal('solid'),
   flavor: z.enum(['pyramid', 'prism', 'tetrahedron', 'box']),
   baseLabels: z.array(Label3DZ).min(3),
-  baseVariant: z.enum(['square','rectangle','parallelogram','trapezoid','rhombus','triangle','equilateral-triangle']),
+  baseVariant: z.enum(['square','rectangle','parallelogram','trapezoid','rhombus','triangle','equilateral-triangle',
+    'right-triangle','right-isosceles-triangle','isosceles-triangle','right-trapezoid','rhombus-60','half-hexagon']),
   apex: Label3DZ.optional(),               // pyramid/tetrahedron apex; prism: top labels derived
-  apexVariant: z.enum(['regular','over-vertex','over-edge-mid','free']),
+  apexVariant: z.enum(['regular','over-vertex','over-edge-mid','free','over-circumcenter','over-edge-point','over-incenter','over-weights']),
   apexAnchor: z.string().optional(),        // vertex label (over-vertex) or edge token "AB" (over-edge-mid)
   topLabels: z.array(Label3DZ).optional(),  // prism/box top face
   // Điều kiện đề đặt lên khối (đáy vuông tại B, chân đường cao, chiều cao…) — solidRefine3d.
   refine: z.record(z.unknown()).optional(),
+  // ── Lớp 12 (tuỳ chọn, vắng = hành vi cũ) ──
+  baseAnchor: z.string().optional(),        // đỉnh góc vuông/đỉnh cân; right-trapezoid: cặp "AB" vuông tại A và B
+  apexRatio: z.number().optional(),         // over-edge-point: chân H = X + t·(Y−X), X/Y = apexAnchor
+  heightMode: z.enum(['lateral-eq-base','face-equilateral','face-right-isosceles','solve-equilateral','solve-right-apex']).optional(),
+  heightEdge: z.string().optional(),        // solve-*: cạnh đáy XY của mặt SXY
+  projOf: Label3DZ.optional(),              // lăng trụ XIÊN: đỉnh trên có hình chiếu = chân theo apexVariant
+  apexWeights: z.record(z.number()).optional(), // over-weights: chân = Σ w·đỉnh đáy (Σw = 1)
 });
 
 // Mirror Constraint3D kinds (core/scene/kinds/3d-constraint.ts) + a few rule-level kinds.
@@ -95,11 +114,15 @@ export const Intent3DZ = z.discriminatedUnion('op', [
 ]);
 export type Intent3DT = z.infer<typeof Intent3DZ>;
 
-export function solid(spec: {
+export interface SolidSpec3D {
   flavor: SolidFlavor; baseLabels: string[]; baseVariant: BaseVariant;
   apex?: string; apexVariant: ApexVariant; apexAnchor?: string; topLabels?: string[];
   refine?: Record<string, unknown>;
-}): Intent3DT {
+  baseAnchor?: string; apexRatio?: number; heightMode?: HeightMode; projOf?: string;
+  apexWeights?: Record<string, number>; heightEdge?: string;
+}
+
+export function solid(spec: SolidSpec3D): Intent3DT {
   return { op: 'solid', ...spec } as Intent3DT;
 }
 

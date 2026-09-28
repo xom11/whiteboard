@@ -1,4 +1,5 @@
 import { countGeometryKeywords3D } from '../deterministic/vocabulary3d';
+import { khoiDaDienFromProblem, parseKhoiHead, chuanHoaDe3d, isRefused } from './khoiDaDien';
 
 export { solid, addPoint3d, plane3d, line3dIntent, connect3d, crossSection3d, sphereIntent, coneIntent, cylinderIntent, polygonIntent } from '../intent';
 
@@ -32,7 +33,12 @@ const SOLID_HEAD_3D =
 /** Parse the leading solid header → apex (pyramid only) + base vertex labels. */
 export function parseSolidHead3D(problem: string): SolidHead3D | null {
   const m = SOLID_HEAD_3D.exec(problem);
-  if (!m) return null;
+  if (!m) {
+    // Lớp 12: "khối chóp S.ABC", "hình chóp tứ giác đều S.ABCD", "lăng trụ đứng ABC.A'B'C'"…
+    const k = parseKhoiHead(problem);
+    if (!k) return null;
+    return k.apex ? { apex: k.apex, baseLabels: k.base } : { baseLabels: k.base };
+  }
   if (m[1]) return { apex: m[1], baseLabels: splitVertexToken(m[2] ?? '') };  // pyramid
   if (m[3]) return { baseLabels: splitVertexToken(m[3]) };                    // tetrahedron
   if (m[4]) return { baseLabels: splitVertexToken(m[4]) };                    // prism (bottom face)
@@ -73,7 +79,7 @@ const SOLID_RULE_PYRAMID = SOLID_PYRAMID_RE;
 export function parsePyramidTolerant(problem: string): { apex: string; base: string[]; solidRuleDraws: boolean } | null {
   const m = PYRAMID_TOLERANT.exec(problem);
   if (!m) return null;
-  return { apex: m[1], base: splitVertexToken(m[2]), solidRuleDraws: SOLID_RULE_PYRAMID.test(problem) };
+  return { apex: m[1], base: splitVertexToken(m[2]), solidRuleDraws: SOLID_RULE_PYRAMID.test(problem) || khoiDraws(problem, 'pyramid') };
 }
 
 // Prism head tolerant of "đều" qualifier. solidRule.PRISM = /lăng\s+trụ\s+[A-Z]{3,4}\./ FAIL
@@ -83,11 +89,18 @@ const PRISM_TOLERANT = /lăng\s*trụ(?:\s*đều)?\s+([A-Z]{3,4})\.((?:[A-Z]['�
 export const SOLID_PRISM_RE = /lăng\s+trụ(?:\s+(?:đứng|đều|tam\s+giác|tứ\s+giác))*\s+([A-Z]{3,4})\.((?:[A-Z]['′])+)/u;
 const SOLID_RULE_PRISM = SOLID_PRISM_RE;
 
+/** solidRule đã lo khối qua nhánh lớp 12 (khoiDaDien: vẽ, hoặc từ chối vẽ) chưa. */
+function khoiDraws(problem: string, flavor: 'pyramid' | 'prism'): boolean {
+  const k = khoiDaDienFromProblem(chuanHoaDe3d(problem));
+  // Từ chối (dữ kiện không dựng đúng được) ⟹ cũng KHÔNG cho rule khác tự vẽ khối mặc định.
+  return !!k && (isRefused(k) || k.spec.flavor === flavor);
+}
+
 /** Parse lăng trụ head (đều-tolerant) → base + top labels + solidRuleDraws (bare → solidRule vẽ). */
 export function parsePrismTolerant(problem: string): { base: string[]; top: string[]; solidRuleDraws: boolean } | null {
   const m = PRISM_TOLERANT.exec(problem);
   if (!m) return null;
-  return { base: splitVertexToken(m[1]), top: splitVertexToken(m[2]), solidRuleDraws: SOLID_RULE_PRISM.test(problem) };
+  return { base: splitVertexToken(m[1]), top: splitVertexToken(m[2]), solidRuleDraws: SOLID_RULE_PRISM.test(problem) || khoiDraws(problem, 'prism') };
 }
 
 /** Implied base plane (3 base vertices) for "đáy"/"mặt đáy" with no (XYZ) token. */

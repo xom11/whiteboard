@@ -1,7 +1,8 @@
 import type { LanguageRule3D, RuleContext3D, RuleMatch3D } from './_types';
-import { solid, escapeRe, splitVertexToken, SOLID_PYRAMID_RE, SOLID_PRISM_RE } from './_shared';
+import { solid, escapeRe, splitVertexToken, addPoint3d, SOLID_PYRAMID_RE, SOLID_PRISM_RE } from './_shared';
 import type { BaseVariant, ApexVariant, Intent3DT } from '../intent';
 import { refineSolid, type SolidHeadInfo } from '../solidRefine3d';
+import { parseKhoiDaDien, isRefused } from './khoiDaDien';
 
 // Match against full problem: "hình chóp S.ABCD" | "hình chóp tứ giác đều S.ABCD" (qualifier dung nạp)
 const PYRAMID = SOLID_PYRAMID_RE;
@@ -74,8 +75,53 @@ export const solidRule: LanguageRule3D = {
   id: 'solid',
   priority: 90,
   languages: ['vi'],
-  patterns: [/hình\s+chóp/u, /tứ\s+diện/u, /lăng\s+trụ/u, /hình\s+(hộp|lập\s+phương)/u],
+  patterns: [/hình\s+chóp/u, /tứ\s+diện/u, /lăng\s+trụ/u, /hình\s+(hộp|lập\s+phương)/u,
+    /(?:khối|hình)\s+(?:chóp|lăng\s+trụ|hộp|lập\s+phương)/iu],
   match(ctx: RuleContext3D): RuleMatch3D[] {
+    return chooseSolid(ctx, legacyMatch(ctx), khoiMatch(ctx));
+  },
+};
+
+/** Nhánh lớp 12 (khoiDaDien): 'refused' = có đầu khối nhưng dữ kiện không dựng đúng được. */
+function khoiMatch(ctx: RuleContext3D): RuleMatch3D[] | 'refused' | null {
+    const k = parseKhoiDaDien(ctx);
+    if (isRefused(k)) return 'refused';
+    if (!k) return null;
+    const ids = [...new Set([...solidClauseIds(ctx), ...k.clauseIds])];
+    return [{
+      ruleId: 'solid',
+      clauseIds: ids,
+      intents: [
+        solid(k.spec),
+        ...(k.center ? [addPoint3d(k.center, { kind: 'centroid', vertices: k.spec.baseLabels })] : []),
+      ],
+    }];
+}
+
+/**
+ * Hợp nhất 2 thiết kế dựng khối:
+ *  - lớp 11 (solidRefine3d gắn vào đường cũ): đọc được điều kiện ⇒ dùng (đo trên 4 bộ lớp 11–12 cho
+ *    nhiều hình ĐÚNG hơn khi ưu tiên nhánh này);
+ *  - không đọc được điều kiện nào ⇒ nhánh lớp 12 (khoiDaDien: đầu "khối …", chiều cao lập phương,
+ *    kiểm số hình dạng mặt bên…); khoiDaDien TỪ CHỐI (dữ kiện hình dạng không dựng đúng được) ⇒
+ *    không vẽ khối (thà thiếu còn hơn sai), kể cả đường cũ.
+ */
+function chooseSolid(ctx: RuleContext3D, mine: RuleMatch3D[], khoi: RuleMatch3D[] | 'refused' | null): RuleMatch3D[] {
+  const refined = mine.some((mm) => mm.intents.some((i) => i.op === 'solid' && (i as { refine?: unknown }).refine));
+  if (ctx.solidPref === 'khoi') {
+    // Lần thử thứ hai (lần đầu không ra hình đúng/đủ): nhánh lớp 12 trước.
+    if (Array.isArray(khoi)) return khoi;
+    if (refined) return mine;
+    return khoi === 'refused' ? [] : mine;
+  }
+  if (refined) return mine;
+  if (khoi === 'refused') return [];
+  return khoi ?? mine;
+}
+
+function legacyMatch(ctx: RuleContext3D): RuleMatch3D[] {
+  const self = { id: 'solid' };
+  {
     const prob = ctx.problem;
     let m: RegExpExecArray | null;
 
@@ -85,7 +131,7 @@ export const solidRule: LanguageRule3D = {
       const { v, anchor } = apexVariantFrom(prob, apex);
       return [
         {
-          ruleId: this.id,
+          ruleId: self.id,
           clauseIds: solidClauseIds(ctx, baseLabels.length),
           intents: [
             withRefine(prob, solid({
@@ -107,7 +153,7 @@ export const solidRule: LanguageRule3D = {
         const isReg = /tứ\s+diện\s+đều/u.test(prob);
         return [
           {
-            ruleId: this.id,
+            ruleId: self.id,
             clauseIds: solidClauseIds(ctx),
             intents: [
               withRefine(prob, solid({
@@ -128,7 +174,7 @@ export const solidRule: LanguageRule3D = {
       const topLabels = splitVertexToken(m[2]);
       return [
         {
-          ruleId: this.id,
+          ruleId: self.id,
           clauseIds: solidClauseIds(ctx),
           intents: [
             withRefine(prob, solid({
@@ -148,7 +194,7 @@ export const solidRule: LanguageRule3D = {
       const topLabels = splitVertexToken(m[2]);
       return [
         {
-          ruleId: this.id,
+          ruleId: self.id,
           clauseIds: solidClauseIds(ctx),
           intents: [
             withRefine(prob, solid({
@@ -164,5 +210,6 @@ export const solidRule: LanguageRule3D = {
     }
 
     return [];
-  },
-};
+  }
+}
+

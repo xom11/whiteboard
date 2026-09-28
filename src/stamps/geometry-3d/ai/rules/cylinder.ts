@@ -1,6 +1,7 @@
 import type { LanguageRule3D, RuleContext3D, RuleMatch3D } from './_types';
 import type { Intent3DT } from '../intent';
 import { cylinderIntent, addPoint3d, parseSolidHead3D, polygonIntent, sectionNames } from './_shared';
+import { kichThuocTru } from './thietDienQuaTruc';
 
 const CUE = /(?:hình|khối)\s*trụ/iu;
 const INSCRIBED = /(?:nội|ngoại)\s*tiếp/iu;
@@ -18,20 +19,21 @@ export const cylinderRule: LanguageRule3D = {
     if (parseSolidHead3D(ctx.problem) || INSCRIBED.test(ctx.problem)) return [];
     const c = ctx.clauses.find((cl) => CUE.test(cl.text));
     if (!c) return [];
+    const { r, h } = kichThuocTru(ctx.problem); // thiết diện qua trục là hình vuông ⟹ h = 2r
     const intents: Intent3DT[] = [
-      addPoint3d('O', { kind: 'free', x: 0, y: 0, z: -1.2 }),
-      addPoint3d('I', { kind: 'free', x: 0, y: 0, z: 1.2 }),
-      cylinderIntent({ baseCenter: 'O', topCenter: 'I', radius: 1.4 }),
+      addPoint3d('O', { kind: 'free', x: 0, y: 0, z: -h / 2 }),
+      addPoint3d('I', { kind: 'free', x: 0, y: 0, z: h / 2 }),
+      cylinderIntent({ baseCenter: 'O', topCenter: 'I', radius: r }),
     ];
     const clauseIds = [c.id];
     if (AXIAL.test(ctx.problem)) {
       // 4 đầu mút 2 đường kính 2 đáy → hcn qua trục [A(đáy−),B(đáy+),C(đỉnh+),D(đỉnh−)].
       const [a, b, cc, d] = sectionNames(4, ['O', 'I']);
       intents.push(
-        addPoint3d(a, { kind: 'free', x: -1.4, y: 0, z: -1.2 }),
-        addPoint3d(b, { kind: 'free', x: 1.4, y: 0, z: -1.2 }),
-        addPoint3d(cc, { kind: 'free', x: 1.4, y: 0, z: 1.2 }),
-        addPoint3d(d, { kind: 'free', x: -1.4, y: 0, z: 1.2 }),
+        addPoint3d(a, { kind: 'free', x: -r, y: 0, z: -h / 2 }),
+        addPoint3d(b, { kind: 'free', x: r, y: 0, z: -h / 2 }),
+        addPoint3d(cc, { kind: 'free', x: r, y: 0, z: h / 2 }),
+        addPoint3d(d, { kind: 'free', x: -r, y: 0, z: h / 2 }),
         polygonIntent({ vertices: [a, b, cc, d] }),
       );
       const sc = ctx.clauses.find((cl) => AXIAL.test(cl.text));

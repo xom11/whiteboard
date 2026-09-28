@@ -178,7 +178,7 @@ function shapeFacts(labels: string[], desc: string, where: string): Fact3D[] {
   if (n === 3) {
     const [A, B, C] = L;
     const other = (x: string) => L.filter((y) => y !== x) as [string, string];
-    let m = /vuông\s+cân\s+tại\s+([A-Z])/u.exec(d) ?? /vuông\s+tại\s+([A-Z])/u.exec(d) ?? /vuông\s+ở\s+([A-Z])/u.exec(d);
+    let m = /vuông\s+cân\s+t[aạ]i\s+([A-Z])/u.exec(d) ?? /vuông\s+t[aạ]i\s+([A-Z])/u.exec(d) ?? /vuông\s+ở\s+([A-Z])/u.exec(d);
     if (m && L.includes(m[1])) {
       const at = m[1]; const [p, q] = other(at);
       out.push(mk('right-angle', 'incidence', `${where}: vuông tại ${at}`, L, (P) => isRightAt(P, at, p, q)));
@@ -243,7 +243,7 @@ function baseShapeFacts(problem: string, solid: SolidInfo | null): Fact3D[] {
 function namedTriangleFacts(problem: string): Fact3D[] {
   const out: Fact3D[] = [];
   // "tam giác SAB (là tam giác)? (vuông cân tại S|vuông tại A|đều|cân tại S)"
-  const re = /(?:tam\s+giác|mặt\s+bên|∆|Δ)\s*([A-Z]{3})(?![A-Z])\s*(?:là\s+)?(?:(?:một\s+)?tam\s+giác\s+)?((?:vuông\s+cân|vuông|cân)\s+(?:tại|ở)\s+[A-Z](?![A-Z])|đều)/gu;
+  const re = /(?:tam\s+giác|mặt\s+bên|∆|Δ)\s*([A-Z]{3})(?![A-Z])\s*(?:là\s+)?(?:(?:một\s+)?tam\s+giác\s+)?((?:vuông\s+cân|vuông|cân)\s+(?:t[aạ]i|ở)\s+[A-Z](?![A-Z])|đều)/gu;
   for (const m of problem.matchAll(re)) {
     if (/^(?:đáy)/u.test(problem.slice(Math.max(0, (m.index ?? 0) - 6), m.index))) continue;
     out.push(...shapeFacts(splitLabels(m[1]), m[2], `tam giác ${m[1]}`));
@@ -395,12 +395,35 @@ function solidKindFacts(problem: string, solid: SolidInfo | null): Fact3D[] {
   return out;
 }
 
+// "SC tạo với đáy (một) góc 60°" | "góc giữa SC và (ABCD) bằng 45°" (0° < θ < 90°): hình phải có góc
+// THẬT SỰ nhọn khác 0 — không được ⊥ mặt (90°) hay nằm trong/song song mặt (0°). Không đo số độ.
+function lineAngleFacts(problem: string, solid: SolidInfo | null): Fact3D[] {
+  const out: Fact3D[] = [];
+  const res = [
+    new RegExp(`(?<![(\\p{L}'′’])(${LBL})(${LBL})\\s+(?:tạo|hợp)\\s+với\\s+${PLANE_TOK}\\s*(?:một\\s+)?góc\\s*(?:bằng\\s*)?(\\d+(?:[.,]\\d+)?)\\s*(?:°|độ|o)`, 'gu'),
+    new RegExp(`[Gg]óc\\s+giữa\\s+(?:đường\\s+thẳng\\s+|cạnh\\s+)?(${LBL})(${LBL})\\s+(?:và|với)\\s+${PLANE_TOK}\\s*(?:bằng|là)\\s*(\\d+(?:[.,]\\d+)?)\\s*(?:°|độ|o)`, 'gu'),
+  ];
+  for (const re of res) for (const m of problem.matchAll(re)) {
+    const th = Number(m[5].replace(',', '.'));
+    if (!(th > 0 && th < 90)) continue;
+    const pl = planeLabels(m[3] ?? m[4], solid);
+    if (!pl) continue;
+    const [x, y] = [normLabel(m[1]), normLabel(m[2])];
+    out.push(mk('line-angle', 'incidence', `${x}${y} tạo góc ${th}° với (${pl.join('')})`, [x, y, ...pl], (P) => {
+      const c = absCos(sub(P[y], P[x]), normalOf(P[pl[0]], P[pl[1]], P[pl[2]]));
+      return c > 1e-3 && c < 1 - 1e-3;   // không ⊥ (c=1) và không ∥ (c=0)
+    }));
+  }
+  return out;
+}
+
 /** Rút mọi sự kiện kiểm được từ đề. */
 export function extractFacts3d(problem: string): Fact3D[] {
   const p = normalizeProblem3d(problem).replace(/\s+/gu, ' ');
   const solid = parseSolid(p);
   return [
     ...lineperpPlaneFacts(p, solid),
+    ...lineAngleFacts(p, solid),
     ...pairwisePerpFacts(p),
     ...planePerpFacts(p, solid),
     ...baseShapeFacts(p, solid),

@@ -53,9 +53,17 @@ function toTarget(planeTok: string | undefined, dayKw: string | undefined, lineA
   return null;
 }
 
-function emit(named: string | undefined, from: string, t: Target): Intent3DT[] {
+// Tên chân ĐÃ được rule khác dựng ("… trùng với điểm O là giao điểm hai đường chéo") ⇒ chỉ nối,
+// không tạo điểm thứ hai cùng nhãn (hình đúng khi khối đặt chân đúng chỗ — factAudit3d kiểm).
+function definedElsewhere(name: string, problem: string): boolean {
+  const x = name.replace(/['′]/gu, "['′]");
+  return new RegExp(`(?<![\\p{L}'′])${x}\\s+là\\s+(?:giao\\s+điểm|trung\\s+điểm|trọng\\s+tâm|tâm)`, 'u').test(problem);
+}
+
+function emit(named: string | undefined, from: string, t: Target, problem = ''): Intent3DT[] {
   const foot = named ?? `H${stripPrime(from)}`;
   const out: Intent3DT[] = [];
+  if (named && definedElsewhere(named, problem)) return [connect3d(from, foot, 'segment')];
   if (t.kind === 'plane') {
     out.push(plane3d(t.planeName, { kind: 'threePoints', p1: t.p[0], p2: t.p[1], p3: t.p[2] }));
     out.push(addPoint3d(foot, { kind: 'perpFootPlane', from, plane: t.planeName }));
@@ -81,7 +89,7 @@ export const projectionFootRule: LanguageRule3D = {
         if (!t) continue;
         // Named: leading "H là" (m[1]) takes priority; then trailing "là H" (m[7]).
         const named = m[1] ?? m[7];
-        out.push({ ruleId: this.id, clauseIds: [c.id], intents: emit(named, m[2], t) });
+        out.push({ ruleId: this.id, clauseIds: [c.id], intents: emit(named, m[2], t, ctx.problem) });
         continue;
       }
       // "khoảng cách từ A đến mặt phẳng SBC" (nguồn rơi ngoặc) ⇒ coi như "(SBC)"

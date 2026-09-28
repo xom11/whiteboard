@@ -1,4 +1,4 @@
-// scripts/diag-all-3d.ts — probe hợp nhất cho 3 dataset hình không gian 3D.
+// scripts/diag-all-3d.ts — probe hợp nhất cho các dataset hình không gian 3D.
 //   npx tsx scripts/diag-all-3d.ts   → in summary + ghi .work/escalations-3d.json
 // JSON: [{dataset, id, intro, tier, reason, detail, detIntents[], uncovered[]}]
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -37,6 +37,7 @@ const DATASETS = [
   { name: 'vuonggoc',     file: 'docs/datasets/hinh-khong-gian-11-vuonggoc-khoangcach.txt' },
   { name: 'tron-xoay',   file: 'docs/datasets/hinh-khong-gian-12-khoi-tron-xoay.txt' },
   { name: 'bosung-11',   file: 'docs/datasets/hinh-khong-gian-11-bosung-2026-09.txt' },
+  { name: 'lop12-bosung', file: 'docs/datasets/hinh-khong-gian-12-bosung-2026-09.txt' },
 ];
 
 interface Row {

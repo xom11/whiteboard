@@ -55,6 +55,9 @@ export const angleLinePlaneRule: LanguageRule3D = {
         const inPlane = planeTok ? [...planeTok].filter((x) => /[A-Z]/u.test(x)) : (head?.baseLabels ?? (boxBase ? [...boxBase] : []));
         const strip = (x: string) => x.replace(/['′]/gu, '');
         const in1 = inPlane.includes(e1) && e1 === strip(e1), in2 = inPlane.includes(e2) && e2 === strip(e2);
+        // Cạnh bên lăng trụ (AA') tạo góc ≠ 90° với đáy ⇒ lăng trụ XIÊN theo góc — layout chưa dựng
+        // được góc đó (lăng trụ đứng sẽ ra 90°) ⇒ không nhận (thà thiếu còn hơn sai).
+        if (strip(e1) === strip(e2) && !/[Hh]ình\s+chiếu[^.;]{0,40}?[A-Z]['′]/u.test(ctx.problem)) continue;
         if (in1 && !in2) { vtx = e1; from = e2; } else if (in2 && !in1) { vtx = e2; from = e1; }
       }
       if (!vtx || !from) continue;

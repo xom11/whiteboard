@@ -1,12 +1,12 @@
 import type { IntentBuilder3D } from './_types';
 import { addPoint3dObj, addShape3dObj } from './_types';
 import { solidLayout } from '../layout3d';
-import type { SolidRefine } from '../solidRefine3d';
+import type { SolidSpec3D } from '../intent';
 import { nextLabel } from '../../../../core/scene';
 
 export const buildSolid: IntentBuilder3D = (s, intent) => {
   if (intent.op !== 'solid') return;
-  const L = solidLayout({ ...intent, refine: intent.refine as SolidRefine | undefined });
+  const L = solidLayout(intent as SolidSpec3D);
   const vertexIds: string[] = [];
   for (const label of L.vertexOrder) {
     const [x, y, z] = L.coords[label];

@@ -1,6 +1,7 @@
 import type { LanguageRule3D, RuleContext3D, RuleMatch3D } from './_types';
 import type { Intent3DT } from '../intent';
 import { coneIntent, addPoint3d, parseSolidHead3D, polygonIntent, sectionNames } from './_shared';
+import { kichThuocNon } from './thietDienQuaTruc';
 
 const CUE = /(?:hình|khối)\s*nón/iu;
 const INSCRIBED = /(?:nội|ngoại)\s*tiếp/iu;
@@ -25,18 +26,19 @@ export const coneRule: LanguageRule3D = {
     const apexName = am ? (am[1] ?? am[2]!) : 'S';
     const baseRaw = am && am[3] ? am[3] : 'O';
     const baseName = baseRaw === apexName ? 'O' : baseRaw;
+    const { r, h } = kichThuocNon(ctx.problem); // giữ hình dạng thiết diện qua trục (đều / vuông cân / góc ở đỉnh)
     const intents: Intent3DT[] = [
-      addPoint3d(baseName, { kind: 'free', x: 0, y: 0, z: -1.2 }),
-      addPoint3d(apexName, { kind: 'free', x: 0, y: 0, z: 1.2 }),
-      coneIntent({ baseCenter: baseName, apex: apexName, radius: 1.4 }),
+      addPoint3d(baseName, { kind: 'free', x: 0, y: 0, z: -h / 2 }),
+      addPoint3d(apexName, { kind: 'free', x: 0, y: 0, z: h / 2 }),
+      coneIntent({ baseCenter: baseName, apex: apexName, radius: r }),
     ];
     const clauseIds = [c.id];
     if (AXIAL.test(ctx.problem)) {
       // 2 đầu mút đường kính đáy (trên vành R=1.4) + tam giác qua trục [A, đỉnh, B].
       const [pA, pB] = sectionNames(2, [apexName, baseName]);
       intents.push(
-        addPoint3d(pA, { kind: 'free', x: -1.4, y: 0, z: -1.2 }),
-        addPoint3d(pB, { kind: 'free', x: 1.4, y: 0, z: -1.2 }),
+        addPoint3d(pA, { kind: 'free', x: -r, y: 0, z: -h / 2 }),
+        addPoint3d(pB, { kind: 'free', x: r, y: 0, z: -h / 2 }),
         polygonIntent({ vertices: [pA, apexName, pB] }),
       );
       const sc = ctx.clauses.find((cl) => AXIAL.test(cl.text));

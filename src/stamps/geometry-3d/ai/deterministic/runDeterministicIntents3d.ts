@@ -21,14 +21,14 @@ export type RunDeterministicResult3D =
  * Chạy toàn bộ rule engine 3D trên `problem`.
  * Trả về intents nếu coverage đầy đủ, ngược lại trả lý do thất bại.
  */
-export function runDeterministicIntents3d(problemRaw: string): RunDeterministicResult3D {
+export function runDeterministicIntents3d(problemRaw: string, solidPref?: 'refine' | 'khoi'): RunDeterministicResult3D {
   // Chữ Việt dạng TỔ HỢP (NFD: "i" + dấu huyền rời — gặp khi copy từ PDF/web/macOS) làm MỌI regex
   // rule trượt ("hình" ≠ "hình"). Chuẩn hoá NFC một lần ở cửa vào.
   const problem = normalizeProblem3d(problemRaw);
   const clauses = segmentClauses3D(problem);
   const geo = clauses.filter((c) => c.hasGeometry);
 
-  const matches = runRules3D({ problem, clauses: geo });
+  const matches = runRules3D({ problem, clauses: geo, solidPref });
 
   if (matches.length === 0) {
     const coverage = computeCoverage3D(clauses, []);

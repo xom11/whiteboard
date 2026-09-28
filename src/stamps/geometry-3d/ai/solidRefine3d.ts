@@ -178,8 +178,8 @@ function baseDesc(problem: string, base: string[]): string | null {
   const B = base.join('');
   // "đáy (ABCD)? (là)? <mô tả>" | "(có)? ABCD là <mô tả>" | "tam giác ABC <mô tả>" (n=3)
   const res = [
-    new RegExp(`đáy\\s*(?:\\(?${B}\\)?\\s*)?(?:là\\s+)?((?:một\\s+)?(?:hình|tam\\s+giác|nửa\\s+lục\\s+giác)[^.;]*)`, 'u'),
-    new RegExp(`(?<![A-Z])${B}(?![A-Z'′])\\s+là\\s+((?:một\\s+)?(?:hình|tam\\s+giác|nửa\\s+lục\\s+giác)[^.;]*)`, 'u'),
+    new RegExp(`đáy\\s*(?:\\(?${B}\\)?\\s*)?(?:là\\s+)?((?:(?:một|các)\\s+)?(?:hình|tam\\s+giác|nửa\\s+lục\\s+giác)[^.;]*)`, 'u'),
+    new RegExp(`(?<![A-Z])${B}(?![A-Z'′])\\s+là\\s+((?:(?:một|các)\\s+)?(?:hình|tam\\s+giác|nửa\\s+lục\\s+giác)[^.;]*)`, 'u'),
     new RegExp(`(?:[Tt]am\\s+giác|∆|Δ)\\s*${B}(?![A-Z'′])\\s*((?:là\\s+tam\\s+giác\\s+)?(?:vuông|cân|đều)[^.;]*)`, 'u'),
   ];
   for (const re of res) {
@@ -207,6 +207,15 @@ function parseBaseShape(problem: string, head: SolidHeadInfo, regular: boolean):
     m = /cân\s+(?:tại|ở)\s+([A-Z])(?![A-Z'])/u.exec(d);
     if (m && B.includes(m[1])) return { kind: 'iso-tri', at: m[1] };
     if (/đều/u.test(d)) return { kind: 'equi-tri' };
+    // "tam giác vuông, BA = BC" (không nói tại đâu): 2 cạnh bằng nhau của tam giác vuông là 2 CẠNH
+    // GÓC VUÔNG ⇒ vuông cân tại đỉnh chung.
+    if (/vuông/u.test(d)) {
+      const e = new RegExp(`(?<![A-Z'])([${B.join('')}])([${B.join('')}])\\s*=\\s*([${B.join('')}])([${B.join('')}])(?![A-Z'])`, 'u').exec(problem);
+      if (e) {
+        const common = [e[1], e[2]].find((z) => [e[3], e[4]].includes(z));
+        if (common && new Set([e[1], e[2], e[3], e[4]]).size === 3) return { kind: 'right-tri', at: common, iso: true };
+      }
+    }
     return undefined;
   }
   if (n !== 4) return undefined;
@@ -271,7 +280,7 @@ function rhombusAngle(problem: string, B: string[]): number | null {
 
 function triProps(problem: string, S: string, x: string, y: string): { prop: string; at?: string; text: string } | null {
   const perms = [`${S}${x}${y}`, `${S}${y}${x}`, `${x}${S}${y}`, `${y}${S}${x}`, `${x}${y}${S}`, `${y}${x}${S}`];
-  const re = new RegExp(`(?:[Tt]am\\s+giác|[Mm]ặt\\s+bên|∆|Δ)\\s*\\(?(?:${perms.join('|')})\\)?(?![A-Z'])\\s*(?:là\\s+(?:một\\s+)?(?:tam\\s+giác\\s+)?)?(vuông\\s+cân|vuông|cân|đều)(?:\\s+(?:tại|ở|đỉnh)\\s+([A-Z])(?![A-Z']))?`, 'u');
+  const re = new RegExp(`(?:[Tt]am\\s+giác|[Mm]ặt\\s+bên|∆|Δ)\\s*\\(?(?:${perms.join('|')})\\)?(?![A-Z'])\\s*(?:là\\s+(?:một\\s+)?(?:tam\\s+giác\\s+)?)?(vuông\\s+cân|vuông|cân|đều)(?:\\s+(?:t[aạ]i|ở|đỉnh)\\s+([A-Z])(?![A-Z']))?`, 'u');
   const m = re.exec(problem);
   if (!m) return null;
   return { prop: m[1], at: m[2], text: m[0] };
@@ -491,6 +500,16 @@ export function refineSolid(problemRaw: string, head: SolidHeadInfo): RefineResu
     }
   }
 
+  // Chỉ biết một mặt bên "SXY vuông tại X" (X ∈ đáy), không nói chân đường cao: chọn chân = X
+  // (SX ⊥ đáy ⇒ SX ⊥ XY — một trường hợp thoả đúng điều kiện).
+  if (isPyr && S && !r.apexFoot && !regTetra && !r.height) {
+    for (let i = 0; i < base.length && !r.apexFoot; i++) for (let j = 0; j < base.length && !r.apexFoot; j++) {
+      if (i === j) continue;
+      const t = triProps(problem, S, base[i], base[j]);
+      if (t && t.prop === 'vuông' && (t.at === base[i] || t.at === base[j])) { r.apexFoot = t.at!; consumed.push(t.text); }
+    }
+  }
+
   // Chỉ biết một mặt bên SXY đều / cân tại S / vuông cân tại S (không nói chân đường cao):
   // chân đặt trên TRUNG TRỰC của XY (hình chiếu tâm đáy lên trung trực) ⇒ SX = SY thật.
   if (isPyr && S && !r.apexFoot && !regTetra && !r.height) {
@@ -533,8 +552,17 @@ export function refineSolid(problemRaw: string, head: SolidHeadInfo): RefineResu
   if (!isPyr && head.top) {
     const top = head.top.map(norm);
     const re = new RegExp(`[Hh]ình\\s+chiếu\\s+(?:vuông\\s+góc\\s+)?(?:của\\s+)?(?:đỉnh\\s+|điểm\\s+)?(${L1})\\s+(?:lên|trên|xuống)\\s+${PLANE}\\s*(?:là|trùng\\s+với|chính\\s+là)\\s+([^.;]{1,80})`, 'u');
+    // "A'A = A'B = A'C" ⇒ A' cách đều 3 đỉnh đáy ⇒ hình chiếu của A' = tâm ngoại tiếp đáy
+    const eq = new RegExp(`(${L1})([A-Z])\\s*=\\s*(${L1})([A-Z])\\s*=\\s*(${L1})([A-Z])(?![A-Z'])`, 'u').exec(problem);
+    if (eq && norm(eq[1]) === norm(eq[3]) && norm(eq[3]) === norm(eq[5]) && top.includes(norm(eq[1]))) {
+      const pts = [eq[2], eq[4], eq[6]];
+      if (pts.every((z) => base.includes(z)) && new Set(pts).size === 3) {
+        r.topFoot = { vertex: norm(eq[1]), foot: { circ: pts } };
+        consumed.push(eq[0]);
+      }
+    }
     const m = re.exec(problem);
-    if (m && top.includes(norm(m[1])) && isBasePlane(m[2], m[3], m[4], base)) {
+    if (!r.topFoot && m && top.includes(norm(m[1])) && isBasePlane(m[2], m[3], m[4], base)) {
       const f = descToSpec(m[5], ctx);
       if (f) { r.topFoot = { vertex: norm(m[1]), foot: f }; consumed.push(m[0]); }
     }

@@ -1,3 +1,4 @@
+import { runRules3D } from '../registry';
 import { inscribedRoundSolidRule } from '../inscribedRoundSolid';
 import { segmentClauses3D } from '../../deterministic/coverage3d';
 
@@ -10,7 +11,10 @@ describe('inscribedRoundSolid — nón', () => {
     const ms = inscribedRoundSolidRule.match(ctxOf(p) as any);
     expect(ms.length).toBe(1);
     const ops = ms[0].intents.map((i: any) => i.op + (i.constraint ? '/' + i.constraint.kind : ''));
-    expect(ops).not.toContain('solid');                   // solidRule dung nạp "tứ giác đều" → rule chỉ reference
+    // Từ khoiDaDien (lớp 12), solidRule đã nhận "chóp tứ giác đều" ⟹ rule này KHÔNG vẽ chóp lần 2.
+    expect(ops).not.toContain('solid');
+    const all = runRules3D(ctxOf(p) as any).flatMap((m) => m.intents);
+    expect(all.filter((i: any) => i.op === 'solid').length).toBe(1);
     expect(ops).toContain('cone');
     expect(ops).toContain('add-point-3d/centroid');       // tâm incircle = centroid (vuông)
     expect(ops).toContain('add-point-3d/midpoint');       // radiusTo = trung điểm cạnh
