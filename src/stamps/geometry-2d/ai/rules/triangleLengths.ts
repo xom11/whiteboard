@@ -35,6 +35,12 @@ export function doCanhDeCho(problem: string, labels: readonly string[]): Map<str
     if (!tap.has(X) || tap.has(H)) continue;
     const v = new RegExp(`(?<![A-Z])(?:${X}${H}|${H}${X})\\s*=\\s*(\\d+(?:[.,]\\d+)?)`, 'u').exec(problem);
     if (v && Number(v[1].replace(',', '.')) > 0) out.set(`h:${X}`, Number(v[1].replace(',', '.')));
+    // Chân H chia cạnh đáy: "BH = 16 cm, CH = 9 cm" → khoá 'f:B', 'f:C'.
+    for (const Y of labels) {
+      if (Y === X) continue;
+      const f = new RegExp(`(?<![A-Z])(?:${Y}${H}|${H}${Y})\\s*=\\s*(\\d+(?:[.,]\\d+)?)`, 'u').exec(problem);
+      if (f && Number(f[1].replace(',', '.')) > 0) out.set(`f:${Y}`, Number(f[1].replace(',', '.')));
+    }
   }
   return out;
 }
@@ -48,8 +54,20 @@ export function toaDoTamGiacTheoCanh(
   variant: string,
   lens: Map<string, number>,
 ): Record<string, Pt> | undefined {
-  if ([...lens.keys()].every((k) => k.startsWith('h:')) || variant === 'equilateral') return undefined;
+  if ([...lens.keys()].every((k) => /^[hf]:/u.test(k)) && ![...lens.keys()].some((k) => k.startsWith('f:')) || variant === 'equilateral') return undefined;
   const [A, B, C] = labels;
+  // Đường cao từ V + hai đoạn chân H chia cạnh đối ("AH = 12, BH = 16, CH = 9"): H nằm
+  // giữa hai đỉnh kia ⇒ dựng thẳng (đề Pythagore lớp 8 — tam giác vuông ẩn trong số đo).
+  for (const V of labels) {
+    const h = lens.get(`h:${V}`);
+    const [P, Q] = labels.filter((x) => x !== V);
+    const fp = lens.get(`f:${P}`);
+    const fq = lens.get(`f:${Q}`);
+    if (h && fp && fq) {
+      const k = CO_CHUAN / Math.max(fp + fq, h);
+      return { [V]: [fp * k, h * k], [P]: [0, 0], [Q]: [(fp + fq) * k, 0] };
+    }
+  }
   const L = new Map(lens);
   const len = (p: string, q: string) => L.get(key(p, q));
 

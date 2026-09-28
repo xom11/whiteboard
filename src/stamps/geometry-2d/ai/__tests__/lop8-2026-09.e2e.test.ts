@@ -225,4 +225,22 @@ describe('lớp 8 — hình đúng dữ kiện đề', () => {
     expect(songSong(p.M, p.N, p.C, p.D)).toBe(true);
     expect(thuocDoan(p.N, p.B, p.D)).toBe(true);
   });
+
+  // --- đường cao theo tam giác chứa nó; tam giác từ chân đường cao --------------
+  it('lop8 #62: "AH, HD lần lượt là các đường cao kẻ từ đỉnh A của tam giác ABC và đỉnh H của tam giác HAB" (trước: H trùng B)', () => {
+    const p = toaDoHinh('Cho tam giác ABC vuông tại A có AB = 5 cm, AC = 4 cm. Gọi AH, HD lần lượt là các đường cao kẻ từ đỉnh A của tam giác ABC và đỉnh H của tam giác HAB.');
+    expect(thuocDoan(p.H, p.B, p.C)).toBe(true);
+    expect(vuongGoc(p.A, p.H, p.B, p.C)).toBe(true);
+    expect(thuocDoan(p.D, p.A, p.B)).toBe(true);
+    expect(vuongGoc(p.H, p.D, p.A, p.B)).toBe(true);
+    expect(dist(p.A, p.B) / dist(p.A, p.C)).toBeCloseTo(5 / 4, 9);
+  });
+
+  it('lop8 #38: "đường cao AH, AH = 12, CH = 9, BH = 16" ⇒ đúng tỉ lệ (và vuông tại A như đề yêu cầu chứng minh)', () => {
+    const p = toaDoHinh('Cho tam giác ABC có đường cao AH. Biết AH = 12 cm, CH = 9 cm, BH = 16 cm. Lấy M, N lần lượt là trung điểm của AH, BH.');
+    expect(thuocDoan(p.H, p.B, p.C)).toBe(true);
+    expect(dist(p.B, p.H) / dist(p.C, p.H)).toBeCloseTo(16 / 9, 9);
+    expect(dist(p.A, p.H) / dist(p.C, p.H)).toBeCloseTo(12 / 9, 9);
+    expect(vuongGoc(p.A, p.B, p.A, p.C)).toBe(true);
+  });
 });

@@ -114,6 +114,7 @@ import { lineThroughPointCutsRule } from './lineThroughPointCuts';
 import { bisectorCutsLinesRule } from './bisectorCutsLines';
 import { linesAtPointsMeetRule } from './linesAtPointsMeet';
 import { oppositeRayAtLengthRule } from './oppositeRayAtLength';
+import { altitudesOfNamedTrianglesRule } from './altitudesOfNamedTriangles';
 
 const RULES: readonly LanguageRule[] = [
   namedLineRule,
@@ -175,6 +176,7 @@ const RULES: readonly LanguageRule[] = [
   bisectorCutsLinesRule,
   linesAtPointsMeetRule,
   oppositeRayAtLengthRule,
+  altitudesOfNamedTrianglesRule,
   diagonalsMeetNamedRule,
   intersectionDistribRule,
   lineCircleIntersectionRule,
