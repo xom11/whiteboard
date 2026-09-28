@@ -5,6 +5,7 @@ import { runDeterministicIntents3d } from './runDeterministicIntents3d';
 import { intentToScene3d } from '../intentToScene3d';
 import { verifyFigure3d } from '../verify3d';
 import { allNamedEntities3DPresent } from './guards3d';
+import { auditFacts3d } from './factAudit3d';
 import { normalizeProblem3d } from './normalize3d';
 
 export type Reason3D =
@@ -55,6 +56,18 @@ export function tryDeterministicFigure3d(problemRaw: string): TryResult3D {
       ok: false,
       reason: 'named-missing',
       detail: named.missing.join(','),
+      coverage: det.coverage,
+    };
+  }
+
+  // Hình đo được VI PHẠM điều kiện đề nêu (SA ⊥ đáy mà không vuông góc, đáy "vuông tại B" mà
+  // không vuông…) ⇒ từ chối: thà thiếu còn hơn sai.
+  const audit = auditFacts3d(problem, state);
+  if (audit.violated.length > 0) {
+    return {
+      ok: false,
+      reason: 'verify-fail',
+      detail: `vi phạm đề: ${audit.violated.map((f) => f.text).join('; ')}`,
       coverage: det.coverage,
     };
   }

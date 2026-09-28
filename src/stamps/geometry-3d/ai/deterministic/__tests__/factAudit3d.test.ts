@@ -39,3 +39,16 @@ describe('factAudit3d', () => {
     for (const k of ['plane⊥plane', 'parallelogram', 'right-angle', 'projection-foot', 'center', 'centroid', 'ratio-point']) expect(kinds).toContain(k);
   });
 });
+
+describe('tryDeterministicFigure3d — chặn hình vi phạm đề', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { tryDeterministicFigure3d } = require('../tryDeterministicFigure3d');
+  it('đề mâu thuẫn với layout (SCD vuông tại S khi chân là trung điểm AB của đáy chữ nhật mặc định) ⇒ verify-fail', () => {
+    const r = tryDeterministicFigure3d('Cho hình chóp S.ABCD có đáy ABCD là hình chữ nhật có AD=a 2, hình chiếu vuông góc của đỉnh S xuống mặt đáy là trung điểm của AB, biết tam giác SCD là tam giác vuông tại S và nằm trong mặt phẳng tạo với đáy một góc 45.');
+    expect(r.ok).toBe(false);
+    expect(r.detail).toMatch(/vi phạm đề/);
+  });
+  it('hình đúng đề vẫn qua', () => {
+    expect(tryDeterministicFigure3d('Cho hình chóp S.ABC có đáy là tam giác vuông tại B, SA ⊥ (ABC).').ok).toBe(true);
+  });
+});
