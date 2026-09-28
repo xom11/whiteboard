@@ -58,7 +58,9 @@ describe('normalizeProblemText', () => {
     expect(normalizeProblemText('hình chiếu của H lên √ √ √ AB,AC').replace(/\s+/g, ' ')).toBe(
       'hình chiếu của H lên AB,AC',
     );
-    expect(normalizeProblemText('√3')).not.toContain('√');
+    // √ đứng trước chữ số là số đo thật ("AB = 3√2", "AC = a√3") → GIỮ để
+    // triangleLengths đọc đúng (xoá thành "3 2" thì đọc nhầm AB = 3).
+    expect(normalizeProblemText('AB = 3√2, AC = a√3')).toBe('AB = 3√2, AC = a√3');
   });
 
   it('prime cong ’ / ′ / ´ sau chữ-số → ASCII apostrophe (canonical)', () => {

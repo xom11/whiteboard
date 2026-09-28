@@ -47,6 +47,7 @@ const CAT_TAI = new RegExp(`${REF}\\s+(?:kéo\\s+dài\\s+)?cắt\\s+${REF}\\s+(?
 //    nhau" → "đôi một" (diameterCirclePairwise) chen vào sẽ phá khớp.
 // CONN gồm dấu phẩy: "AB, CD cắt nhau tại E" (Câu 13). "đôi một" vẫn bị loại vì
 // nó chen giữa REF2 và "cắt nhau" → REF2 không liền "cắt nhau".
+const SONG_SONG_VOI_TRUOC = /(?:song\s*song|vuông\s*góc|⊥|\/\/)\s*(?:với\s+)?(?:đường\s*thẳng\s+|cạnh\s+|đoạn\s*(?:thẳng\s+)?)?$/u;
 const DUONG_CUA_TRUOC =
   /(?:trung\s*trực\s+(?:của\s+)?|(?:phân\s*giác|vuông\s*góc|song\s*song)\s+của\s+)(?:các\s+|hai\s+)?(?:đoạn\s*(?:thẳng\s+)?|cạnh\s+|góc\s+)?$/u;
 // ("đường trung tuyến BD, CE cắt nhau tại G" / "phân giác BE và CF cắt nhau tại I":
@@ -309,6 +310,7 @@ export const intersectionRule: LanguageRule = {
       // B-ray đơn: "tia AF cắt tia tiếp tuyến Bx … tại D".
       CAT_ONE_RAY.lastIndex = 0;
       for (const m of c.text.matchAll(CAT_ONE_RAY)) {
+        if (SONG_SONG_VOI_TRUOC.test(c.text.slice(0, m.index))) continue;
         emitShape(m[3], m[1], m[2]);
       }
       // NAMED_CAT_TAI: "d cắt AB tại E" — đường tên chữ thường <d> ở TRƯỚC cắt
@@ -350,7 +352,12 @@ export const intersectionRule: LanguageRule = {
       }
       // B: "REF1 cắt REF2 tại D".
       CAT_TAI.lastIndex = 0;
-      for (const m of c.text.matchAll(CAT_TAI)) emit(m[3], m[1], m[2]);
+      for (const m of c.text.matchAll(CAT_TAI)) {
+        // "kẻ đường thẳng song song với AC cắt Oy tại D": cái cắt là ĐƯỜNG song song,
+        // không phải AC (perpThroughCutsLines/parallelsThroughCut dựng đúng).
+        if (SONG_SONG_VOI_TRUOC.test(c.text.slice(0, m.index))) continue;
+        emit(m[3], m[1], m[2]);
+      }
       // C: "REF1 và REF2 cắt nhau tại D".
       CAT_NHAU.lastIndex = 0;
       for (const m of c.text.matchAll(CAT_NHAU)) {

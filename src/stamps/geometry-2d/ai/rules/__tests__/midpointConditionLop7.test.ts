@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import { midpointReflectRule } from '../midpointReflect';
+import { midpointConditionRule } from '../midpointCondition';
 import { segmentClauses } from '../../deterministic/coverage';
 import { toaDoHinh, dist, thuocDoan, type XY } from '../../__tests__/helpers/toaDoHinh';
 
@@ -10,10 +10,10 @@ beforeAll(() => {
 const trungDiem = (m: XY, a: XY, b: XY) => Math.hypot(m[0] - (a[0] + b[0]) / 2, m[1] - (a[1] + b[1]) / 2) < 1e-9;
 
 function intentsOf(problem: string) {
-  return midpointReflectRule.match({ problem, clauses: segmentClauses(problem) }).flatMap((m) => m.intents) as any[];
+  return midpointConditionRule.match({ problem, clauses: segmentClauses(problem) }).flatMap((m) => m.intents) as any[];
 }
 
-describe('midpointReflect — "lấy điểm D sao cho C là trung điểm của AD"', () => {
+describe('midpointCondition (lớp 7) — "lấy điểm D sao cho C là trung điểm của AD"', () => {
   it('hinh-phang #27: C (đỉnh tam giác) giữ nguyên, D mới sao cho C là trung điểm AD; E trung điểm BD', () => {
     const p = toaDoHinh('Cho tam giác ABC. Trên cạnh BC lấy điểm G sao cho BG = 2GC. Vẽ điểm D sao cho C là trung điểm của AD. Gọi E là trung điểm của BD.');
     expect(trungDiem(p.C, p.A, p.D)).toBe(true);

@@ -23,7 +23,10 @@ import type { IntentT } from '../intent';
 import { addPoint, connect, drawLine } from './_shared';
 
 // Tính từ đứng trước ("góc nhọn xOy") hoặc sau ("góc xOy nhọn").
-const GOC = /(?:[Cc]ho|[Vv]ẽ)\s+(?:một\s+)?góc\s+(?:(nhọn|vuông|tù)\s+)?([a-z])([A-Z])([a-z])(?![\p{L}\d'′])(?:\s+(nhọn|vuông|tù)(?!\p{L}))?/u;
+// Động từ "Cho/Vẽ" không bắt buộc ("Trên hai tia Ox, Oy của góc xOy …").
+const GOC = /(?:(?:[Cc]ho|[Vv]ẽ)\s+(?:một\s+)?)?góc\s+(?:(nhọn|vuông|tù)\s+)?([a-z])([A-Z])([a-z])(?![\p{L}\d'′])(?:\s+(nhọn|vuông|tù)(?!\p{L}))?/u;
+// Mệnh đề KHAI BÁO góc (mới được claim): "Cho/Vẽ góc …" hoặc mở đầu bằng "góc …".
+const GOC_KHAI_BAO = /(?:^\s*|(?:[Cc]ho|[Vv]ẽ)\s+(?:một\s+)?)góc\s+(?:(?:nhọn|vuông|tù)\s+)?[a-z][A-Z][a-z](?![\p{L}\d'′])/u;
 const SO_DO = /^\s*(?:\(\s*)?(?:=|bằng|có\s+số\s+đo(?:\s+bằng)?)\s*(\d{1,3})\s*(?:°|độ|o(?!\p{L}))/u;
 
 const R = 8; // độ dài tia vẽ
@@ -102,7 +105,7 @@ export const gocXOyRule: LanguageRule = {
       'u',
     );
     for (const c of doan) {
-      if (GOC.test(c.text)) claimed.add(c.id);
+      if (GOC_KHAI_BAO.test(c.text)) claimed.add(c.id);
       for (const re of PG_TEN) {
         const m = re.exec(c.text);
         if (m && !k.tia.has(m[1])) {
@@ -169,7 +172,7 @@ export const gocXOyRule: LanguageRule = {
     };
 
     const TREN_TIA = new RegExp(
-      String.raw`[Tt]rên\s+(?:tia\s+)?${o}([a-z])\s+lấy\s+(?:các\s+|hai\s+|một\s+)?(?:điểm\s+)?([A-Z](?:\s*(?:,|và)\s*[A-Z])*)(?![\p{L}\d'′])`,
+      String.raw`[Tt]rên\s+(?:tia\s+)?${o}([a-z])\s*,?\s*lấy\s+(?:các\s+|hai\s+|một\s+)?(?:điểm\s+)?([A-Z](?:\s*(?:,|và)\s*[A-Z])*)(?![\p{L}\d'′])`,
       'gu',
     );
     const TREN_CAC_TIA = new RegExp(
@@ -180,11 +183,37 @@ export const gocXOyRule: LanguageRule = {
       String.raw`(?:[Gg]ọi\s+|[Ll]ấy\s+(?:điểm\s+)?|[Đđ]iểm\s+)?${P}\s+(?:là\s+(?:một\s+)?(?:điểm\s+)?(?:bất\s+kì\s+|bất\s+kỳ\s+)?)?(?:thuộc|nằm\s+trên|trên)\s+(?:tia\s+)?${o}([a-z])(?![\p{L}\d'′])`,
       'gu',
     );
+    // "(các điểm) A, N nằm trên tia Ox" — danh sách điểm (hợp nhất từ angleXOy, lớp 8).
+    const NAM = new RegExp(
+      String.raw`(?:các\s+)?(?:điểm\s+)?((?:[A-Z]\s*(?:,|và)\s*)+[A-Z])(?![A-Z])\s+(?:nằm\s+)?(?:trên|thuộc)\s+tia\s+${o}([a-z])(?![\p{L}\d'′])`,
+      'gu',
+    );
+    // "sao cho AM, BN lần lượt vuông góc với Oy, Ox": M, N là CHÂN vuông góc — không đặt tự do.
+    const VG_LAN_LUOT = new RegExp(
+      String.raw`sao\s+cho\s+([A-Z])([A-Z])\s*,\s*([A-Z])([A-Z])\s+lần\s*lượt\s+(?:vuông\s*góc\s+với|⊥)\s+${o}([a-z])\s*,\s*${o}([a-z])(?![\p{L}\d'′])`,
+      'u',
+    );
+    const chanLL = new Map<string, [string, string, number]>(); // chân → [từ, tia, clause]
+    for (const c of doan) {
+      const v = VG_LAN_LUOT.exec(c.text);
+      if (v) {
+        chanLL.set(v[2], [v[1], v[5], c.id]);
+        chanLL.set(v[4], [v[3], v[6], c.id]);
+      }
+    }
+    // Độ dài trên tia "OA = 2 cm" — quy về thang chung (lớn nhất = 0,75·R).
+    const doDai = new Map<string, number>();
+    for (const m of ctx.problem.matchAll(new RegExp(String.raw`(?<![A-Z])(?:${o}([A-Z])|([A-Z])${o})\s*=\s*(\d+(?:[.,]\d+)?)\s*(?:cm|dm|mm|m)?(?![\p{L}\d])`, 'gu'))) {
+      doDai.set(m[1] ?? m[2], Number(m[3].replace(',', '.')));
+    }
+    const tiLe = doDai.size ? (R * 0.75) / Math.max(...doDai.values()) : 1;
+
     // Hai lượt: lượt 1 dựng điểm KHÔNG điều kiện, lượt 2 điểm đo theo điểm đã có.
     for (let pass = 0; pass < 2; pass++) {
       for (const c of doan) {
         const dk = dieuKien(c.text);
         const tryPlace = (ten: string, tia: string) => {
+          if (chanLL.has(ten)) return;
           const sau = dk.get(ten);
           if (pass === 0 && sau) return;
           if (pass === 1 && !sau) return;
@@ -200,6 +229,7 @@ export const gocXOyRule: LanguageRule = {
           for (const ten of m[2].split(/\s*(?:,|và)\s*/u)) tryPlace(ten, m[1]);
         }
         for (const m of c.text.matchAll(THUOC_TIA)) tryPlace(m[1], m[2]);
+        for (const m of c.text.matchAll(NAM)) for (const ten of m[1].split(/\s*(?:,|và)\s*/u)) tryPlace(ten, m[2]);
         // Chỉ có "sao cho OA = OB" mà A, B đều đã đặt từ trước (không mới) → không đụng.
       }
     }
@@ -207,7 +237,9 @@ export const gocXOyRule: LanguageRule = {
     // Chốt khoảng cách các điểm tự do trên tia theo thứ tự nêu + ràng buộc
     // "OA > OM" / "OA < OB" / "A nằm giữa O và B". Không thoả được → không dựng.
     {
-      const d = new Map<string, number>(tuDo.map((p) => [p.ten, R * ([0.35, 0.65, 0.85][p.hang] ?? 0.9)]));
+      const d = new Map<string, number>(
+        tuDo.map((p) => [p.ten, doDai.has(p.ten) ? doDai.get(p.ten)! * tiLe : R * ([0.35, 0.65, 0.85][p.hang] ?? 0.9)]),
+      );
       const nho: Array<[string, string]> = []; // [p, q]: OP < OQ
       for (const m of ctx.problem.matchAll(new RegExp(String.raw`${o}([A-Z])\s*([<>])\s*${o}([A-Z])(?![\p{L}\d'′])`, 'gu'))) {
         nho.push(m[2] === '<' ? [m[1], m[3]] : [m[3], m[1]]);
@@ -269,6 +301,7 @@ export const gocXOyRule: LanguageRule = {
       known.add(foot);
       return true;
     };
+    for (const [foot, [from, tia, id]] of chanLL) if (chan(from, foot, tia)) claimed.add(id);
     for (let pass = 0; pass < 2; pass++) {
       for (const c of doan) {
         for (const m of c.text.matchAll(HA_CAC)) {
@@ -355,6 +388,8 @@ export const gocXOyRule: LanguageRule = {
     const CAT = new RegExp(String.raw`(?<![A-Z])([A-Z])([A-Z])(?![\p{L}\d'′])\s+cắt\s+${TIA}\s+(?:tại|ở)\s+(?:điểm\s+)?${P}`, 'gu');
     for (const c of doan) {
       for (const m of c.text.matchAll(CAT)) {
+        // "kẻ đường thẳng song song với AC cắt Oy tại D": cái cắt là đường song song.
+        if (/(?:song\s*song|vuông\s*góc|⊥|\/\/)\s*(?:với\s+)?(?:đường\s*thẳng\s+|cạnh\s+|đoạn\s*(?:thẳng\s+)?)?$/u.test(c.text.slice(0, m.index))) continue;
         const [, p, q, tia, ten] = m;
         if (!k.tia.has(tia) || known.has(ten) || ten === p || ten === q) continue;
         intents.push(addPoint(ten, { kind: 'intersection', of: [`${p}${q}`, `${o}${tia}`] }), connect(p, q, 'segment'));

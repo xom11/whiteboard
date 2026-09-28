@@ -35,4 +35,16 @@ describe('hình suy biến — không còn hai điểm trùng khít', () => {
     expect(dist(p.O, p.E)).toBeCloseTo(dist(p.O, p.A), 9);
     expect(dot(p.A, p.D, p.B, p.C)).toBeCloseTo(0, 9);
   });
+
+  it('lop9 #42 "I là tâm đường tròn ngoại tiếp tứ giác AMHN": IA = IM = IH = IN (không phải I ≡ O)', () => {
+    const p = toaDoHinh('Cho tam giác ABC có ba góc nhọn và nội tiếp đường tròn (O, R). Hai đường cao BM, CN của tam giác ABC cắt nhau tại H.\na) Chứng minh tứ giác AMHN nội tiếp.\nc) Gọi I là tâm đường tròn ngoại tiếp tứ giác AMHN. Chứng minh IM là tiếp tuyến của đường tròn ngoại tiếp tam giác BCM.');
+    for (const X of [p.M, p.H, p.N]) expect(dist(p.I, X)).toBeCloseTo(dist(p.I, p.A), 9);
+    expect(dist(p.I, p.O)).toBeGreaterThan(0.1);
+  });
+
+  it('lop8 #29 "tam giác ABC vuông tại A … d) Nếu AB = AC, tức là … vuông cân tại A thì …": vẫn VUÔNG tại A (câu giả định không đè)', () => {
+    const p = toaDoHinh('Cho tam giác ABC vuông tại A. Gọi M là trung điểm của BC còn P, N lần lượt là chân đường vuông góc hạ từ M xuống CA, AB.\nd) Nếu AB = AC, tức là tam giác ABC vuông cân tại A thì tứ giác AMCQ có là hình vuông không? Vì sao?');
+    expect(dot(p.A, p.B, p.A, p.C)).toBeCloseTo(0, 9);
+  });
 });
+

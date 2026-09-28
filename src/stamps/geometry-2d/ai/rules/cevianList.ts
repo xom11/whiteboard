@@ -26,11 +26,6 @@ const PAIR = String.raw`[A-Z][A-Z](?![A-Z'′])`;
 const LIST = String.raw`(${PAIR}(?:\s*(?:,|và)\s*${PAIR})+)`;
 const KIND = String.raw`(trung\s*tuyến|phân\s*giác(?:\s+trong)?|đường\s*cao)`;
 
-// Tên-sau: "(hai|ba|các) (đường) trung tuyến BD và CE"
-const FORWARD = new RegExp(
-  String.raw`(?<![\p{L}])([Tt]rung\s*tuyến|[Pp]hân\s*giác(?:\s+trong)?|[Đđ]ường\s*cao)\s+` + LIST,
-  'gu',
-);
 // Tên-trước: "CP, BQ là (các|hai) (đường) phân giác (trong)" — (?!\s+ngoài).
 const REVERSE = new RegExp(
   String.raw`(?<![A-Z])` + LIST + String.raw`\s+(?:lần\s*lượt\s+)?là\s+(?:các\s+|hai\s+|ba\s+)?(?:đường\s*|tia\s+)?` +
@@ -67,10 +62,8 @@ export const cevianListRule: LanguageRule = {
 
     for (const c of ctx.clauses) {
       const hits: Array<{ kind: Kind; list: string; after: string; rev: boolean }> = [];
-      for (const m of c.text.matchAll(FORWARD)) {
-        const after = c.text.slice((m.index ?? 0) + m[0].length);
-        hits.push({ kind: kindOf(m[1]), list: m[2], after, rev: false });
-      }
+      // Dạng tên-sau "hai đường trung tuyến BD và CE" nay do `cevian` lo (nhánh lớp 8
+      // đã thêm danh sách nối "và") — ở đây chỉ còn tên-trước và hai loại khác nhau.
       for (const m of c.text.matchAll(REVERSE)) hits.push({ kind: kindOf(m[2]), list: m[1], after: '', rev: true });
       for (const m of c.text.matchAll(HON_HOP)) {
         const [, a1, f1, a2, f2, k1, k2] = m;

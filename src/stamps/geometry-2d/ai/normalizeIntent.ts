@@ -110,6 +110,10 @@ function normalizeTriangle(
 ): DrawShapeIntentT {
   // Đa tam giác: không clobber — variant đã được set đúng per-intent ở nguồn.
   if (triangleCount !== 1) return intent;
+  // Rule đã chốt tam giác VUÔNG hoặc đặt toạ độ theo số đo: "cân tại A" nhặt từ toàn
+  // đề (có khi nằm trong câu hỏi giả định "Nếu AB = AC, tức là tam giác ABC vuông cân
+  // tại A thì …") không được đè — trước đây ra tam giác cân KHÔNG vuông (lop8 #29).
+  if (intent.variant.startsWith('right-at-') || intent.explicitCoords) return intent;
   const m = problem.match(CAN_TAI_RE) ?? problem.match(ISOCELES_AT_RE);
   if (!m) return intent;
   const apex = m[1].toUpperCase();

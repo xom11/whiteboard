@@ -23,12 +23,12 @@ import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint, connect } from './_shared';
 
 const PREFILTER =
-  /(?:[Kk]ẻ|[Vv]ẽ)\s+(?:các\s+|hai\s+|2\s+)?tiếp\s*tuyến\s+(?:thứ\s+\S+\s+)?[A-Z]{2}|[Cc]ác\s+tiếp\s*tuyến\s+với|[Tt]iếp\s*tuyến\s+[A-Z]{2}\s*(?:,|và)\s*[A-Z]{2}|[Tt]ừ\s+[A-Z][^.;]{0,20}?(?:kẻ|vẽ)\s+(?:hai|2|các)\s+tiếp\s*tuyến|[A-Z]{2}\s*(?:,|và)\s*[A-Z]{2}\s+là\s+(?:hai\s+|2\s+|các\s+)?tiếp\s*tuyến/u;
+  /(?:[Kk]ẻ|[Vv]ẽ)\s+(?:các\s+|hai\s+|2\s+)?tiếp\s*tuyến\s+(?:thứ\s+\S+\s+|phân\s*biệt\s+)?[A-Z]{2}|[Cc]ác\s+tiếp\s*tuyến\s+với|[Tt]iếp\s*tuyến\s+[A-Z]{2}\s*(?:,|và)\s*[A-Z]{2}|[Tt]ừ\s+[A-Z][^.;]{0,20}?(?:kẻ|vẽ)\s+(?:hai|2|các)\s+tiếp\s*tuyến|[A-Z]{2}\s*(?:,|và)\s*[A-Z]{2}\s+là\s+(?:hai\s+|2\s+|các\s+)?tiếp\s*tuyến/u;
 
 // 2 tiếp tuyến: "Kẻ (các/hai/2)? tiếp tuyến XY, XZ" / "XY và XZ" (vao10).
 // g1g2 = cặp 1, g3g4 = cặp 2.
 const TWO = new RegExp(
-  '(?:[Kk]ẻ|[Vv]ẽ)\\s+(?:các\\s+|hai\\s+|2\\s+)?tiếp\\s*tuyến\\s+([A-Z])([A-Z])\\s*(?:,\\s*|và\\s+)([A-Z])([A-Z])(?!\\p{L})',
+  '(?:[Kk]ẻ|[Vv]ẽ)\\s+(?:các\\s+|hai\\s+|2\\s+)?tiếp\\s*tuyến\\s+(?:phân\\s*biệt\\s+)?([A-Z])([A-Z])\\s*(?:,\\s*|và\\s+)([A-Z])([A-Z])(?!\\p{L})',
   'gu',
 );
 // 1 tiếp tuyến: "Kẻ tiếp tuyến XY" / "vẽ tiếp tuyến thứ hai XY" (qualifier thứ

@@ -31,7 +31,20 @@ const RE_CIRCLE = new RegExp(
   'gu',
 );
 
-const PREFILTER = /Đường\s*(?:thẳng\s+)?(?:vuông\s*góc|song\s*song)[^.]{0,40}?tại\s+[A-Z][^.]{0,24}?cắt/u;
+// HAI đường bị cắt: "Đường thẳng vuông góc với MN tại N cắt các tiếp tuyến Ax, By
+// của nửa đường tròn (O) lần lượt ở C và D", "… vuông góc với AB tại H cắt dây CB
+// và tia AC lần lượt tại D và E". g1 kind, g2g3 L1, g4 qua, g5/g6 hai đường, g7/g8
+// hai giao.
+const LTOK2 = String.raw`(?:dây\s+(?:cung\s+)?|tia\s+|cạnh\s+|đoạn(?:\s+thẳng)?\s+|đường\s*thẳng\s+|tiếp\s*tuyến\s+)?([A-Z](?:[A-Z]|[xyzt]))(?![A-Za-z])`;
+const RE_TWO = new RegExp(
+  '[Đđ]ường\\s*(?:thẳng\\s+)?(vuông\\s*góc|song\\s*song)\\s+(?:với\\s+)?(?:cạnh\\s+|đoạn(?:\\s+thẳng)?\\s+|đường\\s*thẳng\\s+)?' +
+    '([A-Z])([A-Z])(?!\\p{L})\\s+tại\\s+([A-Z])(?!\\p{L})' +
+    String.raw`[^.]{0,24}?cắt\s+(?:các\s+|hai\s+)?(?:tiếp\s*tuyến\s+|đường\s*thẳng\s+|cạnh\s+|tia\s+)?` + LTOK2 + String.raw`\s*(?:,|và)\s*` + LTOK2 +
+    String.raw`[^.]{0,40}?(?:lần\s*lượt|theo\s+thứ\s+tự|thứ\s+tự)\s+(?:ở|tại)\s+(?:các\s+điểm\s+)?([A-Z])\s*(?:,|và)\s*([A-Z])(?![A-Z])`,
+  'gu',
+);
+
+const PREFILTER = /[Đđ]ường\s*(?:thẳng\s+)?(?:vuông\s*góc|song\s*song)[^.]{0,40}?tại\s+[A-Z][^.]{0,24}?cắt/u;
 
 export const perpAtPointCutsLineRule: LanguageRule = {
   id: 'perpAtPointCutsLine',
@@ -41,8 +54,28 @@ export const perpAtPointCutsLineRule: LanguageRule = {
   match(ctx) {
     const out: RuleMatch[] = [];
     for (const c of ctx.clauses) {
+      let haiDuong = false;
+      RE_TWO.lastIndex = 0;
+      for (const m of c.text.matchAll(RE_TWO)) {
+        const isParallel = /song/.test(m[1]);
+        const l1 = m[2] + m[3];
+        const through = m[4];
+        const [d1, d2, q1, q2] = [m[5], m[6], m[7], m[8]];
+        if (q1 === q2 || d1.includes(q1) || d2.includes(q2) || through === q1 || through === q2) continue;
+        const name = (isParallel ? 'par' : 'prp') + through;
+        haiDuong = true;
+        out.push({
+          ruleId: 'perpAtPointCutsLine',
+          clauseIds: [c.id],
+          intents: [
+            drawLine(name, isParallel ? 'parallelThrough' : 'perpThrough', { through, to: l1 }),
+            addPoint(q1, { kind: 'intersection', of: [name, d1] }),
+            addPoint(q2, { kind: 'intersection', of: [name, d2] }),
+          ],
+        });
+      }
       RE.lastIndex = 0;
-      for (const m of c.text.matchAll(RE)) {
+      for (const m of haiDuong ? [] : c.text.matchAll(RE)) {
         const isParallel = /song/.test(m[1]);
         const l1 = m[2] + m[3];
         const through = m[4];

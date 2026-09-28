@@ -21,6 +21,9 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   'cung', 'chính giữa',
   // Segments / on-segment
   'đoạn', 'cạnh', 'thuộc', 'nằm giữa', 'nằm ngoài',
+  // "Trên đường chéo AC lấy điểm E sao cho AC = 3AE" (lớp 8) — thiếu thì clause bị coi
+  // văn xuôi, E không dựng mà hình vẫn báo đủ (silent-incomplete).
+  'đường chéo',
   // "nằm trên" — "Gọi C,D là các điểm nằm trên (O)" (vao10:12): clause chỉ có
   // "nằm trên (O)" (không "thuộc"/"đường tròn") bị coi văn xuôi → rule không
   // thấy clause (runDeterministicIntents chỉ feed clause hasGeometry) → điểm
@@ -34,7 +37,7 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   'trọng tâm', 'trực tâm', 'tâm nội tiếp', 'tâm ngoại tiếp',
   'đối xứng',
   // Cevian names
-  'đường cao', 'đương cao', 'trung tuyến', 'phân giác', 'trung trực',
+  'đường cao', 'đương cao', 'chiều cao', 'trung tuyến', 'phân giác', 'trung trực',
   // Special lines/circles
   'tiếp tuyến', 'tiếp điểm', 'tiếp xúc',
   'nội tiếp', 'ngoại tiếp',
@@ -75,6 +78,9 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   // hình học DUY NHẤT bị coi là văn xuôi (hasGeometry=false). Thêm "⊥" để 2
   // phrasing hành xử như nhau ở gate coverage (issue #46 nhóm A).
   '⊥',
+  // "//" ≡ "song song" (lớp 8: "Qua D vẽ DE // AB (E ∈ AC)") — thiếu thì mệnh đề bị coi
+  // văn xuôi, E không dựng mà hình vẫn báo đủ.
+  '//', '∥',
   // Ký hiệu giao "∩" ("A1 = BC ∩ AP"): tương đương "giao điểm". Thiếu nó, clause
   // chỉ dùng "∩" (không chữ "giao điểm/cắt") bị coi văn xuôi (hasGeometry=false)
   // → điểm giao KHÔNG dựng (silent-incomplete) dù intersection rule khớp "∩".

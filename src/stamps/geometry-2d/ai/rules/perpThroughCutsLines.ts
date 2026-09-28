@@ -25,8 +25,8 @@ const RE = new RegExp(
   '(?:Qua|qua|Từ|từ)\\s+(?:một\\s+)?(?:điểm\\s+)?([A-Z])(?:[\'′]?)(?!\\p{L})' +
     '[^.]{0,24}?(song\\s*song|vuông\\s*góc)\\s+(?:với\\s+)?(?:cạnh\\s+|đoạn(?:\\s+thẳng)?\\s+)?' +
     '([A-Z])([A-Z])(?!\\p{L})' +
-    `[^.]{0,40}?cắt\\s+(?:các\\s+|hai\\s+)?(?:đường\\s*thẳng\\s+|cạnh\\s+)?(${LTOK})\\s*(?:,|và)\\s*(${LTOK})(?![A-Z])` +
-    '[^.]{0,30}?(?:ở|tại)\\s+([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])',
+    `[^.]{0,40}?cắt\\s+(?:các\\s+|hai\\s+)?(?:đường\\s*thẳng\\s+|cạnh\\s+|tia\\s+)?(${LTOK})\\s*(?:,|và)\\s*(${LTOK})(?![A-Z])` +
+    '[^.]{0,30}?(?:ở|tại)\\s+(?:(?:các|hai)\\s+điểm\\s+)?([A-Z])\\s*(?:,|và)\\s*([A-Z])(?![A-Z])',
   'gu',
 );
 
@@ -59,7 +59,8 @@ const RE_SINGLE = new RegExp(
     '[^.]{0,30}?(song\\s*song|vuông\\s*góc)\\s+(?:với\\s+)?(?:cạnh\\s+|đoạn(?:\\s+thẳng)?\\s+|đường\\s*thẳng\\s+)?' +
     '([A-Z])([A-Z])(?!\\p{L})' +
     '(?:\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Za-z]))?' +
-    '[^.]{0,30}?cắt\\s+(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?([A-Z])([A-Z])(?!\\p{L})\\s+(?:ở|tại)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])',
+    // L2 có thể là tia đặt tên chữ thường "Oy" (góc xOy — lớp 8).
+    '[^.]{0,30}?cắt\\s+(?:đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+|tia\\s+)?([A-Z])([A-Z]|[xyzt])(?!\\p{L})\\s+(?:ở|tại)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])',
   'gu',
 );
 
@@ -84,6 +85,9 @@ export const perpThroughCutsLinesRule: LanguageRule = {
         const k = m[8];
         if (isParallel && to.includes(through)) continue; // degenerate
         if (h === k) continue;
+        // "song song với AB VÀ AC, cắt AC và AB …" = HAI đường (parallelsThroughCut lo);
+        // đọc thành một đường ∥ AB cắt cả AB ⇒ giao hai đường song song (điểm rác).
+        if (/^\s*(?:,|và)\s*(?:(?:cạnh|đường\s*thẳng)\s+)?[A-Z]{2}(?![A-Z])/u.test(c.text.slice((m.index ?? 0) + m[0].indexOf(m[3] + m[4], m[0].search(/song|vuông/u)) + 2))) continue;
         const kind = isParallel ? 'parallelThrough' : 'perpThrough';
         const name = (isParallel ? 'par' : 'prp') + through;
         out.push({

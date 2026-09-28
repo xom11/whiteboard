@@ -65,8 +65,8 @@ describe('registry', () => {
     }
   });
 
-  test('registry has 41 kinds (regression guard)', () => {
-    expect(KIND_REGISTRY.size).toBe(41);
+  test('registry has 43 kinds (regression guard)', () => {
+    expect(KIND_REGISTRY.size).toBe(43); // +onArc (lớp 9), +affine (lớp 10)
   });
 });
 

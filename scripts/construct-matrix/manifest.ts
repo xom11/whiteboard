@@ -54,11 +54,13 @@ export const CONSTRUCT_MANIFEST: ConstructEntry[] = [
   { dslKind: 'tangencyPoint',      sceneKind: 'point',   intentKey: 'tangencyPoint',      toolKey: 'tangencyPoint',  ruleId: null,             serialize: true,  evalFixture: null },
   { dslKind: 'tangentPointExt',    sceneKind: 'point',   intentKey: 'tangentPoint',       toolKey: 'tangentPointExt', ruleId: null,            serialize: true,  evalFixture: null },
   { dslKind: 'arcMidpoint',        sceneKind: 'point',   intentKey: 'arcMidpoint',        toolKey: 'arcMidpoint',    ruleId: 'arcMidpoint',    serialize: true,  evalFixture: null },
+  { dslKind: 'onArc',              sceneKind: 'point',   intentKey: 'onArc',              toolKey: null,             ruleId: 'on-circle-point', serialize: true, evalFixture: null },
   { dslKind: 'excenter',           sceneKind: 'point',   intentKey: 'excenter',           toolKey: 'excenter',       ruleId: 'centers',        serialize: true,  evalFixture: null },
   { dslKind: 'reflectPoint',       sceneKind: 'point',   intentKey: 'reflectPoint',       toolKey: null,             ruleId: 'reflection',     serialize: false, evalFixture: null },
   { dslKind: 'reflectLine',        sceneKind: 'point',   intentKey: 'reflectLine',        toolKey: null,             ruleId: 'reflection',     serialize: false, evalFixture: null },
   { dslKind: 'pointAtDistance',    sceneKind: 'point',   intentKey: 'pointAtDistance',    toolKey: null,             ruleId: 'pointAtDistance', serialize: true, evalFixture: null },
   { dslKind: 'commonTangentPoint', sceneKind: 'point',   intentKey: 'commonTangentPoint', toolKey: null,             ruleId: 'common-tangent', serialize: true, evalFixture: null },
+  { dslKind: 'affine',             sceneKind: 'point',   intentKey: 'affine',             toolKey: null,             ruleId: 'pointRatio',     serialize: true, evalFixture: null },
 
   // ── lines / line-constructions ──────────────────────────────────────────────
   { dslKind: 'segment',            sceneKind: 'segment', intentKey: 'connect',            toolKey: 'segment',        ruleId: 'connect',        serialize: true,  evalFixture: null },

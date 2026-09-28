@@ -1,0 +1,257 @@
+Bài 1 [lop8|tu-giac|ngan]: Tứ giác ABCD có AB = AD, CB = CD, được gọi là hình "cái diều".
+a) Chứng minh rằng AC là đường trung trực của đoạn thẳng BD.
+b) Tính các góc B, D biết rằng góc A = 100°, góc C = 60°.
+
+Bài 2 [lop8|tu-giac|ngan]: Tứ giác ABCD có góc A = 100°, góc ngoài tại đỉnh B bằng 110°, góc C = 75°. Tính số đo góc D.
+
+Bài 3 [lop8|tu-giac|ngan]: Tứ giác ABCD có góc ngoài tại đỉnh A bằng 65°, góc ngoài tại đỉnh B bằng 100°, góc ngoài tại đỉnh C bằng 60°. Tính số đo góc ngoài tại đỉnh D.
+
+Bài 4 [lop8|tu-giac|ngan]: Tứ giác ABCD có góc A = x, góc B = 2x, góc C = 3x, góc D = 4x. Tính số đo các góc của tứ giác đó.
+
+Bài 5 [lop8|hinh-thang|ngan]: Cho tứ giác ABCD có AB = AD, BD là tia phân giác của góc B. Chứng minh rằng ABCD là hình thang.
+
+Bài 6 [lop8|hinh-thang|trung-binh]: Cho tam giác nhọn ABC có AH là đường cao. Tia phân giác của góc B cắt AC tại M. Từ M kẻ đường thẳng vuông góc với AH và cắt AB tại N. Chứng minh rằng:
+a) Tứ giác BCMN là hình thang.
+b) BN = MN.
+
+Bài 7 [lop8|hinh-thang|dai]: Cho tam giác ABC vuông tại A (AB < AC). Tia phân giác của góc B cắt AC tại D. Trên BC lấy điểm E sao cho BE = BA.
+a) Chứng minh rằng tam giác ABD = tam giác EBD.
+b) Kẻ đường cao AH của tam giác ABC. Chứng minh rằng tứ giác ADEH là hình thang vuông.
+c) Gọi I là giao điểm của AH với BD, đường thẳng EI cắt AB tại F. Chứng minh rằng tứ giác ACEF là hình thang vuông.
+
+Bài 8 [lop8|hinh-thang|trung-binh]: Hình thang ABCD (AB // CD) có DC = 2AB. Gọi M, N, P, Q lần lượt là trung điểm của các cạnh AB, BC, CD, DA.
+a) Chứng minh các tứ giác ABPD, MNPQ là hình bình hành.
+b) Tìm điều kiện của hình thang ABCD để MNPQ là hình thoi.
+c) Gọi E là giao điểm của BD và AP. Chứng minh ba điểm Q, N, E thẳng hàng.
+
+Bài 9 [lop8|hinh-thang-can|trung-binh]: Cho hình thang ABCD (AB // CD). Kẻ đường thẳng vuông góc với AC tại C và đường thẳng vuông góc với BD tại D, hai đường thẳng này cắt nhau tại E. Chứng minh rằng nếu EC = ED thì hình thang ABCD là hình thang cân.
+
+Bài 10 [lop8|hinh-thang-can|ngan]: Hai tia phân giác của hai góc A, B của hình thang cân ABCD (AB // CD) cắt nhau tại điểm E trên cạnh đáy CD. Chứng minh rằng EC = ED.
+
+Bài 11 [lop8|hinh-thang-can|trung-binh]: Hình thang cân ABCD (AB // CD, AB < CD) có các đường thẳng AD, BC cắt nhau tại I, các đường thẳng AC, BD cắt nhau tại J. Chứng minh rằng đường thẳng IJ là đường trung trực của đoạn thẳng AB.
+
+Bài 12 [lop8|hinh-thang-can|trung-binh]: Cho hình thang cân ABCD có AB // CD, AB < CD. Gọi M, N lần lượt là trung điểm của cạnh AB, CD và T là giao điểm của AC và BD. Chứng minh:
+a) góc TAD = góc TBC, góc TDA = góc TCB.
+b) TA = TB, TD = TC.
+c) MN là đường trung trực của cả hai đoạn thẳng AB và CD.
+
+Bài 13 [lop8|hinh-thang-can|dai]: Cho hình thang cân ABCD (AB // CD, AB < CD). Đường thẳng AD cắt đường thẳng BC tại O.
+a) Chứng minh tam giác OAB cân.
+b) Gọi P, Q lần lượt là trung điểm của AB và CD. Chứng minh rằng ba điểm O, P, Q thẳng hàng.
+c) Qua điểm M bất kì thuộc cạnh AC, vẽ đường thẳng song song với CD. Đường thẳng đó cắt BD tại N. Chứng minh rằng tứ giác MNAB và tứ giác MNDC là các hình thang cân.
+
+Bài 14 [lop8|hinh-binh-hanh|ngan]: Gọi O là giao điểm của hai đường chéo của hình bình hành ABCD. Một đường thẳng đi qua O lần lượt cắt các cạnh AB, CD của hình bình hành tại hai điểm M, N. Chứng minh tam giác OAM = tam giác OCN. Từ đó suy ra tứ giác MBND là hình bình hành.
+
+Bài 15 [lop8|hinh-binh-hanh|trung-binh]: Cho hình bình hành ABCD (AB > AD). Qua A kẻ đường thẳng vuông góc với BD tại E, cắt CD tại I. Qua C kẻ đường thẳng vuông góc với BD tại F, cắt AB tại K.
+a) Tứ giác AKCI là hình gì? Vì sao?
+b) Chứng minh AF // CE.
+c) Chứng minh rằng ba đường thẳng AC, EF và KI đồng quy tại một điểm.
+
+Bài 16 [lop8|hinh-binh-hanh|ngan]: Cho hình bình hành ABCD, kẻ AH vuông góc với BD tại H và CK vuông góc với BD tại K.
+a) Chứng minh tứ giác AHCK là hình bình hành.
+b) Gọi I là trung điểm của HK. Chứng minh IB = ID.
+
+Bài 17 [lop8|hinh-binh-hanh|ngan]: Cho hình bình hành ABCD. Lấy điểm P trên tia AB sao cho AP = 2AB.
+a) Tứ giác BPCD có phải là hình bình hành không? Tại sao?
+b) Khi tam giác ABD vuông cân tại A, hãy tính số đo các góc của tứ giác BPCD.
+
+Bài 18 [lop8|hinh-binh-hanh|ngan]: Cho tứ giác ABCD có góc DAB = góc BCD, góc ABD = góc CDB. Chứng minh ABCD là hình bình hành.
+
+Bài 19 [lop8|hinh-chu-nhat|ngan]: Xét một điểm M trên cạnh huyền của tam giác ABC vuông cân tại A. Gọi N và P lần lượt là hình chiếu vuông góc của M trên các cạnh AB và AC.
+a) Hỏi tứ giác MPAN là hình gì?
+b) Hỏi M ở vị trí nào thì đoạn thẳng NP có độ dài ngắn nhất? Vì sao?
+
+Bài 20 [lop8|hinh-chu-nhat|ngan]: Cho tam giác ABC vuông tại A có M là trung điểm của cạnh BC. Trên tia đối của tia MA lấy điểm D sao cho MD = MA. Chứng minh tứ giác ABCD là hình chữ nhật và AM = BC/2.
+
+Bài 21 [lop8|hinh-chu-nhat|dai]: Cho tam giác ABC có đường cao AH. Gọi I là trung điểm của AC, E là điểm đối xứng với H qua I. Gọi M, N lần lượt là trung điểm của HC, CE. Các đường thẳng AM, AN cắt HE tại G và K.
+a) Chứng minh tứ giác AHCE là hình chữ nhật.
+b) Chứng minh HG = GK = KE.
+
+Bài 22 [lop8|hinh-chu-nhat|dai]: Cho tam giác ABC vuông tại A, đường cao AH. Kẻ HE vuông góc với AB tại E và HF vuông góc với AC tại F.
+a) Chứng minh tứ giác AFHE là hình chữ nhật.
+b) Trên tia đối của tia FH lấy điểm M sao cho FH = FM. Trên tia đối của tia EH lấy điểm N sao cho EH = EN. Chứng minh tứ giác AEFM là hình bình hành.
+c) Chứng minh A, M, N thẳng hàng.
+
+Bài 23 [lop8|hinh-chu-nhat|dai]: Cho tam giác ABC vuông tại A có AB < AC, đường cao AH. Gọi I là trung điểm của AB. Lấy K đối xứng với B qua H. Qua A kẻ đường thẳng song song với BC, cắt HI tại D.
+a) Chứng minh AD = BH. Từ đó chứng minh tứ giác AKHD là hình bình hành.
+b) Chứng minh tứ giác AHBD là hình chữ nhật. Tính diện tích AHBD nếu AH = 6 cm, BH = 8 cm.
+c) Tam giác ABC cần có thêm điều kiện gì để tứ giác AHBD là hình vuông?
+
+Bài 24 [lop8|hinh-chu-nhat|trung-binh]: Cho hình chữ nhật ABCD. Gọi H là chân đường vuông góc kẻ từ A đến BD. Gọi M và N theo thứ tự là trung điểm của các đoạn AH và DH.
+a) Chứng minh MN // AD.
+b) Gọi I là trung điểm của cạnh BC. Chứng minh tứ giác BMNI là hình bình hành.
+c) Chứng minh tam giác ANI vuông tại N.
+
+Bài 25 [lop8|hinh-thoi|dai]: Cho tam giác ABC cân tại A, gọi M là trung điểm của BC. Lấy điểm D đối xứng với điểm A qua BC.
+a) Chứng minh tứ giác ABDC là hình thoi.
+b) Gọi E, F lần lượt là trung điểm của AB và AC, lấy điểm O sao cho E là trung điểm của OM. Chứng minh rằng hai tam giác AOB và MBO bằng nhau.
+c) Chứng minh tứ giác AEMF là hình thoi.
+
+Bài 26 [lop8|hinh-thoi|ngan]: Cho hình bình hành ABCD có tia AC là tia phân giác của góc DAB. Chứng minh ABCD là hình thoi.
+
+Bài 27 [lop8|hinh-thoi|trung-binh]: Cho hình thoi ABCD và hình bình hành BCMD. Gọi O là giao điểm của AC và BD. Chứng minh:
+a) OD = CM/2 và tam giác ACM là tam giác vuông.
+b) Ba điểm A, D, M thẳng hàng.
+c) Tam giác DCM là tam giác cân.
+
+Bài 28 [lop8|hinh-thoi|ngan]: Cho hình thoi ABCD có góc CDB = 40°. Tính số đo mỗi góc của hình thoi ABCD.
+
+Bài 29 [lop8|hinh-vuong|trung-binh]: Cho tam giác ABC vuông tại A. Gọi M là trung điểm của BC còn P, N lần lượt là chân đường vuông góc hạ từ M xuống CA, AB.
+a) Chứng minh hai tam giác vuông CMP và MBN bằng nhau.
+b) Chứng minh tứ giác APMN là một hình chữ nhật. Từ đó suy ra N là trung điểm của AB, P là trung điểm của AC.
+c) Lấy điểm Q sao cho P là trung điểm của MQ, chứng minh rằng tứ giác AMCQ là một hình thoi.
+d) Nếu AB = AC, tức là tam giác ABC vuông cân tại A thì tứ giác AMCQ có là hình vuông không? Vì sao?
+
+Bài 30 [lop8|hinh-vuong|trung-binh]: Cho hình vuông ABCD có M, N lần lượt là trung điểm của các cạnh BC, CD. Gọi O là giao điểm của AM và BN. Chứng minh:
+a) tam giác ABM = tam giác BCN.
+b) góc BAO = góc MBO.
+c) AM ⊥ BN.
+
+Bài 31 [lop8|hinh-vuong|ngan]: Cho hình thoi ABCD có AC = BD. Chứng minh ABCD là hình vuông.
+
+Bài 32 [lop8|hinh-vuong|trung-binh]: Cho hình bình hành ABCD có AB = 2AD. Gọi E và F lần lượt là trung điểm của AB và CD, I là giao điểm của AF và DE, K là giao điểm của BF và CE.
+a) Chứng minh rằng tứ giác AECF là hình bình hành.
+b) Tứ giác AEFD là hình gì? Vì sao?
+c) Chứng minh tứ giác EIFK là hình chữ nhật.
+d) Tìm điều kiện của hình bình hành ABCD để tứ giác EIFK là hình vuông.
+
+Bài 33 [lop8|hinh-vuong|dai]: Cho tam giác ABC cân tại A, trung tuyến AM. Gọi I là trung điểm của AC. Trên tia MI lấy điểm N sao cho I là trung điểm của MN.
+a) Tứ giác AMCN là hình gì? Vì sao?
+b) Gọi E là trung điểm của AM. Chứng minh E là trung điểm của BN.
+c) Gọi K là trung điểm của AB. Tìm điều kiện để AKMI là hình vuông.
+
+Bài 34 [lop8|pythagore|ngan]: Cho hình thoi ABCD, hai đường chéo AC và BD cắt nhau tại O. Biết AC = 6 cm, BD = 8 cm. Tính độ dài cạnh của hình thoi ABCD.
+
+Bài 35 [lop8|pythagore|ngan]: Cho tam giác ABC cân tại đỉnh A, chiều cao AH = 3 cm và cạnh đáy BC = 10 cm. Hãy tính độ dài các cạnh bên AB, AC.
+
+Bài 36 [lop8|pythagore|ngan]: Chứng minh rằng tam giác ABC vuông trong các trường hợp sau:
+a) AB = 8 cm, AC = 15 cm, BC = 17 cm.
+b) AB = 29 cm, AC = 21 cm, BC = 20 cm.
+c) AB = 12 cm, AC = 37 cm, BC = 35 cm.
+
+Bài 37 [lop8|pythagore|ngan]: Cho hình thoi ABCD có hai đường chéo AC và BD cắt nhau tại O. Chứng minh: AC² + BD² = 4(OA² + OB²) = 4AB².
+
+Bài 38 [lop8|pythagore|trung-binh]: Cho tam giác ABC có đường cao AH. Biết AH = 12 cm, CH = 9 cm, BH = 16 cm. Lấy M, N lần lượt là trung điểm của AH, BH.
+a) Chứng minh rằng ABC là tam giác vuông tại A.
+b) Chứng minh rằng MN ⊥ AC và CM ⊥ AN.
+c) Tính diện tích tam giác AMN.
+
+Bài 39 [lop8|thales|ngan]: Cho tam giác ABC, từ điểm D trên cạnh BC, kẻ đường thẳng song song với AB cắt AC tại F và kẻ đường thẳng song song với AC cắt AB tại E. Chứng minh rằng AE/AB + AF/AC = 1.
+
+Bài 40 [lop8|thales|ngan]: Cho góc xOy. Trên tia Ox, lấy hai điểm A và B sao cho OA = 2 cm, OB = 5 cm. Trên tia Oy, lấy điểm C sao cho OC = 3 cm. Từ điểm B kẻ đường thẳng song song với AC cắt Oy tại D. Tính độ dài đoạn thẳng CD.
+
+Bài 41 [lop8|thales|trung-binh]: Cho tam giác ABC, điểm I thuộc cạnh AB, điểm K thuộc cạnh AC. Kẻ IM song song với BK (M thuộc AC), kẻ KN song song với CI (N thuộc AB). Chứng minh MN song song với BC.
+
+Bài 42 [lop8|thales|ngan]: Cho hình thang ABCD (AB // CD) có AB = 4 cm, CD = 6 cm. Đường thẳng d song song với hai đáy và cắt hai cạnh bên AD, BC của hình thang đó lần lượt tại M, N; cắt đường chéo AC tại P.
+a) Chứng minh AM/MD = BN/NC.
+b) Tính độ dài các đoạn thẳng MP, PN, MN, biết rằng MD = 2MA.
+
+Bài 43 [lop8|thales|dai]: Cho tứ giác ABCD có AC và BD cắt nhau tại O. Qua O, kẻ đường thẳng song song với BC cắt AB tại E, kẻ đường thẳng song song với CD cắt AD tại F.
+a) Chứng minh EF // BD.
+b) Từ O kẻ đường thẳng song song với AB cắt BC tại G và đường thẳng song song với AD cắt CD tại H. Chứng minh rằng CG.DH = BG.CH.
+
+Bài 44 [lop8|thales|trung-binh]: Cho tam giác ABC. Từ điểm D (D ∈ AB) kẻ đường thẳng song song với BC cắt AC tại E.
+a) Cho AB = 15 cm, AC = 20 cm, AE = 8 cm. Tính độ dài AD.
+b) Qua E kẻ EM // CD (M ∈ AD). Chứng minh AD² = AM.AB.
+
+Bài 45 [lop8|duong-trung-binh|trung-binh]: Cho tam giác ABC có trung tuyến AM. Lấy điểm D và E trên cạnh AB sao cho AD = DE = EB và D nằm giữa hai điểm A, E.
+a) Chứng minh DC // EM.
+b) DC cắt AM tại I. Chứng minh I là trung điểm của AM.
+
+Bài 46 [lop8|duong-trung-binh|trung-binh]: Cho tam giác ABC vuông tại A. Gọi D, E, F lần lượt là trung điểm của AB, BC, AC.
+a) Chứng minh rằng AE = DF.
+b) Gọi I là trung điểm của DE. Chứng minh rằng ba điểm B, I, F thẳng hàng.
+
+Bài 47 [lop8|duong-trung-binh|trung-binh]: Cho tam giác ABC, các đường trung tuyến BD và CE cắt nhau tại G. Gọi I, K lần lượt là trung điểm của GB, GC. Chứng minh tứ giác EDKI là hình bình hành.
+
+Bài 48 [lop8|duong-trung-binh|trung-binh]: Cho tam giác ABC nhọn có H là trực tâm. Gọi M, N, P, Q lần lượt là trung điểm của các đoạn thẳng AB, BH, HC, CA. Chứng minh tứ giác MNPQ là hình chữ nhật.
+
+Bài 49 [lop8|duong-trung-binh|trung-binh]: Cho tam giác ABC nhọn. Gọi M, N, P lần lượt là trung điểm của AB, AC, BC. Kẻ đường cao AH. Chứng minh rằng tứ giác MNPH là hình thang cân.
+
+Bài 50 [lop8|duong-trung-binh|trung-binh]: Cho hình thang ABCD (AB // CD) có E và F lần lượt là trung điểm hai cạnh bên AD và BC. Gọi K là giao điểm của AF và DC.
+a) Tam giác FBA và tam giác FCK có bằng nhau không? Vì sao?
+b) Chứng minh EF // CD // AB.
+c) Chứng minh EF = (AB + CD)/2.
+
+Bài 51 [lop8|phan-giac|trung-binh]: Tam giác ABC có AB = 15 cm, AC = 20 cm, BC = 25 cm. Đường phân giác của góc BAC cắt BC tại D. Qua D vẽ DE // AB (E ∈ AC).
+a) Tính độ dài các đoạn thẳng BD, DC và DE.
+b) Chứng minh ABC là tam giác vuông. Tính diện tích tam giác ABC.
+c) Tính diện tích tam giác ADB, ADE và DCE.
+
+Bài 52 [lop8|phan-giac|trung-binh]: Cho tam giác ABC có đường trung tuyến AM. Đường phân giác của góc AMB cắt AB tại D và đường phân giác góc AMC cắt AC tại E. Chứng minh DE // BC.
+
+Bài 53 [lop8|phan-giac|trung-binh]: Cho tam giác ABC có đường trung tuyến AM. Tia phân giác của góc ABC lần lượt cắt các đoạn thẳng AM, AC tại điểm D, E. Chứng minh EC/EA = 2DM/DA.
+
+Bài 54 [lop8|phan-giac|ngan]: Cho tam giác ABC vuông tại A có AB = 3, AC = 4, AD là đường phân giác. Tính:
+a) Độ dài các đoạn thẳng BC, DB, DC.
+b) Khoảng cách từ điểm D đến đường thẳng AC.
+c) Độ dài đường phân giác AD.
+
+Bài 55 [lop8|phan-giac|trung-binh]: Cho tam giác ABC vuông tại A có AD là đường phân giác của góc BAC (D ∈ BC). Kẻ DE vuông góc với AC tại E. Đường thẳng qua D vuông góc với BC cắt đường thẳng AC tại F. Chứng minh rằng:
+a) BD/BC = AB/(AB + AC), từ đó suy ra AE = AB.AC/(AB + AC).
+b) Tam giác DFC ∽ tam giác ABC.
+c) DF = DB.
+
+Bài 56 [lop8|dong-dang|ngan]: Cho tam giác ABC có AB = 12 cm, AC = 15 cm. Trên các tia AB, AC lần lượt lấy các điểm M, N sao cho AM = 10 cm, AN = 8 cm. Chứng minh rằng tam giác ABC ∽ tam giác ANM.
+
+Bài 57 [lop8|dong-dang|ngan]: Cho hình bình hành ABCD. Một đường thẳng đi qua D lần lượt cắt đoạn thẳng BC và tia AB tại M và N sao cho điểm M nằm giữa hai điểm B và C. Chứng minh:
+a) tam giác NBM ∽ tam giác NAD.
+b) tam giác NBM ∽ tam giác DCM.
+c) tam giác NAD ∽ tam giác DCM.
+
+Bài 58 [lop8|dong-dang|ngan]: Cho tam giác nhọn ABC, hai đường cao AD và BE cắt nhau tại H. Chứng minh:
+a) tam giác ACD ∽ tam giác BCE và CA.CE = CB.CD.
+b) tam giác ACD ∽ tam giác AHE và AC.AE = AD.AH.
+
+Bài 59 [lop8|dong-dang|trung-binh]: Cho tam giác ABC nhọn có hai đường cao BM, CN cắt nhau tại H.
+a) Chứng minh rằng tam giác AMN ∽ tam giác ABC.
+b) Phân giác của góc BAC cắt MN và BC lần lượt tại I và K. Chứng minh rằng IM/IN = KB/KC.
+
+Bài 60 [lop8|dong-dang|dai]: Cho tam giác ABC có ba góc nhọn. Đường cao AF, BE cắt nhau tại H. Từ A kẻ tia Ax vuông góc với AC, từ B kẻ tia By vuông góc với BC. Tia Ax và By cắt nhau tại K.
+a) Tứ giác AHBK là hình gì? Vì sao?
+b) Chứng minh tam giác HAE ∽ tam giác HBF.
+c) Chứng minh CE.CA = CF.CB.
+d) Tam giác ABC cần thêm điều kiện gì để tứ giác AHBK là hình thoi?
+
+Bài 61 [lop8|dong-dang|trung-binh]: Cho tam giác ABC nhọn (AB < AC). Hai đường cao BE và CF.
+a) Chứng minh tam giác ABE ∽ tam giác ACF và AE.AC = AF.AB.
+b) Trên tia BE lấy điểm N sao cho góc ANC = 90° (E nằm giữa B và N). Chứng minh tam giác ANE ∽ tam giác ACN và AN² = AE.AC.
+c) Trên cạnh CF lấy điểm M sao cho AM = AN. Tính số đo góc AMB.
+
+Bài 62 [lop8|tam-giac-vuong-dong-dang|trung-binh]: Cho tam giác ABC vuông tại A có AB = 5 cm, AC = 4 cm. Gọi AH, HD lần lượt là các đường cao kẻ từ đỉnh A của tam giác ABC và đỉnh H của tam giác HAB.
+a) Chứng minh rằng tam giác HDA ∽ tam giác AHC.
+b) Tính độ dài các đoạn thẳng HA, HB, HC, HD.
+
+Bài 63 [lop8|tam-giac-vuong-dong-dang|dai]: Cho tam giác ABC vuông tại A (AB < AC). Kẻ đường cao AH (H ∈ BC).
+a) Chứng minh rằng tam giác ABH ∽ tam giác CBA, suy ra AB² = BH.BC.
+b) Vẽ HE vuông góc với AB tại E, vẽ HF vuông góc với AC tại F. Chứng minh rằng AE.AB = AF.AC.
+c) Chứng minh rằng tam giác AFE ∽ tam giác ABC.
+d) Qua A vẽ đường thẳng song song với BC cắt đường thẳng HF tại I. Vẽ IN vuông góc với BC tại N. Chứng minh rằng tam giác HNF ∽ tam giác HIC.
+
+Bài 64 [lop8|tam-giac-vuong-dong-dang|ngan]: Cho tam giác ABC vuông tại A (AB > AC). Gọi I là trung điểm của AB. Kẻ IN vuông góc với BC tại N (N thuộc BC).
+a) Chứng minh tam giác ACB ∽ tam giác NIB. Từ đó suy ra BA.BI = BC.BN.
+b) Giả sử AC = 6 cm, BC = 10 cm. Tính BN.
+c) Chứng minh góc IAN = góc ICN.
+d) Chứng minh AC² = NC² - NB².
+
+Bài 65 [lop8|tam-giac-vuong-dong-dang|trung-binh]: Cho tam giác ABC vuông tại A (AB > AC), đường cao AH. Từ B kẻ tia Bx ⊥ AB, tia Bx cắt AH tại K.
+a) Tứ giác ABKC là hình gì? Tại sao?
+b) Chứng minh tam giác ABK ∽ tam giác CHA. Từ đó suy ra AB.AC = AK.CH.
+c) Chứng minh AH² = HB.HC.
+d) Giả sử BH = 9 cm, HC = 16 cm. Tính AB, AH.
+
+Bài 66 [lop8|tam-giac-vuong-dong-dang|ngan]: Cho góc nhọn xOy, các điểm A, N nằm trên tia Ox, các điểm B, M nằm trên tia Oy sao cho AM, BN lần lượt vuông góc với Oy, Ox. Chứng minh tam giác OAM đồng dạng với tam giác OBN.
+
+Bài 67 [lop8|hinh-dong-dang|ngan]: Lấy một điểm O nằm ngoài một đoạn thẳng AB. Hãy vẽ hình đồng dạng phối cảnh tâm O của đoạn thẳng AB theo tỉ số đồng dạng 1/2.
+
+Bài 68 [lop8|hinh-dong-dang|ngan]: Cho tam giác ABC, hãy vẽ một tam giác đồng dạng với tam giác ABC theo tỉ số đồng dạng k = 1/2.
+
+Bài 69 [lop8|hinh-dong-dang|ngan]: Cho tam giác ABC có AB = 3, BC = 6, CA = 5. Cho O, I là hai điểm phân biệt.
+a) Giả sử tam giác A'B'C' là hình đồng dạng phối cảnh của tam giác ABC với điểm O là tâm đồng dạng phối cảnh, tỉ số A'B'/AB = 3. Hãy tìm độ dài các cạnh của tam giác A'B'C'.
+b) Giả sử tam giác A''B''C'' là hình đồng dạng phối cảnh của tam giác ABC với điểm I là tâm đồng dạng phối cảnh, tỉ số A''B''/AB = 3. Hãy tìm độ dài các cạnh của tam giác A''B''C''.
+c) Chứng minh tam giác A'B'C' = tam giác A''B''C''.
+
+Bài 70 [lop8|hinh-dong-dang|trung-binh]: Cho hai hình chữ nhật ABCD và A'B'C'D' có A'B'/B'C' = AB/BC. Trên các tia AB, AC, AD ta lần lượt lấy các điểm B'', C'', D'' sao cho AB''/AB = AC''/AC = AD''/AD = B'C'/BC. Chứng minh:
+a) Hình chữ nhật AB''C''D'' đồng dạng phối cảnh với hình chữ nhật ABCD.
+b) AB'' = A'B', B''C'' = B'C'.
+c) Hai hình chữ nhật ABCD và A'B'C'D' là đồng dạng.

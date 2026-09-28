@@ -73,17 +73,16 @@ describe('onCirclePointRule', () => {
   });
 
   // hinh9:19 / vao10:202 — ĐẢO 2 điểm trên cung: "Trên cung lớn AB lấy hai điểm C, D".
-  it('"Trên cung lớn AB lấy hai điểm C, D" → C, D onCircle theta khác nhau', () => {
+  it('"Trên cung lớn AB lấy hai điểm C, D" → C, D trên cung lớn AB (onArc), vị trí khác nhau', () => {
     const all = intents('Cho đường tròn (O) đường kính AB. Trên cung lớn AB lấy hai điểm C, D sao cho AD // BC.');
     const c = all.find((i) => i.name === 'C');
     const d = all.find((i) => i.name === 'D');
-    expect(c?.constraint.kind).toBe('onCircle');
-    expect(d?.constraint.kind).toBe('onCircle');
-    expect(c.constraint.circle).toBe('O_c');
-    expect(c.constraint.theta).not.toBe(d.constraint.theta);
+    expect(c?.constraint).toMatchObject({ kind: 'onArc', circle: 'O_c', a: 'A', b: 'B', mode: 'major' });
+    expect(d?.constraint).toMatchObject({ kind: 'onArc', circle: 'O_c', a: 'A', b: 'B', mode: 'major' });
+    expect(c.constraint.t).not.toBe(d.constraint.t);
   });
 
-  it('"Trên cung nhỏ AB lấy hai điểm C và E" → C, E onCircle', () => {
+  it('"Trên cung nhỏ AB lấy hai điểm C và E" (A, B không được dựng ở đâu) → giữ onCircle', () => {
     const all = intents('Cho đường tròn (O). Trên cung nhỏ AB lấy hai điểm C và E.');
     expect(all.find((i) => i.name === 'C')?.constraint.kind).toBe('onCircle');
     expect(all.find((i) => i.name === 'E')?.constraint.kind).toBe('onCircle');
@@ -106,20 +105,21 @@ describe('onCirclePointRule', () => {
     expect(all.find((i) => i.name === 'P' && i.constraint.circle === 'O_c')).toBeUndefined();
   });
 
-  it('"Các điểm E, F thuộc cung BC" (phân phối phẩy) → E,F onCircle (Câu 28)', () => {
+  it('"Các điểm E, F thuộc cung BC không chứa A" (phân phối phẩy) → E,F onArc không chứa A (Câu 28)', () => {
     const all = intents('Cho tam giác ABC nội tiếp (O). Các điểm E, F thuộc cung BC không chứa A');
-    const names = all.filter((i) => i.constraint?.kind === 'onCircle').map((i) => i.name).sort();
-    expect(names).toEqual(['E', 'F']);
+    const arc = all.filter((i) => i.constraint?.kind === 'onArc');
+    expect(arc.map((i) => i.name).sort()).toEqual(['E', 'F']);
+    for (const i of arc) expect(i.constraint).toMatchObject({ a: 'B', b: 'C', mode: 'notContaining', ref: 'A' });
   });
 
   it('bare "(O)" (không tiền tố "đường tròn") vẫn resolve circle', () => {
     const all = intents('Cho tam giác ABC nội tiếp (O). Điểm M thuộc cung nhỏ BC');
-    expect(all.find((i) => i.name === 'M' && i.constraint?.kind === 'onCircle')).toBeDefined();
+    expect(all.find((i) => i.name === 'M' && i.constraint?.kind === 'onArc' && i.constraint.circle === 'O')).toBeDefined();
   });
 
-  it('"M, N là hai điểm thuộc cung nhỏ BC" (tên trước) → M,N onCircle (Câu 18)', () => {
+  it('"M, N là hai điểm thuộc cung nhỏ BC" (tên trước) → M,N trên cung nhỏ BC (Câu 18)', () => {
     const all = intents('Cho tam giác ABC nội tiếp (O). M, N là hai điểm thuộc cung nhỏ BC');
-    const names = all.filter((i) => i.constraint?.kind === 'onCircle').map((i) => i.name).sort();
+    const names = all.filter((i) => i.constraint?.kind === 'onArc' && i.constraint.mode === 'minor').map((i) => i.name).sort();
     expect(names).toEqual(['M', 'N']);
   });
 });
@@ -127,7 +127,7 @@ describe('onCirclePointRule', () => {
 // Các phrasing "điểm chạy trên cung" / "Gọi … là điểm … thuộc cung" — feed qua
 // ctxOf (normalize + lọc hasGeometry) để bám sát pipeline runRules.
 describe('onCirclePointRule — điểm tự do trên cung (di chuyển / thay đổi / thuộc)', () => {
-  it('hinh9 #108: "Gọi E là một điểm bất kì thuộc cung nhỏ BC của (O)" → E onCircle (O)', () => {
+  it('hinh9 #108: "Gọi E là một điểm bất kì thuộc cung nhỏ BC của (O)" → E trên cung nhỏ BC của (O)', () => {
     const all = geoIntents(
       'Cho tam giác ABC nhọn, AB < AC, nội tiếp đường tròn (O). Gọi E là một điểm bất kì thuộc cung nhỏ BC của đường tròn (O) sao cho BE < BA.',
     );
@@ -135,12 +135,12 @@ describe('onCirclePointRule — điểm tự do trên cung (di chuyển / thay �
       expect.objectContaining({
         op: 'add-point',
         name: 'E',
-        constraint: expect.objectContaining({ kind: 'onCircle', circle: 'O' }),
+        constraint: expect.objectContaining({ kind: 'onArc', circle: 'O', a: 'B', b: 'C', mode: 'minor' }),
       }),
     );
   });
 
-  it('hinh9 #116: "điểm A thay đổi trên cung lớn BC" → A onCircle (O)', () => {
+  it('hinh9 #116: "điểm A thay đổi trên cung lớn BC" → A trên cung lớn BC của (O)', () => {
     const all = geoIntents(
       'Cho đường tròn (O), dây cung BC không chứa tâm O và điểm A thay đổi trên cung lớn BC.',
     );
@@ -148,12 +148,12 @@ describe('onCirclePointRule — điểm tự do trên cung (di chuyển / thay �
       expect.objectContaining({
         op: 'add-point',
         name: 'A',
-        constraint: expect.objectContaining({ kind: 'onCircle', circle: 'O' }),
+        constraint: expect.objectContaining({ kind: 'onArc', circle: 'O', a: 'B', b: 'C', mode: 'major' }),
       }),
     );
   });
 
-  it('hinh9 #126: "Điểm P di chuyển trên cung nhỏ AD" → P onCircle (O) [rule-level]', () => {
+  it('hinh9 #126: "Điểm P di chuyển trên cung nhỏ AD" → P trên cung nhỏ AD của (O) [rule-level]', () => {
     // onCirclePoint CLAIM được clause này (regex POINT_ON khớp "P di chuyển trên
     // cung nhỏ AD"). Dùng segmentClauses TRẦN (như các test khác trong file) để
     // kiểm tra phần rule chịu trách nhiệm.
@@ -171,7 +171,7 @@ describe('onCirclePointRule — điểm tự do trên cung (di chuyển / thay �
       expect.objectContaining({
         op: 'add-point',
         name: 'P',
-        constraint: expect.objectContaining({ kind: 'onCircle', circle: 'O' }),
+        constraint: expect.objectContaining({ kind: 'onArc', circle: 'O', a: 'A', b: 'D', mode: 'minor' }),
       }),
     );
   });
@@ -213,9 +213,9 @@ describe('onCirclePointRule — điểm tự do trên cung (di chuyển / thay �
     expect(b.constraint.theta).not.toBe(c.constraint.theta);
   });
 
-  it('"M và N là hai điểm trên cung nhỏ AB" (sep "và" + cung) → CẢ M và N on O', () => {
+  it('"M và N là hai điểm trên cung nhỏ AB" (sep "và" + cung) → CẢ M và N trên cung AB', () => {
     const all = geoIntents('Cho đường tròn (O) đường kính AB. M và N là hai điểm trên cung nhỏ AB.');
-    expect(all.find((i) => i.name === 'M' && i.constraint.kind === 'onCircle')).toBeTruthy();
-    expect(all.find((i) => i.name === 'N' && i.constraint.kind === 'onCircle')).toBeTruthy();
+    expect(all.find((i) => i.name === 'M' && i.constraint.kind === 'onArc')).toBeTruthy();
+    expect(all.find((i) => i.name === 'N' && i.constraint.kind === 'onArc')).toBeTruthy();
   });
 });

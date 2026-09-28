@@ -33,7 +33,7 @@ export const givenNamedCircleRule: LanguageRule = {
   id: 'givenNamedCircle',
   priority: 74, // dưới circleRadius(75)/circleTriangle, trên điểm onCircle(64)
   languages: ['vi'],
-  patterns: [/\(\s*[A-Z]\s*\)/u],
+  patterns: [/\(\s*[A-Z]\s*\)/u, /đường\s*tròn\s+tâm/u],
   match(ctx) {
     if (!HAS_POINTS_ON.test(ctx.problem) && !HAS_TANGENT_OR_SECANT.test(ctx.problem)) return [];
     const out: RuleMatch[] = [];
@@ -48,6 +48,12 @@ export const givenNamedCircleRule: LanguageRule = {
       if (new RegExp(`\\(\\s*${escapeRe(c)}\\s*[;,]`, 'u').test(ctx.problem)) continue; // (O; R)/(O; 3)
       if (new RegExp(`\\(\\s*${escapeRe(c)}\\s*\\)[^.]{0,30}?đường\\s*kính|đường\\s*kính[^.]{0,30}?\\(\\s*${escapeRe(c)}\\s*\\)`, 'u').test(ctx.problem)) continue;
       if (new RegExp(`(?:nội|ngoại)\\s*tiếp[^.]{0,30}?\\(\\s*${escapeRe(c)}\\s*\\)|\\(\\s*${escapeRe(c)}\\s*\\)[^.]{0,30}?(?:nội|ngoại)\\s*tiếp`, 'u').test(ctx.problem)) continue;
+      // Cùng các qualifier nhưng tâm viết TRẦN "tâm O": "tam giác ABC … nội tiếp
+      // đường tròn tâm O. Tiếp tuyến tại A của (O) …" — circleTriangle dựng (O) qua
+      // 3 đỉnh; dựng thêm (O) tự do ở đây (priority cao hơn) là đè mất đường tròn
+      // ngoại tiếp: A không còn trên (O), tiếp tuyến tại A vô nghĩa.
+      const tam = `tâm\\s+${escapeRe(c)}(?![\\p{L}\\d'′])`;
+      if (new RegExp(`(?:nội|ngoại)\\s*tiếp[^.]{0,30}?${tam}|${tam}[^.]{0,30}?(?:nội|ngoại)\\s*tiếp|${tam}[^.]{0,20}?(?:bán|đường)\\s*kính`, 'u').test(ctx.problem)) continue;
       // "(O)" phải là đường tròn:
       //   (a) đứng sau "đường tròn"/"(nửa) đường tròn" — "Cho đường tròn (O)", HOẶC
       //   (b) đề MỞ bằng "Cho (O)" (notation tắt phổ biến — "(O)" trần = đường tròn
@@ -64,6 +70,18 @@ export const givenNamedCircleRule: LanguageRule = {
         ruleId: 'givenNamedCircle',
         clauseIds: owner ? [owner.id] : [],
         intents: [drawCircle(center, 'centerRadius', { center, radius: SYMBOLIC_RADIUS })],
+      });
+    }
+    // "Cho đường tròn tâm O." trơ (cả mệnh đề chỉ có vậy) + có điểm trên đường tròn:
+    // "Giả sử A, B là hai điểm nằm trên đường tròn" (SGK Cánh diều).
+    for (const cl of ctx.clauses) {
+      const m = /^(?:[Cc]ho\s+)?(?:một\s+)?đường\s*tròn\s+tâm\s+([A-Z])(?![A-Z'′\p{L}])\s*$/u.exec(cl.text.trim());
+      if (!m || seen.has(m[1])) continue;
+      seen.add(m[1]);
+      out.push({
+        ruleId: 'givenNamedCircle',
+        clauseIds: [cl.id],
+        intents: [drawCircle(m[1], 'centerRadius', { center: m[1], radius: SYMBOLIC_RADIUS })],
       });
     }
     return out;

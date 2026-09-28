@@ -57,6 +57,19 @@ export function gocDeCho(problem: string, labels: readonly string[]): Map<string
   return out;
 }
 
+/** Chỉ "góc X là góc tù/vuông" (không số đo) — bổ sung cho doGocDeCho (triangleLengths). */
+export function gocLoaiDeCho(problem: string, labels: readonly string[]): Map<string, number> {
+  const out = new Map<string, number>();
+  const tap = new Set(labels);
+  const LOAI = /(?<!\p{L})góc\s+([A-Z])([A-Z])?([A-Z])?\s+là\s+góc\s+(tù|vuông)(?!\p{L})/gu;
+  for (const m of problem.matchAll(LOAI)) {
+    const [, a, b, c, loai] = m;
+    const dinh = !b && !c ? a : b && c && tap.has(a) && tap.has(c) ? b : undefined;
+    if (dinh && tap.has(dinh) && !out.has(dinh)) out.set(dinh, loai === 'vuông' ? 90 : 115);
+  }
+  return out;
+}
+
 /** Bất đẳng thức cạnh "AB < AC" giữa hai cạnh của tam giác: [nhỏ, lớn]. */
 export function batDangThucCanh(problem: string, labels: readonly string[]): Array<[string, string]> {
   const tap = new Set(labels);
@@ -122,8 +135,10 @@ export function toaDoTamGiacTheoGoc(
   variant: string,
   problem: string,
   mau: readonly [Pt, Pt, Pt],
+  opts: { boQuaGoc?: boolean } = {},
 ): Record<string, Pt> | undefined {
-  const known = gocDeCho(problem, labels);
+  // boQuaGoc: góc đã do bộ giải triangleLengths lo — ở đây chỉ còn bất đẳng thức cạnh.
+  const known = opts.boQuaGoc ? new Map<string, number>() : gocDeCho(problem, labels);
   if (!known) return undefined;
   const bdt = batDangThucCanh(problem, labels);
   const goc = known.size > 0 ? giaiGoc(labels, variant, known) : null;

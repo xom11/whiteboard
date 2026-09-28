@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import { ratioPointOnSegmentRule, giaiTiSo } from '../ratioPointOnSegment';
+import { pointRatioRule } from '../pointRatio';
 import { segmentClauses } from '../../deterministic/coverage';
 import { toaDoHinh, dist, thuocDoan } from '../../__tests__/helpers/toaDoHinh';
 
@@ -8,10 +8,10 @@ beforeAll(() => {
 });
 
 function intentsOf(problem: string) {
-  return ratioPointOnSegmentRule.match({ problem, clauses: segmentClauses(problem) }).flatMap((m) => m.intents) as any[];
+  return pointRatioRule.match({ problem, clauses: segmentClauses(problem) }).flatMap((m) => m.intents) as any[];
 }
 
-describe('ratioPointOnSegment — điểm chia đoạn theo tỉ số', () => {
+describe('pointRatio (đề lớp 7) — điểm chia đoạn theo tỉ số', () => {
   it('hinh-phang #32 "M thuộc đoạn thẳng BC sao cho BM = 2MC": M ∈ BC, BM = 2·MC', () => {
     const p = toaDoHinh('Cho tam giác ABC, điểm M thuộc đoạn thẳng BC sao cho BM = 2MC. Trên tia đối của tia CA lấy điểm D sao cho CD = CA. Gọi E là giao điểm của AM và BD.');
     expect(thuocDoan(p.M, p.B, p.C)).toBe(true);
@@ -34,12 +34,15 @@ describe('ratioPointOnSegment — điểm chia đoạn theo tỉ số', () => {
     expect(dist(p.A, p.M) / dist(p.A, p.B)).toBeCloseTo(1 / 3, 9);
   });
 
-  it('giải tỉ số: các dạng viết', () => {
-    expect(giaiTiSo('B', 'C', 'BM = 2MC')?.get('M')).toBeCloseTo(2 / 3, 12);
-    expect(giaiTiSo('B', 'C', 'MC = 2BM')?.get('M')).toBeCloseTo(1 / 3, 12);
-    expect(giaiTiSo('A', 'M', 'AG = 2/3 AM')?.get('G')).toBeCloseTo(2 / 3, 12);
-    expect(giaiTiSo('A', 'D', 'GD = EG = AE')?.get('E')).toBeCloseTo(1 / 3, 12);
-    expect(giaiTiSo('B', 'C', 'BM = MC/2')?.get('M')).toBeCloseTo(1 / 3, 12);
+  it.each([
+    ['BM = MC/2', 'Cho tam giác ABC. Trên cạnh BC lấy điểm M sao cho BM = MC/2.', 'B', 'M', 'C', 1 / 3],
+    ['MC = 2BM', 'Cho tam giác ABC. Trên cạnh BC lấy điểm M sao cho MC = 2BM.', 'B', 'M', 'C', 1 / 3],
+    ['AG = 2/3 AM', 'Cho tam giác ABC có trung tuyến AM. Gọi G là điểm trên đoạn AM sao cho AG = 2/3 AM.', 'A', 'G', 'M', 2 / 3],
+    ['chuỗi viết từ phía D "GD = EG = AE"', 'Cho tam giác ABC có trung tuyến AD. Trên đoạn thẳng AD lấy hai điểm E, G sao cho GD = EG = AE.', 'A', 'E', 'D', 1 / 3],
+  ])('các dạng viết tỉ số (%s): điểm trong đoạn, đúng tỉ lệ', (_l, de, x, p, y, t) => {
+    const q = toaDoHinh(de);
+    expect(thuocDoan(q[p], q[x], q[y])).toBe(true);
+    expect(dist(q[x], q[p]) / dist(q[x], q[y])).toBeCloseTo(t, 9);
   });
 
   it.each([

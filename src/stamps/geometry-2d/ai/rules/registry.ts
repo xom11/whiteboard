@@ -8,7 +8,6 @@ import { congruentTriangleOppositeRule } from './congruentTriangleOpposite';
 import { quadRule } from './quad';
 import { connectRule } from './connect';
 import { midpointRule } from './midpoint';
-import { midpointReflectRule } from './midpointReflect';
 import { perpBisectorRule } from './perpBisector';
 import { perpBisectorsMeetRule } from './perpBisectorsMeet';
 import { cevianRule } from './cevian';
@@ -27,7 +26,6 @@ import { externalPointAtRadiusRule } from './externalPointAtRadius';
 import { arcMidpointRule } from './arcMidpoint';
 import { excenterRule } from './excenter';
 import { parallelPerpRule } from './parallelPerp';
-import { twoParallelsThroughPointRule } from './twoParallelsThroughPoint';
 import { twoThroughLinesMeetRule } from './twoThroughLinesMeet';
 import { reflectionRule } from './reflection';
 import { pointAtDistanceRule } from './pointAtDistance';
@@ -49,7 +47,14 @@ import { onSegmentPointRule } from './onSegmentPoint';
 import { pointNamedOnSegmentRule } from './pointNamedOnSegment';
 import { pointOnSideAtLengthRule } from './pointOnSideAtLength';
 import { twoPointsOneSideRule } from './twoPointsOneSide';
-import { ratioPointOnSegmentRule } from './ratioPointOnSegment';
+import { pointRatioRule } from './pointRatio';
+import { givenPointsRule } from './givenPoints';
+import { quadCenterRule } from './quadCenter';
+import { parallelogramVertexRule } from './parallelogramVertex';
+import { centersDistribRule } from './centersDistrib';
+import { arbitraryPointRule } from './arbitraryPoint';
+import { parallelogramOnSidesRule } from './parallelogramOnSides';
+import { figuresOnSidesRule } from './figuresOnSides';
 import { diagonalsMeetNamedRule } from './diagonalsMeetNamed';
 import { intersectionDistribRule } from './intersectionDistrib';
 import { lineCircleIntersectionRule } from './lineCircleIntersection';
@@ -102,6 +107,7 @@ import { twoPerpLinesMeetRule } from './twoPerpLinesMeet';
 import { circumcircleCutsLineRule } from './circumcircleCutsLine';
 import { lineConcurrencyRule } from './lineConcurrency';
 import { twoCirclesMeetRule } from './twoCirclesMeet';
+import { diameterCircleMeetsCircleRule } from './diameterCircleMeetsCircle';
 import { radiusRule } from './radius';
 import { perpNamedLineRule } from './perpNamedLine';
 import { parallelSidePointsRule } from './parallelSidePoints';
@@ -121,6 +127,20 @@ import { namedLinesMeetRule } from './namedLinesMeet';
 import { bisectorsMeetRule } from './bisectorsMeet';
 import { triangleBisectorsMeetRule } from './triangleBisectorsMeet';
 import { hexagonRule } from './hexagon';
+import { parallelsThroughCutRule } from './parallelsThroughCut';
+import { pointOnSegmentNoteRule } from './pointOnSegmentNote';
+import { namedRayLinesRule } from './namedRayLines';
+import { midpointConditionRule } from './midpointCondition';
+import { pointOnNamedSideRule } from './pointOnNamedSide';
+import { lineThroughPointCutsRule } from './lineThroughPointCuts';
+import { bisectorCutsLinesRule } from './bisectorCutsLines';
+import { linesAtPointsMeetRule } from './linesAtPointsMeet';
+import { altitudesOfNamedTrianglesRule } from './altitudesOfNamedTriangles';
+import { trapezoidAltitudesRule } from './trapezoidAltitudes';
+import { lineCutsLineAndCircleRule } from './lineCutsLineAndCircle';
+import { footsExtraRule } from './footsExtra';
+import { lineThroughPointCutsCircleRule } from './lineThroughPointCutsCircle';
+import { linesCutDistribRule } from './linesCutDistrib';
 
 const RULES: readonly LanguageRule[] = [
   namedLineRule,
@@ -144,7 +164,6 @@ const RULES: readonly LanguageRule[] = [
   quadRule,
   connectRule,
   midpointRule,
-  midpointReflectRule,
   perpBisectorRule,
   perpBisectorsMeetRule,
   cevianRule,
@@ -163,7 +182,6 @@ const RULES: readonly LanguageRule[] = [
   arcMidpointRule,
   excenterRule,
   parallelPerpRule,
-  twoParallelsThroughPointRule,
   twoThroughLinesMeetRule,
   reflectionRule,
   pointAtDistanceRule,
@@ -185,7 +203,24 @@ const RULES: readonly LanguageRule[] = [
   pointNamedOnSegmentRule,
   pointOnSideAtLengthRule,
   twoPointsOneSideRule,
-  ratioPointOnSegmentRule,
+  parallelsThroughCutRule,
+  pointOnSegmentNoteRule,
+  namedRayLinesRule,
+  midpointConditionRule,
+  pointOnNamedSideRule,
+  lineThroughPointCutsRule,
+  bisectorCutsLinesRule,
+  linesAtPointsMeetRule,
+  altitudesOfNamedTrianglesRule,
+  trapezoidAltitudesRule,
+  pointRatioRule,
+  givenPointsRule,
+  quadCenterRule,
+  parallelogramVertexRule,
+  centersDistribRule,
+  arbitraryPointRule,
+  parallelogramOnSidesRule,
+  figuresOnSidesRule,
   diagonalsMeetNamedRule,
   intersectionDistribRule,
   lineCircleIntersectionRule,
@@ -236,11 +271,16 @@ const RULES: readonly LanguageRule[] = [
   givenNamedCircleRule,
   twoPerpLinesMeetRule,
   twoCirclesMeetRule,
+  diameterCircleMeetsCircleRule,
   radiusRule,
   perpNamedLineRule,
   parallelSidePointsRule,
   bisectorsMeetRule,
   triangleBisectorsMeetRule,
+  lineCutsLineAndCircleRule,
+  footsExtraRule,
+  lineThroughPointCutsCircleRule,
+  linesCutDistribRule,
 ];
 
 /**

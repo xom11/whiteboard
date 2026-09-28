@@ -39,7 +39,10 @@ export const perpFeetFromTwoRule: LanguageRule = {
       for (const m of c.text.matchAll(CHAN)) {
         const [, h, k, b, cc, l1a, l1b, l2a, l2b] = m;
         const l1 = l1a + l1b;
-        const l2 = l2a ? l2a + l2b : l1;
+        // Một đường chung ("… xuống đoạn thẳng AD") là việc của footsExtra (lớp 8) —
+        // ở đây chỉ còn dạng zip hai đường ("… xuống AB, AC").
+        if (!l2a) continue;
+        const l2 = l2a + l2b;
         if (h === k || b === cc) continue;
         const cap = [
           [b, h, l1],
