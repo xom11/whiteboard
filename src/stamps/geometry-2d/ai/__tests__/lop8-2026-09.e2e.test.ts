@@ -257,4 +257,17 @@ describe('lớp 8 — hình đúng dữ kiện đề', () => {
     expect(p.D[0]).toBeCloseTo(p.B[0] + p.C[0] - p.A[0], 9);
     expect(p.D[1]).toBeCloseTo(p.B[1] + p.C[1] - p.A[1], 9);
   });
+
+  // --- đường cao hình thang; guard chân cevian ------------------------------------
+  it('"hình thang cân ABCD (AB // CD, AB < CD), đường cao AH, BK" — H, K chân ⊥ trên CD (trước: báo full mà thiếu H, K)', () => {
+    const p = toaDoHinh('Cho hình thang cân ABCD (AB // CD, AB < CD), đường cao AH, BK.');
+    expect(thuocDoan(p.H, p.C, p.D)).toBe(true);
+    expect(thuocDoan(p.K, p.C, p.D)).toBe(true);
+    expect(vuongGoc(p.A, p.H, p.C, p.D)).toBe(true);
+    expect(vuongGoc(p.B, p.K, p.C, p.D)).toBe(true);
+  });
+
+  it('"hình bình hành ABCD, đường cao AH" (không rõ xuống cạnh nào) → KHÔNG báo full', () => {
+    expect(() => toaDoHinh('Cho hình bình hành ABCD, đường cao AH.')).toThrow(/named-missing/);
+  });
 });

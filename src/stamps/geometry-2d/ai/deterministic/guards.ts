@@ -33,7 +33,11 @@ function joinPrime(letter: string | undefined, prime: string | undefined): strin
 
 // Đỉnh của hình khai báo: "tam giác ABC", "tứ giác ABCD", "hình vuông/… ABCD".
 // Bắt cụm 3-4 ký tự HOA LIỀN ngay sau tên hình (mỗi đỉnh phải có trong DSL).
-const SHAPE_TRI = /tam giác\s+([A-Z]{3})(?![A-Z])/gu;
+const SHAPE_TRI = /[Tt]am giác\s+([A-Z]{3})(?![A-Z])/gu;
+// Chân đường cao / trung tuyến / phân giác nêu bằng cặp đỉnh: "đường cao AH, BK" →
+// H, K phải có (trước đây "hình thang ABCD, đường cao AH, BK": quad claim cả mệnh đề,
+// H/K không ai dựng mà hình vẫn báo đủ).
+const CEVIAN_FEET = /(?:[Đđ]ường\s*cao|[Cc]hiều\s*cao|[Tt]rung\s*tuyến|[Pp]hân\s*giác)\s+((?:[A-Z][A-Z]\s*(?:,|và)\s*)*[A-Z][A-Z])(?![A-Z])/gu;
 const SHAPE_QUAD = /(?:tứ giác|hình\s+(?:vuông|chữ nhật|bình hành|thoi|thang))\s+([A-Z]{4})(?![A-Z])/gu;
 
 export interface NamedEntityReport {
@@ -58,6 +62,10 @@ function collectExpectedNames(problem: string): Set<string> {
   add(NAMED_LA, [[1, 2]]);
   add(NAMED_LANLUOT, [[1, 2], [3, 4]]);
   // Đỉnh hình: tách cụm 3/4 ký tự thành từng đỉnh.
+  CEVIAN_FEET.lastIndex = 0;
+  for (const m of problem.matchAll(CEVIAN_FEET)) {
+    for (const cap of m[1].split(/\s*,\s*|\s+và\s+/u)) if (cap.length === 2) names.add(cap[1]);
+  }
   for (const re of [SHAPE_TRI, SHAPE_QUAD]) {
     re.lastIndex = 0;
     let m: RegExpExecArray | null;
