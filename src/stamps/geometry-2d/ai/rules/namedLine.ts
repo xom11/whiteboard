@@ -28,7 +28,9 @@ import { addPoint, drawLine, DUONG_KW, escapeRe } from './_shared';
 
 // Token tên đường chữ thường: 1-2 ký tự thường + tối đa 1 chữ số ("d","xy","d1"),
 // NEO (?!\p{L}) để không nuốt từ tiếng Việt ("vuông"/"song").
-const LC = String.raw`([a-z]{1,2}[0-9]?)(?!\p{L})`;
+// Prime cho phép ("d'" — đề lớp 7 "đường thẳng d // AC … đường thẳng d' // AB");
+// prime cong đã được normalizeText quy về ASCII '.
+const LC = String.raw`([a-z]{1,2}[0-9]?'?)(?![\p{L}'])`;
 // Đường tham chiếu = cặp đỉnh HOA (cho space giữa "O A"), tiền tố loại optional.
 const REF = String.raw`(?:${DUONG_KW}\s*thẳng\s+|đoạn(?:\s+thẳng)?\s+|cạnh\s+|tia\s+)?([A-Z]\s*[A-Z])(?![A-Z])`;
 // Điểm HOA đơn.

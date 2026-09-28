@@ -108,12 +108,14 @@ import { twoCirclesCenterRadiusMeetRule } from './twoCirclesCenterRadiusMeet';
 import { rightAngleVertexCirclesRule } from './rightAngleVertexCircles';
 import { gocXOyRule } from './gocXOy';
 import { namedLineRule } from './namedLine';
+import { namedLinesMeetRule } from './namedLinesMeet';
 import { bisectorsMeetRule } from './bisectorsMeet';
 import { triangleBisectorsMeetRule } from './triangleBisectorsMeet';
 import { hexagonRule } from './hexagon';
 
 const RULES: readonly LanguageRule[] = [
   namedLineRule,
+  namedLinesMeetRule,
   collinearPointsRule,
   quadDiagonalsRule,
   twoCirclesTangentRule,
