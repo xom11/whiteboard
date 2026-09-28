@@ -54,6 +54,7 @@ export const CONSTRUCT_MANIFEST: ConstructEntry[] = [
   { dslKind: 'tangencyPoint',      sceneKind: 'point',   intentKey: 'tangencyPoint',      toolKey: 'tangencyPoint',  ruleId: null,             serialize: true,  evalFixture: null },
   { dslKind: 'tangentPointExt',    sceneKind: 'point',   intentKey: 'tangentPoint',       toolKey: 'tangentPointExt', ruleId: null,            serialize: true,  evalFixture: null },
   { dslKind: 'arcMidpoint',        sceneKind: 'point',   intentKey: 'arcMidpoint',        toolKey: 'arcMidpoint',    ruleId: 'arcMidpoint',    serialize: true,  evalFixture: null },
+  { dslKind: 'onArc',              sceneKind: 'point',   intentKey: 'onArc',              toolKey: null,             ruleId: 'on-circle-point', serialize: true, evalFixture: null },
   { dslKind: 'excenter',           sceneKind: 'point',   intentKey: 'excenter',           toolKey: 'excenter',       ruleId: 'centers',        serialize: true,  evalFixture: null },
   { dslKind: 'reflectPoint',       sceneKind: 'point',   intentKey: 'reflectPoint',       toolKey: null,             ruleId: 'reflection',     serialize: false, evalFixture: null },
   { dslKind: 'reflectLine',        sceneKind: 'point',   intentKey: 'reflectLine',        toolKey: null,             ruleId: 'reflection',     serialize: false, evalFixture: null },

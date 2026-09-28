@@ -59,7 +59,38 @@ function collectDeterministic(rawProblem: string): Collected {
       seen.add(key);
       return true;
     });
-  return { intents, coverage, matchCount: matches.length };
+  return { intents: boDinhNghiaChung(suaGiaoDiemThuHai(intents)), coverage, matchCount: matches.length };
+}
+
+// Ràng buộc "chung chung" của một điểm: chỉ nói điểm nằm TRÊN một hình (hoặc tự do).
+const RANG_BUOC_CHUNG = new Set(['free', 'onCircle', 'onSegment']);
+
+/**
+ * Nhiều rule cùng định nghĩa MỘT điểm: builder lấy định nghĩa ĐẦU TIÊN (theo
+ * priority) — rule chung priority cao (chord 71 "dây CD" → C, D onCircle; onCircle
+ * 64) từng đè im lặng định nghĩa cụ thể đúng của rule priority thấp (C = giao thứ
+ * hai của MD với (O), D thuộc cung lớn AB, tiếp điểm…). Khi một điểm vừa có ràng
+ * buộc chung vừa có ràng buộc cụ thể ⇒ bỏ ràng buộc chung (thông tin của nó đã nằm
+ * trong ràng buộc cụ thể: giao điểm với (O) thì hiển nhiên trên (O)).
+ */
+export function boDinhNghiaChung(intents: IntentT[]): IntentT[] {
+  const cuThe = new Set<string>();
+  for (const i of intents) {
+    if (i.op === 'add-point' && !RANG_BUOC_CHUNG.has(i.constraint.kind)) cuThe.add(i.name);
+  }
+  // Cùng là ràng buộc chung nhưng onCircle/onArc cụ thể hơn onSegment: "cát tuyến
+  // ACD (C nằm giữa A và D)" — secant đặt C trên (O) ở cung gần (đã bảo đảm C giữa
+  // A, D); onSegment AD thêm vào là vòng phụ thuộc C → AD → D → C.
+  const trenDuongTron = new Set<string>();
+  for (const i of intents) {
+    if (i.op === 'add-point' && (i.constraint.kind === 'onCircle' || i.constraint.kind === 'onArc')) trenDuongTron.add(i.name);
+  }
+  if (cuThe.size === 0 && trenDuongTron.size === 0) return intents;
+  return intents.filter((i) => {
+    if (i.op !== 'add-point') return true;
+    if (RANG_BUOC_CHUNG.has(i.constraint.kind) && cuThe.has(i.name)) return false;
+    return !(i.constraint.kind === 'onSegment' && trenDuongTron.has(i.name));
+  });
 }
 
 export function runDeterministicIntents(problem: string): DetIntentResult {
@@ -98,4 +129,66 @@ export function tryPartialDeterministic(problem: string): PartialDeterministicRe
     coverage,
     hasPartial: matchCount > 0 && !coverage.complete && intents.length > 0,
   };
+}
+
+const goc = (circle: string) => circle.replace(/_c$/u, '');
+
+/** Tên các điểm CHẮC CHẮN nằm trên từng đường tròn (theo tên gốc, bỏ hậu tố _c). */
+export function diemTrenDuongTron(intents: readonly IntentT[]): Map<string, Set<string>> {
+  const out = new Map<string, Set<string>>();
+  const them = (circle: string | undefined, ...names: (string | undefined)[]) => {
+    if (!circle) return;
+    const k = goc(circle);
+    const set = out.get(k) ?? new Set<string>();
+    for (const n of names) if (n) set.add(n);
+    out.set(k, set);
+  };
+  for (const i of intents) {
+    if (i.op === 'add-point') {
+      const c = i.constraint;
+      if (c.kind === 'onCircle' || c.kind === 'onArc' || c.kind === 'arcMidpoint' || c.kind === 'secondIntersection' || c.kind === 'tangencyPoint') them(c.circle, i.name);
+      else if (c.kind === 'tangentPoint') them(c.circle, i.name);
+      else if (c.kind === 'circleIntersection') { them(c.c1, i.name); them(c.c2, i.name); }
+      else if (c.kind === 'circleSecondIntersection') { them(c.c1, i.name, c.exclude); them(c.c2, i.name, c.exclude); }
+    } else if (i.op === 'draw-circle') {
+      if (i.spec === 'through3') them(i.name, ...(i.points ?? []));
+      else if (i.spec === 'diameter') them(i.name, ...(i.endpoints ?? []));
+      else if (i.spec === 'centerThrough') them(i.name, i.through);
+    }
+  }
+  // Tâm là trung điểm PQ và P trên đường tròn ⇒ Q (đối tâm) cũng trên đường tròn:
+  // "O là trung điểm MC, vẽ (O) bán kính OC" ⇒ M ∈ (O).
+  const trungDiem = new Map<string, [string, string]>();
+  for (const i of intents) {
+    if (i.op !== 'add-point' || i.constraint.kind !== 'midpoint') continue;
+    const m = /^([A-Z])([A-Z])$/u.exec(i.constraint.of);
+    if (m) trungDiem.set(i.name, [m[1], m[2]]);
+  }
+  for (const i of intents) {
+    if (i.op !== 'draw-circle' || !i.center) continue;
+    const pq = trungDiem.get(i.center);
+    const set = out.get(goc(i.name));
+    if (pq && set && (set.has(pq[0]) || set.has(pq[1]))) them(i.name, pq[0], pq[1]);
+  }
+  return out;
+}
+
+/**
+ * "MC cắt (O) tại P": rule lấy `other` (giao thứ nhất đã biết) = chữ ĐẦU của đường
+ * thẳng. Khi chữ đầu là điểm NGOÀI (M giao hai tiếp tuyến) còn chữ sau mới nằm trên
+ * (O) thì JSXGraph "giao khác M" trả về một giao bất kỳ — có thể chính là C. Đổi
+ * `other` sang đầu mút thực sự nằm trên đường tròn.
+ */
+export function suaGiaoDiemThuHai(intents: IntentT[]): IntentT[] {
+  const tren = diemTrenDuongTron(intents);
+  return intents.map((i) => {
+    if (i.op !== 'add-point' || i.constraint.kind !== 'secondIntersection') return i;
+    const c = i.constraint;
+    const m = /^([A-Z])([A-Z])$/u.exec(c.line);
+    if (!m) return i;
+    const set = tren.get(goc(c.circle)) ?? new Set<string>();
+    const khac = m[1] === c.other ? m[2] : m[2] === c.other ? m[1] : undefined;
+    if (!khac || set.has(c.other) || !set.has(khac)) return i;
+    return { ...i, constraint: { ...c, other: khac } } as IntentT;
+  });
 }

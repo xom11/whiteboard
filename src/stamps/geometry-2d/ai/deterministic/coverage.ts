@@ -144,13 +144,33 @@ const CONSTRUCTION_LEAD = new RegExp(
   'u',
 );
 
+// Mệnh đề DỰNG HÌNH nằm GIỮA phần chứng minh (đề vào 10 nhiều ý: "b) Đường thẳng
+// qua E vuông góc với BC cắt tia AF tại G. Chứng minh …", "c) Tia FE cắt (O) tại
+// P", "Hai đoạn thẳng CM và HN cắt nhau tại T") — không mở bằng từ dẫn dựng hình
+// nên trước đây bị coi là câu chứng minh → BỎ QUA IM LẶNG: hình báo "đủ" mà thiếu
+// G/K/T. Nhận diện HẸP: chủ ngữ là đường/tia/tiếp tuyến/đoạn/dây/cặp đỉnh, có
+// "cắt … tại|ở <điểm>", và KHÔNG chứa động từ chứng minh/tính/tìm hay dấu "?".
+// Thêm "CD là đường kính (của (O))" (định nghĩa đầu mút D).
+const MID_PROOF_CONSTRUCTION = new RegExp(
+  `^${ENUM_PREFIX}` +
+    `(?:(?:(?:[Đđ]ường|[Tt]ia|[Tt]iếp\\s*tuyến|[Hh]ai|[Cc]ác|[Đđ]oạn|[Dd]ây|[Cc]át\\s*tuyến|[Nn]ửa)(?!\\p{L})|[A-Z]{2}(?![\\p{L}]))` +
+    `[^]*cắt[^]*(?:tại|ở)\\s+(?:(?:hai\\s+|các\\s+)?điểm\\s+(?:thứ\\s+hai\\s+)?)?(?:là\\s+)?[A-Z](?!\\p{L})` +
+    `|[A-Z]{2}\\s+là\\s+(?:một\\s+)?đường\\s*kính)`,
+  'u',
+);
+const PROOF_WORD = /[Cc]hứng\s*(?:minh|tỏ)|CMR|C\/m|[Tt]ính(?!\p{L})|[Tt]ìm(?!\p{L})|\?/u;
+
+function isMidProofConstruction(text: string): boolean {
+  return MID_PROOF_CONSTRUCTION.test(text) && !PROOF_WORD.test(text);
+}
+
 function startsProofSection(text: string): boolean {
   return PROOF_SECTION_START.test(text);
 }
 
 function isProofOnlyClause(text: string, proofMode: boolean): boolean {
   if (PROOF_SECTION_START.test(text) && !CONSTRUCTION_LEAD.test(text)) return true;
-  return proofMode && !CONSTRUCTION_LEAD.test(text);
+  return proofMode && !CONSTRUCTION_LEAD.test(text) && !isMidProofConstruction(text);
 }
 
 export function computeCoverage(

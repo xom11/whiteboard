@@ -11,7 +11,7 @@
 import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint, drawLine } from './_shared';
 
-const PREFILTER = /[Tt]iếp\s*tuyến[^.]{0,30}?tại\s+[A-Z][^.]{0,40}?cắt|Qua\s+(?:điểm\s+)?[A-Z][^.]{0,40}?tiếp\s*tuyến[^.]{0,20}?cắt/u;
+const PREFILTER = /[Tt]iếp\s*tuyến[^.]{0,30}?tại\s+(?:điểm\s+)?[A-Z][^.]{0,40}?cắt|Qua\s+(?:một\s+)?(?:điểm\s+)?[A-Z][^.]{0,40}?tiếp\s*tuyến[^.]{0,20}?cắt/u;
 const CIRCLE_REF = /đường\s*tròn\s*(?:tâm\s+)?\(?\s*([A-Z])(?:\s*[;,]\s*[Rr])?\s*\)?/u;
 const UNNAMED_DIAMETER = /(?:nửa\s+)?đường\s*tròn\s+đường\s*kính\s+([A-Z])([A-Z])(?![A-Z])/u;
 
@@ -19,9 +19,9 @@ const UNNAMED_DIAMETER = /(?:nửa\s+)?đường\s*tròn\s+đường\s*kính\s+(
 // lượt)? (ở|tại) C, D" → tiếp tuyến TẠI M (M trên đường tròn) cắt 2 tia → C,D.
 // group1=M(tiếp điểm), 2+3=2 đường/tia bị cắt, 4+5=2 giao điểm.
 const QUA_RE = new RegExp(
-  'Qua\\s+(?:điểm\\s+)?([A-Z])(?!\\p{L})[^.]{0,40}?tiếp\\s*tuyến\\s+(?:thứ\\s+(?:ba|3|hai|2)\\s+)?cắt\\s+' +
+  'Qua\\s+(?:một\\s+)?(?:điểm\\s+)?([A-Z])(?!\\p{L})[^.]{0,40}?tiếp\\s*tuyến\\s+(?:thứ\\s+(?:ba|3|hai|2)\\s+)?cắt\\s+' +
     '(?:các\\s+)?(?:(?:các\\s+)?tiếp\\s*tuyến\\s+|đường\\s*thẳng\\s+|cạnh\\s+)?' +
-    '([A-Z](?:[A-Z]|[xyzt]))\\s*(?:,|và)\\s*([A-Z](?:[A-Z]|[xyzt]))(?!\\p{L})(?:\\s+kéo\\s+dài)?\\s+(?:lần\\s*lượt\\s+)?(?:ở|tại)\\s+([A-Z])\\s*(?:,|và)\\s*(?:(?:tại|ở)\\s+)?([A-Z])(?![A-Z])',
+    '([A-Z](?:[A-Z]|[xyzt]))\\s*(?:,|và)\\s*([A-Z](?:[A-Z]|[xyzt]))(?!\\p{L})(?:\\s+kéo\\s+dài)?\\s+(?:lần\\s*lượt\\s+)?(?:ở|tại)\\s+(?:(?:các\\s+)?điểm\\s+)?([A-Z])\\s*(?:,|và)\\s*(?:(?:tại|ở)\\s+)?([A-Z])(?![A-Z])',
   'gu',
 );
 
@@ -30,7 +30,7 @@ const QUA_RE = new RegExp(
 const SINGLE_RE = new RegExp(
   '[Tt]iếp\\s*tuyến\\s+(?:của\\s+[^.]{0,14}?\\s+)?tại\\s+(?:điểm\\s+)?([A-Z])(?!\\p{L})' +
     '(?:\\s+của\\s+[^.]{0,14}?)?\\s+cắt\\s+(?:tia\\s+|đường\\s*thẳng\\s+|cạnh\\s+|đoạn\\s+)?' +
-    '([A-Z]{1,2})(?![A-Z])\\s+(?:tại|ở)\\s+([A-Z])(?![A-Z])',
+    '([A-Z]{1,2})(?![A-Z])\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])',
   'gu',
 );
 
@@ -43,7 +43,7 @@ const RE = new RegExp(
     '(?:\\s+(?:của|với)\\s+[^.]{0,14}?)?\\s+cắt\\s+(?:các\\s+)?(?:(?:các\\s+)?tiếp\\s*tuyến\\s+|đường\\s*thẳng\\s+|cạnh\\s+)?' +
     // Đường bị cắt: cặp đỉnh "AD" HOẶC token tia đã đặt tên "Ax"/"By" (1 HOA +
     // x/y/z/t). tangentRay dựng tia Ax,By (priority 63>62) trước → giao hợp lệ.
-    '([A-Z](?:[A-Z]|[xyzt]))\\s*(?:,|và)\\s*([A-Z](?:[A-Z]|[xyzt]))(?!\\p{L})(?:\\s+kéo\\s+dài)?\\s+(?:lần\\s*lượt\\s+)?(?:tại|ở)\\s+([A-Z])\\s*(?:,|và)\\s*(?:(?:tại|ở)\\s+)?([A-Z])(?![A-Z])',
+    '([A-Z](?:[A-Z]|[xyzt]))\\s*(?:,|và)\\s*([A-Z](?:[A-Z]|[xyzt]))(?!\\p{L})(?:\\s+kéo\\s+dài)?\\s+(?:(?:lần\\s*lượt|theo\\s+thứ\\s+tự)\\s+)?(?:tại|ở)\\s+(?:(?:các\\s+)?điểm\\s+)?([A-Z])\\s*(?:,|và)\\s*(?:(?:tại|ở)\\s+)?([A-Z])(?![A-Z])',
   'gu',
 );
 

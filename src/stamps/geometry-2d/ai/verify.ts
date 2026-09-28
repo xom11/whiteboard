@@ -136,6 +136,7 @@ function constraintKey(c: AddPointIntentT['constraint']): string {
     case 'angleBisectorFoot':   return `angleBisectorFoot:${c.from}:${c.onLine}`;
     case 'externalAngleBisectorFoot': return `externalAngleBisectorFoot:${c.from}:${c.onLine}`;
     case 'arcMidpoint':         return `arcMidpoint:${c.circle}:${c.a}:${c.b}:${c.notContaining}`;
+    case 'onArc':               return `onArc:${c.circle}:${c.a}:${c.b}:${c.mode}:${c.ref ?? ''}:${c.t ?? ''}`;
     case 'reflectPoint':        return `reflectPoint:${c.of}:${c.through}`;
     case 'reflectLine':         return `reflectLine:${c.of}:${c.through}`;
     case 'excenter':            return `excenter:${c.of.join(',')}:${c.opposite}`;

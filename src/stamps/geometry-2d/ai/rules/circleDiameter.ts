@@ -100,7 +100,35 @@ function parseAll(text: string): Parsed[] {
   });
 }
 
-function intentsFor(p: Parsed) {
+/**
+ * Đỉnh tam giác NỘI TIẾP đường tròn tâm `center` ("tam giác ABC … nội tiếp (đường
+ * tròn)? (O)|tâm O"). "… nội tiếp (O) đường kính AD": (O) là đường tròn NGOẠI TIẾP
+ * (circleTriangle dựng qua 3 đỉnh) — đường kính AD chỉ thêm điểm D đối tâm của A.
+ * Dựng lại (O) = đường tròn đường kính AD với A, D tự do thì O không còn là tâm
+ * ngoại tiếp (B, C nằm ngoài đường tròn).
+ */
+function dinhNoiTiep(problem: string, center: string): Set<string> {
+  const c = escapeRe(center);
+  const re = new RegExp(
+    `tam\\s*giác\\s+(?:(?:nhọn|vuông|cân|đều|tù)\\s+)?([A-Z])([A-Z])([A-Z])(?![A-Z])[^.]{0,60}?nội\\s*tiếp\\s+(?:trong\\s+)?(?:đường\\s*tròn\\s*)?(?:\\(\\s*${c}\\s*[)\\s;,]|tâm\\s+${c}(?![\\p{L}\\d'′]))`,
+    'gu',
+  );
+  const out = new Set<string>();
+  for (const m of problem.matchAll(re)) { out.add(m[1]); out.add(m[2]); out.add(m[3]); }
+  return out;
+}
+
+function intentsFor(p: Parsed, problem = '') {
+  const dinh = dinhNoiTiep(problem, p.center);
+  const aIn = dinh.has(p.a);
+  const bIn = dinh.has(p.b);
+  if (aIn !== bIn) {
+    const [goc, doiTam] = aIn ? [p.a, p.b] : [p.b, p.a];
+    return [
+      addPoint(doiTam, { kind: 'reflectPoint', of: goc, through: p.center }),
+      connect(p.a, p.b, 'segment'),
+    ];
+  }
   return [
     addPoint(p.a, { kind: 'free' }),
     addPoint(p.b, { kind: 'free' }),
@@ -131,7 +159,7 @@ export const circleDiameterRule: LanguageRule = {
         out.push({
           ruleId: 'circle-diameter',
           clauseIds: claim.length > 0 ? claim : ctx.clauses.map((c) => c.id),
-          intents: intentsFor(p),
+          intents: intentsFor(p, ctx.problem),
         });
       }
     }
@@ -146,7 +174,7 @@ export const circleDiameterRule: LanguageRule = {
         out.push({
           ruleId: 'circle-diameter',
           clauseIds: [c.id],
-          intents: intentsFor(p),
+          intents: intentsFor(p, ctx.problem),
         });
       }
     }
@@ -165,7 +193,7 @@ export const circleDiameterRule: LanguageRule = {
       out.push({
         ruleId: 'circle-diameter',
         clauseIds: claim.length > 0 ? claim : [ctx.clauses[0]?.id ?? 0],
-        intents: intentsFor(p),
+        intents: intentsFor(p, ctx.problem),
       });
     }
 
@@ -184,7 +212,7 @@ export const circleDiameterRule: LanguageRule = {
       out.push({
         ruleId: 'circle-diameter',
         clauseIds: claim.length > 0 ? claim : [ctx.clauses[0]?.id ?? 0],
-        intents: intentsFor(p),
+        intents: intentsFor(p, ctx.problem),
       });
     }
 

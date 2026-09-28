@@ -59,11 +59,15 @@ const THUOC_CUNG_NHO = /([A-Z])(?![A-Z])\s+(?:thuộc|nằm\s+trên)\s+cung\s+nh
 // "tia AC nằm giữa (hai tia) AD và AO" ⇒ phía tiếp điểm D.
 const TIA_NAM_GIUA = /tia\s+[A-Z]{2}\s+nằm\s+giữa\s+(?:hai\s+tia\s+)?[A-Z]([A-Z])\s+và\s+[A-Z]{2}/u;
 
+// "A và O nằm khác phía so với đường thẳng EK" (O tâm) ⇒ cát tuyến chắn giữa A và
+// tâm ⇒ nằm về phía tiếp điểm A.
+const KHAC_PHIA_TAM = /([A-Z])(?![A-Z])\s+và\s+[A-Z](?![A-Z])\s+nằm\s+(?:ở\s+)?(?:hai\s+phía|khác\s+phía)/u;
+
 /** +1 / −1: nửa mặt phẳng (bờ AO) chứa cát tuyến. Không chỉ định ⇒ −1. */
 function phiaCatTuyen(problem: string): 1 | -1 {
   const tt = TIEP_TUYEN_HAI.exec(problem);
   if (!tt) return -1;
-  const t = THUOC_CUNG_NHO.exec(problem)?.[1] ?? TIA_NAM_GIUA.exec(problem)?.[1];
+  const t = THUOC_CUNG_NHO.exec(problem)?.[1] ?? TIA_NAM_GIUA.exec(problem)?.[1] ?? KHAC_PHIA_TAM.exec(problem)?.[1];
   if (t === tt[1]) return 1;
   if (t === tt[2]) return -1;
   return -1;
@@ -114,7 +118,10 @@ export const secantRule: LanguageRule = {
       LINE_THROUGH.lastIndex = 0;
       for (const m of c.text.matchAll(LINE_THROUGH)) {
         const circle = m[2] ?? fallbackCircle;
-        const intents = secantIntents(m[1], m[3], m[4], circle, theta);
+        // "cắt (O) tại E và D sao cho KD < KE" / "D nằm giữa K và E" ⇒ D là giao gần.
+        const [ext, p, q] = [m[1], m[3], m[4]];
+        const nguoc = new RegExp(`${ext}${q}\\s*<\\s*${ext}${p}(?![A-Z])|${ext}${p}\\s*>\\s*${ext}${q}(?![A-Z])|${q}\\s+(?:nằm|ở)\\s+giữa\\s+${ext}\\s+và\\s+${p}(?![A-Z])`, 'u').test(c.text);
+        const intents = nguoc ? secantIntents(ext, q, p, circle, theta) : secantIntents(ext, p, q, circle, theta);
         if (intents) {
           out.push({ ruleId: 'secant', clauseIds: [c.id], intents });
           next();
