@@ -24,8 +24,18 @@ const TRI_G =
 // Tên ĐỨNG TRƯỚC: "ABC là tam giác (vuông|cân|đều)? …" — variant suy từ window
 // SAU "tam giác" (vd "ABC là tam giác vuông tại A" → window "vuông tại A").
 const TRI_BEFORE_G = /(?<![A-Z])([A-Z])([A-Z])([A-Z])(?![A-Z])\s+là\s+tam\s*giác/gu;
-const RIGHT_AT = /vuông\s+tại\s+([A-Z])(?![A-Za-z])/u;
-const ISO_AT = /cân\s+tại\s+([A-Z])(?![A-Za-z])/u;
+// "tại A" | "ở A" | "đỉnh A" (lớp 7: "tam giác ABC cân đỉnh A", "vuông ở A") — trước
+// đây chỉ nhận "tại", các cách viết kia rơi về tam giác thường (hình SAI im lặng).
+const RIGHT_AT = /vuông\s+(?:tại|ở|đỉnh)\s+([A-Z])(?![A-Za-z])/u;
+const ISO_AT = /cân\s+(?:tại|ở|đỉnh)\s+([A-Z])(?![A-Za-z])/u;
+// "vuông cân tại A": vừa vuông vừa cân — không có variant riêng; dựng cân tại A với
+// toạ độ tường minh cho góc đỉnh = 90°.
+const RIGHT_ISO_AT = /vuông\s+cân\s+(?:tại|ở|đỉnh)\s+([A-Z])(?![A-Za-z])/u;
+const RIGHT_ISO_COORDS: ReadonlyArray<readonly [readonly [number, number], readonly [number, number], readonly [number, number]]> = [
+  [[0, 2], [-2, 0], [2, 0]], // đỉnh = labels[0]
+  [[0, 0], [2, 2], [4, 0]], // đỉnh = labels[1]
+  [[0, 0], [4, 0], [2, 2]], // đỉnh = labels[2]
+];
 // LƯU Ý: \b của JS dựa trên ASCII word-char nên KHÔNG khớp quanh ký tự Việt
 // ("đ","ề"…). Dùng lookaround \p{L} để chặn match giữa từ dài hơn.
 const EQUILATERAL = /(?<!\p{L})đều(?!\p{L})/u;
@@ -281,6 +291,14 @@ export const triangleRule: LanguageRule = {
             const thales = thalesIntents(hit.labels, rightIdx, circleName, window);
             if (thales) return thales;
           }
+        }
+        // Vuông cân: cân tại X với góc đỉnh 90° (toạ độ tường minh).
+        const vc = hit.lang === 'vi' ? RIGHT_ISO_AT.exec(window) : null;
+        const vcIdx = vc ? hit.labels.indexOf(vc[1]) : -1;
+        if (vcIdx >= 0 && variant === ISO_BY_IDX[vcIdx]) {
+          const xyz = RIGHT_ISO_COORDS[vcIdx];
+          const coords = Object.fromEntries(hit.labels.map((l, i) => [l, xyz[i]]));
+          return [drawShape('triangle', hit.labels, variant, coords)];
         }
         // Số đo đề cho ("AB = 4 cm, AC = 8 cm") ⇒ đặt đỉnh đúng tỉ lệ thay tam giác mẫu.
         const theoCanh =
