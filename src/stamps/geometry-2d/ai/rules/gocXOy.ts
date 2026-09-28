@@ -23,7 +23,7 @@ import type { IntentT } from '../intent';
 import { addPoint, connect, drawLine } from './_shared';
 
 // Tính từ đứng trước ("góc nhọn xOy") hoặc sau ("góc xOy nhọn").
-const GOC = /[Cc]ho\s+(?:một\s+)?góc\s+(?:(nhọn|vuông|tù)\s+)?([a-z])([A-Z])([a-z])(?![\p{L}\d'′])(?:\s+(nhọn|vuông|tù)(?!\p{L}))?/u;
+const GOC = /(?:[Cc]ho|[Vv]ẽ)\s+(?:một\s+)?góc\s+(?:(nhọn|vuông|tù)\s+)?([a-z])([A-Z])([a-z])(?![\p{L}\d'′])(?:\s+(nhọn|vuông|tù)(?!\p{L}))?/u;
 const SO_DO = /^\s*(?:\(\s*)?(?:=|bằng|có\s+số\s+đo(?:\s+bằng)?)\s*(\d{1,3})\s*(?:°|độ|o(?!\p{L}))/u;
 
 const R = 8; // độ dài tia vẽ
@@ -263,7 +263,8 @@ export const gocXOyRule: LanguageRule = {
       'u',
     );
     const chan = (from: string, foot: string, tia: string) => {
-      if (!known.has(from) || known.has(foot) || !k.tia.has(tia) || from === foot) return false;
+      // from = O: "OA ⊥ Ox" là tia vuông góc tại đỉnh, không phải chân vuông góc (≡ O).
+      if (!known.has(from) || known.has(foot) || !k.tia.has(tia) || from === foot || from === o) return false;
       intents.push(addPoint(foot, { kind: 'perpFoot', from, onLine: `${o}${tia}` }), connect(from, foot, 'segment'));
       known.add(foot);
       return true;
@@ -377,6 +378,58 @@ export const gocXOyRule: LanguageRule = {
         if (!ok || known.has(ten)) continue;
         intents.push(addPoint(ten, { kind: 'angleBisectorFoot', from: o, onLine: `${p}${q}` }), connect(o, ten, 'segment'), connect(p, q, 'segment'));
         known.add(ten);
+        claimed.add(c.id);
+      }
+    }
+
+    // ── Góc ở vị trí đặc biệt (lớp 7, KNTT bài 8) ──
+    // Hướng (radian) của mọi tia/điểm đã biết xuất phát từ O.
+    const huong = new Map<string, number>(k.tia);
+    for (const [tia, ds] of Object.entries(onRay)) for (const d of ds) huong.set(d, k.tia.get(tia)!);
+    const themTia = (ten: string, ang: number, laTiaThuong: boolean) => {
+      huong.set(ten, ang);
+      if (laTiaThuong) k.tia.set(ten, ang);
+      intents.push(addPoint(ten, { kind: 'free', at: xy(ang, laTiaThuong ? R : R * 0.6) }), connect(o, ten, 'ray'));
+      if (!laTiaThuong) known.add(ten);
+    };
+    // "(Vẽ) tia Om là tia đối của tia Ox"
+    const TIA_DOI = new RegExp(String.raw`(?:tia\s+)?${o}([a-z])\s+là\s+tia\s+đối\s+của\s+tia\s+${o}([a-z])(?![\p{L}\d'′])`, 'u');
+    // "bên ngoài (của) góc vẽ hai tia OA và OB sao cho OA ⊥ Ox, OB ⊥ Oy"
+    const NGOAI_VG = new RegExp(
+      String.raw`bên\s+ngoài\s+(?:của\s+)?góc[^.]{0,20}?vẽ\s+(?:hai\s+)?tia\s+${o}([A-Z])\s+và\s+${o}([A-Z])\s+sao\s+cho\s+${o}([A-Z])\s*(?:⊥|vuông\s*góc\s+với)\s*${o}([a-z])\s*(?:,|và)\s*${o}([A-Z])\s*(?:⊥|vuông\s*góc\s+với)\s*${o}([a-z])(?![\p{L}\d'′])`,
+      'u',
+    );
+    // "OM là tia phân giác của góc xOy", "OM' là tia phân giác của góc AOB"
+    const PG_HOA = new RegExp(
+      String.raw`(?:tia\s+)?${o}([A-Z]'?)(?![\p{L}\d′])\s+là\s+(?:tia\s+)?phân\s*giác\s+(?:của\s+)?góc\s+([A-Za-z])${o}([A-Za-z])(?![\p{L}\d'′])`,
+      'gu',
+    );
+    for (const c of doan) {
+      const td = TIA_DOI.exec(c.text);
+      if (td && !huong.has(td[1]) && huong.has(td[2])) {
+        themTia(td[1], huong.get(td[2])! + Math.PI, true);
+        claimed.add(c.id);
+      }
+      const nv = NGOAI_VG.exec(c.text);
+      if (nv) {
+        const [, A, B, A2, t1, B2, t2] = nv;
+        const ngoai = (t: string) => (t === k.a ? -Math.PI / 2 : t === k.b ? k.theta + Math.PI / 2 : NaN);
+        if (A2 === A && B2 === B && A !== B && t1 !== t2 && !known.has(A) && !known.has(B) && Number.isFinite(ngoai(t1)) && Number.isFinite(ngoai(t2))) {
+          themTia(A, ngoai(t1), false);
+          themTia(B, ngoai(t2), false);
+          claimed.add(c.id);
+        }
+      }
+    }
+    for (const c of doan) {
+      for (const m of c.text.matchAll(PG_HOA)) {
+        const [, ten, u, v] = m;
+        if (known.has(ten) || !huong.has(u) || !huong.has(v)) continue;
+        const [a1, a2] = [huong.get(u)!, huong.get(v)!];
+        let d = a2 - a1;
+        while (d > Math.PI) d -= 2 * Math.PI;
+        while (d < -Math.PI) d += 2 * Math.PI;
+        themTia(ten, a1 + d / 2, false);
         claimed.add(c.id);
       }
     }

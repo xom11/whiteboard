@@ -132,6 +132,24 @@ describe('gocXOy — đề xuất phát từ góc xOy (tia tên chữ thường)
     expect(goc(p.A, p.O, p.C)).toBeCloseTo(80, 6);
   });
 
+  it('lop7 #1 "Vẽ góc xOy có số đo bằng 60°. Vẽ tia Om là tia đối của tia Ox … tia Ot là tia phân giác": góc yOm = 120°, tOy = 30°', () => {
+    const p = toaDoHinh('Vẽ góc xOy có số đo bằng 60°. Vẽ tia Om là tia đối của tia Ox.\na) Gọi tên hai góc kề bù có trong hình vừa vẽ.\nb) Tính số đo góc yOm.\nc) Vẽ tia Ot là tia phân giác của góc xOy. Tính số đo các góc tOy và tOm.');
+    expect(goc(p.x, p.O, p.y)).toBeCloseTo(60, 9);
+    expect(goc(p.x, p.O, p.m)).toBeCloseTo(180, 6);
+    expect(goc(p.y, p.O, p.m)).toBeCloseTo(120, 6);
+    expect(goc(p.t, p.O, p.y)).toBeCloseTo(30, 6);
+  });
+
+  it('lop7 #5 "góc xOy = 150°, bên ngoài góc vẽ tia OA ⊥ Ox, OB ⊥ Oy; OM, OM\' phân giác xOy, AOB": OM, OM\' đối nhau', () => {
+    const p = toaDoHinh("Cho góc xOy = 150°, bên ngoài của góc vẽ hai tia OA và OB sao cho OA ⊥ Ox, OB ⊥ Oy. Gọi OM là tia phân giác của góc xOy và OM' là tia phân giác của góc AOB.");
+    expect(goc(p.A, p.O, p.x)).toBeCloseTo(90, 6);
+    expect(goc(p.B, p.O, p.y)).toBeCloseTo(90, 6);
+    // ngoài góc: A, y khác phía Ox
+    expect(p.A[1] * p.y[1]).toBeLessThan(0);
+    expect(goc(p.M, p.O, p["M'"])).toBeCloseTo(180, 6);
+    expect(goc(p.x, p.O, p.B)).toBeCloseTo(120, 6);
+  });
+
   it.each([
     ['không có góc chữ thường', 'Cho tam giác ABC. Trên tia AB lấy điểm D.'],
     ['số đo không hợp lệ', 'Cho góc xOy = 200°. Vẽ tia phân giác Oz của góc xOy.'],
