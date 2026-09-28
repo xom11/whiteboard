@@ -131,4 +131,20 @@ describe('lop10 — đề thật, đo hình', () => {
     const p = toaDoHinh(de);
     khop(p.O, tong([[0.5, p.A], [0.5, p.C]]));
   });
+
+  it('#79 "tam giác ABC nhọn (AB < AC)": hình phải có AB < AC (mẫu cũ AB > AC), vẫn nhọn', () => {
+    const p = toaDoHinh('Cho tam giác ABC nhọn (AB < AC) có M là trung điểm BC.');
+    expect(dist(p.A, p.B)).toBeLessThan(dist(p.A, p.C));
+    const [a, b, c] = [dist(p.B, p.C), dist(p.C, p.A), dist(p.A, p.B)];
+    expect(b * b + c * c).toBeGreaterThan(a * a);
+    expect(a * a + c * c).toBeGreaterThan(b * b);
+    expect(a * a + b * b).toBeGreaterThan(c * c);
+  });
+
+  it('#78 "Điểm M thuộc tia đối của tia CA": C nằm giữa A và M; D đối xứng B qua M', () => {
+    const p = toaDoHinh('Cho tam giác nhọn ABC nội tiếp đường tròn (O). Điểm M thuộc tia đối của tia CA (M ≠ C). Lấy D đối xứng với B qua M, AD cắt (O) tại điểm thứ hai là E. Đường tròn (ACD) cắt AB tại điểm thứ hai là F.');
+    expect(dist(p.A, p.C) + dist(p.C, p.M)).toBeCloseTo(dist(p.A, p.M), 9);
+    khop(p.M, tong([[0.5, p.B], [0.5, p.D]]));
+    expect(dist(p.O, p.E)).toBeCloseTo(dist(p.O, p.A), 9);
+  });
 });

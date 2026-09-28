@@ -167,6 +167,28 @@ function laTamGiacCon(problem: string, labels: readonly string[], viTri: number)
   return false;
 }
 
+// "(AB < AC)", "AB > AC" — bất đẳng thức cạnh đề cho. Tam giác mẫu 'any' có
+// AB = 5 > BC ≈ 4,24 > AC ≈ 3,61: đề "tam giác ABC nhọn (AB < AC)" vẽ ra NGƯỢC điều
+// kiện (thấy ngay khi nhìn hình). Hoán vị ba đỉnh mẫu (vẫn nhọn, không cân) cho tới
+// khi mọi bất đẳng thức đúng; không hoán vị nào đúng ⇒ giữ mẫu.
+const BAT_DANG = /(?<![A-Z])([A-Z])([A-Z])\s*([<>])\s*([A-Z])([A-Z])(?![A-Z])/gu;
+const MAU_ANY: readonly (readonly [number, number])[] = [[0, 0], [5, 0], [2, 3]];
+
+function theoBatDangThuc(problem: string, labels: readonly string[]): Record<string, readonly [number, number]> | undefined {
+  const ds = [...problem.matchAll(BAT_DANG)].filter((m) => [m[1], m[2], m[4], m[5]].every((x) => labels.includes(x)) && m[1] !== m[2] && m[4] !== m[5]);
+  if (ds.length === 0) return undefined;
+  const perms = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]];
+  for (const pm of perms) {
+    const xy: Record<string, readonly [number, number]> = {};
+    labels.forEach((l, i) => { xy[l] = MAU_ANY[pm[i]]; });
+    const d = (a: string, b: string) => Math.hypot(xy[a][0] - xy[b][0], xy[a][1] - xy[b][1]);
+    if (ds.every((m) => (m[3] === '<' ? d(m[1], m[2]) < d(m[4], m[5]) : d(m[1], m[2]) > d(m[4], m[5])))) {
+      return pm[0] === 0 && pm[1] === 1 ? undefined : xy; // mẫu gốc đã đúng ⇒ giữ nguyên
+    }
+  }
+  return undefined;
+}
+
 function variantFor(hit: TriHit, window: string): string {
   return hit.lang === 'en' ? variantForEn(hit, window) : variantForVi(hit, window);
 }
@@ -327,7 +349,7 @@ export const triangleRule: LanguageRule = {
         const theoCanh =
           toaDoTamGiacTheoCanh(hit.labels as [string, string, string], variant, doCanhDeCho(ctx.problem, hit.labels), goc, doTrungTuyenDeCho(ctx.problem, hit.labels)) ??
           (variant === 'any' ? toaDoTamGiacTuKhiTrungTrucCatCanh(ctx.problem, hit.labels as [string, string, string]) : undefined);
-        return [drawShape('triangle', hit.labels, variant, theoCanh)];
+        return [drawShape('triangle', hit.labels, variant, theoCanh ?? (variant === 'any' ? theoBatDangThuc(ctx.problem, hit.labels) : undefined))];
       });
 
       out.push({ ruleId: 'triangle', clauseIds: [c.id], intents });
