@@ -42,7 +42,7 @@ const TEN_THUOC = new RegExp(
 );
 //  (2) "Trên (các)? (đoạn|cạnh) AB (, AC)? lấy (lần lượt)? (các|hai)? (điểm)? M (, N)?"
 const TREN_LAY = new RegExp(
-  String.raw`[Tt]rên\s+(?:các\s+|hai\s+)?(?:${SEG_WORD}\s+)?${SEGS}\s*,?\s*(?:ta\s+)?lấy\s+(?:(?:lần\s*lượt|theo\s+thứ\s+tự)\s+)?(?:các\s+|hai\s+|ba\s+|một\s+)?(?:điểm\s+)?${NAMES}`,
+  String.raw`[Tt]rên\s+(?:các\s+|hai\s+)?(?:${SEG_WORD}\s+)?${SEGS}(?:\s+của\s+(?:tam\s+giác|tứ\s+giác|hình\s+\S+(?:\s+\S+)?)\s+[A-Z]{3,4}(?![A-Z]))?\s*,?\s*(?:ta\s+)?lấy\s+(?:(?:lần\s*lượt|theo\s+thứ\s+tự)\s+)?(?:các\s+|hai\s+|ba\s+|một\s+)?(?:điểm\s+)?${NAMES}`,
   'gu',
 );
 
@@ -148,7 +148,8 @@ export const pointRatioRule: LanguageRule = {
       }
 
       // (B) Hệ thức độ dài sau "sao cho" cho điểm trên ĐOẠN.
-      const sau = text.split(/sao\s+cho/u)[1];
+      // "sao cho" hoặc "thỏa mãn" ("Các điểm D, E thuộc cạnh BC thỏa mãn BD = DE = EC").
+      const sau = text.split(/sao\s+cho|th[oỏ][aả]\s+mãn/u)[1];
       if (sau && cho.length > 0 && !/vectơ/u.test(sau)) {
         const chuois: ReturnType<typeof docChuoiDoDai>[] = [];
         for (const m of sau.matchAll(/(?:^|,|;|\svà\s)/gu)) {
@@ -189,7 +190,7 @@ export const pointRatioRule: LanguageRule = {
       if (hong || intents.length === 0) continue;
       // Mọi điểm mới có chỗ chứa trong mệnh đề phải dựng được — thiếu một thì để
       // mệnh đề chưa phủ (rule khác / GV lo), không claim nửa vời.
-      if (cho.some((k) => !daDung.has(k.ten) && /sao\s+cho/u.test(text))) continue;
+      if (cho.some((k) => !daDung.has(k.ten) && /sao\s+cho|th[oỏ][aả]\s+mãn/u.test(text))) continue;
       out.push({ ruleId: 'pointRatio', clauseIds: [c.id], intents });
     }
     return out;

@@ -72,4 +72,24 @@ describe('lop10 — đề thật, đo hình', () => {
     cachDeu(p.K, p.B, p.C, p.X);
     cachDeu(p.L, p.P, p.A, p.B);
   });
+
+  it('#33 "Các điểm D, E thuộc cạnh BC thỏa mãn BD = DE = EC" ⇒ chia ba đều (trước: D, E đặt tự do)', () => {
+    const p = toaDoHinh('Cho tam giác ABC. Các điểm D, E thuộc cạnh BC thỏa mãn BD = DE = EC. Giả sử vectơ AB = vectơ a, vectơ AC = vectơ b. Biểu diễn các vectơ BC, BD, BE, AD, AE theo vectơ a, vectơ b.');
+    khop(p.D, tong([[2 / 3, p.B], [1 / 3, p.C]]));
+    khop(p.E, tong([[1 / 3, p.B], [2 / 3, p.C]]));
+  });
+
+  it('#15 "Trên cạnh BC của tam giác ABC lấy điểm M sao cho MB = 3MC"', () => {
+    const p = toaDoHinh('Trên cạnh BC của tam giác ABC lấy điểm M sao cho MB = 3MC. a) Tìm mối liên hệ giữa hai vectơ MB và MC. b) Biểu thị vectơ AM theo hai vectơ AB và AC.');
+    expect(dist(p.M, p.B)).toBeCloseTo(3 * dist(p.M, p.C), 9);
+    expect(dist(p.M, p.B) + dist(p.M, p.C)).toBeCloseTo(dist(p.B, p.C), 9);
+  });
+
+  it('#47 "độ dài ba cạnh AB, BC, CA lần lượt là 15, 18, 27" ⇒ đúng tỉ lệ', () => {
+    const p = toaDoHinh('Cho tam giác ABC có trọng tâm G và độ dài ba cạnh AB, BC, CA lần lượt là 15, 18, 27. a) Tính diện tích và bán kính đường tròn nội tiếp tam giác ABC.');
+    const k = dist(p.A, p.B) / 15;
+    expect(dist(p.B, p.C) / k).toBeCloseTo(18, 6);
+    expect(dist(p.C, p.A) / k).toBeCloseTo(27, 6);
+    khop(p.G, tong([[1 / 3, p.A], [1 / 3, p.B], [1 / 3, p.C]]));
+  });
 });

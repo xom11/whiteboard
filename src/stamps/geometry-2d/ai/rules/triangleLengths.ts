@@ -21,6 +21,7 @@ type Pt = readonly [number, number];
 const NUM = String.raw`(\d+(?:[.,]\d+)?)?\s*(a(?![\p{L}\d]))?\s*(?:√\s*(\d+(?:[.,]\d+)?))?\s*(a(?![\p{L}\d]))?\s*(?:\/\s*(\d+))?\s*(?:cm|dm|mm|m)?(?![\p{L}\d])`;
 // Chuỗi "AB = AC = 5" → mọi cặp đỉnh trước số đo đều nhận số đo đó.
 const LEN = new RegExp(String.raw`(?<![A-Z])((?:[A-Z][A-Z]\s*=\s*)+)` + NUM, 'gu');
+const LAN_LUOT = /(?<![A-Z])((?:[A-Z]{2}\s*(?:,|và)\s*)+[A-Z]{2})(?![A-Z])\s+(?:lần\s*lượt|theo\s+thứ\s+tự)\s+(?:là|bằng)\s+((?:\d+(?:,\d+)?(?:\s*(?:,\s+|;|và)\s*))+\d+(?:,\d+)?)(?![\d,])/gu;
 // Ký hiệu cạnh chuẩn của tam giác ABC: a = BC, b = CA, c = AB ("a = 7, b = 8, c = 5").
 const SIDE_ABC = new RegExp(String.raw`(?<![\p{L}\d])([abc])\s*=\s*` + NUM, 'gu');
 // Số đo góc: "góc A = 60°", "góc BAC = 120°", "∠B = 45°", "Â = 60°", "góc C bằng 30 độ".
@@ -55,6 +56,16 @@ export function doCanhDeCho(problem: string, labels: readonly string[]): Map<str
       if (!tap.has(cap[0]) || !tap.has(cap[1]) || cap[0] === cap[1]) continue;
       raw.push({ k: key(cap[0], cap[1]), ...gt });
     }
+  }
+  // "độ dài ba cạnh AB, BC, CA lần lượt là 15, 18, 27" — zip 1-1 (số thập phân "3,5"
+  // không có khoảng trắng sau dấu phẩy nên tách được bằng ", " / ";" / "và").
+  for (const m of problem.matchAll(LAN_LUOT)) {
+    const caps = m[1].split(/\s*,\s*|\s+và\s+/u);
+    const vals = m[2].trim().split(/,\s+|\s*;\s*|\s+và\s+/u).map((x) => so(x.trim()));
+    if (caps.length !== vals.length || vals.some((v) => !(v > 0))) continue;
+    caps.forEach((cap, i) => {
+      if (tap.has(cap[0]) && tap.has(cap[1]) && cap[0] !== cap[1]) raw.push({ k: key(cap[0], cap[1]), v: vals[i], unit: '' });
+    });
   }
   if (tap.size === 3 && ['A', 'B', 'C'].every((x) => tap.has(x))) {
     const doi: Record<string, string> = { a: 'BC', b: 'AC', c: 'AB' };
