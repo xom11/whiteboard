@@ -15,6 +15,7 @@ import { angleBisectorAngleRule } from './angleBisectorAngle';
 import { centersRule } from './centers';
 import { concurrencyCenterRule } from './concurrencyCenter';
 import { perpFootRule } from './perpFoot';
+import { barePerpFootRule } from './barePerpFoot';
 import { circleRadiusRule } from './circleRadius';
 import { circleTriangleRule } from './circleTriangle';
 import { tangentFromExtRule } from './tangentFromExt';
@@ -142,6 +143,7 @@ const RULES: readonly LanguageRule[] = [
   centersRule,
   concurrencyCenterRule,
   perpFootRule,
+  barePerpFootRule,
   circleRadiusRule,
   circleTriangleRule,
   tangentFromExtRule,
