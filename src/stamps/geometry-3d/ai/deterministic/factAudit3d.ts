@@ -11,6 +11,7 @@
 //   - 'metric'    : độ dài/đều/cân (tam giác đều, chóp đều có cạnh bên bằng nhau, lập phương…)
 import type { State } from '../../../../core/scene';
 import { constraintToWorld } from '../../../../core/scene/kinds/constraint3d-math';
+import { normalizeProblem3d } from './normalize3d';
 
 export type Vec3 = [number, number, number];
 
@@ -396,7 +397,7 @@ function solidKindFacts(problem: string, solid: SolidInfo | null): Fact3D[] {
 
 /** Rút mọi sự kiện kiểm được từ đề. */
 export function extractFacts3d(problem: string): Fact3D[] {
-  const p = problem.normalize('NFC').replace(/\s+/gu, ' ');
+  const p = normalizeProblem3d(problem).replace(/\s+/gu, ' ');
   const solid = parseSolid(p);
   return [
     ...lineperpPlaneFacts(p, solid),

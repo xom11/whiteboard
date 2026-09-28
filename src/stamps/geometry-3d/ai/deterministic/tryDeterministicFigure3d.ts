@@ -5,6 +5,7 @@ import { runDeterministicIntents3d } from './runDeterministicIntents3d';
 import { intentToScene3d } from '../intentToScene3d';
 import { verifyFigure3d } from '../verify3d';
 import { allNamedEntities3DPresent } from './guards3d';
+import { normalizeProblem3d } from './normalize3d';
 
 export type Reason3D =
   | 'no-match'
@@ -22,7 +23,7 @@ export type TryResult3D =
  * intentToScene3d đã topo-sort nội bộ (Bundle 2), nên không cần retry topo ở đây.
  */
 export function tryDeterministicFigure3d(problemRaw: string): TryResult3D {
-  const problem = problemRaw.normalize('NFC'); // xem runDeterministicIntents3d (NFD → NFC)
+  const problem = normalizeProblem3d(problemRaw); // xem runDeterministicIntents3d (NFD → NFC)
   const det = runDeterministicIntents3d(problem);
   if (!det.ok) return { ok: false, reason: det.reason, coverage: det.coverage };
 

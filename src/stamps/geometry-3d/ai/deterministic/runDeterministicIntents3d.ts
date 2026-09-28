@@ -1,6 +1,7 @@
 import type { Intent3DT } from '../intent';
 import { segmentClauses3D, computeCoverage3D, type CoverageReport3D, type Clause3D } from './coverage3d';
 import { runRules3D } from '../rules/registry';
+import { normalizeProblem3d } from './normalize3d';
 
 function dedup(intents: Intent3DT[]): Intent3DT[] {
   const seen = new Set<string>();
@@ -23,7 +24,7 @@ export type RunDeterministicResult3D =
 export function runDeterministicIntents3d(problemRaw: string): RunDeterministicResult3D {
   // Chữ Việt dạng TỔ HỢP (NFD: "i" + dấu huyền rời — gặp khi copy từ PDF/web/macOS) làm MỌI regex
   // rule trượt ("hình" ≠ "hình"). Chuẩn hoá NFC một lần ở cửa vào.
-  const problem = problemRaw.normalize('NFC');
+  const problem = normalizeProblem3d(problemRaw);
   const clauses = segmentClauses3D(problem);
   const geo = clauses.filter((c) => c.hasGeometry);
 
@@ -53,7 +54,7 @@ export function tryPartial3d(problemRaw: string): {
   uncovered: Clause3D[];
   coverage: CoverageReport3D;
 } {
-  const problem = problemRaw.normalize('NFC');
+  const problem = normalizeProblem3d(problemRaw);
   const clauses = segmentClauses3D(problem);
   const geo = clauses.filter((c) => c.hasGeometry);
   const matches = runRules3D({ problem, clauses: geo });
