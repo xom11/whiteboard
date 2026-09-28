@@ -129,6 +129,8 @@ const CUNG_CHUA = /cung\s+([A-Z])([A-Z])(?![A-Z])\s*(?:\(\s*)?(không\s+chứa|c
 
 interface CungSpec { a: string; b: string; mode: 'minor' | 'major' | 'notContaining' | 'containing'; ref?: string }
 
+let NUA_DUONG_TRON = false;
+
 function cungCuaDiem(text: string, name: string): CungSpec | undefined {
   let spec: CungSpec | undefined;
   const chua = CUNG_CHUA.exec(text);
@@ -137,6 +139,10 @@ function cungCuaDiem(text: string, name: string): CungSpec | undefined {
   if (!spec && truoc) spec = { a: truoc[2], b: truoc[3], mode: truoc[1] === 'nhỏ' ? 'minor' : 'major' };
   const sau = CUNG_TINH_TU_SAU.exec(text);
   if (!spec && sau) spec = { a: sau[1], b: sau[2], mode: sau[3] === 'nhỏ' ? 'minor' : 'major' };
+  // "cung AC" trơn trên NỬA đường tròn: mọi cung giữa hai điểm của nửa đường tròn
+  // đều là cung nhỏ nằm trong nửa đó.
+  const tron = /cung\s+([A-Z])([A-Z])(?![A-Z])(?!\s*(?:nhỏ|lớn|\(?\s*(?:không\s+)?chứa))/u.exec(text);
+  if (!spec && tron && NUA_DUONG_TRON) spec = { a: tron[1], b: tron[2], mode: 'minor' };
   if (!spec) return undefined;
   const ten = [spec.a, spec.b, spec.ref].filter(Boolean);
   if (spec.a === spec.b || ten.includes(name) || (spec.ref && (spec.ref === spec.a || spec.ref === spec.b))) return undefined;
@@ -181,6 +187,7 @@ export const onCirclePointRule: LanguageRule = {
   languages: ['vi'],
   patterns: [PREFILTER],
   match(ctx) {
+    NUA_DUONG_TRON = /nửa\s+đường\s*tròn/u.test(ctx.problem);
     const circle = resolveCircle(ctx.problem);
     const out: RuleMatch[] = [];
     let theta = 1.2;

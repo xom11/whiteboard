@@ -50,3 +50,23 @@ b) Đường thẳng AH cắt BC tại F và cắt đường tròn (O) tại đi
     expect(vuong(p.A, p.F, p.B, p.C)).toBe(true);
   });
 });
+
+describe('hsg — hai đường tròn', () => {
+  it('#131: "I là trung điểm của OO\'"; qua A vẽ đường ⊥ IA cắt (O) tại C, (O\') tại D ⇒ AC = AD', () => {
+    const p = toaDoHinh("Cho hai đường tròn (O) và (O') cắt nhau tại A, B. Gọi I là trung điểm của OO'. Qua A vẽ đường thẳng vuông góc với IA cắt (O) tại C và cắt (O') tại D. So sánh AC và AD.");
+    const O2 = p["O'"];
+    expect(dist(p.I, p.O)).toBeCloseTo(dist(p.I, O2), 9);
+    expect(thuocDoan(p.I, p.O, O2, 1e-7)).toBe(true);
+    expect(khac(p.C, p.A) && khac(p.D, p.A)).toBe(true);
+    expect(trenDuongTron(p.C, p.O, dist(p.O, p.A)) && trenDuongTron(p.D, O2, dist(O2, p.A))).toBe(true);
+    expect(dist(p.A, p.C)).toBeCloseTo(dist(p.A, p.D), 7);
+  });
+
+  it('#141: "Từ A kẻ đường thẳng song song với MB, cắt (O) tại C. MC cắt (O) tại P" — P ≠ C', () => {
+    const p = toaDoHinh('Cho 2 điểm A và B thuộc đường tròn (O). Các tiếp tuyến của đường tròn tại A và B cắt nhau tại M. Từ A kẻ đường thẳng song song với MB, cắt (O) tại C. MC cắt (O) tại P. Các tia AP và MB cắt nhau tại K. a) Chứng minh MK² = AK.PK. b) Chứng minh MK = KB.');
+    const R = dist(p.O, p.A);
+    expect(trenDuongTron(p.C, p.O, R) && trenDuongTron(p.P, p.O, R)).toBe(true);
+    expect(khac(p.P, p.C) && thuocDoan(p.P, p.M, p.C, 1e-7)).toBe(true);
+    expect(dist(p.M, p.K)).toBeCloseTo(dist(p.K, p.B), 7); // điều đề bắt chứng minh
+  });
+});

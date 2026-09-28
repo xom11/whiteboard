@@ -13,7 +13,8 @@ const MIDPOINT = /trung\s*điểm/u;
 //   | "M là trung điểm cạnh huyền BC" | "trung điểm đoạn thẳng AC"
 // Tên = ký tự HOA NGAY TRƯỚC cụm trung điểm (cục bộ quanh match, KHÔNG quét intro).
 const NAME_BEFORE_G = new RegExp(
-  `([A-Z])(?:['′]?)\\s+(?:là\\s+|=\\s+)?trung\\s*điểm\\s+(?:của\\s+)?${SIDE_PREFIX}([A-Z])([A-Z])(?!\\p{L})`,
+  // Đầu mút thứ hai có thể có dấu phẩy trên: "I là trung điểm của OO′" (hai tâm).
+  `([A-Z])(?:['′]?)\\s+(?:là\\s+|=\\s+)?trung\\s*điểm\\s+(?:của\\s+)?${SIDE_PREFIX}([A-Z])([A-Z])(['′]?)(?![\\p{L}'′])`,
   'gu',
 );
 
@@ -143,6 +144,13 @@ export const midpointRule: LanguageRule = {
         for (const m of c.text.matchAll(NAME_BEFORE_G)) {
           const tdIdx = c.text.indexOf('trung', m.index ?? 0);
           if (tdIdx >= 0) consumed.add(tdIdx);
+          if (m[4]) {
+            // "OO′": of = "OO'" (parseEnds tách "O" | "O'").
+            if (m[1] !== m[2]) {
+              out.push({ ruleId: 'midpoint', clauseIds: [c.id], intents: [addPoint(m[1], { kind: 'midpoint', of: `${m[2]}${m[3]}'` })] });
+            }
+            continue;
+          }
           emit(m[1], m[2] + m[3], c.id);
         }
 

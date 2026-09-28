@@ -78,10 +78,19 @@ export function boDinhNghiaChung(intents: IntentT[]): IntentT[] {
   for (const i of intents) {
     if (i.op === 'add-point' && !RANG_BUOC_CHUNG.has(i.constraint.kind)) cuThe.add(i.name);
   }
-  if (cuThe.size === 0) return intents;
-  return intents.filter(
-    (i) => !(i.op === 'add-point' && RANG_BUOC_CHUNG.has(i.constraint.kind) && cuThe.has(i.name)),
-  );
+  // Cùng là ràng buộc chung nhưng onCircle/onArc cụ thể hơn onSegment: "cát tuyến
+  // ACD (C nằm giữa A và D)" — secant đặt C trên (O) ở cung gần (đã bảo đảm C giữa
+  // A, D); onSegment AD thêm vào là vòng phụ thuộc C → AD → D → C.
+  const trenDuongTron = new Set<string>();
+  for (const i of intents) {
+    if (i.op === 'add-point' && (i.constraint.kind === 'onCircle' || i.constraint.kind === 'onArc')) trenDuongTron.add(i.name);
+  }
+  if (cuThe.size === 0 && trenDuongTron.size === 0) return intents;
+  return intents.filter((i) => {
+    if (i.op !== 'add-point') return true;
+    if (RANG_BUOC_CHUNG.has(i.constraint.kind) && cuThe.has(i.name)) return false;
+    return !(i.constraint.kind === 'onSegment' && trenDuongTron.has(i.name));
+  });
 }
 
 export function runDeterministicIntents(problem: string): DetIntentResult {
