@@ -104,6 +104,7 @@ import { rightAngleVertexCirclesRule } from './rightAngleVertexCircles';
 import { namedLineRule } from './namedLine';
 import { bisectorsMeetRule } from './bisectorsMeet';
 import { hexagonRule } from './hexagon';
+import { pointOnSideAtRatioRule } from './pointOnSideAtRatio';
 
 const RULES: readonly LanguageRule[] = [
   namedLineRule,
@@ -155,6 +156,7 @@ const RULES: readonly LanguageRule[] = [
   tangentAtRule,
   onSegmentPointRule,
   pointOnSideAtLengthRule,
+  pointOnSideAtRatioRule,
   diagonalsMeetNamedRule,
   intersectionDistribRule,
   lineCircleIntersectionRule,

@@ -21,6 +21,9 @@ export const GEOMETRY_KEYWORDS: readonly string[] = [
   'cung', 'chính giữa',
   // Segments / on-segment
   'đoạn', 'cạnh', 'thuộc', 'nằm giữa', 'nằm ngoài',
+  // "Trên đường chéo AC lấy điểm E sao cho AC = 3AE" (lớp 8) — thiếu thì clause bị coi
+  // văn xuôi, E không dựng mà hình vẫn báo đủ (silent-incomplete).
+  'đường chéo',
   // "nằm trên" — "Gọi C,D là các điểm nằm trên (O)" (vao10:12): clause chỉ có
   // "nằm trên (O)" (không "thuộc"/"đường tròn") bị coi văn xuôi → rule không
   // thấy clause (runDeterministicIntents chỉ feed clause hasGeometry) → điểm
