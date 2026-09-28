@@ -26,8 +26,13 @@ import { addPoint, drawLine } from './_shared';
 // nhau…" (phân phối), (c) mở "Qua/Từ <P> vẽ/kẻ đường thẳng ⊥ <L1> cắt đường thẳng
 // qua <P2> ⊥ <L2> tại <S>" (C28 — vế đầu điểm-qua đứng TRƯỚC "đường thẳng" + động
 // từ vẽ/kẻ). Đều có "vuông góc/⊥ … cắt đường thẳng qua …".
-const PREFILTER =
+const PREFILTER_QUA =
   /(?:[Đđ]ường\s*thẳng\s+qua|(?:Qua|qua|Từ|từ)\s+[A-Z][^.]{0,20}?(?:vẽ|kẻ|dựng)\s+đường\s*thẳng)\s*[^.]{0,30}?(?:vuông\s*góc|⊥)[^.]{0,40}?cắt\s+(?:[Đđ]ường\s*thẳng\s+qua|nhau)/u;
+// (d) dạng "vuông góc với AB TẠI B" (điểm nằm trên chính đường được vuông góc):
+//   "Các đường thẳng vuông góc với AB, AC tại M, N cắt nhau ở O"
+//   "Đường thẳng vuông góc với AB tại B cắt đường thẳng vuông góc với AC tại C ở D"
+//   "Các đường thẳng vuông góc với AB tại B, vuông góc với AC tại C cắt nhau tại D"
+const PREFILTER_TAI = /(?:vuông\s*góc|⊥)\s+(?:với\s+)?[A-Z]{2}[^.]{0,30}?tại\s+[A-Z][^.]{0,70}?cắt/u;
 
 const RE = new RegExp(
   '[Đđ]ường\\s*thẳng\\s+qua\\s+([A-Z])(?!\\p{L})\\s+(?:vuông\\s*góc|⊥)\\s+(?:với\\s+)?([A-Z])([A-Z])(?![A-Z])' +
@@ -60,11 +65,31 @@ const RE_DISTRIB = new RegExp(
   'gu',
 );
 
+const VG = '(?:vuông\\s*góc|⊥)\\s+(?:với\\s+)?';
+const L2 = '([A-Z])([A-Z])(?![A-Z])';
+const P1 = '([A-Z])(?![A-Z])';
+const TAI_O = '\\s+(?:tại|ở)\\s+(?:điểm\\s+)?([A-Z])(?![A-Z])';
+// "(Các)? đường thẳng ⊥ AB, AC (lần lượt)? tại M, N cắt nhau tại O" — zip AB↔M, AC↔N.
+const RE_TAI_DISTRIB = new RegExp(
+  `[Đđ]ường\\s*thẳng\\s+${VG}${L2}\\s*(?:,|và)\\s*${L2}\\s+(?:lần\\s*lượt\\s+|theo\\s*thứ\\s*tự\\s+)?tại\\s+${P1}\\s*(?:,|và)\\s*${P1}[^.]{0,20}?cắt\\s+nhau${TAI_O}`,
+  'gu',
+);
+// "Đường thẳng ⊥ AB tại B cắt đường thẳng ⊥ AC tại C (tại|ở) D"
+const RE_TAI_CAT = new RegExp(
+  `[Đđ]ường\\s*thẳng\\s+${VG}${L2}\\s+tại\\s+${P1}\\s+cắt\\s+(?:[Đđ]ường\\s*thẳng\\s+)?${VG}${L2}\\s+tại\\s+${P1}${TAI_O}`,
+  'gu',
+);
+// "Các đường thẳng ⊥ AB tại B, ⊥ AC tại C cắt nhau tại D"
+const RE_TAI_HAI_VE = new RegExp(
+  `[Đđ]ường\\s*thẳng\\s+${VG}${L2}\\s+tại\\s+${P1}\\s*(?:,|và)\\s*${VG}${L2}\\s+tại\\s+${P1}[^.]{0,20}?cắt\\s+nhau${TAI_O}`,
+  'gu',
+);
+
 export const twoPerpLinesMeetRule: LanguageRule = {
   id: 'twoPerpLinesMeet',
   priority: 49, // sau parallelPerp (dựng đường), trước/đủ để S tham chiếu 2 đường
   languages: ['vi'],
-  patterns: [PREFILTER],
+  patterns: [PREFILTER_QUA, PREFILTER_TAI],
   match(ctx) {
     const out: RuleMatch[] = [];
     const emit = (c: { id: number }, p1: string, l1: string, p2: string, l2: string, s: string) => {
@@ -91,6 +116,16 @@ export const twoPerpLinesMeetRule: LanguageRule = {
       RE_DRAW_FIRST.lastIndex = 0;
       for (const m of c.text.matchAll(RE_DRAW_FIRST)) {
         emit(c, m[1], m[2] + m[3], m[4], m[5] + m[6], m[7]);
+      }
+      // Dạng "⊥ … TẠI <điểm trên chính đường đó>".
+      for (const m of c.text.matchAll(RE_TAI_DISTRIB)) {
+        emit(c, m[5], m[1] + m[2], m[6], m[3] + m[4], m[7]);
+      }
+      for (const m of c.text.matchAll(RE_TAI_CAT)) {
+        emit(c, m[3], m[1] + m[2], m[6], m[4] + m[5], m[7]);
+      }
+      for (const m of c.text.matchAll(RE_TAI_HAI_VE)) {
+        emit(c, m[3], m[1] + m[2], m[6], m[4] + m[5], m[7]);
       }
       // Dạng phân phối: zip <P1>↔<L1>, <P2>↔<L2>.
       RE_DISTRIB.lastIndex = 0;
