@@ -24,6 +24,14 @@ export default defineConfig({
     'zod-to-json-schema',
   ],
   treeshake: true,
+  // Giữ ký tự tiếng Việt nguyên văn trong dist thay vì escape `\xHH`/`\uHHHH`.
+  // Bộ minify SWC của Next làm RƠI một dấu `\` trong template literal khi ngay
+  // trước nó là `\xHH` (`l\xE0\\s+` → `l\xe0\s+`): regex tiếng Việt của rule
+  // engine hỏng âm thầm ở bản production của consumer ("M là trung điểm BC" không
+  // khớp ⇒ hình thiếu M). scripts/check-dist-latin1-escape.mjs canh sau build.
+  esbuildOptions(options) {
+    options.charset = 'utf8';
+  },
   // "use client" được prepend qua scripts/inject-use-client.mjs (script lặp
   // toàn bộ dist/*.js + dist/*.mjs nên multi-entry tự động được handle).
 });

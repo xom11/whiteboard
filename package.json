@@ -67,7 +67,7 @@
     "src/core/scene/kinds/**"
   ],
   "scripts": {
-    "build": "tsup && node scripts/inject-use-client.mjs && node scripts/build-catalog.mjs",
+    "build": "tsup && node scripts/inject-use-client.mjs && node scripts/build-catalog.mjs && node scripts/check-dist-latin1-escape.mjs",
     "build:catalog": "node scripts/build-catalog.mjs",
     "dev": "tsup --watch --onSuccess \"node scripts/inject-use-client.mjs && node scripts/build-catalog.mjs\"",
     "test": "jest",
