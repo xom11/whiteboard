@@ -124,10 +124,15 @@ describe('lineCircleIntersectionRule', () => {
 });
 
 describe('lineCircleIntersection — "cắt (O) tại hai điểm M, N" (cả 2 nhánh)', () => {
-  it('M=branch0, N=branch1 intersection lineCircle', () => {
+  it('M = giao GẦN B (tia BD gặp (O) đầu tiên), N = giao còn lại', () => {
     const it = run('BD cắt (O) tại hai điểm M, N').flatMap((m) => m.intents) as any[];
-    expect(it.find((i) => i.name === 'M').constraint).toEqual({ kind: 'intersection', of: ['BD', 'O'], branch: 0 });
-    expect(it.find((i) => i.name === 'N').constraint).toEqual({ kind: 'intersection', of: ['BD', 'O'], branch: 1 });
+    expect(it.find((i) => i.name === 'M').constraint).toEqual({ kind: 'secondIntersection', line: 'BD', circle: 'O', other: 'B' });
+    expect(it.find((i) => i.name === 'N').constraint).toEqual({ kind: 'secondIntersection', line: 'BD', circle: 'O', other: 'M' });
+  });
+  it('"sao cho BN < BM" ⇒ đảo: N gần B', () => {
+    const it = run('BD cắt (O) tại hai điểm M, N sao cho BN < BM').flatMap((m) => m.intents) as any[];
+    expect(it.find((i) => i.name === 'N').constraint).toEqual({ kind: 'secondIntersection', line: 'BD', circle: 'O', other: 'B' });
+    expect(it.find((i) => i.name === 'M').constraint).toEqual({ kind: 'secondIntersection', line: 'BD', circle: 'O', other: 'N' });
   });
 });
 

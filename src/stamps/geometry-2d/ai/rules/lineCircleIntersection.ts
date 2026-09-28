@@ -76,8 +76,8 @@ const SINGLE_NAMED_CENTER = new RegExp(
 // 0/1). Khác SINGLE (1 giao thứ hai khi biết điểm chung): ở đây 2 đầu mút đều
 // chưa nằm trên (O) nên dùng intersection lineCircle 2 nhánh.
 const BOTH = new RegExp(
-  String.raw`([A-Z]{2})(?![A-Z])\s+cắt\s+` + CIRCLE +
-    String.raw`\s+(?:ở|tại)\s+(?:hai\s+|các\s+)?điểm\s+(?:phân\s*biệt\s+)?([A-Z])\s*(?:,|và)\s*([A-Z])(?![A-Z])`,
+  String.raw`([A-Z]{2})(?![A-Z])\s+cắt\s+(?:` + CIRCLE + String.raw`|(?:nửa\s+)?đường\s*tròn(?!\s*\())` +
+    String.raw`\s+(?:lần\s*lượt\s+)?(?:ở|tại)\s+(?:hai\s+|các\s+)?điểm\s+(?:phân\s*biệt\s+)?([A-Z])\s*(?:,|và)\s*([A-Z])(?![A-Z])`,
   'gu',
 );
 
@@ -297,12 +297,22 @@ export const lineCircleIntersectionRule: LanguageRule = {
       BOTH.lastIndex = 0;
       for (const m of c.text.matchAll(BOTH)) {
         const line = m[1];
-        const circle = m[2];
+        const rc = m[2] ? undefined : RESOLVE_CIRCLE_BARE.exec(ctx.problem);
+        const circle = m[2] ?? rc?.[1] ?? rc?.[2];
         const [x, y] = [m[3], m[4]];
-        if (x === y || line.includes(x) || line.includes(y)) continue;
+        if (!circle || x === y || line.includes(x) || line.includes(y)) continue;
+        // Thứ tự theo đề: tên đầu là giao GẦN đầu mút đầu của đường (line[0]) —
+        // "AO cắt (O) tại M, N" ⇒ M gần A — trừ khi đề nói ngược ("AN < AM",
+        // "N nằm giữa A và M"). Giao gần = tia line[0]→line[1] gặp đường tròn đầu
+        // tiên (secondIntersection với điểm chung không nằm trên đường tròn); giao
+        // xa = giao còn lại. Trước đây branch 0/1 của JSXGraph: thứ tự tuỳ ý.
+        const g = line[0];
+        const nguoc =
+          new RegExp(`${g}${y}\\s*<\\s*${g}${x}(?![A-Z])|${g}${x}\\s*>\\s*${g}${y}(?![A-Z])|${y}\\s+(?:nằm|ở)\\s+giữa\\s+${g}\\s+và\\s+${x}(?![A-Z])`, 'u').test(c.text);
+        const [gan, xa] = nguoc ? [y, x] : [x, y];
         intents.push(
-          addPoint(x, { kind: 'intersection', of: [line, circle], branch: 0 }),
-          addPoint(y, { kind: 'intersection', of: [line, circle], branch: 1 }),
+          addPoint(gan, { kind: 'secondIntersection', line, circle, other: g }),
+          addPoint(xa, { kind: 'secondIntersection', line, circle, other: gan }),
         );
       }
 
