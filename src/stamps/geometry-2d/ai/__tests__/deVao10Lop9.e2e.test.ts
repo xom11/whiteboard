@@ -145,3 +145,27 @@ describe('rule đơn lẻ', () => {
     expect(chay('Đường thẳng qua D vuông góc với AC cắt AB, BC lần lượt tại M, N')).toEqual([]);
   });
 });
+
+describe('đường vuông góc tại một điểm cắt HAI đường; dây vuông góc đường kính', () => {
+  it('#41 (Bình Thuận 2020): "Đường thẳng vuông góc với MN tại N cắt các tiếp tuyến Ax, By … lần lượt ở C và D"', () => {
+    const p = hinh(41);
+    expect(vuong(p.C, p.D, p.M, p.N) && thangHang(p.N, p.C, p.D)).toBe(true);
+    expect(vuong(p.A, p.C, p.A, p.B) && vuong(p.B, p.D, p.A, p.B)).toBe(true);
+    expect(cungPhia(p.A, p.B, p.C, p.N) && cungPhia(p.A, p.B, p.D, p.N)).toBe(true);
+  });
+  it('#50 (Tiền Giang 2021): "đường thẳng vuông góc với AB tại H cắt dây CB và tia AC lần lượt tại D và E"', () => {
+    const p = hinh(50);
+    expect(vuong(p.D, p.E, p.A, p.B) && thangHang(p.H, p.D, p.E)).toBe(true);
+    expect(thuocDoan(p.D, p.C, p.B, 1e-7)).toBe(true);
+    expect(thangHang(p.E, p.A, p.C)).toBe(true);
+    expect(dist(p.C, p.A)).toBeLessThan(dist(p.C, p.B));
+  });
+  it('#19 (Lạng Sơn 2022): "Dây cung MN vuông góc với AB, (AM < BM)"', () => {
+    const p = hinh(19);
+    const R = dist(p.O, p.A);
+    expect(trenDuongTron(p.M, p.O, R) && trenDuongTron(p.N, p.O, R)).toBe(true);
+    expect(vuong(p.M, p.N, p.A, p.B)).toBe(true);
+    expect(dist(p.A, p.M)).toBeLessThan(dist(p.B, p.M));
+    expect(vuong(p.K, p.H, p.A, p.B)).toBe(true);
+  });
+});

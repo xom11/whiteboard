@@ -87,6 +87,25 @@ export const perpChordAtFootRule: LanguageRule = {
           continue;
         }
 
+        // Nhánh (C): cả 2 đầu mút mới, KHÔNG nêu chân ("Dây cung MN vuông góc với AB,
+        // (AM < BM)") ⇒ M chạy trên (O), N đối xứng M qua AB. Đầu đường kính thứ nhất
+        // nằm ở góc 0 (circleDiameter) ⇒ θ = 1.0 gần nó, θ = 2.1 gần đầu kia.
+        if (freshEndpoints && collinear && !h && diam) {
+          const circle = center ? `${center}_c` : `k${diam[1]}${diam[2]}`;
+          const [a, b] = [diam[1], diam[2]];
+          const ganB = new RegExp(`(?:${b}${d}|${d}${b})\\s*<\\s*(?:${a}${d}|${d}${a})|(?:${a}${d}|${d}${a})\\s*>\\s*(?:${b}${d}|${d}${b})`, 'u').test(ctx.problem);
+          out.push({
+            ruleId: 'perpChordAtFoot',
+            clauseIds: [c.id],
+            intents: [
+              addPoint(d, { kind: 'onCircle', circle, theta: ganB ? 2.1 : 1.0 }),
+              addPoint(e, { kind: 'reflectLine', of: d, through: line }),
+              connect(d, e, 'segment'),
+            ],
+          });
+          continue;
+        }
+
         // Nhánh (A): đầu mút neo đã có.
         const intents = [
           addPoint(e, { kind: 'reflectLine', of: d, through: line }),
