@@ -362,6 +362,11 @@ function solidKindFacts(problem: string, solid: SolidInfo | null): Fact3D[] {
     out.push(mk('regular-pyramid', 'metric', 'chóp đều: cạnh bên bằng nhau', [S, ...B], (P) => B.every((x) => near(dist(P[S], P[x]), dist(P[S], P[B[0]])))));
     out.push(mk('regular-pyramid', 'metric', 'chóp đều: đáy đều', B, (P) => B.every((_, i) => near(dist(P[B[i]], P[B[(i + 1) % B.length]]), dist(P[B[0]], P[B[1]])))));
   }
+  if (solid.kind === 'pyramid' && /[Tt]ất\s+cả\s+các\s+cạnh(?:\s+(?:của\s+)?(?:hình\s+)?chóp)?\s+(?:đều\s+)?bằng/u.test(problem)) {
+    const S = solid.apex!;
+    const E = [...B.map((x) => [S, x]), ...B.map((x, i) => [x, B[(i + 1) % B.length]])];
+    out.push(mk('all-edges', 'metric', 'mọi cạnh chóp bằng nhau', [S, ...B], (P) => E.every(([a, b]) => near(dist(P[a], P[b]), dist(P[E[0][0]], P[E[0][1]])))));
+  }
   if (solid.kind === 'tetra' && /tứ\s+diện\s+đều/u.test(problem)) {
     const V = [...B, solid.apex!];
     out.push(mk('regular-tetra', 'metric', 'tứ diện đều', V, (P) => {

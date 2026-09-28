@@ -157,6 +157,40 @@ describe('solidRefine3d — đáy + chân đường cao đúng đề (đo toạ 
     expect(dist(P.M, P.B)).toBeGreaterThan(0.5);
   });
 
+  it('"SA ⊥ AB và SA ⊥ AD" ⇒ SA ⊥ đáy (bosung Câu 16)', () => {
+    const P = toaDoDe3d('Cho hình chóp S.ABCD có đáy là hình thoi ABCD cạnh a. Cho biết SA = a√3, SA ⊥ AB và SA ⊥ AD.');
+    expect(perpToPlane(sub(P.S, P.A), P.A, P.B, P.C)).toBe(true);
+  });
+
+  it('"Cho biết ABCD là hình thang vuông tại A và D" (mệnh đề riêng) ⇒ góc A, D vuông, FULL', () => {
+    const P = toaDoDe3d('Cho hình chóp S.ABCD có SA ⊥ (ABCD). Cho biết ABCD là hình thang vuông tại A và D, AB = 2AD.');
+    expect(vuongGoc(sub(P.B, P.A), sub(P.D, P.A))).toBe(true);
+    expect(vuongGoc(sub(P.A, P.D), sub(P.C, P.D))).toBe(true);
+  });
+
+  it('"tất cả các cạnh của hình chóp bằng a" ⇒ mọi cạnh bằng nhau (bosung Câu 49, vuonggoc 159)', () => {
+    for (const de of [
+      'Cho hình chóp S.ABCD có ABCD là hình vuông, AC cắt BD tại O, SO ⊥ (ABCD). Tất cả các cạnh của hình chóp bằng a.',
+      'Cho hình chóp S.ABC có tất cả các cạnh đều bằng a. Gọi I,J lần lượt là trung điểm của SA, BC.',
+    ]) {
+      const P = toaDoDe3d(de);
+      const B = de.includes('ABCD') ? ['A', 'B', 'C', 'D'] : ['A', 'B', 'C'];
+      const e = dist(P.A, P.B);
+      B.forEach((x, i) => {
+        expect(bangNhau(dist(P.S, P[x]), e)).toBe(true);
+        expect(bangNhau(dist(P[x], P[B[(i + 1) % B.length]]), e)).toBe(true);
+      });
+    }
+  });
+
+  it("hộp: hình chiếu của A' lên mặt đáy trùng với điểm O là giao điểm hai đường chéo của đáy", () => {
+    const P = toaDoDe3d("Cho hình hộp ABCD.A'B'C'D' có cạnh bên AA' = a, đáy ABCD là hình thoi có AB = BD = a. Hình chiếu vuông góc của A' lên mặt đáy trùng với điểm O là giao điểm hai đường chéo của đáy.");
+    expect(perpToPlane(sub(P["A'"], mid(P.A, P.C)), P.A, P.B, P.C)).toBe(true);
+    expect(dist(sub(P["C'"], P.C), sub(P["A'"], P.A))).toBeLessThan(EPS);
+    // đáy hình thoi có AB = BD ⇒ AB = AD = BD
+    expect(bangNhau(dist(P.A, P.B), dist(P.B, P.D)) && bangNhau(dist(P.A, P.D), dist(P.A, P.B))).toBe(true);
+  });
+
   it('không có điều kiện ⇒ layout cũ giữ nguyên (tương thích ngược)', () => {
     const P = toaDoDe3d('Cho hình chóp S.ABCD có đáy ABCD là hình bình hành.');
     expect(P.A).toEqual([-1.4, -1, 0]);

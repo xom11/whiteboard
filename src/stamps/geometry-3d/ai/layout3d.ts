@@ -234,6 +234,13 @@ const d2 = (a: V2, b: V2) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 function heightFor(rule: SolidRefine['height'], F: V2, B: Record<string, V2>): number | null {
   if (!rule) return null;
   if (rule.kind === 'cube') return 2;              // đáy vuông cạnh 2
+  if (rule.kind === 'all-edges') {
+    // cạnh bên = cạnh đáy: chỉ khi chân cách đều mọi đỉnh và mọi cạnh đáy bằng nhau
+    const ls = Object.values(B); const e = d2(ls[0], ls[1]); const r0 = d2(F, ls[0]);
+    if (!ls.every((p, i) => Math.abs(d2(F, p) - r0) < 1e-6 && Math.abs(d2(p, ls[(i + 1) % ls.length]) - e) < 1e-6)) return null;
+    const h2 = e * e - r0 * r0;
+    return h2 > 0.05 ? Math.sqrt(h2) : null;
+  }
   if (rule.kind === 'reg-tetra' || rule.kind === 'corner') {
     const ls = Object.values(B); if (ls.length < 2) return null;
     const s = d2(ls[0], ls[1]);

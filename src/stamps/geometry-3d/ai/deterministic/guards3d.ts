@@ -6,7 +6,8 @@ const SOLID_HEAD =
   /(?:hình\s+chóp\s+(?:(?:tứ|tam)\s+giác\s+)?(?:đều\s+)?([A-Z])\.([A-Z'′₀-₉0-9]+))|(?:tứ\s+diện(?:\s+đều)?\s+([A-Z'′]{4}))|(?:lăng\s+trụ(?:\s+(?:đứng|đều|tam\s+giác|tứ\s+giác))*\s+([A-Z]{3,})\.([A-Z'′]+))/gu;
 
 // "Gọi M là…" / "Lấy điểm K…" / "Dựng điểm N…"
-const GOI = /(?:Gọi|Lấy|Dựng)\s+(?:điểm\s+)?([A-Z])(?![\p{L}])/gu;
+// Nhãn có chỉ số/prime (G1, G') — trước đây cắt "G1" thành "G" ⇒ đòi điểm G không tồn tại.
+const GOI = /(?:Gọi|Lấy|Dựng)\s+(?:điểm\s+)?([A-Z](?:\d|['′])?)(?![\p{L}\d])/gu;
 
 // "X là trung điểm…" / "X là chân…" — chỉ lấy tên ĐỘC LẬP (HOA, không đứng sau chữ)
 const LA_NAMED = /(?<![A-Za-z\p{L}])([A-Z])\s+là\s+(?!hình\s+chóp|tứ\s+diện|lăng\s+trụ)/gu;

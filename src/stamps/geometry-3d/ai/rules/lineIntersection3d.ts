@@ -33,6 +33,12 @@ function emitLines(name: string, a1: string, b1: string, a2: string, b2: string)
   ];
 }
 
+// parseSolidHead3D không đọc hình hộp/lập phương — lấy đáy ABCD của "hình hộp ABCD.A'B'C'D'".
+function boxBase(problem: string): string[] | null {
+  const m = /hình\s+(?:hộp(?:\s+(?:chữ\s+nhật|đứng))?|lập\s+phương)\s+([A-Z]{4})\./u.exec(problem);
+  return m ? splitVertexToken(m[1]) : null;
+}
+
 export const lineIntersection3dRule: LanguageRule3D = {
   id: 'lineIntersection3d',
   priority: 59,
@@ -55,7 +61,7 @@ export const lineIntersection3dRule: LanguageRule3D = {
           const isShapeFirst = /^hình/u.test(m[0]);
           name = isShapeFirst ? g[1] : g[0];
           const q = isShapeFirst ? g[0] : g[1];
-          quad = q ? splitVertexToken(q) : head && head.baseLabels.length === 4 ? head.baseLabels : null;
+          quad = q ? splitVertexToken(q) : head && head.baseLabels.length === 4 ? head.baseLabels : boxBase(ctx.problem);
           if (!quad || quad.length !== 4) continue;
         } else {
           const vals = g.filter((x) => x !== undefined);

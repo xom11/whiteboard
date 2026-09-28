@@ -32,7 +32,8 @@ export type HeightRule =
   | { kind: 'tri'; x: string; y: string; prop: 'equi' | 'riso-apex' | 'right-apex' | 'riso-x' }
   | { kind: 'reg-tetra' }
   | { kind: 'corner' }
-  | { kind: 'cube' };
+  | { kind: 'cube' }
+  | { kind: 'all-edges' };                         // mọi cạnh chóp bằng nhau: cạnh bên = cạnh đáy
 
 export interface SolidRefine {
   baseShape?: BaseShape;
@@ -147,6 +148,10 @@ export function descToSpec(desc: string, ctx: Ctx): PSpec | null {
     const s = [m[1], m[2], m[3]].map((y) => defOfLabel(y, c));
     return s.every(Boolean) ? { cen: s as PSpec[] } : null;
   }
+  // "giao điểm (của) hai đường chéo (của đáy | hình …)" không nêu tên đường chéo ⇒ tâm hbh đáy
+  if (/^(?:điểm\s+)?giao\s+điểm\s+(?:[A-Z]\s+)?(?:của\s+)?hai\s+đường\s+chéo(?!\s+[A-Z]{2})/u.test(d) && ctx.base.length === 4) {
+    return { mid: [ctx.base[0], ctx.base[2]] };
+  }
   m = /^(?:điểm\s+)?giao\s+điểm\s+(?:[A-Z]\s+)?(?:của\s+)?(?:hai\s+đường\s+chéo\s+)?([A-Z])([A-Z])\s+(?:và|với)\s+([A-Z])([A-Z])(?![A-Z])/u.exec(d);
   if (m) {
     const s = [m[1], m[2], m[3], m[4]].map((y) => defOfLabel(y, c));
@@ -254,6 +259,9 @@ function rhombusAngle(problem: string, B: string[]): number | null {
   if (m) return deg(m[1]);
   m = new RegExp(`(?:góc\\s+)?(?:${A}\\s*${Bv}\\s*${C}|${C}\\s*${Bv}\\s*${A})\\s*=\\s*(\\d+(?:[.,]\\d+)?)\\s*(?:°|◦|o|độ|0)`, 'u').exec(problem);
   if (m) return 180 - deg(m[1]);
+  // "AB = BD" (tam giác ABD đều) ⇒ BAD = 60°; "AB = AC" (ABC đều) ⇒ 120°
+  if (new RegExp(`(?:${A}${Bv}|${Bv}${A})\\s*=\\s*(?:${Bv}${D}|${D}${Bv})(?![A-Z])|(?:${Bv}${D}|${D}${Bv})\\s*=\\s*(?:${A}${Bv}|${Bv}${A})(?![A-Z])`, 'u').test(problem)) return 60;
+  if (new RegExp(`(?:${A}${Bv}|${Bv}${A})\\s*=\\s*(?:${A}${C}|${C}${A})(?![A-Z])|(?:${A}${C}|${C}${A})\\s*=\\s*(?:${A}${Bv}|${Bv}${A})(?![A-Z])`, 'u').test(problem)) return 120;
   if (new RegExp(`(?:[Tt]am\\s+giác|∆|Δ)\\s*(?:${A}${Bv}${C}|${A}${C}${Bv}|${Bv}${A}${C})\\s+(?:là\\s+tam\\s+giác\\s+)?đều`, 'u').test(problem)) return 120;
   if (new RegExp(`(?:[Tt]am\\s+giác|∆|Δ)\\s*(?:${A}${Bv}${D}|${A}${D}${Bv}|${Bv}${A}${D})\\s+(?:là\\s+tam\\s+giác\\s+)?đều`, 'u').test(problem)) return 60;
   return null;
@@ -327,7 +335,18 @@ export function refineSolid(problemRaw: string, head: SolidHeadInfo): RefineResu
     const cue = opp.some(([e, f]) => new RegExp(`${e}\\s*(?:∩|cắt|và)\\s*${f}|${f}\\s*(?:∩|cắt)\\s*${e}|${e}\\s*,\\s*${f}\\s+không\\s+song\\s+song`, 'u').test(problem));
     if (cue) shape = { kind: 'general-quad' };
   }
-  if (shape) r.baseShape = shape;
+  // Hộp/lăng trụ tứ giác: template luôn là HÌNH CHỮ NHẬT — đáy nêu "hình vuông"/"hình thoi" phải
+  // theo đề (thoi không nêu góc ⇒ góc 70°, vẫn là hình thoi thật, không vẽ thành chữ nhật).
+  if (!shape && !isPyr && base.length === 4) {
+    const d = baseDesc(problem, base) ?? '';
+    if (/hình\s+vuông/u.test(d)) shape = { kind: 'square' };
+    else if (/hình\s+thoi/u.test(d)) shape = { kind: 'rhombus', angleAt0: 70 };
+  }
+  if (shape) {
+    r.baseShape = shape;
+    const d = baseDesc(problem, base);
+    if (d) consumed.push(d.trim());
+  }
   if (regTetra) r.height = { kind: 'reg-tetra' };
   if (cube) { r.baseShape = { kind: 'square' }; r.height = { kind: 'cube' }; }
 
@@ -384,6 +403,15 @@ export function refineSolid(problemRaw: string, head: SolidHeadInfo): RefineResu
       if (m && isBasePlane(m[3], m[4], m[5], base)) {
         const f = defOfLabel(norm(m[1] ?? m[2]), ctx);
         if (f) { r.apexFoot = f; consumed.push(m[0]); }
+      }
+    }
+    // "SA ⊥ AB và SA ⊥ AD": cạnh bên ⊥ 2 cạnh đáy (không song song) cùng qua X ⇒ SX ⊥ đáy
+    if (!r.apexFoot) {
+      const hits = [...problem.matchAll(new RegExp(`(?<![(\\p{L}'])${s}([A-Z])\\s*(?:⊥|vuông\\s*góc(?:\\s+với)?)\\s*(?:đường\\s+thẳng\\s+|cạnh\\s+)?([A-Z])([A-Z])(?![A-Z(\\p{L}'])`, 'gu'))];
+      for (const X of base) {
+        const lines = hits.filter((h) => h[1] === X && base.includes(h[2]) && base.includes(h[3]) && [h[2], h[3]].includes(X));
+        const others = new Set(lines.map((h) => (h[2] === X ? h[3] : h[2])));
+        if (others.size >= 2) { r.apexFoot = X; consumed.push(...lines.map((h) => h[0])); break; }
       }
     }
     // "cạnh bên SB vuông góc với mặt phẳng đáy" đã phủ ở trên; "đường cao SX" | "SX là đường cao"
@@ -471,6 +499,18 @@ export function refineSolid(problemRaw: string, head: SolidHeadInfo): RefineResu
       const t = triProps(problem, S, x, y);
       if (!t || !(t.prop === 'đều' || ((t.prop === 'cân' || t.prop === 'vuông cân') && t.at === S))) continue;
       r.apexFoot = { perpBis: [x, y] };
+    }
+  }
+
+  // "tất cả các cạnh (của hình chóp) (đều) bằng (nhau|a)" ⇒ cạnh bên = cạnh đáy (chân đều cách các đỉnh)
+  if (isPyr && S && !r.height && !regTetra) {
+    const m = /[Tt]ất\s+cả\s+các\s+cạnh(?:\s+(?:của\s+)?(?:hình\s+)?chóp)?\s+(?:đều\s+)?(?:bằng|có\s+độ\s+dài)[^.;,]*/u.exec(problem);
+    if (m) {
+      // mọi cạnh bằng nhau ⇒ đáy đều (tam giác đều / hình vuông) — chóp đều
+      if (!r.baseShape) { if (base.length === 3) r.baseShape = { kind: 'equi-tri' }; else if (base.length === 4) r.baseShape = { kind: 'square' }; }
+      if (!r.apexFoot) r.apexFoot = { cen: [...base] };
+      r.height = { kind: 'all-edges' };
+      consumed.push(m[0]);
     }
   }
 
