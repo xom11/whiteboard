@@ -1,5 +1,6 @@
 import type { LanguageRule3D, RuleContext3D, RuleMatch3D } from './_types';
-import { solid, escapeRe, splitVertexToken } from './_shared';
+import { solid, escapeRe, splitVertexToken, addPoint3d } from './_shared';
+import { parseKhoiDaDien, isRefused } from './khoiDaDien';
 import type { BaseVariant, ApexVariant } from '../intent';
 
 // Match against full problem: "hình chóp S.ABCD"
@@ -57,10 +58,29 @@ export const solidRule: LanguageRule3D = {
   id: 'solid',
   priority: 90,
   languages: ['vi'],
-  patterns: [/hình\s+chóp/u, /tứ\s+diện/u, /lăng\s+trụ/u, /hình\s+(hộp|lập\s+phương)/u],
+  patterns: [/hình\s+chóp/u, /tứ\s+diện/u, /lăng\s+trụ/u, /hình\s+(hộp|lập\s+phương)/u,
+    /(?:khối|hình)\s+(?:chóp|lăng\s+trụ|hộp|lập\s+phương)/iu],
   match(ctx: RuleContext3D): RuleMatch3D[] {
     const prob = ctx.problem;
     let m: RegExpExecArray | null;
+
+    // Lớp 12 (khoiDaDien.ts): đầu khối rộng hơn + dữ kiện hình dạng (⊥ đáy, mặt bên ⊥ đáy,
+    // lăng trụ xiên, lập phương…). null ⟹ giữ nguyên đường cũ bên dưới.
+    const k = parseKhoiDaDien(ctx);
+    // Có đầu khối nhưng dữ kiện hình dạng không dựng ĐÚNG được → KHÔNG vẽ (thà thiếu còn hơn sai):
+    // đường cũ bên dưới sẽ bỏ qua dữ kiện đó và vẽ sai (vd chóp đỉnh-trên-tâm khi SH ⊥ đáy lạ).
+    if (isRefused(k)) return [];
+    if (k) {
+      const ids = [...new Set([...solidClauseIds(ctx), ...k.clauseIds])];
+      return [{
+        ruleId: this.id,
+        clauseIds: ids,
+        intents: [
+          solid(k.spec),
+          ...(k.center ? [addPoint3d(k.center, { kind: 'centroid', vertices: k.spec.baseLabels })] : []),
+        ],
+      }];
+    }
 
     if ((m = PYRAMID.exec(prob))) {
       const apex = m[1];

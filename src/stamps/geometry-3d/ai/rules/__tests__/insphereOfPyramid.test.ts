@@ -5,12 +5,13 @@ import { segmentClauses3D } from '../../deterministic/coverage3d';
 function ctxOf(problem: string) { return { problem, clauses: segmentClauses3D(problem).filter((c) => c.hasGeometry) }; }
 
 describe('insphereOfPyramid rule', () => {
-  it('chóp tứ giác đều (solidRule miss) → tự emit solid + insphere center + sphere', () => {
+  it('chóp tứ giác đều (solidRule vẽ qua khoiDaDien) → insphere center + sphere, KHÔNG vẽ chóp lần 2', () => {
     const p = 'Bán kính mặt cầu nội tiếp hình chóp tứ giác đều S.ABCD có cạnh đáy bằng a là bao nhiêu.';
     const m = insphereOfPyramidRule.match(ctxOf(p) as any);
     expect(m.length).toBe(1);
     const ops = m[0].intents.map((i: any) => i.op + (i.constraint ? '/' + i.constraint.kind : ''));
-    expect(ops).toContain('solid');                          // tự vẽ chóp (solidRule miss qualifier)
+    expect(ops).not.toContain('solid');                      // solidRule (khoiDaDien) đã vẽ chóp
+    expect(runRules3D(ctxOf(p)).flatMap((mm) => mm.intents).filter((i: any) => i.op === 'solid').length).toBe(1);
     expect(ops).toContain('add-point-3d/pyramidInsphereCenter');
     expect(ops).toContain('add-point-3d/centroid');          // surfacePoint = tâm đáy
     expect(ops).toContain('sphere');

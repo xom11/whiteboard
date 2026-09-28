@@ -1,3 +1,4 @@
+import { chuanHoaDe3d } from './chuanHoa3d';
 import type { State } from '../../../../core/scene';
 import type { Intent3DT } from '../intent';
 import type { CoverageReport3D } from './coverage3d';
@@ -21,7 +22,8 @@ export type TryResult3D =
  * Track-A engine entry: chạy rule engine → build scene → verify → named-entity guard.
  * intentToScene3d đã topo-sort nội bộ (Bundle 2), nên không cần retry topo ở đây.
  */
-export function tryDeterministicFigure3d(problem: string): TryResult3D {
+export function tryDeterministicFigure3d(problemRaw: string): TryResult3D {
+  const problem = chuanHoaDe3d(problemRaw);
   const det = runDeterministicIntents3d(problem);
   if (!det.ok) return { ok: false, reason: det.reason, coverage: det.coverage };
 
