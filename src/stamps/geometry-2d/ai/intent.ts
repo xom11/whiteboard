@@ -172,6 +172,8 @@ export const AddPointIntentZ = z.object({
       kind: z.literal('affine'),
       points: z.array(LabelZ).min(2).max(8),
       weights: z.array(z.number()).min(2).max(8),
+      rot: z.array(z.number()).min(2).max(8).optional(),
+      awayFrom: LabelZ.optional(),
     }),
     z.object({
       kind: z.literal('commonTangentPoint'),

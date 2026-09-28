@@ -1,5 +1,6 @@
 // src/stamps/geometry-2d/ai/rules/triangle.ts
 import type { LanguageRule, RuleMatch } from './_types';
+import { tenHinhTrenCanh } from './figuresOnSides';
 import { doCanhDeCho, doGocDeCho, doTrungTuyenDeCho, toaDoTamGiacTheoCanh, toaDoTamGiacTuKhiTrungTrucCatCanh } from './triangleLengths';
 import type { IntentT } from '../intent';
 import { drawShape, addPoint, drawCircle, markShape } from './_shared';
@@ -240,6 +241,7 @@ export const triangleRule: LanguageRule = {
   patterns: [TRI_G, TRI_EN_G, TRI_BEFORE_G],
   match(ctx) {
     const out: RuleMatch[] = [];
+    const tenHinh = tenHinhTrenCanh(ctx.problem);
     for (const c of ctx.clauses) {
       const hits: TriHit[] = [];
 
@@ -298,6 +300,9 @@ export const triangleRule: LanguageRule = {
         // trước (cùng priority, triangle đứng trước quad) rồi A của tứ giác rơi TRÙNG B
         // (0,0) — hình suy biến. mark-shape chỉ nối đỉnh có sẵn; thiếu đỉnh thì build
         // ném lỗi ⇒ thử lại theo thứ tự phụ thuộc (quad dựng trước).
+        // Tam giác đều / vuông cân dựng ra phía ngoài trên cạnh đa giác gốc: figuresOnSides
+        // dựng đỉnh mới (affine + quay) và nối cạnh — không đặt theo tam giác mẫu.
+        if (hit.lang === 'vi' && tenHinh.has(hit.labels.join(''))) return [];
         if (hit.lang === 'vi' && laTamGiacCon(ctx.problem, hit.labels, Math.max(0, ctx.problem.indexOf(c.text)) + hit.start)) {
           return [markShape('triangle', hit.labels)];
         }

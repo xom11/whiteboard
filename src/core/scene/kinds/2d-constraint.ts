@@ -96,7 +96,10 @@ export type Constraint2D =
   // Tổ hợp AFFINE Σ wᵢ·Pᵢ (Σ wᵢ = 1) — điểm xác định bởi đẳng thức vectơ (Toán 10):
   // "vectơ MA + vectơ MB + 2 vectơ MC = vectơ 0" ⇒ M = (A + B + 2C)/4; đỉnh thứ tư
   // hình bình hành D = A − B + C. Render functional (kéo đỉnh vẫn đúng đẳng thức).
-  | { kind: 'affine'; points: string[]; weights: number[] };
+  // rot (tuỳ chọn, Σ rot = 0): cộng thêm Σ rotᵢ·J(Pᵢ), J = quay +90° — dựng hình vuông /
+  // tam giác đều trên cạnh. awayFrom: nếu kết quả cùng phía đường points[0]points[1] với
+  // điểm này thì lấy phần quay theo chiều ngược lại ("vẽ ra phía ngoài").
+  | { kind: 'affine'; points: string[]; weights: number[]; rot?: number[]; awayFrom?: string };
 
 export function constraintRefs2D(c: Constraint2D): string[] {
   switch (c.kind) {
@@ -132,7 +135,7 @@ export function constraintRefs2D(c: Constraint2D): string[] {
     }
     case 'excenter': return [c.vertices[0], c.vertices[1], c.vertices[2]];
     case 'commonTangentPoint': return [c.circles[0], c.circles[1]];
-    case 'affine': return [...c.points];
+    case 'affine': return c.awayFrom ? [...c.points, c.awayFrom] : [...c.points];
     // Các kind KHÔNG có ref scene-object (toạ độ literal): liệt kê TƯỜNG MINH để
     // exhaustive never-guard bên dưới buộc khai báo khi thêm constraint kind mới.
     case 'free':

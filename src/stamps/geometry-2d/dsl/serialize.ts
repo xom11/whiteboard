@@ -255,9 +255,17 @@ function serializePoint(obj: SceneObject<PointAttrs>, state: State): SerializedE
     }
 
     case 'affine': {
-      const refs = resolveRefs([...c.points], state);
-      if (!refs) return fail('unresolved-ref', c.points.join(','));
-      return { ok: true, entity: { name: obj.label, kind: 'affine', points: refs, weights: [...c.weights] } };
+      const ids = c.awayFrom ? [...c.points, c.awayFrom] : [...c.points];
+      const refs = resolveRefs(ids, state);
+      if (!refs) return fail('unresolved-ref', ids.join(','));
+      return {
+        ok: true,
+        entity: {
+          name: obj.label, kind: 'affine', points: refs.slice(0, c.points.length), weights: [...c.weights],
+          ...(c.rot ? { rot: [...c.rot] } : {}),
+          ...(c.awayFrom ? { awayFrom: refs[c.points.length] } : {}),
+        },
+      };
     }
 
     // Out of DSL v1:

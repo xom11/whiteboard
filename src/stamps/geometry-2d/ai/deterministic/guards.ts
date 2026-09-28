@@ -34,7 +34,8 @@ function joinPrime(letter: string | undefined, prime: string | undefined): strin
 // Đỉnh của hình khai báo: "tam giác ABC", "tứ giác ABCD", "hình vuông/… ABCD".
 // Bắt cụm 3-4 ký tự HOA LIỀN ngay sau tên hình (mỗi đỉnh phải có trong DSL).
 const SHAPE_TRI = /tam giác\s+([A-Z]{3})(?![A-Z])/gu;
-const SHAPE_QUAD = /(?:tứ giác|hình\s+(?:vuông|chữ nhật|bình hành|thoi|thang))\s+([A-Z]{4})(?![A-Z])/gu;
+// Danh sách "các hình bình hành ABIJ, BCPQ, CARS" — mọi đỉnh của mọi hình trong list.
+const SHAPE_QUAD = /(?:tứ giác|hình\s+(?:vuông|chữ nhật|bình hành|thoi|thang))\s+([A-Z]{4}(?:\s*(?:,|và)\s*[A-Z]{4}(?![A-Z]))*)(?![A-Z])/gu;
 
 export interface NamedEntityReport {
   ok: boolean;
@@ -62,7 +63,7 @@ function collectExpectedNames(problem: string): Set<string> {
     re.lastIndex = 0;
     let m: RegExpExecArray | null;
     while ((m = re.exec(problem)) !== null) {
-      for (const ch of m[1]) names.add(ch);
+      for (const ch of m[1].replace(/[^A-Z]/gu, '')) names.add(ch);
     }
   }
   return names;

@@ -23,15 +23,23 @@ export const affineModule = defineModule<'affine', Input>({
     kind: z.literal('affine'),
     points: z.array(NameZ).min(2).max(8),
     weights: z.array(z.number().finite()).min(2).max(8),
+    // Phần quay +90° (hình vuông / tam giác đều dựng trên cạnh) + điểm để chọn phía.
+    rot: z.array(z.number().finite()).min(2).max(8).optional(),
+    awayFrom: NameZ.optional(),
   }),
-  collectRefs: (e) => [...e.points],
-  refSpecs: [{ field: 'points', role: 'point', many: true }],
+  collectRefs: (e) => (e.awayFrom ? [...e.points, e.awayFrom] : [...e.points]),
+  refSpecs: (e) => [
+    { field: 'points', role: 'point', many: true },
+    ...(e.awayFrom ? [{ field: 'awayFrom', role: 'point' as const }] : []),
+  ],
   emit: (e, ctx) => [{
     role: 'primary',
     object: emitPointObject(ctx.resolveId(e.name), e.name, {
       kind: 'affine',
       points: e.points.map((p) => ctx.resolveId(p)),
       weights: [...e.weights],
+      ...(e.rot ? { rot: [...e.rot] } : {}),
+      ...(e.awayFrom ? { awayFrom: ctx.resolveId(e.awayFrom) } : {}),
     }),
   }],
 });

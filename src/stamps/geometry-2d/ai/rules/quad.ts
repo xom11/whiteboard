@@ -6,6 +6,8 @@
 import type { LanguageRule, RuleContext, RuleMatch } from './_types';
 import { drawShape, drawCircle, addPoint, markShape } from './_shared';
 import { toaDoTuGiacTheoSoDo } from './quadLengths';
+import { hinhBinhHanhTrenCanh } from './parallelogramOnSides';
+import { tenHinhTrenCanh } from './figuresOnSides';
 
 // LƯU Ý: \b của JS dựa trên ASCII word-char nên KHÔNG khớp quanh ký tự Việt
 // ("đ","ề","ạ"…). Dùng lookaround \p{L} (cờ 'u') ở prefilter để chặn biên từ.
@@ -380,7 +382,10 @@ export const quadRule: LanguageRule = {
           ],
         });
       }
+      const trenCanh = new Set([...hinhBinhHanhTrenCanh(ctx.problem).map((h) => h.ten), ...tenHinhTrenCanh(ctx.problem)]);
       for (const hit of scanClause(c.text)) {
+        // Hình bình hành dựng trên cạnh tam giác có sẵn: parallelogramOnSides dựng.
+        if (trenCanh.has(hit.labels.join(''))) continue;
         // Số đo đề cho ("AB = 3, AD = 4", "góc BAD = 60°") ⇒ đặt đỉnh đúng số đo.
         const theoSoDo = toaDoTuGiacTheoSoDo(hit.shape, hit.variant, hit.labels as [string, string, string, string], ctx.problem);
         let intents = [drawShape(hit.shape, hit.labels, hit.variant, theoSoDo)];
