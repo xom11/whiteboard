@@ -74,6 +74,7 @@ import { circleExternalPointRule } from './circleExternalPoint';
 import { tangentNamedFromExtRule } from './tangentNamedFromExt';
 import { secantRule } from './secant';
 import { oppositeRayPointRule } from './oppositeRayPoint';
+import { oppositeRayAtLengthRule } from './oppositeRayAtLength';
 import { perpChordAtFootRule } from './perpChordAtFoot';
 import { diameterCircleSecantRule } from './diameterCircleSecant';
 import { tangentsAtMeetRule } from './tangentsAtMeet';
@@ -193,6 +194,7 @@ const RULES: readonly LanguageRule[] = [
   tangentNamedFromExtRule,
   secantRule,
   oppositeRayPointRule,
+  oppositeRayAtLengthRule,
   perpChordAtFootRule,
   diameterCircleSecantRule,
   tangentsAtMeetRule,

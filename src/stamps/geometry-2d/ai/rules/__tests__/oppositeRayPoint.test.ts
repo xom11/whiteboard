@@ -19,7 +19,7 @@ describe('oppositeRayPoint rule', () => {
   it('DISTRIBUTIVE (C82): "Lấy D, E thuộc tia đối của tia AB, AC" → zip 1-1', () => {
     // D trên tia đối AB (gốc A, vượt A so B) → from=B, through=A.
     // E trên tia đối AC → from=C, through=A.
-    const pts = points('Cho tam giác ABC. Lấy D, E thuộc tia đối của tia AB, AC sao cho BD = AC và CE = AB.');
+    const pts = points('Cho tam giác ABC. Lấy D, E thuộc tia đối của tia AB, AC.');
     expect(pts).toEqual(
       expect.arrayContaining([
         ['D', 'B', 'A'],
@@ -27,6 +27,10 @@ describe('oppositeRayPoint rule', () => {
       ]),
     );
     expect(pts.length).toBe(2);
+  });
+
+  it('C82 có điều kiện "sao cho BD = AC và CE = AB" → KHÔNG đặt khoảng cách tuỳ ý (hình sai BD ≠ AC)', () => {
+    expect(points('Cho tam giác ABC. Lấy D, E thuộc tia đối của tia AB, AC sao cho BD = AC và CE = AB.')).toEqual([]);
   });
 
   it('DISTRIBUTIVE số tên ≠ số tia → KHÔNG đoán (escalate)', () => {
