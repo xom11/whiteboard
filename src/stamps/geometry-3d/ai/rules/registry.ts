@@ -1,8 +1,11 @@
 import type { LanguageRule3D, RuleContext3D, RuleMatch3D } from './_types';
 import { solidRule } from './solid';
+import { solidFacts3dRule } from './solidFacts3d';
 import { pointOnEdgeRule } from './pointOnEdge';
+import { lineIntersection3dRule } from './lineIntersection3d';
 import { planeNamedRule } from './planeNamed';
 import { midpoint3dRule } from './midpoint3d';
+import { pointList3dRule } from './pointList3d';
 import { centroid3dRule } from './centroid3d';
 import { intersectionLineRule } from './intersectionLine';
 import { crossSectionRule } from './crossSection';
@@ -10,6 +13,7 @@ import { crossSectionParallelRule } from './crossSectionParallel';
 import { linePlanePointRule } from './linePlanePoint';
 import { projectionFootRule } from './projectionFoot';
 import { perpLineToPlaneRule } from './perpLineToPlane';
+import { skewDistance3dRule } from './skewDistance3d';
 import { perpPlaneToLineRule } from './perpPlaneToLine';
 import { angleLinePlaneRule } from './angleLinePlane';
 import { circumsphereRule } from './circumsphere';
@@ -18,12 +22,16 @@ import { coneRule } from './cone';
 import { cylinderRule } from './cylinder';
 import { insphereCubeRule } from './insphereCube';
 import { inscribedRoundSolidRule } from './inscribedRoundSolid';
+import { duKienSoDoRule } from './duKienSoDo';
 
 const RULES: LanguageRule3D[] = [
   solidRule,                  // priority 90
+  solidFacts3dRule,           // priority 89
   midpoint3dRule,             // priority 62
+  pointList3dRule,            // priority 62
   centroid3dRule,             // priority 61
   pointOnEdgeRule,            // priority 60
+  lineIntersection3dRule,     // priority 59
   intersectionLineRule,       // priority 58
   crossSectionParallelRule,   // priority 58
   crossSectionRule,           // priority 57
@@ -31,6 +39,7 @@ const RULES: LanguageRule3D[] = [
   planeNamedRule,             // priority 55
   projectionFootRule,         // priority 54
   perpLineToPlaneRule,        // priority 53
+  skewDistance3dRule,         // priority 53
   perpPlaneToLineRule,        // priority 52
   angleLinePlaneRule,         // priority 51
   circumsphereRule,           // priority 50
@@ -39,6 +48,7 @@ const RULES: LanguageRule3D[] = [
   cylinderRule,               // priority 48
   insphereCubeRule,           // priority 47
   inscribedRoundSolidRule,    // priority 46
+  duKienSoDoRule,             // priority 20 — chỉ claim câu hỏi/số đo, không vẽ
 ];
 
 export const ALL_RULES_3D: readonly LanguageRule3D[] = RULES.slice().sort(

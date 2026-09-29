@@ -52,6 +52,27 @@ function secantIntents(ext: string, near: string, far: string, circle: string, t
   ];
 }
 
+// "Kẻ hai tiếp tuyến AM, AN" ⇒ tiếp điểm thứ nhất M (which 0, phía +), N (phía −).
+const TIEP_TUYEN_HAI = /tiếp\s*tuyến\s+(?:[A-Z])([A-Z])(?![A-Z])\s*(?:,|và)\s*(?:[A-Z])([A-Z])(?![A-Z])/u;
+// "N thuộc cung nhỏ BC" (cát tuyến ABC) ⇒ cát tuyến nằm phía tiếp điểm N.
+const THUOC_CUNG_NHO = /([A-Z])(?![A-Z])\s+(?:thuộc|nằm\s+trên)\s+cung\s+nhỏ\s+[A-Z]{2}/u;
+// "tia AC nằm giữa (hai tia) AD và AO" ⇒ phía tiếp điểm D.
+const TIA_NAM_GIUA = /tia\s+[A-Z]{2}\s+nằm\s+giữa\s+(?:hai\s+tia\s+)?[A-Z]([A-Z])\s+và\s+[A-Z]{2}/u;
+
+// "A và O nằm khác phía so với đường thẳng EK" (O tâm) ⇒ cát tuyến chắn giữa A và
+// tâm ⇒ nằm về phía tiếp điểm A.
+const KHAC_PHIA_TAM = /([A-Z])(?![A-Z])\s+và\s+[A-Z](?![A-Z])\s+nằm\s+(?:ở\s+)?(?:hai\s+phía|khác\s+phía)/u;
+
+/** +1 / −1: nửa mặt phẳng (bờ AO) chứa cát tuyến. Không chỉ định ⇒ −1. */
+function phiaCatTuyen(problem: string): 1 | -1 {
+  const tt = TIEP_TUYEN_HAI.exec(problem);
+  if (!tt) return -1;
+  const t = THUOC_CUNG_NHO.exec(problem)?.[1] ?? TIA_NAM_GIUA.exec(problem)?.[1] ?? KHAC_PHIA_TAM.exec(problem)?.[1];
+  if (t === tt[1]) return 1;
+  if (t === tt[2]) return -1;
+  return -1;
+}
+
 export const secantRule: LanguageRule = {
   id: 'secant',
   priority: 58,
@@ -63,7 +84,16 @@ export const secantRule: LanguageRule = {
     const extM = EXT_RESOLVE.exec(ctx.problem);
     const resolvedExt = extM ? extM[1] : undefined;
     const out: RuleMatch[] = [];
-    let theta = 2.4;
+    // Giao GẦN phải nằm trên cung NHÌN THẤY từ điểm ngoài: A do externalToCircle
+    // đặt ở góc 0 so với tâm, d ≥ 2R ⇒ tiếp điểm ở ±α với α ≥ 60°. |θ| < α ⇒ D là
+    // giao gần, E = giao thứ hai là giao xa ⇒ đúng "cát tuyến ADE" (D giữa A, E).
+    // θ = 2.4 cũ nằm trên cung XA ⇒ D xa, E gần: ngược đề, AB > AC dù đề cho AB < AC.
+    // Dấu θ = phía đề chỉ định (tiếp điểm thứ nhất ở phía +, thứ hai phía −).
+    const side = phiaCatTuyen(ctx.problem);
+    const thetas = [0.5, 0.25, 0.75].map((t) => side * t);
+    let idx = 0;
+    let theta = thetas[0];
+    const next = () => { idx++; theta = thetas[idx % thetas.length]; };
     for (const c of ctx.clauses) {
       // "cát tuyến (d)? cắt (O) tại P,Q" — điểm ngoài từ context (resolvedExt).
       if (resolvedExt) {
@@ -73,7 +103,7 @@ export const secantRule: LanguageRule = {
           const intents = secantIntents(resolvedExt, m[2], m[3], circle, theta);
           if (intents) {
             out.push({ ruleId: 'secant', clauseIds: [c.id], intents });
-            theta += 0.7;
+            next();
           }
         }
       }
@@ -82,16 +112,19 @@ export const secantRule: LanguageRule = {
         const intents = secantIntents(m[1], m[2], m[3], fallbackCircle, theta);
         if (intents) {
           out.push({ ruleId: 'secant', clauseIds: [c.id], intents });
-          theta += 0.7;
+          next();
         }
       }
       LINE_THROUGH.lastIndex = 0;
       for (const m of c.text.matchAll(LINE_THROUGH)) {
         const circle = m[2] ?? fallbackCircle;
-        const intents = secantIntents(m[1], m[3], m[4], circle, theta);
+        // "cắt (O) tại E và D sao cho KD < KE" / "D nằm giữa K và E" ⇒ D là giao gần.
+        const [ext, p, q] = [m[1], m[3], m[4]];
+        const nguoc = new RegExp(`${ext}${q}\\s*<\\s*${ext}${p}(?![A-Z])|${ext}${p}\\s*>\\s*${ext}${q}(?![A-Z])|${q}\\s+(?:nằm|ở)\\s+giữa\\s+${ext}\\s+và\\s+${p}(?![A-Z])`, 'u').test(c.text);
+        const intents = nguoc ? secantIntents(ext, q, p, circle, theta) : secantIntents(ext, p, q, circle, theta);
         if (intents) {
           out.push({ ruleId: 'secant', clauseIds: [c.id], intents });
-          theta += 0.7;
+          next();
         }
       }
     }

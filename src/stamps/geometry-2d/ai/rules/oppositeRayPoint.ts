@@ -20,8 +20,9 @@ const RE = new RegExp(
 
 // Khoảng cách canonical (board units) — vị trí C trên tia đối không nêu metric.
 // Dạng tên-TRƯỚC (vao10): "Lấy điểm A trên tia đối của tia CB" — g1=tên, g2g3=tia.
+// + "(Điểm) M thuộc/nằm trên tia đối của tia CA" (đề HSG trại hè Hùng Vương 2024).
 const RE_NAME_FIRST = new RegExp(
-  String.raw`[Ll]ấy\s+(?:điểm\s+)?([A-Z])(?![A-Z])\s+trên\s+tia\s+đối\s+(?:của\s+)?(?:tia\s+)?([A-Z])([A-Z])(?![A-Z])`,
+  String.raw`(?:[Ll]ấy|[Đđ]iểm|[Gg]ọi|[Cc]ho)\s+(?:điểm\s+)?([A-Z])(?![A-Z])\s+(?:là\s+(?:một\s+)?điểm\s+)?(?:trên|thuộc|nằm\s+trên)\s+tia\s+đối\s+(?:của\s+)?(?:tia\s+)?([A-Z])([A-Z])(?![A-Z])`,
   'gu',
 );
 
@@ -35,6 +36,12 @@ const RE_DISTRIB = new RegExp(
 );
 
 const CANON = 2.5;
+
+// Có điều kiện metric theo sau ("… lấy điểm D sao cho MD = MA") → KHÔNG đặt khoảng
+// cách tuỳ ý (hình sai MD ≠ MA); nhường pointAtDistance/pointOnSideAtLength. Không
+// rule nào dựng được điều kiện đó thì mệnh đề bỏ trống → vẽ một phần (đúng).
+const SAO_CHO_SAU = /^\s*,?\s*sao\s+cho(?!\p{L})/u;
+const coDieuKien = (text: string, m: RegExpMatchArray) => SAO_CHO_SAU.test(text.slice((m.index ?? 0) + m[0].length));
 
 function splitNames(blob: string): string[] {
   return blob.split(/\s*,\s*|\s+và\s+/u).map((s) => s.trim()).filter(Boolean);
@@ -50,7 +57,7 @@ export const oppositeRayPointRule: LanguageRule = {
     for (const c of ctx.clauses) {
       // DISTRIBUTIVE ưu tiên: "Lấy D, E thuộc tia đối của tia AB, AC" → zip.
       const dm = RE_DISTRIB.exec(c.text);
-      if (dm) {
+      if (dm && !coDieuKien(c.text, dm)) {
         const names = splitNames(dm[1]);
         const rays = splitNames(dm[2]);
         if (names.length >= 2 && names.length === rays.length) {
@@ -85,6 +92,7 @@ export const oppositeRayPointRule: LanguageRule = {
         const b = m[2]; // hướng tia
         const name = m[3];
         if (new Set([a, b, name]).size !== 3) continue;
+        if (coDieuKien(c.text, m)) continue;
         out.push({
           ruleId: 'oppositeRayPoint',
           clauseIds: [c.id],
@@ -106,6 +114,7 @@ export const oppositeRayPointRule: LanguageRule = {
         const a = m[2]; // gốc tia
         const b = m[3]; // hướng tia
         if (new Set([a, b, name]).size !== 3) continue;
+        if (coDieuKien(c.text, m)) continue;
         out.push({
           ruleId: 'oppositeRayPoint',
           clauseIds: [c.id],

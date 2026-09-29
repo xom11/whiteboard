@@ -1,3 +1,6 @@
+import { countGeometryKeywords3D } from '../deterministic/vocabulary3d';
+import { khoiDaDienFromProblem, parseKhoiHead, chuanHoaDe3d, isRefused } from './khoiDaDien';
+
 export { solid, addPoint3d, plane3d, line3dIntent, connect3d, crossSection3d, sphereIntent, coneIntent, cylinderIntent, polygonIntent } from '../intent';
 
 export function escapeRe(s: string): string {
@@ -23,13 +26,19 @@ export function splitVertexToken(token: string): string[] {
 export interface SolidHead3D { apex?: string; baseLabels: string[] }
 
 // Mirror guards3d.SOLID_HEAD (non-global here — first match only).
+// Dung nạp qualifier như SOLID_PYRAMID_RE/SOLID_PRISM_RE (solidRule vẽ được thì head phải đọc được).
 const SOLID_HEAD_3D =
-  /(?:hình\s+chóp\s+([A-Z])\.([A-Z'′₀-₉0-9]+))|(?:tứ\s+diện(?:\s+đều)?\s+([A-Z'′]{3,}))|(?:lăng\s+trụ\s+([A-Z]{3,})\.([A-Z'′]+))/u;
+  /(?:hình\s+chóp\s+(?:(?:tứ|tam)\s+giác\s+)?(?:đều\s+)?([A-Z])\.([A-Z'′₀-₉0-9]+))|(?:tứ\s+diện(?:\s+đều)?\s+([A-Z'′]{3,}))|(?:lăng\s+trụ(?:\s+(?:đứng|đều|tam\s+giác|tứ\s+giác))*\s+([A-Z]{3,})\.([A-Z'′]+))/u;
 
 /** Parse the leading solid header → apex (pyramid only) + base vertex labels. */
 export function parseSolidHead3D(problem: string): SolidHead3D | null {
   const m = SOLID_HEAD_3D.exec(problem);
-  if (!m) return null;
+  if (!m) {
+    // Lớp 12: "khối chóp S.ABC", "hình chóp tứ giác đều S.ABCD", "lăng trụ đứng ABC.A'B'C'"…
+    const k = parseKhoiHead(problem);
+    if (!k) return null;
+    return k.apex ? { apex: k.apex, baseLabels: k.base } : { baseLabels: k.base };
+  }
   if (m[1]) return { apex: m[1], baseLabels: splitVertexToken(m[2] ?? '') };  // pyramid
   if (m[3]) return { baseLabels: splitVertexToken(m[3]) };                    // tetrahedron
   if (m[4]) return { baseLabels: splitVertexToken(m[4]) };                    // prism (bottom face)
@@ -57,8 +66,10 @@ export function sectionNames(n: number, taken: string[]): string[] {
 // Pyramid head tolerant of "(tứ|tam) giác (đều)?" qualifier giữa "chóp" và nhãn.
 // solidRule.PYRAMID = /hình\s+chóp\s+([A-Z])\./ FAIL khi có qualifier → solidRule KHÔNG vẽ chóp.
 const PYRAMID_TOLERANT = /(?:hình\s*)?chóp\s+(?:(?:tứ|tam)\s*giác\s*)?(?:đều\s+)?([A-Z])\.([A-Z]+)/u;
-// Mirror CHÍNH XÁC solidRule.PYRAMID /hình\s+chóp\s+([A-Z])\.([A-Z]+)/ (kèm nhãn sau dấu chấm).
-const SOLID_RULE_PYRAMID = /hình\s+chóp\s+[A-Z]\.[A-Z]/u;
+// Head chóp mà solidRule VẼ — nguồn DUY NHẤT (solidRule import) để solidRuleDraws không lệch.
+// Dung nạp "hình chóp (tứ|tam) giác đều S.ABCD" / "hình chóp đều S.ABC".
+export const SOLID_PYRAMID_RE = /hình\s+chóp\s+(?:(?:tứ|tam)\s+giác\s+)?(?:đều\s+)?([A-Z])\.([A-Z]+)/u;
+const SOLID_RULE_PYRAMID = SOLID_PYRAMID_RE;
 
 /**
  * Parse chóp head, dung nạp qualifier "tứ/tam giác đều". `solidRuleDraws` = solidRule
@@ -68,20 +79,28 @@ const SOLID_RULE_PYRAMID = /hình\s+chóp\s+[A-Z]\.[A-Z]/u;
 export function parsePyramidTolerant(problem: string): { apex: string; base: string[]; solidRuleDraws: boolean } | null {
   const m = PYRAMID_TOLERANT.exec(problem);
   if (!m) return null;
-  return { apex: m[1], base: splitVertexToken(m[2]), solidRuleDraws: SOLID_RULE_PYRAMID.test(problem) };
+  return { apex: m[1], base: splitVertexToken(m[2]), solidRuleDraws: SOLID_RULE_PYRAMID.test(problem) || khoiDraws(problem, 'pyramid') };
 }
 
 // Prism head tolerant of "đều" qualifier. solidRule.PRISM = /lăng\s+trụ\s+[A-Z]{3,4}\./ FAIL
 // khi có "đều" chen ⟹ solidRule KHÔNG vẽ lăng trụ. (Mirror parsePyramidTolerant.)
 const PRISM_TOLERANT = /lăng\s*trụ(?:\s*đều)?\s+([A-Z]{3,4})\.((?:[A-Z]['′])+)/u;
-// Mirror CHÍNH XÁC solidRule.PRISM /lăng\s+trụ\s+([A-Z]{3,4})\.((?:[A-Z]['′])+)/ (kèm top prime).
-const SOLID_RULE_PRISM = /lăng\s+trụ\s+[A-Z]{3,4}\.(?:[A-Z]['′])+/u;
+// Head lăng trụ mà solidRule VẼ — nguồn DUY NHẤT (solidRule import). Dung nạp "đứng/đều/tam giác/tứ giác".
+export const SOLID_PRISM_RE = /lăng\s+trụ(?:\s+(?:đứng|đều|tam\s+giác|tứ\s+giác))*\s+([A-Z]{3,4})\.((?:[A-Z]['′])+)/u;
+const SOLID_RULE_PRISM = SOLID_PRISM_RE;
+
+/** solidRule đã lo khối qua nhánh lớp 12 (khoiDaDien: vẽ, hoặc từ chối vẽ) chưa. */
+function khoiDraws(problem: string, flavor: 'pyramid' | 'prism'): boolean {
+  const k = khoiDaDienFromProblem(chuanHoaDe3d(problem));
+  // Từ chối (dữ kiện không dựng đúng được) ⟹ cũng KHÔNG cho rule khác tự vẽ khối mặc định.
+  return !!k && (isRefused(k) || k.spec.flavor === flavor);
+}
 
 /** Parse lăng trụ head (đều-tolerant) → base + top labels + solidRuleDraws (bare → solidRule vẽ). */
 export function parsePrismTolerant(problem: string): { base: string[]; top: string[]; solidRuleDraws: boolean } | null {
   const m = PRISM_TOLERANT.exec(problem);
   if (!m) return null;
-  return { base: splitVertexToken(m[1]), top: splitVertexToken(m[2]), solidRuleDraws: SOLID_RULE_PRISM.test(problem) };
+  return { base: splitVertexToken(m[1]), top: splitVertexToken(m[2]), solidRuleDraws: SOLID_RULE_PRISM.test(problem) || khoiDraws(problem, 'prism') };
 }
 
 /** Implied base plane (3 base vertices) for "đáy"/"mặt đáy" with no (XYZ) token. */
@@ -91,4 +110,16 @@ export function baseFaceOf(problem: string): { planeName: string; p1: string; p2
   const [p1, p2, p3] = head.baseLabels;
   const clean = (s: string) => s.replace(/['′'´₀-₉0-9]/gu, '');
   return { planeName: `mp_${clean(p1)}${clean(p2)}${clean(p3)}`, p1, p2, p3 };
+}
+
+/**
+ * Mệnh đề còn nội dung hình học NGOÀI các đoạn rule đã hiểu? (vd "Gọi M, N lần lượt là trung
+ * điểm AB, CD, trên cạnh AD lấy điểm P" — rule trung điểm KHÔNG được claim cả mệnh đề, kẻo P
+ * bị bỏ mà vẫn báo FULL). Bỏ các đoạn đã hiểu + từ nối/động từ dẫn rồi đếm từ khoá hình học.
+ */
+export function residualHasGeometry(clause: string, understood: readonly string[]): boolean {
+  let rest = clause;
+  for (const u of understood) if (u) rest = rest.split(u).join(' ');
+  rest = rest.replace(/(?:Gọi|Cho|Lấy|Biết|biết|Cho\s+biết|Giả\s+sử|và|với|,|;|:)/gu, ' ');
+  return countGeometryKeywords3D(rest) > 0;
 }

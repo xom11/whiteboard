@@ -46,6 +46,8 @@ const CEVIAN_PATTERNS: ReadonlyArray<{ type: CevianType; patterns: readonly RegE
     patterns: [
       /(?:[Kk]ẻ|[Vv]ẽ|[Hh]ạ|[Dd]ựng)\s+[Đđ]ường\s*cao\s+([A-Z])([A-Z])(?![A-Z])/gu,
       /[Đđ]ường\s*cao\s+([A-Z])([A-Z])(?![A-Z])/gu,
+      // "chiều cao AH" (SGK lớp 8: "tam giác cân, chiều cao AH = 3 cm") = đường cao.
+      /[Cc]hiều\s*cao\s+([A-Z])([A-Z])(?![A-Z])/gu,
       /(?<![A-Z])([A-Z])([A-Z])\s+(?:là\s+|=\s+)?đường\s*cao/gu,
       // EN (issue #46 group B). g1=apex g2=foot, nhãn strict [A-Z], NO cờ 'i'.
       // First-letter flex [Aa] (HOA đầu câu "Altitude AH"); KHÔNG cờ 'i' (phá nhãn).
@@ -117,7 +119,8 @@ const CEVIAN_PATTERNS: ReadonlyArray<{ type: CevianType; patterns: readonly RegE
 // ĐẦU (cặp sau thiếu keyword). Capture blob → tách từng cặp (apex+foot).
 // Cặp đỉnh có thể có PRIME ở chân ("BB'", "CC'") — đề olympiad đặt chân đường cao
 // B', C'. apex = chữ đầu, foot = chữ + prime optional.
-const PAIR_LIST = String.raw`(?:[A-Z][A-Z](?:['′])?\s*,\s*)+[A-Z][A-Z](?:['′])?`;
+// Phân cách "," hoặc "và" ("các đường cao AH, BK và CP", "AD và CE là hai đường cao").
+const PAIR_LIST = String.raw`(?:[A-Z][A-Z](?:['′])?\s*(?:,|và)\s*)+[A-Z][A-Z](?:['′])?`;
 const CEVIAN_LISTS: ReadonlyArray<{ type: CevianType; re: RegExp }> = [
   { type: 'altitude', re: new RegExp(String.raw`[Đđ]ường\s*cao\s+(${PAIR_LIST})(?![A-Z])`, 'gu') },
   // Reverse-distributive (tên TRƯỚC, list): "AD,BE,CF (là) (các) đường cao"
@@ -129,7 +132,7 @@ const CEVIAN_LISTS: ReadonlyArray<{ type: CevianType; re: RegExp }> = [
   // nuốt chữ nối ("đường cao nhất"…). dedup theo (apex,foot,type) né trùng single.
   {
     type: 'altitude',
-    re: new RegExp(String.raw`(${PAIR_LIST})\s+(?:là\s+)?(?:các\s+)?đường\s*cao(?!\p{L})`, 'gu'),
+    re: new RegExp(String.raw`(${PAIR_LIST})\s+(?:là\s+)?(?:các\s+|hai\s+|ba\s+)?đường\s*cao(?!\p{L})`, 'gu'),
   },
   { type: 'median', re: new RegExp(String.raw`[Tt]rung\s*tuyến\s+(${PAIR_LIST})(?![A-Z])`, 'gu') },
   {
@@ -151,6 +154,7 @@ function splitCevianPair(tok: string): [string, string] | null {
 // boolean .test() thuần (KHÔNG capture nhãn) nên cờ 'i' AN TOÀN.
 const PREFILTER = [
   /[Đđ]ường\s*cao/u,
+  /[Cc]hiều\s*cao/u,
   /[Tt]rung\s*tuyến/u,
   /[Pp]hân\s*giác/u,
   /median/i,
@@ -217,7 +221,7 @@ export const cevianRule: LanguageRule = {
       for (const cl of CEVIAN_LISTS) {
         cl.re.lastIndex = 0;
         for (const m of c.text.matchAll(cl.re)) {
-          for (const tok of m[1].split(',').map((s) => s.trim())) {
+          for (const tok of m[1].split(/\s*,\s*|\s+và\s+/u).map((s) => s.trim())) {
             const pair = splitCevianPair(tok);
             if (pair) addCandidate(c.id, cl.type, pair[0], pair[1]);
           }

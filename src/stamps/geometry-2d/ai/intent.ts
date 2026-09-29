@@ -142,6 +142,18 @@ export const AddPointIntentZ = z.object({
     z.object({ kind: z.literal('externalAngleBisectorFoot'), from: LabelZ, onLine: z.string() }),
     // Cụm A
     z.object({ kind: z.literal('arcMidpoint'), circle: LabelZ, a: LabelZ, b: LabelZ, notContaining: LabelZ.optional(), containing: LabelZ.optional() }),
+    // Điểm chạy trên CUNG ab: cung nhỏ/lớn, hoặc cung không chứa/chứa `ref`.
+    // t ∈ (0,1) = vị trí ban đầu theo tỉ lệ góc quét; mặc định lệch khỏi giữa cung
+    // (0.35) để hình không gợi "điểm chính giữa cung" mà đề không cho.
+    z.object({
+      kind: z.literal('onArc'),
+      circle: LabelZ,
+      a: LabelZ,
+      b: LabelZ,
+      mode: z.enum(['minor', 'major', 'notContaining', 'containing']),
+      ref: LabelZ.optional(),
+      t: z.number().gt(0).lt(1).optional(),
+    }),
     z.object({ kind: z.literal('reflectPoint'), of: LabelZ, through: LabelZ }),
     z.object({ kind: z.literal('reflectLine'), of: LabelZ, through: z.string() }),
     z.object({ kind: z.literal('excenter'), of: z.tuple([LabelZ, LabelZ, LabelZ]), opposite: LabelZ }),
@@ -159,10 +171,22 @@ export const AddPointIntentZ = z.object({
         z.object({ kind: z.literal('segmentLength'), p1: LabelZ, p2: LabelZ, scale: z.number().positive().optional(), offset: z.number().optional() }),
         z.object({ kind: z.literal('literal'), value: z.number().positive(), scale: z.number().positive().optional(), offset: z.number().optional() }),
       ]),
+      // Vắng = đặt ngoài `through` (tia from→through kéo dài). 'from' = đặt từ
+      // `from` về phía `through`: "Trên cạnh AB lấy E sao cho AE = AD".
+      origin: z.literal('from').optional(),
     }),
     // Tiếp điểm tiếp tuyến CHUNG 2 đường tròn (spec mục A). circles = 2 tên đtròn;
     // on = tiếp điểm trên đtròn 0 hay 1; variant = ngoài/trong; side = chọn 1 trong
     // 2 tiếp tuyến cùng loại.
+    // Tổ hợp affine Σ weights[i]·points[i] (Σ = 1): điểm theo đẳng thức vectơ có ≥ 3
+    // điểm ("vectơ MA + vectơ MB + 2 vectơ MC = vectơ 0"), đỉnh thứ tư hình bình hành.
+    z.object({
+      kind: z.literal('affine'),
+      points: z.array(LabelZ).min(2).max(8),
+      weights: z.array(z.number()).min(2).max(8),
+      rot: z.array(z.number()).min(2).max(8).optional(),
+      awayFrom: LabelZ.optional(),
+    }),
     z.object({
       kind: z.literal('commonTangentPoint'),
       circles: z.tuple([LabelZ, LabelZ]),

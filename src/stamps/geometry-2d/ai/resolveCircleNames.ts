@@ -193,7 +193,8 @@ function rewriteCircleRefs(intent: IntentT, rename: Map<string, string>): Intent
       c.kind === 'secondIntersection' ||
       c.kind === 'externalToCircle' ||
       c.kind === 'onCircle' ||
-      c.kind === 'arcMidpoint'
+      c.kind === 'arcMidpoint' ||
+      c.kind === 'onArc'
     ) {
       const newCircle = rename.get(c.circle);
       if (newCircle) {

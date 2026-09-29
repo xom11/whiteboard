@@ -5,6 +5,24 @@
 // hình → draw-shape với shape + variant tương ứng.
 import type { LanguageRule, RuleContext, RuleMatch } from './_types';
 import { drawShape, drawCircle, addPoint, markShape } from './_shared';
+import { toaDoTuGiacTheoDe } from './quadLayout';
+import { dungTuDinhCo } from './quadFromExisting';
+import { doCanhDeCho } from './triangleLengths';
+
+/** Mọi độ dài đề cho (cùng một thang) khớp tỉ lệ trên toạ độ. */
+function khopSoDo(P: Record<string, readonly [number, number]>, lens: Map<string, number>): boolean {
+  let thang: number | undefined;
+  for (const [k, v] of lens) {
+    if (k.includes(':') || !P[k[0]] || !P[k[1]]) continue;
+    const d = Math.hypot(P[k[0]][0] - P[k[1]][0], P[k[0]][1] - P[k[1]][1]) / v;
+    if (thang === undefined) thang = d;
+    else if (Math.abs(d - thang) > 1e-6 * thang) return false;
+  }
+  return true;
+}
+import { toaDoTuGiacTheoSoDo } from './quadLengths';
+import { hinhBinhHanhTrenCanh } from './parallelogramOnSides';
+import { tenHinhTrenCanh } from './figuresOnSides';
 
 // LƯU Ý: \b của JS dựa trên ASCII word-char nên KHÔNG khớp quanh ký tự Việt
 // ("đ","ề","ạ"…). Dùng lookaround \p{L} (cờ 'u') ở prefilter để chặn biên từ.
@@ -210,13 +228,16 @@ function scanClause(text: string): Hit[] {
 // đồng viên. polygon nối 4 đỉnh qua mark-shape (không tạo coord mới).
 //
 // 4 đỉnh trên đường tròn bán kính 5 (đồng viên), góc theta cố định cho layout lồi
-// A→B→C→D (chiều kim đồng hồ), bảo toàn bố cục cũ.
-const CYCLIC_QUAD_COORDS: readonly [number, number][] = [
-  [-3, 4],
-  [4, 3],
-  [3, -4],
-  [-4, -3],
-];
+// A→B→C→D (chiều kim đồng hồ).
+// FIX 2026-09-29: bộ cũ (−3,4), (4,3), (3,−4), (−4,−3) là một HÌNH VUÔNG: AD ∥ BC,
+// AB ∥ CD ⇒ mọi đề HSG "AD cắt BC tại P", "AB cắt CD tại Q" ra giao điểm ở vô cực
+// (điểm biến mất mà hình vẫn "đủ"), và hình gợi ý tính chất đề không cho. Nay tứ
+// giác nội tiếp tổng quát: A 118°, B 32°, C −62°, D −152° (không cặp cạnh nào song
+// song, không đường chéo nào là đường kính).
+const CYCLIC_QUAD_COORDS: readonly [number, number][] = [118, 32, -62, -152].map((deg) => {
+  const t = (deg * Math.PI) / 180;
+  return [5 * Math.cos(t), 5 * Math.sin(t)] as [number, number];
+});
 // Bán kính + góc theta dẫn xuất TỪ toạ độ trên (đồng bộ layout): glider đặt tại
 // (cos θ, sin θ)·r quanh tâm → giữ đúng vị trí lồi như bản free cũ.
 const CYCLIC_RADIUS = Math.hypot(CYCLIC_QUAD_COORDS[0][0], CYCLIC_QUAD_COORDS[0][1]);
@@ -293,14 +314,19 @@ function ownedByOthers(ctx: RuleContext, selfLabels: string[]): Set<string> {
  * dùng đỉnh đã có). CHỈ hình có đỉnh NGOÀI tứ giác mới là xung đột thật (đặt theo
  * toạ độ riêng → phá đồng viên). Khắc phục C29 (cyclic quad + tâm nội tiếp ABD).
  */
-function conflictingOwners(ctx: RuleContext, quadLabels: string[]): Set<string> {
+function conflictingOwners(ctx: RuleContext, quadLabels: string[], quadPos = Infinity): Set<string> {
   const quadSet = new Set(quadLabels);
   const owned = new Set<string>();
   const addIfOutside = (verts: string[]) => {
     if (verts.some((v) => !quadSet.has(v))) for (const v of verts) owned.add(v);
   };
   TRIANGLE_DECL.lastIndex = 0;
-  for (const m of ctx.problem.matchAll(TRIANGLE_DECL)) addIfOutside([m[1], m[2], m[3]]);
+  // Chỉ tam giác nêu TRƯỚC tứ giác mới "giữ" toạ độ đỉnh. Tam giác nhắc SAU ("tâm
+  // đường tròn ngoại tiếp tam giác ADX" với X lấy trên cạnh CD) chỉ tham chiếu đỉnh
+  // đã có — trước đây nó chặn nhánh nội tiếp nên đường tròn (O) mất hẳn.
+  for (const m of ctx.problem.matchAll(TRIANGLE_DECL)) {
+    if (m.index! < quadPos) addIfOutside([m[1], m[2], m[3]]);
+  }
   const selfKey = quadLabels.join('');
   for (const c of ctx.clauses) {
     for (const h of scanClause(c.text)) {
@@ -371,15 +397,37 @@ export const quadRule: LanguageRule = {
           ],
         });
       }
+      const trenCanh = new Set([...hinhBinhHanhTrenCanh(ctx.problem).map((h) => h.ten), ...tenHinhTrenCanh(ctx.problem)]);
       for (const hit of scanClause(c.text)) {
-        let intents = [drawShape(hit.shape, hit.labels, hit.variant)];
+        // Hình bình hành / hình vuông … dựng trên cạnh hình có sẵn: parallelogramOnSides /
+        // figuresOnSides dựng.
+        if (trenCanh.has(hit.labels.join(''))) continue;
+        // Ba đỉnh đã có từ hình nêu trước → dựng đỉnh thứ tư (không đặt tự do).
+        const tuDinhCo = dungTuDinhCo(ctx.problem, Math.max(0, ctx.problem.indexOf(c.text)) + hit.index, hit.shape, hit.labels);
+        if (tuDinhCo) {
+          out.push({ ruleId: 'quad', clauseIds: [c.id], intents: tuDinhCo });
+          continue;
+        }
+        // Toạ độ theo dữ kiện đề — MỘT điểm quyết định: quadLayout (cặp đáy, tỉ lệ cạnh/
+        // đường chéo, góc; tự kiểm lại mọi dữ kiện) trước, không được thì quadLengths
+        // (số đo dạng chữ "cạnh a", "AB = 2a, AD = DC = a"); không có gì ⇒ hình mẫu.
+        let theoDe = toaDoTuGiacTheoDe(ctx.problem, hit.shape, hit.variant, hit.labels);
+        // quadLayout chỉ đọc số thuần; số đo dạng chữ ("AB = 2a, AD = DC = a") nó không
+        // thấy ⇒ kiểm lại bằng bộ đọc chung doCanhDeCho, lệch thì nhường quadLengths.
+        if (theoDe && !khopSoDo(theoDe.coords, doCanhDeCho(ctx.problem, hit.labels))) theoDe = undefined;
+        const theoSoDo = theoDe ? undefined : toaDoTuGiacTheoSoDo(hit.shape, hit.variant, hit.labels as [string, string, string, string], ctx.problem);
+        let intents = [
+          theoDe
+            ? drawShape(hit.shape, hit.labels, theoDe.variant, theoDe.coords)
+            : drawShape(hit.shape, hit.labels, hit.variant, theoSoDo),
+        ];
         // Chỉ tứ giác CHUNG: thử phát hiện đường tròn ngoại tiếp.
         if (hit.shape === 'quadrilateral') {
           const center = detectCyclic(c.text, hit);
           if (center !== undefined) {
             // Fail-safe: đỉnh dùng chung với hình XUNG ĐỘT (có đỉnh NGOÀI tứ giác)
             // → giữ quad-only. Tam giác con (⊆ đỉnh tứ giác) KHÔNG xung đột (C29).
-            const owned = conflictingOwners(ctx, hit.labels);
+            const owned = conflictingOwners(ctx, hit.labels, Math.max(0, ctx.problem.indexOf(c.text)) + hit.index);
             const shared = hit.labels.some((lbl) => owned.has(lbl));
             if (!shared) {
               const centerName = center || 'O';

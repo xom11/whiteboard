@@ -124,10 +124,15 @@ describe('lineCircleIntersectionRule', () => {
 });
 
 describe('lineCircleIntersection — "cắt (O) tại hai điểm M, N" (cả 2 nhánh)', () => {
-  it('M=branch0, N=branch1 intersection lineCircle', () => {
+  it('M = giao GẦN B (tia BD gặp (O) đầu tiên), N = giao còn lại', () => {
     const it = run('BD cắt (O) tại hai điểm M, N').flatMap((m) => m.intents) as any[];
-    expect(it.find((i) => i.name === 'M').constraint).toEqual({ kind: 'intersection', of: ['BD', 'O'], branch: 0 });
-    expect(it.find((i) => i.name === 'N').constraint).toEqual({ kind: 'intersection', of: ['BD', 'O'], branch: 1 });
+    expect(it.find((i) => i.name === 'M').constraint).toEqual({ kind: 'secondIntersection', line: 'BD', circle: 'O', other: 'B' });
+    expect(it.find((i) => i.name === 'N').constraint).toEqual({ kind: 'secondIntersection', line: 'BD', circle: 'O', other: 'M' });
+  });
+  it('"sao cho BN < BM" ⇒ đảo: N gần B', () => {
+    const it = run('BD cắt (O) tại hai điểm M, N sao cho BN < BM').flatMap((m) => m.intents) as any[];
+    expect(it.find((i) => i.name === 'N').constraint).toEqual({ kind: 'secondIntersection', line: 'BD', circle: 'O', other: 'B' });
+    expect(it.find((i) => i.name === 'M').constraint).toEqual({ kind: 'secondIntersection', line: 'BD', circle: 'O', other: 'N' });
   });
 });
 
@@ -223,5 +228,14 @@ describe('lineCircleIntersection — residue', () => {
     expect(ints).toEqual([
       { op: 'add-point', name: 'K', constraint: { kind: 'secondIntersection', line: 'BM', circle: 'O', other: 'M' } },
     ]);
+  });
+});
+
+describe('lineCircleIntersection — chủ ngữ không phải đường tham chiếu / đường kính của đường tròn khác', () => {
+  it('"Đường tròn đường kính OM cắt (O; R) tại hai điểm E, F" KHÔNG thành giao của ĐƯỜNG THẲNG OM', () => {
+    expect(run('Đường tròn đường kính OM cắt đường tròn (O; R) tại hai điểm E, F').flatMap((m) => m.intents)).toEqual([]);
+  });
+  it('"Đường thẳng đi qua C và vuông góc với AB cắt nửa đường tròn tại K" KHÔNG thành giao của AB', () => {
+    expect(run('Đường thẳng đi qua C và vuông góc với AB cắt nửa đường tròn tại K').flatMap((m) => m.intents)).toEqual([]);
   });
 });

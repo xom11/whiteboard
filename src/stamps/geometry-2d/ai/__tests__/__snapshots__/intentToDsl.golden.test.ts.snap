@@ -1291,7 +1291,7 @@ exports[`intentsToDsl — golden (behavior-preserving Mức 3) curated: onSegmen
       "kind": "onSegment",
       "name": "P",
       "segmentId": "AB",
-      "t": 0.5,
+      "t": 0.4,
     },
   ],
   "shapes": [
@@ -3841,8 +3841,8 @@ exports[`intentsToDsl — golden (behavior-preserving Mức 3) generated[20]: Ch
     {
       "kind": "free",
       "name": "M",
-      "x": 0,
-      "y": 0,
+      "x": 5.9,
+      "y": 3.9000000000000004,
     },
     {
       "kind": "orthocenter",

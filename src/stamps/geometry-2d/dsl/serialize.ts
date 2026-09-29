@@ -200,6 +200,19 @@ function serializePoint(obj: SceneObject<PointAttrs>, state: State): SerializedE
       };
     }
 
+    case 'onArc': {
+      const baseRefs = c.ref ? [c.circle, c.a, c.b, c.ref] : [c.circle, c.a, c.b];
+      const refs = resolveRefs(baseRefs, state);
+      if (!refs) return fail('unresolved-ref', baseRefs.join(','));
+      return {
+        ok: true,
+        entity: {
+          name: obj.label, kind: 'onArc', circle: refs[0], a: refs[1], b: refs[2],
+          mode: c.mode, t: c.t, ...(c.ref ? { ref: refs[3] } : {}),
+        },
+      };
+    }
+
     case 'excenter': {
       const refs = resolveRefs([c.vertices[0], c.vertices[1], c.vertices[2], c.opposite], state);
       if (!refs) return fail('unresolved-ref', `${c.vertices.join(',')},${c.opposite}`);
@@ -234,7 +247,7 @@ function serializePoint(obj: SceneObject<PointAttrs>, state: State): SerializedE
       if (d.offset !== undefined) distance.offset = d.offset;
       return {
         ok: true,
-        entity: { name: obj.label, kind: 'pointAtDistance', from: refs[0], through: refs[1], distance },
+        entity: { name: obj.label, kind: 'pointAtDistance', from: refs[0], through: refs[1], distance, ...(c.origin ? { origin: c.origin } : {}) },
       };
     }
 
@@ -250,6 +263,20 @@ function serializePoint(obj: SceneObject<PointAttrs>, state: State): SerializedE
           on: c.on,
           variant: c.variant,
           side: c.side,
+        },
+      };
+    }
+
+    case 'affine': {
+      const ids = c.awayFrom ? [...c.points, c.awayFrom] : [...c.points];
+      const refs = resolveRefs(ids, state);
+      if (!refs) return fail('unresolved-ref', ids.join(','));
+      return {
+        ok: true,
+        entity: {
+          name: obj.label, kind: 'affine', points: refs.slice(0, c.points.length), weights: [...c.weights],
+          ...(c.rot ? { rot: [...c.rot] } : {}),
+          ...(c.awayFrom ? { awayFrom: refs[c.points.length] } : {}),
         },
       };
     }

@@ -7,6 +7,8 @@ import { addPoint, defaultFreeCoord, resolveSegmentRef } from '../shared';
 import type { AddPointIntentT } from '../../intent';
 import { LINE_LIKE_SHAPE_KINDS } from '../../../dsl/registry';
 
+const T_TUY_Y = 0.4;
+
 export const buildOnSegment = (s: BuildState, intent: AddPointIntentT): void => {
   const c = intent.constraint;
   if (c.kind !== 'onSegment') return;
@@ -21,7 +23,10 @@ export const buildOnSegment = (s: BuildState, intent: AddPointIntentT): void => 
     addPoint(s, { name: intent.name, kind: 'onLine', lineId: ref, t: c.t ?? 0.5 });
     return;
   }
-  addPoint(s, { name: intent.name, kind: 'onSegment', segmentId: ref, t: c.t ?? 0.5 });
+  // Điểm "bất kì trên cạnh" KHÔNG đặt đúng trung điểm: ở tam giác cân, trung điểm
+  // đáy trùng chân đường cao → hình rơi vào trường hợp đặc biệt, có khi suy biến
+  // ("Lấy M trên cạnh BC … đường vuông góc với BC tại M cắt AB tại E" ⇒ E ≡ A).
+  addPoint(s, { name: intent.name, kind: 'onSegment', segmentId: ref, t: c.t ?? T_TUY_Y });
 };
 
 export const buildFree = (s: BuildState, intent: AddPointIntentT): void => {

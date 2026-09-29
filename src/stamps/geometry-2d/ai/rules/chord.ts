@@ -55,6 +55,51 @@ const THETA_A = 2.3;
 const THETA_B = 0.7;
 const THETA_STEP = 0.9;
 
+/**
+ * Thetas cho HAI DÂY VUÔNG GÓC NHAU tại M, cắt nhau bên trong đường tròn. Hệ trục
+ * riêng: dây 1 (AB) nằm ngang y = d1, dây 2 (CD) thẳng đứng x = d2, M = (d2, d1);
+ * A = (−h1, d1), B = (h1, d1), C = (d2, h2), D = (d2, −h2) với h = nửa độ dài dây.
+ * Dữ kiện đề: độ dài hai dây ("AB = 18 cm, CD = 14 cm") và một đoạn từ M tới đầu
+ * mút ("MC = 4 cm") → dựng ĐÚNG tỉ lệ; thiếu đoạn từ M → chọn R giữa max(h) và
+ * √(h1²+h2²) (điều kiện cắt nhau bên trong); thiếu độ dài dây → hai dây bằng nhau.
+ */
+function thetaDayVuongGoc(
+  problem: string,
+  d1: { a: string; b: string },
+  d2: { a: string; b: string },
+  giao?: string,
+): [[number, number], [number, number]] {
+  const doDai = (x: string, y: string) => {
+    const re = new RegExp(`(?<![A-Z])(?:${x}${y}|${y}${x})\\s*=\\s*(\\d+(?:[.,]\\d+)?)`, 'u');
+    const m = re.exec(problem);
+    return m ? Number(m[1].replace(',', '.')) : undefined;
+  };
+  const L1 = doDai(d1.a, d1.b);
+  const L2 = doDai(d2.a, d2.b);
+  const [h1, h2] = L1 && L2 ? [L1 / 2, L2 / 2] : [1, 1];
+  let y1: number | undefined; // d1
+  let x2: number | undefined; // d2
+  if (L1 && L2 && giao) {
+    const tu = (p: string) => doDai(giao, p);
+    if (tu(d2.a) !== undefined) y1 = h2 - tu(d2.a)!;
+    else if (tu(d2.b) !== undefined) y1 = tu(d2.b)! - h2;
+    else if (tu(d1.a) !== undefined) x2 = tu(d1.a)! - h1;
+    else if (tu(d1.b) !== undefined) x2 = h1 - tu(d1.b)!;
+  }
+  let R: number;
+  if (y1 !== undefined) R = Math.hypot(h1, y1);
+  else if (x2 !== undefined) R = Math.hypot(h2, x2);
+  else R = (Math.max(h1, h2) + Math.hypot(h1, h2)) / 2;
+  y1 ??= Math.sqrt(Math.max(R * R - h1 * h1, 0));
+  x2 ??= Math.sqrt(Math.max(R * R - h2 * h2, 0));
+  // Dữ kiện mâu thuẫn (M ngoài một dây) → bố cục không dữ kiện.
+  if (!(Math.abs(x2) < h1 && Math.abs(y1) < h2) || Math.abs(Math.hypot(h2, x2) - R) > 1e-9 * R) {
+    return thetaDayVuongGoc('', d1, d2);
+  }
+  const g = (x: number, y: number) => Math.atan2(y, x);
+  return [[g(-h1, y1), g(h1, y1)], [g(x2, h2), g(x2, -h2)]];
+}
+
 // Prefilter toàn đề ("Dây" HOA đầu câu cũng khớp).
 const PREFILTER = /[Dd]ây/u;
 
@@ -113,6 +158,19 @@ function inscribedTriangleVertices(problem: string, circle: string): Set<string>
   return out;
 }
 
+const SECANT_TOKEN = /cát\s*tuyến\s+[A-Z]([A-Z])([A-Z])(?![A-Z])/gu;
+const SECANT_THROUGH =
+  /[Qq]ua\s+(?:điểm\s+)?[A-Z](?!\p{L})[^.]{0,30}?cắt\s+(?:lại\s+)?(?:nửa\s+)?(?:đường\s*tròn\s*)?(?:\(\s*[A-Z]\s*\)\s*|[A-Z]\s+)?(?:tại|ở)\s+(?:hai\s+|2\s+)?(?:điểm\s+)?([A-Z])\s*(?:và|,)\s*([A-Z])(?![A-Z])/gu;
+
+/** Điểm do cát tuyến định nghĩa (khớp các dạng rule secant nhận). */
+function secantPoints(problem: string): Set<string> {
+  const out = new Set<string>();
+  for (const re of [SECANT_TOKEN, SECANT_THROUGH]) {
+    for (const m of problem.matchAll(re)) { out.add(m[1]); out.add(m[2]); }
+  }
+  return out;
+}
+
 export const chordRule: LanguageRule = {
   id: 'chord',
   // Dưới circleRadius (75) — nếu circle O có bán kính cụ thể, định nghĩa đó thắng.
@@ -130,12 +188,18 @@ export const chordRule: LanguageRule = {
     // Đỉnh tam giác nội tiếp O — đã trên đường tròn (qua circumcircle). KHÔNG
     // gắn onCircle (tránh CYCLE qua O_c=through3); connect vẫn dựng dây.
     const inscribedVerts = inscribedTriangleVertices(ctx.problem, circle);
+    // Hai giao điểm của cát tuyến ("cát tuyến ABC", "qua A cắt (O) tại D và E")
+    // do rule secant dựng ĐÚNG thứ tự gần→xa. Gắn onCircle tự do ở đây (prio 71 >
+    // secant 58) là đè mất: "dây BC" của cát tuyến ABC từng ra B xa, C gần.
+    for (const p of secantPoints(ctx.problem)) inscribedVerts.add(p);
 
     // Gom các dây hợp lệ.
     interface Chord {
       clauseId: number;
       a: string;
       b: string;
+      /** thetas cố định (dây ⊥ nhau) — vắng = bố cục mặc định. */
+      th?: [number, number];
     }
     const chords: Chord[] = [];
     const seen = new Set<string>(); // "a|b" (chuẩn hoá thứ tự) tránh trùng
@@ -153,8 +217,18 @@ export const chordRule: LanguageRule = {
       // "vuông góc" (2 dây ⊥ NHAU ≠ perpChordThroughPoint — httcd:65/68).
       CHORD_TWO.lastIndex = 0;
       for (const m of c.text.matchAll(CHORD_TWO)) {
+        const n0 = chords.length;
         pushChord(c.id, m[1], m[2]);
         pushChord(c.id, m[3], m[4]);
+        // "… vuông góc với nhau": bố cục mặc định KHÔNG vuông góc (hình sai đề) →
+        // đặt thetas để hai dây ⊥ và cắt nhau bên trong đường tròn.
+        const sau = c.text.slice((m.index ?? 0) + m[0].length);
+        const vg = /^\s*(?:vuông\s*góc|⊥)\s*(?:với\s+)?nhau(?:\s+(?:tại|ở)\s+([A-Z])(?![A-Z]))?/u.exec(sau);
+        if (chords.length === n0 + 2 && vg) {
+          const [t1, t2] = thetaDayVuongGoc(ctx.problem, chords[n0], chords[n0 + 1], vg[1]);
+          chords[n0].th = t1;
+          chords[n0 + 1].th = t2;
+        }
       }
       // GUARD (chỉ dây ĐƠN fwd/rev): dây cung VUÔNG GÓC (qua điểm, ⊥ đoạn) →
       // perpChordThroughPoint sở hữu (D,E là giao của đường ⊥ với đường tròn SẴN CÓ).
@@ -184,8 +258,9 @@ export const chordRule: LanguageRule = {
       const offset = k * THETA_STEP;
       const intents = [];
       // Đầu mút là đỉnh tam giác nội tiếp O → BỎ onCircle (đã trên O, tránh cycle).
-      if (!inscribedVerts.has(ch.a)) intents.push(addPoint(ch.a, { kind: 'onCircle', circle, theta: THETA_A + offset }));
-      if (!inscribedVerts.has(ch.b)) intents.push(addPoint(ch.b, { kind: 'onCircle', circle, theta: THETA_B + offset }));
+      const [ta, tb] = ch.th ?? [THETA_A + offset, THETA_B + offset];
+      if (!inscribedVerts.has(ch.a)) intents.push(addPoint(ch.a, { kind: 'onCircle', circle, theta: ta }));
+      if (!inscribedVerts.has(ch.b)) intents.push(addPoint(ch.b, { kind: 'onCircle', circle, theta: tb }));
       intents.push(connect(ch.a, ch.b, 'segment'));
       out.push({ ruleId: 'chord', clauseIds: [ch.clauseId], intents });
     });

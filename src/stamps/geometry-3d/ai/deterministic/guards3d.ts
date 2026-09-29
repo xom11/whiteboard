@@ -3,10 +3,11 @@ import type { State } from '../../../../core/scene';
 // Khớp đầu khối: "hình chóp S.ABCD" → S + ABCD, "tứ diện ABCD" → ABCD, "lăng trụ ABC.A'B'C'" → ABC + A'B'C'.
 // Mỗi nhóm capture lấy 1 phần, code dưới tách ký tự đơn lẻ.
 const SOLID_HEAD =
-  /(?:hình\s+chóp\s+([A-Z])\.([A-Z'′₀-₉0-9]+))|(?:tứ\s+diện(?:\s+đều)?\s+([A-Z'′]{4}))|(?:lăng\s+trụ\s+([A-Z]{3,})\.([A-Z'′]+))/gu;
+  /(?:hình\s+chóp\s+(?:(?:tứ|tam)\s+giác\s+)?(?:đều\s+)?([A-Z])\.([A-Z'′₀-₉0-9]+))|(?:tứ\s+diện(?:\s+đều)?\s+([A-Z'′]{4}))|(?:lăng\s+trụ(?:\s+(?:đứng|đều|tam\s+giác|tứ\s+giác))*\s+([A-Z]{3,})\.([A-Z'′]+))/gu;
 
 // "Gọi M là…" / "Lấy điểm K…" / "Dựng điểm N…"
-const GOI = /(?:Gọi|Lấy|Dựng)\s+(?:điểm\s+)?([A-Z])(?![\p{L}])/gu;
+// Nhãn có chỉ số/prime (G1, G') — trước đây cắt "G1" thành "G" ⇒ đòi điểm G không tồn tại.
+const GOI = /(?:Gọi|Lấy|Dựng)\s+(?:điểm\s+)?([A-Z](?:\d|['′])?)(?![\p{L}\d])/gu;
 
 // "X là trung điểm…" / "X là chân…" — chỉ lấy tên ĐỘC LẬP (HOA, không đứng sau chữ)
 const LA_NAMED = /(?<![A-Za-z\p{L}])([A-Z])\s+là\s+(?!hình\s+chóp|tứ\s+diện|lăng\s+trụ)/gu;
@@ -65,6 +66,11 @@ export function allNamedEntities3DPresent(
   while ((m = laRe.exec(problem)) !== null) {
     expected.add(m[1]);
   }
+
+  // "trung điểm H của AC" | "trọng tâm G của tam giác …" | "tâm O" | "giao điểm I của …" — tên đặt
+  // giữa mô tả (không có "là"): trước đây lọt guard ⇒ FULL mà thiếu điểm H.
+  const EMBED = /(?:trung\s+điểm|trọng\s+tâm|giao\s+điểm|(?<![\p{L}])tâm)\s+(?:là\s+)?([A-Z])(?![\p{L}A-Z'′\d])/gu;
+  while ((m = EMBED.exec(problem)) !== null) expected.add(m[1]);
 
   const labels = new Set(
     Object.values(state.objects)

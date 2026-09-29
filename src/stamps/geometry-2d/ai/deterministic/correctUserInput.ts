@@ -136,8 +136,13 @@ const SYMBOL_MAP: ReadonlyArray<readonly [RegExp, string]> = [
 ];
 
 /** Tầng 1: gộp xuống dòng + khoảng trắng dư về 1 space; áp bảng ký hiệu. */
+// Ý con xuống dòng KHÔNG có dấu chấm cuối dòng trước ("a) Chứng minh ADE cân⏎b) Gọi M
+// là trung điểm …") — gộp dòng sẽ dính hai ý thành một mệnh đề chứng minh, nuốt mất
+// phần dựng hình của ý sau. Chèn dấu chấm trước nhãn ý a)…h) đầu dòng.
+const Y_CON_XUONG_DONG = /([^\s.;:!?])[ \t]*\n\s*(?=[a-h]\s*\)\s)/gu;
+
 function applyStructure(s: string): string {
-  let out = s;
+  let out = s.replace(Y_CON_XUONG_DONG, '$1.\n');
   for (const [re, to] of SYMBOL_MAP) out = out.replace(re, to);
   return out.replace(/\s+/g, ' ').trim();
 }

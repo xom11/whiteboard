@@ -54,6 +54,7 @@ function describeEntity(e: DslPointT | DslShapeT): string {
     case 'excircle':            return `${e.name} = đường tròn bàng tiếp ${e.vertices.join('')} đối diện ${e.opposite}`;
     // Cụm A
     case 'arcMidpoint':   return `${e.name} = trung điểm cung ${e.a}${e.b}${e.containing || e.notContaining ? ` (${e.containing ? 'chứa' : 'không chứa'} ${e.containing ?? e.notContaining})` : ''} trên ${e.circle}`;
+    case 'onArc':         return `${e.name} ∈ cung ${e.mode === 'minor' ? 'nhỏ ' : e.mode === 'major' ? 'lớn ' : ''}${e.a}${e.b}${e.ref ? ` (${e.mode === 'containing' ? 'chứa' : 'không chứa'} ${e.ref})` : ''} trên ${e.circle}`;
     case 'excenter':      return `${e.name} = tâm bàng tiếp ${e.vertices.join('')} đối diện ${e.opposite}`;
     case 'mixtilinearPoint': return `${e.name} = ${e.which === 'center' ? 'tâm' : 'tiếp điểm'} mixtilinear ${e.vertices.join('')}`;
     case 'reflectPoint':  return `${e.name} = đối xứng ${e.of} qua điểm ${e.through}`;
@@ -64,9 +65,11 @@ function describeEntity(e: DslPointT | DslShapeT): string {
       const distStr = d.kind === 'circleRadius' ? `r(${d.circle})`
         : d.kind === 'segmentLength' ? `|${d.p1}${d.p2}|`
         : `${d.value}`;
-      return `${e.name} = điểm trên tia ${e.from}${e.through} cách ${e.through} một khoảng ${distStr}`;
+      const moc = e.origin === 'from' ? e.from : e.through;
+      return `${e.name} = điểm trên tia ${e.from}${e.through} cách ${moc} một khoảng ${distStr}`;
     }
     case 'onPerpBisector': return `${e.name} = điểm trên trung trực ${e.p1}${e.p2}`;
+    case 'affine': return `${e.name} = ${e.points.map((p, i) => `${+e.weights[i].toFixed(4)}·${p}`).join(' + ')}${e.rot ? ` + J(${e.points.map((p, i) => `${+e.rot![i].toFixed(4)}·${p}`).join(' + ')})` : ''}${e.awayFrom ? ` (khác phía ${e.awayFrom})` : ''}`;
     case 'commonTangentPoint': {
       const v = e.variant === 'internal' ? 'trong' : 'ngoài';
       return `${e.name} = tiếp điểm tiếp tuyến chung ${v} ${e.circles[0]},${e.circles[1]} (trên ${e.circles[e.on]})`;

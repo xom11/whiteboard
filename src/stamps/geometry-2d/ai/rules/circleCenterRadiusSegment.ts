@@ -22,11 +22,11 @@
 import type { LanguageRule, RuleMatch } from './_types';
 import { addPoint, drawCircle, drawLine, CIRCLE_KW } from './_shared';
 
-// "(đường tròn) tâm <X> bán kính <X><Y>" — bán kính là ĐOẠN (2 chữ HOA), chữ đầu
+// "(đường tròn) tâm <X>(,)? bán kính <X><Y>" — bán kính là ĐOẠN (2 chữ HOA), chữ đầu
 // trùng tâm. Loại bán kính số (\d) / ký hiệu [Rr] (circleRadius sở hữu).
 const CENTER_RADIUS_SEG = new RegExp(
   CIRCLE_KW +
-    '\\s*(?:\\(\\s*)?(?:tâm\\s+)?([A-Z])(?:\\s*\\))?\\s*bán\\s*kính\\s+([A-Z])([A-Z])(?![A-Z])',
+    '\\s*(?:\\(\\s*)?(?:tâm\\s+)?([A-Z])(?:\\s*\\))?\\s*,?\\s*bán\\s*kính\\s+([A-Z])([A-Z])(?![A-Z])',
   'u',
 );
 

@@ -76,14 +76,18 @@ export type DslPointT =
   | { name: Name; kind: 'tangentPointExt'; from: Name; circle: Name; which: 0 | 1 }
   // Cụm A
   | { name: Name; kind: 'arcMidpoint'; circle: Name; a: Name; b: Name; notContaining?: Name; containing?: Name }
+  // Điểm chạy trên cung AB (cung nhỏ/lớn/không chứa ref/chứa ref) — glider trên cung.
+  | { name: Name; kind: 'onArc'; circle: Name; a: Name; b: Name; mode: 'minor' | 'major' | 'notContaining' | 'containing'; ref?: Name; t: number }
   | { name: Name; kind: 'excenter'; vertices: [Name, Name, Name]; opposite: Name }
   | { name: Name; kind: 'mixtilinearPoint'; vertices: [Name, Name, Name]; which: 'center' | 'touch' }
   | { name: Name; kind: 'reflectPoint'; of: Name; through: Name }
   | { name: Name; kind: 'reflectLine'; of: Name; through: Name }
   // Cụm B points
-  | { name: Name; kind: 'pointAtDistance'; from: Name; through: Name; distance: DslDistanceSpec }
+  | { name: Name; kind: 'pointAtDistance'; from: Name; through: Name; distance: DslDistanceSpec; origin?: 'from' }
   // Tiếp điểm tiếp tuyến CHUNG 2 đường tròn (T1, A đợt — spec mục A).
-  | { name: Name; kind: 'commonTangentPoint'; circles: [Name, Name]; on: 0 | 1; variant: 'external' | 'internal'; side: 0 | 1 };
+  | { name: Name; kind: 'commonTangentPoint'; circles: [Name, Name]; on: 0 | 1; variant: 'external' | 'internal'; side: 0 | 1 }
+  // Tổ hợp affine Σ weights[i]·points[i] (Σ weights = 1) — điểm theo đẳng thức vectơ.
+  | { name: Name; kind: 'affine'; points: Name[]; weights: number[]; rot?: number[]; awayFrom?: Name };
 
 export type DslShapeT =
   | { name: Name; kind: 'segment'; p1: Name; p2: Name }

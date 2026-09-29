@@ -36,12 +36,14 @@ import { circleCRModule } from './kinds/circles/circleCR';
 import { incircleModule } from './kinds/circles/incircle';
 import { excircleModule } from './kinds/circles/excircle';
 import { arcMidpointModule } from './kinds/points/arcMidpoint';
+import { onArcModule } from './kinds/points/onArc';
 import { excenterModule } from './kinds/points/excenter';
 import { mixtilinearPointModule } from './kinds/points/mixtilinearPoint';
 import { reflectPointModule } from './kinds/points/reflectPoint';
 import { reflectLineModule } from './kinds/points/reflectLine';
 import { pointAtDistanceModule } from './kinds/points/pointAtDistance';
 import { commonTangentPointModule } from './kinds/points/commonTangentPoint';
+import { affineModule } from './kinds/points/affine';
 
 const ALL_MODULES: ReadonlyArray<DslKindModule> = [
   freeModule, midpointModule, onPerpBisectorModule, onSegmentModule, onLineModule, onCircleModule,
@@ -58,11 +60,13 @@ const ALL_MODULES: ReadonlyArray<DslKindModule> = [
   // NEW Tier 4+5 circles
   circleCRModule, incircleModule, excircleModule,
   // Cụm A points
-  arcMidpointModule, excenterModule, mixtilinearPointModule, reflectPointModule, reflectLineModule,
+  arcMidpointModule, onArcModule, excenterModule, mixtilinearPointModule, reflectPointModule, reflectLineModule,
   // Cụm B points
   pointAtDistanceModule,
   // 2-circle relations (spec mục A)
   commonTangentPointModule,
+  // Đẳng thức vectơ (Toán 10)
+  affineModule,
 ];
 
 export const KIND_REGISTRY: ReadonlyMap<string, DslKindModule> =

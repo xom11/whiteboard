@@ -59,6 +59,41 @@ export function verifyFigure3d(state: State): { ok: boolean; issues: string[] } 
       }
     }
 
+    // intersectionLines: 2 đường phải ĐỒNG PHẲNG và không song song — chéo nhau thì constraint trả
+    // trung điểm đoạn ⊥ chung (KHÔNG phải giao điểm) ⇒ hình sai đề.
+    if (c.kind === 'intersectionLines') {
+      try {
+        const [a1, b1, a2, b2] = [c.a1, c.b1, c.a2, c.b2].map((id: string) => ptWorld(state, id));
+        const u = [b1[0] - a1[0], b1[1] - a1[1], b1[2] - a1[2]];
+        const v = [b2[0] - a2[0], b2[1] - a2[1], b2[2] - a2[2]];
+        const w = [a2[0] - a1[0], a2[1] - a1[1], a2[2] - a1[2]];
+        const n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+        const nl = Math.hypot(n[0], n[1], n[2]);
+        const scale = Math.hypot(u[0], u[1], u[2]) * Math.hypot(v[0], v[1], v[2]);
+        if (nl <= 1e-9 * Math.max(1, scale)) issues.push(`${obj.label}: hai đường song song — không có giao điểm`);
+        else if (Math.abs(n[0] * w[0] + n[1] * w[1] + n[2] * w[2]) / nl > 1e-6) issues.push(`${obj.label}: hai đường chéo nhau — không có giao điểm`);
+      } catch (e) {
+        issues.push(`${obj.label}: intersectionLines check lỗi — ${(e as Error).message}`);
+      }
+    }
+
+    // commonPerpFoot: 2 đường phải CHÉO NHAU (song song ⇒ đường ⊥ chung vô định; cắt nhau ⇒
+    // khoảng cách 0 — hình không thể hiện đề).
+    if (c.kind === 'commonPerpFoot') {
+      try {
+        const [a1, b1, a2, b2] = [c.a1, c.b1, c.a2, c.b2].map((id: string) => ptWorld(state, id));
+        const u = [b1[0] - a1[0], b1[1] - a1[1], b1[2] - a1[2]];
+        const v = [b2[0] - a2[0], b2[1] - a2[1], b2[2] - a2[2]];
+        const w = [a2[0] - a1[0], a2[1] - a1[1], a2[2] - a1[2]];
+        const n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+        const nl = Math.hypot(n[0], n[1], n[2]);
+        if (nl <= 1e-9) issues.push(`${obj.label}: hai đường song song — đường vuông góc chung vô định`);
+        else if (Math.abs(n[0] * w[0] + n[1] * w[1] + n[2] * w[2]) / nl < 1e-6) issues.push(`${obj.label}: hai đường cắt nhau — không chéo nhau`);
+      } catch (e) {
+        issues.push(`${obj.label}: commonPerpFoot check lỗi — ${(e as Error).message}`);
+      }
+    }
+
     // Kiểm tra intersectionLinePlane: điểm nằm trên mặt + param t∈[0,1]
     if (c.kind === 'intersectionLinePlane') {
       try {
@@ -294,6 +329,16 @@ export function verifyFigure3d(state: State): { ok: boolean; issues: string[] } 
     } catch (e) {
       issues.push(`${obj.label || obj.id}: polygon check lỗi — ${(e as Error).message}`);
     }
+  }
+
+  // Hai điểm CÙNG nhãn (vd "hình chiếu của A trên SB" từng bị hiểu thành "A ∈ SB" → A thứ hai):
+  // hình mâu thuẫn chính nó — từ chối ("thà thiếu còn hơn sai"). Nhãn rỗng (điểm mặt cắt) bỏ qua.
+  const seen = new Set<string>();
+  for (const obj of Object.values(state.objects)) {
+    if (obj.kind !== 'point3d' || !obj.label) continue;
+    const k = obj.label.replace(/[′’´]/gu, "'");
+    if (seen.has(k)) issues.push(`${obj.label}: nhãn điểm bị trùng`);
+    seen.add(k);
   }
 
   return { ok: issues.length === 0, issues };

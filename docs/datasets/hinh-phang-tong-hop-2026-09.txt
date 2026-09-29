@@ -1,0 +1,803 @@
+Bài 1 [lop7|tam-giac-can|ngan]: Cho tam giác ABC cân đỉnh A. Gọi BD, CE lần lượt là phân giác trong góc B, C của tam giác ABC. Chứng minh rằng tam giác ADE là tam giác cân.
+
+Bài 2 [lop7|tam-giac-can|trung-binh]: Cho tam giác ABC có AD là đường phân giác trong góc A (D ∈ BC). Trên cạnh AB lấy điểm I, trên cạnh AC lấy điểm H sao cho AI = AH. Chứng minh rằng tam giác IDH là tam giác cân.
+
+Bài 3 [lop7|tam-giac-deu|ngan]: Cho tam giác ABC có góc A = 120°. Trên tia phân giác của góc A lấy điểm D sao cho AD = AB + AC. Chứng minh rằng tam giác BCD đều.
+
+Bài 4 [lop7|tam-giac-can|ngan]: Cho tam giác ABC có góc A = 100°, góc C = 40°.
+a) Chứng minh rằng tam giác ABC cân.
+b) Trên tia đối của tia AB lấy điểm D sao cho AD = AB. Chứng minh rằng tam giác BCD là tam giác vuông.
+
+Bài 5 [lop7|tam-giac-can|trung-binh]: Cho tam giác nhọn ABC có AD là phân giác trong góc A (D ∈ BC). Đường thẳng qua D song song với AB cắt AC tại I, đường thẳng qua D song song với AC cắt AB tại K. Chứng minh rằng tam giác IDK là tam giác cân.
+
+Bài 6 [lop7|duong-cao|trung-binh]: Cho tam giác nhọn ABC. Kẻ AD ⊥ BC (D ∈ BC) và BE ⊥ AC (E ∈ AC). Gọi H là giao điểm của AD và BE. Biết rằng AH = BC, tính số đo góc BAC.
+
+Bài 7 [lop7|tam-giac-can|ngan]: Cho tam giác ABC cân tại A. Trên các cạnh AB, AC lần lượt lấy các điểm M, N sao cho AM = AN. Chứng minh rằng CM = BN.
+
+Bài 8 [lop7|tam-giac-vuong|ngan]: Cho tam giác ABC vuông tại A, M là trung điểm của cạnh huyền BC. Chứng minh rằng MA = MB = MC = BC/2.
+
+Bài 9 [lop7|tam-giac-can|ngan]: Cho tam giác ABC cân tại A có góc A = 36°. Tia phân giác góc B cắt cạnh AC tại điểm D. Chứng minh rằng DA = DB = BC.
+
+Bài 10 [lop7|tam-giac-can|trung-binh]: Cho tam giác ABC cân đỉnh A, gọi M là trung điểm của BC. Trên cạnh AB lấy điểm D. Từ D kẻ đường vuông góc với AM tại K và kéo dài cắt cạnh AC tại E. Chứng minh AD = AE.
+
+Bài 11 [lop7|tam-giac-can|ngan]: Cho tam giác ABC cân đỉnh A có M, N lần lượt là trung điểm của AB, AC. Chứng minh rằng MN // BC và MN = BC/2.
+
+Bài 12 [lop7|trung-tuyen|ngan]: Cho tam giác ABC có BC = 2AB, M là trung điểm của cạnh BC, D là trung điểm của BM. Chứng minh rằng AC = 2AD.
+
+Bài 13 [lop7|tam-giac-can|trung-binh]: Cho tam giác ABC cân tại A có góc A < 90°, kẻ BD vuông góc với AC. Trên cạnh AB lấy điểm E sao cho AE = AD. Chứng minh rằng:
+a) DE // BC.
+b) CE ⊥ AB.
+
+Bài 14 [lop7|trung-truc|trung-binh]: Cho góc vuông xOy. Điểm M nằm trong góc đó. Vẽ điểm N và P sao cho tia Ox là đường trung trực của MN và Oy là đường trung trực của MP.
+a) Chứng minh ON = OP.
+b) Chứng minh ba điểm P, O, N thẳng hàng.
+
+Bài 15 [lop7|trung-truc|ngan]: Cho tam giác ABC vuông tại A. Đường trung trực của đoạn thẳng AC cắt AC tại H, cắt BC tại D. Nối A và D.
+a) So sánh số đo góc DAB và góc DBA.
+b) Chứng minh D là trung điểm của BC.
+
+Bài 16 [lop7|trung-truc|ngan]: Cho tam giác ABC. Các đường trung trực của AB và AC cắt cạnh BC theo thứ tự ở M và N.
+a) Biết góc B = 30°, góc C = 45°. Tính số đo góc BAC và góc MAN.
+b) Chứng minh góc MAN = 2.góc BAC − 180°.
+
+Bài 17 [lop7|trung-truc|ngan]: Cho đoạn thẳng AB = 5 cm. Vẽ đường tròn tâm A bán kính 4 cm và đường tròn tâm B bán kính 3 cm. Hai đường tròn này cắt nhau tại D, E. Chứng minh:
+a) Điểm A thuộc đường trung trực của DE.
+b) AB là đường trung trực của DE.
+
+Bài 18 [lop7|trung-truc|ngan]: Cho tam giác ABC, đường phân giác AD. Trên tia AC lấy điểm E sao cho AE = AB. Chứng minh:
+a) BD = DE;
+b) AD là đường trung trực của BE.
+
+Bài 19 [lop7|trung-truc|trung-binh]: Cho tam giác DEF có DE = DF. Lấy điểm K nằm trong tam giác sao cho KE = KF. Kẻ KP vuông góc với DE (P ∈ DE), KQ vuông góc với DF (Q ∈ DF). Chứng minh:
+a) K thuộc đường trung trực của EF và PQ;
+b) DK là đường trung trực của EF và PQ. Từ đó suy ra PQ // EF.
+
+Bài 20 [lop7|tam-giac-can|trung-binh]: Cho tam giác ABC cân tại A, M là trung điểm của BC. ME vuông góc với AB, MF vuông góc với AC. Chứng minh:
+a) AM là trung trực của BC;
+b) ME = MF và AM là trung trực của EF;
+c) EF // BC.
+
+Bài 21 [lop7|trung-truc|dai]: Cho góc xOy khác góc bẹt, Oz là tia phân giác của góc xOy. Gọi M là một điểm bất kì thuộc tia Oz. Qua M vẽ đường thẳng a vuông góc với Ox tại A, cắt Oy tại C và vẽ đường thẳng b vuông góc với Oy tại B, cắt Ox tại D. Chứng minh:
+a) Điểm O thuộc đường trung trực của AB;
+b) OM là đường trung trực của AB;
+c) OM là đường trung trực của CD;
+d) AB // CD.
+
+Bài 22 [lop7|trung-truc|dai]: Cho tam giác ABC cân tại A (góc A < 90°). Đường trung trực của cạnh AC cắt tia CB tại điểm D. Trên tia đối của tia AD lấy điểm E sao cho AE = BD.
+a) Chứng minh tam giác ADC cân;
+b) Chứng minh góc DAC = góc ABC;
+c) Chứng minh AD = CE;
+d) Lấy F là trung điểm của DE. Chứng minh CF là đường trung trực của DE.
+
+Bài 23 [lop7|trung-truc|trung-binh]: Cho tam giác ABC vuông tại A. Tia phân giác của góc B cắt AC tại E. Từ E kẻ EH vuông góc với BC tại H.
+a) Chứng minh: tam giác ABE = tam giác HBE.
+b) Chứng minh BE là đường trung trực của đoạn thẳng AH.
+c) Kẻ AD ⊥ BC (D ∈ BC). Chứng minh AH là tia phân giác của góc DAC.
+
+Bài 24 [lop7|trung-truc|trung-binh]: Cho tam giác ABC vuông tại A. M là trung điểm của cạnh AB. Đường trung trực của cạnh AB cắt cạnh BC tại N. Gọi I là giao điểm của CM và AN.
+a) Chứng minh tam giác ANB là tam giác cân. So sánh góc NAB và góc NBA.
+b) Chứng minh N là trung điểm của BC.
+c) Nếu IB = IC, tính số đo góc ABC.
+
+Bài 25 [lop7|tam-giac-can|dai]: Cho tam giác ABC cân tại A. Lấy điểm M trên cạnh BC. Trên tia đối của tia CB lấy điểm N sao cho BM = CN. Đường thẳng qua M vuông góc với BC cắt AB tại E. Đường thẳng qua N vuông góc với BC cắt AC tại F.
+a) Chứng minh: EM = FN.
+b) Qua E kẻ ED // AC (D ∈ BC). Chứng minh MB = MD.
+c) EF cắt BC tại O. Chứng minh OE = OF.
+
+Bài 26 [lop7|trong-tam|trung-binh]: Cho tam giác ABC cân tại A có hai đường trung tuyến BD và CE cắt nhau tại G.
+a) Chứng minh BD = CE.
+b) Chứng minh tam giác GBC là tam giác cân.
+c) Chứng minh GD + GE > BC/2.
+
+Bài 27 [lop7|trong-tam|trung-binh]: Cho tam giác ABC. Trên cạnh BC lấy điểm G sao cho BG = 2GC. Vẽ điểm D sao cho C là trung điểm của AD. Gọi E là trung điểm của BD. Chứng minh:
+a) Ba điểm A, G, E thẳng hàng.
+b) Đường thẳng DG đi qua trung điểm của AB.
+
+Bài 28 [lop7|tam-giac-deu|ngan]: Cho tam giác đều ABC có ba đường trung tuyến AD, BE, CF cắt nhau tại G. Chứng minh:
+a) AD = BE = CF.
+b) GA = GB = GC.
+
+Bài 29 [lop7|trung-tuyen|ngan]: Cho tam giác ABC cân ở A, đường trung tuyến AM.
+a) Chứng minh AM ⊥ BC.
+b) Tính AM biết rằng AB = 10 cm, BC = 12 cm.
+
+Bài 30 [lop7|trong-tam|ngan]: Cho tam giác ABC có hai đường trung tuyến AD và BE vuông góc với nhau tại G. Biết AD = 4,5 cm, BE = 6 cm. Tính độ dài AB.
+
+Bài 31 [lop7|trong-tam|trung-binh]: Cho tam giác ABC có đường trung tuyến AD, trên đoạn thẳng AD lấy hai điểm E, G sao cho AE = EG = GD. Chứng minh G là trọng tâm tam giác ABC.
+
+Bài 32 [lop7|trong-tam|trung-binh]: Cho tam giác ABC, điểm M thuộc đoạn thẳng BC sao cho BM = 2MC. Trên tia đối của tia CA lấy điểm D sao cho CD = CA. Gọi E là giao điểm của AM và BD.
+a) Chứng minh M là trọng tâm tam giác ABD.
+b) Chứng minh AM đi qua trung điểm của BD.
+
+Bài 33 [lop7|trong-tam|trung-binh]: Cho tam giác ABC có hai đường trung tuyến BD, CE cắt nhau tại G. Trên tia đối của tia DB lấy điểm M sao cho DM = DG. Trên tia đối của tia EG lấy điểm N sao cho EN = EG. Chứng minh rằng:
+a) BG = GM; CG = GN.
+b) MN = BC và MN // BC.
+
+Bài 34 [lop7|phan-giac|trung-binh]: Cho tam giác ABC cân tại A. Kẻ các đường phân giác BD, CE. Lấy M là trung điểm của BC. Chứng minh rằng:
+a) AM là đường phân giác của góc BAC;
+b) Ba đường thẳng AM, BD, CE đồng quy.
+
+Bài 35 [lop7|phan-giac|ngan]: Cho tam giác ABC, đường phân giác AD. Các đường phân giác ngoài tại đỉnh B và C cắt nhau ở E. Chứng minh rằng ba điểm A, D, E thẳng hàng.
+
+Bài 36 [lop7|phan-giac|ngan]: Cho tam giác ABC cân tại A. Gọi I là điểm nằm trong tam giác và cách đều ba cạnh của tam giác đó. Chứng minh rằng AI vuông góc với BC.
+
+Bài 37 [lop7|phan-giac|ngan]: Cho tam giác MNP cân tại M có G là trọng tâm. I là điểm nằm trong tam giác và cách đều ba cạnh của tam giác đó. Chứng minh rằng ba điểm M, G, I thẳng hàng.
+
+Bài 38 [lop7|phan-giac|ngan]: Cho tam giác ABC. Các đường phân giác của góc B và góc C cắt nhau tại I.
+a) Nếu góc A = 70°, hãy tính số đo góc BIC.
+b) Nếu góc BIC = 140°, hãy tính số đo góc A.
+c) Chứng minh rằng góc BIC = 90° + góc A/2.
+
+Bài 39 [lop7|phan-giac|trung-binh]: Cho tam giác ABC có CF là đường phân giác của góc C (F ∈ AB). Qua F kẻ đường thẳng song song với BC cắt AC ở E.
+a) Chứng minh tam giác FEC là tam giác cân.
+b) Trên cạnh BC lấy điểm D sao cho CD = FE. Chứng minh FE = FD.
+
+Bài 40 [lop7|phan-giac|trung-binh]: Cho tam giác DEF có DE = DF, hạ DK ⊥ EF (K ∈ EF). Gọi EM, FN lần lượt là đường phân giác trong các góc E và F của tam giác DEF. Chứng minh rằng:
+a) DK là đường phân giác của góc EDF.
+b) DK, EM, FN đồng quy.
+
+Bài 41 [lop7|phan-giac|trung-binh]: Cho tam giác ABC. Các đường phân giác các góc ngoài tại đỉnh A và C cắt nhau ở K.
+a) Chứng minh rằng BK là phân giác của góc ABC.
+b) Cho các đường phân giác của góc A và góc C trong tam giác ABC cắt nhau ở I. Chứng minh rằng B, I, K thẳng hàng.
+
+Bài 42 [lop7|phan-giac|dai]: Cho tam giác đều ABC. Qua B kẻ đường thẳng d // AC và hạ BM ⊥ AC (M ∈ AC). Qua C kẻ đường thẳng d' // AB và hạ CN ⊥ AB (N ∈ AB). Hai đường thẳng d và d' cắt nhau tại P. Chứng minh rằng:
+a) Đường phân giác của góc A và hai đường BM, CN đồng quy.
+b) BM ⊥ BP.
+
+Bài 43 [lop7|phan-giac|trung-binh]: Cho tam giác ABC cân tại A. CP, BQ là các đường phân giác trong của tam giác ABC (P ∈ AB, Q ∈ AC). Gọi O là giao điểm của CP và BQ.
+a) Chứng minh tam giác OBC là tam giác cân.
+b) Chứng minh điểm O cách đều ba cạnh AB, AC và BC.
+c) Chứng minh đường thẳng AO đi qua trung điểm của đoạn thẳng BC và vuông góc với nó.
+d) Chứng minh CP = BQ.
+e) Tam giác APQ là tam giác gì? Vì sao?
+
+Bài 44 [lop7|truc-tam|ngan]: Cho tam giác nhọn ABC, có H là trực tâm. Xác định trực tâm của các tam giác HAB, HAC, HBC.
+
+Bài 45 [lop7|duong-cao|trung-binh]: Cho tam giác nhọn ABC, đường cao AH. Vẽ ra phía ngoài của tam giác hai tam giác vuông cân ABD và ACE (góc ABD = góc ACE = 90°). Chứng minh ba đường thẳng AH, BE và CD cùng đi qua một điểm.
+
+Bài 46 [lop7|duong-cao|trung-binh]: Cho tam giác ABC, qua các đỉnh A, B, C kẻ các đường thẳng song song với cạnh đối diện, chúng cắt nhau tạo thành tam giác DEF. Chứng minh rằng đường cao của tam giác ABC là đường trung trực của tam giác DEF.
+
+Bài 47 [lop7|truc-tam|dai]: Cho tam giác ABC, I là trung điểm của BC. Vẽ ra phía ngoài của tam giác ABC hai tam giác đều ABE và ACF. Gọi H là trực tâm của tam giác ABE. Trên tia đối của tia IH lấy điểm K sao cho HI = IK. Chứng minh:
+a) Tam giác AHF = tam giác CKF.
+b) Tam giác KHF là tam giác đều.
+
+Bài 48 [lop7|duong-cao|dai]: Cho tam giác ABC vuông ở A, đường cao AH, phân giác AD. Gọi I, J lần lượt là giao điểm các đường phân giác trong của tam giác ABH, tam giác ACH. E là giao điểm của đường thẳng BI với AJ. Chứng minh rằng:
+a) Tam giác ABE là tam giác vuông.
+b) IJ ⊥ AD.
+
+Bài 49 [lop7|tam-giac-can|ngan]: Cho tam giác ABC có AB = AC. Gọi D là trung điểm của cạnh BC. Kẻ DE ⊥ AB, DF ⊥ AC. Chứng minh:
+a) Tam giác DEB = tam giác DFC;
+b) Tam giác DEA = tam giác DFA.
+
+Bài 50 [lop7|tam-giac-vuong|ngan]: Cho tam giác ABC vuông tại A và AB = AC. Qua A kẻ đường thẳng d cắt BC. Vẽ BM, CN vuông góc với d. Chứng minh rằng tam giác BAM = tam giác ACN.
+
+Bài 51 [lop7|tam-giac-vuong|trung-binh]: Cho tam giác ABC vuông tại A. Tia phân giác góc B cắt cạnh AC tại điểm M. Kẻ MD ⊥ BC (D ∈ BC).
+a) Chứng minh BA = BD;
+b) Gọi E là giao điểm của hai đường thẳng DM và BA. Chứng minh tam giác ABC = tam giác DBE.
+
+Bài 52 [lop7|tam-giac-can|trung-binh]: Cho tam giác ABC có AB = AC. Trên cạnh AB, AC lần lượt lấy các điểm M, N sao cho AM = AN. Các đường thẳng vuông góc với AB, AC tại M, N cắt nhau ở O. AO cắt BC tại H. Chứng minh:
+a) Tam giác AMO = tam giác ANO;
+b) HB = HC và AH ⊥ BC.
+
+Bài 53 [lop7|tam-giac-can|trung-binh]: Cho tam giác ABC có AB = AC. Đường thẳng vuông góc với AB tại B cắt đường thẳng vuông góc với AC tại C ở D. Gọi M là trung điểm cạnh BC. Chứng minh:
+a) Tam giác DAB = tam giác DAC;
+b) A, M, D thẳng hàng.
+
+Bài 54 [lop7|tam-giac-can|trung-binh]: Cho tam giác ABC nhọn có AB = AC, vẽ BD ⊥ AC tại D, CE ⊥ AB tại E. Gọi M là giao điểm của BD và CE. Chứng minh:
+a) Tam giác DBA = tam giác ECA;
+b) Tam giác EBC = tam giác DCB;
+c) Tam giác EAM = tam giác DAM.
+
+Bài 55 [lop7|phan-giac|ngan]: Cho góc xOy. Trên tia phân giác của góc đó lấy một điểm M, từ M hạ các đường vuông góc MA, MB xuống cạnh Ox, Oy. Chứng minh:
+a) Tam giác MAO = tam giác MBO;
+b) AB vuông góc với OM.
+
+Bài 56 [lop7|phan-giac|ngan]: Cho tam giác ABC. Các tia phân giác của góc B và C cắt nhau ở I. Kẻ ID ⊥ AB, IE ⊥ AC (D ∈ AB, E ∈ AC). Chứng minh rằng AD = AE.
+
+Bài 57 [lop8|hinh-binh-hanh|trung-binh]: Cho hình bình hành ABCD. Gọi E và F theo thứ tự là trung điểm của AB và CD.
+a) Chứng minh rằng AF // CE.
+b) Gọi M, N theo thứ tự là giao điểm của BD với AF, CE. Chứng minh rằng DM = MN = NB.
+
+Bài 58 [lop8|hinh-binh-hanh|trung-binh]: Cho hình bình hành ABCD, O là giao điểm của hai đường chéo, E và F theo thứ tự là trung điểm của OD và OB.
+a) Chứng minh rằng AE // CF.
+b) Gọi K là giao điểm của AE và DC. Chứng minh rằng DK = KC/2.
+
+Bài 59 [lop8|hinh-binh-hanh|ngan]: Cho tứ giác ABCD. Gọi E, F, G, H theo thứ tự là trung điểm của BD, AB, AC, CD.
+a) Chứng minh rằng EFGH là hình bình hành.
+b) Cho AD = a, BC = b. Tính chu vi của hình bình hành EFGH.
+
+Bài 60 [lop8|hinh-binh-hanh|trung-binh]: Cho tam giác ABC, trực tâm H. Các đường thẳng vuông góc với AB tại B, vuông góc với AC tại C cắt nhau tại D. Chứng minh rằng:
+a) BDCH là hình bình hành.
+b) góc BAC + góc BDC = 180°.
+c) H, M, D thẳng hàng (M là trung điểm của BC).
+
+Bài 61 [lop8|hinh-binh-hanh|dai]: Cho hình bình hành ABCD có E, F lần lượt là trung điểm AB, CD.
+a) Chứng minh rằng AF // EC.
+b) Chứng minh rằng ED = BF.
+c) Gọi O là giao điểm của AC và BD. Chứng minh rằng E, O, F thẳng hàng.
+d) AF cắt ED tại G, BF cắt EC tại H. Chứng minh rằng G, O, H thẳng hàng.
+e) Chứng minh rằng GH // CD.
+f) Giả sử AB = 4 cm. Tìm GH.
+
+Bài 62 [lop8|hinh-binh-hanh|ngan]: Cho hình bình hành ABCD. Lấy N ∈ AB, M ∈ CD sao cho AN = CM.
+a) Chứng minh rằng AM // CN.
+b) Chứng minh rằng DN = BM.
+c) Chứng minh rằng AC, BD, MN đồng quy.
+
+Bài 63 [lop8|hinh-binh-hanh|trung-binh]: Cho tam giác nhọn ABC. Vẽ ra phía ngoài của tam giác này các tam giác ABD và tam giác ACE vuông cân tại A. Gọi M là trung điểm của DE. Chứng minh rằng hai đường thẳng MA và BC vuông góc với nhau.
+
+Bài 64 [lop8|hinh-binh-hanh|trung-binh]: Cho hình bình hành ABCD. Vẽ ra ngoài hình bình hành các tam giác ABM vuông cân tại A, tam giác BCN vuông cân tại C. Chứng minh rằng tam giác DMN vuông cân.
+
+Bài 65 [lop8|tu-giac|ngan]: Cho tứ giác ABCD có AB = BC, CD = DA.
+a) Chứng minh BD là đường trung trực của AC;
+b) Cho góc B = 100°, góc D = 80°. Tính góc A và góc C.
+
+Bài 66 [lop8|hinh-thang-can|ngan]: Cho tam giác ABC cân tại A. Trên các cạnh bên AB, AC lấy theo thứ tự các điểm D và E sao cho AD = AE.
+a) Chứng minh BDEC là hình thang cân;
+b) Tính các góc của hình thang cân đó, biết rằng góc A = 50°.
+
+Bài 67 [lop8|hinh-thang-can|ngan]: Cho hình thang cân ABCD có AB // CD, đường chéo DB vuông góc với cạnh bên BC, DB là tia phân giác góc D. Tính chu vi của hình thang, biết BC = 3 cm.
+
+Bài 68 [lop8|hinh-thang-can|trung-binh]: Cho hình thang MNPQ (MN // PQ) có MP = NQ. Qua N kẻ đường thẳng song song với MP, cắt đường thẳng PQ tại K. Chứng minh:
+a) Tam giác NKQ là tam giác cân;
+b) Tam giác MPQ = tam giác NQP;
+c) MNPQ là hình thang cân.
+
+Bài 69 [lop8|hinh-thang-can|ngan]: Cho tam giác ABC cân tại A, các đường phân giác BD, CE (D ∈ AC, E ∈ AB).
+a) Chứng minh BEDC là hình thang cân;
+b) Tính các góc của hình thang cân BEDC, biết góc C = 50°.
+
+Bài 70 [lop8|hinh-thang-can|trung-binh]: Cho hình thang cân ABCD có AB // CD, O là giao điểm của hai đường chéo, E là giao điểm của hai đường thẳng chứa cạnh bên AD và BC. Chứng minh:
+a) OA = OB, OC = OD;
+b) EO là đường trung trực của hai đáy hình thang ABCD.
+
+Bài 71 [lop8|hinh-thang-can|ngan]: Cho hình thang ABCD (AD // BC, AD > BC) có đường chéo AC vuông góc với cạnh bên CD, AC là tia phân giác góc BAD và góc D = 60°.
+a) Chứng minh ABCD là hình thang cân;
+b) Tính độ dài cạnh AD, biết chu vi hình thang bằng 20 cm.
+
+Bài 72 [lop8|hinh-thang|ngan]: Cho hình thang ABCD (AB // CD) có AC = BD. Chứng minh ABCD là hình thang cân.
+
+Bài 73 [lop8|hinh-binh-hanh|trung-binh]: Cho hình bình hành ABCD, gọi O là giao điểm của hai đường chéo. Gọi P và Q lần lượt là trung điểm của OB, OD. Kẻ PM vuông góc với AB tại M, QN vuông góc với CD tại N. Chứng minh ba điểm M, O, N thẳng hàng và các đường thẳng AC, MN, PQ đồng quy.
+
+Bài 74 [lop8|hinh-binh-hanh|ngan]: Cho hình bình hành ABCD. Tia phân giác của góc D cắt AB ở E, tia phân giác của góc B cắt CD ở F.
+a) Chứng minh DE // BF;
+b) Tứ giác DEBF là hình gì?
+
+Bài 75 [lop8|hinh-binh-hanh|trung-binh]: Cho tam giác ABC. Từ một điểm E trên cạnh AC vẽ đường thẳng song song với BC cắt AB tại F và đường thẳng song song với AB cắt BC tại D. Giả sử AE = BF. Chứng minh:
+a) Tam giác AED cân;
+b) AD là phân giác của góc A.
+
+Bài 76 [lop8|hinh-binh-hanh|dai]: Cho hình bình hành ABCD. Gọi O là giao điểm hai đường thẳng AC và BD. Qua điểm O vẽ đường thẳng song song với AB cắt hai cạnh AD, BC lần lượt tại M, N. Trên AB, CD lần lượt lấy các điểm P, Q sao cho AP = CQ. Gọi I là giao điểm của AC và PQ. Chứng minh:
+a) Các tứ giác AMNB, APCQ là hình bình hành;
+b) Ba điểm M, N, I thẳng hàng;
+c) Ba đường thẳng AC, MN, PQ đồng quy.
+
+Bài 77 [lop8|hinh-chu-nhat|ngan]: Cho tam giác ABC, đường cao AH. Gọi I là trung điểm của AC. Lấy D là điểm đối xứng với H qua I. Chứng minh tứ giác AHCD là hình chữ nhật.
+
+Bài 78 [lop8|hinh-chu-nhat|trung-binh]: Cho tam giác ABC vuông cân tại C. Trên các cạnh AC, BC lấy lần lượt các điểm P, Q sao cho AP = CQ. Từ điểm P vẽ PM song song với BC (M ∈ AB). Chứng minh tứ giác PCQM là hình chữ nhật.
+
+Bài 79 [lop8|hinh-thoi|ngan]: Cho góc xOy và tia phân giác Oz. Từ điểm M thuộc Oz kẻ MA // Oy và MB // Ox (với A ∈ Ox, B ∈ Oy). Chứng minh tứ giác OAMB là hình thoi.
+
+Bài 80 [lop8|hinh-thoi|ngan]: Cho hình thoi ABCD có góc B = 60°. Kẻ AE ⊥ DC, AF ⊥ BC. Chứng minh:
+a) AE = AF;
+b) Tam giác AEF đều.
+
+Bài 81 [lop8|hinh-thoi|trung-binh]: Cho tam giác ABC, phân giác AD. Qua D kẻ đường thẳng song song với AC cắt AB tại E, qua D kẻ đường thẳng song song với AB cắt AC tại F. Chứng minh EF là phân giác của góc AED.
+
+Bài 82 [lop8|hinh-thoi|trung-binh]: Cho hình thoi ABCD, gọi O là giao điểm của hai đường chéo. Trên cạnh AB, BC, CD, DA lấy theo thứ tự các điểm M, N, P, Q sao cho AM = CN = CP = AQ. Chứng minh:
+a) M, O, P thẳng hàng và N, O, Q thẳng hàng;
+b) Tứ giác MNPQ là hình chữ nhật.
+
+Bài 83 [lop8|hinh-thoi|ngan]: Cho tam giác ABC, qua điểm D thuộc cạnh BC, kẻ các đường thẳng song song với AB và AC, cắt AC và AB theo thứ tự ở E và F.
+a) Tứ giác AEDF là hình gì?
+b) Điểm D ở vị trí nào trên BC thì AEDF là hình thoi?
+
+Bài 84 [lop8|hinh-vuong|ngan]: Cho tam giác ABC vuông tại A. Gọi AD là đường phân giác của góc A (D thuộc BC), từ D kẻ DE và DF lần lượt vuông góc với AB và AC. Chứng minh rằng AEDF là hình vuông.
+
+Bài 85 [lop8|hinh-vuong|ngan]: Cho hình vuông ABCD. Trên các cạnh AD, DC lần lượt lấy các điểm E, F sao cho AE = DF. Chứng minh:
+a) Các tam giác ADF và BAE bằng nhau.
+b) BE ⊥ AF.
+
+Bài 86 [lop8|hinh-vuong|ngan]: Cho tam giác ABC vuông tại A, M là một điểm thuộc cạnh BC. Qua M vẽ các đường thẳng song song với AB và AC, chúng cắt các cạnh AC, AB theo thứ tự tại E và F.
+a) Tứ giác AFME là hình gì?
+b) Xác định vị trí điểm M trên cạnh BC để tứ giác AFME là hình vuông.
+
+Bài 87 [lop8|hinh-vuong|trung-binh]: Cho hình vuông ABCD, trên các cạnh AB, BC, CD, DA lần lượt lấy M, N, P, Q sao cho AM = BN = CP = DQ. Chứng minh MNPQ là hình vuông.
+
+Bài 88 [lop8|hinh-vuong|trung-binh]: Cho hình bình hành ABCD. Vẽ về phía ngoài hình bình hành hai hình vuông ABEF và ADGH. Chứng minh:
+a) AC = FH.
+b) AC ⊥ FH.
+c) Tam giác CEG là tam giác vuông cân.
+
+Bài 89 [lop8|hinh-chu-nhat|dai]: Cho tam giác ABC vuông tại A, đường trung tuyến AM. Gọi H là điểm đối xứng với M qua AB, E là giao điểm của MH và AB. Gọi K là điểm đối xứng với M qua AC, F là giao điểm của MK và AC.
+a) Các tứ giác AEMF, AMBH, AMCK là hình gì? Vì sao?
+b) Chứng minh rằng H đối xứng với K qua A.
+c) Tam giác vuông ABC cần thêm điều kiện gì thì tứ giác AEMF là hình vuông?
+
+Bài 90 [lop8|hinh-binh-hanh|dai]: Cho hình bình hành ABCD có BC = 2AB, góc A = 60°. Gọi E, F theo thứ tự là trung điểm của BC, AD. Vẽ I đối xứng với A qua B.
+a) Tứ giác ABEF là hình gì? Vì sao?
+b) Chứng minh tứ giác AIEF là hình thang cân.
+c) Chứng minh BICD là hình chữ nhật.
+d) Tính góc AED.
+
+Bài 91 [lop8|hinh-chu-nhat|dai]: Cho tam giác ABC vuông tại B. Gọi E, F lần lượt là trung điểm của AC, BC. Kẻ Ex song song với BC cắt AB tại M.
+a) Chứng minh tứ giác BMEF là hình chữ nhật.
+b) Gọi K đối xứng với B qua E. Tứ giác BAKC là hình gì? Vì sao?
+c) Gọi G đối xứng với E qua F. Tứ giác BGCE là hình gì? Vì sao?
+d) Tam giác ABC cần thêm điều kiện gì để tứ giác BGCE là hình vuông?
+
+Bài 92 [lop8|hinh-thang-can|dai]: Cho tam giác ABC vuông tại A có AB < AC. Gọi M là trung điểm của BC, kẻ MD vuông góc với AB tại D, ME vuông góc với AC tại E.
+a) Chứng minh AM = DE.
+b) Chứng minh tứ giác DMCE là hình bình hành.
+c) Gọi AH là đường cao của tam giác ABC (H ∈ BC). Chứng minh tứ giác DHME là hình thang cân và A đối xứng với H qua DE.
+
+Bài 93 [lop8|hinh-vuong|dai]: Cho hình vuông ABCD. E là điểm trên cạnh DC, F là điểm trên tia đối của tia BC sao cho BF = DE.
+a) Chứng minh tam giác AEF vuông cân.
+b) Gọi I là trung điểm của EF. Chứng minh I thuộc BD.
+c) Lấy điểm K đối xứng với A qua I. Chứng minh tứ giác AEKF là hình vuông.
+
+Bài 94 [lop8|hinh-chu-nhat|trung-binh]: Cho tam giác ABC vuông tại A, đường trung tuyến AM. Gọi D là trung điểm của AB, E là điểm đối xứng của M qua D.
+a) Chứng minh E đối xứng với M qua đường thẳng AB.
+b) Các tứ giác AEMC, AEBM là hình gì? Vì sao?
+c) Tam giác vuông ABC cần thêm điều kiện gì thì tứ giác AEBM là hình vuông?
+
+Bài 95 [lop8|hinh-chu-nhat|dai]: Cho hình bình hành MNPQ có MN = 2MQ và góc M = 120°. Gọi I, K lần lượt là trung điểm của MN, PQ và A là điểm đối xứng của Q qua M.
+a) Tứ giác MIKQ là hình gì? Vì sao?
+b) Chứng minh tam giác AMI đều.
+c) Chứng minh tứ giác AMPN là hình chữ nhật.
+
+Bài 96 [lop8|hinh-binh-hanh|dai]: Cho tứ giác ABCD, E là trung điểm của cạnh AB. Qua E kẻ đường thẳng song song với AC cắt BC ở F. Qua F kẻ đường thẳng song song với BD cắt CD ở G. Qua G kẻ đường thẳng song song với AC cắt AD ở H.
+a) Chứng minh tứ giác EFGH là hình bình hành.
+b) Tứ giác ABCD cần thêm điều kiện gì để tứ giác EFGH là hình chữ nhật?
+
+Bài 97 [lop8|hinh-thoi|dai]: Cho tam giác ABC vuông ở A. Gọi E, G, F lần lượt là trung điểm của AB, BC, AC. Từ E kẻ đường thẳng song song với BF, đường thẳng này cắt GF tại I.
+a) Tứ giác AEGF là hình gì? Vì sao?
+b) Chứng minh tứ giác BEIF là hình bình hành.
+c) Chứng minh tứ giác AGCI là hình thoi.
+d) Tìm điều kiện của tam giác ABC để tứ giác AGCI là hình vuông.
+
+Bài 98 [lop8|dong-dang|ngan]: Cho tam giác ABC. Trên tia đối của tia AB lấy điểm D sao cho AD = 2AB. Trên tia đối của tia AC lấy điểm E sao cho AE = 2AC. Chứng minh tam giác ADE đồng dạng với tam giác ABC.
+
+Bài 99 [lop8|dong-dang|ngan]: Cho hình thang ABCD (AB // CD) có CD = 2AB. Gọi E là trung điểm của DC. Chứng minh ba tam giác EDA, ABE, CEB đồng dạng với nhau.
+
+Bài 100 [lop8|talet|ngan]: Cho tam giác ABC vuông tại A có AB = 6 cm, BC = 10 cm. Kẻ một đường thẳng song song với BC, cắt các cạnh AB và AC tại E và F. Biết AE = 2 cm, tính tỉ số đồng dạng của tam giác AEF và tam giác ABC và độ dài các đoạn AF, EF.
+
+Bài 101 [lop8|talet|trung-binh]: Cho tam giác ABC có AB = 5 cm, BC = 8 cm, AC = 7 cm. Điểm D nằm trên cạnh BC sao cho BD = 2 cm. Qua D kẻ các đường thẳng song song với AB và AC, cắt AC và AB lần lượt tại F và E.
+a) Chứng minh tam giác BDE đồng dạng với tam giác DCF.
+b) Tính chu vi tứ giác AEDF.
+
+Bài 102 [lop8|dong-dang|trung-binh]: Cho hình bình hành ABCD có AB = 6 cm, AD = 5 cm. Lấy F trên cạnh BC sao cho CF = 3 cm. Tia DF cắt tia AB tại G.
+a) Chứng minh tam giác GBF đồng dạng với tam giác DCF và tam giác GAD đồng dạng với tam giác DCF.
+b) Tính độ dài đoạn thẳng AG.
+c) Chứng minh AG.CF = AD.AB.
+
+Bài 103 [lop8|talet|trung-binh]: Cho tam giác ABC, kẻ Ax song song với BC. Từ trung điểm M của cạnh BC, kẻ một đường thẳng bất kì cắt Ax ở N, cắt AB ở P và cắt AC ở Q. Chứng minh: PN/PM = QN/QM.
+
+Bài 104 [lop8|talet|trung-binh]: Cho hình bình hành ABCD. Trên đường chéo AC lấy điểm E sao cho AC = 3AE. Qua E vẽ đường thẳng song song với CD, cắt AD và BC theo thứ tự ở M và N.
+a) Tìm các tam giác đồng dạng với tam giác ADC và tìm tỉ số đồng dạng.
+b) Điểm E nằm ở vị trí nào trên AC thì E là trung điểm của MN?
+
+Bài 105 [lop8|dong-dang|ngan]: Cho hình thoi ABCD, điểm M thuộc cạnh BC. Tia DM cắt tia AB tại N.
+a) Chứng minh tam giác ADN đồng dạng với tam giác CMD.
+b) Chứng minh AN.CM = AB².
+
+Bài 106 [lop8|dong-dang|ngan]: Cho tam giác ABC có AB = 4 cm, AC = 8 cm. Trên cạnh AC lấy D sao cho AD = 2 cm. Chứng minh:
+a) góc ABD = góc ACB;
+b) BC = 2BD.
+
+Bài 107 [lop8|dong-dang|ngan]: Cho tam giác AHB vuông tại H có HA = 4 cm, HB = 6 cm. Trên tia đối của tia HA lấy điểm C sao cho HC = 9 cm. Chứng minh:
+a) Tam giác AHB đồng dạng với tam giác BHC;
+b) Tam giác ABC vuông.
+
+Bài 108 [lop8|dong-dang|ngan]: Cho tam giác ABC có AB = 9 cm, AC = 12 cm, BC = 7 cm. Trên tia đối của tia BA lấy D sao cho BD = BC.
+a) Chứng minh tam giác ABC đồng dạng với tam giác ACD.
+b) Tính độ dài đoạn thẳng CD.
+c) Chứng minh góc ABC = 2.góc ACB.
+
+Bài 109 [lop8|dong-dang|trung-binh]: Cho tam giác ABC. Trên AB, AC lần lượt lấy các điểm D, E sao cho góc ACD = góc ABE và CD cắt BE tại O. Chứng minh:
+a) AD.AB = AE.AC;
+b) OC.OD = OB.OE.
+
+Bài 110 [lop8|dong-dang|trung-binh]: Cho tam giác ABC vuông tại A, đường cao AH. Tia phân giác của góc B cắt AH, AC lần lượt tại D, E.
+a) Chứng minh tam giác BAD đồng dạng với tam giác BCE và tam giác BHD đồng dạng với tam giác BAE.
+b) Chứng minh DH/DA = EA/EC.
+c) Biết AB = 3 cm, BC = 5 cm. Tính độ dài HB, HC.
+
+Bài 111 [lop8|dong-dang|trung-binh]: Cho tam giác ABC nhọn, các đường cao AD, BE, CF cắt nhau tại H. Chứng minh:
+a) Tam giác HBF đồng dạng với tam giác HCE.
+b) HB.HE = HF.HC = HA.HD.
+c) EH là tia phân giác của góc DEF.
+
+Bài 112 [lop8|dong-dang|trung-binh]: Cho tứ giác ABCD có góc ADB = góc ACB, hai đường chéo AC và BD cắt nhau tại O.
+a) Chứng minh tam giác AOD đồng dạng với tam giác BOC.
+b) Chứng minh tam giác AOB đồng dạng với tam giác DOC.
+c) Gọi E là giao điểm của các đường thẳng AB và CD. Chứng minh EA.EB = ED.EC.
+
+Bài 113 [lop8|dong-dang|trung-binh]: Cho hình thoi ABCD có góc A = 60°. Một đường thẳng đi qua A cắt các tia CD, CB lần lượt tại M và N.
+a) Chứng minh tam giác ADM đồng dạng với tam giác NBA.
+b) Chứng minh AD² = DM.BN, rồi suy ra tam giác MDB đồng dạng với tam giác DBN.
+c) Gọi O là giao điểm của BM và DN. Tính góc MON.
+
+Bài 114 [lop8|dong-dang|trung-binh]: Cho tam giác ABC đều, O là trung điểm của BC. Trên AB, AC lần lượt lấy M, N sao cho góc MON = 60°. Chứng minh:
+a) góc BMO = góc CON, từ đó suy ra tam giác BMO đồng dạng với tam giác CON.
+b) OM/ON = BM/BO.
+c) MO là tia phân giác của góc BMN.
+
+Bài 115 [lop8|dong-dang|trung-binh]: Cho tam giác ABC vuông tại A có AB = 6 cm, AC = 8 cm. Kẻ đường cao AH.
+a) Chứng minh AH.BC = AB.AC.
+b) Gọi M, N lần lượt là hình chiếu của H trên AB, AC. Chứng minh tam giác AMN đồng dạng với tam giác ACB.
+c) Tính diện tích tứ giác BMNC.
+
+Bài 116 [lop8|dong-dang|dai]: Cho hình chữ nhật ABCD có AD = 6 cm, AB = 8 cm. Gọi O là giao điểm của AC và BD. Qua D kẻ đường thẳng d vuông góc với BD, d cắt tia BC tại E.
+a) Chứng minh tam giác BDE đồng dạng với tam giác DCE.
+b) Kẻ CH ⊥ DE tại H. Chứng minh DC² = CH.DB.
+c) Gọi K là giao điểm của OE và HC. Chứng minh K là trung điểm của HC.
+
+Bài 117 [lop8|dong-dang|trung-binh]: Cho hình chữ nhật ABCD có AB = 12 cm, BC = 5 cm. Gọi H là hình chiếu của A trên BD, tia AH cắt CD tại K.
+a) Chứng minh tam giác ABD đồng dạng với tam giác DAK.
+b) Tính độ dài DK.
+
+Bài 118 [lop8|dong-dang|dai]: Cho tam giác ABC nhọn (AB < AC). Các đường cao BN, CP cắt nhau tại H.
+a) Chứng minh AN.AC = AP.AB.
+b) Chứng minh tam giác ANP đồng dạng với tam giác ABC.
+c) Gọi E, F lần lượt là hình chiếu của P, N trên BN, CP. Chứng minh EF // BC.
+
+Bài 119 [lop8|dong-dang|trung-binh]: Cho tam giác ABC vuông tại A (AB < AC) và trung tuyến AD. Qua D kẻ đường thẳng vuông góc với AD cắt AC và AB lần lượt tại E và F.
+a) Chứng minh tam giác ABC đồng dạng với tam giác AEF.
+b) Chứng minh BC² = 4DE.DF.
+
+Bài 120 [lop8|dong-dang|trung-binh]: Cho tam giác ABC nhọn. Kẻ các đường cao BD và CE cắt nhau tại H.
+a) Chứng minh AD.AC = AE.AB.
+b) Chứng minh tam giác ADE đồng dạng với tam giác ABC.
+c) Chứng minh BH.BD + CH.CE = BC².
+
+Bài 121 [lop8|dong-dang|ngan]: Cho tam giác ABC vuông tại A, đường cao AH. Chứng minh:
+a) AB² = BH.BC;
+b) AH² = HB.HC.
+
+Bài 122 [lop9|duong-tron-ngoai-tiep|trung-binh]: Cho tam giác đều ABC cạnh bằng a, các đường cao BM, CN. Gọi O là trung điểm của BC.
+a) Chứng minh rằng B, C, M, N cùng thuộc đường tròn (O).
+b) Gọi G là giao điểm của BM và CN. Chứng minh điểm G nằm trong, điểm A nằm ngoài đối với đường tròn đường kính BC.
+
+Bài 123 [lop9|duong-tron-ngoai-tiep|trung-binh]: Cho tam giác ABC có góc A = 90°, đường cao AH. Từ M là điểm bất kỳ trên cạnh BC, kẻ MD ⊥ AB, ME ⊥ AC. Chứng minh 5 điểm A, D, M, H, E cùng nằm trên một đường tròn.
+
+Bài 124 [lop9|duong-tron-ngoai-tiep|trung-binh]: Cho hình vuông ABCD. Gọi M, N lần lượt là trung điểm của AB, BC. Gọi E là giao điểm của CM và DN.
+a) Tính số đo góc CEN.
+b) Chứng minh A, D, E, M cùng nằm trên 1 đường tròn.
+c) Xác định tâm của đường tròn đi qua 3 điểm B, D, E.
+
+Bài 125 [lop9|day-cung|ngan]: Cho đường tròn tâm O, hai dây AB và CD vuông góc với nhau ở M. Biết AB = 18 cm, CD = 14 cm, MC = 4 cm. Hãy tính khoảng cách từ tâm O đến mỗi dây AB và CD.
+
+Bài 126 [lop9|nua-duong-tron|ngan]: Cho nửa đường tròn (O), đường kính AB và một dây cung CD. Kẻ AE và BF vuông góc với CD lần lượt tại E và F. Chứng minh:
+a) CE = DF;
+b) E và F đều ở ngoài (O).
+
+Bài 127 [lop9|day-cung|ngan]: Cho đường tròn (O) và dây CD. Từ O kẻ tia vuông góc với CD tại M, cắt (O) tại H. Tính bán kính R của (O) biết CD = 16 cm, MH = 4 cm.
+
+Bài 128 [lop9|duong-kinh|trung-binh]: Cho tam giác ABC có trực tâm H và nội tiếp đường tròn (O) đường kính AD.
+a) Chứng minh BHCD là hình bình hành.
+b) Kẻ OI vuông góc với BC tại I. Chứng minh I, H, D thẳng hàng.
+c) Chứng minh AH = 2OI.
+
+Bài 129 [lop9|duong-kinh|ngan]: Cho đường tròn (O) đường kính AB, dây CD cắt AB tại I. Gọi H, K theo thứ tự là chân đường vuông góc kẻ từ A và B đến CD. Chứng minh rằng CH = DK.
+
+Bài 130 [lop9|hai-duong-tron|ngan]: Cho đường tròn (O; R) và (O'; R') cắt nhau tại A, B. Chứng minh OO' là đường trung trực của AB.
+
+Bài 131 [lop9|hai-duong-tron|trung-binh]: Cho hai đường tròn (O) và (O') cắt nhau tại A, B. Gọi I là trung điểm của OO'. Qua A vẽ đường thẳng vuông góc với IA cắt (O) tại C và cắt (O') tại D. So sánh AC và AD.
+
+Bài 132 [lop9|tiep-tuyen|ngan]: Cho đường tròn (O) dây BC khác đường kính, qua O kẻ đường thẳng vuông góc với BC cắt tiếp tuyến tại B của đường tròn ở A. Chứng minh: AC là tiếp tuyến của đường tròn (O).
+
+Bài 133 [lop9|tiep-tuyen|trung-binh]: Cho tam giác ABC cân tại A, đường cao AH và BK cắt nhau tại I. Chứng minh rằng HK là tiếp tuyến của đường tròn đường kính AI.
+
+Bài 134 [lop9|hai-tiep-tuyen|ngan]: Cho đường tròn (O) và điểm A bên ngoài đường tròn, kẻ các tiếp tuyến AB, AC với đường tròn (B, C là các tiếp điểm).
+a) Chứng minh rằng OA là đường trung trực của đoạn BC.
+b) Vẽ đường kính BD. Chứng minh rằng CD song song với AO.
+
+Bài 135 [lop9|hai-tiep-tuyen|trung-binh]: Cho đường tròn (O) và điểm A nằm bên ngoài đường tròn, kẻ các tiếp tuyến AB, AC với đường tròn (B, C là các tiếp điểm). Kẻ đường kính BD. Tiếp tuyến của đường tròn tại D cắt đường thẳng BC tại E.
+a) Chứng minh: tam giác ACO đồng dạng với tam giác DCE.
+b) Chứng minh: tam giác ACD đồng dạng với tam giác OCE.
+c) Gọi K là giao điểm của AD và OE. Chứng minh: AD vuông góc với OE tại K.
+
+Bài 136 [lop9|tiep-tuyen|dai]: Cho B, C là hai điểm trên đường tròn (O; R). Từ B kẻ đường thẳng vuông góc với OB cắt đường phân giác của góc BOC tại A. H là giao điểm của AO và BC.
+a) Chứng minh tam giác BOH vuông và OB² = OH.OA.
+b) Chứng minh AC là tiếp tuyến của (O; R).
+c) CD là đường kính của (O; R). Qua O dựng đường thẳng vuông góc với AD tại E và cắt CB tại F. Chứng minh: FD là tiếp tuyến của đường tròn tâm O.
+
+Bài 137 [lop9|nua-duong-tron|dai]: Cho nửa đường tròn (O) đường kính AB. Từ A và B kẻ hai tiếp tuyến Ax và By. Qua một điểm M thuộc nửa đường tròn này, kẻ tiếp tuyến thứ ba cắt các tiếp tuyến Ax và By lần lượt ở C và D. Các đường thẳng AD và BC cắt nhau ở N.
+a) Chứng minh rằng: MN // AC.
+b) Chứng minh rằng: CD.MN = CM.DB.
+c) Gọi H là giao điểm của MN và AB. Chứng minh: MN = HN.
+
+Bài 138 [lop9|hai-tiep-tuyen|ngan]: Cho đường tròn (O; 6 cm). Điểm M nằm ngoài đường tròn sao cho OM = 10 cm. Từ M kẻ hai tiếp tuyến MA, MB đến đường tròn (A, B là các tiếp điểm).
+a) Chứng minh: MO là đường trung trực của AB.
+b) Tính độ dài các cạnh của tam giác MAB.
+
+Bài 139 [lop9|hai-duong-tron|trung-binh]: Cho hai đường tròn đồng tâm (O; R) và (O; R') với R > R'. Qua điểm M ở ngoài (O; R), vẽ hai tiếp tuyến với (O; R'). Một tiếp tuyến cắt (O; R) tại A và B (A nằm giữa M và B); một tiếp tuyến cắt (O; R) tại C và D (C nằm giữa D và M). Chứng minh hai cung AB và CD bằng nhau.
+
+Bài 140 [lop9|goc-noi-tiep|trung-binh]: Cho đường tròn (O) có các dây cung AB, BC, CA. Gọi M là điểm chính giữa của cung nhỏ AB. Vẽ dây MN song song với BC và gọi S là giao điểm của MN và AC. Chứng minh SM = SC và SN = SA.
+
+Bài 141 [lop9|goc-noi-tiep|trung-binh]: Cho 2 điểm A và B thuộc đường tròn (O). Các tiếp tuyến của đường tròn tại A và B cắt nhau tại M. Từ A kẻ đường thẳng song song với MB, cắt (O) tại C. MC cắt (O) tại P. Các tia AP và MB cắt nhau tại K.
+a) Chứng minh MK² = AK.PK.
+b) Chứng minh MK = KB.
+
+Bài 142 [lop9|duong-kinh|ngan]: Cho đường tròn (O), đường kính AB. S là một điểm nằm bên ngoài đường tròn. SA và SB lần lượt cắt đường tròn tại M, N. Gọi H là giao điểm của BM và AN. Chứng minh rằng SH ⊥ AB.
+
+Bài 143 [lop9|goc-noi-tiep|trung-binh]: Cho đường tròn (O) và hai dây MA, MB vuông góc với nhau. Gọi I, K lần lượt là điểm chính giữa của các cung nhỏ MA và MB.
+a) Chứng minh ba điểm A, O, B thẳng hàng.
+b) Gọi P là giao điểm của AK và BI. Chứng minh P là tâm đường tròn nội tiếp tam giác MAB.
+
+Bài 144 [lop9|goc-noi-tiep|trung-binh]: Cho tam giác ABC nội tiếp đường tròn (O), hai đường cao BD và CE cắt nhau tại H. Vẽ đường kính AF.
+a) Tứ giác BFCH là hình gì?
+b) Gọi M là trung điểm của BC. Chứng minh rằng ba điểm H, M, F thẳng hàng.
+c) Chứng minh OM = AH/2.
+
+Bài 145 [lop9|hai-duong-tron|dai]: Cho đường tròn (O) đường kính AB và một điểm C di động trên một nửa đường tròn đó. Vẽ đường tròn (I) tiếp xúc với đường tròn (O) tại C và tiếp xúc với đường kính AB tại D, đường tròn này cắt CA và CB lần lượt tại các điểm thứ hai là M và N. Chứng minh rằng:
+a) Ba điểm M, I, N thẳng hàng.
+b) ID ⊥ MN.
+c) Đường thẳng CD đi qua một điểm cố định.
+
+Bài 146 [lop9|duong-tron-noi-tiep|ngan]: Cho tam giác ABC vuông tại A (AB ≤ AC). Đường tròn (I) nội tiếp tam giác ABC tiếp xúc với BC tại D. Chứng minh rằng:
+a) BD = (BC + AB − AC)/2;
+b) Diện tích tam giác ABC bằng BD.DC.
+
+Bài 147 [lop9|duong-tron-noi-tiep|ngan]: Cho tam giác ABC có chu vi 20 cm ngoại tiếp đường tròn (O). Tiếp tuyến của đường tròn (O) song song với BC bị AB, AC cắt thành đoạn thẳng MN = 2,4 cm. Tính độ dài BC.
+
+Bài 148 [lop9|tu-giac-noi-tiep|trung-binh]: Từ điểm A nằm ngoài đường tròn (O; R) (OA > 2R) kẻ hai tiếp tuyến AB, AC (B, C là hai tiếp điểm). Kẻ đường kính CK của (O), AK cắt (O) tại E. Gọi H là giao điểm của OA và BC.
+a) Chứng minh: OA ⊥ BC tại H và tứ giác ABOC nội tiếp.
+b) Tính số đo góc KEC và chứng minh: tứ giác AEHC nội tiếp.
+
+Bài 149 [lop9|goc-noi-tiep|ngan]: Cho đường tròn (O) ngoại tiếp tam giác đều ABC. Điểm E nằm trên cung nhỏ BC (E khác B và C). ED là tia đối của tia EB. Chứng minh EC là phân giác của góc AED và EA là phân giác của góc BEC.
+
+Bài 150 [lop9|tu-giac-noi-tiep|dai]: Cho đường tròn tâm O có hai đường kính AB và CD vuông góc với nhau. Lấy điểm M bất kì trên cung nhỏ CB (M khác B và C), kẻ AM cắt CD tại N.
+a) Tính góc AMB và chứng minh: tứ giác MNOB nội tiếp.
+b) Đoạn thẳng MD cắt BC ở H. Tính góc NCH và chứng minh: tứ giác CNHM nội tiếp.
+c) Chứng minh: NH song song với AB.
+
+Bài 151 [lop9|tiep-tuyen-cat-tuyen|dai]: Cho đường tròn (O) và điểm A cố định nằm ngoài đường tròn (O). Kẻ hai tiếp tuyến AM và AN với đường tròn (M, N là tiếp điểm). Qua A kẻ cát tuyến ABC không đi qua tâm O (AB < AC và N thuộc cung nhỏ BC). Gọi H, K thứ tự là giao điểm của MN với AO và BC. Gọi I là trung điểm của dây BC.
+a) Chứng minh tứ giác AMOI nội tiếp.
+b) Chứng minh AK.AI = AB.AC.
+c) Tiếp tuyến của (O) tại B và C cắt nhau tại E. Chứng minh khi cát tuyến ABC thay đổi thì E luôn thuộc một đường cố định.
+
+Bài 152 [lop9|tu-giac-noi-tiep|dai]: Cho tam giác nhọn ABC (AB > AC). Gọi AH là đường cao của tam giác ABC (H ∈ BC). Vẽ đường tròn (O) đường kính BC, đường tròn (O) cắt AB tại E. Trên cung nhỏ BE lấy điểm D, CD cắt AH tại G.
+a) Chứng minh tứ giác BDGH nội tiếp trong một đường tròn.
+b) Đường thẳng EG cắt đường tròn (O) tại điểm M. Hai đường thẳng AH và BM cắt nhau tại I. Chứng minh GA.GI = GE.GM.
+c) Hai đường thẳng AD và CB cắt nhau tại N, DB và CI cắt nhau tại K. Chứng minh NK // AH.
+
+Bài 153 [lop9|tiep-tuyen|trung-binh]: Cho đường tròn tâm (O), đường kính AB = 2R. Trên đường tròn (O) lấy điểm C bất kì (C không trùng với A và B). Tiếp tuyến của đường tròn (O) tại A cắt tia BC ở điểm D. Gọi H là hình chiếu của A trên đường thẳng DO. Tia AH cắt đường tròn (O) tại điểm F (không trùng với A).
+a) Chứng minh tứ giác AHCD nội tiếp được một đường tròn.
+b) Chứng minh tam giác CFH là tam giác vuông.
+c) Tính giá trị của biểu thức S = BH.BC/BF.
+
+Bài 154 [hsg9|duong-tron-noi-tiep|trung-binh]: Cho tam giác ABC vuông tại A. Đường tròn tâm I nội tiếp tam giác ABC, tiếp xúc với CA và CB lần lượt tại M và N. Đường thẳng MN cắt đường thẳng AI tại P. Chứng minh rằng góc IPB vuông.
+
+Bài 155 [hsg9|duong-tron-noi-tiep|trung-binh]: Cho đường tròn tâm I nội tiếp tam giác ABC tiếp xúc với BC, CA, AB lần lượt tại D, E, F. Đường thẳng qua A song song với BC cắt EF tại K, gọi M là trung điểm BC. Chứng minh: MI ⊥ DK.
+
+Bài 156 [hsg9|duong-tron-noi-tiep|dai]: Cho đường tròn tâm O nội tiếp tam giác ABC tiếp xúc với BC, CA, AB lần lượt tại D, E, F. Đường thẳng qua A song song với BC cắt EF tại K. Gọi I là giao điểm của OD, EF. Gọi N là giao điểm của OA và EF.
+a) Giả sử AI cắt OK tại H, chứng minh: bốn điểm A, N, H, K cùng nằm trên một đường tròn.
+b) Chứng minh: tam giác OHD đồng dạng với tam giác ODK và tâm đường tròn ngoại tiếp tam giác DHK nằm trên một đường thẳng cố định.
+c) Gọi M là giao điểm của AI, BC. Chứng minh: OM ⊥ DK.
+
+Bài 157 [hsg9|hai-duong-tron|dai]: Cho hai đường tròn (O1) và (O2) tiếp xúc ngoài nhau tại điểm T. Hai đường tròn này nằm trong đường tròn (O3) và tiếp xúc với (O3) tương ứng tại M và N. Tiếp tuyến chung tại T của (O1) và (O2) cắt (O3) tại P. PM cắt đường tròn (O1) tại điểm thứ hai A và MN cắt (O1) tại điểm thứ hai B. PN cắt đường tròn (O2) tại điểm thứ hai D và MN cắt (O2) tại điểm thứ hai C.
+a) Chứng minh rằng tứ giác ABCD là tứ giác nội tiếp.
+b) Chứng minh rằng các đường thẳng AB, CD và PT đồng quy.
+
+Bài 158 [hsg9|duong-tron-noi-tiep|trung-binh]: Cho đường tròn (O; R) và một điểm M nằm ngoài đường tròn. Đường tròn đường kính OM cắt đường tròn (O; R) tại hai điểm E, F.
+a) Chứng minh giao điểm I của đoạn thẳng OM với đường tròn (O; R) là tâm của đường tròn nội tiếp tam giác MEF.
+b) Cho A là một điểm bất kỳ thuộc cung EF chứa điểm M của đường tròn đường kính OM (A khác E và F). Đoạn thẳng OA cắt đoạn thẳng EF tại B. Chứng minh OA.OB = R².
+
+Bài 159 [hsg9|duong-tron-bang-tiep|trung-binh]: Cho BC là một dây cung khác đường kính của đường tròn (O). Điểm A thay đổi trên cung lớn BC. Đường tròn bàng tiếp góc A của tam giác ABC tiếp xúc với cạnh BC, CA, AB lần lượt tại M, N, P.
+a) Tìm vị trí của A để chu vi tam giác MNP đạt giá trị lớn nhất.
+b) Chứng minh rằng đường thẳng Ơ-le của tam giác MNP luôn đi qua một điểm cố định.
+
+Bài 160 [vao10|goc-noi-tiep|dai]: Cho tam giác ABC có các góc nhọn, nội tiếp trong đường tròn tâm O. Gọi M là trung điểm cạnh BC, E là điểm chính giữa của cung nhỏ BC, F là điểm đối xứng của E qua M.
+a) Chứng minh rằng EB² = EF.EO;
+b) Gọi D là giao điểm của AE và BC. Chứng minh các điểm A, D, O, F cùng thuộc một đường tròn.
+c) Gọi I là tâm đường tròn nội tiếp tam giác ABC và P là điểm thay đổi trên đường tròn ngoại tiếp tam giác IBC sao cho P, O, F không thẳng hàng. Chứng minh rằng tiếp tuyến tại P của đường tròn ngoại tiếp tam giác POF đi qua một điểm cố định.
+
+Bài 161 [vao10|tu-giac-noi-tiep|dai]: Cho tam giác ABC nhọn nội tiếp đường tròn (O), các đường cao AD, BE, CF của tam giác ABC (với D ∈ BC, E ∈ AC, F ∈ AB) cắt nhau tại điểm H.
+a) Chứng minh tứ giác BFEC nội tiếp đường tròn.
+b) Chứng minh: AE.AC = AF.AB.
+c) Gọi K là điểm đối xứng với O qua đường thẳng BC. Chứng minh rằng: HK ⊥ EF.
+
+Bài 162 [vao10|tu-giac-noi-tiep|dai]: Cho tam giác ABC có ba góc nhọn (AB < AC), nội tiếp đường tròn (O). Đường cao AD của tam giác ABC cắt đường tròn (O) tại điểm E (E khác A). Gọi K là chân đường vuông góc kẻ từ điểm E đến đường thẳng AB.
+a) Chứng minh bốn điểm E, D, B, K cùng thuộc một đường tròn.
+b) Đường thẳng AO cắt đường thẳng BC tại điểm S. Chứng minh EA là tia phân giác của góc CEK và AB.AC = AE.AS.
+c) Gọi H là trực tâm của tam giác ABC và I là trung điểm của đoạn thẳng AB. Chứng minh đường thẳng SI vuông góc với đường thẳng HK.
+
+Bài 163 [vao10|tiep-tuyen|dai]: Cho tam giác ABC có ba góc nhọn (AB < AC), nội tiếp đường tròn (O). Tiếp tuyến tại điểm A của đường tròn (O) cắt đường thẳng BC tại điểm S. Gọi I là chân đường vuông góc kẻ từ điểm O đến đường thẳng BC.
+a) Chứng minh tứ giác SAOI là tứ giác nội tiếp.
+b) Gọi H và D lần lượt là chân các đường vuông góc kẻ từ điểm A đến các đường thẳng SO và SC. Chứng minh góc OAH = góc IAD.
+c) Vẽ đường cao CE của tam giác ABC. Gọi Q là trung điểm của đoạn thẳng BE. Đường thẳng QD cắt đường thẳng AH tại điểm K. Chứng minh BQ.BA = BD.BI và đường thẳng CK song song với đường thẳng SO.
+
+Bài 164 [vao10|tiep-tuyen|trung-binh]: Cho tam giác ABC vuông tại A. Vẽ đường tròn tâm C, bán kính CA. Từ điểm B kẻ tiếp tuyến BM với đường tròn (C; CA) (M là tiếp điểm, M và A nằm khác phía nhau đối với đường thẳng BC).
+a) Chứng minh bốn điểm A, C, M và B cùng thuộc một đường tròn.
+b) Lấy điểm N thuộc đoạn thẳng AB (N khác A, N khác B). Lấy điểm P thuộc tia đối của tia MB sao cho MP = AN. Chứng minh tam giác CPN là tam giác cân và đường thẳng AM đi qua trung điểm của đoạn thẳng NP.
+
+Bài 165 [vao10|tu-giac-noi-tiep|dai]: Cho tam giác ABC có ba góc nhọn và đường cao BE. Gọi H và K lần lượt là chân các đường vuông góc kẻ từ điểm E đến các đường thẳng AB và BC.
+a) Chứng minh tứ giác BHEK là tứ giác nội tiếp.
+b) Chứng minh BH.BA = BK.BC.
+c) Gọi F là chân đường vuông góc kẻ từ điểm C đến đường thẳng AB và I là trung điểm của đoạn thẳng EF. Chứng minh ba điểm H, I, K là ba điểm thẳng hàng.
+
+Bài 166 [vao10|tu-giac-noi-tiep|dai]: Cho tam giác ABC có ba góc nhọn (AB < AC) nội tiếp đường tròn (O). Hai đường cao BE và CF của tam giác ABC cắt nhau tại H.
+a) Chứng minh bốn điểm B, C, E, F cùng thuộc một đường tròn.
+b) Chứng minh đường thẳng OA vuông góc với đường thẳng EF.
+c) Gọi K là trung điểm của đoạn thẳng BC. Đường thẳng AO cắt đường thẳng BC tại điểm I, đường thẳng EF cắt đường thẳng AH tại điểm P. Chứng minh tam giác APE đồng dạng với tam giác AIB và đường thẳng KH song song với đường thẳng IP.
+
+Bài 167 [vao10|tiep-tuyen-cat-tuyen|dai]: Cho đường tròn (O; R) với dây cung AB không đi qua tâm. Lấy S là một điểm bất kì trên tia đối của tia AB (S khác A). Từ điểm S vẽ hai tiếp tuyến SC, SD với đường tròn (O; R) sao cho điểm C nằm trên cung nhỏ AB (C, D là các tiếp điểm). Gọi H là trung điểm của đoạn thẳng AB.
+a) Chứng minh năm điểm C, D, H, O, S thuộc đường tròn đường kính SO.
+b) Khi SO = 2R, hãy tính độ dài đoạn thẳng SD theo R và tính số đo góc CSD.
+c) Đường thẳng đi qua điểm A và song song với đường thẳng SC, cắt đoạn thẳng CD tại điểm K. Chứng minh tứ giác ADHK là tứ giác nội tiếp và đường thẳng BK đi qua trung điểm của đoạn thẳng SC.
+d) Gọi E là trung điểm của đoạn thẳng BD và F là hình chiếu vuông góc của điểm E trên đường thẳng AD. Chứng minh rằng, khi điểm S thay đổi trên tia đối của tia AB thì điểm F luôn thuộc một đường tròn cố định.
+
+Bài 168 [vao10|hai-tiep-tuyen|dai]: Từ một điểm A nằm ngoài đường tròn (O; R) với OA = 2R, kẻ hai tiếp tuyến AB, AC đến đường tròn (B, C là các tiếp điểm). Vẽ đường kính BD của đường tròn (O). Gọi E là giao điểm thứ hai của đường thẳng AD với (O). Đường thẳng BC và AO cắt nhau tại H.
+a) Chứng minh rằng tam giác BED vuông và ABHE là tứ giác nội tiếp.
+b) Chứng minh rằng OD² = OH.OA và góc HDO = góc HBE.
+c) Tính theo R chu vi và diện tích tam giác DHE.
+
+Bài 169 [vao10|tu-giac-noi-tiep|dai]: Cho tam giác ABC nhọn (AB < AC) có đường cao AH và nội tiếp đường tròn (O). Gọi E, F lần lượt là hình chiếu của H lên các cạnh AB, AC. Đường kính AD của (O) cắt EF tại K và DH cắt (O) tại L (L khác D).
+a) Chứng minh các tứ giác AEHF và ALHF nội tiếp.
+b) Chứng minh tứ giác BEFC nội tiếp và AD vuông góc với EF tại K.
+c) Tia FE cắt (O) tại P và cắt BC tại M. Chứng minh AP = AH và ba điểm A, L, M thẳng hàng.
+
+Bài 170 [vao10|hai-tiep-tuyen|dai]: Cho đường tròn tâm O bán kính R và điểm A nằm ngoài đường tròn sao cho OA > 2R. Từ A kẻ hai tiếp tuyến AD, AE đến đường tròn (O) (D, E là hai tiếp điểm). Lấy điểm M nằm trên cung nhỏ DE sao cho MD > ME. Tiếp tuyến của đường tròn (O) tại M cắt AD, AE lần lượt tại I, J. Đường thẳng DE cắt OJ tại F.
+a) Chứng minh OJ là đường trung trực của đoạn thẳng ME và góc OMF = góc OEF.
+b) Chứng minh tứ giác ODIM nội tiếp và 5 điểm I, D, O, F, M cùng nằm trên một đường tròn.
+c) Chứng minh góc JOM = góc IOA và sin góc IOA = MF/IO.
+
+Bài 171 [vao10|tu-giac-noi-tiep|dai]: Cho tam giác nhọn ABC (AB < AC) nội tiếp đường tròn (O). Hai đường cao BD và CE của tam giác ABC cắt nhau tại H. Đường thẳng AH cắt BC và (O) lần lượt tại F và K (K ≠ A). Gọi L là hình chiếu của D lên AB.
+a) Chứng minh rằng tứ giác BEDC nội tiếp và BD² = BL.BA.
+b) Gọi J là giao điểm của KD và (O), (J ≠ K). Chứng minh góc BJK = góc BDE.
+c) Gọi I là giao điểm của BJ và ED. Chứng minh tứ giác ALIJ nội tiếp và I là trung điểm của ED.
+
+Bài 172 [vao10|duong-kinh|dai]: Cho đường tròn (O) có hai đường kính AC, BD (A khác B, D). Trên đoạn BC lấy điểm E (E khác B, C), đường thẳng ED cắt đường tròn (O) tại điểm thứ hai là F.
+a) Chứng minh rằng AB = CD và góc CFD = góc BCA.
+b) Đường thẳng qua E vuông góc với BC cắt tia AF tại G. Chứng minh rằng tứ giác CEFG nội tiếp và CD.EG = CB.CE.
+c) Gọi H là giao điểm của tia GE và AD. Đường thẳng qua H, song song với AC cắt đường thẳng qua E, song song với FC tại K. Chứng minh rằng ba điểm G, C, K thẳng hàng.
+
+Bài 173 [vao10|tu-giac-noi-tiep|dai]: Cho tam giác nhọn ABC (AB < AC), các đường cao BD, CE (D ∈ AC, E ∈ AB) cắt nhau tại H.
+a) Chứng minh rằng tứ giác BEDC nội tiếp.
+b) Gọi M là trung điểm của BC. Đường tròn đường kính AH cắt AM tại điểm G (G khác A). Chứng minh rằng AE.AB = AG.AM.
+c) Hai đường thẳng DE và BC cắt nhau tại K. Chứng minh rằng góc MAC = góc GCM và hai đường thẳng nối tâm hai đường tròn ngoại tiếp hai tam giác MBE, MCD song song với đường thẳng KG.
+
+Bài 174 [vao10|duong-kinh|dai]: Cho tam giác ABC nội tiếp đường tròn (O) đường kính AB. Trên cung nhỏ BC của đường tròn (O) lấy điểm D (không trùng với B và C). Gọi H là chân đường vuông góc kẻ từ C đến AB (H ∈ AB) và E là giao điểm của CH với AD.
+a) Chứng minh tứ giác BDEH nội tiếp.
+b) Chứng minh AB² = AE.AD + BH.BA.
+c) Đường thẳng qua E song song với AB cắt BC tại F. Chứng minh góc CDF = 90° và đường tròn ngoại tiếp tam giác OBD đi qua trung điểm của CF.
+
+Bài 175 [vao10|hai-duong-tron|dai]: Cho đường tròn (O) tâm O, đường kính AB và C là điểm nằm trên đoạn thẳng OB (với C ≠ B). Kẻ dây DE của đường tròn (O) vuông góc với AC tại trung điểm H của AC. Gọi K là giao điểm thứ hai của BD với đường tròn đường kính BC.
+a) Chứng minh tứ giác DHCK là tứ giác nội tiếp.
+b) Chứng minh CE song song với AD và ba điểm E, C, K thẳng hàng.
+c) Đường thẳng qua K vuông góc với DE cắt đường tròn (O) tại hai điểm M và N (với M thuộc cung nhỏ AD). Chứng minh EM² + DN² = AB².
+
+Bài 176 [vao10|tu-giac-noi-tiep|dai]: Cho tam giác nhọn ABC (AB < AC), đường cao AH. Kẻ HD, HE lần lượt vuông góc với AB, AC (D ∈ AB, E ∈ AC).
+a) Chứng minh ADHE là tứ giác nội tiếp.
+b) Trên tia đối của tia DH lấy điểm F (F ≠ D). Đường thẳng qua F vuông góc với FB cắt đường thẳng AH tại G. Kẻ GI vuông góc với HF (I ∈ HF). Chứng minh tam giác IFG đồng dạng với tam giác HBG và IF = DH.
+c) Tia phân giác của góc HEC cắt CH tại K. Kẻ KM, KN lần lượt vuông góc với EH, EC (M ∈ EH, N ∈ EC). Hai đoạn thẳng CM và HN cắt nhau tại T. Gọi P là giao điểm của HN và KM, Q là giao điểm của CM và KN. Chứng minh ET vuông góc với PQ.
+
+Bài 177 [vao10|tu-giac-noi-tiep|dai]: Cho tam giác nhọn ABC (AB < AC), các đường cao AD, BE, CF (D ∈ BC, E ∈ AC, F ∈ AB) cắt nhau tại H.
+a) Chứng minh AEHF là tứ giác nội tiếp.
+b) Gọi O là trung điểm của đoạn thẳng BC, M là giao điểm của tia EF và tia CB. Chứng minh rằng góc FAD = góc OFC và OC² = OD.OM.
+c) Chứng minh rằng hai đường thẳng MH và AO vuông góc với nhau.
+
+Bài 178 [vao10|duong-kinh|dai]: Cho tứ giác ABCD (AD > BC) nội tiếp đường tròn tâm O đường kính AB. Hai đường chéo AC và BD cắt nhau tại E. Gọi H là hình chiếu của E trên AB.
+a) Chứng minh ADEH là tứ giác nội tiếp.
+b) Tia CH cắt đường tròn (O) tại điểm thứ hai là K. Gọi I là giao điểm của DK và AB. Chứng minh DI² = AI.BI.
+c) Khi tam giác DAB không cân, gọi M là trung điểm của EB, tia DC cắt tia HM tại N. Tia NB cắt đường tròn ngoại tiếp tam giác HMB tại điểm thứ hai là F. Chứng minh F thuộc đường tròn (O).
+
+Bài 179 [vao10|hai-tiep-tuyen|dai]: Cho đường tròn (O; R) và điểm A sao cho OA > 2R, vẽ hai tiếp tuyến AB, AC của đường tròn (B, C là các tiếp điểm), kẻ dây cung BD song song với AC. Đường thẳng AD cắt (O; R) tại điểm E (E ≠ D). Gọi I là trung điểm của DE.
+a) Chứng minh năm điểm A, B, I, O, C cùng thuộc một đường tròn.
+b) Đường thẳng BC cắt OA, AD lần lượt tại H và K. Gọi F là giao điểm của BE và AC. Chứng minh AK.AI = AB².
+c) Chứng minh ba đường thẳng AB, CD, FK đồng quy.
+
+Bài 180 [vao10|tu-giac-noi-tiep|dai]: Cho tam giác ABC có ba góc nhọn nội tiếp đường tròn (O). Các đường cao AD, BE và CF của tam giác ABC cắt nhau tại H.
+a) Chứng minh BCEF và CDHE là các tứ giác nội tiếp.
+b) Chứng minh EB là tia phân giác của góc FED và tam giác BFE đồng dạng với tam giác DHE.
+c) Giao điểm của AD với đường tròn (O) là I (I khác A), IE cắt đường tròn (O) tại K (K khác I). Gọi M là trung điểm của đoạn thẳng EF. Chứng minh rằng ba điểm B, M, K thẳng hàng.
+
+Bài 181 [vao10|hai-tiep-tuyen|dai]: Qua điểm A nằm ngoài đường tròn (O) vẽ hai tiếp tuyến AB và AC của đường tròn (B và C là các tiếp điểm). Gọi E là trung điểm của đoạn thẳng AC, F là giao điểm thứ hai của đường thẳng EB với đường tròn (O), K là giao điểm thứ hai của đường thẳng AF với đường tròn (O). Chứng minh:
+a) Tứ giác ABOC là tứ giác nội tiếp và tam giác ABF đồng dạng với tam giác AKB.
+b) BF.CK = CF.BK.
+c) Tam giác FCE đồng dạng với tam giác CBE và EA là tiếp tuyến của đường tròn ngoại tiếp tam giác ABF.
+
+Bài 182 [vao10|tiep-tuyen-cat-tuyen|dai]: Từ điểm A nằm bên ngoài đường tròn (O) vẽ hai tiếp tuyến AD, AE (D, E là các tiếp điểm). Vẽ cát tuyến ABC của đường tròn (O) sao cho điểm B nằm giữa hai điểm A, C; tia AC nằm giữa hai tia AD và AO. Từ điểm O kẻ OI ⊥ AC tại I.
+a) Chứng minh năm điểm A, D, I, O, E cùng nằm trên một đường tròn.
+b) Chứng minh IA là tia phân giác của góc DIE và AB.AC = AD².
+c) Gọi K và F lần lượt là giao điểm của ED với AC và OI. Qua điểm D vẽ đường thẳng song song với IE cắt OF và AC lần lượt tại H và P. Chứng minh D là trung điểm của HP.
+
+Bài 183 [vao10|nua-duong-tron|dai]: Cho nửa đường tròn tâm O, đường kính AB = 2R. Trên tia đối của tia AB lấy điểm E (khác với điểm A). Tiếp tuyến kẻ từ điểm E cắt các tiếp tuyến kẻ từ điểm A và B của nửa đường tròn (O) lần lượt tại C và D. Gọi M là tiếp điểm của tiếp tuyến kẻ từ điểm E.
+a) Chứng minh rằng tứ giác ACMO nội tiếp được trong một đường tròn.
+b) Chứng minh rằng DM/CM = DE/CE.
+c) Chứng minh rằng khi điểm E thay đổi trên tia đối của tia AB, tích AC.BD không đổi.
+
+Bài 184 [vao10|nua-duong-tron|dai]: Cho nửa đường tròn (O) đường kính AB, trên nửa đường tròn lấy điểm C (C không trùng với A, B). Gọi H là hình chiếu của C trên đường thẳng AB. Trên cung CB lấy điểm D (D khác C, B). Hai đường thẳng AD và CH cắt nhau tại E.
+a) Chứng minh tứ giác BDEH nội tiếp.
+b) Chứng minh AC² = AE.AD.
+c) Gọi (O') là đường tròn đi qua D và tiếp xúc với AB tại B. Đường tròn (O') cắt CB tại F khác B. Chứng minh EF // AB.
+
+Bài 185 [vao10|nua-duong-tron|dai]: Cho nửa đường tròn (O; R), đường kính AB. Trên nửa mặt phẳng bờ AB chứa nửa đường tròn (O; R), vẽ các tiếp tuyến Ax, By với nửa đường tròn. Gọi M là điểm bất kì trên cung AB (M ≠ A; M ≠ B). Tiếp tuyến tại M với nửa đường tròn (O; R) cắt Ax, By lần lượt tại C và D.
+a) Chứng minh tứ giác ACMO nội tiếp.
+b) Chứng minh tam giác COD vuông.
+c) Chứng minh: AC.BD = R².
+d) Trong trường hợp AM = R. Tính diện tích hình viên phân giới hạn bởi dây MB và cung MB của nửa đường tròn (O; R) theo R.
+
+Bài 186 [vao10|tu-giac-noi-tiep|dai]: Cho tam giác ABC vuông tại A, M là trung điểm của cạnh AC. Đường tròn đường kính MC cắt BC tại N. Đường thẳng BM cắt đường tròn đường kính MC tại D.
+a) Chứng minh tứ giác BADC nội tiếp. Xác định tâm O của đường tròn đó.
+b) Chứng minh DB là phân giác của góc ADN.
+c) Chứng minh OM là tiếp tuyến của đường tròn đường kính MC.
+d) BA và CD kéo dài cắt nhau tại P. Chứng minh ba điểm P, M, N thẳng hàng.
+
+Bài 187 [vao10|tiep-tuyen|dai]: Cho tam giác ABC vuông tại A có đường cao AH (H thuộc BC). Vẽ đường tròn (C) có tâm C, bán kính CA. Đường thẳng AH cắt đường tròn (C) tại điểm thứ hai là D.
+a) Chứng minh BD là tiếp tuyến của đường tròn (C).
+b) Trên cung nhỏ AD của đường tròn (C) lấy điểm E sao cho HE song song với AB. Đường thẳng BE cắt đường tròn (C) tại điểm thứ hai là F. Gọi K là trung điểm của EF. Chứng minh rằng BA² = BE.BF và góc BHE = góc BFC.
+c) Chứng minh ba đường thẳng AF, ED và HK song song với nhau từng đôi một.
+
+Bài 188 [vao10|hai-duong-tron|dai]: Từ một điểm A nằm bên ngoài đường tròn (O) kẻ các tiếp tuyến AB, AC với đường tròn (B, C là các tiếp điểm).
+a) Chứng minh rằng ABOC là tứ giác nội tiếp.
+b) Cho bán kính đường tròn (O) bằng 3 cm, độ dài đoạn thẳng OA bằng 5 cm. Tính độ dài đoạn thẳng BC.
+c) Gọi (K) là đường tròn qua A và tiếp xúc với đường thẳng BC tại C. Đường tròn (K) và đường tròn (O) cắt nhau tại điểm thứ hai là M. Chứng minh rằng đường thẳng BM đi qua trung điểm của đoạn thẳng AC.
+
+Bài 189 [vao10|duong-kinh|dai]: Cho đường tròn (O; R) có đường kính AB cố định. Vẽ đường kính MN của đường tròn (O; R) (M khác A, M khác B). Tiếp tuyến của đường tròn (O; R) tại B cắt các đường thẳng AM, AN lần lượt tại các điểm Q, P.
+a) Chứng minh tứ giác AMBN là hình chữ nhật.
+b) Chứng minh bốn điểm M, N, P, Q cùng thuộc một đường tròn.
+c) Gọi E là trung điểm của BQ. Đường thẳng vuông góc với OE tại O cắt PQ tại điểm F. Chứng minh F là trung điểm của BP và ME // NF.
+d) Khi đường kính MN quay quanh tâm O và thỏa mãn điều kiện đề bài, xác định vị trí của đường kính MN để tứ giác MNPQ có diện tích nhỏ nhất.
+
+Bài 190 [vao10|nua-duong-tron|dai]: Cho nửa đường tròn tâm O có đường kính AB. Lấy điểm C trên đoạn thẳng AO (C khác A, C khác O). Đường thẳng đi qua C và vuông góc với AB cắt nửa đường tròn tại K. Gọi M là điểm bất kì trên cung KB (M khác K, M khác B). Đường thẳng CK cắt các đường thẳng AM, BM lần lượt tại H và D. Đường thẳng BH cắt nửa đường tròn tại điểm thứ hai N.
+a) Chứng minh tứ giác ACMD là tứ giác nội tiếp.
+b) Chứng minh CA.CB = CH.CD.
+c) Chứng minh ba điểm A, N, D thẳng hàng và tiếp tuyến tại N của nửa đường tròn đi qua trung điểm của DH.
+d) Khi M di động trên cung KB, chứng minh đường thẳng MN luôn đi qua một điểm cố định.
+
+Bài 191 [vao10|tu-giac-noi-tiep|dai]: Cho đường tròn tâm O, đường kính BC. Lấy một điểm A trên đường tròn (O) (A khác C). Từ A vẽ AH vuông góc với BC (H thuộc BC). Từ H vẽ HE vuông góc với AB và HF vuông góc với AC (E thuộc AB, F thuộc AC).
+a) Chứng minh rằng AEHF là hình chữ nhật và OA ⊥ EF.
+b) Tia FE cắt đường tròn (O) tại P. Chứng minh rằng tam giác APH cân.
+
+Bài 192 [vao10|hai-duong-tron|dai]: Cho tam giác ABC vuông tại A. Hai đường tròn (B; BA) và (C; CA) cắt nhau tại điểm thứ hai là D. Vẽ đường thẳng a bất kì qua D cắt đường tròn (B) tại M và cắt đường tròn (C) tại N (D nằm giữa M và N). Tiếp tuyến tại M của đường tròn (B) và tiếp tuyến tại N của đường tròn (C) cắt nhau tại E.
+a) Chứng minh BC là tia phân giác của góc ABD.
+b) Gọi I là giao điểm của AD và BC. Chứng minh: AD² = 4BI.CI.
+c) Chứng minh bốn điểm A, M, E, N cùng thuộc một đường tròn.
+d) Chứng minh rằng số đo góc MEN không phụ thuộc vị trí của đường thẳng a.
+
+Bài 193 [vao10|tiep-tuyen|dai]: Cho đường tròn tâm O đường kính AB. Từ A và B vẽ hai dây cung AC và BD của đường tròn (O) cắt nhau tại N bên trong đường tròn (C, D nằm trên cùng nửa mặt phẳng bờ AB). Hai tiếp tuyến Cx và Dy của đường tròn (O) cắt nhau tại M. Gọi P là giao điểm của hai đường thẳng AD và BC.
+a) Chứng minh tứ giác DNCP nội tiếp đường tròn.
+b) Chứng minh ba điểm P, M, N thẳng hàng.
+
+Bài 194 [vao10|tu-giac-noi-tiep|dai]: Cho tam giác ABC nhọn. Đường tròn (O) đường kính BC cắt AB, AC lần lượt tại M và N. Gọi H là giao điểm của BN và CM, K là trung điểm của AH.
+a) Chứng minh rằng tứ giác AMHN nội tiếp đường tròn.
+b) Chứng minh AM.AB = AN.AC.
+c) Chứng minh KN là tiếp tuyến của đường tròn (O).
+
+Bài 195 [vao10|tiep-tuyen|dai]: Cho đường tròn (O) đường kính AB. Trên tia đối của tia BA lấy điểm C (C không trùng với B). Kẻ tiếp tuyến CD với đường tròn (O) (D là tiếp điểm), tiếp tuyến tại A của đường tròn (O) cắt đường thẳng CD tại E. Gọi H là giao điểm của AD và OE, K là giao điểm của BE với đường tròn (O) (K không trùng với B).
+a) Chứng minh: AE² = EK.EB.
+b) Chứng minh 4 điểm B, O, H, K cùng thuộc một đường tròn.
+c) Đường thẳng vuông góc với AB tại O cắt CE tại M. Chứng minh AE/EM − EM/CM = 1.
+
+Bài 196 [vao10|hai-duong-tron|dai]: Cho (O) và (I) tiếp xúc ngoài tại A. Một đường thẳng d tiếp xúc với (O), (I) lần lượt tại B, C. Gọi tiếp tuyến chung trong của hai đường tròn cắt BC tại M, tia BA cắt (I) tại D, CA cắt (O) tại E.
+a) Chứng minh tứ giác BMAO nội tiếp và tam giác ABC vuông.
+b) Chứng minh góc OMI = 90° và cho OA = 9 cm, AI = 4 cm. Tính BC.
+c) Chứng minh BC là tiếp tuyến của đường tròn đường kính OI và diện tích tam giác AED bằng diện tích tam giác ABC.
+
+Bài 197 [vao10|hai-duong-tron|dai]: Cho (O; R) và (I; r) tiếp xúc ngoài tại A (R > r). Dựng tiếp tuyến chung ngoài BC, B nằm trên đường tròn tâm O và C nằm trên đường tròn tâm I. Tiếp tuyến BC cắt tiếp tuyến tại A của hai đường tròn ở E.
+a) Chứng minh tam giác ABC vuông ở A.
+b) OE cắt AB ở N; IE cắt AC tại F. Chứng minh N, E, F, A cùng nằm trên một đường tròn.
+c) Chứng tỏ: BC² = 4Rr.
+d) Tính diện tích tứ giác BCIO theo R, r.
+
+Bài 198 [vao10|hai-duong-tron|dai]: Cho hai đường tròn (O) và (O') cắt nhau ở A và B. Các đường thẳng AO cắt (O), (O') lần lượt ở C và D; đường thẳng AO' cắt (O) và (O') lần lượt ở E và F.
+a) Chứng minh: C, B, F thẳng hàng.
+b) Chứng minh CDEF nội tiếp.
+c) Chứng tỏ DA.FE = DC.EA.
+d) Chứng minh A là tâm đường tròn nội tiếp tam giác BDE.
+e) Tìm điều kiện để DE là tiếp tuyến chung của hai đường tròn (O), (O').
+
+Bài 199 [vao10|hai-duong-tron|dai]: Cho đường tròn (O; R), đường kính AB. Điểm H thuộc đoạn OA. Kẻ dây CD vuông góc với AB tại H. Vẽ đường tròn (O1) đường kính AH và đường tròn (O2) đường kính BH. Nối AC cắt đường tròn (O1) tại N. Nối BC cắt đường tròn (O2) tại M. Đường thẳng MN cắt đường tròn (O; R) tại E và F.
+a) Chứng minh CMHN là hình chữ nhật.
+b) Cho AH = 4 cm, BH = 9 cm. Tính MN.
+c) Chứng minh MN là tiếp tuyến chung của hai đường tròn (O1) và (O2).
+d) Chứng minh CE = CF = CH.
+
+Bài 200 [vao10|nua-duong-tron|dai]: Cho nửa đường tròn tâm O, đường kính BC và một điểm A trên nửa đường tròn (A khác B và C). Hạ AH vuông góc với BC (H thuộc BC). Trên nửa mặt phẳng có bờ BC chứa điểm A dựng hai đường tròn đường kính HB và HC, chúng lần lượt cắt AB và AC tại E và F.
+a) Chứng minh AE.AB = AF.AC.
+b) Chứng minh EF là tiếp tuyến chung của hai đường tròn đường kính HB và HC.
+c) Gọi I và K lần lượt là hai điểm đối xứng với H qua AB và AC. Chứng minh ba điểm I, A, K thẳng hàng.
+d) Đường thẳng IK cắt tiếp tuyến kẻ từ B của nửa đường tròn (O) tại M. Chứng minh MC, AH, EF đồng quy.

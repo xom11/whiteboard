@@ -18,22 +18,20 @@ import { addPoint, connect, pairFromToken } from './_shared';
 const PERP_BISECTOR =
   /(?<!\p{L})[Tt]rung\s*trực\s+(?:(?:của|đoạn|đoạn\s+thẳng|cạnh)\s+)*([A-Z][A-Z])(?!\p{L})/gu;
 
-// "(đường) trung trực (của) PAIR1 cắt [đường thẳng|đoạn|cạnh|tia]? PAIR2 tại D":
-// đường trung trực CỦA PAIR1 (line dựng) ∩ đường PAIR2 = điểm D.
-//   "Đường trung trực của BC cắt AB tại D" → perpBisector(B,C) + D=giao(pb_BC, AB)
-// group1 = PAIR1 (đoạn lấy trung trực); group2 = PAIR2 (đường bị cắt); group3 = D.
-//
-// perpBisector là LINE dựng (không phải đoạn) nên KHÔNG dùng intersection rule
-// generic (vốn chỉ nhận cặp đỉnh): rule này tự đặt perpBisector + intersection ref
-// TÊN shape mà connect builder sinh ('pb_<PAIR1>', deterministic + dedup JSON nên
-// duy nhất). PAIR1/PAIR2 chia sẻ đỉnh là BÌNH THƯỜNG (pb là đường khác đoạn PAIR2).
-const PERP_BIS_CUT =
-  /(?<!\p{L})[Tt]rung\s*trực\s+(?:(?:của|đoạn|đoạn\s+thẳng|cạnh)\s+)*([A-Z][A-Z])(?!\p{L})\s+cắt\s+(?:đường\s*thẳng\s+|đoạn(?:\s+thẳng)?\s+|cạnh\s+|tia\s+)?([A-Z][A-Z])(?!\p{L})\s+tại\s+([A-Z])(?!\p{L})/gu;
-
 // Phân phối: "Trung trực của CA, AB cắt PA tại E, F" → trung trực(CA)∩PA=E,
 // trung trực(AB)∩PA=F. group1=PAIR1, 2=PAIR2, 3=đường bị cắt, 4=P1, 5=P2.
+// Cũng nhận "và" giữa các cặp/tên và "(theo) thứ tự … ở": "Các đường trung trực
+// của AB và AC cắt cạnh BC theo thứ tự ở M và N".
 const PERP_BIS_CUT_DISTRIB =
-  /(?<!\p{L})[Tt]rung\s*trực\s+(?:(?:của|đoạn|đoạn\s+thẳng|cạnh)\s+)*([A-Z][A-Z])\s*,\s*([A-Z][A-Z])(?!\p{L})\s+cắt\s+(?:đường\s*thẳng\s+|đoạn(?:\s+thẳng)?\s+|cạnh\s+|tia\s+)?([A-Z][A-Z])(?!\p{L})\s+(?:lần\s*lượt\s+)?tại\s+([A-Z])\s*,\s*([A-Z])(?!\p{L})/gu;
+  /(?<!\p{L})[Tt]rung\s*trực\s+(?:(?:của|đoạn|đoạn\s+thẳng|cạnh)\s+)*([A-Z][A-Z])\s*(?:,|và)\s*(?:(?:của|đoạn|đoạn\s+thẳng|cạnh)\s+)*([A-Z][A-Z])(?!\p{L})\s+cắt\s+(?:đường\s*thẳng\s+|đoạn(?:\s+thẳng)?\s+|cạnh\s+|tia\s+)?([A-Z][A-Z])(?!\p{L})\s+(?:(?:lần\s*lượt|(?:theo\s+)?thứ\s+tự)\s+)?(?:tại|ở)\s+(?:(?:các\s+)?điểm\s+)?([A-Z])\s*(?:,|và)\s*([A-Z])(?!\p{L})/gu;
+
+// Chuỗi cắt: sau "trung trực PAIR1", một hay nhiều vế "(,|và)? cắt PAIR2 (tại|ở) (điểm)? D":
+//   "Đường trung trực của đoạn thẳng AC cắt AC tại H, cắt BC tại D"
+//   "Đường trung trực của cạnh AC cắt tia CB tại điểm D"
+const PB_HEAD =
+  /(?<!\p{L})[Tt]rung\s*trực\s+(?:(?:của|đoạn|đoạn\s+thẳng|cạnh)\s+)*([A-Z][A-Z])(?!\p{L})/gu;
+const PB_CUT_STEP =
+  /^\s*(?:,\s*|và\s+)?cắt\s+(?:đường\s*thẳng\s+|đoạn(?:\s+thẳng)?\s+|cạnh\s+|tia\s+)?([A-Z][A-Z])(?!\p{L})\s+(?:tại|ở)\s+(?:điểm\s+)?([A-Z])(?![A-Z'′])/u;
 
 /** prefilter nhanh trên toàn đề. */
 const PREFILTER = /[Tt]rung\s*trực/u;
@@ -77,25 +75,27 @@ export const perpBisectorRule: LanguageRule = {
       // Emit connect(perpBisector) NGAY TRƯỚC intersection (cùng match) để shape
       // 'pb_<PAIR1>' tồn tại khi transpile resolve ref của intersection (connect
       // trùng với loop plain ở trên sẽ bị dedup JSON → an toàn).
-      PERP_BIS_CUT.lastIndex = 0;
-      for (const m of c.text.matchAll(PERP_BIS_CUT)) {
-        const pb = pairFromToken(m[1]);
-        const line = pairFromToken(m[2]);
-        const d = m[3];
-        if (pb.length !== 2 || line.length !== 2) continue;
-        // Giao điểm phải là điểm MỚI: D không trùng đỉnh nào của 2 cặp.
-        if (new Set([pb[0], pb[1], line[0], line[1]]).has(d)) continue;
+      for (const h of c.text.matchAll(PB_HEAD)) {
+        const pb = pairFromToken(h[1]);
+        if (pb.length !== 2) continue;
         const pbName = `pb_${pb[0]}${pb[1]}`; // khớp connect builder uniqueShapeName('pb_BC')
+        let rest = c.text.slice(h.index! + h[0].length);
+        const intents = [];
+        for (let step = PB_CUT_STEP.exec(rest); step; step = PB_CUT_STEP.exec(rest)) {
+          const line = pairFromToken(step[1]);
+          const d = step[2];
+          rest = rest.slice(step[0].length);
+          // Giao điểm phải là điểm MỚI: D không trùng đỉnh nào của 2 cặp.
+          if (line.length !== 2 || new Set([pb[0], pb[1], line[0], line[1]]).has(d)) continue;
+          intents.push(addPoint(d, { kind: 'intersection', of: [pbName, step[1]] }));
+        }
+        if (intents.length === 0) continue;
         out.push({
           ruleId: 'perpBisector',
           clauseIds: [c.id],
-          intents: [
-            connect(pb[0], pb[1], 'perpBisector'),
-            addPoint(d, { kind: 'intersection', of: [pbName, m[2]] }),
-          ],
+          intents: [connect(pb[0], pb[1], 'perpBisector'), ...intents],
         });
       }
-
       // Phân phối "trung trực CA, AB cắt PA tại E, F" → 2 perpBisector + 2 giao.
       PERP_BIS_CUT_DISTRIB.lastIndex = 0;
       for (const m of c.text.matchAll(PERP_BIS_CUT_DISTRIB)) {

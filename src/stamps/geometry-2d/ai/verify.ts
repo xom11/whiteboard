@@ -136,6 +136,7 @@ function constraintKey(c: AddPointIntentT['constraint']): string {
     case 'angleBisectorFoot':   return `angleBisectorFoot:${c.from}:${c.onLine}`;
     case 'externalAngleBisectorFoot': return `externalAngleBisectorFoot:${c.from}:${c.onLine}`;
     case 'arcMidpoint':         return `arcMidpoint:${c.circle}:${c.a}:${c.b}:${c.notContaining}`;
+    case 'onArc':               return `onArc:${c.circle}:${c.a}:${c.b}:${c.mode}:${c.ref ?? ''}:${c.t ?? ''}`;
     case 'reflectPoint':        return `reflectPoint:${c.of}:${c.through}`;
     case 'reflectLine':         return `reflectLine:${c.of}:${c.through}`;
     case 'excenter':            return `excenter:${c.of.join(',')}:${c.opposite}`;
@@ -146,10 +147,11 @@ function constraintKey(c: AddPointIntentT['constraint']): string {
       const dKey = d.kind === 'circleRadius' ? `r:${d.circle}`
         : d.kind === 'segmentLength' ? `seg:${d.p1}:${d.p2}`
         : `lit:${d.value}`;
-      return `pointAtDistance:${c.from}:${c.through}:${dKey}`;
+      return `pointAtDistance:${c.from}:${c.through}:${dKey}${c.origin ? ':' + c.origin : ''}`;
     }
     case 'externalToCircle': return `externalToCircle:${c.circle}`;
     case 'onCircle': return `onCircle:${c.circle}:${c.theta ?? ''}`;
+    case 'affine': return `affine:${c.points.map((p, i) => `${c.weights[i]}${p}`).join('+')}${c.rot ? ':rot' + c.rot.join(',') : ''}${c.awayFrom ? ':away' + c.awayFrom : ''}`;
     case 'commonTangentPoint': return `commonTangentPoint:${c.circles.join(',')}:${c.on}:${c.variant}:${c.side}`;
   }
 }

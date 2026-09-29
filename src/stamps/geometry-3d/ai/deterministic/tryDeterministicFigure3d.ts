@@ -5,6 +5,8 @@ import { runDeterministicIntents3d } from './runDeterministicIntents3d';
 import { intentToScene3d } from '../intentToScene3d';
 import { verifyFigure3d } from '../verify3d';
 import { allNamedEntities3DPresent } from './guards3d';
+import { auditFacts3d } from './factAudit3d';
+import { normalizeProblem3d } from './normalize3d';
 
 export type Reason3D =
   | 'no-match'
@@ -21,8 +23,18 @@ export type TryResult3D =
  * Track-A engine entry: chạy rule engine → build scene → verify → named-entity guard.
  * intentToScene3d đã topo-sort nội bộ (Bundle 2), nên không cần retry topo ở đây.
  */
-export function tryDeterministicFigure3d(problem: string): TryResult3D {
-  const det = runDeterministicIntents3d(problem);
+export function tryDeterministicFigure3d(problemRaw: string): TryResult3D {
+  const problem = normalizeProblem3d(problemRaw); // xem runDeterministicIntents3d (NFD → NFC)
+  // Hai nhánh dựng khối (solidRefine3d lớp 11 / khoiDaDien lớp 12): thử nhánh mặc định; không ra
+  // hình ĐỦ + ĐÚNG (factAudit3d) thì thử ưu tiên nhánh kia. Lỗi trả về là của lần thử đầu.
+  const first = attempt(problem, 'refine');
+  if (first.ok) return first;
+  const second = attempt(problem, 'khoi');
+  return second.ok ? second : first;
+}
+
+function attempt(problem: string, solidPref: 'refine' | 'khoi'): TryResult3D {
+  const det = runDeterministicIntents3d(problem, solidPref);
   if (!det.ok) return { ok: false, reason: det.reason, coverage: det.coverage };
 
   let state: State;
@@ -53,6 +65,18 @@ export function tryDeterministicFigure3d(problem: string): TryResult3D {
       ok: false,
       reason: 'named-missing',
       detail: named.missing.join(','),
+      coverage: det.coverage,
+    };
+  }
+
+  // Hình đo được VI PHẠM điều kiện đề nêu (SA ⊥ đáy mà không vuông góc, đáy "vuông tại B" mà
+  // không vuông…) ⇒ từ chối: thà thiếu còn hơn sai.
+  const audit = auditFacts3d(problem, state);
+  if (audit.violated.length > 0) {
+    return {
+      ok: false,
+      reason: 'verify-fail',
+      detail: `vi phạm đề: ${audit.violated.map((f) => f.text).join('; ')}`,
       coverage: det.coverage,
     };
   }

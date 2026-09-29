@@ -7,6 +7,7 @@
 // This rule is intentionally conservative: it needs one unambiguous circle name
 // in the whole problem, and it does not try to model arc bounds yet.
 import type { LanguageRule, RuleMatch } from './_types';
+import type { IntentT } from '../intent';
 import { addPoint, escapeRe } from './_shared';
 
 const PREFILTER = /(?:nằm|thuộc|lấy\s+điểm|trên\s+(?:nửa\s+)?(?:đường\s*tròn|cung))/iu;
@@ -28,7 +29,9 @@ const POINT_ON = new RegExp(
   // Nhánh "là (một)? điểm …" chấp nhận giới từ kết là "trên" HOẶC "thuộc"
   // ("Gọi E là một điểm bất kì thuộc cung nhỏ BC" — hinh9 #108). ON_SUFFIX vẫn
   // neo circle/cung nên "thuộc" trần không nuốt "thuộc cạnh/đoạn".
-  `(?:[Đđ]iểm\\s+)?([A-Z])(?:\\s+[^.]{0,12}?)?\\s+(?:(?:nằm\\s+)?trên|thuộc|là\\s+(?:một\\s+)?điểm\\s+(?:[^.A-Z]{0,16}?\\s+)?(?:(?:nằm\\s+)?trên|thuộc))\\s+${ON_SUFFIX}`,
+  // Khoảng chen giữa tên và "thuộc" KHÔNG được chứa chữ HOA (tên điểm khác): trước đây
+  // "(AB < AC và N thuộc cung nhỏ BC)" bắt nhầm B của "AB" thay vì N.
+  `(?:[Đđ]iểm\\s+)?([A-Z])(?:\\s+[^.A-Z]{0,12}?)?\\s+(?:(?:nằm\\s+)?trên|thuộc|là\\s+(?:một\\s+)?điểm\\s+(?:[^.A-Z]{0,16}?\\s+)?(?:(?:nằm\\s+)?trên|thuộc))\\s+${ON_SUFFIX}`,
   'u',
 );
 const TAKE_ON = new RegExp(
@@ -39,7 +42,7 @@ const TAKE_ON = new RegExp(
 // trên circle toàn-đề. TAKE_ON_REV cần "(X)"; TAKE_ON_CUNG cần "cung"; đây phủ
 // dạng trần "Trên đường tròn lấy điểm D" (phang:14).
 const TAKE_ON_DUONGTRON =
-  /[Tt]rên\s+(?:nửa\s+)?đường\s*tròn\s+lấy\s+(?:một\s+)?điểm\s+([A-Z])(?![A-Z])/u;
+  /[Tt]rên\s+(?:nửa\s+)?đường\s*tròn\s+(?:đã\s+cho\s+|đó\s+|này\s+)?lấy\s+(?:một\s+)?điểm\s+([A-Z])(?![A-Z])/u;
 // Đảo trên CUNG (không paren): "Trên cung BC lấy điểm M" → M onCircle. KHÁC
 // TAKE_ON_REV (cần "(X)"): ở đây cung nêu bằng cặp đỉnh; circle = toàn đề.
 const TAKE_ON_CUNG = /[Tt]rên\s+cung\s+(?:nhỏ\s+|lớn\s+)?[A-Z]{2}(?:\s*(?:nhỏ|lớn))?[^.]{0,16}?lấy\s+điểm\s+([A-Z])(?![A-Z])/u;
@@ -53,7 +56,7 @@ const TAKE_ON_REV =
 // `hai\s*điểm`: OCR hay dính "haiđiểm" (httcd:191). "bất kì/kỳ" optional xen giữa
 // tên thứ hai và "thuộc".
 const TWO_ON =
-  /(?:lấy\s+)?hai\s*điểm\s+([A-Z])(?![A-Za-z])\s+và\s+([A-Z])(?![A-Za-z])(?:\s+bất\s*k[ìiyỳ])?\s+thuộc\s+(?:nửa\s+)?(?:đường\s*tròn|cung)/u;
+  /(?:lấy\s+)?(?:hai|2)\s*điểm\s+([A-Z])(?![A-Za-z])\s+và\s+([A-Z])(?![A-Za-z])(?:\s+bất\s*k[ìiyỳ])?\s+thuộc\s+(?:nửa\s+)?(?:đường\s*tròn|cung|\(\s*[A-Z]\s*\))/u;
 // "(Các)? điểm E, F thuộc cung BC …" — 2 điểm phân phối ngăn bởi dấu phẩy.
 const TWO_ON_COMMA =
   /(?:[CcNn]ác\s+|[Nn]hững\s+)?điểm\s+([A-Z])(?![A-Za-z])\s*,\s*([A-Z])(?![A-Za-z])\s+thuộc\s+(?:nửa\s+)?(?:đường\s*tròn|cung)/u;
@@ -63,10 +66,13 @@ const TWO_ON_COMMA =
 // Hậu tố nhận thêm "(X)" paren bare vì đề hay viết "nằm trên (O)" không chữ
 // "đường tròn".
 const TWO_ON_NAMES =
-  /([A-Z])(?![A-Za-z])\s*(?:,|và)\s*([A-Z])(?![A-Za-z])\s+là\s+(?:hai|các)\s+điểm\s+(?:thuộc|nằm\s+trên|trên)\s+(?:(?:nửa\s+)?(?:đường\s*tròn|cung)|\(\s*[A-Z]\s*\))/u;
+  /([A-Z])(?![A-Za-z])\s*(?:,|và)\s*([A-Z])(?![A-Za-z])\s+là\s+(?:hai|các)\s+điểm\s+(?:(?:phân\s*biệt|cố\s*định|bất\s*k[ìiyỳ])\s*,?\s*)*(?:thuộc|nằm\s+trên|trên)\s+(?:(?:nửa\s+)?(?:đường\s*tròn|cung)|\(\s*[A-Z]\s*\))/u;
 // ĐẢO 2 điểm trên CUNG: "Trên cung (lớn|nhỏ)? AB lấy hai điểm C, D" / "C và D"
 // (hinh9:19, vao10:202). Cung nêu bằng cặp đỉnh; circle = toàn đề. group1, group2
 // = 2 điểm.
+// "Trên nửa đường tròn (đường kính AD)? lấy hai điểm B, C (sao cho B ở giữa A và C)".
+const TWO_ON_DT_REV =
+  /[Tt]rên\s+(?:nửa\s+)?đường\s*tròn\s+(?:(?:tâm\s+)?\(?[A-Z]\)?\s+)?(?:đường\s*kính\s+[A-Z]{2}\s+)?(?:đã\s+cho\s+)?lấy\s+(?:hai|2)\s+điểm\s+([A-Z])(?![A-Za-z])\s*(?:,|và)\s*([A-Z])(?![A-Za-z])/u;
 const TWO_ON_CUNG_REV =
   /[Tt]rên\s+cung\s+(?:nhỏ\s+|lớn\s+)?[A-Z]{2}(?:\s*(?:nhỏ|lớn))?\s+lấy\s+hai\s+điểm\s+([A-Z])(?![A-Za-z])\s*(?:,|và)\s*([A-Z])(?![A-Za-z])/u;
 
@@ -106,12 +112,82 @@ function resolveCircle(problem: string): string | undefined {
   return diameterOfThisCenter ? `${center}_c` : center;
 }
 
+
+/** X là tiếp điểm: "tiếp tuyến AX" hoặc "(…, X là (các)? tiếp điểm)". */
+function laTiepDiem(problem: string, x: string): boolean {
+  const e = x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return (
+    new RegExp(`tiếp\\s*tuyến\\s+(?:[A-Z]${e}(?![A-Z])|[^.]{0,30}?(?:,|và)\\s*[A-Z]${e}(?![A-Z]))`, 'u').test(problem) ||
+    new RegExp(`(?<![A-Z])${e}(?![A-Z])[^.()]{0,12}?là\\s+(?:các\\s+|hai\\s+)?tiếp\\s*điểm`, 'u').test(problem)
+  );
+}
+// Cung đề chỉ định cho điểm: "cung nhỏ BC" / "cung BC nhỏ" / "cung lớn AB" /
+// "cung BC không chứa (điểm)? A" / "cung BC chứa A". Trả spec onArc (a,b = đầu cung).
+const CUNG_TINH_TU_TRUOC = /cung\s+(nhỏ|lớn)\s+([A-Z])([A-Z])(?![A-Z])/u;
+const CUNG_TINH_TU_SAU = /cung\s+([A-Z])([A-Z])\s*(nhỏ|lớn)(?!\p{L})/u;
+const CUNG_CHUA = /cung\s+([A-Z])([A-Z])(?![A-Z])\s*(?:\(\s*)?(không\s+chứa|chứa)\s+(?:điểm\s+)?([A-Z])(?![A-Z])/u;
+
+interface CungSpec { a: string; b: string; mode: 'minor' | 'major' | 'notContaining' | 'containing'; ref?: string }
+
+let NUA_DUONG_TRON = false;
+
+function cungCuaDiem(text: string, name: string): CungSpec | undefined {
+  let spec: CungSpec | undefined;
+  const chua = CUNG_CHUA.exec(text);
+  if (chua) spec = { a: chua[1], b: chua[2], mode: chua[3].startsWith('không') ? 'notContaining' : 'containing', ref: chua[4] };
+  const truoc = CUNG_TINH_TU_TRUOC.exec(text);
+  if (!spec && truoc) spec = { a: truoc[2], b: truoc[3], mode: truoc[1] === 'nhỏ' ? 'minor' : 'major' };
+  const sau = CUNG_TINH_TU_SAU.exec(text);
+  if (!spec && sau) spec = { a: sau[1], b: sau[2], mode: sau[3] === 'nhỏ' ? 'minor' : 'major' };
+  // "cung AC" trơn trên NỬA đường tròn: mọi cung giữa hai điểm của nửa đường tròn
+  // đều là cung nhỏ nằm trong nửa đó.
+  const tron = /cung\s+([A-Z])([A-Z])(?![A-Z])(?!\s*(?:nhỏ|lớn|\(?\s*(?:không\s+)?chứa))/u.exec(text);
+  if (!spec && tron && NUA_DUONG_TRON) spec = { a: tron[1], b: tron[2], mode: 'minor' };
+  if (!spec) return undefined;
+  const ten = [spec.a, spec.b, spec.ref].filter(Boolean);
+  if (spec.a === spec.b || ten.includes(name) || (spec.ref && (spec.ref === spec.a || spec.ref === spec.b))) return undefined;
+  return spec;
+}
+
+/** "sao cho MD > ME" (M trên cung DE) ⇒ M gần E hơn: t = 0.65 tính từ D; "<" ⇒ 0.35. */
+function tTheoSoSanh(text: string, name: string, a: string, b: string): number | undefined {
+  const [n, x, y] = [name, a, b].map(escapeRe);
+  const m =
+    new RegExp(`${n}(${x}|${y})\\s*([<>])\\s*${n}(${x}|${y})(?![A-Z])`, 'u').exec(text) ??
+    new RegExp(`(${x}|${y})${n}\\s*([<>])\\s*(${x}|${y})${n}(?![A-Z])`, 'u').exec(text);
+  if (!m || m[1] === m[3]) return undefined;
+  const gan = m[2] === '<' ? m[1] : m[3]; // đầu cung GẦN điểm hơn
+  return gan === a ? 0.35 : 0.65;
+}
+
+/**
+ * Đầu cung phải là điểm đề ĐÃ nêu ở chỗ khác (đỉnh tam giác, tiếp điểm…). "Cho (O).
+ * Trên cung nhỏ AB lấy C" mà A, B không được dựng ở đâu ⇒ onArc sẽ treo tham chiếu
+ * — giữ onCircle như cũ (thà không ép cung còn hơn mất cả điểm).
+ */
+function daNeu(problem: string, x: string): boolean {
+  // "dây cung BC" là dây (B, C được dựng) — không xoá.
+  const boCung = problem.replace(/(?<!dây\s*)cung\s+(?:nhỏ\s+|lớn\s+)?[A-Z]{2}(?![A-Z])/gu, ' ');
+  return new RegExp(`(?<![\\p{L}])[A-Z]*${escapeRe(x)}[A-Z]*(?![\\p{L}])`, 'u').test(boCung);
+}
+
+function diemTren(name: string, circle: string, text: string, theta: number, problem: string, t?: number): IntentT {
+  let cung = cungCuaDiem(text, name);
+  if (cung && ![cung.a, cung.b, cung.ref].every((x) => !x || daNeu(problem, x))) cung = undefined;
+  if (cung) {
+    const tt = t ?? tTheoSoSanh(text, name, cung.a, cung.b);
+    return addPoint(name, { kind: 'onArc', circle, ...cung, ...(tt !== undefined ? { t: tt } : {}) });
+  }
+  return addPoint(name, { kind: 'onCircle', circle, theta });
+}
+
 export const onCirclePointRule: LanguageRule = {
   id: 'on-circle-point',
   priority: 64,
   languages: ['vi'],
   patterns: [PREFILTER],
   match(ctx) {
+    NUA_DUONG_TRON = /nửa\s+đường\s*tròn/u.test(ctx.problem);
     const circle = resolveCircle(ctx.problem);
     const out: RuleMatch[] = [];
     let theta = 1.2;
@@ -125,7 +201,7 @@ export const onCirclePointRule: LanguageRule = {
           out.push({
             ruleId: 'on-circle-point',
             clauseIds: [c.id],
-            intents: [addPoint(name, { kind: 'onCircle', circle: rev[1], theta })],
+            intents: [diemTren(name, rev[1], c.text, theta, ctx.problem)],
           });
           theta += 0.8;
         }
@@ -138,39 +214,55 @@ export const onCirclePointRule: LanguageRule = {
         TWO_ON.exec(c.text) ??
         TWO_ON_COMMA.exec(c.text) ??
         TWO_ON_NAMES.exec(c.text) ??
-        TWO_ON_CUNG_REV.exec(c.text);
+        TWO_ON_CUNG_REV.exec(c.text) ??
+        TWO_ON_DT_REV.exec(c.text);
       if (two && two[1].length === 1 && two[2].length === 1) {
+        // "… lấy hai điểm B, C sao cho C ở giữa A và B" ⇒ C đứng trước B khi đi từ A.
+        const [p1, p2] = new RegExp(`${two[2]}\\s+(?:ở|nằm)\\s+giữa\\s+[A-Z]\\s+và\\s+${two[1]}(?![A-Z])`, 'u').test(c.text)
+          ? [two[2], two[1]]
+          : [two[1], two[2]];
+        two[1] = p1;
+        two[2] = p2;
         out.push({
           ruleId: 'on-circle-point',
           clauseIds: [c.id],
           intents: [
-            addPoint(two[1], { kind: 'onCircle', circle, theta }),
-            addPoint(two[2], { kind: 'onCircle', circle, theta: theta + 0.8 }),
+            diemTren(two[1], circle, c.text, theta, ctx.problem, 0.3),
+            diemTren(two[2], circle, c.text, theta + 0.8, ctx.problem, 0.7),
           ],
         });
         theta += 1.6;
         continue;
       }
-      const m =
-        POINT_ON.exec(c.text) ??
-        TAKE_ON.exec(c.text) ??
-        TAKE_ON_CUNG.exec(c.text) ??
-        TAKE_ON_DUONGTRON.exec(c.text);
-      if (!m) continue;
-      const name = m[1];
-      if (name.length !== 1) continue;
-      // "cung LỚN <BC>" (cung lớn): điểm nằm trên CUNG LỚN → phía ĐỐI DIỆN dây BC.
-      // chord đặt 2 đầu dây cố định ở NỬA TRÊN (theta 0.7–2.3) → điểm cung lớn để
-      // ở NỬA DƯỚI (≈ -1.6 rad) tránh cụm 3 điểm thành "sliver" (C89). Cung nhỏ /
-      // không nêu → giữ theta tăng dần như cũ.
-      const major = /cung\s+lớn|lớn\s+[A-Z]{2}/u.test(c.text);
-      const ptTheta = major ? -1.6 : theta;
-      out.push({
-        ruleId: 'on-circle-point',
-        clauseIds: [c.id],
-        intents: [addPoint(name, { kind: 'onCircle', circle, theta: ptTheta })],
-      });
-      theta += 0.8;
+      // "lấy điểm A cố định (…) và lấy điểm D thay đổi trên cung nhỏ AC" — mỗi vế
+      // "lấy" là một điểm riêng; xét từng vế (cung của D không áp cho A).
+      for (const ve of c.text.split(/\s*(?:,|và)\s+(?=lấy\s)/u)) {
+        const m =
+          POINT_ON.exec(ve) ??
+          TAKE_ON.exec(ve) ??
+          TAKE_ON_CUNG.exec(ve) ??
+          TAKE_ON_DUONGTRON.exec(ve) ??
+          (ve !== c.text ? TAKE_ON_DUONGTRON.exec(c.text.slice(0, c.text.indexOf(ve)) + ve) : null);
+        if (!m) continue;
+        const name = m[1];
+        if (name.length !== 1) continue;
+        // Tiếp điểm đã do rule tiếp tuyến định nghĩa: "N thuộc cung nhỏ BC" chỉ là ĐIỀU
+        // KIỆN vị trí, không phải định nghĩa — gắn onCircle tự do (prio 64 > tiếp tuyến 50)
+        // là đè mất tiếp điểm.
+        if (laTiepDiem(ctx.problem, name)) continue;
+        // "cung LỚN <BC>" (cung lớn): điểm nằm trên CUNG LỚN → phía ĐỐI DIỆN dây BC.
+        // chord đặt 2 đầu dây cố định ở NỬA TRÊN (theta 0.7–2.3) → điểm cung lớn để
+        // ở NỬA DƯỚI (≈ -1.6 rad) tránh cụm 3 điểm thành "sliver" (C89). Cung nhỏ /
+        // không nêu → giữ theta tăng dần như cũ.
+        const major = /cung\s+lớn|lớn\s+[A-Z]{2}/u.test(ve);
+        const ptTheta = major ? -1.6 : theta;
+        out.push({
+          ruleId: 'on-circle-point',
+          clauseIds: [c.id],
+          intents: [diemTren(name, circle, ve, ptTheta, ctx.problem)],
+        });
+        theta += 0.8;
+      }
     }
     return out;
   },

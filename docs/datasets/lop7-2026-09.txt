@@ -1,0 +1,263 @@
+Bài 1 [lop7|goc-song-song|ngan]: Vẽ góc xOy có số đo bằng 60°. Vẽ tia Om là tia đối của tia Ox.
+a) Gọi tên hai góc kề bù có trong hình vừa vẽ.
+b) Tính số đo góc yOm.
+c) Vẽ tia Ot là tia phân giác của góc xOy. Tính số đo các góc tOy và tOm.
+
+Bài 2 [lop7|goc-song-song|trung-binh]: Cho hai đường thẳng phân biệt a, b cùng vuông góc với đường thẳng c; d là một đường thẳng khác c và d vuông góc với a. Chứng minh rằng:
+a) a // b;
+b) c // d;
+c) b ⊥ d.
+
+Bài 3 [lop7|goc-song-song|trung-binh]: Trên đường thẳng xx' lấy một điểm O. Trên nửa mặt phẳng bờ xx', vẽ tia OM sao cho góc xOM = 45°. Trên nửa mặt phẳng bờ xx' không chứa tia OM, vẽ tia ON sao cho góc xON = 90°. Gọi OP là tia phân giác của góc x'ON. Chứng minh góc xOM đối đỉnh góc x'OP.
+
+Bài 4 [lop7|goc-song-song|trung-binh]: Cho hai đường thẳng AB và CD cắt nhau tại O. Gọi OM, ON lần lượt là tia phân giác của góc BOC và góc BOD. Trên nửa mặt phẳng bờ OM không chứa ON dựng tia OP vuông góc OM. Chứng minh hai góc COP và DON là hai góc đối đỉnh.
+
+Bài 5 [lop7|goc-song-song|trung-binh]: Cho góc xOy = 150°, bên ngoài của góc vẽ hai tia OA và OB sao cho OA ⊥ Ox, OB ⊥ Oy. Gọi OM là tia phân giác của góc xOy và OM' là tia phân giác của góc AOB.
+a) Chứng minh OM và OM' đối nhau.
+b) Tính góc xOB và góc yOA.
+
+Bài 6 [lop7|goc-song-song|dai]: Cho góc nhọn AOB. Từ M trên tia OA vẽ MN vuông góc với OB (N ∈ OB), từ N vẽ NP vuông góc với OA (P ∈ OA), từ P vẽ PQ vuông góc với OB (Q ∈ OB), từ Q vẽ QR ⊥ OA (R ∈ OA).
+a) Chứng minh MN // PQ và NP // QR.
+b) Xác định các góc có số đo bằng số đo góc PMN, các góc có số đo bằng số đo góc MNP biết góc QOR + góc RQO = 90°.
+
+Bài 7 [lop7|tam-giac-bang-nhau|ngan]: Cho tam giác ABC, đường cao AH. Trên nửa mặt phẳng bờ AC không chứa B vẽ tam giác ACD sao cho AD = BC; CD = AB. Chứng minh rằng: AB // CD và AH ⊥ AD.
+
+Bài 8 [lop7|tam-giac-bang-nhau|ngan]: Cho tam giác ABC có góc A = 80°. Vẽ cung tròn tâm B có bán kính bằng độ dài đoạn AC. Vẽ cung tròn tâm C có bán kính bằng độ dài đoạn AB. Hai cung tròn này cắt nhau tại D nằm khác phía của A đối với BC.
+a) Chứng minh tam giác ABC = tam giác DCB. Từ đó suy ra số đo góc BDC.
+b) Chứng minh AB // CD.
+
+Bài 9 [lop7|tam-giac-bang-nhau|ngan]: Cho tia Oz là tia phân giác của góc xOy. Lấy các điểm A, B, C lần lượt thuộc các tia Ox, Oy, Oz sao cho góc CAO = góc CBO.
+a) Chứng minh rằng tam giác OAC = tam giác OBC.
+b) Lấy điểm M trên tia đối của tia CO. Chứng minh rằng tam giác MAC = tam giác MBC.
+
+Bài 10 [lop7|tam-giac-bang-nhau|trung-binh]: Cho góc xOy. Trên tia Ox lấy hai điểm A, M; trên tia Oy lấy hai điểm B, N sao cho OA = OB, OM = ON, OA > OM. Chứng minh rằng:
+a) Tam giác OAN = tam giác OBM;
+b) Tam giác AMN = tam giác BNM.
+
+Bài 11 [lop7|tam-giac-bang-nhau|trung-binh]: Cho tam giác ABC, kẻ BD vuông góc với AC, CE vuông góc với AB. Trên tia đối của tia BD, lấy điểm H sao cho BH = AC. Trên tia đối của tia CE lấy điểm K sao cho CK = AB. Chứng minh AH = AK.
+
+Bài 12 [lop7|tam-giac-bang-nhau|trung-binh]: Cho tam giác ABC (AB < AC), tia Ax đi qua trung điểm M của BC. Kẻ BE và CF vuông góc với Ax (E, F ∈ Ax).
+a) Chứng minh: BE // CF.
+b) So sánh BE và FC; CE và BF.
+c) Tìm điều kiện về tam giác ABC để có BE = CE.
+
+Bài 13 [lop7|tam-giac-bang-nhau|trung-binh]: Cho tam giác ABC nhọn có AB < AC. Gọi M là trung điểm của BC, trên tia đối của tia MA lấy điểm N sao cho MA = MN.
+a) Chứng minh: AB = NC.
+b) Trên AC lấy điểm E và trên BN lấy điểm F sao cho CE = BF. Chứng minh: tam giác CME = tam giác BMF và 3 điểm F, M, E thẳng hàng.
+
+Bài 14 [lop7|tam-giac-bang-nhau|dai]: Cho tam giác ABC. Đường thẳng qua A song song với BC cắt đường thẳng qua C song song với AB ở D. Gọi M là giao điểm của BD và AC.
+a) Chứng minh tam giác ABC = tam giác CDA.
+b) Chứng minh M là trung điểm của AC.
+c) Đường thẳng d qua M cắt các đoạn thẳng AD, BC lần lượt ở I, K. Chứng minh M là trung điểm của IK.
+
+Bài 15 [lop7|tam-giac-bang-nhau|dai]: Cho tam giác ABC. Gọi E, F theo thứ tự là trung điểm của các cạnh AB và AC. Trên tia đối của tia FB lấy điểm D sao cho DF = FB. Trên tia đối của tia EC lấy điểm H sao cho HE = EC.
+a) Chứng minh AD = BC.
+b) Chứng minh A là trung điểm của HD.
+c) Chứng minh CD // AB.
+d) Gọi P là giao của DC và HB. Chứng minh AP; BD; CH đồng quy.
+
+Bài 16 [lop7|tam-giac-vuong|dai]: Cho tam giác ABC vuông tại A (AB < AC), H là chân đường vuông góc hạ từ A xuống BC. Trên cạnh AC, lấy điểm E sao cho AH = AE. Qua E kẻ đường vuông góc với AC, cắt cạnh BC tại D.
+a) Chứng minh tam giác AHD = tam giác AED và AD là tia phân giác của góc HAC.
+b) Tia ED cắt tia AH tại K. Chứng minh tam giác KCD cân.
+c) Gọi I là trung điểm của KC. Chứng minh ba điểm A, D, I thẳng hàng.
+
+Bài 17 [lop7|tam-giac-vuong|dai]: Cho tam giác ABC có góc A = 90°; góc B = 60°. Trên cạnh BC lấy điểm D sao cho BD = AB. Đường vuông góc với BC tại D cắt AC ở E.
+a) Chứng minh: tam giác ABE = tam giác DBE; tam giác ABD là tam giác đều.
+b) Gọi H là chân đường vuông góc hạ từ A xuống BC, AH cắt BE tại N. Chứng minh tam giác ANE là tam giác cân.
+c) Chứng minh tia AD là tia phân giác của góc HAC.
+d) So sánh HD và DC.
+e) Chứng minh AH + BC > AB + AC.
+
+Bài 18 [lop7|tam-giac-vuong|trung-binh]: Cho tam giác ABC vuông tại A, tia phân giác của góc ABC cắt AC tại M. Gọi N là hình chiếu của M trên BC.
+a) Chứng minh tam giác ABM = tam giác NBM và MB là tia phân giác của góc AMN.
+b) Vẽ NK // BM (K thuộc MC). Chứng minh góc BMN = góc MNK và tam giác MNK cân.
+c) Chứng minh BM ⊥ AN và AN < AK.
+d) Tìm điều kiện của tam giác ABC vuông ban đầu để K là trung điểm của MC.
+
+Bài 19 [lop7|tam-giac-vuong|dai]: Cho tam giác ABC có góc A = 90° và AB = AC. Trên các cạnh AB và AC lần lượt lấy điểm D và E sao cho AD = AE. Qua A và D kẻ đường vuông góc với BE cắt BC lần lượt tại M và N. Tia ND cắt tia CA tại I. Chứng minh rằng:
+a) Tam giác AID = tam giác ABE.
+b) CM = MN.
+
+Bài 20 [lop7|tam-giac-vuong|dai]: Cho tam giác ABC vuông tại A, AB > AC. M là trung điểm của BC. Trên tia đối của tia MA lấy điểm D sao cho MD = MA.
+a) Chứng minh: AB = DC và AB // DC.
+b) Chứng minh: tam giác ACD = tam giác CAB từ đó suy ra AM = BC/2.
+c) Trên tia đối của tia AC lấy điểm E sao cho AE = AC. Chứng minh: BE // AM.
+d) Tìm điều kiện của tam giác ABC để AC = BC/2.
+e) Gọi O là trung điểm của AB. Chứng minh: Ba điểm E, O, D thẳng hàng.
+
+Bài 21 [lop7|tam-giac-can|ngan]: Cho tam giác ABC và M là trung điểm của đoạn thẳng BC.
+a) Giả sử AM vuông góc với BC. Chứng minh rằng tam giác ABC cân tại A.
+b) Giả sử AM là tia phân giác của góc BAC. Chứng minh rằng tam giác ABC cân tại A.
+
+Bài 22 [lop7|tam-giac-can|trung-binh]: Cho tam giác ABC cân ở A. Lấy điểm D thuộc cạnh AC và điểm E thuộc cạnh AB sao cho AD = AE.
+a) Chứng minh tam giác ADB = tam giác AEC.
+b) Gọi I là giao điểm của BD và CE. Tam giác IBC là tam giác gì? Vì sao?
+c) Chứng minh ED // BC.
+
+Bài 23 [lop7|tam-giac-can|trung-binh]: Cho tam giác ABC cân tại A (góc A > 90°). Trên tia đối của tia AB và AC lần lượt lấy các điểm D, E sao cho AD = AE < AB. Gọi O là giao điểm của hai đường thẳng BE và CD. Chứng minh rằng:
+a) Tam giác AEB = tam giác ADC
+b) OE = OD
+c) Gọi H là chân đường vuông góc kẻ từ O tới BC. Chứng minh ba điểm O, A, H thẳng hàng.
+
+Bài 24 [lop7|tam-giac-can|dai]: Cho tam giác ABC cân ở A. Trên tia đối của các tia BC và CB lấy thứ tự hai điểm D và E sao cho BD = CE.
+a) Chứng minh tam giác ADE cân
+b) Gọi M là trung điểm của BC. Chứng minh AM là tia phân giác của góc DAE
+c) Từ B và C kẻ BH, CK theo thứ tự vuông góc với AD và AE (H ∈ AD, K ∈ AE). Chứng minh: BH = CK.
+d) Gọi I là giao điểm HB và KC. Chứng minh ba điểm A, M, I thẳng hàng
+
+Bài 25 [lop7|tam-giac-can|trung-binh]: Cho tam giác ABC cân tại A, đường cao AH. Lấy điểm M, N lần lượt là hình chiếu vuông góc của H trên cạnh AB, AC. Đường thẳng qua H và song song với AC cắt cạnh AB ở D.
+a) Chứng minh rằng BH = HC.
+b) So sánh độ dài hai đoạn thẳng BH và HN.
+c) Chứng minh rằng DH = AB/2.
+
+Bài 26 [lop7|tam-giac-can|dai]: Cho tam giác ABC, AB = AC, AB > BC, H là trung điểm của BC.
+a) Chứng minh tam giác ABH = tam giác ACH. Từ đó suy ra AH vuông góc với BC.
+b) Tia phân giác của góc B cắt AH tại I. Chứng minh tam giác BIC cân.
+c) Đường thẳng đi qua A và song song với BC cắt BI, CI lần lượt tại M, N. Chứng minh A là trung điểm của đoạn MN.
+d) Kẻ IE vuông góc với AB tại E, IF vuông góc với AC tại F. Chứng minh: IH = IE = IF.
+e) Chứng minh IC vuông góc với MC.
+
+Bài 27 [lop7|tam-giac-can|trung-binh]: Cho tam giác ABC vuông tại A. Tia phân giác của góc C cắt AB ở M. Từ B kẻ BH vuông góc với đường thẳng CM (H ∈ CM). Trên tia đối của tia HC lấy điểm E sao cho HE = HM.
+a) Chứng minh rằng tam giác MBE cân.
+b) Chứng minh rằng góc EBH = góc ACM.
+c) Chứng minh rằng EB ⊥ BC.
+
+Bài 28 [lop7|tam-giac-deu|ngan]: Cho tam giác MBC vuông tại M có góc B = 60°. Gọi A là điểm nằm trên tia đối của tia MB sao cho MA = MB. Chứng minh rằng tam giác ABC là tam giác đều.
+
+Bài 29 [lop7|tam-giac-deu|ngan]: Cho tam giác ABC vuông tại A có góc B = 60°. Trên cạnh BC lấy điểm M sao cho góc CAM = 30°. Chứng minh rằng:
+a) Tam giác CAM cân tại M;
+b) Tam giác BAM là tam giác đều;
+c) M là trung điểm của đoạn thẳng BC.
+
+Bài 30 [lop7|tam-giac-deu|ngan]: Cho tam giác ABC vuông tại A có góc C = 60°. Trên tia đối của tia AC lấy điểm D sao cho AC = AD.
+a) Chứng minh tam giác BCD là tam giác đều.
+b) Biết BC = 2√3. Tính độ dài các cạnh AB, AC.
+
+Bài 31 [lop7|tam-giac-deu|trung-binh]: Cho tam giác ABC đều. Trên các cạnh AB, BC, CA lấy theo thứ tự ba điểm M, N, P sao cho AM = BN = CP.
+a) Chứng minh tam giác MNP là tam giác đều.
+b) Gọi O là giao điểm các đường trung trực của tam giác ABC. Chứng minh O cũng là giao điểm các đường trung trực của tam giác MNP.
+
+Bài 32 [lop7|tam-giac-deu|trung-binh]: Cho tam giác ABC vuông tại C có góc A = 60°. Trên cạnh AB lấy điểm K sao cho AK = AC. Từ K kẻ đường thẳng vuông góc với AB, cắt BC tại E.
+a) Chứng minh AE là tia phân giác của góc CAB và EC < EB.
+b) Chứng minh K là trung điểm của AB và AB = 2AC.
+c) Chứng minh EB > AC.
+d) Kẻ BD vuông góc với AE tại D. Gọi G là giao điểm của AC và BD. Chứng minh tam giác AGB đều.
+
+Bài 33 [lop7|canh-goc|ngan]: Cho tam giác ABC có góc BAC là góc tù. Lấy điểm D nằm giữa A và B, lấy điểm E nằm giữa A và C. Chứng minh DE < BC.
+
+Bài 34 [lop7|canh-goc|ngan]: Cho tam giác ABC (AB > AC). Trên đường thẳng chứa cạnh BC, lấy điểm D và điểm E sao cho B nằm giữa D và C, C nằm giữa B và E, BD = BA, CE = CA.
+a) So sánh góc ADE và góc AED.
+b) So sánh các đoạn thẳng AD và AE.
+
+Bài 35 [lop7|canh-goc|ngan]: Cho tam giác ABC, biết góc A + góc C = 120°, góc A − góc C = 40°.
+a) So sánh các cạnh của tam giác ABC.
+b) Tia phân giác của góc A cắt BC ở D. So sánh độ dài các đoạn BD và CD.
+
+Bài 36 [lop7|canh-goc|trung-binh]: Cho góc xOy nhọn, trên Ox lấy hai điểm A và B (điểm A nằm giữa hai điểm O và B). Trên Oy lấy hai điểm C và D (điểm C nằm giữa O và D). Chứng minh AB + CD < AD + BC.
+
+Bài 37 [lop7|canh-goc|dai]: Cho tam giác ABC cân ở A. Trên cạnh AB lấy điểm M, trên tia đối của tia CA lấy điểm N sao cho BM = CN. Từ C kẻ tia Cx // MN, từ M kẻ tia My // CN. Hai tia Cx và My cắt nhau tại D. So sánh BC và CD.
+
+Bài 38 [lop7|vuong-goc-xien|ngan]: Cho tam giác ABC (AB < AC), đường cao AH. Gọi M là điểm tùy ý trên đoạn thẳng AH. Chứng minh MB < MC.
+
+Bài 39 [lop7|vuong-goc-xien|ngan]: Cho tam giác ABC vuông tại A. Trên cạnh AB lấy hai điểm D, E sao cho AD = DE = EB. Chứng minh rằng CA < CD < CE < CB.
+
+Bài 40 [lop7|vuong-goc-xien|ngan]: Cho tam giác ABC, điểm D nằm giữa B và C. Gọi H, K lần lượt là chân các đường vuông góc kẻ từ D xuống các đường thẳng AB, AC. So sánh BC và tổng DH + DK.
+
+Bài 41 [lop7|vuong-goc-xien|trung-binh]: Cho tam giác ABC, D là điểm nằm giữa B và C (AD không vuông góc với BC). Gọi H, K lần lượt là chân các đường vuông góc kẻ từ B, C xuống đoạn thẳng AD. Chứng minh rằng:
+a) AB + AC > BH + CK.
+b) BH + CK < BC.
+
+Bài 42 [lop7|vuong-goc-xien|trung-binh]: Cho tam giác ABC vuông tại A, Bm là tia phân giác của góc B cắt AC tại D. Tại C kẻ Cn ⊥ AC (AB và Cn thuộc hai nửa mặt phẳng đối nhau có bờ là AC), Cn cắt Bm tại E. So sánh chu vi tam giác ABD và chu vi tam giác CDE.
+
+Bài 43 [lop7|vuong-goc-xien|ngan]: Gọi AI và AM lần lượt là đường cao và đường trung tuyến xuất phát từ đỉnh A của tam giác ABC. Chứng minh rằng
+a) AI < (AB + AC)/2
+b) AM < (AB + AC)/2
+
+Bài 44 [lop7|trung-tuyen|ngan]: Chứng minh rằng:
+a) Trong một tam giác cân, hai đường trung tuyến ứng với 2 cạnh bên là hai đoạn thẳng bằng nhau.
+b) Ngược lại, nếu tam giác có hai đường trung tuyến bằng nhau thì tam giác đó cân.
+
+Bài 45 [lop7|trung-tuyen|ngan]: Cho tam giác ABC có các đường trung tuyến BM và CN cắt nhau tại G. Biết góc GBC lớn hơn góc GCB. Hãy so sánh BM và CN.
+
+Bài 46 [lop7|trung-tuyen|ngan]: Cho tam giác ABC có đường phân giác AD, D nằm trên BC sao cho BD = 2DC. Trên đường thẳng AC, lấy điểm E sao cho C là trung điểm của AE. Chứng minh rằng tam giác ABE cân tại A.
+
+Bài 47 [lop7|trung-tuyen|trung-binh]: Cho tam giác ABC cân tại A. Kẻ AH vuông góc với BC tại H.
+a) Chứng minh tam giác AHB = tam giác AHC.
+b) Từ H kẻ đường thẳng song song với AC cắt AB tại D. Chứng minh AD = DH.
+c) Gọi E là trung điểm của AC, CD cắt AH tại G. Chứng minh ba điểm B, G, E thẳng hàng.
+d) Chứng minh chu vi tam giác ABC lớn hơn AH + 3BG.
+
+Bài 48 [lop7|trung-tuyen|dai]: Cho tam giác ABC, đường trung tuyến AD. Qua D kẻ đường thẳng song song với AB, qua B kẻ đường thẳng song song với AD, hai đường thẳng này cắt nhau tại E.
+a) Chứng minh tam giác ABD = tam giác EDB.
+b) Gọi I là giao của AE và BD. So sánh AI và AC.
+c) Chứng minh điểm D là trọng tâm của tam giác ACE.
+d) Gọi K là trung điểm CE. Chứng minh A, D, K thẳng hàng.
+
+Bài 49 [lop7|trung-tuyen|dai]: Cho tam giác ABC cân tại A, và điểm M là trung điểm của cạnh BC. Vẽ tia Ax // BC, Cy // AB sao cho Ax cắt Cy tại D. Kéo dài AM cắt tia đối của tia Cy tại E.
+a) Chứng minh tam giác ACB = tam giác CAD; AB = CD.
+b) Chứng minh tam giác MBA = tam giác MCE; MA = ME; CE = CD.
+c) Trên tia Ax lấy điểm N sao cho AN = BM và G là giao điểm của AC và MD. Chứng minh rằng E, G, N thẳng hàng.
+d) Gọi P là trọng tâm của tam giác ABC. Chứng minh rằng NG > AP.
+
+Bài 50 [lop7|phan-giac|ngan]: Kí hiệu I là điểm đồng quy của ba đường phân giác trong tam giác ABC. Tính góc BIC khi biết góc BAC bằng 120°.
+
+Bài 51 [lop7|phan-giac|trung-binh]: Trong tam giác ABC, hai đường phân giác của các góc B và C cắt nhau tại D. Kẻ DP vuông góc với BC, DQ vuông góc với CA, DR vuông góc với AB.
+a) Hãy giải thích tại sao DP = DR.
+b) Hãy giải thích tại sao DP = DQ.
+c) Từ câu a và b suy ra DR = DQ. Tại sao D nằm trên tia phân giác của góc A?
+
+Bài 52 [lop7|phan-giac|trung-binh]: Cho tam giác ABC có góc A = 120°. Tia phân giác của góc A cắt BC tại D. Tia phân giác của góc ADC cắt AC tại I. Gọi H, K lần lượt là hình chiếu của I trên đường thẳng AB, BC. Chứng minh IH = IK.
+
+Bài 53 [lop7|phan-giac|trung-binh]: Cho tam giác ABC có góc B = 120°. Kẻ đường phân giác BM. Đường phân giác của góc ngoài ở đỉnh C cắt đường thẳng AB ở P. Đoạn thẳng MP cắt BC ở K. Tính số đo góc AKM.
+
+Bài 54 [lop7|phan-giac|trung-binh]: Cho tam giác ABC có AB < AC. Kẻ tia phân giác AD của góc BAC (D ∈ BC). Trên cạnh AC lấy điểm E sao cho AE = AB, trên tia AB lấy điểm F sao cho AF = AC. Chứng minh:
+a) BD = ED.
+b) BF = EC.
+c) Tam giác BDF = tam giác EDC.
+d) AD ⊥ FC.
+
+Bài 55 [lop7|phan-giac|trung-binh]: Cho tam giác ABC vuông tại A có AB = AC/2, AD là tia phân giác góc BAC (D ∈ BC). Gọi E là trung điểm của AC.
+a) Chứng minh rằng DE = DB.
+b) AB cắt DE tại K. Chứng minh rằng tam giác DCK cân và B là trung điểm của đoạn thẳng AK.
+c) AD cắt CK tại H. Chứng minh rằng AH ⊥ KC.
+
+Bài 56 [lop7|trung-truc|trung-binh]: Cho góc xOy = 40°. Trên Ox lấy điểm A, trên Oy lấy điểm B. Lấy điểm C sao cho OB là đường trung trực của AC.
+a) Chứng minh tam giác OAB = tam giác OCB.
+b) Tính số đo góc AOC.
+
+Bài 57 [lop7|trung-truc|ngan]: Cho tam giác ABC cân tại A. Trên cạnh AB lấy điểm D, trên cạnh AC lấy điểm E sao cho BD = AE. Chứng minh đường trung trực của DE luôn đi qua một điểm cố định.
+
+Bài 58 [lop7|trung-truc|dai]: Cho tam giác ABC cố định, đường phân giác AI (I ∈ BC). Trên đoạn thẳng IC lấy điểm H. Từ H kẻ đường thẳng song song với AI, cắt AB kéo dài tại E và cắt AC tại F. Chứng minh rằng:
+a) Đường trung trực của EF luôn đi qua đỉnh A của tam giác ABC.
+b) Khi H di động trên đoạn thẳng IC thì đường trung trực của đoạn thẳng EF luôn cố định.
+
+Bài 59 [lop7|trung-truc|trung-binh]: Cho tam giác ABC cân tại A, có góc A = 50°. Đường trung trực của AB cắt BC ở D.
+a) Tính góc CAD.
+b) Trên tia đối của tia AD lấy điểm M sao cho AM = CD. Chứng minh tam giác BMD là tam giác cân.
+
+Bài 60 [lop7|trung-truc|ngan]: Cho tam giác ABC vuông tại A. Trên cạnh BC lấy hai điểm D và E sao cho BD = BA và CE = CA. Chứng minh tâm O của đường tròn ngoại tiếp tam giác ADE là giao điểm của các đường phân giác của tam giác ABC.
+
+Bài 61 [lop7|trung-truc|trung-binh]: Cho tam giác ABC có AB < AC, lấy E trên cạnh CA sao cho CE = BA, các đường trung trực của các đoạn thẳng BE và CA cắt nhau ở I.
+a) Chứng minh tam giác AIB = tam giác CIE.
+b) Chứng minh AI là tia phân giác của góc BAC.
+
+Bài 62 [lop7|trung-truc|trung-binh]: Cho tam giác ABC, góc B = 75°, góc C = 45°. Vẽ đường trung trực d của BC cắt BC tại M. Gọi E là điểm thuộc d và thuộc nửa mặt phẳng bờ BC chứa điểm A sao cho góc EBC = 30°. Chứng minh rằng:
+a) Tam giác BEC cân tại E;
+b) Góc BAC = góc ABE + góc ACE;
+c) Góc AEB = 90°.
+
+Bài 63 [lop7|duong-cao|ngan]: Cho tam giác ABC có góc A = 100° và trực tâm H. Tìm góc BHC.
+
+Bài 64 [lop7|duong-cao|ngan]: Cho tam giác ABC vuông cân tại A. Lấy điểm E thuộc cạnh AC. Trên tia đối của tia AB lấy điểm D sao cho AD = AE. Chứng minh rằng:
+a) DE vuông góc với BC
+b) BE vuông góc với DC
+
+Bài 65 [lop7|duong-cao|trung-binh]: Cho tam giác ABC vuông tại A. Lấy điểm H thuộc cạnh AB. Vẽ HM vuông góc với BC tại M. Tia MH cắt tia CA tại N. Chứng minh rằng CH vuông góc với NB.
+
+Bài 66 [lop7|duong-cao|dai]: Cho ba điểm phân biệt thẳng hàng A, B, C. Gọi d là đường thẳng vuông góc với AB tại A. Với điểm M thuộc d, M khác A, vẽ đường thẳng CM. Qua B kẻ đường thẳng vuông góc với đường thẳng CM, cắt d tại N. Chứng minh đường thẳng BM vuông góc với đường thẳng CN.
+
+Bài 67 [lop7|duong-cao|dai]: Cho tam giác ABC có ba góc nhọn, đường cao AH. Vẽ HM, HN lần lượt vuông góc với AB, AC. Trên tia đối của tia MH lấy MD = MH. Trên tia đối NH lấy điểm E sao cho NE = NH. Gọi I và K là giao điểm của DE với AB và AC. Chứng minh rằng
+a) IB là tia phân giác của góc HID.
+b) HA là tia phân giác của góc IHK.
+
+Bài 68 [lop7|duong-cao|dai]: Cho hai tam giác nhọn ABC và ECD, trong đó ba điểm B, C, D thẳng hàng. Hai đường cao BM và CN của tam giác ABC cắt nhau tại I, hai đường cao CP và DQ của tam giác ECD cắt nhau tại K. Chứng minh AI // EK.

@@ -35,7 +35,14 @@ const RENDERABLE: string[] = [
 // Các đề trung-bình-khó cần điểm phái sinh chưa có rule → PHẢI escalate (an toàn),
 // KHÔNG được dùng hình thiếu điểm.
 const ESCALATE: { problem: string; reason: string }[] = [
-  { problem: 'Cho tam giác ABC. Trên cạnh AB lấy điểm D sao cho AD = 2DB', reason: 'named-missing' },
+  // Trên CẠNH thì ratioPointOnSegment dựng đúng (AD = 2DB); trên TIA có hai vị trí → escalate.
+  { problem: 'Cho tam giác ABC. Trên tia BC lấy điểm D sao cho BD = 2DC', reason: 'named-missing' },
+  // (Trước 2026-09 là "AD = 2DB" — nay pointOnSideAtRatio dựng chính xác.) Điều kiện
+  // GÓC trên cạnh vẫn chưa có rule → phải escalate.
+  { problem: 'Cho tam giác ABC. Trên cạnh AB lấy điểm D sao cho góc ACD = 30°', reason: 'named-missing' },
+  // (AD = 2DB trên CẠNH giờ dựng chính xác — pointRatio.) Trên TIA thì "AD = 2DB"
+  // có hai nghiệm (chia trong/chia ngoài) ⇒ vẫn phải escalate, không đoán.
+  { problem: 'Cho tam giác ABC. Trên tia AB lấy điểm D sao cho AD = 2DB', reason: 'named-missing' },
   { problem: 'Chứng minh định lý Pytago', reason: 'no-match' },
   // Guard NAMED_LA: "X là <construct chưa có rule>" cùng clause với tam giác đã
   // claim → coverage complete nhưng điểm P thiếu → PHẢI named-missing (escalate),

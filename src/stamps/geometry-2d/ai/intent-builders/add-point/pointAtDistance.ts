@@ -11,5 +11,8 @@ export const buildPointAtDistance = (s: BuildState, intent: AddPointIntentT): vo
   const c = intent.constraint;
   if (c.kind !== 'pointAtDistance') return;
   ensureSegment(s, c.from, c.through);
-  addPoint(s, { name: intent.name, kind: 'pointAtDistance', from: c.from, through: c.through, distance: c.distance });
+  addPoint(s, {
+    name: intent.name, kind: 'pointAtDistance', from: c.from, through: c.through, distance: c.distance,
+    ...(c.origin ? { origin: c.origin } : {}),
+  });
 };

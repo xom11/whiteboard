@@ -160,6 +160,10 @@ export const parallelPerpRule: LanguageRule = {
         const to = m[3] + m[4];
         // Song song với đường CHỨA chính điểm qua → trùng đường đó (degenerate) → bỏ.
         if (isParallel && to.includes(through)) continue;
+        // "từ M hạ các đường vuông góc MA, MB xuống Ox, Oy": "MA" là TÊN đường vuông
+        // góc (bắt đầu bằng chính điểm qua, không có "với"), KHÔNG phải đường tham
+        // chiếu — dựng "⊥ MA qua M" là vẽ thêm một đường sai.
+        if (!isParallel && m[3] === through && !/vuông\s*góc\s+với/u.test(m[0])) continue;
         const kind = isParallel ? 'parallelThrough' : 'perpThrough';
         const name = lineNameOf(isParallel, through);
         out.push({

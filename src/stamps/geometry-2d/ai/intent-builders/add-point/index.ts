@@ -16,12 +16,14 @@ import { buildAngleBisectorFoot } from './angleBisectorFoot';
 import { buildExternalAngleBisectorFoot } from './externalAngleBisectorFoot';
 import { buildRightAngleViewing } from './rightAngleViewing';
 import { buildArcMidpoint } from './arcMidpoint';
+import { buildOnArc } from './onArc';
 import { buildReflectPoint, buildReflectLine } from './reflect';
 import { buildPointAtDistance } from './pointAtDistance';
 import { buildCommonTangentPoint } from './commonTangentPoint';
 import { buildExternalToCircle } from './externalToCircle';
 import { buildOnCircle } from './onCircle';
 import { buildMixtilinearPoint } from './mixtilinear';
+import { buildAffine } from './affine';
 
 export const ADD_POINT_BUILDERS: Record<string, (s: BuildState, intent: AddPointIntentT) => void> = {
   midpoint: buildMidpoint, onPerpBisector: buildOnPerpBisector, perpFoot: buildPerpFoot,
@@ -33,12 +35,13 @@ export const ADD_POINT_BUILDERS: Record<string, (s: BuildState, intent: AddPoint
   onSegment: buildOnSegment, free: buildFree,
   angleBisectorFoot: buildAngleBisectorFoot, externalAngleBisectorFoot: buildExternalAngleBisectorFoot,
   rightAngleViewing: buildRightAngleViewing,
-  arcMidpoint: buildArcMidpoint, reflectPoint: buildReflectPoint, reflectLine: buildReflectLine,
+  arcMidpoint: buildArcMidpoint, onArc: buildOnArc, reflectPoint: buildReflectPoint, reflectLine: buildReflectLine,
   pointAtDistance: buildPointAtDistance,
   commonTangentPoint: buildCommonTangentPoint,
   externalToCircle: buildExternalToCircle,
   onCircle: buildOnCircle,
   mixtilinearPoint: buildMixtilinearPoint,
+  affine: buildAffine,
 };
 
 export const buildAddPoint = (s: BuildState, intent: AddPointIntentT): void => {

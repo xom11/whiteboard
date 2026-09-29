@@ -1,0 +1,137 @@
+Câu 1: Cho hình lăng trụ tam giác ABC.A'B'C'. Gọi M, N, P lần lượt là trung điểm của các cạnh AA', BB', CC'. Chứng minh rằng mặt phẳng (MNP) song song với mặt phẳng (ABC).
+
+Câu 2: Cho hình lăng trụ tứ giác ABCD.A'B'C'D'. Một mặt phẳng song song với mặt phẳng (A'B'C'D') cắt cạnh bên của hình lăng trụ lần lượt tại A", B", C", D". Hỏi hình tạo bởi các điểm A, B, C, D, A", B", C", D" là hình gì?
+
+Câu 3: Cho hình lăng trụ tam giác ABC.A'B'C'. Gọi G và G' lần lượt là trọng tâm của hai tam giác ABC và A'B'C'. a) Chứng minh rằng tứ giác AGG'A' là hình bình hành. b) Chứng minh rằng AGC.A'G'C' là hình lăng trụ.
+
+Câu 4: Cho hình hộp ABCD.A'B'C'D'. Một mặt phẳng song song với mặt bên (ABB'A') của hình hộp và cắt các cạnh AD, BC, A'D', B'C' lần lượt tại M, N, M', N'. Chứng minh rằng ABNM.A'B'N'M' là hình hộp.
+
+Câu 5: Cho hình hộp ABCD.A'B'C'D'. Gọi M, M' lần lượt là trung điểm của các cạnh BC, B'C'. Hình chiếu của ∆B'DM qua phép chiếu song song trên (A'B'C'D') theo phương chiếu AA' là
+
+Câu 6: Cho hình lăng trụ tam giác ABC.A'B'C'. Gọi M, N, P lần lượt là trung điểm của các cạnh AB, BC, AA'. a) Xác định giao điểm của mặt phẳng (MNP) với đường thẳng B'C. b) Gọi K là giao điểm của mặt phẳng (MNP) với đường thẳng B'C. Tính tỉ số (KB')/KC.
+
+Câu 7: Cho hình hộp ABCD.A'B'C'D'. Gọi M, N lần lượt là trung điểm của cạnh AD, A'B'. Chứng minh rằng: a) BD // B'D', (A'BD) // (CB'D') và MN // (BDD'B'); b) Đường thẳng AC' đi qua trọng tâm G của tam giác A'BD.
+
+Câu 8: Cho hình hộp ABCD.A'B'C'D'. Gọi G1 và G2 lần lượt là trọng tâm của hai tam giác BDA' và B'D'C. Chứng minh G1 và G2 chia đoạn AC' thành ba phần bằng nhau.
+
+Câu 9: Cho hình hộp ABCD.A'B'C'D'. Gọi M và N lần lượt là trung điểm của AB và A'B' và O là một điểm thuộc miền trong của mặt bên CC'D'D. Tìm giao tuyến của mặt phẳng (OMN) với các mặt của hình hộp.
+
+Câu 10: Cho hình hộp ABCD.A'B'C'D'. a) Chứng minh rằng (ACB') // (A'C'D). b) Gọi G1, G2 lần lượt là giao điểm của BD' với các mặt phẳng (ACB') và (A'C'D). Chứng minh rằng G1, G2 lần lượt là trọng tâm của hai tam giác ACB' và A'C'D. c) Chứng minh rằng BG1 = G1G2 = D'G2.
+
+Câu 11: Cho hình lăng trụ tam giác ABC.A'B'C'. Gọi E, F lần lượt là trung điểm của các cạnh AC và A'B'. a) Chứng minh rằng EF // (BCC'B'). b) Gọi I là giao điểm của đường thẳng CF với mặt phẳng (AC'B). Chứng minh rằng I là trung điểm đoạn thẳng CF.
+
+Câu 12: Cho hình hộp ABCD.A'B'C'D'. Xác định ảnh của tam giác A'C'D' qua phép chiếu song song lên mặt phẳng (ABCD) theo phương A'B.
+
+Câu 13: Cho hình lăng trụ ABC.A'B'C' có đáy là các tam giác đều. Tính góc (AB, B'C').
+
+Câu 14: Cho hình hộp ABCD.A'B'C'D' có các cạnh bằng nhau. Chứng minh rằng tứ diện ACB'D' có các cặp cạnh đối diện vuông góc với nhau.
+
+Câu 15: Cho tứ diện ABCD có góc CBD=90°. a) Gọi M, N tương ứng là trung điểm của AB, AD. Chứng minh rằng MN vuông góc với BC. b) Gọi G, K tương ứng là trọng tâm của các tam giác ABC, ACD. Chứng minh rằng GK vuông góc với BC.
+
+Câu 16: Cho hình chóp S.ABCD có đáy là hình thoi ABCD cạnh a. Cho biết SA = a√3, SA ⊥ AB và SA ⊥ AD. Tính góc giữa SB và CD, SD và CB.
+
+Câu 17: Cho hình chóp S.ABC có SA = SB = SC = a, góc BSA= góc CSA=60°, góc BSC=90°. Cho I và J lần lượt là trung điểm của SA và BC. Chứng minh rằng IJ ⊥ SA và IJ ⊥ BC.
+
+Câu 18: Cho tứ diện đều ABCD cạnh a. Gọi K là trung điểm CD. Tính góc giữa hai đường thẳng AK và BC.
+
+Câu 19: Cho tứ diện ABCD. Gọi M, N lần lượt là trung điểm của BC và AD. Biết AB = CD = 2a và MN = a√3. Tính góc giữa AB và CD.
+
+Câu 20: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành và góc SAB=100°. Tính góc giữa hai đường thẳng: a) SA và AB; b) SA và CD.
+
+Câu 21: Cho hình chóp S.ABCD có đáy ABCD là hình bình hành, tam giác SAD là tam giác đều và M là trung điểm của cạnh AD. Tính góc giữa hai đường thẳng BC và SA; BC và SM.
+
+Câu 22: Cho hình hộp ABCD.A'B'C'D' có tất cả các cạnh bằng nhau và góc A'AD bằng 120°. Tính góc giữa các cặp đường thẳng sau: A'C' và BD; AD và BB'; A'D và BB'.
+
+Câu 23: Cho hình chóp S.ABCD có đáy là hình vuông tâm O và tất cả các cạnh của hình chóp đều bằng a. Gọi M, N lần lượt là trung điểm của cạnh SA, AB. a) Tính góc giữa các cặp đường thẳng sau: MN và SD; MO và SB. b) Tính tang của góc giữa hai đường thẳng SN và BC.
+
+Câu 24: Cho hình chóp S.ABCD có đáy là hình chữ nhật và SA⊥(ABCD). Gọi M, N tương ứng là hình chiếu của A trên SB, SD. Chứng minh rằng: AM⊥(SBC), AN⊥(SCD), SC⊥(AMN).
+
+Câu 25: Cho hình hộp chữ nhật ABCD.A'B'C'D'. a) Chứng minh rằng (BDD'B') ⊥ (ABCD). b) Xác định hình chiếu của AC' trên mặt phẳng (ABCD). c) Cho AB = a, BC = b, CC' = c. Tính AC'.
+
+Câu 26: Cho hình chóp S.ABCD có SA ⊥ (ABCD). Cho biết ABCD là hình thang vuông tại A và D, AB = 2AD. a) Chứng minh CD ⊥ (SAD). b) Gọi M là trung điểm của AB. Chứng minh CM ⊥ (SAB).
+
+Câu 27: Cho hình vuông ABCD. Gọi H, K lần lượt là trung điểm của AB, AD. Trên đường thẳng vuông góc với (ABCD) tại H, lấy điểm S. Chứng minh rằng: a) AC ⊥ (SHK); b) CK ⊥ (SDH).
+
+Câu 28: Cho hình chóp S.ABC có SA = SB = SC = a, góc ASB=90°, góc BSC=60° và góc ASC=120°. Gọi I là trung điểm cạnh AC. Chứng minh SI ⊥ (ABC).
+
+Câu 29: Cho hình chóp S.ABC có đáy là tam giác vuông tại C, mặt bên SAC là tam giác đều và nằm trong mặt phẳng vuông góc với (ABC). a) Chứng minh rằng (SBC) ⊥ (SAC). b) Gọi I là trung điểm của SC. Chứng minh rằng (ABI) ⊥ (SAC).
+
+Câu 30: Cho tam giác đều ABC cạnh a, I trung điểm của BC, D là điểm đối xứng với A qua I. Vẽ đoạn thẳng SD có độ dài (a√6)/2 và vuông góc với (ABC). Chứng minh rằng: a) (SBC) ⊥ (SAD); b) (SAB) ⊥ (SAC).
+
+Câu 31: Cho hình vuông ABCD và tam giác đều SAB cạnh a nằm trong hai mặt phẳng vuông góc với nhau. Gọi M,N lần lượt là trung điểm của AB và AD. a) Chứng minh rằng (SMD)⊥(SNC). b) Tính khoảng cách từ M đến mặt phẳng (SNC).
+
+Câu 32: Cho hình chóp S.ABC. Gọi H là hình chiếu của S trên mặt phẳng (ABC). a) Xác định hình chiếu của các đường thẳng SA, SB, SC trên mặt phẳng (ABC). b) Giả sử BC ⊥ SA, CA ⊥ SB. Chứng minh rằng H là trực tâm của tam giác ABC và AB ⊥ SC.
+
+Câu 33: Cho hình chóp S.ABCD có đáy là hình bình hành. Tam giác ABC nhọn có trực tâm H là hình chiếu của S trên (ABCD). Chứng minh rằng: a) SA ⊥ AD; b) SC ⊥ CD.
+
+Câu 34: Cho hình chóp S.ABCD có đáy ABCD là hình chữ nhật, mặt phẳng (SAB) vuông góc với mặt đáy, tam giác SAB vuông cân tại S. Gọi M là trung điểm của AB. Chứng minh rằng: a) SM ⊥ (ABCD); b) AD ⊥ (SAB); c) (SAD) ⊥ (SBC).
+
+Câu 35: Cho hình lăng trụ ABC.A'B'C' có tất cả các cạnh cùng bằng a, hai mặt phẳng (A'AB) và (A'AC) cùng vuông góc với (ABC). a) Chứng minh rằng AA' ⊥ (ABC). b) Tính số đo góc giữa đường thẳng A'B và mặt phẳng (ABC).
+
+Câu 36: Cho tứ diện ABCD có AC = BC, AD = BD. Gọi M là trung điểm của AB. Chứng minh rằng (CDM) ⊥ (ABC) và (CDM) ⊥ (ABD).
+
+Câu 37: Cho hình chóp S.ABCD có đáy ABCD là hình thoi tâm O, cạnh bằng a, góc BAD bằng 60°. Kẻ OH vuông góc với SC tại H. Biết SA ⊥ (ABCD) và SA = (a√6)/2. Chứng minh rằng: a) (SBD) ⊥ (SAC); b) (SBC) ⊥ (BDH); c) (SBC) ⊥ (SCD).
+
+Câu 38: Cho hình chóp S.ABCD có đáy là hình vuông ABCD cạnh a, SA ⊥ (ABCD) và SA=a√2. a) Tính góc giữa SC và mặt phẳng (ABCD). b) Tính góc giữa BD và mặt phẳng (SAC). c) Tìm hình chiếu của SB trên mặt phẳng (SAC).
+
+Câu 39: Cho hình chóp S.ABC có SA ⊥ (ABC). Gọi H là hình chiếu của A trên BC. a) Chứng minh rằng (SAB) ⊥ (ABC) và (SAH) ⊥ (SBC). b) Giả sử tam giác ABC vuông tại A, góc ABC=30°, AC = a, SA=(a√3)/2. Tính số đo của góc nhị diện [S, BC, A].
+
+Câu 40: Cho hình lập phương ABCD.A'B'C'D' có cạnh bằng a. a) Tính độ dài đường chéo của hình lập phương. b) Chứng minh rằng (ACC'A') ⊥ (BDD'B'). c) Gọi O là tâm của hình vuông ABCD. Chứng minh rằng góc COC' là một góc phẳng của góc nhị diện [C, BD, C']. Tính (gần đúng) số đo của các góc nhị diện [C, BD, C'], [A, BD,C'].
+
+Câu 41: Cho hình chóp đều S.ABC, đáy có cạnh bằng a, cạnh bên bằng b. a) Tính sin của góc tạo bởi cạnh bên và mặt đáy. b) Tính tang của góc giữa mặt phẳng chứa mặt đáy và mặt phẳng chứa mặt bên.
+
+Câu 42: Cho tứ diện đều ABCD. Vẽ hình bình hành BCED. a) Tìm góc giữa đường thẳng AB và (BCD). b) Tìm góc phẳng nhị diện [A,CD,B]; [A,CD, E].
+
+Câu 43: Cho hình chóp tứ giác đều S.ABCD có O là tâm của đáy và có tất cả các cạnh bằng nhau. a) Tìm góc giữa đường thẳng SA và (ABCD). b) Tìm góc phẳng nhị diện [A, SO, B], [S, AB, O].
+
+Câu 44: Cho hình chóp S.ABCD có SA ⊥ (ABCD), đáy ABCD là hình thoi cạnh a và AC = a. a) Tính số đo của góc nhị diện [B, SA, C]. b) Tính số đo của góc nhị diện [B, SA, D]. c) Biết SA = a, tính số đo của góc giữa đường thẳng SC và mặt phẳng (ABCD).
+
+Câu 45: Cho hình chóp S.ABCD có đáy ABCD là hình vuông, hai đường thẳng AC và BD cắt nhau tại O, SO ⊥ (ABCD), tam giác SAC là tam giác đều. a) Tính số đo của góc giữa đường thẳng SA và mặt phẳng (ABCD). b) Chứng minh rằng AC ⊥ (SBD). Tính số đo của góc giữa đường thẳng SA và mặt phẳng (SBD). c) Gọi M là trung điểm của cạnh AB. Tính số đo của góc nhị diện [M, SO, D].
+
+Câu 46: Cho hình lập phương ABCD.A'B'C'D' có cạnh bằng a. a) Tính côsin của góc giữa hai mặt phẳng (A'BD) và (ABCD). b) Tính côsin của số đo góc nhị diện [A', BD, C'].
+
+Câu 47: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a, biết (SAB) ⊥ (ABCD), (SAD) ⊥ (ABCD) và SA = a. Tính côsin của số đo góc nhị diện [S, BD, C] và góc nhị diện [B, SC, D].
+
+Câu 48: Cho hình chóp S.ABC có SA ⊥ (ABC), AB ⊥ BC, SA = AB = 3a, BC = 4a. Gọi α, β, γ lần lượt là số đo của các góc nhị diện [B, SA, C], [A, BC, S], [A, SC, B]. Tính: a) cosα, cosβ; b*) cosγ.
+
+Câu 49: Cho hình chóp S.ABCD có ABCD là hình vuông, AC cắt BD tại O, SO ⊥ (ABCD). Tất cả các cạnh của hình chóp bằng a. a) Tính góc giữa đường thẳng SB và mặt phẳng (SAC). b) Gọi α là số đo của góc nhị diện [S, CD, A]. Tính cosα. c) Gọi d là giao tuyến giữa hai mặt phẳng (SAB) và (SCD), β là số đo của góc nhị diện [A, d, D]. Tính cosβ. d*) Gọi γ là số đo góc nhị diện [B, SC, D]. Tính cosγ.
+
+Câu 50: Cho chóp tứ giác S.ABCD có đáy là hình chữ nhật với AB = 4a, AD = 3a. Các cạnh bên đều có độ dài 5a. Góc nhị diện [S, BC, A] có số đo là
+
+Câu 51: Cho hình chóp S.ABCD có đáy là một hình vuông cạnh a, mặt bên SAD là một tam giác đều và (SAD) ⊥ (ABCD). a) Tính chiều cao của hình chóp. b) Tính khoảng cách giữa BC và (SAD). c) Xác định đường vuông góc chung và tính khoảng cách giữa AB và SD.
+
+Câu 52: Cho hình hộp chữ nhật ABCD.A'B'C'D' có AA' = a, AB = b, BC = c. a) Tính khoảng cách giữa CC' và (BB'D'D). b) Xác định đường vuông góc chung và tính khoảng cách giữa AC và B'D'.
+
+Câu 53: Cho hình lập phương ABCD.A'B'C'D' có cạnh a. a) Chứng minh rằng hai mặt phẳng (D'AC) và (BC'A') song song với nhau và DB' vuông góc với hai mặt phẳng đó. b) Xác định các giao điểm E, F của DB' với (D'AC), (BC'A'). Tính d((D'AC), (BC'A')).
+
+Câu 54: Cho hình chóp S.ABC có đáy ABC là tam giác vuông tại B, BC = a và góc CAB = 30°. Biết SA ⊥ (ABC) và SA = a√2. a) Chứng minh rằng (SBC) ⊥ (SAB). b) Tính theo a khoảng cách từ điểm A đến đường thẳng SC và khoảng cách từ điểm A đến mặt phẳng (SBC).
+
+Câu 55: Cho hình chóp S.ABCD có đáy ABCD là hình thoi cạnh a có O là giao điểm của hai đường chéo, góc ABC=60°, SO⊥(ABCD), SO=a√3. Tính khoảng cách từ O đến mặt phẳng (SCD).
+
+Câu 56: Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a, SA=SB=SC=SD=a√2. Gọi I, J lần lượt là trung điểm của AB và CD. a) Chứng minh AB ⊥ (SIJ). b) Tính khoảng cách giữa hai đường thẳng AB và SC.
+
+Câu 57: Cho hình chóp tứ giác đều S.ABCD có tất cả các cạnh đều bằng a và có O là giao điểm hai đường chéo của đáy. a) Tính khoảng cách giữa hai đường thẳng AC và SB. b) Tính thể tích của khối chóp.
+
+Câu 58: Cho hình chóp S.ABCD có đáy là hình vuông cạnh a, SA ⊥ (ABCD) và SA = a. Gọi M, N, P lần lượt là trung điểm của SB, SC và SD. Tính khoảng cách giữa AM và NP.
+
+Câu 59: Cho hình tứ diện ABCD có AB = a, BC = b, BD = c, góc ABC= góc ABD= góc BCD=90°. Gọi M, N, P lần lượt là trung điểm của AB, AC, AD. a) Tính khoảng cách từ điểm C đến đường thẳng AB. b) Tính khoảng cách từ điểm D đến mặt phẳng (ABC). c) Tính khoảng cách giữa hai đường thẳng AB và CD.
+
+Câu 60: Cho hình chóp S.ABCD có SA ⊥ (ABCD), đáy ABCD là hình vuông cạnh a, SA = a. a) Tính khoảng cách từ điểm S đến đường thẳng CD. b) Tính khoảng cách từ điểm D đến mặt phẳng (SAB). c) Tính khoảng cách từ điểm A đến mặt phẳng (SCD).
+
+Câu 61: Cho hình lăng trụ đứng ABCD.A'B'C'D' có đáy ABCD là hình vuông cạnh a. Góc giữa đường thẳng AC' và mặt phẳng (ABCD) bằng 60°. a) Chứng minh rằng hai mặt phẳng (ACC'A') và (BDD'B') vuông góc với nhau. b) Tính khoảng cách giữa hai đường thẳng AB và C'D'.
+
+Câu 62: Cho khối chóp đều S.ABCD, đáy có cạnh 6 cm. Tính thể tích của khối chóp đó trong các trường hợp sau: a) Cạnh bên tạo với mặt đáy một góc bằng 60°. b) Mặt bên tạo với mặt đáy một góc bằng 45°.
+
+Câu 63: Cho khối lăng trụ ABC.A'B'C' có đáy là các tam giác đều cạnh a, A'A = A'B = A'C = b. Tính thể tích của khối lăng trụ.
+
+Câu 64: Cho hình lăng trụ ABCD.A'B'C'D'. Biết A'.ABCD là hình chóp đều có tất cả các cạnh đều bằng nhau và bằng a. Tính theo a thể tích của khối lăng trụ ABCD.A'B'C'D' và thể tích của khối chóp A'.BB'C'C.
+
+Câu 65: Cho hình lăng trụ đứng ABCD.A'B'C'D' có đáy ABCD là hình thang vuông tại A và B, AA' = 2a, AD = 2a, AB = BC = a. a) Tính độ dài đoạn thẳng AC'. b) Tính tổng diện tích các mặt của hình lăng trụ.
+
+Câu 66: Cho hình chóp cụt lục giác đều ABCDEF.A'B'C'D'E'F' với O và O' là tâm hai đáy, cạnh đáy lớn và đáy nhỏ lần lượt là a và a/2, OO' = a. a) Tìm góc giữa cạnh bên và mặt đáy. b) Tìm góc phẳng nhị diện [O, AB, A']; [O', A'B', A].
+
+Câu 67: Cho hình hộp ABCD.A'B'C'D' có cạnh bên AA' = a, đáy ABCD là hình thoi có AB = BD = a. Hình chiếu vuông góc của A' lên mặt đáy trùng với điểm O là giao điểm hai đường chéo của đáy. Tính thể tích của khối hộp.
+
+Câu 68: Cho hình lăng trụ ABC.A'B'C' có A'B'C' và AA'C' là hai tam giác đều cạnh a. Biết (ACC'A') ⊥ (A'B'C'). Tính theo a thể tích khối lăng trụ ABC.A'B'C'.
+
+Câu 69: Cho hình lăng trụ tam giác đều ABC.A'B'C' có tất cả các cạnh bằng a. Gọi M là trung điểm của AB. a) Tính góc giữa hai đường thẳng AB và B'C'. b) Tính góc giữa đường thẳng A'B và mặt phẳng (ABC). c) Tính số đo của góc nhị diện [B, CC', M]. d) Chứng minh rằng CC' // (ABB'A'). Tính khoảng cách giữa đường thẳng CC' và mặt phẳng (ABB'A'). e) Chứng minh rằng CM ⊥ (ABB'A'). Tính khoảng cách giữa hai đường thẳng CC' và A'M. g) Tính thể tích của khối lăng trụ tam giác đều ABC.A'B'C' và thể tích khối chóp A'.MBC.

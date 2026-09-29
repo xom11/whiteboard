@@ -272,7 +272,10 @@ export const centersRule: LanguageRule = {
       let circumName: string | undefined;
       if (CIRCUM_KW.test(c.text)) {
         circumName = resolveCenterName(c.text, CIRCUM_KW);
-        const of = ofFor(c.text, CIRCUM_KW);
+        // "tâm đường tròn ngoại tiếp TỨ GIÁC AMHN": tâm = tâm ngoại tiếp ba đỉnh bất kì
+        // của tứ giác (nội tiếp được) — KHÔNG rơi về tam giác duy nhất của đề (ABC ⇒ I ≡ O).
+        const tg = /ngoại\s*tiếp\s+(?:tứ\s*giác|hình\s+\S+(?:\s+\S+)?)\s+([A-Z])([A-Z])([A-Z])([A-Z])(?![A-Z])/u.exec(c.text);
+        const of = tg ? [tg[1], tg[2], tg[3]] : ofFor(c.text, CIRCUM_KW);
         if (circumName && of) intents.push(addPoint(circumName, { kind: 'circumcenter', of }));
       }
       // incenter: "nội tiếp". Khi clause CŨNG có "ngoại tiếp", chỉ emit nếu có
