@@ -14,6 +14,7 @@ import {
 import { ToolbarInjector } from './stamps/shared/ToolbarInjector';
 import { useShortcuts } from './stamps/shared/useShortcuts';
 import { PdfImporterButton } from './pdf/PdfImporterButton';
+import { ExtraToolsInjector, type WhiteboardExtraTool } from './ui/ExtraToolsInjector';
 import { PageRangeDialog } from './pdf/PageRangeDialog';
 import { PropsPanelToggle } from './ui/PropsPanelToggle';
 import { StrokeWidthSlider } from './ui/StrokeWidthSlider';
@@ -46,6 +47,8 @@ const ExcalidrawLoadingFallback = () => (
     Đang tải bảng…
   </div>
 );
+
+const NO_EXTRA_TOOLS: ReadonlyArray<WhiteboardExtraTool> = [];
 
 export interface WhiteboardProps {
   /**
@@ -108,6 +111,12 @@ export interface WhiteboardProps {
    * đang dựng + vị trí chèn; `null` khi clear. Consumer broadcast cho học sinh.
    */
   onGeometryDraft?: (draft: GeometryDraftPreview | null) => void;
+  /**
+   * Mục consumer cắm thêm vào dropdown "More tools" của Excalidraw, cạnh "Chèn PDF"
+   * (vd "Chèn từ giáo trình" của hoctotbachkhoa). Bấm mục ⇒ đóng dropdown rồi gọi
+   * `onSelect`. Ẩn khi `readOnly`.
+   */
+  extraTools?: ReadonlyArray<WhiteboardExtraTool>;
 }
 
 export function Whiteboard({
@@ -122,6 +131,7 @@ export function Whiteboard({
   initialFiles,
   generateGeometryFigure,
   onGeometryDraft,
+  extraTools,
 }: WhiteboardProps) {
   const { api, apiRef, isDark, setApiFromExcalidraw, syncThemeFromAppState } =
     useExcalidrawApi({ onApi });
@@ -330,6 +340,7 @@ export function Whiteboard({
       />
 
       <PdfImporterButton enabled={!readOnly} onPick={handlePdfPick} />
+      <ExtraToolsInjector enabled={!readOnly} tools={extraTools ?? NO_EXTRA_TOOLS} />
 
       <OffPageNotice api={api} enabled={paperStyle !== 'none'} />
 

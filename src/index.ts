@@ -2,6 +2,7 @@
 
 export { Whiteboard } from './Whiteboard';
 export type { WhiteboardProps } from './Whiteboard';
+export type { WhiteboardExtraTool } from './ui/ExtraToolsInjector';
 export { pickSyncableAppState } from './serialize';
 export type {
   ExcalidrawElement,

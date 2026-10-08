@@ -629,3 +629,61 @@ describe('Nền giấy kẻ dòng', () => {
     expect(container.querySelector('.wb-paper-layer')).not.toBeNull();
   });
 });
+
+describe('Mục công cụ của consumer (extraTools)', () => {
+  let fakeRoot: HTMLElement | null = null;
+
+  /** Mock Excalidraw không có dropdown "More tools" → dựng tay (đang mở) để portal có chỗ bám. */
+  function mountFakeDropdown() {
+    const root = document.createElement('div');
+    root.className = 'excalidraw';
+    root.innerHTML =
+      '<button class="App-toolbar__extra-tools-trigger">More tools</button>' +
+      '<div class="dropdown-menu App-toolbar__extra-tools-dropdown"><div class="dropdown-menu-container"></div></div>';
+    document.body.appendChild(root);
+    fakeRoot = root;
+  }
+
+  afterEach(() => {
+    fakeRoot?.remove();
+    fakeRoot = null;
+  });
+
+  it('extraTools ⇒ mục hiện trong dropdown More tools; bấm gọi onSelect', async () => {
+    mountFakeDropdown();
+    const onSelect = jest.fn();
+    render(
+      <Whiteboard
+        storageKey={null}
+        extraTools={[{ key: 'giao-trinh', label: 'Chèn từ giáo trình', onSelect }]}
+      />,
+    );
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
+
+    const btn = document.querySelector<HTMLButtonElement>(
+      '.dropdown-menu-container [data-testid="wb-extra-tool-giao-trinh"]',
+    );
+    expect(btn).not.toBeNull();
+    await act(async () => {
+      btn!.click();
+    });
+    expect(onSelect).toHaveBeenCalledTimes(1);
+  });
+
+  it('readOnly ⇒ không có mục', async () => {
+    mountFakeDropdown();
+    render(
+      <Whiteboard
+        storageKey={null}
+        readOnly
+        extraTools={[{ key: 'giao-trinh', label: 'Chèn từ giáo trình', onSelect: jest.fn() }]}
+      />,
+    );
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
+    expect(document.querySelector('[data-testid="wb-extra-tool-giao-trinh"]')).toBeNull();
+  });
+});

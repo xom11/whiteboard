@@ -61,6 +61,17 @@ export function ClassroomBoard() {
 }
 ```
 
+### Mục riêng trong menu "More tools" (`extraTools`)
+
+Consumer cắm thêm mục vào dropdown công cụ phụ của Excalidraw (cạnh "Chèn PDF"). Bấm mục ⇒
+dropdown đóng rồi `onSelect` chạy. Ẩn khi `readOnly`.
+
+```tsx
+<Whiteboard
+  extraTools={[{ key: 'giao-trinh', label: 'Chèn từ giáo trình', onSelect: () => openCurriculumPanel() }]}
+/>
+```
+
 ### AI dựng hình học 2D (opt-in)
 
 Textarea AI chỉ xuất hiện khi truyền `generateGeometryFigure`. Callback chạy từ client nên phải gọi server boundary của ứng dụng; không bao giờ đặt API key vào component / biến môi trường public.
