@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.40.0 — 2026-10-09
+
+### Mục riêng của ứng dụng trong menu "More tools"
+
+Prop mới `extraTools` cho phép ứng dụng cắm thêm mục vào dropdown công cụ phụ của
+Excalidraw, ngay cạnh "Chèn PDF". Bấm mục thì dropdown đóng lại rồi callback `onSelect`
+của ứng dụng chạy; bảng ở chế độ chỉ xem thì không hiện. hoctotbachkhoa dùng nó cho mục
+"Chèn từ giáo trình" — mở panel giáo trình bên cạnh bảng mà không phủ gì lên bảng.
+
+Bản này cũng gom các thay đổi dựng hình chưa phát hành kể từ v0.39.0 — xem GitHub Release
+v0.40.0 để có danh sách đầy đủ.
+
 ## v0.39.0 — 2026-09-01
 
 ### Thanh trượt độ dày nét, có nấc mảnh hơn hẳn
